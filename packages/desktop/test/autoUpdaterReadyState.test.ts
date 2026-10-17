@@ -2259,27 +2259,6 @@ describe("autoUpdater ready state sync", () => {
     });
   });
 
-  it("强制升级自动更新会直接安装已下载版本，不再用最低版本二次拦截", async () => {
-    mockProcessPlatform("darwin");
-    const { initAutoUpdater, requestForceAutoUpdate } = await import("../src/main/autoUpdater.js");
-    const onStateChange = vi.fn();
-
-    initAutoUpdater();
-    autoUpdaterMock.emit("update-downloaded", { version: "0.1.25" });
-    await Promise.resolve();
-    await Promise.resolve();
-    autoUpdaterMock.checkForUpdates.mockClear();
-    autoUpdaterMock.quitAndInstall.mockClear();
-
-    requestForceAutoUpdate(onStateChange, "force-update", "0.1.26");
-    await Promise.resolve();
-
-    expect(onStateChange).toHaveBeenCalledWith({ kind: "checking" });
-    expect(onStateChange).toHaveBeenCalledWith({ kind: "installing" });
-    expect(autoUpdaterMock.quitAndInstall).toHaveBeenCalledOnce();
-    expect(autoUpdaterMock.checkForUpdates).not.toHaveBeenCalled();
-  });
-
   it("开发态自动更新安装请求会重启当前 dev app", async () => {
     mockProcessPlatform("darwin");
     appMock.isPackaged = false;
@@ -2309,98 +2288,5 @@ describe("autoUpdater ready state sync", () => {
     expect(loggerInfoMock).toHaveBeenCalledWith(
       "[auto-update] dev update install fallback: relaunch app",
     );
-  });
-
-  it("强制升级下载失败时会恢复菜单并反馈弹窗错误", async () => {
-    const downloadError = new Error("network down");
-    autoUpdaterMock.downloadUpdate.mockRejectedValueOnce(downloadError);
-    const win = {
-      isDestroyed: () => false,
-      webContents: {
-        id: 41,
-        send: vi.fn(),
-      },
-    };
-    browserWindows.push(win);
-    const { initAutoUpdater, requestForceAutoUpdate } = await import("../src/main/autoUpdater.js");
-    const onStateChange = vi.fn();
-
-    initAutoUpdater();
-    requestForceAutoUpdate(onStateChange);
-    autoUpdaterMock.emit("update-available", { version: "0.1.25" });
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(onStateChange).toHaveBeenCalledWith({ kind: "checking" });
-    expect(onStateChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        kind: "downloading",
-        version: "0.1.25",
-      }),
-    );
-    expect(onStateChange).toHaveBeenCalledWith({
-      kind: "error",
-      message: "network down",
-    });
-    expect(win.webContents.send).toHaveBeenCalledWith(PlatformChannels.UpdateStateChanged, {
-      kind: "idle",
-      enabled: true,
-    });
-  });
-
-  it("强制升级自动更新复用检查时，无可用更新会反馈错误状态", async () => {
-    const { initAutoUpdater, requestForceAutoUpdate } = await import("../src/main/autoUpdater.js");
-    const onStateChange = vi.fn();
-
-    initAutoUpdater();
-    expect(autoUpdaterMock.checkForUpdates).toHaveBeenCalledTimes(1);
-
-    requestForceAutoUpdate(onStateChange);
-
-    expect(onStateChange).toHaveBeenCalledWith({ kind: "checking" });
-    expect(autoUpdaterMock.checkForUpdates).toHaveBeenCalledTimes(1);
-
-    autoUpdaterMock.emit("update-not-available", { version: "0.1.24" });
-
-    // Bugfix: 启动期检查被强更弹窗复用后，无更新也必须通知弹窗，避免一直停留在 checking。
-    expect(onStateChange).toHaveBeenCalledWith({
-      kind: "error",
-      message: "未找到可安装更新，请使用手动升级。",
-    });
-  });
-
-  it("强制升级自动更新复用检查失败时，会反馈弹窗错误状态", async () => {
-    const checkError = new Error("feed offline");
-    autoUpdaterMock.checkForUpdates.mockRejectedValueOnce(checkError);
-    const { getAutoUpdaterState, initAutoUpdater, requestForceAutoUpdate } =
-      await import("../src/main/autoUpdater.js");
-    const onStateChange = vi.fn();
-
-    initAutoUpdater();
-    requestForceAutoUpdate(onStateChange);
-    await Promise.resolve();
-    await Promise.resolve();
-
-    // Bugfix: 强更弹窗复用启动期后台检查时，checkForUpdates 直接 reject 也必须反馈给弹窗，
-    // 否则用户会一直看到 checking，无法判断自动升级已经失败。
-    expect(onStateChange).toHaveBeenCalledWith({ kind: "checking" });
-    expect(onStateChange).toHaveBeenCalledWith({
-      kind: "error",
-      message: "feed offline",
-    });
-    expect(getAutoUpdaterState()).toEqual({ kind: "idle", enabled: true });
-  });
-
-  it("强制升级自动更新无可用更新时按英文 locale 反馈错误文案", async () => {
-    const { initAutoUpdater, requestForceAutoUpdate } = await importAutoUpdaterWithLocale();
-    const onStateChange = vi.fn();
-
-    initAutoUpdater();
-    requestForceAutoUpdate(onStateChange);
-    autoUpdaterMock.emit("update-not-available", { version: "0.1.24" });
-
-    expect(onStateChange).toHaveBeenCalledWith({
-      kind: "error",
-      message: "No installable update was found. Use manual update instead.",
-    });
   });
 });

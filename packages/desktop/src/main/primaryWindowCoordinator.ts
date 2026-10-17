@@ -59,7 +59,8 @@ export function createPrimaryWindowCoordinator(deps: PrimaryWindowCoordinatorDep
 
   async function ensurePrimaryWindow(reason: string) {
     if (deps.canCreateWindow && !deps.canCreateWindow(reason)) {
-      // 强制升级是进程级 gate，activate/dock/tray/open-url 等入口也必须共享同一阻断边界。
+      // canCreateWindow 是进程级可选闸：activate/dock/tray/open-url 等入口
+      // 共享 ensurePrimaryWindow，由同一判定决定是否允许创建/复用主窗口。
       deps.logger.info(`[primary-window] window creation blocked (${reason})`);
       return;
     }

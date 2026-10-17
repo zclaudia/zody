@@ -43,7 +43,6 @@ import type {
   EnterpriseCodingPlanPricingResponse,
   StartPlanPreviewConfig,
   ZCodeModelContextBudgetStrategy,
-  ForceUpdateConfig,
   ManualClaimPlanPreviewSnapshot,
   ManualClaimPlanClaimRequest,
   ManualClaimPlanClaimResult,
@@ -80,7 +79,6 @@ export interface ICodingPlanSubscriptionService {
   getModelContextBudgetStrategy(): Promise<ZCodeModelContextBudgetStrategy>;
   getBillingDiscount(): Promise<CodingPlanBillingDiscountConfig | undefined>;
   getRequestVerificationConfig(): Promise<RequestVerificationConfig | null>;
-  getForceUpdateConfig(): Promise<ForceUpdateConfig | null>;
   productInfo(request: CodingPlanProductInfoRequest): Promise<CodingPlanProductInfo>;
   preview(request: CodingPlanPreviewRequest): Promise<CodingPlanPreviewResponse>;
   createSign(request: CodingPlanCreateSignRequest): Promise<CodingPlanAgreementResponse>;
