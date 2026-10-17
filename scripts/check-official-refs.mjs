@@ -70,18 +70,22 @@ const alwaysIgnoredSegments = new Set([
   "material-icons",
 ]);
 
-/** 拦截范围：与基线比较，新增文件或命中数增加即失败。 */
-const enforcedRoots = ["packages", "apps", "scripts", "config", "public"];
+/** 拦截范围：与基线比较，新增文件或命中数增加即失败。F0.3 的屏蔽清单生成器复用同一范围。 */
+export const enforcedRoots = ["packages", "apps", "scripts", "config", "public"];
 /** 单列统计：不参与拦截（文档在阶段 7 处理）。 */
 const reportOnlyRoots = ["docs", "apps/dev-docs"];
 
 // 检查器自身、其测试与词表模块必然包含官方引用字面量，纳入统计会让基线
 // 自指（无法收敛也无法判定新增）；基线文件只含路径与数字，一并排除。
+// F0.3 断网验收容器的测试（official-request-sink / generate-official-blocklist）
+// 同理：断言「拦到官方请求」的夹具必须写出真实官方域名字面量，一并自排除。
 const selfExcludedPaths = new Set([
   "scripts/check-official-refs.mjs",
   "scripts/check-official-refs.test.mjs",
   "scripts/lib/official-domains.mjs",
   "scripts/official-refs-baseline.json",
+  "scripts/generate-official-blocklist.test.mjs",
+  "scripts/official-request-sink.test.mjs",
 ]);
 
 function parseArgs(argv) {
@@ -136,7 +140,8 @@ function isTextFile(relativePath) {
   return extensionMatch ? textExtensions.has(extensionMatch[0]) : false;
 }
 
-function* walk(root) {
+/** 导出供 F0.3 屏蔽清单生成器（generate-official-blocklist.mjs）复用同一扫描范围与过滤。 */
+export function* walk(root) {
   if (!existsSync(root)) {
     return;
   }

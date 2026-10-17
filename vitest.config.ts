@@ -30,6 +30,10 @@ const forkIsolatedTests = [
   // Bugfix: checkpoint 集成测试同样会连续创建真实 Git 仓库；related 全量并发时会因
   // 子进程与磁盘调度饥饿超过 30 秒，隔离串行后保持聚焦运行时的真实耗时口径。
   "packages/services/test/gitCheckpointService.test.ts",
+  // F4.0 upstream 同步脚本测试在临时仓库连续 spawn 真实 git（构造 merge 冲突、
+  // git rm、diff 摘要）；与 gitService 等同理隔离到串行 fork 组，避免 threads
+  // 并发下的进程启动队列饥饿。
+  "scripts/upstream-sync-resolve.test.mjs",
   "packages/services/test/mcpSyncService.test.ts",
   "packages/services/test/providerRuntimeResolver.test.ts",
   "packages/services/test/runtimeToolResolver.test.ts",
@@ -99,6 +103,8 @@ export default defineConfig({
             "scripts/assert-safe-cua-helper-zip.test.mjs",
             "scripts/check-official-refs.test.mjs",
             "scripts/ci/ci-telemetry-keyword-guard.test.mjs",
+            "scripts/generate-official-blocklist.test.mjs",
+            "scripts/official-request-sink.test.mjs",
           ],
           exclude: ["packages/desktop/test/e2e/**", ...forkIsolatedTests],
           // Node 24/macOS 的 threads 全量运行可触发 V8 SIGSEGV；诊断时切换进程隔离，测试范围不变。

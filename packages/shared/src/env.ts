@@ -11,6 +11,7 @@ declare const __ZCODE_PRODUCT_FLAVOR__: string;
 declare const __ZCODE_ARMS_RUM_ENDPOINT__: string;
 declare const __ZCODE_TELEMETRY_REPORT_ENDPOINT__: string;
 declare const __ZCODE_AUTO_UPDATE_ENABLED__: boolean;
+declare const __ZCODE_DOWNLOAD_PAGE_URL__: string;
 
 export function normalizeZCodeEnv(value: string | undefined): ZCodeEnv {
   return value?.trim().toLowerCase() === "production" ? "production" : "test";
@@ -60,6 +61,22 @@ export const ZCODE_TELEMETRY_REPORT_ENDPOINT: string =
 /** 桌面自动更新是否启用。 */
 export const ZCODE_AUTO_UPDATE_ENABLED: boolean =
   typeof __ZCODE_AUTO_UPDATE_ENABLED__ !== "undefined" ? __ZCODE_AUTO_UPDATE_ENABLED__ : false;
+/**
+ * fork 手动升级下载页地址（构建期 ZCODE_DOWNLOAD_PAGE_URL，经 define 注入，运行时只读）。
+ * 为空表示未配置，消费方（如架构不匹配弹框）不展示下载入口；loopback http 仅用于本机测试。
+ */
+export const ZCODE_DOWNLOAD_PAGE_URL: string =
+  typeof __ZCODE_DOWNLOAD_PAGE_URL__ !== "undefined" ? __ZCODE_DOWNLOAD_PAGE_URL__ : "";
+
+/**
+ * 桌面自动更新是否生效：production 安装身份且构建期启用自动更新，两者缺一不可。
+ * 这是唯一判定（阶段 2 细则「自动更新」规则 1）：启动初始化、应用菜单、托盘、渲染端入口
+ * 与设置项统一只读它，不再各自拼条件。fork 采用手动更新，构建护栏禁止 ZCODE_AUTO_UPDATE，
+ * fork 构建中恒为 false。
+ */
+export function isDesktopAutoUpdateActive(): boolean {
+  return ZCODE_PRODUCT_FLAVOR === "production" && ZCODE_AUTO_UPDATE_ENABLED;
+}
 
 /** 将本地运行态与编译期 ZCODE_ENV 映射为 ARMS 控制台识别的上报环境标签 */
 export function mapZCodeEnvToArmsRumEnv(runtimeEnv: ZCodeRuntimeEnv): ArmsRumEnv {

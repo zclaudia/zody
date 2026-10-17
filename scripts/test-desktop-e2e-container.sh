@@ -13,16 +13,33 @@ CONVERSATION_SESSION_VERIFIED_E2E_SPEC=""
 # 只有通过人工 review、formal promotion 和单 spec Docker admission 的插件用例才能写入。
 PLUGIN_MANAGEMENT_VERIFIED_E2E_SPEC=""
 E2E_SPEC_PRESET="${E2E_SPEC_PRESET:-}"
-if [ "$#" -gt 1 ]; then
+# F0.3 断网验收：--block-official（或 BLOCK_OFFICIAL=1）把官方域名 --add-host 到
+# 容器内 sink 地址（127.0.0.1），在容器内先启动 scripts/official-request-sink.mjs
+# 记录被拦请求，跑完后用 scripts/assert-official-requests.mjs 断言。
+BLOCK_OFFICIAL="${BLOCK_OFFICIAL:-0}"
+preset_arg=""
+preset_count=0
+for script_arg in "$@"; do
+  case "$script_arg" in
+    --block-official)
+      BLOCK_OFFICIAL=1
+      ;;
+    *)
+      preset_arg="$script_arg"
+      preset_count=$((preset_count + 1))
+      ;;
+  esac
+done
+if [ "$preset_count" -gt 1 ]; then
   printf '[desktop-e2e-container] expected at most one preset argument\n' >&2
   exit 1
 fi
-if [ "$#" -eq 1 ]; then
-  if [ -n "$E2E_SPEC_PRESET" ] && [ "$E2E_SPEC_PRESET" != "$1" ]; then
-    printf '[desktop-e2e-container] preset argument conflicts with E2E_SPEC_PRESET: %s != %s\n' "$1" "$E2E_SPEC_PRESET" >&2
+if [ "$preset_count" -eq 1 ]; then
+  if [ -n "$E2E_SPEC_PRESET" ] && [ "$E2E_SPEC_PRESET" != "$preset_arg" ]; then
+    printf '[desktop-e2e-container] preset argument conflicts with E2E_SPEC_PRESET: %s != %s\n' "$preset_arg" "$E2E_SPEC_PRESET" >&2
     exit 1
   fi
-  E2E_SPEC_PRESET="$1"
+  E2E_SPEC_PRESET="$preset_arg"
 fi
 
 case "$E2E_SPEC_PRESET" in
@@ -192,6 +209,24 @@ for provider_env_name in E2E_PROVIDER_BASE_URL E2E_PROVIDER_MODEL E2E_PROVIDER_S
   fi
 done
 
+# F0.3：--block-official 时从官方域名词表（scripts/lib/official-domains.mjs）生成
+# --add-host 清单，把官方域名解析到容器内 sink 地址。sink 与 E2E 同容器、监听容器内
+# 80/443，因此 --network none（replay-isolated 默认）下同样生效。生成失败直接中止：
+# 不允许「以为在断网验收、实际屏蔽清单为空」地跑容器。
+OFFICIAL_REQUEST_SINK_ADDRESS="${OFFICIAL_REQUEST_SINK_ADDRESS:-127.0.0.1}"
+if [ "$BLOCK_OFFICIAL" = "1" ]; then
+  OFFICIAL_HOST_BLOCKLIST="$(node scripts/generate-official-blocklist.mjs \
+    --format add-host --sink-address "$OFFICIAL_REQUEST_SINK_ADDRESS")"
+  official_host_count="$(printf '%s\n' "$OFFICIAL_HOST_BLOCKLIST" | wc -l | tr -d ' ')"
+  log "blocking ${official_host_count} official host(s) -> ${OFFICIAL_REQUEST_SINK_ADDRESS} (in-container official-request-sink)"
+  while IFS= read -r host_map; do
+    [ -n "$host_map" ] || continue
+    docker_run_args+=(--add-host "$host_map")
+  done <<EOF
+$OFFICIAL_HOST_BLOCKLIST
+EOF
+fi
+
 sample_container_stats() {
   while true; do
     if docker inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
@@ -217,8 +252,46 @@ cleanup_container() {
 trap cleanup_container EXIT
 docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
 
-log "running ${E2E_SPEC}; network=${E2E_NETWORK_MODE}; artifacts: ${HOST_ARTIFACT_DIR}"
-sample_container_stats &
-stats_sampler_pid=$!
+if [ "$BLOCK_OFFICIAL" = "1" ]; then
+  SINK_LOG_IN_CONTAINER="${CONTAINER_ARTIFACT_DIR}/official-requests.jsonl"
+  # 覆盖镜像 CMD：先启动 sink（写进挂载的 artifact 目录，宿主机在
+  # $HOST_ARTIFACT_DIR/official-requests.jsonl 读取），就绪检查失败立即退出；
+  # E2E 结束向 sink 发 SIGINT 冲刷文件，容器退出码取 E2E 的。
+  # 容器侧变量（\$SINK_PID 等）由容器 shell 求值；路径在此处展开，不含引号字符。
+  container_command="node /workspace/scripts/official-request-sink.mjs --output '${SINK_LOG_IN_CONTAINER}' & SINK_PID=\$!; sleep 1; kill -0 \$SINK_PID 2>/dev/null || { echo '[official-request-sink] sink exited at startup (port conflict or script missing in image?)' >&2; exit 90; }; E2E_STATUS=0; dbus-run-session -- pnpm --filter @zcode/desktop test:e2e \${EXTRA_WDIO_ARGS:-} || E2E_STATUS=\$?; kill -INT \$SINK_PID 2>/dev/null || true; wait \$SINK_PID 2>/dev/null || true; exit \$E2E_STATUS"
+  log "running ${E2E_SPEC}; network=${E2E_NETWORK_MODE}; official-request sink ON; artifacts: ${HOST_ARTIFACT_DIR}"
+  sample_container_stats &
+  stats_sampler_pid=$!
+  container_status=0
+  docker run "${docker_run_args[@]}" "${IMAGE_NAME}:latest" bash -lc "$container_command" || container_status=$?
+else
+  log "running ${E2E_SPEC}; network=${E2E_NETWORK_MODE}; artifacts: ${HOST_ARTIFACT_DIR}"
+  sample_container_stats &
+  stats_sampler_pid=$!
+  container_status=0
+  docker run "${docker_run_args[@]}" "${IMAGE_NAME}:latest" || container_status=$?
+fi
 
-docker run "${docker_run_args[@]}" "${IMAGE_NAME}:latest"
+if [ "$BLOCK_OFFICIAL" = "1" ]; then
+  # 断言 sink 记录：默认 report 只观察；阶段验收用
+  # OFFICIAL_REQUESTS_ASSERT_MODE=empty（必须无官方请求）
+  # 或 OFFICIAL_REQUESTS_ASSERT_MODE=whitelist + OFFICIAL_REQUESTS_ALLOW=<逗号分隔主机名>
+  # （仅白名单，如放行 BYOK 直连的公开 API 主机，见 scripts/lib/official-domains.mjs）。
+  OFFICIAL_REQUESTS_ASSERT_MODE="${OFFICIAL_REQUESTS_ASSERT_MODE:-report}"
+  assert_args=("${HOST_ARTIFACT_DIR}/official-requests.jsonl" --mode "$OFFICIAL_REQUESTS_ASSERT_MODE")
+  if [ -n "${OFFICIAL_REQUESTS_ALLOW:-}" ]; then
+    assert_args+=(--allow "$OFFICIAL_REQUESTS_ALLOW")
+  fi
+  assert_status=0
+  if ! node scripts/assert-official-requests.mjs "${assert_args[@]}"; then
+    assert_status=1
+  fi
+  if [ "$container_status" -ne 0 ]; then
+    exit "$container_status"
+  fi
+  exit "$assert_status"
+fi
+
+# 非 --block-official 路径：docker run 的退出码经 container_status 显式透传
+# （`|| container_status=$?` 赋值本身恒为 0，不能靠隐式状态退出）。
+exit "$container_status"
