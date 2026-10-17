@@ -11,7 +11,9 @@ import {
 } from "../src/dynamic-workflow-feature.js";
 
 // DWG-01（docs/dynamic-workflow/launch.md「Gray release: the `dynamicWorkflow` feature key」）：
-// 远端取值、缺省 fail-closed、本地覆盖优先级三件事都由这个纯函数裁决，三端共用。
+// 远端取值、缺省、本地覆盖优先级三件事都由这个纯函数裁决，三端共用。
+// fork（F2.6b，细则 D1b）：缺省改为固定提供 onDemand（DEFAULT_DYNAMIC_WORKFLOW_MODE），
+// 本地 Host 恒以 remote: undefined 调用，落到缺省分支。
 
 function remote(mode: unknown) {
   return { mode };
@@ -46,10 +48,10 @@ describe("resolveDynamicWorkflowClientConfig（DWG-01）", () => {
     ["mode 不是字符串", remote(1)],
     ["对象里没有 mode", {}],
     ["远端下发字符串而非对象", "alwaysOn"],
-  ])("远端 %s 时 fail-closed 到 default", (_name, value) => {
+  ])("远端 %s 时落到 fork 缺省（固定提供 onDemand，来源 default）", (_name, value) => {
     expect(resolveDynamicWorkflowClientConfig({ remote: value })).toEqual({
       mode: DEFAULT_DYNAMIC_WORKFLOW_MODE,
-      enabled: false,
+      enabled: true,
       source: "default",
       offeredMode: DEFAULT_DYNAMIC_WORKFLOW_MODE,
     });

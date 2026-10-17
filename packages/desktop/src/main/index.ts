@@ -13,10 +13,6 @@ import {
 import armsRum from "@arms/rum-electron";
 import { createArmsUserIdentitySync } from "./armsUserIdentity.js";
 import { ensureDesktopDeviceMidSync } from "./desktopDeviceMid.js";
-import {
-  createDesktopContextPromptRollout,
-  createElectronDesktopContextPromptConfigFetcher,
-} from "./desktopContextPromptRollout.js";
 import { buildBrowserViewCloseTabNotification } from "./browserView/browserCloseTabNotification.js";
 import { BrowserGuestManager } from "./browserView/browserGuestManager.js";
 import { createElectronBrowserWebmRecorder } from "./browserView/electronBrowserWebmRecorder.js";
@@ -72,6 +68,7 @@ import {
   ZCODE_PRODUCT_FLAVOR,
   ZCODE_AUTO_UPDATE_ENABLED,
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
+  DISABLED_RENDERER_ACTION_TRACE_CONFIG,
   DEFAULT_LOCALE,
   TEST_ZCODE_ENDPOINT_ORIGIN,
   ZCODE_VERSION,
@@ -107,7 +104,8 @@ import { createAppTelemetryRuntime } from "./appTelemetryRuntime.js";
 import { createRendererActionTraceBroker } from "./rendererActionTraceBroker.js";
 import { createRendererActionTraceExporter } from "./rendererActionTraceExporter.js";
 import { registerRendererActionTraceIpc } from "./rendererActionTraceIpc.js";
-import { createRendererActionTraceRollout } from "./rendererActionTraceRollout.js";
+// fork（F2.6a）：只复用 rollout 的形状类型；实现文件按任务要求保留（同步友好），不再装配。
+import type { RendererActionTraceRollout } from "./rendererActionTraceRollout.js";
 import {
   resolveAppShutdownPolicy,
   selectAppShutdownPolicy,
@@ -716,52 +714,6 @@ async function resolveCurrentZCodeEndpointOrigin() {
     overrideOrigin: (await mainSettingService.get()).zcodeEndpointOrigin,
   });
 }
-let desktopContextPromptRollout: ReturnType<typeof createDesktopContextPromptRollout> | undefined;
-function resolveDesktopContextPromptEnabledForHost(): boolean {
-  const rollout = desktopContextPromptRollout;
-  if (!rollout) {
-    return false;
-  }
-  // Host 创建时顺便触发过期刷新，但只读取当前快照；网络请求不能阻塞 Local/Remote Host。
-  void rollout.refresh();
-  return rollout.getSnapshot().enabled;
-}
-
-// 首个 Host 创建前的有界灰度裁决门。Host/Agent 的 presentation surface 在进程启动时
-// 冻结（services/node.ts 顶层 const + CLI --surface），而灰度请求是旁路、不阻塞 Host。若首个
-// Host fork 早于请求 resolve，成功结果（enabled:true）对已冻结的 Host/Agent 无可达生效路径。
-// 这里给"成功结果"一条有界的生效路径：首 Host fork 前 await 一次裁决（≤2s），失败/超时仍按当前
-// 快照继续（desktopContextPrompt fail-open）。first-only 永久
-// latch——后续 Host fork await 已 resolve 的 promise（近乎 0ms），且各 resolve*ForHost()
-// 同步读取已被刷新的 live 快照。
-const DESKTOP_FIRST_HOST_SPAWN_DECISION_TIMEOUT_MS = 2_000;
-let firstHostSpawnDecisionPromise: Promise<void> | null = null;
-function awaitFirstHostSpawnDecision(): Promise<void> {
-  if (firstHostSpawnDecisionPromise) {
-    return firstHostSpawnDecisionPromise;
-  }
-  firstHostSpawnDecisionPromise = (async () => {
-    const rollout = desktopContextPromptRollout;
-    if (!rollout) {
-      return;
-    }
-    try {
-      const decision = await rollout.awaitFirstDecision(
-        DESKTOP_FIRST_HOST_SPAWN_DECISION_TIMEOUT_MS,
-      );
-      logger.info("[desktop-context-prompt] first host spawn decision resolved", {
-        enabled: decision.enabled,
-        configVersion: decision.configVersion,
-      });
-    } catch (error) {
-      // awaitFirstDecision 永不 reject（refresh 内部已 catch + timeout 回退快照），此处仅兜底。
-      logger.warn("[desktop-context-prompt] first host spawn decision failed, fail-open", {
-        error,
-      });
-    }
-  })();
-  return firstHostSpawnDecisionPromise;
-}
 const appTelemetryCore = createTelemetryCore({
   loadUserId: createTelemetryUserIdLoader(appTelemetryCredentialService),
   loadAuthorization: createTelemetryAuthorizationLoader(appTelemetryCredentialService),
@@ -836,21 +788,15 @@ const deviceMid = ensureDesktopDeviceMidSync();
 // fork（F2.7）：帮助与社群配置只读内置 config/default.json，不再构造/请求远端
 // /api/v1/client/configs（原实现附带 X-Device-Mid 等设备标识，且官方可改写反馈与社群入口）。
 const readHelpConfig = createDesktopHelpConfigReader();
-// 同一个 /api/v1/client/configs fetcher 供两个灰度 rollout 共用（请求参数与鉴权完全一致，
-// 各自独立缓存/去重，服务端按 data.configs.<key> 区分功能）。
-const electronClientConfigsFetcher = createElectronDesktopContextPromptConfigFetcher({
-  appVersion: ZCODE_VERSION || app.getVersion(),
-  deviceMid,
-  resolveEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
-});
-desktopContextPromptRollout = createDesktopContextPromptRollout({
-  fetchConfig: electronClientConfigsFetcher,
-  logger,
-});
-const rendererActionTraceRollout = createRendererActionTraceRollout({
-  fetchConfig: electronClientConfigsFetcher,
-  logger,
-});
+// fork（F2.6a，spec D1b）：渲染端动作追踪属于遥测，fork 无自有 OTLP 端点，固定禁用。
+// 不再构造 /api/v1/client/configs 的 fetchConfig，也不经 singleFeatureRollout 读远端；
+// 保留 rollout 形状以复用 registerRendererActionTraceIpc 的装配与本地 env 调试覆盖
+// （ZCODE_RENDERER_ACTION_TRACE_ENABLED / ZCODE_LOCAL_TTFT_ENABLED）。
+const rendererActionTraceRollout: RendererActionTraceRollout = {
+  getSnapshot: () => ({ ...DISABLED_RENDERER_ACTION_TRACE_CONFIG }),
+  refresh: async () => ({ ...DISABLED_RENDERER_ACTION_TRACE_CONFIG }),
+  awaitFirstDecision: async () => ({ ...DISABLED_RENDERER_ACTION_TRACE_CONFIG }),
+};
 const localTtftExporter = createLocalTtftExporter({
   env: { ...hostProcessLocalEnv, ...process.env },
   version: ZCODE_VERSION || app.getVersion(),
@@ -1816,7 +1762,6 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
       }),
     windowHostProcessMap,
     onHostProcessReady: (windowKey) => cuaPipFocusRouter.refreshWindow(windowKey),
-    awaitFirstHostSpawnDecision,
     spawnHostProcess: (win, label, initMessage) =>
       spawnHostProcess(
         win,
@@ -1827,7 +1772,6 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
         },
         {
           hostProcessLocalEnv,
-          desktopContextPromptEnabled: resolveDesktopContextPromptEnabledForHost,
           logger,
           broadcastHub,
           taskRealtimeBus,
@@ -2064,8 +2008,6 @@ app.whenReady().then(async () => {
       ? { registryMaxEntries: Number(process.env.ZCODE_E2E_PLUGIN_SANDBOX_MAX_ENTRIES) }
       : {}),
   });
-  // Electron 的 net.request 只能在 app ready 后使用；灰度请求仍是旁路预热，不阻塞首个 Host。
-  void desktopContextPromptRollout?.refresh();
   installBrowserRestoreBootstrapProtocol(
     session.fromPartition(EMBEDDED_BROWSER_PARTITION).protocol,
   );

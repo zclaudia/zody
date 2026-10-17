@@ -335,7 +335,8 @@ function RootInner({
   // 动态工作流灰度快照的唯一取数点：
   // 放在 app 级 ServiceProvider 这一层取一次，自动化页与 run 面板只读。消费方可能位于
   // 工作区级 ServiceProvider 内（远程 Host 的 accessor），由它们取数会拿到另一台 Host 的答案。
-  useDynamicWorkflowAvailabilityLoader(services.codingPlanSubscriptionService);
+  // fork（F2.6b）：经 IClientConfigService 读 Host 本地 offer，不再依赖订阅服务。
+  useDynamicWorkflowAvailabilityLoader(services.clientConfigService);
 
   const { intl, locale } = useZCodeIntl();
   const theme = useZCodeStore((state) => state.theme);
@@ -353,12 +354,12 @@ function RootInner({
     update: updateAppSettings,
   } = useSettings();
   // docs/dynamic-workflow/launch.md「The user's choice」：设置里的动态工作流选择变化后，通知本窗口
-  // 的 Host 重发 CLI 策略（并转发给远程 Host），再重读灰度快照。
+  // 的 Host 重发 CLI 策略（并转发给远程 Host），再重读灰度快照（经 clientConfigService，fork F2.6b）。
   useDynamicWorkflowUserModeSync({
     settingsLoaded: Boolean(appSettings),
     userMode: appSettings?.dynamicWorkflowMode,
     zcodeAgentService: services.zcodeAgentService,
-    codingPlanSubscriptionService: services.codingPlanSubscriptionService,
+    clientConfigService: services.clientConfigService,
   });
   const [welcomeScreenOpenReason, setWelcomeScreenOpenReason] =
     useState<WelcomeScreenOpenReason | null>(() =>

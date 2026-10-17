@@ -65,6 +65,7 @@ import {
   createMediaPreviewService,
   createCodingPlanSubscriptionService,
   createClientScenesService,
+  LOCAL_MODEL_CONTEXT_BUDGET_STRATEGY,
   createServiceLogger,
   createSubagentsService,
   createMemoryService,
@@ -75,7 +76,6 @@ import {
 import {
   BIGMODEL_PROVIDER_ID,
   buildRuntimeZCodeApiUrl,
-  DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
   type ProviderFamilyDomain,
   resolveBigModelApiOrigin,
   resolveZaiBusinessBaseUrl,
@@ -317,9 +317,10 @@ export function createRemoteWorkspaceServiceCollection(params: {
           | { status: "resolved"; preferences: ZCodeSessionRuntimePreferencesResult }
           | { status: "failed"; message: string };
         try {
-          // 与本地 Host 同源：固定预算不依赖配置网关，远程/手机偏好响应不再串行等待网络。
+          // 与本地 Host 同源：预算取 services 本地模块的固定值（fork F2.6b 所有者），
+          // 远程/手机偏好响应不再串行等待网络。
           const settings = await trackStage("settings", localSettingService.get());
-          const modelContextBudgetStrategy = DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY;
+          const modelContextBudgetStrategy = LOCAL_MODEL_CONTEXT_BUDGET_STRATEGY;
           resolution = {
             status: "resolved",
             preferences: {

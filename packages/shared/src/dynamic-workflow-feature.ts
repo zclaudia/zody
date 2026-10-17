@@ -19,8 +19,14 @@ export type DynamicWorkflowMode = (typeof DYNAMIC_WORKFLOW_MODES)[number];
  */
 export const ZCODE_DYNAMIC_WORKFLOW_MODE_ENV = "ZCODE_DYNAMIC_WORKFLOW_MODE";
 
-/** 服务端缺省、格式非法或请求失败时的取值：fail-closed，与闲时任务灰度一致。 */
-export const DEFAULT_DYNAMIC_WORKFLOW_MODE: DynamicWorkflowMode = "disabled";
+/**
+ * fork（F2.6b，细则 D1b）：不再有服务端下发，`/api/v1/client/configs` 的 `dynamicWorkflow`
+ * key 消失。提供值固定为 `onDemand`、来源记为 `default`——功能完整可用且用户可在设置里改；
+ * `ZCODE_DYNAMIC_WORKFLOW_MODE` 三档覆盖规则不变（dynamic-workflow-feature 同一折叠），
+ * 用户选择仍以设置 `dynamicWorkflowMode` 为准。原「请求失败 fail-closed 到 disabled」的
+ * 语义随远端来源一并移除：fork 上缺省即提供，不再依赖任何远端响应。
+ */
+export const DEFAULT_DYNAMIC_WORKFLOW_MODE: DynamicWorkflowMode = "onDemand";
 
 export function normalizeDynamicWorkflowMode(value: unknown): DynamicWorkflowMode | undefined {
   if (typeof value !== "string") return undefined;
@@ -108,8 +114,10 @@ export function applyDynamicWorkflowUserMode(
 
 /**
  * 纯函数：把远端 envelope 的 `configs.dynamicWorkflow` 与本地覆盖环境变量折叠成「提供」，再应用用户选择。
- * 提供的优先级：覆盖 > 远端合法值 > 缺省。远端成功但**未下发**该 key 也视为 disabled——
- * 服务端撤掉 key 等于关闭，不能沿用旧快照（与 desktopContextPromptRollout 同一裁决）。
+ * 提供的优先级：覆盖 > 远端合法值 > 缺省（fork 缺省即 `DEFAULT_DYNAMIC_WORKFLOW_MODE` = `onDemand`；
+ * fork 不再请求远端，本地 Host 恒以 `remote: undefined` 调用，落到缺省分支）。
+ * 历史上「远端成功但未下发该 key 视为 disabled」的 fail-closed 裁决已随 fork 固定 offer 移除：
+ * 缺省现在等于提供 onDemand（细则 D1b）。
  */
 export function resolveDynamicWorkflowClientConfig(input: {
   remote: unknown;

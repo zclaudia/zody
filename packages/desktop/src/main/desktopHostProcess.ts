@@ -159,8 +159,6 @@ export function spawnHostProcess(
   initMessage: HostInitMessage,
   dependencies: {
     hostProcessLocalEnv: Record<string, string>;
-    /** Main 进程已完成服务端灰度裁决；Host 只消费这个快照，不自行请求或分桶。 */
-    desktopContextPromptEnabled?: () => boolean;
     logger: {
       info: (...args: unknown[]) => void;
       warn: (...args: unknown[]) => void;
@@ -277,13 +275,10 @@ export function spawnHostProcess(
       // health-timing out. Env-name mirror of services' LAUNCHER_PID_ENV. Not set on
       // Windows/Linux (CUA is macOS-only; nothing reads it there) to keep the host env pristine.
       ...(process.platform === "darwin" ? { ZCODE_CUA_LAUNCHER_PID: String(process.pid) } : {}),
-      ...(dependencies.desktopContextPromptEnabled
-        ? {
-            [ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]: dependencies.desktopContextPromptEnabled()
-              ? "1"
-              : "0",
-          }
-        : {}),
+      // fork（F2.6a，spec D1b）：桌面上下文提示固定开启，不再由 Main 读取远端灰度后
+      // 经依赖注入决定；Host env 恒为 1，下游 services/node.ts 的三态解析（"1"/"0"/缺省）
+      // 保持不变，Host/Agent 侧语义不受影响。
+      [ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]: "1",
     },
   });
 

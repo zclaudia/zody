@@ -4,7 +4,9 @@ import { BigModelCodingPlanSubscriptionProvider } from "../src/coding-plan-subsc
 import { createCodingPlanSubscriptionService } from "../src/coding-plan-subscription/codingPlanSubscriptionService.js";
 
 // 动态工作流灰度快照的 Host 侧读取（docs/dynamic-workflow/launch.md「Gray release」）：
-// 复用 client/configs 通道，本地覆盖短路远端，失败 fail-closed 且不抛给调用方。
+// 复用 client/configs 通道，本地覆盖短路远端，失败不抛给调用方。
+// fork（F2.6b）：生产装配已改走 localClientConfig 本地模块；本文件钉的是
+// coding-plan-subscription provider 在删除（F4.5）前的行为，缺省随 shared 语义翻转为 onDemand。
 
 function createConfigsResponse(dynamicWorkflow: unknown): Response {
   return new Response(
@@ -80,16 +82,16 @@ describe("getDynamicWorkflowClientConfig", () => {
     });
   });
 
-  it("远端成功但没有该 key 时视为关闭", async () => {
+  it("远端成功但没有该 key 时落到 fork 缺省（onDemand/default，F2.6b 语义翻转）", async () => {
     const apiClient: ApiClient = {
       request: vi.fn(async () => createConfigsResponse(undefined)),
     };
 
     await expect(createProvider(apiClient).getDynamicWorkflowClientConfig()).resolves.toEqual({
-      mode: "disabled",
-      enabled: false,
+      mode: "onDemand",
+      enabled: true,
       source: "default",
-      offeredMode: "disabled",
+      offeredMode: "onDemand",
     });
   });
 
@@ -116,7 +118,7 @@ describe("getDynamicWorkflowClientConfig", () => {
     expect(apiClient.request).toHaveBeenCalledTimes(2);
   });
 
-  it("远端请求失败时 fail-closed 返回 default，不抛给调用方", async () => {
+  it("远端请求失败时返回 default（fork 缺省 onDemand，F2.6b 后不再 fail-closed 到 disabled），不抛给调用方", async () => {
     const apiClient: ApiClient = {
       request: vi.fn(async () => {
         throw new Error("network down");
@@ -124,10 +126,10 @@ describe("getDynamicWorkflowClientConfig", () => {
     };
 
     await expect(createProvider(apiClient).getDynamicWorkflowClientConfig()).resolves.toEqual({
-      mode: "disabled",
-      enabled: false,
+      mode: "onDemand",
+      enabled: true,
       source: "default",
-      offeredMode: "disabled",
+      offeredMode: "onDemand",
     });
   });
 

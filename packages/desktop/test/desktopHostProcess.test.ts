@@ -1,6 +1,10 @@
 import { EventEmitter } from "node:events";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { HostMessageTypes, HostResponseTypes } from "@zcode/shared";
+import {
+  HostMessageTypes,
+  HostResponseTypes,
+  ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
+} from "@zcode/shared";
 import {
   disposeHostProcess,
   disposeHostProcessAndWait,
@@ -67,6 +71,34 @@ describe("desktopHostProcess loadWindow", () => {
 
     expect(window.loadURL).not.toHaveBeenCalled();
     expect(window.loadFile).toHaveBeenCalledOnce();
+  });
+});
+
+describe("desktopHostProcess fork Host env（fork 灰度本地值 F2.6a / D1b）", () => {
+  it("Host env 恒注入 ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED=1，不再依赖 Main 的灰度装配依赖", () => {
+    // fork（F2.6a）：桌面上下文提示按 D1b 固定开启，desktopContextPromptEnabled
+    // 灰度依赖已删除；这里验证 spawnHostProcess 无需任何灰度输入即下发 env=1。
+    const child = new MockUtilityProcess();
+    electronMock.fork.mockReturnValue(child);
+
+    spawnHostProcess(
+      { id: 7, webContents: { id: 11, postMessage: vi.fn() } } as never,
+      "local-window",
+      { type: HostMessageTypes.InitLocal, workspacePath: "/repo" },
+      {
+        hostProcessLocalEnv: {},
+        logger: { info: vi.fn(), warn: vi.fn() },
+        broadcastHub: { register: vi.fn(), unregister: vi.fn() } as never,
+        windowHostProcessMap: new Map(),
+        hostRunningTaskCountMap: new Map(),
+      },
+    );
+
+    const forkOptions = electronMock.fork.mock.calls[0]?.[2] as {
+      env: Record<string, string | undefined>;
+    };
+    expect(forkOptions.env[ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]).toBe("1");
+    child.emit("exit", 0);
   });
 });
 

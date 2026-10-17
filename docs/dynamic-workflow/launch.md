@@ -2384,12 +2384,14 @@ follows: on a team plan it is a UUID.
 
 ## Gray release: the `dynamicWorkflow` feature key
 
-Status: implemented. The server decides, per client, whether dynamic workflows are offered
-at all, and which mode a user gets by default. The key is `data.configs.dynamicWorkflow.mode`
-in the `/api/v1/client/configs` response, with the values `"disabled" | "onDemand" |
-"alwaysOn"`. Where the server offers the feature, the user can pick another of the three
-modes in Settings (see "The user's choice"). The server offers; the user picks among what is
-offered.
+Status: implemented; fork semantics since F2.6b (spec D1b). The fork no longer reads
+`/api/v1/client/configs`: the Host offers the feature locally, fixed at `onDemand`, and the
+source of the offer is recorded as `default`. The key that used to decide this —
+`data.configs.dynamicWorkflow.mode` in the `/api/v1/client/configs` response, with the
+values `"disabled" | "onDemand" | "alwaysOn"` — is gone. Where the feature is offered, the
+user can pick any of the three modes in Settings (see "The user's choice"). The Host
+offers; the user picks among what is offered. Development and operations can still override
+the offer with `ZCODE_DYNAMIC_WORKFLOW_MODE` (three values, rules unchanged below).
 
 ### What each mode means
 
@@ -2402,10 +2404,13 @@ offered mode.
 | `onDemand` | Every door of `alwaysOn`, with the model-facing tool surface deferred. The `/workflow` command stays in the slash catalog (so the composer's plus-menu entry and `/` panel entry stay), the `dynamic-workflows` skill stays discoverable, the automations page keeps its 「工作流」 tab and every Resume affordance is offered; but the ten workflow tools are **not registered for the model, and the `Agent`/`Task` descriptions carry no CreateWorkflow line, until the session is activated** by its first `/workflow`, by a Resume or Configure of one of its runs, or by resuming a session whose records already hold a workflow. Once activated a session stays activated. See "On demand: activation". `enabled = mode !== "disabled"` (`isDynamicWorkflowModeEnabled` in `packages/shared/src/dynamic-workflow-feature.ts`) still answers every "is the feature offered at all" question; only the registration gate reads the mode itself. |
 | `alwaysOn` | Everything this document describes; the ten tools are registered from the session's first request. |
 
-The key absent, malformed, or the request failed: `disabled`. A server that stops sending
-the key has turned the feature off; a stale "on" snapshot is never carried forward past a
-successful response that lacks it. The terminal UI and headless `-p` runs never consult the
-key: the standalone CLI does not read `/client/configs`. Its mode comes from the
+Under the fork there is no remote key to be absent, malformed, or failed: the Host's local
+offer (`packages/services/src/client-config/localClientConfig.ts`) is the only source, so
+the old fail-closed fallback to `disabled` is gone and the default offer is `onDemand`
+(`DEFAULT_DYNAMIC_WORKFLOW_MODE` in `packages/shared/src/dynamic-workflow-feature.ts`). A
+`ZCODE_DYNAMIC_WORKFLOW_MODE` override with a legal value still wins over the default and is
+recorded as source `override`. The terminal UI and headless `-p` runs never consult the
+offer: the standalone CLI does not read the Host's client config. Its mode comes from the
 `--workflow-mode` flag and is `disabled` when the flag is absent (see "The standalone CLI:
 `--workflow-mode`").
 
@@ -2413,10 +2418,10 @@ key: the standalone CLI does not read `/client/configs`. Its mode comes from the
 
 ```
 Host (packages/services)
-  BigModelCodingPlanSubscriptionProvider.getDynamicWorkflowClientConfig()
-    ← the cached /client/configs snapshot (1 h TTL, forceRefresh bypasses it)
+  localClientConfig.resolveLocalDynamicWorkflowClientConfig()   (fork F2.6b owner)
+    ← the local fixed offer: onDemand, source "default"   (no remote, nothing latched from a network)
     ← ZCODE_DYNAMIC_WORKFLOW_MODE (local override, see below)
-    → the offer: { offeredMode, source }                     (latched once per Host process)
+    → the offer: { offeredMode, source }
   settings.dynamicWorkflowMode (the user's choice, absent = follow the offer)
     ← local and standalone-server Hosts: their own settings file, read at each use
     ← desktop-attached remote Hosts: pushed by the desktop (see "The user's choice")
@@ -2427,7 +2432,7 @@ Host (packages/services)
       │   and on every session/create, session/resume, v4 createSession:
       │      dynamicWorkflowEnabled: true, dynamicWorkflowMode         (only when enabled)
       │
-      └─► ICodingPlanSubscriptionService.getDynamicWorkflowClientConfig  (RPC to the renderer)
+      └─► IClientConfigService.getDynamicWorkflowClientConfig  (RPC to the renderer)
              → the automations page and the run pane read `enabled` (effective)
              → the Settings row reads `offeredMode` and `mode`
 
@@ -2441,24 +2446,24 @@ CLI (apps/zcode-cli, protocol server mode)
     → disabled only: the bundled `dynamic-workflows` SKILL.md is excluded from skill discovery
 ```
 
-The Host is the single owner of the decision, and it reads the server once per Host process:
-the first workspace client start awaits the snapshot and latches the offer, and every later
+The Host is the single owner of the decision. Under the fork the offer is computed from
+local facts only, so nothing waits on a network: the first workspace client start resolves
+the offer synchronously from the environment and the Host latches it, and every later
 policy sync, session create and resume in that process reuses it. The user's choice is not
-latched: it is applied to the latched offer at every use. A server flip therefore
-takes effect at the next app start, the same rule as the desktop context prompt gray. The
-latch is what keeps a session create from waiting on a network timeout when the machine is
-offline; the cost is that a Host that started offline stays disabled until restart. The
-provider's own 1 h envelope cache and `forceRefresh` serve the renderer's refresh, not the
-CLI gate. Remote Hosts over SSH, WSL and Docker evaluate the key themselves through their own
-`/client/configs` request, so a remote machine that cannot reach the server is disabled
-unless the override reaches it (below). The CLI never reads the key or the override;
-it only consumes what the Host sends, the way `offPeakToolEnabled` works. Old CLIs that do
-not know the policy method answer method-not-found, which the Host logs and ignores, and
-their `z.object` schemas drop the unknown session flag, so the pairing degrades to disabled.
-A workspace's live sessions keep the tool surface they started with; the flag is read on
-create and resume, never mid-session, matching the off-peak rule. On-demand activation is
-the one mid-session change, and it only adds: a session never loses the ten tools while it
-lives.
+latched: it is applied to the latched offer at every use. A `ZCODE_DYNAMIC_WORKFLOW_MODE`
+change therefore takes effect at the next app start, the same rule the server flip used to
+follow. The renderer's `IClientConfigService.getDynamicWorkflowClientConfig` reads the same
+local offer (with a `forceRefresh` option kept for its contract; the local value has no
+cache to bypass, so refresh is a plain re-read). Remote Hosts over SSH, WSL and Docker
+evaluate the offer themselves in their own Host process from their own environment, so an
+override must reach that machine's environment to change it. The CLI never reads the offer
+or the override; it only consumes what the Host sends, the way `offPeakToolEnabled` works.
+Old CLIs that do not know the policy method answer method-not-found, which the Host logs
+and ignores, and their `z.object` schemas drop the unknown session flag, so the pairing
+degrades to disabled. A workspace's live sessions keep the tool surface they started with;
+the flag is read on create and resume, never mid-session, matching the off-peak rule.
+On-demand activation is the one mid-session change, and it only adds: a session never loses
+the ten tools while it lives.
 
 When the gate is off, other tools' model-facing text stops pointing at the missing tools
 too: the `Agent` tool description drops its "CreateWorkflow is mandatory for workflow
@@ -2553,9 +2558,11 @@ Status: implemented. One app-wide setting, `dynamicWorkflowMode` in the shared s
 file, holds the user's choice. Absent means "follow the offer". It holds one of the three
 modes otherwise.
 
-**Precedence.** The server (or the local override) decides the *offer*: whether the feature
-is available (`offeredMode` is a known mode other than `disabled`, `isDynamicWorkflowOffered`)
-and which mode is the default. A snapshot without a readable `offeredMode` counts as not
+**Precedence.** The Host decides the *offer* — under the fork from local facts alone: the
+fixed `onDemand` default, or a legal `ZCODE_DYNAMIC_WORKFLOW_MODE` override (source
+`override`) — and that settles whether the feature is available (`offeredMode` is a known
+mode other than `disabled`, `isDynamicWorkflowOffered`) and which mode is the default. A
+snapshot without a readable `offeredMode` counts as not
 offered: it comes from an older Host (a newer UI bundle, such as the phone remote, attached
 to an older desktop), which ignores the choice, so neither the row nor the hub's settings
 button appears. The user's choice
@@ -2567,8 +2574,9 @@ Host calls it, and the renderer only reads its result.
 
 **Clear on default.** Picking the option that equals the offered mode deletes the stored
 value (the patch carries the empty string, which the settings patch normalizer turns into a
-delete, since `undefined` does not survive the RPC hop). An untouched install therefore keeps
-following later server flips, for example `onDemand` today and `alwaysOn` in a later release.
+delete, since `undefined` does not survive the RPC hop). An untouched install therefore
+follows the current offer — `onDemand` under the fork — and picks up any later change to
+the default or to a deployed `ZCODE_DYNAMIC_WORKFLOW_MODE` override.
 
 **Where it is shown.** Settings › 常规, in the card that holds 交互行为, directly below
 提问自动继续: label 「动态工作流」, description
@@ -2587,7 +2595,7 @@ description that wraps inside the list:
 The option equal to the offered mode carries a 「默认」 (Default) tag; the trigger shows the
 effective mode's title only. The row is not rendered while the availability snapshot is
 loading, when it failed, or when the offer is `disabled`: the gray release stays invisible,
-and a user whose server never offered the feature sees nothing that mentions it. The row
+and a user whose offer is disabled sees nothing that mentions it. The row
 has no note about timing; open sessions keeping their tools is the rule below, not something
 the row explains.
 
