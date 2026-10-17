@@ -97,8 +97,8 @@ import {
   AutomationRunNowIcon,
   AutomationTrashIcon,
 } from "@/settings/AutomationDesignPrimitives.js";
-import { useCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
 import { SETTINGS_FRAME_CONTENT_CLASSNAME } from "@/settings/SettingsPageParts.js";
+import { useOptionalCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
 import { isWorkspaceTab } from "@/store/tabStore.js";
 import {
@@ -531,7 +531,10 @@ export function AutomationsSection({
   const platform = usePlatform();
   const { clientScenesService, offPeakTaskService, zcodeAgentService } = useServices();
   const confirmDialog = useConfirmDialog();
-  const { openCodingPlanUpgrade } = useCodingPlanUpgradeDialog();
+  // fork（F4.1b）：升级弹窗 Provider 已在 Root 摘挂载，改用可选上下文——
+  // openCodingPlanUpgrade 只被闲时创建的升级提示引用（闲时入口已摘除），缺省时为 no-op。
+  const openCodingPlanUpgrade =
+    useOptionalCodingPlanUpgradeDialog()?.openCodingPlanUpgrade ?? (() => false);
   const providerSettingsRead = useProviderSettingsView();
   const providerSettingsView =
     providerSettingsRead.state.status === "ready" ? providerSettingsRead.state.view : null;
@@ -624,9 +627,10 @@ export function AutomationsSection({
     return activeTab && isWorkspaceTab(activeTab) ? activeTab : undefined;
   });
   const currentWorkspaceIsRemote = isRemoteAutomationWorkspace(activeWorkspaceTab);
-  // 灰度中途翻转：只藏创建入口；有非终态存量仍展示并跑到终态。
-  const offPeakGrayEnabled = offPeakGrayConfig?.enabled === true;
-  const offPeakCreationEnabled = offPeakGrayEnabled && !currentWorkspaceIsRemote;
+  // fork（F4.1b）：官方账号入口摘除——自动化页「闲时」tab、闲时创建按钮与闲时模板
+  // 一并下线（闲时能力属官方账号灰度，F4.3 删除整条代码链路）。灰度/存量判定保留待删。
+  const offPeakGrayEnabled = false;
+  const offPeakCreationEnabled = false;
   // 扫描全部 provider 会把未选中的 Coding Plan 当成当前执行凭证。
   // mock 演示字段仍可覆盖；真实路径只接受与当前 family/selectedKey 一致的脱敏 resolver 快照。
   const offPeakNoPlan =
@@ -634,8 +638,7 @@ export function AutomationsSection({
     (offPeakGrayConfig?.codingPlanActive === undefined &&
       !offPeakStoreLoading &&
       !isCurrentOffPeakCodingPlanSupported(offPeakCodingPlanSupport, sharedSettings));
-  const offPeakVisible =
-    !currentWorkspaceIsRemote && (offPeakGrayEnabled || offPeakTasks.length > 0);
+  const offPeakVisible = false;
   const hasAnyTasks = automations.length > 0 || offPeakTasks.length > 0;
   const visibleTabs = resolveVisibleAutomationTabs({
     hasAnyTasks,

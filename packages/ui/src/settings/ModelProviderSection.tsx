@@ -17,9 +17,7 @@ import {
   type ProviderFamilyConnectionSelectionSettings,
   type ProviderFamilyDomain,
   type OAuthProviderId,
-  resolveModelProviderFamilyIdByProviderId,
   resolveModelProviderFamilySpecByProviderId,
-  resolveProviderFamilyDomainFromOAuthProvider,
   ZAI_PROVIDER_ID,
 } from "@zcode/shared";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -32,7 +30,6 @@ import { useServices } from "@/hooks/useServices.js";
 import { useZCodeStore } from "@/store/StoreProvider.js";
 import { logger } from "@/logger.js";
 import {
-  PRESET_PROVIDER_SPECS,
   PRESET_SUBSCRIPTION_TIMEOUT_MS,
   BIGMODEL_REGISTRATION_URL,
   type CodingPlanStatus,
@@ -149,36 +146,9 @@ function shouldRefreshCodingPlanEntitlementsAfterSave(
   );
 }
 
-function resolveBuiltinPresetOAuthProvider(
-  presetId: BuiltinModelProviderId,
-): OAuthProviderId | null {
-  if (
-    presetId === BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan ||
-    presetId === BUILTIN_MODEL_PROVIDER_IDS.zaiTeamCodingPlan ||
-    presetId === BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan
-  ) {
-    return ZAI_PROVIDER_ID;
-  }
-  if (
-    presetId === BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan ||
-    presetId === BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan ||
-    presetId === BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan
-  ) {
-    return BIGMODEL_PROVIDER_ID;
-  }
-  return null;
-}
-
-function shouldShowPresetProviderForActiveOAuth(
-  presetId: BuiltinModelProviderId,
-  providerFamilyDomain: ProviderFamilyDomain | null | undefined,
-): boolean {
-  const presetOAuthProvider = resolveBuiltinPresetOAuthProvider(presetId);
-  if (!providerFamilyDomain || !presetOAuthProvider) {
-    return true;
-  }
-  return resolveModelProviderFamilyIdByProviderId(presetId) === providerFamilyDomain;
-}
+// fork（F4.1b）：resolveBuiltinPresetOAuthProvider / shouldShowPresetProviderForActiveOAuth
+// 只服务已摘除的官方账号预置入口（presetProviders → 空数组），随之移除；调用方文件
+// constants.ts 的 PRESET_PROVIDER_SPECS 装配留给 F4.5 删除。
 
 function clearPendingProviderFamilyConnectionSelection(
   selections: ProviderFamilyConnectionSelectionSettings,
@@ -280,17 +250,7 @@ export function ModelProviderSection({
       id: "settings.modelProvider.testModel.localWorkspaceUnavailable",
     }),
   });
-  const entitledAccountProviderIds = useMemo<ReadonlySet<string>>(() => {
-    return new Set(
-      (providerSettingsView?.providers ?? [])
-        .filter(
-          (provider) =>
-            provider.effectiveConfig.access?.type === "zhipu-account" &&
-            provider.effectiveConfig.access.entitled === true,
-        )
-        .map((provider) => provider.providerId),
-    );
-  }, [providerSettingsView]);
+  // fork（F4.1b）：entitledAccountProviderIds 不再计算——导航不再生成官方账号项。
   const providerConnectionRefreshSignal = providerSettingsView?.revision;
   const [initialModelProviderTarget] = useState(() => consumePendingSettingsModelProviderTarget());
   const [invalidProviderTarget, setInvalidProviderTarget] = useState(() =>
@@ -450,9 +410,7 @@ export function ModelProviderSection({
     effectiveConnectionSelections.bigmodel?.kind === "team-coding-plan" ||
     effectiveConnectionSelections.zai?.kind === "team-coding-plan",
   );
-  const effectiveProviderFamilyDomain =
-    sharedSettings?.providerFamilyDomain ??
-    resolveProviderFamilyDomainFromOAuthProvider(activeOAuthProvider);
+  // fork（F4.1b）：effectiveProviderFamilyDomain 只服务已摘除的预置入口过滤，随之移除。
   const { entitlements: codingPlanEntitlements, refresh: refreshCodingPlanEntitlements } =
     useCodingPlanEntitlements({
       providerSettingsView,
@@ -608,16 +566,10 @@ export function ModelProviderSection({
     };
   }, [providerConnectionRefreshSignal, refreshCodingPlanPurchaseTokenState]);
 
-  const presetProviders = useMemo(
-    () =>
-      PRESET_PROVIDER_SPECS.filter((preset) =>
-        shouldShowPresetProviderForActiveOAuth(preset.id, effectiveProviderFamilyDomain),
-      ).map((preset) => ({
-        ...preset,
-        provider: modelProviders.find((provider) => provider.providerId === preset.id) ?? null,
-      })),
-    [effectiveProviderFamilyDomain, modelProviders],
-  );
+  // fork（F4.1b）：官方账号品牌入口（Z.ai / BigModel Start Plan 预置卡）摘除——
+  // 预置分组不再渲染官方账号入口；BYOK 走「添加供应商 → 模板选择」（custom 分组）。
+  // PRESET_PROVIDER_SPECS 装配保留待 F4.5 删除。
+  const presetProviders = useMemo(() => [], []);
 
   useEffect(() => {
     if (!presetSubscriptionProviderId) {
@@ -686,12 +638,10 @@ export function ModelProviderSection({
     useModelProviderNavigation({
       presetProviders,
       modelProviders,
-      entitledAccountProviderIds,
       modelProvidersLoading: loading,
       displayOrder,
       codingPlanEntitlements,
       subscribedTeamProducts,
-      providerFamilyDomain: effectiveProviderFamilyDomain,
       connectionSelections: effectiveConnectionSelections,
       pendingConnectionSelections,
       showPurchasedTeamPlanFallback,

@@ -1,19 +1,12 @@
 /* oxlint-disable eslint(max-lines) -- footer 聚合账户、主题、模式和快捷键菜单。 */
 import type { Locale, UserInfo } from "@zcode/shared";
 import { memo, useCallback, useEffect, useState, type ReactNode } from "react";
-import {
-  DesktopCommandIds,
-  TID_LOGIN_MENU_ITEM,
-  TID_LOGIN_TRIGGER,
-  TID_LOGOUT_BUTTON,
-  TID_TASK_SETTINGS_BUTTON,
-} from "@zcode/shared";
+import { DesktopCommandIds, TID_LOGIN_TRIGGER, TID_TASK_SETTINGS_BUTTON } from "@zcode/shared";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.js";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
 import { toast } from "@/components/ui/toast.js";
-import { Badge } from "@/components/ui/badge.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,10 +24,7 @@ import {
   Copy,
   PencilRuler,
   Globe,
-  Gift,
   Loader2,
-  LogInIcon,
-  LogOut,
   Maximize,
   Palette,
   Settings,
@@ -43,18 +33,12 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { usePlatform } from "@/hooks/usePlatform.js";
-import { useOpenRewards } from "@/rewards/RewardsProvider.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
 import { useZCodeStore } from "@/store/StoreProvider.js";
 import { normalizeInterfaceMode } from "@/lib/interfaceMode.js";
 import type { Theme } from "@/useTheme.js";
 import { WorkspaceWebRemoteControlTrigger } from "@/WorkspaceWebRemoteControlTrigger.js";
-import {
-  WorkspaceSidebarFooterPlanBadge,
-  WorkspaceSidebarFooterUsageSummaryContent,
-  useWorkspaceSidebarFooterUsageSummaryState,
-} from "@/WorkspaceSidebarFooterUsageSummary.js";
 
 const DESKTOP_ZOOM_MIN_LEVEL = -3;
 const DESKTOP_ZOOM_MAX_LEVEL = 5;
@@ -95,10 +79,6 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
   onLocaleChange,
   onThemeChange,
   onSettingsButtonClick,
-  onUsageClick,
-  onUpgradeClick,
-  onLogin,
-  onLogout,
   settingsButtonMode = "settings",
   user,
   workspacePath,
@@ -114,12 +94,6 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
   onLocaleChange: (value: string) => void;
   onThemeChange: (value: string) => void;
   onSettingsButtonClick?: () => void;
-  onUsageClick?: () => void;
-  onUpgradeClick?: Parameters<
-    typeof WorkspaceSidebarFooterUsageSummaryContent
-  >[0]["onUpgradeClick"];
-  onLogin?: () => void;
-  onLogout?: () => void;
   settingsButtonMode?: "settings" | "back";
   user?: UserInfo | null;
   workspacePath?: string;
@@ -132,7 +106,6 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
 }) {
   const { intl } = useZCodeIntl();
   const platform = usePlatform();
-  const openRewards = useOpenRewards();
   const interfaceMode = useZCodeStore((state) => state.interfaceMode);
   const setInterfaceMode = useZCodeStore((state) => state.setInterfaceMode);
   const zoomInShortcutLabel = useShortcutCommandLabel("zoomIn");
@@ -143,11 +116,6 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
   const avatarFallbackText = getAvatarFallbackText(user);
   const avatarKey = user?.avatarUrl ?? user?.id ?? "guest";
   const showAuthRestoreLoading = !user && isRestoringOAuthSession;
-  const usageSummaryState = useWorkspaceSidebarFooterUsageSummaryState({
-    enabled: true,
-    workspaceIdentity,
-    workspacePath,
-  });
   const copyUserId = async () => {
     if (!user?.id) return;
     try {
@@ -190,7 +158,6 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
     settingsButtonMode === "back"
       ? intl.formatMessage({ id: "workspace.backToWorkspace" })
       : intl.formatMessage({ id: "settings.title" });
-  const usageButtonClick = onUsageClick ?? onSettingsButtonClick;
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [desktopZoomLevel, setDesktopZoomLevel] = useState(0);
   const runDesktopZoomCommand = useCallback(
@@ -279,12 +246,7 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
                       >
                         {profileBadge}
                       </span>
-                      <span
-                        data-testid="profile-menu-plan"
-                        className="flex shrink-0 [&>span]:border-border/50 [&>span]:bg-transparent [&>span]:font-normal"
-                      >
-                        <WorkspaceSidebarFooterPlanBadge state={usageSummaryState} />
-                      </span>
+                      {/* fork（F4.1b）：头像菜单套餐徽标（WorkspaceSidebarFooterPlanBadge）摘除。 */}
                     </div>
                     {user.id ? (
                       <div className="flex min-w-0 items-center gap-1 text-ui-sm text-foreground-subtle">
@@ -427,40 +389,9 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
             ) : null}
-            {/* Bugfix: 升级入口状态不再以菜单开关为生命周期边界。 */}
-            <WorkspaceSidebarFooterUsageSummaryContent
-              state={usageSummaryState}
-              onUsageClick={usageButtonClick}
-              onUpgradeClick={onUpgradeClick}
-            />
-            {user ? (
-              <DropdownMenuItem onSelect={() => openRewards?.()} data-testid="rewards-menu-item">
-                <Gift className="size-4" />
-                {intl.formatMessage({ id: "rewards.menuTitle" })}
-                <Badge
-                  data-testid="rewards-reward-badge"
-                  className="-ml-0.5 h-auto border-0 px-1.5 py-0.5 text-ui-sm leading-none bg-[var(--color-plugin-paid-plan-badge)] text-[var(--color-plugin-paid-plan-badge-foreground)]"
-                >
-                  {intl.formatMessage({ id: "rewards.menuBadge" })}
-                </Badge>
-              </DropdownMenuItem>
-            ) : null}
-            {onLogin && !user ? (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={onLogin} data-testid={TID_LOGIN_MENU_ITEM}>
-                  <LogInIcon className="size-4" />
-                  {intl.formatMessage({ id: "app.login" })}
-                </DropdownMenuItem>
-              </>
-            ) : null}
-            {onLogout ? <DropdownMenuSeparator /> : null}
-            {onLogout ? (
-              <DropdownMenuItem onSelect={onLogout} data-testid={TID_LOGOUT_BUTTON}>
-                <LogOut className="size-4" />
-                {intl.formatMessage({ id: "app.logout" })}
-              </DropdownMenuItem>
-            ) : null}
+            {/* fork（F4.1b）：侧栏头像菜单的用量摘要（打开用量统计 + 升级套餐）、
+                Rewards 菜单项、登录/登出菜单项全部摘除（官方账号入口下线）。
+                WorkspaceSidebarFooterUsageSummary / RewardsProvider 组件文件留给 F4.4/F4.5 删除。 */}
           </DropdownMenuContent>
         </DropdownMenu>
         <div className="flex shrink-0 items-center gap-1.5">

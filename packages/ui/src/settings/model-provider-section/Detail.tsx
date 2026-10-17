@@ -58,7 +58,7 @@ import {
   createCodingPlanFunnelContext,
   resolveCodingPlanEntryPlanState,
 } from "@/lib/codingPlanFunnelTelemetry.js";
-import { useCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
+import { useOptionalCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
 import { useProviderSettingsView } from "@/hooks/useProviderSettingsView.js";
 import type { ProviderSettingsView } from "@zcode/services";
 import type { SavePersonalModelDraftInput } from "@zcode/provider";
@@ -305,7 +305,11 @@ export function ModelProviderSectionDetail({
   providerSettingsView?: ProviderSettingsView | null;
 }) {
   const { intl } = useZCodeIntl();
-  const { openCodingPlanUpgrade } = useCodingPlanUpgradeDialog();
+  // fork（F4.1b）：升级弹窗 Provider 已在 Root 摘挂载，改用可选上下文——
+  // 升级入口只存在于套餐分支（导航项已摘除，不可达），上下文缺省时为 no-op。
+  const openCodingPlanUpgrade =
+    useOptionalCodingPlanUpgradeDialog()?.openCodingPlanUpgrade ??
+    (() => false);
   const loadingLabel = intl.formatMessage({ id: "common.loading" });
   const [upgradePlansVisibleProviderId, setUpgradePlansVisibleProviderId] =
     useState<BuiltinModelProviderId | null>(null);

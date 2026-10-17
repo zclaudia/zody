@@ -20,7 +20,6 @@ import type {
   IntegratedTerminalShellOption,
   IntegratedTerminalShellSelection,
   Locale,
-  UsageEntitlementSnapshot,
   UserInfo,
   ZCodeInteractionBehavior,
 } from "@zcode/shared";
@@ -62,14 +61,11 @@ import {
 } from "@/lib/accountProviderAccess.js";
 import { buildUsageEntitlementCacheKey } from "@/lib/usageEntitlementCache.js";
 import { ModelProviderSection } from "@/settings/ModelProviderSection.js";
-import { useCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
 import { useEnterpriseCodingPlanProducts } from "@/settings/model-provider-section/useEnterpriseCodingPlanProducts.js";
 import { UsageStatsSection, type UsageStatsSectionTab } from "@/settings/UsageStatsSection.js";
-import {
-  buildCodingPlanUsageSources,
-  type CodingPlanUsageSource,
-} from "@/settings/usage-stats/CodingPlanUsagePanel.js";
-import { buildPersonalCodingPlanUsageSource } from "@/lib/codingPlanUsageSources.js";
+// fork（F4.1b）：buildCodingPlanUsageSources / buildPersonalCodingPlanUsageSource
+// 随 personal/team sources 计算一并摘除；type CodingPlanUsageSource 保留（sources 空数组类型）。
+import { type CodingPlanUsageSource } from "@/settings/usage-stats/CodingPlanUsagePanel.js";
 import { SubagentsSection } from "@/settings/SubagentsSection.js";
 import { AutomationsSection } from "@/settings/AutomationsSection.js";
 import { SegmentPill } from "@/settings/PluginStoreListView.js";
@@ -221,19 +217,8 @@ function resolveSettingsUsageCodingPlanTabLabel({
   return defaultLabel;
 }
 
-function hasActiveCodingPlanSnapshot(
-  snapshot: UsageEntitlementSnapshot | null,
-  providerId: string,
-): boolean {
-  return (
-    snapshot?.provider?.id === providerId &&
-    snapshot.unavailableReason !== "no_plan" &&
-    (Boolean(snapshot.subscription?.details.length) ||
-      // quota 暂时失败时服务仍能确认当前 provider，但旧过滤条件会把
-      // Coding Plan tab 当成未开通套餐删除。只有明确 no_plan 才应隐藏入口。
-      snapshot.unavailableReason === "unavailable")
-  );
-}
+// fork（F4.1b）：hasActiveCodingPlanSnapshot 只服务已摘除的 Coding Plan tab sources
+// 组装，随之移除；entitlement 探测链其余部分由 F4.5 统一删除。
 
 function SettingsSidebarButton({
   icon: Icon,
@@ -286,8 +271,6 @@ export function SettingsPage({
   onCreateTask,
   onOpenWorkspace,
   allowOpenWorkspace = true,
-  onLogin,
-  onLogout,
   user,
 }: {
   isDesktop?: boolean;
@@ -300,8 +283,6 @@ export function SettingsPage({
   onCreateTask?: (request?: CreateTaskRequest) => void;
   onOpenWorkspace?: () => void;
   allowOpenWorkspace?: boolean;
-  onLogin?: () => void;
-  onLogout?: () => void;
   user?: UserInfo | null;
 }) {
   const { intl, localePreference, setLocalePreference } = useZCodeIntl();
@@ -406,12 +387,9 @@ export function SettingsPage({
       ? usageProviderSettingsRead.state.view
       : null;
   const usageProviderSettingsLoading = usageProviderSettingsRead.state.status !== "ready";
-  const usageZaiProvider = usageProviderSettingsView?.providers.find(
-    (provider) => provider.providerId === BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
-  );
-  const usageBigmodelProvider = usageProviderSettingsView?.providers.find(
-    (provider) => provider.providerId === BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-  );
+  // fork（F4.1b）：Coding Plan tab 摘除后不再组装 personal/team sources；
+  // 下列 account provider 探测仅剩 checking 兜底 effect 消费（无账号时恒 false、不发请求），
+  // 整条装配留给 F4.5 删除。
   const usageZaiProviderAccess = resolveEntitledAccountProviderAccess(
     usageProviderSettingsView,
     BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
@@ -504,82 +482,10 @@ export function SettingsPage({
     const pendingTab = consumePendingSettingsUsageTab();
     return pendingTab === "codingPlan" ? "codingPlan" : (pendingTab ?? "app");
   });
-  const usagePersonalCodingPlanSources = useMemo(() => {
-    const sources: CodingPlanUsageSource[] = [];
-    if (
-      usageZaiProviderAccess &&
-      hasActiveCodingPlanSnapshot(
-        usageZaiEntitlement.snapshot,
-        BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
-      )
-    ) {
-      sources.push(
-        buildPersonalCodingPlanUsageSource({
-          providerId: BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
-          accountAccess: usageZaiProviderAccess.access,
-          label: usageZaiProvider?.providerName,
-        }),
-      );
-    }
-    if (
-      usageBigmodelProviderAccess &&
-      hasActiveCodingPlanSnapshot(
-        usageBigmodelEntitlement.snapshot,
-        BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-      )
-    ) {
-      sources.push(
-        buildPersonalCodingPlanUsageSource({
-          providerId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-          accountAccess: usageBigmodelProviderAccess.access,
-          label: usageBigmodelProvider?.providerName,
-        }),
-      );
-    }
-    return sources;
-  }, [
-    usageBigmodelEntitlement.snapshot,
-    usageBigmodelProvider,
-    usageBigmodelProviderAccess,
-    usageZaiEntitlement.snapshot,
-    usageZaiProvider,
-    usageZaiProviderAccess,
-  ]);
-  const usageTeamCodingPlanSources = useMemo(
-    () =>
-      buildCodingPlanUsageSources({
-        accountAccesses: {
-          ...(resolveEntitledAccountProviderAccess(
-            usageProviderSettingsView,
-            BUILTIN_MODEL_PROVIDER_IDS.zaiTeamCodingPlan,
-          )?.access
-            ? {
-                zai: resolveEntitledAccountProviderAccess(
-                  usageProviderSettingsView,
-                  BUILTIN_MODEL_PROVIDER_IDS.zaiTeamCodingPlan,
-                )!.access,
-              }
-            : {}),
-          ...(resolveEntitledAccountProviderAccess(
-            usageProviderSettingsView,
-            BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan,
-          )?.access
-            ? {
-                bigmodel: resolveEntitledAccountProviderAccess(
-                  usageProviderSettingsView,
-                  BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan,
-                )!.access,
-              }
-            : {}),
-        },
-        subscribedTeamProducts: usageSubscribedTeamProducts,
-      }),
-    [usageProviderSettingsView, usageSubscribedTeamProducts],
-  );
-  const usageCodingPlanSources = useMemo(
-    () => [...usagePersonalCodingPlanSources, ...usageTeamCodingPlanSources],
-    [usagePersonalCodingPlanSources, usageTeamCodingPlanSources],
-  );
+  // fork（F4.1b）：用量页 Coding Plan tab 摘除——官方套餐额度统计入口下线，
+  // sources 恒为空（tab 条只剩 App Usage；codingPlan 意图由下方 fallback effect 落回 app）。
+  // 原 personal/team sources 计算与 entitlement 探测装配留给 F4.5 删除。
+  const usageCodingPlanSources = useMemo<CodingPlanUsageSource[]>(() => [], []);
   const selectedUsageCodingPlanSourceId =
     usageActiveTab === "codingPlan"
       ? (usageCodingPlanSources[0]?.id ?? null)
@@ -603,7 +509,7 @@ export function SettingsPage({
     usageBigmodelEnterpriseProducts.loading ||
     usageZaiEnterpriseProducts.loading;
   const [initialModelProviderTarget] = useState(() => consumePendingSettingsModelProviderTarget());
-  const { openCodingPlanUpgrade } = useCodingPlanUpgradeDialog();
+  // fork（F4.1b）：useCodingPlanUpgradeDialog 消费摘除（升级弹窗 Provider 已在 Root 摘挂载）。
   const [pendingModelProviderTarget, setPendingModelProviderTarget] = useState<
     SettingsModelProviderTarget | undefined
   >(() => initialModelProviderTarget);
@@ -652,25 +558,10 @@ export function SettingsPage({
     },
     [activeSection],
   );
-  const handleOpenCodingPlanUpgradeSettings = useCallback(
-    (
-      providerId: string,
-      funnelContext?: import("@/lib/codingPlanFunnelTelemetry.js").CodingPlanFunnelContext,
-    ) => {
-      openCodingPlanUpgrade({
-        providerId,
-        funnelContext,
-      });
-    },
-    [openCodingPlanUpgrade],
-  );
+  // fork（F4.1b）：设置页头像菜单的「升级套餐 / 使用统计」入口 handler 摘除
+  // （openCodingPlanUpgrade 消费方随之消失；升级弹窗 Provider 已在 Root 摘挂载）。
   const handleOpenModelProviderSettings = useCallback(() => {
     setActiveSettingsSection("modelProvider");
-  }, [setActiveSettingsSection]);
-  const handleOpenUsageSettings = useCallback(() => {
-    // 设置页 sidebar footer 里的齿轮/返回按钮复用 onBack，
-    // 但头像菜单的“使用统计”应该停留在设置页并切到 Usage，不能跟着返回工作区。
-    setActiveSettingsSection("usage");
   }, [setActiveSettingsSection]);
   const activeWorkspacePath = useTabStore((state) => state.activeWorkspacePath);
   const tabs = useTabStore((state) => state.tabs);
@@ -1589,10 +1480,8 @@ export function SettingsPage({
                   onLocaleChange={handleFooterLocaleChange}
                   onThemeChange={handleFooterThemeChange}
                   onSettingsButtonClick={onBack}
-                  onUsageClick={handleOpenUsageSettings}
-                  onUpgradeClick={handleOpenCodingPlanUpgradeSettings}
-                  onLogin={onLogin}
-                  onLogout={onLogout}
+                  // fork（F4.1b）：头像菜单 onUsageClick/onUpgradeClick/onLogin/onLogout
+                  // 摘除——设置页不再出现用量、升级、登录/登出入口。
                   settingsButtonMode="back"
                   user={user}
                   // 头像菜单是 WorkspaceSidebarFooter 的共享菜单，Settings 场景不能丢失桌面平台能力。

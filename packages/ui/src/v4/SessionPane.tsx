@@ -18,7 +18,6 @@ import {
 } from "react";
 import { Hand } from "lucide-react";
 import {
-  BUILTIN_MODEL_PROVIDER_IDS,
   buildCustomSupplierKey,
   TID_CHAT_EMPTY,
   TID_V4_SESSION_PANE,
@@ -124,10 +123,8 @@ import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import { buildGenUiModelContext } from "@zcode/shared/gen-ui";
 import { useWorkspaceHomePath } from "@/hooks/useWorkspaceHomePath.js";
 import { prepareWorkspaceWithZCodeSessionService } from "@/hooks/useWorkspacePrepare.js";
-import {
-  createCodingPlanFunnelContext,
-  resolveCodingPlanEntryPlanState,
-} from "@/lib/codingPlanFunnelTelemetry.js";
+// fork（F4.1b）：createCodingPlanFunnelContext / resolveCodingPlanEntryPlanState 随套餐横幅
+// 升级入口摘除不再引用。
 import { decodeCustomModelValue, encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
 import { parseModelPickerValue } from "@/lib/zcodeSessionProjection.js";
 import { captureComposerRecentSubmission } from "@/lib/composerRecent.js";
@@ -175,7 +172,7 @@ import { ConversationDraftSuggestedPromptsContainer } from "@/v4/ConversationDra
 import { ConversationHeader, type PaneWorkspaceBadge } from "@/v4/ConversationHeader.js";
 import { ConversationQueuePanel } from "@/v4/ConversationQueuePanel.js";
 import { projectPendingGuideQueue } from "@/v4/pendingGuideProjection.js";
-import { ConversationQuotaBanner } from "@/v4/ConversationQuotaBanner.js";
+// fork（F4.1b）：ConversationQuotaBanner（套餐横幅）挂载摘除，组件文件留给 F4.5 删除。
 import { PendingCommandRecoveryBanner } from "@/v4/PendingCommandRecoveryBanner.js";
 import { WorkspaceHookPendingBanner } from "@/v4/WorkspaceHookPendingBanner.js";
 import { ConversationStatusPanel } from "@/v4/ConversationStatusPanel.js";
@@ -291,7 +288,6 @@ import {
 } from "@/v4/chatLoadingVisibility.js";
 import type { ZCodeUiError } from "@/lib/zcodeUiError.js";
 import { isProviderNotReadyError } from "@/lib/chatPrepareError.js";
-import { useOptionalCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
 import { setPendingSettingsSectionIntent } from "@/lib/settingsNavigation.js";
 import { useOptionalTabStore } from "@/store/TabStoreProvider.js";
 import { useIsMobileTextInputViewport } from "@/lib/mobileTextInput.js";
@@ -1760,11 +1756,14 @@ export function SessionPane({
     () => createComposerSubmissionConfig(draftConfig, modelSelectionView) !== null,
     [draftConfig, modelSelectionView],
   );
-  const codingPlanUpgradeDialog = useOptionalCodingPlanUpgradeDialog();
+  // fork（F4.1b）：useOptionalCodingPlanUpgradeDialog 消费摘除（升级弹窗 Provider 已在 Root 摘挂载）。
   const openSettingsTab = useOptionalTabStore((state) => state.openSettingsTab);
+  // fork（F4.1b）：billingDiscount（套餐购买折扣探测）只服务已摘除的套餐横幅，不再消费；
+  // 探测装配留给 F4.5 删除。
   const billingDiscount = useCodingPlanBillingDiscountFromService(
     baseWorkspaceServices.codingPlanSubscriptionService,
   );
+  void billingDiscount;
   const promoteGroupedDraftTask = useZCodeSessionStore((state) => state.promoteGroupedDraftTask);
   // 首发 commandId 在 accepted 时已存在，也是 completion 的 message_id；不必等回复完成。
   const reportDraftCreated = useCallback(
@@ -3752,10 +3751,8 @@ export function SessionPane({
     },
     [clearQueueEditOperation],
   );
-  const handleHighspeedActivationApplied = useCallback((cardId: string) => {
-    // 按 cardId 消费：迟到的旧卡回调不能清掉新卡的激活请求。
-    setHighspeedActivationCardId((current) => (current === cardId ? null : current));
-  }, []);
+  // fork（F4.1b）：handleHighspeedActivationApplied 只服务已摘除的 Composer 加速卡入口，
+  // 随之移除；highspeedActivationCardId 状态与 turn 链路留给 F4.2 删除。
 
   const handleFork = useCallback(
     (target: ConversationRowTarget) => {
@@ -4756,10 +4753,11 @@ export function SessionPane({
     usageStatsService: baseWorkspaceServices.usageStatsService,
     mcpUnavailableNotice,
   });
-  const composerError =
-    draftModelReadinessError ??
-    sendSubmissionError ??
-    (quotaBanner.takesOverError ? null : projectedComposerError);
+  // fork（F4.1b）：套餐横幅（ConversationQuotaBanner）入口摘除——BYOK 无套餐额度，
+  // 不再展示套餐告警/升级横幅，也不再让额度状态接管或禁用输入。
+  // hook 保留待 F4.5 删除；横幅被接管过的错误恢复为普通 composer 错误展示。
+  void quotaBanner;
+  const composerError = draftModelReadinessError ?? sendSubmissionError ?? projectedComposerError;
   useEffect(() => {
     setSendSubmissionError(null);
   }, [sessionId]);
@@ -4788,41 +4786,8 @@ export function SessionPane({
     setPendingSettingsSectionIntent("modelProvider");
     openSettingsTab();
   }, [openSettingsTab]);
-  const handleOpenModelUpgrade = useCallback(() => {
-    if (!codingPlanUpgradeDialog) return;
-    const providerId =
-      sharedSettings?.providerFamilyDomain === "bigmodel"
-        ? BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan
-        : BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan;
-    codingPlanUpgradeDialog.openCodingPlanUpgrade({ providerId });
-  }, [codingPlanUpgradeDialog, sharedSettings?.providerFamilyDomain]);
-  const handleOpenQuotaUpgrade = useCallback(() => {
-    const providerId = quotaBanner.upgradeProviderId;
-    if (!providerId || !codingPlanUpgradeDialog) return;
-    const eventText = intl.formatMessage({
-      id: quotaBanner.upgradeActionLabelId,
-    });
-    // 横幅只建立漏斗上下文；coding_plan_upgrade_ck 仍由真实购买面板打开后统一上报。
-    codingPlanUpgradeDialog.openCodingPlanUpgrade({
-      providerId,
-      funnelContext: createCodingPlanFunnelContext({
-        providerId,
-        upgradeSource: "session_quota_alert",
-        eventRegion: "app.session",
-        eventText,
-        entryPlanState: resolveCodingPlanEntryPlanState({
-          providerId,
-          displayStatus: "purchased",
-          planLevel: "start",
-        }),
-      }),
-    });
-  }, [
-    codingPlanUpgradeDialog,
-    intl,
-    quotaBanner.upgradeActionLabelId,
-    quotaBanner.upgradeProviderId,
-  ]);
+  // fork（F4.1b）：handleOpenModelUpgrade / handleOpenQuotaUpgrade（错误横幅与套餐横幅的
+  // 升级入口）随官方账号入口摘除；升级弹窗 Provider 已在 Root 摘挂载。
 
   const handleConfirmShareDisclosure = useCallback(async () => {
     if (!sessionId || !shareDraft || sharePublishing) return;
@@ -5200,8 +5165,8 @@ export function SessionPane({
       disabled={
         connecting ||
         draftRuntimeRebuilding ||
-        queueEditActiveForCurrentComposer ||
-        quotaBanner.state.blocksSubmit
+        queueEditActiveForCurrentComposer
+        // fork（F4.1b）：quotaBanner.state.blocksSubmit 不再禁用输入（套餐横幅入口摘除）。
       }
       isWebRemoteControl={compactForRemoteControl}
       workspacePath={workspacePath}
@@ -5218,9 +5183,8 @@ export function SessionPane({
       telemetryVisible={telemetryVisible && conversationTelemetryForegroundEnabled}
       readPlanIdentitySnapshot={readPlanIdentitySnapshot}
       onSendText={handleSendText}
-      highspeedCard={activeHighspeedCard}
-      highspeedActivationCardId={highspeedActivationCardId}
-      onHighspeedActivationApplied={handleHighspeedActivationApplied}
+      // fork（F4.1b）：加速卡在输入框的入口（卡片动效、模型锁定、倒计时）摘除——
+      // 不再向 Composer 传递 highspeedCard；会话内 turn 展示留给 F4.2 删除。
       onDraftStateChange={handleComposerDraftStateChange}
       composerRestoreRequest={composerRestoreRequest}
       onComposerRestoreApplied={handleComposerRestoreApplied}
@@ -5241,7 +5205,6 @@ export function SessionPane({
       error={composerError}
       onDismissError={handleDismissComposerError}
       onOpenModelSettings={handleOpenModelSettings}
-      onOpenModelUpgrade={handleOpenModelUpgrade}
       onOpenCodeViewer={onOpenCodeViewer}
       suppressGoalCommands={selectionSideChat}
       appSlashCommands={appSlashCommands}
@@ -5306,23 +5269,8 @@ export function SessionPane({
     )
   ) : (
     <>
-      {quotaBanner.state.visible &&
-      !quotaBanner.dismissed &&
-      (!projectedComposerError || quotaBanner.takesOverError || quotaBanner.state.blocksSubmit) ? (
-        <ConversationQuotaBanner
-          state={quotaBanner.state}
-          onShown={quotaBanner.markShown}
-          billingDiscountActive={billingDiscount.active}
-          billingDiscountConfig={billingDiscount.config}
-          upgradeActionLabelId={quotaBanner.upgradeActionLabelId}
-          onUpgrade={
-            quotaBanner.upgradeProviderId && codingPlanUpgradeDialog
-              ? handleOpenQuotaUpgrade
-              : undefined
-          }
-          onDismiss={quotaBanner.dismiss}
-        />
-      ) : null}
+      {/* fork（F4.1b）：ConversationQuotaBanner（套餐横幅 + 购买折扣 + 升级入口）挂载摘除；
+          组件文件与 billingDiscount 探测留给 F4.5 删除。 */}
       {recoverableCommand ? (
         <PendingCommandRecoveryBanner
           entry={recoverableCommand}

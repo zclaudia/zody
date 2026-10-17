@@ -135,7 +135,7 @@
   "packages/ui/test/loginApiKeyForm.test.ts": 2,
   "packages/ui/test/messageResponseStreamdownMode.test.ts": 1,
   "packages/ui/test/messageTelemetry.test.ts": 2,
-  "packages/ui/test/modelProviderCodingPlan.test.ts": 47,
+  "packages/ui/test/modelProviderCodingPlan.test.ts": 46,
   "packages/ui/test/modelProviderDraftSave.test.ts": 1,
   "packages/ui/test/modelProviderPresetSubscriptionAction.test.ts": 2,
   "packages/ui/test/providerApiKeyPersistence.test.ts": 3,

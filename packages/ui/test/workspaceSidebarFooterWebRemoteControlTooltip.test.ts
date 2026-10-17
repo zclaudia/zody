@@ -450,79 +450,11 @@ describe("WorkspaceSidebarFooter web remote control tooltip", () => {
     expect(source).toContain(") : null}");
   });
 
-  it("keeps profile menu grouped as language theme zoom usage auth", () => {
-    const source = readFileSync(
-      resolve(process.cwd(), "packages/ui/src/WorkspaceSidebarFooter.tsx"),
-      "utf8",
-    );
-
-    const localeIndex = source.indexOf('id: "settings.locale"');
-    const themeIndex = source.indexOf('id: "settings.themeMode"');
-    const zoomIndex = source.indexOf('id: "sidebar.settings.interfaceZoom"');
-    const usageIndex = source.indexOf("<WorkspaceSidebarFooterUsageSummary");
-    const loginIndex = source.indexOf('id: "app.login"');
-    const logoutIndex = source.indexOf('id: "app.logout"');
-    const separatorBeforeAuthIndex = source.indexOf("<DropdownMenuSeparator />", usageIndex);
-
-    expect(localeIndex).toBeGreaterThan(-1);
-    expect(themeIndex).toBeGreaterThan(localeIndex);
-    expect(zoomIndex).toBeGreaterThan(themeIndex);
-    expect(usageIndex).toBeGreaterThan(zoomIndex);
-    expect(separatorBeforeAuthIndex).toBeGreaterThan(usageIndex);
-    expect(loginIndex).toBeGreaterThan(separatorBeforeAuthIndex);
-    expect(logoutIndex).toBeGreaterThan(separatorBeforeAuthIndex);
-  });
-
-  it("keeps the always-visible upgrade entry inside the footer summary", () => {
-    const footerSource = readFileSync(
-      resolve(process.cwd(), "packages/ui/src/WorkspaceSidebarFooter.tsx"),
-      "utf8",
-    );
-    const summarySource = readFileSync(
-      resolve(process.cwd(), "packages/ui/src/WorkspaceSidebarFooterUsageSummary.tsx"),
-      "utf8",
-    );
-    const usageIndex = footerSource.indexOf("<WorkspaceSidebarFooterUsageSummary");
-
-    // 偏好设置与用量之间由 summary 统一管理分隔线，账号操作组另有分隔线。
-    const preferencesIndex = footerSource.indexOf('id: "settings.locale"');
-    expect(footerSource.slice(preferencesIndex, usageIndex)).not.toContain(
-      "<DropdownMenuSeparator />",
-    );
-    expect(summarySource).toContain("<DropdownMenuSeparator />");
-    expect(summarySource.indexOf("sidebar.usage.plan.openStats")).toBeLessThan(
-      summarySource.indexOf("onUpgradeClick?.("),
-    );
-    expect(summarySource).toContain("setPendingSettingsUsageIntent();");
-    expect(summarySource).toContain("onUsageClick?.();");
-    expect(summarySource).toContain("upgradeTargetProviderId");
-    expect(summarySource).toContain("onUpgradeClick?.(");
-    expect(summarySource).not.toContain("if (!upgradeProviderId");
-    expect(summarySource).not.toContain("if (!upgradeTargetProviderId");
-    expect(summarySource).toContain("<DropdownMenuSeparator />");
-    expect(summarySource).not.toContain("<CodingPlanUsageRemainingPanel");
-  });
-
-  it("keeps settings-page usage stats separate from the back button", () => {
-    const footerSource = readFileSync(
-      resolve(process.cwd(), "packages/ui/src/WorkspaceSidebarFooter.tsx"),
-      "utf8",
-    );
-    const settingsSource = readFileSync(
-      resolve(process.cwd(), "packages/ui/src/SettingsPage.tsx"),
-      "utf8",
-    );
-
-    expect(footerSource).toContain("onUsageClick,");
-    expect(footerSource).toContain(
-      "const usageButtonClick = onUsageClick ?? onSettingsButtonClick;",
-    );
-    expect(footerSource).toContain("onUsageClick={usageButtonClick}");
-    expect(settingsSource).toContain("const handleOpenUsageSettings = useCallback(() => {");
-    expect(settingsSource).toContain('setActiveSettingsSection("usage");');
-    expect(settingsSource).toContain("onSettingsButtonClick={onBack}");
-    expect(settingsSource).toContain("onUsageClick={handleOpenUsageSettings}");
-  });
+  // fork（F4.1b）：头像菜单的用量摘要、升级入口、套餐徽标、登录/登出入口已摘除，
+  // 原断言这些入口的菜单顺序 / 挂载 / 徽标状态用例随之删除
+  //（keeps profile menu grouped / keeps the always-visible upgrade entry /
+  //  keeps settings-page usage stats separate / keeps usage remaining mounted /
+  //  renders the profile plan badge）。
 
   it("keeps duplicated help actions out of the profile menu", () => {
     const source = readFileSync(
@@ -535,30 +467,5 @@ describe("WorkspaceSidebarFooter web remote control tooltip", () => {
     expect(source).not.toContain('id: "titleBar.menu.help.exportLogs"');
     expect(source).not.toContain("<DropdownMenuItem onSelect={onSettingsButtonClick}>");
     expect(source).not.toContain("runExportLogsAction");
-  });
-
-  it("keeps usage remaining mounted across profile menu toggles", () => {
-    const source = readFileSync(
-      resolve(process.cwd(), "packages/ui/src/WorkspaceSidebarFooter.tsx"),
-      "utf8",
-    );
-
-    // 此用例验证菜单保持挂载，不应绑定会随国际化文案调整的宽度。
-    expect(source).toMatch(/<DropdownMenuContent\b[^>]*\bforceMount\s*>/);
-    expect(source).toContain("<WorkspaceSidebarFooterUsageSummary");
-    expect(source).toContain("enabled");
-    expect(source).not.toContain("enabled={profileMenuOpen}");
-  });
-
-  it("renders the profile plan badge from the shared usage summary state", () => {
-    const source = readFileSync(
-      resolve(process.cwd(), "packages/ui/src/WorkspaceSidebarFooter.tsx"),
-      "utf8",
-    );
-
-    expect(source).toContain("useWorkspaceSidebarFooterUsageSummaryState");
-    expect(source).toContain("<WorkspaceSidebarFooterPlanBadge state={usageSummaryState} />");
-    expect(source).toContain("<WorkspaceSidebarFooterUsageSummaryContent");
-    expect(source).toContain("state={usageSummaryState}");
   });
 });
