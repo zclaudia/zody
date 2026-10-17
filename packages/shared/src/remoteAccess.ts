@@ -11,6 +11,36 @@ import type { WebRemoteControlStatus } from "./web-remote-control.js";
 /** namespace 默认值；设备凭证的 discovery 接口不返回 namespace，手机设置页可编辑。 */
 export const DEFAULT_REMOTE_ACCESS_NAMESPACE = "zcode";
 
+/**
+ * 手机 release 构建缺少原生安全存储时的固定错误文案。
+ *
+ * 页面用它区分「没有安全存储」和普通保存失败，从而给出可操作的提示；
+ * release 构建绝不能降级到 localStorage。
+ */
+export const MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE =
+  "Secure storage is not available in this build. Reinstall the app with the native bridge enabled.";
+
+/**
+ * 手机「选择电脑」列表项（T4.2）。
+ *
+ * 数据来自 `discoverBackends` 与 registry 的合并：`online` 以 registry 为准（liveness），
+ * `supported` 只有 registry 明确缺少能力位时才为 false；离线电脑的能力位未知，保持可选项。
+ */
+export interface RemoteAccessMobileBackendOption {
+  backendId: string;
+  name: string;
+  online: boolean;
+  supported: boolean;
+  lastSeenAt: number | null;
+}
+
+/** 在线且确认支持远控的电脑才能直接连接；离线电脑仍可选择，等待 registry 恢复。 */
+export function isRemoteAccessMobileBackendSelectable(
+  backend: Pick<RemoteAccessMobileBackendOption, "supported">,
+): boolean {
+  return backend.supported;
+}
+
 /** 归一化后的 gateway 端点，桌面 Main 与手机页面都从这里取地址。 */
 export interface RemoteAccessGatewayEndpoint {
   /** 交给 SDK 的 HTTP(S) 基地址，已去掉尾部斜杠。 */

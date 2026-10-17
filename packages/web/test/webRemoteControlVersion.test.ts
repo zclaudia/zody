@@ -9,73 +9,59 @@ const bootstrap = (desktopAppVersion?: string): WebRemoteControlWindowBootstrapR
   ...(desktopAppVersion === undefined ? {} : { desktopAppVersion }),
 });
 
-function harness(options: { url?: string; ready?: boolean; version?: string } = {}) {
+function harness(options: { ready?: boolean; version?: string } = {}) {
   const requestBootstrap = vi.fn(async () => bootstrap(options.version));
-  const navigate = vi.fn();
-  const onMismatch = vi.fn();
-  const url =
-    options.url ?? "https://zcode.z.ai/remote/v4?sid=a&hash=x%2By&t=1&app_version=3.12.1#task";
+  const onVersionChanged = vi.fn();
   const guard = createWebRemoteControlVersionGuard({
     requestBootstrap,
-    getUrl: () => url,
     isPageReady: () => options.ready ?? false,
-    navigate,
-    onMismatch,
+    onVersionChanged,
   });
-  return { guard, requestBootstrap, navigate, onMismatch, url };
+  return { guard, requestBootstrap, onVersionChanged };
 }
 
-describe("remote v4 desktop version guard", () => {
-  it("corrects the first URL before allowing business bootstrap, preserving connection parameters", async () => {
-    const h = harness({ version: "3.12.2" });
-    expect(await h.guard.check()).toBeUndefined();
-    expect(h.navigate).toHaveBeenCalledExactlyOnceWith(h.url.replace("3.12.1", "3.12.2"));
-    expect(h.onMismatch).not.toHaveBeenCalled();
-    expect(h.guard.isBlocked()).toBe(true);
-    await h.guard.check();
-    h.guard.confirm();
-    expect(h.navigate).toHaveBeenCalledTimes(1);
+describe("desktop version observer (T4.2, URL-free)", () => {
+  it("records the first desktop version as the baseline without notifying", async () => {
+    const h = harness({ ready: true, version: "3.12.1" });
+    expect(await h.guard.check()).toEqual(bootstrap("3.12.1"));
+    expect(h.onVersionChanged).not.toHaveBeenCalled();
   });
 
-  it("fills a missing version and accepts the v4 trailing slash", async () => {
-    const h = harness({ url: "https://zcode.z.ai/remote/v4/?sid=a", version: "3.12.2" });
+  it("keeps returning bootstrap results when the version is unchanged or missing", async () => {
+    const h = harness({ ready: true, version: "3.12.1" });
     await h.guard.check();
-    expect(h.navigate).toHaveBeenCalledWith(
-      "https://zcode.z.ai/remote/v4/?sid=a&app_version=3.12.2",
-    );
+    expect(await h.guard.check()).toEqual(bootstrap("3.12.1"));
+    h.requestBootstrap.mockResolvedValueOnce(bootstrap(undefined));
+    expect(await h.guard.check()).toEqual(bootstrap(undefined));
+    expect(h.onVersionChanged).not.toHaveBeenCalled();
   });
 
-  it.each([undefined, "3.12.1"])(
-    "continues with an old desktop or equal version: %s",
-    async (version) => {
-      const h = harness({ version });
-      expect(await h.guard.check()).toEqual(bootstrap(version));
-      expect(h.navigate).not.toHaveBeenCalled();
-      expect(h.guard.isBlocked()).toBe(false);
-    },
-  );
-
-  it.each(["/remote", "/remote/v3", "/custom/remote"])(
-    "does not redirect other entry points: %s",
-    async (path) => {
-      const h = harness({ url: `http://localhost:5173${path}?app_version=old`, version: "3.12.2" });
-      expect(await h.guard.check()).toEqual(bootstrap("3.12.2"));
-      expect(h.navigate).not.toHaveBeenCalled();
-    },
-  );
-
-  it("keeps the active page and URL until confirmation, then navigates once", async () => {
-    const h = harness({ ready: true, version: "3.12.2" });
-    expect(await h.guard.check()).toBeUndefined();
-    expect(h.onMismatch).toHaveBeenCalledExactlyOnceWith("3.12.2");
-    expect(h.navigate).not.toHaveBeenCalled();
+  it("notifies once when the desktop version changes on a mounted page", async () => {
+    const h = harness({ ready: true, version: "3.12.1" });
     await h.guard.check();
-    h.guard.confirm();
-    h.guard.confirm();
-    expect(h.navigate).toHaveBeenCalledTimes(1);
+    h.requestBootstrap.mockResolvedValue(bootstrap("3.13.0"));
+    expect(await h.guard.check()).toEqual(bootstrap("3.13.0"));
+    expect(h.onVersionChanged).toHaveBeenCalledExactlyOnceWith("3.13.0");
+    await h.guard.check();
+    expect(h.onVersionChanged).toHaveBeenCalledTimes(1);
   });
 
-  it("coalesces concurrent checks and checks again after recovery", async () => {
+  it("does not notify while the page is still bootstrapping", async () => {
+    const h = harness({ ready: false, version: "3.12.1" });
+    await h.guard.check();
+    h.requestBootstrap.mockResolvedValue(bootstrap("3.13.0"));
+    await h.guard.check();
+    expect(h.onVersionChanged).not.toHaveBeenCalled();
+  });
+
+  it("never blocks business bootstrap results on a version mismatch", async () => {
+    // 旧实现会返回 undefined 并把版本写回 URL；APK 内置页面没有可导航的资源，
+    // 因此不兼容必须交给 appProtocol 协商，而不是让调用方一直等不到结果。
+    const h = harness({ ready: false, version: "3.12.2" });
+    expect(await h.guard.check()).toEqual(bootstrap("3.12.2"));
+  });
+
+  it("coalesces concurrent checks and checks again after invalidation", async () => {
     const h = harness({ version: "3.12.1" });
     await Promise.all([h.guard.check(), h.guard.check()]);
     expect(h.requestBootstrap).toHaveBeenCalledTimes(1);
@@ -84,7 +70,7 @@ describe("remote v4 desktop version guard", () => {
     expect(h.requestBootstrap).toHaveBeenCalledTimes(2);
   });
 
-  it("ignores a late version from an obsolete connection", async () => {
+  it("ignores a late result from an obsolete connection", async () => {
     const h = harness({ version: "3.12.1" });
     let resolveOld!: (value: WebRemoteControlWindowBootstrapResult) => void;
     h.requestBootstrap.mockImplementationOnce(
@@ -96,9 +82,9 @@ describe("remote v4 desktop version guard", () => {
     const old = h.guard.check();
     h.guard.invalidate();
     expect(await h.guard.check()).toEqual(bootstrap("3.12.1"));
-    resolveOld(bootstrap("3.12.2"));
+    resolveOld(bootstrap("3.13.0"));
     expect(await old).toBeUndefined();
-    expect(h.navigate).not.toHaveBeenCalled();
+    expect(h.onVersionChanged).not.toHaveBeenCalled();
   });
 
   it("suppresses obsolete errors but propagates current failures", async () => {
@@ -119,13 +105,11 @@ describe("remote v4 desktop version guard", () => {
     await expect(h.guard.check()).rejects.toThrow("current connection");
   });
 
-  it("does not navigate after disposal or leak pending state to another device", async () => {
-    const first = harness({ ready: true, version: "3.12.2" });
-    await first.guard.check();
-    first.guard.dispose();
-    first.guard.confirm();
-    expect(first.navigate).not.toHaveBeenCalled();
-    const second = harness({ version: "3.12.1" });
-    expect(await second.guard.check()).toEqual(bootstrap("3.12.1"));
+  it("stops observing after disposal", async () => {
+    const h = harness({ ready: true, version: "3.12.1" });
+    await h.guard.check();
+    h.guard.dispose();
+    expect(await h.guard.check()).toBeUndefined();
+    expect(h.onVersionChanged).not.toHaveBeenCalled();
   });
 });

@@ -18,17 +18,17 @@ class RemoteControlKeepAliveService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val remoteUrl = intent?.getStringExtra(EXTRA_REMOTE_URL).orEmpty()
         ensureNotificationChannel()
 
         // Bugfix: 纯浏览器后台后 WebView/JS/WebSocket 容易被系统暂停或回收。
         // 前台服务不能保证 WebView socket 永不断，但能给远控会话一个用户可见的保活边界，
         // 降低进程被杀概率；真正的状态恢复仍交给 web 端 replayable snapshot 协议完成。
+        // 方案要求：服务只表达「有一个活动会话」，不再接收或回跳远端 URL。
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_remote_control)
             .setContentTitle(getString(R.string.remote_keep_alive_title))
             .setContentText(getString(R.string.remote_keep_alive_text))
-            .setContentIntent(createContentIntent(remoteUrl))
+            .setContentIntent(createContentIntent())
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -72,10 +72,9 @@ class RemoteControlKeepAliveService : Service() {
         manager.createNotificationChannel(channel)
     }
 
-    private fun createContentIntent(remoteUrl: String): PendingIntent {
+    private fun createContentIntent(): PendingIntent {
+        // 页面固定来自内置 assets，通知点击只需把用户带回 MainActivity。
         val intent = Intent(this, MainActivity::class.java)
-            .setAction(Intent.ACTION_VIEW)
-            .putExtra(EXTRA_REMOTE_URL, remoteUrl)
             .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         return PendingIntent.getActivity(
             this,
@@ -88,12 +87,12 @@ class RemoteControlKeepAliveService : Service() {
     companion object {
         private const val CHANNEL_ID = "zcode_remote_control"
         private const val NOTIFICATION_ID = 1001
-        const val EXTRA_REMOTE_URL = "com.example.zcode_mobile.remote.REMOTE_URL"
 
-        fun start(context: Context, remoteUrl: String) {
-            val intent = Intent(context, RemoteControlKeepAliveService::class.java)
-                .putExtra(EXTRA_REMOTE_URL, remoteUrl)
-            ContextCompat.startForegroundService(context, intent)
+        fun start(context: Context) {
+            ContextCompat.startForegroundService(
+                context,
+                Intent(context, RemoteControlKeepAliveService::class.java),
+            )
         }
 
         fun stop(context: Context) {

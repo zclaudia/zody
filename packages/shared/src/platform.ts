@@ -657,9 +657,29 @@ export type CuaOsSupport =
  * 比如 native dialog、窗口生命周期控制等。
  * 业务服务（文件、终端、凭据等）走 IServiceAccessor 的 RPC 通道。
  */
+/**
+ * 平台安全存储能力（方案「状态归属 · 手机端 gateway 配置」）。
+ *
+ * 手机页面只能经 `IPlatformService.secureStore` 读写设备凭证与所选电脑；
+ * Android 壳用 Keystore + EncryptedSharedPreferences 实现（T6.2），普通浏览器开发模式
+ * 由页面侧降级到 localStorage。release 构建缺少原生桥时必须拒绝写入，不能把 `zgd_`
+ * 明文落到浏览器存储。
+ */
+export interface PlatformSecureStore {
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string): Promise<void>;
+  remove(key: string): Promise<void>;
+}
+
 export interface IPlatformService {
   /** 当前平台的文件选择框是否能返回 agent 可访问的本地绝对路径 */
   canSelectFilePath?: boolean;
+
+  /**
+   * 手机远控的可选安全存储能力。只有带原生桥的手机宿主实现；
+   * 桌面端与普通 Web 端不提供，调用方必须显式处理能力缺失。
+   */
+  secureStore?: PlatformSecureStore;
 
   /**
    * 插件 UI 沙箱平台端口。只有桌面端实现；

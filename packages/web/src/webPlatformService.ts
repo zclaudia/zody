@@ -2,6 +2,7 @@ import { sessionCreateTelemetrySchema, type RendererTelemetryEventPayload } from
 import { playTaskNotificationSound } from "@zcode/ui";
 import type {
   IPlatformService,
+  PlatformSecureStore,
   RemoteTarget,
   WebRemoteControlPlatformMethod,
   WebRemoteControlPlatformMethodArgsMap,
@@ -28,10 +29,17 @@ interface WebRemoteControlPlatformProxy {
 }
 export function createWebPlatform(options?: {
   externalWebRemoteControlProxy?: WebRemoteControlPlatformProxy;
+  /**
+   * 手机入口的安全存储能力（T4.2）。桌面 Web 客户端不传，`secureStore` 保持 undefined；
+   * 手机页面会显式检查能力是否存在，release 构建缺桥时拒绝保存凭证。
+   */
+  secureStore?: PlatformSecureStore;
 }): IPlatformService {
   const platformProxy = options?.externalWebRemoteControlProxy;
+  const secureStore = options?.secureStore;
 
   return {
+    ...(secureStore ? { secureStore } : {}),
     canSelectFilePath: false,
     // Web 端无法打开系统目录选择框
     selectDirectory: () => Promise.resolve(null),

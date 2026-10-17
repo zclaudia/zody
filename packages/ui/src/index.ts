@@ -5,6 +5,21 @@ export { Button, buttonVariants } from "./components/ui/button.js";
 export { DesktopWindowFrame } from "./DesktopWindowFrame.js";
 export { WebRemoteControlDialog } from "./WebRemoteControlDialog.js";
 export {
+  WebRemoteControlMobileSettingsScreen,
+  type WebRemoteControlMobileSettingsDraft,
+  type WebRemoteControlMobileSettingsScreenProps,
+} from "./WebRemoteControlMobileSettingsScreen.js";
+export {
+  WebRemoteControlMobileBackendPicker,
+  type WebRemoteControlMobileBackendPickerProps,
+} from "./WebRemoteControlMobileBackendPicker.js";
+export {
+  WebRemoteControlRecentProjectsSection,
+  WebRemoteControlMobileStartPage,
+  type WebRemoteControlRecentProjectsSectionProps,
+  type WebRemoteControlMobileStartPageProps,
+} from "./WebRemoteControlRecentProjects.js";
+export {
   WebRemoteControlFeatureProvider,
   useWebRemoteControlFeatureEnabled,
 } from "./WebRemoteControlFeatureProvider.js";

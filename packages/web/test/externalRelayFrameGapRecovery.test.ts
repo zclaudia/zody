@@ -49,6 +49,9 @@ vi.mock("react-dom/client", () => ({
 vi.mock("@zcode/ui", () => ({
   AppErrorBoundary: ({ children }: { children: unknown }) => children,
   Root: () => null,
+  WebRemoteControlMobileStartPage: () => null,
+  WebRemoteControlMobileSettingsScreen: () => null,
+  WebRemoteControlMobileBackendPicker: () => null,
   ZCodeIntlProvider: ({ children }: { children: unknown }) => children,
   generateMobileDeviceFingerprint: vi.fn(() => "test-mobile-fingerprint"),
   installDocumentHiddenMotionPause: vi.fn(),
@@ -250,6 +253,7 @@ function setupExternalRelayGlobals(pathname = "/remote") {
       pathname,
       href: `https://zcode.z.ai${pathname}?gateway=http%3A%2F%2Fgateway.test&namespace=zcode&credential=zgd_test&backend=backend-1&client_id=client-1&app_version=1.0.0`,
       replace: navigateMock,
+      reload: navigateMock,
       search:
         "?gateway=http%3A%2F%2Fgateway.test&namespace=zcode&credential=zgd_test&backend=backend-1&client_id=client-1&app_version=1.0.0",
     },
@@ -310,35 +314,20 @@ describe("external relay frame gap recovery", () => {
     noticeMock.mockClear();
   });
 
-  it("corrects v4 before opening a business bridge", async () => {
+  it("opens the bridge when the desktop version differs, without any URL navigation", async () => {
+    // T4.2：手机页面内置在 APK 中，不再按 app_version 导航到版本化 URL。
+    // 版本不一致只观察，不阻塞业务建连。
     vi.stubEnv("BASE_URL", "/remote/v4/");
     setupExternalRelayGlobals("/remote/v4");
     testState.desktopAppVersion = "3.12.2";
     await startMobileBootstrap();
-    await vi.waitFor(() => expect(navigateMock).toHaveBeenCalledOnce());
-    expect(new URL(navigateMock.mock.calls[0]![0]).searchParams.get("app_version")).toBe("3.12.2");
-    expect(testState.relayProtocolOptions).toHaveLength(0);
-    expect(noticeMock).not.toHaveBeenCalled();
-  });
-
-  it("rechecks a new pairing while the previous business bootstrap is still pending", async () => {
-    vi.stubEnv("BASE_URL", "/remote/v4/");
-    setupExternalRelayGlobals("/remote/v4");
-    testState.desktopAppVersion = "1.0.0";
-    testState.deferBridge = true;
-    await startMobileBootstrap();
-    await vi.waitFor(() => expect(testState.bridgeReplies).toHaveLength(1));
-    testState.desktopAppVersion = "3.12.2";
-    testState.transportOptions[0]!.onStateChange("connecting");
-    testState.transportOptions[0]!.onStateChange("ready");
-    await vi.waitFor(() => expect(navigateMock).toHaveBeenCalledOnce());
-    testState.bridgeReplies[0]!();
-    await Promise.resolve();
+    await vi.waitFor(() => expect(testState.relayProtocolOptions).toHaveLength(1));
+    expect(navigateMock).not.toHaveBeenCalled();
     expect(noticeMock).not.toHaveBeenCalled();
   });
 
   it.each(["pair", "foreground"])(
-    "checks v4 on %s recovery even with a healthy bridge, without unmounting the page",
+    "notifies on %s when the desktop version changes and keeps the page usable",
     async (kind) => {
       vi.stubEnv("BASE_URL", "/remote/v4/");
       const lifecycle = setupExternalRelayGlobals("/remote/v4");
@@ -364,18 +353,20 @@ describe("external relay frame gap recovery", () => {
       }
       await vi.waitFor(() => expect(noticeMock).toHaveBeenCalledOnce());
       expect(noticeMock.mock.calls[0]![0]).toBe("3.12.2");
+      // 版本变化不再阻塞帧发送，也不卸载已挂载页面。
       expect(navigateMock).not.toHaveBeenCalled();
       expect(testState.relayProtocolOptions).toHaveLength(1);
       expect(renderMock).toHaveBeenCalledTimes(renderCount);
-      const sentBeforeBlockedFrame = testState.sentPayloads.length;
+      const sentBeforeFrame = testState.sentPayloads.length;
       const protocol = testState.relayProtocolOptions[0]!;
       const [frame] = encodeWebRemoteControlRpcTransportMessage(new Uint8Array([1, 2, 3]), {
         bridgeSessionId: protocol.bridgeSessionId,
         firstPhysicalSeq: 1,
         messageSeq: 1,
       });
-      expect(protocol.sendFrame(frame!)).toBe(false);
-      expect(testState.sentPayloads).toHaveLength(sentBeforeBlockedFrame);
+      expect(protocol.sendFrame(frame!)).toBe(true);
+      expect(testState.sentPayloads.length).toBeGreaterThan(sentBeforeFrame);
+      // 提示里的「重新加载」是用户的显式动作，不再是自动导航。
       noticeMock.mock.calls[0]![1]();
       expect(navigateMock).toHaveBeenCalledOnce();
     },
@@ -523,9 +514,11 @@ describe("external relay frame gap recovery", () => {
     });
     await new Promise((resolve) => setTimeout(resolve, 20));
 
+    // T4.2：回前台会额外用一次 bootstrap-request 观察桌面版本变化（版本化 URL 已移除）。
+    // 关键是 bridge 和已挂载页面都不重建。
     expect(
       testState.sentPayloads.filter((payload) => payload.zcode_type === "bootstrap-request"),
-    ).toHaveLength(initialBootstrapRequestCount);
+    ).toHaveLength(initialBootstrapRequestCount + 1);
     expect(
       testState.sentPayloads.filter((payload) => payload.zcode_type === "workspace-bridge-open"),
     ).toHaveLength(initialBridgeOpenCount);
@@ -558,9 +551,12 @@ describe("external relay frame gap recovery", () => {
     await vi.waitFor(() => {
       expect(testState.recoverConnectionCalls).toBe(1);
     });
-    expect(
-      testState.sentPayloads.filter((payload) => payload.zcode_type === "bootstrap-request"),
-    ).toHaveLength(initialBootstrapRequestCount);
+    // 同短时恢复：允许一次版本观察请求，但不重建 bridge。
+    await vi.waitFor(() => {
+      expect(
+        testState.sentPayloads.filter((payload) => payload.zcode_type === "bootstrap-request"),
+      ).toHaveLength(initialBootstrapRequestCount + 1);
+    });
     expect(
       testState.sentPayloads.filter((payload) => payload.zcode_type === "workspace-bridge-open"),
     ).toHaveLength(initialBridgeOpenCount);

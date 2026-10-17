@@ -2,6 +2,7 @@ import type {
   IPlatformService,
   UserInfo,
   WebRemoteControlMobileNavigationIntent,
+  WebRemoteControlRecentProjectsResult,
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceListResult,
   WebRemoteControlWorkspaceSwitchOptions,
@@ -38,6 +39,17 @@ export interface WebRemoteControlWorkspaceSwitcherApi {
     workspaceKey: string,
     options?: { mobileNavigationIntent?: WebRemoteControlMobileNavigationIntent },
   ): Promise<void>;
+  /** 手机首页「最近项目」与无窗口空态（T4.2）。 */
+  getRecentProjects?(): Promise<WebRemoteControlRecentProjectsResult>;
+  onRecentProjectsUpdated?(
+    listener: (result: WebRemoteControlRecentProjectsResult) => void,
+  ): () => void;
+  /** 请求桌面打开最近项目；成功后返回 workspaceKey，并等待它进入聚合列表。 */
+  openRecentProject?(recentProjectId: string): Promise<string>;
+  /** 请求桌面重新打开主窗口。 */
+  openDesktopWindow?(): Promise<void>;
+  /** 从首页回到 phone 设置页。 */
+  onOpenSettings?(): void;
 }
 
 export interface RootProps {

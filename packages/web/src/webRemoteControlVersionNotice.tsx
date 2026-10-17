@@ -30,8 +30,8 @@ export function showWebRemoteControlVersionNotice(
         className="text-ui-base text-foreground-subtle break-words"
       >
         {zh
-          ? `桌面当前版本为 ${version}。任务操作已暂停，请重新加载以继续。未发送的附件不会保留。`
-          : `The desktop is now running ${version}. Task controls are paused. Reload to continue. Unsent attachments will not be retained.`}
+          ? `桌面当前版本为 ${version}。重新加载页面可重新连接；未发送的附件不会保留。`
+          : `The desktop is now running ${version}. Reload the page to reconnect; unsent attachments will not be retained.`}
       </p>
       <Button autoFocus size="lg" className="self-end" onClick={onReload}>
         {zh ? "重新加载" : "Reload"}

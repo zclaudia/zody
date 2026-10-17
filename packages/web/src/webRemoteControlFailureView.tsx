@@ -10,14 +10,30 @@ import {
  * 共用同一份实现，避免两条入口各自维护一套失败展示。
  */
 
-export function renderWebRemoteControlFailure(failure: WebRemoteControlFailure): void {
+export interface RenderWebRemoteControlFailureOptions {
+  onOpenSettings?(): void;
+  onChooseBackend?(): void;
+  onRetry?(): void;
+  onReload?(): void;
+}
+
+export function renderWebRemoteControlFailure(
+  failure: WebRemoteControlFailure,
+  options: RenderWebRemoteControlFailureOptions = {},
+): void {
   webEntryRoot.render(
     <WebRemoteControlFailureScreen
       failure={failure}
       locale={resolveWebRemoteControlScreenLocale(navigator.language)}
-      onReload={() => {
-        window.location.reload();
-      }}
+      onReload={
+        options.onReload ??
+        (() => {
+          window.location.reload();
+        })
+      }
+      {...(options.onOpenSettings ? { onOpenSettings: options.onOpenSettings } : {})}
+      {...(options.onChooseBackend ? { onChooseBackend: options.onChooseBackend } : {})}
+      {...(options.onRetry ? { onRetry: options.onRetry } : {})}
     />,
   );
 }

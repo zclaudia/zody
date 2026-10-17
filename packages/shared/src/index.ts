@@ -230,6 +230,7 @@ export type {
   IPlatformService,
   OpenInEditorRemoteTarget,
   OpenInEditorOptions,
+  PlatformSecureStore,
   PostUpdateReleaseNotesPayload,
   RemoteConnectionRuntimeLog,
   RemoteSessionClosedEvent,

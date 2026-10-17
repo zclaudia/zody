@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- 失败页中英文文案与按失败原因/upgrade 分派的渲染逻辑集中在一处，拆分会引入两套文案来源。 */
 import type { WebRemoteControlFailure, WebRemoteControlFailureReason } from "@zcode/shared";
 
 type WebRemoteControlScreenLocale = "zh-CN" | "en-US";
@@ -92,7 +93,10 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
       description: "手机端连接没有及时恢复，当前页面暂时无法继续同步远程控制。",
       detailLabel: "恢复详情",
       nextStepsTitle: "下一步",
-      nextSteps: ["保持手机网络可用后重试。", "如果仍无法恢复，再回到桌面端重新开启 Web 远程控制。"],
+      nextSteps: [
+        "保持手机网络可用后重试。",
+        "如果仍无法恢复，再回到桌面端重新开启 Web 远程控制。",
+      ],
       action: "重试",
     },
     "backend-unsupported": {
@@ -135,7 +139,10 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
         "This phone cannot maintain a connection to the remote access gateway. Desktop may be offline or the network unreachable.",
       detailLabel: "Connection detail",
       nextStepsTitle: "Next steps",
-      nextSteps: ["Check the phone network and the gateway address.", "Reconnect automatically once the gateway and desktop are back."],
+      nextSteps: [
+        "Check the phone network and the gateway address.",
+        "Reconnect automatically once the gateway and desktop are back.",
+      ],
       action: "Retry",
     },
     "gateway-credential-invalid": {
@@ -146,7 +153,10 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
         "The gateway rejected this device credential. It may have been revoked or entered incorrectly.",
       detailLabel: "Authentication detail",
       nextStepsTitle: "Next steps",
-      nextSteps: ["Confirm the device credential with the gateway admin on desktop.", "Enter the credential again in settings."],
+      nextSteps: [
+        "Confirm the device credential with the gateway admin on desktop.",
+        "Enter the credential again in settings.",
+      ],
       action: "Try Again",
     },
     "session-conflict": {
@@ -157,14 +167,18 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
         "Another remote control device connected and replaced this phone. Only one mobile controller can stay active at a time.",
       detailLabel: "Connection detail",
       nextStepsTitle: "Next steps",
-      nextSteps: ["Continue on the newer device.", "Select Try Again to take control back with this phone."],
+      nextSteps: [
+        "Continue on the newer device.",
+        "Select Try Again to take control back with this phone.",
+      ],
       action: "Try Again",
     },
     "workspace-closed": {
       tone: "neutral",
       badge: "Workspace closed",
       title: "Workspace Closed",
-      description: "The shared workspace was closed on desktop, so this phone can no longer access it.",
+      description:
+        "The shared workspace was closed on desktop, so this phone can no longer access it.",
       detailLabel: "Desktop detail",
       nextStepsTitle: "Next steps",
       nextSteps: ["Reopen the target workspace on desktop.", "Start Web remote control again."],
@@ -178,7 +192,10 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
         "The desktop side disconnected. This phone can no longer control the desktop workspace.",
       detailLabel: "Connection detail",
       nextStepsTitle: "What happened",
-      nextSteps: ["Make sure ZCode is still running and online on desktop.", "Start Web remote control again from desktop."],
+      nextSteps: [
+        "Make sure ZCode is still running and online on desktop.",
+        "Start Web remote control again from desktop.",
+      ],
       action: "Try Again",
     },
     "incompatible-version": {
@@ -189,18 +206,23 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
         "The phone and desktop application protocol ranges do not overlap. One side must be upgraded.",
       detailLabel: "Version detail",
       nextStepsTitle: "Next steps",
-      nextSteps: ["Upgrade the phone app or desktop ZCode as indicated.", "Reconnect after the upgrade."],
+      nextSteps: [
+        "Upgrade the phone app or desktop ZCode as indicated.",
+        "Reconnect after the upgrade.",
+      ],
       action: "Try Again",
     },
     "desktop-bootstrap-timeout": {
       tone: "warning",
       badge: "Timed out",
       title: "Desktop Timed Out",
-      description:
-        "This phone reached desktop, but desktop did not return workspace data in time.",
+      description: "This phone reached desktop, but desktop did not return workspace data in time.",
       detailLabel: "Timeout detail",
       nextStepsTitle: "Next steps",
-      nextSteps: ["Check that desktop is not asleep or waiting for confirmation.", "Keep both devices online and retry."],
+      nextSteps: [
+        "Check that desktop is not asleep or waiting for confirmation.",
+        "Keep both devices online and retry.",
+      ],
       action: "Retry",
     },
     "connection-recovery-timeout": {
@@ -211,7 +233,10 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
         "This phone did not recover its remote control connection in time, so the current page cannot keep syncing yet.",
       detailLabel: "Recovery detail",
       nextStepsTitle: "Next steps",
-      nextSteps: ["Keep the phone network available and retry.", "If it still cannot recover, start Web remote control again from desktop."],
+      nextSteps: [
+        "Keep the phone network available and retry.",
+        "If it still cannot recover, start Web remote control again from desktop.",
+      ],
       action: "Retry",
     },
     "backend-unsupported": {
@@ -222,7 +247,10 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
         "The selected desktop is online but does not advertise the ZCode remote-control capability.",
       detailLabel: "Desktop detail",
       nextStepsTitle: "Next steps",
-      nextSteps: ["Confirm desktop runs a ZCode version that supports remote control.", "Go back and select another desktop."],
+      nextSteps: [
+        "Confirm desktop runs a ZCode version that supports remote control.",
+        "Go back and select another desktop.",
+      ],
       action: "Choose Again",
     },
     "unsupported-action": {
@@ -232,7 +260,10 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
       description: "Web remote control can only access workspaces already open on desktop.",
       detailLabel: "Limitation",
       nextStepsTitle: "Next steps",
-      nextSteps: ["Open the target workspace on desktop first.", "Select it from this phone afterward."],
+      nextSteps: [
+        "Open the target workspace on desktop first.",
+        "Select it from this phone afterward.",
+      ],
       action: "Reload",
     },
     "unexpected-error": {
@@ -242,7 +273,10 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
       description: "An unexpected error occurred while opening Web remote control.",
       detailLabel: "Error detail",
       nextStepsTitle: "Next steps",
-      nextSteps: ["Refresh this page once.", "If it still fails, confirm remote access is enabled on desktop."],
+      nextSteps: [
+        "Refresh this page once.",
+        "If it still fails, confirm remote access is enabled on desktop.",
+      ],
       action: "Retry",
     },
   },
@@ -261,7 +295,53 @@ export function resolveWebRemoteControlScreenCopy(
   failure: WebRemoteControlFailure,
   locale: WebRemoteControlScreenLocale,
 ): WebRemoteControlScreenCopy {
-  return WEB_REMOTE_CONTROL_SCREEN_COPY[locale][failure.reason];
+  const base = WEB_REMOTE_CONTROL_SCREEN_COPY[locale][failure.reason];
+  if (failure.reason !== "incompatible-version" || !failure.upgrade) {
+    return base;
+  }
+  // 方案「版本兼容」：upgrade 指明哪一端需要升级，页面必须给出不同提示。
+  // 不能只说「版本不兼容」，否则用户不知道该更新手机还是电脑。
+  if (failure.upgrade === "mobile") {
+    return locale === "zh-CN"
+      ? {
+          ...base,
+          badge: "需要更新 App",
+          title: "请更新手机 App",
+          description: "电脑端要求更高的应用协议版本，当前手机 App 版本过旧。",
+          nextSteps: ["从应用商店或分发渠道更新 ZCode 手机 App。", "升级完成后重新连接。"],
+          action: "已更新，重新连接",
+        }
+      : {
+          ...base,
+          badge: "App update required",
+          title: "Update the Phone App",
+          description:
+            "The desktop requires a newer application protocol than this phone app supports.",
+          nextSteps: [
+            "Update the ZCode phone app from your app store or distribution channel.",
+            "Reconnect after the update.",
+          ],
+          action: "Updated, reconnect",
+        };
+  }
+  return locale === "zh-CN"
+    ? {
+        ...base,
+        badge: "需要更新电脑端",
+        title: "请更新电脑端 ZCode",
+        description: "手机 App 需要更高的应用协议版本，当前电脑端 ZCode 版本过旧。",
+        nextSteps: ["在电脑上更新 ZCode 桌面端。", "更新完成后重新连接。"],
+        action: "重试",
+      }
+    : {
+        ...base,
+        badge: "Desktop update required",
+        title: "Update Desktop ZCode",
+        description:
+          "This phone app requires a newer application protocol than the desktop supports.",
+        nextSteps: ["Update ZCode on the desktop.", "Reconnect after the update."],
+        action: "Retry",
+      };
 }
 
 function resolveToneClassName(tone: WebRemoteControlScreenCopy["tone"]): {
@@ -291,15 +371,37 @@ interface WebRemoteControlFailureScreenProps {
   failure: WebRemoteControlFailure;
   locale: WebRemoteControlScreenLocale;
   onReload(): void;
+  /** 凭证无效时跳回手机设置页（T4.2）。 */
+  onOpenSettings?(): void;
+  /** 选中的电脑不支持远控时回到选电脑页（T4.2）。 */
+  onChooseBackend?(): void;
+  /** 可恢复失败或 session-conflict 时的手动重试入口。 */
+  onRetry?(): void;
 }
 
 export function WebRemoteControlFailureScreen({
   failure,
   locale,
   onReload,
+  onOpenSettings,
+  onChooseBackend,
+  onRetry,
 }: WebRemoteControlFailureScreenProps) {
   const copy = resolveWebRemoteControlScreenCopy(failure, locale);
   const toneClassName = resolveToneClassName(copy.tone);
+  // 终态页面提供可操作的下一步：凭证失效回设置页、电脑不支持回选电脑页，
+  // 其余原因保留原有重试/重新加载。
+  const action =
+    failure.reason === "gateway-credential-invalid" && onOpenSettings
+      ? { label: locale === "zh-CN" ? "打开设置" : "Open settings", onClick: onOpenSettings }
+      : failure.reason === "backend-unsupported" && onChooseBackend
+        ? {
+            label: locale === "zh-CN" ? "重新选择电脑" : "Choose another desktop",
+            onClick: onChooseBackend,
+          }
+        : onRetry
+          ? { label: copy.action, onClick: onRetry }
+          : { label: copy.action, onClick: onReload };
 
   return (
     <div
@@ -321,9 +423,7 @@ export function WebRemoteControlFailureScreen({
               <span className="min-w-0 truncate">{copy.badge}</span>
             </div>
             <h1 className="text-ui-lg font-medium text-foreground">{copy.title}</h1>
-            <p className="mt-2 text-ui-xs leading-6 text-foreground-subtle">
-              {copy.description}
-            </p>
+            <p className="mt-2 text-ui-xs leading-6 text-foreground-subtle">{copy.description}</p>
           </div>
         </div>
 
@@ -352,10 +452,10 @@ export function WebRemoteControlFailureScreen({
 
         <button
           type="button"
-          className="mt-5 inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-ui-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          onClick={onReload}
+          className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-ui-base font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          onClick={action.onClick}
         >
-          {copy.action}
+          {action.label}
         </button>
       </main>
     </div>
