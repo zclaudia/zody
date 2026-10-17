@@ -205,6 +205,11 @@ function isAmbientHostEnvKey(key: string): boolean {
     AMBIENT_TOOL_PASSTHROUGH_ENV_KEYS.has(upperKey) ||
     upperKey.startsWith("OTEL_") ||
     upperKey.startsWith("ZCODE_TELEMETRY_") ||
+    // 在 ZCode 桌面进程拉起的终端里跑测试时，Host 会继承 ZCODE_CUA_*（例如打包态的
+    // ZCODE_CUA_BUNDLED_HELPER_APP_PATH）。buildHostProcessEnv 里 readDefinedProcessEnv()
+    // 的优先级高于入参里的本地 env，这些外部键会覆盖用例显式传入的 dev Helper 路径，
+    // 让「本地免签 CUA」断言读到 /Applications 下的打包路径。测试基线必须与宿主环境隔离。
+    upperKey.startsWith("ZCODE_CUA_") ||
     AMBIENT_PACKAGE_MANAGER_PROXY_ENV_PATTERN.test(key)
   );
 }
