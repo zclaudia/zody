@@ -27,6 +27,17 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <!-- T6.3：拍照临时文件与 Android 9 及以下的下载文件通过 FileProvider 交给 WebView/外部应用读取。 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

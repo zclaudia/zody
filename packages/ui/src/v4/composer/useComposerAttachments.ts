@@ -683,10 +683,47 @@ export function useComposerAttachments(
     [commitScope, enqueueUpload, scopeKey, showAttachmentLimitWarning],
   );
 
+  const showAttachmentSizeWarning = useCallback(() => {
+    const maxBytes = platform.maxAttachmentBytes;
+    if (!maxBytes) {
+      return;
+    }
+    // 手机远控受单条逻辑消息 16 MiB 约束：在选择阶段就拒绝超限文件，
+    // 避免整文件 base64 编码后才被传输层拒绝。
+    toast(
+      intl.formatMessage(
+        { id: "chat.attachments.maxFileSize" },
+        { sizeMb: String(Math.floor(maxBytes / (1024 * 1024))) },
+      ),
+      {
+        variant: "warning",
+        position: "bottom-center",
+        dedupeKey: `attachment-size:${scopeKey}`,
+      },
+    );
+  }, [intl, platform.maxAttachmentBytes, scopeKey]);
+
   const addAttachmentFiles = useCallback(
     (selectedFiles: File[]): string[] => {
+      const maxAttachmentBytes = platform.maxAttachmentBytes;
+      let sizeRejected = false;
+      const acceptedFiles = maxAttachmentBytes
+        ? selectedFiles.filter((file) => {
+            if (file.size <= maxAttachmentBytes) {
+              return true;
+            }
+            sizeRejected = true;
+            return false;
+          })
+        : selectedFiles;
+      if (sizeRejected) {
+        showAttachmentSizeWarning();
+      }
+      if (acceptedFiles.length === 0) {
+        return [];
+      }
       return addPreparedAttachments(
-        selectedFiles.map((file) => {
+        acceptedFiles.map((file) => {
           let localPath: string | undefined;
           try {
             const resolvedPath = platform.getPathForFile?.(file);
@@ -699,7 +736,7 @@ export function useComposerAttachments(
         }),
       );
     },
-    [addPreparedAttachments, platform],
+    [addPreparedAttachments, platform, showAttachmentSizeWarning],
   );
 
   const addAttachmentLocalPaths = useCallback(

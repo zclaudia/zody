@@ -73,6 +73,10 @@ import {
   resolveMobileRemoteNativeBridge,
 } from "./mobileRemoteSecureStore.js";
 import { installMobileRemoteNativeHost } from "./mobileRemoteNativeHost.js";
+import {
+  createMobileRemoteFileCapabilities,
+  resolveMobileRemoteFileBridge,
+} from "./mobileRemoteFileBridge.js";
 
 /**
  * 手机远控启动模块（T1.2 迁出 `main.tsx`，T3.4 换成 gateway transport，T4.2 加设置/选电脑流程）。
@@ -103,19 +107,24 @@ function createDefaultSecureStore(): PlatformSecureStore {
 }
 
 /**
- * 把启动阶段的平台能力透传给 Root/手机 Shell（T6.2）。
- * Root 会重新构造一个 Web 平台对象，安全存储、前后台和返回键都必须显式带上，
+ * 把启动阶段的平台能力透传给 Root/手机 Shell（T6.2/T6.3）。
+ * Root 会重新构造一个 Web 平台对象，安全存储、前后台、返回键和文件能力都必须显式带上，
  * 否则 `useOptionalPlatform()` 在 UI 层看不到原生能力。
  */
 function pickMobileRemotePlatformCapabilities(
   platform: IPlatformService,
-): Pick<IPlatformService, "secureStore" | "onAppLifecycleChange" | "onBackPressed"> {
+): Pick<
+  IPlatformService,
+  "secureStore" | "onAppLifecycleChange" | "onBackPressed" | "saveFile" | "maxAttachmentBytes"
+> {
   return {
     ...(platform.secureStore ? { secureStore: platform.secureStore } : {}),
     ...(platform.onAppLifecycleChange
       ? { onAppLifecycleChange: platform.onAppLifecycleChange }
       : {}),
     ...(platform.onBackPressed ? { onBackPressed: platform.onBackPressed } : {}),
+    ...(platform.saveFile ? { saveFile: platform.saveFile } : {}),
+    ...(platform.maxAttachmentBytes ? { maxAttachmentBytes: platform.maxAttachmentBytes } : {}),
   };
 }
 
@@ -190,6 +199,8 @@ export async function bootstrapGatewayWebRemoteControl(
   // T6.2：Android 壳注入 ZcodeMobileBridge 后，安装宿主 → 页面的 ZcodeMobileBridgeHost
   // （前后台/返回键）。普通浏览器返回 undefined，页面继续只依赖 document 事件。
   const nativeHost = installMobileRemoteNativeHost();
+  // T6.3：文件桥与事件桥共用同一个注入对象；缺桥时只保留 16 MiB 附件上限。
+  const fileCapabilities = createMobileRemoteFileCapabilities(resolveMobileRemoteFileBridge());
   const secureStore =
     options.secureStore ?? options.platform?.secureStore ?? createDefaultSecureStore();
   // 不展开注入的平台对象：桌面/测试实现可能是带原型方法的实例。能力缺省时只补 secureStore。
@@ -197,6 +208,7 @@ export async function bootstrapGatewayWebRemoteControl(
     options.platform ??
     createWebPlatform({
       secureStore,
+      ...fileCapabilities,
       ...(nativeHost
         ? {
             onAppLifecycleChange: nativeHost.onAppLifecycleChange,

@@ -38,16 +38,24 @@ export function createWebPlatform(options?: {
   onAppLifecycleChange?: IPlatformService["onAppLifecycleChange"];
   /** 手机宿主的返回键分发（T6.2）；只有 Android 原生桥提供。 */
   onBackPressed?: IPlatformService["onBackPressed"];
+  /** 手机宿主的文件保存能力（T6.3）；普通 Web 端不传。 */
+  saveFile?: IPlatformService["saveFile"];
+  /** 手机远控的单个附件上限（T6.3）。 */
+  maxAttachmentBytes?: number;
 }): IPlatformService {
   const platformProxy = options?.externalWebRemoteControlProxy;
   const secureStore = options?.secureStore;
   const onAppLifecycleChange = options?.onAppLifecycleChange;
   const onBackPressed = options?.onBackPressed;
+  const saveFile = options?.saveFile;
+  const maxAttachmentBytes = options?.maxAttachmentBytes;
 
   return {
     ...(secureStore ? { secureStore } : {}),
     ...(onAppLifecycleChange ? { onAppLifecycleChange } : {}),
     ...(onBackPressed ? { onBackPressed } : {}),
+    ...(saveFile ? { saveFile } : {}),
+    ...(maxAttachmentBytes ? { maxAttachmentBytes } : {}),
     canSelectFilePath: false,
     // Web 端无法打开系统目录选择框
     selectDirectory: () => Promise.resolve(null),

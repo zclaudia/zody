@@ -39,7 +39,7 @@ export interface MobileRemoteNativeBridge {
   secureStoreRemove?(key: string): void;
 }
 
-const NATIVE_BRIDGE_GLOBAL_KEY = "ZcodeMobileBridge";
+export const MOBILE_REMOTE_NATIVE_BRIDGE_GLOBAL_KEY = "ZcodeMobileBridge";
 
 function isNativeSecureStore(value: unknown): value is MobileRemoteNativeSecureStore {
   if (!value || typeof value !== "object") {
@@ -79,7 +79,7 @@ export function resolveMobileRemoteNativeBridge(
   if (!target || typeof target !== "object") {
     return undefined;
   }
-  const bridge = (target as Record<string, unknown>)[NATIVE_BRIDGE_GLOBAL_KEY];
+  const bridge = (target as Record<string, unknown>)[MOBILE_REMOTE_NATIVE_BRIDGE_GLOBAL_KEY];
   if (!bridge || typeof bridge !== "object") {
     return undefined;
   }

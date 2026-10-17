@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- T6.3：只暴露文件能力真正需要的两个目录，避免把整个应用私有目录交给 FileProvider。 -->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 拍照临时文件（ACTION_IMAGE_CAPTURE 的 EXTRA_OUTPUT）。 -->
+    <cache-path
+        name="camera"
+        path="camera/" />
+    <!-- Android 9 及以下没有免权限的公共下载目录，保存到应用专属 Download 目录。 -->
+    <external-files-path
+        name="downloads"
+        path="Download/" />
+    <files-path
+        name="downloads_internal"
+        path="downloads/" />
+</paths>

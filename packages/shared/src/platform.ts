@@ -718,8 +718,19 @@ export interface IPlatformService {
   /** 打开系统多文件选择框，返回选中的文件路径；取消时返回空数组 */
   selectFiles?(): Promise<string[]>;
 
-  /** 使用宿主原生另存为对话框写入文件；普通 Web 端不实现 */
+  /**
+   * 使用宿主原生另存为对话框/下载目录写入文件；普通 Web 端不实现。
+   * 手机远控由 Android 原生桥按 base64 分块接收后写入「下载」目录。
+   */
   saveFile?(payload: SaveFileRequest): Promise<SaveFileResult>;
+
+  /**
+   * 单个附件的字节上限；未设置表示沿用各文件类型自己的限制。
+   *
+   * 手机远控受单条逻辑消息 16 MiB 的约束（`WEB_REMOTE_CONTROL_RPC_TRANSPORT_LIMITS.maxMessageBytes`），
+   * 由 composer 在选择附件时提前提示并拒绝超限文件，避免编码后才失败。
+   */
+  maxAttachmentBytes?: number;
 
   /**
    * 用 Chromium 打印引擎把当前 webContents 的 print 媒体版面输出为 PDF（矢量文本）。

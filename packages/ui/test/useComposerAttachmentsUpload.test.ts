@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
     canSelectFilePath: true,
     createTempTextAttachment: vi.fn(),
     getPathForFile: vi.fn(),
+    maxAttachmentBytes: undefined as number | undefined,
     selectFiles: vi.fn(async () => [] as string[]),
   },
   service: null as IPromptAttachmentTransferService | null,
@@ -210,6 +211,7 @@ beforeEach(() => {
   latestApi = null;
   mocks.platform.createTempTextAttachment.mockReset();
   mocks.platform.getPathForFile.mockReset();
+  mocks.platform.maxAttachmentBytes = undefined;
   mocks.platform.selectFiles.mockReset();
   mocks.toast.mockClear();
   useComposerAttachmentUploadStore.setState({ scopes: {} });
@@ -1092,6 +1094,35 @@ describe("useComposerAttachments eager upload", () => {
 
     expect(latestApi?.attachments[0]?.runtimeRebuildRetryCount).toBe(1);
     expect(restart).toBeNull();
+    act(() => root.unmount());
+  });
+
+  it("按 maxAttachmentBytes 拒绝超限附件并提示，边界值仍被接受", () => {
+    mocks.platform.maxAttachmentBytes = 16 * 1024 * 1024;
+    const { root } = renderProbe({
+      attachmentSessionId: null,
+      scopeId: "attachment-size",
+    });
+
+    const oversized = new File(["x"], "too-big.bin");
+    // 不真的分配 16 MiB，只把 size getter 固定到超限值；选择阶段只读取 size。
+    Object.defineProperty(oversized, "size", { configurable: true, value: 16 * 1024 * 1024 + 1 });
+    const boundary = new File(["x"], "boundary.bin");
+    Object.defineProperty(boundary, "size", { configurable: true, value: 16 * 1024 * 1024 });
+
+    let ids: string[] = [];
+    act(() => {
+      ids = latestApi!.addAttachmentFiles([oversized, boundary]);
+    });
+
+    expect(ids).toHaveLength(1);
+    expect(latestApi?.attachments.map((attachment) => attachment.filename)).toEqual([
+      "boundary.bin",
+    ]);
+    expect(mocks.toast).toHaveBeenCalledWith(
+      "chat.attachments.maxFileSize",
+      expect.objectContaining({ variant: "warning" }),
+    );
     act(() => root.unmount());
   });
 });
