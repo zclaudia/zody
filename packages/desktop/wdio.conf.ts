@@ -3264,9 +3264,20 @@ function seedE2EStartupState(specs: string[] = []) {
     E2E_APP_SETTINGS_FILE,
     JSON.stringify(
       {
-        providerFamilyDomain: shouldUseBigmodelAuth ? "bigmodel" : "zai",
+        // F4.1c：基座默认「无官方账号」——不再种入 OAuth/JWT 凭据（见下方 credentials
+        // 写入与 helpers/e2e-startup-credentials.ts），模型来源只剩 seedUpstreamE2EModelConfig
+        // 种入的本地桩 BYOK provider。
+        // 临时保留 providerFamilyDomain 种入：现行首启登录门
+        // （useProviderAvailabilityLoginEntryGuard.ts:57 `!providerFamilyDomain || ...`）
+        // 在无域时即使已有可用 BYOK provider 也会强制弹欢迎登录页（F4.1c 运行时已复证）；
+        // 该门改为 `!hasUsableProvider` 属于 F4.1a 的改动。F4.1a 改登录门时，必须随之一并
+        // 移除这里的 providerFamilyDomain 种入。
+        // 仅待删清单（test/e2e/pending-official-account-removal.txt）里的 Coding Plan
+        // 团队/升级 spec 继续以 bigmodel 域启动，随对应删除任务一起移除。
         providerFamilyDomainMigrated: true,
-        providerFamilyDomainUpdatedAt: now,
+        ...(shouldUseBigmodelAuth
+          ? { providerFamilyDomain: "bigmodel", providerFamilyDomainUpdatedAt: now }
+          : { providerFamilyDomain: "zai" }),
         ...(modelProviderRegressionFixture
           ? {
               recentProjects: [legacyDefaultProjectPath, ...passiveWorkspacePaths],
@@ -3342,6 +3353,9 @@ function seedE2EStartupState(specs: string[] = []) {
               ? createCorruptOAuthCredentialSeed(authProviderId)
               : jwtExpiryReauthenticationSpec
                 ? createExpiredJwtOAuthCredentialSeed(authProviderId)
+                // F4.1c：默认基座不再种入任何 OAuth/JWT 凭据（无官方账号）；仅待删清单
+                // spec（Coding Plan 团队/升级、营销、JWT 专项等）保留原账号种子。模型来源
+                // 统一是 seedUpstreamE2EModelConfig 种入的本地桩 BYOK provider。
                 : createE2EStartupCredentialSeed({
                     specs,
                     legacyAuthToken: E2E_AUTH_TOKEN,

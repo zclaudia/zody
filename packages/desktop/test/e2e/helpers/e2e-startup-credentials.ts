@@ -5,61 +5,59 @@ export interface E2EStartupCredentialSeedOptions {
   restoredOAuthCredentials: Record<string, string>;
 }
 
-const PERSONAL_PROVIDER_ONLY_SPEC_NAMES = new Set([
-  "conversation-session-composer-draft-switching.test.ts",
-  "conversation-session-draft-model-switch-first-send.test.ts",
-  "conversation-session-unbound-resume.test.ts",
-  "conversation-session-v4-composer-toolbar.test.ts",
-  // SSH 配置同步用例只需 Personal 配置；假 OAuth 的 401 会在连接前遮住向导入口。
-  "conversation-session-ssh-provisioning-failure.test.ts",
+// F4.1c：E2E 基座默认「无官方账号」——credentials.json 一律空凭据启动，模型来源只有
+// wdio.conf seedUpstreamE2EModelConfig 种入的本地桩 BYOK provider。仅下列仍在待删清单
+// （test/e2e/pending-official-account-removal.txt）里的 spec 保留官方账号种子，
+// 由对应删除任务随 spec 一起移除。
+//
+// 级别 2（OAuth + 旧式 JWT/auth_token）：断言直接依赖登录态/JWT 契约的认证与领取专项。
+const OFFICIAL_ACCOUNT_SEED_WITH_JWT_SPEC_NAMES = new Set([
+  "marketing-touch-entitlement.test.ts",
+  "marketing-touch-rewards.test.ts",
+  "jwt-401-auto-logout.test.ts",
+  "coding-plan-upgrade-webview-refresh-provider.test.ts",
+  "start-plan-manual-claim-experience.test.ts",
+  "provider-family-responsive.test.ts",
 ]);
-
-// 这些 fork/goal/tool 场景也只使用本地回放 Provider；假 OAuth 会触发真实控制面
-// 鉴权失败并遮挡被测交互，因此与 Personal-only 场景一样保持无账号启动。
-const ACCOUNTLESS_FORK_SPEC_NAMES = new Set([
-  "conversation-session-automation-cron-create.test.ts",
-  "conversation-session-fork-merged-assistant.test.ts",
-  "conversation-session-goal-run-cases.test.ts",
-  // 引导布局回归只依赖本地回放 Provider；假账号会弹出登录过期提示，遮住职业引导。
-  "conversation-session-running-guide-steer.test.ts",
-  "conversation-session-tool-cross-product.test.ts",
-  "conversation-session-v4-fork-edit-branch.test.ts",
+// 级别 1（仅 OAuth 展示态，不带 zcodejwttoken——假 JWT 打到未 mock 的官方路径会 401
+// 弹登录过期框，历史合并时已按此隔离）：Coding Plan 团队/升级 spec 走本地 team mock，
+// 只需要 bigmodel 账号展示态。
+const OFFICIAL_ACCOUNT_SEED_OAUTH_ONLY_SPEC_NAMES = new Set([
+  "coding-plan-team-usage.test.ts",
+  "coding-plan-upgrade-personal-sold-out.test.ts",
+  "coding-plan-upgrade-personal-system-busy.test.ts",
 ]);
 
 export function createE2EStartupCredentialSeed(
   options: E2EStartupCredentialSeedOptions,
 ): Record<string, string> {
-  if (
+  const specFileName = (spec: string) => spec.replaceAll("\\", "/").split("/").at(-1);
+  const requiresZCodeJwt = options.specs?.some((spec) => {
+    const fileName = specFileName(spec);
+    return (
+      fileName !== undefined &&
+      // 营销投放 spec 按主题拆成 marketing-touch-delivery*.test.ts，领取用例都需要本地 JWT。
+      (fileName.startsWith("marketing-touch-delivery") ||
+        OFFICIAL_ACCOUNT_SEED_WITH_JWT_SPEC_NAMES.has(fileName) ||
+        // request-security 专项已在 F2 阶段被置空（isRequestSecuritySpec 恒 false），
+        // 保留判断仅为兼容残留调用。
+        isRequestSecuritySpec(fileName))
+    );
+  });
+  const requiresOfficialAccountSeed =
+    requiresZCodeJwt ||
     options.specs?.some((spec) => {
-      const fileName = spec.replaceAll("\\", "/").split("/").at(-1);
-      return (
-        fileName !== undefined &&
-        (PERSONAL_PROVIDER_ONLY_SPEC_NAMES.has(fileName) ||
-          ACCOUNTLESS_FORK_SPEC_NAMES.has(fileName))
-      );
-    })
-  ) {
-    // Bug 原因：这些 case 只验证 Personal Provider 的会话/Composer 行为；默认假 JWT
-    // 会访问真实账号控制面并触发 401 弹窗，遮挡真正待测交互。它们从无账号态进入，
-    // 再通过正式 API Key/Personal Provider UI 建立测试前置。
+      const fileName = specFileName(spec);
+      return fileName !== undefined && OFFICIAL_ACCOUNT_SEED_OAUTH_ONLY_SPEC_NAMES.has(fileName);
+    }) ||
+    false;
+  if (!requiresOfficialAccountSeed) {
+    // F4.1c 修复依据：基座默认不得携带官方账号身份。空凭据同时避免假 JWT 访问真实
+    // 控制面触发 401 弹窗遮挡被测交互（与历史 PERSONAL_PROVIDER_ONLY/ACCOUNTLESS
+    // 白名单的动机一致，只是把「白名单例外」翻转成「默认行为」）。
     return {};
   }
   const restoredOAuthCredentials = { ...options.restoredOAuthCredentials };
-  const requiresZCodeJwt = options.specs?.some((spec) => {
-    const fileName = spec.replaceAll("\\", "/").split("/").at(-1);
-    return (
-      // 营销投放 spec 按主题拆成 marketing-touch-delivery*.test.ts，领取用例都需要本地 JWT。
-      fileName?.startsWith("marketing-touch-delivery") ||
-      fileName === "marketing-touch-entitlement.test.ts" ||
-      // Rewards 专项走本地控制面，需要同时验证 OAuth 与 JWT 注入。
-      fileName === "marketing-touch-rewards.test.ts" ||
-      fileName === "jwt-401-auto-logout.test.ts" ||
-      isRequestSecuritySpec(fileName) ||
-      fileName === "coding-plan-upgrade-webview-refresh-provider.test.ts" ||
-      fileName === "start-plan-manual-claim-experience.test.ts" ||
-      fileName === "provider-family-responsive.test.ts"
-    );
-  });
   // 合并时遗漏了普通 E2E 的 JWT 隔离：假的 JWT 会访问真实套餐接口并弹出登录失效提示。
   // 保留 OAuth 展示态；只有认证专项、本地 mock 的领取与响应式用例需要 JWT。
   if (!requiresZCodeJwt) delete restoredOAuthCredentials.zcodejwttoken;
