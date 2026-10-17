@@ -46,6 +46,10 @@ function createManagerHarness(options?: {
   ) => void;
   reconnectWorkspace?: (windowId: number, workspaceKey: string) => Promise<void>;
   onStatusChanged?: Parameters<typeof createWebRemoteControlManager>[0]["onStatusChanged"];
+  /** T3.2：gateway backend 连接状态由 Main 的 RemoteGatewayBackend 注入。 */
+  getGatewayConnectionStatus?: Parameters<
+    typeof createWebRemoteControlManager
+  >[0]["getGatewayConnectionStatus"];
   getEndpointUrls?: Parameters<typeof createWebRemoteControlManager>[0]["getEndpointUrls"];
   reportRemoteUsageEvent?: Parameters<
     typeof createWebRemoteControlManager
@@ -121,6 +125,7 @@ function createManagerHarness(options?: {
       },
     },
     featureGate: createWebRemoteControlFeatureGate(options?.featureEnabled ?? true),
+    getGatewayConnectionStatus: options?.getGatewayConnectionStatus,
     // T2.2：快照投影改为注入的 App 级目录，测试用独立实例观察同步结果。
     remoteWorkspaceDirectory: remoteWorkspaceDirectory,
     logger,
@@ -1888,11 +1893,15 @@ describe("createWebRemoteControlManager external relay", () => {
   });
 
   it("reports the app-level remote access status", async () => {
-    const { manager } = createManagerHarness({ remoteAccessEnabled: true });
+    const { manager } = createManagerHarness({
+      remoteAccessEnabled: true,
+      getGatewayConnectionStatus: () => ({ state: "online", backendId: "backend-1", epoch: 3 }),
+    });
 
     await expect(manager.getRemoteAccessStatus()).resolves.toEqual({
       enabled: true,
       status: { status: "idle" },
+      gateway: { state: "online", backendId: "backend-1", epoch: 3 },
     });
 
     await manager.start({ workspacePath: "/workspace/demo" });

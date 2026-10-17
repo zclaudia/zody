@@ -43,7 +43,12 @@ export function createDesktopPlatform(options: {
       window.zcode.disconnectRemoteClient?.() ?? Promise.resolve(),
     getRemoteAccessStatus: () =>
       window.zcode.getRemoteAccessStatus?.() ??
-      Promise.resolve({ enabled: false, status: { status: "idle" as const } }),
+      Promise.resolve({
+        enabled: false,
+        status: { status: "idle" as const },
+        // T3.2：旧 preload / 浏览器开发模式下没有 gateway backend，按关闭处理。
+        gateway: { state: "disabled" as const },
+      }),
     disposeRemoteSession: (sessionId) => window.zcode.disposeRemoteSession(sessionId),
     isDockerAvailable: () => window.zcode.isDockerAvailable(),
     listWSLDistros: () => window.zcode.listWSLDistros(),

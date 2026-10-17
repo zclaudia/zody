@@ -125,6 +125,8 @@ import {
 } from "./startupWorkspaceDeepLinkGate.js";
 import { createWebRemoteControlManager } from "./webRemoteControlManager.js";
 import { createRemoteWorkspaceDirectory } from "./remote-access/remoteWorkspaceDirectory.js";
+import { createRemoteAccessCredentialStore } from "./remote-access/remoteAccessCredentialStore.js";
+import { createRemoteGatewayBackend } from "./remote-access/remoteGatewayBackend.js";
 import { createNodeWebRemoteControlRelayAuthProvider } from "./webRemoteControlRelayAuthProvider.js";
 import { createWebRemoteControlRelayAuthStorageProvider } from "./webRemoteControlRelayAuthStorageProvider.js";
 import { createWebRemoteControlFeatureGate } from "./webRemoteControlFeatureGate.js";
@@ -709,6 +711,32 @@ const UPDATE_STATUS_WINDOW_READY_HEIGHT = UPDATE_STATUS_WINDOW_PROGRESS_HEIGHT -
 const UPDATE_STATUS_WINDOW_TRAFFIC_LIGHT_POSITION = { x: 10, y: 10 } as const;
 const mainSettingService = createSettingService();
 const webRemoteControlCredentialService = createCredentialService();
+const remoteAccessCredentialStore = createRemoteAccessCredentialStore({
+  credentialService: webRemoteControlCredentialService,
+  logger,
+});
+/**
+ * T3.2：App 级唯一 gateway backend 连接所有者。
+ *
+ * 连接只依赖设置和凭证，不依赖窗口；启动时由 app ready 分支触发一次，之后设置同步经
+ * `syncImmediateAppSettings` 与 `SetRemoteAccessEnabled` 两条路径收敛到 `reloadConfig()`。
+ * channel 交给 T3.3 的 GatewayDeviceTransport（后者调用 `setChannelHandler`）。
+ */
+const remoteGatewayBackend = createRemoteGatewayBackend({
+  loadConfig: async () => {
+    const settings = await mainSettingService.get();
+    return {
+      enabled: settings.remoteAccess?.enabled === true,
+      gatewayUrl: settings.remoteAccess?.gatewayUrl ?? "",
+      namespace: settings.remoteAccess?.namespace ?? DEFAULT_REMOTE_ACCESS_NAMESPACE,
+      // 凭证只从 Main 凭据服务读取，不进 settings、不进日志。
+      credential: await remoteAccessCredentialStore.load(),
+    };
+  },
+  logger,
+  // release 构建要求 https；本地 dev（未打包）允许 http，方便连本机 gateway。
+  allowInsecureTransport: !app.isPackaged,
+});
 const appLaunchGate = createAppLaunchGate();
 const appLaunchCoordinator = createAppLaunchCoordinator(appLaunchGate);
 const appTelemetryCredentialService = createCredentialService();
@@ -964,9 +992,13 @@ const webRemoteControlManager = createWebRemoteControlManager({
           win.webContents.send(PlatformChannels.SettingsChanged);
         }
       }
+      // T3.2：SetRemoteAccessEnabled 走的是 Main 内部写入，不经过 renderer 的 SyncAppSettings；
+      // 这里显式刷新 gateway backend，保证开关变化立即反映到连接状态。
+      void remoteGatewayBackend.reloadConfig();
     },
   },
   featureGate: createWebRemoteControlFeatureGate(),
+  getGatewayConnectionStatus: () => remoteGatewayBackend.getStatus(),
   remoteWorkspaceDirectory,
   logger,
   relayMessageLogger: webRemoteControlRelayLogger,
@@ -1019,6 +1051,20 @@ const webRemoteControlManager = createWebRemoteControlManager({
     webRemoteControlSharedHostAttachments.disposeWindow(windowId),
   disposeWorkspaceHostAttachmentsForRemoteSession: (remoteSessionId) =>
     webRemoteControlSharedHostAttachments.disposeRemoteSession(remoteSessionId),
+  // T2.4：最近项目、打开项目与打开窗口。事实源仍是 settings / 窗口协调器，
+  // manager 只做不透明 id 映射、gate 校验与 10 秒成功判定。
+  getRecentProjects: async () => (await mainSettingService.get()).recentProjects ?? [],
+  // 只把主应用窗口算作「有窗口」：更新进度窗口不是可接收 OpenWorkspacePath 的主界面。
+  hasOpenWindow: () => getMainApplicationWindows().length > 0,
+  canCreateWindow: canCreateMainWindow,
+  ensurePrimaryWindow: (reason) => primaryWindowCoordinator.ensurePrimaryWindow(reason),
+  openWorkspacePath: (workspacePath) =>
+    // 内部请求：只把路径投递给 renderer 的 OpenWorkspacePath 通道，不经过
+    // confirmExternalWorkspaceOpen 那个只在外部链接使用的原生确认框。
+    handleOpenWorkspacePath(workspacePath, logger, {
+      allowWithoutReadyWindow: true,
+      resolveApplicationWindow: () => getMainApplicationWindows()[0] ?? null,
+    }),
 });
 webRemoteControlManagerRef.current = webRemoteControlManager;
 
@@ -1047,6 +1093,18 @@ function focusForceUpdateGateWindow() {
   gateWindow.focus();
 }
 
+// 强制升级命中后，Dock/托盘/activate/deep link 与手机远控都不能绕过 app-ready gate 创建旧版主界面。
+// 提取成函数是为了让 webRemoteControlManager 的桌面窗口打开请求共享同一个 gate。
+function canCreateMainWindow(reason: string): boolean {
+  if (!forceUpdateMainWindowCreationBlocked) {
+    return true;
+  }
+
+  logger.warn(`[force-update] 已阻止主窗口创建入口：${reason}`);
+  focusForceUpdateGateWindow();
+  return false;
+}
+
 const primaryWindowCoordinator = createPrimaryWindowCoordinator({
   listWindows: getApplicationWindowsExcludingCuaIndicator,
   resolveStartupWindowBootstrap: () => {
@@ -1073,16 +1131,7 @@ const primaryWindowCoordinator = createPrimaryWindowCoordinator({
   createWindow: (startupBootstrap) => {
     createWindowInstance(startupBootstrap);
   },
-  canCreateWindow: (reason) => {
-    if (!forceUpdateMainWindowCreationBlocked) {
-      return true;
-    }
-
-    // 强制升级命中后，Dock/托盘/activate/deep link 不能绕过 app-ready gate 创建旧版主界面。
-    logger.warn(`[force-update] 已阻止主窗口创建入口：${reason}`);
-    focusForceUpdateGateWindow();
-    return false;
-  },
+  canCreateWindow: canCreateMainWindow,
   logger,
 });
 
@@ -1130,6 +1179,14 @@ function syncImmediateAppSettings(patch: Partial<AppSettings>) {
     // 设置页既可能走新 IPC，也可能直接 useSettings.update 写 remoteAccess；两条路径都在这里
     // 收敛到同一个 App 级 runtime 启停方法，避免出现第二个 runtime 控制入口。
     void webRemoteControlManagerRef.current?.applyRemoteAccessEnabled(patch.remoteAccess.enabled);
+    // T3.2：重新读取完整配置（地址/namespace 也可能一起变了）。backend 内部按四要素签名
+    // 去重，只有真正影响连接的字段变化才重连。
+    void remoteGatewayBackend.reloadConfig();
+  }
+
+  if (patch.recentProjects !== undefined) {
+    // T2.4：最近项目变化后主动推送 recent-projects-updated（手机首页据此刷新）。
+    webRemoteControlManagerRef.current?.notifyRecentProjectsChanged();
   }
 
   if (patch.shortcutBindings !== undefined) {
@@ -1235,6 +1292,11 @@ async function prepareAppQuit(reason: string, kind: AppShutdownKind = "normal"):
     // remote session、attachment 和 transport 都由窗口 Host 持有；这里先清理
     // Main 的请求关联，再由下方每窗口唯一 Host 的 shutdown barrier 释放真实连接与 Agent。
     remoteSessionManager.disposeAllAndWaitForAppShutdown(reason),
+    // T3.2：退出前先给手机发 close{desktop-stopping} 并关闭 backend 连接，
+    // 否则手机要等 gateway 租约过期才知道电脑离线。
+    remoteGatewayBackend.dispose().catch((error) => {
+      logger.warn(`[app-quit] gateway backend dispose failed (${reason}):`, error);
+    }),
     ...hostProcesses.map((child, index) =>
       disposeHostProcessAndWait(
         child,
@@ -2189,6 +2251,10 @@ app.whenReady().then(async () => {
   } catch {
     // 读取失败不影响启动，使用默认 homedir
   }
+
+  // T3.2：远程访问不依赖窗口——设置迁移完成后立即按持久化配置建立 backend 连接。
+  // 放在这里而不是窗口创建之后，保证 macOS 关窗驻留托盘时手机仍能看到这台电脑在线。
+  void remoteGatewayBackend.reloadConfig();
 
   // scheduler 也会打开 tasks-index；等 Host 完成统一准备，避免在启动页出现前抢先迁移。
   configureDatabaseStartupQuit(() => {

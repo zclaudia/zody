@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- 帧 schema、心跳常量、版本协商与 appProtocol 清单按 spec 必须同文件。 */
 /**
  * 手机远控 channel 帧协议（zclaudia-gateway 数据面）。
  *
@@ -22,12 +23,19 @@ import { WEB_REMOTE_CONTROL_RPC_TRANSPORT_LIMITS } from "./web-remote-control-rp
 /** Channel kind 固定值；桌面只接受这个 kind，其余由 backend SDK 自动回 `channel_reject`。 */
 export const WEB_REMOTE_CONTROL_CHANNEL_KIND = "zcode-remote";
 
+/**
+ * backend 在 `peer_hello.backend.capabilities` 里自报的能力位。
+ * 手机在 channel_open 之前查 registry：电脑在线但没有这个能力位时直接进入 `backend-unsupported`。
+ */
+export const WEB_REMOTE_CONTROL_BACKEND_CAPABILITY = "zcode-remote-control";
+
 /** channel 帧格式版本：只有帧格式不兼容变化时才递增，不相等就直接 `close{incompatible-version}`。 */
 export const WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION = 1;
 
 /** 应用层 payload 协议区间；`max` 是本仓库当前实现的版本。 */
 export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION = 1;
-export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION = 1;
+/** v2：最近项目 / 打开项目 / 打开窗口 payload，以及 bootstrap-response 的新字段。 */
+export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION = 2;
 
 /** gateway 不在数据 socket 上发 ping，心跳由应用层每 15 秒发一次；45 秒没有入站帧即判定 channel 已死。 */
 export const WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_INTERVAL_MS = 15_000;
@@ -397,7 +405,10 @@ export interface WebRemoteControlAppProtocolFeature {
   /** 引入该类型或字段的 appProtocol 版本。 */
   introducedIn: number;
   zcodeType: WebRemoteControlAppPayloadType;
-  /** 字段级条目才有；类型级条目省略。 */
+  /**
+   * 字段级条目才有；类型级条目省略。嵌套字段用点号表示（例如 `result.recentProjects`），
+   * 顶层字段直接写字段名。
+   */
   field?: string;
 }
 
@@ -414,6 +425,15 @@ export const WEB_REMOTE_CONTROL_APP_PROTOCOL_FEATURES: readonly WebRemoteControl
     { zcodeType: "workspace-list-request", introducedIn: 1 },
     { zcodeType: "workspace-list-response", introducedIn: 1 },
     { zcodeType: "workspace-list-updated", introducedIn: 1 },
+    // T2.4（appProtocol 2）：最近项目与打开请求。
+    { zcodeType: "recent-projects-updated", introducedIn: 2 },
+    { zcodeType: "workspace-open-request", introducedIn: 2 },
+    { zcodeType: "workspace-open-response", introducedIn: 2 },
+    { zcodeType: "desktop-window-open-request", introducedIn: 2 },
+    { zcodeType: "desktop-window-open-response", introducedIn: 2 },
+    // bootstrap-response 的新字段挂在 result 下；字段路径用点号表示嵌套。
+    { zcodeType: "bootstrap-response", field: "result.desktopWindowState", introducedIn: 2 },
+    { zcodeType: "bootstrap-response", field: "result.recentProjects", introducedIn: 2 },
     { zcodeType: "workspace-bridge-open", introducedIn: 1 },
     { zcodeType: "workspace-bridge-ready", introducedIn: 1 },
     { zcodeType: "workspace-bridge-error", introducedIn: 1 },
@@ -460,6 +480,18 @@ export type WebRemoteControlAppPayloadVersionGate =
       protocolError: WebRemoteControlChannelFrameOf<"protocol_error">;
     };
 
+/** 按点号路径判断字段是否真的出现在 payload 里（用于 result.recentProjects 这类嵌套字段）。 */
+function hasPayloadFieldPath(payload: unknown, fieldPath: string): boolean {
+  let current: unknown = payload;
+  for (const segment of fieldPath.split(".")) {
+    if (typeof current !== "object" || current === null || !Object.hasOwn(current, segment)) {
+      return false;
+    }
+    current = (current as Record<string, unknown>)[segment];
+  }
+  return true;
+}
+
 /** 找出协商版本之外的已登记类型或字段；没有任何越界时返回 null。 */
 function findUnsupportedAppProtocolFeature(
   payload: WebRemoteControlAppPayload,
@@ -482,7 +514,7 @@ function findUnsupportedAppProtocolFeature(
       feature.field !== undefined &&
       feature.zcodeType === payload.zcode_type &&
       feature.introducedIn > negotiatedAppProtocol &&
-      Object.hasOwn(payload, feature.field)
+      hasPayloadFieldPath(payload, feature.field)
     ) {
       return { zcodeType: payload.zcode_type, field: feature.field };
     }

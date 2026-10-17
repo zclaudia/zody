@@ -483,6 +483,71 @@ export interface WebRemoteControlWorkspaceListUpdatedPayload {
   result: WebRemoteControlWorkspaceListResult;
 }
 
+/** 桌面是否有可接收打开请求的主窗口。 */
+export type WebRemoteControlDesktopWindowState = "open" | "none";
+
+/**
+ * 最近项目条目。`id` 是桌面在本次进程会话内生成的不透明标识，不携带路径；
+ * 手机只能用当前列表里出现过的 id 发起打开请求，不能自行构造路径。
+ */
+export interface WebRemoteControlRecentProjectTarget {
+  id: string;
+  /** 目录名，仅用于展示。 */
+  label: string;
+  /** 父路径，仅用于展示。 */
+  location: string;
+}
+
+export interface WebRemoteControlRecentProjectsResult {
+  desktopWindowState: WebRemoteControlDesktopWindowState;
+  recentProjects: WebRemoteControlRecentProjectTarget[];
+}
+
+export interface WebRemoteControlRecentProjectsUpdatedPayload {
+  zcode_type: "recent-projects-updated";
+  result: WebRemoteControlRecentProjectsResult;
+}
+
+export interface WebRemoteControlWorkspaceOpenRequestPayload {
+  zcode_type: "workspace-open-request";
+  requestId: string;
+  /** 必须来自桌面最近一次下发的列表；手机不传路径。 */
+  recentProjectId: string;
+}
+
+export type WebRemoteControlWorkspaceOpenResponsePayload =
+  | {
+      zcode_type: "workspace-open-response";
+      requestId: string;
+      success: true;
+      /** 打开成功后该 workspace 在聚合列表里的 key。 */
+      workspaceKey: string;
+    }
+  | {
+      zcode_type: "workspace-open-response";
+      requestId: string;
+      success: false;
+      error: string;
+    };
+
+export interface WebRemoteControlDesktopWindowOpenRequestPayload {
+  zcode_type: "desktop-window-open-request";
+  requestId: string;
+}
+
+export type WebRemoteControlDesktopWindowOpenResponsePayload =
+  | {
+      zcode_type: "desktop-window-open-response";
+      requestId: string;
+      success: true;
+    }
+  | {
+      zcode_type: "desktop-window-open-response";
+      requestId: string;
+      success: false;
+      error: string;
+    };
+
 export interface WebRemoteControlWorkspaceBridgeOpenPayload {
   zcode_type: "workspace-bridge-open";
   requestId: string;
@@ -629,6 +694,11 @@ export type WebRemoteControlAppPayload =
   | WebRemoteControlWorkspaceListRequestPayload
   | WebRemoteControlWorkspaceListResponsePayload
   | WebRemoteControlWorkspaceListUpdatedPayload
+  | WebRemoteControlRecentProjectsUpdatedPayload
+  | WebRemoteControlWorkspaceOpenRequestPayload
+  | WebRemoteControlWorkspaceOpenResponsePayload
+  | WebRemoteControlDesktopWindowOpenRequestPayload
+  | WebRemoteControlDesktopWindowOpenResponsePayload
   | WebRemoteControlWorkspaceBridgeOpenPayload
   | WebRemoteControlWorkspaceBridgeReadyPayload
   | WebRemoteControlWorkspaceBridgeErrorPayload
@@ -752,6 +822,10 @@ export interface WebRemoteControlWindowBootstrapResult {
   tasks: WebRemoteControlTaskTarget[];
   initialViewState?: WebRemoteControlMobileViewState;
   mobileViewState?: WebRemoteControlMobileViewState;
+  // 以下两个字段自 appProtocol 2 起加入。旧对端按协商版本 1 收包时发送方必须省略，
+  // 因此这里保持可选；字段引入版本登记在 web-remote-control-channel.ts 的清单里。
+  desktopWindowState?: WebRemoteControlDesktopWindowState;
+  recentProjects?: WebRemoteControlRecentProjectTarget[];
 }
 
 export function resolveWebRemoteControlWorkspaceKey(

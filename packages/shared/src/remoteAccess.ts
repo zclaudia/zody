@@ -170,15 +170,36 @@ export const remoteAccessSettingsPatchSchema = z
 export type RemoteAccessSettings = z.infer<typeof remoteAccessSettingsSchema>;
 
 /**
- * App 级远程访问状态（T2.3 起）。
+ * gateway backend 连接状态（T3.2 的 `RemoteGatewayBackend` 是唯一所有者）。
+ *
+ * 取值与方案「桌面侧状态」一致：`disabled | connecting | online | error(...)`。
+ * 错误原因只保留 UI 需要区分的四种；其余 SDK 错误码（`HANDSHAKE_TIMEOUT`、`PROTOCOL_ERROR` 等）
+ * 一律归入 `unreachable`，由 Main 的日志保留原始 `code`。
+ */
+export type RemoteAccessGatewayConnectionErrorReason =
+  | "unconfigured"
+  | "credential-invalid"
+  | "replaced"
+  | "unreachable";
+
+export type RemoteAccessGatewayConnectionStatus =
+  | { state: "disabled" }
+  | { state: "connecting" }
+  | { state: "online"; backendId?: string; epoch?: number }
+  | { state: "error"; reason: RemoteAccessGatewayConnectionErrorReason };
+
+/**
+ * App 级远程访问状态（T2.3 起，T3.2 扩展 gateway 连接状态）。
  *
  * 远控 runtime 从「每个窗口一个」改为「全 App 一个」，所以状态查询和状态广播都不再携带
  * windowId。`status` 与旧窗口级 `WebRemoteControlStatus` 同构，方便现有 UI 过渡；
- * T3.2 接入 gateway backend 后会在同一对象上扩展连接状态。
+ * `gateway` 描述桌面到 gateway 的 backend 连接，与手机上看到的是否在线一致。
  */
 export interface RemoteAccessStatus {
   /** `AppSettings.remoteAccess.enabled` 的当前值（Main 是唯一写入方）。 */
   enabled: boolean;
   /** App 级远控 runtime 状态；`idle` 表示当前没有运行中的远控会话。 */
   status: WebRemoteControlStatus;
+  /** gateway backend 连接状态；关闭远程访问时为 `disabled`。 */
+  gateway: RemoteAccessGatewayConnectionStatus;
 }

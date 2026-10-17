@@ -13,7 +13,6 @@ import {
   WEB_REMOTE_CONTROL_CHANNEL_KIND,
   WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES,
   WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION,
-  type WebRemoteControlAppProtocolFeature,
   type WebRemoteControlChannelFrameOf,
   gateWebRemoteControlAppPayloadVersion,
   isWebRemoteControlChannelClosingFinished,
@@ -75,6 +74,21 @@ interface ZodLikeIntrospection {
   def?: { values?: Set<unknown> };
 }
 
+function collectFieldPaths(schema: ZodLikeIntrospection, prefix = ""): Set<string> {
+  const paths = new Set<string>();
+  for (const [key, value] of Object.entries(schema.shape ?? {})) {
+    const path = prefix ? `${prefix}.${key}` : key;
+    paths.add(path);
+    const nested = value as ZodLikeIntrospection;
+    if (nested.shape) {
+      for (const nestedPath of collectFieldPaths(nested, path)) {
+        paths.add(nestedPath);
+      }
+    }
+  }
+  return paths;
+}
+
 function readShapeByZcodeType(): Map<string, Set<string>> {
   const union = webRemoteControlAppPayloadSchema as unknown as ZodLikeIntrospection;
   const shapeByType = new Map<string, Set<string>>();
@@ -84,9 +98,10 @@ function readShapeByZcodeType(): Map<string, Set<string>> {
     for (const value of literal?.def?.values ?? []) {
       if (typeof value === "string") {
         // 同一个 zcode_type 可能由多个 schema 成员表达（例如 platform-response），字段取并集。
+        // 嵌套对象（例如 bootstrap-response.result）按点号路径登记，供字段引入版本清单校验。
         const fields = shapeByType.get(value) ?? new Set<string>();
-        for (const key of Object.keys(shape)) {
-          fields.add(key);
+        for (const fieldPath of collectFieldPaths({ shape })) {
+          fields.add(fieldPath);
         }
         shapeByType.set(value, fields);
       }
@@ -100,8 +115,8 @@ describe("web remote control channel frames", () => {
     expect(WEB_REMOTE_CONTROL_CHANNEL_KIND).toBe("zcode-remote");
     expect(WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION).toBe(1);
     expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION).toBe(1);
-    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION).toBe(1);
-    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE).toEqual({ min: 1, max: 1 });
+    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION).toBe(2);
+    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE).toEqual({ min: 1, max: 2 });
     expect(WEB_REMOTE_CONTROL_CHANNEL_HELLO_TIMEOUT_MS).toBe(10_000);
     expect(WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_INTERVAL_MS).toBe(15_000);
     expect(WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_TIMEOUT_MS).toBe(45_000);
@@ -366,8 +381,9 @@ describe("appProtocol negotiation", () => {
     });
     expect(
       negotiateWebRemoteControlAppProtocol(WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE, {
-        min: 2,
-        max: 3,
+        // 桌面 max 是 2；手机从 3 起才支持，交集为空 → 升级桌面。
+        min: 3,
+        max: 4,
       }),
     ).toEqual({ ok: false, upgrade: "desktop" });
     expect(
@@ -421,14 +437,14 @@ describe("appProtocol manifest", () => {
     expect(resolveWebRemoteControlAppProtocolVersion("not-a-real-type")).toBeNull();
     expect(resolveWebRemoteControlAppProtocolVersion("bootstrap-response", "workspaces")).toBe(1);
     expect(resolveWebRemoteControlAppProtocolVersion("not-a-real-type", "workspaces")).toBeNull();
-
-    const features: WebRemoteControlAppProtocolFeature[] = [
-      ...WEB_REMOTE_CONTROL_APP_PROTOCOL_FEATURES,
-      { zcodeType: "bootstrap-response", field: "recentProjects", introducedIn: 2 },
-    ];
+    // T2.4：bootstrap-response 的最近项目字段自 appProtocol 2 引入。
     expect(
-      resolveWebRemoteControlAppProtocolVersion("bootstrap-response", "recentProjects", features),
+      resolveWebRemoteControlAppProtocolVersion("bootstrap-response", "result.recentProjects"),
     ).toBe(2);
+    expect(
+      resolveWebRemoteControlAppProtocolVersion("bootstrap-response", "result.desktopWindowState"),
+    ).toBe(2);
+    expect(resolveWebRemoteControlAppProtocolVersion("recent-projects-updated")).toBe(2);
   });
 });
 
@@ -464,16 +480,11 @@ describe("appProtocol version gate", () => {
   });
 
   it("协商版本之外的字段被丢弃，协商版本达到引入版本后通过", () => {
-    const features: WebRemoteControlAppProtocolFeature[] = [
-      ...WEB_REMOTE_CONTROL_APP_PROTOCOL_FEATURES,
-      { zcodeType: "bootstrap-response", field: "recentProjects", introducedIn: 2 },
-    ];
     const withField = {
       zcode_type: "bootstrap-response",
       requestId: "request-1",
       success: true,
-      result: {},
-      recentProjects: [],
+      result: { recentProjects: [] },
     } as unknown as WebRemoteControlAppPayload;
     const withoutField = {
       zcode_type: "bootstrap-response",
@@ -482,21 +493,21 @@ describe("appProtocol version gate", () => {
       result: {},
     } as unknown as WebRemoteControlAppPayload;
 
-    expect(gateWebRemoteControlAppPayloadVersion(withField, 1, features)).toEqual({
+    expect(gateWebRemoteControlAppPayloadVersion(withField, 1)).toEqual({
       kind: "unsupported-version",
       offendingType: "bootstrap-response",
-      offendingField: "recentProjects",
+      offendingField: "result.recentProjects",
       protocolError: {
         type: "protocol_error",
         code: "unsupported-version",
         offendingType: "bootstrap-response",
       },
     });
-    expect(gateWebRemoteControlAppPayloadVersion(withField, 2, features)).toEqual({
+    expect(gateWebRemoteControlAppPayloadVersion(withField, 2)).toEqual({
       kind: "accepted",
     });
     // 字段缺席时不做版本判定，旧对端缺字段不会被打回
-    expect(gateWebRemoteControlAppPayloadVersion(withoutField, 1, features)).toEqual({
+    expect(gateWebRemoteControlAppPayloadVersion(withoutField, 1)).toEqual({
       kind: "accepted",
     });
   });

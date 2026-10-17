@@ -20,6 +20,7 @@ import {
   type WebRemoteControlAppPayload,
   type WebRemoteControlContext,
   type WebRemoteControlExternalWorkspaceBridge,
+  type WebRemoteControlDesktopWindowOpenRequestPayload,
   type WebRemoteControlFailure,
   type WebRemoteControlFailureReason,
   type WebRemoteControlMobileDeviceInfo,
@@ -29,6 +30,7 @@ import {
   type WebRemoteControlPlatformMethodResultMap,
   type WebRemoteControlPlatformRequestPayload,
   type WebRemoteControlPlatformResponsePayload,
+  type WebRemoteControlRecentProjectsResult,
   type WebRemoteControlRpcTransportPayload,
   type WebRemoteControlStartResult,
   type WebRemoteControlStatus,
@@ -36,7 +38,9 @@ import {
   type WebRemoteControlWindowBootstrapResult,
   type WebRemoteControlWorkspaceBridgeOpenPayload,
   type WebRemoteControlWorkspaceListResult,
+  type WebRemoteControlWorkspaceOpenRequestPayload,
   type WebRemoteControlWorkspaceTarget,
+  type RemoteAccessGatewayConnectionStatus,
   type RemoteAccessStatus,
   type RemoteUsageRemoteKind,
   type TelemetryEventPayload,
@@ -52,6 +56,7 @@ import type { WebRemoteControlRelayAuthProvider } from "./webRemoteControlRelayA
 import type { WebRemoteControlRelayAuthStorageProvider } from "./webRemoteControlRelayAuthStorageProvider.js";
 import type { WebRemoteControlFeatureGate } from "./webRemoteControlFeatureGate.js";
 import type { RemoteWorkspaceDirectory } from "./remote-access/remoteWorkspaceDirectory.js";
+import { createWebRemoteControlRecentProjectsRegistry } from "./remote-access/recentProjects.js";
 
 interface WebRemoteControlHostAttachmentHandle {
   entryId: string;
@@ -146,6 +151,13 @@ interface AppControlRuntime {
   mobileDisconnectGraceTimer?: ReturnType<typeof setTimeout>;
 }
 
+interface PendingWorkspaceOpen {
+  runtime: AppControlRuntime;
+  requestId: string;
+  workspacePath: string;
+  timer: ReturnType<typeof setTimeout>;
+}
+
 interface WebRemoteControlManagerDependencies {
   getEndpointUrls?: () => Promise<ZCodeEndpointUrls> | ZCodeEndpointUrls;
   relayWsUrl: string;
@@ -164,6 +176,11 @@ interface WebRemoteControlManagerDependencies {
     setEnabled(enabled: boolean): Promise<void>;
   };
   featureGate: WebRemoteControlFeatureGate;
+  /**
+   * gateway backend 连接状态（T3.2 的 `RemoteGatewayBackend` 是唯一所有者）。
+   * 没注入时按 `disabled` 处理，方便单测只关心 runtime。
+   */
+  getGatewayConnectionStatus?: () => RemoteAccessGatewayConnectionStatus;
   /**
    * 各窗口 workspace / 任务快照的唯一投影（App 级，T2.2）。
    * renderer 的 `syncAvailableWorkspaces` / `syncAvailableTasks` 直接写它，不依赖本窗口是否有 runtime。
@@ -201,12 +218,29 @@ interface WebRemoteControlManagerDependencies {
   createDeviceTransport?: (
     options: WebRemoteControlDeviceTransportOptions,
   ) => WebRemoteControlDeviceTransportLike;
+  /** T2.4：`AppSettings.recentProjects`（最近优先）。缺省视为没有最近项目。 */
+  getRecentProjects?: () => Promise<readonly string[]>;
+  /** T2.4：当前是否至少有一个桌面应用窗口；缺省视为有窗口（旧 relay 链路）。 */
+  hasOpenWindow?: () => boolean;
+  /** T2.4：强制升级等进程级 gate；返回 false 时不能创建主窗口。 */
+  canCreateWindow?: (reason: string) => boolean;
+  /** T2.4：`ensurePrimaryWindow("remote-control")`。 */
+  ensurePrimaryWindow?: (reason: string) => Promise<void>;
+  /**
+   * T2.4：通过 Main 的内部路径打开本地 workspace（复用 OpenWorkspacePath 投递，
+   * 不经过 deep link 的外部确认框）。返回 false 表示路径无效或窗口不可用。
+   */
+  openWorkspacePath?: (workspacePath: string) => boolean;
 }
 
 // Bugfix: 外部 relay 首次鉴权会受边缘层冷启动和网络抖动影响，实测可能略超 15s。
 // 这里等待到 30s，避免在 device 已经快进入 waiting_terminal 时过早销毁可用连接。
 const EXTERNAL_RELAY_QR_READY_TIMEOUT_MS = 30_000;
 const MOBILE_DISCONNECT_STATUS_GRACE_MS = 3_000;
+/** 打开最近项目以「聚合列表出现该 workspace」为成功判定，最多等 10 秒。 */
+export const WEB_REMOTE_CONTROL_WORKSPACE_OPEN_TIMEOUT_MS = 10_000;
+/** 主窗口创建 reason：与既有 ensurePrimaryWindow 入口保持同一措辞。 */
+const REMOTE_CONTROL_WINDOW_REASON = "remote-control";
 
 function createFailure(
   reason: WebRemoteControlFailureReason,
@@ -315,6 +349,16 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
   /** App 级唯一 runtime；生命周期与窗口解耦。 */
   let appRuntime: AppControlRuntime | undefined;
   const startAuthorizations = new Map<string, WebRemoteControlStartAuthorization>();
+  /**
+   * T2.4：最近项目快照。路径缓存只在 runtime 活跃时用于同步构造 bootstrap；
+   * 每次 workspace 同步 / 设置变更都会异步刷新，保证列表事实仍来自 `recentProjects`。
+   */
+  const recentProjectsRegistry = createWebRemoteControlRecentProjectsRegistry();
+  let recentProjectPaths: readonly string[] = [];
+  let pushedRecentProjectsSignature: string | undefined;
+  let recentProjectsRefreshSequence = 0;
+  /** 已经受理、等待 workspace 出现在聚合列表里的打开请求。 */
+  const pendingWorkspaceOpens = new Map<string, PendingWorkspaceOpen>();
   /**
    * 显式关闭（旧 Stop IPC / 新开关关闭）后压制 renderer 快照同步触发的自动启动；
    * 只有下一次显式开启或进程重启才重新允许自动启动。
@@ -621,10 +665,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     clearPendingOutboundPayloadTimer(runtime);
   }
 
-  function sendAppPayload(
-    runtime: AppControlRuntime,
-    payload: WebRemoteControlAppPayload,
-  ): void {
+  function sendAppPayload(runtime: AppControlRuntime, payload: WebRemoteControlAppPayload): void {
     if (runtime.pendingOutboundPayloads.length > 0) {
       bufferOutboundPayload(runtime, payload);
       flushPendingOutboundPayloads(runtime);
@@ -689,6 +730,8 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     });
     appRuntime = undefined;
     pushedWorkspaceListSignature = undefined;
+    pushedRecentProjectsSignature = undefined;
+    clearPendingWorkspaceOpens();
     const attachmentWindowId = runtime.currentBridge?.windowId ?? runtime.originWindowId;
     disposeRuntimeBridgeResources(runtime);
     clearPendingOutboundPayloadTimer(runtime);
@@ -706,9 +749,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     emitIdleStatus();
   }
 
-  function getRuntimeWorkspaceTarget(
-    runtime: AppControlRuntime,
-  ): WebRemoteControlWorkspaceTarget {
+  function getRuntimeWorkspaceTarget(runtime: AppControlRuntime): WebRemoteControlWorkspaceTarget {
     const bridge = runtime.currentBridge;
     if (bridge) {
       return {
@@ -743,9 +784,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     };
   }
 
-  function getAvailableWorkspaces(
-    runtime: AppControlRuntime,
-  ): WebRemoteControlWorkspaceTarget[] {
+  function getAvailableWorkspaces(runtime: AppControlRuntime): WebRemoteControlWorkspaceTarget[] {
     const workspaceByKey = new Map<string, WebRemoteControlWorkspaceTarget>();
 
     // T2.3：runtime 是 App 级，列表读跨窗口聚合（按 workspaceKey 去重）而不是本窗口快照。
@@ -806,9 +845,137 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     };
   }
 
-  function buildBootstrapResult(
+  function getOpenWorkspacePaths(runtime: AppControlRuntime): Set<string> {
+    return new Set(getAvailableWorkspaces(runtime).map((workspace) => workspace.workspacePath));
+  }
+
+  function buildRecentProjectsResult(
     runtime: AppControlRuntime,
-  ): WebRemoteControlWindowBootstrapResult {
+  ): WebRemoteControlRecentProjectsResult {
+    return recentProjectsRegistry.buildResult({
+      paths: recentProjectPaths,
+      openWorkspacePaths: getOpenWorkspacePaths(runtime),
+      desktopWindowState: (dependencies.hasOpenWindow?.() ?? true) ? "open" : "none",
+    });
+  }
+
+  function buildRecentProjectsSignature(result: WebRemoteControlRecentProjectsResult): string {
+    return JSON.stringify([
+      result.desktopWindowState,
+      result.recentProjects.map((project) => [project.id, project.label, project.location]),
+    ]);
+  }
+
+  function pushRecentProjectsUpdated(runtime: AppControlRuntime): void {
+    const result = buildRecentProjectsResult(runtime);
+    const signature = buildRecentProjectsSignature(result);
+    if (signature === pushedRecentProjectsSignature) {
+      return;
+    }
+    pushedRecentProjectsSignature = signature;
+    sendAppPayload(runtime, {
+      zcode_type: "recent-projects-updated",
+      result,
+    });
+  }
+
+  async function readRecentProjectPaths(): Promise<readonly string[]> {
+    try {
+      return (await dependencies.getRecentProjects?.()) ?? [];
+    } catch (error) {
+      dependencies.logger.warn("[web-remote-control] failed to read recent projects", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+      return recentProjectPaths;
+    }
+  }
+
+  /** 设置变化或 workspace 快照变化后刷新最近项目；只采用最新一次读取的结果。 */
+  async function refreshRecentProjects(runtime: AppControlRuntime): Promise<void> {
+    const sequence = ++recentProjectsRefreshSequence;
+    const paths = await readRecentProjectPaths();
+    if (sequence !== recentProjectsRefreshSequence || !isCurrentRuntime(runtime)) {
+      return;
+    }
+    recentProjectPaths = paths;
+    pushRecentProjectsUpdated(runtime);
+  }
+
+  function isWorkspaceOpen(runtime: AppControlRuntime, workspacePath: string): boolean {
+    return getAvailableWorkspaces(runtime).some(
+      (workspace) => workspace.workspacePath === workspacePath,
+    );
+  }
+
+  function completePendingWorkspaceOpen(
+    pending: PendingWorkspaceOpen,
+    outcome: { error?: string },
+  ): void {
+    // 同一个 requestId 可能被后续请求替换，旧 timer 不能覆盖新请求的结果。
+    if (pendingWorkspaceOpens.get(pending.requestId) !== pending) {
+      return;
+    }
+    pendingWorkspaceOpens.delete(pending.requestId);
+    clearTimeout(pending.timer);
+    const runtime = pending.runtime;
+    if (!isCurrentRuntime(runtime)) {
+      return;
+    }
+
+    if (outcome.error) {
+      dependencies.logger.info("[web-remote-control] recent project open failed", {
+        requestId: pending.requestId,
+        label: getPathLabel(pending.workspacePath),
+        error: outcome.error,
+      });
+      sendAppPayload(runtime, {
+        zcode_type: "workspace-open-response",
+        requestId: pending.requestId,
+        success: false,
+        error: outcome.error,
+      });
+      return;
+    }
+
+    const target = getAvailableWorkspaces(runtime).find(
+      (workspace) => workspace.workspacePath === pending.workspacePath,
+    );
+    const workspaceKey = target
+      ? resolveWebRemoteControlWorkspaceKey(target)
+      : pending.workspacePath;
+    dependencies.logger.info("[web-remote-control] recent project open succeeded", {
+      requestId: pending.requestId,
+      label: getPathLabel(pending.workspacePath),
+    });
+    sendAppPayload(runtime, {
+      zcode_type: "workspace-open-response",
+      requestId: pending.requestId,
+      success: true,
+      workspaceKey,
+    });
+  }
+
+  function completePendingWorkspaceOpens(runtime: AppControlRuntime): void {
+    // completePendingWorkspaceOpen 只删除当前项，删除后继续迭代 Map 是安全的。
+    for (const pending of pendingWorkspaceOpens.values()) {
+      if (pending.runtime !== runtime) {
+        continue;
+      }
+      if (isWorkspaceOpen(runtime, pending.workspacePath)) {
+        completePendingWorkspaceOpen(pending, {});
+      }
+    }
+  }
+
+  function clearPendingWorkspaceOpens(): void {
+    for (const pending of pendingWorkspaceOpens.values()) {
+      clearTimeout(pending.timer);
+    }
+    pendingWorkspaceOpens.clear();
+  }
+
+  function buildBootstrapResult(runtime: AppControlRuntime): WebRemoteControlWindowBootstrapResult {
+    const recentProjects = buildRecentProjectsResult(runtime);
     return {
       windowControlSessionId: runtime.deviceSid,
       desktopAppVersion: dependencies.appVersion,
@@ -816,6 +983,8 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       tasks: getAvailableTasks(runtime),
       initialViewState: getRuntimeInitialViewState(runtime),
       mobileViewState: runtime.mobileViewState,
+      desktopWindowState: recentProjects.desktopWindowState,
+      recentProjects: recentProjects.recentProjects,
     };
   }
 
@@ -1178,6 +1347,127 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     }
   }
 
+  async function respondToWorkspaceOpenRequest(
+    runtime: AppControlRuntime,
+    request: WebRemoteControlWorkspaceOpenRequestPayload,
+  ): Promise<void> {
+    try {
+      // 每次请求都按当前设置重建列表：只接受此刻列表里的 id。
+      // 手机端只传 recentProjectId；带 workspacePath 等字段的整帧已被 strict schema 丢弃。
+      recentProjectPaths = await readRecentProjectPaths();
+      if (!isCurrentRuntime(runtime)) {
+        return;
+      }
+      buildRecentProjectsResult(runtime);
+      const workspacePath = recentProjectsRegistry.resolvePath(request.recentProjectId);
+      if (!workspacePath) {
+        throw new Error("recentProjectId is not part of the current recent project list.");
+      }
+
+      if (!(dependencies.hasOpenWindow?.() ?? true)) {
+        if (
+          dependencies.canCreateWindow &&
+          !dependencies.canCreateWindow(REMOTE_CONTROL_WINDOW_REASON)
+        ) {
+          throw new Error("Desktop window creation is blocked by the current app state.");
+        }
+        await dependencies.ensurePrimaryWindow?.(REMOTE_CONTROL_WINDOW_REASON);
+        if (!isCurrentRuntime(runtime)) {
+          return;
+        }
+      }
+
+      // 内部路径：复用 renderer 的 OpenWorkspacePath 投递，不触发 deep link 的外部确认弹窗。
+      const accepted = dependencies.openWorkspacePath?.(workspacePath) ?? false;
+      if (!accepted) {
+        throw new Error("Desktop could not open the recent project.");
+      }
+
+      const existing = pendingWorkspaceOpens.get(request.requestId);
+      if (existing) {
+        clearTimeout(existing.timer);
+        pendingWorkspaceOpens.delete(request.requestId);
+      }
+      const pending: PendingWorkspaceOpen = {
+        runtime,
+        requestId: request.requestId,
+        workspacePath,
+        timer: setTimeout(() => {
+          completePendingWorkspaceOpen(pending, {
+            error: "Desktop did not open the workspace within 10 seconds.",
+          });
+        }, WEB_REMOTE_CONTROL_WORKSPACE_OPEN_TIMEOUT_MS),
+      };
+      pendingWorkspaceOpens.set(request.requestId, pending);
+      dependencies.logger.info("[web-remote-control] recent project open accepted", {
+        requestId: request.requestId,
+        label: getPathLabel(workspacePath),
+      });
+      // 并发场景下该 workspace 可能已经在聚合列表里，不必等下一次快照同步。
+      if (isWorkspaceOpen(runtime, workspacePath)) {
+        completePendingWorkspaceOpen(pending, {});
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      dependencies.logger.info("[web-remote-control] recent project open failed", {
+        requestId: request.requestId,
+        error: message,
+      });
+      if (isCurrentRuntime(runtime)) {
+        sendAppPayload(runtime, {
+          zcode_type: "workspace-open-response",
+          requestId: request.requestId,
+          success: false,
+          error: message,
+        });
+      }
+    }
+  }
+
+  async function respondToDesktopWindowOpenRequest(
+    runtime: AppControlRuntime,
+    request: WebRemoteControlDesktopWindowOpenRequestPayload,
+  ): Promise<void> {
+    try {
+      // ensurePrimaryWindow 内部复用同一个 canCreateWindow gate；这里先判一次，
+      // 以便 gate 阻断时能给手机一个明确的失败响应，而不是静默无窗口。
+      if (
+        dependencies.canCreateWindow &&
+        !dependencies.canCreateWindow(REMOTE_CONTROL_WINDOW_REASON)
+      ) {
+        throw new Error("Desktop window creation is blocked by the current app state.");
+      }
+      await dependencies.ensurePrimaryWindow?.(REMOTE_CONTROL_WINDOW_REASON);
+      if (!isCurrentRuntime(runtime)) {
+        return;
+      }
+      dependencies.logger.info("[web-remote-control] desktop window open request completed", {
+        requestId: request.requestId,
+      });
+      sendAppPayload(runtime, {
+        zcode_type: "desktop-window-open-response",
+        requestId: request.requestId,
+        success: true,
+      });
+      // 窗口状态可能从 none 变成 open，主动推送一次（签名去重）。
+      pushRecentProjectsUpdated(runtime);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      dependencies.logger.info("[web-remote-control] desktop window open request failed", {
+        requestId: request.requestId,
+        error: message,
+      });
+      if (isCurrentRuntime(runtime)) {
+        sendAppPayload(runtime, {
+          zcode_type: "desktop-window-open-response",
+          requestId: request.requestId,
+          success: false,
+          error: message,
+        });
+      }
+    }
+  }
+
   function applyMobileViewStateUpdate(
     runtime: AppControlRuntime,
     viewState: WebRemoteControlMobileViewState,
@@ -1233,14 +1523,21 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       return;
     }
     switch (payload.zcode_type) {
-      case "bootstrap-request":
+      case "bootstrap-request": {
+        const result = buildBootstrapResult(runtime);
+        // bootstrap 响应已经携带最近项目快照，把它记为已推送基线，避免紧接着重复推送。
+        pushedRecentProjectsSignature = buildRecentProjectsSignature({
+          desktopWindowState: result.desktopWindowState ?? "none",
+          recentProjects: result.recentProjects ?? [],
+        });
         sendAppPayload(runtime, {
           zcode_type: "bootstrap-response",
           requestId: payload.requestId,
           success: true,
-          result: buildBootstrapResult(runtime),
+          result,
         });
         break;
+      }
       case "workspace-list-request":
         sendAppPayload(runtime, {
           zcode_type: "workspace-list-response",
@@ -1257,6 +1554,12 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         break;
       case "workspace-bridge-open":
         void respondToWorkspaceBridgeOpen(runtime, payload);
+        break;
+      case "workspace-open-request":
+        void respondToWorkspaceOpenRequest(runtime, payload);
+        break;
+      case "desktop-window-open-request":
+        void respondToDesktopWindowOpenRequest(runtime, payload);
         break;
       case "workspace-reconnect-request":
         void respondToWorkspaceReconnectRequest(runtime, payload);
@@ -1432,6 +1735,8 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       autoStartSuppressed = false;
       autoStartAttempted = true;
       await stopRuntime("restart");
+      // T2.4：启动时读一次最近项目；之后的设置变更/快照同步会继续刷新。
+      recentProjectPaths = await readRecentProjectPaths();
       const endpointUrls = await dependencies.getEndpointUrls?.();
       const relayWsUrl = endpointUrls?.relayWsUrl ?? dependencies.relayWsUrl;
       const mobileRemoteControlUrl = endpointUrls?.remoteUrl ?? dependencies.mobileRemoteControlUrl;
@@ -1705,11 +2010,12 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       return buildRuntimeStatus(runtime);
     },
 
-    /** App 级远程访问状态：开关 + 唯一 runtime 的全局状态（T2.3 新 IPC）。 */
+    /** App 级远程访问状态：开关 + 唯一 runtime 的全局状态 + gateway 连接状态（T2.3/T3.2）。 */
     async getRemoteAccessStatus(): Promise<RemoteAccessStatus> {
       return {
         enabled: await dependencies.remoteAccessSettings.isEnabled(),
         status: this.getStatus(),
+        gateway: dependencies.getGatewayConnectionStatus?.() ?? { state: "disabled" },
       };
     },
 
@@ -1750,7 +2056,10 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         await this.start(context);
       } catch (error) {
         autoStartAttempted = false;
-        dependencies.logger.warn("[web-remote-control] start for enabled remote access failed", error);
+        dependencies.logger.warn(
+          "[web-remote-control] start for enabled remote access failed",
+          error,
+        );
       }
     },
 
@@ -1802,6 +2111,10 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         return;
       }
       pushWorkspaceListUpdated(runtime);
+      // T2.4：打开最近项目的成功判定就是「该 workspace 出现在聚合列表」。
+      completePendingWorkspaceOpens(runtime);
+      // 最近项目可能刚被打开动作写入设置（旧路径不经过 SyncAppSettings），按需刷新。
+      void refreshRecentProjects(runtime);
     },
 
     syncAvailableTasks(windowId: number, tasks: WebRemoteControlTaskTarget[]): void {
@@ -1843,7 +2156,18 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       dependencies.disposeWorkspaceHostAttachmentsForWindow(windowId, "window-disposed");
       if (runtime) {
         pushWorkspaceListUpdated(runtime);
+        // 窗口关闭可能让 desktopWindowState 从 open 变成 none。
+        pushRecentProjectsUpdated(runtime);
       }
+    },
+
+    /** T2.4：设置里的 recentProjects 变化后刷新并推送最近项目快照。 */
+    notifyRecentProjectsChanged(): void {
+      const runtime = appRuntime;
+      if (!runtime) {
+        return;
+      }
+      void refreshRecentProjects(runtime);
     },
 
     failRemoteSession(

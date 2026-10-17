@@ -55,6 +55,139 @@ describe("resolveWebRemoteControlWorkspaceKey", () => {
   });
 });
 
+describe("recent projects / workspace open / desktop window open payloads", () => {
+  const recentProject = { id: "opaque-id-1", label: "demo", location: "/workspace" };
+
+  it("parses recent-projects-updated and the bootstrap-response additions", () => {
+    const updated = {
+      zcode_type: "recent-projects-updated",
+      result: { desktopWindowState: "none", recentProjects: [recentProject] },
+    };
+    expect(parseWebRemoteControlAppPayload(updated)).toEqual(updated);
+
+    const bootstrap = {
+      zcode_type: "bootstrap-response",
+      requestId: "bootstrap-1",
+      success: true,
+      result: {
+        windowControlSessionId: "sid-1",
+        workspaces: [],
+        tasks: [],
+        desktopWindowState: "open",
+        recentProjects: [recentProject],
+      },
+    };
+    expect(parseWebRemoteControlAppPayload(bootstrap)).toEqual(bootstrap);
+    // 旧桌面不带新字段时仍可解析（协商版本 1）。
+    expect(
+      parseWebRemoteControlAppPayload({
+        ...bootstrap,
+        result: { windowControlSessionId: "sid-1", workspaces: [], tasks: [] },
+      }),
+    ).not.toBeNull();
+    expect(
+      parseWebRemoteControlAppPayload({
+        ...bootstrap,
+        result: { ...bootstrap.result, desktopWindowState: "opening" },
+      }),
+    ).toBeNull();
+  });
+
+  it("recent-projects-updated 是 strict schema：多余字段与不透明 id 的额外路径字段都被丢弃", () => {
+    const valid = {
+      zcode_type: "recent-projects-updated",
+      result: { desktopWindowState: "open", recentProjects: [recentProject] },
+    };
+    expect(parseWebRemoteControlAppPayload({ ...valid, extra: 1 })).toBeNull();
+    expect(
+      parseWebRemoteControlAppPayload({
+        ...valid,
+        result: {
+          ...valid.result,
+          recentProjects: [{ ...recentProject, workspacePath: "/etc" }],
+        },
+      }),
+    ).toBeNull();
+    expect(
+      parseWebRemoteControlAppPayload({
+        ...valid,
+        result: { ...valid.result, recentProjects: [{ ...recentProject, id: "" }] },
+      }),
+    ).toBeNull();
+  });
+
+  it("workspace-open-request 只接受 recentProjectId，手机无法夹带任意路径", () => {
+    const request = {
+      zcode_type: "workspace-open-request",
+      requestId: "open-1",
+      recentProjectId: "opaque-id-1",
+    };
+    expect(parseWebRemoteControlAppPayload(request)).toEqual(request);
+    // strict：带 workspacePath 的整帧被丢弃，而不是忽略多余字段后按 id 打开。
+    expect(
+      parseWebRemoteControlAppPayload({ ...request, workspacePath: "/etc/passwd" }),
+    ).toBeNull();
+    expect(parseWebRemoteControlAppPayload({ ...request, recentProjectId: "" })).toBeNull();
+  });
+
+  it("解析 workspace-open-response 的成功与失败形状", () => {
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "workspace-open-response",
+        requestId: "open-1",
+        success: true,
+        workspaceKey: "/workspace/demo",
+      }),
+    ).not.toBeNull();
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "workspace-open-response",
+        requestId: "open-1",
+        success: false,
+        error: "unknown recent project id",
+      }),
+    ).not.toBeNull();
+    // 失败响应不能携带 workspaceKey，成功响应必须携带。
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "workspace-open-response",
+        requestId: "open-1",
+        success: false,
+        error: "x",
+        workspaceKey: "/workspace/demo",
+      }),
+    ).toBeNull();
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "workspace-open-response",
+        requestId: "open-1",
+        success: true,
+      }),
+    ).toBeNull();
+  });
+
+  it("解析 desktop-window-open-request/response", () => {
+    const request = { zcode_type: "desktop-window-open-request", requestId: "window-1" };
+    expect(parseWebRemoteControlAppPayload(request)).toEqual(request);
+    expect(parseWebRemoteControlAppPayload({ ...request, extra: true })).toBeNull();
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "desktop-window-open-response",
+        requestId: "window-1",
+        success: true,
+      }),
+    ).not.toBeNull();
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "desktop-window-open-response",
+        requestId: "window-1",
+        success: false,
+        error: "window creation blocked",
+      }),
+    ).not.toBeNull();
+  });
+});
+
 describe("external relay QR helpers", () => {
   it("validates the optional authoritative desktop version in bootstrap responses", () => {
     const response = {

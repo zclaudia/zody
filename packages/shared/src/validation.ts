@@ -201,6 +201,27 @@ export const webRemoteControlMobileDeviceInfoSchema = z.object({
   updatedAt: z.number().finite(),
 });
 
+export const webRemoteControlDesktopWindowStateSchema = z.enum(["open", "none"]);
+
+/**
+ * 最近项目只下发不透明 id 与展示信息。手机端无法从 id 反推路径，
+ * 打开请求也不接受路径字段（见 workspace-open-request 的 strict schema）。
+ */
+export const webRemoteControlRecentProjectTargetSchema = z
+  .object({
+    id: nonEmptyStringSchema,
+    label: nonEmptyStringSchema,
+    location: nonEmptyStringSchema,
+  })
+  .strict();
+
+export const webRemoteControlRecentProjectsResultSchema = z
+  .object({
+    desktopWindowState: webRemoteControlDesktopWindowStateSchema,
+    recentProjects: z.array(webRemoteControlRecentProjectTargetSchema),
+  })
+  .strict();
+
 export const webRemoteControlWindowBootstrapResultSchema = z.object({
   windowControlSessionId: nonEmptyStringSchema,
   desktopAppVersion: nonEmptyStringSchema.optional(),
@@ -208,6 +229,9 @@ export const webRemoteControlWindowBootstrapResultSchema = z.object({
   tasks: webRemoteControlTaskTargetsSchema,
   initialViewState: webRemoteControlMobileViewStateSchema.optional(),
   mobileViewState: webRemoteControlMobileViewStateSchema.optional(),
+  // appProtocol 2 新增字段：旧对端按协商版本 1 收包时发送方省略，所以这里保持 optional。
+  desktopWindowState: webRemoteControlDesktopWindowStateSchema.optional(),
+  recentProjects: z.array(webRemoteControlRecentProjectTargetSchema).optional(),
 });
 
 export const webRemoteControlWorkspaceListResultSchema = z.object({
@@ -255,6 +279,57 @@ const webRemoteControlAppPayloadSchemas = [
     zcode_type: z.literal("workspace-list-updated"),
     result: webRemoteControlWorkspaceListResultSchema,
   }),
+  z
+    .object({
+      zcode_type: z.literal("recent-projects-updated"),
+      result: webRemoteControlRecentProjectsResultSchema,
+    })
+    .strict(),
+  // strict：手机只能传最近一次列表里的 recentProjectId；带 workspacePath 等多余字段的整帧被丢弃。
+  z
+    .object({
+      zcode_type: z.literal("workspace-open-request"),
+      requestId: nonEmptyStringSchema,
+      recentProjectId: nonEmptyStringSchema,
+    })
+    .strict(),
+  z
+    .object({
+      zcode_type: z.literal("workspace-open-response"),
+      requestId: nonEmptyStringSchema,
+      success: z.literal(true),
+      workspaceKey: nonEmptyStringSchema,
+    })
+    .strict(),
+  z
+    .object({
+      zcode_type: z.literal("workspace-open-response"),
+      requestId: nonEmptyStringSchema,
+      success: z.literal(false),
+      error: z.string(),
+    })
+    .strict(),
+  z
+    .object({
+      zcode_type: z.literal("desktop-window-open-request"),
+      requestId: nonEmptyStringSchema,
+    })
+    .strict(),
+  z
+    .object({
+      zcode_type: z.literal("desktop-window-open-response"),
+      requestId: nonEmptyStringSchema,
+      success: z.literal(true),
+    })
+    .strict(),
+  z
+    .object({
+      zcode_type: z.literal("desktop-window-open-response"),
+      requestId: nonEmptyStringSchema,
+      success: z.literal(false),
+      error: z.string(),
+    })
+    .strict(),
   z.object({
     zcode_type: z.literal("workspace-bridge-open"),
     requestId: nonEmptyStringSchema,
