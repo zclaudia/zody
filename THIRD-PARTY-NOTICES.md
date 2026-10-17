@@ -792,6 +792,14 @@ Original copyright, license and NOTICE text is retained below. Identical text is
 
 - @xyflow/system@0.0.79 — MIT
 
+- @zclaudia/gateway-backend@0.4.0 — MIT
+
+- @zclaudia/gateway-client@0.2.0 — MIT
+
+- @zclaudia/gateway-client@0.3.0 — MIT
+
+- @zclaudia/gateway-protocol@0.3.0 — MIT
+
 - accepts@2.0.0 — MIT
 
 - acorn-jsx@5.3.2 — MIT
@@ -7701,6 +7709,43 @@ SOFTWARE.
 ## License
 
 React Flow is [MIT licensed](../../LICENSE).
+
+````
+
+### Notice 85db3313ffced5132f49b79009fb625b78bb2029ada01aa0a6ccccb1a56f4c43
+
+- @zclaudia/gateway-backend@0.4.0: https://raw.githubusercontent.com/zclaudia/zclaudia-gateway/048297c697b7fdd7036d7a0ff899a9091b529c80/LICENSE
+
+- @zclaudia/gateway-client@0.2.0: https://raw.githubusercontent.com/zclaudia/zclaudia-gateway/048297c697b7fdd7036d7a0ff899a9091b529c80/LICENSE
+
+- @zclaudia/gateway-client@0.3.0: https://raw.githubusercontent.com/zclaudia/zclaudia-gateway/120d6353a26cc80d7dd2c5e2ed781cc93242ef59/LICENSE
+
+- @zclaudia/gateway-protocol@0.3.0: https://raw.githubusercontent.com/zclaudia/zclaudia-gateway/048297c697b7fdd7036d7a0ff899a9091b529c80/LICENSE
+
+
+
+````text
+MIT License
+
+Copyright (c) 2026 zhvala
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ````
 
@@ -15090,6 +15135,8 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 ````
 
 ### Notice 5154e165bd6c2cc0cfbcd8916498c7abab0497923bafcd5cb07673fe8480087d
+
+- electron@41.0.3: dist/LICENSE
 
 - electron@41.0.3: LICENSE
 

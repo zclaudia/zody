@@ -846,6 +846,12 @@ importers:
       '@opentelemetry/sdk-trace-base':
         specifier: 2.6.1
         version: 2.6.1(@opentelemetry/api@1.9.1)
+      '@zclaudia/gateway-backend':
+        specifier: 0.4.0
+        version: 0.4.0
+      '@zclaudia/gateway-protocol':
+        specifier: 0.3.0
+        version: 0.3.0
       '@zcode/client':
         specifier: workspace:*
         version: link:../client
@@ -970,6 +976,9 @@ importers:
       '@wdio/spec-reporter':
         specifier: ^9.27.0
         version: 9.27.0
+      '@zclaudia/gateway-client':
+        specifier: 0.3.0
+        version: 0.3.0
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -1790,6 +1799,9 @@ importers:
 
   packages/web:
     dependencies:
+      '@zclaudia/gateway-client':
+        specifier: 0.3.0
+        version: 0.3.0
       '@zcode/client':
         specifier: workspace:*
         version: link:../client
@@ -6193,6 +6205,18 @@ packages:
 
   '@xyflow/system@0.0.79':
     resolution: {integrity: sha512-czLyOh91NF0hIzbNzwi8I6GlqG23BHh2435OddfI6uiaLH3xdrdygO93gqgH1Bv9mhy8XPFQJOBn1FTq4LvEWA==}
+
+  '@zclaudia/gateway-backend@0.4.0':
+    resolution: {integrity: sha512-Dk1IJC6GsOjeh83ryasIz2zfmiXUoTE09YLil2W8ACdqhfMqfT5CqIB20wcPdqvzH9H8TeVxj2UhM7hZ9aTLZw==}
+
+  '@zclaudia/gateway-client@0.2.0':
+    resolution: {integrity: sha512-LZ87RCzIRtzndz9cJkU89WAZVsl5927DwPMgJrm0tiHHzAC/3CfHhoCdffqJhhkqUnjRPrcf8GGvK0q8LgNaVg==}
+
+  '@zclaudia/gateway-client@0.3.0':
+    resolution: {integrity: sha512-/VP9/IeYqHYpxfU/bSq+hC1CC4a+bUo3AeLJZarYl5l0QG3V76+EIlowGezu9tnR8ul6qRCdcFd0BcXFhKxuEQ==}
+
+  '@zclaudia/gateway-protocol@0.3.0':
+    resolution: {integrity: sha512-OmcbnUFmxiax3HkisD7I9CO7k4XZrvIjgxJqD6A85uE3YWD1tSE9/270HDht03TIVS9nZSUeqmuzHi2z6PgRcg==}
 
   '@zip.js/zip.js@2.8.26':
     resolution: {integrity: sha512-RQ4h9F6DOiHxpdocUDrOl6xBM+yOtz+LkUol47AVWcfebGBDpZ7w7Xvz9PS24JgXvLGiXXzSAfdCdVy1tPlaFA==}
@@ -16335,6 +16359,21 @@ snapshots:
       d3-interpolate: 3.0.1
       d3-selection: 3.0.0
       d3-zoom: 3.0.0
+
+  '@zclaudia/gateway-backend@0.4.0':
+    dependencies:
+      '@zclaudia/gateway-client': 0.2.0
+      '@zclaudia/gateway-protocol': 0.3.0
+
+  '@zclaudia/gateway-client@0.2.0':
+    dependencies:
+      '@zclaudia/gateway-protocol': 0.3.0
+
+  '@zclaudia/gateway-client@0.3.0':
+    dependencies:
+      '@zclaudia/gateway-protocol': 0.3.0
+
+  '@zclaudia/gateway-protocol@0.3.0': {}
 
   '@zip.js/zip.js@2.8.26': {}
 

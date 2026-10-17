@@ -4,7 +4,20 @@
     "-lintignore"
   ],
   "workspaces": {
-    ".": {}
+    ".": {},
+    "packages/desktop": {
+      // T0.1 只引入依赖与 tsup 内联配置，还没有 import；gateway-backend/protocol 由 T3.2、
+      // gateway-client 由桌面 E2E 里的手机端用例消费。对应代码落码后移除本 ignore。
+      "ignoreDependencies": [
+        "@zclaudia/gateway-backend",
+        "@zclaudia/gateway-protocol",
+        "@zclaudia/gateway-client"
+      ]
+    },
+    "packages/web": {
+      // 同上：由 T3.4 的 GatewayTerminalTransport 消费。
+      "ignoreDependencies": ["@zclaudia/gateway-client"]
+    }
   },
   "ignore": [".agents/**", ".claude/**", "docs/**", "packages/ui/src/components/**"]
 }

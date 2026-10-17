@@ -273,6 +273,12 @@ export default defineConfig([
       // electron-builder 又会排除 node_modules/@zcode，导致安装包启动即 ERR_MODULE_NOT_FOUND。
       // producer 的 JS broker 必须跟随 services 一起内联，原生 addon 仍只存在于独立 Helper。
       "@zcode/zcode-cua",
+      // 远程访问改走 zclaudia-gateway。@zclaudia/gateway-backend 运行时 import "@zclaudia/gateway-client"
+      // （解析到它自己声明的 0.2.x），安装包不随包发布 node_modules，所以三个包都必须内联进 main bundle；
+      // 漏掉 gateway-client 会让打包后的安装包在启动远程访问时报 ERR_MODULE_NOT_FOUND。
+      "@zclaudia/gateway-backend",
+      "@zclaudia/gateway-protocol",
+      "@zclaudia/gateway-client",
     ],
     define: createMainDefines(),
     // 修复原因：main/host 同时 watch 且共享 out 根目录时，默认 chunk 命名会互相覆盖，

@@ -539,5 +539,48 @@
     "file": "third-party/upstream/e49e62397b603438476e0d6b5ca3b6e6d4f23a80594e596aff29ac04fa3e1b1c.txt",
     "sha256": "e49e62397b603438476e0d6b5ca3b6e6d4f23a80594e596aff29ac04fa3e1b1c",
     "source": "https://raw.githubusercontent.com/rrweb-io/rrweb/%40rrweb%2Futils%402.0.0/LICENSE"
+  },
+  {
+    "package": "@zclaudia/gateway-backend@0.4.0",
+    "repo": "zclaudia/zclaudia-gateway",
+    "refs": [
+      "gateway-backend-v0.4.0",
+      "048297c697b7fdd7036d7a0ff899a9091b529c80"
+    ],
+    "file": "third-party/upstream/85db3313ffced5132f49b79009fb625b78bb2029ada01aa0a6ccccb1a56f4c43.txt",
+    "sha256": "85db3313ffced5132f49b79009fb625b78bb2029ada01aa0a6ccccb1a56f4c43",
+    "source": "https://raw.githubusercontent.com/zclaudia/zclaudia-gateway/048297c697b7fdd7036d7a0ff899a9091b529c80/LICENSE"
+  },
+  {
+    "package": "@zclaudia/gateway-client@0.2.0",
+    "repo": "zclaudia/zclaudia-gateway",
+    "refs": [
+      "gateway-client-v0.2.0",
+      "048297c697b7fdd7036d7a0ff899a9091b529c80"
+    ],
+    "file": "third-party/upstream/85db3313ffced5132f49b79009fb625b78bb2029ada01aa0a6ccccb1a56f4c43.txt",
+    "sha256": "85db3313ffced5132f49b79009fb625b78bb2029ada01aa0a6ccccb1a56f4c43",
+    "source": "https://raw.githubusercontent.com/zclaudia/zclaudia-gateway/048297c697b7fdd7036d7a0ff899a9091b529c80/LICENSE"
+  },
+  {
+    "package": "@zclaudia/gateway-client@0.3.0",
+    "repo": "zclaudia/zclaudia-gateway",
+    "refs": [
+      "120d6353a26cc80d7dd2c5e2ed781cc93242ef59"
+    ],
+    "file": "third-party/upstream/85db3313ffced5132f49b79009fb625b78bb2029ada01aa0a6ccccb1a56f4c43.txt",
+    "sha256": "85db3313ffced5132f49b79009fb625b78bb2029ada01aa0a6ccccb1a56f4c43",
+    "source": "https://raw.githubusercontent.com/zclaudia/zclaudia-gateway/120d6353a26cc80d7dd2c5e2ed781cc93242ef59/LICENSE"
+  },
+  {
+    "package": "@zclaudia/gateway-protocol@0.3.0",
+    "repo": "zclaudia/zclaudia-gateway",
+    "refs": [
+      "gateway-protocol-v0.3.0",
+      "048297c697b7fdd7036d7a0ff899a9091b529c80"
+    ],
+    "file": "third-party/upstream/85db3313ffced5132f49b79009fb625b78bb2029ada01aa0a6ccccb1a56f4c43.txt",
+    "sha256": "85db3313ffced5132f49b79009fb625b78bb2029ada01aa0a6ccccb1a56f4c43",
+    "source": "https://raw.githubusercontent.com/zclaudia/zclaudia-gateway/048297c697b7fdd7036d7a0ff899a9091b529c80/LICENSE"
   }
 ]

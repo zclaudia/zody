@@ -9,6 +9,7 @@
     "lint:fix": "oxlint --fix"
   },
   "dependencies": {
+    "@zclaudia/gateway-client": "0.3.0",
     "@zcode/client": "workspace:*",
     "@zcode/shared": "workspace:*",
     "@zcode/ui": "workspace:*",
