@@ -17,35 +17,11 @@ import { buildProviderRequestMessages } from "../../core/src/runtime/helpers/pro
 import { AiSdkModelAdapter } from "../src/model/runner.js";
 
 describe("Published MCS and search final Anthropic wire", () => {
+  // F4.1a（specs/fork-official-deps-removal-tasks.md）已删除 builtin 配置中全部 account:* 官方账号
+  // provider（zcode-plan / off-peak / highspeed wire，分别属 F4.9 账号运行时与 F4.3 off-peak 删除范围），
+  // 以下 4 条 account:zai/bigmodel-start-plan、account:zai/bigmodel-offpeak-idle-plan 用例断言的
+  // 是已下线的账号 wire，按 D2 路线 B 语义删除；保留 3 条 BYOK/fixture 用例继续覆盖 MCS 与 native search。
   it.each([
-    [
-      "account:zai-start-plan",
-      "https://zcode.z.ai/api/v1/zcode-plan/anthropic",
-      "GLM-5.3-Flash",
-      true,
-      true,
-    ],
-    [
-      "account:bigmodel-start-plan",
-      "https://zcode.z.ai/api/v1/zcode-plan/anthropic",
-      "GLM-5.3-Flash",
-      true,
-      true,
-    ],
-    [
-      "account:zai-offpeak-idle-plan",
-      "https://zcode.z.ai/api/v1/off-peak/anthropic",
-      "GLM-5.3-Flash",
-      true,
-      true,
-    ],
-    [
-      "account:bigmodel-offpeak-idle-plan",
-      "https://zcode.z.ai/api/v1/off-peak/anthropic",
-      "GLM-5.3-Flash",
-      true,
-      true,
-    ],
     ["fixture", "https://api.anthropic.com/v1", "claude-sonnet-5", false, true],
     ["fixture", "https://proxy.invalid/v1", "vendor/claude-opus-4-8", true, false],
     ["personal-off", "https://proxy.invalid/v1", "vendor/claude-opus-4-8", false, false],

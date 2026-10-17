@@ -1,7 +1,6 @@
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import {
   ProviderConfig,
   ProviderConfigMap,
@@ -191,15 +190,45 @@ describe("process provider registry runtime", () => {
     }
   });
   it("真实 Built-in 下完整状态跨协议往返；仅切 current 即更新 Worker 的有效选择", async () => {
+    // F4.1a 已从仓库 builtin 配置删除 account:* 官方账号 provider，原用例依赖
+    // builtin 物化 account:bigmodel-*-coding-plan 已不可能；跨协议往返与「仅切
+    // current 即更新有效选择」的机制改用本地 fixture 验证（与本文件 zcodeBuiltinRelease
+    // 工厂风格一致），不向任何 config JSON 回填账号数据。
     const root = await temporaryDirectory();
-    const runtime = await startProcessProviderRegistryRuntime({
-      [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: fileURLToPath(
-        new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
-      ),
-      [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: join(root, "personal.json"),
-    });
+    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
     const personal = "account:bigmodel-individual-coding-plan";
     const team = "account:bigmodel-team-coding-plan";
+    const codingPlanProvider = {
+      group: "bigmodel-family",
+      access: {
+        type: "zhipu-account",
+        accountType: "bigmodel",
+        mode: "individual-coding-plan",
+      },
+      api: { type: "anthropic-messages", baseUrl: "https://account.example.com" },
+      builtinModelIds: ["GLM-5.3"],
+    };
+    await writeFile(
+      zcodeBuiltinFilePath,
+      JSON.stringify(
+        zcodeBuiltinRelease({
+          providers: {
+            [personal]: codingPlanProvider,
+            [team]: {
+              ...codingPlanProvider,
+              access: { ...codingPlanProvider.access, mode: "team-coding-plan" },
+            },
+          },
+          templates: {},
+          models: [codingPlanModelRule()],
+        }),
+      ),
+      "utf8",
+    );
+    const runtime = await startProcessProviderRegistryRuntime({
+      [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zcodeBuiltinFilePath,
+      [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: join(root, "personal.json"),
+    });
     const original = Object.freeze({
       providerId: personal,
       modelId: "GLM-5.3",
@@ -825,6 +854,42 @@ function completeZCodeBuiltinModelRule() {
       },
       optionSpecs: {
         reasoningLevel: { values: ["disabled"], map: "{}" },
+        maxOutputTokens: {
+          max: 32_000,
+          map: '{"max_completion_tokens":maxOutputTokens}',
+        },
+      },
+    },
+  } as const;
+}
+
+/** 账号 Coding Plan fixture 的模型规则：reasoningLevel 覆盖 high 供有效选择断言使用。 */
+function codingPlanModelRule() {
+  return {
+    modelMatch: "GLM-5.3",
+    config: {
+      enabled: true,
+      properties: {
+        requiresMfjsToolSchema: false,
+        contextWindow: 200_000,
+        inputFormat: {
+          supportsText: true,
+          supportsImage: false,
+          supportsVideo: false,
+          supportsAudio: false,
+          supportsPdf: false,
+        },
+        outputFormat: { supportsText: true },
+        supportsToolCall: true,
+        supportsJsonSchemaOutput: true,
+        supportsNativeWebSearch: false,
+        supportsMidConversationSystem: false,
+      },
+      optionSpecs: {
+        reasoningLevel: {
+          values: ["disabled", "low", "medium", "high"],
+          map: "{}",
+        },
         maxOutputTokens: {
           max: 32_000,
           map: '{"max_completion_tokens":maxOutputTokens}',
