@@ -992,8 +992,8 @@ function resolveExternalWorkspaceConfirmationCopy() {
   return resolveExternalWorkspaceOpenDialogCopy(effectiveLocale);
 }
 
-// fork(D1)：强制升级 gate 已整体删除，不再有 canCreateMainWindow/focusForceUpdateGateWindow
-// 进程级闸门；manager 与 coordinator 的可选 canCreateWindow 钩子保持未注入状态。
+// fork(D1)：强制升级 gate 已整体删除，不再有强更窗口聚焦与主窗口创建闸门；
+// manager 与 coordinator 的可选窗口创建闸门钩子保持未注入状态。
 
 const primaryWindowCoordinator = createPrimaryWindowCoordinator({
   listWindows: getApplicationWindowsExcludingCuaIndicator,
