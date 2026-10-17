@@ -12,44 +12,52 @@ import type { HighspeedCardSnapshot } from "@zcode/shared";
 import { SessionPane } from "@/v4/SessionPane.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 
-// spec §9.2：激活动效只属于本端发送路径的 draw 新命中；切回、恢复与同卡复用都按 restore 呈现。
+// fork（F4.1b）：加速卡在输入框的入口（卡片动效、模型锁定、倒计时）已从 SessionPane →
+// Composer 的 props 转发中摘除（specs/fork-official-deps-removal-tasks.md F4.1b「UI 单测
+// 断言上述入口不存在」）。本文件原 §9.2 激活动效用例全部经 composer props 观察入口行为，
+// 随入口摘除改写为：① 入口 props 不存在；② 保留至 F4.2 的 turn 链路仍按发送起点抽卡。
 
-const { composerProps, layerMock, sendCommandMock, timelineProps } = vi.hoisted(() => ({
-  composerProps: [] as Array<{
-    highspeedCard?: HighspeedCardSnapshot | null;
-    highspeedActivationCardId?: string | null;
-    onHighspeedActivationApplied?: (cardId: string) => void;
-    onSendText?: (text: string, options?: Record<string, unknown>) => Promise<unknown>;
-  }>,
-  layerMock: {
-    acquire: vi.fn(() => ({
-      store: {
-        markCommandPending: vi.fn(),
-        expectAcceptedInputProjection: vi.fn(),
-        recoverFromStaleAuthority: vi.fn(),
-        onOnlineModelTransition: vi.fn(() => () => {}),
-        refreshPlans: vi.fn(async () => {}),
-        settleCommand: vi.fn(),
-      },
-      release: vi.fn(),
-    })),
-  },
-  sendCommandMock: vi.fn(
-    async (envelope: CommandEnvelope): Promise<CommandAck> => ({
-      commandId: envelope.commandId,
-      revisionAtDecision: envelope.baseRevision ?? 0,
-      status: "accepted",
-    }),
-  ),
-  timelineProps: [] as Array<{
-    bottomDock?: ReactNode;
-    onEdit?: (
-      target: ConversationRowTarget,
-      newText: string,
-      attachments?: readonly AttachmentRef[],
-    ) => Promise<boolean | void> | boolean | void;
-  }>,
-}));
+const { composerProps, layerMock, sendCommandMock, timelineProps } = vi.hoisted(
+  () => ({
+    composerProps: [] as Array<{
+      highspeedCard?: HighspeedCardSnapshot | null;
+      highspeedActivationCardId?: string | null;
+      onHighspeedActivationApplied?: (cardId: string) => void;
+      onSendText?: (
+        text: string,
+        options?: Record<string, unknown>,
+      ) => Promise<unknown>;
+    }>,
+    layerMock: {
+      acquire: vi.fn(() => ({
+        store: {
+          markCommandPending: vi.fn(),
+          expectAcceptedInputProjection: vi.fn(),
+          recoverFromStaleAuthority: vi.fn(),
+          onOnlineModelTransition: vi.fn(() => () => {}),
+          refreshPlans: vi.fn(async () => {}),
+          settleCommand: vi.fn(),
+        },
+        release: vi.fn(),
+      })),
+    },
+    sendCommandMock: vi.fn(
+      async (envelope: CommandEnvelope): Promise<CommandAck> => ({
+        commandId: envelope.commandId,
+        revisionAtDecision: envelope.baseRevision ?? 0,
+        status: "accepted",
+      }),
+    ),
+    timelineProps: [] as Array<{
+      bottomDock?: ReactNode;
+      onEdit?: (
+        target: ConversationRowTarget,
+        newText: string,
+        attachments?: readonly AttachmentRef[],
+      ) => Promise<boolean | void> | boolean | void;
+    }>,
+  }),
+);
 
 // 永不 resolve：本用例不测 run 发现查询；resolve 会在环境拆除后触发 setState（未处理异常）。
 const workflowRunsQueryMock = vi.hoisted(() =>
@@ -67,7 +75,7 @@ const projectionState = vi.hoisted(() => ({
 }));
 
 const servicesMock = vi.hoisted(() => ({
-  // 普通任务也会读取 Bot 绑定并订阅广播，补齐依赖以保持激活动效测试的原有范围。
+  // 普通任务也会读取 Bot 绑定并订阅广播，补齐依赖以保持本文件原有的渲染范围。
   botsService: {
     getBotStates: vi.fn(async () => []),
   },
@@ -184,7 +192,10 @@ vi.mock("@/v4/ConversationComposer.js", async () => {
 
 vi.mock("@/v4/ConversationHeader.js", async () => {
   const React = await import("react");
-  return { ConversationHeader: () => React.createElement("div", { "data-testid": "mock-header" }) };
+  return {
+    ConversationHeader: () =>
+      React.createElement("div", { "data-testid": "mock-header" }),
+  };
 });
 
 vi.mock("@/v4/ConversationTimeline.js", async () => {
@@ -205,31 +216,37 @@ vi.mock("@/v4/ConversationTimeline.js", async () => {
 vi.mock("@/v4/ConversationStatusPanel.js", async () => {
   const React = await import("react");
   return {
-    ConversationStatusPanel: () => React.createElement("div", { "data-testid": "mock-status" }),
+    ConversationStatusPanel: () =>
+      React.createElement("div", { "data-testid": "mock-status" }),
   };
 });
 
 vi.mock("@/v4/ConversationQueuePanel.js", async () => {
   const React = await import("react");
   return {
-    ConversationQueuePanel: () => React.createElement("div", { "data-testid": "mock-queue" }),
+    ConversationQueuePanel: () =>
+      React.createElement("div", { "data-testid": "mock-queue" }),
   };
 });
 
 vi.mock("@/v4/V4InteractionDialogs.js", async () => {
   const React = await import("react");
   return {
-    V4InteractionDialogs: () => React.createElement("div", { "data-testid": "mock-interactions" }),
+    V4InteractionDialogs: () =>
+      React.createElement("div", { "data-testid": "mock-interactions" }),
   };
 });
 
-vi.mock("@/request-security-edition/V4ProviderRuntimeHeadersController.js", async () => {
-  const React = await import("react");
-  return {
-    V4ProviderRuntimeHeadersController: () =>
-      React.createElement("div", { "data-testid": "mock-runtime-headers" }),
-  };
-});
+vi.mock(
+  "@/request-security-edition/V4ProviderRuntimeHeadersController.js",
+  async () => {
+    const React = await import("react");
+    return {
+      V4ProviderRuntimeHeadersController: () =>
+        React.createElement("div", { "data-testid": "mock-runtime-headers" }),
+    };
+  },
+);
 
 vi.mock("@/v4/ConversationDraftEmptyState.js", async () => {
   const React = await import("react");
@@ -238,19 +255,6 @@ vi.mock("@/v4/ConversationDraftEmptyState.js", async () => {
       React.createElement("div", { "data-testid": "mock-draft-empty" }),
   };
 });
-
-// 捕获 document/window 的事件监听，供唤醒补偿用例手动触发（模拟息屏后回到窗口）。
-const domEventListeners: Array<{
-  target: "document" | "window";
-  type: string;
-  handler: () => void;
-}> = [];
-
-function triggerDomEvent(target: "document" | "window", type: string): void {
-  for (const listener of [...domEventListeners]) {
-    if (listener.target === target && listener.type === type) listener.handler();
-  }
-}
 
 function createMinimalElement(ownerDocument: Document, tagName = "div") {
   const element = {
@@ -283,11 +287,8 @@ function createMinimalElement(ownerDocument: Document, tagName = "div") {
 }
 
 function installMinimalDom() {
-  domEventListeners.length = 0;
   const documentMock = {
-    addEventListener: (type: string, handler: () => void) => {
-      domEventListeners.push({ target: "document", type, handler });
-    },
+    addEventListener: () => {},
     createElement: (tagName: string) =>
       createMinimalElement(documentMock as unknown as Document, tagName),
     createElementNS: (_namespace: string, tagName: string) =>
@@ -303,9 +304,7 @@ function installMinimalDom() {
     visibilityState: "visible",
   } as unknown as Document;
   const windowMock = {
-    addEventListener: (type: string, handler: () => void) => {
-      domEventListeners.push({ target: "window", type, handler });
-    },
+    addEventListener: () => {},
     clearTimeout,
     document: documentMock,
     HTMLElement: function HTMLElement() {},
@@ -468,7 +467,10 @@ async function sendTextHeldBeforePrepare(): Promise<{
         submission: {
           mode: "build",
           planEnabled: false,
-          modelSelection: { providerId: "builtin:bigmodel-coding-plan", modelId: "GLM-5.3" },
+          modelSelection: {
+            providerId: "builtin:bigmodel-coding-plan",
+            modelId: "GLM-5.3",
+          },
         },
       }) ?? Promise.reject(new Error("composer 未提供 onSendText"));
     await flushMicrotasks();
@@ -478,36 +480,12 @@ async function sendTextHeldBeforePrepare(): Promise<{
   return { release, sending };
 }
 
-/**
- * 截获到期清退 timer（挂载时刻 + 延时恰为 expiresAt）改由用例手动触发，其余 timer 照常执行。
- * 需配合固定的 Date.now，才能按挂载时刻精确识别。
- */
-function captureExpiryTimers(expiresAt: number) {
-  const realSetTimeout = window.setTimeout;
-  const realClearTimeout = window.clearTimeout;
-  const pending = new Map<number, () => void>();
-  let nextId = 0;
-  window.setTimeout = ((handler: () => void, delay = 0) => {
-    if (Date.now() + delay !== expiresAt) return realSetTimeout(handler, delay);
-    nextId -= 1;
-    pending.set(nextId, handler);
-    return nextId;
-  }) as typeof window.setTimeout;
-  window.clearTimeout = ((id?: number) => {
-    if (id !== undefined && pending.delete(id)) return;
-    realClearTimeout(id);
-  }) as typeof window.clearTimeout;
-  return {
-    get pendingCount() {
-      return pending.size;
-    },
-    fireNext: () => {
-      const next = pending.entries().next().value;
-      if (!next) return;
-      pending.delete(next[0]);
-      next[1]();
-    },
-  };
+/** 入口摘除后 Composer 不应再收到任何一个加速卡入口 props（字段整体不存在，而非取值 null）。 */
+function expectNoHighspeedEntryProps(): void {
+  const props = latestComposer();
+  expect(props.highspeedCard).toBeUndefined();
+  expect(props.highspeedActivationCardId).toBeUndefined();
+  expect(props.onHighspeedActivationApplied).toBeUndefined();
 }
 
 afterEach(() => {
@@ -526,57 +504,15 @@ afterEach(() => {
   projectionState.current = null;
   delete (globalThis as { document?: unknown }).document;
   delete (globalThis as { window?: unknown }).window;
-  delete (globalThis as { IS_REACT_ACT_ENVIRONMENT?: unknown }).IS_REACT_ACT_ENVIRONMENT;
+  delete (globalThis as { IS_REACT_ACT_ENVIRONMENT?: unknown })
+    .IS_REACT_ACT_ENVIRONMENT;
 });
 
-describe("SessionPane Highspeed 激活动效请求", () => {
-  it("draw 新命中只登记一次激活；切走再切回与同卡再次发送都不重播", async () => {
+describe("SessionPane Highspeed 输入框入口摘除（fork F4.1b）", () => {
+  it("Composer 不再接收加速卡入口 props：初始渲染、快照恢复与 draw 命中后都不传", async () => {
+    // F4.1b 验收（specs/fork-official-deps-removal-tasks.md）：加速卡入口摘除后，即使
+    // getSnapshot 仍有有效卡、发送路径抽中新卡，输入框也不再进入加速态。
     const card = makeCard("card-1");
-    const root = createRoot(installMinimalDom());
-    try {
-      await renderPane(root, "session-a");
-      expect(latestComposer().highspeedCard).toBeNull();
-      expect(latestComposer().highspeedActivationCardId).toBeNull();
-
-      mockDrawHit(card);
-      await sendThroughEdit();
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-1");
-      expect(latestComposer().highspeedActivationCardId).toBe("card-1");
-
-      // composer 锁定入场方式后回调消费：请求清空，但卡片仍然有效。
-      await act(async () => {
-        latestComposer().onHighspeedActivationApplied?.("card-1");
-      });
-      expect(latestComposer().highspeedActivationCardId).toBeNull();
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-1");
-
-      // Service 仍持有该卡；切到其他 Task 时卡不属于它，输入框回到普通态。
-      servicesMock.highspeedCardService.getSnapshot.mockResolvedValue({
-        card,
-        nextDrawAt: card.expiresAt,
-        drawing: false,
-      });
-      await renderPane(root, "session-b");
-      expect(latestComposer().highspeedCard).toBeNull();
-
-      // 切回：恢复链路与 draw 命中共用同一张卡快照，但不能再登记激活。
-      await renderPane(root, "session-a");
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-1");
-      expect(latestComposer().highspeedActivationCardId).toBeNull();
-
-      // 同一张卡继续加速下一轮：prepare 仍返回 accelerated，但不是新命中。
-      mockDrawHit(card);
-      await sendThroughEdit();
-      expect(servicesMock.highspeedCardService.prepareTurn).toHaveBeenCalledTimes(2);
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-1");
-      expect(latestComposer().highspeedActivationCardId).toBeNull();
-    } finally {
-      await act(async () => root.unmount());
-    }
-  });
-
-  it("Renderer 重载后经 getSnapshot 恢复的卡，再次发送也不补播激活", async () => {
-    const card = makeCard("card-restored");
     servicesMock.highspeedCardService.getSnapshot.mockResolvedValue({
       card,
       nextDrawAt: card.expiresAt,
@@ -585,113 +521,22 @@ describe("SessionPane Highspeed 激活动效请求", () => {
     const root = createRoot(installMinimalDom());
     try {
       await renderPane(root, "session-a");
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-restored");
-      expect(latestComposer().highspeedActivationCardId).toBeNull();
+      expectNoHighspeedEntryProps();
 
       mockDrawHit(card);
       await sendThroughEdit();
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-restored");
-      expect(latestComposer().highspeedActivationCardId).toBeNull();
+      expect(
+        servicesMock.highspeedCardService.prepareTurn,
+      ).toHaveBeenCalledTimes(1);
+      expectNoHighspeedEntryProps();
     } finally {
       await act(async () => root.unmount());
     }
   });
 
-  it("换到新卡时重新登记激活；迟到的旧卡消费回调不清掉新请求", async () => {
-    const restoredCard = makeCard("card-old");
-    servicesMock.highspeedCardService.getSnapshot.mockResolvedValue({
-      card: restoredCard,
-      nextDrawAt: restoredCard.expiresAt,
-      drawing: false,
-    });
-    const root = createRoot(installMinimalDom());
-    try {
-      await renderPane(root, "session-a");
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-old");
-
-      mockDrawHit(makeCard("card-new"));
-      await sendThroughEdit();
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-new");
-      expect(latestComposer().highspeedActivationCardId).toBe("card-new");
-
-      await act(async () => {
-        latestComposer().onHighspeedActivationApplied?.("card-old");
-      });
-      expect(latestComposer().highspeedActivationCardId).toBe("card-new");
-    } finally {
-      await act(async () => root.unmount());
-    }
-  });
-
-  it("息屏期间到期的卡在窗口唤醒时立即清退，不残留 00:00:00 僵尸加速态", async () => {
-    // 回归（spec §9.2/§9.3 清退时钟补偿）：清卡 setTimeout 在页面冻结期间停摆，
-    // 唤醒后若不按真实时钟重估，输入框会停在加速态、倒计时却已显示 00:00:00。
-    const card = makeCard("card-wake");
-    const root = createRoot(installMinimalDom());
-    const nowSpy = vi.spyOn(Date, "now");
-    try {
-      await renderPane(root, "session-a");
-      mockDrawHit(card);
-      await sendThroughEdit();
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-wake");
-
-      // 模拟息屏：清卡定时器停摆，卡按墙钟已过期。
-      nowSpy.mockReturnValue(card.expiresAt + 1_000);
-      // 回到窗口（focus + 恢复可见）触发补偿，立即清卡。
-      await act(async () => {
-        triggerDomEvent("window", "focus");
-        triggerDomEvent("document", "visibilitychange");
-        await flushMicrotasks();
-      });
-      expect(latestComposer().highspeedCard).toBeNull();
-    } finally {
-      // 断言失败也必须还原墙钟，否则固定的 Date.now 会泄漏到后续用例。
-      nowSpy.mockRestore();
-      await act(async () => root.unmount());
-    }
-  });
-
-  it("清退 timer 早于墙钟到期触发时按剩余时长重挂，到期后清卡", async () => {
-    // 回归：setTimeout 按单调时钟计时，到期判定读墙钟 Date.now()；两者的毫秒级偏差或 NTP
-    // 回拨会让 timer 在墙钟到期前触发。若此时只判定不重挂，窗口常驻前台时加速态永不退出。
-    const startedAt = Date.now();
-    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(startedAt);
-    const card = makeCard("card-early-timer");
-    const root = createRoot(installMinimalDom());
-    const expiryTimers = captureExpiryTimers(card.expiresAt);
-    try {
-      await renderPane(root, "session-a");
-      mockDrawHit(card);
-      await sendThroughEdit();
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-early-timer");
-      expect(expiryTimers.pendingCount).toBe(1);
-
-      // timer 提前 1ms 触发：墙钟尚未到期，卡保留并重挂剩余时长。
-      nowSpy.mockReturnValue(card.expiresAt - 1);
-      await act(async () => {
-        expiryTimers.fireNext();
-        await flushMicrotasks();
-      });
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-early-timer");
-      expect(expiryTimers.pendingCount).toBe(1);
-
-      // 重挂的 timer 在墙钟到期后触发：清卡，且不再重挂。
-      nowSpy.mockReturnValue(card.expiresAt);
-      await act(async () => {
-        expiryTimers.fireNext();
-        await flushMicrotasks();
-      });
-      expect(latestComposer().highspeedCard).toBeNull();
-      expect(expiryTimers.pendingCount).toBe(0);
-    } finally {
-      nowSpy.mockRestore();
-      await act(async () => root.unmount());
-    }
-  });
-
-  it("抽卡返回前已切到其他 Task 时，旧 Task 的卡不呈现到当前 Task、也不登记激活", async () => {
-    // 回归（spec §9.2「卡片不属于当前 Task 时恢复普通态」）：SessionPane 跨 Task 复用同一实例，
-    // prepare 在 await 期间用户切走，返回后若直接写卡片状态，A 的卡会出现在 B 的输入框并播放激活。
+  it("保留的 turn 链路仍按发送起点抽卡：prepare 返回前切走 Task 也不改归属（留给 F4.2 删除）", async () => {
+    // 原 §9.2「卡片不属于当前 Task 时不呈现」用例的保留半边：composer 呈现已随入口摘除
+    // 不可观察，但 prepareTurn / sendCommand 仍以发送起点归属，跨 Task 加速仍是真实缺陷。
     const card = makeCard("card-late", "session-a");
     const root = createRoot(installMinimalDom());
     try {
@@ -707,38 +552,40 @@ describe("SessionPane Highspeed 激活动效请求", () => {
         sending = Promise.resolve(
           timelineProps
             .at(-1)
-            ?.onEdit?.({ rowId: 42, entityId: "message-user-42" }, "再加速一轮", []),
+            ?.onEdit?.(
+              { rowId: 42, entityId: "message-user-42" },
+              "再加速一轮",
+              [],
+            ),
         );
         await flushMicrotasks();
       });
-      expect(servicesMock.highspeedCardService.prepareTurn).toHaveBeenCalledTimes(1);
+      expect(
+        servicesMock.highspeedCardService.prepareTurn,
+      ).toHaveBeenCalledTimes(1);
 
       await renderPane(root, "session-b");
       await act(async () => {
-        resolvePrepare({ kind: "accelerated", card, nextDrawAt: card.expiresAt });
+        resolvePrepare({
+          kind: "accelerated",
+          card,
+          nextDrawAt: card.expiresAt,
+        });
         await sending;
         await flushMicrotasks();
       });
-      expect(latestComposer().highspeedCard).toBeNull();
-      expect(latestComposer().highspeedActivationCardId).toBeNull();
-
-      // 切回所属 Task：经快照恢复呈现，按 restore 入场，不补播激活。
-      servicesMock.highspeedCardService.getSnapshot.mockResolvedValue({
-        card,
-        nextDrawAt: card.expiresAt,
-        drawing: false,
-      });
-      await renderPane(root, "session-a");
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-late");
-      expect(latestComposer().highspeedActivationCardId).toBeNull();
+      expect(
+        servicesMock.highspeedCardService.prepareTurn,
+      ).toHaveBeenCalledWith(expect.objectContaining({ taskId: "session-a" }));
+      expectNoHighspeedEntryProps();
     } finally {
       await act(async () => root.unmount());
     }
   });
 
-  it("prepare 开始前已切到其他 Task 时，旧 Task 的卡同样不呈现到当前 Task", async () => {
-    // 回归（CR-01）：发送起点曾在 prepare 入口才读取；配置屏障、套餐推荐、建会话等前置 await
-    // 期间切到 B 后，起点已被读成 B，A 的卡会呈现到 B 的输入框并播放激活。
+  it("保留的 turn 链路在 prepare 开始前切走 Task 时仍归属发送起点（留给 F4.2 删除）", async () => {
+    // 原 CR-01 回归用例的保留半边：起点在发送同步阶段冻结，prepare 之前的切换不改变
+    // prepareTurn 的 taskId 与 sendCommand 的 sessionId。
     const card = makeCard("card-pre-prepare", "session-a");
     const root = createRoot(installMinimalDom());
     try {
@@ -752,73 +599,14 @@ describe("SessionPane Highspeed 激活动效请求", () => {
         await sending;
         await flushMicrotasks();
       });
-      // 卡仍用于 A 的本轮发送。
-      expect(servicesMock.highspeedCardService.prepareTurn).toHaveBeenCalledWith(
-        expect.objectContaining({ taskId: "session-a" }),
-      );
+      expect(
+        servicesMock.highspeedCardService.prepareTurn,
+      ).toHaveBeenCalledWith(expect.objectContaining({ taskId: "session-a" }));
       expect(sendCommandMock).toHaveBeenCalledWith(
         expect.objectContaining({ type: "sendText", sessionId: "session-a" }),
       );
-      expect(latestComposer().highspeedCard).toBeNull();
-      expect(latestComposer().highspeedActivationCardId).toBeNull();
+      expectNoHighspeedEntryProps();
     } finally {
-      await act(async () => root.unmount());
-    }
-  });
-
-  it("A → B → A 后结果才返回时，按本端发送路径的首次呈现播放激活", async () => {
-    const card = makeCard("card-round-trip", "session-a");
-    const root = createRoot(installMinimalDom());
-    try {
-      await renderPane(root, "session-a");
-      const { release, sending } = await sendTextHeldBeforePrepare();
-
-      await renderPane(root, "session-b");
-      await renderPane(root, "session-a");
-      mockDrawHit(card);
-      await act(async () => {
-        release();
-        await sending;
-        await flushMicrotasks();
-      });
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-round-trip");
-      expect(latestComposer().highspeedActivationCardId).toBe("card-round-trip");
-    } finally {
-      await act(async () => root.unmount());
-    }
-  });
-
-  it("唤醒时未到期的卡保持加速态并重挂剩余时长的清退 timer", async () => {
-    const startedAt = Date.now();
-    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(startedAt);
-    const card = makeCard("card-early-wake");
-    const root = createRoot(installMinimalDom());
-    const expiryTimers = captureExpiryTimers(card.expiresAt);
-    try {
-      await renderPane(root, "session-a");
-      mockDrawHit(card);
-      await sendThroughEdit();
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-early-wake");
-
-      // 息屏片刻后唤醒：卡仍有效，补偿不得误清，并用剩余时长替换原 timer。
-      nowSpy.mockReturnValue(card.expiresAt - 10_000);
-      await act(async () => {
-        triggerDomEvent("window", "focus");
-        triggerDomEvent("document", "visibilitychange");
-        await flushMicrotasks();
-      });
-      expect(latestComposer().highspeedCard?.cardId).toBe("card-early-wake");
-      expect(expiryTimers.pendingCount).toBe(1);
-
-      // 重挂的 timer 到期触发后清卡。
-      nowSpy.mockReturnValue(card.expiresAt);
-      await act(async () => {
-        expiryTimers.fireNext();
-        await flushMicrotasks();
-      });
-      expect(latestComposer().highspeedCard).toBeNull();
-    } finally {
-      nowSpy.mockRestore();
       await act(async () => root.unmount());
     }
   });

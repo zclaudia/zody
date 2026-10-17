@@ -16,8 +16,8 @@ export function WorkspaceSettingsLayer({
   onCreateTask,
   onOpenWorkspace,
   allowOpenWorkspace,
-  onLogin,
-  onLogout,
+  // fork（F4.1b）：onLogin/onLogout 透传摘除——SettingsPage 的登录/登出入口已下线，
+  // 本层不再承接（类型字段随 F4.5 链路清理一并删除）。
   user,
 }: WorkspaceSettingsLayerProps) {
   useEffect(() => {
@@ -42,8 +42,6 @@ export function WorkspaceSettingsLayer({
             onCreateTask={onCreateTask}
             onOpenWorkspace={onOpenWorkspace}
             allowOpenWorkspace={allowOpenWorkspace}
-            onLogin={onLogin}
-            onLogout={onLogout}
             user={user}
           />
         </ServiceProvider>
@@ -59,8 +57,6 @@ export function WorkspaceSettingsLayer({
           onCreateTask={onCreateTask}
           onOpenWorkspace={onOpenWorkspace}
           allowOpenWorkspace={allowOpenWorkspace}
-          onLogin={onLogin}
-          onLogout={onLogout}
           user={user}
         />
       )}

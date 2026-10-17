@@ -79,7 +79,11 @@ export function useModelProviderNavigation({
   // fork（F4.1b）：官方账号入口摘除——模型提供方页不再生成 Coding Plan / Start Plan /
   // Team Plan 导航项与套餐连接方式项，套餐详情（含购买入口）随之不可达。
   // CODING_PLAN_PROVIDER_SPECS 与原派生逻辑（导航分组、连接方式过滤）保留待 F4.5 删除。
-  const codingPlanItems = useMemo<ModelProviderNavItem[]>(() => [], []);
+  // 类型必须取联合的 codingPlan 分支：消费方（presetId 过滤、buildVisibleFamilyConnectionItems）
+  // 只接受该分支；标注成宽泛的 ModelProviderNavItem[] 会让 codingPlanLoading 分支混入。
+  const codingPlanItems = useMemo<
+    Array<Extract<ModelProviderNavItem, { type: "codingPlan" }>>
+  >(() => [], []);
   const connectionModeCodingPlanItems = useMemo(
     () =>
       buildVisibleFamilyConnectionItems({

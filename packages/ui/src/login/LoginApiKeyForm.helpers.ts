@@ -9,7 +9,9 @@ import { encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
 
 export function shouldShowLoginApiKeyLink(
   apiKeyValue: string,
-  apiKeyUrl: string | undefined,
+  // fork（F4.1b）：模板的 apiKeyManagementUrl 在 provider schema 中 nullable().optional()
+  // （provider-data-schema），实际取值为 string | null | undefined；Boolean() 已兼容 null。
+  apiKeyUrl: string | null | undefined,
 ): boolean {
   return Boolean(apiKeyUrl) && apiKeyValue.trim().length === 0;
 }
