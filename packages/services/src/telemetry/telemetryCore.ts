@@ -469,8 +469,8 @@ export function createTelemetryCore(dependencies: TelemetryCoreDependencies = {}
       releaseChannel: dependencies.releaseChannel ?? ZCODE_ENV,
       clientLanguage: context.clientLanguage,
       clientTimezone: context.clientTimezone,
-      deviceMid,
-      endpointOrigin: new URL(endpoint).origin,
+      // fork（F2.10）：来源头停发 X-Device-Mid 与 HTTP-Referer；
+      // deviceMid 仍只进上报 body（遥测整体由构建期 ZCODE_TELEMETRY_REPORT_ENDPOINT 控制）。
     });
     const startedAt = Date.now();
     let lastError: TelemetryReportError | null = null;

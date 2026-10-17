@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { join } from "node:path";
 import { DesktopCommandIds } from "@zcode/shared";
 
 const appMock = {
@@ -135,7 +134,9 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     stubProcessPlatform(originalPlatform);
   });
 
-  it("优先使用远端 JSON 里的 feedback_url", async () => {
+  // fork（F2.7）：帮助与社群配置只读内置 config/default.json，不再请求远端。
+  // 原断言「远端优先、远端不可用回退本地」的用例随行为一起移除。
+  it("反馈地址只读注入的本地帮助配置", async () => {
     const logger = {
       warn: vi.fn(),
     };
@@ -146,41 +147,17 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
 
     const feedbackUrl = await resolveFeedbackUrl({
       logger,
-      fetchRemoteConfig: async () => ({
-        feedback_url: "https://remote.example.com/feedback",
-      }),
-      readLocalConfig: () => ({
+      readHelpConfig: async () => ({
+        community_urls: {},
         feedback_url: "https://local.example.com/feedback",
-      }),
-    });
-
-    expect(feedbackUrl).toBe("https://remote.example.com/feedback");
-  }, 15_000);
-
-  it("远端不可用时回退到本地 JSON", async () => {
-    const logger = {
-      warn: vi.fn(),
-    };
-    const { resolveFeedbackUrl } = await import("../src/main/desktopCommandHandlers.js");
-
-    const feedbackUrl = await resolveFeedbackUrl({
-      logger,
-      fetchRemoteConfig: async () => {
-        throw new Error("network down");
-      },
-      readLocalConfig: () => ({
-        feedback_url: "https://local.example.com/feedback",
+        feedback_use_external_form: false,
       }),
     });
 
     expect(feedbackUrl).toBe("https://local.example.com/feedback");
-    expect(logger.warn).toHaveBeenCalledWith(
-      "[feedback] failed to fetch remote config:",
-      expect.any(Error),
-    );
-  });
+  }, 15_000);
 
-  it("两个 JSON 都没有有效地址时返回 undefined", async () => {
+  it("本地帮助配置读取失败时反馈地址降级为 undefined", async () => {
     const logger = {
       warn: vi.fn(),
     };
@@ -188,14 +165,33 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
 
     const feedbackUrl = await resolveFeedbackUrl({
       logger,
-      fetchRemoteConfig: async () => ({}),
-      readLocalConfig: () => ({}),
+      readHelpConfig: async () => {
+        throw new Error("config missing");
+      },
+    });
+
+    expect(feedbackUrl).toBeUndefined();
+    expect(logger.warn).toHaveBeenCalledWith(
+      "[feedback] failed to read local help config:",
+      expect.any(Error),
+    );
+  });
+
+  it("帮助配置没有有效反馈地址时返回 undefined", async () => {
+    const logger = {
+      warn: vi.fn(),
+    };
+    const { resolveFeedbackUrl } = await import("../src/main/desktopCommandHandlers.js");
+
+    const feedbackUrl = await resolveFeedbackUrl({
+      logger,
+      readHelpConfig: async () => ({ community_urls: {} }),
     });
 
     expect(feedbackUrl).toBeUndefined();
   });
 
-  it("中文界面只打开中文社群入口，缺失时不跨语言回退", async () => {
+  it("中文界面只打开内置中文社群入口，缺失时不跨语言回退", async () => {
     const logger = {
       warn: vi.fn(),
     };
@@ -205,29 +201,29 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
       resolveCommunityUrl({
         locale: "zh-CN",
         logger,
-        fetchRemoteConfig: async () => ({
+        readHelpConfig: async () => ({
           community_urls: {
-            "zh-CN": "https://remote.example.com/zh-community",
-            "en-US": "https://remote.example.com/en-community",
+            "zh-CN": "https://local.example.com/zh-community",
+            "en-US": "https://local.example.com/en-community",
           },
         }),
       }),
-    ).resolves.toBe("https://remote.example.com/zh-community");
+    ).resolves.toBe("https://local.example.com/zh-community");
 
     await expect(
       resolveCommunityUrl({
         locale: "zh-CN",
         logger,
-        fetchRemoteConfig: async () => ({
+        readHelpConfig: async () => ({
           community_urls: {
-            "en-US": "https://remote.example.com/en-community",
+            "en-US": "https://local.example.com/en-community",
           },
         }),
       }),
     ).resolves.toBeUndefined();
   });
 
-  it("英文界面优先使用本地英文入口，不被远端中文入口截获", async () => {
+  it("英文界面使用内置英文入口，不被中文入口截获", async () => {
     const logger = {
       warn: vi.fn(),
     };
@@ -236,12 +232,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     const communityUrl = await resolveCommunityUrl({
       locale: "en-US",
       logger,
-      fetchRemoteConfig: async () => ({
-        community_urls: {
-          "zh-CN": "https://remote.example.com/zh-community",
-        },
-      }),
-      readLocalConfig: () => ({
+      readHelpConfig: async () => ({
         community_urls: {
           "zh-CN": "https://local.example.com/zh-community",
           "en-US": "https://local.example.com/en-community",
@@ -252,25 +243,25 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     expect(communityUrl).toBe("https://local.example.com/en-community");
   });
 
-  it("正式包从 resources/config 读取内置配置，开发态继续读取仓库配置", async () => {
-    const { resolveLocalAppConfigPath } = await import("../src/main/desktopCommandHandlers.js");
+  it("本地配置读取失败时社群入口降级为 undefined", async () => {
+    const logger = {
+      warn: vi.fn(),
+    };
+    const { resolveCommunityUrl } = await import("../src/main/desktopCommandHandlers.js");
 
-    // Bugfix：resolveLocalAppConfigPath 用宿主 path.join 拼接，Windows 上分隔符是 `\`，
-    // 而这里原来写死 POSIX 字面量，两条断言在 Windows 上都对不上。改用宿主 join 组装期望值，
-    // 断言仍然表达同一组「正式包读 resources/config、开发态回到仓库 config」。
-    expect(
-      resolveLocalAppConfigPath({
-        isPackaged: true,
-        resourcesPath: "/Applications/ZCode.app/Contents/Resources",
-        appPath: "/Applications/ZCode.app/Contents/Resources/app.asar",
+    await expect(
+      resolveCommunityUrl({
+        locale: "en-US",
+        logger,
+        readHelpConfig: async () => {
+          throw new Error("boom");
+        },
       }),
-    ).toBe(join("/Applications/ZCode.app/Contents/Resources", "config/default.json"));
-    expect(
-      resolveLocalAppConfigPath({
-        isPackaged: false,
-        appPath: "/repo/packages/desktop",
-      }),
-    ).toBe(join("/repo", "config", "default.json"));
+    ).resolves.toBeUndefined();
+    expect(logger.warn).toHaveBeenCalledWith(
+      "[community] failed to read local help config:",
+      expect.any(Error),
+    );
   });
 
   it("中文界面打开中文 changelog，其他语言打开英文 changelog", async () => {

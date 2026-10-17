@@ -116,8 +116,8 @@ export function createElectronDesktopContextPromptConfigFetcher(options: {
       const sourceHeaders = buildZCodeSourceHeadersFromContext({
         appVersion: options.appVersion,
         arch: process.arch,
-        deviceMid: options.deviceMid,
-        endpointOrigin,
+        // fork（F2.10）：来源头停发 X-Device-Mid 与 HTTP-Referer；deviceMid 入参不再下传，
+        // 本文件的下线改造归 F2.6a，此处仅做编译适配。
         platform: process.platform,
         releaseChannel: ZCODE_ENV,
         sourceTitle: "electron",

@@ -97,6 +97,7 @@ export default defineConfig({
             "packages/shared/src/node/genUiPaths.test.ts",
             "packages/services/src/gen-ui/**/*.test.ts",
             "scripts/assert-safe-cua-helper-zip.test.mjs",
+            "scripts/check-official-refs.test.mjs",
             "scripts/ci/ci-telemetry-keyword-guard.test.mjs",
           ],
           exclude: ["packages/desktop/test/e2e/**", ...forkIsolatedTests],

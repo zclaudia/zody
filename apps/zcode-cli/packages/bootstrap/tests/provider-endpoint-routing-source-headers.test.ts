@@ -13,7 +13,7 @@ afterEach(async () => {
 });
 
 describe("createProviderEndpointRoutingSourceHeaders", () => {
-  it("adds runtime attribution and reuses an existing deviceMid for the config GET", async () => {
+  it("adds runtime attribution and never emits device or source identity headers", async () => {
     const dataBaseDir = await mkdtemp(
       join(tmpdir(), "zcode-routing-source-headers-"),
     );
@@ -37,18 +37,19 @@ describe("createProviderEndpointRoutingSourceHeaders", () => {
     });
 
     expect(headers).toMatchObject({
-      "HTTP-Referer": "https://routing-config.example.test",
       "User-Agent": "ZCode/1.2.3",
       "X-Client-Language": expect.any(String),
       "X-Client-Timezone": expect.any(String),
-      "X-Device-Mid": "mid-routing-1",
       "X-Os-Category": osCategory(process.platform),
       "X-Os-Version": readOsRelease(),
       "X-Platform": `${process.platform}-${readOsArch()}`,
       "X-Release-Channel": "test",
-      "X-Title": "Z Code@electron",
       "X-ZCode-App-Version": "1.2.3",
     });
+    // F2.10：设备标识与来源标识停发——即使 telemetry-state.json 里有 deviceMid 也不发送。
+    expect(headers).not.toHaveProperty("X-Device-Mid");
+    expect(headers).not.toHaveProperty("HTTP-Referer");
+    expect(headers).not.toHaveProperty("X-Title");
     expect(headers).not.toHaveProperty("Authorization");
   });
 
@@ -67,12 +68,12 @@ describe("createProviderEndpointRoutingSourceHeaders", () => {
     });
 
     expect(headers).toMatchObject({
-      "HTTP-Referer": "https://zcode.z.ai",
       "User-Agent": "ZCode/2.0.0",
       "X-Release-Channel": "production",
-      "X-Title": "Z Code@cli",
     });
     expect(headers).not.toHaveProperty("X-Device-Mid");
+    expect(headers).not.toHaveProperty("HTTP-Referer");
+    expect(headers).not.toHaveProperty("X-Title");
   });
 });
 

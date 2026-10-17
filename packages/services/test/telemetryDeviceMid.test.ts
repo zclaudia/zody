@@ -28,8 +28,9 @@ describe("ensureTelemetryDeviceMid", () => {
     }
   });
 
-  it("远端主机没有 telemetry-state.json 时，确保后 ZCode 来源头才带上同一个 X-Device-Mid", async () => {
-    // 复现远端事故前提：全新主机没有任何进程写过 state 文件，来源头缺 X-Device-Mid。
+  it("远端主机没有 telemetry-state.json 时 ensureTelemetryDeviceMid 会创建；来源头已停发 X-Device-Mid", async () => {
+    // F2.10：来源头不再携带 X-Device-Mid；ensureTelemetryDeviceMid 只服务遥测 body 的
+    // device_mid 字段（遥测上报整体由构建期 ZCODE_TELEMETRY_REPORT_ENDPOINT 控制）。
     const { stateFile } = createIsolatedDataBaseDir();
     expect(existsSync(stateFile)).toBe(false);
     expect(buildZCodeSourceHeaders()["X-Device-Mid"]).toBeUndefined();
@@ -38,8 +39,8 @@ describe("ensureTelemetryDeviceMid", () => {
 
     expect(deviceMid).toMatch(UUID_PATTERN);
     expect(JSON.parse(readFileSync(stateFile, "utf-8"))).toEqual({ deviceMid });
-    // 与 NodeApiClient 实际注入来源头的同一读取路径必须拿到同一个值。
-    expect(buildZCodeSourceHeaders()["X-Device-Mid"]).toBe(deviceMid);
+    // 来源头停发后，state 文件里的 deviceMid 不再进入任何请求头。
+    expect(buildZCodeSourceHeaders()["X-Device-Mid"]).toBeUndefined();
   });
 
   it("已有 deviceMid 时复用现值，不改写 state 文件里的其他字段", async () => {

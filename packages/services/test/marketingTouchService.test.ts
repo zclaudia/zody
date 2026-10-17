@@ -1,141 +1,61 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createMarketingTouchService } from "#src/marketing-touch/marketingTouchService.js";
 
-function fixture(createService = createMarketingTouchService) {
-  let token: string | null = "first-token";
-  const request = vi.fn(
-    async () =>
-      new Response(
-        JSON.stringify({ code: 0, data: { server_time: 1, language: "en-US", deliveries: [] } }),
-      ),
-  );
-  const service = createService({
+// F2.8（fork 官方依赖移除）：营销触达停用——服务不再请求 {官方}/api/v1/marketing/touch，
+// 未登录与已登录两态都必须零请求；query 恒返回空快照（UI 因此不出现横幅与弹窗），
+// report 为空操作。营销触达代码与 UI 组件在 F4.4 统一删除。
+function fixture(token: string | null) {
+  const request = vi.fn(async () => {
+    throw new Error("marketing touch must not issue requests");
+  });
+  const onSnapshot = vi.fn();
+  const service = createMarketingTouchService({
     apiClient: { request },
     getToken: async () => token,
     getDeviceMid: () => "550e8400-e29b-41d4-a716-446655440000",
     baseUrl: "https://api.example.com",
-    appVersion: "3.11.2",
+    appVersion: "3.15.1",
+    onSnapshot,
   });
-  return {
-    service,
-    request,
-    setToken: (next: string | null) => {
-      token = next;
-    },
-  };
+  return { service, request, onSnapshot };
 }
 
-describe("MarketingTouchService", () => {
-  it("supplies common headers, original campaign ID and no unsupported event fields", async () => {
-    const f = fixture();
+describe("MarketingTouchService（fork 营销触达停用）", () => {
+  it.each([
+    ["未登录", null],
+    ["已登录", "first-token"],
+  ])("%s时 query 不发出任何营销触达请求并返回空快照", async (_state, token) => {
+    const f = fixture(token);
     const snapshot = await f.service.query({ locale: "en-US" });
-    await f.service.report({
-      locale: "en-US",
-      scope: snapshot.scope,
-      campaignId: "193001",
-      actionType: "confirm",
-    });
-    const [url, init] = f.request.mock.calls[1] as unknown as [string, RequestInit];
-    expect(url).toBe("https://api.example.com/api/v1/marketing/touch/action");
-    expect(new Headers(init.headers).get("X-Device-Mid")).toBe(
-      "550e8400-e29b-41d4-a716-446655440000",
-    );
-    expect(new Headers(init.headers).get("X-Client-Language")).toBe("en-US");
-    expect(new Headers(init.headers).get("X-ZCode-App-Version")).toBe("3.11.2");
-    expect(JSON.parse(String(init.body))).toEqual({
-      campaign_id: "193001",
-      action_type: "confirm",
-    });
-    expect(JSON.stringify(snapshot)).not.toContain("first-token");
-  });
-  it("refuses to report an old operation using a new account", async () => {
-    const f = fixture();
-    const snapshot = await f.service.query({ locale: "en-US" });
-    f.setToken("second-token");
-    await expect(
-      f.service.report({
-        locale: "en-US",
-        scope: snapshot.scope,
-        campaignId: "193001",
-        actionType: "cancel",
-      }),
-    ).rejects.toThrow("marketing_identity_changed");
-    expect(f.request).toHaveBeenCalledTimes(1);
-  });
-  it("allows anonymous delivery and does not retry uncertain reports", async () => {
-    const f = fixture();
-    f.setToken(null);
-    const snapshot = await f.service.query({ locale: "en-US" });
-    f.request.mockRejectedValueOnce(new Error("network"));
-    await expect(
-      f.service.report({
-        locale: "en-US",
-        scope: snapshot.scope,
-        campaignId: "193001",
-        actionType: "cancel",
-      }),
-    ).rejects.toThrow("network");
-    expect(f.request).toHaveBeenCalledTimes(2);
-    const [, init] = f.request.mock.calls[0] as unknown as [string, RequestInit];
-    expect(new Headers(init.headers).has("Authorization")).toBe(false);
-  });
-});
-
-describe("MarketingTouchService boot request sequence", () => {
-  let createService: typeof createMarketingTouchService;
-  beforeEach(async () => {
-    vi.resetModules();
-    ({ createMarketingTouchService: createService } =
-      await import("#src/marketing-touch/marketingTouchService.js"));
-  });
-
-  function sequences(f: ReturnType<typeof fixture>) {
-    return f.request.mock.calls.map((call) =>
-      new URL((call as unknown as [string])[0]).searchParams.get("seq"),
-    );
-  }
-
-  it("starts at zero, continues across accounts, locales and service instances", async () => {
-    const f = fixture(createService);
-    await f.service.query({ locale: "en-US" });
-    f.setToken(null);
-    await f.service.query({ locale: "zh-CN" });
-    f.setToken("second-token");
-    await f.service.query({ locale: "en-US" });
-    expect(sequences(f)).toEqual(["0", "1", "2"]);
-    const next = fixture(createService);
-    await next.service.query({ locale: "en-US" });
-    expect(sequences(next)).toEqual(["3"]);
-  });
-
-  it("counts failed and concurrent requests without reusing a sequence", async () => {
-    const f = fixture(createService);
-    f.request.mockRejectedValueOnce(new Error("network"));
-    await expect(f.service.query({ locale: "en-US" })).rejects.toThrow("network");
-    f.request.mockResolvedValueOnce(new Response("invalid JSON"));
-    await expect(f.service.query({ locale: "en-US" })).rejects.toThrow();
-    await Promise.all([f.service.query({ locale: "en-US" }), f.service.query({ locale: "en-US" })]);
-    expect(sequences(f)).toEqual(["0", "1", "2", "3"]);
-  });
-
-  it("does not count validation failures or action reports", async () => {
-    const f = fixture(createService);
-    await expect(f.service.query({ locale: "invalid" as "en-US" })).rejects.toThrow();
+    expect(snapshot.deliveries).toEqual([]);
+    expect(snapshot.rejectedCount).toBe(0);
+    expect(snapshot.language).toBe("en-US");
     expect(f.request).not.toHaveBeenCalled();
-    const snapshot = await f.service.query({ locale: "en-US" });
-    await f.service.report({
-      locale: "en-US",
-      scope: snapshot.scope,
-      campaignId: "193001",
-      actionType: "cancel",
-    });
-    await f.service.query({ locale: "en-US" });
-    expect(sequences(f)).toEqual(["0", null, "1"]);
+    // 空快照不投喂素材注册表，云内容也就没有任何营销素材可用。
+    expect(f.onSnapshot).not.toHaveBeenCalled();
   });
 
-  it("starts at zero in a freshly initialized process module", async () => {
-    const f = fixture(createService);
-    await f.service.query({ locale: "en-US" });
-    expect(sequences(f)).toEqual(["0"]);
+  it("report 不再向官方上报动作", async () => {
+    const f = fixture("first-token");
+    const snapshot = await f.service.query({ locale: "zh-CN" });
+    await expect(
+      f.service.report({
+        locale: "zh-CN",
+        scope: snapshot.scope,
+        campaignId: "193001",
+        actionType: "confirm",
+      }),
+    ).resolves.toBeUndefined();
+    expect(f.request).not.toHaveBeenCalled();
+  });
+
+  it("scope 在服务实例内保持稳定，跨实例不同", async () => {
+    const f = fixture(null);
+    const first = await f.service.query({ locale: "en-US" });
+    const second = await f.service.query({ locale: "zh-CN" });
+    expect(second.scope).toBe(first.scope);
+    const other = fixture(null);
+    const otherSnapshot = await other.service.query({ locale: "en-US" });
+    expect(otherSnapshot.scope).not.toBe(first.scope);
   });
 });

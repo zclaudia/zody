@@ -121,7 +121,6 @@ function isRequestForEndpoint(input: string | URL, endpointOrigin: string): bool
 
 function withZCodeEndpointHeaders(
   headers: RequestInit["headers"] | undefined,
-  endpointOrigin: string,
 ): RequestInit["headers"] {
   const next = new Headers(buildZCodeSourceHeaders());
   if (headers) {
@@ -130,9 +129,8 @@ function withZCodeEndpointHeaders(
     });
   }
 
-  if (next.get("HTTP-Referer") === DEFAULT_ZCODE_ENDPOINT_ORIGIN) {
-    next.set("HTTP-Referer", endpointOrigin);
-  }
+  // fork（F2.10）：HTTP-Referer 默认不发（构建期可配置），不再把官方 origin 回写成
+  // 运行时 endpoint origin；调用方显式传入的头保持原值。
   return next;
 }
 
@@ -147,7 +145,7 @@ function resolveRequestHeaders(
 
   // ZCode 后端请求以前只有部分业务路径手动补来源头。
   // 统一在 ApiClient 出口按 endpoint origin 注入，避免 OAuth/config/billing/snapshot 等链路遗漏。
-  return withZCodeEndpointHeaders(headers, endpointOrigin);
+  return withZCodeEndpointHeaders(headers);
 }
 
 export class NodeApiClient implements ApiClient {

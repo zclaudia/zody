@@ -333,7 +333,9 @@ describe("offPeakServerClient × offPeakMockGateway 契约联测", () => {
       expect(request.headers.get("bigmodel-project")).toBe("project-team");
       expect(request.headers.get("x-request-id")).toBeTruthy();
       expect(request.headers.get("user-agent")).toMatch(/^ZCode\//);
-      expect(request.headers.get("http-referer")).toBeTruthy();
+      // F2.10：来源标识默认不发。
+      expect(request.headers.get("http-referer")).toBeNull();
+      expect(request.headers.get("x-device-mid")).toBeNull();
     }
     const serializedWarnings = JSON.stringify(warnings);
     expect(serializedWarnings).toContain("bigmodel-team");

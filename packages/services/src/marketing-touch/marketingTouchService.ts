@@ -1,80 +1,36 @@
 import { randomUUID } from "node:crypto";
-import { z } from "zod";
-import { parseMarketingTouchResponse, type ApiClient } from "@zcode/shared";
-import { readApiJson } from "#src/providers/api/apiJson.js";
+import type { ApiClient, MarketingTouchSnapshot } from "@zcode/shared";
 import type { IMarketingTouchService } from "#src/marketing-touch/marketingTouch.js";
 
-const localeSchema = z.enum(["zh-CN", "en-US"]);
-// 序号属于本次服务进程启动，不能随组件、账号或服务实例重建而归零。
-let bootRequestSeq = 0;
-const reportSchema = z.object({
-  locale: localeSchema,
-  scope: z.string().uuid(),
-  campaignId: z.string().trim().min(1).max(128),
-  actionType: z.enum(["confirm", "cancel"]),
-});
-
-export function createMarketingTouchService(options: {
+// F2.8（fork 官方依赖移除，阶段 2 细则盘点 #7）：营销触达属「外露」官方依赖——UI 挂载后即请求
+// {官方}/api/v1/marketing/touch（携带 X-Device-Mid，登录后附带 Bearer），官方可在 fork 内弹窗、
+// 展示横幅。fork 决策关闭该能力：本服务不再发出任何网络请求，query 恒返回空快照（无投放，
+// UI 因此不出现横幅与弹窗），report 为空操作（不再向官方发送设备标识与动作）。
+// 营销触达代码与 UI 组件按任务拆分在 F4.4 统一删除；在此之前保留工厂签名与类型契约，
+// node.ts 的装配无需改动（options 仅原远端实现消费，现已不读取）。
+export function createMarketingTouchService(_options: {
   apiClient: ApiClient;
   getToken: () => Promise<string | null | undefined>;
   getDeviceMid: () => string | undefined;
   baseUrl: string;
   appVersion: string;
-  onSnapshot?: (snapshot: ReturnType<typeof parseMarketingTouchResponse>) => void;
+  onSnapshot?: (snapshot: MarketingTouchSnapshot) => void;
 }): IMarketingTouchService {
-  let previousToken: string | undefined;
-  let scope = randomUUID();
-  async function context(locale: "zh-CN" | "en-US") {
-    const token = (await options.getToken())?.trim() || "";
-    if (previousToken !== token) {
-      previousToken = token;
-      scope = randomUUID();
-    }
-    const device = z.string().uuid().parse(options.getDeviceMid());
-    return {
-      scope,
-      headers: {
-        "X-Device-Mid": device,
-        "X-Client-Language": localeSchema.parse(locale),
-        "X-ZCode-App-Version": options.appVersion,
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    };
-  }
+  // scope 保留「一次服务实例一个上下文」的原语义，供 UI 控制器做事件上下文隔离；
+  // 不再随账号凭据变化，因为已没有需要凭据隔离的上报。
+  const scope = randomUUID();
   return {
     async query({ locale }) {
-      const identity = await context(locale);
-      const url = new URL("/api/v1/marketing/touch", options.baseUrl);
-      url.searchParams.set("seq", String(bootRequestSeq++));
-      const response = await readApiJson<unknown>(options.apiClient, url.href, {
-        method: "GET",
-        headers: identity.headers,
-        timeoutMs: 15_000,
-        redirect: "error",
-      });
-      if ((await context(locale)).scope !== identity.scope)
-        throw new Error("marketing_identity_changed");
-      const snapshot = parseMarketingTouchResponse(response);
-      options.onSnapshot?.(snapshot);
-      return { ...snapshot, scope: identity.scope };
+      return {
+        serverTime: Date.now(),
+        language: locale,
+        deliveries: [],
+        rejectedCount: 0,
+        scope,
+      };
     },
-    async report(input) {
-      const parsed = reportSchema.parse(input);
-      const identity = await context(parsed.locale);
-      // 领取期间账号可能已切换；禁止把旧操作用新凭据上报，也不向 UI 暴露凭据。
-      if (identity.scope !== parsed.scope) throw new Error("marketing_identity_changed");
-      const response = await readApiJson<unknown>(
-        options.apiClient,
-        new URL("/api/v1/marketing/touch/action", options.baseUrl).href,
-        {
-          method: "POST",
-          headers: { ...identity.headers, "Content-Type": "application/json" },
-          body: JSON.stringify({ campaign_id: parsed.campaignId, action_type: parsed.actionType }),
-          timeoutMs: 15_000,
-          redirect: "error",
-        },
-      );
-      z.object({ code: z.literal(0) }).parse(response);
+    async report() {
+      // 无营销内容，也停止向官方上报动作；保留空实现以免 UI 调用点悬空（F4.4 一并删除）。
     },
   };
 }

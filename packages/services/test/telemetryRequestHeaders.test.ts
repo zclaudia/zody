@@ -42,11 +42,10 @@ it("adds every public header and re-reads authorization on retry and logout", as
   });
   await core.reportAppLaunch(context);
   expect(fetchImpl.mock.calls[0]?.[1]?.redirect).toBe("error");
+  // F2.10：来源标识（HTTP-Referer/X-Title）与设备标识（X-Device-Mid）停发，不再出现在遥测请求头。
   expect(fetchImpl.mock.calls[0]?.[1]?.headers).toEqual({
     "Content-Type": "application/json",
     "User-Agent": "ZCode/1.2.3",
-    "HTTP-Referer": "https://zcode.z.ai",
-    "X-Title": "Z Code@electron",
     "X-ZCode-App-Version": "1.2.3",
     "X-Platform": "darwin-arm64",
     "X-Release-Channel": "test",
@@ -54,7 +53,6 @@ it("adds every public header and re-reads authorization on retry and logout", as
     "X-Client-Timezone": "Asia/Shanghai",
     "X-Os-Category": "macos",
     "X-Os-Version": "24.0",
-    "X-Device-Mid": "device-1",
     Authorization: "Bearer first",
   });
   expect(new Headers(fetchImpl.mock.calls[1]?.[1]?.headers).get("Authorization")).toBe(
