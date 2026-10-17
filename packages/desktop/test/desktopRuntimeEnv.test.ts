@@ -58,12 +58,6 @@ vi.mock("@zcode/shared", () => ({
   TEST_ZCODE_ENDPOINT_ORIGIN: "https://zcode.z.ai",
   resolveRuntimeZCodeEndpointOrigin: (env: Record<string, string | undefined>) =>
     env.ZCODE_BASE_URL ?? env.ZCODE_TEST_BASE_URL ?? "https://zcode.z.ai",
-  resolveZaiOAuthOrigin: (env: Record<string, string | undefined>) =>
-    env.ZAI_OAUTH_ORIGIN ?? env.ZAI_TEST_OAUTH_ORIGIN ?? "https://chat.z.ai",
-  resolveZaiBusinessBaseUrl: (env: Record<string, string | undefined>) =>
-    env.ZAI_BUSINESS_BASE_URL ?? env.ZAI_TEST_BUSINESS_BASE_URL ?? "https://api.z.ai",
-  resolveZaiOAuthClientId: (env: Record<string, string | undefined>) =>
-    env.ZAI_OAUTH_CLIENT_ID ?? env.ZAI_TEST_OAUTH_CLIENT_ID ?? "client_P8X5CMWmlaRO9gyO-KSqtg",
   sanitizeZCodeRuntimeEnv: (env: Record<string, string | undefined>) => {
     const sanitizedKeys = new Set([
       "NODE_ENV",
@@ -764,15 +758,16 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     expectRuntimePath(env.GLM_BINARY_PATH, bundledPath);
   });
 
-  it("本地 host 进程加载工作区 .env.development 的测试环境 API 与 ZAI 登录入口", async () => {
+  it("本地 host 进程加载工作区 .env.development 的测试环境 API，且不再注入 ZAI 账号端点", async () => {
     const { loadHostProcessEnvFromLocalFiles } = await import("../src/main/desktopRuntimeEnv.js");
 
     const env = loadHostProcessEnvFromLocalFiles();
 
     expect(env.ZCODE_BASE_URL).toBe("https://zcode.z.ai");
-    expect(env.ZAI_OAUTH_ORIGIN).toBe("https://chat.z.ai");
-    expect(env.ZAI_BUSINESS_BASE_URL).toBe("https://api.z.ai");
-    expect(env.ZAI_OAUTH_CLIENT_ID).toBe("client_P8X5CMWmlaRO9gyO-KSqtg");
+    // fork（F4.1a）：官方账号下线后 ZAI_* 只会误导残留的账号链代码，必须停止注入。
+    expect(env.ZAI_OAUTH_ORIGIN).toBeUndefined();
+    expect(env.ZAI_BUSINESS_BASE_URL).toBeUndefined();
+    expect(env.ZAI_OAUTH_CLIENT_ID).toBeUndefined();
   });
 
   it("main 进程 endpoint 临时覆盖优先读取命令行环境变量", async () => {
@@ -786,7 +781,7 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     ).toBe("http://127.0.0.1:18765");
   });
 
-  it("打包后的测试环境 host 进程应内置测试环境登录入口", async () => {
+  it("打包后的测试环境 host 进程只内置测试环境 API 端点，不再注入 ZAI 登录入口", async () => {
     appMock.isPackaged = true;
     Object.defineProperty(process, "resourcesPath", {
       value: "/mock/resources",
@@ -805,9 +800,10 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
 
     expect(env.ZCODE_ENV).toBe("test");
     expect(env.ZCODE_BASE_URL).toBe("https://zcode.z.ai");
-    expect(env.ZAI_OAUTH_ORIGIN).toBe("https://chat.z.ai");
-    expect(env.ZAI_BUSINESS_BASE_URL).toBe("https://api.z.ai");
-    expect(env.ZAI_OAUTH_CLIENT_ID).toBe("client_P8X5CMWmlaRO9gyO-KSqtg");
+    // fork（F4.1a）：官方账号下线后 ZAI_* 只会误导残留的账号链代码，必须停止注入。
+    expect(env.ZAI_OAUTH_ORIGIN).toBeUndefined();
+    expect(env.ZAI_BUSINESS_BASE_URL).toBeUndefined();
+    expect(env.ZAI_OAUTH_CLIENT_ID).toBeUndefined();
     expect(env.ZCODE_CUA_HELPER_INSTALL_VARIANT).toBe("preview");
   });
 

@@ -12,3 +12,10 @@
 # - `#` 整行注释与空行忽略；拒绝绝对路径与含 `..` 段的条目。
 #
 # 本批任务（F4.0）只建立清单与解析脚本，暂无条目。
+
+# F4.1a（账号 provider 下线与存量数据迁移，2026-10-17）：
+# zcode-builtin(.test).json 内的 account:* providerRules 与 builtinProviderModelRules 属
+# 文件内删除，不产生整文件删除路径；以下为本次实际删除的整文件。
+packages/provider-node/test/account-model-membership.test.ts
+packages/provider-node/test/start-plan-selection.test.ts
+packages/services/test/offPeakModelSelectionView.test.ts

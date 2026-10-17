@@ -31,7 +31,11 @@ const OAUTH_CREDENTIAL_KEYS = new Set<string>(PROVIDER_PROVISIONING_OAUTH_CREDEN
 export interface ProviderProvisioningTargetOptions {
   readonly providerRuntime: ProviderRuntime;
   readonly personalRepository: PersonalProviderConfigRepository;
-  readonly accountProviderSource: AccountProviderService;
+  /**
+   * fork（F4.1a）：官方账号 provider 下线后 Host 不再装配账号源；依赖改为可选，
+   * Provisioning 只同步 Personal/BYOK 配置并跳过账号层刷新（账号链在 F4.5 整体删除）。
+   */
+  readonly accountProviderSource?: AccountProviderService;
   readonly credentialService: ICredentialService;
   readonly settingService: ISettingService;
   readonly personalConfigFilePath: string;
@@ -115,7 +119,7 @@ export function createProviderProvisioningTarget(
           });
 
           errorCode = "target-refresh-failed";
-          await options.accountProviderSource.refresh("provider-provisioning");
+          await options.accountProviderSource?.refresh("provider-provisioning");
           const snapshot =
             await options.providerRuntime.registryService.refresh("provider-provisioning");
           // 失效默认只是新会话偏好；把它当同步硬条件会让正常 SSH 被旧模型/档位阻断。
@@ -270,7 +274,7 @@ async function rollback(
     return new Error(errors.map(formatError).join("；"));
   }
   try {
-    await options.accountProviderSource.refresh("provider-provisioning-rollback");
+    await options.accountProviderSource?.refresh("provider-provisioning-rollback");
     await options.providerRuntime.registryService.refresh("provider-provisioning-rollback");
   } catch (error) {
     return error instanceof Error ? error : new Error(String(error));

@@ -331,52 +331,59 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
 });
 
 describe("desktopOAuthDeepLink OAuth routing", () => {
-  it("归因-only 回调不消费 OAuth state 路由，真实授权码回调才消费", async () => {
-    vi.useFakeTimers();
-    try {
-      const targetWindow = createMockWindow(31);
-      const logger = { info: vi.fn(), warn: vi.fn() };
-      electronMocks.getAllWindows.mockReturnValue([targetWindow]);
+  // fork（F4.1a）：官方账号下线后 OAuth 回调只记 info 日志并忽略，
+  // 不再消费 state 路由、不投递 renderer、不进入 pending 缓存。
+  it("OAuth 回调被忽略且只记 info 日志，不投递任何窗口", async () => {
+    const targetWindow = createMockWindow(31);
+    const logger = { info: vi.fn(), warn: vi.fn() };
+    electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
-      const { handleDeepLink, registerOAuthState } =
-        await import("../src/main/desktopOAuthDeepLink.js");
+    const { handleDeepLink, registerOAuthState, deliverPendingDeepLink } =
+      await import("../src/main/desktopOAuthDeepLink.js");
 
-      registerOAuthState(31, { state: "state-001", provider: "bigmodel" });
+    registerOAuthState(31, { state: "state-001", provider: "bigmodel" });
 
-      expect(
-        handleDeepLink("zcode://oauth/callback?state=state-001&utm_source=google", logger),
-      ).toBe(true);
-      expect(targetWindow.webContents.send).toHaveBeenCalledWith(
-        PlatformChannels.OAuthCallback,
-        "zcode://oauth/callback?state=state-001&utm_source=google",
-      );
+    expect(
+      handleDeepLink("zcode://oauth/callback?state=state-001&utm_source=google", logger),
+    ).toBe(false);
+    expect(
+      handleDeepLink("zcode://oauth/callback?authCode=auth-001&state=state-001", logger),
+    ).toBe(false);
+    expect(targetWindow.webContents.send).not.toHaveBeenCalled();
+    expect(logger.warn).not.toHaveBeenCalled();
+    expect(logger.info).toHaveBeenCalledWith(
+      "[deep-link] OAuth 回调已随官方账号下线，忽略此次回调",
+      expect.objectContaining({ host: "oauth", path: "/callback" }),
+    );
 
-      targetWindow.webContents.send.mockClear();
+    // 即使 OAuth 回调先于 renderer ready 到达，也不允许从 ready 投递中复活。
+    expect(deliverPendingDeepLink(targetWindow.webContents as never)).toBe(false);
+    expect(targetWindow.webContents.send).not.toHaveBeenCalled();
+  });
 
-      expect(
-        handleDeepLink("zcode://oauth/callback?authCode=auth-001&state=state-001", logger),
-      ).toBe(true);
-      expect(targetWindow.webContents.send).toHaveBeenCalledWith(
-        PlatformChannels.OAuthCallback,
-        "zcode://oauth/callback?authCode=auth-001&state=state-001",
-      );
+  it("支付回调被忽略且只记 info 日志，不投递任何窗口", async () => {
+    const targetWindow = createMockWindow(32);
+    const logger = { info: vi.fn(), warn: vi.fn() };
+    electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
-      targetWindow.webContents.send.mockClear();
+    const { handleDeepLink, deliverPendingDeepLink } =
+      await import("../src/main/desktopOAuthDeepLink.js");
 
-      expect(
-        handleDeepLink("zcode://oauth/callback?authCode=auth-002&state=state-001", logger),
-      ).toBe(false);
-      expect(targetWindow.webContents.send).not.toHaveBeenCalled();
-      expect(logger.warn).toHaveBeenLastCalledWith(
-        "[deep-link] OAuth 回调未命中目标窗口，先缓存等待 renderer ready",
-        {
-          state: "state-001",
-          hasRouteTarget: false,
-        },
-      );
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(
+      handleDeepLink(
+        "zcode://payment/callback?provider=bigmodel&channel=alipay&status=success",
+        logger,
+      ),
+    ).toBe(false);
+    expect(targetWindow.webContents.send).not.toHaveBeenCalled();
+    expect(logger.warn).not.toHaveBeenCalled();
+    expect(logger.info).toHaveBeenCalledWith(
+      "[deep-link] 支付回调已随官方账号下线，忽略此次回调",
+      expect.objectContaining({ host: "payment", path: "/callback" }),
+    );
+
+    expect(deliverPendingDeepLink(targetWindow.webContents as never)).toBe(false);
+    expect(targetWindow.webContents.send).not.toHaveBeenCalled();
   });
 });
 

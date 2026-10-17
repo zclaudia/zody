@@ -307,7 +307,7 @@ describe("connectRemote", () => {
     expect(backend.commands[0]).toContain(`ZCODE_APP_VERSION='2.13.1+build'"'"'7'`);
   });
 
-  it("启动远端 server 时只注入受控的测试环境 endpoint 变量", async () => {
+  it("启动远端 server 时只注入受控的测试环境 endpoint 变量，不再转发 ZAI_* 账号端点", async () => {
     const backend = new FakeConnectBackend();
 
     const connection = await connectRemote(backend, {
@@ -325,8 +325,9 @@ describe("connectRemote", () => {
 
     expect(backend.commands[0]).toContain("ZCODE_ENV='test'");
     expect(backend.commands[0]).toContain("ZCODE_BASE_URL='https://zcode.z.ai/api/v1'");
-    expect(backend.commands[0]).toContain("ZAI_OAUTH_ORIGIN='https://chat.z.ai'");
-    expect(backend.commands[0]).toContain(`ZAI_OAUTH_CLIENT_ID='client_'"'"'test'`);
+    // fork（F4.1a）：官方账号下线后远端不再需要 ZAI_*（OAuth/ClientId）端点，一律不转发。
+    expect(backend.commands[0]).not.toContain("ZAI_OAUTH_ORIGIN");
+    expect(backend.commands[0]).not.toContain("ZAI_OAUTH_CLIENT_ID");
     expect(backend.commands[0]).not.toContain("ZAI_OAUTH_APP_SECRET");
     expect(backend.commands[0]).not.toContain("must-not-cross-ssh");
   });

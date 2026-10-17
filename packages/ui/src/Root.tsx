@@ -93,6 +93,7 @@ import { setSessionOpenArmsReporter } from "@/lib/sessionOpenArmsTelemetry.js";
 import { setSendFunnelArmsReporter } from "@/lib/sendFunnelArmsTelemetry.js";
 import { RootStartupLoading } from "@/root/RootStartupLoading.js";
 import { resolveProviderAvailabilityState } from "@/lib/modelProviderAvailability.js";
+import { stripOfficialAccountSelectionsFromStorage } from "@/lib/officialAccountRendererDataMigration.js";
 import { useProviderAvailabilityLoginEntryGuard } from "@/root/useProviderAvailabilityLoginEntryGuard.js";
 import { ensureProviderFamilyDomainMigration } from "@/lib/providerFamilyDomainMigration.js";
 import { useSettings } from "@/hooks/useSettingService.js";
@@ -550,6 +551,15 @@ function RootInner({
   const refreshProviderState = useRootProviderStateRefresh(services);
   useRootProviderSettingsSnapshot(services);
   useEffect(() => {
+    // fork（F4.1a）：官方账号下线后，渲染端 localStorage 中指向 account:* 的
+    // 模型选择（composer 草稿/最近模型）一次性剔除；幂等，失败不影响启动。
+    try {
+      stripOfficialAccountSelectionsFromStorage();
+    } catch (error) {
+      logger.warn("[Root] 渲染端官方账号模型选择清理失败，继续启动", { error });
+    }
+  }, []);
+  useEffect(() => {
     let disposed = false;
 
     void (async () => {
@@ -598,9 +608,7 @@ function RootInner({
   const { startupCheckCompleted: providerAvailabilityStartupCheckCompleted } =
     useProviderAvailabilityLoginEntryGuard({
       enabled: providerAvailabilityLoginEntryGuardEnabled,
-      user,
       isRestoringOAuthSession: isResolvingStartupAuthState || providerStartupSyncPending,
-      providerFamilyDomain: appSettings?.providerFamilyDomain,
       modelSelectionView: rootModelSelectionView,
       modelSelectionError:
         rootModelSelectionRead.state.status === "error"

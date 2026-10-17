@@ -21,11 +21,13 @@ const OFFICIAL_ACCOUNT_SEED_WITH_JWT_SPEC_NAMES = new Set([
 ]);
 // 级别 1（仅 OAuth 展示态，不带 zcodejwttoken——假 JWT 打到未 mock 的官方路径会 401
 // 弹登录过期框，历史合并时已按此隔离）：Coding Plan 团队/升级 spec 走本地 team mock，
-// 只需要 bigmodel 账号展示态。
+// 只需要 bigmodel 账号展示态。fork（F4.1a）：「旧版本升级」场景也种官方账号存量，
+// 供 Host 启动迁移在真实启动路径上清理（spec 断言清理后的最终态）。
 const OFFICIAL_ACCOUNT_SEED_OAUTH_ONLY_SPEC_NAMES = new Set([
   "coding-plan-team-usage.test.ts",
   "coding-plan-upgrade-personal-sold-out.test.ts",
   "coding-plan-upgrade-personal-system-busy.test.ts",
+  "official-account-removal-upgrade.test.ts",
 ]);
 
 export function createE2EStartupCredentialSeed(

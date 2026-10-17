@@ -4,10 +4,11 @@ import {
   ModelConfigRules,
   ModelConfig,
   ModelOptionSpecsConfig,
+  ApiKeyAccessConfig,
+  ProviderApiConfig,
   ProviderConfigMap,
   ProviderConfigResolver,
   ProviderConfig,
-  ZhipuAccountAccessConfig,
   createRegistryModelConfig,
   createRegistryProviderConfig,
   type ModelSelection,
@@ -40,30 +41,38 @@ function view(modelId: string, level: string, personalModels = ModelConfigRules.
     zcodeBuiltinModelRules: builtin.models,
     personalModels,
   };
+  // fork（F4.1a）：官方账号 provider 已从 Built-in 下线；改名规则的回归载体改为
+  // Personal（BYOK）provider——account 层留空，不再依赖已删除的 account:* 声明。
+  const providerId = "personal-zai";
   const account = {
     revision: "a",
     basedOnZCodeBuiltinRevision: "b",
-    providers: new ProviderConfigMap([
-      [
-        "account:bigmodel-individual-coding-plan",
-        new ProviderConfig({ access: new ZhipuAccountAccessConfig({ entitled: true }) }),
-      ],
-    ]),
-    states: {
-      "account:bigmodel-individual-coding-plan": {
-        availability: "available" as const,
-        entitled: true,
-        current: true,
-      },
-    },
+    providers: ProviderConfigMap.empty(),
+    states: {},
   };
   // 真实 Built-in 规则和 Resolver；补入模型成员用于独立覆盖 GLM 的不同代际。
   const resolution = new ProviderConfigResolver().resolve({
     ...config,
     accountProviders: account.providers,
     accountStates: account.states,
+    personalProviders: new ProviderConfigMap([
+      [
+        providerId,
+        new ProviderConfig({
+          group: "standard-personal",
+          api: new ProviderApiConfig({
+            type: "anthropic-messages",
+            baseUrl: "https://api.z.ai/api/anthropic",
+          }),
+          access: new ApiKeyAccessConfig({
+            type: "zhipu-coding-plan-api-key",
+            apiKey: "test-key",
+          }),
+          personalModelIds: ["GLM-5.3", "GLM-5.3-Flash", "GLM-5.2", "GLM-5-Turbo"],
+        }),
+      ],
+    ]),
   });
-  const providerId = "account:bigmodel-individual-coding-plan";
   const providerConfig = resolution.effectiveProviders.get(providerId)!;
   const modelConfig = ModelConfigRules.composeEffective(builtin.models, personalModels).resolve({
     providerId,
@@ -163,7 +172,7 @@ describe("Todo95C 来源限定的只读关闭档位改名", () => {
       new ModelConfigRules([
         {
           type: "provider-model",
-          providerId: "account:bigmodel-individual-coding-plan",
+          providerId: "personal-zai",
           modelId: "GLM-5.2",
           config: new ModelConfig({
             optionSpecs: new ModelOptionSpecsConfig({ reasoningLevel: { values } }),

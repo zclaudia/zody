@@ -79,11 +79,9 @@ describe("Todo104 最终文件外壳", () => {
     expect(raw.revision).toBeGreaterThanOrEqual(18);
     const parsed = decodeZCodeBuiltinRelease(raw);
     expect(encodeZCodeBuiltinRelease(parsed)).toEqual(raw);
-    expect(parsed.config.providers.keys().length).toBeGreaterThan(0);
+    // fork（F4.1a）：官方账号 provider 下线后 Built-in 不再声明 Provider 实例，
+    // 只有模板（BYOK 与第三方）与模型规则；往返一致性继续成立。
+    expect(parsed.config.providers.keys().length).toBe(0);
     expect(parsed.config.providerTemplates.keys().length).toBeGreaterThan(0);
-    for (const rule of parsed.config.providers.toJSON()) {
-      expect(rule.config).not.toHaveProperty("templateId");
-      expect(rule.config).not.toHaveProperty("label");
-    }
   });
 });
