@@ -77,6 +77,7 @@ export {
   ZCODE_TELEMETRY_REPORT_ENDPOINT,
   ZCODE_AUTO_UPDATE_ENABLED,
   ZCODE_DOWNLOAD_PAGE_URL,
+  ZCODE_FEEDBACK_ISSUE_URL,
   isDesktopAutoUpdateActive,
   mapZCodeEnvToArmsRumEnv,
   normalizeZCodeEnv,

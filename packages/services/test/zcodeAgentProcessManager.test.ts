@@ -1214,7 +1214,16 @@ setInterval(() => {}, 1000);
       });
       try {
         const client = await manager.getClient({ workspacePath });
-        await vi.waitFor(() => expect(reporter.onException).toHaveBeenCalledOnce());
+        // Bugfix: vi.waitFor 默认 1s 超时只覆盖子进程 stderr 首帧的等待窗口，而本用例
+        // 正常总耗时已 ~2.2s（spawn 真实 node 子进程占大头）。全量门禁高负载下
+        // （2026-10-17 门禁第 3 轮该 it.each 用例以（false）变体偶发失败，同代码前后
+        // 两轮全量均绿），spawn 排队会把首帧挤过 1s 窗口。与 vitest.config.ts
+        // testTimeout 30s 及 workflowArtifactSidePane 版本步进器用例的放宽口径一致，
+        // 只放宽本等待的上限，不改断言语义；it.each 三个变体共享此函数体。
+        const exceptionForwardTimeoutMs = 5_000;
+        await vi.waitFor(() => expect(reporter.onException).toHaveBeenCalledOnce(), {
+          timeout: exceptionForwardTimeoutMs,
+        });
         expect(reporter.onExit).not.toHaveBeenCalled();
         expect(await manager.getClient({ workspacePath })).toBe(client);
         expect(reporter.onException.mock.calls[0]?.[0]).toMatchObject({
