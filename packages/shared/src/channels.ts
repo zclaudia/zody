@@ -17,7 +17,12 @@ import type {
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceTarget,
 } from "./web-remote-control.js";
-import type { RemoteAccessStatus } from "./remoteAccess.js";
+import type {
+  RemoteAccessCredentialStatus,
+  RemoteAccessStatus,
+  RemoteAccessTestConnectionRequest,
+  RemoteAccessTestConnectionResult,
+} from "./remoteAccess.js";
 import type { AppSettings, Locale } from "./protocol.js";
 import type { StorageCleanRequest, StorageCleanResult, StorageUsageSnapshot } from "./storage.js";
 import type {
@@ -236,6 +241,14 @@ export const PlatformChannels = {
   DisconnectRemoteClient: "zcode:disconnect-remote-client",
   /** Renderer → Main：查询 App 级远程访问状态（开关 + 全局 runtime 状态） */
   GetRemoteAccessStatus: "zcode:get-remote-access-status",
+  /** Renderer → Main：查询 backend 凭证是否已配置（只读状态，不返回凭证） */
+  GetRemoteAccessCredentialStatus: "zcode:get-remote-access-credential-status",
+  /** Renderer → Main：保存 backend 凭证（`zgb_`/`zga_`），只写入 Main 凭据服务 */
+  SaveRemoteAccessCredential: "zcode:save-remote-access-credential",
+  /** Renderer → Main：清除 backend 凭证 */
+  ClearRemoteAccessCredential: "zcode:clear-remote-access-credential",
+  /** Renderer → Main：用设置页当前表单值测试 gateway 连接 */
+  TestRemoteAccessConnection: "zcode:test-remote-access-connection",
   /** 释放当前窗口里的远程 session */
   DisposeRemoteSession: "zcode:dispose-remote-session",
   /** Renderer → Main：检查本机 Docker daemon 是否可用 */
@@ -857,6 +870,22 @@ export interface PlatformChannelMap {
   [PlatformChannels.GetRemoteAccessStatus]: {
     request: void;
     response: RemoteAccessStatus;
+  };
+  [PlatformChannels.GetRemoteAccessCredentialStatus]: {
+    request: void;
+    response: RemoteAccessCredentialStatus;
+  };
+  [PlatformChannels.SaveRemoteAccessCredential]: {
+    request: string;
+    response: void;
+  };
+  [PlatformChannels.ClearRemoteAccessCredential]: {
+    request: void;
+    response: void;
+  };
+  [PlatformChannels.TestRemoteAccessConnection]: {
+    request: RemoteAccessTestConnectionRequest;
+    response: RemoteAccessTestConnectionResult;
   };
   [PlatformChannels.DisposeRemoteSession]: {
     request: string;

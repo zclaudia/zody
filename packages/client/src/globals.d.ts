@@ -36,6 +36,9 @@ import type {
   WebRemoteControlReconnectWorkspaceRequest,
   WebRemoteControlReconnectWorkspaceResult,
   RemoteAccessStatus,
+  RemoteAccessCredentialStatus,
+  RemoteAccessTestConnectionRequest,
+  RemoteAccessTestConnectionResult,
   WebRemoteControlStartOperationResult,
   WebRemoteControlStatus,
   WebRemoteControlTaskTarget,
@@ -118,6 +121,16 @@ declare global {
       disconnectRemoteClient?(): Promise<void>;
       /** 查询 App 级远程访问状态 */
       getRemoteAccessStatus?(): Promise<RemoteAccessStatus>;
+      /** 查询 backend 凭证是否已配置；凭证本身不出 Main */
+      getRemoteAccessCredentialStatus?(): Promise<RemoteAccessCredentialStatus>;
+      /** 保存 backend 凭证（`zgb_`/`zga_`） */
+      saveRemoteAccessCredential?(credential: string): Promise<void>;
+      /** 清除 backend 凭证 */
+      clearRemoteAccessCredential?(): Promise<void>;
+      /** 用当前表单值测试 gateway 连接 */
+      testRemoteAccessConnection?(
+        input: RemoteAccessTestConnectionRequest,
+      ): Promise<RemoteAccessTestConnectionResult>;
       /** 释放当前窗口里的远程 session */
       disposeRemoteSession(sessionId: string): Promise<void>;
       /** 检查本机 Docker daemon 是否可用 */

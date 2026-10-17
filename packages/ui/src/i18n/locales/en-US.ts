@@ -1076,7 +1076,8 @@ const enUS: Record<string, string> = {
   "browser.permission.deviceBluetooth": "Bluetooth devices",
   "browser.permission.unknownCapability": "an unknown capability",
   "browser.permission.screenShareTitle": "{origin} wants to share your screen",
-  "browser.permission.screenShareDescription": "Choose the screen or window to share. This choice applies only to this session.",
+  "browser.permission.screenShareDescription":
+    "Choose the screen or window to share. This choice applies only to this session.",
   "browser.permission.deviceTitle": "{origin} wants to connect a device",
   "browser.permission.connect": "Connect",
   "browser.permission.screenGroup.screen": "Entire Screen",
@@ -1955,8 +1956,26 @@ const enUS: Record<string, string> = {
   "webRemoteControl.triggerStatus.connected": "Phone connected",
   "webRemoteControl.triggerStatus.error": "Remote control failed",
   "webRemoteControl.title": "Mobile remote control",
-  "webRemoteControl.description":
-    "Scan the QR code or open the link on your phone to control this workspace.",
+  "webRemoteControl.description": "Control this computer from your phone through the gateway.",
+  "webRemoteControl.remoteAccess.title": "Remote access",
+  "webRemoteControl.remoteAccess.offDetail":
+    "Remote access is off, so your phone cannot see this computer.",
+  "webRemoteControl.remoteAccess.connectingDetail": "Connecting to the gateway…",
+  "webRemoteControl.remoteAccess.waitingPhoneDetail":
+    "The gateway is connected and waiting for a phone.",
+  "webRemoteControl.remoteAccess.phoneConnectedDetail":
+    "Your phone is connected and can control this computer.",
+  "webRemoteControl.remoteAccess.errorDetail":
+    "The gateway connection failed. Check the address and credential in Settings.",
+  "webRemoteControl.remoteAccess.settingsHint":
+    "Enter the gateway URL, namespace, and backend credential in Settings → Remote access.",
+  "webRemoteControl.remoteAccess.managedInSettings":
+    "Remote access configuration and credentials are managed in Settings.",
+  "webRemoteControl.remoteAccess.enabledToast": "Remote access enabled",
+  "webRemoteControl.remoteAccess.disabledToast": "Remote access disabled",
+  "webRemoteControl.remoteAccess.toggleFailed": "Could not change remote access: {error}",
+  "webRemoteControl.remoteAccess.disconnectSuccess": "Phone disconnected",
+  "webRemoteControl.remoteAccess.disconnectFailed": "Could not disconnect the phone: {error}",
   "webRemoteControl.statusLabel": "Session status",
   "webRemoteControl.status.idle": "Idle",
   "webRemoteControl.status.starting": "Starting",
@@ -2785,6 +2804,74 @@ const enUS: Record<string, string> = {
     "Certificate setting saved. Restart the app to take effect.",
   "settings.browser.data.section": "Browser data",
   "settings.browser.desktopOnly": "Browser data can only be managed in the ZCode desktop app.",
+  "settings.remoteAccess.title": "Remote access",
+  "settings.remoteAccess.toggle.label": "Enable remote access",
+  "settings.remoteAccess.toggle.description":
+    "When enabled, the desktop connects to the gateway in the background so your phone can see and control this computer. When disabled, the phone sees it as offline.",
+  "settings.remoteAccess.toggle.failed": "Could not change remote access: {error}",
+  "settings.remoteAccess.config.section": "Gateway configuration",
+  "settings.remoteAccess.gatewayUrl.label": "Gateway URL",
+  "settings.remoteAccess.gatewayUrl.description":
+    "The gateway's http(s) address. It is stored only on this computer and has no default.",
+  "settings.remoteAccess.gatewayUrl.placeholder": "https://gateway.example.com",
+  "settings.remoteAccess.gatewayUrl.invalid":
+    "Enter a valid http(s) gateway URL. Release builds require https.",
+  "settings.remoteAccess.namespace.label": "Namespace",
+  "settings.remoteAccess.namespace.description":
+    "The gateway namespace. Keep the default zcode unless your gateway administrator says otherwise.",
+  "settings.remoteAccess.config.save": "Save configuration",
+  "settings.remoteAccess.config.saveSuccess": "Remote access configuration saved",
+  "settings.remoteAccess.config.saveFailed":
+    "Could not save the remote access configuration: {error}",
+  "settings.remoteAccess.credential.label": "Backend credential",
+  "settings.remoteAccess.credential.description":
+    "The zgb_ credential issued by the gateway administrator, one per computer. It is written only to local secure storage and never displayed or synced.",
+  "settings.remoteAccess.credential.placeholder": "Paste the credential starting with zgb_",
+  "settings.remoteAccess.credential.replacePlaceholder":
+    "Configured; paste a new credential to replace it",
+  "settings.remoteAccess.credential.configured": "Credential configured",
+  "settings.remoteAccess.credential.notConfigured": "Credential not configured",
+  "settings.remoteAccess.credential.save": "Save credential",
+  "settings.remoteAccess.credential.clear": "Clear credential",
+  "settings.remoteAccess.credential.saveSuccess": "Backend credential saved",
+  "settings.remoteAccess.credential.saveFailed": "Could not save the credential: {error}",
+  "settings.remoteAccess.credential.invalid":
+    "Invalid credential format. Use a credential starting with zgb_ or zga_.",
+  "settings.remoteAccess.credential.clearSuccess": "Backend credential cleared",
+  "settings.remoteAccess.credential.clearFailed": "Could not clear the credential: {error}",
+  "settings.remoteAccess.status.section": "Connection status",
+  "settings.remoteAccess.gateway.label": "Gateway connection",
+  "settings.remoteAccess.gateway.description":
+    "The backend connection between this desktop and the gateway.",
+  "settings.remoteAccess.gateway.disabled": "Off",
+  "settings.remoteAccess.gateway.connecting": "Connecting",
+  "settings.remoteAccess.gateway.online": "Connected",
+  "settings.remoteAccess.gateway.unconfigured": "Incomplete configuration",
+  "settings.remoteAccess.gateway.credentialInvalid": "Credential invalid",
+  "settings.remoteAccess.gateway.replaced": "Credential used on another device",
+  "settings.remoteAccess.gateway.unreachable": "Cannot reach gateway",
+  "settings.remoteAccess.phone.label": "Phone",
+  "settings.remoteAccess.phone.waiting": "Waiting for phone",
+  "settings.remoteAccess.phone.waitingDetail":
+    "A phone appears here after it connects through the gateway.",
+  "settings.remoteAccess.phone.unknownDevice": "Unknown device",
+  "settings.remoteAccess.phone.disconnect": "Disconnect phone",
+  "settings.remoteAccess.phone.disconnectSuccess": "Phone disconnected",
+  "settings.remoteAccess.phone.disconnectFailed": "Could not disconnect the phone: {error}",
+  "settings.remoteAccess.test.label": "Test connection",
+  "settings.remoteAccess.test.description":
+    "Open a separate connection using the address, namespace, and credential currently in the form without saving.",
+  "settings.remoteAccess.test.mobileConnected":
+    "A phone is connected. Only one process can use a credential at a time, and testing would interrupt the session; disconnect the phone first.",
+  "settings.remoteAccess.test.success": "Gateway connection succeeded",
+  "settings.remoteAccess.test.error": "Test connection failed: {error}",
+  "settings.remoteAccess.test.reason.unconfigured":
+    "Enter the gateway URL and backend credential first",
+  "settings.remoteAccess.test.reason.mobileConnected":
+    "A phone is connected; disconnect it before testing",
+  "settings.remoteAccess.test.reason.credentialInvalid": "The backend credential is invalid",
+  "settings.remoteAccess.test.reason.replaced": "This credential is already used on another device",
+  "settings.remoteAccess.test.reason.unreachable": "Cannot reach the gateway",
   "settings.browser.import.title": "Import Chrome sign-in state",
   "settings.browser.import.description":
     "Bring your Chrome sign-in state into the built-in browser once, so the AI can open sites you are already signed in to and work more smoothly.",

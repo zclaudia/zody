@@ -5,26 +5,16 @@ import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  WebRemoteControlDialog,
-  isSameWebRemoteControlTarget,
-  isReusableWebRemoteControlSession,
-  getWebRemoteControlStatusTagLabel,
-} from "@/WebRemoteControlDialog.js";
+import type { RemoteAccessStatus } from "@zcode/shared";
+import { WebRemoteControlDialog } from "@/WebRemoteControlDialog.js";
 
 vi.mock("@/components/ui/button.js", () => ({
-  Button: ({
-    children,
-    ...props
-  }: {
-    children?: ReactNode;
-    [key: string]: unknown;
-  }) => createElement("button", props, children),
+  Button: ({ children, ...props }: { children?: ReactNode; [key: string]: unknown }) =>
+    createElement("button", props, children),
 }));
 
 vi.mock("@/components/ui/dialog.js", () => ({
-  Dialog: ({ children }: { children?: ReactNode }) =>
-    createElement("div", null, children),
+  Dialog: ({ children }: { children?: ReactNode }) => createElement("div", null, children),
   DialogContent: ({
     children,
     className,
@@ -36,17 +26,31 @@ vi.mock("@/components/ui/dialog.js", () => ({
     showCloseButton?: boolean;
     [key: string]: unknown;
   }) => createElement("section", { className, ...props }, children),
-  DialogDescription: ({ children }: { children?: ReactNode }) =>
-    createElement("p", null, children),
-  DialogHeader: ({
-    children,
-    className,
+  DialogDescription: ({ children }: { children?: ReactNode }) => createElement("p", null, children),
+  DialogHeader: ({ children, className }: { children?: ReactNode; className?: string }) =>
+    createElement("header", { className }, children),
+  DialogTitle: ({ children }: { children?: ReactNode }) => createElement("h2", null, children),
+}));
+
+vi.mock("@/components/ui/switch.js", () => ({
+  Switch: ({
+    checked,
+    disabled,
+    onCheckedChange,
+    ...props
   }: {
-    children?: ReactNode;
-    className?: string;
-  }) => createElement("header", { className }, children),
-  DialogTitle: ({ children }: { children?: ReactNode }) =>
-    createElement("h2", null, children),
+    checked?: boolean;
+    disabled?: boolean;
+    onCheckedChange?: (checked: boolean) => void;
+    [key: string]: unknown;
+  }) =>
+    createElement("input", {
+      ...props,
+      type: "checkbox",
+      checked,
+      disabled,
+      onChange: () => onCheckedChange?.(!checked),
+    }),
 }));
 
 const feedbackMocks = vi.hoisted(() => ({
@@ -69,25 +73,25 @@ vi.mock("@/BotsDialog.js", () => ({
 }));
 
 const platformMock = vi.hoisted(() => ({
-  getWebRemoteControlStatus: vi.fn(async () => ({ status: "idle" })),
-  startWebRemoteControl: vi.fn(async () => ({ status: "running" })),
-  refreshWebRemoteControlPairing: vi.fn(async () => ({ status: "running" })),
-  stopWebRemoteControl: vi.fn(async () => {}),
+  setRemoteAccessEnabled: vi.fn(async () => {}),
+  disconnectRemoteClient: vi.fn(async () => {}),
 }));
 
 vi.mock("@/hooks/usePlatform.js", () => ({
   usePlatform: () => platformMock,
 }));
 
-const confirmDialogMock = vi.hoisted(() => vi.fn(async () => true));
-
-vi.mock("@/hooks/useConfirmDialog.js", () => ({
-  useConfirmDialog: () => confirmDialogMock,
+const remoteAccessStatusMock = vi.hoisted(() => ({
+  status: null as RemoteAccessStatus | null,
+  refresh: vi.fn(async () => {}),
 }));
 
-vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (selector: (state: { theme: string }) => unknown) =>
-    selector({ theme: "zai-dark" }),
+vi.mock("@/hooks/useRemoteAccessStatus.js", () => ({
+  useRemoteAccessStatus: () => ({
+    status: remoteAccessStatusMock.status,
+    loading: false,
+    refresh: remoteAccessStatusMock.refresh,
+  }),
 }));
 
 const intlMock = vi.hoisted(() => ({
@@ -107,201 +111,142 @@ vi.mock("@/logger.js", () => ({
   },
 }));
 
-function readWebRemoteControlDialogSource() {
-  // Bugfix: WebRemoteControlDialog 经过 React.memo 包装后，组件 toString() 只会返回 [object Object]。
-  // 源码结构守卫需要读取真实文件，才能继续校验复用顺序和确认弹窗保护没有被性能优化绕开。
+function readDialogSource() {
   return readFileSync("packages/ui/src/WebRemoteControlDialog.tsx", "utf8");
 }
 
-describe("WebRemoteControlDialog layout", () => {
+function makeStatus(overrides: Partial<RemoteAccessStatus> = {}): RemoteAccessStatus {
+  return {
+    enabled: true,
+    status: { status: "running" },
+    gateway: { state: "online", backendId: "backend-1", epoch: 1 },
+    ...overrides,
+  };
+}
+
+function renderDialog() {
+  return render(
+    createElement(WebRemoteControlDialog, {
+      open: true,
+      onOpenChange: vi.fn(),
+      workspacePath: "/tmp/project",
+    }),
+  );
+}
+
+describe("WebRemoteControlDialog", () => {
   afterEach(() => {
     cleanup();
-    platformMock.getWebRemoteControlStatus.mockClear();
-    platformMock.startWebRemoteControl.mockClear();
-    platformMock.refreshWebRemoteControlPairing.mockClear();
-    platformMock.stopWebRemoteControl.mockClear();
+    platformMock.setRemoteAccessEnabled.mockClear();
+    platformMock.disconnectRemoteClient.mockClear();
+    remoteAccessStatusMock.status = null;
+    remoteAccessStatusMock.refresh.mockClear();
     feedbackMocks.error.mockClear();
     feedbackMocks.info.mockClear();
     feedbackMocks.toast.mockClear();
-    confirmDialogMock.mockClear();
     botsDialogMock.props.length = 0;
   });
 
-  it("打开弹层不会自动启动远控，只有显式点「开启」才调用 start", async () => {
-    platformMock.getWebRemoteControlStatus.mockResolvedValue({ status: "idle" });
+  it("只展示 App 级远程访问状态，不再生成二维码", () => {
+    remoteAccessStatusMock.status = makeStatus({ enabled: false, gateway: { state: "disabled" } });
 
-    const view = render(
-      createElement(WebRemoteControlDialog, {
-        open: true,
-        onOpenChange: vi.fn(),
-        workspacePath: "/tmp/project",
-      }),
-    );
+    const view = renderDialog();
 
-    await waitFor(() => expect(platformMock.getWebRemoteControlStatus).toHaveBeenCalled());
-    // T1.3: 打开即查看状态，不再顺带 startWebRemoteControl。
-    expect(platformMock.startWebRemoteControl).not.toHaveBeenCalled();
-    expect(view.container.textContent).toContain("webRemoteControl.statusDetail.idle");
-    expect(view.container.textContent).toContain("webRemoteControl.qrIdle");
-
-    const startButton = await view.findByTestId("web-remote-control-start");
-    fireEvent.click(startButton);
-
-    await waitFor(() => expect(platformMock.startWebRemoteControl).toHaveBeenCalledOnce());
-    expect(platformMock.startWebRemoteControl).toHaveBeenCalledWith({
-      workspacePath: "/tmp/project",
-      workspaceIdentity: undefined,
-      remoteSessionId: undefined,
-      initialTaskId: undefined,
-    });
-    await waitFor(() =>
-      expect(view.container.textContent).toContain("webRemoteControl.statusDetail.running"),
-    );
+    expect(view.container.textContent).toContain("webRemoteControl.remoteAccess.title");
+    expect(view.container.textContent).toContain("settings.remoteAccess.gateway.disabled");
+    expect(view.container.textContent).toContain("settings.remoteAccess.phone.waiting");
+    expect(view.container.textContent).not.toContain("webRemoteControl.qrAlt");
+    expect(view.container.querySelector('img[alt="webRemoteControl.qrAlt"]')).toBeNull();
   });
 
-  it("treats native start cancellation as idle without failure UI", async () => {
-    platformMock.startWebRemoteControl.mockResolvedValueOnce({ status: "cancelled" });
-
-    const view = render(
-      createElement(WebRemoteControlDialog, {
-        open: true,
-        onOpenChange: vi.fn(),
-        workspacePath: "/tmp/project",
-      }),
-    );
-    const startButton = await view.findByTestId("web-remote-control-start");
-    fireEvent.click(startButton);
-
-    await waitFor(() => expect(platformMock.startWebRemoteControl).toHaveBeenCalledOnce());
-    expect(view.container.textContent).toContain("webRemoteControl.statusDetail.idle");
-    expect(view.container.textContent).toContain("webRemoteControl.qrIdle");
-    expect(feedbackMocks.toast).not.toHaveBeenCalled();
-    expect(feedbackMocks.error).not.toHaveBeenCalled();
-  });
-
-  it("keeps the running status and shows no feedback when native refresh is cancelled", async () => {
-    platformMock.getWebRemoteControlStatus.mockResolvedValueOnce({
-      status: "running",
-      sessionId: "sid-1",
-      mobileConnected: true,
-      workspacePath: "/tmp/project",
-    });
-    platformMock.refreshWebRemoteControlPairing.mockResolvedValueOnce({ status: "cancelled" });
-
-    const view = render(
-      createElement(WebRemoteControlDialog, {
-        open: true,
-        onOpenChange: vi.fn(),
-        workspacePath: "/tmp/project",
-      }),
-    );
-    const refreshButton = await view.findByRole("button", {
-      name: "webRemoteControl.refreshQr",
-    });
-
-    fireEvent.click(refreshButton);
-
-    await waitFor(() => expect(platformMock.refreshWebRemoteControlPairing).toHaveBeenCalledOnce());
-    expect(view.container.textContent).toContain("webRemoteControl.statusDetail.running");
-    expect(feedbackMocks.toast).not.toHaveBeenCalled();
-    expect(feedbackMocks.error).not.toHaveBeenCalled();
-  });
-
-  it("仅在 workspace 与 remoteSessionId 都匹配时复用远控状态", () => {
-    expect(
-      isSameWebRemoteControlTarget(
-        {
-          status: "running",
-          sessionId: "sid-1",
-          workspacePath: "/tmp/workspace-a",
-        },
-        "/tmp/workspace-b",
-      ),
-    ).toBe(false);
-
-    expect(
-      isSameWebRemoteControlTarget(
-        {
-          status: "running",
-          sessionId: "sid-1",
-          workspacePath: "/tmp/workspace-a",
-          remoteSessionId: "remote-a",
-        },
-        "/tmp/workspace-a",
-        undefined,
-        "remote-b",
-      ),
-    ).toBe(false);
-
-    expect(
-      isSameWebRemoteControlTarget(
-        {
-          status: "running",
-          sessionId: "sid-1",
-          workspacePath: "/tmp/workspace-a",
-          workspaceIdentity: "ssh://host/repo",
-          remoteSessionId: "remote-a",
-        },
-        "/tmp/any-local-path",
-        "ssh://host/repo",
-        "remote-a",
-      ),
-    ).toBe(true);
-  });
-
-  it("复用已有 window 级远控会话时不要求 workspace 匹配", () => {
-    expect(
-      isReusableWebRemoteControlSession({
+  it("展示 gateway 与手机的全局连接状态", () => {
+    remoteAccessStatusMock.status = makeStatus({
+      status: {
         status: "active",
-        sessionId: "sid-1",
         mobileConnected: true,
-        workspacePath: "/tmp/workspace-a",
-      }),
-    ).toBe(true);
+        mobileDeviceInfo: {
+          platform: "android",
+          version: "1.0.0",
+          name: "Pixel 9",
+          updatedAt: 1,
+        },
+      },
+      gateway: { state: "online", backendId: "backend-1", epoch: 2 },
+    });
 
-    expect(
-      isReusableWebRemoteControlSession({
-        status: "idle",
-      }),
-    ).toBe(false);
+    const view = renderDialog();
 
+    expect(view.container.textContent).toContain("settings.remoteAccess.gateway.online");
+    expect(view.container.textContent).toContain("Pixel 9");
     expect(
-      isReusableWebRemoteControlSession({
-        status: "error",
-        sessionId: "sid-1",
-        mobileConnected: true,
-        workspacePath: "/tmp/workspace-a",
-      }),
-    ).toBe(false);
-
+      view.container
+        .querySelector('[data-testid="web-remote-control-gateway-status"]')
+        ?.getAttribute("data-state"),
+    ).toBe("online");
     expect(
-      isReusableWebRemoteControlSession({
-        status: "running",
-        sessionId: "sid-1",
-        mobileConnected: false,
-        workspacePath: "/tmp/workspace-a",
-      }),
-    ).toBe(false);
+      view.container
+        .querySelector('[data-testid="web-remote-control-mobile-status"]')
+        ?.getAttribute("data-connected"),
+    ).toBe("true");
   });
 
-  it("打开弹层只同步状态，startWebRemoteControl 只出现在显式开启处理函数里", () => {
-    const source = readWebRemoteControlDialogSource();
-    const syncBodyStart = source.indexOf("const syncWebRemoteControlStatus");
-    const syncBodyEnd = source.indexOf("void syncWebRemoteControlStatus();");
-    const handleStartIndex = source.indexOf("const handleStart = async () => {");
-    const startCallIndex = source.indexOf("platform.startWebRemoteControl({");
+  it("快捷开关调用 setRemoteAccessEnabled 并刷新状态", async () => {
+    remoteAccessStatusMock.status = makeStatus({ enabled: false, gateway: { state: "disabled" } });
 
-    expect(syncBodyStart).toBeGreaterThan(-1);
-    expect(syncBodyEnd).toBeGreaterThan(syncBodyStart);
-    expect(handleStartIndex).toBeGreaterThan(-1);
-    expect(startCallIndex).toBeGreaterThan(handleStartIndex);
+    const view = renderDialog();
+    const toggle = (await view.findByTestId(
+      "web-remote-control-remote-access-switch",
+    )) as HTMLInputElement;
 
-    const syncBody = source.slice(syncBodyStart, syncBodyEnd);
-    expect(syncBody).not.toContain("platform.startWebRemoteControl(");
-    // 打开即启动的旧行为必须整体消失，不能只在别处留一个保底 start。
-    expect(source.match(/platform\.startWebRemoteControl\(/g)).toHaveLength(1);
-    expect(source).toContain('data-testid="web-remote-control-start"');
-    expect(source.indexOf("onClick={() => void handleStart()}")).toBeGreaterThan(startCallIndex);
+    fireEvent.click(toggle);
+
+    await waitFor(() => expect(platformMock.setRemoteAccessEnabled).toHaveBeenCalledWith(true));
+    expect(remoteAccessStatusMock.refresh).toHaveBeenCalled();
+  });
+
+  it("有手机连接时可以断开手机", async () => {
+    remoteAccessStatusMock.status = makeStatus({
+      status: {
+        status: "active",
+        mobileConnected: true,
+        mobileDeviceInfo: {
+          platform: "android",
+          version: "1.0.0",
+          name: "Pixel 9",
+          updatedAt: 1,
+        },
+      },
+    });
+
+    const view = renderDialog();
+    fireEvent.click(await view.findByTestId("web-remote-control-disconnect-client"));
+
+    await waitFor(() => expect(platformMock.disconnectRemoteClient).toHaveBeenCalledOnce());
+    expect(remoteAccessStatusMock.refresh).toHaveBeenCalled();
+  });
+
+  it("gateway 失败时显示可读状态并提示去设置页配置", () => {
+    remoteAccessStatusMock.status = makeStatus({
+      enabled: true,
+      gateway: { state: "error", reason: "credential-invalid" },
+    });
+
+    const view = renderDialog();
+
+    expect(view.container.textContent).toContain("settings.remoteAccess.gateway.credentialInvalid");
+    expect(view.container.textContent).toContain("webRemoteControl.remoteAccess.settingsHint");
+  });
+
+  it("源码不再包含二维码、链接和窗口级启动/停止路径", () => {
+    const source = readDialogSource();
+
+    expect(source).not.toContain("QRCode");
+    expect(source).not.toContain("startWebRemoteControl");
+    expect(source).not.toContain("refreshWebRemoteControlPairing");
+    expect(source).not.toContain("stopWebRemoteControl");
+    expect(source).toContain("useRemoteAccessStatus");
+    expect(source).toContain("setRemoteAccessEnabled");
+    expect(source).toContain("disconnectRemoteClient");
   });
 
   it("uses Remote Connect width without forcing the lighter dialog to full height", () => {
@@ -321,7 +266,7 @@ describe("WebRemoteControlDialog layout", () => {
     expect(html).toContain("overflow-y-auto");
   });
 
-  it("renders phone QR and bot channel entry cards in the remote control dialog", () => {
+  it("保留可用的 Bots 入口卡片", () => {
     const html = renderToStaticMarkup(
       createElement(WebRemoteControlDialog, {
         open: true,
@@ -331,154 +276,26 @@ describe("WebRemoteControlDialog layout", () => {
     );
 
     expect(html).toContain('data-testid="web-remote-control-main-grid"');
-    expect(html).toContain("webRemoteControl.mobileQr.title");
     expect(html).toContain("webRemoteControl.botChannel.title");
     expect(html).toContain("webRemoteControl.botChannel.weixin.title");
     expect(html).toContain("webRemoteControl.botChannel.feishu.title");
     expect(html).toContain("webRemoteControl.botChannel.lark.title");
     expect(html).toContain("webRemoteControl.botChannel.telegram.title");
-    expect(html).toContain("login.oauth.regionTag.bigmodel");
-    expect(html).toContain("login.oauth.regionTag.zai");
-    expect(html).not.toContain("web-remote-control-bot-channel-logo-");
-    expect(html).toContain("size-12");
-    expect(html).toContain("border-transparent");
     expect(html).toContain('data-testid="web-remote-control-open-bots"');
     expect(html).toContain("webRemoteControl.botChannel.manageBots");
-
-    const larkIndex = html.indexOf("webRemoteControl.botChannel.lark.title");
-    const larkTagIndex = html.indexOf("login.oauth.regionTag.zai");
-    const telegramIndex = html.indexOf("webRemoteControl.botChannel.telegram.title");
-    const openBotsIndex = html.indexOf('data-testid="web-remote-control-open-bots"');
-    expect(larkTagIndex).toBeGreaterThan(larkIndex);
-    expect(larkTagIndex).toBeLessThan(telegramIndex);
-    expect(telegramIndex).toBeGreaterThan(larkIndex);
-    expect(openBotsIndex).toBeGreaterThan(telegramIndex);
   });
 
-  it("keeps the standalone bots entry working without touching the remote-control session", async () => {
-    const view = render(
-      createElement(WebRemoteControlDialog, {
-        open: true,
-        onOpenChange: vi.fn(),
-        workspacePath: "/tmp/project",
-      }),
-    );
+  it("standalone bots entry works without touching remote access", async () => {
+    remoteAccessStatusMock.status = makeStatus({ enabled: false, gateway: { state: "disabled" } });
 
-    await waitFor(() => expect(platformMock.getWebRemoteControlStatus).toHaveBeenCalled());
+    const view = renderDialog();
     expect(view.container.querySelector('[data-testid="bots-dialog"]')).toBeNull();
 
     fireEvent.click(await view.findByTestId("web-remote-control-open-bots"));
 
     expect(await view.findByTestId("bots-dialog")).toBeTruthy();
-    // Bugfix: Bot 入口抽成 WebRemoteControlBotsEntry 后仍要能把所选渠道传给 BotsDialog；
-    // 总入口（机器人管理）必须保持 entryProvider=null，不能被上一次点击的渠道污染。
     expect(botsDialogMock.props.at(-1)?.entryProvider ?? null).toBeNull();
-    expect(platformMock.startWebRemoteControl).not.toHaveBeenCalled();
-    expect(platformMock.stopWebRemoteControl).not.toHaveBeenCalled();
-  });
-
-  it("opens the bots dialog for a single provider card from the standalone entry", async () => {
-    const view = render(
-      createElement(WebRemoteControlDialog, {
-        open: true,
-        onOpenChange: vi.fn(),
-        workspacePath: "/tmp/project",
-      }),
-    );
-
-    fireEvent.click(await view.findByText("webRemoteControl.botChannel.feishu.title"));
-
-    await waitFor(() => expect(botsDialogMock.props.at(-1)?.open).toBe(true));
-    expect(botsDialogMock.props.at(-1)?.entryProvider).toBe("feishu");
-  });
-
-  it("merges status and copy link inside the Scan from phone card", () => {
-    const html = renderToStaticMarkup(
-      createElement(WebRemoteControlDialog, {
-        open: true,
-        onOpenChange: vi.fn(),
-        workspacePath: "/tmp/project",
-      }),
-    );
-
-    const scanCardIndex = html.indexOf('data-testid="web-remote-control-scan-card"');
-    const connectionCardIndex = html.indexOf('data-testid="web-remote-control-connection-card"');
-    const copyLinkIndex = html.indexOf('data-testid="web-remote-control-copy-link-row"');
-    const botChannelIndex = html.indexOf("webRemoteControl.botChannel.title");
-
-    expect(scanCardIndex).toBeGreaterThan(-1);
-    expect(connectionCardIndex).toBeGreaterThan(scanCardIndex);
-    expect(copyLinkIndex).toBeGreaterThan(connectionCardIndex);
-    expect(copyLinkIndex).toBeLessThan(botChannelIndex);
-    expect(html).toContain('data-testid="web-remote-control-connection-card"');
-    expect(html).toContain('data-testid="web-remote-control-copy-link-row"');
-    expect(html).toContain("items-center");
-    expect(html).toContain("webRemoteControl.statusDetail.idle");
-    expect(html).toContain("webRemoteControl.copyLink.description");
-    expect(html).not.toContain('data-testid="web-remote-control-copy-link-card"');
-    expect(html).not.toContain("mt-5 flex min-h-11");
-  });
-
-  it("renders a refresh QR action near the copied mobile link", () => {
-    const html = renderToStaticMarkup(
-      createElement(WebRemoteControlDialog, {
-        open: true,
-        onOpenChange: vi.fn(),
-        workspacePath: "/tmp/project",
-      }),
-    );
-
-    const refreshIndex = html.indexOf("webRemoteControl.refreshQr");
-    const copyIndex = html.indexOf("webRemoteControl.copyLink</button>");
-
-    expect(refreshIndex).toBeGreaterThan(-1);
-    expect(copyIndex).toBeGreaterThan(-1);
-    expect(refreshIndex).toBeLessThan(copyIndex);
-  });
-
-  it("asks for confirmation before refreshing pairing material", () => {
-    const source = readWebRemoteControlDialogSource();
-    const confirmIndex = source.indexOf("confirmDialog({");
-    const refreshIndex = source.indexOf("platform.refreshWebRemoteControlPairing");
-
-    expect(source).toContain("webRemoteControl.refreshQr.confirmTitle");
-    expect(source).toContain("webRemoteControl.refreshQr.confirmDescription");
-    expect(confirmIndex).toBeGreaterThan(-1);
-    expect(refreshIndex).toBeGreaterThan(-1);
-    expect(confirmIndex).toBeLessThan(refreshIndex);
-  });
-
-  it("uses the paired mobile device name for the status tag instead of session id", () => {
-    expect(
-      getWebRemoteControlStatusTagLabel(
-        {
-          status: "active",
-          sessionId: "sid-12345678",
-          mobileConnected: true,
-          mobileDeviceInfo: {
-            platform: "web",
-            version: "1.7.0",
-            name: "mobile-browser",
-            browserPlatform: "iPhone",
-            updatedAt: 1,
-          },
-        },
-        ({ id }: { id: string }) => id,
-      ),
-    ).toBe("iPhone");
-  });
-
-  it("does not let dialog-local state decide the global remote-control session state", () => {
-    const source = readWebRemoteControlDialogSource();
-
-    expect(source).not.toContain("setWebRemoteControlSessionActive");
-    expect(source).not.toContain("useWebRemoteControlRuntimeStore");
-  });
-
-  it("does not pass theme into start payload when syncing Web remote control status", () => {
-    const source = readWebRemoteControlDialogSource();
-    // Bugfix: 手机远控已改为默认 dark + 本地偏好，桌面端不应再把 theme 注入 start 参数，
-    // 否则会重新把两端主题耦合到同一链路，和当前设计目标冲突。
-    expect(source).not.toContain("theme,");
+    expect(platformMock.setRemoteAccessEnabled).not.toHaveBeenCalled();
+    expect(platformMock.disconnectRemoteClient).not.toHaveBeenCalled();
   });
 });

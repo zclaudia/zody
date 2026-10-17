@@ -39,8 +39,7 @@ export function createDesktopPlatform(options: {
       window.zcode.onWebRemoteControlStatusChanged?.(handler) ?? (() => {}),
     setRemoteAccessEnabled: (enabled) =>
       window.zcode.setRemoteAccessEnabled?.(enabled) ?? Promise.resolve(),
-    disconnectRemoteClient: () =>
-      window.zcode.disconnectRemoteClient?.() ?? Promise.resolve(),
+    disconnectRemoteClient: () => window.zcode.disconnectRemoteClient?.() ?? Promise.resolve(),
     getRemoteAccessStatus: () =>
       window.zcode.getRemoteAccessStatus?.() ??
       Promise.resolve({
@@ -49,6 +48,22 @@ export function createDesktopPlatform(options: {
         // T3.2：旧 preload / 浏览器开发模式下没有 gateway backend，按关闭处理。
         gateway: { state: "disabled" as const },
       }),
+    getRemoteAccessCredentialStatus: () =>
+      window.zcode.getRemoteAccessCredentialStatus?.() ?? Promise.resolve({ configured: false }),
+    saveRemoteAccessCredential: (credential) => {
+      if (!window.zcode.saveRemoteAccessCredential) {
+        return Promise.reject(new Error("Remote access credentials are not supported"));
+      }
+      return window.zcode.saveRemoteAccessCredential(credential);
+    },
+    clearRemoteAccessCredential: () =>
+      window.zcode.clearRemoteAccessCredential?.() ?? Promise.resolve(),
+    testRemoteAccessConnection: (input) => {
+      if (!window.zcode.testRemoteAccessConnection) {
+        return Promise.resolve({ ok: false as const, reason: "unconfigured" as const });
+      }
+      return window.zcode.testRemoteAccessConnection(input);
+    },
     disposeRemoteSession: (sessionId) => window.zcode.disposeRemoteSession(sessionId),
     isDockerAvailable: () => window.zcode.isDockerAvailable(),
     listWSLDistros: () => window.zcode.listWSLDistros(),

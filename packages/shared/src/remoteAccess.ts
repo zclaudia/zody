@@ -203,3 +203,36 @@ export interface RemoteAccessStatus {
   /** gateway backend 连接状态；关闭远程访问时为 `disabled`。 */
   gateway: RemoteAccessGatewayConnectionStatus;
 }
+
+/**
+ * renderer 能看到的 backend 凭证状态。
+ *
+ * 方案要求凭证「只写不读」：设置页只能知道是否已配置，凭证本身由 Main 的凭据服务保存，
+ * 不经过 settings、IPC 返回值或日志。
+ */
+export interface RemoteAccessCredentialStatus {
+  configured: boolean;
+}
+
+/** 「测试连接」使用的表单值；凭证省略时复用已保存的凭证。 */
+export interface RemoteAccessTestConnectionRequest {
+  gatewayUrl: string;
+  namespace: string;
+  /** 设置页新输入但尚未保存的凭证。空串等同省略。 */
+  credential?: string;
+}
+
+/**
+ * 「测试连接」失败原因。
+ *
+ * `mobile-connected` 是本地保护：同一张 `zgb_` 只能有一个进程在线，测试会拆掉手机正在用的
+ * channel，所以有手机连接时必须禁用测试。其余原因与 gateway 连接状态共用一套错误分类。
+ */
+export type RemoteAccessTestConnectionFailureReason =
+  | "unconfigured"
+  | "mobile-connected"
+  | RemoteAccessGatewayConnectionErrorReason;
+
+export type RemoteAccessTestConnectionResult =
+  | { ok: true; status: RemoteAccessGatewayConnectionStatus }
+  | { ok: false; reason: RemoteAccessTestConnectionFailureReason };

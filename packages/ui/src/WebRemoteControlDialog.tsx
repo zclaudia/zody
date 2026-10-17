@@ -1,18 +1,6 @@
 import { memo, useEffect, useMemo, useState } from "react";
-import QRCode from "qrcode";
-/* eslint-disable max-lines -- Web 远程控制弹层集中处理状态同步、显式开关、二维码和错误文案，Bot Channel 入口已拆到 WebRemoteControlBotsEntry。 */
-import type { WebRemoteControlFailure, WebRemoteControlStatus } from "@zcode/shared";
-import { resolveWebRemoteControlWorkspaceKey } from "@zcode/shared";
-import {
-  CopyIcon,
-  LoaderCircle,
-  MonitorSmartphone,
-  PlugZap,
-  RefreshCw,
-  Smartphone,
-  Unplug,
-  XIcon,
-} from "lucide-react";
+import type { RemoteAccessStatus, WebRemoteControlFailure } from "@zcode/shared";
+import { LoaderCircle, MonitorSmartphone, Smartphone, Unplug, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import {
   Dialog,
@@ -21,192 +9,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog.js";
+import { Switch } from "@/components/ui/switch.js";
 import { toast } from "@/components/ui/toast.js";
-import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
+import { useRemoteAccessStatus } from "@/hooks/useRemoteAccessStatus.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
+import { getGatewayStatusDotClassName, getGatewayStatusLabelId } from "@/remoteAccessStatusUi.js";
 import { WebRemoteControlBotsEntry } from "@/WebRemoteControlBotsEntry.js";
-
-export function isSameWebRemoteControlTarget(
-  status: WebRemoteControlStatus,
-  workspacePath: string,
-  workspaceIdentity?: string,
-  remoteSessionId?: string,
-): boolean {
-  if (status.status === "idle" || status.status === "error") {
-    return false;
-  }
-
-  // Bugfix: 之前这里仅凭 sessionId 存在就判定“同一目标”，会把其他 workspace 的旧会话误复用，
-  // 导致当前 workspace 打开弹层时不触发 start，状态长期卡在 starting。
-  // 这里改为严格比较 workspaceKey(identity 优先) + remoteSessionId，确保会话和目标一一对应。
-  const statusWorkspacePath = status.workspacePath?.trim();
-  if (!statusWorkspacePath) {
-    return false;
-  }
-
-  const expectedWorkspaceKey = resolveWebRemoteControlWorkspaceKey({
-    workspacePath,
-    workspaceIdentity,
-  });
-  const statusWorkspaceKey = resolveWebRemoteControlWorkspaceKey({
-    workspacePath: statusWorkspacePath,
-    workspaceIdentity: status.workspaceIdentity,
-  });
-  if (statusWorkspaceKey !== expectedWorkspaceKey) {
-    return false;
-  }
-
-  const expectedRemoteSessionId = remoteSessionId?.trim() || undefined;
-  const statusRemoteSessionId = status.remoteSessionId?.trim() || undefined;
-  if (statusRemoteSessionId !== expectedRemoteSessionId) {
-    return false;
-  }
-
-  return Boolean(status.windowControlSessionId ?? status.sessionId);
-}
-
-export function isReusableWebRemoteControlSession(
-  status: WebRemoteControlStatus,
-): boolean {
-  if (status.status === "idle" || status.status === "error") {
-    return false;
-  }
-
-  // Bugfix: 打开桌面弹层只是查看/管理 window 级远控入口，不能因为当前桌面 workspace
-  // 和手机已 bridge 的 workspace 不一致就重启 device relay 会话；否则会主动给手机发
-  // desktop-disconnected。只有已经连上手机的会话才跨 workspace 复用，避免未连接的旧二维码
-  // 继续把新扫码用户带回旧默认 workspace。
-  return Boolean(status.mobileConnected && (status.windowControlSessionId ?? status.sessionId));
-}
-
-/**
- * 弹层只采用「和当前 workspace/remoteSessionId 匹配」「已连手机可跨 workspace 复用」或
- * 无会话身份的 idle/error 状态；其他 workspace 的会话状态继续由那个窗口自己显示。
- * 打开弹层不再按这个判断去 start，只用于决定同步/轮询到的状态要不要落到本地。
- */
-function shouldApplyWebRemoteControlStatus(
-  status: WebRemoteControlStatus,
-  workspacePath: string,
-  workspaceIdentity?: string,
-  remoteSessionId?: string,
-): boolean {
-  return (
-    isSameWebRemoteControlTarget(status, workspacePath, workspaceIdentity, remoteSessionId) ||
-    isReusableWebRemoteControlSession(status) ||
-    status.status === "idle" ||
-    status.status === "error"
-  );
-}
-
-function getStatusLabel(
-  status: WebRemoteControlStatus,
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
-): string {
-  switch (status.status) {
-    case "starting":
-      return formatMessage({ id: "webRemoteControl.status.starting" });
-    case "running":
-      return formatMessage({ id: "webRemoteControl.status.running" });
-    case "connecting":
-      return formatMessage({ id: "webRemoteControl.status.connecting" });
-    case "active":
-      return formatMessage({ id: "webRemoteControl.status.active" });
-    case "error":
-      return formatMessage({ id: "webRemoteControl.status.error" });
-    default:
-      return formatMessage({ id: "webRemoteControl.status.idle" });
-  }
-}
-
-function getStatusDetail(
-  status: WebRemoteControlStatus,
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
-): string {
-  switch (status.status) {
-    case "starting":
-      return formatMessage({ id: "webRemoteControl.statusDetail.starting" });
-    case "running":
-      return formatMessage({ id: "webRemoteControl.statusDetail.running" });
-    case "connecting":
-      return formatMessage({ id: "webRemoteControl.statusDetail.connecting" });
-    case "active":
-      return formatMessage({ id: "webRemoteControl.statusDetail.active" });
-    case "error":
-      return formatMessage({ id: "webRemoteControl.statusDetail.error" });
-    default:
-      return formatMessage({ id: "webRemoteControl.statusDetail.idle" });
-  }
-}
-
-function getStatusDotClassName(status: WebRemoteControlStatus): string {
-  if (status.status === "error") {
-    return "bg-destructive";
-  }
-  if (status.status === "active") {
-    return "bg-success";
-  }
-  if (status.status === "idle") {
-    return "bg-border";
-  }
-  return "bg-warning";
-}
-
-export function getWebRemoteControlStatusTagLabel(
-  status: WebRemoteControlStatus,
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
-): string {
-  const deviceName =
-    status.mobileDeviceInfo?.browserPlatform?.trim() ||
-    status.mobileDeviceInfo?.name?.trim();
-
-  if (deviceName) {
-    return deviceName;
-  }
-
-  if (status.mobileConnected) {
-    return formatMessage({ id: "webRemoteControl.statusTag.phone" });
-  }
-
-  if (status.status === "idle") {
-    return formatMessage({ id: "webRemoteControl.status.idle" });
-  }
-
-  if (status.status === "error") {
-    return formatMessage({ id: "webRemoteControl.status.error" });
-  }
-
-  return formatMessage({ id: "webRemoteControl.statusTag.ready" });
-}
-
-function isSameWebRemoteControlStatus(
-  left: WebRemoteControlStatus,
-  right: WebRemoteControlStatus,
-): boolean {
-  return (
-    left.status === right.status &&
-    left.sessionId === right.sessionId &&
-    left.windowControlSessionId === right.windowControlSessionId &&
-    left.deviceToken === right.deviceToken &&
-    left.expiresAt === right.expiresAt &&
-    left.mobileConnected === right.mobileConnected &&
-    left.mobileDeviceInfo?.updatedAt === right.mobileDeviceInfo?.updatedAt &&
-    left.mobileDeviceInfo?.userAgent === right.mobileDeviceInfo?.userAgent &&
-    left.mobileDeviceInfo?.viewport?.width ===
-      right.mobileDeviceInfo?.viewport?.width &&
-    left.mobileDeviceInfo?.viewport?.height ===
-      right.mobileDeviceInfo?.viewport?.height &&
-    left.qrUrl === right.qrUrl &&
-    left.connectUrl === right.connectUrl &&
-    left.workspacePath === right.workspacePath &&
-    left.workspaceIdentity === right.workspaceIdentity &&
-    left.remoteSessionId === right.remoteSessionId &&
-    left.error === right.error &&
-    left.failure?.reason === right.failure?.reason &&
-    left.failure?.message === right.failure?.message
-  );
-}
 
 function getFailureDescription(
   failure: WebRemoteControlFailure | undefined,
@@ -255,576 +65,311 @@ function getFailureDescription(
   }
 }
 
+function getRemoteAccessStatusSummary(
+  status: RemoteAccessStatus | null,
+  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
+): string {
+  if (!status?.enabled) {
+    return formatMessage({ id: "webRemoteControl.remoteAccess.offDetail" });
+  }
+  switch (status.gateway.state) {
+    case "online":
+      return status.status.mobileConnected
+        ? formatMessage({ id: "webRemoteControl.remoteAccess.phoneConnectedDetail" })
+        : formatMessage({ id: "webRemoteControl.remoteAccess.waitingPhoneDetail" });
+    case "connecting":
+      return formatMessage({ id: "webRemoteControl.remoteAccess.connectingDetail" });
+    case "error":
+      return formatMessage({ id: "webRemoteControl.remoteAccess.errorDetail" });
+    case "disabled":
+      return formatMessage({ id: "webRemoteControl.remoteAccess.offDetail" });
+  }
+}
+
+/**
+ * 远控弹层（T4.1）。
+ *
+ * 只展示 App 级远程访问状态并提供快捷开关：gateway 地址、namespace 和 backend 凭证都在
+ * 设置页配置，这里不再生成二维码，也不会在打开弹层时自动启动远控。Bot Channel 入口保留。
+ */
 export const WebRemoteControlDialog = memo(function WebRemoteControlDialogComponent({
   open,
   onOpenChange,
   workspacePath,
   workspaceIdentity,
-  remoteSessionId,
-  initialTaskId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   workspacePath: string;
   workspaceIdentity?: string;
+  /** 保留旧入口参数以兼容调用方；远控目标已由 App 级 runtime 自行聚合。 */
   remoteSessionId?: string;
   initialTaskId?: string;
 }) {
   const platform = usePlatform();
-  const confirmDialog = useConfirmDialog();
   const { intl } = useZCodeIntl();
-  const [status, setStatus] = useState<WebRemoteControlStatus>({
-    status: "idle",
-  });
-  const [loading, setLoading] = useState(false);
-  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const remoteAccessStatusRead = useRemoteAccessStatus({ enabled: open });
+  const remoteAccessStatus = remoteAccessStatusRead.status;
+  const [pendingAction, setPendingAction] = useState<"toggle" | "disconnect" | null>(null);
 
-  const statusLabel = useMemo(
-    () => getStatusLabel(status, intl.formatMessage),
-    [intl.formatMessage, status],
-  );
-  const statusDetail = useMemo(
-    () => getStatusDetail(status, intl.formatMessage),
-    [intl.formatMessage, status],
+  const enabled = remoteAccessStatus?.enabled === true;
+  const gateway = remoteAccessStatus?.gateway ?? { state: "disabled" as const };
+  const mobileConnected = remoteAccessStatus?.status.mobileConnected === true;
+  const mobileDeviceName =
+    remoteAccessStatus?.status.mobileDeviceInfo?.name?.trim() ||
+    remoteAccessStatus?.status.mobileDeviceInfo?.browserPlatform?.trim() ||
+    intl.formatMessage({ id: "settings.remoteAccess.phone.unknownDevice" });
+  const gatewayStatusLabelId = getGatewayStatusLabelId(gateway);
+  const gatewayStatusDotClassName = getGatewayStatusDotClassName(gateway);
+  const statusSummary = useMemo(
+    () => getRemoteAccessStatusSummary(remoteAccessStatus, intl.formatMessage),
+    [intl.formatMessage, remoteAccessStatus],
   );
   const failureDescription = useMemo(
-    () => getFailureDescription(status.failure, intl.formatMessage),
-    [intl.formatMessage, status.failure],
+    () => getFailureDescription(remoteAccessStatus?.status.failure, intl.formatMessage),
+    [intl.formatMessage, remoteAccessStatus?.status.failure],
   );
-  const statusTagLabel = useMemo(
-    () => getWebRemoteControlStatusTagLabel(status, intl.formatMessage),
-    [intl.formatMessage, status],
-  );
-  const statusDotClassName = getStatusDotClassName(status);
-  // 未开启（含上次启动失败）时弹层只展示状态和「开启」按钮，不再在打开弹层时启动远控。
-  const isRemoteControlOff = status.status === "idle" || status.status === "error";
+  const busy = pendingAction !== null;
 
   useEffect(() => {
     if (!open) {
       return;
     }
-
-    let cancelled = false;
-
-    const syncWebRemoteControlStatus = async () => {
-      setLoading(true);
-
-      try {
-        const currentStatus = await platform.getWebRemoteControlStatus();
-        // T1.3: 打开弹层只同步状态，不再调用 startWebRemoteControl。
-        // 远控开关改成显式「开启」按钮（handleStart），关闭弹层也不影响已开启的会话。
-        const shouldApplyStatus = shouldApplyWebRemoteControlStatus(
-          currentStatus,
-          workspacePath,
-          workspaceIdentity,
-          remoteSessionId,
-        );
-        if (!cancelled && shouldApplyStatus) {
-          setStatus(currentStatus);
-        }
-        logger.info("[WebRemoteControlDialog] Web 远程控制状态已同步", {
-          workspacePath,
-          workspaceIdentity: workspaceIdentity ?? "none",
-          remoteSessionId: remoteSessionId ?? "none",
-          initialTaskId: initialTaskId ?? "none",
-          status: currentStatus.status,
-          sessionId: currentStatus.sessionId ?? "none",
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        if (!cancelled) {
-          setStatus({
-            status: "error",
-            workspacePath,
-            remoteSessionId,
-            error: message,
-          });
-          toast(
-            // 这里已经只是状态查询失败（不再自动启动），不能再提示「开启失败」，否则会误导用户。
-            intl.formatMessage({ id: "webRemoteControl.statusSyncFailed" }, { error: message }),
-          );
-        }
-        logger.error("[WebRemoteControlDialog] 同步 Web 远程控制状态失败", {
-          workspacePath,
-          workspaceIdentity: workspaceIdentity ?? "none",
-          remoteSessionId: remoteSessionId ?? "none",
-          initialTaskId: initialTaskId ?? "none",
-          error: message,
-        });
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void syncWebRemoteControlStatus();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    intl,
-    open,
-    platform,
-    remoteSessionId,
-    workspaceIdentity,
-    workspacePath,
-    initialTaskId,
-  ]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const pollWebRemoteControlStatus = async () => {
-      try {
-        const nextStatus = await platform.getWebRemoteControlStatus();
-        if (cancelled) {
-          return;
-        }
-
-        if (
-          !shouldApplyWebRemoteControlStatus(
-            nextStatus,
-            workspacePath,
-            workspaceIdentity,
-            remoteSessionId,
-          )
-        ) {
-          return;
-        }
-
-        setStatus((currentStatus) =>
-          isSameWebRemoteControlStatus(currentStatus, nextStatus)
-            ? currentStatus
-            : nextStatus,
-        );
-      } catch {
-        // Bugfix: Web 远程控制的状态变化发生在 main / relay 侧，
-        // 如果弹层只在打开时同步一次，状态会长期停在“等待连接”。
-        // 这里用轻量轮询补齐状态刷新；单次失败时静默忽略，避免打断用户操作。
-      }
-    };
-
-    const intervalId = window.setInterval(() => {
-      void pollWebRemoteControlStatus();
-    }, 1000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(intervalId);
-    };
-  }, [open, platform, remoteSessionId, workspaceIdentity, workspacePath]);
-
-  useEffect(() => {
-    if (!status.qrUrl) {
-      setQrDataUrl(null);
-      return;
-    }
-
-    let cancelled = false;
-    setQrDataUrl(null);
-
-    void QRCode.toDataURL(status.qrUrl, {
-      margin: 1,
-      width: 320,
-    })
-      .then((dataUrl: string) => {
-        if (!cancelled) {
-          setQrDataUrl(dataUrl);
-        }
-      })
-      .catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : String(error);
-        logger.error("[WebRemoteControlDialog] 生成二维码失败", message);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [status.qrUrl]);
-
-  const handleCopyLink = async () => {
-    if (!status.connectUrl) {
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(status.connectUrl);
-      toast(intl.formatMessage({ id: "webRemoteControl.copyLink.copied" }));
-      logger.info("[WebRemoteControlDialog] 已复制 Web 远程控制链接", {
-        workspacePath,
-        remoteSessionId: remoteSessionId ?? "none",
-        sessionId: status.sessionId ?? "none",
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      toast(
-        intl.formatMessage(
-          { id: "webRemoteControl.copyLinkFailed" },
-          { error: message },
-        ),
-      );
-      logger.error(
-        "[WebRemoteControlDialog] 复制 Web 远程控制链接失败",
-        message,
-      );
-    }
-  };
-
-  const handleRefreshQr = async () => {
-    // Bugfix: 刷新二维码会废弃之前复制或扫码得到的 sid/hash 链接。
-    // 之前按钮和复制链接并排，误触会让已发出的手机链接立即失效；这里先用统一确认弹窗保护。
-    const confirmed = await confirmDialog({
-      title: intl.formatMessage({ id: "webRemoteControl.refreshQr.confirmTitle" }),
-      description: intl.formatMessage({
-        id: "webRemoteControl.refreshQr.confirmDescription",
-      }),
-      confirmLabel: intl.formatMessage({ id: "webRemoteControl.refreshQr" }),
+    logger.info("[WebRemoteControlDialog] 打开远控状态弹层", {
+      workspacePath,
+      workspaceIdentity: workspaceIdentity ?? "none",
+      enabled,
+      gateway: gateway.state,
+      mobileConnected,
     });
-    if (!confirmed) {
+  }, [enabled, gateway.state, mobileConnected, open, workspaceIdentity, workspacePath]);
+
+  const handleToggle = async (nextEnabled: boolean) => {
+    const setEnabled = platform.setRemoteAccessEnabled;
+    if (!setEnabled) {
       return;
     }
-
-    setLoading(true);
+    setPendingAction("toggle");
     try {
-      const nextStatus = await platform.refreshWebRemoteControlPairing({
+      await setEnabled.call(platform, nextEnabled);
+      await remoteAccessStatusRead.refresh();
+      toast(
+        intl.formatMessage({
+          id: nextEnabled
+            ? "webRemoteControl.remoteAccess.enabledToast"
+            : "webRemoteControl.remoteAccess.disabledToast",
+        }),
+      );
+      logger.info("[WebRemoteControlDialog] 切换远程访问开关", {
         workspacePath,
-        workspaceIdentity,
-        remoteSessionId,
-        initialTaskId,
-      });
-      if (nextStatus.status === "cancelled") {
-        // 兼容可取消的平台实现：保持当前运行状态，不显示成功或失败反馈。
-        return;
-      }
-      // Bugfix: 泄露后的旧二维码包含 sid/hash，单纯重新绘制图片只会更新时间戳。
-      // 这里走平台层 reset，确保 main 清掉持久化配对材料后重新注册 relay 设备。
-      setStatus(nextStatus);
-      toast(intl.formatMessage({ id: "webRemoteControl.refreshQr.success" }));
-      logger.info("[WebRemoteControlDialog] 已刷新 Web 远程控制二维码", {
-        workspacePath,
-        workspaceIdentity: workspaceIdentity ?? "none",
-        remoteSessionId: remoteSessionId ?? "none",
-        initialTaskId: initialTaskId ?? "none",
-        sessionId: nextStatus.sessionId ?? "none",
+        enabled: nextEnabled,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       toast(
         intl.formatMessage(
-          { id: "webRemoteControl.refreshQr.failed" },
+          { id: "webRemoteControl.remoteAccess.toggleFailed" },
           { error: message },
         ),
       );
-      logger.error("[WebRemoteControlDialog] 刷新 Web 远程控制二维码失败", {
+      logger.error("[WebRemoteControlDialog] 切换远程访问开关失败", {
         workspacePath,
-        workspaceIdentity: workspaceIdentity ?? "none",
-        remoteSessionId: remoteSessionId ?? "none",
-        initialTaskId: initialTaskId ?? "none",
         error: message,
       });
     } finally {
-      setLoading(false);
+      setPendingAction(null);
     }
   };
 
-  // T1.3: 远控启动改为用户显式动作。打开弹层只同步状态，只有点击「开启」才调用平台启动，
-  // 这样查看状态/进 Bot 入口不会顺带起一条远控会话，也不会把已在别的 workspace 的会话顶掉。
-  const handleStart = async () => {
-    setLoading(true);
-    try {
-      // Bugfix: 手机端默认主题已统一收敛到 dark，不再依赖二维码 URL 透传 theme。
-      // 这里（唯一的启动入口）同样不传 theme，避免桌面端主题无意义地参与远控链路。
-      const startResult = await platform.startWebRemoteControl({
-        workspacePath,
-        workspaceIdentity,
-        remoteSessionId,
-        initialTaskId,
-      });
-      // 兼容仍可返回 cancelled 的平台实现；当前 Desktop 不再叠加原生确认。
-      const nextStatus: WebRemoteControlStatus =
-        startResult.status === "cancelled" ? { status: "idle" } : startResult;
-      setStatus(nextStatus);
-      logger.info("[WebRemoteControlDialog] 用户点击开启 Web 远程控制", {
-        workspacePath,
-        workspaceIdentity: workspaceIdentity ?? "none",
-        remoteSessionId: remoteSessionId ?? "none",
-        initialTaskId: initialTaskId ?? "none",
-        status: nextStatus.status,
-        sessionId: nextStatus.sessionId ?? "none",
-      });
-      if (startResult.status !== "cancelled") {
-        toast(intl.formatMessage({ id: "webRemoteControl.startSuccess" }));
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      setStatus({
-        status: "error",
-        workspacePath,
-        remoteSessionId,
-        error: message,
-      });
-      toast(intl.formatMessage({ id: "webRemoteControl.startFailed" }, { error: message }));
-      logger.error("[WebRemoteControlDialog] 开启 Web 远程控制失败", {
-        workspacePath,
-        workspaceIdentity: workspaceIdentity ?? "none",
-        remoteSessionId: remoteSessionId ?? "none",
-        initialTaskId: initialTaskId ?? "none",
-        error: message,
-      });
-    } finally {
-      setLoading(false);
+  const handleDisconnect = async () => {
+    const disconnect = platform.disconnectRemoteClient;
+    if (!disconnect) {
+      return;
     }
-  };
-
-  const handleStop = async () => {
-    setLoading(true);
+    setPendingAction("disconnect");
     try {
-      await platform.stopWebRemoteControl();
-      setStatus({ status: "idle" });
-      onOpenChange(false);
-      toast(intl.formatMessage({ id: "webRemoteControl.stopSuccess" }));
-      logger.info("[WebRemoteControlDialog] 已关闭 Web 远程控制", {
-        workspacePath,
-        remoteSessionId: remoteSessionId ?? "none",
-      });
+      await disconnect.call(platform);
+      await remoteAccessStatusRead.refresh();
+      toast(intl.formatMessage({ id: "webRemoteControl.remoteAccess.disconnectSuccess" }));
+      logger.info("[WebRemoteControlDialog] 已断开手机", { workspacePath });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       toast(
         intl.formatMessage(
-          { id: "webRemoteControl.stopFailed" },
+          { id: "webRemoteControl.remoteAccess.disconnectFailed" },
           { error: message },
         ),
       );
-      logger.error("[WebRemoteControlDialog] 关闭 Web 远程控制失败", message);
+      logger.error("[WebRemoteControlDialog] 断开手机失败", { workspacePath, error: message });
     } finally {
-      setLoading(false);
+      setPendingAction(null);
     }
   };
 
   const handleDialogOpenChange = (nextOpen: boolean) => {
     logger.info("[WebRemoteControlDialog] 弹层开关状态变化", {
       workspacePath,
-      remoteSessionId: remoteSessionId ?? "none",
       nextOpen,
     });
     onOpenChange(nextOpen);
   };
 
   const handleDismiss = () => {
-    logger.info("[WebRemoteControlDialog] 用户点击右上角关闭按钮", {
-      workspacePath,
-      remoteSessionId: remoteSessionId ?? "none",
-      sessionId: status.sessionId ?? "none",
-      status: status.status,
-    });
     handleDialogOpenChange(false);
   };
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-        <DialogContent
-          showCloseButton={false}
-          // Bugfix: Mobile Remote Control 弹窗之前比 Remote Connect 更宽也更贴近窗口边缘，
-          // 启动二维码和 Bot Channel 内容时会显得层级不一致。这里复用 Remote Connect 的外层尺寸，
-          // 但不强制撑满高度；远控内容比 Remote Connect 少，内容自适应能避免窗口显得空。
-          className="max-h-[calc(100vh-6rem)] max-w-4xl gap-0 overflow-hidden rounded-2xl p-0"
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+      <DialogContent
+        showCloseButton={false}
+        className="max-h-[calc(100vh-6rem)] max-w-4xl gap-0 overflow-hidden rounded-2xl p-0"
+      >
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="absolute top-2 right-2 enabled:cursor-pointer [app-region:no-drag]"
+          onClick={handleDismiss}
         >
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            // Bugfix: 这个弹窗会贴近桌面窗口顶部显示，默认 close 在 Electron drag 区里容易点不中。
-            // 这里改成显式点击关闭，并把按钮本身标成 no-drag，保证右上角关闭动作能稳定命中。
-            // Bugfix: 远控弹层内可点击控件之前没有显式 pointer cursor，桌面端 hover 时不像可操作元素。
-            // 这里仅给启用态补手指指针，禁用态仍沿用 Button 的 disabled 交互语义。
-            className="absolute top-2 right-2 enabled:cursor-pointer [app-region:no-drag]"
-            onClick={handleDismiss}
-          >
-            <XIcon />
-            <span className="sr-only">Close</span>
-          </Button>
-          <div
-            data-testid="web-remote-control-dialog-scroll"
-            className="max-h-[calc(100vh-6rem)] min-h-0 overflow-y-auto p-5"
-          >
-            <DialogHeader className="space-y-2 pr-8">
-              <div className="flex items-center gap-2">
-                <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-surface text-primary">
-                  <MonitorSmartphone className="size-5" />
-                </div>
-                <div className="space-y-1">
-                  <DialogTitle>
-                    {intl.formatMessage({ id: "webRemoteControl.title" })}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {intl.formatMessage({ id: "webRemoteControl.description" })}
-                  </DialogDescription>
-                </div>
+          <XIcon />
+          <span className="sr-only">Close</span>
+        </Button>
+        <div
+          data-testid="web-remote-control-dialog-scroll"
+          className="max-h-[calc(100vh-6rem)] min-h-0 overflow-y-auto p-5"
+        >
+          <DialogHeader className="space-y-2 pr-8">
+            <div className="flex items-center gap-2">
+              <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-surface text-primary">
+                <MonitorSmartphone className="size-5" />
               </div>
-            </DialogHeader>
+              <div className="space-y-1">
+                <DialogTitle>{intl.formatMessage({ id: "webRemoteControl.title" })}</DialogTitle>
+                <DialogDescription>
+                  {intl.formatMessage({ id: "webRemoteControl.description" })}
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
 
-            <div
-              data-testid="web-remote-control-main-grid"
-              className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1.45fr)_minmax(300px,1fr)]"
+          <div
+            data-testid="web-remote-control-main-grid"
+            className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1.45fr)_minmax(300px,1fr)]"
+          >
+            <section
+              data-testid="web-remote-control-status-card"
+              className="flex min-h-[360px] flex-col rounded-xl border border-border bg-card p-4"
             >
-              <section
-                data-testid="web-remote-control-scan-card"
-                className="flex min-h-[360px] flex-col rounded-xl border border-border bg-card p-4"
-              >
-                <div className="mb-4 flex items-start gap-2">
-                  <Smartphone className="mt-0.5 size-4 shrink-0 text-foreground-subtle" />
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-2">
+                  <MonitorSmartphone className="mt-0.5 size-4 shrink-0 text-foreground-subtle" />
                   <div className="min-w-0 space-y-1">
                     <div className="text-ui-base font-medium text-foreground">
-                      {intl.formatMessage({
-                        id: "webRemoteControl.mobileQr.title",
-                      })}
+                      {intl.formatMessage({ id: "webRemoteControl.remoteAccess.title" })}
                     </div>
-                    <p className="text-ui-base/relaxed text-foreground-subtle">
-                      {intl.formatMessage({
-                        id: "webRemoteControl.mobileQr.description",
-                      })}
-                    </p>
+                    <p className="text-ui-base/relaxed text-foreground-subtle">{statusSummary}</p>
                   </div>
                 </div>
+                {pendingAction === "toggle" ? (
+                  <LoaderCircle className="size-4 animate-spin text-foreground-subtle" />
+                ) : (
+                  <Switch
+                    aria-label={intl.formatMessage({
+                      id: "webRemoteControl.remoteAccess.title",
+                    })}
+                    data-testid="web-remote-control-remote-access-switch"
+                    checked={enabled}
+                    disabled={busy || typeof platform.setRemoteAccessEnabled !== "function"}
+                    onCheckedChange={(checked) => void handleToggle(checked)}
+                  />
+                )}
+              </div>
+
+              <div className="mt-4 space-y-2">
                 <div
-                  data-testid="web-remote-control-connection-card"
-                  className="mb-3 rounded-lg bg-surface px-3 py-2"
+                  data-testid="web-remote-control-gateway-status"
+                  data-state={gateway.state}
+                  data-reason={gateway.state === "error" ? gateway.reason : undefined}
+                  className="flex items-center justify-between gap-3 rounded-lg bg-surface px-3 py-2.5"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <div className="text-ui-base font-medium text-foreground">
-                          {statusLabel}
-                        </div>
-                        <div className="flex min-w-0 items-center gap-1.5 rounded-full bg-card px-2 py-0.5 text-ui-xs font-medium text-foreground-subtle">
-                          <span
-                            className={`size-1.5 shrink-0 rounded-full ${statusDotClassName}`}
-                          />
-                          <span className="truncate">{statusTagLabel}</span>
-                        </div>
-                      </div>
-                      <div className="text-ui-base/relaxed text-foreground-subtle">
-                        {statusDetail}
-                      </div>
-                    </div>
-                    {loading ? (
-                      <LoaderCircle className="size-4 animate-spin text-foreground-subtle" />
-                    ) : isRemoteControlOff ? (
-                      <Button
-                        type="button"
-                        variant="default"
-                        size="default"
-                        data-testid="web-remote-control-start"
-                        className="shrink-0 gap-2 enabled:cursor-pointer"
-                        onClick={() => void handleStart()}
-                      >
-                        <PlugZap className="size-3.5" />
-                        {intl.formatMessage({ id: "webRemoteControl.start" })}
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="default"
-                        data-testid="web-remote-control-stop"
-                        className="shrink-0 gap-2 enabled:cursor-pointer"
-                        onClick={() => void handleStop()}
-                      >
-                        <Unplug className="size-3.5" />
-                        {intl.formatMessage({ id: "webRemoteControl.stop" })}
-                      </Button>
-                    )}
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className={`size-2 shrink-0 rounded-full ${gatewayStatusDotClassName}`} />
+                    <span className="truncate text-ui-base text-foreground">
+                      {intl.formatMessage({ id: "settings.remoteAccess.gateway.label" })}
+                    </span>
                   </div>
-                  {failureDescription ? (
-                    <div className="mt-3 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-ui-base/relaxed text-destructive">
-                      <p>{failureDescription}</p>
-                      {status.failure?.message &&
-                      status.failure.message !== failureDescription ? (
-                        <p className="mt-1 text-ui-xs/relaxed opacity-80">
-                          {status.failure.message}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : status.error ? (
-                    <p className="mt-3 text-ui-base/relaxed text-destructive">
-                      {status.error}
+                  <span className="shrink-0 text-ui-base text-foreground-subtle">
+                    {intl.formatMessage({ id: gatewayStatusLabelId })}
+                  </span>
+                </div>
+
+                <div
+                  data-testid="web-remote-control-mobile-status"
+                  data-connected={mobileConnected ? "true" : "false"}
+                  className="flex items-center justify-between gap-3 rounded-lg bg-surface px-3 py-2.5"
+                >
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Smartphone className="size-4 shrink-0 text-foreground-subtle" />
+                    <span className="truncate text-ui-base text-foreground">
+                      {mobileConnected
+                        ? mobileDeviceName
+                        : intl.formatMessage({ id: "settings.remoteAccess.phone.waiting" })}
+                    </span>
+                  </div>
+                  {mobileConnected ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="default"
+                      data-testid="web-remote-control-disconnect-client"
+                      className="shrink-0 gap-2 enabled:cursor-pointer"
+                      disabled={busy}
+                      onClick={() => void handleDisconnect()}
+                    >
+                      {pendingAction === "disconnect" ? (
+                        <LoaderCircle className="size-3.5 animate-spin" />
+                      ) : (
+                        <Unplug className="size-3.5" />
+                      )}
+                      {intl.formatMessage({ id: "settings.remoteAccess.phone.disconnect" })}
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+
+              {failureDescription ? (
+                <div className="mt-3 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-ui-base/relaxed text-destructive">
+                  <p>{failureDescription}</p>
+                  {remoteAccessStatus?.status.failure?.message &&
+                  remoteAccessStatus.status.failure.message !== failureDescription ? (
+                    <p className="mt-1 text-ui-xs/relaxed opacity-80">
+                      {remoteAccessStatus.status.failure.message}
                     </p>
                   ) : null}
-                  <div
-                    data-testid="web-remote-control-copy-link-row"
-                    className="mt-3 flex min-h-10 flex-wrap items-center gap-3 border-t border-border pt-3"
-                  >
-                    <div className="min-w-48 flex-1 text-ui-base/relaxed text-foreground-subtle">
-                      {intl.formatMessage({
-                        id: "webRemoteControl.copyLink.description",
-                      })}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="default"
-                      className="shrink-0 gap-2 enabled:cursor-pointer"
-                      onClick={() => void handleRefreshQr()}
-                      // T1.3: 刷新二维码在平台层等同重新 start；未开启时禁用，
-                      // 否则这个按钮会变成「打开即启动」之外的另一条隐式启动路径。
-                      disabled={loading || isRemoteControlOff}
-                    >
-                      <RefreshCw className="size-3.5" />
-                      {intl.formatMessage({ id: "webRemoteControl.refreshQr" })}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="default"
-                      className="shrink-0 gap-2 enabled:cursor-pointer"
-                      onClick={() => void handleCopyLink()}
-                      disabled={!status.connectUrl || loading}
-                    >
-                      <CopyIcon className="size-3.5" />
-                      {intl.formatMessage({ id: "webRemoteControl.copyLink" })}
-                    </Button>
-                  </div>
                 </div>
-                <div className="flex min-h-0 flex-1 items-center justify-center rounded-xl border border-dashed border-border bg-background-alt p-4">
-                  {qrDataUrl ? (
-                    <img
-                      src={qrDataUrl}
-                      alt={intl.formatMessage({ id: "webRemoteControl.qrAlt" })}
-                      className="size-64 max-w-full rounded-lg bg-white p-3"
-                    />
-                  ) : isRemoteControlOff ? (
-                    <div className="flex flex-col items-center gap-2 text-center text-ui-base text-foreground-subtle">
-                      <Smartphone className="size-5" />
-                      <span>{intl.formatMessage({ id: "webRemoteControl.qrIdle" })}</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-3 text-center text-ui-base text-foreground-subtle">
-                      <LoaderCircle className="size-5 animate-spin" />
-                      <span>
-                        {intl.formatMessage({
-                          id: "webRemoteControl.generating",
-                        })}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </section>
+              ) : null}
 
-              <WebRemoteControlBotsEntry
-                workspacePath={workspacePath}
-                workspaceIdentity={workspaceIdentity}
-              />
-            </div>
+              {!enabled || gateway.state === "error" ? (
+                <p
+                  data-testid="web-remote-control-settings-hint"
+                  className="mt-3 rounded-lg border border-border bg-background-alt px-3 py-2 text-ui-base/relaxed text-foreground-subtle"
+                >
+                  {intl.formatMessage({ id: "webRemoteControl.remoteAccess.settingsHint" })}
+                </p>
+              ) : null}
+
+              <div className="mt-auto pt-4 text-ui-xs/relaxed text-foreground-subtlest">
+                {intl.formatMessage({ id: "webRemoteControl.remoteAccess.managedInSettings" })}
+              </div>
+            </section>
+
+            <WebRemoteControlBotsEntry
+              workspacePath={workspacePath}
+              workspaceIdentity={workspaceIdentity}
+            />
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 });

@@ -142,6 +142,7 @@ describe("settingsPageConfig", () => {
       "browser",
       "computerUse",
       "shortcuts",
+      "remoteAccess",
     ]);
     expect(
       settingsSectionGroups
@@ -158,5 +159,28 @@ describe("settingsPageConfig", () => {
     expect(resolveSettingsSectionForPlatform("computerUse", settingsSections, "general")).toBe(
       "general",
     );
+  });
+
+  it.each([
+    ["macOS", { isMacDesktop: true }, true],
+    ["Windows", { isWindowsDesktop: true }, true],
+    ["Linux 桌面", { isDesktop: true }, true],
+    ["Web", {}, false],
+  ] as const)("%s 的远程访问入口符合桌面平台边界", async (_name, options, expected) => {
+    const { createSettingsPageConfig } = await loadSettingsPageConfig("test");
+    const { settingsSections } = createSettingsPageConfig(options);
+
+    expect(settingsSections.some((section) => section.id === "remoteAccess")).toBe(expected);
+  });
+
+  it("Web 的兼容分区列表不包含远程访问", async () => {
+    const { SETTINGS_SECTIONS } = await loadSettingsPageConfig("test");
+
+    expect(SETTINGS_SECTIONS.some((section) => section.id === "remoteAccess")).toBe(false);
+  });
+
+  it("远程访问分区提供中英文标题", () => {
+    expect(zhCN["settings.remoteAccess.title"]).toBe("远程访问");
+    expect(enUS["settings.remoteAccess.title"]).toBe("Remote access");
   });
 });

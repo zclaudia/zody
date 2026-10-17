@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Smartphone } from "lucide-react";
-import type { WebRemoteControlStatus } from "@zcode/shared";
+import type { RemoteAccessStatus } from "@zcode/shared";
 import {
   buildWebRemoteControlEntryViewTelemetry,
   parseRemoteWorkspaceIdentity,
@@ -10,7 +10,7 @@ import { cn } from "@/components/lib/utils.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { useResolvedRemoteWorkspaceSessionId } from "@/hooks/useResolvedRemoteWorkspaceSessionId.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
-import { useWebRemoteControlStatus } from "@/hooks/useWebRemoteControlStatus.js";
+import { useRemoteAccessStatus } from "@/hooks/useRemoteAccessStatus.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { reportAppTelemetryEvent } from "@/lib/appTelemetry.js";
@@ -19,48 +19,43 @@ import { useWebRemoteControlFeatureEnabled } from "@/WebRemoteControlFeatureProv
 
 type FormatMessage = ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"];
 
-export function getWebRemoteControlTriggerPresentation(
-  status: Pick<WebRemoteControlStatus, "status" | "mobileConnected">,
+/**
+ * 侧边栏入口展示 App 级远程访问状态：开关、gateway 连接和手机连接共同决定图标颜色。
+ * 这里不读窗口级 runtime 状态，避免多窗口时同一条远控链路显示成互相矛盾的状态。
+ */
+export function getRemoteAccessTriggerPresentation(
+  status: RemoteAccessStatus | null,
   formatMessage: FormatMessage,
 ): { iconClassName: string; tooltip: string } {
-  if (status.status === "error") {
+  if (!status?.enabled) {
+    return {
+      iconClassName: "text-foreground-subtle",
+      tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.idle" }),
+    };
+  }
+
+  if (status.gateway.state === "error") {
     return {
       iconClassName: "text-destructive",
       tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.error" }),
     };
   }
 
-  if (status.status === "active") {
-    // Bugfix: relay 重连时 main 可能先把 status 降到 starting/running，
-    // 但 mobileConnected 仍保留上一轮配对状态。按钮只按 active 显示已连接，
-    // 避免和打开弹层后的真实连接阶段文案不一致。
+  if (status.gateway.state === "connecting") {
+    return {
+      iconClassName: "text-warning",
+      tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.starting" }),
+    };
+  }
+
+  if (status.status.mobileConnected) {
     return {
       iconClassName: "text-success",
-      tooltip: formatMessage({
-        id: "webRemoteControl.triggerStatus.connected",
-      }),
+      tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.connected" }),
     };
   }
 
-  if (status.status === "starting") {
-    return {
-      iconClassName: "text-warning",
-      tooltip: formatMessage({
-        id: "webRemoteControl.triggerStatus.starting",
-      }),
-    };
-  }
-
-  if (status.status === "connecting") {
-    return {
-      iconClassName: "text-warning",
-      tooltip: formatMessage({
-        id: "webRemoteControl.triggerStatus.connecting",
-      }),
-    };
-  }
-
-  if (status.status === "running") {
+  if (status.gateway.state === "online") {
     return {
       iconClassName: "text-warning",
       tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.waiting" }),
@@ -135,9 +130,11 @@ function WorkspaceWebRemoteControlTriggerContent({
   // resolver 按 identity 校验后的 live session，未恢复时让弹层保持 remote-waiting。
   const currentRemoteSessionId = mappedRemoteSessionId ?? undefined;
   const [webRemoteControlOpen, setWebRemoteControlOpen] = useState(false);
-  const remoteControlStatus = useWebRemoteControlStatus();
-  const triggerPresentation = getWebRemoteControlTriggerPresentation(
-    remoteControlStatus,
+  const remoteAccessStatusRead = useRemoteAccessStatus({
+    enabled: !webRemoteControlOpen,
+  });
+  const triggerPresentation = getRemoteAccessTriggerPresentation(
+    remoteAccessStatusRead.status,
     intl.formatMessage,
   );
 

@@ -2567,6 +2567,20 @@ app.whenReady().then(async () => {
     },
     finalArmsCustomEventE2EEnabled: shouldEnableE2ETestBridge(process.env),
     webRemoteControlManager,
+    // T4.1：设置页的凭证读写与「测试连接」共用 T3.2 backend；凭证保存/清除后重新读取配置，
+    // 让 gateway 连接按新的凭证签名重连。
+    remoteAccessIpc: {
+      getCredentialStatus: () => remoteAccessCredentialStore.getStatus(),
+      saveCredential: async (credential) => {
+        await remoteAccessCredentialStore.save(credential);
+        await remoteGatewayBackend.reloadConfig();
+      },
+      clearCredential: async () => {
+        await remoteAccessCredentialStore.clear();
+        await remoteGatewayBackend.reloadConfig();
+      },
+      testConnection: (input) => remoteGatewayBackend.testConnection(input),
+    },
     createRemoteWorkspaceSession: remoteSessionManager.createRemoteWorkspaceSession,
     getRemoteConnectionStats: remoteSessionManager.getRemoteConnectionStats,
     disposeRemoteWorkspaceSession: remoteSessionManager.disposeRemoteWorkspaceSession,

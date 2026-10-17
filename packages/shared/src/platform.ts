@@ -24,7 +24,12 @@ import type {
   WebRemoteControlWorkspaceTarget,
 } from "./web-remote-control.js";
 import type { AppSettings, Locale } from "./protocol.js";
-import type { RemoteAccessStatus } from "./remoteAccess.js";
+import type {
+  RemoteAccessCredentialStatus,
+  RemoteAccessStatus,
+  RemoteAccessTestConnectionRequest,
+  RemoteAccessTestConnectionResult,
+} from "./remoteAccess.js";
 import type { ArmsCustomEventPayload, RendererTelemetryEventPayload } from "./telemetry.js";
 import type {
   RendererActionTraceBatchV1,
@@ -768,6 +773,20 @@ export interface IPlatformService {
 
   /** 查询 App 级远程访问状态（开关 + 全局 runtime 状态）。 */
   getRemoteAccessStatus?(): Promise<RemoteAccessStatus>;
+
+  /** 查询 backend 凭证是否已配置；凭证本身永不出 Main。 */
+  getRemoteAccessCredentialStatus?(): Promise<RemoteAccessCredentialStatus>;
+
+  /** 保存 backend 凭证（`zgb_`/`zga_`），只写入 Main 的凭据服务。 */
+  saveRemoteAccessCredential?(credential: string): Promise<void>;
+
+  /** 清除 backend 凭证。 */
+  clearRemoteAccessCredential?(): Promise<void>;
+
+  /** 用设置页当前表单值测试 gateway 连接；有手机连接时 Main 会返回 `mobile-connected`。 */
+  testRemoteAccessConnection?(
+    input: RemoteAccessTestConnectionRequest,
+  ): Promise<RemoteAccessTestConnectionResult>;
 
   /** 释放当前窗口里已创建的远程 session */
   disposeRemoteSession(sessionId: string): Promise<void>;

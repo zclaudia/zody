@@ -41,8 +41,8 @@ vi.mock("@/hooks/useResolvedRemoteWorkspaceSessionId.js", () => ({
     remoteSessionId ?? null,
 }));
 
-vi.mock("@/hooks/useWebRemoteControlStatus.js", () => ({
-  useWebRemoteControlStatus: () => ({ status: "idle" }),
+vi.mock("@/hooks/useRemoteAccessStatus.js", () => ({
+  useRemoteAccessStatus: () => ({ status: null, loading: false, refresh: async () => {} }),
 }));
 
 vi.mock("@/WebRemoteControlDialog.js", () => ({

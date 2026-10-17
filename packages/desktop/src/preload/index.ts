@@ -83,6 +83,9 @@ import type {
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceTarget,
   RemoteAccessStatus,
+  RemoteAccessCredentialStatus,
+  RemoteAccessTestConnectionRequest,
+  RemoteAccessTestConnectionResult,
   RemoteConnectionRuntimeLog,
   WindowControlsOverlayMetrics,
   WindowControlsOverlayReadyPayload,
@@ -304,6 +307,16 @@ contextBridge.exposeInMainWorld("zcode", {
     ipcRenderer.invoke(PlatformChannels.DisconnectRemoteClient),
   getRemoteAccessStatus: (): Promise<RemoteAccessStatus> =>
     ipcRenderer.invoke(PlatformChannels.GetRemoteAccessStatus),
+  getRemoteAccessCredentialStatus: (): Promise<RemoteAccessCredentialStatus> =>
+    ipcRenderer.invoke(PlatformChannels.GetRemoteAccessCredentialStatus),
+  saveRemoteAccessCredential: (credential: string): Promise<void> =>
+    ipcRenderer.invoke(PlatformChannels.SaveRemoteAccessCredential, credential),
+  clearRemoteAccessCredential: (): Promise<void> =>
+    ipcRenderer.invoke(PlatformChannels.ClearRemoteAccessCredential),
+  testRemoteAccessConnection: (
+    input: RemoteAccessTestConnectionRequest,
+  ): Promise<RemoteAccessTestConnectionResult> =>
+    ipcRenderer.invoke(PlatformChannels.TestRemoteAccessConnection, input),
   disposeRemoteSession: (sessionId: string): Promise<void> =>
     ipcRenderer.invoke(PlatformChannels.DisposeRemoteSession, sessionId),
   isDockerAvailable: (): Promise<boolean> => ipcRenderer.invoke(PlatformChannels.IsDockerAvailable),
