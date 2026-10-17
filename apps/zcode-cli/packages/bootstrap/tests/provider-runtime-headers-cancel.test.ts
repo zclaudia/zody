@@ -181,7 +181,7 @@ it("无人应答在总时限后失败并取消，迟到响应失效且下一请�
 });
 
 it("闲时 scope 经过执行投影和私有反向 RPC 保留，SSH workspace 身份不变", async () => {
-  const { createModelExecutionContext } = await import("../src/zcode-protocol/model-execution.js");
+  const { createModelExecutionContext } = await import("../src/model-execution.js");
   const {
     zcodeSessionSendParamsSchema,
     zcodeProviderRuntimeHeadersRequestParamsSchema,

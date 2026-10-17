@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createNodeFileSystemAdapter } from "@zcode/adapters/fs";
-import { AiSdkModelAdapter, AiSdkModelRegistry } from "@zcode/adapters/model";
+import { AiSdkModelAdapter } from "@zcode/adapters/model";
 import {
   createInMemorySessionEventStore,
   createNodeToolArtifactStore,
@@ -22,7 +22,18 @@ import {
   type PdfDocumentPort,
   type RuntimeModelConfig,
 } from "@zcode/contracts";
-import { AgentRuntime } from "@zcode/core";
+import { AgentRuntime, type RuntimeModelFactory } from "@zcode/core";
+import {
+  createRegistryModelConfig,
+  createRegistryProviderConfig,
+  ModelConfig,
+  ModelOptionSpecsConfig,
+  ModelPropertiesConfig,
+  parseProviderConfig,
+  ProviderRegistry,
+  type RegistryModelConfig,
+} from "@zcode/provider";
+import { createApiKeyProviderConfig } from "./provider-config-fixtures.js";
 
 import { createSessionFacade } from "../src/app/session-facade.js";
 
@@ -52,7 +63,11 @@ describe("Read PDF model capability switching E2E", () => {
         mode: "yolo",
         modelInputMediaCapabilities: { supportsImages: true, supportsPdf: true },
         modelProviderOptions: { apiFormat: "openai-chat-completions" },
-        modelRef: PDF_CAPABLE_MODEL,
+        modelSelection: {
+          providerId: String(PDF_CAPABLE_MODEL.providerId),
+          modelId: String(PDF_CAPABLE_MODEL.modelId),
+          options: { reasoningLevel: "disabled" },
+        },
         modelStreaming: "off",
         workingDirectory: root,
       },
@@ -64,7 +79,7 @@ describe("Read PDF model capability switching E2E", () => {
         }),
         eventStore: createInMemorySessionEventStore(),
         fileSystemPort: createNodeFileSystemAdapter(),
-        modelAdapter: createModelSwitchChatAdapter(capture.baseURL),
+        modelFactory: createModelSwitchChatFactory(capture.baseURL),
         pdfDocumentPort,
         sessionStore,
       },
@@ -130,6 +145,22 @@ function createModelSwitcher(input: {
       [formatModel(PDF_INCAPABLE_MODEL)]: { supportsImages: true, supportsPdf: false },
     },
   };
+  // setModel 现在按 Provider Registry 校验目标模型；为切换 fixture 提供同源注册表。
+  const registry = new ProviderRegistry([
+    {
+      providerId: String(PROVIDER_ID),
+      config: createApiKeyProviderConfig({
+        apiFormat: "openai-chat-completions",
+        apiKey: "pdf-model-switch-e2e-key",
+        baseURL: `${input.baseURL}/v1`,
+        models: [PDF_CAPABLE_MODEL.modelId, PDF_INCAPABLE_MODEL.modelId],
+      }),
+      models: [
+        { modelId: PDF_CAPABLE_MODEL.modelId, config: createSwitchModelConfig(true) },
+        { modelId: PDF_INCAPABLE_MODEL.modelId, config: createSwitchModelConfig(false) },
+      ],
+    },
+  ]);
   return createSessionFacade({
     configResult: {
       config: { ...DefaultRuntimeConfig, model: modelConfig, modelCatalog },
@@ -151,6 +182,7 @@ function createModelSwitcher(input: {
     prepareResume: async () => {},
     prepareUserExecutionBoundary: async () => {},
     projectID: createProjectId("read-pdf-model-switch-e2e"),
+    providerRegistry: registry,
     resolveUiLocale: () => "en-US",
     runtime: input.runtime,
     sessionId: input.sessionId,
@@ -176,32 +208,66 @@ function formatModel(model: ModelRef): string {
   return `${model.providerId}/${model.modelId}`;
 }
 
-function createModelSwitchChatAdapter(baseURL: string): AiSdkModelAdapter {
-  const providerId = String(PROVIDER_ID);
-  return new AiSdkModelAdapter({
-    registry: new AiSdkModelRegistry({
-      env: {},
-      inputMediaCapabilities: {
-        [`${providerId}/${PDF_CAPABLE_MODEL.modelId}`]: {
-          supportsImages: true,
-          supportsPdf: true,
-        },
-        [`${providerId}/${PDF_INCAPABLE_MODEL.modelId}`]: {
-          supportsImages: true,
-          supportsPdf: false,
-        },
-      },
-      providers: {
-        [providerId]: {
-          apiKey: "pdf-model-switch-e2e-key",
-          baseURL: `${baseURL}/v1`,
-          kind: "openai-compatible",
-          providerOptions: { apiFormat: "openai-chat-completions" },
-        },
-      },
+function createModelSwitchChatFactory(baseURL: string): RuntimeModelFactory {
+  // AiSdkModelRegistry 已从 adapters 移除：按模型能力区分的 modelConfig 由
+  // modelFactory 注入（CreateAiSdkModelOptions）。
+  const adapter = new AiSdkModelAdapter({ env: {}, retry: { maxAttempts: 1 } });
+  const providerResult = createRegistryProviderConfig(
+    parseProviderConfig({
+      group: "standard-personal",
+      access: { type: "api-key", apiKey: "pdf-model-switch-e2e-key" },
+      api: { type: "openai-chat-completions", baseUrl: `${baseURL}/v1` },
     }),
-    retry: { maxAttempts: 1 },
-  });
+  );
+  if (!providerResult.ok) {
+    throw new Error(`fixture provider config invalid: ${JSON.stringify(providerResult.issues)}`);
+  }
+  const modelConfigByCapability = new Map<boolean, RegistryModelConfig>([
+    [true, createSwitchModelConfig(true)],
+    [false, createSwitchModelConfig(false)],
+  ]);
+  return ({ selection }) => {
+    const pdfCapable = String(selection.modelId) === String(PDF_CAPABLE_MODEL.modelId);
+    return adapter.createModel({
+      providerId: String(selection.providerId),
+      modelId: String(selection.modelId),
+      providerConfig: providerResult.config,
+      modelConfig: modelConfigByCapability.get(pdfCapable)!,
+      options: { reasoningLevel: selection.options?.reasoningLevel ?? "disabled" },
+    });
+  };
+}
+
+function createSwitchModelConfig(supportsPdf: boolean): RegistryModelConfig {
+  const result = createRegistryModelConfig(
+    new ModelConfig({
+      enabled: true,
+      properties: new ModelPropertiesConfig({
+        requiresMfjsToolSchema: false,
+        contextWindow: 200_000,
+        inputFormat: {
+          supportsText: true,
+          supportsImage: true,
+          supportsVideo: false,
+          supportsAudio: false,
+          supportsPdf,
+        },
+        outputFormat: { supportsText: true },
+        supportsToolCall: true,
+        supportsJsonSchemaOutput: false,
+        supportsNativeWebSearch: false,
+        supportsMidConversationSystem: false,
+      }),
+      optionSpecs: new ModelOptionSpecsConfig({
+        reasoningLevel: { values: ["disabled"], map: "{}" },
+        maxOutputTokens: { max: 32_000, map: '{"max_tokens":maxOutputTokens}' },
+      }),
+    }),
+  );
+  if (!result.ok) {
+    throw new Error(`fixture model config invalid: ${JSON.stringify(result.issues)}`);
+  }
+  return result.config;
 }
 
 async function startChatCaptureServer(pdfPath: string): Promise<{

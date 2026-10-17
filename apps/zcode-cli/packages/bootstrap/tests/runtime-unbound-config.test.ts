@@ -79,7 +79,7 @@ function resolve(resume: boolean, modelSelection?: ModelSelection, registry = cr
 }
 
 describe("Runtime 创建与未绑定恢复的边界", () => {
-  it("新建空白会话没有 configured default 时保持未绑定，等待显式提交选择", () => {
+  it("新建空白会话没有 configured default 时按 Registry 顺序推荐首项", () => {
     const config = resolveAppRuntimeConfig({
       cliStorageRoot: "/test/cli",
       configResult: createConfig({ env: {}, skipUserConfig: true, workingDirectory: "/test" }),
@@ -87,7 +87,10 @@ describe("Runtime 创建与未绑定恢复的边界", () => {
       subagentOutputRootDir: "/test/agents",
       workingDirectory: "/test",
     });
-    expect(config.runtimeConfig.modelSelection).toBeUndefined();
+    // provider/model-selection-config.ts：resolveInitialModelSelection 对全新草稿
+    // （非 resume、无 configuredDefault）fallback 到 Registry 首个可见模型并补最高档
+    // （registry-fallback）；「保持未绑定等待显式提交」只适用于 resume 恢复路径。
+    expect(config.runtimeConfig.modelSelection).toEqual(complete);
   });
   it.each([
     undefined,

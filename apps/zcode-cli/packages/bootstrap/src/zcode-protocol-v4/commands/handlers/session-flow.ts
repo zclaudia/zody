@@ -7,7 +7,7 @@ import type {
   CommandResult,
 } from "@zcode/shared/zcode-protocol-v4";
 import { isHighspeedProviderId } from "@zcode/shared";
-import { createModelExecutionContext } from "../../../zcode-protocol/model-execution.js";
+import { createModelExecutionContext } from "../../../model-execution.js";
 import { mapAttachmentRefsToTurnAttachments } from "../attachment-refs.js";
 import {
   applyHeldQueueDisposition,

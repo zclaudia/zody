@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { createNodeExecutionAdapter } from "@zcode/adapters/exec";
 import { createNodeFileSystemAdapter } from "@zcode/adapters/fs";
 import { createJimpImageProcessorAdapter } from "@zcode/adapters/image";
-import { AiSdkModelAdapter, AiSdkModelRegistry } from "@zcode/adapters/model";
+import { AiSdkModelAdapter } from "@zcode/adapters/model";
 import { createPopplerPdfDocumentAdapter } from "@zcode/adapters/pdf";
 import {
   createInMemorySessionEventStore,
@@ -24,7 +24,17 @@ import {
   type ImageProcessorPort,
   type PdfDocumentPort,
 } from "@zcode/contracts";
-import { AgentRuntime } from "@zcode/core";
+import { AgentRuntime, type RuntimeModelFactory } from "@zcode/core";
+import {
+  createRegistryModelConfig,
+  createRegistryProviderConfig,
+  ModelConfig,
+  ModelOptionSpecsConfig,
+  ModelPropertiesConfig,
+  parseProviderConfig,
+  type RegistryModelConfig,
+  type RegistryProviderConfig,
+} from "@zcode/provider";
 
 const CHAT_MODEL = {
   providerId: createModelProviderId("pdf-capture"),
@@ -62,7 +72,11 @@ describe("Read PDF provider and cold-resume E2E", () => {
           mode: "yolo",
           modelInputMediaCapabilities: { supportsImages: true, supportsPdf: true },
           modelProviderOptions: { apiFormat: "openai-chat-completions" },
-          modelRef: CHAT_MODEL,
+          modelSelection: {
+            providerId: String(CHAT_MODEL.providerId),
+            modelId: String(CHAT_MODEL.modelId),
+            options: { reasoningLevel: "disabled" },
+          },
           modelStreaming: "off",
           workingDirectory: root,
         },
@@ -71,7 +85,7 @@ describe("Read PDF provider and cold-resume E2E", () => {
           eventStore: createInMemorySessionEventStore(),
           fileSystemPort: createNodeFileSystemAdapter(),
           imageProcessorPort: passthroughImageProcessor,
-          modelAdapter: createChatModelAdapter(capture.baseURL),
+          modelFactory: createChatModelFactory(capture.baseURL),
           pdfDocumentPort: deterministicPdfDocument,
           sessionStore,
         },
@@ -184,26 +198,66 @@ async function commandSucceeds(command: string, args: string[]): Promise<boolean
   });
 }
 
-function createChatModelAdapter(baseURL: string): AiSdkModelAdapter {
-  const providerId = String(CHAT_MODEL.providerId);
-  const modelId = String(CHAT_MODEL.modelId);
-  return new AiSdkModelAdapter({
-    registry: new AiSdkModelRegistry({
-      env: {},
-      inputMediaCapabilities: {
-        [`${providerId}/${modelId}`]: { supportsImages: true, supportsPdf: true },
-      },
-      providers: {
-        [providerId]: {
-          apiKey: "pdf-e2e-key",
-          baseURL: `${baseURL}/v1`,
-          kind: "openai-compatible",
-          providerOptions: { apiFormat: "openai-chat-completions" },
-        },
-      },
+function createChatModelFactory(baseURL: string): RuntimeModelFactory {
+  // AiSdkModelRegistry 已从 adapters 移除：模型身份与端点事实改由调用方经
+  // providerConfig/modelConfig 在 modelFactory 注入（CreateAiSdkModelOptions）。
+  const adapter = new AiSdkModelAdapter({ env: {}, retry: { maxAttempts: 1 } });
+  const providerConfig = createChatProviderConfig(baseURL);
+  const modelConfig = createChatModelConfig(true);
+  return ({ selection }) =>
+    adapter.createModel({
+      providerId: String(selection.providerId),
+      modelId: String(selection.modelId),
+      providerConfig,
+      modelConfig,
+      options: { reasoningLevel: selection.options?.reasoningLevel ?? "disabled" },
+    });
+}
+
+function createChatProviderConfig(baseURL: string): RegistryProviderConfig {
+  const result = createRegistryProviderConfig(
+    parseProviderConfig({
+      group: "standard-personal",
+      access: { type: "api-key", apiKey: "pdf-e2e-key" },
+      api: { type: "openai-chat-completions", baseUrl: `${baseURL}/v1` },
     }),
-    retry: { maxAttempts: 1 },
-  });
+  );
+  if (!result.ok) {
+    throw new Error(`fixture provider config invalid: ${JSON.stringify(result.issues)}`);
+  }
+  return result.config;
+}
+
+function createChatModelConfig(supportsPdf: boolean): RegistryModelConfig {
+  const result = createRegistryModelConfig(
+    new ModelConfig({
+      enabled: true,
+      properties: new ModelPropertiesConfig({
+        requiresMfjsToolSchema: false,
+        contextWindow: 200_000,
+        inputFormat: {
+          supportsText: true,
+          supportsImage: true,
+          supportsVideo: false,
+          supportsAudio: false,
+          supportsPdf,
+        },
+        outputFormat: { supportsText: true },
+        supportsToolCall: true,
+        supportsJsonSchemaOutput: false,
+        supportsNativeWebSearch: false,
+        supportsMidConversationSystem: false,
+      }),
+      optionSpecs: new ModelOptionSpecsConfig({
+        reasoningLevel: { values: ["disabled"], map: "{}" },
+        maxOutputTokens: { max: 32_000, map: '{"max_tokens":maxOutputTokens}' },
+      }),
+    }),
+  );
+  if (!result.ok) {
+    throw new Error(`fixture model config invalid: ${JSON.stringify(result.issues)}`);
+  }
+  return result.config;
 }
 
 const deterministicPdfDocument: PdfDocumentPort = {

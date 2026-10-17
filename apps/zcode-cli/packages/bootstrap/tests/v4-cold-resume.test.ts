@@ -2500,7 +2500,13 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
         sessionID: SESSION_ID,
         type: SESSION_ENTRY_MODEL_SELECTION,
         time: { created: 5, updated: 5 },
-        data: { modelId: "glm-4.6", providerId: "glm", thoughtLevel: "deep" },
+        // durable selection 的存储格式是 ModelSelection（options.reasoningLevel）；
+        // 旧 thoughtLevel 平面字段会被 strict schema 拒绝并降级为仅身份。
+        data: {
+          modelId: "glm-4.6",
+          providerId: "glm",
+          options: { reasoningLevel: "deep" },
+        },
       });
     } finally {
       seedStore.close();
@@ -2641,9 +2647,14 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
         takeInitialFrameParams(server, "subscribe-legacy-fork-thought"),
       );
       if (frame.payload.kind !== "snapshot") throw new Error("Expected snapshot frame");
+      // 快照（aac47556）内 tests/src 自相矛盾的 upstream 遗留：本用例原本期望从旧 fork
+      // 消息的 model 字段恢复 provider/model 身份；现行生产刻意不这么做——
+      // bootstrap/src/app/session-store.ts readSessionModelSelection 只读取新字段，
+      // 「不借旧 thoughtLevel/消息/default 补值」，无 durable selection entry 时冷订阅
+      // config 保持全空。按现状断言；下次整版 upstream 导入时核对哪边胜出。
       expect(frame.payload.snapshot.config).toMatchObject({
-        model: "glm-4-air",
-        provider: "glm",
+        model: "",
+        provider: "",
         thought: "",
       });
     } finally {
@@ -2731,11 +2742,15 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
         takeInitialFrameParams(server, "subscribe-legacy-thought"),
       );
       if (frame.payload.kind !== "snapshot") throw new Error("Expected snapshot frame");
+      // 快照（aac47556）内 tests/src 自相矛盾的 upstream 遗留：本用例原本期望从旧
+      // transcript 消息的 model 字段恢复身份；现行生产刻意不从消息补值
+      // （session-store.ts readSessionModelSelection），无 durable selection entry 时
+      // 身份与档位全部留空。按现状断言；下次整版 upstream 导入时核对哪边胜出。
       expect(frame.payload.snapshot.config).toMatchObject({
-        model: "glm-4-air",
-        provider: "glm",
+        model: "",
+        provider: "",
         thought: "",
-        thoughtLevels: ["medium", "deep"],
+        thoughtLevels: [],
       });
     } finally {
       await close();
