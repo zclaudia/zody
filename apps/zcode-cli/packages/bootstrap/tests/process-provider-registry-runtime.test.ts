@@ -77,6 +77,8 @@ describe("process provider registry runtime", () => {
       [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: active,
       [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: join(root, "personal.json"),
       ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE: bundled,
+      // fork：远程刷新默认关闭，此处显式开启以验证机制本身。
+      ZCODE_BUILTIN_REMOTE_REFRESH: "1",
     };
     const runtime = await startProcessProviderRegistryRuntime(env, {
       standalone: {
@@ -108,6 +110,48 @@ describe("process provider registry runtime", () => {
       }
     } finally {
       releaseDownload();
+      runtime.dispose();
+    }
+  });
+  it("fork 默认不启用内置配置远程刷新：不请求控制面，active 文件保持 bundled 内容", async () => {
+    const root = await temporaryDirectory();
+    const builtin = JSON.parse(
+      await readFile(
+        new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    const bundled = join(root, "bundled.json");
+    const active = join(root, "active.json");
+    await writeFile(bundled, JSON.stringify(builtin));
+    await writeFile(active, JSON.stringify(builtin));
+    const request = vi.fn(async () => new Response("{}"));
+    const credentialStore = createSharedZCodeCredentialStore({
+      env: { ZCODE_DATA_BASE_DIR: root },
+    });
+    // 不设置 ZCODE_BUILTIN_REMOTE_REFRESH：fork 默认关闭官方远程刷新，
+    // 防止官方 release 把已删除的 account:* provider 带回运行时（F4.1a followUp）。
+    const runtime = await startProcessProviderRegistryRuntime(
+      {
+        [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: active,
+        [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: join(root, "personal.json"),
+        ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE: bundled,
+      },
+      {
+        standalone: {
+          credentialStore,
+          request,
+          legacyCliUserConfigFilePath: join(root, "absent.json"),
+        },
+      },
+    );
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      expect(request).not.toHaveBeenCalled();
+      expect(JSON.parse(await readFile(active, "utf8")).revision).toBe(builtin.revision);
+      const snapshot = runtime.runtime.registryService.getSnapshot()!;
+      expect(snapshot.config.zcodeBuiltinRevision).toMatch(`zcode-builtin:${builtin.revision}:`);
+    } finally {
       runtime.dispose();
     }
   });

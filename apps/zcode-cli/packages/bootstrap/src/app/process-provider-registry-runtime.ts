@@ -59,28 +59,40 @@ export async function startProcessProviderRegistryRuntime(
   const bundledFile = options.standalone
     ? env[ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV]?.trim()
     : undefined;
+  // fork：默认关闭内置配置的官方远程刷新——官方 release（如 revision 31）会把已删除的
+  // account:* 官方账号 provider 带回运行时，破坏「内置列表剔除官方账号」的装配决策
+  // （specs/fork-official-deps-removal-tasks.md F4.1a followUps 实测：E2E 打包 agent 联网时
+  // configRevision 被回填为 zcode-builtin:31）。仅显式设置 ZCODE_BUILTIN_REMOTE_REFRESH=1
+  // 时启用，留作未来接入自建控制面的过渡开关。
+  const remoteRefreshEnabled = ["1", "true", "yes"].includes(
+    (env.ZCODE_BUILTIN_REMOTE_REFRESH ?? "").trim().toLowerCase(),
+  );
   const runtime = new NodeProviderRegistryRuntime({
     ...paths,
     ...(bundledFile
       ? {
           zcodeBuiltinFilePath: bundledFile,
           zcodeBuiltinActiveFilePath: paths.zcodeBuiltinFilePath,
-          zcodeBuiltinRemote: {
-            controlFilePath: join(
-              dirname(paths.zcodeBuiltinFilePath),
-              "zcode-builtin-refresh.json",
-            ),
-            resolveEndpointKey: () => resolveRuntimeZCodeEndpointOrigin(env),
-            fetchRelease: (endpointOrigin, signal) =>
-              downloadZCodeBuiltinRelease({
-                endpointOrigin,
-                signal,
-                appVersion: ZCODE_VERSION,
-                platform: resolveZCodeBuiltinClientPlatform(),
-                request: options.standalone?.request ?? globalThis.fetch,
-              }),
-            onRefreshResult: options.standalone?.onBuiltinRefreshResult,
-          },
+          ...(remoteRefreshEnabled
+            ? {
+                zcodeBuiltinRemote: {
+                  controlFilePath: join(
+                    dirname(paths.zcodeBuiltinFilePath),
+                    "zcode-builtin-refresh.json",
+                  ),
+                  resolveEndpointKey: () => resolveRuntimeZCodeEndpointOrigin(env),
+                  fetchRelease: (endpointOrigin, signal) =>
+                    downloadZCodeBuiltinRelease({
+                      endpointOrigin,
+                      signal,
+                      appVersion: ZCODE_VERSION,
+                      platform: resolveZCodeBuiltinClientPlatform(),
+                      request: options.standalone?.request ?? globalThis.fetch,
+                    }),
+                  onRefreshResult: options.standalone?.onBuiltinRefreshResult,
+                },
+              }
+            : {}),
         }
       : {}),
     onZCodeBuiltinRefreshError: options.standalone?.onBuiltinRefreshError,
