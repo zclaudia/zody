@@ -133,15 +133,15 @@ export const webRemoteControlTaskTargetSchema = z.object({
 export const webRemoteControlTaskTargetsSchema = z.array(webRemoteControlTaskTargetSchema);
 
 export const webRemoteControlFailureReasonSchema = z.enum([
-  "session-not-found",
-  "session-expired",
   "session-conflict",
   "workspace-closed",
   "desktop-disconnected",
-  "invalid-mobile-connection",
   "desktop-bootstrap-timeout",
   "connection-recovery-timeout",
-  "relay-unavailable",
+  "gateway-unreachable",
+  "gateway-credential-invalid",
+  "incompatible-version",
+  "backend-unsupported",
   "unsupported-action",
   "unexpected-error",
 ]);

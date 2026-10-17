@@ -70,7 +70,7 @@ export function createWebRemoteControlAppPayloadRequester({
           pending.delete(payload.requestId);
           reject(
             createFailure(
-              "relay-unavailable",
+              "gateway-unreachable",
               "Web remote control transport is not ready to send payload.",
             ),
           );

@@ -138,6 +138,8 @@ export function createRemoteGatewayBackend(
       namespace: config.namespace,
       capabilities: [WEB_REMOTE_CONTROL_BACKEND_CAPABILITY],
       reconnect: true,
+      // T3.3：transport 需要扣住数据 socket 读 bufferedAmount 做背压。
+      ...(dependencies.socketFactory ? { socketFactory: dependencies.socketFactory } : {}),
     };
     const sdk = createBackend(options);
     sdk.onState((state) => handleSdkState(sdk, state));
@@ -193,7 +195,9 @@ export function createRemoteGatewayBackend(
 
     if (!resolved.complete) {
       if (resolved.enabled) {
-        logger.warn("[remote-access] remote access enabled but gateway configuration is incomplete");
+        logger.warn(
+          "[remote-access] remote access enabled but gateway configuration is incomplete",
+        );
         setStatus({ state: "error", reason: "unconfigured" });
       } else {
         setStatus({ state: "disabled" });

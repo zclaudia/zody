@@ -127,6 +127,7 @@ import { createWebRemoteControlManager } from "./webRemoteControlManager.js";
 import { createRemoteWorkspaceDirectory } from "./remote-access/remoteWorkspaceDirectory.js";
 import { createRemoteAccessCredentialStore } from "./remote-access/remoteAccessCredentialStore.js";
 import { createRemoteGatewayBackend } from "./remote-access/remoteGatewayBackend.js";
+import { createGatewayDeviceTransport } from "./remote-access/gatewayDeviceTransport.js";
 import { createNodeWebRemoteControlRelayAuthProvider } from "./webRemoteControlRelayAuthProvider.js";
 import { createWebRemoteControlRelayAuthStorageProvider } from "./webRemoteControlRelayAuthStorageProvider.js";
 import { createWebRemoteControlFeatureGate } from "./webRemoteControlFeatureGate.js";
@@ -722,6 +723,10 @@ const remoteAccessCredentialStore = createRemoteAccessCredentialStore({
  * `syncImmediateAppSettings` 与 `SetRemoteAccessEnabled` 两条路径收敛到 `reloadConfig()`。
  * channel 交给 T3.3 的 GatewayDeviceTransport（后者调用 `setChannelHandler`）。
  */
+const gatewayDeviceTransport = createGatewayDeviceTransport({
+  logger,
+  desktopAppVersion: ZCODE_VERSION || app.getVersion(),
+});
 const remoteGatewayBackend = createRemoteGatewayBackend({
   loadConfig: async () => {
     const settings = await mainSettingService.get();
@@ -736,7 +741,16 @@ const remoteGatewayBackend = createRemoteGatewayBackend({
   logger,
   // release 构建要求 https；本地 dev（未打包）允许 http，方便连本机 gateway。
   allowInsecureTransport: !app.isPackaged,
+  // T3.3：transport 经 socketFactory 扣住数据 socket，读 bufferedAmount 做背压。
+  socketFactory: gatewayDeviceTransport.socketFactory,
 });
+// T3.3：在 backend connect() 之前挂好 channel handler；handler 内部同步注册 onMessage/onClose。
+remoteGatewayBackend.setChannelHandler((channel, offer) =>
+  gatewayDeviceTransport.handleChannel(channel, offer),
+);
+remoteGatewayBackend.onChannelClosed((info) =>
+  gatewayDeviceTransport.handleGatewayChannelClosed(info),
+);
 const appLaunchGate = createAppLaunchGate();
 const appLaunchCoordinator = createAppLaunchCoordinator(appLaunchGate);
 const appTelemetryCredentialService = createCredentialService();
@@ -1022,6 +1036,9 @@ const webRemoteControlManager = createWebRemoteControlManager({
     migrateLegacyCommonMcp: (payload) => migrateLegacyCommonMcp(payload),
   },
   reconnectWorkspace: reconnectWebRemoteControlWorkspaceInRenderer,
+  // T3.3：App 级 runtime 的 transport 改用 gateway channel；relay transport 保留到 T5.1，
+  // 但生产环境不再被选用（manager 的默认实现只在没有注入时兜底）。
+  createDeviceTransport: (options) => gatewayDeviceTransport.createSession(options),
   reportRendererTelemetryEvent: (event) => {
     void appTelemetryCore.reportEvent(event).catch(() => {});
   },

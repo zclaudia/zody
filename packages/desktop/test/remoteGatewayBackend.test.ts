@@ -41,6 +41,9 @@ class FakeChannel implements RemoteGatewayChannel {
   isOpen = true;
   readonly sent: string[] = [];
   private readonly closeHandlers = new Set<() => void>();
+  private readonly messageHandlers = new Set<
+    (message: { data: string | Uint8Array; binary: boolean }) => void
+  >();
 
   constructor(
     channelId = "channel-1",
@@ -66,6 +69,15 @@ class FakeChannel implements RemoteGatewayChannel {
     for (const handler of Array.from(this.closeHandlers)) {
       handler();
     }
+  }
+
+  onMessage(
+    handler: (message: { data: string | Uint8Array; binary: boolean }) => void,
+  ): () => void {
+    this.messageHandlers.add(handler);
+    return () => {
+      this.messageHandlers.delete(handler);
+    };
   }
 
   onClose(handler: () => void): () => void {

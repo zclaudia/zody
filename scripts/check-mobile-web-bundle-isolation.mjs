@@ -14,13 +14,10 @@ const WEB_DIST = resolve(REPO_ROOT, "packages/web/dist");
 const MOBILE_DIST = resolve(REPO_ROOT, "packages/web/dist-mobile-remote");
 const MOBILE_ENTRY_HTML = "mobile.html";
 
-// gateway-client（0.3.0）里只可能来自该 SDK 的标记：包名 + SDK 内部协议/API 字面量。
-const GATEWAY_CLIENT_MARKERS = [
-  "@zclaudia/gateway-client",
-  "@zclaudia/",
-  "discoverBackends",
-  "peer_hello",
-];
+// gateway-client（0.3.0）里只可能来自该 SDK 的标记：包名 + SDK 的 API 名。
+// 不用 `peer_hello`：shared 的 web-remote-control-channel.ts 注释里也有这个词，而普通 Web
+// 客户端合法引用 shared 后，source map 的 sourcesContent 会把它带进 .map，造成假阳性。
+const GATEWAY_CLIENT_MARKERS = ["@zclaudia/gateway-client", "@zclaudia/", "discoverBackends"];
 
 const SCANNED_EXTENSIONS = [".js", ".mjs", ".css", ".html", ".map"];
 

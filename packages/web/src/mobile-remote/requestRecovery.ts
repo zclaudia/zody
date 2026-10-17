@@ -15,7 +15,10 @@ function isRecoverableRelayRequestFailure(
 ): boolean {
   const failure = error as Partial<WebRemoteControlFailure> | undefined;
   return (
-    failure?.reason === "relay-unavailable" ||
+    // Bugfix: gateway 链路的临时不可发送（channel 未 ready / 正在重开）与电脑离线都值得
+    // 触发一次共用恢复；旧 relay 的 relay-unavailable 已随失败原因枚举删除。
+    failure?.reason === "gateway-unreachable" ||
+    failure?.reason === "desktop-disconnected" ||
     (options?.recoverTimeout === true && failure?.reason === "desktop-bootstrap-timeout")
   );
 }

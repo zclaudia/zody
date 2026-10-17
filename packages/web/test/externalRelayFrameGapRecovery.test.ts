@@ -19,7 +19,7 @@ const testState = vi.hoisted(() => ({
   transportOptions: [] as Array<{
     onPayload(payload: WebRemoteControlAppPayload): void;
     onRawTransportPayload?(payload: unknown): boolean;
-    onSendReady?(event: { kind: "same-socket" | "reconnected-socket" }): void;
+    onSendReady?(): void;
     onStateChange(state: string): void;
   }>,
   recoverConnectionCalls: 0,
@@ -91,17 +91,14 @@ vi.mock("@zcode/client", () => ({
   }),
 }));
 
-vi.mock("../src/webRemoteControlTransport.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../src/webRemoteControlTransport.js")>();
-
+vi.mock("../src/mobile-remote/gatewayTerminalTransport.js", () => {
   return {
-    ...actual,
-    WebRemoteControlTerminalTransport: class {
+    GatewayTerminalTransport: class {
       constructor(
         private readonly options: {
           onPayload(payload: WebRemoteControlAppPayload): void;
           onRawTransportPayload?(payload: unknown): boolean;
-          onSendReady?(event: { kind: "same-socket" | "reconnected-socket" }): void;
+          onSendReady?(): void;
           onStateChange(state: string): void;
         },
       ) {
@@ -109,7 +106,7 @@ vi.mock("../src/webRemoteControlTransport.js", async (importOriginal) => {
       }
 
       start() {
-        this.options.onStateChange("paired");
+        this.options.onStateChange("ready");
       }
 
       sendPayload(payload: WebRemoteControlAppPayload): boolean {
@@ -251,9 +248,10 @@ function setupExternalRelayGlobals(pathname = "/remote") {
     matchMedia: () => ({ matches: false }),
     location: {
       pathname,
-      href: `https://zcode.z.ai${pathname}?sid=sid-1&hash=hash-1&t=1&mid=mid-1&app_version=1.0.0`,
+      href: `https://zcode.z.ai${pathname}?gateway=http%3A%2F%2Fgateway.test&namespace=zcode&credential=zgd_test&backend=backend-1&client_id=client-1&app_version=1.0.0`,
       replace: navigateMock,
-      search: "?sid=sid-1&hash=hash-1&t=1&mid=mid-1&app_version=1.0.0",
+      search:
+        "?gateway=http%3A%2F%2Fgateway.test&namespace=zcode&credential=zgd_test&backend=backend-1&client_id=client-1&app_version=1.0.0",
     },
   });
   vi.stubGlobal("navigator", {
@@ -285,6 +283,12 @@ function setupExternalRelayGlobals(pathname = "/remote") {
   };
 }
 
+/** 手机 bootstrap 不再挂在普通 Web 入口的 `/remote*` 路由上（T3.4 隔离 SDK），直接调用启动函数。 */
+async function startMobileBootstrap(): Promise<void> {
+  const { bootstrapGatewayWebRemoteControl } = await import("../src/mobile-remote/bootstrap.js");
+  await bootstrapGatewayWebRemoteControl(new URLSearchParams(window.location.search));
+}
+
 describe("external relay frame gap recovery", () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -310,7 +314,7 @@ describe("external relay frame gap recovery", () => {
     vi.stubEnv("BASE_URL", "/remote/v4/");
     setupExternalRelayGlobals("/remote/v4");
     testState.desktopAppVersion = "3.12.2";
-    await import("../src/main.js");
+    await startMobileBootstrap();
     await vi.waitFor(() => expect(navigateMock).toHaveBeenCalledOnce());
     expect(new URL(navigateMock.mock.calls[0]![0]).searchParams.get("app_version")).toBe("3.12.2");
     expect(testState.relayProtocolOptions).toHaveLength(0);
@@ -322,11 +326,11 @@ describe("external relay frame gap recovery", () => {
     setupExternalRelayGlobals("/remote/v4");
     testState.desktopAppVersion = "1.0.0";
     testState.deferBridge = true;
-    await import("../src/main.js");
+    await startMobileBootstrap();
     await vi.waitFor(() => expect(testState.bridgeReplies).toHaveLength(1));
     testState.desktopAppVersion = "3.12.2";
-    testState.transportOptions[0]!.onStateChange("waiting");
-    testState.transportOptions[0]!.onStateChange("paired");
+    testState.transportOptions[0]!.onStateChange("connecting");
+    testState.transportOptions[0]!.onStateChange("ready");
     await vi.waitFor(() => expect(navigateMock).toHaveBeenCalledOnce());
     testState.bridgeReplies[0]!();
     await Promise.resolve();
@@ -339,7 +343,7 @@ describe("external relay frame gap recovery", () => {
       vi.stubEnv("BASE_URL", "/remote/v4/");
       const lifecycle = setupExternalRelayGlobals("/remote/v4");
       testState.desktopAppVersion = "1.0.0";
-      await import("../src/main.js");
+      await startMobileBootstrap();
       await vi.waitFor(() =>
         expect(
           renderMock.mock.calls.some(([element]) =>
@@ -350,8 +354,8 @@ describe("external relay frame gap recovery", () => {
       const renderCount = renderMock.mock.calls.length;
       testState.desktopAppVersion = "3.12.2";
       if (kind === "pair") {
-        testState.transportOptions[0]!.onStateChange("waiting");
-        testState.transportOptions[0]!.onStateChange("paired");
+        testState.transportOptions[0]!.onStateChange("connecting");
+        testState.transportOptions[0]!.onStateChange("ready");
       } else {
         lifecycle.setVisibilityState("hidden");
         lifecycle.dispatchDocumentEvent("visibilitychange");
@@ -381,7 +385,7 @@ describe("external relay frame gap recovery", () => {
     vi.stubEnv("BASE_URL", "/remote/v4/");
     const lifecycle = setupExternalRelayGlobals("/remote/v4");
     testState.desktopAppVersion = "1.0.0";
-    await import("../src/main.js");
+    await startMobileBootstrap();
     await vi.waitFor(() => expect(testState.relayProtocolOptions).toHaveLength(1));
 
     testState.deferBootstrap = true;
@@ -408,7 +412,7 @@ describe("external relay frame gap recovery", () => {
       vi.stubEnv("BASE_URL", `/remote/${version}/`);
       setupExternalRelayGlobals(`/remote/${version}`);
       testState.deferBootstrap = true;
-      await import("../src/main.js");
+      await startMobileBootstrap();
 
       await vi.advanceTimersByTimeAsync(20_000);
 
@@ -427,7 +431,7 @@ describe("external relay frame gap recovery", () => {
     vi.stubEnv("BASE_URL", "/remote/v3/");
     setupExternalRelayGlobals("/remote/v3");
 
-    await import("../src/main.js");
+    await startMobileBootstrap();
 
     await vi.waitFor(() => {
       expect(testState.relayProtocolOptions).toHaveLength(1);
@@ -437,7 +441,7 @@ describe("external relay frame gap recovery", () => {
   it("starts hard recovery when the mobile relay protocol detects an inbound rpc frame gap", async () => {
     setupExternalRelayGlobals();
 
-    await import("../src/main.js");
+    await startMobileBootstrap();
 
     await vi.waitFor(() => {
       expect(testState.relayProtocolOptions).toHaveLength(1);
@@ -468,7 +472,7 @@ describe("external relay frame gap recovery", () => {
   it("routes raw ACKs before app requesters and replays whenever the same bridge is send-ready", async () => {
     setupExternalRelayGlobals();
 
-    await import("../src/main.js");
+    await startMobileBootstrap();
 
     await vi.waitFor(() => {
       expect(testState.relayProtocolAdapters).toHaveLength(1);
@@ -485,18 +489,18 @@ describe("external relay frame gap recovery", () => {
     expect(transportOptions.onRawTransportPayload?.(ack)).toBe(true);
     expect(adapter.acceptPayload).toHaveBeenCalledWith(ack);
 
-    transportOptions.onSendReady?.({ kind: "same-socket" });
+    transportOptions.onSendReady?.();
     expect(adapter.replayUnacknowledged).toHaveBeenCalledOnce();
     expect(adapter.flushPendingFrames).not.toHaveBeenCalled();
 
-    transportOptions.onSendReady?.({ kind: "reconnected-socket" });
+    transportOptions.onSendReady?.();
     expect(adapter.replayUnacknowledged).toHaveBeenCalledTimes(2);
   });
 
   it("keeps the current bridge mounted when a short background recovery confirms pairing", async () => {
     const lifecycle = setupExternalRelayGlobals();
 
-    await import("../src/main.js");
+    await startMobileBootstrap();
 
     await vi.waitFor(() => {
       expect(testState.relayProtocolOptions).toHaveLength(1);
@@ -533,7 +537,7 @@ describe("external relay frame gap recovery", () => {
     vi.setSystemTime(0);
     const lifecycle = setupExternalRelayGlobals();
 
-    await import("../src/main.js");
+    await startMobileBootstrap();
 
     await vi.waitFor(() => {
       expect(testState.relayProtocolOptions).toHaveLength(1);

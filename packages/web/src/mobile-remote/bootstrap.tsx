@@ -1,4 +1,4 @@
-/* eslint-disable max-lines -- 手机远控启动流程（参数解析 → terminal transport → 版本校验 → workspace bridge → Root 渲染）暂时集中在一个模块。 */
+/* eslint-disable max-lines -- 手机远控启动流程（配置解析 → gateway transport → 版本校验 → workspace bridge → Root 渲染）暂时集中在一个模块。 */
 import {
   AppErrorBoundary,
   Root,
@@ -11,14 +11,13 @@ import {
 import { connectViaProtocol, createAcknowledgedWebRemoteControlRelayProtocol } from "@zcode/client";
 import {
   WEB_REMOTE_CONTROL_WORKSPACE_RECONNECT_TIMEOUT_MS,
-  parseWebRemoteControlExternalQrParams,
   resolveWebRemoteControlInitialWorkspaceSelection,
-  resolveWebRemoteControlRelayWsUrl,
   resolveWebRemoteControlWorkspaceKey,
   sessionCreateTelemetrySchema,
   type WebRemoteControlAppPayload,
   type WebRemoteControlExternalWorkspaceBridge,
   type WebRemoteControlFailure,
+  type WebRemoteControlFailureReason,
   type WebRemoteControlMobileNavigationIntent,
   type WebRemoteControlPlatformMethod,
   type WebRemoteControlPlatformMethodArgsMap,
@@ -32,7 +31,6 @@ import {
 import { createWebRemoteControlAppPayloadRequester } from "./payloadRequester.js";
 import { createWebRemoteControlRelayRequestRecovery } from "./requestRecovery.js";
 import { createHomeOnlyWebRemoteControlServices } from "./homeOnlyServices.js";
-import { createBrowserWebRemoteControlRelayAuthProvider } from "../webRemoteControlRelayAuthProvider.js";
 import { createWebRemoteControlLifecycleRecovery } from "../webRemoteControlLifecycle.js";
 import { seedWebRemoteControlThemePreference } from "../webRemoteControlThemeSeed.js";
 import { createWebRemoteControlVersionGuard } from "../webRemoteControlVersion.js";
@@ -54,15 +52,17 @@ import {
 } from "../webRemoteControlFailureView.js";
 import { WebRemoteControlLoadingScreen } from "../webRemoteControlLoadingScreen.js";
 import {
-  WebRemoteControlTerminalTransport,
-  type WebRemoteControlTerminalTransportDiagnostic,
-} from "../webRemoteControlTransport.js";
+  GatewayTerminalTransport,
+  type GatewayTerminalTransportDiagnostic,
+  type GatewayTerminalTransportState,
+} from "./gatewayTerminalTransport.js";
+import { resolveWebRemoteControlGatewayBootstrapConfig } from "./gatewayBootstrapConfig.js";
 
 /**
- * 手机远控启动模块（T1.2 迁出 `main.tsx`）。
+ * 手机远控启动模块（T1.2 迁出 `main.tsx`，T3.4 换成 gateway transport）。
  * 桌面 Web 客户端的 `/remote*` 路由和手机入口（`mobile.html`）都从这里启动远控：
- * 解析 relay 参数 → 建 terminal transport → 校验桌面版本 → 打开 workspace bridge → 渲染 Root。
- * 后续 T3.4/T4.2 会把 transport 与流程换成 gateway 版本。
+ * 解析 gateway 连接配置 → 建 GatewayTerminalTransport → 校验桌面版本 → 打开 workspace bridge → 渲染 Root。
+ * 配置的持久化与设置页属于 T4.2；这里只消费注入的配置。
  */
 
 type WebRemoteControlWorkspaceListUpdateListener = (
@@ -93,35 +93,49 @@ function seedStableWebRemoteControlClientId(deviceSid: string): void {
     setStreamClientId(generateMobileDeviceFingerprint());
   }
 }
-function resolveExternalRelayWsUrl(): string {
-  const endpointOrigin =
-    import.meta.env.VITE_ZCODE_BASE_URL?.trim() ||
-    import.meta.env.VITE_ZCODE_ENDPOINT_ORIGIN?.trim();
-  return resolveWebRemoteControlRelayWsUrl({
-    endpointOrigin,
-    overrideUrl: import.meta.env.VITE_ZCODE_WEB_REMOTE_CONTROL_RELAY_WS_URL,
-  });
-}
 function renderWebRemoteControlLoading(state: UiWebRemoteControlTerminalTransportState): void {
   document.title = "ZCode - Web Remote Control";
   webEntryRoot.render(<WebRemoteControlLoadingScreen state={state} />);
 }
-export async function bootstrapExternalRelayWebRemoteControl(
-  params: URLSearchParams,
-): Promise<void> {
-  const relayParams = parseWebRemoteControlExternalQrParams(params);
-  if (!relayParams) {
+
+/** 新的 gateway transport 状态映射到现有手机壳/加载页使用的 UI 状态。 */
+function toUiTerminalTransportState(
+  state: GatewayTerminalTransportState,
+): UiWebRemoteControlTerminalTransportState {
+  switch (state) {
+    case "connecting":
+      return "connecting";
+    case "ready":
+      return "paired";
+    case "reconnecting":
+      return "reconnecting";
+    case "suspended":
+      return "suspended";
+    case "error":
+      return "error";
+    default:
+      return "idle";
+  }
+}
+
+/** 可恢复失败不卸载页面：transport 继续监听 registry，电脑恢复在线后自动重连。 */
+function isRecoverableGatewayFailure(reason: WebRemoteControlFailureReason): boolean {
+  return reason === "gateway-unreachable" || reason === "desktop-disconnected";
+}
+export async function bootstrapGatewayWebRemoteControl(params: URLSearchParams): Promise<void> {
+  const gatewayConfig = resolveWebRemoteControlGatewayBootstrapConfig(params);
+  if (!gatewayConfig) {
     renderWebRemoteControlFailure(
       toWebRemoteControlFailure(
-        "invalid-mobile-connection",
-        "Missing or invalid Web remote control relay parameters.",
+        "gateway-credential-invalid",
+        "Missing gateway URL, device credential, or backend id.",
       ),
     );
     return;
   }
 
-  seedWebRemoteControlThemePreference(relayParams.theme);
-  seedStableWebRemoteControlClientId(relayParams.deviceSid);
+  seedWebRemoteControlThemePreference(gatewayConfig.theme);
+  seedStableWebRemoteControlClientId(gatewayConfig.clientInstanceId);
 
   let bootstrapping = false;
   let recovering = false;
@@ -185,25 +199,48 @@ export async function bootstrapExternalRelayWebRemoteControl(
     }
   };
 
-  const sendMobileDiagnostic = (diagnostic: WebRemoteControlTerminalTransportDiagnostic) => {
-    if (diagnostic.type === "socket-extensions") {
-      return;
-    }
-    sendMobileDiagnosticPayload?.({
-      zcode_type: "mobile-diagnostic",
-      event: diagnostic.type,
+  const sendMobileDiagnostic = (diagnostic: GatewayTerminalTransportDiagnostic) => {
+    const base = {
+      zcode_type: "mobile-diagnostic" as const,
       timestamp: diagnostic.timestamp,
       state: diagnostic.state,
-      previousState: "previousState" in diagnostic ? diagnostic.previousState : undefined,
-      pairStatus: "pairStatus" in diagnostic ? diagnostic.pairStatus : undefined,
-      closeCode: "code" in diagnostic ? diagnostic.code : undefined,
-      closeReason: "reason" in diagnostic ? diagnostic.reason : undefined,
-      wasClean: "wasClean" in diagnostic ? diagnostic.wasClean : undefined,
-      wasPaired: "wasPaired" in diagnostic ? diagnostic.wasPaired : undefined,
       visibilityState: diagnostic.visibilityState,
       online: diagnostic.online,
       hiddenDurationMs: diagnostic.hiddenDurationMs,
-    });
+    };
+    switch (diagnostic.type) {
+      case "state-transition":
+        sendMobileDiagnosticPayload?.({
+          ...base,
+          event: "state-transition",
+          previousState: diagnostic.previousState,
+        });
+        break;
+      case "socket-close":
+        sendMobileDiagnosticPayload?.({
+          ...base,
+          event: "socket-close",
+          closeCode: diagnostic.code,
+          closeReason: diagnostic.reason,
+          wasClean: diagnostic.wasClean,
+          // mobile-diagnostic 的历史字段名保留 wasPaired；gateway 语义是 channel 曾 ready。
+          wasPaired: diagnostic.wasReady,
+        });
+        break;
+      case "socket-error":
+        sendMobileDiagnosticPayload?.({ ...base, event: "socket-error" });
+        break;
+      case "recover-start":
+        sendMobileDiagnosticPayload?.({ ...base, event: "recover-start" });
+        break;
+      case "recover-scheduled":
+        sendMobileDiagnosticPayload?.({ ...base, event: "recover-scheduled" });
+        break;
+      default:
+        // credential-reverify/protocol-error/heartbeat-timeout/channel-rejected 不属于
+        // mobile-diagnostic 现有事件集，避免为了诊断扩展 appProtocol 1 的 payload schema。
+        break;
+    }
   };
 
   const sendMobileFailureDiagnostic = (failure: WebRemoteControlFailure) => {
@@ -222,19 +259,6 @@ export async function bootstrapExternalRelayWebRemoteControl(
   const mapBootstrapUnknownErrorToFailure = (error: unknown): WebRemoteControlFailure => {
     if (error && typeof error === "object" && "reason" in error) {
       return error as WebRemoteControlFailure;
-    }
-    if (
-      error instanceof Error &&
-      error.message === "Web remote control relay did not recover before timeout."
-    ) {
-      // Bugfix: 桌面端长时间休眠导致“假连接”时，手机端 recoverConnection 超时会先落入 unknown，
-      // 随后 waiting timer 又触发 invalid-mobile，用户会看到前后冲突的两张错误页。
-      // 这里把 recover 超时直接映射为 desktop-disconnected，并在失败后立即终止 transport，
-      // 保证错误语义单一且稳定。
-      return toWebRemoteControlFailure(
-        "desktop-disconnected",
-        "Desktop did not recover the Web remote control session in time.",
-      );
     }
     return toWebRemoteControlFailure(
       "unexpected-error",
@@ -337,13 +361,14 @@ export async function bootstrapExternalRelayWebRemoteControl(
 
   renderWebRemoteControlLoading("connecting");
 
-  const transport = new WebRemoteControlTerminalTransport({
-    relayWsUrl: resolveExternalRelayWsUrl(),
-    deviceSid: relayParams.deviceSid,
-    passHash: relayParams.passHash,
-    deviceMid: relayParams.deviceMid,
-    appVersion: relayParams.appVersion,
-    authProvider: createBrowserWebRemoteControlRelayAuthProvider(),
+  const transport = new GatewayTerminalTransport({
+    gatewayUrl: gatewayConfig.gatewayUrl,
+    namespace: gatewayConfig.namespace,
+    credential: gatewayConfig.credential,
+    backendId: gatewayConfig.backendId,
+    clientInstanceId: gatewayConfig.clientInstanceId,
+    clientName: gatewayConfig.clientName,
+    appVersion: gatewayConfig.appVersion,
     onRawTransportPayload: (payload) => activeRelayProtocol?.acceptPayload(payload) ?? false,
     onRawTransportFault: (reasonCode) => {
       activeRelayProtocol?.markDegraded(reasonCode);
@@ -387,13 +412,14 @@ export async function bootstrapExternalRelayWebRemoteControl(
       if (terminated || versionGuard.isBlocked()) {
         return;
       }
-      terminalTransportState = state;
-      if (state !== "paired") versionGuard.invalidate();
-      setWebRemoteControlTerminalTransportState(state);
+      const uiState = toUiTerminalTransportState(state);
+      terminalTransportState = uiState;
+      if (uiState !== "paired") versionGuard.invalidate();
+      setWebRemoteControlTerminalTransportState(uiState);
       if (!ready) {
-        renderWebRemoteControlLoading(state);
+        renderWebRemoteControlLoading(uiState);
       }
-      if (state !== "paired") {
+      if (uiState !== "paired") {
         return;
       }
       // 已有校验操作自行跨重连消费一次重试；配对事件不能启动另一个恢复 owner。
@@ -424,6 +450,11 @@ export async function bootstrapExternalRelayWebRemoteControl(
         });
     },
     onFailure: (failure) => {
+      if (isRecoverableGatewayFailure(failure.reason)) {
+        // 可恢复失败：保留当前页面，transport 继续按 registry 自动重连。
+        sendMobileFailureDiagnostic(failure);
+        return;
+      }
       renderBootstrapFailure(failure);
     },
     onError: (error) => {
@@ -440,13 +471,15 @@ export async function bootstrapExternalRelayWebRemoteControl(
     onSendReady: () => {
       if (versionGuard.isBlocked()) return;
       if (activeRelayProtocol?.isDegraded()) return;
-      // Bug 修复：same-socket matched 只说明 relay 当前重新可达，desktop peer 可能已经换代，
+      // Bug 修复：channel 重新 ready 只说明链路恢复，desktop peer 可能已经换代，
       // 也可能只丢了上一批 data/ACK。重放同 bridge 未 ACK 批次，由 messageSeq 去重；
       // adapter 继续保留原始 45 秒 age，避免心跳把不可恢复链路无限续命。
       activeRelayProtocol?.replayUnacknowledged();
     },
-    reloadPage: () => {
-      window.location.reload();
+    onVersionNegotiated: (info) => {
+      if (!import.meta.env.PROD) {
+        console.info("[web-remote-control] negotiated app protocol", info);
+      }
     },
   });
   sendMobileDiagnosticPayload = (payload) => transport.sendPayload(payload);
@@ -559,7 +592,7 @@ export async function bootstrapExternalRelayWebRemoteControl(
         updatedAt: Date.now(),
       },
       deviceInfo: collectWebRemoteControlMobileDeviceInfo({
-        appVersion: relayParams.appVersion,
+        appVersion: gatewayConfig.appVersion,
       }),
     });
   };

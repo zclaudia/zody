@@ -1995,10 +1995,10 @@ const enUS: Record<string, string> = {
   "webRemoteControl.singlePageNote":
     "This relay pairing supports one phone page at a time. If it is already open elsewhere, close the old page first.",
   "webRemoteControl.copyLink.description": "Can't scan? Open the link on your phone.",
-  "webRemoteControl.failure.sessionNotFound":
-    "This Web remote control link is no longer valid. Start it again from desktop.",
-  "webRemoteControl.failure.sessionExpired":
-    "This Web remote control session has already ended. Generate a new link from desktop to continue.",
+  "webRemoteControl.failure.gatewayUnreachable":
+    "Cannot reach the remote access gateway. Check the phone network and the gateway address; it reconnects automatically.",
+  "webRemoteControl.failure.gatewayCredentialInvalid":
+    "The gateway rejected this device credential. It may have been revoked or entered incorrectly; check it in settings.",
   "webRemoteControl.failure.sessionConflict":
     "This link is already being used by another page. Close the other page and scan again.",
   "webRemoteControl.failure.kicked":
@@ -2007,14 +2007,14 @@ const enUS: Record<string, string> = {
     "The shared desktop window has been closed. Go back to desktop and start Web remote control again.",
   "webRemoteControl.failure.desktopDisconnected":
     "The desktop side disconnected, so this Web remote control session can no longer continue.",
-  "webRemoteControl.failure.invalidMobileConnection":
-    "The current mobile connection is no longer valid. Reload the page and reconnect.",
+  "webRemoteControl.failure.incompatibleVersion":
+    "The phone and desktop application protocol versions are incompatible. Upgrade one side as indicated and reconnect.",
   "webRemoteControl.failure.desktopBootstrapTimeout":
     "The desktop window did not respond in time. Make sure it is still running, then reload.",
   "webRemoteControl.failure.connectionRecoveryTimeout":
     "The mobile connection did not recover in time, so Web remote control cannot keep syncing yet.",
-  "webRemoteControl.failure.relayUnavailable":
-    "The external relay connection is unavailable. Make sure desktop is online, then try again.",
+  "webRemoteControl.failure.backendUnsupported":
+    "The selected desktop is online but does not support the ZCode remote-control capability. Choose another desktop.",
   "webRemoteControl.failure.unsupportedAction":
     "Web remote control mode can only open workspaces that are already open in the current desktop window.",
   "webRemoteControl.failure.unexpectedError":

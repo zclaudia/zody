@@ -30,14 +30,20 @@ describe("resolveWebRemoteControlRoutePath", () => {
     expect(resolveWebRemoteControlRoutePath({ BASE_URL: "/" })).toBe("/remote");
   });
 
-  it("源码保留发布脚本识别版本化 base 能力所依赖的变量引用", async () => {
-    // remote-frontend-build-source.mjs 通过该文件是否引用此变量决定旧 tag 是否回退 legacy base。
+  it("手机入口直接启动 gateway bootstrap，普通 Web 入口不再挂载 /remote* 路由", async () => {
+    // T3.4 起手机页面是独立入口（mobile.html）；普通 Web 入口引用 bootstrap 会把
+    // @zclaudia/gateway-client 带进 dist，违反 scripts/check-mobile-web-bundle-isolation.mjs。
     const source = await readFile(
       resolve(import.meta.dirname, "../src/webRemoteControlRoute.ts"),
       "utf8",
     );
     expect(source).toContain("VITE_WEB_REMOTE_CONTROL_ROUTE_PATH");
     const main = await readFile(resolve(import.meta.dirname, "../src/main.tsx"), "utf8");
-    expect(main).toContain("resolveWebRemoteControlRoutePath(import.meta.env)");
+    expect(main).not.toContain("mobile-remote/bootstrap");
+    const mobileEntry = await readFile(
+      resolve(import.meta.dirname, "../src/mobile-remote/main.tsx"),
+      "utf8",
+    );
+    expect(mobileEntry).toContain("bootstrapGatewayWebRemoteControl");
   });
 });

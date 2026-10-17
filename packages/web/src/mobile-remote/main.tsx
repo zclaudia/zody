@@ -5,7 +5,7 @@ import {
 } from "@zcode/ui";
 import "@zcode/ui/styles.css";
 import { applyWebThemePreference } from "../webThemePreference.js";
-import { bootstrapExternalRelayWebRemoteControl } from "./bootstrap.js";
+import { bootstrapGatewayWebRemoteControl } from "./bootstrap.js";
 
 /**
  * 手机入口（`mobile.html`，T1.2）。
@@ -17,7 +17,7 @@ import { bootstrapExternalRelayWebRemoteControl } from "./bootstrap.js";
 installDocumentHiddenMotionPause();
 applyWebThemePreference();
 // 初始化流式 clientId，确保所有 hook 在首次渲染前就使用稳定 ID；
-// 远控配对成功后 seedStableWebRemoteControlClientId 会按设备参数覆盖成持久 ID。
+// 建连前 seedStableWebRemoteControlClientId 会按 clientInstanceId 覆盖成持久 ID。
 setStreamClientId(generateMobileDeviceFingerprint());
 
-void bootstrapExternalRelayWebRemoteControl(new URLSearchParams(window.location.search));
+void bootstrapGatewayWebRemoteControl(new URLSearchParams(window.location.search));

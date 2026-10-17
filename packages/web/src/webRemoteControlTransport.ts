@@ -346,7 +346,7 @@ export class WebRemoteControlTerminalTransport {
       }
       this.setState("error");
       this.options.onFailure(
-        createFailure("relay-unavailable", "Web remote control relay connection closed."),
+        createFailure("gateway-unreachable", "Web remote control relay connection closed."),
       );
     });
   }
@@ -547,7 +547,7 @@ export class WebRemoteControlTerminalTransport {
       return;
     }
     if (code === "AUTH_FAILED" || code === "WRONG_PARAM") {
-      this.enterTerminalFailure(createFailure("invalid-mobile-connection", message || code));
+      this.enterTerminalFailure(createFailure("gateway-credential-invalid", message || code));
       return;
     }
     if (code === "INTERNAL") {
@@ -560,7 +560,7 @@ export class WebRemoteControlTerminalTransport {
       this.recoverFromRelayInternal(message || code);
       return;
     }
-    this.enterTerminalFailure(createFailure("relay-unavailable", message || code));
+    this.enterTerminalFailure(createFailure("gateway-unreachable", message || code));
   }
 
   private handleDataPayload(payload: unknown): void {
@@ -659,7 +659,7 @@ export class WebRemoteControlTerminalTransport {
       }
       this.enterTerminalFailure(
         createFailure(
-          "invalid-mobile-connection",
+          "gateway-credential-invalid",
           "Desktop did not match this mobile connection before the waiting timeout.",
         ),
       );

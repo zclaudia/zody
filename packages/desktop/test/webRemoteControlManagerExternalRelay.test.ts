@@ -54,6 +54,8 @@ function createManagerHarness(options?: {
   reportRemoteUsageEvent?: Parameters<
     typeof createWebRemoteControlManager
   >[0]["reportRemoteUsageEvent"];
+  /** T3.3：用 gateway channel transport 的语义启动（没有 relay 配对材料）。 */
+  usesGatewayChannel?: boolean;
 }) {
   const sentPayloads: WebRemoteControlAppPayload[] = [];
   const logger = {
@@ -152,6 +154,7 @@ function createManagerHarness(options?: {
     disposeWorkspaceHostAttachmentsForRemoteSession,
     onStatusChanged: options?.onStatusChanged,
     createDeviceTransport: (transportOptions) => ({
+      usesGatewayChannel: options?.usesGatewayChannel,
       start: () => {
         latestTransportOptions = transportOptions;
         transportStartCount += 1;
@@ -167,6 +170,12 @@ function createManagerHarness(options?: {
           }
           transportOptions.onStateChange("waiting_terminal");
         };
+        if (options?.usesGatewayChannel) {
+          // gateway channel 没有 relay 配对/二维码阶段，也不需要 onRegisteredAuth。
+          deliverPayload = transportOptions.onPayload;
+          transportOptions.onStateChange("waiting_terminal");
+          return;
+        }
         if (options?.delayReadyMs !== undefined) {
           setTimeout(markReady, options.delayReadyMs);
           return;
@@ -1157,6 +1166,24 @@ describe("createWebRemoteControlManager external relay", () => {
     });
   });
 
+  it("starts a gateway-backed transport without relay pairing material", async () => {
+    const { manager, getStoredAuth } = createManagerHarness({ usesGatewayChannel: true });
+
+    await expect(manager.start({ workspacePath: "/workspace/demo" })).resolves.toMatchObject({
+      status: "running",
+      sessionId: "gateway",
+      qrUrl: "",
+      connectUrl: "",
+    });
+    expect(manager.getStatus()).toMatchObject({
+      status: "running",
+      sessionId: "gateway",
+      qrUrl: "",
+    });
+    // T3.3：gateway transport 不写 relay 配对材料。
+    expect(getStoredAuth()).toBeUndefined();
+  });
+
   it("emits a status update as soon as the external relay session is ready", async () => {
     const onStatusChanged = vi.fn();
     const { manager } = createManagerHarness({ onStatusChanged });
@@ -1801,9 +1828,7 @@ describe("createWebRemoteControlManager external relay", () => {
       bridgeSessionId: "bridge-remote",
       workspaceKey: remoteWorkspace.workspaceIdentity!,
     });
-    await vi.waitFor(() =>
-      expect(manager.getStatus()).toMatchObject({ status: "active" }),
-    );
+    await vi.waitFor(() => expect(manager.getStatus()).toMatchObject({ status: "active" }));
 
     // 关闭另一个窗口不应影响当前 bridge。
     await manager.disposeWindow(1);
@@ -1862,9 +1887,7 @@ describe("createWebRemoteControlManager external relay", () => {
 
     await manager.disposeWindow(2);
 
-    const updated = sentPayloads.find(
-      (payload) => payload.zcode_type === "workspace-list-updated",
-    );
+    const updated = sentPayloads.find((payload) => payload.zcode_type === "workspace-list-updated");
     expect(updated).toEqual(
       expect.objectContaining({
         zcode_type: "workspace-list-updated",

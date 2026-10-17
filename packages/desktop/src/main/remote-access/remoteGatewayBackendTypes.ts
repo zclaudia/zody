@@ -30,6 +30,12 @@ export interface RemoteGatewayChannelOffer {
   sourcePeerSessionId?: string;
 }
 
+/** SDK `GatewayChannel.onMessage` 的入站帧；binary 标志保持 gateway 的 text/binary 区分。 */
+export interface RemoteGatewayChannelMessage {
+  data: string | Uint8Array;
+  binary: boolean;
+}
+
 /**
  * backend SDK 的 `GatewayChannel` 在本模块只使用这几个成员。
  * 用结构化类型让单测可以注入 fake channel，同时真实 SDK 的实例天然满足。
@@ -40,6 +46,7 @@ export interface RemoteGatewayChannel {
   readonly isOpen: boolean;
   send(data: string | Uint8Array): void;
   close(): void;
+  onMessage(handler: (message: RemoteGatewayChannelMessage) => void): () => void;
   onClose(handler: () => void): () => void;
 }
 
@@ -89,6 +96,11 @@ export interface RemoteGatewayBackendDependencies {
   createBackend?: RemoteGatewayBackendSdkFactory;
   /** release 构建要求 https；本地开发运行形态由调用方传 true。 */
   allowInsecureTransport?: boolean;
+  /**
+   * T3.3：GatewayDeviceTransport 的 socketFactory。适配层在 socketFactory 里扣住数据
+   * socket，才能读到 `bufferedAmount` 做背压（SDK 的 GatewayChannel 不暴露它）。
+   */
+  socketFactory?: GatewayBackendOptions["socketFactory"];
 }
 
 export interface RemoteGatewayTestConnectionInput {
@@ -118,7 +130,9 @@ export interface RemoteGatewayBackend {
   hasConnectedClient(): boolean;
   onChannelClosed(handler: (info: RemoteGatewayChannelClosedInfo) => void): () => void;
   /** 用表单值独立测试一次连接，结束后恢复生效配置。 */
-  testConnection(input: RemoteGatewayTestConnectionInput): Promise<RemoteGatewayTestConnectionResult>;
+  testConnection(
+    input: RemoteGatewayTestConnectionInput,
+  ): Promise<RemoteGatewayTestConnectionResult>;
   /** 关闭连接并进入 disabled；之后 reload/apply 都是 no-op。 */
   dispose(): Promise<void>;
 }

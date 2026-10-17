@@ -72,7 +72,7 @@ describe("createWebRemoteControlAppPayloadRequester", () => {
     );
 
     await expect(promise).rejects.toMatchObject({
-      reason: "relay-unavailable",
+      reason: "gateway-unreachable",
     });
   });
 

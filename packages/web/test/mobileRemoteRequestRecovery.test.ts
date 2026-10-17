@@ -13,7 +13,7 @@ describe("createWebRemoteControlRelayRequestRecovery", () => {
       const attempts = attemptsByRequest.get(requestId) ?? 0;
       attemptsByRequest.set(requestId, attempts + 1);
       if (attempts === 0) {
-        throw { reason: "relay-unavailable" };
+        throw { reason: "gateway-unreachable" };
       }
       return requestId;
     };

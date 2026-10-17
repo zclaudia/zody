@@ -10,12 +10,10 @@ import {
 import "@zcode/ui/styles.css";
 import { connectViaWebSocket } from "@zcode/client";
 import type { ServerRemoteInfo, WebRemoteControlFailure } from "@zcode/shared";
-import { matchesWebRemoteControlRoutePath } from "@zcode/shared";
 import { WebCallbackPage } from "./auth/WebCallbackPage.js";
 import { createWebAuthService } from "./auth/webAuthService.js";
 import { WEB_ZAI_OAUTH_CONFIG, resolveWebAuthDevReturnTo } from "./auth/webZaiOAuthConfig.js";
 import { parseOAuthState, resolveSafeAppReturnTo } from "./auth/oauthStateCodec.js";
-import { bootstrapExternalRelayWebRemoteControl } from "./mobile-remote/bootstrap.js";
 import {
   ConversationShareLandingLoader,
   ConversationShareLandingStatus,
@@ -28,7 +26,6 @@ import {
   isConversationSharePath,
   resolveConversationShareCodeFromPath,
 } from "./share/conversationShareRoute.js";
-import { resolveWebRemoteControlRoutePath } from "./webRemoteControlRoute.js";
 import {
   renderWebRemoteControlFailure,
   toWebRemoteControlFailure,
@@ -202,13 +199,6 @@ async function resolveWebBootstrap(): Promise<WebBootstrapResult> {
   }
 }
 
-function isWebRemoteControlRoute(): boolean {
-  return matchesWebRemoteControlRoutePath(
-    window.location.pathname,
-    resolveWebRemoteControlRoutePath(import.meta.env),
-  );
-}
-
 async function bootstrapWebApp() {
   const params = new URLSearchParams(window.location.search);
   if (isWebOAuthCallback(params)) {
@@ -218,11 +208,6 @@ async function bootstrapWebApp() {
 
   if (isConversationSharePath(window.location.pathname)) {
     await renderConversationSharePage();
-    return;
-  }
-
-  if (isWebRemoteControlRoute()) {
-    await bootstrapExternalRelayWebRemoteControl(params);
     return;
   }
 

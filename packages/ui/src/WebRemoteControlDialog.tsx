@@ -217,10 +217,12 @@ function getFailureDescription(
   }
 
   switch (failure.reason) {
-    case "session-not-found":
-      return formatMessage({ id: "webRemoteControl.failure.sessionNotFound" });
-    case "session-expired":
-      return formatMessage({ id: "webRemoteControl.failure.sessionExpired" });
+    case "gateway-unreachable":
+      return formatMessage({ id: "webRemoteControl.failure.gatewayUnreachable" });
+    case "gateway-credential-invalid":
+      return formatMessage({
+        id: "webRemoteControl.failure.gatewayCredentialInvalid",
+      });
     case "session-conflict":
       if (failure.message?.toLowerCase().includes("kicked")) {
         return formatMessage({ id: "webRemoteControl.failure.kicked" });
@@ -232,10 +234,8 @@ function getFailureDescription(
       return formatMessage({
         id: "webRemoteControl.failure.desktopDisconnected",
       });
-    case "invalid-mobile-connection":
-      return formatMessage({
-        id: "webRemoteControl.failure.invalidMobileConnection",
-      });
+    case "incompatible-version":
+      return formatMessage({ id: "webRemoteControl.failure.incompatibleVersion" });
     case "desktop-bootstrap-timeout":
       return formatMessage({
         id: "webRemoteControl.failure.desktopBootstrapTimeout",
@@ -244,8 +244,8 @@ function getFailureDescription(
       return formatMessage({
         id: "webRemoteControl.failure.connectionRecoveryTimeout",
       });
-    case "relay-unavailable":
-      return formatMessage({ id: "webRemoteControl.failure.relayUnavailable" });
+    case "backend-unsupported":
+      return formatMessage({ id: "webRemoteControl.failure.backendUnsupported" });
     case "unsupported-action":
       return formatMessage({
         id: "webRemoteControl.failure.unsupportedAction",

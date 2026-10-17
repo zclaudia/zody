@@ -314,6 +314,8 @@ sequenceDiagram
 | `backend-unsupported`                                                                                                    | 选中的电脑在线，但 registry 能力位里没有 `zcode-remote-control`                                                              | 终态，提示这台电脑不支持 ZCode 远控，不再自动重试    |
 | `desktop-bootstrap-timeout`、`connection-recovery-timeout`、`workspace-closed`、`unsupported-action`、`unexpected-error` | 语义不变                                                                                                                     | 现有逻辑                                             |
 
+- 共享类型 `WebRemoteControlFailure` 增加可选 `upgrade: "mobile" | "desktop"`：手机 transport 从 `close{incompatible-version}` 透传，失败页据此提示升级 App 或电脑端。
+
 判定终态需要比 close code 更具体的证据，规则如下：
 
 - gateway 用 1008 表达多种情况：凭证吊销、凭证范围变化、每 IP 10 条 WS 连接超限、认证超时、`peer_hello` 非法（`server.ts`）。只按 1008 判终态，会让触发连接限流或网络抖动的手机卡在「凭证无效」页面上。

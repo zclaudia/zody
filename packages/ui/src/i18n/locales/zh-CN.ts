@@ -1863,10 +1863,10 @@ const zhCN: Record<string, string> = {
   "webRemoteControl.singlePageNote":
     "当前 relay 配对同一时间只支持一个手机页面；如果已经在别的页面打开，请先关闭旧页面。",
   "webRemoteControl.copyLink.description": "无法扫码？可以在手机上打开链接。",
-  "webRemoteControl.failure.sessionNotFound":
-    "当前 Web 远程控制链接已经失效，请回到桌面端重新开启一次。",
-  "webRemoteControl.failure.sessionExpired":
-    "这次 Web 远程控制会话已经结束了，需要在桌面端重新生成新的链接。",
+  "webRemoteControl.failure.gatewayUnreachable":
+    "无法稳定连接远程访问 gateway，请检查手机网络和 gateway 地址；恢复后会自动重连。",
+  "webRemoteControl.failure.gatewayCredentialInvalid":
+    "gateway 拒绝了当前设备凭证，可能已被吊销或填写有误，请回到设置页确认。",
   "webRemoteControl.failure.sessionConflict":
     "这个链接已经被其他页面占用，请关闭旧页面后重新扫码。",
   "webRemoteControl.failure.kicked":
@@ -1875,12 +1875,14 @@ const zhCN: Record<string, string> = {
     "桌面端共享的窗口已经关闭，请回到桌面端重新发起访问。",
   "webRemoteControl.failure.desktopDisconnected":
     "桌面端已经断开连接，当前 Web 远程控制无法继续使用。",
-  "webRemoteControl.failure.invalidMobileConnection": "当前手机连接已失效，请刷新页面后重新连接。",
+  "webRemoteControl.failure.incompatibleVersion":
+    "手机与电脑端的应用协议版本不兼容，请按提示升级其中一端后重新连接。",
   "webRemoteControl.failure.desktopBootstrapTimeout":
     "桌面端响应超时，请确认窗口仍在运行后刷新页面。",
   "webRemoteControl.failure.connectionRecoveryTimeout":
     "手机端连接恢复超时，当前 Web 远程控制暂时无法继续同步。",
-  "webRemoteControl.failure.relayUnavailable": "外部 relay 连接不可用，请确认桌面端在线后重试。",
+  "webRemoteControl.failure.backendUnsupported":
+    "选中的电脑在线，但不支持 ZCode 远程控制能力，请选择另一台电脑。",
   "webRemoteControl.failure.unsupportedAction":
     "当前是 Web 远程控制模式，只支持访问桌面端当前窗口已经打开的工作区。",
   "webRemoteControl.failure.unexpectedError": "无法启动移动端远程控制，请回到桌面端重试。",

@@ -38,22 +38,37 @@ export type WebRemoteControlStatusKind =
   | "active"
   | "error";
 
+/**
+ * 手机远控失败原因（spec「失败原因与恢复」）。
+ *
+ * gateway 链路删除了 relay 专属的 `session-not-found`、`session-expired`、
+ * `invalid-mobile-connection`、`relay-unavailable`，新增：
+ * - `gateway-unreachable`：控制连接持续失败超过 30 秒（可恢复）；
+ * - `gateway-credential-invalid`：首次 connect 被 UNAUTHORIZED 拒绝，或关闭后复核得到 401/403（终态）；
+ * - `incompatible-version`：收到 `close{incompatible-version}`（终态，按 `upgrade` 提示升级一端）；
+ * - `backend-unsupported`：选中的电脑在线但 registry 能力位里没有 `zcode-remote-control`（终态）。
+ */
 export type WebRemoteControlFailureReason =
-  | "session-not-found"
-  | "session-expired"
   | "session-conflict"
   | "workspace-closed"
   | "desktop-disconnected"
-  | "invalid-mobile-connection"
   | "desktop-bootstrap-timeout"
   | "connection-recovery-timeout"
-  | "relay-unavailable"
+  | "gateway-unreachable"
+  | "gateway-credential-invalid"
+  | "incompatible-version"
+  | "backend-unsupported"
   | "unsupported-action"
   | "unexpected-error";
 
 export interface WebRemoteControlFailure {
   reason: WebRemoteControlFailureReason;
   message?: string;
+  /**
+   * `incompatible-version` 时指明需要升级的一端：来自 channel `close{incompatible-version, upgrade}`。
+   * `mobile` 表示手机 App 太旧，`desktop` 表示电脑端需要升级。
+   */
+  upgrade?: "mobile" | "desktop";
 }
 
 export function createWebRemoteControlConnectionRecoveryTimeoutFailure(

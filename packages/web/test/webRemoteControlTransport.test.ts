@@ -989,7 +989,7 @@ describe("WebRemoteControlTerminalTransport", () => {
     transport.start();
     await waitUntil(() => failures.length === 1);
 
-    expect(failures).toEqual(["invalid-mobile-connection"]);
+    expect(failures).toEqual(["gateway-credential-invalid"]);
     expect(reloadPage).not.toHaveBeenCalled();
     transport.dispose();
   });
@@ -1095,7 +1095,7 @@ describe("WebRemoteControlTerminalTransport", () => {
     transport.start();
     await waitUntil(() => failures.length === 1);
 
-    expect(failures).toEqual(["invalid-mobile-connection"]);
+    expect(failures).toEqual(["gateway-credential-invalid"]);
     transport.dispose();
   });
 

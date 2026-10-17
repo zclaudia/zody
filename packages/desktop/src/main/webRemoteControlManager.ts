@@ -92,6 +92,11 @@ interface WorkspaceBridgeRuntime {
 }
 
 interface WebRemoteControlDeviceTransportLike {
+  /**
+   * T3.3：gateway channel transport 没有 relay 的配对/二维码阶段。
+   * 为 true 时 start 不等待 onRegisteredAuth，也不生成 QR URL。
+   */
+  readonly usesGatewayChannel?: boolean;
   start(): void;
   sendPayload(payload: WebRemoteControlAppPayload): boolean;
   sendPayloadResult?(payload: WebRemoteControlAppPayload): WebRemoteControlPayloadSendResult;
@@ -418,7 +423,9 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
   /** App 级推送去重签名：只有一个 runtime，不再按窗口保存。 */
   let pushedWorkspaceListSignature: string | undefined;
 
-  function createTransport(options: WebRemoteControlDeviceTransportOptions) {
+  function createTransport(
+    options: WebRemoteControlDeviceTransportOptions,
+  ): WebRemoteControlDeviceTransportLike {
     return dependencies.createDeviceTransport
       ? dependencies.createDeviceTransport(options)
       : new WebRemoteControlDeviceTransport(options);
@@ -1764,10 +1771,11 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
           : undefined;
       let registeredAuth: { deviceSid: string; passHash: string } | undefined;
       let runtime: AppControlRuntime;
+      let usesGatewayChannel = false;
 
       const readyPromise = new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
-          reject(new Error("External relay device did not reach QR-ready state before timeout."));
+          reject(new Error("Web remote control transport did not become ready before timeout."));
         }, EXTERNAL_RELAY_QR_READY_TIMEOUT_MS);
 
         const resolveReady = () => {
@@ -1793,7 +1801,11 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
           },
           onStateChange: (state) => {
             mapTransportState(runtime, state);
-            if ((state === "waiting_terminal" || state === "paired") && readyAuth) {
+            // gateway channel transport 没有 relay 配对材料，进入 waiting/paired 即视为可启动。
+            if (
+              (state === "waiting_terminal" || state === "paired") &&
+              (usesGatewayChannel || readyAuth)
+            ) {
               resolveReady();
             }
           },
@@ -1844,6 +1856,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
           hasEverPaired: false,
           pendingOutboundPayloads: [],
         };
+        usesGatewayChannel = transport.usesGatewayChannel === true;
         appRuntime = runtime;
         emitRuntimeStatus(runtime);
         transport.start();
@@ -1869,6 +1882,28 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         clearPendingOutboundPayloadTimer(runtime!);
         clearMobileDisconnectGraceTimer(runtime!);
         throw new Error("Web remote control start was superseded.");
+      }
+
+      // T3.3：gateway channel transport 没有 relay 配对材料（二维码/device sid）。
+      // 这里用固定 sessionId 回显状态，等 T5.1 删除 relay 后由新 UI 契约替换。
+      if (usesGatewayChannel) {
+        const gatewaySessionId = "gateway";
+        runtime!.deviceSid = gatewaySessionId;
+        runtime!.passHash = "";
+        runtime!.qrUrl = "";
+        runtime!.connectUrl = "";
+        emitRuntimeStatus(runtime!);
+        return {
+          status: runtime!.status === "active" ? "active" : "running",
+          sessionId: gatewaySessionId,
+          windowControlSessionId: gatewaySessionId,
+          qrUrl: "",
+          connectUrl: "",
+          workspacePath: context.workspacePath,
+          workspaceIdentity: context.workspaceIdentity,
+          remoteSessionId: context.remoteSessionId,
+          initialTaskId: context.initialTaskId,
+        };
       }
 
       const auth = readyAuth;
