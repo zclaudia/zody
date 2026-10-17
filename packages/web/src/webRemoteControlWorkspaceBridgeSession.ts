@@ -1,7 +1,4 @@
-import type {
-  WebRemoteControlExternalWorkspaceBridge,
-  WebRemoteControlWorkspaceBridge,
-} from "@zcode/shared";
+import type { WebRemoteControlExternalWorkspaceBridge } from "@zcode/shared";
 import {
   bindRemoteWorkspaceIdentity,
   bindRemoteWorkspacePath,
@@ -11,16 +8,12 @@ import {
   type RemoteWorkspaceSession,
 } from "@zcode/ui/remote-workspace-session-store";
 
-type WebRemoteControlBridgeWithRemoteSession =
-  | WebRemoteControlExternalWorkspaceBridge
-  | WebRemoteControlWorkspaceBridge;
-
 export interface WebRemoteControlWorkspaceBridgeServiceRegistration {
   dispose: () => void;
 }
 
 export function registerWebRemoteControlWorkspaceBridgeServices(params: {
-  bridge: WebRemoteControlBridgeWithRemoteSession;
+  bridge: WebRemoteControlExternalWorkspaceBridge;
   services: RemoteWorkspaceSession["services"];
 }): WebRemoteControlWorkspaceBridgeServiceRegistration {
   const { bridge, services } = params;

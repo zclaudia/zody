@@ -271,7 +271,6 @@ export function registerRemoteIpcHandlers(options: {
   }
 
   registerWebRemoteControlIpcHandlers({
-    reportRemoteUsageEvent,
     webRemoteControlManager: options.webRemoteControlManager,
   });
 

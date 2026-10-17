@@ -13,6 +13,7 @@ import {
   type WebRemoteControlMobileTaskHomePreferences,
 } from "@/WebRemoteControlMobileTaskHome.js";
 import { WebRemoteControlThemeMenu } from "@/WebRemoteControlThemeMenu.js";
+import { useOptionalPlatform } from "@/hooks/usePlatform.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import type { WebRemoteControlTerminalTransportState } from "@/root/types.js";
@@ -151,6 +152,26 @@ export function WebRemoteControlMobileShell({
 
     setCurrentPage("home");
   }, []);
+
+  // T6.2：Android 返回键经 IPlatformService 分发到页面。页面比 WebView 历史更清楚当前 UI：
+  // 浮层打开时先关浮层，聊天页先回首页；首页返回 false，由宿主做历史回退/退出。
+  const platform = useOptionalPlatform();
+  useEffect(() => {
+    if (!platform?.onBackPressed) {
+      return;
+    }
+    return platform.onBackPressed(() => {
+      if (isSidePaneOpen && onCloseSidePane) {
+        onCloseSidePane();
+        return true;
+      }
+      if (currentPage === "chat") {
+        navigateHome();
+        return true;
+      }
+      return false;
+    });
+  }, [currentPage, isSidePaneOpen, navigateHome, onCloseSidePane, platform]);
 
   useEffect(() => {
     if (initialNavigationIntent !== "chat") {

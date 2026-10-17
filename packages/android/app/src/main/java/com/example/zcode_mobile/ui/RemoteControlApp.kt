@@ -1,6 +1,7 @@
 package com.example.zcode_mobile.ui
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -41,9 +42,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.webkit.WebViewAssetLoader
 import com.example.zcode_mobile.BuildConfig
 import com.example.zcode_mobile.R
+import com.example.zcode_mobile.bridge.EncryptedSharedPreferencesSecureStore
+import com.example.zcode_mobile.bridge.MobileBridgeEventDispatcher
+import com.example.zcode_mobile.bridge.MobileBridgeLifecycleState
+import com.example.zcode_mobile.bridge.ZcodeMobileBridge
 
 /**
  * 内置页面由 Gradle 从 `packages/web/dist-mobile-remote` 同步到 `assets/remote/`，
@@ -64,19 +72,55 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
             .build()
     }
     var webView by remember { mutableStateOf<WebView?>(null) }
+    var bridgeDispatcher by remember { mutableStateOf<MobileBridgeEventDispatcher?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-    var canGoBack by remember { mutableStateOf(false) }
     var pageError by remember { mutableStateOf<String?>(null) }
+    val activity = context as? Activity
+    // 凭证存储随页面创建；Keystore 主密钥在首次读写时才初始化。
+    val secureStore = remember(context) { EncryptedSharedPreferencesSecureStore(context) }
 
-    // 返回键优先交给页面历史；到页面根目录后不再拦截，交给系统退出 App。
-    BackHandler(enabled = canGoBack) {
-        webView?.goBack()
+    // 返回键先分发给页面（浮层/聊天页优先），页面未消费时再回退 WebView 历史或退出 App。
+    BackHandler(enabled = webView != null) {
+        val view = webView ?: return@BackHandler
+        val dispatcher = bridgeDispatcher ?: return@BackHandler
+        dispatcher.dispatchBackPressed { handled ->
+            if (!handled) {
+                if (view.canGoBack()) {
+                    view.goBack()
+                } else {
+                    activity?.finish()
+                }
+            }
+        }
+    }
+
+    // T6.2：Activity ON_START/ON_STOP 是“页面是否可见”的宿主事实，用它驱动页面暂停/恢复连接。
+    // 权限弹窗、配置变更不会触发 ON_STOP，避免把短暂遮挡误判成后台。
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, webView, bridgeDispatcher) {
+        val dispatcher = bridgeDispatcher
+        if (dispatcher == null) {
+            onDispose {}
+        } else {
+            val observer = LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_START ->
+                        dispatcher.dispatchLifecycle(MobileBridgeLifecycleState.FOREGROUND)
+                    Lifecycle.Event.ON_STOP ->
+                        dispatcher.dispatchLifecycle(MobileBridgeLifecycleState.BACKGROUND)
+                    else -> Unit
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        }
     }
 
     DisposableEffect(Unit) {
         onDispose {
             webView?.destroy()
             webView = null
+            bridgeDispatcher = null
         }
     }
 
@@ -92,10 +136,11 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
                     createRemoteControlWebView(
                         context = viewContext,
                         assetLoader = assetLoader,
+                        secureStore = secureStore,
                         onLoadingChanged = { loading -> isLoading = loading },
-                        onHistoryChanged = { historyAvailable -> canGoBack = historyAvailable },
                         onMainFrameError = { message -> pageError = message },
                     ).also { view ->
+                        bridgeDispatcher = MobileBridgeEventDispatcher.forWebView(view)
                         webView = view
                         view.loadUrl(REMOTE_PAGE_URL)
                     }
@@ -161,8 +206,8 @@ private fun RemoteControlErrorOverlay(
 private fun createRemoteControlWebView(
     context: Context,
     assetLoader: WebViewAssetLoader,
+    secureStore: EncryptedSharedPreferencesSecureStore,
     onLoadingChanged: (Boolean) -> Unit,
-    onHistoryChanged: (Boolean) -> Unit,
     onMainFrameError: (String) -> Unit,
 ): WebView {
     CookieManager.getInstance().setAcceptCookie(true)
@@ -186,6 +231,8 @@ private fun createRemoteControlWebView(
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             userAgentString = "$userAgentString ZCodeAndroid/${BuildConfig.VERSION_NAME}"
         }
+        // 只加载内置页面；离开 appassets 的主框架导航会被交给系统浏览器，桥不会暴露给远端页面。
+        addJavascriptInterface(ZcodeMobileBridge(secureStore), "ZcodeMobileBridge")
         webChromeClient = object : WebChromeClient() {}
         webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(
@@ -198,16 +245,10 @@ private fun createRemoteControlWebView(
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 onLoadingChanged(true)
-                onHistoryChanged(view?.canGoBack() == true)
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 onLoadingChanged(false)
-                onHistoryChanged(view?.canGoBack() == true)
-            }
-
-            override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
-                onHistoryChanged(view?.canGoBack() == true)
             }
 
             override fun shouldOverrideUrlLoading(

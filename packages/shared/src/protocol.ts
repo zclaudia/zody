@@ -393,16 +393,6 @@ export interface AppSettings {
   skippedElectronUpdateVersions?: Partial<Record<ElectronReleaseChannel, string>>;
   /** 首次启动设置同步提示是否已消费；只表示弹窗不再出现，不代表导入成功。 */
   settingsSyncFirstRunPromptHandled?: boolean;
-  /** 外部 Web 远控 relay 的非敏感设备身份；passHash 必须存 credentialService。 */
-  webRemoteControlExternalRelayDevice?: {
-    deviceSid: string;
-  };
-  /** 上次成功开启 Web 远控时的目标；缺失表示用户已明确关闭，不自动恢复。 */
-  webRemoteControlLastEnabledContext?: {
-    workspacePath: string;
-    workspaceIdentity?: string;
-    initialTaskId?: string;
-  };
   /**
    * App 级远程访问（zclaudia-gateway）开关与地址；backend 凭证不在这里，
    * 只存 Main 的凭据服务。缺省等价于 `{ enabled: false, gatewayUrl: "", namespace: "zcode" }`。

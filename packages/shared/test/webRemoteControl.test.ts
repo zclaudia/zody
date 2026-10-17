@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { HostMessageTypes } from "../src/channels.js";
 import {
-  WEB_REMOTE_CONTROL_RELAY_AUTH_PROOF_VECTORS,
-  buildWebRemoteControlExternalQrUrl,
-  matchesWebRemoteControlRoutePath,
-  parseWebRemoteControlExternalQrParams,
   resolveWebRemoteControlInitialWorkspaceSelection,
-  resolveWebRemoteControlRoutePathFromBaseUrl,
   resolveWebRemoteControlWorkspaceKey,
 } from "../src/web-remote-control.js";
 import {
@@ -188,7 +183,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
   });
 });
 
-describe("external relay QR helpers", () => {
+describe("bootstrap response version", () => {
   it("validates the optional authoritative desktop version in bootstrap responses", () => {
     const response = {
       zcode_type: "bootstrap-response",
@@ -207,89 +202,6 @@ describe("external relay QR helpers", () => {
         }),
       ).toBeNull();
     }
-  });
-  it("builds an encoded web remote control QR URL without theme params", () => {
-    expect(
-      buildWebRemoteControlExternalQrUrl({
-        baseUrl: "https://zcode.z.ai/remote",
-        deviceSid: "sid-1",
-        passHash: "hash+with/slash=",
-        timestamp: 1710000000000,
-        deviceMid: "mid-1",
-        deviceName: "MacBook",
-        appVersion: "1.5.0",
-        theme: "zai-dark",
-      }),
-    ).toBe(
-      "https://zcode.z.ai/remote?sid=sid-1&hash=hash%2Bwith%2Fslash%3D&t=1710000000000&mid=mid-1&name=MacBook&app_version=1.5.0",
-    );
-  });
-
-  it("parses required external relay QR params", () => {
-    expect(
-      parseWebRemoteControlExternalQrParams(
-        new URLSearchParams("sid=sid-1&hash=hash&t=1710000000000&mid=mid-1&theme=light"),
-      ),
-    ).toEqual({
-      deviceSid: "sid-1",
-      passHash: "hash",
-      timestamp: 1710000000000,
-      deviceMid: "mid-1",
-      theme: "light",
-    });
-  });
-
-  it("ignores invalid external relay QR theme params", () => {
-    expect(
-      parseWebRemoteControlExternalQrParams(
-        new URLSearchParams("sid=sid-1&hash=hash&t=1710000000000&theme=midnight"),
-      ),
-    ).toEqual({
-      deviceSid: "sid-1",
-      passHash: "hash",
-      timestamp: 1710000000000,
-    });
-  });
-
-  it("rejects missing required external relay QR params", () => {
-    expect(
-      parseWebRemoteControlExternalQrParams(new URLSearchParams("sid=sid-1&t=1710000000000")),
-    ).toBeNull();
-  });
-});
-
-describe("resolveWebRemoteControlRoutePathFromBaseUrl", () => {
-  it("resolves the v2 QR route from the Vite remote base", () => {
-    expect(resolveWebRemoteControlRoutePathFromBaseUrl("/remote/")).toBe("/remote");
-  });
-
-  it("resolves the v3 QR route from the Vite remote v3 base", () => {
-    expect(resolveWebRemoteControlRoutePathFromBaseUrl("/remote/v3/")).toBe("/remote/v3");
-  });
-
-  it("resolves the v4 QR route from the Vite remote v4 base", () => {
-    expect(resolveWebRemoteControlRoutePathFromBaseUrl("/remote/v4/")).toBe("/remote/v4");
-  });
-
-  it("resolves the test QR route from the Vite remote test base", () => {
-    expect(resolveWebRemoteControlRoutePathFromBaseUrl("/remote/__test__/")).toBe(
-      "/remote/__test__",
-    );
-  });
-
-  it("keeps the existing dev QR route when Vite uses the root base", () => {
-    expect(resolveWebRemoteControlRoutePathFromBaseUrl("/")).toBe("/remote");
-  });
-});
-
-describe("matchesWebRemoteControlRoutePath", () => {
-  it("accepts the remote route with or without a trailing slash", () => {
-    expect(matchesWebRemoteControlRoutePath("/remote", "/remote")).toBe(true);
-    expect(matchesWebRemoteControlRoutePath("/remote/", "/remote")).toBe(true);
-  });
-
-  it("does not accept nested static asset paths as the app route", () => {
-    expect(matchesWebRemoteControlRoutePath("/remote/favicon.ico", "/remote")).toBe(false);
   });
 });
 
@@ -722,30 +634,20 @@ describe("parseWebRemoteControlAppPayload", () => {
     expect(
       parseWebRemoteControlAppPayload({
         zcode_type: "mobile-diagnostic",
-        event: "pair-status",
+        event: "socket-close",
         timestamp: 1710000000000,
-        state: "paired",
-        pairStatus: "waiting",
+        state: "reconnecting",
+        closeCode: 1006,
+        wasPaired: true,
         visibilityState: "visible",
         online: true,
       }),
     ).toMatchObject({
       zcode_type: "mobile-diagnostic",
-      event: "pair-status",
-      pairStatus: "waiting",
+      event: "socket-close",
+      closeCode: 1006,
+      wasPaired: true,
     });
-  });
-
-  it("rejects pair status values that are not emitted by the external relay", () => {
-    expect(
-      parseWebRemoteControlAppPayload({
-        zcode_type: "mobile-diagnostic",
-        event: "pair-status",
-        timestamp: 1710000000000,
-        state: "paired",
-        pairStatus: "rejected",
-      }),
-    ).toBeNull();
   });
 
   it("rejects invalid rpc-frame payloads", () => {
@@ -789,30 +691,5 @@ describe("hostIncomingMessageSchema", () => {
       type: HostMessageTypes.DetachServicePort,
       attachmentId: "attachment-1",
     });
-  });
-});
-
-describe("WEB_REMOTE_CONTROL_RELAY_AUTH_PROOF_VECTORS", () => {
-  it("documents the shared external relay HMAC vectors", () => {
-    const passHash = "dGVzdF9oYXNo";
-    const nonce = "nonce-1";
-    const deviceSid = "device-1";
-
-    expect(WEB_REMOTE_CONTROL_RELAY_AUTH_PROOF_VECTORS).toEqual([
-      {
-        passHash,
-        nonce,
-        role: "device",
-        deviceSid,
-        proof: "XK0m7u-26VS88uk7ISAX5Z_9pjzq8jqyP77N-HkCsPE",
-      },
-      {
-        passHash,
-        nonce,
-        role: "terminal",
-        deviceSid,
-        proof: "YkqkJy-p-iZK1g1AcoGd0Q83REOggX1EygWkcxW4oLU",
-      },
-    ]);
   });
 });

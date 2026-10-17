@@ -1,12 +1,11 @@
 import { EventEmitter } from "node:events";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
-  AppSettings,
   WebRemoteControlAppPayload,
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceTarget,
 } from "@zcode/shared";
-import { buildZCodeEndpointUrls, encodeWebRemoteControlRpcTransportMessage } from "@zcode/shared";
+import { encodeWebRemoteControlRpcTransportMessage } from "@zcode/shared";
 import { createWebRemoteControlManager } from "../src/main/webRemoteControlManager.js";
 import { createWebRemoteControlFeatureGate } from "../src/main/webRemoteControlFeatureGate.js";
 import { createRemoteWorkspaceDirectory } from "../src/main/remote-access/remoteWorkspaceDirectory.js";
@@ -29,14 +28,11 @@ type AttachWorkspaceHost = Parameters<
 
 function createManagerHarness(options?: {
   featureEnabled?: boolean;
-  delayReadyMs?: number;
   canSendPayload?: () => boolean;
-  storedAuth?: { deviceSid: string; passHash: string };
   /** T2.3：启动恢复只看 App 级开关，不再读 webRemoteControlLastEnabledContext。 */
   remoteAccessEnabled?: boolean;
   /** 让两个窗口共享同一目录时可注入聚焦窗口，用于路由规则测试。 */
   getFocusedWindowId?: () => number | undefined;
-  registeredAuths?: Array<{ deviceSid: string; passHash: string }>;
   attachWorkspaceHost?: AttachWorkspaceHost;
   releaseWorkspaceHostAttachment?: (attachmentId: string) => void;
   disposeWorkspaceHostAttachmentsForWindow?: (windowId: number, reason: string) => void;
@@ -50,12 +46,9 @@ function createManagerHarness(options?: {
   getGatewayConnectionStatus?: Parameters<
     typeof createWebRemoteControlManager
   >[0]["getGatewayConnectionStatus"];
-  getEndpointUrls?: Parameters<typeof createWebRemoteControlManager>[0]["getEndpointUrls"];
   reportRemoteUsageEvent?: Parameters<
     typeof createWebRemoteControlManager
   >[0]["reportRemoteUsageEvent"];
-  /** T3.3：用 gateway channel transport 的语义启动（没有 relay 配对材料）。 */
-  usesGatewayChannel?: boolean;
 }) {
   const sentPayloads: WebRemoteControlAppPayload[] = [];
   const logger = {
@@ -66,10 +59,7 @@ function createManagerHarness(options?: {
   const remoteWorkspaceDirectory = createRemoteWorkspaceDirectory({
     getFocusedWindowId: options?.getFocusedWindowId,
   });
-  const settings: AppSettings = { recentProjects: [], locale: "zh-CN" };
-  let storedAuth = options?.storedAuth;
   let remoteAccessEnabled = options?.remoteAccessEnabled ?? false;
-  let transportStartCount = 0;
   let deliverPayload: ((payload: WebRemoteControlAppPayload) => void) | undefined;
   let latestTransportOptions:
     | Parameters<
@@ -97,29 +87,7 @@ function createManagerHarness(options?: {
   const disposeWorkspaceHostAttachmentsForRemoteSession =
     options?.disposeWorkspaceHostAttachmentsForRemoteSession ?? vi.fn();
   const manager = createWebRemoteControlManager({
-    relayWsUrl: "ws://relay.test/ws",
-    mobileRemoteControlUrl: "https://zcode.z.ai/remote/v3",
-    getEndpointUrls: options?.getEndpointUrls,
-    deviceMid: "mid-1",
-    deviceName: "MacBook",
     appVersion: "1.5.0",
-    authProvider: {
-      createPassword: () => "password",
-      createPassHash: () => "hash-1",
-      calculateProof: () => "proof",
-    },
-    authStorageProvider: {
-      load: async () => storedAuth,
-      save: async (auth) => {
-        storedAuth = auth;
-        settings.webRemoteControlExternalRelayDevice = { deviceSid: auth.deviceSid };
-      },
-      clear: async () => {
-        storedAuth = undefined;
-        settings.webRemoteControlExternalRelayDevice = undefined;
-      },
-      rotate: async () => {},
-    },
     remoteAccessSettings: {
       isEnabled: async () => remoteAccessEnabled,
       setEnabled: async (enabled) => {
@@ -154,33 +122,11 @@ function createManagerHarness(options?: {
     disposeWorkspaceHostAttachmentsForRemoteSession,
     onStatusChanged: options?.onStatusChanged,
     createDeviceTransport: (transportOptions) => ({
-      usesGatewayChannel: options?.usesGatewayChannel,
       start: () => {
         latestTransportOptions = transportOptions;
-        transportStartCount += 1;
         emitTransportState = transportOptions.onStateChange;
-        const markReady = () => {
-          const registeredAuth = options?.registeredAuths?.[transportStartCount - 1] ?? {
-            deviceSid: "sid-1",
-            passHash: "hash-1",
-          };
-          deliverPayload = transportOptions.onPayload;
-          if (transportOptions.auth.mode === "register") {
-            transportOptions.onRegisteredAuth(registeredAuth);
-          }
-          transportOptions.onStateChange("waiting_terminal");
-        };
-        if (options?.usesGatewayChannel) {
-          // gateway channel 没有 relay 配对/二维码阶段，也不需要 onRegisteredAuth。
-          deliverPayload = transportOptions.onPayload;
-          transportOptions.onStateChange("waiting_terminal");
-          return;
-        }
-        if (options?.delayReadyMs !== undefined) {
-          setTimeout(markReady, options.delayReadyMs);
-          return;
-        }
-        markReady();
+        deliverPayload = transportOptions.onPayload;
+        transportOptions.onStateChange("waiting_terminal");
       },
       sendPayload: (payload) => {
         if (options?.canSendPayload && !options.canSendPayload()) {
@@ -215,7 +161,6 @@ function createManagerHarness(options?: {
     reportRemoteUsageEvent,
     reportRendererTelemetryEvent,
     sentPayloads,
-    getStoredAuth: () => storedAuth,
     getRemoteAccessEnabled: () => remoteAccessEnabled,
     getLatestTransportOptions: () => latestTransportOptions,
     deliverPayload: (payload: WebRemoteControlAppPayload) => {
@@ -310,7 +255,7 @@ async function createPrimedRemoteTaskSyncHarness(
   return { ...harness, task };
 }
 
-describe("createWebRemoteControlManager external relay", () => {
+describe("createWebRemoteControlManager app runtime", () => {
   it("returns the desktop's own version before a workspace bridge is attached", async () => {
     const h = createManagerHarness();
     await h.manager.start({ workspacePath: localWorkspace.workspacePath });
@@ -323,57 +268,9 @@ describe("createWebRemoteControlManager external relay", () => {
       }),
     );
     expect(h.defaultAttachWorkspaceHost).not.toHaveBeenCalled();
-    await h.manager.stop();
   });
   afterEach(() => {
     vi.useRealTimers();
-  });
-
-  it("授权票据绑定窗口与工作区，并且只能消费一次", async () => {
-    const { manager } = createManagerHarness();
-    const context = { workspacePath: localWorkspace.workspacePath };
-    const authorization = manager.authorizeStart(1, context);
-
-    await manager.startAuthorized(1, context, authorization);
-    await expect(manager.startAuthorized(1, context, authorization)).rejects.toThrow(
-      "already used",
-    );
-    await manager.stop();
-  });
-
-  it("停止窗口远控时会作废尚未消费的授权票据", async () => {
-    const { manager } = createManagerHarness();
-    const context = { workspacePath: localWorkspace.workspacePath };
-    const authorization = manager.authorizeStart(1, context);
-
-    await manager.stop();
-
-    await expect(manager.startAuthorized(1, context, authorization)).rejects.toThrow("invalid");
-  });
-
-  it("授权票据拒绝窗口或 workspace 目标不匹配", async () => {
-    const { manager } = createManagerHarness();
-    const context = { workspacePath: localWorkspace.workspacePath };
-    const authorization = manager.authorizeStart(1, context);
-
-    await expect(manager.startAuthorized(2, context, authorization)).rejects.toThrow(
-      "target mismatch",
-    );
-    await expect(manager.startAuthorized(1, context, authorization)).rejects.toThrow(
-      "already used",
-    );
-  });
-
-  it("授权票据超过短 TTL 后不可消费", async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-08-19T00:00:00Z"));
-    const { manager } = createManagerHarness();
-    const context = { workspacePath: localWorkspace.workspacePath };
-    const authorization = manager.authorizeStart(1, context);
-
-    vi.advanceTimersByTime(30_001);
-
-    await expect(manager.startAuthorized(1, context, authorization)).rejects.toThrow("expired");
   });
 
   it("按首次配对和重连上报低频配对成功事件", async () => {
@@ -381,7 +278,7 @@ describe("createWebRemoteControlManager external relay", () => {
 
     await manager.start({ workspacePath: localWorkspace.workspacePath }, 1);
     emitTransportState("paired");
-    emitTransportState("connecting");
+    emitTransportState("waiting_terminal");
     emitTransportState("paired");
 
     expect(reportRemoteUsageEvent).toHaveBeenNthCalledWith(1, 1, {
@@ -508,9 +405,6 @@ describe("createWebRemoteControlManager external relay", () => {
       },
     ]);
 
-    const status = manager.getStatus();
-    expect(status.qrUrl).toContain("/remote/v3?");
-
     sentPayloads.length = 0;
     deliverPayload({
       zcode_type: "workspace-bridge-open" as const,
@@ -539,30 +433,6 @@ describe("createWebRemoteControlManager external relay", () => {
     expect(JSON.stringify(readyPayload)).not.toContain("wsUrl");
   });
 
-  it("uses the current endpoint resolver for relay and QR URL on each start", async () => {
-    const { getLatestTransportOptions, manager } = createManagerHarness({
-      getEndpointUrls: () => buildZCodeEndpointUrls("http://localhost:3030"),
-    });
-
-    await manager.start({ workspacePath: "/workspace/demo" });
-    const status = manager.getStatus();
-
-    expect(getLatestTransportOptions()?.relayWsUrl).toBe("ws://localhost:3030/ws");
-    expect(status.qrUrl).toContain("http://localhost:3030/remote/v3?");
-  });
-
-  it("does not append theme params to the mobile QR URL", async () => {
-    const { manager } = createManagerHarness();
-
-    await manager.start({
-      workspacePath: "/workspace/demo",
-      theme: "zai-dark",
-    });
-
-    const status = manager.getStatus();
-    expect(status.qrUrl).not.toContain("theme=");
-  });
-
   it("keeps the App-level runtime alive when the initiating window closes", async () => {
     const { disposeTransport, manager } = createManagerHarness();
 
@@ -574,7 +444,7 @@ describe("createWebRemoteControlManager external relay", () => {
     expect(disposeTransport).not.toHaveBeenCalled();
     expect(manager.getStatus()).toMatchObject({ status: "running" });
 
-    await manager.stop();
+    await manager.suspend("test-stop");
     expect(disposeTransport).toHaveBeenCalledOnce();
     expect(manager.getStatus()).toEqual({ status: "idle" });
   });
@@ -634,46 +504,6 @@ describe("createWebRemoteControlManager external relay", () => {
       manager.restorePreviouslyEnabled(1, [{ workspacePath: "/workspace/demo" }]),
     ).resolves.toBe(false);
     expect(manager.getStatus()).toEqual({ status: "idle" });
-  });
-
-  it("resets persisted relay auth and returns a new QR URL when refreshing leaked pairing material", async () => {
-    const { disposeTransport, getStoredAuth, manager } = createManagerHarness({
-      storedAuth: { deviceSid: "sid-old", passHash: "hash-old" },
-      registeredAuths: [
-        { deviceSid: "sid-unused", passHash: "hash-unused" },
-        { deviceSid: "sid-new", passHash: "hash-new" },
-      ],
-    });
-
-    await manager.start({ workspacePath: "/workspace/demo" });
-    const oldStatus = manager.getStatus();
-    expect(oldStatus.qrUrl).toContain("sid=sid-old");
-    expect(oldStatus.qrUrl).toContain("hash=hash-old");
-
-    const refreshed = await manager.resetPairing({
-      workspacePath: "/workspace/demo",
-    });
-
-    expect(refreshed.qrUrl).toContain("sid=sid-new");
-    expect(refreshed.qrUrl).toContain("hash=hash-new");
-    expect(refreshed.qrUrl).not.toContain("sid=sid-old");
-    expect(refreshed.qrUrl).not.toContain("hash=hash-old");
-    expect(getStoredAuth()).toEqual({ deviceSid: "sid-new", passHash: "hash-new" });
-    expect(disposeTransport).toHaveBeenCalledTimes(1);
-  });
-
-  it("does not clear persisted relay auth when refreshing pairing is blocked by the feature gate", async () => {
-    const { disposeTransport, getStoredAuth, manager } = createManagerHarness({
-      featureEnabled: false,
-      storedAuth: { deviceSid: "sid-old", passHash: "hash-old" },
-    });
-
-    await expect(manager.resetPairing({ workspacePath: "/workspace/demo" })).rejects.toThrow(
-      "Web remote control is disabled in this build",
-    );
-
-    expect(getStoredAuth()).toEqual({ deviceSid: "sid-old", passHash: "hash-old" });
-    expect(disposeTransport).not.toHaveBeenCalled();
   });
 
   it("releases only the previous attachment when mobile reconnects to the same workspace", async () => {
@@ -1130,7 +960,7 @@ describe("createWebRemoteControlManager external relay", () => {
     });
   });
 
-  it("production feature gate rejects start before returning QR material", async () => {
+  it("production feature gate rejects start", async () => {
     const { manager } = createManagerHarness({ featureEnabled: false });
 
     await expect(
@@ -1147,44 +977,20 @@ describe("createWebRemoteControlManager external relay", () => {
     });
   });
 
-  it("waits long enough for slow external relay QR readiness", async () => {
-    vi.useFakeTimers();
-    const { manager } = createManagerHarness({ delayReadyMs: 20_000 });
+  it("starts the gateway channel transport without relay pairing material", async () => {
+    const { manager } = createManagerHarness();
 
-    const startPromise = manager.start({
-      workspacePath: "/workspace/demo",
-    });
-    await vi.advanceTimersByTimeAsync(20_000);
-
-    await expect(startPromise).resolves.toMatchObject({
-      status: "running",
-      sessionId: "sid-1",
-    });
+    await expect(manager.start({ workspacePath: "/workspace/demo" })).resolves.toBeUndefined();
     expect(manager.getStatus()).toMatchObject({
       status: "running",
-      sessionId: "sid-1",
+      mobileConnected: false,
     });
+    expect(manager.getStatus()).not.toHaveProperty("qrUrl");
+    expect(manager.getStatus()).not.toHaveProperty("connectUrl");
+    expect(manager.getStatus()).not.toHaveProperty("sessionId");
   });
 
-  it("starts a gateway-backed transport without relay pairing material", async () => {
-    const { manager, getStoredAuth } = createManagerHarness({ usesGatewayChannel: true });
-
-    await expect(manager.start({ workspacePath: "/workspace/demo" })).resolves.toMatchObject({
-      status: "running",
-      sessionId: "gateway",
-      qrUrl: "",
-      connectUrl: "",
-    });
-    expect(manager.getStatus()).toMatchObject({
-      status: "running",
-      sessionId: "gateway",
-      qrUrl: "",
-    });
-    // T3.3：gateway transport 不写 relay 配对材料。
-    expect(getStoredAuth()).toBeUndefined();
-  });
-
-  it("emits a status update as soon as the external relay session is ready", async () => {
+  it("emits a status update as soon as the gateway channel session is ready", async () => {
     const onStatusChanged = vi.fn();
     const { manager } = createManagerHarness({ onStatusChanged });
 
@@ -1193,13 +999,7 @@ describe("createWebRemoteControlManager external relay", () => {
     });
 
     // T2.3：状态是 App 级事件，不再携带 windowId；广播由 index.ts 负责。
-    expect(onStatusChanged).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "running",
-        sessionId: "sid-1",
-        qrUrl: expect.stringContaining("/remote/v3?"),
-      }),
-    );
+    expect(onStatusChanged).toHaveBeenCalledWith(expect.objectContaining({ status: "running" }));
   });
 
   it("keeps the dialog active during a short paired-session reconnect", async () => {
@@ -1210,12 +1010,6 @@ describe("createWebRemoteControlManager external relay", () => {
       workspacePath: "/workspace/demo",
     });
     emitTransportState("paired");
-    expect(manager.getStatus()).toMatchObject({
-      status: "active",
-      mobileConnected: true,
-    });
-
-    emitTransportState("connecting");
     expect(manager.getStatus()).toMatchObject({
       status: "active",
       mobileConnected: true,
@@ -1254,8 +1048,7 @@ describe("createWebRemoteControlManager external relay", () => {
     expect(sentPayloads).toEqual([]);
 
     canSendPayload = true;
-    emitTransportState("connecting");
-    emitTransportState("authenticating");
+    emitTransportState("waiting_terminal");
     emitTransportState("paired");
 
     expect(sentPayloads).toContainEqual(
@@ -1626,10 +1419,10 @@ describe("createWebRemoteControlManager external relay", () => {
 
     deliverPayload({
       zcode_type: "mobile-diagnostic",
-      event: "pair-status",
+      event: "socket-close",
       timestamp: 1710000000000,
-      state: "paired",
-      pairStatus: "waiting",
+      state: "reconnecting",
+      closeCode: 1006,
       visibilityState: "visible",
       online: true,
     });
@@ -1637,9 +1430,9 @@ describe("createWebRemoteControlManager external relay", () => {
     expect(logger.info).toHaveBeenCalledWith(
       "[web-remote-control] mobile diagnostic",
       expect.objectContaining({
-        event: "pair-status",
-        pairStatus: "waiting",
-        state: "paired",
+        event: "socket-close",
+        closeCode: 1006,
+        state: "reconnecting",
         visibilityState: "visible",
         online: true,
       }),
@@ -1684,7 +1477,7 @@ describe("createWebRemoteControlManager external relay", () => {
     });
 
     await manager.start({ workspacePath: "/workspace/demo" }, 1);
-    await manager.stop();
+    await manager.suspend("manual-stop");
 
     expect(disposeWorkspaceHostAttachmentsForWindow).toHaveBeenCalledWith(1, "manual-stop");
   });

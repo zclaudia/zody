@@ -233,31 +233,6 @@ describe("app settings", () => {
         .pendingPostUpdateReleaseNotes,
     ).toEqual(payload);
   });
-
-  it("persists only stable Web remote control startup context fields", () => {
-    const context = {
-      workspacePath: "/workspace/demo",
-      workspaceIdentity: "remote:ssh:host:/workspace/demo",
-      initialTaskId: "task-1",
-    };
-
-    expect(
-      appSettingsSchema.parse({ webRemoteControlLastEnabledContext: context })
-        .webRemoteControlLastEnabledContext,
-    ).toEqual(context);
-    expect(
-      appSettingsPatchSchema.parse({ webRemoteControlLastEnabledContext: context })
-        .webRemoteControlLastEnabledContext,
-    ).toEqual(context);
-    expect(
-      appSettingsPatchSchema.parse({
-        webRemoteControlLastEnabledContext: {
-          ...context,
-          remoteSessionId: "ephemeral-session",
-        },
-      }).webRemoteControlLastEnabledContext,
-    ).toEqual(context);
-  });
 });
 
 // DWG-19（docs/dynamic-workflow/launch.md「The user's choice」）：空串是删除选择的哨兵，
@@ -304,11 +279,8 @@ describe("remoteAccess 设置（gateway 远程访问）", () => {
 
     // relay 的配对与凭证对 gateway 无效：带过来的只能是「未配置且关闭」，等用户重新配置。
     expect(parsed.remoteAccess).toEqual({ enabled: false, gatewayUrl: "", namespace: "zcode" });
-    // 旧字段本身由删除 relay 体系的任务清理，本次迁移不动它。
-    expect(parsed.webRemoteControlLastEnabledContext).toEqual({
-      workspacePath: "/workspace/demo",
-      workspaceIdentity: "remote:ssh:host:/workspace/demo",
-    });
+    // 旧字段已从 AppSettings 删除，读取时被 schema 丢弃。
+    expect(parsed).not.toHaveProperty("webRemoteControlLastEnabledContext");
   });
 
   it("已经写过 remoteAccess 时不被旧 relay 状态回退成关闭", () => {

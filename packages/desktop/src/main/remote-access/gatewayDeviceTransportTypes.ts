@@ -1,12 +1,14 @@
 import type { GatewayBackendOptions } from "@zclaudia/gateway-backend";
 import type { WebRemoteControlAppPayload, WebRemoteControlAppProtocolRange } from "@zcode/shared";
-import type { WebRemoteControlDeviceTransportState } from "../webRemoteControlTransport.js";
 import type {
   RemoteGatewayBackendLogger,
   RemoteGatewayChannel,
   RemoteGatewayChannelClosedInfo,
   RemoteGatewayChannelOffer,
 } from "./remoteGatewayBackendTypes.js";
+
+/** gateway channel 的运行态；relay 的 registering/authenticating/kicked 分支已随 T5.1 删除。 */
+export type GatewayDeviceTransportState = "waiting_terminal" | "paired";
 
 /**
  * GatewayDeviceTransport 的公共契约（T3.3）。
@@ -28,8 +30,6 @@ export type GatewayDevicePayloadSendResult =
  * transport 本身可以在下一次 start 时复用。
  */
 export interface GatewayDeviceTransportSession {
-  /** 告诉 manager：没有 relay 配对/二维码阶段（T5.1 删除 relay 后即可去掉）。 */
-  readonly usesGatewayChannel: true;
   start(): void;
   sendPayload(payload: WebRemoteControlAppPayload): boolean;
   sendPayloadResult(payload: WebRemoteControlAppPayload): GatewayDevicePayloadSendResult;
@@ -38,9 +38,9 @@ export interface GatewayDeviceTransportSession {
   dispose(): void;
 }
 
-/** 回调形状与 `WebRemoteControlDeviceTransportOptions` 的对应字段一致，避免 transport 依赖 relay 类型。 */
+/** session 回调形状；manager 只依赖这里的结构类型。 */
 export interface GatewayDeviceTransportSessionOptions {
-  onStateChange(state: WebRemoteControlDeviceTransportState): void;
+  onStateChange(state: GatewayDeviceTransportState): void;
   onPayload(payload: WebRemoteControlAppPayload): void;
   onRawTransportPayload?(payload: unknown): boolean;
   onRawTransportFault?(reasonCode: string): void;

@@ -4,7 +4,6 @@ import {
   buildWebRemoteControlBridgeResultTelemetry,
   buildWebRemoteControlEntryViewTelemetry,
   buildWebRemoteControlPairResultTelemetry,
-  buildWebRemoteControlStartResultTelemetry,
   classifyRemoteUsageError,
 } from "../src/remoteUsageTelemetry.js";
 
@@ -45,36 +44,6 @@ describe("remote usage telemetry", () => {
       eventExtraDetail: {
         workspace_kind: "remote",
         remote_kind: "ssh",
-      },
-    });
-    expect(
-      buildWebRemoteControlStartResultTelemetry({
-        result: "failure",
-        workspaceKind: "local",
-        errorCategory: "relay",
-      }),
-    ).toMatchObject({
-      elementName: "web_remote_control_start_result",
-      eventExtraDetail: {
-        result: "failure",
-        workspace_kind: "local",
-        remote_kind: "",
-        error_category: "relay",
-      },
-    });
-    expect(
-      buildWebRemoteControlStartResultTelemetry({
-        result: "cancelled",
-        workspaceKind: "remote",
-        remoteKind: "ssh",
-      }),
-    ).toMatchObject({
-      elementName: "web_remote_control_start_result",
-      eventExtraDetail: {
-        result: "cancelled",
-        workspace_kind: "remote",
-        remote_kind: "ssh",
-        error_category: "",
       },
     });
     expect(

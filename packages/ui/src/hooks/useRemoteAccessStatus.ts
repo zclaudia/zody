@@ -9,8 +9,6 @@ function isSameRuntimeStatus(
 ): boolean {
   return (
     left.status === right.status &&
-    left.sessionId === right.sessionId &&
-    left.windowControlSessionId === right.windowControlSessionId &&
     left.mobileConnected === right.mobileConnected &&
     left.mobileViewState?.activeWorkspaceKey === right.mobileViewState?.activeWorkspaceKey &&
     left.mobileViewState?.activeTaskId === right.mobileViewState?.activeTaskId &&

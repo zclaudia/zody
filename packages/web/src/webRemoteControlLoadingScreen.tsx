@@ -16,37 +16,37 @@ function resolveWebRemoteControlLoadingCopy(state: WebRemoteControlTerminalTrans
 } {
   const zh = isZhLocale();
   const steps = zh
-    ? ["连接中转服务", "设备鉴权", "等待桌面端配对", "同步工作区"]
+    ? ["连接 gateway", "设备鉴权", "等待电脑建立连接", "同步工作区"]
     : [
-        "Connect to relay service",
+        "Connect to gateway",
         "Authenticate device",
-        "Wait for desktop pairing",
+        "Wait for desktop connection",
         "Sync workspace",
       ];
 
   switch (state) {
     case "connecting":
       return {
-        title: zh ? "正在连接中转服务…" : "Connecting relay service…",
+        title: zh ? "正在连接 gateway…" : "Connecting to gateway…",
         description: zh
-          ? "正在建立手机与远控中转服务的连接。"
-          : "Establishing a connection between your phone and the relay.",
+          ? "正在建立手机与 gateway 的连接。"
+          : "Establishing a connection between your phone and the gateway.",
         steps,
       };
     case "authenticating":
       return {
         title: zh ? "正在认证设备…" : "Authenticating device…",
         description: zh
-          ? "已连接中转服务，正在完成远控身份校验。"
-          : "Relay connected. Verifying your remote-control identity.",
+          ? "gateway 已连接，正在完成远控身份校验。"
+          : "Gateway connected. Verifying your remote-control identity.",
         steps,
       };
     case "waiting":
       return {
-        title: zh ? "等待桌面端确认配对…" : "Waiting for desktop pairing…",
+        title: zh ? "等待电脑端建立连接…" : "Waiting for desktop connection…",
         description: zh
-          ? "手机端已就绪，等待桌面端会话匹配当前连接。"
-          : "Phone is ready. Waiting for desktop to match this connection.",
+          ? "手机端已就绪，等待电脑端接受当前连接。"
+          : "Phone is ready. Waiting for the desktop to accept this connection.",
         steps,
       };
     case "reconnecting":
@@ -59,7 +59,7 @@ function resolveWebRemoteControlLoadingCopy(state: WebRemoteControlTerminalTrans
       };
     case "paired":
       return {
-        title: zh ? "已配对，正在加载工作区…" : "Paired. Loading workspace…",
+        title: zh ? "已连接，正在加载工作区…" : "Connected. Loading workspace…",
         description: zh
           ? "连接已建立，正在同步桌面端工作区和任务。"
           : "Connection established. Syncing workspace and tasks.",

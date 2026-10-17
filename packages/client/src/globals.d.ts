@@ -32,14 +32,12 @@ import type {
   ApplicationIconInfo,
   ApplicationIconRequest,
   Locale,
-  WebRemoteControlContext,
   WebRemoteControlReconnectWorkspaceRequest,
   WebRemoteControlReconnectWorkspaceResult,
   RemoteAccessStatus,
   RemoteAccessCredentialStatus,
   RemoteAccessTestConnectionRequest,
   RemoteAccessTestConnectionResult,
-  WebRemoteControlStartOperationResult,
   WebRemoteControlStatus,
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceTarget,
@@ -99,16 +97,6 @@ declare global {
         workspacePath: string;
         workspaceIdentity?: string;
       }): Promise<BrowserGuestAttachResult>;
-      /** 为当前 workspace 开启 Web 远程控制 */
-      startWebRemoteControl(
-        context: WebRemoteControlContext,
-      ): Promise<WebRemoteControlStartOperationResult>;
-      /** 清除旧配对材料并重新生成 Web 远程控制二维码 */
-      refreshWebRemoteControlPairing(
-        context: WebRemoteControlContext,
-      ): Promise<WebRemoteControlStartOperationResult>;
-      /** 关闭当前窗口的 Web 远程控制 */
-      stopWebRemoteControl(): Promise<void>;
       /** 查询当前窗口 Web 远程控制状态（T2.3 起返回 App 级状态） */
       getWebRemoteControlStatus(): Promise<WebRemoteControlStatus>;
       /** 订阅 App 级 Web 远程控制状态变化（T2.3 起广播给所有窗口） */

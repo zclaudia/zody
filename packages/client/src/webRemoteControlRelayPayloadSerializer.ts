@@ -1,7 +1,6 @@
 import {
   WEB_REMOTE_CONTROL_RPC_TRANSPORT_LIMITS,
   type WebRemoteControlAppPayload,
-  type WebRemoteControlRelayDataMessage,
 } from "@zcode/shared";
 
 export type WebRemoteControlPayloadSendResult =
@@ -9,8 +8,15 @@ export type WebRemoteControlPayloadSendResult =
   | { kind: "unavailable" }
   | { kind: "oversize"; bytes: number; maxBytes: number };
 
+/** channel 数据帧的最小信封；与 `createWebRemoteControlChannelDataFrame` 的输出一致。 */
+interface WebRemoteControlPayloadDataMessage<T> {
+  type: "data";
+  payload: T;
+  client_ts?: number;
+}
+
 export interface SerializedWebRemoteControlRelayPayload {
-  readonly message: WebRemoteControlRelayDataMessage<WebRemoteControlAppPayload>;
+  readonly message: WebRemoteControlPayloadDataMessage<WebRemoteControlAppPayload>;
   readonly json: string;
   readonly bytes: number;
 }
@@ -31,7 +37,7 @@ export class WebRemoteControlRelayPayloadSerializer {
   ): SerializedWebRemoteControlRelayPayload {
     const cached = this.cache.get(payload);
     if (cached) return cached;
-    const message: WebRemoteControlRelayDataMessage<WebRemoteControlAppPayload> = {
+    const message: WebRemoteControlPayloadDataMessage<WebRemoteControlAppPayload> = {
       type: "data",
       payload,
       client_ts: clientTimestamp,

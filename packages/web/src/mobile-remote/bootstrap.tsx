@@ -72,6 +72,7 @@ import {
   createMobileRemoteSecureStore,
   resolveMobileRemoteNativeBridge,
 } from "./mobileRemoteSecureStore.js";
+import { installMobileRemoteNativeHost } from "./mobileRemoteNativeHost.js";
 
 /**
  * 手机远控启动模块（T1.2 迁出 `main.tsx`，T3.4 换成 gateway transport，T4.2 加设置/选电脑流程）。
@@ -101,6 +102,23 @@ function createDefaultSecureStore(): PlatformSecureStore {
   return createMobileRemoteSecureStore(bridge ? { bridge } : {});
 }
 
+/**
+ * 把启动阶段的平台能力透传给 Root/手机 Shell（T6.2）。
+ * Root 会重新构造一个 Web 平台对象，安全存储、前后台和返回键都必须显式带上，
+ * 否则 `useOptionalPlatform()` 在 UI 层看不到原生能力。
+ */
+function pickMobileRemotePlatformCapabilities(
+  platform: IPlatformService,
+): Pick<IPlatformService, "secureStore" | "onAppLifecycleChange" | "onBackPressed"> {
+  return {
+    ...(platform.secureStore ? { secureStore: platform.secureStore } : {}),
+    ...(platform.onAppLifecycleChange
+      ? { onAppLifecycleChange: platform.onAppLifecycleChange }
+      : {}),
+    ...(platform.onBackPressed ? { onBackPressed: platform.onBackPressed } : {}),
+  };
+}
+
 type WebRemoteControlWorkspaceListUpdateListener = (
   result: WebRemoteControlWorkspaceListResult,
 ) => void;
@@ -115,8 +133,8 @@ function createWebRemoteControlRequestId(prefix: string): string {
   return `${prefix}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`}`;
 }
 
-function seedStableWebRemoteControlClientId(deviceSid: string): void {
-  const storageKey = `zcode-web-remote-client-id:${deviceSid}`;
+function seedStableWebRemoteControlClientId(clientInstanceId: string): void {
+  const storageKey = `zcode-web-remote-client-id:${clientInstanceId}`;
   try {
     const existing = globalThis.localStorage?.getItem(storageKey)?.trim();
     if (existing) {
@@ -169,10 +187,23 @@ export async function bootstrapGatewayWebRemoteControl(
 ): Promise<void> {
   const allowUrlConfig = options.allowUrlConfig ?? !import.meta.env.PROD;
   const allowInsecureTransport = options.allowInsecureTransport ?? !import.meta.env.PROD;
+  // T6.2：Android 壳注入 ZcodeMobileBridge 后，安装宿主 → 页面的 ZcodeMobileBridgeHost
+  // （前后台/返回键）。普通浏览器返回 undefined，页面继续只依赖 document 事件。
+  const nativeHost = installMobileRemoteNativeHost();
   const secureStore =
     options.secureStore ?? options.platform?.secureStore ?? createDefaultSecureStore();
   // 不展开注入的平台对象：桌面/测试实现可能是带原型方法的实例。能力缺省时只补 secureStore。
-  const platform = options.platform ?? createWebPlatform({ secureStore });
+  const platform =
+    options.platform ??
+    createWebPlatform({
+      secureStore,
+      ...(nativeHost
+        ? {
+            onAppLifecycleChange: nativeHost.onAppLifecycleChange,
+            onBackPressed: nativeHost.onBackPressed,
+          }
+        : {}),
+    });
   if (!platform.secureStore) {
     platform.secureStore = secureStore;
   }
@@ -469,7 +500,7 @@ async function startGatewaySession(
           if (!activeRelayProtocol.isDegraded()) throw error;
         }
         // Bugfix: 手机短暂切后台只会暂停 JS/心跳，不代表 shared-host bridge 已经失效。
-        // 原逻辑每次回前台都重建 bridge 和 Root，导致用户看到“已配对，正在加载工作区…”闪回。
+        // 原逻辑每次回前台都重建 bridge 和 Root，导致用户看到“已连接，正在加载工作区…”闪回。
         // bridge 是否需要重建以 desktop 发来的 bridge-degraded 或本地 frame gap 为准，避免只按后台时长误判。
         // 版本校验是异步的，完成后必须重新读取 bridge 状态，避免丢失并发的降级事件。
         if (!activeRelayProtocol.isDegraded()) {
@@ -927,9 +958,7 @@ async function startGatewaySession(
                     transport.sendPayload({ zcode_type: "telemetry-report", event: parsed.data });
                 },
               },
-              ...(context.platform.secureStore
-                ? { secureStore: context.platform.secureStore }
-                : {}),
+              ...pickMobileRemotePlatformCapabilities(context.platform),
             })}
             // Bug 原因：手机复用 Desktop Host 中已持久化的 Assistant row，但 Root 默认关闭
             // code-comment 投影，导致 replay hydration 暴露原始 directive。该开关只修正展示能力，
@@ -1009,9 +1038,7 @@ async function startGatewaySession(
                     transport.sendPayload({ zcode_type: "telemetry-report", event: parsed.data });
                 },
               },
-              ...(context.platform.secureStore
-                ? { secureStore: context.platform.secureStore }
-                : {}),
+              ...pickMobileRemotePlatformCapabilities(context.platform),
             })}
             initialWorkspaceAbsPath={workspaceKey}
             initialTaskId={taskId}
@@ -1219,6 +1246,16 @@ async function startGatewaySession(
     },
   });
 
+  // T6.2：Android 壳按 Activity ON_START/ON_STOP 派发前后台。复用 document 事件的同一套
+  // suspended 状态机，避免两路事件各自恢复导致重复建连；后台暂停连接，回前台走完整恢复。
+  const disposeNativeAppLifecycle = context.platform.onAppLifecycleChange?.((state) => {
+    if (state === "background") {
+      lifecycle.suspend();
+      return;
+    }
+    lifecycle.recover("resume");
+  });
+
   disposeSession = () => {
     if (disposed) {
       return;
@@ -1233,6 +1270,7 @@ async function startGatewaySession(
     disposeStartPageRecentSubscription?.();
     disposeStartPageRecentSubscription = undefined;
     renderStartPageIfActive = undefined;
+    disposeNativeAppLifecycle?.();
     activeBridgeServiceRegistration?.dispose();
     activeBridgeServiceRegistration = undefined;
     activeRelayProtocol?.dispose();

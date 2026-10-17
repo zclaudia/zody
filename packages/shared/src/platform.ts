@@ -15,9 +15,7 @@ import type {
 } from "./mcp.js";
 import type { OAuthStateRegistration } from "./oauth.js";
 import type {
-  WebRemoteControlContext,
   WebRemoteControlReconnectWorkspaceResult,
-  WebRemoteControlStartOperationResult,
   WebRemoteControlStatus,
   WebRemoteControlTaskTarget,
   WebRemoteControlReconnectWorkspaceRequest,
@@ -671,6 +669,15 @@ export interface PlatformSecureStore {
   remove(key: string): Promise<void>;
 }
 
+/**
+ * 手机宿主的前后台状态（T6.2）。
+ *
+ * Android 壳以 Activity 的 `ON_START`/`ON_STOP` 为边界派发：`background` 表示页面已不可见，
+ * 用来暂停心跳和连接；`foreground` 表示页面重新可见，用来重连。普通浏览器没有这个能力，
+ * 继续使用 document `visibilitychange`。
+ */
+export type PlatformAppLifecycleState = "foreground" | "background";
+
 export interface IPlatformService {
   /** 当前平台的文件选择框是否能返回 agent 可访问的本地绝对路径 */
   canSelectFilePath?: boolean;
@@ -680,6 +687,21 @@ export interface IPlatformService {
    * 桌面端与普通 Web 端不提供，调用方必须显式处理能力缺失。
    */
   secureStore?: PlatformSecureStore;
+
+  /**
+   * 订阅手机宿主的前后台事件（T6.2）。返回 disposer。
+   * 只有带原生桥的 Android 宿主实现；页面用它触发 suspend/recoverInBackground。
+   */
+  onAppLifecycleChange?(handler: (state: PlatformAppLifecycleState) => void): () => void;
+
+  /**
+   * 订阅手机宿主的返回键分发（T6.2）。返回 disposer。
+   *
+   * handler 同步返回 `true` 表示页面已经消费这次返回（例如关闭浮层或从聊天页回到首页），
+   * 宿主不再做历史回退/退出；返回 `false` 时宿主回退 WebView 历史，没有历史则退出 App。
+   * 多个 handler 按注册逆序询问，先返回 `true` 的生效。
+   */
+  onBackPressed?(handler: () => boolean): () => void;
 
   /**
    * 插件 UI 沙箱平台端口。只有桌面端实现；
@@ -763,20 +785,7 @@ export interface IPlatformService {
     context: BindRemoteWorkspaceSessionContextRequest,
   ): Promise<void>;
 
-  /** 为当前 workspace 开启 Web 远程控制能力 */
-  startWebRemoteControl(
-    context: WebRemoteControlContext,
-  ): Promise<WebRemoteControlStartOperationResult>;
-
-  /** 清除旧配对材料并重新生成 Web 远程控制二维码 */
-  refreshWebRemoteControlPairing(
-    context: WebRemoteControlContext,
-  ): Promise<WebRemoteControlStartOperationResult>;
-
-  /** 关闭当前窗口已开启的 Web 远程控制能力 */
-  stopWebRemoteControl(): Promise<void>;
-
-  /** 查询当前窗口 Web 远程控制状态 */
+  /** 查询 App 级 Web 远程控制状态（Main 是唯一事实源）。 */
   getWebRemoteControlStatus(): Promise<WebRemoteControlStatus>;
 
   /**

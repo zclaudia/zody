@@ -14,12 +14,22 @@ interface WebRemoteControlLifecycleRecoveryOptions {
   onRecover(reason: "visible" | "pageshow" | "online" | "resume"): void;
 }
 
+export interface WebRemoteControlLifecycleRecovery {
+  /**
+   * 外部生命周期源（Android 原生桥的 ON_STOP，T6.2）复用同一个挂起状态机，
+   * 避免 document 事件与原生事件各自维护一套 suspended 标记。
+   */
+  suspend(): void;
+  recover(reason: "visible" | "pageshow" | "online" | "resume"): void;
+  dispose(): void;
+}
+
 export function createWebRemoteControlLifecycleRecovery({
   documentTarget,
   windowTarget,
   onSuspend,
   onRecover,
-}: WebRemoteControlLifecycleRecoveryOptions): { dispose(): void } {
+}: WebRemoteControlLifecycleRecoveryOptions): WebRemoteControlLifecycleRecovery {
   let suspended = false;
   const suspend = () => {
     suspended = true;
@@ -56,6 +66,8 @@ export function createWebRemoteControlLifecycleRecovery({
   windowTarget.addEventListener("online", handleOnline);
 
   return {
+    suspend,
+    recover,
     dispose() {
       documentTarget.removeEventListener("visibilitychange", handleVisibilityChange);
       documentTarget.removeEventListener("freeze", handleFreeze);

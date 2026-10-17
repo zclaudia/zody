@@ -13,22 +13,15 @@ function createManagerWithDirectory() {
   const directory = createRemoteWorkspaceDirectory();
   const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
   const manager = createWebRemoteControlManager({
-    relayWsUrl: "ws://relay.test/ws",
-    mobileRemoteControlUrl: "https://example.test/remote/v3",
-    deviceMid: "mid-1",
-    deviceName: "MacBook",
     appVersion: "1.5.0",
-    authProvider: {
-      createPassword: () => "password",
-      createPassHash: () => "hash-1",
-      calculateProof: () => "proof",
-    },
-    authStorageProvider: {
-      load: async () => undefined,
-      save: async () => {},
-      clear: async () => {},
-      rotate: async () => {},
-    },
+    createDeviceTransport: () => ({
+      start: () => {},
+      sendPayload: () => false,
+      sendPayloadResult: () => ({ kind: "unavailable" as const }),
+      measurePayloadBytes: () => 0,
+      disconnectClient: () => {},
+      dispose: () => {},
+    }),
     remoteAccessSettings: {
       isEnabled: async () => false,
       setEnabled: async () => {},

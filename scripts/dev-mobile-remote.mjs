@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // 手机远控的浏览器开发模式（T1.2）：同时起 Web 端 Vite dev server（服务手机入口 mobile.html）
-// 和桌面 dev 进程（把桌面生成的远控 URL 指向手机入口）。
-// 旧链路 `dev:web-remote-control` 保留到 T5.1。
+// 和桌面 dev 进程。手机在设置页手动填写本地 gateway 配置。
 import { spawn } from "node:child_process";
 import process from "node:process";
 
@@ -47,9 +46,7 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => shutdown(0));
 }
 
-console.info(`[dev:mobile-remote] 手机入口 ${mobilePageUrl}（桌面远控 URL 指向该地址）`);
+console.info(`[dev:mobile-remote] 手机入口 ${mobilePageUrl}`);
 
 start(pnpmCommand, ["--filter", "@zcode/web", "exec", "vite", "dev", "--strictPort"]);
-start(pnpmCommand, ["--filter", "@zcode/desktop", "dev:local-cli"], {
-  ZCODE_WEB_REMOTE_CONTROL_URL: mobilePageUrl,
-});
+start(pnpmCommand, ["--filter", "@zcode/desktop", "dev:local-cli"]);

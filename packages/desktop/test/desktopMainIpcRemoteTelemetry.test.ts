@@ -83,11 +83,10 @@ function createOptions(overrides?: Partial<RemoteIpcOptions>): RemoteIpcOptions 
       armsEnv: "test",
     },
     webRemoteControlManager: {
-      authorizeStart: vi.fn(),
-      startAuthorized: vi.fn(),
-      resetPairingAuthorized: vi.fn(),
-      stop: vi.fn(),
       getStatus: vi.fn(),
+      setRemoteAccessEnabled: vi.fn(),
+      disconnectRemoteClient: vi.fn(),
+      getRemoteAccessStatus: vi.fn(),
     },
     createRemoteWorkspaceSession: vi.fn(async () => "remote-session-1"),
     disposeRemoteWorkspaceSession: vi.fn(),
@@ -158,7 +157,6 @@ describe("remote workspace connect telemetry IPC", () => {
       }),
     );
     expect(h.registerWebRemoteControlIpcHandlers).toHaveBeenCalledWith({
-      reportRemoteUsageEvent: expect.any(Function),
       webRemoteControlManager: options.webRemoteControlManager,
     });
   });

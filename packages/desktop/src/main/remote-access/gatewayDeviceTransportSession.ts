@@ -81,7 +81,6 @@ export function createGatewayDeviceTransportSession(
   options: GatewayDeviceTransportSessionOptions,
 ): GatewayDeviceTransportSession {
   return {
-    usesGatewayChannel: true,
     start() {
       if (host.isDisposed()) return;
       host.setActiveSession(options);

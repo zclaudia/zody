@@ -29,8 +29,8 @@ description = "Start the server and web client dev servers."
 run = "mise exec -- node scripts/mise-run.mjs pnpm dev:web"
 
 [tasks.dev-remote]
-description = "Start the web remote-control development stack."
-run = "mise exec -- node scripts/mise-run.mjs pnpm dev:web-remote-control"
+description = "Start the mobile remote-control development stack."
+run = "mise exec -- node scripts/mise-run.mjs pnpm dev:mobile-remote"
 
 [tasks.typecheck]
 description = "Run the root TypeScript project references check."

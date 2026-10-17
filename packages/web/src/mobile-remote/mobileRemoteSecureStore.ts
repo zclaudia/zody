@@ -28,9 +28,49 @@ export interface MobileRemoteNativeSecureStore {
 
 export interface MobileRemoteNativeBridge {
   secureStore?: MobileRemoteNativeSecureStore;
+  /*
+   * Android `@JavascriptInterface` 注入的对象只能暴露平铺方法（T6.2）：
+   * Kotlin 的 `ZcodeMobileBridge.secureStoreGet/secureStoreSet/secureStoreRemove`。
+   * `resolveMobileRemoteNativeBridge` 会把它们归一化成 `secureStore.get/set/remove`，
+   * 页面其余部分只依赖归一化后的形状。
+   */
+  secureStoreGet?(key: string): string | null;
+  secureStoreSet?(key: string, value: string): void;
+  secureStoreRemove?(key: string): void;
 }
 
 const NATIVE_BRIDGE_GLOBAL_KEY = "ZcodeMobileBridge";
+
+function isNativeSecureStore(value: unknown): value is MobileRemoteNativeSecureStore {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const store = value as MobileRemoteNativeSecureStore;
+  return (
+    typeof store.get === "function" &&
+    typeof store.set === "function" &&
+    typeof store.remove === "function"
+  );
+}
+
+/** 把 Kotlin 注入的平铺方法归一化成 `secureStore.get/set/remove`。 */
+function resolveFlatNativeSecureStore(
+  bridge: MobileRemoteNativeBridge,
+): MobileRemoteNativeSecureStore | undefined {
+  if (
+    typeof bridge.secureStoreGet !== "function" ||
+    typeof bridge.secureStoreSet !== "function" ||
+    typeof bridge.secureStoreRemove !== "function"
+  ) {
+    return undefined;
+  }
+  return {
+    // 保留 bridge 作为 receiver：WebView 注入的方法不依赖 this，但不要依赖这一点。
+    get: (key) => bridge.secureStoreGet!(key),
+    set: (key, value) => bridge.secureStoreSet!(key, value),
+    remove: (key) => bridge.secureStoreRemove!(key),
+  };
+}
 
 /** 读取宿主注入的原生桥；不存在或字段缺失时返回 undefined。 */
 export function resolveMobileRemoteNativeBridge(
@@ -43,16 +83,14 @@ export function resolveMobileRemoteNativeBridge(
   if (!bridge || typeof bridge !== "object") {
     return undefined;
   }
-  const secureStore = (bridge as MobileRemoteNativeBridge).secureStore;
-  if (
-    !secureStore ||
-    typeof secureStore.get !== "function" ||
-    typeof secureStore.set !== "function" ||
-    typeof secureStore.remove !== "function"
-  ) {
+  const candidate = bridge as MobileRemoteNativeBridge;
+  const secureStore = isNativeSecureStore(candidate.secureStore)
+    ? candidate.secureStore
+    : resolveFlatNativeSecureStore(candidate);
+  if (!secureStore) {
     return undefined;
   }
-  return bridge as MobileRemoteNativeBridge;
+  return { secureStore };
 }
 
 export interface CreateMobileRemoteSecureStoreOptions {

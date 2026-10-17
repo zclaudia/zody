@@ -118,6 +118,32 @@ describe("mobile remote secure store (T4.2)", () => {
     expect(await browserStore.get("config")).toBeNull();
   });
 
+  it("normalizes the Kotlin flat @JavascriptInterface shape", async () => {
+    // Android 的 @JavascriptInterface 只能暴露平铺方法（T6.2）；
+    // resolveMobileRemoteNativeBridge 负责归一化成 secureStore.get/set/remove。
+    const state = new Map<string, string>();
+    const target = {
+      ZcodeMobileBridge: {
+        secureStoreGet: (key: string) => state.get(key) ?? null,
+        secureStoreSet: (key: string, value: string) => {
+          state.set(key, value);
+        },
+        secureStoreRemove: (key: string) => {
+          state.delete(key);
+        },
+      },
+    };
+
+    const bridge = resolveMobileRemoteNativeBridge(target);
+    expect(bridge?.secureStore).toBeDefined();
+
+    const store = createNativeMobileRemoteSecureStore(bridge);
+    await store.set("config", "zgd_native");
+    expect(await store.get("config")).toBe("zgd_native");
+    await store.remove("config");
+    expect(await store.get("config")).toBeNull();
+  });
+
   it("detects only complete native bridge shapes", () => {
     expect(resolveMobileRemoteNativeBridge({})).toBeUndefined();
     expect(
@@ -130,5 +156,14 @@ describe("mobile remote secure store (T4.2)", () => {
         },
       }),
     ).toBeDefined();
+    // 平铺形状缺一个方法时同样视为没有桥，release 构建会拒绝保存凭证。
+    expect(
+      resolveMobileRemoteNativeBridge({
+        ZcodeMobileBridge: {
+          secureStoreGet: () => null,
+          secureStoreSet: () => {},
+        },
+      }),
+    ).toBeUndefined();
   });
 });

@@ -20,7 +20,6 @@ export function resolveWorkspaceTelemetryDetail(scope: {
 export type RemoteUsageRemoteKind = RemoteTarget["kind"];
 export type RemoteUsageWorkspaceKind = "local" | "remote";
 export type RemoteUsageResult = "success" | "failure";
-export type WebRemoteControlStartTelemetryResult = RemoteUsageResult | "cancelled";
 export type RemoteWorkspaceConnectTrigger = "new" | "reconnect" | "restore";
 export type WebRemoteControlPairKind = "initial" | "reconnect";
 export type WebRemoteControlEntryKind = "home" | "task";
@@ -34,7 +33,7 @@ export type RemoteUsageErrorCategory =
   | "unknown";
 
 function buildResultDetail(
-  result: WebRemoteControlStartTelemetryResult,
+  result: RemoteUsageResult,
   errorCategory?: RemoteUsageErrorCategory,
 ): Record<string, string> {
   return {
@@ -80,19 +79,6 @@ export function buildWebRemoteControlEntryViewTelemetry(input: {
   remoteKind?: RemoteUsageRemoteKind;
 }): TelemetryEventPayload {
   return buildWebRemoteControlEvent("web_remote_control_entry_view", "view", {
-    workspace_kind: input.workspaceKind,
-    remote_kind: input.remoteKind ?? "",
-  });
-}
-
-export function buildWebRemoteControlStartResultTelemetry(input: {
-  result: WebRemoteControlStartTelemetryResult;
-  workspaceKind: RemoteUsageWorkspaceKind;
-  remoteKind?: RemoteUsageRemoteKind;
-  errorCategory?: RemoteUsageErrorCategory;
-}): TelemetryEventPayload {
-  return buildWebRemoteControlEvent("web_remote_control_start_result", "result", {
-    ...buildResultDetail(input.result, input.errorCategory),
     workspace_kind: input.workspaceKind,
     remote_kind: input.remoteKind ?? "",
   });

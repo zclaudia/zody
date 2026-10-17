@@ -47,7 +47,7 @@ import {
 import type { UtilityProcess as ElectronUtilityProcess } from "electron";
 import { spawn } from "node:child_process";
 import { join, resolve } from "node:path";
-import { homedir, hostname } from "node:os";
+import { homedir } from "node:os";
 import {
   createCredentialService,
   createSettingService,
@@ -76,15 +76,13 @@ import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   TEST_ZCODE_ENDPOINT_ORIGIN,
   ZCODE_VERSION,
-  buildZCodeEndpointUrls,
-  resolveWebRemoteControlRelayWsUrl,
   resolveZCodeEndpointOrigin,
   shouldEnableE2ETestBridge,
   type UpdateStatePayload,
   type TelemetryEventPayload,
   HostMessageTypes,
 } from "@zcode/shared";
-import { logger, webRemoteControlRelayLogger } from "./logger.js";
+import { logger } from "./logger.js";
 import { markMainLaunchAppReady } from "./desktopLaunchMarks.js";
 import { createCuaPipFocusRouter, resolveCuaPipWindowKey } from "./cuaPipFocusRouter.js";
 import { createDesktopTelemetryFetch } from "./desktopTelemetryFetch.js";
@@ -128,8 +126,6 @@ import { createRemoteWorkspaceDirectory } from "./remote-access/remoteWorkspaceD
 import { createRemoteAccessCredentialStore } from "./remote-access/remoteAccessCredentialStore.js";
 import { createRemoteGatewayBackend } from "./remote-access/remoteGatewayBackend.js";
 import { createGatewayDeviceTransport } from "./remote-access/gatewayDeviceTransport.js";
-import { createNodeWebRemoteControlRelayAuthProvider } from "./webRemoteControlRelayAuthProvider.js";
-import { createWebRemoteControlRelayAuthStorageProvider } from "./webRemoteControlRelayAuthStorageProvider.js";
 import { createWebRemoteControlFeatureGate } from "./webRemoteControlFeatureGate.js";
 import { reconnectWebRemoteControlWorkspaceInRenderer } from "./webRemoteControlRendererReconnect.js";
 import { broadcastWebRemoteControlStatusChanged } from "./webRemoteControlStatusEvents.js";
@@ -871,7 +867,6 @@ const remoteSessionManager = createRemoteWorkspaceSessionManager({
   webRemoteControlManagerRef,
 });
 
-const webRemoteControlAuthProvider = createNodeWebRemoteControlRelayAuthProvider();
 const webRemoteControlSharedHostAttachments = createWebRemoteControlSharedHostAttachments({
   windowHostProcessMap,
   attachRemoteWorkspaceSessionHost: remoteSessionManager.attachRemoteWorkspaceSessionHost,
@@ -919,14 +914,6 @@ const armsUserIdentitySync = createArmsUserIdentitySync({
   deviceMid,
   setUser: (user) => armsRum.setConfig("user", user),
 });
-const webRemoteControlAppVersion = ZCODE_VERSION || app.getVersion();
-const defaultZCodeEndpointUrls = buildZCodeEndpointUrls(DEFAULT_ZCODE_ENDPOINT_ORIGIN, {
-  appVersion: webRemoteControlAppVersion,
-});
-const webRemoteControlRelayWsEnvOverride =
-  process.env["ZCODE_WEB_REMOTE_CONTROL_RELAY_WS_URL"]?.trim();
-const webRemoteControlUrlEnvOverride = process.env["ZCODE_WEB_REMOTE_CONTROL_URL"]?.trim();
-
 function extractOpenWorkspacePathFromDeepLinkUrl(url: string): string | null {
   try {
     const parsedUrl = new URL(url);
@@ -957,36 +944,9 @@ const remoteWorkspaceDirectory = createRemoteWorkspaceDirectory({
 });
 
 const webRemoteControlManager = createWebRemoteControlManager({
-  getEndpointUrls: async () => {
-    const derived = buildZCodeEndpointUrls(await resolveCurrentZCodeEndpointOrigin(), {
-      appVersion: webRemoteControlAppVersion,
-    });
-    return {
-      ...derived,
-      relayWsUrl: resolveWebRemoteControlRelayWsUrl({
-        endpointOrigin: derived.origin,
-        overrideUrl: webRemoteControlRelayWsEnvOverride,
-      }),
-      remoteUrl: webRemoteControlUrlEnvOverride || derived.remoteUrl,
-    };
-  },
-  relayWsUrl: resolveWebRemoteControlRelayWsUrl({
-    endpointOrigin: DEFAULT_ZCODE_ENDPOINT_ORIGIN,
-    overrideUrl: webRemoteControlRelayWsEnvOverride,
-  }),
-  mobileRemoteControlUrl: webRemoteControlUrlEnvOverride || defaultZCodeEndpointUrls.remoteUrl,
-  deviceMid,
-  deviceName: hostname(),
-  appVersion: webRemoteControlAppVersion,
-  authProvider: webRemoteControlAuthProvider,
-  authStorageProvider: createWebRemoteControlRelayAuthStorageProvider({
-    credentialService: webRemoteControlCredentialService,
-    loadSettings: () => mainSettingService.get(),
-    patchSettings: (patch) => mainSettingService.update(patch),
-    logger,
-  }),
-  // T2.3：启动恢复只看 App 级开关；旧的 webRemoteControlLastEnabledContext 不再读，
-  // 字段本身留到 T5.1 清理（T2.1 的迁移规则仍需要识别它）。
+  appVersion: ZCODE_VERSION || app.getVersion(),
+  // T2.3：启动恢复只看 App 级开关；旧的 webRemoteControlLastEnabledContext 已随 relay
+  // 体系删除，只在设置迁移时读取原始 JSON。
   remoteAccessSettings: {
     isEnabled: async () => (await mainSettingService.get()).remoteAccess?.enabled === true,
     setEnabled: async (enabled) => {
@@ -1015,7 +975,6 @@ const webRemoteControlManager = createWebRemoteControlManager({
   getGatewayConnectionStatus: () => remoteGatewayBackend.getStatus(),
   remoteWorkspaceDirectory,
   logger,
-  relayMessageLogger: webRemoteControlRelayLogger,
   platformHandlers: {
     isDockerAvailable: () => isDockerDaemonAvailable(),
     listWSLDistros: () => listAvailableWSLDistros(),
@@ -1036,8 +995,7 @@ const webRemoteControlManager = createWebRemoteControlManager({
     migrateLegacyCommonMcp: (payload) => migrateLegacyCommonMcp(payload),
   },
   reconnectWorkspace: reconnectWebRemoteControlWorkspaceInRenderer,
-  // T3.3：App 级 runtime 的 transport 改用 gateway channel；relay transport 保留到 T5.1，
-  // 但生产环境不再被选用（manager 的默认实现只在没有注入时兜底）。
+  // T5.1：gateway channel 是 App 级 runtime 唯一的 device transport。
   createDeviceTransport: (options) => gatewayDeviceTransport.createSession(options),
   reportRendererTelemetryEvent: (event) => {
     void appTelemetryCore.reportEvent(event).catch(() => {});

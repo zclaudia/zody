@@ -76,7 +76,6 @@ import type {
   SaveFileResult,
   PrintPageToPdfResult,
   SSHConfigAliasOption,
-  WebRemoteControlContext,
   WebRemoteControlReconnectWorkspaceRequest,
   WebRemoteControlReconnectWorkspaceResult,
   WebRemoteControlStatus,
@@ -286,12 +285,6 @@ contextBridge.exposeInMainWorld("zcode", {
     workspaceIdentity?: string;
   }): Promise<void> =>
     ipcRenderer.invoke(PlatformChannels.BindRemoteWorkspaceSessionContext, context),
-  startWebRemoteControl: (context: WebRemoteControlContext) =>
-    ipcRenderer.invoke(PlatformChannels.StartWebRemoteControl, context),
-  refreshWebRemoteControlPairing: (context: WebRemoteControlContext) =>
-    ipcRenderer.invoke(PlatformChannels.ResetWebRemoteControlPairing, context),
-  stopWebRemoteControl: (): Promise<void> =>
-    ipcRenderer.invoke(PlatformChannels.StopWebRemoteControl),
   getWebRemoteControlStatus: () => ipcRenderer.invoke(PlatformChannels.GetWebRemoteControlStatus),
   onWebRemoteControlStatusChanged: (
     callback: (status: WebRemoteControlStatus) => void,

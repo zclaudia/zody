@@ -2,7 +2,6 @@ import {
   resolveWebRemoteControlWorkspaceKey,
   type WebRemoteControlExternalWorkspaceBridge,
   type WebRemoteControlTaskTarget,
-  type WebRemoteControlWorkspaceBridge,
 } from "@zcode/shared";
 import {
   markWebRemoteControlBridgeTaskRead,
@@ -31,7 +30,7 @@ export async function markCurrentWebRemoteControlBridgeTaskRead({
   services,
   task,
 }: {
-  bridge: WebRemoteControlExternalWorkspaceBridge | WebRemoteControlWorkspaceBridge;
+  bridge: WebRemoteControlExternalWorkspaceBridge;
   services: RootServices;
   task: WebRemoteControlTaskTarget;
 }): Promise<void> {
@@ -71,7 +70,7 @@ export async function markOpenedWebRemoteControlBridgeTaskRead({
   expectedUnreadAt,
   services,
 }: {
-  bridge: WebRemoteControlExternalWorkspaceBridge | WebRemoteControlWorkspaceBridge;
+  bridge: WebRemoteControlExternalWorkspaceBridge;
   expectedUnreadAt?: number;
   services: RootServices;
 }): Promise<void> {

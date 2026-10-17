@@ -1,6 +1,5 @@
 /* oxlint-disable eslint(max-lines) -- AppSettings schema 聚合历史迁移、默认值和 patch 校验，拆分会削弱设置迁移的单一入口。 */
 import { z } from "zod";
-import type { AppSettings } from "./protocol.js";
 import { REMOTE_ASSET_INSTALL_MODES } from "./remoteAssetInstallMode.js";
 import { isKnownRemoteResourcePackageId } from "./remoteResourcePackages.js";
 import { wslUserSchema } from "./wslUserValidation.js";
@@ -142,9 +141,6 @@ const appWorkspaceSessionEntrySchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
-const webRemoteControlExternalRelayDeviceSchema = z.object({
-  deviceSid: nonEmptyStringSchema,
-});
 const webRemoteControlLastEnabledContextSchema = z.object({
   workspacePath: nonEmptyStringSchema,
   workspaceIdentity: nonEmptyStringSchema.optional(),
@@ -326,7 +322,8 @@ function stripHistoricalRemoteResourcePackages(target: unknown): unknown {
  * 旧 relay 远控（`webRemoteControlLastEnabledContext`）与新的 gateway 远程访问开关不是同一件事：
  * relay 的配对与凭证对 gateway 无效，沿用旧状态只会让新链路带着「已开启」去连一个没配好的 gateway。
  * 因此迁到的 `remoteAccess` 一律是关闭状态，等用户在设置页填好地址和凭证后自行开启。
- * 旧字段本身由删除 relay 体系的任务清理，这里只负责不把它的含义带进新开关。
+ * 旧字段已从 AppSettings schema 删除（T5.1）；这里仍直接检查原始 JSON，保证老用户升级时
+ * 不会带着 relay 的「已开启」意图进入 gateway 链路。
  */
 function migrateLegacyWebRemoteControlToRemoteAccess(value: unknown): unknown {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -556,8 +553,6 @@ const appSettingsObjectSchema = z.object({
   autoDownloadAndInstallUpdates: z.boolean().default(false),
   skippedElectronUpdateVersions: skippedElectronUpdateVersionsSchema,
   settingsSyncFirstRunPromptHandled: z.boolean().optional(),
-  webRemoteControlExternalRelayDevice: webRemoteControlExternalRelayDeviceSchema.optional(),
-  webRemoteControlLastEnabledContext: webRemoteControlLastEnabledContextSchema.optional(),
   // App 级远程访问配置（gateway）；旧 relay 的开关状态不迁移，见 migrateLegacyWebRemoteControlToRemoteAccess。
   remoteAccess: remoteAccessSettingsSchema.default({
     enabled: false,
@@ -661,8 +656,6 @@ export const appSettingsPatchSchema = z.object({
     .partialRecord(electronReleaseChannelSchema, nonEmptyStringSchema)
     .optional(),
   settingsSyncFirstRunPromptHandled: z.boolean().optional(),
-  webRemoteControlExternalRelayDevice: webRemoteControlExternalRelayDeviceSchema.optional(),
-  webRemoteControlLastEnabledContext: webRemoteControlLastEnabledContextSchema.optional(),
   remoteAccess: remoteAccessSettingsPatchSchema.optional(),
   zcodeEndpointOrigin: zcodeEndpointOriginSchema.optional(),
 });

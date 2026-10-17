@@ -39,22 +39,7 @@ function createHarness(
   const remoteWorkspaceDirectory = createRemoteWorkspaceDirectory();
 
   const manager = createWebRemoteControlManager({
-    relayWsUrl: "ws://relay.test/ws",
-    mobileRemoteControlUrl: "https://example.test/remote/v3",
-    deviceMid: "mid-1",
-    deviceName: "MacBook",
     appVersion: "1.5.0",
-    authProvider: {
-      createPassword: () => "password",
-      createPassHash: () => "hash-1",
-      calculateProof: () => "proof",
-    },
-    authStorageProvider: {
-      load: async () => undefined,
-      save: async () => {},
-      clear: async () => {},
-      rotate: async () => {},
-    },
     remoteAccessSettings: {
       isEnabled: async () => true,
       setEnabled: async () => {},
@@ -97,9 +82,6 @@ function createHarness(
     createDeviceTransport: (transportOptions) => ({
       start: () => {
         deliverPayload = transportOptions.onPayload;
-        if (transportOptions.auth.mode === "register") {
-          transportOptions.onRegisteredAuth({ deviceSid: "sid-1", passHash: "hash-1" });
-        }
         transportOptions.onStateChange("waiting_terminal");
       },
       sendPayload: (payload) => {
@@ -111,6 +93,7 @@ function createHarness(
         sentPayloads.push(payload);
         return { kind: "sent" as const, bytes: JSON.stringify(payload).length };
       },
+      disconnectClient: () => {},
       dispose: vi.fn(),
     }),
   });

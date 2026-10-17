@@ -9,10 +9,8 @@ import type {
 } from "./index.js";
 import type { OAuthStateRegistration } from "./oauth.js";
 import type {
-  WebRemoteControlContext,
   WebRemoteControlReconnectWorkspaceRequest,
   WebRemoteControlReconnectWorkspaceResult,
-  WebRemoteControlStartOperationResult,
   WebRemoteControlStatus,
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceTarget,
@@ -226,16 +224,11 @@ export const PlatformChannels = {
   CancelPendingRemoteConnection: "zcode:cancel-pending-remote-connection",
   /** Renderer → Main：绑定远程 logical session 的 canonical workspace context */
   BindRemoteWorkspaceSessionContext: "zcode:bind-remote-workspace-session-context",
-  /** 为当前 workspace 开启 Web 远程控制 */
-  StartWebRemoteControl: "zcode:start-web-remote-control",
-  ResetWebRemoteControlPairing: "zcode:reset-web-remote-control-pairing",
-  /** 关闭当前窗口的 Web 远程控制（T5.1 删除；T2.3 起内部转调 App 级 stop） */
-  StopWebRemoteControl: "zcode:stop-web-remote-control",
-  /** 查询当前窗口的 Web 远程控制状态（T5.1 删除；T2.3 起返回 App 级状态） */
+  /** 查询 App 级 Web 远程控制状态（T5.1 起只保留查询；启停走远程访问开关） */
   GetWebRemoteControlStatus: "zcode:get-web-remote-control-status",
   /** Main → Renderer：App 级 Web 远程控制状态变化（T2.3 起广播给所有窗口） */
   WebRemoteControlStatusChanged: "zcode:web-remote-control-status-changed",
-  /** Renderer → Main：设置 App 级远程访问总开关（T2.3 起，替代 Start/StopWebRemoteControl） */
+  /** Renderer → Main：设置 App 级远程访问总开关 */
   SetRemoteAccessEnabled: "zcode:set-remote-access-enabled",
   /** Renderer → Main：断开当前连接的手机，保持远程访问开关不变 */
   DisconnectRemoteClient: "zcode:disconnect-remote-client",
@@ -837,18 +830,6 @@ export interface PlatformChannelMap {
   };
   [PlatformChannels.BindRemoteWorkspaceSessionContext]: {
     request: BindRemoteWorkspaceSessionContextRequest;
-    response: void;
-  };
-  [PlatformChannels.StartWebRemoteControl]: {
-    request: WebRemoteControlContext;
-    response: WebRemoteControlStartOperationResult;
-  };
-  [PlatformChannels.ResetWebRemoteControlPairing]: {
-    request: WebRemoteControlContext;
-    response: WebRemoteControlStartOperationResult;
-  };
-  [PlatformChannels.StopWebRemoteControl]: {
-    request: void;
     response: void;
   };
   [PlatformChannels.GetWebRemoteControlStatus]: {

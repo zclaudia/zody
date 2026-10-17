@@ -428,13 +428,11 @@ const webRemoteControlAppPayloadSchemas = [
       "socket-error",
       "recover-start",
       "recover-scheduled",
-      "pair-status",
       "failure",
     ]),
     timestamp: z.number().int().nonnegative(),
     state: z.string().optional(),
     previousState: z.string().optional(),
-    pairStatus: z.enum(["waiting", "matched"]).optional(),
     closeCode: z.number().int().optional(),
     closeReason: z.string().optional(),
     wasClean: z.boolean().optional(),
@@ -449,7 +447,7 @@ const webRemoteControlAppPayloadSchemas = [
 
 // Bugfix: app payload 里多个消息共享 zcode_type（例如 platform-response），
 // 不能直接用 z.discriminatedUnion("zcode_type")，否则 schema 初始化会因重复值失败。
-// 这里保留同一批运行时约束，改用普通 union，让外部 relay 的不可信 payload
+// 这里保留同一批运行时约束，改用普通 union，让 gateway 链路的不可信 payload
 // 在进入 desktop/web 路由前仍然先被机械校验。
 export const webRemoteControlAppPayloadSchema = z.union(webRemoteControlAppPayloadSchemas);
 

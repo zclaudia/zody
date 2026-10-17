@@ -34,12 +34,20 @@ export function createWebPlatform(options?: {
    * 手机页面会显式检查能力是否存在，release 构建缺桥时拒绝保存凭证。
    */
   secureStore?: PlatformSecureStore;
+  /** 手机宿主的前后台事件（T6.2）；只有 Android 原生桥提供。 */
+  onAppLifecycleChange?: IPlatformService["onAppLifecycleChange"];
+  /** 手机宿主的返回键分发（T6.2）；只有 Android 原生桥提供。 */
+  onBackPressed?: IPlatformService["onBackPressed"];
 }): IPlatformService {
   const platformProxy = options?.externalWebRemoteControlProxy;
   const secureStore = options?.secureStore;
+  const onAppLifecycleChange = options?.onAppLifecycleChange;
+  const onBackPressed = options?.onBackPressed;
 
   return {
     ...(secureStore ? { secureStore } : {}),
+    ...(onAppLifecycleChange ? { onAppLifecycleChange } : {}),
+    ...(onBackPressed ? { onBackPressed } : {}),
     canSelectFilePath: false,
     // Web 端无法打开系统目录选择框
     selectDirectory: () => Promise.resolve(null),
@@ -85,12 +93,7 @@ export function createWebPlatform(options?: {
       };
     },
     cancelPendingRemoteConnection: (_requestId?: string) => Promise.resolve(),
-    // Web 端不作为 Web 远程控制的发起端，保留空实现以兼容统一接口。
-    startWebRemoteControl: () =>
-      Promise.reject(new Error("Web remote control can only be started from desktop")),
-    refreshWebRemoteControlPairing: () =>
-      Promise.reject(new Error("Web remote control pairing can only be refreshed from desktop")),
-    stopWebRemoteControl: () => Promise.resolve(),
+    // Web 端不作为远控发起端，只保留 App 级状态查询以兼容统一接口。
     getWebRemoteControlStatus: () =>
       Promise.resolve<WebRemoteControlStatus>({
         status: "idle",
