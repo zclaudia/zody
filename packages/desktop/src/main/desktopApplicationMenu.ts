@@ -3,9 +3,9 @@ import {
   DesktopCommandIds,
   desktopMenuMessageIds,
   getDesktopMenuMessage,
+  isDesktopAutoUpdateActive,
   isValidShortcutBinding,
   ZCODE_ENV,
-  ZCODE_PRODUCT_FLAVOR,
   type DesktopCommandId,
   type Locale,
 } from "@zcode/shared";
@@ -118,8 +118,9 @@ function buildApplicationMenuTemplate(options: {
                 label: getLabel(desktopMenuMessageIds.helpAbout),
                 click: () => void options.executeDesktopCommand(DesktopCommandIds.ShowAbout),
               },
-              // 更新入口跟随产品身份：Preview 禁用更新器，生产后端的 Preview 也不例外。
-              ...(ZCODE_PRODUCT_FLAVOR === "production"
+              // 更新入口只跟随唯一判定 isDesktopAutoUpdateActive()：production 身份且构建期
+              // 启用自动更新才显示；Preview 身份与 fork 构建一律隐藏（fork spec 规则 3）。
+              ...(isDesktopAutoUpdateActive()
                 ? [
                     {
                       id: CHECK_FOR_UPDATE_MENU_ID,
@@ -260,7 +261,7 @@ function buildApplicationMenuTemplate(options: {
                 label: getLabel(desktopMenuMessageIds.helpAbout),
                 click: () => void options.executeDesktopCommand(DesktopCommandIds.ShowAbout),
               },
-              ...(ZCODE_PRODUCT_FLAVOR === "production"
+              ...(isDesktopAutoUpdateActive()
                 ? [
                     {
                       id: CHECK_FOR_UPDATE_MENU_ID,

@@ -111,6 +111,20 @@ vi.mock("electron-updater", () => {
 
 const originalPlatform = process.platform;
 
+// 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；检查更新命令只读它。
+const autoUpdateState = vi.hoisted(() => ({ active: false }));
+
+vi.mock("@zcode/shared", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@zcode/shared")>()),
+  isDesktopAutoUpdateActive: () => autoUpdateState.active,
+}));
+
+const checkForUpdateMenuClickMock = vi.hoisted(() => vi.fn());
+
+vi.mock("../src/main/autoUpdater.js", () => ({
+  checkForUpdateMenuClick: checkForUpdateMenuClickMock,
+}));
+
 function stubProcessPlatform(platform: NodeJS.Platform): void {
   Object.defineProperty(process, "platform", {
     configurable: true,
@@ -128,6 +142,8 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     sessionFromPartitionMock.mockReset();
     sessionFromPartitionMock.mockReturnValue(codingPlanPartitionSession);
     codingPlanPartitionSession.clearStorageData.mockClear();
+    autoUpdateState.active = false;
+    checkForUpdateMenuClickMock.mockClear();
   });
 
   afterEach(() => {
@@ -513,6 +529,31 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     });
     expect(onDesktopZoomChanged).toHaveBeenCalledTimes(1);
     expect(onDesktopZoomChanged).toHaveBeenCalledWith(1);
+  });
+
+  it("检查更新命令只跟随自动更新判定放行，不再按产品身份拼条件", async () => {
+    // fork spec（阶段 2 细则「自动更新」规则 1 + 验收 7）：判定关闭时（fork 构建恒为关闭）
+    // 命令直接跳过；判定开启时才进入手动检查（其内部还有 fail-closed 闸）。
+    const { executeDesktopCommand } = await import("../src/main/desktopCommandHandlers.js");
+    const commandOptions = createCommandOptions();
+
+    await executeDesktopCommand({
+      ...commandOptions,
+      command: DesktopCommandIds.CheckForUpdates,
+    });
+
+    expect(checkForUpdateMenuClickMock).not.toHaveBeenCalled();
+    expect(commandOptions.logger.info).toHaveBeenCalledWith(
+      "[auto-update] 自动更新未生效，跳过手动更新检查",
+    );
+
+    autoUpdateState.active = true;
+    await executeDesktopCommand({
+      ...commandOptions,
+      command: DesktopCommandIds.CheckForUpdates,
+    });
+
+    expect(checkForUpdateMenuClickMock).toHaveBeenCalledTimes(1);
   });
 });
 

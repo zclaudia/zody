@@ -6235,6 +6235,12 @@ const zhCN: Record<string, string> = {
   // 反馈
   "feedback.center.title": "问题上报",
   "feedback.center.description": "描述问题即可，提交后可查看处理进展。",
+  // fork（F2.9）：反馈中心本地化后的面板文案；官方工单提交停用。
+  "feedback.center.localTitle": "问题反馈",
+  "feedback.center.localDescription":
+    "此版本不再向官方提交工单。可导出诊断日志，随你的反馈渠道一并提供；配置了反馈地址时可直接打开。",
+  "feedback.center.exportLogsAction": "导出诊断日志",
+  "feedback.center.openIssuePage": "打开反馈地址",
   "feedback.center.submitTitle": "提交反馈",
   "feedback.center.ticketsTitle": "我的反馈",
   "feedback.center.backToSubmit": "返回提交反馈",

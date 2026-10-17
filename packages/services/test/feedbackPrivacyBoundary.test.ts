@@ -1,9 +1,8 @@
-import { mkdtemp, readFile, rm, access } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, basename } from "node:path";
+import { join } from "node:path";
 import { createFeedbackService } from "../src/feedback/feedbackService.js";
-import type { IOAuthService } from "../src/oauth/oauth.js";
-import { getFeedbackAttachmentDir, setDataBaseDir } from "../src/paths.js";
+import { setDataBaseDir } from "../src/paths.js";
 import { describe, expect, it, vi } from "vitest";
 import { FeedbackHttpClient } from "../src/feedback/feedbackHttpClient.js";
 import type { ApiRequestInit } from "@zcode/shared";
@@ -70,33 +69,30 @@ describe("工单发送隐私边界", () => {
   });
 });
 
-it("附件文件名不能越出临时目录，上传后清理暂存数据", async () => {
+// fork（F2.9）：官方上传链路停用后，附件不再写临时目录、不再发起上传；
+// 隐私边界收敛为「拒绝且零网络请求」。反馈文本脱敏与归档隐私由
+// feedbackPrivacy.test.ts 与 compactLogArchive.test.ts 继续覆盖。
+it("工单附件上传在停用后直接拒绝，不写入暂存目录也不发请求", async () => {
   const root = await mkdtemp(join(tmpdir(), "feedback-attachment-privacy-"));
   setDataBaseDir(root);
-  let uploadedPath = "";
-  const upload = vi
-    .spyOn(FeedbackHttpClient.prototype, "uploadFile")
-    .mockImplementation(async (_id, _kind, path, filename) => {
-      uploadedPath = path;
-      expect(path.startsWith(getFeedbackAttachmentDir())).toBe(true);
-      expect(basename(path)).toBe("content");
-      expect(filename).toBe("private.png");
-      expect(await readFile(path, "utf8")).toBe("synthetic-image");
-      return { id: 1 } as Awaited<ReturnType<FeedbackHttpClient["uploadFile"]>>;
-    });
+  const request = vi.fn(async () => {
+    throw new Error("feedback service must not issue HTTP requests");
+  });
+  const upload = vi.spyOn(FeedbackHttpClient.prototype, "uploadFile");
+
   try {
     const service = createFeedbackService({
-      credentialService: { load: async () => null, save: async () => {}, delete: async () => {} },
-      oauthService: {} as IOAuthService,
-      apiClient: { request: vi.fn() },
+      apiClient: { request },
     });
-    await service.uploadAttachmentData("ticket", "image", {
-      filename: "../../private.png",
-      dataBase64: Buffer.from("synthetic-image").toString("base64"),
-      contentType: "image/png",
-    });
-    expect(upload).toHaveBeenCalledOnce();
-    await expect(access(uploadedPath)).rejects.toThrow();
+    await expect(
+      service.uploadAttachmentData("ticket", "image", {
+        filename: "../../private.png",
+        dataBase64: Buffer.from("synthetic-image").toString("base64"),
+        contentType: "image/png",
+      }),
+    ).rejects.toThrow(/停用/);
+    expect(upload).not.toHaveBeenCalled();
+    expect(request).not.toHaveBeenCalled();
   } finally {
     upload.mockRestore();
     setDataBaseDir(null);

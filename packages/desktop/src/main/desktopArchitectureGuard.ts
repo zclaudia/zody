@@ -1,9 +1,5 @@
 import type { BrowserWindow, NativeImage } from "electron";
-import {
-  DEFAULT_ZCODE_ENDPOINT_ORIGIN,
-  buildZCodeEndpointUrls,
-  type Locale,
-} from "@zcode/shared";
+import { ZCODE_DOWNLOAD_PAGE_URL, type Locale } from "@zcode/shared";
 
 export interface ArchitectureMismatch {
   /** 当前运行的二进制架构，例如 x64。 */
@@ -48,14 +44,10 @@ export function detectArchitectureMismatch(
   return { binaryArch, nativeArch: "arm64" };
 }
 
-export function resolveArchitectureDownloadUrl(
-  locale: Locale,
-  endpointOrigin = DEFAULT_ZCODE_ENDPOINT_ORIGIN,
-): string {
-  // 与 changelog 等外链保持一致，按应用语言分流到官网下载页。
-  const origin = buildZCodeEndpointUrls(endpointOrigin).origin;
-  return locale === "zh-CN" ? `${origin}/cn` : `${origin}/en`;
-}
+// fork（F2.5）：删除 resolveArchitectureDownloadUrl——它按应用语言拼官方下载页
+// （{origin}/cn、{origin}/en），fork 的手动升级入口统一改为构建期
+// ZCODE_DOWNLOAD_PAGE_URL（阶段 2 细则「强制升级 gate（删除）」规则 4），
+// 代码里不再出现官方下载页形式，下载页地址只由构建配置提供。
 
 interface ArchitectureMismatchDialogText {
   title: string;
@@ -101,7 +93,10 @@ export interface ArchitectureGuardLogger {
 }
 
 /**
- * 启动时检测架构是否匹配；若用户装了错误架构的版本，弹框提示其下载原生版本。
+ * 启动时检测架构是否匹配；若用户装了错误架构的版本，弹框说明情况。
+ * 「前往下载」仅在构建期配置了 ZCODE_DOWNLOAD_PAGE_URL 时显示，点击后用系统浏览器
+ * 打开该地址（fork 手动升级入口，阶段 2 细则「强制升级 gate（删除）」规则 4）；
+ * 未配置时弹框只做说明，不提供下载入口。
  * 非阻塞：检测命中后异步弹框，不影响主界面继续加载。
  */
 export async function maybeWarnArchitectureMismatch(options: {
@@ -109,10 +104,15 @@ export async function maybeWarnArchitectureMismatch(options: {
   logger: ArchitectureGuardLogger;
   parentWindow?: BrowserWindow | null;
   icon?: NativeImage;
+  /** 仅供测试注入，缺省读当前进程；语义与 detectArchitectureMismatch 的同名参数一致。 */
+  platform?: NodeJS.Platform;
+  binaryArch?: string;
 }): Promise<void> {
   const { app, dialog, shell } = await import("electron");
 
   const mismatch = detectArchitectureMismatch({
+    platform: options.platform,
+    binaryArch: options.binaryArch,
     runningUnderARM64Translation: app.runningUnderARM64Translation,
   });
   if (!mismatch) {
@@ -123,12 +123,19 @@ export async function maybeWarnArchitectureMismatch(options: {
     `[architecture] 检测到架构不匹配：运行 ${mismatch.binaryArch}，本机为 ${mismatch.nativeArch}（转译运行）`,
   );
 
+  // 构建期常量（经 define 注入，build-time-config 已做 https 校验与 trim）；空串表示未配置。
+  const downloadPageUrl = ZCODE_DOWNLOAD_PAGE_URL.trim();
   const text = formatArchitectureMismatchDialogText(mismatch, options.locale);
+  const buttons = downloadPageUrl
+    ? [text.downloadButton, text.dismissButton]
+    : // 未配置下载页：不显示「前往下载」，弹框只做说明。
+      [text.dismissButton];
   const dialogOptions = {
     type: "warning" as const,
-    buttons: [text.downloadButton, text.dismissButton],
+    buttons,
     defaultId: 0,
-    cancelId: 1,
+    // Esc/关闭落在「暂不处理」：配置了下载页时它是第 2 个按钮，未配置时是唯一按钮。
+    cancelId: buttons.length - 1,
     title: text.title,
     message: text.message,
     detail: text.detail,
@@ -140,9 +147,10 @@ export async function maybeWarnArchitectureMismatch(options: {
       ? await dialog.showMessageBox(options.parentWindow, dialogOptions)
       : await dialog.showMessageBox(dialogOptions);
 
-  if (response === 0) {
-    const url = resolveArchitectureDownloadUrl(options.locale);
-    options.logger.info(`[architecture] 用户选择前往下载：${url}`);
-    await shell.openExternal(url);
+  // 未配置 downloadPageUrl 时 buttons 只有一个「暂不处理」，response 恒为 0，
+  // 条件保证此时不会打开任何地址。
+  if (response === 0 && downloadPageUrl) {
+    options.logger.info(`[architecture] 用户选择前往下载：${downloadPageUrl}`);
+    await shell.openExternal(downloadPageUrl);
   }
 }

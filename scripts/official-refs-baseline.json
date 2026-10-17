@@ -93,7 +93,7 @@
   "packages/services/test/conversationShareImportService.test.ts": 4,
   "packages/services/test/conversationShareMockApiClient.test.ts": 2,
   "packages/services/test/conversationShareService.test.ts": 7,
-  "packages/services/test/feedbackHttpClient.test.ts": 27,
+  "packages/services/test/feedbackHttpClient.test.ts": 21,
   "packages/services/test/legacyPersonalProviderConfigImporter.test.ts": 1,
   "packages/services/test/nodeApiClient.test.ts": 2,
   "packages/services/test/nodeApiClientEndpoint.test.ts": 6,

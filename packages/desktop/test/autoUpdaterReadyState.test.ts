@@ -289,6 +289,48 @@ describe("autoUpdater ready state sync", () => {
     );
   });
 
+  it("自动更新禁用后，无窗口检查/通道刷新/下载/菜单检查四个入口都不触碰 updater（fail-closed）", async () => {
+    // fork spec（阶段 2 细则「自动更新」规则 2 + 验收 6）：initAutoUpdater({enabled:false})
+    // 之后，所有会调用 checkForUpdates 或下载的入口必须直接返回，不能对打包占位 feed
+    // （localhost:8081）发真实请求；且不注册更新相关 IPC。
+    const win = {
+      isDestroyed: () => false,
+      webContents: {
+        id: 10,
+        send: vi.fn(),
+      },
+    };
+    browserWindows.push(win);
+
+    const {
+      checkForUpdateMenuClick,
+      downloadAvailableUpdate,
+      initAutoUpdater,
+      refreshAutoUpdaterReleaseChannel,
+      requestAutoUpdateCheckWithoutWindow,
+    } = await import("../src/main/autoUpdater.js");
+
+    await initAutoUpdater({ enabled: false });
+    autoUpdaterMock.checkForUpdates.mockClear();
+    autoUpdaterMock.downloadUpdate.mockClear();
+    autoUpdaterMock.setFeedURL.mockClear();
+    ipcMainHandle.mockClear();
+    ipcMainOn.mockClear();
+
+    requestAutoUpdateCheckWithoutWindow("test-without-window");
+    await refreshAutoUpdaterReleaseChannel(true, "test channel refresh");
+    downloadAvailableUpdate("test-download");
+    checkForUpdateMenuClick(win as never);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(autoUpdaterMock.checkForUpdates).not.toHaveBeenCalled();
+    expect(autoUpdaterMock.downloadUpdate).not.toHaveBeenCalled();
+    expect(autoUpdaterMock.setFeedURL).not.toHaveBeenCalled();
+    expect(ipcMainHandle).not.toHaveBeenCalled();
+    expect(ipcMainOn).not.toHaveBeenCalled();
+  });
+
   it("Linux arm64 主更新检查默认使用服务端 manifest provider", async () => {
     mockProcessPlatform("linux");
     process.env["TEST_UPDATER_ARCH"] = "arm64";

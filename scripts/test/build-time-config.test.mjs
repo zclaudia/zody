@@ -22,6 +22,7 @@ test("没有私有默认配置也没有环境变量时能力全部关闭、下�
     telemetryReportEndpoint: "",
     autoUpdateEnabled: false,
     downloadPageUrl: "",
+    feedbackIssueUrl: "",
   });
 });
 
@@ -35,6 +36,7 @@ test("私有默认配置启用 ARMS 与事件上报", async () => {
     telemetryReportEndpoint: "https://report.example.com/event",
     autoUpdateEnabled: false,
     downloadPageUrl: "",
+    feedbackIssueUrl: "",
   });
 });
 
@@ -52,10 +54,7 @@ test("私有默认配置把 ZCODE_AUTO_UPDATE 配为真值时直接报错", asyn
 
 test("环境变量 ZCODE_AUTO_UPDATE=1 时直接报错并指向阶段 2 细则", async () => {
   await assert.rejects(
-    resolveBuildTimeConfig(
-      { ZCODE_AUTO_UPDATE: "1" },
-      { defaultsPath: join(dir, "missing.json") },
-    ),
+    resolveBuildTimeConfig({ ZCODE_AUTO_UPDATE: "1" }, { defaultsPath: join(dir, "missing.json") }),
     /specs\/fork-official-backend-runtime-dependencies\.md/,
   );
 });
@@ -80,6 +79,7 @@ test("环境变量优先于私有默认配置，显式空字符串关闭单项�
     telemetryReportEndpoint: "https://other.example.com/event",
     autoUpdateEnabled: false,
     downloadPageUrl: "",
+    feedbackIssueUrl: "",
   });
 });
 
@@ -126,6 +126,43 @@ test("ZCODE_DOWNLOAD_PAGE_URL 非法 URL 构建失败", async () => {
   );
 });
 
+// fork（F2.9）：问题反馈地址与下载页共用同一校验规则；未配置为空串，反馈入口不显示。
+test("ZCODE_FEEDBACK_ISSUE_URL 合法 https 地址按配置返回", async () => {
+  const config = await resolveBuildTimeConfig(
+    { ZCODE_FEEDBACK_ISSUE_URL: " https://example.com/feedback " },
+    { defaultsPath: join(dir, "missing.json") },
+  );
+  assert.equal(config.feedbackIssueUrl, "https://example.com/feedback");
+});
+
+test("ZCODE_FEEDBACK_ISSUE_URL 非 loopback 的 http 地址构建失败", async () => {
+  await assert.rejects(
+    resolveBuildTimeConfig(
+      { ZCODE_FEEDBACK_ISSUE_URL: "http://example.com/issues" },
+      { defaultsPath: join(dir, "missing.json") },
+    ),
+    /ZCODE_FEEDBACK_ISSUE_URL 必须是完整 https URL/,
+  );
+});
+
+test("ZCODE_FEEDBACK_ISSUE_URL loopback 允许 http，仅用于本机测试", async () => {
+  const config = await resolveBuildTimeConfig(
+    { ZCODE_FEEDBACK_ISSUE_URL: "http://127.0.0.1:3000/issues" },
+    { defaultsPath: join(dir, "missing.json") },
+  );
+  assert.equal(config.feedbackIssueUrl, "http://127.0.0.1:3000/issues");
+});
+
+test("ZCODE_FEEDBACK_ISSUE_URL 非法 URL 构建失败", async () => {
+  await assert.rejects(
+    resolveBuildTimeConfig(
+      { ZCODE_FEEDBACK_ISSUE_URL: "not a url" },
+      { defaultsPath: join(dir, "missing.json") },
+    ),
+    /ZCODE_FEEDBACK_ISSUE_URL 不是合法 URL/,
+  );
+});
+
 test("私有默认配置格式错误时直接报错，不静默关闭", async () => {
   const defaultsPath = await writeDefaults("broken.json", "[1]");
   await assert.rejects(resolveBuildTimeConfig({}, { defaultsPath }), /必须是 JSON 对象/);
@@ -138,12 +175,14 @@ test("define 以 JSON 字面量注入", () => {
       telemetryReportEndpoint: "",
       autoUpdateEnabled: true,
       downloadPageUrl: "https://example.com/download",
+      feedbackIssueUrl: "https://example.com/feedback",
     }),
     {
       __ZCODE_ARMS_RUM_ENDPOINT__: '"https://rum.example.com/x"',
       __ZCODE_TELEMETRY_REPORT_ENDPOINT__: '""',
       __ZCODE_AUTO_UPDATE_ENABLED__: "true",
       __ZCODE_DOWNLOAD_PAGE_URL__: '"https://example.com/download"',
+      __ZCODE_FEEDBACK_ISSUE_URL__: '"https://example.com/feedback"',
     },
   );
 });

@@ -1,7 +1,15 @@
 import { createElement } from "react";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+// 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；Windows 标题栏菜单入口只读它。
+const autoUpdateState = vi.hoisted(() => ({ active: false }));
+
+vi.mock("@zcode/shared", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@zcode/shared")>()),
+  isDesktopAutoUpdateActive: () => autoUpdateState.active,
+}));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
   useZCodeIntl: () => ({
@@ -107,6 +115,10 @@ vi.mock("@/hooks/usePlatform.js", () => ({
 }));
 
 describe("WindowsCaptionMenuButton", () => {
+  afterEach(() => {
+    autoUpdateState.active = false;
+  });
+
   async function renderButton(
     triggerPresentation?: "header" | "header-borderless",
     useWindowsCaptionSpacing = false,
@@ -166,15 +178,20 @@ describe("WindowsCaptionMenuButton", () => {
     expect(html).not.toContain("titleBar.menu.help.toggleBulkSessionStressTest");
   });
 
-  it("Preview 隐藏更新入口，生产版继续保留", async () => {
+  it("自动更新未生效时隐藏更新入口，生效时出现", async () => {
     const { shouldShowDesktopUpdateEntry } = await import("@/WindowsCaptionMenuButton.js");
 
-    // 更新入口跟随产品身份：生产后端的 Preview 同样隐藏。
-    expect(shouldShowDesktopUpdateEntry("preview")).toBe(false);
-    expect(shouldShowDesktopUpdateEntry("production")).toBe(true);
-
-    const html = await renderButton("header");
+    // fork spec（阶段 2 细则「自动更新」规则 3 + 验收 7）：入口只随唯一判定显隐，
+    // 不再按产品身份单独判断；fork 构建判定恒为 false。
+    autoUpdateState.active = false;
+    expect(shouldShowDesktopUpdateEntry()).toBe(false);
+    let html = await renderButton("header");
     expect(html).not.toContain("titleBar.menu.help.checkForUpdates");
+
+    autoUpdateState.active = true;
+    expect(shouldShowDesktopUpdateEntry()).toBe(true);
+    html = await renderButton("header");
+    expect(html).toContain("titleBar.menu.help.checkForUpdates");
   });
 
   it("includes help actions migrated from the shared question-mark menu", async () => {

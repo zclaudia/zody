@@ -48,6 +48,12 @@
 - 规则（F2.2）：必须为合法 https URL（本地 loopback 允许 http）。
 - 在 F2.2 合入前，本项无需配置；合入后若不配置，「前往下载」按钮不显示（fail-closed，不回退到 upstream 下载页）。
 
+### ZCODE_FEEDBACK_ISSUE_URL（可选，F2.9 起生效）
+
+- fork 问题反馈地址：反馈中心已本地化（决策门 D7：停用官方工单提交），面板只提供「导出诊断日志」与本地址入口。
+- 规则与 `ZCODE_DOWNLOAD_PAGE_URL` 相同：必须为合法 https URL（本地 loopback 允许 http）；未配置时「打开反馈地址」按钮不显示，反馈中心仅剩本地导出日志能力。
+- 建议指向 fork 仓库的 Issues 页（如 `https://github.com/<org>/<repo>/issues`）。
+
 ## 禁止项（fork 构建不得配置）
 
 以下变量配置后会向构建产物中注入官方上报或自动更新能力，fork 构建一律保持未配置状态。fork 仓库不存在 `config/private/build-defaults.json`（内部仓库文件），因此「不设置环境变量」即为关闭，无其他回落来源。

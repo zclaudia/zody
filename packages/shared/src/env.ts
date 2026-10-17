@@ -12,6 +12,7 @@ declare const __ZCODE_ARMS_RUM_ENDPOINT__: string;
 declare const __ZCODE_TELEMETRY_REPORT_ENDPOINT__: string;
 declare const __ZCODE_AUTO_UPDATE_ENABLED__: boolean;
 declare const __ZCODE_DOWNLOAD_PAGE_URL__: string;
+declare const __ZCODE_FEEDBACK_ISSUE_URL__: string;
 
 export function normalizeZCodeEnv(value: string | undefined): ZCodeEnv {
   return value?.trim().toLowerCase() === "production" ? "production" : "test";
@@ -67,6 +68,14 @@ export const ZCODE_AUTO_UPDATE_ENABLED: boolean =
  */
 export const ZCODE_DOWNLOAD_PAGE_URL: string =
   typeof __ZCODE_DOWNLOAD_PAGE_URL__ !== "undefined" ? __ZCODE_DOWNLOAD_PAGE_URL__ : "";
+
+/**
+ * fork 问题反馈地址（构建期 ZCODE_FEEDBACK_ISSUE_URL，经 define 注入，运行时只读）。
+ * fork（F2.9，决策门 D7）：官方工单提交已停用，反馈入口只保留「导出诊断日志」与
+ * 该外部反馈地址；为空表示未配置，消费方不展示对应入口。
+ */
+export const ZCODE_FEEDBACK_ISSUE_URL: string =
+  typeof __ZCODE_FEEDBACK_ISSUE_URL__ !== "undefined" ? __ZCODE_FEEDBACK_ISSUE_URL__ : "";
 
 /**
  * 桌面自动更新是否生效：production 安装身份且构建期启用自动更新，两者缺一不可。

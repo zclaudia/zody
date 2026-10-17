@@ -2,9 +2,9 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 /**
- * 桌面构建期可选能力的唯一解析入口：ARMS RUM 上报、事件上报、自动更新、下载页地址。
+ * 桌面构建期可选能力的唯一解析入口：ARMS RUM 上报、事件上报、自动更新、下载页地址、fork 反馈地址。
  * 优先级：构建进程环境变量 > config/private/build-defaults.json（仅内部仓库存在）> 关闭。
- * 规则见 docs/desktop/build-time-optional-capabilities.md 与
+ * 规则见 docs/desktop/build-time-optional-capabilities.md、docs/fork/build.md 与
  * specs/fork-official-backend-runtime-dependencies.md（fork 自动更新护栏与下载页地址）。
  */
 export const PRIVATE_BUILD_DEFAULTS_PATH = resolve(
@@ -44,22 +44,22 @@ function isLoopbackHostname(hostname) {
 }
 
 /**
- * 构建期校验下载页地址（阶段 2 细则「强制升级 gate（删除）」规则 4）：
+ * 构建期校验对外页面地址（下载页、fork 问题反馈页共用同一规则）：
  * 必须是完整 https URL；仅 loopback 允许 http（用于本机测试），防止打包构建带上明文外链。
- * 未配置返回空串，消费方（如架构不匹配弹框）据此不展示下载入口。
+ * 未配置返回空串，消费方据此不展示对应入口。
  */
-function resolveDownloadPageUrl(value) {
+function resolveExternalPageUrl(value, envName) {
   if (!value) return "";
   let parsed;
   try {
     parsed = new URL(value);
   } catch {
-    throw new Error(`ZCODE_DOWNLOAD_PAGE_URL 不是合法 URL：${value}`);
+    throw new Error(`${envName} 不是合法 URL：${value}`);
   }
   const httpAllowedForLoopback = parsed.protocol === "http:" && isLoopbackHostname(parsed.hostname);
   if (parsed.protocol !== "https:" && !httpAllowedForLoopback) {
     throw new Error(
-      `ZCODE_DOWNLOAD_PAGE_URL 必须是完整 https URL（仅 loopback 允许 http，仅用于本机测试）：${value}`,
+      `${envName} 必须是完整 https URL（仅 loopback 允许 http，仅用于本机测试）：${value}`,
     );
   }
   return value;
@@ -84,7 +84,16 @@ export async function resolveBuildTimeConfig(
     telemetryReportEndpoint: pickValue(env, defaults, "ZCODE_TELEMETRY_REPORT_ENDPOINT"),
     // 上方护栏保证此处恒为 false；运行时由 @zcode/shared 的 isDesktopAutoUpdateActive() 统一判定
     autoUpdateEnabled: false,
-    downloadPageUrl: resolveDownloadPageUrl(pickValue(env, defaults, "ZCODE_DOWNLOAD_PAGE_URL")),
+    downloadPageUrl: resolveExternalPageUrl(
+      pickValue(env, defaults, "ZCODE_DOWNLOAD_PAGE_URL"),
+      "ZCODE_DOWNLOAD_PAGE_URL",
+    ),
+    // fork（F2.9，决策门 D7）：反馈本地化后，官方工单提交停用，反馈入口改为
+    // 「导出日志 + 打开 fork 问题反馈地址」；地址未配置时入口不显示。
+    feedbackIssueUrl: resolveExternalPageUrl(
+      pickValue(env, defaults, "ZCODE_FEEDBACK_ISSUE_URL"),
+      "ZCODE_FEEDBACK_ISSUE_URL",
+    ),
   };
 }
 
@@ -94,5 +103,6 @@ export function createBuildTimeConfigDefines(config) {
     __ZCODE_TELEMETRY_REPORT_ENDPOINT__: JSON.stringify(config.telemetryReportEndpoint),
     __ZCODE_AUTO_UPDATE_ENABLED__: JSON.stringify(config.autoUpdateEnabled),
     __ZCODE_DOWNLOAD_PAGE_URL__: JSON.stringify(config.downloadPageUrl),
+    __ZCODE_FEEDBACK_ISSUE_URL__: JSON.stringify(config.feedbackIssueUrl),
   };
 }

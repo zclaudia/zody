@@ -5,13 +5,13 @@ import {
   buildZCodeEndpointUrls,
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   DesktopCommandIds,
+  isDesktopAutoUpdateActive,
   REWARDS_PARTITION,
   TEST_ZCODE_ENDPOINT_ORIGIN,
   normalizeZCodeEndpointOrigin,
   PlatformChannels,
   resolveZCodeEndpointOrigin,
   ZCODE_ENV,
-  ZCODE_PRODUCT_FLAVOR,
   type AppSettings,
   type DesktopCommandId,
   type HelpAppConfig,
@@ -522,11 +522,13 @@ export async function executeDesktopCommand(options: {
       );
       return;
     case DesktopCommandIds.CheckForUpdates:
-      // 按产品身份而不是后端环境放行：生产后端的 Preview 同样没有更新器。
-      if (ZCODE_PRODUCT_FLAVOR === "production") {
+      // 更新命令只跟随唯一判定 isDesktopAutoUpdateActive()（fork spec「自动更新」规则 1）：
+      // 菜单/托盘/标题栏入口已随判定隐藏，这里不再按产品身份单独拼条件；
+      // checkForUpdateMenuClick 内部还有 assertAutoUpdaterActive() 作为最后一道闸。
+      if (isDesktopAutoUpdateActive()) {
         checkForUpdateMenuClick(targetWindow);
       } else {
-        options.logger.info("[auto-update] Preview 已禁用手动更新检查");
+        options.logger.info("[auto-update] 自动更新未生效，跳过手动更新检查");
       }
       return;
     case DesktopCommandIds.RelaunchApp:

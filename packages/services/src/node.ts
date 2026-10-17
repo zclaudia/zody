@@ -1131,9 +1131,8 @@ export function createLocalServices(options: {
   forwardDynamicWorkflowUserMode?: (mode: DynamicWorkflowMode | undefined) => void;
   /** Desktop Host 请求 Main 登记已校验的插件 UI HTML，换取沙箱句柄。 */
   registerPluginSandbox?: (input: PluginSandboxRegisterInput) => Promise<PluginSandboxHandle>;
-  feedback?: Partial<
-    Omit<CreateFeedbackServiceOptions, "apiClient" | "credentialService" | "oauthService">
-  >;
+  /** fork（F2.9）：反馈本地化后只剩本地归档与展示回调，可在宿主侧覆盖。 */
+  feedback?: CreateFeedbackServiceOptions;
   processLifecycleReporter?: RuntimeProcessLifecycleReporter;
   taskRuntimeReporter?: RuntimeTaskReporter;
   /** workspace 文件搜索默认使用内置过滤器；后续规则来源只需在 Host 装配时注入最终实现。 */
@@ -2635,11 +2634,10 @@ export function createLocalServices(options: {
     .register(ISettingsSyncService, createSettingsSyncService({ settingService }))
     .register(
       IFeedbackService,
+      // fork（F2.9）：官方工单提交停用，feedback 不再注入 apiClient/credential/oauth，
+      // 服务只保留本地日志归档与历史工单读取能力。
       createFeedbackService({
         ...options?.feedback,
-        apiClient,
-        credentialService,
-        oauthService,
       }),
     )
     .register(IPromptAttachmentTransferService, createLocalPromptAttachmentTransferService());

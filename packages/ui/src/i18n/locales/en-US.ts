@@ -6529,6 +6529,12 @@ const enUS: Record<string, string> = {
   // Feedback
   "feedback.center.title": "Feedback",
   "feedback.center.description": "Describe the issue and track progress after submitting.",
+  // fork (F2.9): copy for the localized feedback panel; official ticket submission is disabled.
+  "feedback.center.localTitle": "Feedback",
+  "feedback.center.localDescription":
+    "This build no longer submits tickets to the official service. Export diagnostic logs to attach through your own feedback channel, or open the feedback page when configured.",
+  "feedback.center.exportLogsAction": "Export diagnostic logs",
+  "feedback.center.openIssuePage": "Open feedback page",
   "feedback.center.submitTitle": "Submit feedback",
   "feedback.center.ticketsTitle": "My feedback",
   "feedback.center.backToSubmit": "Back to submit feedback",

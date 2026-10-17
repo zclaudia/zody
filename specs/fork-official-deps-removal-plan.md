@@ -108,7 +108,7 @@ flowchart TD
 - **2.0 强制升级 gate 整体删除**（D1）：fork 采用手动更新，自动更新在 fork 构建中恒关；细则见原 spec「强制升级 gate（删除）」。
 - **2.2 营销触达**（`marketingTouchService.ts`，`/api/v1/marketing/touch`）本阶段直接关闭（对应原 spec 待决 4 的推荐项）。按原则 6，优先以构建期/配置开关关闭，不删代码。
 - **2.3 设备与来源标识**：
-  - 反馈工单（`feedbackService.ts:39-44`、`feedbackHttpClient.ts:424-443`）：已核实 Main 不下发 `feedbackApiBase`（`desktopHostProcess.ts:80` 只有类型定义），未配 `ZCODE_FEEDBACK_API_BASE` 时回落 `buildRuntimeZCodeApiUrl(env, "/api/v1")` 即官方地址。本阶段改为「未配置即关闭反馈提交入口」，停发设备标识。
+  - 反馈工单（`feedbackService.ts:39-44`、`feedbackHttpClient.ts:424-443`）：已核实 Main 不下发 `feedbackApiBase`（`desktopHostProcess.ts:80` 只有类型定义），未配 `ZCODE_FEEDBACK_API_BASE` 时回落 `buildRuntimeZCodeApiUrl(env, "/api/v1")` 即官方地址。**D7 已决（2026-10-17）：按推荐执行——`feedbackHttpClient` 不再被装配，官方工单提交整体停用（非仅「未配置即关闭」）；反馈入口改为「导出诊断日志 + 打开 fork 问题反馈地址（构建期 `ZCODE_FEEDBACK_ISSUE_URL`，未配置不显示）」；`feedbackService` 不再依赖 `oauthService`/`credentialService`/`apiClient`；本地 ticket store 收敛为只读，任何反馈负载不再携带 `device_mid`。**
   - provider API 请求头（`zcode-source-headers.ts:46-57`，经 `nodeApiClient.ts:126` 发往**所有** provider）：停发 `X-Device-Mid`，`HTTP-Referer`、`X-Title` 改为 fork 自有值或不发（原阶段 3 第 3 项移到这里，因为它是行为变化）。按 D2 路线 B，发往官方主机的计费链不再保留，官方账号 provider 在阶段 4 第 1 步摘除。
   - 远控二维码 `mid`（`web-remote-control.ts:287-289`）由阶段 5 处理；购买页注入（`codingPlanEmbeddedWebview.ts:258`）由阶段 4 处理。
 - **2.4 灰度开关本地默认值**（D1b 已决）：fork 不再请求官方 `/api/v1/client/configs`，各开关取本地固定值——桌面上下文提示**开**、渲染端动作追踪**关**、动态工作流**提供且默认 `onDemand`**（用户可在设置改）、闲时任务**关并随阶段 4 删除**。理由与所有者见原 spec「灰度开关的本地默认值（D1b）」。
@@ -250,7 +250,7 @@ flowchart TD
 | D5    | fork 产品名、appId、域名、渠道、签名证书                    | 阶段 7 前          | —                                                                            |
 | D-XDM | 设备与来源标识停发范围                                      | 阶段 2             | 全部停发（D2 路线 B 不保留官方计费链）                                       |
 | D6    | 会话分享：移除，或自建分享服务                              | 阶段 4（F4.8）前   | 移除（发布、导入、分享落地页）；需要时另立 spec                              |
-| D7    | 反馈：保留哪些                                              | 阶段 2（F2.9）前   | 去掉官方提交，保留「导出诊断日志」本地能力                                   |
+| D7    | 反馈：保留哪些                                              | 阶段 2（F2.9）前   | 已决（2026-10-17）：去掉官方提交，保留「导出诊断日志」本地能力               |
 | D-CI  | CI 平台                                                     | 阶段 1（F1.4）前   | GitHub Actions                                                               |
 
 ## 风险

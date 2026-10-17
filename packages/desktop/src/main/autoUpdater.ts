@@ -159,6 +159,25 @@ function canUseAutoUpdaterInCurrentRuntime(): boolean {
   return app.isPackaged || isDevAutoUpdateEnabled();
 }
 
+/**
+ * 自动更新入口的统一 fail-closed 闸（fork spec「自动更新」规则 2 与验收 6）。
+ * 更新器未激活（本 flavor 禁用，或未打包且未开开发态更新）时返回 false，
+ * 入口必须直接返回，不得触碰 electron-updater：未初始化的实例仍带着打包占位 feed
+ * （localhost:8081），任何漏网调用都会对它发真实请求。模块内唯一实现，
+ * 各入口不再各自复制条件；仅 requestForceAutoUpdate（随强更 gate 删除，见 F2.4）暂不经过此闸。
+ */
+function assertAutoUpdaterActive(reason: string): boolean {
+  if (autoUpdaterDisabledForProductFlavor) {
+    logger.info(`[auto-update] skip ${reason}: updater disabled for this product flavor`);
+    return false;
+  }
+  if (!canUseAutoUpdaterInCurrentRuntime()) {
+    logger.info(`[auto-update] skip ${reason}: not packaged`);
+    return false;
+  }
+  return true;
+}
+
 function shouldRelaunchForDevAutoUpdateInstall(): boolean {
   return !app.isPackaged && isDevAutoUpdateEnabled();
 }
@@ -1227,8 +1246,7 @@ async function clearSkippedUpdateVersionForManualCheck(
 }
 
 export function downloadAvailableUpdate(reason = "renderer") {
-  if (!canUseAutoUpdaterInCurrentRuntime()) {
-    logger.info(`[auto-update] skip ${reason} download: not packaged`);
+  if (!assertAutoUpdaterActive(`${reason} download`)) {
     return;
   }
 
@@ -1400,8 +1418,7 @@ export function refreshAutoUpdaterReleaseChannel(
 ) {
   const nextChannel: ElectronReleaseChannel = receivePreviewUpdates ? "preview" : "stable";
 
-  if (!canUseAutoUpdaterInCurrentRuntime()) {
-    logger.info(`[auto-update] skip ${reason}: not packaged`);
+  if (!assertAutoUpdaterActive(reason)) {
     return;
   }
 
@@ -1933,8 +1950,7 @@ export function requestForceAutoUpdate(
 export function requestAutoUpdateCheckWithoutWindow(reason = "force-update") {
   logger.info(`[auto-update] ${reason}: user requested update check without renderer window`);
 
-  if (!canUseAutoUpdaterInCurrentRuntime()) {
-    logger.info(`[auto-update] skip ${reason}: not packaged`);
+  if (!assertAutoUpdaterActive(reason)) {
     return;
   }
 
@@ -1987,17 +2003,9 @@ export function checkForUpdateMenuClick(originWindow?: BrowserWindow | null) {
     return;
   }
 
-  if (!canUseAutoUpdaterInCurrentRuntime()) {
-    logger.info("[auto-update] skip manual check: not packaged");
-    targetWindow.webContents.send(PlatformChannels.UpdateCheckResult, {
-      kind: "dev-skipped",
-    } satisfies UpdateCheckResultPayload);
-    return;
-  }
-
-  if (autoUpdaterDisabledForProductFlavor) {
-    // 入口本应已按产品身份隐藏；这里是最后一道闸，不让未初始化的 updater 实例向占位 feed 发请求。
-    logger.info("[auto-update] skip manual check: updater disabled for this product flavor");
+  if (!assertAutoUpdaterActive("manual check")) {
+    // 入口本应已按 isDesktopAutoUpdateActive() 隐藏；这里是最后一道闸，
+    // 不让未初始化的 updater 实例向占位 feed 发请求，同时给 renderer 一个可关闭弹窗的反馈。
     targetWindow.webContents.send(PlatformChannels.UpdateCheckResult, {
       kind: "dev-skipped",
     } satisfies UpdateCheckResultPayload);
