@@ -199,10 +199,22 @@ const AMBIENT_TOOL_PASSTHROUGH_ENV_KEYS = new Set([
 const AMBIENT_PACKAGE_MANAGER_PROXY_ENV_PATTERN =
   /^(npm_config|yarn|pnpm)_(http_proxy|https_proxy|proxy|all_proxy|no_proxy|cafile|ca)$/i;
 
+// Bugfix: buildHostProcessEnv 会把 process.env 叠在用例显式入参之上（readDefinedProcessEnv 后展开），
+// 宿主机若导出 CUA dev Helper 相关变量（例如从桌面 App 内打开的终端会带上
+// ZCODE_CUA_BUNDLED_HELPER_APP_PATH 指向已安装应用的 Resources），会覆盖用例传入的
+// hostProcessLocalEnv，使免签 dev bundle 断言随宿主机环境漂移。这三个键是 dev 分支的
+// 全部环境输入，按上方 ambient 清理口径一并隔离并在 afterAll 恢复。
+const AMBIENT_CUA_DEV_ENV_KEYS = new Set([
+  "ZCODE_CUA_BUNDLED_HELPER_APP_PATH",
+  "ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL",
+  "ZCODE_HOME",
+]);
+
 function isAmbientHostEnvKey(key: string): boolean {
   const upperKey = key.toUpperCase();
   return (
     AMBIENT_TOOL_PASSTHROUGH_ENV_KEYS.has(upperKey) ||
+    AMBIENT_CUA_DEV_ENV_KEYS.has(upperKey) ||
     upperKey.startsWith("OTEL_") ||
     upperKey.startsWith("ZCODE_TELEMETRY_") ||
     // 在 ZCode 桌面进程拉起的终端里跑测试时，Host 会继承 ZCODE_CUA_*（例如打包态的

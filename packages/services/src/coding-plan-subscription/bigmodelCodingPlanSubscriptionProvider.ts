@@ -9,7 +9,6 @@ import type {
   ApiClient,
   ApiRequestInit,
   RequestVerificationConfig,
-  ForceUpdateConfig,
   CodingPlanAgreementResponse,
   CodingPlanBatchPreviewRequest,
   CodingPlanBatchPreviewResponse,
@@ -159,7 +158,6 @@ interface ZCodeClientConfigEnvelope {
   data?: {
     configs?:
       | (RequestVerificationClientConfig & {
-          forceUpdate?: ForceUpdateConfig | null;
           codingPlanBillingDiscount?: CodingPlanBillingDiscountConfig;
           codingPlanStaticProducts?: CodingPlanStaticProductsConfig;
           codingPlanStaticTeamProducts?: CodingPlanStaticTeamProductsConfig;
@@ -473,11 +471,6 @@ export class BigModelCodingPlanSubscriptionProvider {
 
   async getRequestVerificationConfig(): Promise<RequestVerificationConfig | null> {
     return readRequestVerificationConfig((await this.getClientConfigs()).data?.configs);
-  }
-
-  async getForceUpdateConfig(): Promise<ForceUpdateConfig | null> {
-    const payload = await this.getClientConfigs();
-    return unwrapClientConfigForceUpdate(payload);
   }
 
   async preview(request: CodingPlanPreviewRequest): Promise<CodingPlanPreviewResponse> {
@@ -1429,26 +1422,6 @@ function unwrapClientConfigStartPlanPreview(
     name: preview.name,
     entitlements: preview.entitlements.filter(isValidStartPlanPreviewEntitlement),
   };
-}
-
-function unwrapClientConfigForceUpdate(
-  payload: ZCodeClientConfigEnvelope,
-): ForceUpdateConfig | null {
-  if (payload.code !== undefined && payload.code !== 0) {
-    throw new Error(payload.msg?.trim() || "ZCode client config request failed");
-  }
-
-  const forceUpdate = payload.data?.configs?.forceUpdate;
-  if (!forceUpdate) {
-    return null;
-  }
-
-  const minimalVersion = forceUpdate.minimalVersion;
-  if (typeof minimalVersion !== "string" || minimalVersion.trim() === "") {
-    return null;
-  }
-
-  return { minimalVersion: minimalVersion.trim() };
 }
 
 function isValidStartPlanPreviewEntitlement(

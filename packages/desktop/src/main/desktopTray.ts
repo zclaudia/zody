@@ -4,7 +4,7 @@ import {
   DesktopCommandIds,
   desktopMenuMessageIds,
   getDesktopMenuMessage,
-  ZCODE_PRODUCT_FLAVOR,
+  isDesktopAutoUpdateActive,
   type DesktopCommandId,
   type Locale,
 } from "@zcode/shared";
@@ -83,8 +83,9 @@ export function createDesktopTray(options: {
           click: () => executeTrayCommand(DesktopCommandIds.OpenWorkspace),
         },
         { type: "separator" },
-        // 更新入口跟随产品身份：Preview（含生产后端的 Preview）禁用更新器，托盘也不能露出入口。
-        ...(ZCODE_PRODUCT_FLAVOR === "production"
+        // 更新入口只跟随唯一判定 isDesktopAutoUpdateActive()：production 身份且构建期启用
+        // 自动更新才显示；Preview 身份与 fork 构建一律隐藏，托盘也不能露出入口。
+        ...(isDesktopAutoUpdateActive()
           ? [
               {
                 label: getLabel(desktopMenuMessageIds.helpCheckForUpdates),

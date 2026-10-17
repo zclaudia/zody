@@ -232,6 +232,12 @@ export { createFsVolumeProbe } from "./storage/adapters/volumeProbe.js";
 export { runStorageScan } from "./storage/adapters/inProcessScanRunner.js";
 export { createCodingPlanSubscriptionService } from "./coding-plan-subscription/codingPlanSubscriptionService.js";
 export { createClientConfigService } from "./client-config/clientConfigService.js";
+// fork（F2.6b）：client-config 本地值的公开入口（desktop 远程装配等宿主侧消费）。
+export {
+  resolveLocalDynamicWorkflowClientConfig,
+  resolveLocalRequestVerificationConfig,
+  LOCAL_MODEL_CONTEXT_BUDGET_STRATEGY,
+} from "./client-config/localClientConfig.js";
 export { createClientScenesService } from "./client-scenes/clientScenesService.js";
 export { createSkillsService } from "./skills/skillsService.js";
 export { createSkillSyncService } from "./skill-sync/skillSyncService.js";
@@ -432,6 +438,7 @@ import { createUsageStatsService } from "./usage-stats/usageStatsService.js";
 import { createCodingPlanSubscriptionService } from "./coding-plan-subscription/codingPlanSubscriptionService.js";
 import { createClientConfigService } from "./client-config/clientConfigService.js";
 import { IClientConfigService } from "./client-config/clientConfig.js";
+import { resolveLocalDynamicWorkflowClientConfig } from "./client-config/localClientConfig.js";
 import { createClientScenesService } from "./client-scenes/clientScenesService.js";
 import { createSkillsService } from "./skills/skillsService.js";
 import { createSkillSyncService } from "./skill-sync/skillSyncService.js";
@@ -1131,9 +1138,8 @@ export function createLocalServices(options: {
   forwardDynamicWorkflowUserMode?: (mode: DynamicWorkflowMode | undefined) => void;
   /** Desktop Host 请求 Main 登记已校验的插件 UI HTML，换取沙箱句柄。 */
   registerPluginSandbox?: (input: PluginSandboxRegisterInput) => Promise<PluginSandboxHandle>;
-  feedback?: Partial<
-    Omit<CreateFeedbackServiceOptions, "apiClient" | "credentialService" | "oauthService">
-  >;
+  /** fork（F2.9）：反馈本地化后只剩本地归档与展示回调，可在宿主侧覆盖。 */
+  feedback?: CreateFeedbackServiceOptions;
   processLifecycleReporter?: RuntimeProcessLifecycleReporter;
   taskRuntimeReporter?: RuntimeTaskReporter;
   /** workspace 文件搜索默认使用内置过滤器；后续规则来源只需在 Host 装配时注入最终实现。 */
@@ -1980,6 +1986,15 @@ export function createLocalServices(options: {
       return buildOffPeakModelSelectionView(providerRuntime.registryService.getView());
     },
   });
+  // fork（F2.6b）：本地动态工作流 offer 解析（env 三档覆盖 + 用户设置叠加），
+  // agent 策略与 client-config 服务消费同一份，避免出现「策略一个答案、界面另一个答案」。
+  const resolveLocalDynamicWorkflowOfferConfig = () =>
+    resolveLocalDynamicWorkflowClientConfig({
+      env: process.env,
+      ...(resolveDynamicWorkflowUserMode
+        ? { resolveUserMode: resolveDynamicWorkflowUserMode }
+        : {}),
+    });
   // OffPeakTaskService 单例在下方 DI register IIFE 中创建（晚于 agent service）；
   // 用前向引用 holder 惰性绑定——offPeak/create 协议请求只会发生在服务集合装配完成后。
   let offPeakTaskServiceForAgent: OffPeakTaskService | undefined;
@@ -1999,11 +2014,12 @@ export function createLocalServices(options: {
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
     authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
     ...offPeakToolWiring,
-    // 动态工作流灰度：与 Off-Peak 不同，
-    // 这里不按 serviceAuthorityMode 裁剪——SSH/WSL/Docker 的 desktop-attached-remote Host
-    // 是它自己那些 workspace 的唯一裁决者，灰度开启时远程 workspace 同样提供工作流。
-    resolveDynamicWorkflowClientConfig: () =>
-      codingPlanSubscriptionService.getDynamicWorkflowClientConfig(),
+    // fork（F2.6b）：动态工作流 offer 改由本地模块提供（细则 D1b：固定 onDemand、来源 default，
+    // ZCODE_DYNAMIC_WORKFLOW_MODE 三档覆盖不变，叠加用户设置），不再经订阅服务读远端。
+    // 与 Off-Peak 不同：这里不按 serviceAuthorityMode 裁剪——SSH/WSL/Docker 的
+    // desktop-attached-remote Host 是它自己那些 workspace 的唯一裁决者，
+    // 灰度开启时远程 workspace 同样提供工作流。
+    resolveDynamicWorkflowClientConfig: resolveLocalDynamicWorkflowOfferConfig,
     ...(resolveDynamicWorkflowUserMode ? { resolveDynamicWorkflowUserMode } : {}),
     forwardDynamicWorkflowUserMode: options?.forwardDynamicWorkflowUserMode,
     commandResolver: options?.zcodeAgentCommandResolver,
@@ -2425,15 +2441,12 @@ export function createLocalServices(options: {
       }),
     )
     .register(ICodingPlanSubscriptionService, codingPlanSubscriptionService)
+    // fork（F2.6b）：client-config 服务改纯本地实现，不再请求 /api/v1/client/configs；
+    // 动态工作流 offer 与 zcodeAgentService 同源（localClientConfig + 设置权威）。
     .register(
       IClientConfigService,
       createClientConfigService({
-        apiClient,
-        resolveRequestContext: async () => ({
-          endpointOrigin: await resolveCurrentZCodeEndpointOrigin(),
-          appVersion: ZCODE_VERSION,
-          platform: `${process.platform}-${process.arch}`,
-        }),
+        resolveDynamicWorkflowClientConfig: resolveLocalDynamicWorkflowOfferConfig,
       }),
     )
     .register(IClientScenesService, createClientScenesService({ apiClient }))
@@ -2635,11 +2648,10 @@ export function createLocalServices(options: {
     .register(ISettingsSyncService, createSettingsSyncService({ settingService }))
     .register(
       IFeedbackService,
+      // fork（F2.9）：官方工单提交停用，feedback 不再注入 apiClient/credential/oauth，
+      // 服务只保留本地日志归档与历史工单读取能力。
       createFeedbackService({
         ...options?.feedback,
-        apiClient,
-        credentialService,
-        oauthService,
       }),
     )
     .register(IPromptAttachmentTransferService, createLocalPromptAttachmentTransferService());

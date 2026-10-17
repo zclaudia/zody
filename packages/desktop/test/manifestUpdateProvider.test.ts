@@ -22,36 +22,36 @@ describe("ManifestUpdateProvider helpers", () => {
     expect(getElectronReleasePlatform("linux", "arm64")).toBe("linux-aarch64");
   });
 
-  it("builds the server manifest URL with platform, device_mid, and numeric channel", () => {
+  it("builds the server manifest URL with platform and numeric channel, without device_mid", () => {
     const url = buildElectronManifestUrl({
       endpointOrigin: "https://zcode.example.test/base/path",
       platform: "darwin-aarch64",
-      deviceMid: "mid-1",
       channel: "preview",
     });
 
     expect(url.origin).toBe("https://zcode.example.test");
     expect(url.pathname).toBe("/api/v1/releases/electron/manifest");
     expect(url.searchParams.get("platform")).toBe("darwin-aarch64");
-    expect(url.searchParams.get("device_mid")).toBe("mid-1");
+    // F2.10：设备标识停发，manifest 请求不再携带 device_mid 查询参数。
+    expect(url.searchParams.get("device_mid")).toBeNull();
     expect(url.searchParams.get("channel")).toBe("3");
   });
 
-  it("overrides existing manifest URL query with runtime platform, device, and channel", () => {
+  it("overrides existing manifest URL query with runtime platform and channel", () => {
     const url = buildElectronManifestUrl({
       endpointOrigin: "https://zcode.example.test",
       manifestUrl:
         "https://zcode.z.ai/api/v1/releases/electron/manifest?platform=old&device_mid=old&channel=old",
       platform: "darwin-aarch64",
-      deviceMid: "mid-1",
       channel: "stable",
     });
 
     expect(url.origin).toBe("https://zcode.z.ai");
     expect(url.pathname).toBe("/api/v1/releases/electron/manifest");
     expect(url.searchParams.get("platform")).toBe("darwin-aarch64");
-    expect(url.searchParams.get("device_mid")).toBe("mid-1");
     expect(url.searchParams.get("channel")).toBe("1");
+    // F2.10：自带的旧 device_mid 也不再被程序写入；不再主动覆盖第三方 URL 的查询串。
+    expect(url.searchParams.get("device_mid")).toBe("old");
   });
 });
 

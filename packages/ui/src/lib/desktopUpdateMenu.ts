@@ -1,14 +1,10 @@
-import {
-  ZCODE_PRODUCT_FLAVOR,
-  type ZCodeProductFlavor,
-  type UpdateStatePayload,
-} from "@zcode/shared";
+import { isDesktopAutoUpdateActive, type UpdateStatePayload } from "@zcode/shared";
 
-// 更新入口跟随产品身份而不是后端环境：Preview 身份（含生产后端的 Preview）禁用更新器。
-export function shouldShowDesktopUpdateEntry(
-  flavor: ZCodeProductFlavor = ZCODE_PRODUCT_FLAVOR,
-): boolean {
-  return flavor === "production";
+// 更新入口只跟随唯一判定 isDesktopAutoUpdateActive()（fork spec「自动更新」规则 1/3）：
+// production 安装身份且构建期启用自动更新才显示。Preview 身份与 fork 构建都直接隐藏入口，
+// 不再按产品身份单独拼条件，也不能只依赖 main 进程点击后的 fail-closed 兜底。
+export function shouldShowDesktopUpdateEntry(): boolean {
+  return isDesktopAutoUpdateActive();
 }
 
 export function getUpdateMenuLabelId(state: UpdateStatePayload | null) {

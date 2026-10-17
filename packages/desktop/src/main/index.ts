@@ -13,10 +13,6 @@ import {
 import armsRum from "@arms/rum-electron";
 import { createArmsUserIdentitySync } from "./armsUserIdentity.js";
 import { ensureDesktopDeviceMidSync } from "./desktopDeviceMid.js";
-import {
-  createDesktopContextPromptRollout,
-  createElectronDesktopContextPromptConfigFetcher,
-} from "./desktopContextPromptRollout.js";
 import { buildBrowserViewCloseTabNotification } from "./browserView/browserCloseTabNotification.js";
 import { BrowserGuestManager } from "./browserView/browserGuestManager.js";
 import { createElectronBrowserWebmRecorder } from "./browserView/electronBrowserWebmRecorder.js";
@@ -72,6 +68,7 @@ import {
   ZCODE_PRODUCT_FLAVOR,
   ZCODE_AUTO_UPDATE_ENABLED,
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
+  DISABLED_RENDERER_ACTION_TRACE_CONFIG,
   DEFAULT_LOCALE,
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   TEST_ZCODE_ENDPOINT_ORIGIN,
@@ -106,7 +103,8 @@ import { createAppTelemetryRuntime } from "./appTelemetryRuntime.js";
 import { createRendererActionTraceBroker } from "./rendererActionTraceBroker.js";
 import { createRendererActionTraceExporter } from "./rendererActionTraceExporter.js";
 import { registerRendererActionTraceIpc } from "./rendererActionTraceIpc.js";
-import { createRendererActionTraceRollout } from "./rendererActionTraceRollout.js";
+// fork（F2.6a）：只复用 rollout 的形状类型；实现文件按任务要求保留（同步友好），不再装配。
+import type { RendererActionTraceRollout } from "./rendererActionTraceRollout.js";
 import {
   resolveAppShutdownPolicy,
   selectAppShutdownPolicy,
@@ -141,7 +139,6 @@ import { applyAppIcon } from "./desktopWindowChrome.js";
 import { resolveWindowsAppUserModelIdForFlavor } from "../../scripts/desktop-product-identity.mjs";
 import type { DesktopWindowSize } from "./desktopWindowSize.js";
 import { maybeWarnArchitectureMismatch } from "./desktopArchitectureGuard.js";
-import { maybeBlockStartupForForceUpdate } from "./forceUpdateGuard.js";
 import { createDesktopTray, updateWindowsDesktopTrayMenu } from "./desktopTray.js";
 import {
   createCloseToTrayCapabilityMonitor,
@@ -757,52 +754,6 @@ async function resolveCurrentZCodeEndpointOrigin() {
     overrideOrigin: (await mainSettingService.get()).zcodeEndpointOrigin,
   });
 }
-let desktopContextPromptRollout: ReturnType<typeof createDesktopContextPromptRollout> | undefined;
-function resolveDesktopContextPromptEnabledForHost(): boolean {
-  const rollout = desktopContextPromptRollout;
-  if (!rollout) {
-    return false;
-  }
-  // Host 创建时顺便触发过期刷新，但只读取当前快照；网络请求不能阻塞 Local/Remote Host。
-  void rollout.refresh();
-  return rollout.getSnapshot().enabled;
-}
-
-// 首个 Host 创建前的有界灰度裁决门。Host/Agent 的 presentation surface 在进程启动时
-// 冻结（services/node.ts 顶层 const + CLI --surface），而灰度请求是旁路、不阻塞 Host。若首个
-// Host fork 早于请求 resolve，成功结果（enabled:true）对已冻结的 Host/Agent 无可达生效路径。
-// 这里给"成功结果"一条有界的生效路径：首 Host fork 前 await 一次裁决（≤2s），失败/超时仍按当前
-// 快照继续（desktopContextPrompt fail-open）。first-only 永久
-// latch——后续 Host fork await 已 resolve 的 promise（近乎 0ms），且各 resolve*ForHost()
-// 同步读取已被刷新的 live 快照。
-const DESKTOP_FIRST_HOST_SPAWN_DECISION_TIMEOUT_MS = 2_000;
-let firstHostSpawnDecisionPromise: Promise<void> | null = null;
-function awaitFirstHostSpawnDecision(): Promise<void> {
-  if (firstHostSpawnDecisionPromise) {
-    return firstHostSpawnDecisionPromise;
-  }
-  firstHostSpawnDecisionPromise = (async () => {
-    const rollout = desktopContextPromptRollout;
-    if (!rollout) {
-      return;
-    }
-    try {
-      const decision = await rollout.awaitFirstDecision(
-        DESKTOP_FIRST_HOST_SPAWN_DECISION_TIMEOUT_MS,
-      );
-      logger.info("[desktop-context-prompt] first host spawn decision resolved", {
-        enabled: decision.enabled,
-        configVersion: decision.configVersion,
-      });
-    } catch (error) {
-      // awaitFirstDecision 永不 reject（refresh 内部已 catch + timeout 回退快照），此处仅兜底。
-      logger.warn("[desktop-context-prompt] first host spawn decision failed, fail-open", {
-        error,
-      });
-    }
-  })();
-  return firstHostSpawnDecisionPromise;
-}
 const appTelemetryCore = createTelemetryCore({
   loadUserId: createTelemetryUserIdLoader(appTelemetryCredentialService),
   loadAuthorization: createTelemetryAuthorizationLoader(appTelemetryCredentialService),
@@ -873,27 +824,18 @@ const webRemoteControlSharedHostAttachments = createWebRemoteControlSharedHostAt
   logger,
 });
 const deviceMid = ensureDesktopDeviceMidSync();
-// 帮助配置是公开读取，不能复用下面附带账号鉴权的灰度响应缓存。
-const readHelpConfig = createDesktopHelpConfigReader({
-  appVersion: ZCODE_VERSION || app.getVersion(),
-  deviceMid,
-  resolveEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
-});
-// 同一个 /api/v1/client/configs fetcher 供两个灰度 rollout 共用（请求参数与鉴权完全一致，
-// 各自独立缓存/去重，服务端按 data.configs.<key> 区分功能）。
-const electronClientConfigsFetcher = createElectronDesktopContextPromptConfigFetcher({
-  appVersion: ZCODE_VERSION || app.getVersion(),
-  deviceMid,
-  resolveEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
-});
-desktopContextPromptRollout = createDesktopContextPromptRollout({
-  fetchConfig: electronClientConfigsFetcher,
-  logger,
-});
-const rendererActionTraceRollout = createRendererActionTraceRollout({
-  fetchConfig: electronClientConfigsFetcher,
-  logger,
-});
+// fork（F2.7）：帮助与社群配置只读内置 config/default.json，不再构造/请求远端
+// /api/v1/client/configs（原实现附带 X-Device-Mid 等设备标识，且官方可改写反馈与社群入口）。
+const readHelpConfig = createDesktopHelpConfigReader();
+// fork（F2.6a，spec D1b）：渲染端动作追踪属于遥测，fork 无自有 OTLP 端点，固定禁用。
+// 不再构造 /api/v1/client/configs 的 fetchConfig，也不经 singleFeatureRollout 读远端；
+// 保留 rollout 形状以复用 registerRendererActionTraceIpc 的装配与本地 env 调试覆盖
+// （ZCODE_RENDERER_ACTION_TRACE_ENABLED / ZCODE_LOCAL_TTFT_ENABLED）。
+const rendererActionTraceRollout: RendererActionTraceRollout = {
+  getSnapshot: () => ({ ...DISABLED_RENDERER_ACTION_TRACE_CONFIG }),
+  refresh: async () => ({ ...DISABLED_RENDERER_ACTION_TRACE_CONFIG }),
+  awaitFirstDecision: async () => ({ ...DISABLED_RENDERER_ACTION_TRACE_CONFIG }),
+};
 const localTtftExporter = createLocalTtftExporter({
   env: { ...hostProcessLocalEnv, ...process.env },
   version: ZCODE_VERSION || app.getVersion(),
@@ -1031,7 +973,6 @@ const webRemoteControlManager = createWebRemoteControlManager({
   getRecentProjects: async () => (await mainSettingService.get()).recentProjects ?? [],
   // 只把主应用窗口算作「有窗口」：更新进度窗口不是可接收 OpenWorkspacePath 的主界面。
   hasOpenWindow: () => getMainApplicationWindows().length > 0,
-  canCreateWindow: canCreateMainWindow,
   ensurePrimaryWindow: (reason) => primaryWindowCoordinator.ensurePrimaryWindow(reason),
   openWorkspacePath: (workspacePath) =>
     // 内部请求：只把路径投递给 renderer 的 OpenWorkspacePath 通道，不经过
@@ -1043,8 +984,6 @@ const webRemoteControlManager = createWebRemoteControlManager({
 });
 webRemoteControlManagerRef.current = webRemoteControlManager;
 
-let forceUpdateMainWindowCreationBlocked = false;
-
 function resolveExternalWorkspaceConfirmationCopy() {
   const effectiveLocale =
     currentApplicationLocale === DEFAULT_LOCALE && app.isReady()
@@ -1053,32 +992,8 @@ function resolveExternalWorkspaceConfirmationCopy() {
   return resolveExternalWorkspaceOpenDialogCopy(effectiveLocale);
 }
 
-function focusForceUpdateGateWindow() {
-  const gateWindow = getApplicationWindowsExcludingCuaIndicator()[0];
-  if (!gateWindow) {
-    return;
-  }
-
-  if (gateWindow.isMinimized()) {
-    gateWindow.restore();
-  }
-  if (!gateWindow.isVisible()) {
-    gateWindow.show();
-  }
-  gateWindow.focus();
-}
-
-// 强制升级命中后，Dock/托盘/activate/deep link 与手机远控都不能绕过 app-ready gate 创建旧版主界面。
-// 提取成函数是为了让 webRemoteControlManager 的桌面窗口打开请求共享同一个 gate。
-function canCreateMainWindow(reason: string): boolean {
-  if (!forceUpdateMainWindowCreationBlocked) {
-    return true;
-  }
-
-  logger.warn(`[force-update] 已阻止主窗口创建入口：${reason}`);
-  focusForceUpdateGateWindow();
-  return false;
-}
+// fork(D1)：强制升级 gate 已整体删除，不再有 canCreateMainWindow/focusForceUpdateGateWindow
+// 进程级闸门；manager 与 coordinator 的可选 canCreateWindow 钩子保持未注入状态。
 
 const primaryWindowCoordinator = createPrimaryWindowCoordinator({
   listWindows: getApplicationWindowsExcludingCuaIndicator,
@@ -1106,7 +1021,6 @@ const primaryWindowCoordinator = createPrimaryWindowCoordinator({
   createWindow: (startupBootstrap) => {
     createWindowInstance(startupBootstrap);
   },
-  canCreateWindow: canCreateMainWindow,
   logger,
 });
 
@@ -1559,7 +1473,7 @@ async function executeDesktopCommandForApp(
   senderWindow?: BrowserWindow | null,
 ) {
   return executeDesktopCommand({
-    fetchHelpConfig: readHelpConfig,
+    readHelpConfig,
     command,
     senderWindow,
     logger,
@@ -1915,7 +1829,6 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
       }),
     windowHostProcessMap,
     onHostProcessReady: (windowKey) => cuaPipFocusRouter.refreshWindow(windowKey),
-    awaitFirstHostSpawnDecision,
     spawnHostProcess: (win, label, initMessage) =>
       spawnHostProcess(
         win,
@@ -1926,7 +1839,6 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
         },
         {
           hostProcessLocalEnv,
-          desktopContextPromptEnabled: resolveDesktopContextPromptEnabledForHost,
           logger,
           broadcastHub,
           taskRealtimeBus,
@@ -2089,11 +2001,6 @@ registerDeepLinkProtocol(logger, { iconPath: linuxDesktopIntegrationIconPath });
 app.on("open-url", (event, url) => {
   event.preventDefault();
   const workspacePath = extractOpenWorkspacePathFromDeepLinkUrl(url);
-  if (workspacePath && forceUpdateMainWindowCreationBlocked) {
-    logger.warn("[force-update] 已忽略强制升级期间的 open-url workspace 请求");
-    focusForceUpdateGateWindow();
-    return;
-  }
   if (workspacePath && getApplicationWindowsExcludingCuaIndicator().length === 0) {
     // macOS 冷启动 Finder Service 会先触发 open-url，再创建首窗。
     // 把目标目录按 deep link 来源记录，首窗 bootstrap 前仍要走确认 gate。
@@ -2117,8 +2024,6 @@ app.on("second-instance", (_event, argv, _workingDirectory, additionalData) => {
     handleSecondInstanceWorkspaceRequest({
       additionalData,
       argv,
-      focusForceUpdateGateWindow,
-      forceUpdateBlocked: forceUpdateMainWindowCreationBlocked,
       handleDeepLink: (url, options) => handleDeepLink(url, logger, options),
       handleOpenWorkspacePath: (path, options) =>
         handleOpenWorkspacePath(path, logger, {
@@ -2129,7 +2034,6 @@ app.on("second-instance", (_event, argv, _workingDirectory, additionalData) => {
             (() => getApplicationWindowsExcludingCuaIndicator()[0] ?? null),
         }),
       resolveApplicationWindow: () => getApplicationWindowsExcludingCuaIndicator()[0] ?? null,
-      logger,
       workspaceConfirmationCopy: resolveExternalWorkspaceConfirmationCopy(),
     })
   ) {
@@ -2171,8 +2075,6 @@ app.whenReady().then(async () => {
       ? { registryMaxEntries: Number(process.env.ZCODE_E2E_PLUGIN_SANDBOX_MAX_ENTRIES) }
       : {}),
   });
-  // Electron 的 net.request 只能在 app ready 后使用；灰度请求仍是旁路预热，不阻塞首个 Host。
-  void desktopContextPromptRollout?.refresh();
   installBrowserRestoreBootstrapProtocol(
     session.fromPartition(EMBEDDED_BROWSER_PARTITION).protocol,
   );
@@ -2377,7 +2279,7 @@ app.whenReady().then(async () => {
   }
 
   registerPlatformIpcHandlers({
-    fetchHelpConfig: readHelpConfig,
+    readHelpConfig,
     logger,
     // CDP-on-guest pivot：renderer `<webview>` dom-ready 上报 guest webContentsId → attach。
     attachBrowserGuest: (key, webContentsId, options) => {
@@ -2604,33 +2506,9 @@ app.whenReady().then(async () => {
   });
   registerDesktopNetworkTelemetry(logger);
 
-  // 本地未打包 dev 构建（app.isPackaged === false）必须跳过远端强制升级 gate。
-  // 原因：force-update gate 只看 ZCODE_ENV === "production"，但 dev 构建（如 dev:desktop:cua
-  // 连真实后端测 computer use）虽指向 production 后端，版本号却滞后于线上 release（feature
-  // 分支不 bump 版本），会被 release minimalVersion 误判为"需强制升级"而启动秒退。force-update
-  // 是面向打包发布客户端的安全门，对未打包 dev 运行时无意义。打包版 app.isPackaged === true，
-  // gate 照常生效，对真实用户零影响。
-  const skipForceUpdateForLocalDevRuntime = !app.isPackaged;
-  const forceUpdateGuardResult =
-    ZCODE_PRODUCT_FLAVOR === "production" && !skipForceUpdateForLocalDevRuntime
-      ? await maybeBlockStartupForForceUpdate({
-          locale: currentApplicationLocale,
-          logger,
-          endpointOrigin: await resolveCurrentZCodeEndpointOrigin(),
-          onBlocked: () => {
-            forceUpdateMainWindowCreationBlocked = true;
-          },
-        })
-      : { blocked: false };
-  if (ZCODE_PRODUCT_FLAVOR !== "production") {
-    logger.info("[force-update] Preview 跳过远端强制升级检查");
-  } else if (skipForceUpdateForLocalDevRuntime) {
-    logger.info("[force-update] 本地 dev 构建（未打包）跳过远端强制升级检查");
-  }
-  if (forceUpdateGuardResult.blocked) {
-    return;
-  }
-
+  // fork（D1）已整体删除强制升级 gate：app ready 后不再有任何同步等待网络的步骤，直接创建主窗口。
+  // 原因：官方后端可通过 client/configs 的 minimalVersion 让打包版客户端拒绝启动，fork 的可用性
+  // 不得依赖任何官方端点的响应内容（specs/fork-official-backend-runtime-dependencies.md「产品规则」）。
   logger.info("[startup] 创建主窗口");
   await primaryWindowCoordinator.ensurePrimaryWindow("app-ready");
 

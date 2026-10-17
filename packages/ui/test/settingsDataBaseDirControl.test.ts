@@ -36,6 +36,14 @@ vi.mock("react", async () => {
   };
 });
 
+// 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；「接收预览更新」设置只读它。
+const autoUpdateState = vi.hoisted(() => ({ active: true }));
+
+vi.mock("@zcode/shared", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@zcode/shared")>()),
+  isDesktopAutoUpdateActive: () => autoUpdateState.active,
+}));
+
 vi.mock("@/components/lib/utils.js", () => ({
   cn: (...values: Array<string | false | null | undefined>) => values.filter(Boolean).join(" "),
 }));
@@ -241,6 +249,7 @@ describe("GeneralSectionContent data directory control", () => {
     capturedButtons.length = 0;
     capturedInputs.length = 0;
     capturedSwitches.length = 0;
+    autoUpdateState.active = true;
   });
 
   afterEach(() => {
@@ -252,6 +261,25 @@ describe("GeneralSectionContent data directory control", () => {
 
     expect(capturedInputs.some((input) => input.readOnly === true)).toBe(true);
     expect(findButton("保存")?.disabled).toBe(true);
+  });
+
+  it("自动更新未生效时隐藏「接收预览更新」设置，生效时出现", async () => {
+    // fork spec（阶段 2 细则「自动更新」规则 3 + 验收 7）：判定关闭时设置项直接消失；
+    // 已有的 receivePreviewUpdates 持久值保留不读取。
+    autoUpdateState.active = false;
+    await renderGeneralSection({ receivePreviewUpdates: true });
+    expect(
+      capturedSwitches.some(
+        (entry) => entry["aria-label"] === "settings.receivePreviewUpdates",
+      ),
+    ).toBe(false);
+
+    autoUpdateState.active = true;
+    await renderGeneralSection({ receivePreviewUpdates: true });
+    const previewSwitch = capturedSwitches.find(
+      (entry) => entry["aria-label"] === "settings.receivePreviewUpdates",
+    );
+    expect(previewSwitch?.checked).toBe(true);
   });
 
   it("ModelIO 全量保留默认关闭，并通过标准设置开关提交", async () => {

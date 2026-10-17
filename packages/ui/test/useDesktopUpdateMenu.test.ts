@@ -1,13 +1,16 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DesktopCommandIds, type UpdateStatePayload } from "@zcode/shared";
 import { useDesktopUpdateMenu } from "@/hooks/useDesktopUpdateMenu.js";
 import { getUpdateMenuLabelId, getUpdateMenuLabelValues } from "@/lib/desktopUpdateMenu.js";
 
+// 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；更新入口显隐只读它。
+const autoUpdateState = vi.hoisted(() => ({ active: true }));
+
 vi.mock("@zcode/shared", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@zcode/shared")>()),
-  ZCODE_PRODUCT_FLAVOR: "production",
+  isDesktopAutoUpdateActive: () => autoUpdateState.active,
 }));
 
 const mocks = vi.hoisted(() => ({
@@ -97,6 +100,9 @@ afterEach(() => {
   root = undefined;
   vi.clearAllMocks();
 });
+beforeEach(() => {
+  autoUpdateState.active = true;
+});
 
 describe("帮助菜单更新状态", () => {
   it("实时检查状态不被较晚返回的 idle 快照覆盖，并在卸载时取消订阅", async () => {
@@ -131,6 +137,16 @@ describe("帮助菜单更新状态", () => {
 
   it("Web 不查询或订阅桌面更新状态", () => {
     mount(false);
+    expect(latest.visible).toBe(false);
+    expect(mocks.platform.getUpdateState).not.toHaveBeenCalled();
+    expect(mocks.platform.onUpdateStateChanged).not.toHaveBeenCalled();
+  });
+
+  it("自动更新未生效时隐藏入口且不查询或订阅更新状态", () => {
+    // fork spec（阶段 2 细则「自动更新」规则 3 + 验收 7）：判定关闭时入口直接消失，
+    // 不能只依赖 main 进程点击后的 fail-closed 兜底。
+    autoUpdateState.active = false;
+    mount(true);
     expect(latest.visible).toBe(false);
     expect(mocks.platform.getUpdateState).not.toHaveBeenCalled();
     expect(mocks.platform.onUpdateStateChanged).not.toHaveBeenCalled();

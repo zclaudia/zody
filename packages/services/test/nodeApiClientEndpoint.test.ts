@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_ZCODE_ENDPOINT_ORIGIN } from "@zcode/shared";
 import { setDataBaseDir } from "../src/paths.js";
 import { createNodeApiClient } from "../src/providers/api/nodeApiClient.js";
-import { buildZCodeSourceHeaders, ZCODE_SOURCE_HEADERS } from "../src/providers/sourceHeaders.js";
+import { buildZCodeSourceHeaders } from "../src/providers/sourceHeaders.js";
 
 describe("NodeApiClient endpoint rewriting", () => {
   const tempDirs: string[] = [];
@@ -49,10 +49,12 @@ describe("NodeApiClient endpoint rewriting", () => {
 
     const zcodeHeaders = new Headers(fetchImpl.mock.calls[0]?.[1]?.headers);
     expect(zcodeHeaders.get("User-Agent")).toMatch(/^ZCode\//);
-    expect(zcodeHeaders.get("X-Title")).toBe(ZCODE_SOURCE_HEADERS["X-Title"]);
+    // F2.10：来源标识（HTTP-Referer/X-Title）默认不发，设备标识（X-Device-Mid）停发。
+    expect(zcodeHeaders.get("X-Title")).toBeNull();
+    expect(zcodeHeaders.get("X-Device-Mid")).toBeNull();
     expect(zcodeHeaders.get("X-OpenRouter-Title")).toBeNull();
     expect(zcodeHeaders.get("X-OpenRouter-Categories")).toBeNull();
-    expect(zcodeHeaders.get("HTTP-Referer")).toBe("https://zcode.z.ai");
+    expect(zcodeHeaders.get("HTTP-Referer")).toBeNull();
     expect(zcodeHeaders.get("X-App-Version")).toBeNull();
     expect(zcodeHeaders.get("X-ZCode-App-Version")).toBeTruthy();
     expect(zcodeHeaders.get("X-Platform")).toBe(`${process.platform}-${process.arch}`);
@@ -82,7 +84,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     await client.request(`${DEFAULT_ZCODE_ENDPOINT_ORIGIN}/api/v1/oauth/token`, {
       headers: {
         "User-Agent": "CustomAgent/1.0",
-        "X-Device-Mid": "caller-device-mid",
+        "X-Custom-Client-Ref": "caller-ref",
         "X-Title": "Custom Title",
         Authorization: "Bearer token",
       },
@@ -91,17 +93,18 @@ describe("NodeApiClient endpoint rewriting", () => {
     const headers = new Headers(fetchImpl.mock.calls[0]?.[1]?.headers);
     expect(headers.get("User-Agent")).toBe("CustomAgent/1.0");
     expect(headers.get("X-Title")).toBe("Custom Title");
+    expect(headers.get("X-Custom-Client-Ref")).toBe("caller-ref");
     expect(headers.get("X-OpenRouter-Title")).toBeNull();
     expect(headers.get("X-OpenRouter-Categories")).toBeNull();
     expect(headers.get("Authorization")).toBe("Bearer token");
-    expect(headers.get("X-Device-Mid")).toBe("caller-device-mid");
-    expect(headers.get("HTTP-Referer")).toBe("https://zcode.z.ai");
+    expect(headers.get("X-Device-Mid")).toBeNull();
+    expect(headers.get("HTTP-Referer")).toBeNull();
     expect(headers.get("x-request-id")).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     );
   });
 
-  it("给当前 zcode endpoint 请求补既有 deviceMid header", async () => {
+  it("telemetry-state.json 存在 deviceMid 时也不注入 X-Device-Mid", async () => {
     const dataBaseDir = mkdtempSync(join(tmpdir(), "zcode-device-mid-"));
     tempDirs.push(dataBaseDir);
     setDataBaseDir(dataBaseDir);
@@ -122,49 +125,21 @@ describe("NodeApiClient endpoint rewriting", () => {
     await client.request(`${DEFAULT_ZCODE_ENDPOINT_ORIGIN}/api/v1/client/configs`);
 
     const headers = new Headers(fetchImpl.mock.calls[0]?.[1]?.headers);
-    expect(headers.get("X-Device-Mid")).toBe("device-mid-1");
-  });
-
-  it.each([
-    { name: "state 文件缺失", content: null },
-    { name: "state JSON 损坏", content: "{" },
-    { name: "deviceMid 为空字符串", content: JSON.stringify({ deviceMid: "" }) },
-    { name: "deviceMid 含不可打印字符", content: JSON.stringify({ deviceMid: "mid\n1" }) },
-  ])("$name 时不注入 deviceMid header", async ({ content }) => {
-    const dataBaseDir = mkdtempSync(join(tmpdir(), "zcode-device-mid-invalid-"));
-    tempDirs.push(dataBaseDir);
-    setDataBaseDir(dataBaseDir);
-    const configDir = join(dataBaseDir, ".zcode", "v2");
-    mkdirSync(configDir, { recursive: true });
-    if (content !== null) {
-      writeFileSync(join(configDir, "telemetry-state.json"), content, "utf-8");
-    }
-
-    const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
-    const client = createNodeApiClient({
-      fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => "https://zcode.z.ai",
-    });
-
-    await client.request(`${DEFAULT_ZCODE_ENDPOINT_ORIGIN}/api/v1/client/configs`);
-
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
-    const headers = new Headers(fetchImpl.mock.calls[0]?.[1]?.headers);
+    // F2.10：设备标识停发，来源头构造不再读取 telemetry-state.json。
     expect(headers.get("X-Device-Mid")).toBeNull();
   });
 
   it("统一来源 headers 支持可控的客户端上下文字段", () => {
-    expect(
-      buildZCodeSourceHeaders({
-        appVersion: "2.14.0",
-        arch: "arm64",
-        clientLanguage: "zh-CN",
-        clientTimezone: "Asia/Shanghai",
-        osVersion: "Darwin 25.0.0",
-        platform: "darwin",
-        releaseChannel: "production",
-      }),
-    ).toMatchObject({
+    const headers = buildZCodeSourceHeaders({
+      appVersion: "2.14.0",
+      arch: "arm64",
+      clientLanguage: "zh-CN",
+      clientTimezone: "Asia/Shanghai",
+      osVersion: "Darwin 25.0.0",
+      platform: "darwin",
+      releaseChannel: "production",
+    });
+    expect(headers).toMatchObject({
       "X-Platform": "darwin-arm64",
       "X-Release-Channel": "production",
       "X-Client-Language": "zh-CN",
@@ -173,5 +148,8 @@ describe("NodeApiClient endpoint rewriting", () => {
       "X-Os-Version": "Darwin 25.0.0",
       "X-ZCode-App-Version": "2.14.0",
     });
+    expect(headers).not.toHaveProperty("X-Device-Mid");
+    expect(headers).not.toHaveProperty("HTTP-Referer");
+    expect(headers).not.toHaveProperty("X-Title");
   });
 });

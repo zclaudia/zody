@@ -5,24 +5,20 @@ import {
   buildZCodeEndpointUrls,
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   DesktopCommandIds,
+  isDesktopAutoUpdateActive,
   REWARDS_PARTITION,
   TEST_ZCODE_ENDPOINT_ORIGIN,
-  getCommunityUrlFromConfigs,
-  getFeedbackUrlFromConfig,
   normalizeZCodeEndpointOrigin,
   PlatformChannels,
-  resolveHelpAppConfig,
   resolveZCodeEndpointOrigin,
   ZCODE_ENV,
-  ZCODE_PRODUCT_FLAVOR,
   type AppSettings,
   type DesktopCommandId,
+  type HelpAppConfig,
   type Locale,
 } from "@zcode/shared";
 import type { MessageBoxOptions } from "electron";
 import { app, BrowserWindow, dialog, session, shell } from "electron";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { showAboutDialog } from "./about.js";
 import { checkForUpdateMenuClick } from "./autoUpdater.js";
 import { resolveCuaOsSupport } from "./cuaOsSupport.js";
@@ -152,120 +148,52 @@ export async function clearCodingPlanWebviewStorage(options: {
   }
 }
 
-async function fetchRemoteAppConfig(fetchRemoteConfig?: () => Promise<unknown>): Promise<unknown> {
-  if (!fetchRemoteConfig) throw new Error("Help config reader is unavailable");
-  return fetchRemoteConfig();
-}
-
-export function resolveLocalAppConfigPath(options?: {
-  appPath?: string;
-  isPackaged?: boolean;
-  resourcesPath?: string;
-}): string {
-  const isPackaged = options?.isPackaged ?? app.isPackaged;
-  if (isPackaged) {
-    // app.getAppPath() 在正式包中指向 resources/app.asar，向上两级后会误读
-    // Contents/config。内置配置由 electron-builder 放在 resources/config，必须从 resourcesPath 解析。
-    return join(options?.resourcesPath ?? process.resourcesPath, "config/default.json");
-  }
-  return join(options?.appPath ?? app.getAppPath(), "../../config/default.json");
-}
-
-async function readLocalAppConfig(readLocalConfig?: () => unknown): Promise<unknown> {
-  const localConfigPath = resolveLocalAppConfigPath();
-  return readLocalConfig?.() ?? JSON.parse(await readFile(localConfigPath, "utf-8"));
-}
-
-async function resolveRemoteAppConfigValue(options: {
-  fetchRemoteConfig?: () => Promise<unknown>;
-  readLocalConfig?: () => unknown;
-  resolveFromConfig: (config: unknown) => string | undefined;
-  logPrefix: "feedback" | "community";
-  logger: {
-    warn: (...args: unknown[]) => void;
-  };
-}): Promise<string | undefined> {
-  try {
-    const remoteConfig = await fetchRemoteAppConfig(options.fetchRemoteConfig);
-    const remoteResolvedValue = options.resolveFromConfig(remoteConfig);
-    if (remoteResolvedValue) {
-      return remoteResolvedValue;
-    }
-  } catch (error) {
-    options.logger.warn(`[${options.logPrefix}] failed to fetch remote config:`, error);
-  }
-
-  try {
-    const localConfig = await readLocalAppConfig(options.readLocalConfig);
-    const localResolvedValue = options.resolveFromConfig(localConfig);
-    if (localResolvedValue) {
-      return localResolvedValue;
-    }
-  } catch (error) {
-    options.logger.warn(`[${options.logPrefix}] failed to read local config:`, error);
-  }
-
-  return undefined;
-}
-
+/** fork（F2.7）：反馈与社群链接只读内置 config/default.json，不再请求远端 /api/v1/client/configs。 */
 export async function resolveFeedbackUrl(options: {
-  fetchRemoteConfig?: () => Promise<unknown>;
-  readLocalConfig?: () => unknown;
+  readHelpConfig?: () => Promise<HelpAppConfig>;
   logger: {
     warn: (...args: unknown[]) => void;
   };
 }): Promise<string | undefined> {
-  return resolveRemoteAppConfigValue({
-    ...options,
-    logPrefix: "feedback",
-    resolveFromConfig: getFeedbackUrlFromConfig,
-  });
+  try {
+    return (await options.readHelpConfig?.())?.feedback_url;
+  } catch (error) {
+    options.logger.warn("[feedback] failed to read local help config:", error);
+    return undefined;
+  }
 }
 
 export async function resolveCommunityUrl(options: {
   locale: Locale;
-  fetchRemoteConfig?: () => Promise<unknown>;
-  readLocalConfig?: () => unknown;
+  readHelpConfig?: () => Promise<HelpAppConfig>;
   logger: {
     warn: (...args: unknown[]) => void;
   };
 }): Promise<string | undefined> {
-  let remoteConfig: unknown;
+  let config: HelpAppConfig | undefined;
   try {
-    remoteConfig = await fetchRemoteAppConfig(options.fetchRemoteConfig);
+    config = await options.readHelpConfig?.();
   } catch (error) {
-    options.logger.warn("[community] failed to fetch remote config:", error);
+    options.logger.warn("[community] failed to read local help config:", error);
   }
 
-  let localConfig: unknown;
-  try {
-    localConfig = await readLocalAppConfig(options.readLocalConfig);
-  } catch (error) {
-    options.logger.warn("[community] failed to read local config:", error);
-  }
-
-  return getCommunityUrlFromConfigs(remoteConfig, localConfig, options.locale);
+  // 内置配置缺当前语言时保持隐藏，不跨语言回退（语言边界规则不变，只是不再有远端来源）。
+  return config?.community_urls?.[options.locale];
 }
 
 async function openFeedback(
   logger: { warn: (...args: unknown[]) => void; error: (...args: unknown[]) => void },
   targetWindow?: BrowserWindow | null,
-  fetchRemoteConfig?: () => Promise<unknown>,
+  readHelpConfig?: () => Promise<HelpAppConfig>,
 ) {
-  let remoteConfig: unknown;
-  let localConfig: unknown;
+  // fork（F2.7）：只读内置 config/default.json；读取失败时按缺省语义回落应用内反馈弹窗。
+  let config: HelpAppConfig | undefined;
   try {
-    remoteConfig = await fetchRemoteAppConfig(fetchRemoteConfig);
+    config = await readHelpConfig?.();
   } catch (error) {
-    logger.warn("[feedback] failed to fetch remote config:", error);
+    logger.warn("[feedback] failed to read local help config:", error);
   }
-  try {
-    localConfig = await readLocalAppConfig();
-  } catch (error) {
-    logger.warn("[feedback] failed to read local config:", error);
-  }
-  const config = resolveHelpAppConfig(remoteConfig, localConfig);
-  if (!config.feedback_use_external_form) {
+  if (!config?.feedback_use_external_form) {
     resolveTargetWindow(targetWindow)?.webContents.send(PlatformChannels.OpenFeedbackDialog);
     return;
   }
@@ -278,11 +206,11 @@ async function openCommunity(
     warn: (...args: unknown[]) => void;
     error: (...args: unknown[]) => void;
   },
-  fetchRemoteConfig?: () => Promise<unknown>,
+  readHelpConfig?: () => Promise<HelpAppConfig>,
 ) {
-  const communityUrl = await resolveCommunityUrl({ locale, logger, fetchRemoteConfig });
+  const communityUrl = await resolveCommunityUrl({ locale, logger, readHelpConfig });
   if (!communityUrl) {
-    logger.warn("[community] community_urls is missing from both remote and local config");
+    logger.warn("[community] community_urls is missing from the built-in config");
     return;
   }
   await shell.openExternal(communityUrl);
@@ -480,7 +408,8 @@ async function resolveCurrentZCodeEndpointOrigin(settingService: {
 
 export async function executeDesktopCommand(options: {
   command: DesktopCommandId;
-  fetchHelpConfig?: () => Promise<unknown>;
+  /** fork（F2.7）：菜单与托盘共用；只读内置 config/default.json，不再有远端拉取语义。 */
+  readHelpConfig?: () => Promise<HelpAppConfig>;
   senderWindow?: BrowserWindow | null;
   logger: {
     info: (...args: unknown[]) => void;
@@ -593,24 +522,26 @@ export async function executeDesktopCommand(options: {
       );
       return;
     case DesktopCommandIds.CheckForUpdates:
-      // 按产品身份而不是后端环境放行：生产后端的 Preview 同样没有更新器。
-      if (ZCODE_PRODUCT_FLAVOR === "production") {
+      // 更新命令只跟随唯一判定 isDesktopAutoUpdateActive()（fork spec「自动更新」规则 1）：
+      // 菜单/托盘/标题栏入口已随判定隐藏，这里不再按产品身份单独拼条件；
+      // checkForUpdateMenuClick 内部还有 assertAutoUpdaterActive() 作为最后一道闸。
+      if (isDesktopAutoUpdateActive()) {
         checkForUpdateMenuClick(targetWindow);
       } else {
-        options.logger.info("[auto-update] Preview 已禁用手动更新检查");
+        options.logger.info("[auto-update] 自动更新未生效，跳过手动更新检查");
       }
       return;
     case DesktopCommandIds.RelaunchApp:
       await options.onRelaunchApp();
       return;
     case DesktopCommandIds.OpenFeedback:
-      await openFeedback(options.logger, targetWindow, options.fetchHelpConfig);
+      await openFeedback(options.logger, targetWindow, options.readHelpConfig);
       return;
     case DesktopCommandIds.OpenCommunity:
       await openCommunity(
         options.currentApplicationLocale,
         options.logger,
-        options.fetchHelpConfig,
+        options.readHelpConfig,
       );
       return;
     case DesktopCommandIds.ExportLogs:

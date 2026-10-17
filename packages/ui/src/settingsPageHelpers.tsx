@@ -8,6 +8,7 @@ import type {
 import {
   TID_SETTINGS_ASK_USER_QUESTION_AUTO_RESOLUTION_SWITCH,
   TID_SETTINGS_NATIVE_SEARCH_SWITCH,
+  isDesktopAutoUpdateActive,
 } from "@zcode/shared";
 import { useState, useCallback, useEffect } from "react";
 import type { IPlatformService } from "@zcode/shared";
@@ -588,21 +589,25 @@ export function GeneralSectionContent({
                 />
               }
             />
-            <SettingsRow
-              label={intl.formatMessage({ id: "settings.receivePreviewUpdates" })}
-              description={intl.formatMessage({
-                id: "settings.receivePreviewUpdatesDescription",
-              })}
-              control={
-                <Switch
-                  aria-label={intl.formatMessage({ id: "settings.receivePreviewUpdates" })}
-                  checked={receivePreviewUpdates}
-                  onCheckedChange={(checked) => {
-                    void onReceivePreviewUpdatesChange(checked);
-                  }}
-                />
-              }
-            />
+            {/* 「接收预览更新」只跟随唯一判定 isDesktopAutoUpdateActive()（fork spec 规则 3）：
+                自动更新未生效时隐藏设置项；已有持久值保留不读取。 */}
+            {isDesktopAutoUpdateActive() ? (
+              <SettingsRow
+                label={intl.formatMessage({ id: "settings.receivePreviewUpdates" })}
+                description={intl.formatMessage({
+                  id: "settings.receivePreviewUpdatesDescription",
+                })}
+                control={
+                  <Switch
+                    aria-label={intl.formatMessage({ id: "settings.receivePreviewUpdates" })}
+                    checked={receivePreviewUpdates}
+                    onCheckedChange={(checked) => {
+                      void onReceivePreviewUpdatesChange(checked);
+                    }}
+                  />
+                }
+              />
+            ) : null}
             <SettingsRow
               label={intl.formatMessage({
                 id: "settings.autoDownloadAndInstallUpdates",

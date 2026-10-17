@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 // DWG-22（docs/dynamic-workflow/launch.md「The user's choice」）：设置里的选择变化后，本窗口 Root
 // 先让 Host 重发策略，再重读快照；首次读到的值只是基线，不发信号。多次变化按顺序串行。
+// fork（F2.6b）：重读经 IClientConfigService 读 Host 本地 offer，不经订阅服务。
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ICodingPlanSubscriptionService } from "@zcode/services";
+import type { IClientConfigService } from "@zcode/services";
 import {
   applyDynamicWorkflowUserMode,
   createDynamicWorkflowClientConfig,
@@ -29,19 +30,19 @@ function setup() {
       events.push(`sync:${params.mode ?? "follow"}`);
     }),
   };
-  const codingPlanSubscriptionService = {
+  const clientConfigService = {
     getDynamicWorkflowClientConfig: vi.fn(async () => {
       events.push("reload");
       return applyDynamicWorkflowUserMode(OFFER, currentChoice);
     }),
-  } as unknown as ICodingPlanSubscriptionService;
+  } as unknown as IClientConfigService;
   const hook = renderHook(
     (props: { settingsLoaded: boolean; userMode: DynamicWorkflowMode | undefined }) => {
       currentChoice = props.userMode;
       useDynamicWorkflowUserModeSync({
         ...props,
         zcodeAgentService,
-        codingPlanSubscriptionService,
+        clientConfigService,
       });
     },
     { initialProps: { settingsLoaded: false, userMode: undefined } },

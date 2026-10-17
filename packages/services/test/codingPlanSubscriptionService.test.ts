@@ -300,7 +300,8 @@ describe("BigModelCodingPlanSubscriptionProvider", () => {
         credentialService: { load: vi.fn() },
       });
       // 由其他消费者填充真实共享缓存；预算不能再读出旧算法或发起刷新。
-      await provider.getForceUpdateConfig();
+      // （getForceUpdateConfig 已随强更 gate 删除，改用同样走 getClientConfigs 缓存的验证配置读取。）
+      await provider.getRequestVerificationConfig();
       request.mockClear();
       await expect(provider.getModelContextBudgetStrategy()).resolves.toBe("preflight-v1");
       expect(request).not.toHaveBeenCalled();
@@ -862,88 +863,6 @@ describe("BigModelCodingPlanSubscriptionProvider", () => {
         ZCODE_PRODUCTION_BASE_URL: "https://runtime.example.com",
       }).toString(),
     ).toBe("https://runtime.example.com/api/v1/client/configs");
-  });
-
-  it("getForceUpdateConfig 从 ZCode client config 读取强制升级配置", async () => {
-    const apiClient: ApiClient = {
-      request: vi.fn(async () =>
-        createJsonResponse({
-          code: 0,
-          msg: "",
-          data: {
-            configs: {
-              forceUpdate: {
-                minimalVersion: " 4.0.0 ",
-              },
-            },
-          },
-        }),
-      ),
-    };
-    const provider = new BigModelCodingPlanSubscriptionProvider({
-      apiClient,
-      credentialService: {
-        load: vi.fn(),
-      },
-    });
-
-    await expect(provider.getForceUpdateConfig()).resolves.toEqual({
-      minimalVersion: "4.0.0",
-    });
-    expect(apiClient.request).toHaveBeenCalledWith(
-      expect.any(URL),
-      expect.objectContaining({
-        method: "GET",
-      }),
-    );
-  });
-
-  it("getForceUpdateConfig 在字段缺失时返回 null", async () => {
-    const apiClient: ApiClient = {
-      request: vi.fn(async () =>
-        createJsonResponse({
-          code: 0,
-          msg: "",
-          data: {
-            configs: {},
-          },
-        }),
-      ),
-    };
-    const provider = new BigModelCodingPlanSubscriptionProvider({
-      apiClient,
-      credentialService: {
-        load: vi.fn(),
-      },
-    });
-
-    await expect(provider.getForceUpdateConfig()).resolves.toBeNull();
-  });
-
-  it("getForceUpdateConfig 在 minimalVersion 类型不合法时返回 null", async () => {
-    const apiClient: ApiClient = {
-      request: vi.fn(async () =>
-        createJsonResponse({
-          code: 0,
-          msg: "",
-          data: {
-            configs: {
-              forceUpdate: {
-                minimalVersion: 4,
-              },
-            },
-          },
-        }),
-      ),
-    };
-    const provider = new BigModelCodingPlanSubscriptionProvider({
-      apiClient,
-      credentialService: {
-        load: vi.fn(),
-      },
-    });
-
-    await expect(provider.getForceUpdateConfig()).resolves.toBeNull();
   });
 
   it("getStartPlanPreview 从 ZCode client config 读取未登录 Start Plan 预览", async () => {

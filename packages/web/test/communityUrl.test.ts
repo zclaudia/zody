@@ -1,68 +1,69 @@
 import { describe, expect, it, vi } from "vitest";
 import { resolveWebCommunityUrl, resolveWebHelpConfig } from "../src/communityUrl.js";
+import localDefaultAppConfig from "../../../config/default.json" with { type: "json" };
 
 const LOCAL_CONFIG = {
   community_urls: {
     "zh-CN": "https://local.example.com/feishu",
     "en-US": "https://local.example.com/discord",
   },
+  feedback_url: "https://local.example.com/feedback",
 };
 
 describe("resolveWebCommunityUrl", () => {
-  it.each([404, 500, 503])("HTTP %i 时回退内置同语言入口", async (status) => {
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue({
-      ok: false,
-      status,
-    } as Response);
-
+  it("按语言取注入本地配置的社群入口", async () => {
     await expect(
-      resolveWebCommunityUrl("zh-CN", { fetchImpl, localConfig: LOCAL_CONFIG }),
+      resolveWebCommunityUrl("zh-CN", { localConfig: LOCAL_CONFIG }),
     ).resolves.toBe("https://local.example.com/feishu");
     await expect(
-      resolveWebCommunityUrl("en-US", { fetchImpl, localConfig: LOCAL_CONFIG }),
+      resolveWebCommunityUrl("en-US", { localConfig: LOCAL_CONFIG }),
     ).resolves.toBe("https://local.example.com/discord");
   });
 
-  it("远端缺少当前语言时回退内置同语言入口", async () => {
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue({
-      ok: true,
-      json: async () => ({
+  it("未注入配置时返回内置 config/default.json 的解析结果", async () => {
+    await expect(resolveWebHelpConfig()).resolves.toEqual({
+      community_urls: {
+        "zh-CN": localDefaultAppConfig.community_urls["zh-CN"],
+        "en-US": localDefaultAppConfig.community_urls["en-US"],
+      },
+      feedback_url: localDefaultAppConfig.feedback_url,
+      feedback_use_external_form: localDefaultAppConfig.feedback_use_external_form,
+    });
+  });
+
+  // fork（F2.7）：帮助与社群配置只读内置值；远端桩返回不同链接也不得被请求或采用。
+  it("不再请求远端 /api/v1/client/configs，桩返回的不同链接不会被使用", async () => {
+    const remoteStub = vi.fn<typeof fetch>().mockImplementation(async () =>
+      Response.json({
         code: 0,
         data: {
           configs: {
             feedbackUrl: {
-              community_urls: { "zh-CN": "https://remote.example.com/feishu" },
+              feedback_url: "https://remote.example.com/feedback",
+              community_urls: {
+                "zh-CN": "https://remote.example.com/feishu",
+                "en-US": "https://remote.example.com/discord",
+              },
             },
           },
         },
       }),
-    } as Response);
-
-    await expect(
-      resolveWebCommunityUrl("en-US", { fetchImpl, localConfig: LOCAL_CONFIG }),
-    ).resolves.toBe("https://local.example.com/discord");
+    );
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = remoteStub;
+    try {
+      await expect(resolveWebCommunityUrl("zh-CN")).resolves.toBe(
+        localDefaultAppConfig.community_urls["zh-CN"],
+      );
+      await expect(resolveWebCommunityUrl("en-US")).resolves.toBe(
+        localDefaultAppConfig.community_urls["en-US"],
+      );
+      await expect(resolveWebHelpConfig().then((c) => c.feedback_url)).resolves.toBe(
+        localDefaultAppConfig.feedback_url,
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+    expect(remoteStub).not.toHaveBeenCalled();
   });
-});
-
-it("使用部署 endpoint 的新接口并提取反馈地址", async () => {
-  const fetchImpl = vi.fn<typeof fetch>().mockImplementation(async () =>
-    Response.json({
-      code: 0,
-      data: {
-        configs: {
-          feedbackUrl: {
-            feedback_url: "https://remote.feedback",
-            community_urls: { "zh-CN": "https://remote.community" },
-          },
-        },
-      },
-    }),
-  );
-  expect(
-    (await resolveWebHelpConfig({ fetchImpl, endpointOrigin: "https://test.example.com" }))
-      .feedback_url,
-  ).toBe("https://remote.feedback");
-  expect(new URL(String(fetchImpl.mock.calls[0][0])).searchParams.has("platform")).toBe(false);
-  expect(fetchImpl.mock.calls[0][0]).toContain("https://test.example.com/api/v1/client/configs?");
-  expect(await resolveWebCommunityUrl("zh-CN", { fetchImpl })).toBe("https://remote.community");
 });

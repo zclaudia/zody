@@ -121,7 +121,7 @@ describe("primaryWindowCoordinator", () => {
     });
   });
 
-  it("强制升级 gate 阻断时不会复用或创建主窗口", async () => {
+  it("canCreateWindow 返回 false 时不会复用或创建主窗口", async () => {
     const hiddenWindow = {
       isDestroyed: () => false,
       isVisible: () => false,

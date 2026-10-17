@@ -5,6 +5,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const captured = vi.hoisted(() => ({
   template: [] as MenuItemConstructorOptions[],
 }));
+// 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；托盘入口只读它。
+const autoUpdateState = vi.hoisted(() => ({ active: false }));
+
+vi.mock("@zcode/shared", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@zcode/shared")>()),
+  isDesktopAutoUpdateActive: () => autoUpdateState.active,
+}));
 
 vi.mock("electron", () => ({
   app: { isPackaged: false },
@@ -25,6 +32,7 @@ describe("desktop tray log export", () => {
   beforeEach(() => {
     vi.resetModules();
     captured.template = [];
+    autoUpdateState.active = false;
   });
 
   it.each(["win32", "linux"] as const)(
@@ -65,4 +73,27 @@ describe("desktop tray log export", () => {
       );
     },
   );
+
+  it("自动更新未生效时托盘无检查更新入口，生效时出现", async () => {
+    const { createDesktopTray } = await import("@desktop/main/desktopTray.js");
+    const labels = () => captured.template.map((item) => item.label).filter(Boolean);
+
+    // 判定关闭（fork 构建恒为 false）：不显示「检查更新」。
+    autoUpdateState.active = false;
+    createDesktopTray({
+      platform: "win32",
+      getLocale: () => "zh-CN",
+      showCurrentWindow: vi.fn(),
+      executeDesktopCommand: vi.fn(async () => undefined),
+      quitApp: vi.fn(),
+      logger: { warn: vi.fn() },
+    });
+    expect(labels()).not.toContain("检查更新");
+
+    // 判定开启：托盘出现「检查更新」。
+    autoUpdateState.active = true;
+    const { updateWindowsDesktopTrayMenu } = await import("@desktop/main/desktopTray.js");
+    updateWindowsDesktopTrayMenu();
+    expect(labels()).toContain("检查更新");
+  });
 });

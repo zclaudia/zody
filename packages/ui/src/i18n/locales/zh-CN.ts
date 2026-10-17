@@ -1653,14 +1653,6 @@ const zhCN: Record<string, string> = {
   "update.toast.ready": "v{version} 已下载，重启即可安装",
   "update.toast.devSkipped": "开发环境不检查更新",
   "update.toast.error": "检查更新失败：{error}",
-  "forceUpdate.title": "需要升级 ZCode 后继续使用",
-  "forceUpdate.description":
-    "当前版本 v{currentVersion} 低于最低可用版本 v{minimalVersion}。请先完成升级，升级前暂时无法继续使用当前客户端。",
-  "forceUpdate.currentVersion": "当前版本",
-  "forceUpdate.minimalVersion": "最低版本",
-  "forceUpdate.action.check": "检查并下载更新",
-  "forceUpdate.action.restart": "重启安装更新",
-  "forceUpdate.action.reload": "刷新页面",
   "desktopMenu.help.checkingForUpdates": "正在检查更新...",
   "desktopMenu.help.updateAvailableVersion": "发现新版本 {version}",
   "desktopMenu.help.downloadingUpdateVersion": "正在下载更新 {version}...",
@@ -6371,6 +6363,12 @@ const zhCN: Record<string, string> = {
   // 反馈
   "feedback.center.title": "问题上报",
   "feedback.center.description": "描述问题即可，提交后可查看处理进展。",
+  // fork（F2.9）：反馈中心本地化后的面板文案；官方工单提交停用。
+  "feedback.center.localTitle": "问题反馈",
+  "feedback.center.localDescription":
+    "此版本不再向官方提交工单。可导出诊断日志，随你的反馈渠道一并提供；配置了反馈地址时可直接打开。",
+  "feedback.center.exportLogsAction": "导出诊断日志",
+  "feedback.center.openIssuePage": "打开反馈地址",
   "feedback.center.submitTitle": "提交反馈",
   "feedback.center.ticketsTitle": "我的反馈",
   "feedback.center.backToSubmit": "返回提交反馈",

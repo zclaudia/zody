@@ -15,6 +15,7 @@ import {
   webRemoteControlWorkspaceTargetsSchema,
   type DesktopCommandId,
   type ApplicationIconRequest,
+  type HelpAppConfig,
   type Locale,
   type LoadCliMcpFromUserDirectoryRequest,
   type MigrateLegacyCommonMcpRequest,
@@ -65,7 +66,8 @@ import { registerDesktopPrintToPdfIpcHandler } from "./desktopPrintToPdf.js";
 import { registerCuaPipActiveSessionIpc } from "./desktopCuaPipIpc.js";
 
 export function registerPlatformIpcHandlers(options: {
-  fetchHelpConfig?: () => Promise<unknown>;
+  /** fork（F2.7）：只读内置 config/default.json，不再有远端帮助配置拉取语义。 */
+  readHelpConfig?: () => Promise<HelpAppConfig>;
   logger: {
     info: (...args: unknown[]) => void;
     warn: (...args: unknown[]) => void;
@@ -405,7 +407,7 @@ export function registerPlatformIpcHandlers(options: {
 
     const communityUrl = await resolveCommunityUrl({
       locale: result.data,
-      fetchRemoteConfig: options.fetchHelpConfig,
+      readHelpConfig: options.readHelpConfig,
       logger: options.logger,
     });
 

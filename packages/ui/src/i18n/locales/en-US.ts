@@ -1780,14 +1780,6 @@ const enUS: Record<string, string> = {
   "update.toast.ready": "v{version} downloaded, restart to install",
   "update.toast.devSkipped": "Updates are disabled in dev builds",
   "update.toast.error": "Update check failed: {error}",
-  "forceUpdate.title": "Update ZCode to continue",
-  "forceUpdate.description":
-    "Your current version v{currentVersion} is below the minimum supported version v{minimalVersion}. Update first before continuing with this client.",
-  "forceUpdate.currentVersion": "Current version",
-  "forceUpdate.minimalVersion": "Minimum version",
-  "forceUpdate.action.check": "Check and download update",
-  "forceUpdate.action.restart": "Restart to install update",
-  "forceUpdate.action.reload": "Reload page",
   "desktopMenu.help.checkingForUpdates": "Checking for updates...",
   "desktopMenu.help.updateAvailableVersion": "Update available {version}",
   "desktopMenu.help.downloadingUpdateVersion": "Downloading update {version}...",
@@ -6678,6 +6670,12 @@ const enUS: Record<string, string> = {
   // Feedback
   "feedback.center.title": "Feedback",
   "feedback.center.description": "Describe the issue and track progress after submitting.",
+  // fork (F2.9): copy for the localized feedback panel; official ticket submission is disabled.
+  "feedback.center.localTitle": "Feedback",
+  "feedback.center.localDescription":
+    "This build no longer submits tickets to the official service. Export diagnostic logs to attach through your own feedback channel, or open the feedback page when configured.",
+  "feedback.center.exportLogsAction": "Export diagnostic logs",
+  "feedback.center.openIssuePage": "Open feedback page",
   "feedback.center.submitTitle": "Submit feedback",
   "feedback.center.ticketsTitle": "My feedback",
   "feedback.center.backToSubmit": "Back to submit feedback",

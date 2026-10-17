@@ -420,10 +420,22 @@ describe("WorkflowArtifactSidePane 版本步进器", () => {
     expect(view.getByTestId("workflow-artifact-version-next").hasAttribute("disabled")).toBe(true);
 
     fireEvent.click(view.getByTestId("workflow-artifact-version-previous"));
-    await waitFor(() =>
-      expect(view.getByTestId("workflow-artifact-version").textContent).toBe("第 2 版 / 共 3 版"),
+    // Bugfix: 全量单测高负载下（vitest threads 池 4 worker 并发）jsdom worker 事件循环
+    // 可能停摆超过 waitFor 默认 1s（2026-10-17 门禁第 2 轮该用例以「第 3 版 / 共 3 版」
+    // 超时失败，同文件耗时膨胀 ~50%），点击本身是同步 setState，与 vitest.config.ts
+    // 放宽 testTimeout/hookTimeout 的口径一致，这里只放宽本用例的等待上限，不改断言语义。
+    const versionStepTimeoutMs = 5_000;
+    await waitFor(
+      () =>
+        expect(view.getByTestId("workflow-artifact-version").textContent).toBe(
+          "第 2 版 / 共 3 版",
+        ),
+      { timeout: versionStepTimeoutMs },
     );
-    await waitFor(() => expect(workflowRunArtifactRead.mock.calls.at(-1)?.[0]?.version).toBe(2));
+    await waitFor(
+      () => expect(workflowRunArtifactRead.mock.calls.at(-1)?.[0]?.version).toBe(2),
+      { timeout: versionStepTimeoutMs },
+    );
   });
 
   it("journal 读不到版本历史时不凭最新版号编造 1..n", async () => {

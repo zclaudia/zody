@@ -1,93 +1,109 @@
-import { readFileSync } from "node:fs";
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
-
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { IFeedbackService } from "@zcode/services";
 import type { IPlatformService } from "@zcode/shared";
+
+import { useFeedbackStore } from "@/feedback/feedbackStore.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { TabStoreProvider } from "@/store/TabStoreProvider.js";
 
-function createFeedbackService(): IFeedbackService {
+// fork（F2.9，决策门 D7）：反馈中心收敛为本地面板。
+// 「打开反馈地址」入口显隐由构建期 ZCODE_FEEDBACK_ISSUE_URL 决定；这里用可变 getter 模拟
+// 构建期 define 的两种注入结果（未注入为空串、注入为完整 URL）。
+const sharedMocks = vi.hoisted(() => ({ feedbackIssueUrl: "" as string }));
+
+vi.mock("@zcode/shared", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@zcode/shared")>();
   return {
-    getDeviceSnapshot: vi.fn(),
-    create: vi.fn(),
-    list: vi.fn(async () => ({ items: [], total: 0 })),
-    get: vi.fn(),
-    comment: vi.fn(),
-    uploadAttachmentData: vi.fn(),
-    uploadAttachmentWithProgress: vi.fn(),
-    prepareCompactLogArchive: vi.fn(),
-    cleanupPreparedLogArchive: vi.fn(),
-    onDynamicUploadProgress: vi.fn(),
-    cancelCreate: vi.fn(),
-    cancelUpload: vi.fn(),
-    onDynamicUpdate: vi.fn(),
-  } as unknown as IFeedbackService;
+    ...original,
+    get ZCODE_FEEDBACK_ISSUE_URL() {
+      return sharedMocks.feedbackIssueUrl;
+    },
+  };
+});
+
+import { FeedbackCenter } from "@/feedback/FeedbackCenter.js";
+
+function makePlatform(): IPlatformService {
+  return {
+    exportLogs: vi.fn(async () => ({ success: true, path: "/tmp/logs.zip" })),
+    openExternal: vi.fn(async () => {}),
+  } as unknown as IPlatformService;
 }
 
-describe("FeedbackCenter", () => {
-  it("does not import a background ticket list watcher", () => {
-    const source = readFileSync(
-      new URL("../src/feedback/FeedbackCenter.tsx", import.meta.url),
-      "utf-8",
-    );
-
-    expect(source).not.toContain("FeedbackUpdateWatcher");
-  });
-
-  it("does not mount a background ticket list watcher", async () => {
-    const feedbackService = createFeedbackService();
-    const { FeedbackCenter } = await import("@/feedback/FeedbackCenter.js");
-
-    renderToStaticMarkup(
+function renderFeedbackCenter(platform: IPlatformService) {
+  return render(
+    createElement(
+      ZCodeIntlProvider,
+      { initialLocale: "zh-CN" },
       createElement(
-        ZCodeIntlProvider,
-        { initialLocale: "zh-CN" },
-        createElement(
-          TabStoreProvider,
-          null,
-          createElement(FeedbackCenter, {
-            feedbackService,
-            platform: { showTaskNotification: vi.fn() } as unknown as IPlatformService,
-          }),
-        ),
+        TabStoreProvider,
+        null,
+        createElement(FeedbackCenter, {
+          feedbackService: {} as IFeedbackService,
+          platform,
+        }),
       ),
-    );
+    ),
+  );
+}
 
-    expect(feedbackService.list).not.toHaveBeenCalled();
+describe("FeedbackCenter（反馈本地化面板）", () => {
+  afterEach(() => {
+    cleanup();
+    sharedMocks.feedbackIssueUrl = "";
+    useFeedbackStore.setState({ open: false, featureRequestOpen: false });
   });
 
-  it("defines a tickets-only header back button that returns to submit feedback", () => {
-    const source = readFileSync(
-      new URL("../src/feedback/FeedbackCenter.tsx", import.meta.url),
-      "utf-8",
-    );
+  it("面板提供本地导出诊断日志入口，不再渲染官方工单提交与工单列表", () => {
+    useFeedbackStore.setState({ open: true });
+    renderFeedbackCenter(makePlatform());
 
-    expect(source).toContain("ArrowLeftIcon");
-    expect(source).toContain('tab === "tickets"');
-    expect(source).toContain('data-feedback-back-to-submit="true"');
-    expect(source).toContain("feedback.center.backToSubmit");
-    expect(source).toContain('setTab("submit")');
+    expect(screen.getByText("导出诊断日志")).toBeTruthy();
+    expect(screen.queryByText("提交反馈")).toBeNull();
+    expect(screen.queryByText("我的反馈")).toBeNull();
   });
 
-  it("hides the background upload indicator while any feedback dialog is open", () => {
-    const source = readFileSync(
-      new URL("../src/feedback/FeedbackCenter.tsx", import.meta.url),
-      "utf-8",
-    );
+  it("未配置 ZCODE_FEEDBACK_ISSUE_URL 时不显示打开反馈地址入口", () => {
+    sharedMocks.feedbackIssueUrl = "";
+    useFeedbackStore.setState({ open: true });
+    renderFeedbackCenter(makePlatform());
 
-    expect(source).toContain("featureRequestOpen");
-    expect(source).toContain(
-      "<FeedbackBackgroundUploadIndicator feedbackDialogOpen={open || featureRequestOpen} />",
-    );
+    expect(screen.queryByTestId("feedback-open-issue-page")).toBeNull();
+    expect(screen.queryByText("打开反馈地址")).toBeNull();
   });
 
-  it("defines localized copy for the feedback tickets back button", () => {
-    const zh = readFileSync(new URL("../src/i18n/locales/zh-CN.ts", import.meta.url), "utf-8");
-    const en = readFileSync(new URL("../src/i18n/locales/en-US.ts", import.meta.url), "utf-8");
+  it("配置 ZCODE_FEEDBACK_ISSUE_URL 后显示入口，点击打开配置的地址", async () => {
+    sharedMocks.feedbackIssueUrl = "https://example.com/feedback";
+    useFeedbackStore.setState({ open: true });
+    const platform = makePlatform();
+    renderFeedbackCenter(platform);
 
-    expect(zh).toContain('"feedback.center.backToSubmit": "返回提交反馈"');
-    expect(en).toContain('"feedback.center.backToSubmit": "Back to submit feedback"');
+    fireEvent.click(screen.getByTestId("feedback-open-issue-page"));
+
+    await waitFor(() => {
+      expect(platform.openExternal).toHaveBeenCalledWith("https://example.com/feedback");
+    });
+  });
+
+  it("点击导出诊断日志走本地 platform.exportLogs，不发网络请求", async () => {
+    useFeedbackStore.setState({ open: true });
+    const platform = makePlatform();
+    renderFeedbackCenter(platform);
+
+    fireEvent.click(screen.getByText("导出诊断日志"));
+
+    await waitFor(() => {
+      expect(platform.exportLogs).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("「给产品提需求」入口同样落到本地面板（openFeatureRequest 合并判定）", () => {
+    useFeedbackStore.setState({ featureRequestOpen: true });
+    renderFeedbackCenter(makePlatform());
+
+    expect(screen.getByText("导出诊断日志")).toBeTruthy();
   });
 });

@@ -1,9 +1,12 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 import type { FeedbackListQuery, FeedbackTicketStatus, FeedbackTicketSummary } from "@zcode/shared";
 import { getFeedbackRootDir } from "#src/paths.js";
 
+// fork（F2.9，决策门 D7）：官方工单提交停用后，本地 ticket store 收敛为只读——
+// 仅保留旧版本写入的匿名工单摘要可列出；写入路径（upsert）与 device_mid 归属过滤随之移除，
+// deviceMid 字段只作为旧数据的落盘元数据被容忍，不再参与任何过滤或对外负载。
 interface StoredFeedbackTicket extends FeedbackTicketSummary {
   deviceMid: string;
 }
@@ -19,9 +22,8 @@ export class FeedbackLocalTicketStore {
     this.filePath = join(rootDir, "tickets.json");
   }
 
-  async list(deviceMid: string, query: FeedbackListQuery = {}): Promise<FeedbackTicketSummary[]> {
+  async list(query: FeedbackListQuery = {}): Promise<FeedbackTicketSummary[]> {
     const tickets = (await this.read()).tickets
-      .filter((ticket) => ticket.deviceMid === deviceMid)
       .filter((ticket) => {
         if (query.status && ticket.status !== query.status) return false;
         if (query.type && ticket.type !== query.type) return false;
@@ -33,15 +35,6 @@ export class FeedbackLocalTicketStore {
     return tickets
       .slice(offset, offset + limit)
       .map(({ deviceMid: _deviceMid, ...ticket }) => ticket);
-  }
-
-  async upsert(deviceMid: string, ticket: FeedbackTicketSummary): Promise<void> {
-    const file = await this.read();
-    const next: StoredFeedbackTicket = { ...ticket, deviceMid };
-    const rest = file.tickets.filter(
-      (current) => current.deviceMid !== deviceMid || current.id !== ticket.id,
-    );
-    await this.write({ tickets: [next, ...rest].slice(0, 200) });
   }
 
   private async read(): Promise<FeedbackTicketStoreFile> {
@@ -60,11 +53,6 @@ export class FeedbackLocalTicketStore {
       }
       return { tickets: [] };
     }
-  }
-
-  private async write(file: FeedbackTicketStoreFile): Promise<void> {
-    await mkdir(dirname(this.filePath), { recursive: true });
-    await writeFile(this.filePath, `${JSON.stringify(file, null, 2)}\n`, "utf8");
   }
 }
 

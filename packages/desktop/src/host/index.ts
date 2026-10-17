@@ -2980,9 +2980,9 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
               zcodeBuiltinProviderConfigFilePath: msg.zcodeBuiltinProviderConfigFilePath,
               processLifecycleReporter: runtimeProcessLifecycleReporter,
               taskRuntimeReporter: runtimeTaskReporter,
+              // fork（F2.9）：反馈本地化后不再向下传 deviceMid 与 feedbackApiBase，
+              // 只保留 Main 侧全量日志归档入口。
               feedback: {
-                getDeviceMid: () => msg.deviceMid,
-                apiBaseUrl: msg.feedbackApiBase,
                 createFullLogArchive: createFullFeedbackLogArchiveViaMain,
               },
               forwardSessionMessageSendRequested: (request) => {

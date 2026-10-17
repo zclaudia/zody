@@ -1,0 +1,14 @@
+# 已删官方账号路径清单（F4.0，specs/fork-official-deps-removal-tasks.md「F4.0」小节；
+# 配套规则见 specs/fork-official-deps-removal-plan.md 阶段 4「与 upstream 同步的配套」）。
+#
+# 用途：记录 fork 相对 upstream 删除的官方账号相关路径。upstream 快照导入
+# （git merge <upstream>）出现 modify/delete 冲突时，scripts/upstream-sync-resolve.mjs
+# 对清单内路径的冲突（status DU：fork 已删、upstream 修改）自动执行「保持删除」，
+# 并输出 upstream 在这些路径上的 diff 摘要，供人工判断是否需要把修复移植到保留代码。
+#
+# 维护规则：
+# - 每个删除 PR（F4.1a~F4.11 等阶段 4 任务）追加本次实际删除的路径；
+# - 路径为相对仓库根的 POSIX 格式，支持目录前缀（匹配整棵子树）；
+# - `#` 整行注释与空行忽略；拒绝绝对路径与含 `..` 段的条目。
+#
+# 本批任务（F4.0）只建立清单与解析脚本，暂无条目。

@@ -1,32 +1,20 @@
-import { basename, join } from "node:path";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-
-import type { ApiClient, FeedbackDeviceInfo } from "@zcode/shared";
-import {
-  buildRuntimeZCodeApiUrl,
-  ZCODE_BUILD_TIME,
-  ZCODE_COMMIT,
-  ZCODE_VERSION,
-} from "@zcode/shared";
+import type { FeedbackDeviceInfo } from "@zcode/shared";
+import { ZCODE_BUILD_TIME, ZCODE_COMMIT, ZCODE_VERSION } from "@zcode/shared";
 import { Emitter } from "@zcode/rpc";
 import { arch, platform, release, type as osType } from "node:os";
 
-import type { ICredentialService } from "../credential/credential.js";
-import type { IOAuthService } from "../oauth/oauth.js";
 import type { FeedbackUploadProgress, IFeedbackService } from "./feedback.js";
-import { FeedbackHttpClient, FeedbackUploadCanceledError } from "./feedbackHttpClient.js";
 import { cleanupLogArchive, prepareCompactLogArchive } from "./compactLogArchive.js";
-import { getFeedbackAttachmentDir } from "../paths.js";
 import { FeedbackLocalTicketStore } from "#src/feedback/feedbackLocalTicketStore.js";
 
-const ZCODE_JWT_TOKEN_KEY = "zcodejwttoken";
-
+/**
+ * fork（F2.9，决策门 D7）：官方工单提交停用，feedbackHttpClient 不再被装配。
+ * 保留的本地能力只有：诊断日志归档（feedbackLogArchive / compactLogArchive）、
+ * 本地 ticket store 的历史工单读取，以及进程内设备快照。
+ * 工单类方法保留在 IFeedbackService 接口上（未挂载的旧 UI 文件仍编译通过），
+ * 实现一律抛出明确的停用错误，保证任何调用路径都不会发出网络请求。
+ */
 export interface CreateFeedbackServiceOptions {
-  credentialService: ICredentialService;
-  oauthService: IOAuthService;
-  apiClient: ApiClient;
-  getDeviceMid?: () => string | undefined;
-  apiBaseUrl?: string;
   createFullLogArchive?: (
     sourceDir: string,
     options?: {
@@ -36,13 +24,8 @@ export interface CreateFeedbackServiceOptions {
   revealPath?: (path: string) => Promise<void>;
 }
 
-function resolveApiBaseUrl(explicit?: string): string {
-  return (
-    explicit?.trim() ||
-    process.env.ZCODE_FEEDBACK_API_BASE?.trim() ||
-    buildRuntimeZCodeApiUrl(process.env, "/api/v1")
-  );
-}
+const OFFICIAL_SUBMISSION_DISABLED_MESSAGE =
+  "官方工单提交已在 fork 中停用：请通过「导出诊断日志」与反馈地址提交问题。";
 
 function buildDeviceSnapshot(): FeedbackDeviceInfo {
   return {
@@ -60,49 +43,8 @@ function buildDeviceSnapshot(): FeedbackDeviceInfo {
 }
 
 export function createFeedbackService(options: CreateFeedbackServiceOptions): IFeedbackService {
-  const apiBaseUrl = resolveApiBaseUrl(options.apiBaseUrl);
-  function getHostDeviceMid(): string | undefined {
-    return options.getDeviceMid?.()?.trim() || undefined;
-  }
-
-  function requireHostDeviceMid(): string {
-    const deviceMid = getHostDeviceMid();
-    if (!deviceMid) {
-      throw new Error("Missing feedback device_mid");
-    }
-    return deviceMid;
-  }
-
-  async function getZcodeJwtToken(): Promise<string | undefined> {
-    return (await options.credentialService.load(ZCODE_JWT_TOKEN_KEY))?.trim() || undefined;
-  }
-
-  async function hasZcodeJwtToken(): Promise<boolean> {
-    return Boolean(await getZcodeJwtToken());
-  }
-
-  const httpClient = new FeedbackHttpClient({
-    baseUrl: apiBaseUrl,
-    apiClient: options.apiClient,
-    getAuthHeaders: async () => {
-      const headers: Record<string, string> = {};
-      const deviceMid = getHostDeviceMid();
-      // feedback 的 device_mid 必须复用宿主 deviceMid（与 provider 请求头、远控同一身份）；
-      // 不单独生成 fb_ 身份，否则同一台机器在不同系统里会被拆成两个设备。
-      if (deviceMid) {
-        headers["X-Device-Mid"] = deviceMid;
-      }
-      const jwtToken = await getZcodeJwtToken();
-      if (jwtToken) {
-        headers.Authorization = `Bearer ${jwtToken}`;
-      }
-      return headers;
-    },
-  });
   const localTicketStore = new FeedbackLocalTicketStore();
   const uploadProgressEmitters = new Map<string, Emitter<FeedbackUploadProgress>>();
-  const activeUploadControllers = new Map<string, AbortController>();
-  const activeCreateControllers = new Map<string, AbortController>();
 
   function getUploadProgressEmitter(id: string): Emitter<FeedbackUploadProgress> {
     const current = uploadProgressEmitters.get(id);
@@ -118,133 +60,38 @@ export function createFeedbackService(options: CreateFeedbackServiceOptions): IF
   }
 
   return {
-    create: async (input, createOptions) => {
-      const device = input.device ?? buildDeviceSnapshot();
-      const operationId = createOptions?.operationId?.trim();
-      const controller = new AbortController();
-      if (operationId) {
-        // UI 取消创建工单时不能只关闭弹窗；host 需要能按 operationId
-        // 找到当前 HTTP 请求并 abort，避免“正在连接反馈服务”永久悬挂。
-        activeCreateControllers.get(operationId)?.abort();
-        activeCreateControllers.set(operationId, controller);
-      }
-      try {
-        const ticket = await httpClient.create(
-          {
-            ...input,
-            device,
-          },
-          {
-            signal: controller.signal,
-          },
-        );
-        if (!(await hasZcodeJwtToken())) {
-          await localTicketStore.upsert(requireHostDeviceMid(), ticket);
-        }
-        return ticket;
-      } finally {
-        if (operationId && activeCreateControllers.get(operationId) === controller) {
-          activeCreateControllers.delete(operationId);
-        }
-      }
+    create: async () => {
+      // 停用官方提交后不允许任何「本地假成功」：用户必须明确知道工单没有被接收。
+      throw new Error(OFFICIAL_SUBMISSION_DISABLED_MESSAGE);
     },
-    cancelCreate: async (operationId) => {
-      const key = operationId.trim();
-      if (!key) return;
-      activeCreateControllers.get(key)?.abort();
+    cancelCreate: async () => {
+      // 无在途创建请求可取消，保持幂等 no-op。
     },
     list: async (query) => {
-      if (await hasZcodeJwtToken()) {
-        return httpClient.list(query);
-      }
-      const items = await localTicketStore.list(requireHostDeviceMid(), query);
+      const items = await localTicketStore.list(query);
       return { items, total: items.length };
     },
-    get: (id) => httpClient.get(id),
-    comment: (id, body) => httpClient.comment(id, body),
-    uploadAttachment: async (id, kind, file) => {
-      const filename = file.filename ?? basename(file.path);
-      const contentType = file.contentType ?? (kind === "image" ? "image/png" : "application/zip");
-      return httpClient.uploadFile(id, kind, file.path, filename, contentType, {
-        messageId: file.messageId,
-      });
+    get: async () => {
+      throw new Error(OFFICIAL_SUBMISSION_DISABLED_MESSAGE);
     },
-    uploadAttachmentWithProgress: async (id, kind, file, progressId) => {
-      const filename = file.filename ?? basename(file.path);
-      const contentType = file.contentType ?? (kind === "image" ? "image/png" : "application/zip");
-      const emitter = getUploadProgressEmitter(progressId);
-      emitter.fire({
-        id: progressId,
-        phase: "preparing",
-        uploadedBytes: 0,
-        totalBytes: 0,
-      });
-      const controller = new AbortController();
-      activeUploadControllers.set(progressId, controller);
-      return httpClient
-        .uploadFile(id, kind, file.path, filename, contentType, {
-          messageId: file.messageId,
-          signal: controller.signal,
-          onUploadProgress: (event) => {
-            emitter.fire({
-              id: progressId,
-              phase: event.uploadedBytes >= event.totalBytes ? "complete" : "uploading",
-              uploadedBytes: event.uploadedBytes,
-              totalBytes: event.totalBytes,
-            });
-          },
-        })
-        .catch((error) => {
-          if (error instanceof FeedbackUploadCanceledError) {
-            emitter.fire({
-              id: progressId,
-              phase: "canceled",
-              uploadedBytes: 0,
-              totalBytes: 0,
-            });
-          }
-          throw error;
-        })
-        .finally(() => {
-          activeUploadControllers.delete(progressId);
-        });
+    comment: async () => {
+      throw new Error(OFFICIAL_SUBMISSION_DISABLED_MESSAGE);
     },
-    cancelUpload: async (progressId) => {
-      activeUploadControllers.get(progressId)?.abort();
+    uploadAttachment: async () => {
+      throw new Error(OFFICIAL_SUBMISSION_DISABLED_MESSAGE);
+    },
+    uploadAttachmentWithProgress: async () => {
+      throw new Error(OFFICIAL_SUBMISSION_DISABLED_MESSAGE);
+    },
+    cancelUpload: async () => {
+      // 无在途上传可取消，保持幂等 no-op。
     },
     onDynamicUploadProgress: (id) => getUploadProgressEmitter(id).event,
-    uploadAttachmentData: async (id, kind, file) => {
-      const attachmentRootDir = getFeedbackAttachmentDir();
-      await mkdir(attachmentRootDir, { recursive: true });
-      const tempDir = await mkdtemp(join(attachmentRootDir, "attachment-"));
-      // 附件名来自 renderer，不能作为本地相对路径使用。
-      const filename = basename(file.filename.replaceAll("\\", "/")) || "attachment";
-      const tempPath = join(tempDir, "content");
-      try {
-        await writeFile(tempPath, Buffer.from(file.dataBase64, "base64"));
-        return await httpClient.uploadFile(id, kind, tempPath, filename, file.contentType, {
-          messageId: file.messageId,
-        });
-      } finally {
-        await rm(tempDir, { recursive: true, force: true }).catch(() => {});
-      }
+    uploadAttachmentData: async () => {
+      throw new Error(OFFICIAL_SUBMISSION_DISABLED_MESSAGE);
     },
-    attachLogsFromExport: async (id, attachOptions) => {
-      const archive = await prepareCompactLogArchive({
-        full: attachOptions?.full,
-        createFullArchive: options.createFullLogArchive,
-      });
-      try {
-        return await httpClient.uploadFile(
-          id,
-          "log",
-          archive.path,
-          basename(archive.path),
-          "application/zip",
-        );
-      } finally {
-        await cleanupLogArchive(archive.path);
-      }
+    attachLogsFromExport: async () => {
+      throw new Error(OFFICIAL_SUBMISSION_DISABLED_MESSAGE);
     },
     getDeviceSnapshot: async () => buildDeviceSnapshot(),
     prepareCompactLogArchive: async (archiveOptions) => {

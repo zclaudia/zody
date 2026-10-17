@@ -8,6 +8,8 @@ const envMock = vi.hoisted(() => ({
   isPackaged: false,
   locale: "en-US",
   preferredSystemLanguages: [] as string[],
+  // 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；菜单入口只读它。
+  autoUpdateActive: false,
 }));
 
 vi.mock("electron", () => ({
@@ -102,6 +104,7 @@ vi.mock("@zcode/shared", () => ({
   get ZCODE_PRODUCT_FLAVOR() {
     return envMock.value === "production" ? "production" : "preview";
   },
+  isDesktopAutoUpdateActive: () => envMock.autoUpdateActive,
   getDesktopMenuMessage: (_locale: string, id: string) => {
     const enLabels: Record<string, string> = {
       "titleBar.menu.help.zcodeEndpoint": "ZCode Endpoint",
@@ -171,6 +174,7 @@ describe("desktopApplicationMenu endpoint submenu", () => {
     envMock.isPackaged = false;
     envMock.locale = "en-US";
     envMock.preferredSystemLanguages = [];
+    envMock.autoUpdateActive = false;
     buildFromTemplateMock.mockClear();
     setApplicationMenuMock.mockClear();
     getApplicationMenuMock.mockClear();
@@ -219,10 +223,12 @@ describe("desktopApplicationMenu endpoint submenu", () => {
     expect(findMenuItem(template, "ZCode Endpoint")).toBeUndefined();
   });
 
-  it("Preview 隐藏更新入口，生产版继续显示", async () => {
+  it("自动更新未生效时隐藏更新入口，生效时显示（production 身份但 fork 关闭更新也不显示）", async () => {
     const { rebuildApplicationMenu } = await import("../src/main/desktopApplicationMenu.js");
 
-    envMock.value = "test";
+    // 判定关闭：即使 ZCODE_ENV 为 production（旧实现会显示）也不显示入口。
+    envMock.value = "production";
+    envMock.autoUpdateActive = false;
     rebuildApplicationMenu({
       currentApplicationLocale: "en-US",
       executeDesktopCommand: vi.fn(),
@@ -232,7 +238,8 @@ describe("desktopApplicationMenu endpoint submenu", () => {
     )?.[0] as Electron.MenuItemConstructorOptions[];
     expect(findMenuItem(template, undefined, "check-for-update")).toBeUndefined();
 
-    envMock.value = "production";
+    // 判定开启：production 身份 + 构建期启用，入口出现。
+    envMock.autoUpdateActive = true;
     rebuildApplicationMenu({
       currentApplicationLocale: "en-US",
       executeDesktopCommand: vi.fn(),

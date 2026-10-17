@@ -17,6 +17,42 @@ describe("shared runtime env", () => {
     expect(env.ZCODE_ARMS_RUM_ENDPOINT).toBe("");
     expect(env.ZCODE_AUTO_UPDATE_ENABLED).toBe(false);
     expect(env.ZCODE_TELEMETRY_REPORT_ENDPOINT).toBe("https://zcode.z.ai/api/v1/event/report");
+    // 下载页地址未注入时为空串，消费方据此不展示下载入口
+    expect(env.ZCODE_DOWNLOAD_PAGE_URL).toBe("");
+    // fork 反馈地址未注入时为空串，反馈入口不展示「打开反馈地址」（F2.9 入口显隐）
+    expect(env.ZCODE_FEEDBACK_ISSUE_URL).toBe("");
+  });
+
+  it("注入下载页 define 时常量取构建期值", async () => {
+    vi.stubGlobal("__ZCODE_DOWNLOAD_PAGE_URL__", "https://example.com/download");
+
+    const env = await importFreshEnvModule();
+
+    expect(env.ZCODE_DOWNLOAD_PAGE_URL).toBe("https://example.com/download");
+  });
+
+  it("注入 fork 反馈地址 define 时常量取构建期值", async () => {
+    vi.stubGlobal("__ZCODE_FEEDBACK_ISSUE_URL__", "https://example.com/feedback");
+
+    const env = await importFreshEnvModule();
+
+    expect(env.ZCODE_FEEDBACK_ISSUE_URL).toBe("https://example.com/feedback");
+  });
+
+  // isDesktopAutoUpdateActive 是自动更新唯一判定（production 身份 + 构建期启用，两者缺一不可）
+  it("isDesktopAutoUpdateActive 在 production 且构建期启用时才生效", async () => {
+    vi.stubGlobal("__ZCODE_ENV__", "production");
+    vi.stubGlobal("__ZCODE_PRODUCT_FLAVOR__", "production");
+    vi.stubGlobal("__ZCODE_AUTO_UPDATE_ENABLED__", true);
+    expect((await importFreshEnvModule()).isDesktopAutoUpdateActive()).toBe(true);
+
+    vi.stubGlobal("__ZCODE_PRODUCT_FLAVOR__", "preview");
+    vi.stubGlobal("__ZCODE_AUTO_UPDATE_ENABLED__", true);
+    expect((await importFreshEnvModule()).isDesktopAutoUpdateActive()).toBe(false);
+
+    vi.stubGlobal("__ZCODE_PRODUCT_FLAVOR__", "production");
+    vi.stubGlobal("__ZCODE_AUTO_UPDATE_ENABLED__", false);
+    expect((await importFreshEnvModule()).isDesktopAutoUpdateActive()).toBe(false);
   });
 
   it("未注入 ZCODE_ENV 时默认 test 并映射为 local", async () => {
