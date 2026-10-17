@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { PlatformChannels, type WebRemoteControlStatus } from "@zcode/shared";
-import { sendWebRemoteControlStatusChangedToWindow } from "@desktop/main/webRemoteControlStatusEvents.js";
+import {
+  broadcastWebRemoteControlStatusChanged,
+  sendWebRemoteControlStatusChangedToWindow,
+} from "@desktop/main/webRemoteControlStatusEvents.js";
 
 function createTargetWindow({
   windowDestroyed = false,
@@ -49,5 +52,23 @@ describe("sendWebRemoteControlStatusChangedToWindow", () => {
     sendWebRemoteControlStatusChangedToWindow(targetWindow, status);
 
     expect(targetWindow.webContents.send).not.toHaveBeenCalled();
+  });
+
+  it("T2.3 broadcasts the App-level status to every live window", () => {
+    const first = createTargetWindow();
+    const second = createTargetWindow();
+    const destroyed = createTargetWindow({ webContentsDestroyed: true });
+
+    broadcastWebRemoteControlStatusChanged([first, second, destroyed], status);
+
+    expect(first.webContents.send).toHaveBeenCalledWith(
+      PlatformChannels.WebRemoteControlStatusChanged,
+      status,
+    );
+    expect(second.webContents.send).toHaveBeenCalledWith(
+      PlatformChannels.WebRemoteControlStatusChanged,
+      status,
+    );
+    expect(destroyed.webContents.send).not.toHaveBeenCalled();
   });
 });

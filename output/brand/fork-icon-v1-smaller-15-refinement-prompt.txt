@@ -1,0 +1,6 @@
+Use case: precise-object-edit.
+Edit this original app icon with precise sizing. Keep the 1254 by 1254 canvas and graphite rounded-square tile completely unchanged, including location, colors, corner radius, subtle shading and transparent exterior.
+Resize ONLY the mint folded branching arrow. Its original bounding box is x=236 to1042 and y=240 to1034 (806 pixels wide by794 pixels tall).
+The REQUIRED FINAL mint emblem bounding box is approximately x=297 to982 and y=300 to975: 685 pixels wide by675 pixels tall, centered at x639,y637. This is 85% of the original emblem's width and height. Do not make it any smaller than this target.
+Preserve the exact original fork-arrow silhouette, ribbon facets, gradients, branch geometry, arrowhead and relative proportions. Simply scale that emblem uniformly down to the specified final dimensions. Fill the area the old emblem occupied with seamless matching graphite background.
+One final icon only, no labels, no new objects, no other design changes.

@@ -16,7 +16,9 @@
     },
     "packages/web": {
       // 同上：由 T3.4 的 GatewayTerminalTransport 消费。
-      "ignoreDependencies": ["@zclaudia/gateway-client"]
+      "ignoreDependencies": ["@zclaudia/gateway-client"],
+      // 手机入口由 mobile.html 引用（HTML 入口，不是 TS import），显式声明为 entry（T1.2）。
+      "entry": ["src/mobile-remote/main.tsx"]
     }
   },
   "ignore": [".agents/**", ".claude/**", "docs/**", "packages/ui/src/components/**"]

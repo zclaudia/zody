@@ -82,6 +82,7 @@ import type {
   WebRemoteControlStatus,
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceTarget,
+  RemoteAccessStatus,
   RemoteConnectionRuntimeLog,
   WindowControlsOverlayMetrics,
   WindowControlsOverlayReadyPayload,
@@ -297,6 +298,12 @@ contextBridge.exposeInMainWorld("zcode", {
     return () =>
       ipcRenderer.removeListener(PlatformChannels.WebRemoteControlStatusChanged, handler);
   },
+  setRemoteAccessEnabled: (enabled: boolean): Promise<void> =>
+    ipcRenderer.invoke(PlatformChannels.SetRemoteAccessEnabled, enabled),
+  disconnectRemoteClient: (): Promise<void> =>
+    ipcRenderer.invoke(PlatformChannels.DisconnectRemoteClient),
+  getRemoteAccessStatus: (): Promise<RemoteAccessStatus> =>
+    ipcRenderer.invoke(PlatformChannels.GetRemoteAccessStatus),
   disposeRemoteSession: (sessionId: string): Promise<void> =>
     ipcRenderer.invoke(PlatformChannels.DisposeRemoteSession, sessionId),
   isDockerAvailable: (): Promise<boolean> => ipcRenderer.invoke(PlatformChannels.IsDockerAvailable),

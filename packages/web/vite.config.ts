@@ -24,6 +24,9 @@ function resolveZCodeEnv(value: string | undefined): "test" | "production" {
 }
 
 export default defineConfig(({ mode }) => {
+  // 手机入口（mobile.html）用独立 mode 打包：产物与普通 Web 客户端分开，入口也不复用 index.html。
+  // 这样普通 Web 客户端构建产物里不会带上手机页面（T3.4 之后它才会引入 @zclaudia/gateway-client）。
+  const mobileEntry = mode === "mobile";
   // `.env*` 只提供链接常量；当前产品环境由启动脚本或 CI 注入 ZCODE_ENV。
   // 启动脚本通过 process.env 显式选择 test/production；它必须优先于 .env 文件，
   // 否则 share:test 可能被 mode 的旧配置误解析到错误 endpoint。
@@ -95,8 +98,13 @@ export default defineConfig(({ mode }) => {
       "import.meta.env.VITE_ZAI_OAUTH_ORIGIN": JSON.stringify(zaiOAuthOrigin),
     },
     build: {
+      // 手机入口产物单独放到 dist-mobile-remote，避免与普通 Web 客户端互相清空（两边都是待打包产物，
+      // 分开后各自的「产物里有没有 gateway SDK」也能独立核对）。
+      outDir: mobileEntry ? "dist-mobile-remote" : "dist",
+      emptyOutDir: true,
+      rollupOptions: mobileEntry ? { input: { index: resolve(HERE, "mobile.html") } } : undefined,
       // 生产不在浏览器产物暴露 sourceMappingURL，避免客户端侧还原业务源码。
-      sourcemap: mode === "production" ? "hidden" : true,
+      sourcemap: mode === "production" || mobileEntry ? "hidden" : true,
     },
   };
 });

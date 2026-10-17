@@ -73,6 +73,7 @@ import {
   ZCODE_AUTO_UPDATE_ENABLED,
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   DEFAULT_LOCALE,
+  DEFAULT_REMOTE_ACCESS_NAMESPACE,
   TEST_ZCODE_ENDPOINT_ORIGIN,
   ZCODE_VERSION,
   buildZCodeEndpointUrls,
@@ -123,11 +124,12 @@ import {
   resolveExplicitStartupWorkspaceBootstrap,
 } from "./startupWorkspaceDeepLinkGate.js";
 import { createWebRemoteControlManager } from "./webRemoteControlManager.js";
+import { createRemoteWorkspaceDirectory } from "./remote-access/remoteWorkspaceDirectory.js";
 import { createNodeWebRemoteControlRelayAuthProvider } from "./webRemoteControlRelayAuthProvider.js";
 import { createWebRemoteControlRelayAuthStorageProvider } from "./webRemoteControlRelayAuthStorageProvider.js";
 import { createWebRemoteControlFeatureGate } from "./webRemoteControlFeatureGate.js";
 import { reconnectWebRemoteControlWorkspaceInRenderer } from "./webRemoteControlRendererReconnect.js";
-import { sendWebRemoteControlStatusChangedToWindow } from "./webRemoteControlStatusEvents.js";
+import { broadcastWebRemoteControlStatusChanged } from "./webRemoteControlStatusEvents.js";
 import { executeDesktopCommand } from "./desktopCommandHandlers.js";
 import { clampDesktopZoomLevel, resolveDesktopZoomLevelFromFactor } from "./desktopZoom.js";
 import {
@@ -905,6 +907,13 @@ let startupOpenWorkspaceRequest: ExplicitStartupWorkspaceRequest | null =
       ? { path: startupDeepLinkWorkspacePath, source: "deep-link" }
       : null;
 
+// T2.2：各窗口 workspace / 任务快照的 App 级唯一投影。renderer 同步到达的窗口 id 就是
+// BrowserWindow.id（desktopMainIpcPlatform 用 BrowserWindow.fromWebContents(...).id 得到），
+// 目录只按这一个 id 空间存取；webContents.id 只在 attachLocalHost 内部做一次转换。
+const remoteWorkspaceDirectory = createRemoteWorkspaceDirectory({
+  getFocusedWindowId: () => BrowserWindow.getFocusedWindow()?.id,
+});
+
 const webRemoteControlManager = createWebRemoteControlManager({
   getEndpointUrls: async () => {
     const derived = buildZCodeEndpointUrls(await resolveCurrentZCodeEndpointOrigin(), {
@@ -934,24 +943,31 @@ const webRemoteControlManager = createWebRemoteControlManager({
     patchSettings: (patch) => mainSettingService.update(patch),
     logger,
   }),
-  startupRestoreStorageProvider: {
-    load: async () => (await mainSettingService.get()).webRemoteControlLastEnabledContext,
-    save: async (context) => {
+  // T2.3：启动恢复只看 App 级开关；旧的 webRemoteControlLastEnabledContext 不再读，
+  // 字段本身留到 T5.1 清理（T2.1 的迁移规则仍需要识别它）。
+  remoteAccessSettings: {
+    isEnabled: async () => (await mainSettingService.get()).remoteAccess?.enabled === true,
+    setEnabled: async (enabled) => {
+      const settings = await mainSettingService.get();
       await mainSettingService.update({
-        webRemoteControlLastEnabledContext: {
-          workspacePath: context.workspacePath,
-          workspaceIdentity: context.workspaceIdentity,
-          initialTaskId: context.initialTaskId,
+        // settings 更新是顶层浅合并，remoteAccess 必须整对象写回；
+        // 旧快照可能缺失该字段（协议里仍是 optional），这里补齐默认值。
+        remoteAccess: {
+          enabled,
+          gatewayUrl: settings.remoteAccess?.gatewayUrl ?? "",
+          namespace: settings.remoteAccess?.namespace ?? DEFAULT_REMOTE_ACCESS_NAMESPACE,
         },
       });
-    },
-    clear: async () => {
-      await mainSettingService.update({
-        webRemoteControlLastEnabledContext: undefined,
-      });
+      // Main 是开关写入方：通知所有窗口刷新设置快照（与 setAutoDownloadAndInstallUpdates 同一路径）。
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
+          win.webContents.send(PlatformChannels.SettingsChanged);
+        }
+      }
     },
   },
   featureGate: createWebRemoteControlFeatureGate(),
+  remoteWorkspaceDirectory,
   logger,
   relayMessageLogger: webRemoteControlRelayLogger,
   platformHandlers: {
@@ -978,14 +994,24 @@ const webRemoteControlManager = createWebRemoteControlManager({
     void appTelemetryCore.reportEvent(event).catch(() => {});
   },
   reportRemoteUsageEvent: (windowId, event) => {
-    const win = BrowserWindow.fromId(windowId);
+    // App 级事件可能没有来源窗口（自动启动/手机侧事件）：回退到最近 renderer context。
+    const win = windowId === undefined ? undefined : BrowserWindow.fromId(windowId);
     if (!win || win.webContents.isDestroyed()) {
+      const context = appTelemetryRuntime.getLatestRendererContext();
+      if (!context) {
+        logger.warn("[remote-usage-telemetry] renderer context unavailable", {
+          elementName: event.elementName,
+        });
+        return;
+      }
+      void appTelemetryCore.reportEvent({ context, ...event }).catch(() => {});
       return;
     }
     reportRemoteUsageEventForRenderer(win.webContents.id, event);
   },
-  onStatusChanged: (windowId, status) => {
-    sendWebRemoteControlStatusChangedToWindow(BrowserWindow.fromId(windowId), status);
+  onStatusChanged: (status) => {
+    // T2.3：App 级状态广播给所有窗口，而不是只发给启动远控的那个窗口。
+    broadcastWebRemoteControlStatusChanged(BrowserWindow.getAllWindows(), status);
   },
   attachWorkspaceHost: webRemoteControlSharedHostAttachments.attachWorkspaceHost,
   releaseWorkspaceHostAttachment: webRemoteControlSharedHostAttachments.releaseAttachment,
@@ -1098,6 +1124,12 @@ function syncImmediateAppSettings(patch: Partial<AppSettings>) {
       patch.receivePreviewUpdates,
       "settings receivePreviewUpdates changed",
     );
+  }
+
+  if (patch.remoteAccess !== undefined) {
+    // 设置页既可能走新 IPC，也可能直接 useSettings.update 写 remoteAccess；两条路径都在这里
+    // 收敛到同一个 App 级 runtime 启停方法，避免出现第二个 runtime 控制入口。
+    void webRemoteControlManagerRef.current?.applyRemoteAccessEnabled(patch.remoteAccess.enabled);
   }
 
   if (patch.shortcutBindings !== undefined) {
@@ -1528,9 +1560,8 @@ async function resolveZCodeEndpointSelection(): Promise<"production" | "test" | 
 
 async function handleZCodeEndpointChanged() {
   rebuildMenu();
-  for (const win of getApplicationWindowsExcludingCuaIndicator()) {
-    await webRemoteControlManagerRef.current?.suspend(win.id, "endpoint-changed");
-  }
+  // T2.3：远控 runtime 是 App 级单实例，endpoint 变化只需要挂起一次。
+  await webRemoteControlManagerRef.current?.suspend("endpoint-changed");
 }
 
 /** 快捷键设置页录制态（renderer 经 SetShortcutRecordingActive 同步）；true 时菜单摘除可配置 accelerator。 */

@@ -379,8 +379,10 @@ describe("Root update ready overlay", () => {
       },
     });
 
-    // Bugfix: 渲染性能优化后，feature 关闭时 Root 不再挂载 WebRemoteControlTaskSync。
-    // 这里断言不会触发 useGlobalTaskList，避免桌面 continuous 主链路被无用列表订阅唤醒。
+    // Bugfix: 渲染性能优化后，未启用远控时 Root 不再挂载 WebRemoteControlTaskSync。
+    // T2.2 起门槛是远程访问开关（AppSettings.remoteAccess.enabled）而不是构建 feature 位：
+    // 这里的设置快照没有 remoteAccess，等价于开关关闭，断言不触发 useGlobalTaskList，
+    // 避免桌面 continuous 主链路被无用列表订阅唤醒。
     expect(mockUseGlobalTaskList).not.toHaveBeenCalled();
     expect(syncWebRemoteControlTasks).not.toHaveBeenCalled();
   }, 15_000);

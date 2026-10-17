@@ -2,11 +2,9 @@ import { describe, expect, it } from "vitest";
 import { HostMessageTypes } from "../src/channels.js";
 import {
   WEB_REMOTE_CONTROL_RELAY_AUTH_PROOF_VECTORS,
-  WebRemoteControlCloseCodes,
   buildWebRemoteControlExternalQrUrl,
   matchesWebRemoteControlRoutePath,
   parseWebRemoteControlExternalQrParams,
-  resolveWebRemoteControlFailureReasonFromCloseCode,
   resolveWebRemoteControlInitialWorkspaceSelection,
   resolveWebRemoteControlRoutePathFromBaseUrl,
   resolveWebRemoteControlWorkspaceKey,
@@ -159,16 +157,6 @@ describe("matchesWebRemoteControlRoutePath", () => {
 
   it("does not accept nested static asset paths as the app route", () => {
     expect(matchesWebRemoteControlRoutePath("/remote/favicon.ico", "/remote")).toBe(false);
-  });
-});
-
-describe("resolveWebRemoteControlFailureReasonFromCloseCode", () => {
-  it("maps invalid mobile connection close codes", () => {
-    expect(
-      resolveWebRemoteControlFailureReasonFromCloseCode(
-        WebRemoteControlCloseCodes.InvalidMobileConnection,
-      ),
-    ).toBe("invalid-mobile-connection");
   });
 });
 

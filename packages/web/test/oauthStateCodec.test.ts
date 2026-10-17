@@ -11,9 +11,8 @@ describe("oauthStateCodec", () => {
   it("round-trips unicode payloads through base64url state", () => {
     const state = buildOAuthState({
       nonce: "nonce-1",
-      app_return_to:
-        "https://zcode.z.ai/web-remote?remoteControlToken=token&relayOrigin=https%3A%2F%2Frelay.example&ignored=1",
-      return_to: "http://192.168.1.8:5173/web-remote/callback",
+      app_return_to: "https://zcode.z.ai/cn/share/会话-1",
+      return_to: "http://192.168.1.8:5173/cn/share/callback",
     });
 
     expect(state).not.toContain("+");
@@ -21,9 +20,8 @@ describe("oauthStateCodec", () => {
     expect(state).not.toContain("=");
     expect(parseOAuthState(state)).toEqual({
       nonce: "nonce-1",
-      app_return_to:
-        "https://zcode.z.ai/web-remote?remoteControlToken=token&relayOrigin=https%3A%2F%2Frelay.example&ignored=1",
-      return_to: "http://192.168.1.8:5173/web-remote/callback",
+      app_return_to: "https://zcode.z.ai/cn/share/会话-1",
+      return_to: "http://192.168.1.8:5173/cn/share/callback",
     });
   });
 
@@ -42,13 +40,15 @@ describe("oauthStateCodec", () => {
     expect(isTrustedDevReturnTo(new URL("http://127.0.0.1:5173/other"))).toBe(false);
   });
 
-  it("sanitizes app_return_to to same-origin web-remote paths and allowed query keys", () => {
+  it("sanitizes app_return_to to same-origin paths without forwarding query params", () => {
+    // T1.4：旧的 `/web-remote` relay 参数白名单（remoteControlToken / relayOrigin）已删除，
+    // 回跳地址只保留路径本身。
     expect(
       resolveSafeAppReturnTo(
         "https://zcode.z.ai/web-remote?remoteControlToken=token&relayOrigin=https%3A%2F%2Frelay.example&ignored=1",
         { currentOrigin: "https://zcode.z.ai" },
       ),
-    ).toBe("/web-remote?remoteControlToken=token&relayOrigin=https%3A%2F%2Frelay.example");
+    ).toBe("/web-remote");
 
     expect(
       resolveSafeAppReturnTo("https://evil.example/web-remote?remoteControlToken=token", {
@@ -60,7 +60,7 @@ describe("oauthStateCodec", () => {
       resolveSafeAppReturnTo("http://192.168.1.8:5173/web-remote?remoteControlToken=token", {
         currentOrigin: "http://192.168.1.8:5173",
       }),
-    ).toBe("/web-remote?remoteControlToken=token");
+    ).toBe("/web-remote");
   });
 
   it("accepts a same-origin share route as a safe OAuth return target", () => {

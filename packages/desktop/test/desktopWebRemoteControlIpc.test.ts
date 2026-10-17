@@ -11,12 +11,18 @@ const h = vi.hoisted(() => ({
 }));
 
 function withStartAuthorization(manager: {
-  start(windowId: number, context: WebRemoteControlContext): Promise<unknown>;
-  resetPairing(windowId: number, context: WebRemoteControlContext): Promise<unknown>;
-  stop(windowId: number): Promise<void>;
-  getStatus(windowId: number): unknown;
+  start(context: WebRemoteControlContext): Promise<unknown>;
+  resetPairing(context: WebRemoteControlContext): Promise<unknown>;
+  stop(): Promise<void>;
+  getStatus(): unknown;
+  setRemoteAccessEnabled?(enabled: boolean): Promise<void>;
+  disconnectRemoteClient?(): void;
+  getRemoteAccessStatus?(): Promise<unknown>;
 }) {
   return {
+    setRemoteAccessEnabled: vi.fn(async () => {}),
+    disconnectRemoteClient: vi.fn(),
+    getRemoteAccessStatus: vi.fn(async () => ({ enabled: false, status: { status: "idle" } })),
     ...manager,
     authorizeStart: vi.fn(
       (windowId: number, context: WebRemoteControlContext): WebRemoteControlStartAuthorization => ({
@@ -32,14 +38,14 @@ function withStartAuthorization(manager: {
         windowId: number,
         context: WebRemoteControlContext,
         _authorization: WebRemoteControlStartAuthorization,
-      ) => manager.start(windowId, context),
+      ) => manager.start(context),
     ),
     resetPairingAuthorized: vi.fn(
       (
         windowId: number,
         context: WebRemoteControlContext,
         _authorization: WebRemoteControlStartAuthorization,
-      ) => manager.resetPairing(windowId, context),
+      ) => manager.resetPairing(context),
     ),
   };
 }
@@ -91,7 +97,8 @@ describe("Web Remote Control IPC telemetry", () => {
     );
 
     expect(result).toEqual({ status: "running" });
-    expect(start).toHaveBeenCalledWith(17, context);
+    // T2.3：start 是 App 级接口，windowId 只通过授权票据绑定。
+    expect(start).toHaveBeenCalledWith(context);
     expect(reportRemoteUsageEvent).toHaveBeenCalledWith(73, {
       elementName: "web_remote_control_start_result",
       eventRegion: "web_remote_control",
@@ -132,7 +139,7 @@ describe("Web Remote Control IPC telemetry", () => {
     );
 
     expect(result).toEqual({ status: "running" });
-    expect(resetPairing).toHaveBeenCalledWith(17, context);
+    expect(resetPairing).toHaveBeenCalledWith(context);
     expect(reportRemoteUsageEvent).toHaveBeenCalledWith(74, {
       elementName: "web_remote_control_start_result",
       eventRegion: "web_remote_control",
@@ -228,6 +235,9 @@ describe("Web Remote Control IPC telemetry", () => {
         resetPairingAuthorized: vi.fn(),
         stop: vi.fn(),
         getStatus: vi.fn(),
+        setRemoteAccessEnabled: vi.fn(),
+        disconnectRemoteClient: vi.fn(),
+        getRemoteAccessStatus: vi.fn(),
       },
     });
 
@@ -237,5 +247,65 @@ describe("Web Remote Control IPC telemetry", () => {
     ).resolves.toEqual({ status: "running" });
     expect(authorizeStart).toHaveBeenCalledWith(17, context);
     expect(startAuthorized).toHaveBeenCalledWith(17, context, authorization);
+  });
+
+  it("T2.3 新 IPC：设置远程访问开关并转调 App 级 runtime", async () => {
+    const setRemoteAccessEnabled = vi.fn(async () => {});
+    const { registerWebRemoteControlIpcHandlers } =
+      await import("../src/main/desktopWebRemoteControlIpc.js");
+    registerWebRemoteControlIpcHandlers({
+      reportRemoteUsageEvent: vi.fn(),
+      webRemoteControlManager: withStartAuthorization({
+        start: vi.fn(),
+        resetPairing: vi.fn(),
+        stop: vi.fn(),
+        getStatus: vi.fn(),
+        setRemoteAccessEnabled,
+      }),
+    });
+
+    await h.handlers.get(PlatformChannels.SetRemoteAccessEnabled)?.(
+      { sender: { id: 80 } },
+      true,
+    );
+
+    expect(setRemoteAccessEnabled).toHaveBeenCalledWith(true);
+    // 布尔值之外的载荷必须拒绝，避免把任意 IPC 值当成开关。
+    await expect(
+      h.handlers.get(PlatformChannels.SetRemoteAccessEnabled)?.(
+        { sender: { id: 80 } },
+        "true",
+      ),
+    ).rejects.toThrow("boolean");
+  });
+
+  it("T2.3 新 IPC：断开手机与查询 App 级状态不再依赖发送窗口", async () => {
+    const disconnectRemoteClient = vi.fn();
+    const getRemoteAccessStatus = vi.fn(async () => ({
+      enabled: true,
+      status: { status: "active" as const },
+    }));
+    const { registerWebRemoteControlIpcHandlers } =
+      await import("../src/main/desktopWebRemoteControlIpc.js");
+    registerWebRemoteControlIpcHandlers({
+      reportRemoteUsageEvent: vi.fn(),
+      webRemoteControlManager: withStartAuthorization({
+        start: vi.fn(),
+        resetPairing: vi.fn(),
+        stop: vi.fn(),
+        getStatus: vi.fn(),
+        disconnectRemoteClient,
+        getRemoteAccessStatus,
+      }),
+    });
+
+    await h.handlers.get(PlatformChannels.DisconnectRemoteClient)?.({ sender: { id: 81 } });
+    await expect(
+      h.handlers.get(PlatformChannels.GetRemoteAccessStatus)?.({ sender: { id: 81 } }),
+    ).resolves.toEqual({ enabled: true, status: { status: "active" } });
+
+    expect(disconnectRemoteClient).toHaveBeenCalledOnce();
+    expect(getRemoteAccessStatus).toHaveBeenCalledOnce();
+    expect(h.fromWebContents).not.toHaveBeenCalled();
   });
 });

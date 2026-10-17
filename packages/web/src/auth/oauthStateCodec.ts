@@ -2,9 +2,12 @@ import { DEFAULT_ZCODE_ENDPOINT_ORIGIN } from "@zcode/shared";
 
 const PRODUCTION_WEB_REMOTE_ORIGIN = DEFAULT_ZCODE_ENDPOINT_ORIGIN;
 const WEB_REMOTE_PATHS = new Set(["/web-remote", "/web-remote/"]);
-const WEB_CALLBACK_PATHS = new Set(["/web-remote/callback", "/cn/share/callback", "/share/callback"]);
+const WEB_CALLBACK_PATHS = new Set([
+  "/web-remote/callback",
+  "/cn/share/callback",
+  "/share/callback",
+]);
 const SHARE_PATH_PATTERN = /^\/(?:cn\/share|share)\/[A-Za-z0-9._~-]{1,512}$/u;
-const APP_RETURN_QUERY_ALLOWLIST = new Set(["remoteControlToken", "relayOrigin"]);
 const PRIVATE_DEV_RETURN_TO_PATTERN =
   /^https?:\/\/(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+)(:\d+)?(\/|$)/;
 
@@ -107,18 +110,9 @@ export function resolveSafeAppReturnTo(
     return null;
   }
 
-  if (SHARE_PATH_PATTERN.test(url.pathname)) return url.pathname;
-
-  const safeSearch = new URLSearchParams();
-  for (const key of APP_RETURN_QUERY_ALLOWLIST) {
-    const existing = url.searchParams.get(key);
-    if (existing !== null) {
-      safeSearch.set(key, existing);
-    }
-  }
-
-  const query = safeSearch.toString();
-  return `${url.pathname}${query ? `?${query}` : ""}`;
+  // `/web-remote` 页面路由已删除（T1.4），它原先透传的 `remoteControlToken` / `relayOrigin`
+  // 白名单一并移除；这里只保留路径本身，查询串不再带进 OAuth 回跳地址。
+  return url.pathname;
 }
 
 export function buildReturnToCallbackUrl(

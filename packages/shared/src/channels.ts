@@ -17,6 +17,7 @@ import type {
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceTarget,
 } from "./web-remote-control.js";
+import type { RemoteAccessStatus } from "./remoteAccess.js";
 import type { AppSettings, Locale } from "./protocol.js";
 import type { StorageCleanRequest, StorageCleanResult, StorageUsageSnapshot } from "./storage.js";
 import type {
@@ -223,12 +224,18 @@ export const PlatformChannels = {
   /** 为当前 workspace 开启 Web 远程控制 */
   StartWebRemoteControl: "zcode:start-web-remote-control",
   ResetWebRemoteControlPairing: "zcode:reset-web-remote-control-pairing",
-  /** 关闭当前窗口的 Web 远程控制 */
+  /** 关闭当前窗口的 Web 远程控制（T5.1 删除；T2.3 起内部转调 App 级 stop） */
   StopWebRemoteControl: "zcode:stop-web-remote-control",
-  /** 查询当前窗口的 Web 远程控制状态 */
+  /** 查询当前窗口的 Web 远程控制状态（T5.1 删除；T2.3 起返回 App 级状态） */
   GetWebRemoteControlStatus: "zcode:get-web-remote-control-status",
-  /** Main → Renderer：当前窗口 Web 远程控制状态变化 */
+  /** Main → Renderer：App 级 Web 远程控制状态变化（T2.3 起广播给所有窗口） */
   WebRemoteControlStatusChanged: "zcode:web-remote-control-status-changed",
+  /** Renderer → Main：设置 App 级远程访问总开关（T2.3 起，替代 Start/StopWebRemoteControl） */
+  SetRemoteAccessEnabled: "zcode:set-remote-access-enabled",
+  /** Renderer → Main：断开当前连接的手机，保持远程访问开关不变 */
+  DisconnectRemoteClient: "zcode:disconnect-remote-client",
+  /** Renderer → Main：查询 App 级远程访问状态（开关 + 全局 runtime 状态） */
+  GetRemoteAccessStatus: "zcode:get-remote-access-status",
   /** 释放当前窗口里的远程 session */
   DisposeRemoteSession: "zcode:dispose-remote-session",
   /** Renderer → Main：检查本机 Docker daemon 是否可用 */
@@ -838,6 +845,18 @@ export interface PlatformChannelMap {
   [PlatformChannels.WebRemoteControlStatusChanged]: {
     request: WebRemoteControlStatus;
     response: void;
+  };
+  [PlatformChannels.SetRemoteAccessEnabled]: {
+    request: boolean;
+    response: void;
+  };
+  [PlatformChannels.DisconnectRemoteClient]: {
+    request: void;
+    response: void;
+  };
+  [PlatformChannels.GetRemoteAccessStatus]: {
+    request: void;
+    response: RemoteAccessStatus;
   };
   [PlatformChannels.DisposeRemoteSession]: {
     request: string;

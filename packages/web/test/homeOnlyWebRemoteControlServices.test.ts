@@ -30,7 +30,8 @@ describe("createHomeOnlyWebRemoteControlServices", () => {
     });
     vi.stubGlobal("navigator", { language: "zh-CN" });
 
-    const { createHomeOnlyWebRemoteControlServices } = await import("../src/main.js");
+    const { createHomeOnlyWebRemoteControlServices } =
+      await import("../src/mobile-remote/homeOnlyServices.js");
     const services = createHomeOnlyWebRemoteControlServices();
 
     await expect(services.oauthService.restoreCachedSession()).resolves.toBeNull();
@@ -94,7 +95,8 @@ describe("createHomeOnlyWebRemoteControlServices", () => {
     });
     vi.stubGlobal("navigator", { language: "zh-CN" });
 
-    const { createHomeOnlyWebRemoteControlServices } = await import("../src/main.js");
+    const { createHomeOnlyWebRemoteControlServices } =
+      await import("../src/mobile-remote/homeOnlyServices.js");
     const services = createHomeOnlyWebRemoteControlServices();
     const disposable = services.broadcastService.onMessage(() => {});
 

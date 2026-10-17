@@ -37,6 +37,13 @@ export function createDesktopPlatform(options: {
     getWebRemoteControlStatus: () => window.zcode.getWebRemoteControlStatus(),
     onWebRemoteControlStatusChanged: (handler) =>
       window.zcode.onWebRemoteControlStatusChanged?.(handler) ?? (() => {}),
+    setRemoteAccessEnabled: (enabled) =>
+      window.zcode.setRemoteAccessEnabled?.(enabled) ?? Promise.resolve(),
+    disconnectRemoteClient: () =>
+      window.zcode.disconnectRemoteClient?.() ?? Promise.resolve(),
+    getRemoteAccessStatus: () =>
+      window.zcode.getRemoteAccessStatus?.() ??
+      Promise.resolve({ enabled: false, status: { status: "idle" as const } }),
     disposeRemoteSession: (sessionId) => window.zcode.disposeRemoteSession(sessionId),
     isDockerAvailable: () => window.zcode.isDockerAvailable(),
     listWSLDistros: () => window.zcode.listWSLDistros(),

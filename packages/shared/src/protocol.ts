@@ -6,6 +6,7 @@ import type { ZCodeProvider } from "./zcode-task-types-core.js";
 import type { WorkspacePurpose } from "./workspacePurpose.js";
 import type { DynamicWorkflowMode } from "./dynamic-workflow-feature.js";
 import type { EmbeddedBrowserViewportPreference } from "./browser-use/command-metadata.js";
+import type { RemoteAccessSettings } from "./remoteAccess.js";
 
 // ── Domain types ──
 
@@ -402,6 +403,11 @@ export interface AppSettings {
     workspaceIdentity?: string;
     initialTaskId?: string;
   };
+  /**
+   * App 级远程访问（zclaudia-gateway）开关与地址；backend 凭证不在这里，
+   * 只存 Main 的凭据服务。缺省等价于 `{ enabled: false, gatewayUrl: "", namespace: "zcode" }`。
+   */
+  remoteAccess?: RemoteAccessSettings;
   /** 设置页里的临时 endpoint override；正式/测试默认 base url 由 ZCODE_BASE_URL env 管理。 */
   zcodeEndpointOrigin?: string;
 }

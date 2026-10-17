@@ -24,6 +24,7 @@ import type {
   WebRemoteControlWorkspaceTarget,
 } from "./web-remote-control.js";
 import type { AppSettings, Locale } from "./protocol.js";
+import type { RemoteAccessStatus } from "./remoteAccess.js";
 import type { ArmsCustomEventPayload, RendererTelemetryEventPayload } from "./telemetry.js";
 import type {
   RendererActionTraceBatchV1,
@@ -753,8 +754,20 @@ export interface IPlatformService {
   /** 查询当前窗口 Web 远程控制状态 */
   getWebRemoteControlStatus(): Promise<WebRemoteControlStatus>;
 
-  /** 订阅当前窗口 Web 远程控制状态变化；旧平台可不实现，UI 会保留轮询兜底 */
+  /**
+   * 订阅 App 级 Web 远程控制状态变化；旧平台可不实现，UI 会保留轮询兜底。
+   * T2.3 起 Main 把状态广播给所有窗口，回调不再区分窗口。
+   */
   onWebRemoteControlStatusChanged?(handler: (status: WebRemoteControlStatus) => void): () => void;
+
+  /** 设置 App 级远程访问总开关（T2.3 起；Main 负责启停唯一 runtime）。 */
+  setRemoteAccessEnabled?(enabled: boolean): Promise<void>;
+
+  /** 断开当前连接的手机，保持远程访问开关不变。 */
+  disconnectRemoteClient?(): Promise<void>;
+
+  /** 查询 App 级远程访问状态（开关 + 全局 runtime 状态）。 */
+  getRemoteAccessStatus?(): Promise<RemoteAccessStatus>;
 
   /** 释放当前窗口里已创建的远程 session */
   disposeRemoteSession(sessionId: string): Promise<void>;

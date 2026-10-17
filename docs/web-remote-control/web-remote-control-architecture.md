@@ -54,7 +54,6 @@
 | 实时同步、snapshot 与 gap 恢复     | [任务实时同步](./task-realtime-sync.md)                              |
 | 输入 admission、队列与跨端命令路由 | [任务命令队列](../web-remote-control-task-command-queue.md)          |
 | V4 静态资源发布                    | [V4 部署](./remote-v4-static-deployment.md)                          |
-| 独立 OAuth 登录入口                | [Web Remote Login](./web-remote-login.md)                            |
 
 下文描述当前技术实现；[最小跑通规划](./web-remote-control-minimal-plan.md)仅作为历史记录，
 其中的仓库内 relay、专用 mobile host 和旧联调命令不适用于当前链路。
@@ -458,7 +457,7 @@ Mobile web 连接流程：
 7. `connectViaProtocol()` 后渲染 `Root`；窄屏由 `WebRemoteControlMobileShell` 管理首页/聊天页，
    宽屏使用远控侧栏。初始 workspace 的选择与页面落点是两种状态，不能把选中 task 等同于自动进入聊天。
 
-`/web-remote` 仍是 ZAI OAuth 登录与等待页入口；`remoteControlToken` / `relayOrigin` 只属于旧 `/web-remote` 行为，不适用于新的 `/remote`、`/remote/v3` 或 `/remote/v4` QR route。
+`/web-remote` 页面路由、登录/等待页以及 `remoteControlToken` / `relayOrigin` 旧 bootstrap 已删除；OAuth 回调（含 `/web-remote/callback`）与 `webAuthService` 仍与会话分享共用，但不再向回跳地址透传这两个参数。
 
 ## Feature Exposure
 

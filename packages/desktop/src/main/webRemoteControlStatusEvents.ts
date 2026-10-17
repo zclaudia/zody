@@ -24,3 +24,18 @@ export function sendWebRemoteControlStatusChangedToWindow(
   // 但 webContents 已销毁。发送前同时校验两层对象，避免退出/刷新时 IPC send 抛错。
   targetWindow.webContents.send(PlatformChannels.WebRemoteControlStatusChanged, status);
 }
+
+/**
+ * 把 App 级远控状态广播给所有窗口（T2.3）。
+ *
+ * runtime 改为 App 级后状态不再属于某个窗口；只发给启动窗口会让其他窗口的弹层/触发器
+ * 一直停留在旧状态。逐个窗口复用同一个存活校验，关闭中的窗口自动跳过。
+ */
+export function broadcastWebRemoteControlStatusChanged(
+  targetWindows: Iterable<WebRemoteControlStatusEventTarget>,
+  status: WebRemoteControlStatus,
+): void {
+  for (const targetWindow of targetWindows) {
+    sendWebRemoteControlStatusChangedToWindow(targetWindow, status);
+  }
+}

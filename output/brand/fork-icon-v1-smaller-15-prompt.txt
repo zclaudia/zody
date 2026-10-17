@@ -1,0 +1,6 @@
+Use case: precise-object-edit.
+Edit target: the attached original mint branch-arrow application icon.
+Make exactly one change: uniformly shrink ONLY the entire mint-green branching arrow emblem to 85% of its current width and 85% of its current height (a 15% reduction in each linear dimension). Scale about the emblem's current bounding-box center, so its visual center stays in precisely the same location. Increase the surrounding dark breathing room accordingly.
+Preserve the entire original design of the emblem: same branch angles, arrowhead, proportions, lower stem, folded-ribbon intersections, facets, gradients, rounded tips and mint shades. Do not redesign, simplify or rotate it.
+Keep the graphite rounded-square tile exactly the same size, position, corner radius, colors and surface finish as the original. Preserve the original square canvas dimensions and its transparent exterior. Reconstruct the newly exposed background where the larger arrow used to be so it matches the existing graphite material seamlessly.
+Output one finished icon, no text, no presentation or additional objects. The only observable difference should be the smaller central emblem.

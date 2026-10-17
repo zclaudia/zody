@@ -1,5 +1,5 @@
 import type { MobileSessionCreateTelemetry } from "./sessionCreateTelemetry.js";
-/* eslint-disable max-lines -- Web 远程控制共享协议同时保留旧 /web-remote 类型和新外部 relay 类型，后续拆分时再按 transport/app payload 分文件。 */
+/* eslint-disable max-lines -- Web 远程控制共享协议同时保留外部 relay 类型和 app payload，后续拆分时再按 transport/app payload 分文件。 */
 import type { DockerContainerInfo, SSHConfigAliasOption, WSLDistro } from "./platform.js";
 import type {
   CreateTempTextAttachmentRequest,
@@ -331,46 +331,11 @@ export function parseWebRemoteControlExternalQrParams(
   };
 }
 
-export type WebRemoteControlTokenKind = "window-pairing";
-
-export type WebRemoteControlWindowFailureReason = WebRemoteControlFailureReason;
-
-export const WebRemoteControlCloseCodes = {
-  SessionNotFound: 4004,
-  SessionConflict: 4009,
-  DesktopDisconnected: 4010,
-  SessionExpired: 4011,
-  WorkspaceClosed: 4012,
-  InvalidMobileConnection: 4013,
-} as const;
-
-export function resolveWebRemoteControlFailureReasonFromCloseCode(
-  code: number,
-): WebRemoteControlFailureReason | null {
-  switch (code) {
-    case WebRemoteControlCloseCodes.SessionNotFound:
-      return "session-not-found";
-    case WebRemoteControlCloseCodes.SessionConflict:
-      return "session-conflict";
-    case WebRemoteControlCloseCodes.DesktopDisconnected:
-      return "desktop-disconnected";
-    case WebRemoteControlCloseCodes.SessionExpired:
-      return "session-expired";
-    case WebRemoteControlCloseCodes.WorkspaceClosed:
-      return "workspace-closed";
-    case WebRemoteControlCloseCodes.InvalidMobileConnection:
-      return "invalid-mobile-connection";
-    default:
-      return null;
-  }
-}
-
 export interface WebRemoteControlStartResult {
   status: Extract<WebRemoteControlStatusKind, "running" | "connecting" | "active">;
   sessionId: string;
   windowControlSessionId?: string;
   deviceToken?: string;
-  tokenKind?: WebRemoteControlTokenKind;
   expiresAt?: number;
   qrUrl: string;
   connectUrl: string;
@@ -394,7 +359,6 @@ export interface WebRemoteControlStatus {
   sessionId?: string;
   windowControlSessionId?: string;
   deviceToken?: string;
-  tokenKind?: WebRemoteControlTokenKind;
   expiresAt?: number;
   mobileConnected?: boolean;
   mobileViewState?: WebRemoteControlMobileViewState;
@@ -407,41 +371,6 @@ export interface WebRemoteControlStatus {
   initialTaskId?: string;
   error?: string;
   failure?: WebRemoteControlFailure;
-}
-
-export interface WebRemoteControlSessionCreateRequest {
-  tunnelId: string;
-  workspacePath: string;
-  workspaceIdentity?: string;
-  remoteSessionId?: string;
-  initialTaskId?: string;
-}
-
-export interface WebRemoteControlSessionCreateResponse extends WebRemoteControlStartResult {
-  token: string;
-}
-
-export interface WebRemoteControlWindowSession {
-  windowControlSessionId: string;
-  deviceToken: string;
-  tokenKind: WebRemoteControlTokenKind;
-  connectUrl: string;
-  qrUrl: string;
-  expiresAt: number;
-  status: "idle" | "starting" | "running" | "active" | "error";
-}
-
-export interface WebRemoteControlBootstrapResult {
-  workspacePath: string;
-  workspaceIdentity?: string;
-  remoteSessionId?: string;
-  initialTaskId?: string;
-  wsUrl: string;
-}
-
-export interface WebRemoteControlBootstrapErrorResponse {
-  error: string;
-  reason: WebRemoteControlFailureReason;
 }
 
 export interface WebRemoteControlPlatformMethodArgsMap {
@@ -783,8 +712,6 @@ export interface WebRemoteControlWorkspaceSwitchOptions {
   markTaskReadExpectedUnreadAt?: number;
 }
 
-export interface WebRemoteControlWorkspaceSwitchResult extends WebRemoteControlSessionCreateResponse {}
-
 export interface WebRemoteControlMobileViewState {
   activeWorkspaceKey?: string;
   activeTaskId?: string;
@@ -825,13 +752,6 @@ export interface WebRemoteControlWindowBootstrapResult {
   tasks: WebRemoteControlTaskTarget[];
   initialViewState?: WebRemoteControlMobileViewState;
   mobileViewState?: WebRemoteControlMobileViewState;
-}
-
-export interface WebRemoteControlWindowControlReadyEvent {
-  type: "window-control-ready";
-  windowControlSessionId: string;
-  mobileConnectionId: string;
-  expiresAt: number;
 }
 
 export function resolveWebRemoteControlWorkspaceKey(
@@ -903,138 +823,3 @@ export function resolveWebRemoteControlInitialWorkspaceSelection({
     canBridge: true,
   };
 }
-
-export interface WebRemoteControlWorkspaceListRequest {
-  type: "workspace-list-request";
-  requestId: string;
-  sessionId: string;
-}
-
-export interface WebRemoteControlWorkspaceSwitchRequest {
-  type: "workspace-switch-request";
-  requestId: string;
-  sessionId: string;
-  workspaceKey: string;
-  taskId?: string;
-}
-
-export interface WebRemoteControlWorkspaceListSuccessResponse {
-  type: "workspace-list-response";
-  requestId: string;
-  sessionId: string;
-  success: true;
-  result: WebRemoteControlWorkspaceListResult;
-}
-
-export interface WebRemoteControlWorkspaceSwitchSuccessResponse {
-  type: "workspace-switch-response";
-  requestId: string;
-  sessionId: string;
-  success: true;
-  result: WebRemoteControlWorkspaceSwitchResult;
-}
-
-export interface WebRemoteControlWorkspaceListErrorResponse {
-  type: "workspace-list-response";
-  requestId: string;
-  sessionId: string;
-  success: false;
-  error: string;
-}
-
-export interface WebRemoteControlWorkspaceSwitchErrorResponse {
-  type: "workspace-switch-response";
-  requestId: string;
-  sessionId: string;
-  success: false;
-  error: string;
-}
-
-export type WebRemoteControlWorkspaceControlRequest =
-  | WebRemoteControlWorkspaceListRequest
-  | WebRemoteControlWorkspaceSwitchRequest;
-
-export type WebRemoteControlWorkspaceControlResponse =
-  | WebRemoteControlWorkspaceListSuccessResponse
-  | WebRemoteControlWorkspaceSwitchSuccessResponse
-  | WebRemoteControlWorkspaceListErrorResponse
-  | WebRemoteControlWorkspaceSwitchErrorResponse;
-
-export interface WebRemoteControlWindowBootstrapRequest {
-  type: "window-bootstrap-request";
-  requestId: string;
-  windowControlSessionId: string;
-}
-
-export interface WebRemoteControlWindowBootstrapSuccessResponse {
-  type: "window-bootstrap-response";
-  requestId: string;
-  windowControlSessionId: string;
-  success: true;
-  result: WebRemoteControlWindowBootstrapResult;
-}
-
-export interface WebRemoteControlWindowBootstrapErrorResponse {
-  type: "window-bootstrap-response";
-  requestId: string;
-  windowControlSessionId: string;
-  success: false;
-  error: string;
-}
-
-export interface WebRemoteControlWorkspaceBridgeRequest {
-  type: "workspace-bridge-request";
-  requestId: string;
-  windowControlSessionId: string;
-  bridgeSessionId: string;
-  bridgeToken: string;
-  workspaceKey: string;
-  taskId?: string;
-}
-
-export interface WebRemoteControlWorkspaceBridgeSuccessResponse {
-  type: "workspace-bridge-response";
-  requestId: string;
-  windowControlSessionId: string;
-  success: true;
-  bridge: WebRemoteControlWorkspaceBridge;
-}
-
-export interface WebRemoteControlWorkspaceBridgeErrorResponse {
-  type: "workspace-bridge-response";
-  requestId: string;
-  windowControlSessionId: string;
-  success: false;
-  error: string;
-}
-
-export interface WebRemoteControlMobileViewStateUpdate {
-  type: "mobile-view-state-update";
-  windowControlSessionId: string;
-  viewState: WebRemoteControlMobileViewState;
-  deviceInfo?: WebRemoteControlMobileDeviceInfo;
-}
-
-export type WebRemoteControlWindowControlRequest =
-  | WebRemoteControlWindowBootstrapRequest
-  | WebRemoteControlWorkspaceBridgeRequest
-  | WebRemoteControlMobileViewStateUpdate;
-
-export type WebRemoteControlWindowControlResponse =
-  | WebRemoteControlWindowBootstrapSuccessResponse
-  | WebRemoteControlWindowBootstrapErrorResponse
-  | WebRemoteControlWorkspaceBridgeSuccessResponse
-  | WebRemoteControlWorkspaceBridgeErrorResponse;
-
-export type RelayDesktopControlEvent =
-  | { type: "tunnel-registered"; tunnelId: string }
-  | { type: "window-control-registered"; tunnelId: string }
-  | { type: "web-remote-control-session-request"; sessionId: string }
-  | { type: "mobile-connected"; windowControlSessionId: string }
-  | { type: "mobile-disconnected"; windowControlSessionId: string }
-  | WebRemoteControlPlatformRequest
-  | WebRemoteControlPlatformResponse
-  | WebRemoteControlWorkspaceControlRequest
-  | WebRemoteControlWorkspaceControlResponse
-  | WebRemoteControlWindowControlRequest
-  | WebRemoteControlWindowControlResponse;

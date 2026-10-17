@@ -20,20 +20,21 @@ function sliceBetween(source: string, startMarker: string, endMarker: string): s
 }
 
 describe("web remote control Assistant code-comment capability", () => {
-  it("仅在两条承载 workspace 会话的 /remote bridge Root 上显式开启", async () => {
+  it("仅在承载 workspace 会话的 /remote bridge Root 上显式开启", async () => {
     const source = await readFile(resolve(process.cwd(), "packages/web/src/main.tsx"), "utf8");
+    // T1.4 删除了 `bootstrapWebRemoteControlByToken` 的 token bridge Root；
+    // 手机启动模块在 T1.2 迁到 mobile-remote/bootstrap.tsx，剩下的两个 Root 在那边。
+    const mobileBootstrapSource = await readFile(
+      resolve(process.cwd(), "packages/web/src/mobile-remote/bootstrap.tsx"),
+      "utf8",
+    );
     const externalRelayBridgeRoot = sliceBetween(
-      source,
+      mobileBootstrapSource,
       "const renderExternalRelayRoot =",
       "const renderExternalRelayHomeOnlyRoot =",
     );
-    const tokenBridgeRoot = sliceBetween(
-      source,
-      "const renderBridgeRoot =",
-      "const openWorkspaceBridge =",
-    );
     const externalRelayHomeOnlyRoot = sliceBetween(
-      source,
+      mobileBootstrapSource,
       "const renderExternalRelayHomeOnlyRoot =",
       "bootstrapPairedSession =",
     );
@@ -44,10 +45,11 @@ describe("web remote control Assistant code-comment capability", () => {
     );
 
     expect(externalRelayBridgeRoot).toContain("assistantCodeCommentCardsEnabled");
-    expect(tokenBridgeRoot).toContain("assistantCodeCommentCardsEnabled");
     expect(externalRelayHomeOnlyRoot).not.toContain("assistantCodeCommentCardsEnabled");
     expect(ordinaryWebServerRoot).not.toContain("assistantCodeCommentCardsEnabled");
-    expect(source.match(/assistantCodeCommentCardsEnabled/g)).toHaveLength(2);
+    expect(
+      `${source}${mobileBootstrapSource}`.match(/assistantCodeCommentCardsEnabled/g),
+    ).toHaveLength(1);
   });
 
   it("终态 replay row 通过共享投影隐藏 directive，并保留 remote review scope", () => {

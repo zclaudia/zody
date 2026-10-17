@@ -1,24 +1,18 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
-/* eslint-disable max-lines -- Web 远程控制弹层集中处理启动、状态轮询、二维码和错误文案，后续稳定后再拆分子组件。 */
-import type {
-  BotProvider,
-  WebRemoteControlFailure,
-  WebRemoteControlStatus,
-} from "@zcode/shared";
+/* eslint-disable max-lines -- Web 远程控制弹层集中处理状态同步、显式开关、二维码和错误文案，Bot Channel 入口已拆到 WebRemoteControlBotsEntry。 */
+import type { WebRemoteControlFailure, WebRemoteControlStatus } from "@zcode/shared";
 import { resolveWebRemoteControlWorkspaceKey } from "@zcode/shared";
 import {
-  Bot as BotIcon,
   CopyIcon,
   LoaderCircle,
   MonitorSmartphone,
+  PlugZap,
   RefreshCw,
   Smartphone,
   Unplug,
   XIcon,
 } from "lucide-react";
-import { BotsDialog } from "@/BotsDialog.js";
-import { ProviderIcon } from "@/BotsDialog/shared.js";
 import { Button } from "@/components/ui/button.js";
 import {
   Dialog,
@@ -32,21 +26,7 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
-import { getBotProviderRegionTagLabelId } from "@/botsUi.js";
-
-type RemoteControlBotProvider = Extract<
-  BotProvider,
-  "weixin" | "feishu" | "lark" | "telegram"
->;
-
-const REMOTE_CONTROL_BOT_ENTRIES: Array<{
-  provider: RemoteControlBotProvider;
-}> = [
-  { provider: "weixin" },
-  { provider: "feishu" },
-  { provider: "lark" },
-  { provider: "telegram" },
-];
+import { WebRemoteControlBotsEntry } from "@/WebRemoteControlBotsEntry.js";
 
 export function isSameWebRemoteControlTarget(
   status: WebRemoteControlStatus,
@@ -99,6 +79,25 @@ export function isReusableWebRemoteControlSession(
   // desktop-disconnected。只有已经连上手机的会话才跨 workspace 复用，避免未连接的旧二维码
   // 继续把新扫码用户带回旧默认 workspace。
   return Boolean(status.mobileConnected && (status.windowControlSessionId ?? status.sessionId));
+}
+
+/**
+ * 弹层只采用「和当前 workspace/remoteSessionId 匹配」「已连手机可跨 workspace 复用」或
+ * 无会话身份的 idle/error 状态；其他 workspace 的会话状态继续由那个窗口自己显示。
+ * 打开弹层不再按这个判断去 start，只用于决定同步/轮询到的状态要不要落到本地。
+ */
+function shouldApplyWebRemoteControlStatus(
+  status: WebRemoteControlStatus,
+  workspacePath: string,
+  workspaceIdentity?: string,
+  remoteSessionId?: string,
+): boolean {
+  return (
+    isSameWebRemoteControlTarget(status, workspacePath, workspaceIdentity, remoteSessionId) ||
+    isReusableWebRemoteControlSession(status) ||
+    status.status === "idle" ||
+    status.status === "error"
+  );
 }
 
 function getStatusLabel(
@@ -279,9 +278,6 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
   });
   const [loading, setLoading] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [botsDialogOpen, setBotsDialogOpen] = useState(false);
-  const [botEntryProvider, setBotEntryProvider] =
-    useState<RemoteControlBotProvider | null>(null);
 
   const statusLabel = useMemo(
     () => getStatusLabel(status, intl.formatMessage),
@@ -300,6 +296,8 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
     [intl.formatMessage, status],
   );
   const statusDotClassName = getStatusDotClassName(status);
+  // 未开启（含上次启动失败）时弹层只展示状态和「开启」按钮，不再在打开弹层时启动远控。
+  const isRemoteControlOff = status.status === "idle" || status.status === "error";
 
   useEffect(() => {
     if (!open) {
@@ -313,41 +311,25 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
 
       try {
         const currentStatus = await platform.getWebRemoteControlStatus();
-        let nextStatus: WebRemoteControlStatus;
-        if (
-          isSameWebRemoteControlTarget(
-            currentStatus,
-            workspacePath,
-            workspaceIdentity,
-            remoteSessionId,
-          ) ||
-          isReusableWebRemoteControlSession(currentStatus)
-        ) {
-          nextStatus = currentStatus;
-        } else {
-          const startResult = await platform.startWebRemoteControl({
-            workspacePath,
-            workspaceIdentity,
-            remoteSessionId,
-            initialTaskId,
-          });
-          // 兼容仍可返回 cancelled 的平台实现；当前 Desktop 不再叠加原生确认。
-          nextStatus = startResult.status === "cancelled" ? { status: "idle" } : startResult;
+        // T1.3: 打开弹层只同步状态，不再调用 startWebRemoteControl。
+        // 远控开关改成显式「开启」按钮（handleStart），关闭弹层也不影响已开启的会话。
+        const shouldApplyStatus = shouldApplyWebRemoteControlStatus(
+          currentStatus,
+          workspacePath,
+          workspaceIdentity,
+          remoteSessionId,
+        );
+        if (!cancelled && shouldApplyStatus) {
+          setStatus(currentStatus);
         }
-        // Bugfix: 手机端默认主题已统一收敛到 dark，不再依赖二维码 URL 透传 theme。
-        // 这里去掉启动参数里的 theme，避免桌面端主题无意义地参与远控链路。
-
-        if (!cancelled) {
-          setStatus(nextStatus);
-          logger.info("[WebRemoteControlDialog] Web 远程控制状态已同步", {
-            workspacePath,
-            workspaceIdentity: workspaceIdentity ?? "none",
-            remoteSessionId: remoteSessionId ?? "none",
-            initialTaskId: initialTaskId ?? "none",
-            status: nextStatus.status,
-            sessionId: nextStatus.sessionId ?? "none",
-          });
-        }
+        logger.info("[WebRemoteControlDialog] Web 远程控制状态已同步", {
+          workspacePath,
+          workspaceIdentity: workspaceIdentity ?? "none",
+          remoteSessionId: remoteSessionId ?? "none",
+          initialTaskId: initialTaskId ?? "none",
+          status: currentStatus.status,
+          sessionId: currentStatus.sessionId ?? "none",
+        });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         if (!cancelled) {
@@ -358,13 +340,11 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
             error: message,
           });
           toast(
-            intl.formatMessage(
-              { id: "webRemoteControl.startFailed" },
-              { error: message },
-            ),
+            // 这里已经只是状态查询失败（不再自动启动），不能再提示「开启失败」，否则会误导用户。
+            intl.formatMessage({ id: "webRemoteControl.statusSyncFailed" }, { error: message }),
           );
         }
-        logger.error("[WebRemoteControlDialog] 启动 Web 远程控制失败", {
+        logger.error("[WebRemoteControlDialog] 同步 Web 远程控制状态失败", {
           workspacePath,
           workspaceIdentity: workspaceIdentity ?? "none",
           remoteSessionId: remoteSessionId ?? "none",
@@ -407,17 +387,14 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
           return;
         }
 
-        const shouldApplyStatus =
-          isSameWebRemoteControlTarget(
+        if (
+          !shouldApplyWebRemoteControlStatus(
             nextStatus,
             workspacePath,
             workspaceIdentity,
             remoteSessionId,
-          ) ||
-          isReusableWebRemoteControlSession(nextStatus) ||
-          nextStatus.status === "idle" ||
-          nextStatus.status === "error";
-        if (!shouldApplyStatus) {
+          )
+        ) {
           return;
         }
 
@@ -556,6 +533,55 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
     }
   };
 
+  // T1.3: 远控启动改为用户显式动作。打开弹层只同步状态，只有点击「开启」才调用平台启动，
+  // 这样查看状态/进 Bot 入口不会顺带起一条远控会话，也不会把已在别的 workspace 的会话顶掉。
+  const handleStart = async () => {
+    setLoading(true);
+    try {
+      // Bugfix: 手机端默认主题已统一收敛到 dark，不再依赖二维码 URL 透传 theme。
+      // 这里（唯一的启动入口）同样不传 theme，避免桌面端主题无意义地参与远控链路。
+      const startResult = await platform.startWebRemoteControl({
+        workspacePath,
+        workspaceIdentity,
+        remoteSessionId,
+        initialTaskId,
+      });
+      // 兼容仍可返回 cancelled 的平台实现；当前 Desktop 不再叠加原生确认。
+      const nextStatus: WebRemoteControlStatus =
+        startResult.status === "cancelled" ? { status: "idle" } : startResult;
+      setStatus(nextStatus);
+      logger.info("[WebRemoteControlDialog] 用户点击开启 Web 远程控制", {
+        workspacePath,
+        workspaceIdentity: workspaceIdentity ?? "none",
+        remoteSessionId: remoteSessionId ?? "none",
+        initialTaskId: initialTaskId ?? "none",
+        status: nextStatus.status,
+        sessionId: nextStatus.sessionId ?? "none",
+      });
+      if (startResult.status !== "cancelled") {
+        toast(intl.formatMessage({ id: "webRemoteControl.startSuccess" }));
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setStatus({
+        status: "error",
+        workspacePath,
+        remoteSessionId,
+        error: message,
+      });
+      toast(intl.formatMessage({ id: "webRemoteControl.startFailed" }, { error: message }));
+      logger.error("[WebRemoteControlDialog] 开启 Web 远程控制失败", {
+        workspacePath,
+        workspaceIdentity: workspaceIdentity ?? "none",
+        remoteSessionId: remoteSessionId ?? "none",
+        initialTaskId: initialTaskId ?? "none",
+        error: message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleStop = async () => {
     setLoading(true);
     try {
@@ -598,25 +624,6 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
       status: status.status,
     });
     handleDialogOpenChange(false);
-  };
-
-  const handleOpenBotEntry = (provider: RemoteControlBotProvider) => {
-    setBotEntryProvider(provider);
-    setBotsDialogOpen(true);
-    logger.info("[WebRemoteControlDialog] 打开 Bot Channel 配置入口", {
-      workspacePath,
-      workspaceIdentity: workspaceIdentity ?? "none",
-      provider,
-    });
-  };
-
-  const handleOpenBotsDialog = () => {
-    setBotEntryProvider(null);
-    setBotsDialogOpen(true);
-    logger.info("[WebRemoteControlDialog] 打开 Bots 总配置入口", {
-      workspacePath,
-      workspaceIdentity: workspaceIdentity ?? "none",
-    });
   };
 
   return (
@@ -709,14 +716,26 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
                     </div>
                     {loading ? (
                       <LoaderCircle className="size-4 animate-spin text-foreground-subtle" />
+                    ) : isRemoteControlOff ? (
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="default"
+                        data-testid="web-remote-control-start"
+                        className="shrink-0 gap-2 enabled:cursor-pointer"
+                        onClick={() => void handleStart()}
+                      >
+                        <PlugZap className="size-3.5" />
+                        {intl.formatMessage({ id: "webRemoteControl.start" })}
+                      </Button>
                     ) : (
                       <Button
                         type="button"
                         variant="outline"
                         size="default"
+                        data-testid="web-remote-control-stop"
                         className="shrink-0 gap-2 enabled:cursor-pointer"
                         onClick={() => void handleStop()}
-                        disabled={status.status === "idle"}
                       >
                         <Unplug className="size-3.5" />
                         {intl.formatMessage({ id: "webRemoteControl.stop" })}
@@ -753,7 +772,9 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
                       size="default"
                       className="shrink-0 gap-2 enabled:cursor-pointer"
                       onClick={() => void handleRefreshQr()}
-                      disabled={loading}
+                      // T1.3: 刷新二维码在平台层等同重新 start；未开启时禁用，
+                      // 否则这个按钮会变成「打开即启动」之外的另一条隐式启动路径。
+                      disabled={loading || isRemoteControlOff}
                     >
                       <RefreshCw className="size-3.5" />
                       {intl.formatMessage({ id: "webRemoteControl.refreshQr" })}
@@ -778,6 +799,11 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
                       alt={intl.formatMessage({ id: "webRemoteControl.qrAlt" })}
                       className="size-64 max-w-full rounded-lg bg-white p-3"
                     />
+                  ) : isRemoteControlOff ? (
+                    <div className="flex flex-col items-center gap-2 text-center text-ui-base text-foreground-subtle">
+                      <Smartphone className="size-5" />
+                      <span>{intl.formatMessage({ id: "webRemoteControl.qrIdle" })}</span>
+                    </div>
                   ) : (
                     <div className="flex flex-col items-center gap-3 text-center text-ui-base text-foreground-subtle">
                       <LoaderCircle className="size-5 animate-spin" />
@@ -791,96 +817,14 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
                 </div>
               </section>
 
-              <section className="flex min-h-[360px] flex-col rounded-xl border border-border bg-card p-4">
-                <div className="mb-4 flex items-start gap-2">
-                  <BotIcon className="mt-0.5 size-4 shrink-0 text-foreground-subtle" />
-                  <div className="min-w-0 space-y-1">
-                    <div className="text-ui-base font-medium text-foreground">
-                      {intl.formatMessage({
-                        id: "webRemoteControl.botChannel.title",
-                      })}
-                    </div>
-                    <p className="text-ui-base/relaxed text-foreground-subtle">
-                      {intl.formatMessage({
-                        id: "webRemoteControl.botChannel.description",
-                      })}
-                    </p>
-                  </div>
-                </div>
-                <div className="grid min-h-0 flex-1 gap-3">
-                  {REMOTE_CONTROL_BOT_ENTRIES.map((entry) => {
-                    const regionTagLabelId = getBotProviderRegionTagLabelId(
-                      entry.provider,
-                    );
-
-                    return (
-                      <button
-                        key={entry.provider}
-                        type="button"
-                        className="flex min-h-0 cursor-pointer items-start gap-3 rounded-lg border border-transparent bg-surface px-3 py-3 text-left transition-colors hover:border-input-border-focused hover:bg-surface-hover focus-visible:border-input-border-focused"
-                        onClick={() => handleOpenBotEntry(entry.provider)}
-                      >
-                        {/* Bugfix: 远控 Bot Channel 入口原来用通用 lucide 图标，用户无法一眼区分微信、飞书和 Telegram。
-                            这里直接复用 BotsDialog 的渠道 logo，不再额外包裹容器，保证品牌图标本身作为视觉识别。 */}
-                        <ProviderIcon
-                          provider={entry.provider}
-                          className="size-12 shrink-0"
-                        />
-                        <span className="min-w-0 flex-1 space-y-1">
-                          <span className="flex min-w-0 items-center gap-1.5 text-ui-base font-medium text-foreground">
-                            <span className="min-w-0 truncate">
-                              {intl.formatMessage({
-                                id: `webRemoteControl.botChannel.${entry.provider}.title`,
-                              })}
-                            </span>
-                            {regionTagLabelId ? (
-                              <span className="inline-flex h-5 shrink-0 items-center rounded-full border border-border px-2 text-ui-xs font-medium leading-none text-foreground-subtle">
-                                {intl.formatMessage({ id: regionTagLabelId })}
-                              </span>
-                            ) : null}
-                          </span>
-                          <span className="block text-ui-base/relaxed text-foreground-subtle">
-                            {intl.formatMessage({
-                              id: `webRemoteControl.botChannel.${entry.provider}.description`,
-                            })}
-                          </span>
-                          <span className="block text-ui-base font-medium text-primary">
-                            {intl.formatMessage({
-                              id: "webRemoteControl.botChannel.configure",
-                            })}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="mt-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="lg"
-                    data-testid="web-remote-control-open-bots"
-                    className="w-full justify-center gap-2 enabled:cursor-pointer"
-                    onClick={handleOpenBotsDialog}
-                  >
-                    <BotIcon className="size-3.5" />
-                    {intl.formatMessage({
-                      id: "webRemoteControl.botChannel.manageBots",
-                    })}
-                  </Button>
-                </div>
-              </section>
+              <WebRemoteControlBotsEntry
+                workspacePath={workspacePath}
+                workspaceIdentity={workspaceIdentity}
+              />
             </div>
           </div>
         </DialogContent>
       </Dialog>
-      <BotsDialog
-        open={botsDialogOpen}
-        onOpenChange={setBotsDialogOpen}
-        workspacePath={workspacePath}
-        workspaceIdentity={workspaceIdentity}
-        entryProvider={botEntryProvider}
-      />
     </>
   );
 });

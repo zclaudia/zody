@@ -5,6 +5,7 @@ import {
   classifyRemoteUsageError,
   parseRemoteWorkspaceIdentity,
   PlatformChannels,
+  type RemoteAccessStatus,
   type TelemetryEventPayload,
   type WebRemoteControlContext,
   type WebRemoteControlStartResult,
@@ -27,8 +28,16 @@ export interface WebRemoteControlIpcManager {
     context: WebRemoteControlContext,
     authorization: WebRemoteControlStartAuthorization,
   ) => Promise<WebRemoteControlStartResult>;
-  stop(windowId: number): Promise<void>;
-  getStatus(windowId: number): WebRemoteControlStatus;
+  /** App 级停止（旧 Stop IPC 转调；T5.1 删除旧 IPC）。 */
+  stop(): Promise<void>;
+  /** App 级状态（旧 GetStatus IPC 转调）。 */
+  getStatus(): WebRemoteControlStatus;
+  /** 新 IPC：设置远程访问总开关并启停唯一 runtime。 */
+  setRemoteAccessEnabled(enabled: boolean): Promise<void>;
+  /** 新 IPC：断开当前手机。 */
+  disconnectRemoteClient(): void | Promise<void>;
+  /** 新 IPC：查询 App 级远程访问状态。 */
+  getRemoteAccessStatus(): Promise<RemoteAccessStatus>;
 }
 
 interface WebRemoteControlIpcDependencies {
@@ -133,17 +142,27 @@ export function registerWebRemoteControlIpcHandlers(
       }),
   );
 
-  ipcMain.handle(PlatformChannels.StopWebRemoteControl, async (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    if (win) {
-      await dependencies.webRemoteControlManager.stop(win.id);
-    }
+  // 旧 IPC 保留并内部转调 App 级 runtime；T5.1 删除窗口级入口。
+  ipcMain.handle(PlatformChannels.StopWebRemoteControl, async () => {
+    await dependencies.webRemoteControlManager.stop();
   });
 
-  ipcMain.handle(PlatformChannels.GetWebRemoteControlStatus, (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    return win
-      ? dependencies.webRemoteControlManager.getStatus(win.id)
-      : { status: "idle" as const };
+  ipcMain.handle(PlatformChannels.GetWebRemoteControlStatus, () =>
+    dependencies.webRemoteControlManager.getStatus(),
+  );
+
+  ipcMain.handle(PlatformChannels.SetRemoteAccessEnabled, async (_event, enabled: unknown) => {
+    if (typeof enabled !== "boolean") {
+      throw new Error("SetRemoteAccessEnabled expects a boolean");
+    }
+    await dependencies.webRemoteControlManager.setRemoteAccessEnabled(enabled);
   });
+
+  ipcMain.handle(PlatformChannels.DisconnectRemoteClient, async () => {
+    await dependencies.webRemoteControlManager.disconnectRemoteClient();
+  });
+
+  ipcMain.handle(PlatformChannels.GetRemoteAccessStatus, () =>
+    dependencies.webRemoteControlManager.getRemoteAccessStatus(),
+  );
 }

@@ -282,3 +282,96 @@ describe("dynamicWorkflowMode 设置（DWG-19）", () => {
     );
   });
 });
+
+// 手机远控改走 gateway（specs/mobile-remote-control-via-gateway.md「清理清单 · AppSettings」）：
+// remoteAccess 是新链路唯一的开关来源，旧 relay 的开关状态不能沿用到新链路。
+describe("remoteAccess 设置（gateway 远程访问）", () => {
+  it("缺省时读出「关闭 + 未配置 + 默认 namespace」", () => {
+    expect(appSettingsSchema.parse({}).remoteAccess).toEqual({
+      enabled: false,
+      gatewayUrl: "",
+      namespace: "zcode",
+    });
+  });
+
+  it("旧 relay 的开关状态不迁移到 remoteAccess", () => {
+    const parsed = appSettingsSchema.parse({
+      webRemoteControlLastEnabledContext: {
+        workspacePath: "/workspace/demo",
+        workspaceIdentity: "remote:ssh:host:/workspace/demo",
+      },
+    });
+
+    // relay 的配对与凭证对 gateway 无效：带过来的只能是「未配置且关闭」，等用户重新配置。
+    expect(parsed.remoteAccess).toEqual({ enabled: false, gatewayUrl: "", namespace: "zcode" });
+    // 旧字段本身由删除 relay 体系的任务清理，本次迁移不动它。
+    expect(parsed.webRemoteControlLastEnabledContext).toEqual({
+      workspacePath: "/workspace/demo",
+      workspaceIdentity: "remote:ssh:host:/workspace/demo",
+    });
+  });
+
+  it("已经写过 remoteAccess 时不被旧 relay 状态回退成关闭", () => {
+    const parsed = appSettingsSchema.parse({
+      webRemoteControlLastEnabledContext: { workspacePath: "/workspace/demo" },
+      remoteAccess: {
+        enabled: true,
+        gatewayUrl: "https://gateway.example.com/",
+        namespace: "team",
+      },
+    });
+
+    expect(parsed.remoteAccess).toEqual({
+      enabled: true,
+      gatewayUrl: "https://gateway.example.com",
+      namespace: "team",
+    });
+  });
+
+  it("坏地址与坏字段按默认值读出，不把整份设置读坏", () => {
+    const parsed = appSettingsSchema.parse({
+      locale: "en-US",
+      remoteAccess: { enabled: "yes", gatewayUrl: "not-a-url", namespace: 7 },
+    });
+
+    expect(parsed.remoteAccess).toEqual({ enabled: false, gatewayUrl: "", namespace: "zcode" });
+    expect(parsed.locale).toBe("en-US");
+  });
+
+  it("补丁要求三个字段一次给全，并把地址归一化后落盘", () => {
+    expect(
+      appSettingsPatchSchema.parse({
+        remoteAccess: {
+          enabled: true,
+          gatewayUrl: "https://gateway.example.com//",
+          namespace: "  ",
+        },
+      }),
+    ).toEqual({
+      remoteAccess: {
+        enabled: true,
+        gatewayUrl: "https://gateway.example.com",
+        namespace: "zcode",
+      },
+    });
+    expect(appSettingsPatchSchema.safeParse({ remoteAccess: { enabled: true } }).success).toBe(
+      false,
+    );
+  });
+
+  it("凭证不能通过 settings 补丁写进 setting.json", () => {
+    const remoteAccess = {
+      enabled: true,
+      gatewayUrl: "https://gateway.example.com",
+      namespace: "zcode",
+    };
+
+    // 凭证写错位置必须立刻报错，而不是被静默丢弃后落盘成「地址已配好但连不上」。
+    expect(
+      appSettingsPatchSchema.safeParse({
+        remoteAccess: { ...remoteAccess, gatewayCredential: "zgb_secret" },
+      }).success,
+    ).toBe(false);
+    expect(JSON.stringify(appSettingsPatchSchema.parse({ remoteAccess }))).not.toContain("zgb_");
+  });
+});

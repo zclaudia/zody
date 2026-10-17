@@ -61,9 +61,7 @@ function createService(options?: {
     runtime: {
       assign: (url) => assigned.push(url),
       createNonce: () => "nonce-1",
-      getCurrentHref: () =>
-        options?.currentHref ??
-        "http://192.168.1.8:5173/web-remote?remoteControlToken=token&relayOrigin=https%3A%2F%2Frelay.example",
+      getCurrentHref: () => options?.currentHref ?? "http://192.168.1.8:5173/",
       getCurrentOrigin: () => options?.currentOrigin ?? "http://192.168.1.8:5173",
       replace: (url) => replaced.push(url),
     },
@@ -131,8 +129,7 @@ describe("WebAuthService", () => {
     expect(state).toEqual({
       nonce: "nonce-1",
       return_to: "http://192.168.1.8:5173/web-remote/callback",
-      app_return_to:
-        "http://192.168.1.8:5173/web-remote?remoteControlToken=token&relayOrigin=https%3A%2F%2Frelay.example",
+      app_return_to: "http://192.168.1.8:5173/",
     });
   });
 
@@ -215,8 +212,9 @@ describe("WebAuthService", () => {
       `http://192.168.1.8:5173/web-remote/callback?code=code-1&state=${state}`,
     );
 
+    // T1.4：`remoteControlToken` / `relayOrigin` 不再作为回跳参数透传，只保留路径。
     expect(result).toEqual({
-      appReturnTo: "/web-remote?remoteControlToken=token",
+      appReturnTo: "/web-remote",
       userInfo: {
         id: "u_1",
         username: "Ada",

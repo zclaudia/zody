@@ -35,6 +35,7 @@ import type {
   WebRemoteControlContext,
   WebRemoteControlReconnectWorkspaceRequest,
   WebRemoteControlReconnectWorkspaceResult,
+  RemoteAccessStatus,
   WebRemoteControlStartOperationResult,
   WebRemoteControlStatus,
   WebRemoteControlTaskTarget,
@@ -105,12 +106,18 @@ declare global {
       ): Promise<WebRemoteControlStartOperationResult>;
       /** 关闭当前窗口的 Web 远程控制 */
       stopWebRemoteControl(): Promise<void>;
-      /** 查询当前窗口 Web 远程控制状态 */
+      /** 查询当前窗口 Web 远程控制状态（T2.3 起返回 App 级状态） */
       getWebRemoteControlStatus(): Promise<WebRemoteControlStatus>;
-      /** 订阅当前窗口 Web 远程控制状态变化 */
+      /** 订阅 App 级 Web 远程控制状态变化（T2.3 起广播给所有窗口） */
       onWebRemoteControlStatusChanged?(
         handler: (status: WebRemoteControlStatus) => void,
       ): () => void;
+      /** 设置 App 级远程访问总开关 */
+      setRemoteAccessEnabled?(enabled: boolean): Promise<void>;
+      /** 断开当前连接的手机，保持远程访问开关不变 */
+      disconnectRemoteClient?(): Promise<void>;
+      /** 查询 App 级远程访问状态 */
+      getRemoteAccessStatus?(): Promise<RemoteAccessStatus>;
       /** 释放当前窗口里的远程 session */
       disposeRemoteSession(sessionId: string): Promise<void>;
       /** 检查本机 Docker daemon 是否可用 */

@@ -77,12 +77,8 @@ import {
   shouldSyncWebRemoteControlTaskSnapshot,
 } from "@/lib/webRemoteControlTaskSync.js";
 import { ScopedErrorBoundary } from "@/ErrorBoundary.js";
-import {
-  WebRemoteControlFeatureProvider,
-  useWebRemoteControlFeatureEnabled,
-} from "@/WebRemoteControlFeatureProvider.js";
+import { WebRemoteControlFeatureProvider } from "@/WebRemoteControlFeatureProvider.js";
 import { useRemoteConnectionLogs } from "@/hooks/useRemoteConnectionLogs.js";
-import { useWebRemoteControlStatus } from "@/hooks/useWebRemoteControlStatus.js";
 import {
   CODE_COMMENT_REMOVE_BROADCAST_CHANNEL,
   CODE_COMMENT_PREVIEW_RESTORE_BROADCAST_CHANNEL,
@@ -543,21 +539,12 @@ function RootInner({
   const addTab = useTabStore((state) => state.addTab);
   const activateTabByPath = useTabStore((state) => state.activateTabByPath);
   const tabStoreApi = useTabStoreApi();
-  const webRemoteControlFeatureEnabled = useWebRemoteControlFeatureEnabled();
-  // Bugfix: WebRemoteControlDialog 只是可开关的展示入口，不能由它的本地 state 决定全局远控状态。
-  // Root 直接轮询 main 进程状态，确保任务快照同步只跟真实远控会话 running/active 绑定。
-  const webRemoteControlStatus = useWebRemoteControlStatus({
-    enabled: Boolean(
-      webRemoteControlFeatureEnabled && isDesktop && platform.syncWebRemoteControlTasks,
-    ),
-  });
-  const webRemoteControlSessionActive =
-    webRemoteControlStatus.status === "running" || webRemoteControlStatus.status === "active";
+  // T2.2：远控快照的同步条件改为「远程访问总开关打开」（方案「App 级聚合与路由 · 同步条件」）。
+  // 之前 Root 轮询 main 的远控会话状态、只在本窗口 relay runtime running/active 时才同步任务索引；
+  // 远控改为 App 级后快照由所有窗口共同提供，与本窗口是否启动会话无关，这里直接读 appSettings。
+  const remoteAccessEnabled = appSettings?.remoteAccess?.enabled === true;
   const webRemoteControlTaskSyncEnabled = Boolean(
-    webRemoteControlFeatureEnabled &&
-    webRemoteControlSessionActive &&
-    isDesktop &&
-    platform.syncWebRemoteControlTasks,
+    remoteAccessEnabled && isDesktop && platform.syncWebRemoteControlTasks,
   );
   const refreshProviderState = useRootProviderStateRefresh(services);
   useRootProviderSettingsSnapshot(services);
@@ -898,8 +885,7 @@ function RootInner({
     reconnectingRemoteWorkspaceKeys,
     remoteWorkspaceErrorByWorkspaceKey,
     totalUnreadTaskCount,
-    webRemoteControlFeatureEnabled,
-    webRemoteControlSessionActive,
+    webRemoteAccessEnabled: remoteAccessEnabled,
     hasCompletedFullTabRestore: hasCompletedFullRestore,
     intl,
     isRestoringOAuthSession: isResolvingStartupAuthState || providerStartupSyncPending,

@@ -2,6 +2,7 @@
   "name": "zcode",
   "version": "3.15.1",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "dev:web": "concurrently -k -n server,web -c blue,green \"pnpm --filter @zcode/server dev\" \"pnpm --filter @zcode/web dev\"",
@@ -14,6 +15,7 @@
     "dev:desktop:remote-prod": "node scripts/dev-desktop-remote-prod.mjs",
     "dev:gateway": "node scripts/dev-gateway.mjs",
     "dev:web-remote-control": "node scripts/build-desktop-agent-cli.mjs && concurrently -k -n web,desktop -c green,magenta \"pnpm --filter @zcode/web exec vite dev --strictPort\" \"node scripts/dev-web-remote-control-desktop.mjs\"",
+    "dev:mobile-remote": "node scripts/build-desktop-agent-cli.mjs && node scripts/dev-mobile-remote.mjs",
     "dev:web-share:test": "node scripts/dev-web-share-env.mjs test",
     "dev:web-share:mock": "node scripts/dev-web-share-env.mjs mock",
     "dev:server": "pnpm --filter @zcode/server dev",
@@ -44,6 +46,8 @@
     "build:web-remote-control:v3": "pnpm --filter @zcode/web exec vite build --base=/remote/v3/",
     "build:web-remote-control:v4": "pnpm --filter @zcode/web exec vite build --base=/remote/v4/",
     "build:web-remote-control:test": "pnpm --filter @zcode/web exec vite build --base=/remote/__test__/",
+    "build:mobile-web": "pnpm --filter @zcode/web exec vite build --mode mobile --base=/assets/remote/",
+    "check:mobile-web-isolation": "node scripts/check-mobile-web-bundle-isolation.mjs",
     "build:web-share": "pnpm --filter @zcode/web-share build",
     "build:zcode": "node scripts/build-zcode.mjs",
     "build:bootstrap": "pnpm -r --filter \"./packages/*\" --filter \"!@zcode/desktop\" build && pnpm --filter @zcode/desktop build:no-runtime-assets",
@@ -125,6 +129,5 @@
       "@ai-sdk/openai-compatible@2.0.60": "patches/@ai-sdk__openai-compatible@2.0.60.patch",
       "@ai-sdk/anthropic@3.0.81": "patches/@ai-sdk__anthropic@3.0.81.patch"
     }
-  },
-  "license": "Apache-2.0"
+  }
 }

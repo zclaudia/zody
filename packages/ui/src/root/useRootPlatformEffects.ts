@@ -47,8 +47,7 @@ export function useRootPlatformEffects({
   reconnectingRemoteWorkspaceKeys = [],
   remoteWorkspaceErrorByWorkspaceKey = {},
   totalUnreadTaskCount,
-  webRemoteControlFeatureEnabled = false,
-  webRemoteControlSessionActive = false,
+  webRemoteAccessEnabled = false,
   hasCompletedFullTabRestore = true,
   intl,
   isRestoringOAuthSession,
@@ -82,8 +81,8 @@ export function useRootPlatformEffects({
   reconnectingRemoteWorkspaceKeys?: string[];
   remoteWorkspaceErrorByWorkspaceKey?: Record<string, string>;
   totalUnreadTaskCount: number;
-  webRemoteControlFeatureEnabled?: boolean;
-  webRemoteControlSessionActive?: boolean;
+  /** 桌面「远程访问」总开关（`AppSettings.remoteAccess.enabled`）；打开后本窗口才同步整份远控快照。 */
+  webRemoteAccessEnabled?: boolean;
   hasCompletedFullTabRestore?: boolean;
   intl: ReturnType<typeof import("@/i18n/IntlProvider.js").useZCodeIntl>["intl"];
   isRestoringOAuthSession: boolean;
@@ -524,12 +523,18 @@ export function useRootPlatformEffects({
 
     const connectedRemoteWorkspaces = buildConnectedRemoteWorkspaceSessionTargets({ tabs });
     if (connectedRemoteWorkspaces.length > 0) {
-      // Bugfix: Bot 远端连接状态查询依赖 main 进程里 remoteSessionId -> workspaceIdentity 的绑定。
-      // 之前这条绑定复用 Web 远控 workspace 同步，Web 远控未开启时不会执行，导致 UI 已连接但 Bot 误判未连接。
+      // T1.3 核实：这条同步不再承担 Bot 远端连接状态查询。Bot 的「远端工作区是否已连接」由 main 的
+      // remoteSessionManager.hasRemoteWorkspaceSessionForTarget（desktop/src/main/index.ts）按
+      // connectRemote / bindRemoteWorkspaceSessionContext 建立的 live session 表回答；而
+      // webRemoteControlManager.syncAvailableWorkspaces 在没有 window 远控 runtime 时会直接 return，
+      // 只服务手机端 workspace 列表。保留调用是因为它同时会触发 main 的 restorePreviouslyEnabled。
       platform.syncWebRemoteControlWorkspaces(connectedRemoteWorkspaces);
     }
 
-    if (!webRemoteControlFeatureEnabled || !webRemoteControlSessionActive) {
+    // T2.2：整份快照的同步条件由「本窗口远控会话 running/active」改为「远程访问开关打开」（方案「App 级聚合与路由 · 同步条件」）。
+    // 远控改为 App 级后快照由所有窗口共同提供，不再与本窗口是否启动 relay runtime 绑定；
+    // 开关关闭时不推送整份快照，避免把开关打开前的旧窗口状态写成事实。
+    if (!webRemoteAccessEnabled) {
       return;
     }
 
@@ -547,8 +552,7 @@ export function useRootPlatformEffects({
     reconnectingRemoteWorkspaceKeys,
     remoteWorkspaceErrorByWorkspaceKey,
     tabs,
-    webRemoteControlFeatureEnabled,
-    webRemoteControlSessionActive,
+    webRemoteAccessEnabled,
   ]);
 
   useEffect(() => {

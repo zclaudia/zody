@@ -61,6 +61,29 @@ describe("web Vite config", () => {
     expect(normalize(result!.path)).toBe(configFile);
   });
 
+  it("手机入口单独一个 Vite entry，产物目录与普通 Web 客户端分开", async () => {
+    const webRoot = resolve(import.meta.dirname, "..");
+    const configFile = resolve(webRoot, "vite.config.ts");
+    const load = (mode: string) =>
+      loadConfigFromFile(
+        { command: "build", mode, isPreview: false, isSsrBuild: false },
+        configFile,
+        webRoot,
+        "silent",
+      );
+
+    const mobile = await load("mobile");
+    const web = await load("production");
+
+    expect(mobile?.config.build?.outDir).toBe("dist-mobile-remote");
+    expect(mobile?.config.build?.rollupOptions?.input).toMatchObject({
+      index: resolve(webRoot, "mobile.html"),
+    });
+    // 普通 Web 客户端构建保持默认入口（index.html），不会打包手机页面。
+    expect(web?.config.build?.outDir).toBe("dist");
+    expect(web?.config.build?.rollupOptions?.input).toBeUndefined();
+  });
+
   it("publishes PDF.js CMaps for non-latin PDF rendering", async () => {
     const webRoot = resolve(import.meta.dirname, "..");
     const configFile = resolve(webRoot, "vite.config.ts");

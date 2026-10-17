@@ -8,6 +8,11 @@ import { ZCODE_ENABLED_AGENT_PROVIDERS } from "./zcode-agent-policy.js";
 import { DYNAMIC_WORKFLOW_MODES } from "./dynamic-workflow-feature.js";
 import { normalizeZCodeEndpointOrigin } from "./zcodeEndpoint.js";
 import {
+  DEFAULT_REMOTE_ACCESS_NAMESPACE,
+  remoteAccessSettingsPatchSchema,
+  remoteAccessSettingsSchema,
+} from "./remoteAccess.js";
+import {
   DEFAULT_EMBEDDED_BROWSER_VIEWPORT_PREFERENCE,
   embeddedBrowserViewportPreferenceSchema,
 } from "./browser-use/command-metadata.js";
@@ -317,6 +322,37 @@ function stripHistoricalRemoteResourcePackages(target: unknown): unknown {
   return nextTarget;
 }
 
+/**
+ * 旧 relay 远控（`webRemoteControlLastEnabledContext`）与新的 gateway 远程访问开关不是同一件事：
+ * relay 的配对与凭证对 gateway 无效，沿用旧状态只会让新链路带着「已开启」去连一个没配好的 gateway。
+ * 因此迁到的 `remoteAccess` 一律是关闭状态，等用户在设置页填好地址和凭证后自行开启。
+ * 旧字段本身由删除 relay 体系的任务清理，这里只负责不把它的含义带进新开关。
+ */
+function migrateLegacyWebRemoteControlToRemoteAccess(value: unknown): unknown {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return value;
+  }
+  const raw = value as Record<string, unknown>;
+  if (
+    !webRemoteControlLastEnabledContextSchema.safeParse(raw.webRemoteControlLastEnabledContext)
+      .success
+  ) {
+    return value;
+  }
+  if (raw.remoteAccess !== undefined) {
+    // 已经迁移过，或新版本/用户已经写过开关：当前的开关意图优先，不能被迁移回退成关闭。
+    return value;
+  }
+  return {
+    ...raw,
+    remoteAccess: {
+      enabled: false,
+      gatewayUrl: "",
+      namespace: DEFAULT_REMOTE_ACCESS_NAMESPACE,
+    },
+  };
+}
+
 function migrateLegacyWorkspaceSession(value: unknown): unknown {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return value;
@@ -522,6 +558,12 @@ const appSettingsObjectSchema = z.object({
   settingsSyncFirstRunPromptHandled: z.boolean().optional(),
   webRemoteControlExternalRelayDevice: webRemoteControlExternalRelayDeviceSchema.optional(),
   webRemoteControlLastEnabledContext: webRemoteControlLastEnabledContextSchema.optional(),
+  // App 级远程访问配置（gateway）；旧 relay 的开关状态不迁移，见 migrateLegacyWebRemoteControlToRemoteAccess。
+  remoteAccess: remoteAccessSettingsSchema.default({
+    enabled: false,
+    gatewayUrl: "",
+    namespace: DEFAULT_REMOTE_ACCESS_NAMESPACE,
+  }),
   zcodeEndpointOrigin: zcodeEndpointOriginSchema.optional(),
 });
 
@@ -533,7 +575,11 @@ export const appSettingsSchema = z.preprocess(
           migrateCloseToTrayOnWindowsDefault(
             migrateLegacyLocalePreference(
               sanitizeZCodeEndpointOrigin(
-                migrateLegacyWorkspaceSession(migrateLegacyBuiltinAgentCliProviders(value)),
+                migrateLegacyWorkspaceSession(
+                  migrateLegacyBuiltinAgentCliProviders(
+                    migrateLegacyWebRemoteControlToRemoteAccess(value),
+                  ),
+                ),
               ),
             ),
           ),
@@ -617,5 +663,6 @@ export const appSettingsPatchSchema = z.object({
   settingsSyncFirstRunPromptHandled: z.boolean().optional(),
   webRemoteControlExternalRelayDevice: webRemoteControlExternalRelayDeviceSchema.optional(),
   webRemoteControlLastEnabledContext: webRemoteControlLastEnabledContextSchema.optional(),
+  remoteAccess: remoteAccessSettingsPatchSchema.optional(),
   zcodeEndpointOrigin: zcodeEndpointOriginSchema.optional(),
 });
