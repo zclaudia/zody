@@ -51,7 +51,7 @@ async function createSession(
     workspaceId: payload.workspaceId,
     ...(payload.permissionScope ? { permissionScope: payload.permissionScope } : {}),
     mcpServers: payload.mcpServers,
-    offPeakToolEnabled: payload.offPeakToolEnabled,
+    // fork（F4.3）：offPeakToolEnabled 透传随闲时任务全链路删除。
     dynamicWorkflowEnabled: payload.dynamicWorkflowEnabled,
     dynamicWorkflowMode: payload.dynamicWorkflowMode,
   });

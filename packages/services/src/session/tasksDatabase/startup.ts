@@ -8,7 +8,7 @@ const { DatabaseSync } = createRequire(import.meta.url)(
 ) as typeof import("node:sqlite");
 import { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
 import { AutomationRepo } from "#src/session/automationRepo.js";
-import { OffPeakTaskRepo } from "#src/session/offPeakTaskRepo.js";
+// fork（F4.3）：OffPeakTaskRepo 构造随闲时任务全链路删除（off_peak_tasks 表仍在 schema 中保留）。
 import {
   runTasksDatabaseMigrations,
   inspectTasksMigrationKind,
@@ -99,7 +99,6 @@ export async function prepareTasksIndexStorage(
   const repos = [
     new TaskIndexRepo(path, LOCK_WAIT_MS),
     new AutomationRepo(path, LOCK_WAIT_MS),
-    new OffPeakTaskRepo(path, LOCK_WAIT_MS),
   ];
   let preparationFailure: unknown;
   try {

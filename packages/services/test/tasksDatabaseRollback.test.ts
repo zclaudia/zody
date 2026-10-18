@@ -4,7 +4,6 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { expect, it } from "vitest";
 import { AutomationRepo } from "../src/session/automationRepo.js";
-import { OffPeakTaskRepo } from "../src/session/offPeakTaskRepo.js";
 import { runTasksDatabaseMigrations } from "../src/session/tasksDatabase/migrations.js";
 import {
   rowToAutomation as oldAutomation,
@@ -16,7 +15,6 @@ it("DB109-01/09/10/13：八表内容保留，旧版读取新增/更新任务无�
   const root = await mkdtemp(join(tmpdir(), "zcode-db109-rollback-"));
   const path = join(root, "tasks.sqlite");
   const automation = new AutomationRepo(path);
-  const offPeak = new OffPeakTaskRepo(path);
   const db = new DatabaseSync(path);
   try {
     runTasksDatabaseMigrations(db);
@@ -30,6 +28,8 @@ it("DB109-01/09/10/13：八表内容保留，旧版读取新增/更新任务无�
       INSERT INTO automations(automation_id,cron_expr,prompt,workspace_key,workspace_path,created_at,updated_at,model,provider,thought_level)
       VALUES('old','* * * * *','定时正文','ssh:a:/same','/same',1,2,'custom:proxy:old','zcode','high');
       INSERT INTO automation_runs(run_id,automation_id,workspace_key,created_at,updated_at,session_id) VALUES('run','old','ssh:a:/same',1,2,'session');
+      -- fork（F4.3）：off-peak 链路已删、OffPeakTaskRepo 不复存在，但 off_peak_tasks 表与
+      -- 历史行按兼容红线保留——旧版 reader 必须仍能读取。
       INSERT INTO off_peak_tasks(off_peak_task_id,server_ticket_id,prompt,permission_mode,workspace_key,workspace_path,status,queued_at,created_at,updated_at,model,thought_level)
       VALUES('idle','ticket','闲时正文','default','ssh:a:/same','/same','queued',1,1,2,'old-model','high');`);
     const preservedTables = [
@@ -57,17 +57,8 @@ it("DB109-01/09/10/13：八表内容保留，旧版读取新增/更新任务无�
     });
 
     const selection = { providerId: "proxy", modelId: "next", options: { reasoningLevel: "high" } };
-    // 两个独立 Repo 逆序首次打开同一库，必须都在统一迁移门禁之后工作。
-    const idle = await offPeak.create(
-      {
-        title: "新闲时",
-        prompt: "新闲时正文",
-        permissionMode: "default",
-        workspacePath: "/new",
-        modelSelection: selection,
-      },
-      { now: 20 },
-    );
+    // fork（F4.3）：原用例经 OffPeakTaskRepo 逆序打开验证迁移门禁；repo 已删，
+    // 「多 Repo 首次打开同一库」由 AutomationRepo 单独承担（迁移账本断言不变）。
     const task = await automation.create(
       {
         title: "新任务",
@@ -81,17 +72,11 @@ it("DB109-01/09/10/13：八表内容保留，旧版读取新增/更新任务无�
     const rawTask = db
       .prepare("SELECT * FROM automations WHERE automation_id=?")
       .get(task.automationId)!;
-    const rawIdle = db
-      .prepare("SELECT * FROM off_peak_tasks WHERE off_peak_task_id=?")
-      .get(idle.offPeakTaskId)!;
     expect(rawTask.model).toBeNull();
-    expect(rawIdle.model).toBeNull();
     expect(oldAutomation(rawTask).prompt).toBe("新定时正文");
-    expect(oldOffPeak(rawIdle).prompt).toBe("新闲时正文");
 
     // 模拟回滚后的旧 Writer 更新，保留一次迁移账本；再升级不能拿旧选择恢复默认执行。
     automation.close();
-    offPeak.close();
     const ledger = db.prepare("SELECT * FROM tasks_schema_migration").all();
     db.exec(
       "UPDATE automations SET model_selection=NULL,model='old-after-rollback',prompt='回滚后的正文' WHERE automation_id='old'",
@@ -100,11 +85,13 @@ it("DB109-01/09/10/13：八表内容保留，旧版读取新增/更新任务无�
     await expect(automation.getModelSelectionForDispatch("old", "ssh:a:/same")).rejects.toThrow(
       "重新选择",
     );
-    expect((await offPeak.get("idle"))?.serverTicketId).toBe("ticket");
+    // 历史闲时行在回滚窗口内原样保留（兼容读取，不再有新的写入路径）。
+    expect(
+      db.prepare("SELECT server_ticket_id FROM off_peak_tasks WHERE off_peak_task_id='idle'").get(),
+    ).toMatchObject({ server_ticket_id: "ticket" });
     expect(db.prepare("SELECT * FROM tasks_schema_migration").all()).toEqual(ledger);
   } finally {
     automation.close();
-    offPeak.close();
     db.close();
     await rm(root, { recursive: true, force: true });
   }

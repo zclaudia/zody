@@ -40,7 +40,7 @@ export async function executeToolBatch(
       batch.map((tc) =>
         executeOne(tc, {
           automationTurn: options?.automationTurn,
-          offPeakTurn: options?.offPeakTurn,
+          // fork（F4.3）：offPeakTurn 透传随闲时任务全链路删除。
           signal: options?.signal,
           traceContext: options?.traceContext,
           subagentModelOverride: options?.subagentModelOverride,

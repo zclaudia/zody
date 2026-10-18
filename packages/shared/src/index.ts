@@ -255,7 +255,7 @@ export type {
 export type { ZCodeTaskCreateResult } from "./zcode-task-types.js";
 export * from "./zcode-task-types.js";
 export * from "./automation-types.js";
-export * from "./off-peak-types.js";
+// fork（F4.3）：off-peak-types（闲时任务领域类型）随闲时任务全链路删除。
 export * from "./background-task-control-merge.js";
 export * from "./background-task-controls.js";
 export * from "./background-task-notifications.js";

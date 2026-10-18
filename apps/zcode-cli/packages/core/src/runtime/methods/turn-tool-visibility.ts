@@ -1,9 +1,7 @@
 import type { AgentRuntimeInternal } from "../internal.js";
 import {
   AUTOMATION_MUTATION_TOOL_NAMES,
-  OFF_PEAK_MUTATION_TOOL_NAMES,
   isAutomationMutationRestrictedTurn,
-  isOffPeakCreateRestrictedTurn,
   type RegularTurnLoopState,
 } from "./turn-loop-state.js";
 
@@ -23,12 +21,6 @@ function buildTurnDisallowedTools(state: RegularTurnLoopState): Set<string> | nu
       tools.add(toolName);
     }
   }
-  if (isOffPeakCreateRestrictedTurn(state)) {
-    // D49：闲时执行轮禁止再创建闲时任务（免费池自我放大）；OffPeakList 只读保留。
-    // 注意 automation 执行轮不进此分支——cron turn 按 D49-3 放行 OffPeakCreate。
-    for (const toolName of OFF_PEAK_MUTATION_TOOL_NAMES) {
-      tools.add(toolName);
-    }
-  }
+  // fork（F4.3）：isOffPeakCreateRestrictedTurn 分支（闲时轮 deny OffPeakCreate 等）随闲时任务全链路删除。
   return tools.size > 0 ? tools : null;
 }

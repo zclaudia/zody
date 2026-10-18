@@ -331,15 +331,9 @@ export interface BackgroundResultOriginMeta {
  */
 export type TurnExecutionKind = "agent" | "controlOnly";
 
-export type OffPeakRunType = "init" | "resume";
-
+// fork（F4.3）：OffPeakRunType 与 TurnBackgroundAttribution 的 offPeakTaskId 分支随闲时任务全链路删除。
 export type TurnBackgroundAttribution =
   | { automationId: string; offPeakTaskId?: never; offPeakRunType?: never }
-  | {
-      offPeakTaskId: string;
-      offPeakRunType?: OffPeakRunType;
-      automationId?: never;
-    }
   | {
       automationId?: undefined;
       offPeakTaskId?: undefined;

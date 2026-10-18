@@ -237,10 +237,7 @@ export { IUsageStatsService } from "./usage-stats/usageStats.js";
 export type { IStorageService } from "./storage/contract.js";
 
 // CodingPlanSubscription service — ICodingPlanSubscriptionService is both a type (interface) and value (descriptor)
-export {
-  ICodingPlanSubscriptionService,
-  type OffPeakClientConfig,
-} from "./coding-plan-subscription/codingPlanSubscription.js";
+export { ICodingPlanSubscriptionService } from "./coding-plan-subscription/codingPlanSubscription.js";
 export {
   IClientScenesService,
   type ClientSceneConfig,
@@ -250,9 +247,7 @@ export {
   type ClientScenesResponse,
 } from "./client-scenes/clientScenes.js";
 export { isValidCronExpr } from "./session/automationCronValidation.js";
-// 闲时任务管理服务（与 automation 服务面独立）；接口/描述符 browser-safe。
-export { IOffPeakTaskService } from "./session/offPeakTask.js";
-export type { OffPeakUpdateTaskParams } from "./session/offPeakTask.js";
+// fork（F4.3）：IOffPeakTaskService / OffPeakUpdateTaskParams（闲时任务服务面）随闲时任务全链路删除。
 
 // Skills service — ISkillsService is both a type (interface) and value (descriptor)
 export { ISkillsService } from "./skills/skills.js";

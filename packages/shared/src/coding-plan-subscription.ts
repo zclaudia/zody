@@ -184,12 +184,8 @@ export interface ManualClaimPlanClaimResult {
   };
 }
 
-/**
- * 闲时任务客户端配置：client/configs 只下发入口曝光开关；模型展示来自 Built-in
- * offpeak Provider。准入/低峰判断仍以服务端为准（3006 兜底）。
- * 有效开启判据 = enable_offpeak_task===true 且 Built-in 模型成员非空。
- * 额度不再经 client/configs 下发；改由专用 availability 接口提供服务端即时快照。
- */
+// fork（F4.3）：原「闲时任务客户端配置」接口文档随闲时任务全链路删除；
+// enable_offpeak_task 曝光字段不再被 fork 消费（F4.5 删除订阅服务时一并清理）。
 export interface CodingPlanProductInfoRequest {
   providerId?: CodingPlanSubscriptionProviderId;
   productId: string;

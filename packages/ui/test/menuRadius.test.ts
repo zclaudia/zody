@@ -50,11 +50,10 @@ describe("menu radius hierarchy", () => {
 });
 
 describe("business menus inherit shared radius", () => {
+  // fork（F4.3）：OffPeakEditActionsMenu/OffPeakHistoryTab 随闲时任务全链路删除。
   for (const file of [
     "WindowsCaptionMenuButton",
-    "settings/OffPeakEditActionsMenu",
     "settings/AutomationEditView",
-    "settings/OffPeakHistoryTab",
   ]) {
     it(file, async () => {
       const source = await readFile(new URL(`../src/${file}.tsx`, import.meta.url), "utf8");

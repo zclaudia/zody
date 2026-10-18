@@ -153,34 +153,18 @@ describe("zcode-protocol-v4 command", () => {
     ).toBe(false);
   });
 
-  it("Off-Peak attribution is turn-scoped and mutually exclusive with automation", () => {
+  it("sendText strips unknown attribution fields after off-peak removal (fork F4.3)", () => {
+    // offPeakTaskId/offPeakRunType 已从 schema 移除；旧发送端的历史字段按 zod strip 丢弃。
     expect(
       commandPayloadSchemas.sendText.parse({
         text: "resume",
-        offPeakTaskId: "offpeak-1",
-        offPeakRunType: "resume",
         toolDisallowlist: ["CronCreate"],
         futureAdditiveField: "ignored-by-current-cli",
       }),
     ).toEqual({
       text: "resume",
-      offPeakTaskId: "offpeak-1",
-      offPeakRunType: "resume",
       toolDisallowlist: ["CronCreate"],
     });
-    expect(() =>
-      commandPayloadSchemas.sendText.parse({
-        text: "invalid",
-        offPeakRunType: "init",
-      }),
-    ).toThrow();
-    expect(() =>
-      commandPayloadSchemas.sendText.parse({
-        text: "invalid",
-        automationId: "automation-1",
-        offPeakTaskId: "offpeak-1",
-      }),
-    ).toThrow();
   });
 
   it("keeps execution-scoped model context narrow and drops the legacy runtime snapshot", () => {

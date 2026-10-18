@@ -326,14 +326,8 @@ export async function executeTurnCommand(
           input: displayInput,
           messageId: userMessageId,
           inputId: options?.inputId,
-          ...(options?.automationId
-            ? { automationId: options.automationId }
-            : options?.offPeakTaskId
-              ? {
-                  offPeakTaskId: options.offPeakTaskId,
-                  ...(options.offPeakRunType ? { offPeakRunType: options.offPeakRunType } : {}),
-                }
-              : {}),
+          ...(options?.automationId ? { automationId: options.automationId } : {}),
+          // fork（F4.3）：offPeakTaskId/offPeakRunType 归因随闲时任务全链路删除。
           foregroundExecutionId: this.activeForegroundExecution?.foregroundExecutionId,
           queryId,
           inputSource: options?.inputSource,
@@ -605,8 +599,7 @@ export async function executeTurnCommand(
         loopState = {
           activeTurn,
           ...(options?.automationId ? { automationId: options.automationId } : {}),
-          // 闲时派发轮的身份进入 loop state，供工具执行边界 deny OffPeakCreate。
-          ...(options?.offPeakTaskId ? { offPeakTaskId: options.offPeakTaskId } : {}),
+          // fork（F4.3）：offPeakTaskId 进 loop state 随闲时任务全链路删除。
           anomalyWarningsInjected: 0,
           backgroundSubagentResultConsumed: options?.backgroundSubagentResultConsumed === true,
           workflowResultConsumed: options?.workflowResultConsumed === true,

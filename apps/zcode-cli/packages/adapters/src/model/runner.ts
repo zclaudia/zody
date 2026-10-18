@@ -44,7 +44,6 @@ import {
   type ResolvedAiSdkModel,
 } from "./runner-runtime.js";
 import { createModel, type ModelExecutionRequest } from "./model.js";
-import { refreshOffPeakRequestAuth } from "./off-peak-request-auth.js";
 
 export type { AiSdkModelRetryOptions } from "./retry-policy.js";
 export type {
@@ -183,7 +182,7 @@ export class AiSdkModelAdapter {
           options.providerConfig.access.mode === "highspeed");
       // 调用级 runtime header Port 只服务绑定完整 Account Access 的账号型 Model；
       // 普通 API-key Model 若也消费该 Port，会把静态鉴权误送到 Host 刷新并在请求前失败。
-      // 派生模式保留执行作用域票据/卡身份；Off-Peak 的 PAT 仍逐请求向原账号 owner 刷新。
+      // 派生模式保留执行作用域票据/卡身份。
       const refreshRuntimeHeadersBeforeAttempt = requestAuthRequired
         ? async (input: ModelRequestAuthSourceInput) => {
             const requestAuth = await requestAuthDependency?.source?.resolve(input);
@@ -193,17 +192,9 @@ export class AiSdkModelAdapter {
                 `Model request auth is unavailable: ${resolved.providerId}/${resolved.modelId}`,
               );
             }
-            const refreshedAuth =
-              options.providerConfig.access.type === "zhipu-account" &&
-              options.providerConfig.access.mode === "off-peak"
-                ? await refreshOffPeakRequestAuth({
-                    auth: requestAuth,
-                    input,
-                    accountAccess: options.providerConfig.access,
-                    refresh: contextRefreshRuntimeHeadersBeforeAttempt,
-                  })
-                : requestAuth;
-            return { headersApplied: true, requestAuth: refreshedAuth };
+            // fork（F4.3）：refreshOffPeakRequestAuth 分支（闲时票据逐请求换发 PAT）
+            // 随闲时任务全链路删除。
+            return { headersApplied: true, requestAuth };
           }
         : options.providerConfig.access.type === "zhipu-account"
           ? (contextRefreshRuntimeHeadersBeforeAttempt ??

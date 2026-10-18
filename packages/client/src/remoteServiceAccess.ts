@@ -28,7 +28,6 @@ import {
   IClientScenesService,
   ICloudContentService,
   IMarketingTouchService,
-  IOffPeakTaskService,
   ISkillsService,
   ISkillSyncService,
   IMcpSyncService,
@@ -87,7 +86,6 @@ export class RemoteServiceAccess implements IServiceAccessor {
   readonly clientScenesService: IClientScenesService;
   readonly cloudContentService: ICloudContentService;
   readonly marketingTouchService: IMarketingTouchService;
-  readonly offPeakTaskService: IOffPeakTaskService;
   readonly skillsService: ISkillsService;
   readonly skillSyncService: ISkillSyncService;
   readonly mcpSyncService: IMcpSyncService;
@@ -197,9 +195,7 @@ export class RemoteServiceAccess implements IServiceAccessor {
     this.marketingTouchService = ProxyChannel.toService<IMarketingTouchService>(
       channelClient.getChannel(IMarketingTouchService.channelName),
     );
-    this.offPeakTaskService = ProxyChannel.toService<IOffPeakTaskService>(
-      channelClient.getChannel(IOffPeakTaskService.channelName),
-    );
+    // fork（F4.3）：offPeakTaskService 代理随闲时任务全链路删除。
     this.skillsService = ProxyChannel.toService<ISkillsService>(
       channelClient.getChannel(ISkillsService.channelName),
     );

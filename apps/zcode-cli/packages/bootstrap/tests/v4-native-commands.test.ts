@@ -288,8 +288,6 @@ describe("v4 原生 sendText", () => {
 
     await facade.sendInput("hi", {
       inputId: "cmd-1",
-      offPeakTaskId: "off-peak-task-1",
-      offPeakRunType: "init",
       modelExecution,
     });
 
@@ -298,8 +296,6 @@ describe("v4 原生 sendText", () => {
       "hi",
       undefined,
       expect.objectContaining({
-        offPeakTaskId: "off-peak-task-1",
-        offPeakRunType: "init",
         modelExecution,
       }),
     );
@@ -677,39 +673,7 @@ describe("v4 原生 sendText", () => {
     expect(record.activeBotDeliveryTarget).toBeUndefined();
   });
 
-  it("off-peak sendText 保留本轮归因与独立创建限制，普通后续轮不继承", async () => {
-    const app = makeApp();
-    const record = makeRecord({ app });
-    const host = makeHost(record);
-
-    await new V4CommandExecutor(host).execute(
-      envelope("sendText", {
-        text: "off-peak prompt",
-        offPeakTaskId: "off-peak-task-1",
-        offPeakRunType: "resume",
-      }),
-    );
-    await settle();
-    await new V4CommandExecutor(host).execute(envelope("sendText", { text: "manual follow-up" }));
-    await settle();
-
-    expect(app.sendInput.mock.calls[0]?.[1]).toEqual(
-      expect.objectContaining({
-        offPeakTaskId: "off-peak-task-1",
-        offPeakRunType: "resume",
-      }),
-    );
-    // D49 新增闲时自建限制、D52 追加 SendMessage/Workflow；不混入 automation 写工具集，
-    // Host 的额外 denylist 另行合并。
-    expect(app.sendInput.mock.calls[0]?.[1].toolDisallowlist).toEqual([
-      "OffPeakCreate",
-      "SendMessage",
-      "Workflow",
-    ]);
-    expect(app.sendInput.mock.calls[1]?.[1]).not.toHaveProperty("offPeakTaskId");
-    expect(app.sendInput.mock.calls[1]?.[1]).not.toHaveProperty("offPeakRunType");
-    expect(app.sendInput.mock.calls[1]?.[1]).not.toHaveProperty("toolDisallowlist");
-  });
+  // fork（F4.3）：off-peak sendText 归因与闲时 deny 名单用例随闲时任务全链路删除。
 
   it("automation runId inputId 漏传 automationId 时也隐藏全部写工具", async () => {
     const app = makeApp();

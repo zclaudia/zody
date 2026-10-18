@@ -1110,11 +1110,11 @@ export function createConversationV4Gateway(
     createSessionRecord: async ({
       workspaceId,
       mcpServers,
-      offPeakToolEnabled,
       dynamicWorkflowEnabled,
       dynamicWorkflowMode,
       permissionScope,
     }) => {
+      // fork（F4.3）：offPeakToolEnabled 解构随闲时任务全链路删除。
       if (permissionScope && !context.deps.sessionStore)
         throw new Error("Group task permission scope requires persistence");
       // workspaceId 双形态（Workspace Identity 约束）：
@@ -1134,8 +1134,7 @@ export function createConversationV4Gateway(
         // MCP 是 runtime 创建期配置；v4 createSession 必须与 legacy
         // session/create 等价透传，否则创建的 session 永远不会启动这些工具。
         mcpServers,
-        // Off-Peak 工具面 flag 同为 runtime 创建期配置，必须随 create 进入 record。
-        ...(offPeakToolEnabled === true ? { offPeakToolEnabled: true } : {}),
+        // fork（F4.3）：offPeakToolEnabled 透传随闲时任务全链路删除。
         // 动态工作流灰度门同为 runtime 创建期配置：
         // v4 createSession 必须与 legacy session/create 等价透传，否则无界面创建的会话
         // 会绕过 Host 的灰度判定，只剩进程级缺省。

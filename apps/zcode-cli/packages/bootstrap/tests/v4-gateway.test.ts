@@ -722,38 +722,7 @@ describe("订阅与帧调度", () => {
     );
   });
 
-  it("Off-Peak TurnStarted 只透传稳定 task attribution，不透传正文", () => {
-    const host = makeHost();
-    const gateway = makeGateway(host);
-    const log = new EventLog();
-    gateway.ingest("session-1", sessionCreated(log));
-    gateway.ingest(
-      "session-1",
-      log.push(
-        SessionEventType.TurnStarted,
-        {
-          turnNumber: 1,
-          input: "闲时任务 prompt 不能进入 fact",
-          inputId: "message-offpeak-run-1",
-          offPeakTaskId: "offpeak-stable-1",
-          offPeakRunType: "init",
-        },
-        { turnId: "turn-offpeak" },
-      ),
-    );
-
-    expect(host.telemetryFacts).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          kind: "turn.started",
-          sourceCommandId: "message-offpeak-run-1",
-          offPeakTaskId: "offpeak-stable-1",
-          offPeakRunType: "init",
-        }),
-      ]),
-    );
-    expect(JSON.stringify(host.telemetryFacts)).not.toContain("闲时任务 prompt 不能进入 fact");
-  });
+  // fork（F4.3）：Off-Peak TurnStarted attribution 用例随闲时任务全链路删除。
 
   it("manual run 无调度字段；非 runId 输入与 CronCreate 解析失败只降级不误标", () => {
     const host = makeHost();

@@ -55,7 +55,8 @@ describe("ConversationTelemetryFact schema", () => {
     expect(() => conversationTelemetryFactSchema.parse({ ...tool, output: "private" })).toThrow();
   });
 
-  it("Off-Peak admission 只接收稳定 task ID，且与 automation 互斥", () => {
+  it("历史 turn.started fact 的 offPeakTaskId 仍被容忍解析，正文仍不穿透（fork F4.3）", () => {
+    // off-peak 链路已删、互斥校验已删；字段仅为容忍历史持久化 fact 而保留，隐私边界不变。
     const started = conversationTelemetryFactSchema.parse({
       ...base,
       kind: "turn.started",
@@ -64,20 +65,6 @@ describe("ConversationTelemetryFact schema", () => {
       offPeakRunType: "init",
     });
     expect(started).toMatchObject({ offPeakTaskId: "offpeak-1", offPeakRunType: "init" });
-    expect(() =>
-      conversationTelemetryFactSchema.parse({
-        ...base,
-        kind: "turn.started",
-        sourceCommandId: "message-run-2",
-        offPeakRunType: "resume",
-      }),
-    ).toThrow();
-    expect(() =>
-      conversationTelemetryFactSchema.parse({
-        ...started,
-        automationId: "automation-1",
-      }),
-    ).toThrow();
     for (const forbidden of [
       { prompt: "private prompt" },
       { workspacePath: "/private/workspace" },

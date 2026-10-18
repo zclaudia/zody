@@ -18,7 +18,7 @@ export * from "./agent.js";
 export * from "./skill.js";
 export * from "./todo.js";
 export * from "./automation.js";
-export * from "./off-peak.js";
+// fork（F4.3）：off-peak 工具 schema 随闲时任务全链路删除。
 export * from "./target.js";
 export * from "./plan-mode.js";
 export * from "./ask-user-question.js";

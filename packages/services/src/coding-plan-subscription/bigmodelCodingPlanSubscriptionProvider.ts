@@ -62,7 +62,6 @@ import type {
   DynamicWorkflowClientConfig,
 } from "@zcode/shared";
 import type { ModelSelectionView } from "@zcode/provider";
-import type { OffPeakClientConfig } from "./codingPlanSubscription.js";
 import {
   BIGMODEL_PROVIDER_ID,
   BUILTIN_MODEL_PROVIDER_IDS,
@@ -162,10 +161,7 @@ interface ZCodeClientConfigEnvelope {
           codingPlanStaticProducts?: CodingPlanStaticProductsConfig;
           codingPlanStaticTeamProducts?: CodingPlanStaticTeamProductsConfig;
           startPlanPreview?: StartPlanPreviewConfig | null;
-          // 闲时任务灰度（服务端）：内层字段服务端为 snake_case，与外层 camelCase 混排。
-          offPeak?: {
-            enable_offpeak_task?: boolean;
-          } | null;
+          // fork（F4.3）：offPeak 曝光字段（闲时灰度）随闲时任务全链路删除。
           modelContextBudget?: {
             strategy?: unknown;
           } | null;
@@ -182,7 +178,7 @@ interface ZCodeClientConfigEnvelope {
 interface BigModelCodingPlanSubscriptionProviderOptions {
   apiClient: ApiClient;
   credentialService: Pick<ICredentialService, "load">;
-  resolveOffPeakModelSelectionView?: () => Promise<ModelSelectionView>;
+  // fork（F4.3）：resolveOffPeakModelSelectionView 随闲时任务全链路删除。
 }
 
 interface TeamPlanProjectApiKeyPrewarmStatus {
@@ -212,7 +208,6 @@ interface BigModelCustomerInfoResponse {
 export class BigModelCodingPlanSubscriptionProvider {
   protected readonly apiClient: ApiClient;
   protected readonly credentialService: Pick<ICredentialService, "load">;
-  private readonly resolveOffPeakModelSelectionView?: () => Promise<ModelSelectionView>;
   private clientConfigSnapshot: ZCodeClientConfigEnvelope | null = null;
   private clientConfigSnapshotExpiresAt = 0;
   private clientConfigRequest: Promise<ZCodeClientConfigEnvelope> | null = null;
@@ -220,7 +215,6 @@ export class BigModelCodingPlanSubscriptionProvider {
   constructor(options: BigModelCodingPlanSubscriptionProviderOptions) {
     this.apiClient = options.apiClient;
     this.credentialService = options.credentialService;
-    this.resolveOffPeakModelSelectionView = options.resolveOffPeakModelSelectionView;
   }
 
   // ─────────── family 维度抽象（供 ZaiCodingPlanSubscriptionProvider 覆盖）───────────
@@ -405,25 +399,7 @@ export class BigModelCodingPlanSubscriptionProvider {
     };
   }
 
-  /**
-   * 闲时任务灰度配置：复用 client/configs 通道零新增请求。
-   * forceRefresh 供"打开 Automations 入口补拉"（1h 快照否则灰度翻转最长 1h 不可见）。
-   */
-  async getOffPeakClientConfig(options?: { forceRefresh?: boolean }): Promise<OffPeakClientConfig> {
-    if (process.env["ZCODE_OFFPEAK_MOCK"] === "1") {
-      // mock 已经明确替代远端曝光配置，不能再先等待 /client/configs：
-      // 离线 Desktop E2E 会一直停在 Loading，根本无法进入闲时执行链。
-      const modelSelectionView = await this.resolveOffPeakModelSelectionView?.();
-      return resolveOffPeakClientConfig({}, process.env, modelSelectionView);
-    }
-    if (options?.forceRefresh) {
-      this.clientConfigSnapshot = null;
-      this.clientConfigSnapshotExpiresAt = 0;
-    }
-    const payload = await this.getClientConfigs();
-    const modelSelectionView = await this.resolveOffPeakModelSelectionView?.();
-    return resolveOffPeakClientConfig(payload, process.env, modelSelectionView);
-  }
+  // fork（F4.3）：getOffPeakClientConfig（闲时灰度配置读取）随闲时任务全链路删除。
 
   /**
    * 动态工作流灰度快照：与闲时任务同走
@@ -1511,33 +1487,4 @@ function dropUndefined(value: Record<string, unknown>): Record<string, unknown> 
   return Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined));
 }
 
-/**
- * 闲时任务灰度判据（纯函数供单测）：远端只提供曝光开关，模型成员和事实
- * 来自 ZCode Built-in Provider / Model Config。
- * mock 模式（ZCODE_OFFPEAK_MOCK=1）只替代产品曝光与套餐状态；模型候选仍来自 Registry。
- */
-export function resolveOffPeakClientConfig(
-  payload: ZCodeClientConfigEnvelope,
-  env: NodeJS.ProcessEnv,
-  modelSelectionView: ModelSelectionView = EMPTY_OFF_PEAK_MODEL_SELECTION_VIEW,
-): OffPeakClientConfig {
-  const hasModels = modelSelectionView.providers.some((provider) => provider.models.length > 0);
-  if (env["ZCODE_OFFPEAK_MOCK"] === "1") {
-    return {
-      enabled: hasModels,
-      modelSelectionView,
-      // ZCODE_OFFPEAK_MOCK_NO_PLAN=1 演示「非 coding plan 锁定」态；缺省视为已订阅。
-      codingPlanActive: env["ZCODE_OFFPEAK_MOCK_NO_PLAN"] !== "1",
-    };
-  }
-  const raw = payload.data?.configs?.offPeak;
-  return {
-    enabled: raw?.enable_offpeak_task === true && hasModels,
-    modelSelectionView,
-  };
-}
-
-const EMPTY_OFF_PEAK_MODEL_SELECTION_VIEW: ModelSelectionView = Object.freeze({
-  revision: 0,
-  providers: Object.freeze([]),
-});
+// fork（F4.3）：resolveOffPeakClientConfig / EMPTY_OFF_PEAK_MODEL_SELECTION_VIEW（闲时灰度判据）随闲时任务全链路删除。

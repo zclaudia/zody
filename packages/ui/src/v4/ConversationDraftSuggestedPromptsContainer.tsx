@@ -30,7 +30,6 @@ import { buildDraftSuggestedPluginMention } from "@/v4/draftSuggestedPromptPrefi
 import { resolveDraftSuggestedPromptText } from "@/v4/draftSuggestedPromptItems.js";
 import {
   DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS,
-  DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK,
 } from "@/v4/draftSuggestedPromptItems.js";
 import {
   resolveDraftSuggestedPluginFlowStage,
@@ -51,7 +50,8 @@ const INSTALL_OPERATION_TIMEOUT_MS = 10_000;
 
 type Props = ConversationDraftSuggestedPromptsContainerProps & {
   proactive?: boolean;
-  onOpenAutomations?: (automationTab?: AutomationsNavigationTab) => void;
+  // fork（F4.3）：automationTab 参数（闲时 tab 导航）随闲时任务全链路删除。
+  onOpenAutomations?: () => void;
 };
 
 let draftSuggestedPluginOperationSequence = 0;
@@ -140,9 +140,7 @@ export function ConversationDraftSuggestedPromptsContainer({
       (proactive ? recommendedItems : allItems).filter(
         (item) =>
           !item.actions?.some(
-            (action) =>
-              action === DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS ||
-              action === DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK,
+            (action) => action === DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS,
           ) || Boolean(onOpenAutomations),
       ),
     [allItems, onOpenAutomations, proactive, recommendedItems],
@@ -534,13 +532,7 @@ export function ConversationDraftSuggestedPromptsContainer({
           templatePrompt: prompt,
         });
       }
-      if (
-        onOpenAutomations &&
-        item.actions?.includes(DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK)
-      ) {
-        onOpenAutomations("idle");
-        return;
-      }
+      // fork（F4.3）：OFFPEAK 导航分支随闲时任务全链路删除。
       if (
         onOpenAutomations &&
         item.actions?.includes(DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS)

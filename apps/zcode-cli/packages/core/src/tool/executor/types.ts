@@ -17,7 +17,6 @@ import type {
   Logger,
   Model,
   ModelCatalogPort,
-  OffPeakPort,
   TopicResourcePort,
   PdfDocumentPort,
   PermissionBrokerPort,
@@ -106,7 +105,7 @@ export interface ToolExecutorOptions {
   workflowEscalatePort?: WorkflowEscalatePort;
   artifactStore?: ToolArtifactStorePort;
   automationPort?: AutomationPort;
-  offPeakPort?: OffPeakPort;
+  // fork（F4.3）：offPeakPort 随闲时任务全链路删除。
   topicResourcePort?: TopicResourcePort;
   sessionStore?: SessionStorePort;
   sessionModePort?: SessionModePort;
@@ -176,7 +175,7 @@ export interface ToolExecutor {
 
 export interface ToolExecuteOptions {
   automationTurn?: boolean;
-  offPeakTurn?: boolean;
+  // fork（F4.3）：offPeakTurn 随闲时任务全链路删除。
   signal?: AbortSignal;
   traceContext?: TraceContext;
   subagentModelOverride?: SubagentRunOptions["modelOverride"];
@@ -220,7 +219,7 @@ export interface ToolExecutorDeps {
   workflowEscalatePort?: WorkflowEscalatePort;
   artifactStore?: ToolArtifactStorePort;
   automationPort?: AutomationPort;
-  offPeakPort?: OffPeakPort;
+  // fork（F4.3）：offPeakPort 随闲时任务全链路删除。
   topicResourcePort?: TopicResourcePort;
   sessionStore?: SessionStorePort;
   sessionModePort?: SessionModePort;

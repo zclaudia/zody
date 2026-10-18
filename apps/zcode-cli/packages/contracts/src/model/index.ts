@@ -134,8 +134,7 @@ export const ModelRetryReason = {
   AuthRefresh: "auth_refresh",
   /** Anthropic 明确拒绝历史 thinking signature 后，对请求副本清理并立即重试一次。 */
   ReasoningSignatureRepair: "reasoning_signature_repair",
-  /** off-peak 闲时排队（429/3105+Retry-After）：豁免重试预算、无限探测（仅 idle plan provider）。 */
-  OffpeakQueued: "offpeak_queued",
+  // fork（F4.3）：OffpeakQueued（off-peak 闲时排队重试原因）随闲时任务全链路删除。
 } as const;
 
 export type ModelRetryReason = (typeof ModelRetryReason)[keyof typeof ModelRetryReason];

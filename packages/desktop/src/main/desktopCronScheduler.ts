@@ -21,15 +21,7 @@ export interface CronRunResultPayload {
   failureKind?: "transient" | "permanent";
 }
 
-/** host → main 的闲时任务派发结果（与 cron 消息独立）。 */
-export interface OffPeakRunResultPayload {
-  offPeakTaskId: string;
-  ok: boolean;
-  conversationId?: string;
-  sessionId?: string;
-  error?: string;
-  failureKind?: "transient" | "permanent";
-}
+// fork（F4.3）：OffPeakRunResultPayload（闲时派发结果）随闲时任务全链路删除。
 
 interface CronSchedulerDeps {
   hostProcessLocalEnv: Record<string, string>;
@@ -40,15 +32,12 @@ interface CronSchedulerDeps {
   };
   /** 选一个能执行本地 workspace 派发的 host；无可用 host 时返回 null（scheduler 会退避重试）。 */
   resolveDispatchHost: () => ElectronUtilityProcess | null;
-  /** 闲时任务执行中计数变化（keep-awake：main 据此 + 设置切 powerSaveBlocker）。 */
-  onOffPeakActiveCountChanged?: (count: number) => void;
+  // fork（F4.3）：onOffPeakActiveCountChanged（闲时 keep-awake 计数）随闲时任务全链路删除。
 }
 
 export interface CronSchedulerHandle {
   /** host 回报派发结果时调用，转交给 scheduler 结算。 */
   handleCronRunResult: (result: CronRunResultPayload) => void;
-  /** host 回报闲时任务派发结果时调用，转交给 scheduler 结算。 */
-  handleOffPeakRunResult: (result: OffPeakRunResultPayload) => void;
   /** manual run 落库后立即唤醒 scheduler，不等待下一次轮询。 */
   wake: (automationId: string) => void;
   /** app 退出前优雅收尾（通知 scheduler 释放认领 + 关库，兜底强杀）。 */
@@ -88,11 +77,6 @@ export function spawnCronScheduler(deps: CronSchedulerDeps): CronSchedulerHandle
     if (msg.type === "scheduler-log") {
       const level = msg.level === "warn" ? "warn" : msg.level === "error" ? "error" : "info";
       deps.logger[level](`[cron-scheduler] ${msg.message}`);
-      return;
-    }
-
-    if (msg.type === "offpeak-active-count") {
-      deps.onOffPeakActiveCountChanged?.(msg.count);
       return;
     }
 
@@ -153,43 +137,7 @@ export function spawnCronScheduler(deps: CronSchedulerDeps): CronSchedulerHandle
       return;
     }
 
-    if (msg.type === "offpeak-dispatch-request") {
-      const host = deps.resolveDispatchHost();
-      if (!host) {
-        // 无可用 host：transient 回执，scheduler 按 off-peak 独立退避重试（顺延不丢弃）。
-        postToScheduler({
-          type: "offpeak-dispatch-result",
-          offPeakTaskId: msg.offPeakTaskId,
-          ok: false,
-          failureKind: "transient",
-          error: "no local host available",
-        });
-        return;
-      }
-      try {
-        host.postMessage({
-          type: HostMessageTypes.OffPeakRun,
-          offPeakTaskId: msg.offPeakTaskId,
-          prompt: msg.prompt,
-          permissionMode: msg.permissionMode,
-          modelSelection: msg.modelSelection,
-          conversationId: msg.conversationId,
-          sessionId: msg.sessionId,
-          serverTicketId: msg.serverTicketId,
-          workspacePath: msg.workspacePath,
-          workspaceIdentity: msg.workspaceIdentity,
-        });
-      } catch (error) {
-        deps.logger.warn("[cron-scheduler] forward OffPeakRun to host failed:", error);
-        postToScheduler({
-          type: "offpeak-dispatch-result",
-          offPeakTaskId: msg.offPeakTaskId,
-          ok: false,
-          failureKind: "transient",
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
-    }
+    // fork（F4.3）：offpeak-dispatch-request 转发段随闲时任务全链路删除。
   });
 
   child.on("exit", (code) => {
@@ -200,9 +148,6 @@ export function spawnCronScheduler(deps: CronSchedulerDeps): CronSchedulerHandle
   return {
     handleCronRunResult(result) {
       postToScheduler({ type: "cron-dispatch-result", ...result });
-    },
-    handleOffPeakRunResult(result) {
-      postToScheduler({ type: "offpeak-dispatch-result", ...result });
     },
     wake(automationId) {
       if (isDisposing) return;

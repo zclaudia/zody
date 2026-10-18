@@ -46,10 +46,7 @@ describe("UI font token migration", () => {
       readSource("packages/ui/src/settings/AutomationsSection.tsx"),
       readSource("packages/ui/src/settings/AutomationEditView.tsx"),
       readSource("packages/ui/src/settings/AutomationDesignPrimitives.tsx"),
-      readSource("packages/ui/src/settings/OffPeakEditView.tsx"),
-      readSource("packages/ui/src/settings/OffPeakHistoryTab.tsx"),
-      readSource("packages/ui/src/settings/OffPeakTaskList.tsx"),
-      readSource("packages/ui/src/v4/OffPeakNewTaskEntry.tsx"),
+      // fork（F4.3）：OffPeak* 源文件随闲时任务全链路删除。
       readSource("packages/ui/src/components/ui/toast.tsx"),
     ];
 

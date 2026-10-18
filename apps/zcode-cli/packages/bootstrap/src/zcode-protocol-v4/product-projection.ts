@@ -368,9 +368,7 @@ function modelRetryReasonCode(
   switch (reason) {
     case "rate_limited":
       return "fault.provider.rateLimited";
-    // off-peak 排队（429/3105）语义上就是"上游让我们等"，UI 归入限流可恢复形态。
-    case "offpeak_queued":
-      return "fault.provider.rateLimited";
+    // fork（F4.3）：case "offpeak_queued"（归入限流）随闲时任务全链路删除。
     case "provider_overloaded":
     case "server_error":
       return "fault.provider.serverError";

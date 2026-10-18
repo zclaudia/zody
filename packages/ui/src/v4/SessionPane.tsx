@@ -4715,9 +4715,10 @@ export function SessionPane({
         <ConversationDraftSuggestedPromptsContainer
           className={isOfficeMode ? "mt-4" : "mt-6"}
           proactive={isOfficeMode}
+          // fork（F4.3）：automationTab（闲时 tab 导航）随闲时任务全链路删除。
           onOpenAutomations={
             onOpenAutomationsMain && !compactForRemoteControl
-              ? (automationTab) => onOpenAutomationsMain(undefined, automationTab)
+              ? () => onOpenAutomationsMain(undefined)
               : undefined
           }
           workspacePath={workspacePath}

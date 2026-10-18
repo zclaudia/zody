@@ -7,7 +7,7 @@ import {
   type DynamicWorkflowMode,
 } from "@zcode/shared";
 import { V4_METHODS } from "@zcode/shared/zcode-protocol-v4";
-import { offPeakSelectionView } from "./fixtures/offPeakSelection.js";
+import { testSelectionView } from "./fixtures/testSelectionView.js";
 
 // DWG-02（docs/dynamic-workflow/launch.md「Gray release」）：Host 是灰度的唯一裁决者。
 // 判定在 workspace client 就绪时做一次：开启才下发 workspace/updateDynamicWorkflowPolicy，
@@ -88,7 +88,7 @@ async function setup(params: {
   }));
   const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
   const service = createZCodeAgentService({
-    modelSelectionReadinessSource: { getView: async () => offPeakSelectionView() },
+    modelSelectionReadinessSource: { getView: async () => testSelectionView() },
     ...(params.enabled === undefined && !params.configResolver
       ? {}
       : { resolveDynamicWorkflowClientConfig: resolveConfig }),

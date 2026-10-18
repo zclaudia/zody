@@ -118,12 +118,8 @@ export function createInputFacade(deps: CreateInputFacadeDeps): InputFacade {
     const runtimePromptText = resolvedCommandPrompt ?? promptInput.text;
     const turnAttribution = options?.automationId
       ? { automationId: options.automationId }
-      : options?.offPeakTaskId
-        ? {
-            offPeakTaskId: options.offPeakTaskId,
-            ...(options.offPeakRunType ? { offPeakRunType: options.offPeakRunType } : {}),
-          }
-        : {};
+      : {};
+    // fork（F4.3）：offPeakTaskId/offPeakRunType 归因分支随闲时任务全链路删除。
     return await deps.runtime.executeTurn(runtimePromptText, storedAttachments, {
       abortSignal: options?.abortSignal,
       browserAmbientContext: options?.browserAmbientContext,

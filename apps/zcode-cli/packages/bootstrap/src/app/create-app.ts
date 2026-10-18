@@ -873,7 +873,7 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
       dynamicWorkflowSnippetPort,
       modelCatalogPort,
       automationPort: options.automationPort,
-      offPeakPort: options.offPeakPort,
+      // fork（F4.3）：offPeakPort 透传随闲时任务全链路删除。
       topicResourcePort: options.topicResourcePort,
       appVersion,
       traceContext,

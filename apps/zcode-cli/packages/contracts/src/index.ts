@@ -27,7 +27,7 @@ export * from "./interfaces/dynamic-workflow-run.port.js";
 export * from "./interfaces/dynamic-workflow-snippet.port.js";
 export * from "./interfaces/model-catalog.port.js";
 export * from "./interfaces/automation.port.js";
-export * from "./interfaces/off-peak.port.js";
+// fork（F4.3）：off-peak.port（闲时任务创建端口）随闲时任务全链路删除。
 export * from "./interfaces/topic-resource.port.js";
 export * from "./interfaces/mcp.port.js";
 

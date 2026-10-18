@@ -16,9 +16,7 @@ async function readSource(url: URL): Promise<string> {
 const editViewSource = await readSource(
   new URL("../src/settings/AutomationEditView.tsx", import.meta.url),
 );
-const offPeakEditViewSource = await readSource(
-  new URL("../src/settings/OffPeakEditView.tsx", import.meta.url),
-);
+// fork（F4.3）：offPeakEditViewSource（已删文件）随闲时任务全链路移除。
 const primitivesSource = await readSource(
   new URL("../src/settings/AutomationDesignPrimitives.tsx", import.meta.url),
 );
@@ -40,7 +38,6 @@ describe("automation new-task history interaction", () => {
 
   it("shares the Hooks pill tabs style and uses 设置 / 历史 labels", () => {
     expect(editViewSource).toContain("<AutomationSettingsHistoryTabs");
-    expect(offPeakEditViewSource).toContain("<AutomationSettingsHistoryTabs");
     expect(primitivesSource).toContain("<SettingsSegmentedTabs");
     expect(segmentedTabsSource).toContain(
       'className="flex h-8 rounded-full bg-surface p-0.5 group-data-horizontal/tabs:h-8"',

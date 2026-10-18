@@ -16,7 +16,6 @@
   "apps/zcode-cli/packages/adapters/tests/config.test.ts": 2,
   "apps/zcode-cli/packages/adapters/tests/endpoint-routing-edition.test.ts": 3,
   "apps/zcode-cli/packages/adapters/tests/marketplace-listing.test.ts": 14,
-  "apps/zcode-cli/packages/adapters/tests/off-peak-request-auth-refresh.test.ts": 1,
   "apps/zcode-cli/packages/adapters/tests/official-coding-plan-gateway.test.ts": 5,
   "apps/zcode-cli/packages/adapters/tests/plugins.test.ts": 5,
   "apps/zcode-cli/packages/adapters/tests/provider-endpoint-routing-fetch.test.ts": 2,

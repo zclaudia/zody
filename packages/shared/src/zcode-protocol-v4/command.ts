@@ -65,11 +65,8 @@ export const commandPayloadSchemas = {
     config: createSessionRequestedConfigSchema.optional(),
     // MCP 是 runtime 启动期配置，必须随 create 一次性进入 record，不能在首发后补写。
     mcpServers: z.array(zcodeProtocolMcpServerSchema).optional(),
-    // Off-Peak 工具面 flag，与 legacy session/create 等价——V4 createSession 是桌面
-    // 新会话的实际创建路径，不透传则 OffPeakCreate/OffPeakList 永不注册。additive，
-    // 旧 CLI 的 z.object 会静默丢弃该键（fail-closed）。
-    offPeakToolEnabled: z.boolean().optional(),
-    // 动态工作流灰度 flag，与 offPeakToolEnabled 同一模式。
+    // fork（F4.3）：offPeakToolEnabled 随闲时任务全链路删除。
+    // 动态工作流灰度 flag，与原 offPeakToolEnabled 同一模式。
     dynamicWorkflowEnabled: z.boolean().optional(),
     // 灰度 mode 与布尔同行（launch.md「On demand: activation」）；旧 CLI 的 z.object 静默丢弃。
     dynamicWorkflowMode: z.enum(DYNAMIC_WORKFLOW_MODES).optional(),
@@ -116,8 +113,8 @@ export const commandPayloadSchemas = {
       // fork（F4.2）：原 highspeedMeta 字段（加速卡快照随输入事实进入 message.data）随加速
       // 卡删除；zod 对未知键默认 strip，存量持久化数据仍可被宽容解析（兼容读取）。
       automationId: z.string().min(1).optional(),
-      offPeakTaskId: z.string().min(1).optional(),
-      offPeakRunType: z.enum(["init", "resume"]).optional(),
+      // fork（F4.3）：offPeakTaskId/offPeakRunType（闲时派发归因）随闲时任务全链路删除；
+      // zod 对未知键默认 strip，存量持久化数据仍可被宽容解析（兼容读取）。
       // Bot 来源只由 Host 注入，用于 CronCreate 在当前 turn 内读取并持久化回推地址。
       botDeliveryTarget: zcodeAutomationBotDeliveryTargetSchema.optional(),
       inputOrigin: z.enum(["desktop", "mobile"]).optional(),
@@ -128,19 +125,6 @@ export const commandPayloadSchemas = {
       toolDisallowlist: z.array(z.string().min(1)).optional(),
     })
     .superRefine((payload, context) => {
-      if (payload.automationId && payload.offPeakTaskId) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "automationId and offPeakTaskId are mutually exclusive",
-        });
-      }
-      if (payload.offPeakRunType && !payload.offPeakTaskId) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "offPeakRunType requires offPeakTaskId",
-          path: ["offPeakRunType"],
-        });
-      }
       requireModelSelectionForExecution(payload, context);
     }),
   sendGoalCommand: z.object({

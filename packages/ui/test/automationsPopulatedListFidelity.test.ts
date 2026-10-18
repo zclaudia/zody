@@ -46,7 +46,7 @@ describe("Automations populated-list Figma contract", () => {
       '"bg-surface text-foreground-subtle hover:bg-hover hover:text-foreground"',
     );
     expect(automationsSectionSource).toContain(
-      "<AutomationCreateDropdown\n                onViaChat={handleCreateViaChat}",
+      "<AutomationCreateDropdown onViaChat={handleCreateViaChat}",
     );
     expect(automationsSectionSource).not.toContain("appearance={");
   });
@@ -56,13 +56,13 @@ describe("Automations populated-list Figma contract", () => {
       'aria-label={intl.formatMessage({ id: "automations.refresh" })}',
     );
     const createAction = automationsSectionSource.indexOf(
-      "<AutomationCreateDropdown\n                onViaChat={handleCreateViaChat}",
+      "<AutomationCreateDropdown onViaChat={handleCreateViaChat}",
     );
 
     expect(refreshAction).toBeGreaterThanOrEqual(0);
     expect(createAction).toBeGreaterThan(refreshAction);
     expect(automationsSectionSource).toContain("refresh(zcodeAgentService)");
-    expect(automationsSectionSource).toContain("offPeakRefresh(offPeakTaskService)");
+    // fork（F4.3）：offPeakRefresh 并行断言随闲时任务全链路删除。
     expect(automationsSectionSource).toMatch(
       /variant="outline"\s+size="icon"\s+aria-label=\{intl\.formatMessage\(\{ id: "automations\.refresh" \}\)\}/,
     );
@@ -81,11 +81,7 @@ describe("Automations populated-list Figma contract", () => {
     expect(enUS["automations.resume"]).toBe("Continue");
   });
 
-  it("uses the dedicated idle-time delete confirmation action label", () => {
-    expect(automationsSectionSource).toMatch(
-      /id: "offPeak\.delete\.title"[\s\S]*?id: "offPeak\.delete\.description"[\s\S]*?id: "offPeak\.delete\.confirm"/,
-    );
-  });
+  // fork（F4.3）：闲时删除确认文案断言随闲时任务全链路删除。
 
   it("dims paused schedule time and run count to 40 percent opacity", () => {
     expect(automationsSectionSource).toContain("font-normal text-success opacity-40");

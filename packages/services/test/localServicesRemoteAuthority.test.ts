@@ -290,8 +290,8 @@ describe("createLocalServices remote authority", () => {
       createLocalServices,
       disposeServiceResources,
       getAccountRequestAuthService,
-      getOffPeakRequestAuthBuilder,
     } = await import("../src/node.js");
+    // fork（F4.3）：getOffPeakRequestAuthBuilder 断言随闲时任务全链路删除。
     const { ICredentialService, ISettingService } = await import("../src/index.js");
     const services = createLocalServices({
       zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
@@ -309,7 +309,6 @@ describe("createLocalServices remote authority", () => {
     try {
       const accountRequestAuthService = getAccountRequestAuthService(services);
       expect(accountRequestAuthService).toBeDefined();
-      expect(getOffPeakRequestAuthBuilder(services)).toBeTypeOf("function");
       const { ProxyChannel } = await import("@zcode/rpc");
       const exposeService = vi.spyOn(ProxyChannel, "fromService");
       const registerChannel = vi.fn();
