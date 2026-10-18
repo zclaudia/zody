@@ -48,7 +48,7 @@ command center records the raw command text through a best-effort input-history
 port after a command is successfully handled. This includes local commands such
 as `/help` when an input-history source is available, so `Up` can recall the
 command the user actually typed instead of an expanded prompt. Commands that may
-contain secrets, such as `/login ... <api-key>`, must not be recorded.
+contain secrets must not be recorded.
 
 ## Contract
 
@@ -141,8 +141,7 @@ The retention limit is global, not per project.
 - Bootstrap records accepted prompts and accepted steered inputs.
 - Command center records accepted slash commands such as `/help` as
   `slash_command` when a history source is available.
-- Command center does not record slash command forms that may contain secrets,
-  including API-key login commands.
+- Command center does not record slash command forms that may contain secrets.
 - TUI calls `recallPreviousInput` on `Up` in the normal input state, including
   while a model turn is busy, and places the returned text into the input box.
 - TUI walks older history on repeated `Up` and restores newer history or the

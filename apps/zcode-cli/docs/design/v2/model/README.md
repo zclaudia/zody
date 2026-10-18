@@ -37,10 +37,6 @@ ZCode core intent
 
 AI SDK 是 adapter 里的运行时依赖，不进入 core。core 只知道 ZCode 自己的消息、工具、权限、session event 和 trace。
 
-默认 AI SDK provider transport 还可以按
-[`provider-endpoint-routing.md`](./provider-endpoint-routing.md) 的远端配置，在最终网络出口前重写明确的
-provider endpoint。该能力不修改 provider 配置，也不进入 core/session 状态。
-
 这样做的收益：
 
 - 不为每个 provider 重写 streaming、tool calling、structured output。

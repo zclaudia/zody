@@ -30,7 +30,6 @@ import {
 import { closeSessionStore, getSessionDbPath } from "./app/session-store.js";
 import { startProcessProviderRegistryRuntime } from "./app/process-provider-registry-runtime.js";
 import { scheduleStartupLogRetentionCleanup } from "./log-retention.js";
-import { resolveProcessProviderEndpointRoutingPort } from "./provider-endpoint-routing.js";
 import { StartupTimer, startupNow } from "./startup-logging.js";
 import { installZCodeProtocolAiSdkWarningLogger } from "./zcode-protocol/ai-sdk-warning-logger.js";
 // fork（F4.6）：官方 MCP 身份头端口与可信 origin 注册表随官方 MCP 鉴权链删除。
@@ -181,15 +180,6 @@ export async function runZCodeProtocolAgent(
             onEvent: (event) => mcpTelemetrySink?.(event),
             onResourceSamples: (samples) => mcpResourceSink?.(samples),
           });
-    const providerEndpointRoutingPort =
-      options.providerEndpointRoutingPort ??
-      resolveProcessProviderEndpointRoutingPort({
-        appVersion: options.version,
-        env: options.env,
-        logger,
-        network: configResult.config.network,
-        sourceTitle: "electron",
-      });
     // fork（F4.6）：官方 MCP 身份头端口与可信 origin 校验随官方 MCP 鉴权链删除。
     // MCP elicitation 归属到协议 server 的会话；pool 先于 server 创建，端口延迟绑定。
     let elicitationServer: {
@@ -259,7 +249,6 @@ export async function runZCodeProtocolAgent(
                   }),
               }
             : {}),
-          providerEndpointRoutingPort,
           sourceTitle: "electron",
           onToolExecResource: (params) =>
             connection.send({ method: zcodeProtocolNotifications.toolExecResource, params }),

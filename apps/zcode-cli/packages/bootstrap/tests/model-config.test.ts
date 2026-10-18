@@ -32,16 +32,10 @@ describe("createModelAdapter", () => {
 });
 
 describe("createRuntimeAiSdkModelExecutionConfig", () => {
-  it("只装配来源 Header、网络、路由、环境和签名基础设施", () => {
-    const endpointRoutingPort = {
-      async resolve(url: string) {
-        return { routed: false, url };
-      },
-    };
+  it("只装配来源 Header、网络、环境和签名基础设施", () => {
     const config = createRuntimeAiSdkModelExecutionConfig(
       { ZCODE_APP_VERSION: "3.9.0", ZCODE_ENV: "test" },
       {
-        endpointRoutingPort,
         network: {
           caCertFile: "/tmp/test-ca.pem",
           httpProxy: "http://proxy.example.com",
@@ -56,13 +50,14 @@ describe("createRuntimeAiSdkModelExecutionConfig", () => {
         "X-ZCode-App-Version": "3.9.0",
         "X-Title": "Z Code@electron",
       },
-      endpointRoutingPort,
       network: {
         caCertFile: "/tmp/test-ca.pem",
         httpProxy: "http://proxy.example.com",
         noProxy: "localhost",
       },
     });
+    // fork（F4.9）：provider endpoint routing 已删除，执行配置不得再携带路由端口。
+    expect(config).not.toHaveProperty("endpointRoutingPort");
     expect(config).not.toHaveProperty("providers");
     expect(config).not.toHaveProperty("defaultProviderId");
   });

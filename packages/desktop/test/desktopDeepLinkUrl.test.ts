@@ -44,16 +44,7 @@ describe("desktop deep link url helpers", () => {
     expect(extractWorkspaceOpenPath(new URL("zcode://workspace/open"))).toBeNull();
   });
 
-  it("只接受不含额外敏感参数的 share import code", async () => {
-    const { extractShareImportCode, isShareImportUrl } =
-      await import("../src/main/desktopDeepLinkUrl.js");
-    const valid = new URL("zcode://share/import?code=abc_DEF-123");
-    expect(isShareImportUrl(valid)).toBe(true);
-    expect(extractShareImportCode(valid)).toBe("abc_DEF-123");
-    expect(extractShareImportCode(new URL("zcode://share/import"))).toBeNull();
-    expect(extractShareImportCode(new URL("zcode://share/import?code=bad%2Fcode"))).toBeNull();
-    expect(isShareImportUrl(new URL("https://share/import?code=abc"))).toBe(false);
-  });
+  // fork（F4.8）：share import code 解析用例随会话分享功能删除。
 
   it("extracts protocol urls from desktop argv variants", async () => {
     const { extractDeepLinkUrlFromArgs } = await import("../src/main/desktopDeepLinkUrl.js");

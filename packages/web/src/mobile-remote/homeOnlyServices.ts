@@ -174,10 +174,7 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
         reason: "ZCode session service is not available before workspace bridge is connected.",
       }),
     }),
-    // 分享发布首期只属于 desktop local host；Web 首页和 /remote 不建立独立发布权威。
-    conversationShareService: createUnsupportedHomeOnlyService<
-      RootServices["conversationShareService"]
-    >("conversationShareService"),
+    // fork（F4.8）：conversationShareService 随会话分享功能删除。
     promptAttachmentTransferService: createEmptyHomeOnlyService<
       RootServices["promptAttachmentTransferService"]
     >({

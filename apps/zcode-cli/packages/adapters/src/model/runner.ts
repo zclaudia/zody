@@ -59,7 +59,6 @@ export { normalizeUsage, toModelStreamEvent } from "./runner-normalization.js";
 export interface AiSdkModelAdapterOptions {
   defaultHeaders?: AiSdkModelExecutionConfig["defaultHeaders"];
   requestSecurityState?: ModelRequestSecurityState;
-  endpointRoutingPort?: import("@zcode/contracts").ProviderEndpointRoutingPort;
   network?: AiSdkNetworkConfig;
   runtime?: AiSdkModelRuntime;
   env?: EnvRecord;
@@ -96,9 +95,6 @@ export class AiSdkModelAdapter {
     this.execution = new AiSdkModelExecution(
       {
         defaultHeaders: options.defaultHeaders,
-        ...(options.endpointRoutingPort
-          ? { endpointRoutingPort: options.endpointRoutingPort }
-          : {}),
         ...(options.network ? { network: options.network } : {}),
         ...(options.env ? { env: options.env } : {}),
       },

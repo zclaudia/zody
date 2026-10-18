@@ -18,7 +18,6 @@ import {
   type ModelId,
   type ModelProviderId,
   type ModelRequestAuth,
-  type ProviderEndpointRoutingPort,
 } from "@zcode/contracts";
 import type { RegistryProviderConfig } from "@zcode/provider";
 import { withOpenRouterAttributionHeaders } from "@zcode/shared";
@@ -28,7 +27,6 @@ import type { ModelRequestSecurityState, ModelRequestSecurityPort } from "./requ
 import { createOpenAIResponsesJsonCompatFetch } from "./openai-responses-json-compat.js";
 import { createModelOptionMapFetch, type RawRequestBodyCapture } from "./model-option-map-fetch.js";
 import { createNetworkProxyFetch } from "../network/proxy-fetch.js";
-import { createProviderEndpointRoutingFetch } from "./provider-endpoint-routing-fetch.js";
 import { normalizeModelTlsFailure } from "./failure-tls.js";
 import {
   mergeModelRequestHeaders,
@@ -53,7 +51,6 @@ interface AiSdkProviderConfig {
 export interface AiSdkModelExecutionConfig {
   /** 执行环境提供的默认来源信息，不属于 Provider 持久化配置。 */
   defaultHeaders?: Readonly<Record<string, string>>;
-  endpointRoutingPort?: ProviderEndpointRoutingPort;
   env?: EnvRecord;
   network?: AiSdkNetworkConfig;
 }
@@ -96,7 +93,6 @@ type ProviderCode = string | number;
 
 export interface ProviderBusinessErrorFetchOptions {
   caCertFile?: string;
-  endpointRoutingPort?: ProviderEndpointRoutingPort;
   env?: EnvRecord;
   providerId: string;
   providerKind: AiSdkProviderKind;
@@ -167,7 +163,6 @@ export class AiSdkModelExecution {
   private readonly env: EnvRecord;
   private readonly defaultHeaders: Record<string, string>;
   private readonly network: AiSdkNetworkConfig;
-  private readonly endpointRoutingPort?: ProviderEndpointRoutingPort;
   private readonly logger?: Logger;
   private readonly baseTransport?: ProviderFetch;
   private readonly providerTransports = new Map<string, ProviderFetch>();
@@ -177,7 +172,6 @@ export class AiSdkModelExecution {
     this.env = config.env ?? process.env;
     this.defaultHeaders = { ...config.defaultHeaders };
     this.network = { ...config.network };
-    this.endpointRoutingPort = config.endpointRoutingPort;
     this.logger = options.logger;
     this.baseTransport = options.transport;
     this.requestSecurity = (
@@ -257,7 +251,6 @@ export class AiSdkModelExecution {
       optionValues,
       rawRequestBodyCapture,
       snapshot.supportsJsonSchemaOutput,
-      snapshot.providerConfig.access?.type === "zhipu-account" ? requestAuth?.apiKeyId : undefined,
     );
     return {
       baseURL: providerConfig.baseURL,
@@ -279,24 +272,17 @@ export class AiSdkModelExecution {
     optionValues: ModelOptionValues | undefined,
     rawRequestBodyCapture: RawRequestBodyCapture,
     supportsJsonSchemaOutput: boolean,
-    apiKeyId?: string,
   ): LanguageModelFactory {
     const apiKey = this.resolveApiKey(providerConfig);
     // SDK 会合并 factory 默认 header；必须在这里去掉静态来源，才能保证缺失时真正省略。
     const headers = withoutModelQuerySourceHeader(providerConfig.headers);
+    // fork（F4.9）：官方 endpoint 改写（provider endpoint routing）已删除，
+    // BYOK 模型请求直连用户配置的 baseURL，不再经过任何网关重写。
     const networkTransport = this.resolveProviderTransport(providerId);
-    // ID 属于当前 attempt，不能放入按 Provider 缓存的 transport，避免切换账号后串用。
-    const providerTransport = this.endpointRoutingPort
-      ? createProviderEndpointRoutingFetch({
-          fetch: networkTransport,
-          routingPort: this.endpointRoutingPort,
-          apiKeyId,
-        })
-      : networkTransport;
     const requestTransport = this.requestSecurity.protectTransport({
       providerId,
       providerConfig,
-      transport: providerTransport,
+      transport: networkTransport,
     });
     const fetch = createProviderBusinessErrorFetch({
       fetch: requestTransport,
@@ -475,17 +461,11 @@ export function createProviderBusinessErrorFetch(
   options: ProviderBusinessErrorFetchOptions,
 ): ProviderFetch {
   const networkFetch = createProviderProxyFetch(options);
-  const baseFetch = options.endpointRoutingPort
-    ? createProviderEndpointRoutingFetch({
-        fetch: networkFetch,
-        routingPort: options.endpointRoutingPort,
-      })
-    : networkFetch;
 
   return async (input, init) => {
     let response: Response;
     try {
-      response = await baseFetch(input, init);
+      response = await networkFetch(input, init);
     } catch (error) {
       throw normalizeModelTlsFailure(error);
     }

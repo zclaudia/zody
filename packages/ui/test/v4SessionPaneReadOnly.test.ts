@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ConversationSnapshot } from "@zcode/shared/zcode-protocol-v4";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { SessionPane } from "@/v4/SessionPane.js";
-import type { ConversationShareSelectionDraft } from "@/store/conversationShareSelectionStore.js";
 import type { ConversationRowRenderContext } from "@/v4/conversationRowContext.js";
 
 const sessionPaneSource = readFileSync("packages/ui/src/v4/SessionPane.tsx", "utf8");
@@ -25,44 +24,9 @@ const projectionState = vi.hoisted(() => ({
 const timelineState = vi.hoisted(() => ({
   apiRetry: null as ConversationSnapshot["control"]["apiRetry"],
   rowContext: null as unknown,
-  backgroundScrollLocked: false,
-  selectionActionsEnabled: null as boolean | null,
-  scrollToQueryActionRef: null as { current: unknown } | null,
 }));
 
-// SSR 渲染不执行 effect，因此 zustand 的 getServerSnapshot（= 初始 state）看不到真实 store
-// 的写入。这里直接替换 store，让测试能声明式地摆出任意 share draft。
-const shareStoreState = vi.hoisted(() => ({
-  draft: undefined as unknown,
-}));
-
-vi.mock("@/store/conversationShareSelectionStore.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@/store/conversationShareSelectionStore.js")>();
-  const fakeState = () => ({
-    popoverOpen: false,
-    drafts: shareStoreState.draft ? { "child-session": shareStoreState.draft } : {},
-    // ac4bc6e79c 起 SessionPane 从 dockStates[sessionId] 读取发布中 dock 状态，
-    // mock 缺这个字段会让 SSR selector 读 undefined[sessionId] 直接抛错。
-    dockStates: {},
-    finishSelection: vi.fn(),
-    updateDockState: vi.fn(),
-    goToConfiguration: vi.fn(),
-    goToSelection: vi.fn(),
-    setAccessMode: vi.fn(),
-    setAllRowsSelected: vi.fn(),
-    showTimeline: vi.fn(),
-    showSelectionPanel: vi.fn(),
-    syncAvailableTurns: vi.fn(),
-    toggleRow: vi.fn(),
-  });
-  // 只替换 hook 与 getState；派生 selector 保留真实实现，避免测试自证。
-  const hook = (selector: (state: unknown) => unknown) => selector(fakeState());
-  return {
-    ...actual,
-    useConversationShareSelectionStore: Object.assign(hook, { getState: fakeState }),
-  };
-});
+// fork（F4.8）：分享选择 store mock 随会话分享功能删除。
 
 vi.mock("@/v4/useConversationProjection.js", () => ({
   useConversationProjection: () => projectionState.current,
@@ -133,24 +97,15 @@ vi.mock("@/v4/ConversationTimeline.js", async () => {
   return {
     ConversationTimeline: ({
       apiRetry,
-      backgroundScrollLocked,
       bottomDock,
       rowContext,
-      selectionActions,
-      scrollToQueryActionRef,
     }: {
       apiRetry?: ConversationSnapshot["control"]["apiRetry"];
-      backgroundScrollLocked?: boolean;
       bottomDock?: ReactNode;
       rowContext?: ConversationRowRenderContext;
-      selectionActions?: { enabled: boolean };
-      scrollToQueryActionRef?: { current: unknown };
     }) => {
       timelineState.apiRetry = apiRetry ?? null;
       timelineState.rowContext = rowContext ?? null;
-      timelineState.backgroundScrollLocked = backgroundScrollLocked ?? false;
-      timelineState.selectionActionsEnabled = selectionActions?.enabled ?? null;
-      timelineState.scrollToQueryActionRef = scrollToQueryActionRef ?? null;
       return React.createElement("div", { "data-testid": "mock-timeline" }, bottomDock);
     },
   };
@@ -249,19 +204,16 @@ function renderReadOnlyPane({
   lastError = null,
   readOnly = true,
   workflowRuns,
-  sharedContextImport,
 }: {
   allowWorkspaceFileRewind?: boolean;
   apiRetry?: ConversationSnapshot["control"]["apiRetry"];
   lastError?: ConversationSnapshot["control"]["lastError"];
   readOnly?: boolean;
   workflowRuns?: ConversationSnapshot["workflowRuns"];
-  sharedContextImport?: ConversationSnapshot["sharedContextImport"];
 } = {}): string {
   const snapshot = makeSnapshot(lastError);
   snapshot.control.apiRetry = apiRetry;
   if (workflowRuns) snapshot.workflowRuns = workflowRuns;
-  snapshot.sharedContextImport = sharedContextImport;
   projectionState.current = {
     lastError: null,
     loadingOlder: false,
@@ -379,121 +331,6 @@ describe("SessionPane read-only mode", () => {
     expect(html).not.toContain("workflow-run-island-pill");
   });
 
-  it("does not show the legacy imported-share notice in read-only panes", () => {
-    const html = renderReadOnlyPane({
-      sharedContextImport: { title: "筛选近一年收益前10%的偏股混合基金" },
-    });
-
-    expect(html).not.toContain('data-testid="conversation-share-import-notice"');
-    expect(html).not.toContain("shared_context");
-  });
 });
 
-/**
- * 这些用例守护 SessionPane 到 timeline 的分享模式接线。
- *
- * Bug 根因：滚动锁定、勾选期禁用 message 工具条和 dock 进出动画曾经只有 policy 模块的
- * 隔离单测，SessionPane 从未引用过它们，所以三条修复实际都没生效而测试仍是绿的。
- * 断言必须落在 SessionPane 真正传给 ConversationTimeline 的 props 上。
- */
-describe("SessionPane 分享模式接线", () => {
-  afterEach(() => {
-    timelineState.apiRetry = null;
-    timelineState.rowContext = null;
-    timelineState.backgroundScrollLocked = false;
-    timelineState.selectionActionsEnabled = null;
-    timelineState.scrollToQueryActionRef = null;
-    shareStoreState.draft = undefined;
-  });
-
-  const partialDraft = (
-    overrides: Partial<ConversationShareSelectionDraft> = {},
-  ): ConversationShareSelectionDraft => ({
-    scope: "partial",
-    stage: "selection",
-    view: "selection",
-    availableRowIds: [1],
-    excludedRowIds: [],
-    productTurnIdByRowId: { 1: "product-turn-1" },
-    accessMode: "private",
-    ...overrides,
-  });
-
-  const renderSharePane = (draft?: ConversationShareSelectionDraft): string => {
-    shareStoreState.draft = draft;
-    projectionState.current = {
-      lastError: null,
-      loadingOlder: false,
-      optimisticCommands: [],
-      snapshot: makeSnapshot(null),
-      status: "live",
-      subscriptionId: "sub-1",
-    };
-    return renderToStaticMarkup(
-      createElement(
-        ZCodeIntlProvider,
-        { initialLocale: "zh-CN" },
-        createElement(SessionPane, {
-          paneId: "pane-1",
-          readOnly: false,
-          sessionId: "child-session",
-          workspacePath: "/workspace",
-        }),
-      ),
-    );
-  };
-
-  it("选择面板展开时锁定背景滚动，收起到 timeline 后恢复", () => {
-    renderSharePane(partialDraft({ view: "selection" }));
-    expect(timelineState.backgroundScrollLocked).toBe(true);
-
-    renderSharePane(partialDraft({ view: "timeline" }));
-    expect(timelineState.backgroundScrollLocked).toBe(false);
-  });
-
-  it("选择面板展开时向 Timeline 传递正文定位 action ref", () => {
-    renderSharePane(partialDraft({ view: "selection" }));
-    expect(timelineState.scrollToQueryActionRef).not.toBeNull();
-  });
-
-  it("进入配置阶段后不再锁定背景滚动", () => {
-    renderSharePane(partialDraft({ stage: "configuration", view: "selection" }));
-
-    expect(timelineState.backgroundScrollLocked).toBe(false);
-  });
-
-  it("预检可跳过项不提前写入发布成功 warning，避免确认页重复展示", () => {
-    const nextHandlerStart = sessionPaneSource.indexOf("const handleShareNext = useCallback");
-    const nextHandlerEnd = sessionPaneSource.indexOf(
-      "const handleShareSelectAll = useCallback",
-      nextHandlerStart,
-    );
-    expect(nextHandlerStart).toBeGreaterThanOrEqual(0);
-    expect(nextHandlerEnd).toBeGreaterThan(nextHandlerStart);
-
-    const nextHandler = sessionPaneSource.slice(nextHandlerStart, nextHandlerEnd);
-    expect(nextHandler).toContain("goToShareConfiguration(sessionId)");
-    expect(nextHandler).not.toContain("setShareWarnings");
-  });
-
-  it("不在分享模式时不锁定背景滚动", () => {
-    renderSharePane(undefined);
-
-    expect(timelineState.backgroundScrollLocked).toBe(false);
-  });
-
-  it("局部勾选期间禁用全局 message 工具条，退出分享后恢复", () => {
-    renderSharePane(partialDraft());
-    expect(timelineState.selectionActionsEnabled).toBe(false);
-
-    renderSharePane(undefined);
-    expect(timelineState.selectionActionsEnabled).toBe(true);
-  });
-
-  it("chat 与分享 dock 通过同一个过渡层切换 mode", () => {
-    expect(renderSharePane(undefined)).toContain('data-conversation-bottom-dock-mode="chat"');
-    expect(renderSharePane(partialDraft())).toContain(
-      'data-conversation-bottom-dock-mode="confirmation"',
-    );
-  });
-});
+// fork（F4.8）：SessionPane 分享模式接线用例随会话分享功能删除。

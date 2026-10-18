@@ -1,4 +1,4 @@
-/* eslint-disable max-lines -- Web 入口编排：OAuth 回跳、会话分享、`/remote*` 远控路由与 Web 平台桥接。 */
+/* eslint-disable max-lines -- Web 入口编排：OAuth 回跳、`/remote*` 远控路由与 Web 平台桥接。 */
 import {
   AppErrorBoundary,
   Root,
@@ -12,34 +12,20 @@ import { connectViaWebSocket } from "@zcode/client";
 import type { ServerRemoteInfo, WebRemoteControlFailure } from "@zcode/shared";
 import { WebCallbackPage } from "./auth/WebCallbackPage.js";
 import { createWebAuthService } from "./auth/webAuthService.js";
-import { WEB_ZAI_OAUTH_CONFIG, resolveWebAuthDevReturnTo } from "./auth/webZaiOAuthConfig.js";
 import { parseOAuthState, resolveSafeAppReturnTo } from "./auth/oauthStateCodec.js";
-import {
-  ConversationShareLandingLoader,
-  ConversationShareLandingStatus,
-} from "./share/ConversationShareLandingPage.js";
-import {
-  ConversationSharePreviewClient,
-  resolveConversationShareRouteLocale,
-} from "./share/conversationSharePreviewClient.js";
-import {
-  isConversationSharePath,
-  resolveConversationShareCodeFromPath,
-} from "./share/conversationShareRoute.js";
+// fork（F4.8）：会话分享落地页（preview/route/landing）随会话分享功能删除。
 import {
   renderWebRemoteControlFailure,
   toWebRemoteControlFailure,
 } from "./webRemoteControlFailureView.js";
 import { webEntryRoot } from "./webEntryRoot.js";
 import { createWebPlatform } from "./webPlatformService.js";
-import { applyWebThemePreference, resolveWebThemePreference } from "./webThemePreference.js";
+import { applyWebThemePreference } from "./webThemePreference.js";
 
 // 初始化主题：默认 Zai dark，后续由 useTheme hook 接管
-// system 模式下需要查询系统偏好；非 system 模式直接用存储值
-// 分享页没有本地主题配置时使用浅色，已有配置仍然沿用；其他 Web 页面继续默认深色。
-applyWebThemePreference(
-  isConversationSharePath(window.location.pathname) ? "zai-light" : undefined,
-);
+// system 模式下需要查询系统偏好；非 system 模式直接用存储值。
+// fork（F4.8）：分享落地页已删除，不再按分享路由切换浅色主题。
+applyWebThemePreference();
 
 // 浏览器标签页 / 手机切后台时禁用 CSS 动画，避免 DocumentTimeline 持有已卸载的 DOM 子树。
 installDocumentHiddenMotionPause();
@@ -90,78 +76,7 @@ function renderWebAuthCallbackPage(): void {
   );
 }
 
-async function renderConversationSharePage(): Promise<void> {
-  // 页面语言跟随路径前缀：/cn/share 中文，裸 /share 英文。
-  const routeLocale = resolveConversationShareRouteLocale(window.location.pathname);
-  // index.html 固定 lang="en"；不同步会让中文分享页对无障碍与浏览器翻译都报错语言。
-  document.documentElement.lang = routeLocale;
-  // 分享页必须设置 title：否则浏览器标签只显示 index.html 的通用标题。
-  // 会话标题要等 preview 加载完，先给一个语言正确的兜底。
-  document.title = routeLocale === "zh-CN" ? "ZCode 会话分享" : "ZCode Conversation Share";
-  const shareCode = resolveConversationShareCodeFromPath(window.location.pathname);
-  if (!shareCode) {
-    webEntryRoot.render(
-      <ConversationShareLandingStatus
-        state={{ kind: "error", error: "invalid_contract" }}
-        locale={routeLocale}
-      />,
-    );
-    return;
-  }
-
-  const endpointOrigin =
-    import.meta.env.VITE_ZCODE_BASE_URL?.trim().replace(/\/+$/u, "") || window.location.origin;
-  const mockMode =
-    import.meta.env.DEV && import.meta.env.VITE_CONVERSATION_SHARE_PREVIEW_MOCK === "true";
-  // Share 加载失败不能只有通用 network 文案：需要区分 mock、endpoint 配置或跨域 fetch。
-  // 这里只记录运行时路由与 endpoint，不记录完整 pathname，避免把 share code 写入日志。
-  console.info("[conversation-share-web]", "preview_runtime_initialized", {
-    browserOrigin: window.location.origin,
-    routeKind: "canonical",
-    endpointOrigin,
-    transport: mockMode ? "mock" : "fetch",
-  });
-  const client = mockMode
-    ? new (
-        await import("./share/mockConversationSharePreviewClient.js")
-      ).MockConversationSharePreviewClient()
-    : new ConversationSharePreviewClient({ baseUrl: `${endpointOrigin}/api/v1` });
-  const getMockToken = () =>
-    mockMode && window.sessionStorage.getItem("zcode:share:mock-auth") === "owner"
-      ? "mock-owner-token"
-      : null;
-  const onLogout = () => {
-    if (mockMode) {
-      window.sessionStorage.removeItem("zcode:share:mock-auth");
-      window.location.reload();
-      return;
-    }
-    void webAuthService.logout();
-  };
-  webEntryRoot.render(
-    <ConversationShareLandingLoader
-      shareCode={shareCode}
-      client={client}
-      getAccessToken={() => getMockToken() ?? webAuthService.getZCodeJwtToken()}
-      onLogin={(provider) => {
-        if (mockMode) {
-          window.sessionStorage.setItem("zcode:share:mock-auth", "owner");
-          window.location.reload();
-          return;
-        }
-        webAuthService.startLogin({
-          provider,
-          appReturnTo: window.location.href,
-          redirectUri: WEB_ZAI_OAUTH_CONFIG.shareRedirectUri,
-          devReturnTo: resolveWebAuthDevReturnTo(WEB_ZAI_OAUTH_CONFIG, "share"),
-        });
-      }}
-      onLogout={onLogout}
-      locale={routeLocale}
-      theme={resolveWebThemePreference("zai-light")}
-    />,
-  );
-}
+// fork（F4.8）：会话分享落地页渲染随会话分享功能删除。
 
 function resolveDefaultWsOrigin(): string {
   return `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
@@ -206,10 +121,7 @@ async function bootstrapWebApp() {
     return;
   }
 
-  if (isConversationSharePath(window.location.pathname)) {
-    await renderConversationSharePage();
-    return;
-  }
+  // fork（F4.8）：/cn/share 与 /share 分享路由随会话分享功能删除。
 
   let bootstrap: WebBootstrapResult;
   try {

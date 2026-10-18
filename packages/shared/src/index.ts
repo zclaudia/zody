@@ -95,7 +95,7 @@ export * from "./zcode-network-debug-status.js";
 export * from "./zcode-session-visible-content.js";
 // fork（F4.6）：official-mcp-auth / official-mcp-tool-error 随官方 MCP 全链路删除。
 export * from "./conversation-message-projection-policy.js";
-export * from "./conversation-share.js";
+// fork（F4.8）：conversation-share（发布/预览/导入协议）随会话分享功能删除。
 export * from "./conversation-preview-artifacts.js";
 export * from "./zcode-session-task-status.js";
 export * from "./zcode-session-content-profile.js";

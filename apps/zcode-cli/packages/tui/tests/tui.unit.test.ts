@@ -118,17 +118,17 @@ test("hides the empty transcript logo when messages are present", () => {
   );
 });
 
-test("renders a prominent non-modal login notice", () => {
+test("renders a prominent non-modal model-setup notice", () => {
   const lines = collectTextLines(LoginRequiredPanel());
   const textNodes = collectTextNodes(LoginRequiredPanel());
 
-  // 登录提示改为“没有可用模型”，引导用 /model 查看模型或 /login 连接账号。
+  // 没有可用模型时提示配置 Provider，并用 /model 查看模型。
   assert.ok(lines.some((line) => line.includes("No available models")));
   assert.ok(lines.some((line) => line.includes("/model")));
   assert.ok(textNodes.some((node) => node.style.fg === "#fbbf24"));
 });
 
-test("renders localized Chinese login notice copy", () => {
+test("renders localized Chinese model-setup notice copy", () => {
   const lines = collectTextLines(LoginRequiredPanel({ copy: ZH_COPY }));
 
   assert.ok(lines.some((line) => line.includes("没有可用模型")));

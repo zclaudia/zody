@@ -21,8 +21,7 @@ export function buildRemoteWorkspaceSessionServices(
     zcodeAgentService: remoteServices.zcodeAgentService,
     zcodeTaskService: remoteServices.zcodeTaskService,
     zcodeSessionService: remoteServices.zcodeSessionService,
-    // 分享使用本地登录/API，但 Rows 与文件必须绑定当前远端 connection scope。
-    conversationShareService: remoteServices.conversationShareService,
+    // fork（F4.8）：conversationShareService 随会话分享功能删除。
     fileWatcherService: remoteServices.fileWatcherService,
     // Provider/Model 事实属于目标 Environment；不能因 merge 先展开 baseServices 而回落到本地。
     modelSelectionService: remoteServices.modelSelectionService,

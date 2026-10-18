@@ -25,7 +25,7 @@ describe("Todo104 CLI 同文件默认选择", () => {
     directories.push(directory);
     const personalPath = join(directory, "injected-personal.json");
     // F4.1a 已从 builtin 配置删除 account:* 官方账号 provider，CLI 登录链
-    // （configureCodingPlanApiKey，属 F4.9 删除范围）不再能从真实 builtin 物化账号
+    // （configureCodingPlanApiKey）已在 F4.9 删除，不再能从真实 builtin 物化账号
     // Provider；本用例保留其持久化语义：默认选择与已有 Provider 内容在同一 Personal
     // 文件中共存，写默认选择不得清掉 Provider 定义。
     const repository = new NodePersonalProviderConfigRepository({

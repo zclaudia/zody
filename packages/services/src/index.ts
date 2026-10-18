@@ -25,29 +25,7 @@ export {
 
 // Accessor
 export type { IServiceAccessor } from "./accessor.js";
-export {
-  ConversationShareServiceError,
-  createUnsupportedConversationShareService,
-  IConversationShareService,
-} from "./conversation-share/conversationShare.js";
-export type {
-  ConversationShareSelection,
-  ConversationSharePublishProgress,
-  ConversationShareImportProgress,
-  ImportConversationShareInput,
-  ImportConversationShareResult,
-  ImportedConversationShare,
-  ConversationShareServiceErrorKind,
-  ConversationShareFailureIssue,
-  ConversationShareFailureIssueCode,
-  ConversationSharePreflightInput,
-  ConversationSharePreflightResult,
-  ConversationShareAllowedArtifact,
-  ConversationShareTurnPreflightResult,
-  PublishTextConversationInput,
-} from "./conversation-share/conversationShare.js";
-// Conversation share 的具体实现依赖 Node 文件系统，只能从 @zcode/services/node 引入；
-// 根入口必须保持 browser-safe，避免 renderer 解析到 node:* 模块。
+// fork（F4.8）：会话分享（发布/导入）服务与协议随会话分享功能整体删除。
 export {
   createConversationTelemetryService,
   type ConversationTelemetryWorkspaceTarget,

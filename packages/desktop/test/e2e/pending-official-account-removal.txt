@@ -40,9 +40,7 @@ conversation-session/conversation-session-model-provider-settings-transition.tes
 conversation-session/manual-review/pending/conversation-session-model-provider-effective-selection.test.ts
 conversation-session/manual-review/pending/conversation-session-worker-effective-selection.test.ts
 
-## F4.8 会话分享（D6 已决：移除官方分享服务）
-conversation-session/manual-review/pending/conversation-session-share-publish-import.test.ts
-conversation-session/manual-review/pending/conversation-session-share-ssh-artifact.test.ts
+## F4.8 会话分享（D6 已决：移除官方分享服务）—— 已全部删除（fork 2026-10-18）
 
 ## F4.5/F4.11 边界：设置页仍绑定 providerFamilyDomain / Coding Plan key / 官方目录刷新
 settings/manual-review/pending/provider-connectivity-prompt.test.ts

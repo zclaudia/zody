@@ -14,8 +14,6 @@ import {
   IZCodeTaskService,
   IZCodeAgentService,
   IZCodeSessionService,
-  IConversationShareService,
-  createUnsupportedConversationShareService,
   IBotsService,
   IFileWatcherService,
   IOAuthService,
@@ -40,8 +38,6 @@ import {
   type IServiceAccessor,
 } from "@zcode/services";
 import {
-  ConversationShareHttpClient,
-  ConversationShareService,
   createSettingService,
   createCredentialService,
   createBroadcastService,
@@ -61,13 +57,9 @@ import {
   createSubagentsService,
   createMemoryService,
   createOutputStyleService,
-  createRemoteConversationShareArtifactSource,
   OAuthCredentialRepo,
 } from "@zcode/services/node";
-import {
-  buildRuntimeZCodeApiUrl,
-  type ZCodeSessionRuntimePreferencesResult,
-} from "@zcode/shared";
+import type { ZCodeSessionRuntimePreferencesResult } from "@zcode/shared";
 import { assertLegacyRemoteWorkspaceRpcContract } from "./legacyRemoteWorkspaceRpcContract.js";
 import {
   createRemoteProviderProvisioningExecutorFromWorkspace,
@@ -75,21 +67,7 @@ import {
 } from "./remoteProviderProvisioningService.js";
 
 const runtimePreferencesLogger = createServiceLogger("remote-runtime-preferences");
-const ZCODE_JWT_TOKEN_KEY = "zcodejwttoken";
-const conversationShareLog = createServiceLogger("conversation-share");
-
-function createUnsupportedRemoteConversationShareService(): IConversationShareService {
-  return createUnsupportedConversationShareService({
-    message: "Conversation sharing is not available for this client or remote target",
-    onRejected: (action) => {
-      conversationShareLog.warn(undefined, "conversation share action rejected", {
-        action,
-        kind: "feature_disabled",
-        reason: "server_remote_unsupported",
-      });
-    },
-  });
-}
+// fork（F4.8）：会话分享服务（发布/导入）及远端 unsupported 兜底随分享功能删除。
 
 export function createRemoteWorkspaceServiceCollection(params: {
   clientConfigService: IClientConfigService;
@@ -136,20 +114,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
   handleOAuthProviderLogout = createOAuthProviderLogoutHandler({
     accountProviderCredentialStore: localAccountProviderCredentialStore,
   });
-  const conversationShareClient = new ConversationShareHttpClient({
-    // 远端 workspace 的分享也必须使用真实 API；本地 Mock 仅用于单测，不生成无法跨进程访问的链接。
-    apiClient: localApiClient,
-    baseUrl: buildRuntimeZCodeApiUrl(process.env, "/api/v1"),
-    tokenProvider: async () =>
-      (await localCredentialService.load(ZCODE_JWT_TOKEN_KEY))?.trim() || null,
-  });
-  const conversationShareService = new ConversationShareService({
-    zcodeAgentService: params.connectionServices.zcodeAgentService,
-    client: conversationShareClient,
-    artifactSource: createRemoteConversationShareArtifactSource(
-      params.connectionServices.fileService,
-    ),
-  });
+  // fork（F4.8）：远端 workspace 的会话分享服务装配已删除。
   const reportingRemoteZCodeTaskService = params.createReportingRemoteZCodeTaskService(
     params.connectionServices.zcodeTaskService,
   );
@@ -283,7 +248,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
     .register(IZCodeTaskService, remoteZCodeTaskService)
     .register(IZCodeAgentService, params.connectionServices.zcodeAgentService)
     .register(IZCodeSessionService, remoteZCodeSessionService)
-    .register(IConversationShareService, conversationShareService)
+    // fork（F4.8）：IConversationShareService 注册随会话分享功能删除。
     .register(
       IBotsService,
       createBotsService({
@@ -368,7 +333,7 @@ export function createServerRemoteWorkspaceServiceCollection(params: {
     .register(IZCodeTaskService, params.connectionServices.zcodeTaskService)
     .register(IZCodeAgentService, params.connectionServices.zcodeAgentService)
     .register(IZCodeSessionService, params.connectionServices.zcodeSessionService)
-    .register(IConversationShareService, createUnsupportedRemoteConversationShareService())
+    // fork（F4.8）：IConversationShareService 兜底注册随会话分享功能删除。
     .register(IBotsService, params.connectionServices.botsService)
     .register(IFileWatcherService, params.connectionServices.fileWatcherService)
     .register(IOAuthService, params.connectionServices.oauthService)

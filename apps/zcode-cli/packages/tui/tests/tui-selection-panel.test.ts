@@ -16,7 +16,7 @@ test("renders non-filterable selections without a filter prompt", () => {
     copy: EN_COPY,
     selection: {
       ...baseSelection,
-      filter: "zai",
+      filter: "expert",
       filterable: false,
       selectedIndex: 0,
     },
@@ -26,8 +26,10 @@ test("renders non-filterable selections without a filter prompt", () => {
 
   assert.equal(textNodes.some((node) => node.text.includes("filter:")), false);
   assert.ok(textNodes.some((node) => node.text === baseSelection.help));
-  assert.ok(textNodes.some((node) => node.text === "Z.AI Coding Plan"));
-  const detailNode = textNodes.find((node) => node.text.includes("Open browser login"));
+  assert.ok(textNodes.some((node) => node.text === "Expert status"));
+  const detailNode = textNodes.find((node) =>
+    node.text.includes("Show the expert workflow status."),
+  );
   assert.equal(detailNode?.style.fg, palette.muted);
   assert.equal(detailNode?.style.flexShrink, 0);
 });
@@ -98,21 +100,21 @@ test("pending selections replace options and keep escape as cancel", () => {
     ...baseSelection,
     filter: "",
     pending: {
-      cancelStatus: "Login cancelled. Choose a setup method.",
-      command: "/login zai-coding-plan",
+      cancelStatus: "Command cancelled. Choose a command.",
+      command: "/expert status",
       help: "Esc cancels and returns to setup choices.",
-      itemId: "zai-coding-plan",
-      primary: "Waiting for Z.AI authorization",
-      secondary: "Complete sign-in in your browser.",
-      status: "Waiting for browser authorization...",
+      itemId: "expert-status",
+      primary: "Waiting for expert workflow",
+      secondary: "Status is loading.",
+      status: "Loading expert status...",
     },
     selectedIndex: 0,
   };
   const panel = SelectionPanel({ contentWidth: 72, copy: EN_COPY, selection });
   const textNodes = collectTextNodes(panel);
 
-  assert.ok(textNodes.some((node) => node.text === "Waiting for Z.AI authorization"));
-  assert.equal(textNodes.some((node) => node.text === "Z.AI Coding Plan"), false);
+  assert.ok(textNodes.some((node) => node.text === "Waiting for expert workflow"));
+  assert.equal(textNodes.some((node) => node.text === "Expert status"), false);
 });
 
 test("pending selection escape aborts and restores setup choices", () => {
@@ -121,12 +123,12 @@ test("pending selection escape aborts and restores setup choices", () => {
     ...baseSelection,
     filter: "",
     pending: {
-      cancelStatus: "Login cancelled. Choose a setup method.",
-      command: "/login zai-coding-plan",
+      cancelStatus: "Command cancelled. Choose a command.",
+      command: "/expert status",
       help: "Esc cancels and returns to setup choices.",
-      itemId: "zai-coding-plan",
-      primary: "Waiting for Z.AI authorization",
-      status: "Waiting for browser authorization...",
+      itemId: "expert-status",
+      primary: "Waiting for expert workflow",
+      status: "Loading expert status...",
     },
     selectedIndex: 0,
   };
@@ -147,7 +149,7 @@ test("pending selection escape aborts and restores setup choices", () => {
 
   assert.equal(cancelled, true);
   assert.equal(selection.pending, undefined);
-  assert.deepEqual(statuses, ["Login cancelled. Choose a setup method."]);
+  assert.deepEqual(statuses, ["Command cancelled. Choose a command."]);
 });
 
 test("pending row submission preserves the selection panel while it waits", () => {
@@ -171,15 +173,15 @@ test("pending row submission preserves the selection panel while it waits", () =
     },
   );
 
-  assert.equal(selection.pending?.itemId, "zai-coding-plan");
-  assert.equal(statuses.at(-1), "Waiting for browser authorization...");
+  assert.equal(selection.pending?.itemId, "expert-status");
+  assert.equal(statuses.at(-1), "Loading expert status...");
   assert.deepEqual(submissions, [
     {
       options: {
-        abortStatus: "Login cancelled. Choose a setup method.",
+        abortStatus: "Command cancelled. Choose a command.",
         preserveSelection: true,
       },
-      value: "/login zai-coding-plan",
+      value: "/expert status",
     },
   ]);
 });
@@ -189,18 +191,18 @@ test("input selections replace options with an inline hidden input", () => {
     ...baseSelection,
     filter: "",
     input: {
-      cancelStatus: "API key entry cancelled. Choose a setup method.",
-      clearStatus: "API key input cleared.",
-      command: "/login zai-coding-plan-api-key",
-      emptyStatus: "API key is required.",
-      help: "Enter saves the key. Esc returns to setup choices.",
-      itemId: "zai-coding-plan-api-key",
+      cancelStatus: "Input cancelled. Choose a command.",
+      clearStatus: "Input cleared.",
+      command: "/goal objective",
+      emptyStatus: "Objective is required.",
+      help: "Enter saves the objective. Esc returns to command choices.",
+      itemId: "goal",
       mask: true,
-      placeholder: "Paste API key",
-      primary: "Enter Z.AI Coding Plan API Key",
-      secondary: "Paste the key here. It is hidden while typing.",
-      status: "Enter the API key, then press Enter.",
-      submitStatus: "Saving API key...",
+      placeholder: "Describe the objective",
+      primary: "Enter the goal objective",
+      secondary: "Describe the goal here.",
+      status: "Enter the objective, then press Enter.",
+      submitStatus: "Saving objective...",
       value: "manual-key",
     },
     selectedIndex: 2,
@@ -209,9 +211,9 @@ test("input selections replace options with an inline hidden input", () => {
   const panel = SelectionPanel({ contentWidth: 72, copy: EN_COPY, selection });
   const textNodes = collectTextNodes(panel);
 
-  assert.ok(textNodes.some((node) => node.text === "Enter Z.AI Coding Plan API Key"));
+  assert.ok(textNodes.some((node) => node.text === "Enter the goal objective"));
   assert.ok(textNodes.some((node) => node.text === "> **********"));
-  assert.equal(textNodes.some((node) => node.text === "BigModel Coding Plan"), false);
+  assert.equal(textNodes.some((node) => node.text === "Stop expert workflow"), false);
 });
 
 test("input row submission stays in the setup panel before saving the key", () => {
@@ -236,8 +238,8 @@ test("input row submission stays in the setup panel before saving the key", () =
     },
   );
 
-  assert.equal(selection?.input?.itemId, "zai-coding-plan-api-key");
-  assert.equal(statuses.at(-1), "Enter the API key, then press Enter.");
+  assert.equal(selection?.input?.itemId, "goal");
+  assert.equal(statuses.at(-1), "Enter the objective, then press Enter.");
   assert.deepEqual(submissions, []);
 
   assert.ok(selection);
@@ -269,7 +271,7 @@ test("input row submission stays in the setup panel before saving the key", () =
   );
 
   assert.equal(selection, undefined);
-  assert.deepEqual(submissions, ["/login zai-coding-plan-api-key manual-key"]);
+  assert.deepEqual(submissions, ["/goal objective manual-key"]);
 });
 
 test("input selection escape restores setup choices", () => {
@@ -277,15 +279,15 @@ test("input selection escape restores setup choices", () => {
     ...baseSelection,
     filter: "",
     input: {
-      cancelStatus: "API key entry cancelled. Choose a setup method.",
-      clearStatus: "API key input cleared.",
-      command: "/login zai-coding-plan-api-key",
-      emptyStatus: "API key is required.",
-      itemId: "zai-coding-plan-api-key",
+      cancelStatus: "Input cancelled. Choose a command.",
+      clearStatus: "Input cleared.",
+      command: "/goal objective",
+      emptyStatus: "Objective is required.",
+      itemId: "goal",
       mask: true,
-      placeholder: "Paste API key",
-      primary: "Enter Z.AI Coding Plan API Key",
-      status: "Enter the API key, then press Enter.",
+      placeholder: "Describe the objective",
+      primary: "Enter the goal objective",
+      status: "Enter the objective, then press Enter.",
       value: "manual-key",
     },
     selectedIndex: 2,
@@ -304,55 +306,55 @@ test("input selection escape restores setup choices", () => {
   );
 
   assert.equal(selection?.input, undefined);
-  assert.deepEqual(statuses, ["API key entry cancelled. Choose a setup method."]);
+  assert.deepEqual(statuses, ["Input cancelled. Choose a command."]);
 });
 
 const baseSelection: SelectionState = {
-  emptyMessage: "No login options are available.",
+  emptyMessage: "No commands are available.",
   filter: "",
   help: "Use Up/Down to choose, Enter to select.",
   items: [
     {
-      command: "/login zai-coding-plan",
-      id: "zai-coding-plan",
+      command: "/expert status",
+      id: "expert-status",
       pending: {
-        cancelStatus: "Login cancelled. Choose a setup method.",
+        cancelStatus: "Command cancelled. Choose a command.",
         help: "Esc cancels and returns to setup choices.",
-        primary: "Waiting for Z.AI authorization",
-        secondary: "Complete sign-in in your browser.",
-        status: "Waiting for browser authorization...",
+        primary: "Waiting for expert workflow",
+        secondary: "Status is loading.",
+        status: "Loading expert status...",
       },
-      primary: "Z.AI Coding Plan",
-      secondary: "Open browser login and create a Coding Plan API key.",
+      primary: "Expert status",
+      secondary: "Show the expert workflow status.",
     },
     {
-      command: "/login bigmodel-coding-plan",
-      id: "bigmodel-coding-plan",
-      primary: "BigModel Coding Plan",
-      secondary: "Open browser login with a localhost callback.",
+      command: "/expert stop",
+      id: "expert-stop",
+      primary: "Stop expert workflow",
+      secondary: "Stop the latest workflow run.",
     },
     {
-      command: "/login zai-coding-plan-api-key",
-      id: "zai-coding-plan-api-key",
+      command: "/goal objective",
+      id: "goal",
       input: {
-        cancelStatus: "API key entry cancelled. Choose a setup method.",
-        clearStatus: "API key input cleared.",
-        emptyStatus: "API key is required.",
-        help: "Enter saves the key. Esc returns to setup choices.",
+        cancelStatus: "Input cancelled. Choose a command.",
+        clearStatus: "Input cleared.",
+        emptyStatus: "Objective is required.",
+        help: "Enter saves the objective. Esc returns to command choices.",
         mask: true,
-        placeholder: "Paste API key",
-        primary: "Enter Z.AI Coding Plan API Key",
-        secondary: "Paste the key here. It is hidden while typing.",
-        status: "Enter the API key, then press Enter.",
-        submitStatus: "Saving API key...",
+        placeholder: "Describe the objective",
+        primary: "Enter the goal objective",
+        secondary: "Describe the goal here.",
+        status: "Enter the objective, then press Enter.",
+        submitStatus: "Saving objective...",
       },
-      primary: "Z.AI Coding Plan API Key",
-      secondary: "Paste a Coding Plan API key manually.",
+      primary: "Set goal",
+      secondary: "Describe a goal objective.",
     },
   ],
-  prompt: "Choose a login or API key setup method.",
+  prompt: "Choose a command.",
   selectedIndex: 0,
-  title: "Set Up Coding Plan",
+  title: "Commands",
 };
 
 function key(name: string, overrides: Partial<KeyEvent> = {}): KeyEvent {

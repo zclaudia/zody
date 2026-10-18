@@ -878,7 +878,7 @@ function RootInner({
     webRemoteAccessEnabled: remoteAccessEnabled,
     hasCompletedFullTabRestore: hasCompletedFullRestore,
     intl,
-    isRestoringOAuthSession: isResolvingStartupAuthState || providerStartupSyncPending,
+    // fork（F4.8）：isRestoringOAuthSession 仅服务分享导入，随会话分享功能删除。
   });
 
   useEffect(() => {

@@ -169,7 +169,7 @@ export function createWebPlatform(options?: {
     registerOAuthState: (_payload) => {},
     onOAuthCallback: () => () => {},
     onPaymentCallback: () => () => {},
-    onShareImport: () => () => {},
+    // fork（F4.8）：onShareImport 随会话分享功能删除。
     notifyRendererReady: () => {},
     reportTelemetryEvent: async (event) => {
       // 手机只开放 session_create；不能把原有 Desktop conversation 事件一并启用。

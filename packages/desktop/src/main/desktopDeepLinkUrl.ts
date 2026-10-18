@@ -3,7 +3,7 @@ const DEEP_LINK_RE = /\bzcode:(?:\/\/|\/)?[^\s"'<>]+/i;
 const OAUTH_CALLBACK_HOSTS = new Set(["oauth"]);
 const PAYMENT_CALLBACK_HOST = "payment";
 const WORKSPACE_OPEN_HOST = "workspace";
-const SHARE_IMPORT_HOST = "share";
+// fork（F4.8）：SHARE_IMPORT_HOST（zcode://share/import）随会话分享功能删除。
 const DEEP_LINK_ADDITIONAL_DATA_KEY = "deepLinkUrl";
 const OPEN_WORKSPACE_ADDITIONAL_DATA_KEY = "openWorkspacePath";
 const OPEN_WORKSPACE_ARG = "--open-workspace";
@@ -79,19 +79,7 @@ export function extractWorkspaceOpenPath(parsedUrl: URL): string | null {
   return path && path.length > 0 ? path : null;
 }
 
-export function isShareImportUrl(parsedUrl: URL): boolean {
-  return (
-    parsedUrl.protocol === `${DEEP_LINK_SCHEME}:` &&
-    parsedUrl.hostname === SHARE_IMPORT_HOST &&
-    normalizeOAuthCallbackPath(parsedUrl.pathname) === "/import"
-  );
-}
-
-export function extractShareImportCode(parsedUrl: URL): string | null {
-  if (!isShareImportUrl(parsedUrl)) return null;
-  const code = parsedUrl.searchParams.get("code")?.trim();
-  return code && /^[A-Za-z0-9._~-]{1,512}$/u.test(code) ? code : null;
-}
+// fork（F4.8）：isShareImportUrl / extractShareImportCode 随分享导入深链删除。
 
 function decodeDeepLinkCandidate(value: string): string | null {
   try {
@@ -176,10 +164,7 @@ function isCompleteDeepLinkUrl(value: string): boolean {
     return parsedUrl.searchParams.has("path");
   }
 
-  if (isShareImportUrl(parsedUrl)) {
-    return extractShareImportCode(parsedUrl) !== null;
-  }
-
+  // fork（F4.8）：share import 深链校验随会话分享功能删除。
   return true;
 }
 
