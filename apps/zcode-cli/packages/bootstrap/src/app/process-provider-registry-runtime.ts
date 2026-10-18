@@ -159,6 +159,17 @@ export async function startProcessProviderRegistryRuntime(
   }
 }
 
+/**
+ * fork（F4.11）：官方账号 Provider 身份表（isBuiltinModelProviderId）已随账号链删除，
+ * 但旧 Worker 仍可能推送 zhipu-account 信封。上游只要求普通 Coding Plan 账号携带
+ * current；闲时账号（off-peak idle plan）没有 current 语义，保留豁免，避免把完整的
+ * 闲时信封误判成半份账号事实。
+ */
+const LEGACY_OFFPEAK_IDLE_PLAN_PROVIDER_IDS: ReadonlySet<string> = new Set([
+  "account:zai-offpeak-idle-plan",
+  "account:bigmodel-offpeak-idle-plan",
+]);
+
 /** 把协议信封解析为进程 Registry 使用的第三层 Account Config Overlay。 */
 export function parseProcessAccountProviderConfigSnapshot(input: {
   readonly revision: string;
@@ -176,9 +187,10 @@ export function parseProcessAccountProviderConfigSnapshot(input: {
   for (const [providerId, provider] of providers.entries()) {
     // 仅约束托管 Worker 的普通账号信封；独立 CLI、API 和闲时不需要 current。
     // fork（F4.11）：账号 Provider 已下线，不再用 builtin 身份表过滤；旧 Worker 发来的
-    // zhipu-account 信封仍要求 current 与 entitled 同时存在，避免发布半份账号事实。
+    // 普通 zhipu-account 信封仍要求 current 与 entitled 同时存在，避免发布半份账号事实。
     if (
       provider.access?.type === "zhipu-account" &&
+      !LEGACY_OFFPEAK_IDLE_PLAN_PROVIDER_IDS.has(providerId) &&
       provider.access.entitled &&
       typeof input.states?.[providerId]?.current !== "boolean"
     ) {
