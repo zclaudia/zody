@@ -9,7 +9,7 @@
 - 在仓库根目录的 `.env` 中配置（不入库）；`.env.local` 也可作为覆盖层。
 - 加载入口 `scripts/load-endpoint-env.mjs:8-17`：先读 `.env`，再读 `.env.local`，真实进程环境变量优先级最高。
 - Desktop 构建链（`packages/desktop/tsup.config.ts:29-46`）额外读取 `.env.production`（`NODE_ENV=production` 时）或 `.env.development` / `.env.development.local`（否则），进程环境变量同样最高。
-- `.env.example` 是 upstream 文件，fork 不修改它；fork 自己的取值写在 `.env` / `.env.local`。`.env.example` 中的官方地址示例只作 upstream 参考，fork 不要照抄。
+- `.env.example` 已由 F3.2 去掉官方地址，只保留中性占位示例；fork 自己的取值写在 `.env` / `.env.local`。
 
 ## 必填项
 

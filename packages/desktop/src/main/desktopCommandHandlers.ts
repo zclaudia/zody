@@ -235,8 +235,9 @@ function buildZCodeEndpointPromptHtml(currentValue: string): string {
   <body>
     <form id="form">
       <label for="endpoint">ZCode endpoint origin</label>
-      <input id="endpoint" value="${value}" placeholder="https://zcode.z.ai" spellcheck="false" />
-      <div class="hint">Use an http or https origin, for example https://zcode.z.ai.</div>
+      <!-- fork（F3.2）：占位与提示改用中性示例，不再引导用户填写官方地址。 -->
+      <input id="endpoint" value="${value}" placeholder="https://example.com" spellcheck="false" />
+      <div class="hint">Use an http or https origin for your own deployment, for example https://example.com.</div>
       <div class="actions">
         <button id="cancel" type="button">Cancel</button>
         <button type="submit">Save</button>

@@ -14,9 +14,10 @@ describe("shared runtime env", () => {
     const env = await importFreshEnvModule();
 
     // 单测不注入 ARMS 与自动更新；事件上报端点由 vitest.config.ts 固定注入。
+    // fork（F3.2）：测试端点使用预留域名 example.invalid，不指向官方服务。
     expect(env.ZCODE_ARMS_RUM_ENDPOINT).toBe("");
     expect(env.ZCODE_AUTO_UPDATE_ENABLED).toBe(false);
-    expect(env.ZCODE_TELEMETRY_REPORT_ENDPOINT).toBe("https://zcode.z.ai/api/v1/event/report");
+    expect(env.ZCODE_TELEMETRY_REPORT_ENDPOINT).toBe("https://example.invalid/api/v1/event/report");
     // 下载页地址未注入时为空串，消费方据此不展示下载入口
     expect(env.ZCODE_DOWNLOAD_PAGE_URL).toBe("");
     // fork 反馈地址未注入时为空串，反馈入口不展示「打开反馈地址」（F2.9 入口显隐）
