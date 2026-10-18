@@ -17,5 +17,6 @@ export const requestVerificationRecoveryAction = null;
 export type RequestVerificationRecoveryAction = never;
 export const requestVerificationActionMessages = {};
 export const requestVerificationErrorAttribution = {};
-export const requestVerificationClaimFailureMessageId = "manualClaimPlan.claim.failure.generic";
-export const additionalRequestModalSelectors: readonly string[] = [];
+// fork（F4.4）：requestVerificationClaimFailureMessageId（营销手动领取失败文案 id）与
+// additionalRequestModalSelectors（营销二次请求弹窗选择器，消费者为 marketingPopupAdapter）
+// 均随营销链路删除。

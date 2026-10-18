@@ -12,8 +12,7 @@ export interface E2EStartupCredentialSeedOptions {
 //
 // 级别 2（OAuth + 旧式 JWT/auth_token）：断言直接依赖登录态/JWT 契约的认证与领取专项。
 const OFFICIAL_ACCOUNT_SEED_WITH_JWT_SPEC_NAMES = new Set([
-  "marketing-touch-entitlement.test.ts",
-  "marketing-touch-rewards.test.ts",
+  // fork（F4.4）：marketing-touch-entitlement / marketing-touch-rewards 随营销 spec 删除。
   "jwt-401-auto-logout.test.ts",
   "coding-plan-upgrade-webview-refresh-provider.test.ts",
   "start-plan-manual-claim-experience.test.ts",
@@ -38,12 +37,9 @@ export function createE2EStartupCredentialSeed(
     const fileName = specFileName(spec);
     return (
       fileName !== undefined &&
-      // 营销投放 spec 按主题拆成 marketing-touch-delivery*.test.ts，领取用例都需要本地 JWT。
-      (fileName.startsWith("marketing-touch-delivery") ||
-        OFFICIAL_ACCOUNT_SEED_WITH_JWT_SPEC_NAMES.has(fileName) ||
-        // request-security 专项已在 F2 阶段被置空（isRequestSecuritySpec 恒 false），
-        // 保留判断仅为兼容残留调用。
-        isRequestSecuritySpec(fileName))
+      // request-security 专项已在 F2 阶段被置空（isRequestSecuritySpec 恒 false），
+      // 保留判断仅为兼容残留调用。
+      (OFFICIAL_ACCOUNT_SEED_WITH_JWT_SPEC_NAMES.has(fileName) || isRequestSecuritySpec(fileName))
     );
   });
   const requiresOfficialAccountSeed =

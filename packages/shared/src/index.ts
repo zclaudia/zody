@@ -1,10 +1,6 @@
-export { cloudContentPayloadSchema, contentBundleSchema } from "./cloudContent.js";
+// fork（F4.4）：cloudContent / marketingTouch / rewardsBridge / rewardsEmbedded（营销触达、
+// 云内容与 Rewards 注入桥）已整体删除。
 export * from "./networkCapture.js";
-export type {
-  CloudContentPayload,
-  CloudContentBundle,
-  CloudContentHeroType,
-} from "./cloudContent.js";
 export type {
   FileBinaryPreview,
   FileEntry,
@@ -337,9 +333,6 @@ export * from "./localTtft.js";
 export * from "./pluginStoreOrder.js";
 export * from "./clientConfig.js";
 export * from "./pluginStoreOrdering.js";
-export * from "./marketingTouch.js";
-export * from "./rewardsEmbedded.js";
-export * from "./rewardsBridge.js";
 export * from "./session-debug.js";
 export { redactFeedbackText } from "./feedbackPrivacy.js";
 export { API_KEY_USAGE_SCENE, type ApiKeyCreationUsageScene } from "./api-key-usage-scene.js";

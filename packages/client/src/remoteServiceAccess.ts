@@ -26,8 +26,6 @@ import {
   ICodingPlanSubscriptionService,
   IClientConfigService,
   IClientScenesService,
-  ICloudContentService,
-  IMarketingTouchService,
   ISkillsService,
   ISkillSyncService,
   IMcpSyncService,
@@ -84,8 +82,7 @@ export class RemoteServiceAccess implements IServiceAccessor {
   readonly codingPlanSubscriptionService: ICodingPlanSubscriptionService;
   readonly clientConfigService: IClientConfigService;
   readonly clientScenesService: IClientScenesService;
-  readonly cloudContentService: ICloudContentService;
-  readonly marketingTouchService: IMarketingTouchService;
+  // fork（F4.4）：cloudContentService / marketingTouchService（营销触达与云内容）已删除。
   readonly skillsService: ISkillsService;
   readonly skillSyncService: ISkillSyncService;
   readonly mcpSyncService: IMcpSyncService;
@@ -188,12 +185,6 @@ export class RemoteServiceAccess implements IServiceAccessor {
     );
     this.clientScenesService = ProxyChannel.toService<IClientScenesService>(
       channelClient.getChannel(IClientScenesService.channelName),
-    );
-    this.cloudContentService = ProxyChannel.toService<ICloudContentService>(
-      channelClient.getChannel(ICloudContentService.channelName),
-    );
-    this.marketingTouchService = ProxyChannel.toService<IMarketingTouchService>(
-      channelClient.getChannel(IMarketingTouchService.channelName),
     );
     // fork（F4.3）：offPeakTaskService 代理随闲时任务全链路删除。
     this.skillsService = ProxyChannel.toService<ISkillsService>(

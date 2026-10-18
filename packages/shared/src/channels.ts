@@ -137,8 +137,7 @@ export const ServiceChannels = {
   ClientConfig: "client-config",
   /** ZCode 客户端场景配置服务 */
   ClientScenes: "client-scenes",
-  CloudContent: "cloud-content",
-  MarketingTouch: "marketing-touch",
+  // fork（F4.4）：CloudContent / MarketingTouch 通道随营销触达与云内容服务删除。
   /** Skills 管理服务 */
   Skills: "skills",
   /** SSH 远程 skills 同步服务 */

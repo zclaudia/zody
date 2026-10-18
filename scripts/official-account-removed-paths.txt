@@ -187,3 +187,102 @@ packages/ui/test/offPeakTelemetry.test.ts
 packages/ui/test/offPeakTemplateIcons.test.ts
 packages/ui/test/offPeakUiPresentation.test.ts
 packages/ui/test/taskRowOffPeakMetaMarker.test.ts
+
+# F4.4（删除营销触达、云内容、Rewards 与购买 webview，2026-10-18）：
+# services marketing-touch/ 与 cloud-content/（dep:refs 复核仅营销使用）；
+# ui marketing-touch/、rewards/、manual-claim-plan/、cloud-content-dialog/（营销弹窗渲染层，
+# 唯一业务消费者为 marketing-touch）、sidebar-activity/SidebarBottomActivity（F4.1b 已摘挂载）、
+# lib/marketingNavigation.ts 与 assets/cloud-content/ 营销素材；
+# shared marketingTouch.ts、cloudContent.ts、rewardsBridge.ts、rewardsEmbedded.ts；
+# desktop preload/codingPlanWebview.ts、preload/rewardsWebview.ts 与对应 tsup entry；
+# marketing-touch-* E2E spec/helpers/fixtures、rewards-website-fixture、telemetry-report-fixture
+# （唯一消费者为营销 fixture）及各层营销单测。目录内文件整树删除，upstream 对这些路径的
+# modify 一律按「保持删除」处理。
+packages/desktop/src/preload/codingPlanWebview.ts
+packages/desktop/src/preload/rewardsWebview.ts
+packages/desktop/test/e2e/fixtures/upstream/ui-shell/marketing-touch-task-completion.json
+packages/desktop/test/e2e/helpers/marketing-touch-asset-gate.ts
+packages/desktop/test/e2e/helpers/marketing-touch-assets.ts
+packages/desktop/test/e2e/helpers/marketing-touch-decode-assets.ts
+packages/desktop/test/e2e/helpers/marketing-touch-fault-bundle.ts
+packages/desktop/test/e2e/helpers/marketing-touch-fixture.ts
+packages/desktop/test/e2e/helpers/rewards-website-fixture.ts
+packages/desktop/test/e2e/helpers/telemetry-report-fixture.ts
+packages/desktop/test/e2e/ui-shell/manual-review/pending/marketing-touch-task-completion.test.ts
+packages/desktop/test/e2e/ui-shell/marketing-touch-anonymous.test.ts
+packages/desktop/test/e2e/ui-shell/marketing-touch-delivery.test.ts
+packages/desktop/test/e2e/ui-shell/marketing-touch-entitlement.test.ts
+packages/desktop/test/e2e/ui-shell/marketing-touch-rewards.test.ts
+packages/services/src/cloud-content/cloudContent.ts
+packages/services/src/cloud-content/cloudContentService.ts
+packages/services/src/cloud-content/contentBundleCache.ts
+packages/services/src/marketing-touch/marketingAssetRegistry.ts
+packages/services/src/marketing-touch/marketingTouch.ts
+packages/services/src/marketing-touch/marketingTouchService.ts
+packages/services/test/cloudContentService.test.ts
+packages/services/test/cloudContentServiceDisposal.test.ts
+packages/services/test/contentBundleCache.test.ts
+packages/services/test/marketingAssetRegistry.test.ts
+packages/services/test/marketingTouchService.test.ts
+packages/shared/src/cloudContent.ts
+packages/shared/src/marketingTouch.ts
+packages/shared/src/rewardsBridge.ts
+packages/shared/src/rewardsEmbedded.ts
+packages/shared/test/cloudContent.test.ts
+packages/shared/test/marketingTouch.test.ts
+packages/ui/src/assets/cloud-content/preview.webm.base64
+packages/ui/src/assets/cloud-content/weekend-plan-hero.html
+packages/ui/src/components/cloud-content-dialog/CloudContentDialog.tsx
+packages/ui/src/components/cloud-content-dialog/CloudDialogDescription.tsx
+packages/ui/src/components/cloud-content-dialog/CloudDialogHero.tsx
+packages/ui/src/components/cloud-content-dialog/CloudDialogMediaHero.tsx
+packages/ui/src/components/cloud-content-dialog/cloudContentDialogTypes.ts
+packages/ui/src/components/cloud-content-dialog/cloudDescriptionStyle.ts
+packages/ui/src/components/cloud-content-dialog/cloudLottieRuntime.ts
+packages/ui/src/components/cloud-content-dialog/mocks/weekendPlanResultDialog.zh-CN.json
+packages/ui/src/components/cloud-content-dialog/useCloudHeroEnvironment.ts
+packages/ui/src/components/manual-claim-plan/manualClaimFailureMessage.ts
+packages/ui/src/components/manual-claim-plan/manualClaimPlanStartUsing.ts
+packages/ui/src/components/marketing-touch/MarketingBanner.tsx
+packages/ui/src/components/marketing-touch/MarketingDialogs.tsx
+packages/ui/src/components/marketing-touch/MarketingFailureDialog.tsx
+packages/ui/src/components/marketing-touch/MarketingTouchProvider.tsx
+packages/ui/src/components/marketing-touch/marketingPopupAdapter.ts
+packages/ui/src/components/marketing-touch/marketingResources.ts
+packages/ui/src/components/marketing-touch/marketingTouchController.ts
+packages/ui/src/components/marketing-touch/marketingTouchPoller.ts
+packages/ui/src/components/marketing-touch/useMarketingBannerVisible.ts
+packages/ui/src/components/marketing-touch/useMarketingTaskCompletionRefresh.ts
+packages/ui/src/lib/marketingNavigation.ts
+packages/ui/src/rewards/RewardsProvider.tsx
+packages/ui/src/rewards/RewardsWebview.tsx
+packages/ui/src/sidebar-activity/SidebarBottomActivity.tsx
+packages/ui/test/cloudContentDialog.test.ts
+packages/ui/test/cloudContentDialogHero.test.ts
+packages/ui/test/cloudDialogDescription.test.ts
+packages/ui/test/cloudDialogMediaHero.test.ts
+packages/ui/test/helpers/weekendPlanDialogFixture.ts
+packages/ui/test/manualClaimFailureMessage.test.ts
+packages/ui/test/manualClaimPlanStartUsing.test.ts
+packages/ui/test/marketingBanner.test.ts
+packages/ui/test/marketingFailureDialog.test.ts
+packages/ui/test/marketingNavigation.test.ts
+packages/ui/test/marketingPopupAdapter.test.ts
+packages/ui/test/marketingResources.test.ts
+packages/ui/test/marketingTaskCompletionRefresh.test.ts
+packages/ui/test/marketingTouchController.test.ts
+packages/ui/test/marketingTouchPoller.test.ts
+packages/ui/test/marketingTouchProvider.test.ts
+packages/ui/test/rewardsBridge.test.ts
+packages/ui/test/rewardsEmbedded.test.ts
+packages/ui/test/rewardsProvider.test.ts
+packages/ui/test/sidebarBottomActivity.test.ts
+packages/ui/test/weekendHeroResource.test.ts
+
+# F4.4 连锁补充（2026-10-18）：唯一消费者为已删营销组件的孤儿文件
+# （F4.1b 已注明 GlobalNoticeSurface 留给 F4.4 删除；claim/useStartPlanEntitlement/
+#  cloudLottie 类型声明的唯一消费者分别为 MarketingTouchProvider 与 cloudLottieRuntime）。
+packages/ui/src/global-notice/GlobalNoticeSurface.tsx
+packages/ui/src/hooks/useStartPlanEntitlement.ts
+packages/ui/src/request-security-edition/claim.ts
+packages/ui/src/types/cloudLottie.d.ts

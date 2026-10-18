@@ -27,7 +27,8 @@ it("升级和奖励的网页关闭与窗口关闭分开，三种窗口操作走�
   const onClose = vi.fn();
   render(
     createElement(EmbeddedWebsiteHeader, {
-      title: "Rewards",
+      // fork（F4.4）：Rewards 网页已删除，标题改为通用内嵌网页语义，窗控契约不变。
+      title: "Embedded",
       loading: false,
       canGoBack: false,
       canGoForward: false,
@@ -51,13 +52,12 @@ it("升级和奖励的网页关闭与窗口关闭分开，三种窗口操作走�
   expect(onClose).toHaveBeenCalledTimes(1);
 });
 
-it("登录、升级、奖励均接入覆盖层窗控", async () => {
+it("登录、升级均接入覆盖层窗控", async () => {
   const read = (file: string) => readFile(resolve(__dirname, "../src", file), "utf8");
   expect(await read("WelcomeScreen.tsx")).toContain("<DesktopOverlayWindowControls />");
-  for (const file of [
-    "rewards/RewardsWebview.tsx",
-    "settings/CodingPlanEmbeddedWebviewDialog.tsx",
-  ]) {
+  // fork（F4.4）：Rewards webview（rewards/RewardsWebview.tsx）已删除，不再纳入断言；
+  // CodingPlanEmbeddedWebviewDialog 属套餐购买（F4.5 删除），契约保留。
+  for (const file of ["settings/CodingPlanEmbeddedWebviewDialog.tsx"]) {
     expect(await read(file)).toContain("<EmbeddedWebsiteHeader");
   }
 });

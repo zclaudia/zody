@@ -23,13 +23,6 @@ export {
   materializeZCodeBuiltinProviderConfig,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
 } from "@zcode/provider-node";
-import { randomUUID } from "node:crypto";
-import { getAppConfigDir as getContentAppConfigDir } from "#src/paths.js";
-import { ICloudContentService } from "#src/cloud-content/cloudContent.js";
-import { createCloudContentService } from "#src/cloud-content/cloudContentService.js";
-import { IMarketingTouchService } from "#src/marketing-touch/marketingTouch.js";
-import { createMarketingTouchService } from "#src/marketing-touch/marketingTouchService.js";
-import { createMarketingAssetRegistry } from "#src/marketing-touch/marketingAssetRegistry.js";
 import type { IChannel } from "@zcode/rpc";
 import {
   readTopicResourceFromRelay,
@@ -51,8 +44,7 @@ export {
   type ProcessResourceSampler,
 } from "./process/processResourceSampler.js";
 export { createMediaPreviewService } from "./media-preview/mediaPreview.js";
-export { createContentBundleCache } from "#src/cloud-content/contentBundleCache.js";
-export type { ContentBundle } from "#src/cloud-content/contentBundleCache.js";
+// fork（F4.4）：createContentBundleCache / ContentBundle（云内容 ZIP 缓存）随 cloud-content 删除。
 export type { CreateFileServiceOptions } from "./file/fileService.js";
 export {
   defaultWorkspaceFileSearchFilter,
@@ -2261,31 +2253,10 @@ export function createLocalServices(options: {
   // 注册链上的懒工厂（如 automation）会各自创建 tasks-index sqlite repo；先收集到本数组，
   // services 集合建好后在 return 前统一登记进 sharedSqliteRepos 侧表
   const sqliteReposToClose: Array<{ close(): void }> = [];
-  const marketingAssets = createMarketingAssetRegistry({
-    allowLoopback: ZCODE_ENV === "test" || process.env.NODE_ENV === "development",
-  });
+  // fork（F4.4）：营销触达（IMarketingTouchService，F2.8 起恒返回空）与云内容
+  // （ICloudContentService，仅服务营销素材分发）按官方依赖移除方案整体删除。
   const services = new ServiceCollection()
-    .register(
-      IMarketingTouchService,
-      createMarketingTouchService({
-        apiClient,
-        getToken: () => credentialService.load("zcodejwttoken"),
-        getDeviceMid: () => options?.agentTelemetry?.getDeviceMid?.(),
-        baseUrl: buildRuntimeZCodeApiUrl(process.env, "/"),
-        appVersion: ZCODE_VERSION,
-        onSnapshot: (snapshot) => marketingAssets.accept(snapshot),
-      }),
-    )
     .register(IFileService, fileService)
-    .register(IMediaPreviewService, mediaPreviewService)
-    .register(
-      ICloudContentService,
-      createCloudContentService({
-        publishedAssets: marketingAssets,
-        cacheRoot: join(getContentAppConfigDir(), "cache", "content-bundles", randomUUID()),
-      }),
-    )
-    .register(IGitService, gitService)
     .register(IGitCheckpointService, gitCheckpointService)
     .register(ISystemService, systemService)
     .register(ITerminalService, createTerminalService({ settingService }))
@@ -2510,8 +2481,7 @@ function readTelemetryOAuthUserId(rawUserInfo: string | null): string {
 }
 
 export function disposeServiceResources(services: ServiceCollection): void {
-  const content = services.getOptional(ICloudContentService);
-  if (content && hasDisposeAllAndWait(content)) void content.disposeAllAndWait().catch(() => {});
+  // fork（F4.4）：云内容服务（含 content-bundle 缓存）已删除，不再有独立 dispose 段。
   (
     services.getOptional(IGenUiService) as (IGenUiService & { dispose?(): void }) | undefined
   )?.dispose?.();
@@ -2556,7 +2526,6 @@ export async function disposeServiceResourcesAndWait(services: ServiceCollection
   // app 关闭时 host 需要等 agent 进程树完成 graceful + force 清理。
   // 旧的同步 dispose 会在 host 退出时丢掉强杀 timer，导致 zcode-cli/app-server 变成孤儿进程。
   const disposableServices = [
-    services.getOptional(ICloudContentService),
     services.getOptional(ITerminalService),
     services.getOptional(IZCodeTaskService),
     services.getOptional(IZCodeAgentService),

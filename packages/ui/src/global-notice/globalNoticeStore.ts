@@ -76,7 +76,9 @@ function readState(
   }
 }
 
-export function createGlobalNoticeStore(options: {
+// fork（F4.4）：GlobalNoticeSurface（营销全局通知渲染层）已删除，
+// createGlobalNoticeStore 收敛为模块内工厂，仅供下方 browserGlobalNoticeStore 单例使用。
+function createGlobalNoticeStore(options: {
   storage: GlobalNoticeStorage;
   now?: () => number;
   /** 持久化失败（QuotaExceeded、存储被禁用）的受控回调；缺省静默，浏览器入口接 logger.warn。 */

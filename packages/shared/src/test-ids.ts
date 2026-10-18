@@ -731,8 +731,7 @@ export function testId(base: string, suffix: string): string {
   return `${base}-${suffix}`;
 }
 
-/** 左侧栏头像上方的可手动领取 Start Plan banner。 */
-export const TID_MANUAL_CLAIM_PLAN_BANNER = "manual-claim-plan-banner";
+// fork（F4.4）：TID_MANUAL_CLAIM_PLAN_BANNER（手动领取 Start Plan banner）随营销链路删除。
 
 /** 插件 UI 沙箱卡片容器与其中的 webview。 */
 export const TID_PLUGIN_UI_CARD = "plugin-ui-card";

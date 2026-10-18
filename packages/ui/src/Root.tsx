@@ -245,9 +245,9 @@ export function Root(props: RootProps) {
                     <AssistantCodeCommentFeatureProvider
                       enabled={props.assistantCodeCommentCardsEnabled}
                     >
-                      {/* fork（F4.1b）：CodingPlanUpgradeDialogProvider（套餐升级弹窗）、
-                          RewardsProvider（营销 Rewards）、MarketingTouchProvider（营销触达）
-                          三层挂载摘除；组件文件留给 F4.4/F4.5 删除。 */}
+                      {/* fork（F4.1b）：CodingPlanUpgradeDialogProvider（套餐升级弹窗，F4.5 删）、
+                          RewardsProvider（营销 Rewards，F4.4 已删）、MarketingTouchProvider
+                          （营销触达，F4.4 已删）三层挂载摘除。 */}
                       <RequestSecurityHost />
                       <RootInner {...props} />
                     </AssistantCodeCommentFeatureProvider>

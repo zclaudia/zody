@@ -13,10 +13,8 @@ const browserWindowInstances: Array<{
   loadURL: ReturnType<typeof vi.fn>;
   on: ReturnType<typeof vi.fn>;
 }> = [];
-const sessionFromPartitionMock = vi.fn();
-const codingPlanPartitionSession = {
-  clearStorageData: vi.fn(async () => undefined),
-};
+// fork（F4.4）：clearCodingPlanWebviewStorage（购买/Rewards partition 清理）已删除，
+// 对应 fromPartition mock 与用例一并移除。
 const BrowserWindowMock = vi.fn(function BrowserWindowConstructor() {
   const handlers = new Map<string, (...args: unknown[]) => void>();
   const instance = {
@@ -48,9 +46,6 @@ vi.mock("electron", () => ({
   },
   nativeTheme: {
     shouldUseDarkColors: true,
-  },
-  session: {
-    fromPartition: sessionFromPartitionMock,
   },
   shell: {
     openExternal: vi.fn(() => Promise.resolve()),
@@ -139,9 +134,6 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     appMock.getVersion.mockClear();
     BrowserWindowMock.mockClear();
     browserWindowInstances.length = 0;
-    sessionFromPartitionMock.mockReset();
-    sessionFromPartitionMock.mockReturnValue(codingPlanPartitionSession);
-    codingPlanPartitionSession.clearStorageData.mockClear();
     autoUpdateState.active = false;
     checkForUpdateMenuClickMock.mockClear();
   });
@@ -318,23 +310,6 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     });
 
     expect(onRelaunchApp).toHaveBeenCalledTimes(1);
-  });
-
-  it("清理 Coding Plan webview 持久 partition，避免账号切换后复用旧凭据", async () => {
-    const { executeDesktopCommand } = await import("../src/main/desktopCommandHandlers.js");
-    const commandOptions = createCommandOptions();
-
-    await executeDesktopCommand({
-      ...commandOptions,
-      command: DesktopCommandIds.ClearCodingPlanWebviewStorage,
-    });
-
-    expect(sessionFromPartitionMock).toHaveBeenCalledWith("persist:zcode-coding-plan");
-    expect(sessionFromPartitionMock).toHaveBeenCalledWith("persist:zcode-rewards");
-    expect(codingPlanPartitionSession.clearStorageData).toHaveBeenCalledTimes(2);
-    expect(commandOptions.logger.info).toHaveBeenCalledWith(
-      "[coding-plan-webview] cleared persistent partition storage",
-    );
   });
 
   it("非生产 endpoint 菜单命令能保存 test、自定义和 reset", async () => {

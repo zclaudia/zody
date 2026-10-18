@@ -391,7 +391,7 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
             ) : null}
             {/* fork（F4.1b）：侧栏头像菜单的用量摘要（打开用量统计 + 升级套餐）、
                 Rewards 菜单项、登录/登出菜单项全部摘除（官方账号入口下线）。
-                WorkspaceSidebarFooterUsageSummary / RewardsProvider 组件文件留给 F4.4/F4.5 删除。 */}
+                WorkspaceSidebarFooterUsageSummary 组件文件留给 F4.5 删除；RewardsProvider 已随 F4.4 删除。 */}
           </DropdownMenuContent>
         </DropdownMenu>
         <div className="flex shrink-0 items-center gap-1.5">

@@ -65,7 +65,6 @@ import { useTaskSidePaneMemoryBridge } from "@/app-shell/useTaskSidePaneMemoryBr
 import { resolveAppWorkspaceRpcTarget } from "@/app-shell/workspaceRpcTarget.js";
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import { useWorkspaceTerminalTaskNotifications } from "@/hooks/useTaskNotifications.js";
-import { useMarketingTaskCompletionRefresh } from "@/components/marketing-touch/useMarketingTaskCompletionRefresh.js";
 import type { AppProps, WorkspaceMainView } from "@/app-shell/types.js";
 import type {
   ChatSearchResultHighlightRequest,
@@ -280,12 +279,7 @@ export function App({
   });
   const workspaceKey = workspaceIdentity?.trim() || workspaceAbsPath;
   const notificationEnabled = useZCodeStore((s) => s.notificationEnabled);
-  useMarketingTaskCompletionRefresh({
-    workspacePath: workspaceAbsPath,
-    ...(workspaceIdentity ? { workspaceIdentity } : {}),
-    ...(workspaceRemoteSessionId ? { endpointKey: workspaceRemoteSessionId } : {}),
-    rpcReady: workspaceRpcReady,
-  });
+  // fork（F4.4）：useMarketingTaskCompletionRefresh（营销触达任务完成刷新）随营销链路删除。
   useWorkspaceTerminalTaskNotifications({
     workspacePath: workspaceAbsPath,
     ...(workspaceIdentity ? { workspaceIdentity } : {}),
