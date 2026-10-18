@@ -45,11 +45,12 @@ import { HighspeedModelIndicator } from "@/highspeed/HighspeedModelIndicator.js"
 import { formatHighspeedRemainingTime } from "@/highspeed/highspeedTime.js";
 import { ChatContextUsage } from "@/chat-input-toolbar/display.js";
 import {
-  hasChatCodingPlanUsageRemaining,
+  // fork（F4.1b）：hasChatCodingPlanUsageRemaining 随额度条入口摘除不再引用；
+  // ChatCodingPlanUsageRemainingConfig 类型仍用于被 void 的探测链。
   type ChatCodingPlanUsageRemainingConfig,
 } from "@/chat-input-toolbar/CodingPlanContextUsage.js";
 import {
-  hasChatStartPlanBalance,
+  // fork（F4.1b）：hasChatStartPlanBalance 随 Start Plan 余额条入口摘除不再引用。
   type ChatStartPlanBalanceConfig,
 } from "@/chat-input-toolbar/StartPlanContextBalance.js";
 import { ThoughtLevelCycleControl } from "@/chat-input-toolbar/ThoughtLevelCycleControl.js";
@@ -82,7 +83,7 @@ import {
 } from "@/lib/codingPlanFunnelTelemetry.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
 import { logger } from "@/logger.js";
-import { useCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
+import { useOptionalCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
 import { useCodingPlanEntitlements } from "@/settings/model-provider-section/useCodingPlanEntitlements.js";
 import { decodeCustomModelValue, encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
 import { buildRegistryModelSelectGroups } from "@/lib/modelSelectionGroups.js";
@@ -450,7 +451,10 @@ function V4ComposerModelControlsImpl({
   onRecoverCustomModelSelection,
 }: V4ComposerToolbarProps) {
   const { intl, locale } = useZCodeIntl();
-  const { openCodingPlanUpgrade } = useCodingPlanUpgradeDialog();
+  // fork（F4.1b）：升级弹窗 Provider 已在 Root 摘挂载，改用可选上下文——
+  // 升级入口只被已摘除的套餐额度条配置引用，上下文缺省时为 no-op。
+  const openCodingPlanUpgrade =
+    useOptionalCodingPlanUpgradeDialog()?.openCodingPlanUpgrade ?? (() => false);
   const displayProvider = provider ?? ZCODE_AGENT_PROVIDER;
   // 配置面读取：workspace 缺省目录（taskId=null），不读旧会话态。
   const { error: configOptionsError } = useToolbarConfigOptions(
@@ -597,9 +601,9 @@ function V4ComposerModelControlsImpl({
     providerSourcesLoading,
     refreshCodingPlanEntitlements,
   ]);
-  const contextStartPlanBalance = hasChatStartPlanBalance(contextStartPlanBalanceConfig)
-    ? contextStartPlanBalanceConfig
-    : undefined;
+  // fork（F4.1b）：Start Plan 余额条入口同样摘除（官方账号下线后无余额可查）。
+  const contextStartPlanBalance: ChatStartPlanBalanceConfig | undefined = undefined;
+  void contextStartPlanBalanceConfig;
 
   // 原 hook 不传 family，默认只拉 bigmodel 企业 pricing，
   // zai team plan 拿不到订阅产品，模型选择器里的 team 模型组建不出来。
@@ -780,11 +784,10 @@ function V4ComposerModelControlsImpl({
     providerSourcesLoading,
     refreshTaskEntitlements,
   ]);
-  const codingPlanUsageRemaining =
-    codingPlanUsageRemainingConfig &&
-    hasChatCodingPlanUsageRemaining(codingPlanUsageRemainingConfig)
-      ? codingPlanUsageRemainingConfig
-      : undefined;
+  // fork（F4.1b）：输入框官方套餐额度条（Coding Plan 剩余额度 / Start Plan 余额）入口摘除。
+  // BYOK 模式没有套餐额度；entitlement 探测链保留待 F4.5 删除（无账号 access 时不会发请求）。
+  const codingPlanUsageRemaining: ChatCodingPlanUsageRemainingConfig | undefined = undefined;
+  void codingPlanUsageRemainingConfig;
 
   // 高频交互排障只走 debug，避免生产日志量随每次选择增长。
   useEffect(() => {

@@ -280,6 +280,13 @@ function createWorkflowChildRuntime(
     workflowKind: string;
   },
 ): AgentRuntime {
+  // 修复：workflow child 的模型请求必须继承父会话的 Bash shell snapshot。
+  // 父 runtime 由 prepareUserExecutionBoundary 初始化 shell 后写在自己的 config
+  // 副本上（AgentRuntime 构造会复制传入 config），原始 runtimeConfig 对象永远没有
+  // 该字段；不显式继承时 child 的 # Environment 块回落 basename($SHELL)，与 Bash
+  // 工具实际探测执行的 shell 分叉。与 subagent 路径
+  // （core/runtime/methods/subagent.ts 的 bashShellSelection 继承）保持同一语义。
+  const parentShellSelection = deps.runtime.getSessionShellSelection();
   return new AgentRuntime(
     options.childSessionId,
     {
@@ -291,6 +298,7 @@ function createWorkflowChildRuntime(
       parentSessionId: deps.sessionId,
       taskType: "workflow_child",
       workingDirectory: deps.workingDirectory,
+      ...(parentShellSelection ? { bashShellSelection: parentShellSelection } : {}),
     },
     {
       agentTelemetry: deps.agentTelemetry,

@@ -2,43 +2,54 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-const oauthState = vi.hoisted(() => ({
-  status: "idle",
-  error: null as string | null,
-  loadingProviders: true,
-  providers: [] as Array<{
-    id: string;
-    displayName: string;
-    enabled: boolean;
-    order: number;
+// fork（F4.1b）：WelcomeScreen 改为 BYOK 引导后，本文件改断言「官方账号登录入口不存在、
+// 通用 provider 模板 + API Key 表单存在」，并覆盖无 provider / 已配 BYOK 两态。
+// 原 OAuth 登录尝试完成判定（shouldComplete*）随 useOAuth 摘除删除。
+
+const providerTemplatesState = vi.hoisted(() => ({
+  templates: [] as Array<{
+    templateId: string;
+    templateNameMap?: Record<string, string>;
+    config: { access?: { type: string; apiKeyManagementUrl?: string }; logo?: unknown };
   }>,
 }));
 
-// 静态渲染也会构造登录页窗控，使用与桌面入口一致的平台依赖。
 vi.mock("@/hooks/usePlatform.js", () => ({
-  usePlatform: () => ({ executeDesktopCommand: vi.fn().mockResolvedValue(undefined) }),
+  usePlatform: () => ({ openExternal: vi.fn().mockResolvedValue(undefined) }),
 }));
 
-vi.mock("@/hooks/useOAuth.js", () => ({
-  useOAuth: () => ({
-    startLogin: vi.fn(),
-    cancel: vi.fn(),
-    reset: vi.fn(),
-    status: oauthState.status,
-    error: oauthState.error,
-    providers: oauthState.providers,
-    activeProvider: null,
-    loadingProviders: oauthState.loadingProviders,
-    pendingProvider: null,
-    refreshProviders: vi.fn(),
+vi.mock("@/hooks/useServices.js", () => ({
+  useServices: () => ({
+    providerSettingsService: {
+      getView: vi.fn().mockResolvedValue({
+        providerTemplates: providerTemplatesState.templates,
+      }),
+      createPersonalProvider: vi.fn(),
+    },
+    modelSelectionService: {
+      getView: vi.fn().mockResolvedValue({ revision: 0, providers: [] }),
+    },
+  }),
+}));
+
+vi.mock("@/hooks/useProviderSettingsView.js", () => ({
+  useProviderSettingsView: () => ({
+    state: {
+      status: "ready",
+      view: { revision: 0, providerTemplates: providerTemplatesState.templates, providers: [] },
+    },
   }),
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
   useZCodeIntl: () => ({
     intl: {
-      formatMessage: ({ id }: { id: string }) => id,
+      formatMessage: (
+        { id }: { id: string },
+        _values?: Record<string, unknown>,
+      ) => id,
     },
+    locale: "zh-CN",
   }),
 }));
 
@@ -46,81 +57,75 @@ vi.mock("@/store/StoreProvider.js", () => ({
   useZCodeStore: (selector: (state: unknown) => unknown) =>
     selector({
       user: null,
-      oauthError: null,
-      setOAuthError: vi.fn(),
-      oauthSuccessSeq: 0,
-      lastOAuthSuccessProvider: null,
-      loginEntryRequest: null,
-      loginEntryAttempt: null,
-      clearLoginEntryRequest: vi.fn(),
-      markLoginEntryAttemptStatus: vi.fn(),
+      markApiKeyLoginSuccess: vi.fn(),
     }),
 }));
 
-describe("WelcomeScreen", () => {
-  it("已有用户不会完成新发起的 Provider 登录尝试", async () => {
-    const { shouldCompleteLoginFromExistingUser, shouldCompleteProviderLoginAttempt } =
-      await import("@/WelcomeScreen.js");
-    const attempt = { id: 9, providerId: "bigmodel" as const };
+describe("WelcomeScreen（fork BYOK 引导）", () => {
+  it("无 provider 时渲染 BYOK 表单，不出现任何官方 OAuth 登录入口", async () => {
+    providerTemplatesState.templates = [];
+    const { WelcomeScreen } = await import("@/WelcomeScreen.js");
+    const html = renderToStaticMarkup(createElement(WelcomeScreen, { onComplete: vi.fn() }));
 
-    expect(shouldCompleteLoginFromExistingUser({ hasUser: true, attempt })).toBe(false);
-    expect(shouldCompleteProviderLoginAttempt({ attempt, successProvider: "zai" })).toBe(false);
-    expect(shouldCompleteProviderLoginAttempt({ attempt, successProvider: "bigmodel" })).toBe(true);
+    // BYOK 表单存在（provider 选择 + API Key 输入 + 继续/跳过）。
+    expect(html).toContain("data-testid=\"login-api-key-provider-trigger\"");
+    expect(html).toContain("data-testid=\"login-api-key-input\"");
+    expect(html).toContain("data-testid=\"login-api-key-continue-button\"");
+    expect(html).toContain("data-testid=\"login-api-key-skip-button\"");
+    // 官方 OAuth 登录入口不存在。
+    expect(html).not.toContain("data-testid=\"oauth-login-button\"");
+    expect(html).not.toContain("login.oauth.button");
+    expect(html).not.toContain("login.oauth.noProviders");
+    // 不再有「使用 API Key」二级切换（表单即默认态）。
+    expect(html).not.toContain("data-testid=\"login-use-api-key-button\"");
   });
 
-  it("使用项目选择页主题大背景和 background 登录面板", async () => {
-    oauthState.status = "idle";
-    oauthState.error = null;
-    oauthState.loadingProviders = true;
+  it("已配 BYOK（模板可见）时同样不出现官方入口", async () => {
+    providerTemplatesState.templates = [
+      {
+        templateId: "zai-api",
+        templateNameMap: { "en-US": "Z.ai", "zh-CN": "智谱 Z.ai" },
+        config: {
+          access: { type: "api-key", apiKeyManagementUrl: "https://example.com/apikey-list" },
+        },
+      },
+      {
+        templateId: "deepseek",
+        templateNameMap: { "en-US": "DeepSeek" },
+        config: { access: { type: "api-key" } },
+      },
+      // 官方套餐 Key 模板不得进入 BYOK 引导。
+      {
+        templateId: "zai-coding-plan",
+        templateNameMap: { "en-US": "Z.ai Coding Plan" },
+        config: { access: { type: "zhipu-coding-plan-api-key" } },
+      },
+    ];
+    const { WelcomeScreen } = await import("@/WelcomeScreen.js");
+    // Radix Select 关闭态不渲染选项；模板列表内容断言见 forkAccountEntryRemoval.test.tsx
+    // 的交互用例。这里静态断言表单存在且无官方入口。
+    const html = renderToStaticMarkup(createElement(WelcomeScreen, { onComplete: vi.fn() }));
 
+    expect(html).toContain("data-testid=\"login-api-key-provider-trigger\"");
+    expect(html).toContain("data-testid=\"login-api-key-input\"");
+    // 官方 OAuth 登录入口不存在。
+    expect(html).not.toContain("data-testid=\"oauth-login-button\"");
+    expect(html).not.toContain("login.oauth.waiting");
+    // 获取 API Key 链接跟随所选模板（静态渲染未选择模板时不出现）。
+    expect(html).not.toContain("login.apiKey.getApiKey");
+  });
+
+  it("保留主题背景与登录面板外壳样式", async () => {
+    providerTemplatesState.templates = [];
     const { WelcomeScreen } = await import("@/WelcomeScreen.js");
     const html = renderToStaticMarkup(createElement(WelcomeScreen, { onComplete: vi.fn() }));
 
     expect(html).toContain("overflow-hidden bg-background");
     expect(html).toContain("absolute inset-0");
     expect(html).toContain("bg-[linear-gradient");
-    expect(html).toContain("bg-background");
     expect(html).toContain("border-popover-border");
     expect(html).toContain("shadow-md");
     expect(html).toContain("<h1");
     expect(html).not.toContain("DialogTitle");
-  });
-
-  it("登录报错使用 warning 样式并居中文案", async () => {
-    oauthState.status = "error";
-    oauthState.error = "登录失败，请重试";
-    oauthState.loadingProviders = false;
-
-    const { WelcomeScreen } = await import("@/WelcomeScreen.js");
-    const html = renderToStaticMarkup(createElement(WelcomeScreen, { onComplete: vi.fn() }));
-
-    expect(html).toContain("border-warning/40");
-    expect(html).toContain("bg-warning/10");
-    expect(html).toContain("text-warning");
-    expect(html).toContain("text-center");
-    expect(html).toContain("登录失败，请重试");
-    expect(html).not.toContain("bg-destructive text-destructive-foreground");
-  });
-
-  it("地域标签使用登录按钮前景色弱强调样式", async () => {
-    oauthState.status = "idle";
-    oauthState.error = null;
-    oauthState.loadingProviders = false;
-    oauthState.providers = [
-      {
-        id: "zai",
-        displayName: "Z.AI",
-        enabled: true,
-        order: 0,
-      },
-    ];
-
-    const { WelcomeScreen } = await import("@/WelcomeScreen.js");
-    const html = renderToStaticMarkup(createElement(WelcomeScreen, { onComplete: vi.fn() }));
-
-    expect(html).toContain("border-primary-foreground/30");
-    expect(html).toContain("text-primary-foreground/60");
-    expect(html).not.toContain("bg-primary-foreground/10");
-    expect(html).not.toContain("button-gradient");
   });
 });

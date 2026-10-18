@@ -3,7 +3,7 @@ import { test, type TestContext } from "node:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import type { HttpClientPort, HttpClientResponse, SessionEvent } from "@zcode/contracts";
+import type { HttpClientPort, HttpClientResponse } from "@zcode/contracts";
 import {
   createCliOAuthClient,
   createSharedZCodeCredentialStore,
@@ -11,24 +11,10 @@ import {
 } from "@zcode/adapters/auth";
 import { NodePersonalProviderConfigRepository } from "@zcode/provider-node";
 import {
-  loginZCodeCli,
   loginBigmodelCodingPlan,
   type LoginZCodeCliOptions,
 } from "../../bootstrap/src/auth-login.js";
-import { startProcessProviderRegistryRuntime } from "../../bootstrap/src/app/process-provider-registry-runtime.js";
-import { listRegistryBackedModels } from "../../bootstrap/src/app/provider-registry-selection.js";
-import {
-  createStandaloneAccountIdentityFromSecret,
-  resolveStandaloneCodingPlanProvider,
-  standaloneAccountAuthSourceCredentialKey,
-  standaloneAccountIdentityCredentialKey,
-  standaloneAccountProviderCredentialKey,
-} from "../../bootstrap/src/app/standalone-account-provider-runtime.js";
-import { createTuiSubmitPrompt } from "../src/tui-prompt-handler.js";
-import { createCliModeState } from "../src/tui-command-state.js";
-import type { CommandCenterApp } from "../src/command-center.js";
 import type { RunDependencies } from "../src/cli-types.js";
-import type { TuiOptions } from "../../tui/src/types.js";
 import { runLoginCommand } from "../src/login-command.js";
 
 const authorizeUrl = "https://login.example.test/authorize?state=test-state";
@@ -142,67 +128,12 @@ async function fixture(t: TestContext, providerId: "zai" | "bigmodel" = "bigmode
   return f;
 }
 
-for (const providerId of ["zai", "bigmodel"] as const) {
-  test(`${providerId} browser polling persists credentials and refreshes the running Registry`, async (t) => {
-    const f = await fixture(t, providerId);
-    const runtime = await startProcessProviderRegistryRuntime(f.env, {
-      standalone: { credentialStore: f.store },
-    });
-    t.after(() => runtime.dispose());
-    const configured = await resolveStandaloneCodingPlanProvider(providerId, f.env);
-    assert.equal(runtime.runtime.registryService.getProvider(configured.providerId), undefined);
-    let attempts = 0;
-    f.poll = async () => {
-      attempts++;
-      if (attempts === 1) return response({ status: "pending" });
-      if (attempts === 2) throw new TypeError("test temporary network error");
-      if (attempts === 3)
-        return { ...response(null, 503), body: new TextEncoder().encode("unavailable") };
-      if (attempts === 4) return response(null, 429);
-      return response(ready(providerId));
-    };
-    const result =
-      providerId === "bigmodel"
-        ? await loginBigmodelCodingPlan(f.options)
-        : await loginZCodeCli(f.options);
-    assert.equal(result.providerId, providerId);
-    assert.equal(result.user.user_id, "test-account");
-    assert.equal(attempts, 5);
-    assert.deepEqual(f.sleeps, [1000, 1000, 1000, 1000]);
-    assert.equal(await f.store.load(keys.zcodeJwtToken), "test-backend-jwt");
-    // Z.ai 以账号用户 ID 为连接身份；BigModel 以组织与项目的稳定摘要为连接身份。
-    const expectedIdentity =
-      providerId === "zai"
-        ? "test-account"
-        : createStandaloneAccountIdentityFromSecret(
-            JSON.stringify([TEST_PROJECT_MATERIAL.organizationId, TEST_PROJECT_MATERIAL.projectId]),
-          );
-    assert.equal(
-      await f.store.load(standaloneAccountIdentityCredentialKey(configured.providerId)),
-      expectedIdentity,
-    );
-    assert.equal(
-      await f.store.load(standaloneAccountAuthSourceCredentialKey(configured.providerId)),
-      "oauth",
-    );
-    assert.equal(
-      await f.store.load(
-        standaloneAccountProviderCredentialKey({
-          providerId: configured.providerId,
-          accountIdentity: expectedIdentity,
-        }),
-      ),
-      null,
-    );
-    assert.ok(runtime.runtime.registryService.getProvider(configured.providerId)?.models.length);
-    assert.deepEqual(await runtime.modelSelectionConfigRepository.read(), {
-      providerId: configured.providerId,
-      modelId: configured.modelId,
-    });
-    if (providerId === "bigmodel")
-      assert.equal(await f.store.load(keys.bigmodelRefreshToken), "test-refresh-token");
-  });
-}
+// fork：以下「browser polling persists credentials and refreshes the running Registry」
+// （zai/bigmodel 两个用例）已随 F4.1a 移除——specs/fork-official-deps-removal-tasks.md F4.1a
+// 删除了 zcode-builtin(.test).json 中全部 account:* Individual Coding Plan Provider，
+// `resolveStandaloneCodingPlanProvider` 读真实 builtin 必然抛「必须为 zai/bigmodel 声明唯一
+// Individual Coding Plan Provider」；「登录成功后持久化账号凭据与 Registry 刷新」属 F4.9
+// 「CLI 登录与账号运行时」的整体删除范围，用例按已删除行为语义移除，不再改为否定断言。
 
 test("OAuth init does not require an echoed poll secret and accepts both BigModel token spellings", async () => {
   for (const token of [
@@ -310,168 +241,12 @@ test("cancellation during API key resolution does not save the login", async (t)
   assert.equal(await f.store.load(keys.activeProvider), null);
 });
 
-test("browser failure keeps authorization URL available and polling completes", async (t) => {
-  const f = await fixture(t);
-  let shown = "";
-  const result = await loginBigmodelCodingPlan({
-    ...f.options,
-    noBrowser: false,
-    onAuthorizeUrl: (data) => {
-      shown = data.authorize_url;
-    },
-    openBrowser: async () => ({
-      command: "test-open",
-      opened: false,
-      reason: "test headless host",
-    }),
-  });
-  assert.equal(shown, authorizeUrl);
-  assert.equal(result.browser?.opened, false);
-});
-
-test(
-  "TUI renders the login URL in the current session and refreshes models after authorization",
-  { timeout: 5000 },
-  async (t) => {
-    const f = await fixture(t);
-    const runtime = await startProcessProviderRegistryRuntime(f.env, {
-      standalone: { credentialStore: f.store },
-    });
-    let authorize!: () => void;
-    const authorization = new Promise<void>((resolve) => {
-      authorize = resolve;
-    });
-    let urlShown!: () => void;
-    const authorizationShown = new Promise<void>((resolve) => {
-      urlShown = resolve;
-    });
-    f.poll = async () => {
-      await authorization;
-      return response(ready("bigmodel"));
-    };
-    const app = {
-      sessionId: "login-session",
-      traceId: "login-trace",
-      getModel: () => "",
-      getLocale: () => "en-US",
-      listModels: () => listRegistryBackedModels(runtime.runtime.registryService),
-      listThoughtLevels: () => [],
-    } as unknown as CommandCenterApp;
-    const handler = createTuiSubmitPrompt(
-      {
-        env: f.env,
-        cwd: () => process.cwd(),
-        skipUserConfig: true,
-        loadDotenv: () => ({ keys: [], loaded: false, path: "" }),
-        createZCodeApp: async () => app,
-        startProcessProviderRegistryRuntime: async () => runtime,
-        loginBigmodelCodingPlan: (options: Parameters<typeof loginBigmodelCodingPlan>[0]) =>
-          loginBigmodelCodingPlan({
-            ...f.options,
-            ...options,
-            onAuthorizeUrl: async (data) => {
-              await options?.onAuthorizeUrl?.(data);
-              urlShown();
-            },
-          }),
-      } as unknown as RunDependencies,
-      createCliModeState(),
-      "test",
-    );
-    t.after(() => handler.close?.());
-    const React = await import("react");
-    const { createTestRenderer } = await import("@mbears/opentui-core/testing");
-    const { createRoot } = await import("@mbears/opentui-react");
-    const { CodeRenderable } = await import("@mbears/opentui-core");
-    const { TuiApp } = await import("../../tui/src/app.js");
-    const environment = globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean };
-    const previous = environment.IS_REACT_ACT_ENVIRONMENT;
-    environment.IS_REACT_ACT_ENVIRONMENT = true;
-    const terminal = await createTestRenderer({
-      width: 120,
-      height: 45,
-      screenMode: "alternate-screen",
-      useThread: false,
-    });
-    const root = createRoot(terminal.renderer);
-    let loginCompletion: ReturnType<typeof handler> | undefined;
-    const seenEvents: SessionEvent[] = [];
-    const options: TuiOptions = {
-      noColor: true,
-      stdin: process.stdin,
-      stdout: process.stdout,
-      stderr: process.stderr,
-      getMainSessionId: () => app.sessionId,
-      locale: "en-US",
-      submitPrompt: (input, options) => {
-        loginCompletion = handler(input, {
-          ...options,
-          onEvent: async (event) => {
-            seenEvents.push(event);
-            await options.onEvent?.(event);
-          },
-        });
-        return loginCompletion;
-      },
-      ...(await handler.getSessionMetadata!()),
-      listModelOptions: handler.listModelOptions,
-    };
-    const action = async (run: () => void | Promise<void>) => {
-      await React.act(async () => {
-        await run();
-      });
-      const waitForHighlights = async (node: typeof terminal.renderer.root): Promise<void> => {
-        if (node instanceof CodeRenderable) await node.highlightingDone;
-        await Promise.all(
-          node.getChildren().map((child) => waitForHighlights(child as typeof node)),
-        );
-      };
-      await React.act(async () => {
-        await terminal.renderOnce();
-        await waitForHighlights(terminal.renderer.root);
-        await terminal.renderOnce();
-      });
-    };
-    try {
-      await action(() =>
-        root.render(
-          React.createElement(TuiApp, {
-            options,
-            onExit() {},
-            hasCopyableSelection: () => false,
-            copySelection: async () => ({ kind: "empty" as const }),
-          }),
-        ),
-      );
-      await action(() => terminal.mockInput.typeText("/login bigmodel-coding-plan"));
-      await action(async () => {
-        terminal.mockInput.pressEnter();
-        await authorizationShown;
-      });
-      assert.equal(seenEvents.length, 1);
-      assert.equal(seenEvents[0]!.sessionId, app.sessionId);
-      assert.match(terminal.captureCharFrame(), /login\.example\.test\/authorize/);
-      assert.doesNotMatch(terminal.captureCharFrame(), /test-private-poll-token/);
-      // Waiting for the actual command completion also waits for credential and Registry barriers.
-      await action(async () => {
-        authorize();
-        await loginCompletion;
-      });
-      await action(() => terminal.mockInput.typeText("/model"));
-      assert.match(terminal.captureCharFrame(), /GLM-/);
-      assert.doesNotMatch(terminal.captureCharFrame(), /No available models/);
-    } finally {
-      await action(async () => {
-        authorize();
-        await loginCompletion;
-      });
-      await React.act(() => root.unmount());
-      terminal.renderer.destroy();
-      if (previous === undefined) delete environment.IS_REACT_ACT_ENVIRONMENT;
-      else environment.IS_REACT_ACT_ENVIRONMENT = previous;
-    }
-  },
-);
+// fork：「browser failure keeps authorization URL available and polling completes」与
+// 「TUI renders the login URL in the current session and refreshes models after authorization」
+// 两个用例已随 F4.1a 移除：两者都断言登录成功后的完整账号 wire（persistStandaloneCodingPlanConnection
+// 经 resolveStandaloneCodingPlanProvider 读 builtin 的 account:* provider 写连接与默认模型），
+// F4.1a 删除 builtin 账号 provider 后该链路必然抛 config_update_failed（登录链整体删除见 F4.9）；
+// 后者还因 opentui 渲染 + 永不 settle 的登录 promise 在失败后挂起整个 node --test 进程。
 
 test("standalone login accepts provider selection and keeps authorization URL out of JSON stdout", async () => {
   let stdout = "";

@@ -2,15 +2,8 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 describe("Settings usage provider tabs", () => {
-  it("keeps a connected Coding Plan source visible while quota is unavailable", async () => {
-    const settingsPageSource = await readFile("packages/ui/src/SettingsPage.tsx", "utf8");
-    const start = settingsPageSource.indexOf("function hasActiveCodingPlanSnapshot");
-    const end = settingsPageSource.indexOf("function SettingsSidebarButton", start);
-    const activeSnapshotSource = settingsPageSource.slice(start, end);
-
-    expect(activeSnapshotSource).toContain('snapshot.unavailableReason !== "no_plan"');
-    expect(activeSnapshotSource).toContain('snapshot.unavailableReason === "unavailable"');
-  });
+  // fork（F4.1b）：用量页 Coding Plan tab 摘除（sources 恒为空），
+  // 原「connected Coding Plan source 保留」源码断言用例随之删除。
 
   it("reuses the plugin store Public and Personal segment pill style", async () => {
     const settingsPageSource = await readFile("packages/ui/src/SettingsPage.tsx", "utf8");

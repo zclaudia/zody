@@ -37,7 +37,7 @@ describe("DB109 App 库统一迁移", () => {
       "tasks_schema_migration",
     ]);
     const ledger = db.prepare("SELECT * FROM tasks_schema_migration").all();
-    expect(ledger).toHaveLength(3);
+    expect(ledger).toHaveLength(4);
     runTasksDatabaseMigrations(db);
     expect(db.prepare("SELECT * FROM tasks_schema_migration").all()).toEqual(ledger);
   });
@@ -138,6 +138,65 @@ describe("DB109 App 库统一迁移", () => {
         ?.model_selection,
     ).toBeNull();
     expect(db.prepare("SELECT * FROM tasks_schema_migration ORDER BY id").all()).toEqual(ledger);
+  });
+
+  it("F4.1a：account:* 的自动化模型选择清空为「未配置」，BYOK/自定义选择与坏值保留", () => {
+    const db = open();
+    runTasksDatabaseMigrations(db);
+    db.exec("DELETE FROM tasks_schema_migration WHERE id='0004_account_provider_selection_removal'");
+    const cases = [
+      // 指向已下线官方账号 provider 的选择 → SQL NULL（执行时按未配置回落，不静默改选）。
+      [
+        "account-plan",
+        JSON.stringify({
+          providerId: "account:zai-individual-coding-plan",
+          modelId: "GLM-5.3",
+          options: { reasoningLevel: "high" },
+        }),
+      ],
+      ["account-start", JSON.stringify({ providerId: "account:bigmodel-start-plan", modelId: "GLM-5.2" })],
+      ["account-no-model-id", JSON.stringify({ providerId: "account:zai-team-coding-plan" })],
+      // BYOK 模板与自定义 provider 选择不受影响。
+      ["byok-zai", JSON.stringify({ providerId: "personal-zai", modelId: "glm-5.3" })],
+      [
+        "custom-provider",
+        JSON.stringify({ providerId: "my-openai-proxy", modelId: "gpt-5.6-sol" }),
+      ],
+      // 既有兼容口径保持：坏 JSON 与已清空值不因新迁移改写。
+      ["broken", "{broken"],
+      ["json-null", "null"],
+      ["sql-null", null],
+    ] as const;
+    const insert = db.prepare(
+      `INSERT INTO automations(automation_id,cron_expr,prompt,workspace_key,workspace_path,created_at,updated_at,model_selection)
+      VALUES(?, '* * * * *', '任务正文', 'ws', '/ws', 1, 2, ?)`,
+    );
+    for (const [id, selection] of cases) insert.run(id, selection);
+    runTasksDatabaseMigrations(db);
+
+    for (const [id] of cases) {
+      const row = db.prepare("SELECT model_selection FROM automations WHERE automation_id=?").get(
+        id,
+      )!;
+      const expected =
+        id.startsWith("account") || id === "sql-null"
+          ? null
+          : id === "broken"
+            ? "{broken"
+            : id === "json-null"
+              ? "null"
+              : cases.find(([caseId]) => caseId === id)![1];
+      expect(row.model_selection, id).toBe(expected);
+    }
+
+    // 幂等：重跑不改账本、不二次改写。
+    const ledger = db.prepare("SELECT * FROM tasks_schema_migration ORDER BY id").all();
+    runTasksDatabaseMigrations(db);
+    expect(db.prepare("SELECT * FROM tasks_schema_migration ORDER BY id").all()).toEqual(ledger);
+    expect(
+      db.prepare("SELECT model_selection FROM automations WHERE automation_id='account-plan'").get()
+        ?.model_selection,
+    ).toBeNull();
   });
 
   it("DB109-05/07：SQL 故障不记成功，checksum 错误不重跑", () => {
@@ -257,7 +316,7 @@ describe("DB109 App 库统一迁移", () => {
       Atomics.store(new Int32Array(gate), 0, 1);
       Atomics.notify(new Int32Array(gate), 0);
       expect(await Promise.all(exits)).toEqual([[0], [0]]);
-      expect(db.prepare("SELECT * FROM tasks_schema_migration").all()).toHaveLength(3);
+      expect(db.prepare("SELECT * FROM tasks_schema_migration").all()).toHaveLength(4);
       expect(db.prepare("SELECT * FROM migration_probe").all()).toHaveLength(1);
       expect(db.prepare("PRAGMA integrity_check").get()?.integrity_check).toBe("ok");
     } finally {

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { UserInfo } from "@zcode/shared";
 import type { ModelSelectionView } from "@zcode/services";
 import { resolveProviderAvailabilityState } from "@/lib/modelProviderAvailability.js";
 import { logger } from "@/logger.js";
@@ -12,9 +11,7 @@ export interface ProviderAvailabilityLoginEntryGuardResult {
 
 export function useProviderAvailabilityLoginEntryGuard({
   enabled = true,
-  user,
   isRestoringOAuthSession,
-  providerFamilyDomain,
   modelSelectionView,
   modelSelectionError,
   refreshProviderState,
@@ -22,9 +19,7 @@ export function useProviderAvailabilityLoginEntryGuard({
   setLoginEntryOpen,
 }: {
   enabled?: boolean;
-  user: UserInfo | null;
   isRestoringOAuthSession: boolean;
-  providerFamilyDomain: string | null | undefined;
   modelSelectionView: ModelSelectionView | null;
   modelSelectionError?: Error;
   refreshProviderState: () => Promise<void>;
@@ -54,17 +49,18 @@ export function useProviderAvailabilityLoginEntryGuard({
         : modelSelectionView;
       const availability = resolveProviderAvailabilityState({ modelSelectionView: refreshedView });
       const { hasUsableProvider, providerCount } = availability;
-      const shouldOpenLoginEntry = !providerFamilyDomain || (!user && !hasUsableProvider);
+      // fork（F4.1a）：官方账号 provider 下线后不再有「登录账号」这条出路；
+      // 首启是否弹引导只取决于是否已有可用（自定义/BYOK）provider，
+      // 不再要求 providerFamilyDomain 或登录态。
+      const shouldOpenLoginEntry = !hasUsableProvider;
 
-      // 未登录且没有可用模型配置时必须引导用户连接账号或填写 API Key。
+      // 没有任何可用模型配置时必须引导用户填写 API Key 连接 provider。
       // 启动检查、API Key 设置回流等入口统一走这里，避免各处复制判断后语义分叉。
       logger.info("[Root] provider 可用性登录入口守卫完成检查", {
         reason: options.reason,
         source: availability.source,
         providerCount,
         hasUsableProvider,
-        hasUser: Boolean(user),
-        hasProviderFamilyDomain: Boolean(providerFamilyDomain),
         shouldOpenLoginEntry,
       });
       setLoginEntryOpen(shouldOpenLoginEntry);
@@ -77,11 +73,9 @@ export function useProviderAvailabilityLoginEntryGuard({
     [
       enabled,
       modelSelectionView,
-      providerFamilyDomain,
       refreshProviderState,
       readModelSelectionView,
       setLoginEntryOpen,
-      user,
     ],
   );
 

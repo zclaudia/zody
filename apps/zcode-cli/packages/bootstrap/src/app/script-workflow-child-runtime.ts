@@ -123,6 +123,13 @@ export function createScriptWorkflowAgentRuntime(input: {
       ? (input.request.opts?.systemPrompt ?? inheritedSystemPrompt)
       : undefined;
   const parentSelection = input.deps.runtime.getSessionModelSelection();
+  // 修复：script workflow child 与 expert workflow child 一致，必须继承父会话的
+  // Bash shell snapshot（父 runtime 初始化后写在自己的 config 副本上，原始
+  // runtimeConfig 永远没有该字段）；否则 child 的 # Environment 块回落
+  // basename($SHELL)，与 Bash 工具实际执行的 shell 分叉。
+  // 与 subagent 路径（core/runtime/methods/subagent.ts）和 workflow-facade 的
+  // createWorkflowChildRuntime 保持同一继承语义。
+  const parentShellSelection = input.deps.runtime.getSessionShellSelection();
   const requestedSelection = input.request.opts?.model
     ? parseProviderQualifiedModelSelection(input.request.opts.model)
     : undefined;
@@ -150,6 +157,7 @@ export function createScriptWorkflowAgentRuntime(input: {
       dynamicWorkflowToolsOnDemand: false,
       toolAllowlist: input.request.opts?.tools,
       workingDirectory: input.deps.workingDirectory,
+      ...(parentShellSelection ? { bashShellSelection: parentShellSelection } : {}),
       ...input.configOverrides,
     },
     {

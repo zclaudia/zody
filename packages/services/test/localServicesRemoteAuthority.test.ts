@@ -296,6 +296,9 @@ describe("createLocalServices remote authority", () => {
     const services = createLocalServices({
       zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
       serviceAuthorityMode: "desktop-attached-remote",
+      // fork（F4.1a）：该用例直接断言账号 PAT 解析链；停用启动迁移，避免迁移把
+      // 用例种入的 oauth:* 键当作官方账号存量清掉（账号链在 F4.5 删除）。
+      disableOfficialAccountDataMigration: true,
       hostApiNetworkTransport: {
         fetch: fetchToken,
         dispose: vi.fn(),

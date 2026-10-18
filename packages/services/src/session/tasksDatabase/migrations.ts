@@ -8,6 +8,7 @@ import {
 } from "#src/session/tasksDatabase/schema-v1.js";
 import { importLegacyAutomationSelections } from "#src/session/tasksDatabase/provider-selection-v2.js";
 import { OFFICIAL_GLM_SELECTION_MIGRATION_SQL } from "#src/session/tasksDatabase/official-glm-selection-v3.js";
+import { ACCOUNT_PROVIDER_SELECTION_REMOVAL_MIGRATION_SQL } from "#src/session/tasksDatabase/account-provider-selection-v4.js";
 
 // 冻结历史列声明，不能以实时 Repo/schema 代替，否则新版构建会改变已应用 checksum。
 const columns = [
@@ -64,6 +65,11 @@ const definitions = [
     id: "0003_official_glm_selection",
     checksumInput: [OFFICIAL_GLM_SELECTION_MIGRATION_SQL],
   },
+  {
+    // fork（F4.1a）：官方账号 provider 下线，清空自动化任务指向 account:* 的模型选择。
+    id: "0004_account_provider_selection_removal",
+    checksumInput: [ACCOUNT_PROVIDER_SELECTION_REMOVAL_MIGRATION_SQL],
+  },
 ] as const;
 
 export function runTasksDatabaseMigrations(
@@ -113,7 +119,9 @@ export function runTasksDatabaseMigrations(
       options.onProgress?.("migrating", { ...migrationFacts });
       if (migration.id === "0001_adopt_task_schema") adoptSchema(db);
       else if (migration.id === "0002_provider_selection") importLegacyAutomationSelections(db);
-      else db.exec(OFFICIAL_GLM_SELECTION_MIGRATION_SQL);
+      else if (migration.id === "0003_official_glm_selection")
+        db.exec(OFFICIAL_GLM_SELECTION_MIGRATION_SQL);
+      else db.exec(ACCOUNT_PROVIDER_SELECTION_REMOVAL_MIGRATION_SQL);
       migrationFacts.executedCount++;
       db.prepare("INSERT INTO tasks_schema_migration VALUES(?,?,?)").run(
         migration.id,

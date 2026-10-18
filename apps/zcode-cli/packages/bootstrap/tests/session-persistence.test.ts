@@ -1474,7 +1474,24 @@ describe("session persistence", () => {
           output,
         }),
       ).rejects.toThrow(/SQLite migration checksum mismatch for 0001_base_session_store/);
-      expect(output.output()).toBe("");
+      // 存储启动观测（startup/storageState）是协议的一部分：迁移失败也要向 Host
+      // 上报进度与失败原因；stdout 只允许出现这类通知帧，不得泄漏其他协议或日志。
+      const frames = output
+        .output()
+        .trim()
+        .split("\n")
+        .filter((line) => line.length > 0)
+        .map((line) => JSON.parse(line) as { method: string });
+      expect(frames.length).toBeGreaterThan(0);
+      expect(
+        frames.every((frame) => frame.method === "startup/storageState"),
+      ).toBe(true);
+      const failedFrame = frames.at(-1) as {
+        params: { phase: string; errorCode?: string; migrationId?: string };
+      };
+      expect(failedFrame.params.phase).toBe("failed");
+      expect(failedFrame.params.errorCode).toBe("checksum_mismatch");
+      expect(failedFrame.params.migrationId).toBe("0001_base_session_store");
     } finally {
       await rm(tempRoot, { recursive: true, force: true });
     }
@@ -1509,7 +1526,15 @@ describe("session persistence", () => {
 
       expect(startupCompletedIndex).toBeGreaterThanOrEqual(0);
       expect(retentionScheduledIndex).toBeGreaterThan(startupCompletedIndex);
-      expect(output.output()).toBe("");
+      // 存储启动观测（startup/storageState）现在走协议 stdout；除此之外不得有其他输出。
+      expect(
+        output
+          .output()
+          .trim()
+          .split("\n")
+          .filter((line) => line.length > 0)
+          .every((line) => (JSON.parse(line) as { method: string }).method === "startup/storageState"),
+      ).toBe(true);
     } finally {
       await rm(tempRoot, { recursive: true, force: true });
     }
@@ -1544,7 +1569,16 @@ describe("session persistence", () => {
         });
       }
 
-      expect(output.output()).toBe("");
+      // 存储启动观测（startup/storageState）现在走协议 stdout；AI SDK warning
+      // 仍必须进日志而不是 stdout。
+      expect(
+        output
+          .output()
+          .trim()
+          .split("\n")
+          .filter((line) => line.length > 0)
+          .every((line) => (JSON.parse(line) as { method: string }).method === "startup/storageState"),
+      ).toBe(true);
       const logEntries = await readLogEntries(logDir);
       expect(logEntries.some((entry) => entry.event === "model.sdk.warning")).toBe(true);
     } finally {
@@ -2399,11 +2433,14 @@ describe("session persistence", () => {
       const storedMessages = await store.messages({ sessionID: sessionId });
 
       expect(result.response).toBe("second answer");
-      expect(storedMessages).toHaveLength(4);
+      // agent_listing_delta（model-only 的 agent 类型清单 user 消息）现在也持久化，
+      // 因此比「输入/回答各一条」多出一条运行时注入消息。
+      expect(storedMessages).toHaveLength(5);
       expect(capturedMessages.map((message) => message.role)).toEqual([
         "system",
         "system",
         "system",
+        "user",
         "user",
         "user",
         "user",
@@ -2417,6 +2454,7 @@ describe("session persistence", () => {
         expect.stringContaining("# Environment"),
         expect.stringContaining("The following skills are available"),
         expect.stringContaining("<system-reminder>"),
+        expect.stringContaining("Available agent types"),
         "first prompt",
         "first answer",
         "second prompt",
@@ -2491,8 +2529,9 @@ describe("session persistence", () => {
       });
       const result = await secondApp.submitPrompt("second prompt");
 
-      expect(resume.messageCount).toBe(2);
-      expect(resume.appliedMessageCount).toBe(2);
+      // agent_listing_delta（model-only user 消息）现在持久化并计入恢复历史。
+      expect(resume.messageCount).toBe(3);
+      expect(resume.appliedMessageCount).toBe(3);
       expect(result.response).toBe("second answer");
       // 冷恢复会先补齐持久标题事件，再发布 SessionResumed。
       expect(liveEventTypes).toEqual([
@@ -2505,6 +2544,7 @@ describe("session persistence", () => {
         expect.stringContaining("# Communicating with the user"),
         expect.stringContaining("The following skills are available"),
         expect.stringContaining("<system-reminder>"),
+        expect.stringContaining("Available agent types"),
         "first prompt",
         "first answer",
         "second prompt",
@@ -2840,13 +2880,19 @@ async function createProtocolProviderEnv(root: string): Promise<Record<string, s
   const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
   const personalFilePath = join(root, "provider-personal.json");
   const emptyBuiltinRelease = JSON.stringify({
-    // 此处测试启动/存储顺序，不测试旧版 Release 迁移；使用当前正式结构。
-    schemaVersion: 3,
+    // 此处测试启动/存储顺序，不测试旧版 Release 迁移；使用当前正式结构
+    // （schemaVersion 1 + providerConfigRules，见 provider-node/zcode-builtin-release.ts）。
+    schemaVersion: 1,
     revision: 1,
     config: {
-      providers: {},
-      providerTemplates: {},
-      modelConfigRules: { matchRules: [], templateModelRules: [], providerModelRules: [] },
+      providerConfigRules: { providerRules: [], templateRules: [] },
+      modelConfigRules: {
+        modelRules: [],
+        modelApiRules: [],
+        providerSiteRules: [],
+        templateModelRules: [],
+        builtinProviderModelRules: [],
+      },
     },
   });
   const emptyPersonalConfig = JSON.stringify({

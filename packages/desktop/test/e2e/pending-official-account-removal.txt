@@ -1,0 +1,92 @@
+# 依赖官方登录态的桌面 E2E 待删除清单（F4.1c 盘点，2026-10-17）
+#
+# 背景：F4.1c 之后 E2E 基座默认「无官方账号、已配置本地桩 BYOK provider」
+# （见 packages/desktop/wdio.conf.ts seedE2EStartupState / seedUpstreamE2EModelConfig）。
+# 下面这些 spec 的主题或前置仍依赖官方账号体系（OAuth/JWT 凭据、providerFamilyDomain、
+# account:* provider、Coding Plan/额度、闲时、加速卡、营销触达、会话分享），无法在
+# 新基座下表达，由 specs/fork-official-deps-removal-tasks.md 对应删除任务处理。
+# 本清单只做标记，不删 spec；各删除任务删除 spec 时一并清理其独占 helper/fixture，
+# 并从本清单移除对应条目。
+#
+# 共 43 个 spec + 文末 2 条边界备注。
+
+## F4.2 删除加速卡 highspeed（spec 名对话题即加速卡）
+conversation-session/conversation-session-highspeed-card.test.ts
+conversation-session/conversation-session-highspeed-card-draw-miss.test.ts
+conversation-session/conversation-session-highspeed-card-draw-timeout.test.ts
+
+## F4.3 删除闲时任务 off-peak（主题即闲时创建/调度/门槛）
+off-peak-automations-home-layout.test.ts
+off-peak-create-manage.test.ts
+off-peak-limit-pre-gate.test.ts
+conversation-session/manual-review/pending/conversation-session-off-peak-invalid-ticket.test.ts
+conversation-session/manual-review/pending/conversation-session-off-peak-team-plan.test.ts
+conversation-session/manual-review/pending/conversation-session-offpeak-create.test.ts
+conversation-session/manual-review/pending/conversation-session-offpeak-create-existing-session.test.ts
+conversation-session/manual-review/pending/conversation-session-offpeak-subagent-model-inheritance.test.ts
+
+## F4.4 删除营销触达 / Rewards / 购买 webview（主题即营销触达与领取）
+ui-shell/marketing-touch-anonymous.test.ts
+ui-shell/marketing-touch-delivery.test.ts
+ui-shell/marketing-touch-entitlement.test.ts
+ui-shell/marketing-touch-rewards.test.ts
+ui-shell/manual-review/pending/marketing-touch-task-completion.test.ts
+
+## F4.5 删除订阅、官方用量与套餐（Coding Plan/Start Plan/套餐导航与目录面）
+coding-plan-team-usage.test.ts
+coding-plan-upgrade-personal-sold-out.test.ts
+coding-plan-upgrade-personal-system-busy.test.ts
+coding-plan-upgrade-webview-refresh-provider.test.ts
+subagent-coding-plan-login-catalog-stale.test.ts
+settings/coding-plan-entitlement-presentation.test.ts
+settings/provider-plan-navigation-labels.test.ts
+conversation-session/manual-review/pending/conversation-session-model-provider-plan-surface.test.ts
+
+## F4.7 删除 OAuth 与账号链（OAuth/JWT/401/账号 provider 的模型选择与切换）
+oauth-credential-recovery.test.ts
+oauth-login-failure-cancel.test.ts
+manual-review/pending/oauth-completion-race.test.ts
+manual-review/pending/jwt-401-auto-logout.test.ts
+manual-review/pending/jwt-expiry-reauthentication.test.ts
+manual-review/pending/access-token-401-auto-logout.test.ts
+manual-review/pending/account-key-usage-scene.test.ts
+provider-family-responsive.test.ts
+conversation-session/conversation-session-model-provider-turbo-switch.test.ts
+conversation-session/conversation-session-model-provider-turbo-recovery.test.ts
+conversation-session/conversation-session-model-provider-restart-recovery.test.ts
+conversation-session/conversation-session-model-provider-settings-transition.test.ts
+conversation-session/manual-review/pending/conversation-session-model-provider-effective-selection.test.ts
+conversation-session/manual-review/pending/conversation-session-worker-effective-selection.test.ts
+
+## F4.8 会话分享（D6 已决：移除官方分享服务）
+conversation-session/manual-review/pending/conversation-session-share-publish-import.test.ts
+conversation-session/manual-review/pending/conversation-session-share-ssh-artifact.test.ts
+
+## F4.5/F4.11 边界：设置页仍绑定 providerFamilyDomain / Coding Plan key / 官方目录刷新
+settings/manual-review/pending/provider-connectivity-prompt.test.ts
+settings/manual-review/pending/provider-key-native-open.test.ts
+settings/manual-review/pending/provider-builtin-refresh.test.ts
+
+# ---------------------------------------------------------------------------
+# 边界备注（不列入删除清单，由对应删除任务自行评估）：
+# 1. conversation-session/manual-review/pending/conversation-session-mcp-oauth-status-isolation.test.ts：
+#    主题是插件 MCP OAuth（第三方服务器授权），F4.1b 明确保留，不是官方账号。
+# 2. provider-readiness-agent-startup.test.ts 与 windows-agent-metric-probe-absence.test.ts：
+#    使用空凭据冷启动 fixture + 欢迎页 API Key 跳过，主体是 BYOK 就绪门禁；F4.7 只需
+#    处理 provider-readiness 中依赖登录的段落，不需要整删。
+# 3. conversation-session/manual-review/pending/conversation-session-ssh-provisioning-failure.test.ts：
+#    主题是 SSH 供应失败诊断，但故障注入通过写坏 oauth:bigmodel:refresh_token 触发
+#    （依赖 F4.7 删除的凭据解密链）；F4.7 需改用其它注入方式或删除该注入分支。
+# 4. wdio.conf.ts 中仍为待删 spec 保留的桩（Coding Plan team/upgrade mock、OAuth 桩、
+#    corrupt/expired credential fixture、bigmodel 域种入）随上述 spec 的删除一并移除。
+# 5. F4.1c 起基座默认不再种入 OAuth/JWT 凭据；providerFamilyDomain:"zai" 种入仅为
+#    绕开现行首启登录门而临时保留（F4.1a 改门为 !hasUsableProvider 时移除）。待删
+#    spec 中不在下方 OAuth/JWT 保留名单内的（如 off-peak 系列）会失去默认登录展示态，
+#    断言用户身份/套餐展示的用例属预期降级，由对应删除任务处理，不回填账号种入。
+#    仍保留完整账号种子的待删 spec：Coding Plan team/upgrade（bigmodel 域）、
+#    marketing-touch 领取/entitlement/rewards、jwt-401、jwt-expiry（expired 种子分支）、
+#    oauth-credential-recovery（corrupt 种子分支）、access-token-401、
+#    provider-family-responsive、start-plan-manual-claim。
+#    oauth-login-failure-cancel / oauth-completion-race 自带 clearAppData 或运行时
+#    fixture 自建登录态，不依赖基座默认种子；subagent-login-catalog-stale 与
+#    built-in-subagent-model-overrides 显式要求空凭据，均不受影响。

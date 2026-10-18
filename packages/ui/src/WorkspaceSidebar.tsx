@@ -117,7 +117,6 @@ import { WorkspaceFileTree } from "@/WorkspaceFileTree.js";
 import { WorkspaceArchivedTasksFlatSection } from "@/WorkspaceArchivedTasksFlatSection.js";
 import { WebRemoteControlTaskIndex } from "@/WebRemoteControlTaskIndex.js";
 import { WorkspaceSidebarFooter } from "@/WorkspaceSidebarFooter.js";
-import { SidebarBottomActivity } from "@/sidebar-activity/SidebarBottomActivity.js";
 import { WorkspacePinnedTasksSection } from "@/WorkspacePinnedTasksSection.js";
 import { WorkspaceTimelineTasksSection } from "@/WorkspaceTimelineTasksSection.js";
 import { WorkspaceGroupedTasksSection } from "@/WorkspaceGroupedTasksSection.js";
@@ -134,7 +133,6 @@ import {
 } from "@/WorkspaceSidebar/taskGroupTogglePresentation.js";
 import { WorkspacePurposeSection } from "@/WorkspaceSidebar/WorkspacePurposeSection.js";
 import { cn } from "@/components/lib/utils.js";
-import { useCodingPlanUpgradeDialog } from "@/settings/CodingPlanUpgradeDialogProvider.js";
 import {
   resolveWorkspaceDragGlobalIndices,
   resolveWorkspaceDragExpanded,
@@ -244,8 +242,6 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   onSelectRemoteProject: _onSelectRemoteProject,
   onCancelRemoteProject: _onCancelRemoteProject,
   onReconnectRemoteWorkspace,
-  onLogout,
-  onLogin,
   user,
   reconnectingRemoteWorkspaceKeys,
   remoteWorkspaceErrorByWorkspaceKey,
@@ -300,8 +296,6 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   ) => Promise<void>;
   onCancelRemoteProject: (sessionId: string) => Promise<void>;
   onReconnectRemoteWorkspace: (workspaceKey: string) => Promise<void>;
-  onLogout?: () => void;
-  onLogin?: () => void;
   user?: UserInfo | null;
   reconnectingRemoteWorkspaceKeys: string[];
   remoteWorkspaceErrorByWorkspaceKey: Record<string, string>;
@@ -348,7 +342,6 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
     },
     [onSelectTask],
   );
-  const { openCodingPlanUpgrade } = useCodingPlanUpgradeDialog();
   const webRemoteControlFeatureEnabled = useWebRemoteControlFeatureEnabled();
   const bumpTaskListVersion = useZCodeSessionStore((state) => state.bumpTaskListVersion);
   const workspaceIdentity = useTabStore((state) => {
@@ -869,18 +862,6 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
   const handleOpenAutomationsMain = useCallback(() => {
     onOpenAutomations?.();
   }, [onOpenAutomations]);
-  const handleOpenCodingPlanUpgrade = useCallback(
-    (
-      providerId: string,
-      funnelContext?: import("@/lib/codingPlanFunnelTelemetry.js").CodingPlanFunnelContext,
-    ) => {
-      openCodingPlanUpgrade({
-        providerId,
-        funnelContext,
-      });
-    },
-    [openCodingPlanUpgrade],
-  );
   const activeTaskId = useZCodeSessionStore(
     (state) =>
       // Web 远程控制从全局 task 入口进入远端 workspace 时，会先按
@@ -1447,8 +1428,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
     ],
   );
 
-  // Bugfix：Footer 使用 memo，内联 JSX 会让无关的侧栏更新也穿透其稳定引用边界。
-  const sidebarBottomActivity = useMemo(() => <SidebarBottomActivity />, []);
+  // fork（F4.1b）：SidebarBottomActivity 挂载摘除（营销 banner / 加速卡分享卡入口下线）。
 
   return (
     <aside
@@ -1904,18 +1884,15 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
             </div>
           </div>
 
+          {/* fork（F4.1b）：侧栏左下活动槽位（SidebarBottomActivity = 营销 banner +
+              加速卡分享卡 GlobalNoticeSurface）摘除；组件文件留给 F4.2/F4.4 删除。 */}
           <WorkspaceSidebarFooter
             className="pr-3"
-            banner={sidebarBottomActivity}
             theme={theme}
             localeMenuValue={localeMenuValue}
             onLocaleChange={handleLocaleChange}
             onThemeChange={handleThemeChange}
             onSettingsButtonClick={openSettingsTab}
-            onUsageClick={openSettingsTab}
-            onUpgradeClick={handleOpenCodingPlanUpgrade}
-            onLogin={onLogin}
-            onLogout={onLogout}
             user={user}
             workspacePath={workspacePath}
             workspaceIdentity={workspaceIdentity}

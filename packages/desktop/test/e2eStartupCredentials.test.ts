@@ -74,11 +74,26 @@ describe("desktop e2e startup credentials", () => {
     ).toEqual({});
   });
 
-  it("普通 spec 保留 OAuth 展示态但不注入会触发失效广播的 zcode JWT", () => {
+  // F4.1c 把默认基座翻转为「非官方种子 spec 一律空凭据」；普通 spec 不再保留
+  // OAuth 展示态（历史断言与 helpers/e2e-startup-credentials.ts 的注释矛盾）。
+  it("普通 spec 不再播种 OAuth 展示态，也不注入会触发失效广播的 zcode JWT", () => {
     expect(
       createE2EStartupCredentialSeed({
         specs: [
           "/repo/packages/desktop/test/e2e/conversation-session/conversation-session-v4-sendnow.test.ts",
+        ],
+        legacyAuthToken: "fake-auth-token",
+        restoredOAuthCredentials,
+      }),
+    ).toEqual({});
+  });
+
+  // fork（F4.1a）：「旧版本升级」场景保留官方账号存量种子，供 Host 启动迁移清理。
+  it("F4.1a 升级场景 spec 保留 OAuth 展示态但不注入 zcode JWT", () => {
+    expect(
+      createE2EStartupCredentialSeed({
+        specs: [
+          "/repo/packages/desktop/test/e2e/official-account-removal-upgrade.test.ts",
         ],
         legacyAuthToken: "fake-auth-token",
         restoredOAuthCredentials,

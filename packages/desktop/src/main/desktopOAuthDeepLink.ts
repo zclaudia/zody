@@ -41,8 +41,6 @@ interface OAuthRouteTarget {
 
 const oauthStateToWindow = new Map<string, OAuthRouteTarget>();
 const rendererReadyWebContentsIds = new Set<number>();
-let pendingDeepLinkUrl: string | null = null;
-let pendingPaymentDeepLinkUrl: string | null = null;
 let pendingOpenWorkspaceRequest: {
   path: string;
   targetWebContentsId?: number;
@@ -111,10 +109,6 @@ function focusDeepLinkTargetWindow(targetWindow: BrowserWindow): void {
   }
 
   targetWindow.focus();
-}
-
-function hasOAuthAuthorizationCode(parsedUrl: URL): boolean {
-  return parsedUrl.searchParams.has("code") || parsedUrl.searchParams.has("authCode");
 }
 
 export function isValidLocalWorkspaceDirectory(path: string): boolean {
@@ -293,22 +287,9 @@ export function handleDeepLink(
   }
 
   if (isPaymentCallbackUrl(parsedUrl)) {
-    const targetWindow = options.resolveApplicationWindow
-      ? options.resolveApplicationWindow()
-      : (BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0] ?? null);
-    if (targetWindow) {
-      targetWindow.webContents.send(PlatformChannels.PaymentCallback, url);
-      focusDeepLinkTargetWindow(targetWindow);
-      logger.info("[deep-link] 支付回调路由成功", {
-        windowId: targetWindow.webContents.id,
-        host: parsedUrl.hostname,
-        path: parsedUrl.pathname,
-      });
-      return true;
-    }
-
-    pendingPaymentDeepLinkUrl = url;
-    logger.warn("[deep-link] 支付回调暂未命中窗口，先缓存等待 renderer ready", {
+    // fork（F4.1a）：官方账号支付链下线，zcode://payment/callback 不再路由到 renderer，
+    // 也不进入 pending 缓存；只记 info 日志供诊断，不报错弹窗（总纲阶段 4 产品规则）。
+    logger.info("[deep-link] 支付回调已随官方账号下线，忽略此次回调", {
       host: parsedUrl.hostname,
       path: parsedUrl.pathname,
     });
@@ -356,41 +337,13 @@ export function handleDeepLink(
     return false;
   }
 
-  const state = parsedUrl.searchParams.get("state");
-  if (!state) {
-    logger.warn("[deep-link] OAuth 回调缺少 state，忽略此次回调", {
-      protocol: parsedUrl.protocol,
-      host: parsedUrl.hostname,
-      path: parsedUrl.pathname,
-    });
-    return false;
-  }
-
-  const routeTarget = oauthStateToWindow.get(state);
-  const targetWindow = routeTarget
-    ? BrowserWindow.getAllWindows().find((window) => window.webContents.id === routeTarget.windowId)
-    : null;
-  const shouldCompleteOAuthRoute = hasOAuthAuthorizationCode(parsedUrl);
-
-  if (targetWindow) {
-    targetWindow.webContents.send(PlatformChannels.OAuthCallback, url);
-    if (shouldCompleteOAuthRoute) {
-      oauthStateToWindow.delete(state);
-    }
-    focusDeepLinkTargetWindow(targetWindow);
-    logger.info("[deep-link] OAuth 回调路由成功", {
-      state,
-      windowId: targetWindow.webContents.id,
-      provider: routeTarget?.provider,
-      completed: shouldCompleteOAuthRoute,
-    });
-    return true;
-  }
-
-  pendingDeepLinkUrl = url;
-  logger.warn("[deep-link] OAuth 回调未命中目标窗口，先缓存等待 renderer ready", {
-    state,
-    hasRouteTarget: Boolean(routeTarget),
+  // fork（F4.1a）：官方账号 OAuth 下线，zcode://oauth/callback 不再路由到 renderer，
+  // 也不进入 pending 缓存；只记 info 日志供诊断，不报错弹窗（总纲阶段 4 产品规则）。
+  logger.info("[deep-link] OAuth 回调已随官方账号下线，忽略此次回调", {
+    protocol: parsedUrl.protocol,
+    host: parsedUrl.hostname,
+    path: parsedUrl.pathname,
+    hasState: parsedUrl.searchParams.has("state"),
   });
   return false;
 }
@@ -461,7 +414,9 @@ export function registerOAuthState(windowId: number, registration: OAuthStateReg
 export function deliverPendingDeepLink(webContents: WebContents): boolean {
   rendererReadyWebContentsIds.add(webContents.id);
 
-  const hasPendingOAuthCallback = pendingDeepLinkUrl != null;
+  // fork（F4.1a）：OAuth/支付回调不再进入 pending 缓存（收到即忽略），
+  // ready 投递只剩 share import 与 workspace open；返回值保留给
+  // RendererReady 遥测的 hasPendingOAuthCallback 字段，账号下线后恒为 false。
   // pending share import 绑定目标窗口后，只投递给目标窗口（或冷启动时未绑定目标的
   // 条目）；非目标窗口 ready 时保留条目，否则导入会写进错误窗口的 workspace。
   const undeliveredShareImports: typeof pendingShareImports = [];
@@ -473,14 +428,6 @@ export function deliverPendingDeepLink(webContents: WebContents): boolean {
     }
   }
   pendingShareImports.push(...undeliveredShareImports);
-  if (hasPendingOAuthCallback) {
-    webContents.send(PlatformChannels.OAuthCallback, pendingDeepLinkUrl);
-    pendingDeepLinkUrl = null;
-  }
-  if (pendingPaymentDeepLinkUrl) {
-    webContents.send(PlatformChannels.PaymentCallback, pendingPaymentDeepLinkUrl);
-    pendingPaymentDeepLinkUrl = null;
-  }
   if (
     pendingOpenWorkspaceRequest &&
     (pendingOpenWorkspaceRequest.targetWebContentsId == null ||
@@ -489,7 +436,7 @@ export function deliverPendingDeepLink(webContents: WebContents): boolean {
     webContents.send(PlatformChannels.OpenWorkspacePath, pendingOpenWorkspaceRequest.path);
     pendingOpenWorkspaceRequest = null;
   }
-  return hasPendingOAuthCallback;
+  return false;
 }
 
 export function clearOAuthRoutesForWindow(windowId: number): void {

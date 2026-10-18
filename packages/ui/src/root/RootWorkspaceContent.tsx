@@ -212,8 +212,8 @@ export function RootWorkspaceContent({
             onCreateTask={handleCreateTask}
             onOpenWorkspace={handleOpenWorkspace}
             allowOpenWorkspace={allowOpenWorkspace}
-            onLogin={onLogin}
-            onLogout={handleLogout}
+            // fork（F4.1b）：onLogin/onLogout 透传摘除——WorkspaceSettingsLayer/SettingsPage
+            // 的登录/登出入口已下线。
             user={user}
           />
         </ScopedErrorBoundary>

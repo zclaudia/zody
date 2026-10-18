@@ -399,12 +399,11 @@ import { resolveAccountTeamPlanRuntimeMaterial } from "./model-provider/accountP
 import { createAccountProviderCredentialStore } from "./model-provider/accountProviderCredentialStore.js";
 import { createAccountProviderCredentialService } from "./model-provider/accountProviderCredentialService.js";
 import { createAccountProviderRequestAuthService } from "./model-provider/accountProviderRequestAuthService.js";
+import { runOfficialAccountProviderDataMigration } from "./model-provider/officialAccountDataMigration.js";
+import { resolveSubagentStateFile } from "./subagents/subagentStorage.js";
 import {
-  createAccountProviderConfigSource,
-  createCodingPlanFamilyAvailabilityResolver,
   resolveCurrentAccountAccess,
 } from "./model-provider/accountProviderConnectionResolver.js";
-import { bindAccountProviderInvalidation } from "./model-provider/accountProviderInvalidation.js";
 import { AccountProviderApiClient } from "./model-provider/accountProviderApiClient.js";
 import { createAccountProjectTokenClient } from "./model-provider/accountProjectTokenClient.js";
 import { AccountProviderApiKeyResolver } from "./model-provider/accountProviderApiKeyResolver.js";
@@ -555,7 +554,6 @@ import {
   ZCODE_JWT_INVALID_BROADCAST_CHANNEL,
   formatLogPrefix,
   isCredentialDecryptError,
-  isStartPlanModelProviderId,
   OFF_PEAK_PROVIDER_IDS,
   BIGMODEL_PROVIDER_ID,
   type ProviderFamilyDomain,
@@ -1210,6 +1208,11 @@ export function createLocalServices(options: {
   };
   /** Windows desktop-local Host 的 CUA turn 状态投影；其它 authority 会在装配层拒绝。 */
   cuaOperationStateReporter?: CuaOperationStateReporter;
+  /**
+   * fork（F4.1a）：官方账号存量迁移的显式停用口。仅账号链单测（F4.5 删除前）使用，
+   * 生产 Host 一律执行迁移。
+   */
+  disableOfficialAccountDataMigration?: boolean;
 }): ServiceCollection {
   const isDesktopAttachedRemote = options?.serviceAuthorityMode === "desktop-attached-remote";
   // host / remote server 以前直接沿用当前进程环境启动后续服务。
@@ -1429,25 +1432,24 @@ export function createLocalServices(options: {
     // Repository 仅在新 Personal 配置不存在时导入，并保留旧文件以便回滚。
     readLegacyProviders: () => readLegacyZCodeConfigProviders(),
   });
-  const accountProviderConfigSource = createAccountProviderConfigSource({
-    configSource: providerConfigRuntime.configService,
-    readSettings: readAccountProviderSettings,
-    async loadCodingPlanApiKey(providerId, family, accountIdentity, forceRefresh) {
-      if (isStartPlanModelProviderId(providerId)) return null;
-      return accountProviderCredentialService.loadCodingPlanApiKey({
-        providerId,
-        family,
-        accountIdentity,
-        forceRefresh,
-      });
-    },
-    loadAccountIdentity,
-    resolveFamilyAvailability: createCodingPlanFamilyAvailabilityResolver({
-      apiClient,
-      credentialService,
-    }),
-  });
-  const accountProviderRuntimeLog = createServiceLogger("account-provider-runtime");
+  // fork（F4.1a）：官方账号 provider 下线后的一次性存量迁移。createLocalServices 是同步
+  // 装配，迁移以 fire-and-forget 执行：每个存储位置单项容错、零命中零写入（幂等）。
+  // 与 Provider Runtime 启动并发时，旧账号选择在首次解析只会得到「未配置模型」
+  // （account:* provider 已不存在，不会静默改选），迁移落盘后经 personal:updated
+  // 事件刷新 Registry，最终态一致；迁移失败只降级为该项跳过，不允许让 Host 启动失败。
+  // 账号链单测（F4.5 删除前仍需直接断言账号解析行为）可显式停用迁移以隔离种入数据。
+  if (!options?.disableOfficialAccountDataMigration) {
+    void runOfficialAccountProviderDataMigration({
+      personalRepository: providerConfigRuntime.personalRepository,
+      resolveAgentsStateFilePath: () => resolveSubagentStateFile(),
+      credentialsFilePath: resolveCredentialFilePath(resolveAppConfigDir()),
+    }).catch((error) => {
+      providerConfigLog.warn(undefined, "官方账号存量数据迁移未完成", { error });
+    });
+  }
+  // fork（F4.1a）：官方账号 provider 下线，不再向 Provider Runtime 注入账号源。
+  // Runtime 内部回落 EmptyAccountProviderConfigSource（fail-closed 空账号快照），
+  // 模型解析只剩 Built-in 模板与 Personal 自定义 provider（BYOK）。
   const modelSelectionConfiguredDefaultSource = new NodeModelSelectionConfigRepository({
     personalRepository: providerConfigRuntime.personalRepository,
   });
@@ -1474,24 +1476,11 @@ export function createLocalServices(options: {
       }
     }),
   ];
-  const disposeAccountProviderInvalidation = bindAccountProviderInvalidation({
-    onDidUpdateSetting: (listener) => settingService.onDidUpdate(listener),
-    refresh: (reason) => accountProviderConfigSource.refresh(reason),
-  });
-  const accountProviderRefreshErrorDispose = accountProviderConfigSource.onDidRefreshError(
-    (event) => {
-      accountProviderRuntimeLog.warn(undefined, "account provider source refresh failed", {
-        error: event.error,
-        reasons: event.reasons,
-      });
-    },
-  );
   let providerConnectivityAgentService:
     | Pick<IZCodeAgentService, "testModelConnectivity">
     | undefined;
   const providerRuntime = createProviderRuntimeFromConfigRuntime({
     configRuntime: providerConfigRuntime,
-    accountSource: accountProviderConfigSource,
     modelSelectionConfiguredDefaultSource,
     disposeModelSelectionConfiguredDefaultSource: () =>
       modelSelectionConfiguredDefaultSource.dispose(),
@@ -1503,15 +1492,9 @@ export function createLocalServices(options: {
         return providerConnectivityAgentService.testModelConnectivity(input);
       },
     }),
-    disposeAccountSource: () => {
-      disposeAccountProviderInvalidation();
-      accountProviderRefreshErrorDispose();
-      accountProviderConfigSource.dispose();
-    },
   });
   handleOAuthProviderLogout = createOAuthProviderLogoutHandler({
     accountProviderCredentialStore,
-    refreshAccountProviders: (reason: string) => accountProviderConfigSource.refresh(reason),
   });
   // 官方 Server MCP 的凭证解析源。MCP 调用的身份头与 MCP 额度查询（/api/v1/mcp/usage）
   // 必须共用这一份实现，否则两处对"当前选中的 Coding Plan 连接"的判定会分叉。
@@ -1582,7 +1565,6 @@ export function createLocalServices(options: {
   // 只要当前进程已经装配 Provider Runtime，就由该 Environment 自己的 Selection View
   // 决定执行就绪状态。Desktop-attached remote 也读取远端自己的 Config/Account Facts。
   const modelSelectionReadinessSource = providerRuntime.modelSelection;
-  const agentAccountProviderConfigSource = accountProviderConfigSource;
   // ===== Computer Use Helper lifecycle 层（port 自 feat）=====
   // 约束：lifecycle coordinator 懒获取 + 代际 fence（dispose 仅来自显式 workspace 生命周期）；
   // 不创建定时健康探测；Helper restart 尽可能复用 host transport，既有 Agent 的 session、
@@ -2007,9 +1989,6 @@ export function createLocalServices(options: {
           resolveOffPeakTaskService: () => offPeakTaskServiceForAgent,
         };
   const zcodeAgentService = createZCodeAgentService({
-    ...(agentAccountProviderConfigSource
-      ? { accountProviderConfigSource: agentAccountProviderConfigSource }
-      : {}),
     accountRequestAuthService,
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
     authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
@@ -2684,7 +2663,6 @@ export function createLocalServices(options: {
       createProviderProvisioningTarget({
         providerRuntime,
         personalRepository: providerConfigRuntime.personalRepository,
-        accountProviderSource: accountProviderConfigSource,
         credentialService,
         settingService,
         personalConfigFilePath: join(resolveAppConfigDir(), PERSONAL_PROVIDER_CONFIG_FILE_NAME),

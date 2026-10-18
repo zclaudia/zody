@@ -62,15 +62,8 @@ const REMOTE_RUNTIME_ENV_KEYS = [
   "ZCODE_ENDPOINT_ORIGIN",
   "ZCODE_TEST_BASE_URL",
   "ZCODE_PRODUCTION_BASE_URL",
-  "ZAI_OAUTH_ORIGIN",
-  "ZAI_TEST_OAUTH_ORIGIN",
-  "ZAI_PRODUCTION_OAUTH_ORIGIN",
-  "ZAI_BUSINESS_BASE_URL",
-  "ZAI_TEST_BUSINESS_BASE_URL",
-  "ZAI_PRODUCTION_BUSINESS_BASE_URL",
-  "ZAI_OAUTH_CLIENT_ID",
-  "ZAI_TEST_OAUTH_CLIENT_ID",
-  "ZAI_PRODUCTION_OAUTH_CLIENT_ID",
+  // fork（F4.1a）：官方账号下线后不再向远端转发 ZAI_*（OAuth/Business/ClientId）；
+  // 远端也不再需要官方账号换证与 Business 计费链的端点信息。
   // Desktop Main 已完成的单功能灰度结果；远端 server 只消费，不重新分桶。
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
   // 同上：本地覆盖由 Desktop Main 按构建档位写定（buildHostProcessEnv），

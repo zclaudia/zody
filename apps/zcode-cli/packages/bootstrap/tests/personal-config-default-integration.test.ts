@@ -4,10 +4,11 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import type { SharedZCodeCredentialStore } from "@zcode/adapters/auth";
-import { createSharedZCodeCredentialStore } from "@zcode/adapters/auth";
-import { NodePersonalProviderConfigRepository } from "@zcode/provider-node";
+import {
+  NodeModelSelectionConfigRepository,
+  NodePersonalProviderConfigRepository,
+} from "@zcode/provider-node";
 import { ProviderConfig } from "@zcode/provider";
-import { configureCodingPlanApiKey } from "../src/auth-login.js";
 import { startProcessProviderRegistryRuntime } from "../src/app/process-provider-registry-runtime.js";
 import { importLegacyCliPersonalProviderConfig } from "../src/app/legacy-cli-personal-provider-config-importer.js";
 
@@ -19,17 +20,14 @@ afterEach(async () => {
 });
 
 describe("Todo104 CLI 同文件默认选择", () => {
-  it("登录沿用注入的 Personal 路径，更新默认选择不覆盖 Provider 内容", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "todo104-cli-login-"));
+  it("同一 Personal 文件更新默认选择不覆盖 Provider 内容", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "todo104-cli-default-"));
     directories.push(directory);
     const personalPath = join(directory, "injected-personal.json");
-    const env = {
-      ZCODE_CREDENTIAL_SECRET: "todo104-fixture-only",
-      ZCODE_PERSONAL_PROVIDER_CONFIG_FILE: personalPath,
-      ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: fileURLToPath(
-        new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
-      ),
-    };
+    // F4.1a 已从 builtin 配置删除 account:* 官方账号 provider，CLI 登录链
+    // （configureCodingPlanApiKey，属 F4.9 删除范围）不再能从真实 builtin 物化账号
+    // Provider；本用例保留其持久化语义：默认选择与已有 Provider 内容在同一 Personal
+    // 文件中共存，写默认选择不得清掉 Provider 定义。
     const repository = new NodePersonalProviderConfigRepository({
       filePath: personalPath,
       pollingIntervalMs: false,
@@ -43,21 +41,14 @@ describe("Todo104 CLI 同文件默认选择", () => {
           config: new ProviderConfig({ personalModelIds: ["model-a"] }),
         }),
       }));
-      const credentialStore = createSharedZCodeCredentialStore({
-        baseDir: join(directory, "credentials"),
-        env,
-      });
-      const result = await configureCodingPlanApiKey({
-        apiKey: "fixture-key",
-        providerId: "bigmodel",
-        credentialStore,
-        env,
-      });
-      expect(result.configPath).toBe(personalPath);
+      const selection = new NodeModelSelectionConfigRepository({ personalRepository: repository });
+      try {
+        await selection.saveConfiguredDefault({ providerId: "custom", modelId: "model-a" });
+      } finally {
+        selection.dispose();
+      }
       const stored = await repository.read();
-      expect(stored.defaultModelSelection?.providerId).toBe(
-        "account:bigmodel-individual-coding-plan",
-      );
+      expect(stored.defaultModelSelection).toEqual({ providerId: "custom", modelId: "model-a" });
       expect(stored.providers.getRule("custom")?.providerName).toBe("Keep Me");
       expect(stored.providers.get("custom")?.personalModelIds).toEqual(["model-a"]);
     } finally {

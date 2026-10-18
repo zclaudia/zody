@@ -3264,9 +3264,19 @@ function seedE2EStartupState(specs: string[] = []) {
     E2E_APP_SETTINGS_FILE,
     JSON.stringify(
       {
-        providerFamilyDomain: shouldUseBigmodelAuth ? "bigmodel" : "zai",
+        // F4.1c：基座默认「无官方账号」——不再种入 OAuth/JWT 凭据（见下方 credentials
+        // 写入与 helpers/e2e-startup-credentials.ts），模型来源只剩 seedUpstreamE2EModelConfig
+        // 种入的本地桩 BYOK provider。
+        // fork（F4.1a）：首启登录门已改为 `!hasUsableProvider`，默认基座不再种入
+        // providerFamilyDomain（该域只服务已下线的官方账号链）；升级场景 spec 需要模拟
+        // 旧版本遗留的 providerFamilyDomain（迁移保留可解析），待删清单里的 Coding Plan
+        // 团队/升级 spec 继续以 bigmodel 域启动，随对应删除任务一起移除。
         providerFamilyDomainMigrated: true,
-        providerFamilyDomainUpdatedAt: now,
+        ...(shouldUseBigmodelAuth
+          ? { providerFamilyDomain: "bigmodel", providerFamilyDomainUpdatedAt: now }
+          : isOfficialAccountRemovalUpgradeSpec(specs)
+            ? { providerFamilyDomain: "zai", providerFamilyDomainUpdatedAt: now }
+            : {}),
         ...(modelProviderRegressionFixture
           ? {
               recentProjects: [legacyDefaultProjectPath, ...passiveWorkspacePaths],
@@ -3342,6 +3352,9 @@ function seedE2EStartupState(specs: string[] = []) {
               ? createCorruptOAuthCredentialSeed(authProviderId)
               : jwtExpiryReauthenticationSpec
                 ? createExpiredJwtOAuthCredentialSeed(authProviderId)
+                // F4.1c：默认基座不再种入任何 OAuth/JWT 凭据（无官方账号）；仅待删清单
+                // spec（Coding Plan 团队/升级、营销、JWT 专项等）保留原账号种子。模型来源
+                // 统一是 seedUpstreamE2EModelConfig 种入的本地桩 BYOK provider。
                 : createE2EStartupCredentialSeed({
                     specs,
                     legacyAuthToken: E2E_AUTH_TOKEN,
@@ -3367,6 +3380,11 @@ function seedE2EStartupState(specs: string[] = []) {
 
 function isOAuthCredentialRecoverySpec(specs: string[] = []) {
   return workerSpecsContain(specs, OAUTH_CREDENTIAL_RECOVERY_SPEC);
+}
+
+// fork（F4.1a）：「从带官方账号数据的旧版本升级」场景（official-account-removal-upgrade.test.ts）。
+function isOfficialAccountRemovalUpgradeSpec(specs: string[] = []) {
+  return workerSpecsContain(specs, "official-account-removal-upgrade.test.ts");
 }
 
 function isJwtExpiryReauthenticationSpec(specs: string[] = []) {
@@ -4412,6 +4430,24 @@ async function seedUpstreamE2EModelConfig(specs: string[] = []) {
       ? { options: { reasoningLevel: readE2EThoughtLevel() } }
       : {}),
   });
+  // fork（F4.1a）：升级场景需要种入「旧版本遗留的官方账号选择」，让 Host 启动迁移
+  // 在真实启动路径上执行清理；BYOK 桩仍是最终可用的 provider，不得被 account 选择替代。
+  if (isOfficialAccountRemovalUpgradeSpec(specs)) {
+    await seedPersonalDefaultModelSelection(E2E_APP_PROVIDER_CONFIG_FILE, {
+      providerId: "account:zai-individual-coding-plan",
+      modelId: "GLM-5.3",
+    });
+    await mkdir(E2E_APP_CONFIG_DIR, { recursive: true });
+    await writeFile(
+      resolve(E2E_APP_CONFIG_DIR, "agents-state.json"),
+      `${JSON.stringify({
+        builtInModelSelectionOverrides: {
+          "general-purpose": { providerId: "account:zai-start-plan", modelId: "GLM-5.2" },
+        },
+      }, null, 2)}\n`,
+      "utf-8",
+    );
+  }
 }
 
 function buildUpstreamE2EAnthropicBaseUrl() {

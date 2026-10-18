@@ -152,16 +152,8 @@ describe("@zcode/provider-node", () => {
       supportsMidConversationSystem: true,
       supportsNativeWebSearch: false,
     });
-    expect(snapshot.providers.get("account:zai-start-plan")?.access).toMatchObject({
-      type: "zhipu-account",
-      accountType: "zai",
-      mode: "start-plan",
-    });
-    expect(snapshot.providers.get("account:zai-offpeak-idle-plan")?.access).toMatchObject({
-      type: "zhipu-account",
-      accountType: "zai",
-      mode: "off-peak",
-    });
+    // fork（F4.1a）：官方账号 provider 下线，Built-in 不再声明 zhipu-account Provider；
+    // access 事实只剩模板上的 api-key / zhipu-coding-plan-api-key。
     expect(snapshot.providerTemplates?.get("deepseek")?.config.access).toMatchObject({
       type: "api-key",
     });

@@ -195,7 +195,8 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
 }));
 
 vi.mock("@/settings/CodingPlanUpgradeDialogProvider.js", () => ({
-  useCodingPlanUpgradeDialog: () => ({ openCodingPlanUpgrade: vi.fn() }),
+  // fork（F4.1b）：组件改用可选上下文；测试注入与 Provider 挂载等价的假上下文。
+  useOptionalCodingPlanUpgradeDialog: () => ({ openCodingPlanUpgrade: vi.fn() }),
 }));
 
 vi.mock("@/settings/model-provider-section/useCodingPlanEntitlements.js", () => ({
@@ -919,7 +920,7 @@ describe("V4ComposerModelControls recovery", () => {
     expect(captured.modelSelectProps).toBeNull();
   });
 
-  it("passes Coding Plan usage only when the current connection is the selected OAuth Coding Plan", () => {
+  it("fork F4.1b：额度条入口摘除后，选中 OAuth Coding Plan 连接也不传 codingPlanUsageRemaining", () => {
     addAccountProviderAccess(
       BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
       { accountType: "zai", mode: "individual-coding-plan" },
@@ -932,19 +933,6 @@ describe("V4ComposerModelControls recovery", () => {
         error: null,
       },
     };
-
-    renderToolbarMarkup({
-      config: {
-        provider: BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
-        model: "glm-5",
-        thought: "medium",
-        thoughtLevels: ["medium"],
-        followupMode: "queue",
-        mode: "build",
-      },
-      usage: null,
-    });
-    expect(latestUsageProps().codingPlanUsageRemaining).toBeUndefined();
 
     captured.usageProps = [];
     mocks.settings = {
@@ -966,9 +954,7 @@ describe("V4ComposerModelControls recovery", () => {
     });
 
     const props = latestUsageProps();
-    expect(props.codingPlanUsageRemaining).toMatchObject({
-      selectedProviderId: BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
-    });
+    expect(props.codingPlanUsageRemaining).toBeUndefined();
     expect(props.startPlanBalance).toBeUndefined();
   });
 
@@ -1002,52 +988,38 @@ describe("V4ComposerModelControls recovery", () => {
     expect(latestUsageProps().codingPlanUsageRemaining).toBeUndefined();
   });
 
-  it.each([
-    undefined,
-    { kind: "start-plan" },
-    { kind: "individual-coding-plan" },
-    { kind: "team-coding-plan", organizationId: "org", projectId: "project", productId: "plan" },
-  ] as const)(
-    "Start balance follows composer selection independent of saved connection %j",
-    (selection) => {
-      mocks.codingPlanEntitlements = {
-        [BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan]: {
-          snapshot: createActiveEntitlement(BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan),
-          loading: false,
-          error: null,
-        },
-      };
-      mocks.settings = {
-        providerFamilyConnectionSelections: {
-          zai: selection,
-        },
-        providerFamilyDomain: {},
-      };
-
-      renderToolbarMarkup({
-        config: {
-          provider: BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan,
-          model: "glm-5",
-          thought: "medium",
-          thoughtLevels: ["medium"],
-          followupMode: "queue",
-          mode: "build",
-        },
-        usage: null,
-      });
-
-      const props = latestUsageProps();
-      expect(props.codingPlanUsageRemaining).toBeUndefined();
-      expect(props.startPlanBalance).toMatchObject({
+  // fork（F4.1b）：Start Plan 余额条入口摘除后，任何连接方式都不再传 startPlanBalance。
+  it("fork F4.1b：Start Plan 余额条入口摘除，任何连接方式都不传 startPlanBalance", () => {
+    mocks.codingPlanEntitlements = {
+      [BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan]: {
+        snapshot: createActiveEntitlement(BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan),
         loading: false,
-        snapshot: {
-          provider: {
-            id: BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan,
-          },
-        },
-      });
-    },
-  );
+        error: null,
+      },
+    };
+    mocks.settings = {
+      providerFamilyConnectionSelections: {
+        zai: { kind: "start-plan" },
+      },
+      providerFamilyDomain: {},
+    };
+
+    renderToolbarMarkup({
+      config: {
+        provider: BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan,
+        model: "glm-5",
+        thought: "medium",
+        thoughtLevels: ["medium"],
+        followupMode: "queue",
+        mode: "build",
+      },
+      usage: null,
+    });
+
+    const props = latestUsageProps();
+    expect(props.codingPlanUsageRemaining).toBeUndefined();
+    expect(props.startPlanBalance).toBeUndefined();
+  });
 
   it("does not pass Start Plan balance when the entitlement hook hides fallback balance", () => {
     mocks.codingPlanEntitlements = {
@@ -1084,7 +1056,7 @@ describe("V4ComposerModelControls recovery", () => {
     expect(latestUsageProps().startPlanBalance).toBeUndefined();
   });
 
-  it("attaches the hover access refresh entry when the Start Plan entitlement is enabled", () => {
+  it("fork F4.1b：Start Plan 余额条入口摘除，entitlement 启用也不再挂 hover access 刷新入口", () => {
     mocks.codingPlanEntitlements = {
       [BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan]: {
         snapshot: null,
@@ -1112,16 +1084,13 @@ describe("V4ComposerModelControls recovery", () => {
       usage: null,
     });
 
-    const startPlanBalance = latestUsageProps().startPlanBalance as {
-      onAccess?: () => unknown;
-    };
-    // 修复原因：start plan 用户原先没有 hover onAccess 入口，context 面板从不主动刷新今日余额。
-    expect(typeof startPlanBalance?.onAccess).toBe("function");
-    expect(startPlanBalance.onAccess).not.toBeNull();
+    // fork（F4.1b）：余额条入口摘除后 startPlanBalance 恒不传，hover access 刷新入口随之消失。
+    expect(latestUsageProps().startPlanBalance).toBeUndefined();
   });
 
-  it("recovers a Team Plan usage source from entitlement snapshot when products are not hydrated", () => {
+  it("fork F4.1b：额度条入口摘除后，Team Plan 连接同样不传 codingPlanUsageRemaining", () => {
     const teamSourceId = "team:bigmodel:team-pro:org-1:project-1";
+    void teamSourceId;
     addAccountProviderAccess(BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan, {
       accountType: "bigmodel",
       mode: "team-coding-plan",
@@ -1189,9 +1158,7 @@ describe("V4ComposerModelControls recovery", () => {
       usage: null,
     });
 
-    expect(latestUsageProps().codingPlanUsageRemaining).toMatchObject({
-      selectedProviderId: teamSourceId,
-    });
+    expect(latestUsageProps().codingPlanUsageRemaining).toBeUndefined();
   });
 
   it("routes custom model selection to the recovery callback when configOptions failed", async () => {

@@ -66,7 +66,6 @@ import { resolveAppWorkspaceRpcTarget } from "@/app-shell/workspaceRpcTarget.js"
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import { useWorkspaceTerminalTaskNotifications } from "@/hooks/useTaskNotifications.js";
 import { useMarketingTaskCompletionRefresh } from "@/components/marketing-touch/useMarketingTaskCompletionRefresh.js";
-import { useOffPeakTaskNotifications } from "@/hooks/useOffPeakTaskNotifications.js";
 import type { AppProps, WorkspaceMainView } from "@/app-shell/types.js";
 import type {
   ChatSearchResultHighlightRequest,
@@ -100,8 +99,6 @@ export function App({
   onSelectRemoteProject,
   onCancelRemoteProject,
   onReconnectRemoteWorkspace,
-  onLogout,
-  onLogin,
   user,
   reconnectingRemoteWorkspaceKeys,
   remoteWorkspaceErrorByWorkspaceKey,
@@ -298,13 +295,8 @@ export function App({
     platform,
     formatMessage: intl.formatMessage,
   });
-  // 闲时任务终态/等确认通知：仅桌面本地链路，main 进程按 status:taskId 去重多窗口重复。
-  useOffPeakTaskNotifications({
-    offPeakTaskService: services.offPeakTaskService,
-    platform,
-    enabled: Boolean(notificationEnabled && isDesktop),
-    formatMessage: intl.formatMessage,
-  });
+  // fork（F4.1b）：useOffPeakTaskNotifications（闲时任务系统通知轮询）挂载摘除；
+  // hook 文件留给 F4.3 删除。
   const lastHandledDraftSidePaneCloseRef = useRef({
     workspaceKey,
     draftFocusVersion,
@@ -1094,8 +1086,8 @@ export function App({
           openFeedback: handleOpenFeedback,
           openCommunity: handleOpenCommunity,
           openProductDocs: handleOpenProductDocs,
-          login: onLogin,
-          logout: onLogout,
+          // fork（F4.1b）：quick pick 的 login/logout 命令随官方账号入口摘除；
+          // handlers 缺省时 createQuickPickCommands 不再产出对应命令。
           toggleSidebar: () => runVisibleWorkspaceCommand(handleToggleSidebar),
           toggleTerminal: () => runVisibleWorkspaceCommand(handleToggleTerminalIfWritable),
           togglePreview: () => runVisibleWorkspaceCommand(handleToggleBrowser),
@@ -1123,8 +1115,6 @@ export function App({
       isSidebarVisible,
       newTaskShortcutLabel,
       handleCreateTaskIfWritable,
-      onLogin,
-      onLogout,
       onOpenWorkspace,
       runVisibleWorkspaceCommand,
       openSettingsTab,
@@ -1210,8 +1200,7 @@ export function App({
           onSelectRemoteProject={onSelectRemoteProject}
           onCancelRemoteProject={onCancelRemoteProject}
           onReconnectRemoteWorkspace={onReconnectRemoteWorkspace}
-          onLogout={onLogout}
-          onLogin={onLogin}
+          // fork（F4.1b）：onLogout/onLogin 传递摘除（官方账号入口下线）。
           user={user}
           reconnectingRemoteWorkspaceKeys={reconnectingRemoteWorkspaceKeys}
           remoteWorkspaceErrorByWorkspaceKey={remoteWorkspaceErrorByWorkspaceKey}

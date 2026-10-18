@@ -309,8 +309,7 @@ export const WorkspaceShellLayout = memo(
     onSelectRemoteProject,
     onCancelRemoteProject,
     onReconnectRemoteWorkspace,
-    onLogout,
-    onLogin,
+    // fork（F4.1b）：onLogout/onLogin 不再解构——官方账号入口下线，链路类型留待 F4.5 清理。
     user,
     reconnectingRemoteWorkspaceKeys,
     remoteWorkspaceErrorByWorkspaceKey,
@@ -2440,8 +2439,7 @@ export const WorkspaceShellLayout = memo(
                     reconnectingRemoteWorkspaceLogsByWorkspaceKey={
                       reconnectingRemoteWorkspaceLogsByWorkspaceKey
                     }
-                    onLogout={onLogout}
-                    onLogin={onLogin}
+                    // fork（F4.1b）：onLogout/onLogin 不再传给侧栏（入口摘除）。
                     user={user}
                     isDesktop={isDesktop}
                     isWebRemoteControl={isWebRemoteControlShell}

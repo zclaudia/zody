@@ -6,7 +6,7 @@ import {
 } from "../zcode-protocol-v4/task-list-session-membership.js";
 import { resolveEffectiveBashShellSelection } from "@zcode/adapters/exec";
 import { inputIntentMetadata } from "../zcode-protocol-v4/commands/input-intent.js";
-import { createModelExecutionContext } from "./model-execution.js";
+import { createModelExecutionContext } from "../model-execution.js";
 import type { SendInputOptions } from "../app/types.js";
 import { repairPersistedRemoteSessionPaths, type TurnAttachment } from "@zcode/core";
 import {

@@ -16,8 +16,9 @@ describe("listRegistryBackedModels", () => {
     const registry = new ProviderRegistry([
       {
         providerId: "provider-a",
+        // 展示名是规则层字段（providerName）；ProviderConfig 的旧 label 字段已不存在。
+        providerName: "Provider A",
         config: createApiKeyProviderConfig({
-          label: "Provider A",
           models: ["model-a", "model-b"],
         }),
         models: [

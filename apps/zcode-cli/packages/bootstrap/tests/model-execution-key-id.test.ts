@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { zcodeSessionSendParamsSchema } from "@zcode/shared";
-import { createModelExecutionContext } from "../src/zcode-protocol/model-execution.js";
+import { createModelExecutionContext } from "../src/model-execution.js";
 
 describe("请求期 Key ID 执行上下文", () => {
   it("协议与冻结投影保留真实 ID，不将其加入模型 Header", async () => {

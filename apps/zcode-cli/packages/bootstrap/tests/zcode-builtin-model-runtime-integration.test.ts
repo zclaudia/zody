@@ -8,14 +8,13 @@ import {
   ProviderConfigMap,
   ProviderConfigResolver,
   ProviderRegistry,
-  ZhipuAccountAccessConfig,
   type ProviderId,
 } from "@zcode/provider";
 import {
   NodeZCodeBuiltinProviderConfigSource,
   type ZCodeBuiltinProviderConfigSnapshot,
 } from "@zcode/provider-node";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ApiProviderModelRuntime } from "../src/app/provider-registry-model-runtime.js";
 
 const zcodeBuiltinProviderConfigFilePath = fileURLToPath(
@@ -34,19 +33,30 @@ beforeAll(async () => {
 afterAll(() => source.dispose());
 
 describe("真实 ZCode Built-in Config 到 Active Model", () => {
+  // F4.1a 已从 config/provider/zcode-builtin.json 删除全部 account:* 官方账号 provider，
+  // 以下两个依赖真实 builtin 账号 provider 的用例按语义删除：
+  // -「Account 约束 Built-in 成员后仍由 Personal Overlay 最后覆盖」引用 account:zai-start-plan
+  //   （start-plan 属 F4.5 删除范围）；
+  // -「隐藏 Request Auth Provider 仍由普通 Registry 精确创建 Model」引用
+  //   account:zai-offpeak-idle-plan（off-peak 属 F4.3 删除范围）。
+  // builtin 配置不可能再物化这两类 Provider，删除而非改用 fixture 重造账号数据。
+
   it("API Key Personal Overlay 经 Registry 原样装配到 Adapter", () => {
     const providerId = "zai-api";
-    const modelId = "glm-5.3";
+    // 模型 ID 与 builtin 模板名单一致（大小写敏感）。
+    const modelId = "GLM-5.3";
+    // templateId 是规则层字段：必须用 ProviderConfigRule 形式声明，元组形式会丢弃
+    // templateId 导致 builtin 模板（api/baseUrl）不参与实例化。
     const registry = resolveOneBuiltinProvider(providerId, {
       personalProviders: new ProviderConfigMap([
-        [
+        {
           providerId,
-          new ProviderConfig({
-            templateId: "zai-api",
+          templateId: "zai-api",
+          config: new ProviderConfig({
             group: "standard-personal",
             access: new ApiKeyAccessConfig({ apiKey: "test-zai-api-key" }),
           }),
-        ],
+        },
       ]),
     });
     const capture = captureRuntime(registry);
@@ -71,76 +81,6 @@ describe("真实 ZCode Built-in Config 到 Active Model", () => {
         },
       },
     });
-  });
-
-  it("Account 约束 Built-in 成员后仍由 Personal Overlay 最后覆盖", () => {
-    const providerId = "account:zai-start-plan";
-    const modelId = "GLM-5.2";
-    const registry = resolveOneBuiltinProvider(providerId, {
-      accountProviders: new ProviderConfigMap([
-        [
-          providerId,
-          new ProviderConfig({
-            builtinModelIds: [modelId],
-            access: new ZhipuAccountAccessConfig({ entitled: true }),
-          }),
-        ],
-      ]),
-      personalProviders: new ProviderConfigMap([
-        [providerId, new ProviderConfig({ label: "Personal final label" })],
-      ]),
-    });
-    const capture = captureRuntime(registry);
-
-    capture.runtime.modelFactory({
-      selection: selectionWithHighestReasoning(registry, providerId, modelId),
-    });
-
-    expect(registry.getProvider(providerId)?.models.map(({ modelId: id }) => id)).toEqual([
-      modelId,
-    ]);
-    expect(capture.created[0]?.providerConfig).toMatchObject({
-      label: "Personal final label",
-      access: {
-        type: "zhipu-account",
-        accountType: "zai",
-        mode: "start-plan",
-      },
-    });
-    expect(capture.created[0]?.modelConfig).toBe(registry.getModel(providerId, modelId)?.config);
-  });
-
-  it("隐藏 Request Auth Provider 仍由普通 Registry 精确创建 Model", () => {
-    const providerId = "account:zai-offpeak-idle-plan";
-    const modelId = "GLM-5.2";
-    const registry = resolveOneBuiltinProvider(providerId, {
-      accountProviders: new ProviderConfigMap([
-        [
-          providerId,
-          new ProviderConfig({
-            access: new ZhipuAccountAccessConfig({ entitled: true }),
-          }),
-        ],
-      ]),
-    });
-    const capture = captureRuntime(registry);
-    const requestAuthSource = { resolve: vi.fn() };
-
-    capture.runtime.modelFactory({
-      selection: selectionWithHighestReasoning(registry, providerId, modelId),
-      requestDependencies: { requestAuth: { source: requestAuthSource } },
-    });
-
-    expect(registry.getView().providers[0]).toMatchObject({
-      providerId,
-      config: {
-        visibility: "hidden",
-        access: { type: "zhipu-account", accountType: "zai", mode: "off-peak" },
-      },
-    });
-    expect(capture.created[0]?.requestDependencies?.requestAuth?.source).toBe(requestAuthSource);
-    expect(capture.created[0]?.providerConfig).toBe(registry.getProvider(providerId)?.config);
-    expect(capture.created[0]?.modelConfig).toBe(registry.getModel(providerId, modelId)?.config);
   });
 });
 

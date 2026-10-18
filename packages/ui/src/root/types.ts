@@ -111,7 +111,7 @@ export interface WorkspaceSettingsLayerProps {
   onCreateTask?: (request?: CreateTaskRequest) => void;
   onOpenWorkspace?: () => void;
   allowOpenWorkspace?: RootProps["allowOpenWorkspace"];
-  onLogin?: () => void;
-  onLogout?: () => void;
+  // fork（F4.1b）：onLogin/onLogout 字段摘除——SettingsPage 的登录/登出入口已下线，
+  // 设置层链路不再透传账号入口（AppProps 上的同名残留字段随 F4.5 链路清理）。
   user?: UserInfo | null;
 }
