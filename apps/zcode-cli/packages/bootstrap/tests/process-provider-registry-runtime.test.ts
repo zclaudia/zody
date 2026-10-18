@@ -66,6 +66,9 @@ describe("process provider registry runtime", () => {
       ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE: bundled,
       // fork：远程刷新默认关闭，此处显式开启以验证机制本身。
       ZCODE_BUILTIN_REMOTE_REFRESH: "1",
+      // fork（F3.1）：默认端点为空（未配置）时远端刷新会被关闭，
+      // 因此显式注入测试端点，验证下载与 Release 跟进机制本身。
+      ZCODE_BASE_URL: "https://endpoint.example.test",
     };
     const runtime = await startProcessProviderRegistryRuntime(env, {
       standalone: {
