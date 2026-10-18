@@ -3,22 +3,14 @@ import {
   recordRequestSecurityCaptureMode,
   requestSecurityWorkerEnv,
   requestSecurityEndpointEnv,
-  restoreRequestSecurityEndpointEnv,
-  requestSecurityClientConfig,
-  requestSecurityAgentConfig,
   requestSecuritySpecTimeout,
   startRequestSecurityFixture,
   stopRequestSecurityFixture,
 } from "./test/e2e/helpers/request-security-edition/index.js";
-import {
-  presentationResponse,
-  type EntitlementPresentation,
-} from "./test/e2e/fixtures/entitlement-presentation.js";
 /* eslint-disable max-lines -- WDIO 配置需要集中维护 Electron、Xvfb、代理和容器 demo 参数，拆开会让测试入口更难追踪。 */
 import { execFile, execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import type { ServerResponse } from "node:http";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
@@ -27,10 +19,6 @@ import {
   withE2ESourceEvidence,
 } from "./test/e2e/reporting/e2e-source-evidence.js";
 import { config as loadDotenv } from "dotenv";
-import {
-  PROVIDER_RESPONSIVE_TEAM_NAME,
-  buildProviderResponsiveStartBalance,
-} from "./test/e2e/fixtures/provider-family-responsive.js";
 import {
   startUpstreamReplayServer,
   type UpstreamReplayServer,
@@ -104,11 +92,6 @@ import {
   startModelContextBudgetConfigMockServer,
   type ModelContextBudgetConfigMockServer,
 } from "./test/e2e/helpers/model-context-budget-config-mock-server.js";
-import {
-  MODEL_PROVIDER_CATALOG_PAYLOAD,
-  resolveSubagentLoginCatalogConfigVersion,
-  resolveSubagentLoginCatalogPayload,
-} from "./test/e2e/helpers/model-provider-catalog-mock-server.js";
 // fork（F4.3）：client-scenes-mock-server（off-peak 自动化首页布局 spec 专属 fixture）随闲时任务全链路删除。
 import {
   resolvePluginCdnZipMarketplaceLastUpdated,
@@ -314,13 +297,6 @@ const TOOL_ERROR_SURFACE_HEALTHY_AGENT_NAME = "e2e-healthy-error-reviewer";
 // 回放模式使用本地回放服务器，实际生效的地址经 E2E_PROVIDER_RUNTIME_BASE_URL 传给各测试进程。
 const E2E_PROVIDER_UPSTREAM_BASE_URL = process.env.E2E_PROVIDER_BASE_URL?.trim() ?? "";
 const E2E_PROVIDER_REPLAY_API_KEY = "e2e-fixture-key";
-const CODING_PLAN_MODEL_SSE_BODY =
-  'event: message_start\ndata: {"type":"message_start","message":{"id":"coding-plan-e2e","type":"message","role":"assistant","content":[],"model":"glm-e2e","stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":128,"output_tokens":0}}}\n\n' +
-  'event: content_block_start\ndata: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}\n\n' +
-  'event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"coding-plan-e2e-ok"}}\n\n' +
-  'event: content_block_stop\ndata: {"type":"content_block_stop","index":0}\n\n' +
-  'event: message_delta\ndata: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"output_tokens":12}}\n\n' +
-  'event: message_stop\ndata: {"type":"message_stop"}\n\n';
 const E2E_AUTH_PROVIDER_ID = "zai";
 const E2E_AUTH_TOKEN = "e2e-oauth-token";
 const E2E_USER_PROFILE = {
@@ -1079,12 +1055,6 @@ async function startUpstreamE2EHttp(specs: string[] = []) {
   writeUpstreamE2ERuntimeFile("replay", upstreamReplayServer.baseUrl);
 }
 
-function writeJson(response: ServerResponse, payload: unknown, statusCode = 200) {
-  response.statusCode = statusCode;
-  response.setHeader("content-type", "application/json; charset=utf-8");
-  response.end(JSON.stringify(payload));
-}
-
 async function startUpstreamCaptureProxy() {
   assertUpstreamCaptureConfig();
   const apiKey = readE2EProviderApiKey();
@@ -1149,10 +1119,6 @@ async function stopUpstreamE2EHttp() {
     await upstreamReplayServer.stop();
     upstreamReplayServer = null;
   }
-}
-
-function restoreE2EProviderEndpointEnv() {
-  restoreRequestSecurityEndpointEnv(process.env, e2eProviderPresetName, upstreamE2EHttpMode);
 }
 
 async function startModelContextBudgetConfigE2EMock(specs: string[] = []) {
@@ -2046,6 +2012,467 @@ function isOfficialAccountRemovalUpgradeSpec(specs: string[] = []) {
 
 function isJwtExpiryReauthenticationSpec(specs: string[] = []) {
   return workerSpecsContain(specs, JWT_EXPIRY_REAUTHENTICATION_SPEC);
+}
+
+function usesProviderReadinessColdStartFixture(specs: string[] = []) {
+  return (
+    workerSpecsContain(specs, PROVIDER_READINESS_AGENT_STARTUP_SPEC) ||
+    workerSpecsContain(specs, WINDOWS_AGENT_METRIC_PROBE_ABSENCE_SPEC)
+  );
+}
+
+function usesContextWindowColdResumeFixture(specs: string[] = []) {
+  return workerSpecsContain(specs, CONTEXT_WINDOW_COLD_RESUME_SPEC);
+}
+
+function usesTaskIndexRowAuthorityFixture(specs: string[] = []) {
+  return workerSpecsContain(specs, TASK_INDEX_ROW_AUTHORITY_SPEC);
+}
+
+function usesGroupedHeaderPinVisibilityFixture(specs: string[] = []) {
+  return workerSpecsContain(specs, GROUPED_HEADER_PIN_VISIBILITY_SPEC);
+}
+
+function usesGitReviewEntryFixture(specs: string[] = []) {
+  return workerSpecsContain(specs, GIT_REVIEW_ENTRY_SPEC);
+}
+
+async function seedE2EGitReviewEntryWorkspace(specs: string[] = []) {
+  if (!usesGitReviewEntryFixture(specs)) return;
+
+  const workspacePath = resolve(E2E_HOME_DIR, "ZCodeProject");
+  const caseRoot = resolve(workspacePath, ".zcode-e2e/conversation-session-git-review-entry");
+  await mkdir(caseRoot, { recursive: true });
+  await runGitReviewEntryCommand(workspacePath, ["init"]);
+  await runGitReviewEntryCommand(workspacePath, ["checkout", "-B", "main"]);
+  await writeFile(
+    resolve(caseRoot, "status-panel-review.txt"),
+    "status panel Git review e2e fixture\n",
+    "utf8",
+  );
+}
+
+async function runGitReviewEntryCommand(cwd: string, args: string[]) {
+  await execFileAsync(process.env.ZCODE_GIT_BINARY?.trim() || "git", args, {
+    cwd,
+    encoding: "utf8",
+    windowsHide: true,
+  });
+}
+
+function createCorruptOAuthCredentialSeed(authProviderId: string): Record<string, string> {
+  const corruptEncryptedValue = "enc:v1:bad.bad.bad";
+  return {
+    // Bugfix: 这个 spec 需要冷启动复现线上“密文存在但当前机器无法解密”的状态；
+    // 只损坏 active provider 就足以触发 OAuth 会话清理，并验证用户仍能看到登录入口。
+    "oauth:active_provider": corruptEncryptedValue,
+    [`oauth:${authProviderId}:access_token`]: "stale-access-token",
+    [`oauth:${authProviderId}:refresh_token`]: "stale-refresh-token",
+    [`oauth:${authProviderId}:user_info`]: JSON.stringify(E2E_USER_PROFILE),
+    [`oauth:${BIGMODEL_PROVIDER_ID}:access_token`]: "stale-bigmodel-access-token",
+    [`oauth:${BIGMODEL_PROVIDER_ID}:refresh_token`]: "stale-bigmodel-refresh-token",
+    [`oauth:${BIGMODEL_PROVIDER_ID}:user_info`]: JSON.stringify(E2E_USER_PROFILE),
+    zcodejwttoken: "stale-zcode-jwt-token",
+  };
+}
+
+function createExpiredJwtOAuthCredentialSeed(authProviderId: string): Record<string, string> {
+  return {
+    "oauth:active_provider": authProviderId,
+    [`oauth:${authProviderId}:access_token`]: "expired-session-access-token",
+    [`oauth:${authProviderId}:refresh_token`]: "expired-session-refresh-token",
+    [`oauth:${authProviderId}:user_info`]: JSON.stringify(E2E_USER_PROFILE),
+    // Bug 回归 fixture：exp=1 明确早于任意测试运行时间；客户端只解析 exp，
+    // 不验证这枚本地测试 JWT 的签名。
+    zcodejwttoken: "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjF9.e2e",
+  };
+}
+
+function shouldSeedGuideInteractionBehavior(specs: string[] = []) {
+  return specs.some(
+    (arg) =>
+      arg.includes("conversation-session-running-guide-steer.test.ts") ||
+      arg.includes("conversation-session-background-guide-steer.test.ts"),
+  );
+}
+
+// 插件 MCP skill 生命周期 spec 的 spec 名 → seed 状态映射。
+// 状态 A 不写任何 plugin 记录；状态 B 装入并启用；状态 C 装入但通过
+// `config.json#plugins.enabledPlugins[id] = false` 关闭。读取顺序：
+// ZCODE_E2E_PLUGIN_MCP_SKILL_STATE 环境变量 > spec 文件名约定。
+const PLUGIN_MCP_SKILL_SPEC_PATTERN =
+  /conversation-session-plugin-mcp-skill-(not-installed|installed-enabled|installed-disabled|workspace-enabled|workspace-disabled|workspace-inherited|workspace-isolation|workspace-root|workspace-freeze)\.test\.ts/u;
+const PLUGIN_MCP_SKILL_STATES = new Set([
+  "not-installed",
+  "installed-enabled",
+  "installed-disabled",
+  "workspace-enabled",
+  "workspace-disabled",
+  "workspace-inherited",
+  "workspace-isolation",
+  "workspace-root",
+  "workspace-freeze",
+]);
+
+function resolvePluginMcpSkillState(
+  specs: string[] = [],
+):
+  | "not-installed"
+  | "installed-enabled"
+  | "installed-disabled"
+  | "workspace-enabled"
+  | "workspace-disabled"
+  | "workspace-inherited"
+  | "workspace-isolation"
+  | "workspace-root"
+  | "workspace-freeze"
+  | null {
+  const envState = process.env.ZCODE_E2E_PLUGIN_MCP_SKILL_STATE?.trim();
+  if (envState && PLUGIN_MCP_SKILL_STATES.has(envState)) {
+    return envState as Exclude<ReturnType<typeof resolvePluginMcpSkillState>, null>;
+  }
+  for (const arg of specs) {
+    if (arg.includes("conversation-session-plugin-resident-freeze-cold-resume.test.ts")) {
+      return "workspace-freeze";
+    }
+    const match = arg.match(PLUGIN_MCP_SKILL_SPEC_PATTERN);
+    if (match && match[1]) {
+      return match[1] as
+        | "not-installed"
+        | "installed-enabled"
+        | "installed-disabled"
+        | "workspace-enabled"
+        | "workspace-disabled"
+        | "workspace-inherited"
+        | "workspace-isolation"
+        | "workspace-root"
+        | "workspace-freeze";
+    }
+  }
+  return null;
+}
+
+// 状态 A 不需要写任何文件；B/C 才落 fixture。
+// 这一段必须在 `seedUpstreamE2EModelConfig` 之后调用，因为它要 patch
+// 我们刚写好的 `~/.zcode/cli/config.json`，把 `plugins.enabledPlugins[id]`
+// 置为 false 以表达"已安装但关闭"。
+function seedE2EPluginMcpSkillState(specs: string[] = []) {
+  const state = resolvePluginMcpSkillState(specs);
+  if (!state || state === "not-installed" || state.startsWith("workspace-")) return;
+  const configPath = resolve(E2E_CLI_CONFIG_DIR, "config.json");
+  let config: Record<string, unknown> = {};
+  try {
+    config = JSON.parse(readFileSync(configPath, "utf-8")) as Record<string, unknown>;
+  } catch (error) {
+    if (
+      !(error instanceof Error) ||
+      !("code" in error) ||
+      (error as { code?: string }).code !== "ENOENT"
+    ) {
+      throw error;
+    }
+  }
+
+  const plugins = (config.plugins as Record<string, unknown> | undefined) ?? {};
+  const enabledPlugins = (plugins.enabledPlugins as Record<string, boolean> | undefined) ?? {};
+  const pluginId = "e2e-plugin-mcp-ping@e2e-fixture";
+  // Bugfix: 安装型 plugin 在 candidate 构造时 defaultEnabled=false（见
+  // apps/zcode-cli/packages/adapters/src/plugins/index.ts:resolveCandidates）；
+  // resolveEnabled 用 `config.enabledPlugins[id] ?? defaultEnabled` 判定，
+  // 所以 enabled 状态必须显式写 true，不能只 "delete 字段"。
+  if (state === "installed-disabled") {
+    enabledPlugins[pluginId] = false;
+  } else {
+    enabledPlugins[pluginId] = true;
+  }
+  plugins.enabledPlugins = enabledPlugins;
+  config.plugins = plugins;
+  writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
+}
+
+function seedE2EWorkspacePluginState(specs: string[] = []) {
+  const state = resolvePluginMcpSkillState(specs);
+  if (!state?.startsWith("workspace-")) return;
+
+  const workspacePath = resolve(E2E_HOME_DIR, "ZCodeProject");
+  const userConfigPath = resolve(E2E_CLI_CONFIG_DIR, "config.json");
+  const workspaceConfigPath = resolve(workspacePath, ".zcode", "config.json");
+  const pluginId = "e2e-plugin-mcp-ping@e2e-fixture";
+  const pluginRoot = resolve(DESKTOP_DIR, "test/e2e/fixtures/plugin-mcp-skill/e2e-plugin-mcp-ping");
+  mkdirSync(resolve(workspacePath, ".zcode"), { recursive: true });
+  const userConfig = JSON.parse(readFileSync(userConfigPath, "utf-8")) as Record<string, unknown>;
+  const userPlugins = (userConfig.plugins as Record<string, unknown> | undefined) ?? {};
+  const userEnabledPlugins =
+    (userPlugins.enabledPlugins as Record<string, boolean> | undefined) ?? {};
+  const userOptions =
+    (userPlugins.options as Record<string, Record<string, unknown>> | undefined) ?? {};
+  userEnabledPlugins[pluginId] = state !== "workspace-isolation";
+  userOptions[pluginId] = {
+    label: "user-label",
+    secret: "E2E_USER_PLUGIN_SECRET",
+  };
+  userPlugins.enabledPlugins = userEnabledPlugins;
+  userPlugins.options = userOptions;
+  userConfig.plugins = userPlugins;
+  writeFileSync(userConfigPath, JSON.stringify(userConfig, null, 2), "utf-8");
+
+  const workspaceEnabledPlugins =
+    state === "workspace-inherited"
+      ? {}
+      : {
+          [pluginId]:
+            state === "workspace-enabled" ||
+            state === "workspace-isolation" ||
+            state === "workspace-root" ||
+            state === "workspace-freeze",
+        };
+  const workspaceDirs = state === "workspace-root" ? [pluginRoot] : undefined;
+  writeFileSync(
+    workspaceConfigPath,
+    JSON.stringify(
+      {
+        plugins: {
+          ...(workspaceDirs ? { dirs: workspaceDirs } : {}),
+          enabledPlugins: workspaceEnabledPlugins,
+          options: {
+            [pluginId]: {
+              label: "workspace-label",
+              secret: "E2E_WORKSPACE_PLUGIN_SECRET",
+            },
+          },
+        },
+      },
+      null,
+      2,
+    ),
+    "utf-8",
+  );
+
+  if (state === "workspace-isolation") {
+    mkdirSync(resolve(E2E_HOME_DIR, "WorkspaceB"), { recursive: true });
+  }
+}
+
+function seedE2EBuiltinWorkspacePluginDisable(specs: string[] = []) {
+  if (
+    !specs.some((spec) =>
+      spec.includes("conversation-session-plugin-builtin-workspace-disable.test.ts"),
+    )
+  ) {
+    return;
+  }
+
+  const pluginId = "skill-creator@zcode-plugins-official";
+  const workspaceA = resolve(E2E_HOME_DIR, "ZCodeProject");
+  const workspaceB = resolve(E2E_HOME_DIR, "WorkspaceB");
+  const userConfig = JSON.parse(readFileSync(E2E_CLI_CONFIG_FILE, "utf-8")) as Record<
+    string,
+    unknown
+  >;
+  const userPlugins = (userConfig.plugins as Record<string, unknown> | undefined) ?? {};
+  const enabledPlugins = (userPlugins.enabledPlugins as Record<string, boolean> | undefined) ?? {};
+  const options =
+    (userPlugins.options as Record<string, Record<string, unknown>> | undefined) ?? {};
+  enabledPlugins[pluginId] = true;
+  options[pluginId] = { e2e: "preserve-user-option" };
+  userPlugins.enabledPlugins = enabledPlugins;
+  userPlugins.options = options;
+  userConfig.plugins = userPlugins;
+  writeFileSync(E2E_CLI_CONFIG_FILE, `${JSON.stringify(userConfig, null, 2)}\n`, "utf-8");
+
+  mkdirSync(resolve(workspaceA, ".zcode"), { recursive: true });
+  mkdirSync(workspaceB, { recursive: true });
+  writeFileSync(
+    resolve(workspaceA, ".zcode", "config.json"),
+    `${JSON.stringify(
+      {
+        plugins: {
+          enabledPlugins: {
+            [pluginId]: false,
+          },
+        },
+      },
+      null,
+      2,
+    )}\n`,
+    "utf-8",
+  );
+
+  const pluginDataDir = resolve(E2E_CLI_CONFIG_DIR, "plugins", "data", pluginId);
+  mkdirSync(pluginDataDir, { recursive: true });
+  writeFileSync(
+    resolve(pluginDataDir, "state.json"),
+    `${JSON.stringify({ marker: "preserve-user-data" }, null, 2)}\n`,
+    "utf-8",
+  );
+}
+
+async function seedE2EModelConfig(specs: string[] = []) {
+  if (usesContextWindowColdResumeFixture(specs)) {
+    await seedContextWindowColdResumeModelConfig();
+    return;
+  }
+  await seedUpstreamE2EModelConfig(specs);
+  await seedModelOutputTokenProviders(specs);
+}
+
+interface ModelOutputTokenProviderSeed {
+  apiFormat?: "openai-chat-completions" | "openai-responses";
+  id: string;
+  kind?: "openai" | "openai-compatible";
+  models: Array<{
+    contextWindow: number;
+    id: string;
+    limitOutput?: number;
+    maxOutputTokens?: number;
+  }>;
+  name: string;
+  supportedFormat?: "openai" | "responses";
+}
+
+function seedE2EWorkerModelStreamConfig(specs: string[] = []) {
+  const modelStreamIdleTimeoutMs = resolveE2EWorkerModelStreamIdleTimeoutMs(specs);
+  if (modelStreamIdleTimeoutMs === undefined) return;
+  mkdirSync(E2E_CLI_CONFIG_DIR, { recursive: true });
+  writeFileSync(
+    E2E_CLI_CONFIG_FILE,
+    JSON.stringify({ modelStream: { idleTimeoutMs: modelStreamIdleTimeoutMs } }, null, 2),
+    "utf-8",
+  );
+}
+
+async function seedModelOutputTokenProviders(specs: string[] = []) {
+  const providerSeeds: ModelOutputTokenProviderSeed[] = [];
+  if (specs.some((spec) => spec.includes(MODEL_OUTPUT_TOKEN_BUDGET_SPEC))) {
+    providerSeeds.push({
+      id: "output-token-budget-e2e",
+      models: [
+        { contextWindow: 128_000, id: "otb-default" },
+        { contextWindow: 128_000, id: "otb-16k", limitOutput: 16_000 },
+        { contextWindow: 128_000, id: "otb-64k", maxOutputTokens: 64_000 },
+        { contextWindow: 128_000, id: "otb-runtime-refresh" },
+      ],
+      name: "Output Token Budget E2E",
+    });
+  }
+  if (specs.some((spec) => spec.includes(MODEL_OUTPUT_TOKEN_PREFLIGHT_SPEC))) {
+    providerSeeds.push({
+      id: "output-token-preflight-e2e",
+      models: [
+        {
+          contextWindow: 128_000,
+          id: "otb-preflight-64k",
+          limitOutput: 64_000,
+        },
+        {
+          contextWindow: 64_000,
+          id: "otb-preflight-smoke-64k-48k",
+          limitOutput: 48_000,
+        },
+        {
+          contextWindow: 200_000,
+          id: "otb-preflight-smoke-200k-128k",
+          limitOutput: 128_000,
+        },
+      ],
+      name: "Output Token Preflight E2E",
+    });
+  }
+  if (specs.some((spec) => spec.includes(OUTPUT_LIMIT_CONTINUE_MARKDOWN_PROTOCOLS_SPEC))) {
+    providerSeeds.push(
+      {
+        id: "otc-protocol-chat",
+        models: [{ contextWindow: 128_000, id: "otc-protocol-chat" }],
+        name: "OTC Chat Completions E2E",
+      },
+      {
+        apiFormat: "openai-responses",
+        id: "otc-protocol-responses",
+        kind: "openai",
+        models: [{ contextWindow: 128_000, id: "otc-protocol-responses" }],
+        name: "OTC Responses API E2E",
+        supportedFormat: "responses",
+      },
+    );
+  }
+  if (providerSeeds.length === 0) {
+    return;
+  }
+
+  const apiKey =
+    upstreamE2EHttpMode === "replay"
+      ? E2E_PROVIDER_REPLAY_API_KEY
+      : (process.env.E2E_PROVIDER_API_KEY?.trim() ?? "");
+  if (!apiKey || apiKey === "xxx") {
+    throw new Error("Output-token E2E 缺少可用 provider API Key");
+  }
+  const appProviders = providerSeeds.map(
+    (provider): PersonalProviderConfigSeed => ({
+      apiFormat: "openai-chat-completions",
+      apiKey,
+      baseURL: upstreamE2EBaseUrl,
+      enabled: true,
+      id: provider.id,
+      label: provider.name,
+      models: provider.models.map((model) => ({
+        contextWindow: model.contextWindow,
+        id: model.id,
+        ...(model.maxOutputTokens === undefined && model.limitOutput === undefined
+          ? {}
+          : { maxOutputTokens: model.maxOutputTokens ?? model.limitOutput }),
+      })),
+    }),
+  );
+  for (const provider of appProviders) {
+    await seedPersonalProviderConfig(E2E_APP_PROVIDER_CONFIG_FILE, provider);
+  }
+}
+
+async function seedContextWindowColdResumeModelConfig() {
+  const apiKey =
+    upstreamE2EHttpMode === "replay"
+      ? E2E_PROVIDER_REPLAY_API_KEY
+      : (process.env.E2E_PROVIDER_API_KEY?.trim() ?? "");
+  if (!apiKey || apiKey === "xxx") {
+    throw new Error("context-window cold-resume 缺少可用 provider API Key");
+  }
+  const provider: PersonalProviderConfigSeed = {
+    id: CONTEXT_WINDOW_COLD_RESUME_PROVIDER_ID,
+    label: CONTEXT_WINDOW_COLD_RESUME_PROVIDER_NAME,
+    baseURL: upstreamE2EBaseUrl,
+    apiFormat: "openai-chat-completions",
+    apiKey,
+    enabled: true,
+    models: [
+      {
+        id: CONTEXT_WINDOW_COLD_RESUME_MODEL_ID,
+        contextWindow: CONTEXT_WINDOW_COLD_RESUME_MAX_TOKENS,
+        maxOutputTokens: CONTEXT_WINDOW_COLD_RESUME_MAX_OUTPUT_TOKENS,
+      },
+    ],
+  };
+  await seedPersonalProviderConfig(E2E_APP_PROVIDER_CONFIG_FILE, provider);
+  mkdirSync(E2E_APP_CONFIG_DIR, { recursive: true });
+  await seedPersonalDefaultModelSelection(E2E_APP_PROVIDER_CONFIG_FILE, {
+    providerId: CONTEXT_WINDOW_COLD_RESUME_PROVIDER_ID,
+    modelId: CONTEXT_WINDOW_COLD_RESUME_MODEL_ID,
+  });
+}
+
+function isSubagentProviderRegistryColdStartSpec(specs: string[] = []) {
+  return specs.some((spec) => spec.includes(SUBAGENT_PROVIDER_REGISTRY_COLD_START_SPEC));
+}
+
+function isBuiltInSubagentModelSelectionOverridesSpec(specs: string[] = []) {
+  return specs.some((spec) => spec.includes(BUILT_IN_SUBAGENT_MODEL_OVERRIDES_SPEC));
+}
+
+function isSettingsSubagentCreateEditPersistenceSpec(specs: string[] = []) {
+  return specs.some((spec) => spec.includes(SETTINGS_SUBAGENT_CREATE_EDIT_PERSISTENCE_SPEC));
+}
+
+function isSubagentRuntimeCatalogReasoningSpec(specs: string[] = []) {
+  return specs.some((spec) => spec.includes(SUBAGENT_RUNTIME_CATALOG_REASONING_SPEC));
 }
 
 function isToolErrorSurfaceSpec(specs: string[] = []) {

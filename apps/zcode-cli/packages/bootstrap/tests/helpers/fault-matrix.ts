@@ -92,6 +92,11 @@ interface FaultCellOptions {
   timeoutMs?: number;
   /** 每子代理空转轮数 K（信息性：只影响 `logicalRequests`），缺省 {@link FAULT_CELL_TURNS}。 */
   turns?: number;
+  /**
+   * 流空闲超时（真实毫秒）。缺省交给 adapter 的生产值；只有需要把 hang 判决变成
+   * `stream_idle_timeout` 重试的行（B6）才显式收紧。
+   */
+  streamIdleTimeoutMs?: number;
 }
 
 export interface FaultCellObservation {
@@ -180,6 +185,9 @@ function wireCell(options: Omit<FaultCellOptions, "shape">): CellWiring {
       apiFormat: options.apiFormat,
       baseURL: options.server.baseURL,
       statusSink,
+      ...(options.streamIdleTimeoutMs === undefined
+        ? {}
+        : { streamIdleTimeoutMs: options.streamIdleTimeoutMs }),
     }),
     fileSystemPort: fakeFileSystemPort({}),
     scale,

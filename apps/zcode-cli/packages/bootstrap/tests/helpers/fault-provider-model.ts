@@ -50,8 +50,15 @@ const FAULT_RETRY_OPTIONS: AiSdkModelRetryOptions = {
   maxDelayMs: 50,
 };
 
-/** hang 判决靠它变成一次 stream_idle_timeout 重试。注意：每次重试 +30s（stream-idle-timeout.ts 的增量）。 */
-const FAULT_STREAM_IDLE_TIMEOUT_MS = 300;
+/**
+ * hang 判决靠它变成一次 stream_idle_timeout 重试。注意：每次重试 +30s（stream-idle-timeout.ts 的增量）。
+ *
+ * 必须由需要 hang 的行显式传入（B6），不能做全局缺省：全量并发跑 bootstrap 测试时，事件循环
+ * 会被其它测试文件占住数百毫秒，健康的流也会被 300ms 判成 idle timeout，runner 于是多发一次
+ * 请求（B1 的「请求数 = 逻辑请求数」、B2 的「失败数 = 拒绝数」都会随机翻车）。其余行沿用
+ * adapter 的生产缺省（600s），本 run 的墙钟上限（20s）远小于它，不会误报。
+ */
+export const FAULT_STREAM_IDLE_TIMEOUT_MS = 300;
 
 export interface FaultProviderModelOptions {
   baseURL: string;
@@ -109,7 +116,10 @@ function createFaultModelAdapter(options: FaultProviderModelOptions): AiSdkModel
   return new AiSdkModelAdapter({
     env: {},
     retry: options.retry ?? FAULT_RETRY_OPTIONS,
-    streamIdleTimeoutMs: options.streamIdleTimeoutMs ?? FAULT_STREAM_IDLE_TIMEOUT_MS,
+    // 未显式指定时用 adapter 的生产缺省（600s）：测试装配不应为了省时间收紧它。
+    ...(options.streamIdleTimeoutMs === undefined
+      ? {}
+      : { streamIdleTimeoutMs: options.streamIdleTimeoutMs }),
     ...(options.statusSink === undefined ? {} : { statusSink: options.statusSink }),
   });
 }

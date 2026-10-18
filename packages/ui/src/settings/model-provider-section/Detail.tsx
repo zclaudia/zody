@@ -4,7 +4,8 @@
  */
 import { Loader2Icon } from "lucide-react";
 import type { ProviderSettingsView } from "@zcode/services";
-import type { ModelConnectivityResult, SavePersonalModelDraftInput } from "@zcode/provider";
+import type { SavePersonalModelDraftInput } from "@zcode/provider";
+import type { ModelConnectivityResult } from "@zcode/shared";
 import {
   getProviderFormApiKeyManagementUrl,
   type ProviderSettingsFormProvider,
