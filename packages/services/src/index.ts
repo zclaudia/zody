@@ -9,13 +9,6 @@ export {
   type ProviderSettingsProviderView,
   type ProviderSettingsView,
 } from "./model-provider/providerFacadeServices.js";
-export {
-  createAccountRequestAuthService,
-  type IAccountRequestAuthService,
-  type AccountRequestAuthInput,
-  type AccountRequestAuthMaterial,
-  type AccountRequestAuthResolver,
-} from "./model-provider/accountRequestAuthService.js";
 export { IProviderProvisioningTargetService } from "./model-provider/providerProvisioning.js";
 export {
   collectServiceMemoryDiagnostics,
@@ -203,9 +196,6 @@ export type { SessionRealtimePort } from "./session/sessionRealtimePort.js";
 
 // FileWatcher service — IFileWatcherService is both a type (interface) and value (descriptor)
 export { IFileWatcherService } from "./fileWatcher/fileWatcher.js";
-
-// OAuth service — IOAuthService is both a type (interface) and value (descriptor)
-export { IOAuthService } from "./oauth/oauth.js";
 
 // UsageStats service — IUsageStatsService is both a type (interface) and value (descriptor)
 export { IUsageStatsService } from "./usage-stats/usageStats.js";

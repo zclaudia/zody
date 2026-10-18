@@ -89,7 +89,6 @@ import { RootStartupLoading } from "@/root/RootStartupLoading.js";
 import { resolveProviderAvailabilityState } from "@/lib/modelProviderAvailability.js";
 import { stripOfficialAccountSelectionsFromStorage } from "@/lib/officialAccountRendererDataMigration.js";
 import { useProviderAvailabilityLoginEntryGuard } from "@/root/useProviderAvailabilityLoginEntryGuard.js";
-import { ensureProviderFamilyDomainMigration } from "@/lib/providerFamilyDomainMigration.js";
 import { useSettings } from "@/hooks/useSettingService.js";
 import { CLOSE_ACTIVE_CONTEXT_REQUEST_EVENT } from "@/lib/closeActiveContext.js";
 import { AssistantCodeCommentFeatureProvider } from "@/AssistantCodeCommentFeatureProvider.js";
@@ -326,16 +325,9 @@ function RootInner({
 
   const { intl, locale } = useZCodeIntl();
   const theme = useZCodeStore((state) => state.theme);
-  const user = useZCodeStore((state) => state.user);
-  // fork（F4.1b）：OAuth 会话恢复链（useRootOAuthEffects）摘除后 isRestoringOAuthSession
-  // 恒为 false（store 初始值），这里保留读取以维持启动门禁形状，待 F4.5 删字段。
-  const isRestoringOAuthSession = useZCodeStore((state) => state.isRestoringOAuthSession);
-  const setUser = useZCodeStore((state) => state.setUser);
-  const setOAuthError = useZCodeStore((state) => state.setOAuthError);
   const {
     settings: appSettings,
     refresh: refreshAppSettings,
-    update: updateAppSettings,
   } = useSettings();
   // docs/dynamic-workflow/launch.md「The user's choice」：设置里的动态工作流选择变化后，通知本窗口
   // 的 Host 重发 CLI 策略（并转发给远程 Host），再重读灰度快照（经 clientConfigService，fork F2.6b）。
@@ -349,8 +341,6 @@ function RootInner({
   // useRootOAuthEffects 写入，入口摘除后不再产生。
   const [welcomeScreenOpenReason, setWelcomeScreenOpenReason] =
     useState<WelcomeScreenOpenReason | null>(null);
-  const [providerFamilyDomainMigrationComplete, setProviderFamilyDomainMigrationComplete] =
-    useState(false);
   const rootModelSelectionRead = useModelSelectionServiceView(services.modelSelectionService);
   const rootModelSelectionView =
     rootModelSelectionRead.state.status === "ready" ? rootModelSelectionRead.state.view : null;
@@ -545,44 +535,14 @@ function RootInner({
       logger.warn("[Root] 渲染端官方账号模型选择清理失败，继续启动", { error });
     }
   }, []);
-  useEffect(() => {
-    let disposed = false;
-
-    void (async () => {
-      try {
-        await ensureProviderFamilyDomainMigration(services);
-      } catch (error) {
-        logger.warn("[Root] provider family domain 迁移失败，继续启动", {
-          error,
-        });
-      } finally {
-        if (!disposed) {
-          setProviderFamilyDomainMigrationComplete(true);
-          try {
-            await refreshAppSettings();
-            await refreshProviderState();
-          } catch (refreshError) {
-            logger.warn("[Root] provider family domain 迁移后刷新状态失败", {
-              error: refreshError,
-            });
-          }
-        }
-      }
-    })();
-
-    return () => {
-      disposed = true;
-    };
-  }, [refreshAppSettings, refreshProviderState, services]);
-
+  // fork（F4.7）：官方账号 providerFamilyDomain 迁移随 OAuth/账号链删除；
+  // 启动门禁只等待 Provider Registry / Model Selection 水合。
   const shouldPreferDirectoryBrowser = Boolean(preferDirectoryBrowser);
   const supportsEmbeddedBrowser = explicitSupportsEmbeddedBrowser ?? Boolean(isDesktop);
-  const isResolvingStartupAuthState = isRestoringOAuthSession;
   const rootProviderAvailability = resolveProviderAvailabilityState({
     modelSelectionView: rootModelSelectionView,
   });
   const providerStartupSyncPending = isProviderStartupSyncPending({
-    providerFamilyDomainMigrationComplete,
     modelSelectionViewHydrated:
       rootProviderAvailability.hydrated || rootModelSelectionRead.state.status === "error",
   });
@@ -594,7 +554,6 @@ function RootInner({
   const { startupCheckCompleted: providerAvailabilityStartupCheckCompleted } =
     useProviderAvailabilityLoginEntryGuard({
       enabled: providerAvailabilityLoginEntryGuardEnabled,
-      isRestoringOAuthSession: isResolvingStartupAuthState || providerStartupSyncPending,
       modelSelectionView: rootModelSelectionView,
       modelSelectionError:
         rootModelSelectionRead.state.status === "error"
@@ -623,9 +582,7 @@ function RootInner({
   // 首次安装时 provider 登录入口判定晚于 workspace 注入，ChatView 会先 mount 并触发草稿预热。
   // 这里把 provider 启动检查纳入 workspace 恢复门禁，避免未连接账号前启动 ZCode session。
   const canRestoreWorkspaceSession =
-    !isResolvingStartupAuthState &&
-    !isResolvingProviderStartupState &&
-    !isStartupProviderLoginEntryOpen;
+    !isResolvingProviderStartupState && !isStartupProviderLoginEntryOpen;
 
   useEffect(() => {
     // 跨 workspace 任务列表需要一个稳定的“本地/root services”入口。
@@ -635,6 +592,12 @@ function RootInner({
   }, [services]);
 
   useBotBroadcastEffects(services, tabStoreApi);
+
+  useEffect(() => {
+    // fork（F4.7）：OAuth 生命周期 hook 删除后仍需通知 Main renderer 已就绪；
+    // 否则冷启动缓存的 workspace 深链永远不会投递（工作区深链能力保留）。
+    platform.notifyRendererReady();
+  }, [platform]);
 
   const handleOpenRemoteConnection = useCallback((preference?: RemoteConnectionOpenPreference) => {
     setRemoteConnectionOpenPreference(preference ?? null);
@@ -670,14 +633,6 @@ function RootInner({
     allowOpenWorkspace,
     preferDirectoryBrowser: shouldPreferDirectoryBrowser,
     openDirectoryBrowser: handleOpenDirectoryBrowser,
-    refreshProviderState,
-    updateAppSettings,
-    setOAuthError,
-    setUser,
-    // fork（F4.1b）：handleLogout 的全部入口（侧栏/设置页菜单、快捷命令）已摘除，
-    // 登出回落分支不再触发；装配保留待 F4.5 删除 useRootWorkspaceActions 登出链。
-    onProviderFamilyDomainClearedAfterLogout: undefined,
-    userId: user?.id,
     onOpenRemoteConnection: allowRemoteWorkspace ? handleOpenRemoteConnection : undefined,
     workbenchGroupClientMode: isWebRemoteControlRoot
       ? "web-remote-replayable"
@@ -815,7 +770,6 @@ function RootInner({
   const isStartupRenderBlocked = shouldShowRootStartupLoading({
     isDesktop,
     welcomeScreenOpen: Boolean(welcomeScreenOpenReason),
-    isResolvingStartupAuthState,
     isResolvingProviderStartupState,
     isRestoring,
     isBootstrappingInitialWorkspace: isBootstrappingInitialWorkspace || isCreatingFallbackWorkspace,
@@ -973,7 +927,6 @@ function RootInner({
   useEffect(() => {
     if (
       shouldBlockRootRender({
-        isResolvingStartupAuthState,
         isResolvingProviderStartupState,
         isRestoring,
         isBootstrappingInitialWorkspace,
@@ -1027,7 +980,6 @@ function RootInner({
     handleSelectConversationWorkspace,
     isBootstrappingInitialWorkspace,
     isResolvingProviderStartupState,
-    isResolvingStartupAuthState,
     isRestoring,
     isSettingsTabActive,
     isStartupProviderLoginEntryOpen,
@@ -1141,7 +1093,6 @@ function RootInner({
     onOpenWorkspace: handleOpenWorkspace,
     allowOpenWorkspace,
     // fork（F4.1b）：onLogin/onLogout/user 传递摘除——设置页头像菜单不再有登录/登出入口。
-    user,
   };
 
   if (isStartupRenderBlocked) {
@@ -1245,7 +1196,7 @@ function RootInner({
             allowRemoteWorkspace={allowRemoteWorkspace}
             handleBackFromSettings={handleBackFromSettings}
             // fork（F4.1b）：handleLogout/onLogin 传递摘除——侧栏与快捷命令不再有登录/登出入口。
-            user={user}
+            // fork（F4.7）：OAuth 登录态不再产生，user 传递随账号链删除。
             reconnectingRemoteWorkspaceKeys={reconnectingRemoteWorkspaceKeys}
             remoteWorkspaceErrorByWorkspaceKey={remoteWorkspaceErrorByWorkspaceKey}
             reconnectingRemoteWorkspaceLogsByWorkspaceKey={

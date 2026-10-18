@@ -127,8 +127,8 @@ async function clearAllDataAndRelaunch(options: {
 }
 
 // fork（F4.4）：clearCodingPlanWebviewStorage（购买 webview / Rewards 持久 partition 清理）
-// 随购买与 Rewards webview 基础设施删除；renderer 侧残留的 ClearCodingPlanWebviewStorage
-// 命令调用成为 no-op，待 F4.7 删除账号登出链时一并清理（shared 命令 id 暂保留，避免越界）。
+// 随购买与 Rewards webview 基础设施删除。
+// fork（F4.7）：renderer 登出链与 shared 命令 id 已一并删除。
 
 /** fork（F2.7）：反馈与社群链接只读内置 config/default.json，不再请求远端 /api/v1/client/configs。 */
 export async function resolveFeedbackUrl(options: {

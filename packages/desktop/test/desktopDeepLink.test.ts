@@ -61,10 +61,10 @@ afterEach(() => {
   }
 });
 
-describe("desktopOAuthDeepLink workspace open routing", () => {
+describe("desktopDeepLink workspace open routing", () => {
   it("按应用 locale 解析外部 workspace 确认文案", async () => {
     const { resolveExternalWorkspaceOpenDialogCopy } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+      await import("../src/main/desktopDeepLink.js");
 
     const zhCopy = resolveExternalWorkspaceOpenDialogCopy("zh-CN");
     const enCopy = resolveExternalWorkspaceOpenDialogCopy("en-US");
@@ -83,7 +83,7 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
     electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
     const { deliverPendingDeepLink, handleDeepLink } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+      await import("../src/main/desktopDeepLink.js");
 
     const handled = handleDeepLink(buildWorkspaceOpenUrl(workspacePath), logger);
 
@@ -111,7 +111,7 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
     electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
     const { deliverPendingDeepLink, handleDeepLink } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+      await import("../src/main/desktopDeepLink.js");
 
     deliverPendingDeepLink(targetWindow.webContents);
     targetWindow.webContents.send.mockClear();
@@ -135,7 +135,7 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
     electronMocks.getAllWindows.mockReturnValue([cuaIndicatorWindow, applicationWindow]);
 
     const { deliverPendingDeepLink, handleOpenWorkspacePath } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+      await import("../src/main/desktopDeepLink.js");
     deliverPendingDeepLink(applicationWindow.webContents);
 
     expect(
@@ -158,7 +158,7 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
     electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
     const { deliverPendingDeepLink, handleDeepLink, resolveExternalWorkspaceOpenDialogCopy } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+      await import("../src/main/desktopDeepLink.js");
 
     deliverPendingDeepLink(targetWindow.webContents);
     targetWindow.webContents.send.mockClear();
@@ -188,7 +188,7 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
     electronMocks.getAllWindows.mockReturnValue([]);
 
     const { deliverPendingDeepLink, handleDeepLink } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+      await import("../src/main/desktopDeepLink.js");
 
     const handled = handleDeepLink(buildWorkspaceOpenUrl(workspacePath), logger);
 
@@ -220,7 +220,7 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
     electronMocks.getAllWindows.mockReturnValue([]);
 
     const { deliverPendingDeepLink, handleDeepLink } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+      await import("../src/main/desktopDeepLink.js");
 
     const handled = handleDeepLink(buildWorkspaceOpenUrl(workspacePath), logger);
 
@@ -244,7 +244,7 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
     electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
     const { deliverPendingDeepLink, handleDeepLink } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+      await import("../src/main/desktopDeepLink.js");
 
     deliverPendingDeepLink(targetWindow.webContents);
     targetWindow.webContents.send.mockClear();
@@ -268,7 +268,7 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
     electronMocks.getFocusedWindow.mockReturnValue(targetWindow);
     electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
-    const { handleDeepLink } = await import("../src/main/desktopOAuthDeepLink.js");
+    const { handleDeepLink } = await import("../src/main/desktopDeepLink.js");
 
     const handled = handleDeepLink(buildWorkspaceOpenUrl(workspacePath), logger);
 
@@ -288,7 +288,7 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
     electronMocks.getAllWindows.mockReturnValue([]);
 
     const { deliverPendingDeepLink, handleOpenWorkspacePath } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+      await import("../src/main/desktopDeepLink.js");
 
     const handled = handleOpenWorkspacePath(workspacePath, logger);
 
@@ -311,7 +311,7 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
     electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
     const { deliverPendingDeepLink, handleDeepLink } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+      await import("../src/main/desktopDeepLink.js");
 
     const handled = handleDeepLink(buildWorkspaceOpenUrl(workspacePath), logger, {
       canOpenWorkspace: () => false,
@@ -330,18 +330,16 @@ describe("desktopOAuthDeepLink workspace open routing", () => {
   });
 });
 
-describe("desktopOAuthDeepLink OAuth routing", () => {
-  // fork（F4.1a）：官方账号下线后 OAuth 回调只记 info 日志并忽略，
-  // 不再消费 state 路由、不投递 renderer、不进入 pending 缓存。
-  it("OAuth 回调被忽略且只记 info 日志，不投递任何窗口", async () => {
+describe("desktopDeepLink 已删除的回调深链", () => {
+  // fork（F4.7）：OAuth/支付回调路由随官方账号链删除，到达时一律忽略（不投递、不弹窗）。
+  it("OAuth 回调不再路由到 renderer", async () => {
     const targetWindow = createMockWindow(31);
     const logger = { info: vi.fn(), warn: vi.fn() };
     electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
-    const { handleDeepLink, registerOAuthState, deliverPendingDeepLink } =
-      await import("../src/main/desktopOAuthDeepLink.js");
-
-    registerOAuthState(31, { state: "state-001", provider: "bigmodel" });
+    const { handleDeepLink, deliverPendingDeepLink } = await import(
+      "../src/main/desktopDeepLink.js"
+    );
 
     expect(
       handleDeepLink("zcode://oauth/callback?state=state-001&utm_source=google", logger),
@@ -351,23 +349,19 @@ describe("desktopOAuthDeepLink OAuth routing", () => {
     ).toBe(false);
     expect(targetWindow.webContents.send).not.toHaveBeenCalled();
     expect(logger.warn).not.toHaveBeenCalled();
-    expect(logger.info).toHaveBeenCalledWith(
-      "[deep-link] OAuth 回调已随官方账号下线，忽略此次回调",
-      expect.objectContaining({ host: "oauth", path: "/callback" }),
-    );
 
-    // 即使 OAuth 回调先于 renderer ready 到达，也不允许从 ready 投递中复活。
-    expect(deliverPendingDeepLink(targetWindow.webContents as never)).toBe(false);
+    deliverPendingDeepLink(targetWindow.webContents as never);
     expect(targetWindow.webContents.send).not.toHaveBeenCalled();
   });
 
-  it("支付回调被忽略且只记 info 日志，不投递任何窗口", async () => {
+  it("支付回调不再路由到 renderer", async () => {
     const targetWindow = createMockWindow(32);
     const logger = { info: vi.fn(), warn: vi.fn() };
     electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
-    const { handleDeepLink, deliverPendingDeepLink } =
-      await import("../src/main/desktopOAuthDeepLink.js");
+    const { handleDeepLink, deliverPendingDeepLink } = await import(
+      "../src/main/desktopDeepLink.js"
+    );
 
     expect(
       handleDeepLink(
@@ -377,12 +371,8 @@ describe("desktopOAuthDeepLink OAuth routing", () => {
     ).toBe(false);
     expect(targetWindow.webContents.send).not.toHaveBeenCalled();
     expect(logger.warn).not.toHaveBeenCalled();
-    expect(logger.info).toHaveBeenCalledWith(
-      "[deep-link] 支付回调已随官方账号下线，忽略此次回调",
-      expect.objectContaining({ host: "payment", path: "/callback" }),
-    );
 
-    expect(deliverPendingDeepLink(targetWindow.webContents as never)).toBe(false);
+    deliverPendingDeepLink(targetWindow.webContents as never);
     expect(targetWindow.webContents.send).not.toHaveBeenCalled();
   });
 });

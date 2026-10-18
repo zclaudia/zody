@@ -16,10 +16,6 @@
     "./test/e2e/conversation-session/conversation-session-conversation-workspace.test.ts": 104784,
     "./test/e2e/conversation-session/conversation-session-fork-merged-assistant.test.ts": 129182,
     "./test/e2e/conversation-session/conversation-session-hooks-lifecycle.test.ts": 195492,
-    "./test/e2e/conversation-session/conversation-session-model-provider-restart-recovery.test.ts": 251112,
-    "./test/e2e/conversation-session/conversation-session-model-provider-settings-transition.test.ts": 298324,
-    "./test/e2e/conversation-session/conversation-session-model-provider-turbo-recovery.test.ts": 267283,
-    "./test/e2e/conversation-session/conversation-session-model-provider-turbo-switch.test.ts": 301575,
     "./test/e2e/conversation-session/conversation-session-subagent-respond-to-coordinator.test.ts": 175594,
     "./test/e2e/conversation-session/conversation-session-thought-level-session-isolation.test.ts": 195940,
     "./test/e2e/conversation-session/conversation-session-unregistered-tool-cold-snapshot.test.ts": 166787,
@@ -51,7 +47,6 @@
     "./test/e2e/e2ecase-regression.test.ts": 58972,
     "./test/e2e/git/git-commit-dialog-ui-flow.test.ts": 64924,
     "./test/e2e/infrastructure/session-lifecycle.test.ts": 54977,
-    "./test/e2e/oauth-credential-recovery.test.ts": 111675,
     "./test/e2e/smoke.test.ts": 44627,
     "./test/e2e/task-list-archive-confirmation.test.ts": 187377,
     "./test/e2e/workspace-file-tree-refresh.test.ts": 116316

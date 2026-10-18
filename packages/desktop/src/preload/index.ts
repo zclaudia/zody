@@ -55,7 +55,6 @@ import type {
   EmbeddedBrowserSitePermissionResetRequest,
   EmbeddedBrowserSitePermissionsSnapshot,
   Locale,
-  OAuthStateRegistration,
   OpenInEditorOptions,
   RemoteTarget,
   TaskNotificationPayload,
@@ -100,7 +99,6 @@ import {
   formatZCodeRendererProcessName,
   shouldEnableE2ETestBridge,
 } from "@zcode/shared";
-import { createOAuthCallbackHandler } from "./oauthCallbackBridge.js";
 
 if (shouldEnableE2ETestBridge(process.env)) {
   contextBridge.exposeInMainWorld("__zcodeFinalArmsCustomEventsE2E", {
@@ -676,7 +674,7 @@ contextBridge.exposeInMainWorld("zcode", {
     ipcRenderer.on(PlatformChannels.TaskNotificationClick, handler);
     return () => ipcRenderer.removeListener(PlatformChannels.TaskNotificationClick, handler);
   },
-  /** 打开外部 URL（用于 OAuth 跳转浏览器） */
+  /** 打开外部 URL */
   openExternal: (url: string) => ipcRenderer.send(PlatformChannels.OpenExternal, url),
   /** 查询当前语言下是否存在可用的用户社群入口 */
   canOpenCommunity: (locale: Locale): Promise<boolean> =>
@@ -699,23 +697,8 @@ contextBridge.exposeInMainWorld("zcode", {
   /** 从权限浮窗拖拽 Helper.app 到 macOS 权限列表。必须是 send —— invoke 的往返会错过手势。 */
   startCuaHelperPermissionDrag: () =>
     ipcRenderer.send(PlatformChannels.StartCuaHelperPermissionDrag),
-  /** 上报 OAuth state 用于 deep link 路由 */
-  registerOAuthState: (payload: OAuthStateRegistration) =>
-    ipcRenderer.send(PlatformChannels.OAuthRegisterState, payload),
-  /** 注册 OAuth deep link 回调，返回 disposer */
-  onOAuthCallback: (cb: (url: string) => void): (() => void) => {
-    const handler = createOAuthCallbackHandler(cb, () => {
-      ipcRenderer.send(PlatformChannels.OAuthCallbackHandled);
-    });
-    ipcRenderer.on(PlatformChannels.OAuthCallback, handler);
-    return () => ipcRenderer.removeListener(PlatformChannels.OAuthCallback, handler);
-  },
-  /** 注册支付 deep link 回调，返回 disposer */
-  onPaymentCallback: (callback: (url: string) => void): (() => void) => {
-    const handler = (_event: unknown, url: string) => callback(url);
-    ipcRenderer.on(PlatformChannels.PaymentCallback, handler);
-    return () => ipcRenderer.removeListener(PlatformChannels.PaymentCallback, handler);
-  },
+  // fork（F4.7）：registerOAuthState / onOAuthCallback / onPaymentCallback 随官方账号与
+  // 支付深链删除；工作区深链仍由 notifyRendererReady 触发 main 投递。
   // fork（F4.8）：onShareImport 随会话分享功能删除。
   /** 通知 main process renderer 已就绪 */
   notifyRendererReady: () => ipcRenderer.send(PlatformChannels.RendererReady),

@@ -1,36 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 describe("desktop deep link url helpers", () => {
-  it("recognizes only the unified OAuth callback url", async () => {
-    const { isOAuthCallbackUrl } = await import("../src/main/desktopDeepLinkUrl.js");
+  // fork（F4.7）：OAuth / 支付回调判定随官方账号链删除，这里只保留工作区深链。
 
-    expect(isOAuthCallbackUrl(new URL("zcode://oauth/callback?code=1&state=s"))).toBe(true);
-    expect(isOAuthCallbackUrl(new URL("zcode://bigmodel-auth/callback?authCode=1&state=s"))).toBe(
-      false,
-    );
-    expect(isOAuthCallbackUrl(new URL("zcode://zai-auth/callback?code=1&state=s"))).toBe(false);
-    expect(isOAuthCallbackUrl(new URL("zcode://oauth/other?code=1&state=s"))).toBe(false);
-    expect(isOAuthCallbackUrl(new URL("https://oauth/callback?code=1&state=s"))).toBe(false);
-  });
+  it("accepts Linux one-slash workspace open urls", async () => {
+    const { isWorkspaceOpenUrl } = await import("../src/main/desktopDeepLinkUrl.js");
 
-  it("accepts Linux one-slash callback urls", async () => {
-    const { isOAuthCallbackUrl, isPaymentCallbackUrl } =
-      await import("../src/main/desktopDeepLinkUrl.js");
-
-    expect(isOAuthCallbackUrl(new URL("zcode:/oauth/callback?code=1&state=s"))).toBe(true);
-    expect(isOAuthCallbackUrl(new URL("zcode:oauth/callback?code=1&state=s"))).toBe(true);
-    expect(isPaymentCallbackUrl(new URL("zcode:/payment/callback?status=return"))).toBe(true);
-    expect(isPaymentCallbackUrl(new URL("zcode:payment/callback?status=cancel"))).toBe(true);
-  });
-
-  it("recognizes payment callback urls separately from OAuth", async () => {
-    const { isOAuthCallbackUrl, isPaymentCallbackUrl } =
-      await import("../src/main/desktopDeepLinkUrl.js");
-
-    const paymentUrl = new URL("zcode://payment/callback?provider=zai&channel=paypal");
-    expect(isPaymentCallbackUrl(paymentUrl)).toBe(true);
-    expect(isOAuthCallbackUrl(paymentUrl)).toBe(false);
-    expect(isPaymentCallbackUrl(new URL("zcode://payment/other"))).toBe(false);
+    expect(isWorkspaceOpenUrl(new URL("zcode:/workspace/open?path=%2Ftmp"))).toBe(true);
+    expect(isWorkspaceOpenUrl(new URL("zcode:workspace/open?path=%2Ftmp"))).toBe(true);
+    expect(isWorkspaceOpenUrl(new URL("zcode://workspace/other?path=%2Ftmp"))).toBe(false);
   });
 
   it("recognizes workspace open urls and extracts the encoded folder path", async () => {
@@ -50,40 +28,29 @@ describe("desktop deep link url helpers", () => {
     const { extractDeepLinkUrlFromArgs } = await import("../src/main/desktopDeepLinkUrl.js");
 
     expect(
-      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "zcode://oauth/callback?code=1&state=s"]),
-    ).toBe("zcode://oauth/callback?code=1&state=s");
+      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "zcode://workspace/open?path=%2Ftmp"]),
+    ).toBe("zcode://workspace/open?path=%2Ftmp");
+    expect(
+      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "--open-url=zcode://workspace/open?path=%2Ftmp"]),
+    ).toBe("zcode://workspace/open?path=%2Ftmp");
     expect(
       extractDeepLinkUrlFromArgs([
         "/opt/ZCode/zcode",
-        "--open-url=zcode://oauth/callback?code=1&state=s",
+        "zcode%3A%2F%2Fworkspace%2Fopen%3Fpath%3D%252Ftmp",
       ]),
-    ).toBe("zcode://oauth/callback?code=1&state=s");
+    ).toBe("zcode://workspace/open?path=%2Ftmp");
     expect(
       extractDeepLinkUrlFromArgs([
         "/opt/ZCode/zcode",
-        "zcode%3A%2F%2Foauth%2Fcallback%3Fcode%3D1%26state%3Ds",
+        "zcode%253A%252F%252Fworkspace%252Fopen%253Fpath%253D%25252Ftmp",
       ]),
-    ).toBe("zcode://oauth/callback?code=1&state=s");
+    ).toBe("zcode://workspace/open?path=%2Ftmp");
     expect(
       extractDeepLinkUrlFromArgs([
         "/opt/ZCode/zcode",
-        "zcode%253A%252F%252Foauth%252Fcallback%253Fcode%253D1%2526state%253Ds",
+        "zcode://workspace/open?path=%2Ftmp&amp;x=1",
       ]),
-    ).toBe("zcode://oauth/callback?code=1&state=s");
-    expect(
-      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "zcode://oauth/callback?code=1", "&state=s"]),
-    ).toBe("zcode://oauth/callback?code=1&state=s");
-    expect(
-      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "zcode://oauth/callback?code=1&amp;state=s"]),
-    ).toBe("zcode://oauth/callback?code=1&state=s");
-    expect(
-      extractDeepLinkUrlFromArgs([
-        "/opt/ZCode/zcode",
-        "zcode://payment/callback?provider=zai",
-        "&channel=paypal",
-        "&status=return",
-      ]),
-    ).toBe("zcode://payment/callback?provider=zai&channel=paypal&status=return");
+    ).toBe("zcode://workspace/open?path=%2Ftmp&x=1");
     expect(
       extractDeepLinkUrlFromArgs([
         "/Applications/ZCode.app/Contents/MacOS/ZCode",
@@ -130,12 +97,12 @@ describe("desktop deep link url helpers", () => {
 
     const additionalData = createDeepLinkSingleInstanceData([
       "/opt/ZCode/zcode",
-      "zcode%253A%252F%252Foauth%252Fcallback%253Fcode%253D1%2526state%253Ds",
+      "zcode%253A%252F%252Fworkspace%252Fopen%253Fpath%253D%25252Ftmp",
       "--open-workspace=C:\\Users\\demo\\Project A",
     ]);
 
     expect(extractDeepLinkUrlFromSingleInstanceData(additionalData)).toBe(
-      "zcode://oauth/callback?code=1&state=s",
+      "zcode://workspace/open?path=%2Ftmp",
     );
     expect(extractOpenWorkspacePathFromSingleInstanceData(additionalData)).toBe(
       "C:\\Users\\demo\\Project A",

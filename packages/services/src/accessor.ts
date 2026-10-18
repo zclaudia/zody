@@ -17,7 +17,6 @@ import type { IZCodeSessionService } from "./zcode-session/zcodeSession.js";
 import type { ICuaPermissionService } from "./cua-permission-broker/cuaPermissionService.js";
 import type { IBotsService } from "./bots/bots.js";
 import type { IFileWatcherService } from "./fileWatcher/fileWatcher.js";
-import type { IOAuthService } from "./oauth/oauth.js";
 import type {
   IModelSelectionService,
   IProviderSettingsService,
@@ -66,7 +65,7 @@ export interface IServiceAccessor {
   // fork（F4.8）：conversationShareService（会话分享发布/导入）随分享功能删除。
   readonly botsService: IBotsService;
   readonly fileWatcherService: IFileWatcherService;
-  readonly oauthService: IOAuthService;
+  // fork（F4.7）：oauthService 随官方账号 OAuth 链删除。
   /** 当前 Environment 的 Provider 配置与设置视图。 */
   readonly providerSettingsService: IProviderSettingsService;
   /** 当前 Environment Registry 发布的唯一模型选择 View。 */

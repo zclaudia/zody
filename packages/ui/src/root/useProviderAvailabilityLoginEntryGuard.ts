@@ -11,7 +11,6 @@ export interface ProviderAvailabilityLoginEntryGuardResult {
 
 export function useProviderAvailabilityLoginEntryGuard({
   enabled = true,
-  isRestoringOAuthSession,
   modelSelectionView,
   modelSelectionError,
   refreshProviderState,
@@ -19,7 +18,6 @@ export function useProviderAvailabilityLoginEntryGuard({
   setLoginEntryOpen,
 }: {
   enabled?: boolean;
-  isRestoringOAuthSession: boolean;
   modelSelectionView: ModelSelectionView | null;
   modelSelectionError?: Error;
   refreshProviderState: () => Promise<void>;
@@ -94,11 +92,7 @@ export function useProviderAvailabilityLoginEntryGuard({
       return;
     }
 
-    if (
-      startupCheckCompletedRef.current ||
-      isRestoringOAuthSession ||
-      !providerAvailabilityHydrated
-    ) {
+    if (startupCheckCompletedRef.current || !providerAvailabilityHydrated) {
       return;
     }
 
@@ -110,7 +104,6 @@ export function useProviderAvailabilityLoginEntryGuard({
     });
   }, [
     enabled,
-    isRestoringOAuthSession,
     modelSelectionError,
     providerAvailabilityHydrated,
     syncLoginEntryWithProviderAvailability,

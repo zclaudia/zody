@@ -1,5 +1,4 @@
 interface RootStartupGateState {
-  isResolvingStartupAuthState: boolean;
   isResolvingProviderStartupState: boolean;
   isRestoring: boolean;
   isBootstrappingInitialWorkspace: boolean;
@@ -16,7 +15,6 @@ interface FallbackWorkspaceCreateState {
 }
 
 interface ProviderStartupSyncState {
-  providerFamilyDomainMigrationComplete: boolean;
   modelSelectionViewHydrated: boolean;
 }
 
@@ -32,7 +30,6 @@ interface ProviderStartupResolutionState {
 
 export function shouldBlockRootRender(state: RootStartupGateState): boolean {
   return (
-    state.isResolvingStartupAuthState ||
     state.isResolvingProviderStartupState ||
     state.isRestoring ||
     state.isBootstrappingInitialWorkspace
@@ -79,8 +76,6 @@ export function shouldOpenFallbackWorkspaceAfterCreate(
 export function isProviderStartupSyncPending(
   state: ProviderStartupSyncState,
 ): boolean {
-  return (
-    !state.providerFamilyDomainMigrationComplete ||
-    !state.modelSelectionViewHydrated
-  );
+  // fork（F4.7）：OAuth/providerFamilyDomain 迁移已完成判断随账号链删除，只等 Selection View。
+  return !state.modelSelectionViewHydrated;
 }

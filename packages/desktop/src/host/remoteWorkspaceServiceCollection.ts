@@ -16,7 +16,6 @@ import {
   IZCodeSessionService,
   IBotsService,
   IFileWatcherService,
-  IOAuthService,
   IModelSelectionService,
   IProviderSettingsService,
   IUsageStatsService,
@@ -44,9 +43,6 @@ import {
   createNodeApiClient,
   createHostApiNetworkTransport,
   registerHostApiNetworkTransportForDispose,
-  createOAuthService,
-  createOAuthProviderLogoutHandler,
-  createAccountProviderCredentialStore,
   createSettingsSyncService,
   createBotsService,
   createUsageStatsService,
@@ -57,7 +53,6 @@ import {
   createSubagentsService,
   createMemoryService,
   createOutputStyleService,
-  OAuthCredentialRepo,
 } from "@zcode/services/node";
 import type { ZCodeSessionRuntimePreferencesResult } from "@zcode/shared";
 import { assertLegacyRemoteWorkspaceRpcContract } from "./legacyRemoteWorkspaceRpcContract.js";
@@ -86,9 +81,6 @@ export function createRemoteWorkspaceServiceCollection(params: {
   assertLegacyRemoteWorkspaceRpcContract(params.connectionServices);
   const localSettingService = createSettingService();
   const localCredentialService = createCredentialService();
-  const localAccountProviderCredentialStore = createAccountProviderCredentialStore({
-    credentialService: localCredentialService,
-  });
   const hostApiNetworkTransport = createHostApiNetworkTransport(async () => {
     const settings = await localSettingService.get();
     return {
@@ -101,19 +93,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
     fetchImpl: hostApiNetworkTransport.fetch,
   });
   const localBroadcastService = createBroadcastService(params.parentPort);
-  let handleOAuthProviderLogout: ReturnType<typeof createOAuthProviderLogoutHandler> | null = null;
-  const localOAuthCredentialRepo = new OAuthCredentialRepo(localCredentialService, {
-    onCorruptOAuthSessionCleared: async (providers) => {
-      // remote workspace host 读写的是本机 OAuth 凭据。
-      // 损坏恢复必须和 local host 一样清理 Start/Coding Plan 派生 provider，避免手机 remote 残留旧 key。
-      await Promise.all(
-        providers.map((provider) => handleOAuthProviderLogout?.(provider) ?? Promise.resolve()),
-      );
-    },
-  });
-  handleOAuthProviderLogout = createOAuthProviderLogoutHandler({
-    accountProviderCredentialStore: localAccountProviderCredentialStore,
-  });
+  // fork（F4.7）：remote workspace host 不再重建 OAuth 服务/凭据仓库/账号派生 Key logout。
   // fork（F4.8）：远端 workspace 的会话分享服务装配已删除。
   const reportingRemoteZCodeTaskService = params.createReportingRemoteZCodeTaskService(
     params.connectionServices.zcodeTaskService,
@@ -233,7 +213,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
   // Web 手机远控进入 SSH task 时只连到 remote workspace host，
   // 没有桌面 renderer 那层 `baseServices + remoteServices` 合并。
   // 因此这里为 remote workspace host 补齐本地全局 channel；文件、终端、ZCode Agent 仍来自远端，
-  // 设置、凭据、OAuth、模型供应商和 settings-sync 继续读写本机配置。
+  // 设置、凭据、模型供应商和 settings-sync 继续读写本机配置。
   const services = new ServiceCollection()
     .register(IFileService, params.connectionServices.fileService)
     .register(IGitService, params.connectionServices.gitService)
@@ -263,13 +243,6 @@ export function createRemoteWorkspaceServiceCollection(params: {
       }),
     )
     .register(IFileWatcherService, params.connectionServices.fileWatcherService)
-    .register(
-      IOAuthService,
-      createOAuthService(localCredentialService, {
-        apiClient: localApiClient,
-        onProviderLogout: handleOAuthProviderLogout,
-      }),
-    )
     // Provider/Model 事实属于目标 Environment。远端 workspace 的选择和设置视图
     // 必须直接读取远端 Registry，不能继续显示 Desktop 本地 Provider。
     .register(IModelSelectionService, params.connectionServices.modelSelectionService)
@@ -336,7 +309,6 @@ export function createServerRemoteWorkspaceServiceCollection(params: {
     // fork（F4.8）：IConversationShareService 兜底注册随会话分享功能删除。
     .register(IBotsService, params.connectionServices.botsService)
     .register(IFileWatcherService, params.connectionServices.fileWatcherService)
-    .register(IOAuthService, params.connectionServices.oauthService)
     .register(IModelSelectionService, params.connectionServices.modelSelectionService)
     .register(IProviderSettingsService, params.connectionServices.providerSettingsService)
     .register(IUsageStatsService, params.connectionServices.usageStatsService)
@@ -357,7 +329,7 @@ export function createServerRemoteWorkspaceServiceCollection(params: {
       IPromptAttachmentTransferService,
       params.connectionServices.promptAttachmentTransferService,
     );
-  // Server 的设置与 OAuth 由 Server 持有，引导记录也必须透传同一服务，不能借用桌面记录。
+  // Server 的设置由 Server 持有，引导记录必须透传同一服务，不能借用桌面记录。
   // 保留 accessor 的可选能力约定；当前 RemoteServiceAccess 会提供此代理。
   if (params.connectionServices.onboardingRecordService) {
     services.register(IOnboardingRecordService, params.connectionServices.onboardingRecordService);

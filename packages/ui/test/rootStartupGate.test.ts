@@ -12,7 +12,6 @@ describe("Root startup gate", () => {
   it("会在恢复标签页时阻塞首屏", () => {
     expect(
       shouldBlockRootRender({
-        isResolvingStartupAuthState: false,
         isResolvingProviderStartupState: false,
         isRestoring: true,
         isBootstrappingInitialWorkspace: false,
@@ -23,7 +22,6 @@ describe("Root startup gate", () => {
   it("会在注入初始工作区时阻塞首屏", () => {
     expect(
       shouldBlockRootRender({
-        isResolvingStartupAuthState: false,
         isResolvingProviderStartupState: false,
         isRestoring: false,
         isBootstrappingInitialWorkspace: true,
@@ -31,21 +29,9 @@ describe("Root startup gate", () => {
     ).toBe(true);
   });
 
-  it("会在启动鉴权状态未落定时阻塞首屏", () => {
-    expect(
-      shouldBlockRootRender({
-        isResolvingStartupAuthState: true,
-        isResolvingProviderStartupState: false,
-        isRestoring: false,
-        isBootstrappingInitialWorkspace: false,
-      }),
-    ).toBe(true);
-  });
-
   it("会在 provider 登录入口判定未落定时阻塞首屏", () => {
     expect(
       shouldBlockRootRender({
-        isResolvingStartupAuthState: false,
         isResolvingProviderStartupState: true,
         isRestoring: false,
         isBootstrappingInitialWorkspace: false,
@@ -56,7 +42,6 @@ describe("Root startup gate", () => {
   it("所有启动检查完成后才放行首屏", () => {
     expect(
       shouldBlockRootRender({
-        isResolvingStartupAuthState: false,
         isResolvingProviderStartupState: false,
         isRestoring: false,
         isBootstrappingInitialWorkspace: false,
@@ -66,13 +51,11 @@ describe("Root startup gate", () => {
 
   it("provider 启动同步未完成时会延后首屏放行", () => {
     const providerStartupSyncPending = isProviderStartupSyncPending({
-      providerFamilyDomainMigrationComplete: false,
-      modelSelectionViewHydrated: true,
+      modelSelectionViewHydrated: false,
     });
     expect(providerStartupSyncPending).toBe(true);
     expect(
       shouldBlockRootRender({
-        isResolvingStartupAuthState: false,
         isResolvingProviderStartupState: providerStartupSyncPending,
         isRestoring: false,
         isBootstrappingInitialWorkspace: false,
@@ -113,7 +96,6 @@ describe("Root startup gate", () => {
       shouldShowRootStartupLoading({
         isDesktop: true,
         welcomeScreenOpen: true,
-        isResolvingStartupAuthState: false,
         isResolvingProviderStartupState: true,
         isRestoring: false,
         isBootstrappingInitialWorkspace: false,

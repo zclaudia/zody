@@ -16,7 +16,6 @@ import {
   TID_V4_SESSION_PANE,
   TID_WORKSPACE_ITEM,
   TID_WORKSPACE_PATH,
-  ZAI_PROVIDER_ID,
   testId,
 } from "@zcode/shared";
 import type { AppSettings } from "@zcode/shared";
@@ -49,11 +48,6 @@ const CLI_CONFIG_FILE = join(E2E_STORAGE_ROOT, "cli", "config.json");
 const AGENTS_STATE_FILE = join(E2E_APP_DATA_DIR, "agents-state.json");
 const REMOVE_APP_DATA_RETRY_DELAYS_MS = [200, 500, 1000, 2000, 3000];
 const REMOVE_APP_DATA_MAX_ATTEMPTS = REMOVE_APP_DATA_RETRY_DELAYS_MS.length;
-const E2E_USER_PROFILE = {
-  displayName: "ZCode E2E",
-  id: "zcode-e2e-user",
-  username: "zcode-e2e-user",
-};
 
 interface WindowInfo {
   id: number;
@@ -893,26 +887,7 @@ export async function restoreCliConfig(snapshot: CliConfigSnapshot): Promise<voi
   await writeFile(CLI_CONFIG_FILE, snapshot.content, "utf-8");
 }
 
-export async function seedCredentials(authToken = "mock-token") {
-  await ensureAppDataDir();
-  // Bugfix: 登录恢复已经迁移到 OAuth 命名空间；只写旧 auth_token
-  // 会让 e2e 在欢迎页等待 workspace，录制 provider 流之前就失败。
-  await writeFile(
-    CREDENTIALS_FILE,
-    JSON.stringify(
-      {
-        auth_token: authToken,
-        "oauth:active_provider": ZAI_PROVIDER_ID,
-        [`oauth:${ZAI_PROVIDER_ID}:access_token`]: authToken,
-        [`oauth:${ZAI_PROVIDER_ID}:user_info`]: JSON.stringify(E2E_USER_PROFILE),
-        zcodejwttoken: authToken,
-      },
-      null,
-      2,
-    ),
-    "utf-8",
-  );
-}
+// fork（F4.7）：seedCredentials（官方账号 OAuth 凭据种子）随 OAuth spec 删除。
 
 export interface WorkspaceAppProbeParams {
   workspacePathTestId: string;

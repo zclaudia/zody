@@ -81,7 +81,6 @@ function renderEffects({
     webRemoteAccessEnabled: remoteAccessEnabled,
     hasCompletedFullTabRestore,
     intl: { formatMessage: () => "" } as never,
-    isRestoringOAuthSession: false,
     canBootstrapInitialWorkspace: false,
   } satisfies HookProps;
 

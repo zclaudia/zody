@@ -19,7 +19,6 @@ import {
   IZCodeTaskService,
   IBotsService,
   IFileWatcherService,
-  IOAuthService,
   IModelSelectionService,
   IProviderSettingsService,
   IUsageStatsService,
@@ -197,7 +196,7 @@ describe("remote workspace host service wiring", () => {
     expect(services.get(ICredentialService)).toBeTruthy();
     expect(services.get(IBroadcastService)).toBeTruthy();
     expect(services.get(IBotsService)).toBeTruthy();
-    expect(services.get(IOAuthService)).toBeTruthy();
+    // fork（F4.7）：IOAuthService 随官方账号链删除，集合不再注册。
     expect(services.get(IModelSelectionService)).toBe(remoteServices.modelSelectionService);
     expect(services.get(IProviderSettingsService)).toBe(remoteServices.providerSettingsService);
     expect(services.get(IUsageStatsService)).toBeTruthy();
@@ -480,7 +479,6 @@ describe("remote workspace host service wiring", () => {
       credentialService: { remote: "credential" },
       broadcastService: { remote: "broadcast" },
       botsService: { remote: "bots" },
-      oauthService: { remote: "oauth" },
       usageStatsService: { remote: "usage-stats" },
       pluginManagementService: { remote: "plugin-management" },
       subagentsService: { remote: "subagents" },
@@ -501,7 +499,6 @@ describe("remote workspace host service wiring", () => {
     expect(services.get(ICredentialService)).toBe(remoteServices.credentialService);
     expect(services.get(IBroadcastService)).toBe(remoteServices.broadcastService);
     expect(services.get(IBotsService)).toBe(remoteServices.botsService);
-    expect(services.get(IOAuthService)).toBe(remoteServices.oauthService);
     expect(services.get(IModelSelectionService)).toBe(remoteServices.modelSelectionService);
     expect(services.get(IProviderSettingsService)).toBe(remoteServices.providerSettingsService);
     expect(services.get(IUsageStatsService)).toBe(remoteServices.usageStatsService);

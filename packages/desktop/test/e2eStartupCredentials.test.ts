@@ -9,15 +9,6 @@ const restoredOAuthCredentials = {
 };
 
 describe("desktop e2e startup credentials", () => {
-  it("供应商响应式 spec 保留本地 balance mock 所需的 JWT", () => {
-    expect(
-      createE2EStartupCredentialSeed({
-        specs: ["/repo/packages/desktop/test/e2e/provider-family-responsive.test.ts"],
-        legacyAuthToken: "fake-auth-token",
-        restoredOAuthCredentials,
-      }).zcodejwttoken,
-    ).toBe("fake-zcode-jwt");
-  });
   it("纯 Provider 冷恢复 spec 不播种会访问账号控制面的假登录态", () => {
     expect(
       createE2EStartupCredentialSeed({
@@ -91,21 +82,6 @@ describe("desktop e2e startup credentials", () => {
       "oauth:active_provider": "zai",
       "oauth:zai:access_token": "fake-access-token",
       "oauth:zai:user_info": "{}",
-    });
-  });
-
-  it("JWT 401 自动退出专项 spec 保留完整 restored OAuth fixture", () => {
-    expect(
-      createE2EStartupCredentialSeed({
-        specs: [
-          "/repo/packages/desktop/test/e2e/manual-review/pending/jwt-401-auto-logout.test.ts",
-        ],
-        legacyAuthToken: "fake-auth-token",
-        restoredOAuthCredentials,
-      }),
-    ).toEqual({
-      auth_token: "fake-auth-token",
-      ...restoredOAuthCredentials,
     });
   });
 

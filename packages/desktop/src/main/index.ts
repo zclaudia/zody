@@ -48,9 +48,6 @@ import {
   createCredentialService,
   createSettingService,
   createTelemetryCore,
-  createTelemetryMarketingParamsLoader,
-  createTelemetryUserIdLoader,
-  createTelemetryAuthorizationLoader,
   buildRuntimeProcessEnvPatch,
   captureLoginShellEnvSnapshot,
   getConversationWorkspaceDir,
@@ -182,12 +179,12 @@ import {
 } from "./desktopHostProcess.js";
 import { spawnCronScheduler, type CronSchedulerHandle } from "./desktopCronScheduler.js";
 import {
-  clearOAuthRoutesForWindow,
+  clearDeepLinkRoutesForWindow,
   handleDeepLink,
   handleOpenWorkspacePath,
   registerDeepLinkProtocol,
   resolveExternalWorkspaceOpenDialogCopy,
-} from "./desktopOAuthDeepLink.js";
+} from "./desktopDeepLink.js";
 import { handleSecondInstanceWorkspaceRequest } from "./desktopSecondInstanceDeepLink.js";
 import { installFinderOpenFolderWorkflow } from "./desktopFinderOpenFolderWorkflow.js";
 import { installWindowsOpenFolderContextMenu } from "./desktopWindowsOpenFolderContextMenu.js";
@@ -738,7 +735,6 @@ remoteGatewayBackend.onChannelClosed((info) =>
 );
 const appLaunchGate = createAppLaunchGate();
 const appLaunchCoordinator = createAppLaunchCoordinator(appLaunchGate);
-const appTelemetryCredentialService = createCredentialService();
 async function resolveCurrentZCodeEndpointOrigin() {
   return resolveZCodeEndpointOrigin({
     env: ZCODE_ENV,
@@ -746,10 +742,9 @@ async function resolveCurrentZCodeEndpointOrigin() {
     overrideOrigin: (await mainSettingService.get()).zcodeEndpointOrigin,
   });
 }
+// fork（F4.7）：官方账号 OAuth 下线后不再注入 userId/授权/营销参数 loader，
+// TelemetryCore 回落到匿名遥测（空 userId、无 Authorization）。
 const appTelemetryCore = createTelemetryCore({
-  loadUserId: createTelemetryUserIdLoader(appTelemetryCredentialService),
-  loadAuthorization: createTelemetryAuthorizationLoader(appTelemetryCredentialService),
-  loadMarketingParams: createTelemetryMarketingParamsLoader(appTelemetryCredentialService),
   resolveZCodeEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
   fetchImpl: createDesktopTelemetryFetch(net),
 });
@@ -779,7 +774,7 @@ function syncAppTelemetryInteractiveState(): void {
       (win) => !win.isDestroyed() && win.isVisible() && win.isFocused(),
     ),
   );
-  // 登出/切号发生在 host 子进程，主进程无即时信号；窗口聚焦时兜底刷新 ARMS user.name
+  // fork（F4.7）：ARMS user.name 只使用 deviceMid，窗口聚焦时幂等刷新。
   void armsUserIdentitySync.refresh();
 }
 
@@ -2404,9 +2399,6 @@ app.whenReady().then(async () => {
   registerRemoteIpcHandlers({
     logger,
     appTelemetryRuntime,
-    onOAuthCallbackHandledSideEffect: () => {
-      void armsUserIdentitySync.refresh();
-    },
     appTelemetryCore,
     reportRemoteUsageEvent: reportRemoteUsageEventForRenderer,
     armsCustomContext: {
@@ -2539,8 +2531,8 @@ app.on("browser-window-created", (_, win) => {
     }
     // Electron 进入 closed 回调时，win.webContents 可能已经被销毁。
     // 之前这里现取 win.webContents.id，会在关窗收尾阶段抛出 "Object has been destroyed"。
-    // 改为在窗口创建时缓存 webContents id，确保清理 OAuth 路由时不再访问已销毁对象。
-    clearOAuthRoutesForWindow(windowWebContentsId);
+    // 改为在窗口创建时缓存 webContents id，确保清理深链路由时不再访问已销毁对象。
+    clearDeepLinkRoutesForWindow(windowWebContentsId);
     // 录制中关窗/崩溃时 renderer 不会发复位 IPC，这里按发起 webContents 复位录制态，
     // 防止菜单 accelerator 被永久摘除。
     resetShortcutRecordingForWebContents(windowWebContentsId);

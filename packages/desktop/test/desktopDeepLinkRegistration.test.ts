@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { registerDeepLinkProtocol } from "@desktop/main/desktopOAuthDeepLink";
+import { registerDeepLinkProtocol } from "@desktop/main/desktopDeepLink";
 import {
   createDeepLinkSingleInstanceData,
   extractDeepLinkUrlFromArgs,

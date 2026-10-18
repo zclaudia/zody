@@ -83,8 +83,8 @@ export function useRootPlatformEffects({
   // fork（F4.8）：分享导入的 pending/active/进度 toast refs 随会话分享功能删除。
 
   useEffect(() => {
-    // 启动时必须先判断 OAuth 本地会话，再恢复历史/初始 workspace。
-    // 如果这里抢先 addTab，未登录用户会先看到主界面，之后才被登录页覆盖。
+    // fork（F4.7）：OAuth 会话恢复已删除，启动门禁只等 provider 快照；
+    // 恢复历史/初始 workspace 仍受 canBootstrapInitialWorkspace 控制。
     if (!canBootstrapInitialWorkspace || didBootstrapInitialWorkspaceRef.current) {
       return;
     }

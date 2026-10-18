@@ -1,21 +1,14 @@
 /* oxlint-disable eslint(max-lines) -- Deep Link 路由必须在同一模块内保持协议校验和投递原子性。 */
+// fork（F4.7）：原 desktopOAuthDeepLink 在官方账号/支付深链删除后只保留工作区深链，
+// 更名为 desktopDeepLink。
 import { statSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 import { app, BrowserWindow, dialog } from "electron";
 import type { WebContents } from "electron";
-import {
-  type Locale,
-  type OAuthProviderId,
-  type OAuthStateRegistration,
-  PlatformChannels,
-} from "@zcode/shared";
+import { type Locale, PlatformChannels } from "@zcode/shared";
 // fork（F4.8）：share import 深链判定（isShareImportUrl/extractShareImportCode）随会话分享功能删除。
-import {
-  extractWorkspaceOpenPath,
-  isOAuthCallbackUrl,
-  isPaymentCallbackUrl,
-  isWorkspaceOpenUrl,
-} from "./desktopDeepLinkUrl.js";
+// fork（F4.7）：OAuth/支付回调判定随官方账号链删除，深链只剩工作区打开。
+import { extractWorkspaceOpenPath, isWorkspaceOpenUrl } from "./desktopDeepLinkUrl.js";
 import { registerLinuxDeepLinkProtocol } from "./desktopLinuxDeepLinkRegistration.js";
 
 interface DeepLinkWorkspaceGateOptions {
@@ -33,12 +26,6 @@ export interface ExternalWorkspaceOpenDialogCopy {
   detail: (path: string) => string;
 }
 
-interface OAuthRouteTarget {
-  windowId: number;
-  provider?: OAuthProviderId;
-}
-
-const oauthStateToWindow = new Map<string, OAuthRouteTarget>();
 const rendererReadyWebContentsIds = new Set<number>();
 let pendingOpenWorkspaceRequest: {
   path: string;
@@ -46,33 +33,9 @@ let pendingOpenWorkspaceRequest: {
 } | null = null;
 // fork（F4.8）：pending share import 队列随分享导入深链删除。
 
-export function parseOAuthStateRegistration(payload: unknown): OAuthStateRegistration | null {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-
-  const candidate = payload as {
-    state?: unknown;
-    provider?: unknown;
-  };
-
-  if (typeof candidate.state !== "string" || candidate.state.trim() === "") {
-    return null;
-  }
-
-  if (candidate.provider != null && typeof candidate.provider !== "string") {
-    return null;
-  }
-
-  return {
-    state: candidate.state.trim(),
-    ...(typeof candidate.provider === "string" ? { provider: candidate.provider } : {}),
-  };
-}
-
 function focusDeepLinkTargetWindow(targetWindow: BrowserWindow): void {
   // macOS 的 open-url 回调只会把 URL 投递给当前实例，不会自动把窗口带回前台。
-  // 之前这里只做了 IPC 转发，用户完成 OAuth 或从系统服务打开目录后仍停留在外部应用。
+  // 之前这里只做了 IPC 转发，用户从系统服务打开目录后仍停留在外部应用。
   // 这里在路由成功后显式激活并聚焦目标窗口，统一多平台回跳体验。
   if (targetWindow.isMinimized()) {
     targetWindow.restore();
@@ -264,30 +227,8 @@ export function handleDeepLink(
     });
   }
 
-  if (isPaymentCallbackUrl(parsedUrl)) {
-    // fork（F4.1a）：官方账号支付链下线，zcode://payment/callback 不再路由到 renderer，
-    // 也不进入 pending 缓存；只记 info 日志供诊断，不报错弹窗（总纲阶段 4 产品规则）。
-    logger.info("[deep-link] 支付回调已随官方账号下线，忽略此次回调", {
-      host: parsedUrl.hostname,
-      path: parsedUrl.pathname,
-    });
-    return false;
-  }
-
-  // fork（F4.8）：zcode://share/import 深链分支随会话分享功能删除，不再路由到 renderer。
-
-  if (!isOAuthCallbackUrl(parsedUrl)) {
-    return false;
-  }
-
-  // fork（F4.1a）：官方账号 OAuth 下线，zcode://oauth/callback 不再路由到 renderer，
-  // 也不进入 pending 缓存；只记 info 日志供诊断，不报错弹窗（总纲阶段 4 产品规则）。
-  logger.info("[deep-link] OAuth 回调已随官方账号下线，忽略此次回调", {
-    protocol: parsedUrl.protocol,
-    host: parsedUrl.hostname,
-    path: parsedUrl.pathname,
-    hasState: parsedUrl.searchParams.has("state"),
-  });
+  // fork（F4.7）：OAuth/支付回调路由随官方账号链删除；其它未知深链一律忽略。
+  // fork（F4.8）：zcode://share/import 深链分支随会话分享功能删除。
   return false;
 }
 
@@ -345,21 +286,11 @@ export function registerDeepLinkProtocol(
   }
 }
 
-export function registerOAuthState(windowId: number, registration: OAuthStateRegistration): void {
-  oauthStateToWindow.set(registration.state, {
-    windowId,
-    provider: registration.provider,
-  });
-
-  setTimeout(() => oauthStateToWindow.delete(registration.state), 5 * 60 * 1000);
-}
-
-export function deliverPendingDeepLink(webContents: WebContents): boolean {
+export function deliverPendingDeepLink(webContents: WebContents): void {
   rendererReadyWebContentsIds.add(webContents.id);
 
-  // fork（F4.1a/F4.8）：OAuth/支付回调不再进入 pending 缓存（收到即忽略），
-  // share import 随会话分享删除，ready 投递只剩 workspace open；返回值保留给
-  // RendererReady 遥测的 hasPendingOAuthCallback 字段，账号下线后恒为 false。
+  // fork（F4.8）：OAuth/支付回调与 share import 不再进入 pending 缓存，
+  // renderer ready 投递只剩 workspace open。
   if (
     pendingOpenWorkspaceRequest &&
     (pendingOpenWorkspaceRequest.targetWebContentsId == null ||
@@ -368,19 +299,13 @@ export function deliverPendingDeepLink(webContents: WebContents): boolean {
     webContents.send(PlatformChannels.OpenWorkspacePath, pendingOpenWorkspaceRequest.path);
     pendingOpenWorkspaceRequest = null;
   }
-  return false;
 }
 
-export function clearOAuthRoutesForWindow(windowId: number): void {
+export function clearDeepLinkRoutesForWindow(windowId: number): void {
   rendererReadyWebContentsIds.delete(windowId);
   if (pendingOpenWorkspaceRequest?.targetWebContentsId === windowId) {
     pendingOpenWorkspaceRequest = null;
   }
   // fork（F4.8）：pending share import 清理随分享导入深链删除。
-
-  for (const [state, routeTarget] of oauthStateToWindow) {
-    if (routeTarget.windowId === windowId) {
-      oauthStateToWindow.delete(state);
-    }
-  }
+  // fork（F4.7）：OAuth state → window 路由表随官方账号链删除。
 }

@@ -109,13 +109,6 @@ vi.mock("@/hooks/useGlobalTaskList.js", () => ({
   useGlobalTaskList: mockUseGlobalTaskList,
 }));
 
-vi.mock("@/hooks/useTokenRefresh.js", () => ({
-  useTokenRefresh: () => ({
-    tryRefresh: vi.fn(),
-    clearCredentials: vi.fn(),
-  }),
-}));
-
 vi.mock("@/i18n/IntlProvider.js", () => ({
   useZCodeIntl: () => ({
     intl: {
@@ -242,12 +235,6 @@ async function renderRoot(options?: {
         settingService: {
           get: vi.fn(),
           update: vi.fn(),
-        },
-        oauthService: {
-          restoreCachedSession: vi.fn(),
-          restoreSession: vi.fn(),
-          handleCallback: vi.fn(),
-          logout: vi.fn(),
         },
       },
       platform: {

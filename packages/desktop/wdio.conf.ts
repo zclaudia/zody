@@ -60,12 +60,10 @@ import {
   workerSpecsContain,
 } from "./test/e2e/helpers/e2e-worker-isolation.js";
 import { createE2EStartupCredentialSeed } from "./test/e2e/helpers/e2e-startup-credentials.js";
-import { prepareOAuthCompletionRaceFixture } from "./test/e2e/helpers/oauth-completion-race-fixture.js";
-import { prepareAccessToken401Fixture } from "./test/e2e/helpers/access-token-401-fixture.js";
 import { createE2EReplayFixtureVariables } from "./test/e2e/helpers/e2e-runtime-paths.js";
 import { stageE2EAppOutput } from "./test/e2e/helpers/e2e-app-output-stage.js";
 import { ensureSshRemoteReleaseAssets } from "./test/e2e/helpers/e2e-ssh-remote-release-assets.js";
-import { ASK_USER_QUESTION_E2E_CLOCK_SCALE_ENV, BIGMODEL_PROVIDER_ID } from "@zcode/shared";
+import { ASK_USER_QUESTION_E2E_CLOCK_SCALE_ENV } from "@zcode/shared";
 import {
   seedPersonalProviderConfig,
   seedPersonalDefaultModelSelection,
@@ -226,8 +224,6 @@ const UI_SHELL_MANUAL_REVIEW_SPEC_GLOB = "./test/e2e/ui-shell/manual-review/**/*
 const BROWSER_PERMISSION_MANUAL_REVIEW_SPEC_GLOB =
   "./test/e2e/browser-permission/manual-review/**/*.test.ts";
 const GIT_COMMIT_DIALOG_UI_FLOW_SPEC = "git-commit-dialog-ui-flow.test.ts";
-const OAUTH_CREDENTIAL_RECOVERY_SPEC = "oauth-credential-recovery.test.ts";
-const JWT_EXPIRY_REAUTHENTICATION_SPEC = "jwt-expiry-reauthentication.test.ts";
 const PROVIDER_READINESS_AGENT_STARTUP_SPEC = "provider-readiness-agent-startup.test.ts";
 const CONTEXT_WINDOW_COLD_RESUME_SPEC = "conversation-session-context-window-cold-resume.test.ts";
 const PASSIVE_AGENT_STARTUP_SPEC = "workspace-passive-agent-startup.test.ts";
@@ -532,8 +528,6 @@ let upstreamCaptureProxy: E2ENetworkCaptureProxy | null = null;
 let upstreamReplayServer: UpstreamReplayServer | null = null;
 let modelContextBudgetConfigMockServer: ModelContextBudgetConfigMockServer | null = null;
 let dynamicWorkflowConfigMockServer: DynamicWorkflowConfigMockServer | null = null;
-let stopOAuthCompletionRaceFixture: (() => Promise<void>) | null = null;
-let stopAccessToken401Fixture: (() => Promise<void>) | null = null;
 let pluginCdnZipFixtureServer: PluginCdnZipFixtureServer | null = null;
 let upstreamE2EBaseUrl: string = e2eProviderPreset.baseUrl;
 let e2eRunnerExitWatchdog: ReturnType<typeof setTimeout> | null = null;
@@ -1890,8 +1884,6 @@ function seedE2EStartupState(specs: string[] = []) {
     mkdirSync(legacyDefaultProjectPath, { recursive: true });
   }
   const now = Date.now();
-  const oauthCredentialRecoverySpec = isOAuthCredentialRecoverySpec(specs);
-  const jwtExpiryReauthenticationSpec = isJwtExpiryReauthenticationSpec(specs);
   const builtInSubagentModelOverridesSpec = isBuiltInSubagentModelSelectionOverridesSpec(specs);
   const providerReadinessColdStartFixture = usesProviderReadinessColdStartFixture(specs);
   const authProviderId = E2E_AUTH_PROVIDER_ID;
@@ -1977,14 +1969,9 @@ function seedE2EStartupState(specs: string[] = []) {
           // 该 case 只保留本地 Provider 回放，不注入无关账号身份。
           builtInSubagentModelOverridesSpec
           ? {}
-          : oauthCredentialRecoverySpec
-              ? createCorruptOAuthCredentialSeed(authProviderId)
-              : jwtExpiryReauthenticationSpec
-                ? createExpiredJwtOAuthCredentialSeed(authProviderId)
-                // F4.1c：默认基座不再种入任何 OAuth/JWT 凭据（无官方账号）；仅待删清单
-                // spec（Coding Plan 团队/升级、营销、JWT 专项等）保留原账号种子。模型来源
-                // 统一是 seedUpstreamE2EModelConfig 种入的本地桩 BYOK provider。
-                : createE2EStartupCredentialSeed({
+          : // fork（F4.7）：OAuth/JWT 专项 fixture 随 spec 删除；仅「旧版本升级」场景
+            // 保留官方账号种子，供 Host 启动迁移在真实启动路径上清理。
+            createE2EStartupCredentialSeed({
                     specs,
                     legacyAuthToken: E2E_AUTH_TOKEN,
                     restoredOAuthCredentials: {
@@ -2001,17 +1988,9 @@ function seedE2EStartupState(specs: string[] = []) {
   );
 }
 
-function isOAuthCredentialRecoverySpec(specs: string[] = []) {
-  return workerSpecsContain(specs, OAUTH_CREDENTIAL_RECOVERY_SPEC);
-}
-
 // fork（F4.1a）：「从带官方账号数据的旧版本升级」场景（official-account-removal-upgrade.test.ts）。
 function isOfficialAccountRemovalUpgradeSpec(specs: string[] = []) {
   return workerSpecsContain(specs, "official-account-removal-upgrade.test.ts");
-}
-
-function isJwtExpiryReauthenticationSpec(specs: string[] = []) {
-  return workerSpecsContain(specs, JWT_EXPIRY_REAUTHENTICATION_SPEC);
 }
 
 function usesProviderReadinessColdStartFixture(specs: string[] = []) {
@@ -2058,34 +2037,6 @@ async function runGitReviewEntryCommand(cwd: string, args: string[]) {
     encoding: "utf8",
     windowsHide: true,
   });
-}
-
-function createCorruptOAuthCredentialSeed(authProviderId: string): Record<string, string> {
-  const corruptEncryptedValue = "enc:v1:bad.bad.bad";
-  return {
-    // Bugfix: 这个 spec 需要冷启动复现线上“密文存在但当前机器无法解密”的状态；
-    // 只损坏 active provider 就足以触发 OAuth 会话清理，并验证用户仍能看到登录入口。
-    "oauth:active_provider": corruptEncryptedValue,
-    [`oauth:${authProviderId}:access_token`]: "stale-access-token",
-    [`oauth:${authProviderId}:refresh_token`]: "stale-refresh-token",
-    [`oauth:${authProviderId}:user_info`]: JSON.stringify(E2E_USER_PROFILE),
-    [`oauth:${BIGMODEL_PROVIDER_ID}:access_token`]: "stale-bigmodel-access-token",
-    [`oauth:${BIGMODEL_PROVIDER_ID}:refresh_token`]: "stale-bigmodel-refresh-token",
-    [`oauth:${BIGMODEL_PROVIDER_ID}:user_info`]: JSON.stringify(E2E_USER_PROFILE),
-    zcodejwttoken: "stale-zcode-jwt-token",
-  };
-}
-
-function createExpiredJwtOAuthCredentialSeed(authProviderId: string): Record<string, string> {
-  return {
-    "oauth:active_provider": authProviderId,
-    [`oauth:${authProviderId}:access_token`]: "expired-session-access-token",
-    [`oauth:${authProviderId}:refresh_token`]: "expired-session-refresh-token",
-    [`oauth:${authProviderId}:user_info`]: JSON.stringify(E2E_USER_PROFILE),
-    // Bug 回归 fixture：exp=1 明确早于任意测试运行时间；客户端只解析 exp，
-    // 不验证这枚本地测试 JWT 的签名。
-    zcodejwttoken: "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjF9.e2e",
-  };
 }
 
 function shouldSeedGuideInteractionBehavior(specs: string[] = []) {
@@ -3304,12 +3255,6 @@ export const config: WebdriverIO.Config = {
           startPluginCdnZipFixtureIfNeeded,
         });
         await startRequestSecurityFixture(specs, E2E_HOME_DIR);
-        stopOAuthCompletionRaceFixture = await prepareOAuthCompletionRaceFixture(specs);
-        stopAccessToken401Fixture = await prepareAccessToken401Fixture({
-          specs,
-          credentialsFile: E2E_APP_CREDENTIALS_FILE,
-          settingsFile: E2E_APP_SETTINGS_FILE,
-        });
         // resetHome 之后、Electron 启动之前安装，Main -> Host -> Agent 才会同时继承
         // case-owned PATH；其他 spec 由 helper 保持 no-op。
         await installBashPrefixPermissionPnpmShim({
@@ -3393,10 +3338,6 @@ export const config: WebdriverIO.Config = {
           await stopModelContextBudgetConfigE2EMock();
           await stopDynamicWorkflowConfigE2EMock();
           currentE2EElectronAppPid = null;
-          await stopOAuthCompletionRaceFixture?.();
-          stopOAuthCompletionRaceFixture = null;
-          await stopAccessToken401Fixture?.();
-          stopAccessToken401Fixture = null;
           currentE2EBeforeSessionError = null;
           e2eFailureArtifacts = null;
           currentE2EWorkerSessionSpecs = [];
@@ -3470,10 +3411,6 @@ export const config: WebdriverIO.Config = {
           await stopRequestSecurityFixture();
           await stopModelContextBudgetConfigE2EMock();
           await stopDynamicWorkflowConfigE2EMock();
-          await stopOAuthCompletionRaceFixture?.();
-          stopOAuthCompletionRaceFixture = null;
-          await stopAccessToken401Fixture?.();
-          stopAccessToken401Fixture = null;
           await stopPluginCdnZipFixture();
         } finally {
           await cleanupE2EElectronProcesses("onComplete");

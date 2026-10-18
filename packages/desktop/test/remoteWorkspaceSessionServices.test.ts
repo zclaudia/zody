@@ -28,7 +28,6 @@ function makeServices(id: string): IServiceAccessor {
     clientScenesService: { id, service: "clientScenes" },
     settingService: { id, service: "setting" },
     credentialService: { id, service: "credential" },
-    oauthService: { id, service: "oauth" },
     broadcastService: { id, service: "broadcast" },
     modelSelectionService: { id, service: "model-selection" },
     providerSettingsService: { id, service: "provider-settings" },
@@ -71,7 +70,6 @@ describe("buildRemoteWorkspaceSessionServices", () => {
     expect(merged.clientScenesService).toBe(baseServices.clientScenesService);
     expect(merged.settingService).toBe(baseServices.settingService);
     expect(merged.credentialService).toBe(baseServices.credentialService);
-    expect(merged.oauthService).toBe(baseServices.oauthService);
     expect(merged.broadcastService).toBe(baseServices.broadcastService);
   });
 
@@ -88,7 +86,6 @@ describe("buildRemoteWorkspaceSessionServices", () => {
     );
     expect(merged.settingService).toBe(remoteServices.settingService);
     expect(merged.credentialService).toBe(remoteServices.credentialService);
-    expect(merged.oauthService).toBe(remoteServices.oauthService);
     expect(merged.clientScenesService).toBe(remoteServices.clientScenesService);
     expect(merged.broadcastService).toBe(remoteServices.broadcastService);
   });

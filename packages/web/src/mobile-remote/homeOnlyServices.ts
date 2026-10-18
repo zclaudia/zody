@@ -188,17 +188,7 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
     fileWatcherService: createEmptyHomeOnlyService<RootServices["fileWatcherService"]>({
       watch: async () => ({ dispose: () => {} }),
     }),
-    oauthService: createEmptyHomeOnlyService<RootServices["oauthService"]>({
-      getProviders: async () => [],
-      getActiveProvider: async () => null,
-      restoreCachedSession: async () => null,
-      restoreCachedSessionState: async () => ({ status: "signed-out" }),
-      restoreSession: async () => null,
-      refreshToken: async () => {},
-      logout: async () => {},
-      logoutAll: async () => {},
-      cancelPending: async () => {},
-    }),
+    // fork（F4.7）：oauthService 空实现随官方账号 OAuth 链删除。
     providerSettingsService: createEmptyHomeOnlyService<RootServices["providerSettingsService"]>({
       getView: async () => ({ revision: 0, providers: [] }),
       refresh: async () => ({ revision: 0, providers: [] }),

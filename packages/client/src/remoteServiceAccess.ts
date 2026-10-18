@@ -17,7 +17,6 @@ import {
   ICuaPermissionService,
   IBotsService,
   IFileWatcherService,
-  IOAuthService,
   IModelSelectionService,
   IProviderSettingsService,
   IProviderProvisioningTargetService,
@@ -71,7 +70,7 @@ export class RemoteServiceAccess implements IServiceAccessor {
   // fork（F4.8）：conversationShareService 代理随会话分享功能删除。
   readonly botsService: IBotsService;
   readonly fileWatcherService: IFileWatcherService;
-  readonly oauthService: IOAuthService;
+  // fork（F4.7）：oauthService 代理随官方账号 OAuth 链删除。
   readonly providerSettingsService: IProviderSettingsService;
   readonly modelSelectionService: IModelSelectionService;
   /** Host-only target proxy；不属于 IServiceAccessor，避免向 Renderer 暴露 Secret 写入接口。 */
@@ -152,9 +151,6 @@ export class RemoteServiceAccess implements IServiceAccessor {
     );
     this.fileWatcherService = ProxyChannel.toService<IFileWatcherService>(
       channelClient.getChannel(IFileWatcherService.channelName),
-    );
-    this.oauthService = ProxyChannel.toService<IOAuthService>(
-      channelClient.getChannel(IOAuthService.channelName),
     );
     this.providerSettingsService = ProxyChannel.toService<IProviderSettingsService>(
       channelClient.getChannel(IProviderSettingsService.channelName),
