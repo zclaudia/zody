@@ -47,8 +47,6 @@
   "packages/shared/test/telemetryRedaction.test.ts": 2,
   "packages/shared/test/validation.test.ts": 1,
   "packages/ui/src/lib/productDocs.ts": 1,
-  "packages/ui/src/v4/featureSuggestedPrompts.ts": 1,
-  "packages/ui/src/v4/officeSuggestedPrompts.ts": 16,
   "packages/ui/src/WelcomeScreen.tsx": 1,
   "packages/ui/test/browser/manual-review/pending/provider-settings-batch.test.mjs": 2,
   "packages/ui/test/chatErrorBannerTelemetry.test.ts": 1,
