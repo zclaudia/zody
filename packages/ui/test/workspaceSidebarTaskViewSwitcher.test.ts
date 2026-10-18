@@ -105,8 +105,10 @@ describe("WorkspaceSidebar task view switcher", () => {
 
     expect(source).not.toContain("OffPeakSidebarGroup");
     expect(source).not.toContain("data-workspace-grouped-system-stack");
-    // 闲时组头「+」路由到 Automations：Section 通过该 prop 拿到入口。
-    expect(source).toContain("onOpenAutomations={handleOpenAutomationsMain}");
+    // fork（F4.3）：闲时任务全链路删除后，闲时组头「+」入口不复存在，Section 的
+    // onOpenAutomations prop 已随 F4.3 删除，侧栏不得再传该 prop（传已删除的 prop
+    // 会 typecheck 失败）；此处断言从 D48-A 时期的「必须传递」反转为「必须不传」。
+    expect(source).not.toContain("onOpenAutomations={handleOpenAutomationsMain}");
     expect(source).toContain("onClick={handleOpenPluginStoreMain}");
     expect(source).not.toContain("handleOpenPluginsSettings");
   });

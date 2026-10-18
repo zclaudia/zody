@@ -1642,7 +1642,8 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
                     onGroupedTaskGroupIdsChange={handleGroupedTaskGroupIdsChange}
                     onCollapsedGroupIdsChange={handleCollapsedGroupedTaskGroupIdsChange}
                     onStickyGroupHeaderChange={setGroupedStickyHeader}
-                    onOpenAutomations={handleOpenAutomationsMain}
+                    // fork（F4.3）：WorkspaceGroupedTasksSection 的 onOpenAutomations prop
+                    // （闲时分组「+」跳自动化页）随闲时任务全链路删除，此处不再传递。
                   />
                 ) : taskViewMode === "timeline" ? (
                   <WorkspaceTimelineTasksSection

@@ -3100,7 +3100,10 @@ describe("projection 16MiB fault 与恢复", () => {
     expect(coldHost.errors.some((entry) => entry.scope === "v4.hydrate.payloadTooLarge")).toBe(
       true,
     );
-  });
+    // fork 修复：本用例要构造 16MiB 级 delta 并做 live+cold 两轮投影，单跑就要 ~3.4s，
+    // 全量并行负载下会突破 vitest 缺省 5s 预算被误判超时；给显式预算（同 fault-matrix 的
+    // CELL_TIMEOUT_MS 惯例）。
+  }, 30_000);
 
   it("oversize tool input 不进入 projection，并以同一 protocol fault 终止 turn", async () => {
     const host = makeHost();
