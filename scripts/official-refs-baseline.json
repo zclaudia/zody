@@ -86,11 +86,7 @@
   "packages/ui/test/terminalLinks.test.ts": 2,
   "packages/ui/test/windowsCaptionMenuButton.test.ts": 1,
   "packages/ui/test/workspaceHeaderActionSection.test.ts": 1,
-  "packages/web/src/auth/webZaiOAuthConfig.ts": 2,
-  "packages/web/test/browserOAuthCredentialRepo.test.ts": 1,
   "packages/web/test/externalRelayFrameGapRecovery.test.ts": 1,
-  "packages/web/test/oauthStateCodec.test.ts": 10,
-  "packages/web/test/viteConfigLoad.test.ts": 6,
-  "packages/web/test/webAuthService.test.ts": 26,
+  "packages/web/test/viteConfigLoad.test.ts": 4,
   "scripts/cdn-preload.sh": 1
 }

@@ -738,3 +738,12 @@ packages/ui/test/storeOAuthRestoreState.test.ts
 packages/ui/test/useOAuth.test.ts
 packages/ui/test/zcodeJwtInvalidRestartMarker.test.ts
 packages/services/src/oauth/
+
+# F4.10（Web 端登录删除，2026-10-18）：
+# packages/web/src/auth/ 整树删除（spec 记为 6 个；oauthStateCodec.ts 为 T1.4 后
+# 保留的 OAuth state 编解码，实际共 7 个文件）。目录前缀条目保证 upstream modify 时保持删除；
+# 同时删除只覆盖登录链的三个测试。
+packages/web/src/auth/
+packages/web/test/browserOAuthCredentialRepo.test.ts
+packages/web/test/oauthStateCodec.test.ts
+packages/web/test/webAuthService.test.ts

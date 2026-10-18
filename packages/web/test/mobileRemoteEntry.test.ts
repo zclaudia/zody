@@ -92,7 +92,8 @@ describe("手机独立入口 mobile.html", () => {
 
     expect(relativePaths).toContain(MOBILE_ENTRY);
     expect(relativePaths).toContain("src/mobile-remote/bootstrap.tsx");
-    // 桌面 Web 客户端的 OAuth、分享页与 `/web-remote` 旧路径都不属于手机页面。
+    // 桌面 Web 客户端的登录/分享页与 `/web-remote` 旧路径都不属于手机页面。
+    // F4.10 删除 src/auth/ 后，下面的断言继续锁定手机入口不会重新引入这些模块。
     expect(relativePaths).not.toContain(WEB_ENTRY);
     expect(relativePaths.filter((path) => path.startsWith("src/auth/"))).toEqual([]);
     expect(relativePaths.filter((path) => path.startsWith("src/share/"))).toEqual([]);
