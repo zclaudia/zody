@@ -52,8 +52,11 @@ export function buildCliZCodeSourceHeaders(
   const appVersion = resolveAppVersionForHeaders(env, options);
   const locale = normalizePrintableHeaderValue(Intl.DateTimeFormat().resolvedOptions().locale);
   const timezone = normalizePrintableHeaderValue(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  // fork（F3.1）：端点未配置（空）时不发送 HTTP-Referer，避免空 header；
+  // 也不再通过默认常量回落到官方地址。
+  const zcodeEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(env);
   return {
-    "HTTP-Referer": resolveRuntimeZCodeEndpointOrigin(env),
+    ...(zcodeEndpointOrigin ? { "HTTP-Referer": zcodeEndpointOrigin } : {}),
     "User-Agent": `ZCode/${appVersion ?? "unknown"}`,
     ...(appVersion ? { "X-ZCode-App-Version": appVersion } : {}),
     "X-Title": `Z Code@${sourceTitle}`,

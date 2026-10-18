@@ -1,5 +1,7 @@
 import { buildRuntimeZCodeApiUrl } from "@zcode/shared";
 
+// fork（F3.1）：端点未配置时 buildRuntimeZCodeApiUrl 返回空字符串；
+// clientScenesService 据此关闭动态能力并返回空数据（UI 回落内置内容）。
 export const ZCODE_CLIENT_SCENES_URL = buildRuntimeZCodeApiUrl(
   process.env,
   "/api/v1/client/scenes",

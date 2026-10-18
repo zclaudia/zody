@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DesktopCommandIds } from "@zcode/shared";
+import { DesktopCommandIds, TEST_ZCODE_ENDPOINT_ORIGIN } from "@zcode/shared";
 
 const appMock = {
   isPackaged: false,
@@ -272,15 +272,25 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     );
   });
 
-  it("中文界面打开中文 changelog，其他语言打开英文 changelog", async () => {
+  it("fork（F3.1）：endpoint 未配置时不打开 changelog", async () => {
     const { openChangelog } = await import("../src/main/desktopCommandHandlers.js");
     const { shell } = await import("electron");
 
     await openChangelog("zh-CN");
     await openChangelog("en-US");
 
-    expect(shell.openExternal).toHaveBeenNthCalledWith(1, "https://zcode.z.ai/cn/changelog");
-    expect(shell.openExternal).toHaveBeenNthCalledWith(2, "https://zcode.z.ai/en/changelog");
+    expect(shell.openExternal).not.toHaveBeenCalled();
+  });
+
+  it("中文界面打开中文 changelog，其他语言打开英文 changelog", async () => {
+    const { openChangelog } = await import("../src/main/desktopCommandHandlers.js");
+    const { shell } = await import("electron");
+
+    await openChangelog("zh-CN", "https://docs.example.test");
+    await openChangelog("en-US", "https://docs.example.test");
+
+    expect(shell.openExternal).toHaveBeenNthCalledWith(1, "https://docs.example.test/cn/changelog");
+    expect(shell.openExternal).toHaveBeenNthCalledWith(2, "https://docs.example.test/en/changelog");
   });
 
   it("changelog 按当前非生产 endpoint 打开", async () => {
@@ -312,7 +322,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     expect(onRelaunchApp).toHaveBeenCalledTimes(1);
   });
 
-  it("非生产 endpoint 菜单命令能保存 test、自定义和 reset", async () => {
+  it("非生产 endpoint 菜单命令能保存 test、默认（未配置）和 reset", async () => {
     const { executeDesktopCommand } = await import("../src/main/desktopCommandHandlers.js");
     const onZCodeEndpointChanged = vi.fn();
     const commandOptions = createCommandOptions({ onZCodeEndpointChanged });
@@ -322,7 +332,17 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
       command: DesktopCommandIds.SetZCodeEndpointTest,
     });
     expect(commandOptions.settingService.update).toHaveBeenLastCalledWith({
-      zcodeEndpointOrigin: "https://zcode.z.ai",
+      zcodeEndpointOrigin: TEST_ZCODE_ENDPOINT_ORIGIN,
+    });
+
+    // fork（F3.1）：Production(default) 现在表示「清空覆盖、回到 env/默认」，
+    // 默认端点为空（未配置），不再写入官方地址。
+    await executeDesktopCommand({
+      ...commandOptions,
+      command: DesktopCommandIds.SetZCodeEndpointProduction,
+    });
+    expect(commandOptions.settingService.update).toHaveBeenLastCalledWith({
+      zcodeEndpointOrigin: undefined,
     });
 
     await executeDesktopCommand({
@@ -332,7 +352,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     expect(commandOptions.settingService.update).toHaveBeenLastCalledWith({
       zcodeEndpointOrigin: undefined,
     });
-    expect(onZCodeEndpointChanged).toHaveBeenCalledTimes(2);
+    expect(onZCodeEndpointChanged).toHaveBeenCalledTimes(3);
   });
 
   it("Custom endpoint 菜单打开主进程输入窗并保存提交值", async () => {

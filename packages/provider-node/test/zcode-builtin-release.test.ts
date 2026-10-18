@@ -161,6 +161,44 @@ describe("ZCode Built-in Release", () => {
     ).toThrow("platform");
   });
 
+  it("fork（F3.1）：未配置 Endpoint 使用固定本地目录，不伪造官方地址", () => {
+    const unconfigured = resolveZCodeBuiltinCachePaths({
+      environmentConfigRoot: "/environment",
+      platform: "darwin-aarch64",
+      appVersion: "3.0.0",
+      zcodeEndpointOrigin: "   ",
+    });
+
+    expect(basename(dirname(unconfigured.activeFilePath))).toBe("endpoint-unconfigured");
+    expect(unconfigured.controlFilePath).toBe(
+      join(dirname(unconfigured.activeFilePath), "zcode-builtin-refresh.json"),
+    );
+  });
+
+  it("fork（F3.1）：未配置 Endpoint 时读取内置配置并关闭远端刷新", async () => {
+    const root = await temporaryRoot();
+    const bundledFilePath = join(root, "bundled.json");
+    await writeRelease(bundledFilePath, 1, "bundled-model");
+    const fetchRelease = vi.fn(async () => releaseObject(2, "remote-model"));
+    const source = new EndpointScopedZCodeBuiltinSource({
+      bundledFilePath,
+      environmentConfigRoot: join(root, "environment"),
+      platform: "darwin-aarch64",
+      appVersion: "3.0.0",
+      resolveEndpointOrigin: () => "",
+      fetchRelease,
+      watch: false,
+    });
+
+    expect((await source.read()).providers.get("builtin")?.builtinModelIds).toEqual([
+      "bundled-model",
+    ]);
+    await expect(source.refresh({ force: true })).resolves.toBe("skipped");
+    expect(fetchRelease).not.toHaveBeenCalled();
+    expect(basename(dirname(await source.resolveActiveFilePath()))).toBe("endpoint-unconfigured");
+    source.dispose();
+  });
+
   it("启动选择兼容且 revision 最大的候选，并将它物化为活动文件", async () => {
     const root = await temporaryRoot();
     const bundledFilePath = join(root, "bundled.json");

@@ -19,6 +19,16 @@ import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { getAppConfigDir } from "../paths.js";
 
 const REPORT_ENDPOINT = ZCODE_TELEMETRY_REPORT_ENDPOINT;
+// fork（F3.1）：DEFAULT_ZCODE_ENDPOINT_ORIGIN 为空后不能再假设官方默认源。
+// 遥测只改写「构建期配置的上报端点」到运行时活动端点，因此显式把配置端点 origin 作为源；
+// REPORT_ENDPOINT 为空时 reportEvent 已提前返回，不会走到这里。
+const REPORT_ENDPOINT_ORIGIN = (() => {
+  try {
+    return new URL(REPORT_ENDPOINT).origin;
+  } catch {
+    return undefined;
+  }
+})();
 
 function sessionCreateEventId(userId: string, sessionId: string): string {
   const bytes = createHash("sha256")
@@ -461,6 +471,7 @@ export function createTelemetryCore(dependencies: TelemetryCoreDependencies = {}
       rewriteZCodeEndpointUrl(
         REPORT_ENDPOINT,
         (await dependencies.resolveZCodeEndpointOrigin?.()) ?? REPORT_ENDPOINT,
+        { sourceOrigin: REPORT_ENDPOINT_ORIGIN },
       ),
     );
 

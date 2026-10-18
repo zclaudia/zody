@@ -1,10 +1,21 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ApiClient } from "@zcode/shared";
-import { ZCODE_CLIENT_SCENES_URL } from "../src/providers/api/apiEndpoints.js";
-import { createClientScenesService } from "../src/client-scenes/clientScenesService.js";
+
+const TEST_ZCODE_ORIGIN = "https://scenes.example.test";
 
 describe("ClientScenesService", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
   it("通过统一 ApiClient 读取 client scenes envelope", async () => {
+    vi.stubEnv("ZCODE_ENV", "test");
+    vi.stubEnv("ZCODE_BASE_URL", TEST_ZCODE_ORIGIN);
+    vi.resetModules();
+    const { ZCODE_CLIENT_SCENES_URL } = await import("../src/providers/api/apiEndpoints.js");
+    const { createClientScenesService } =
+      await import("../src/client-scenes/clientScenesService.js");
     const request = vi.fn(
       async () =>
         new Response(
@@ -66,5 +77,24 @@ describe("ClientScenesService", () => {
     expect(request).toHaveBeenCalledWith(ZCODE_CLIENT_SCENES_URL, {
       method: "GET",
     });
+  });
+
+  it("fork（F3.1）：未配置端点时关闭动态 scenes 并返回空数据", async () => {
+    vi.stubEnv("ZCODE_ENV", "production");
+    vi.stubEnv("ZCODE_BASE_URL", "");
+    vi.stubEnv("ZCODE_ENDPOINT_ORIGIN", "");
+    vi.stubEnv("ZCODE_PRODUCTION_BASE_URL", "");
+    vi.stubEnv("ZCODE_TEST_BASE_URL", "");
+    vi.resetModules();
+    const { createClientScenesService } =
+      await import("../src/client-scenes/clientScenesService.js");
+    const request = vi.fn();
+
+    const service = createClientScenesService({
+      apiClient: { request } as unknown as ApiClient,
+    });
+
+    await expect(service.list()).resolves.toEqual({ code: 0, msg: "", data: [] });
+    expect(request).not.toHaveBeenCalled();
   });
 });

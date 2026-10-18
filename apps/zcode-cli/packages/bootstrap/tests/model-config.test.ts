@@ -71,15 +71,32 @@ describe("createRuntimeAiSdkModelExecutionConfig", () => {
 
 describe("buildCliZCodeSourceHeaders", () => {
   it("生成运行时来源 Header，不根据模型或 Provider 推断", () => {
-    expect(
-      buildCliZCodeSourceHeaders(
-        { ZCODE_APP_VERSION: "3.9.0", ZCODE_ENV: "production" },
-        { sourceTitle: "cli" },
-      ),
-    ).toMatchObject({
+    const headers = buildCliZCodeSourceHeaders(
+      { ZCODE_APP_VERSION: "3.9.0", ZCODE_ENV: "production" },
+      { sourceTitle: "cli" },
+    );
+    expect(headers).toMatchObject({
       "User-Agent": "ZCode/3.9.0",
       "X-Title": "Z Code@cli",
       "X-ZCode-App-Version": "3.9.0",
+    });
+    // fork（F3.1）：端点未配置时不发送 HTTP-Referer（也不回落官方地址）。
+    expect(headers).not.toHaveProperty("HTTP-Referer");
+  });
+
+  it("fork（F3.1）：显式配置端点时才发送 HTTP-Referer", () => {
+    expect(
+      buildCliZCodeSourceHeaders(
+        {
+          ZCODE_APP_VERSION: "3.9.0",
+          ZCODE_ENV: "test",
+          ZCODE_BASE_URL: "https://endpoint.example.test",
+        },
+        { sourceTitle: "cli" },
+      ),
+    ).toMatchObject({
+      "HTTP-Referer": "https://endpoint.example.test",
+      "X-Release-Channel": "test",
     });
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   createDesktopContextPromptRollout,
+  createElectronDesktopContextPromptConfigFetcher,
   resolveDesktopContextPromptConfig,
 } from "../src/main/desktopContextPromptRollout.js";
 
@@ -32,9 +33,9 @@ describe("desktopContextPromptRollout", () => {
     expect(
       resolveDesktopContextPromptConfig({ success: false, data: config(true).data }),
     ).toBeNull();
-    expect(
-      resolveDesktopContextPromptConfig({ code: 0, data: { configs: {} } }),
-    ).toEqual({ enabled: false });
+    expect(resolveDesktopContextPromptConfig({ code: 0, data: { configs: {} } })).toEqual({
+      enabled: false,
+    });
     expect(
       resolveDesktopContextPromptConfig({
         code: 0,
@@ -182,14 +183,12 @@ describe("desktopContextPromptRollout", () => {
   it("awaitFirstDecision 在超时窗口内拿到服务端真值", async () => {
     vi.useFakeTimers();
     try {
-      const fetchConfig = vi
-        .fn<(_: AbortSignal) => Promise<unknown>>()
-        .mockImplementation(
-          () =>
-            new Promise((resolve) => {
-              setTimeout(() => resolve(config(true)), 100);
-            }),
-        );
+      const fetchConfig = vi.fn<(_: AbortSignal) => Promise<unknown>>().mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => resolve(config(true)), 100);
+          }),
+      );
       const rollout = createDesktopContextPromptRollout({
         fetchConfig,
         logger: { warn: vi.fn() },
@@ -209,14 +208,12 @@ describe("desktopContextPromptRollout", () => {
   it("awaitFirstDecision 超时回退当前快照，并发调用结果一致，且不阻塞后台请求更新", async () => {
     vi.useFakeTimers();
     try {
-      const fetchConfig = vi
-        .fn<(_: AbortSignal) => Promise<unknown>>()
-        .mockImplementation(
-          () =>
-            new Promise((resolve) => {
-              setTimeout(() => resolve(config(true)), 200);
-            }),
-        );
+      const fetchConfig = vi.fn<(_: AbortSignal) => Promise<unknown>>().mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => resolve(config(true)), 200);
+          }),
+      );
       const rollout = createDesktopContextPromptRollout({
         fetchConfig,
         logger: { warn: vi.fn() },
@@ -244,14 +241,12 @@ describe("desktopContextPromptRollout", () => {
     // 证明"慢响应但成功返回 enabled=true 时，首 Host 最终以 desktop surface 启动"。
     vi.useFakeTimers();
     try {
-      const fetchConfig = vi
-        .fn<(_: AbortSignal) => Promise<unknown>>()
-        .mockImplementation(
-          () =>
-            new Promise((resolve) => {
-              setTimeout(() => resolve(config(true)), 100);
-            }),
-        );
+      const fetchConfig = vi.fn<(_: AbortSignal) => Promise<unknown>>().mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => resolve(config(true)), 100);
+          }),
+      );
       const rollout = createDesktopContextPromptRollout({
         fetchConfig,
         logger: { warn: vi.fn() },
@@ -268,5 +263,17 @@ describe("desktopContextPromptRollout", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("fork（F3.1）：endpoint 未配置时不发起灰度请求，直接返回 disabled", async () => {
+    const fetcher = createElectronDesktopContextPromptConfigFetcher({
+      appVersion: "3.0.0",
+      deviceMid: "mid",
+      resolveEndpointOrigin: async () => "",
+    });
+
+    const payload = await fetcher(new AbortController().signal);
+
+    expect(resolveDesktopContextPromptConfig(payload)).toEqual({ enabled: false });
   });
 });

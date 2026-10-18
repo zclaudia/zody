@@ -49,9 +49,12 @@ export async function startProcessProviderRegistryRuntime(
   // （specs/fork-official-deps-removal-tasks.md F4.1a followUps 实测：E2E 打包 agent 联网时
   // configRevision 被回填为 zcode-builtin:31）。仅显式设置 ZCODE_BUILTIN_REMOTE_REFRESH=1
   // 时启用，留作未来接入自建控制面的过渡开关。
-  const remoteRefreshEnabled = ["1", "true", "yes"].includes(
-    (env.ZCODE_BUILTIN_REMOTE_REFRESH ?? "").trim().toLowerCase(),
-  );
+  // fork（F3.1）：端点未配置（空）时同样关闭远端刷新，避免把空 endpoint 传给下载器。
+  const remoteRefreshEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(env).trim();
+  const remoteRefreshEnabled =
+    ["1", "true", "yes"].includes(
+      (env.ZCODE_BUILTIN_REMOTE_REFRESH ?? "").trim().toLowerCase(),
+    ) && Boolean(remoteRefreshEndpointOrigin);
   const runtime = new NodeProviderRegistryRuntime({
     ...paths,
     ...(bundledFile
@@ -65,7 +68,7 @@ export async function startProcessProviderRegistryRuntime(
                     dirname(paths.zcodeBuiltinFilePath),
                     "zcode-builtin-refresh.json",
                   ),
-                  resolveEndpointKey: () => resolveRuntimeZCodeEndpointOrigin(env),
+                  resolveEndpointKey: () => remoteRefreshEndpointOrigin,
                   fetchRelease: (endpointOrigin, signal) =>
                     downloadZCodeBuiltinRelease({
                       endpointOrigin,
