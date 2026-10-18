@@ -1091,7 +1091,9 @@ describe("设置页 UI polish E2E", () => {
     expect(await modelItem.$('[data-model-input-capability="vision"]').isDisplayed()).toBe(true);
   });
 
-  it("MP-UI-05-remote: 远程 workspace 下也不显示配置同步入口", async function () {
+  // fork（F6.1，决策门 D4a 方案 ii）：SSH 远程工作区新建/部署入口已隐藏，
+  // 本用例无法再从 UI 建立远程 workspace；F6.5 恢复入口后去掉 .skip 并重新启用。
+  it.skip("MP-UI-05-remote: 远程 workspace 下也不显示配置同步入口", async function () {
     this.timeout(10 * 60_000);
     if (!process.env.ZCODE_E2E_SSH_HOST?.trim()) {
       this.skip();

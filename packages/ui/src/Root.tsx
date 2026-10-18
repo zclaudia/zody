@@ -52,6 +52,7 @@ import { OccupationOnboarding } from "@/onboarding/OccupationOnboarding.js";
 import { OnboardingDialog } from "@/onboarding/OnboardingDialog.js";
 import { useRemoteWorkspaceHistory } from "@/root/useRemoteWorkspaceHistory.js";
 import { useRemoteWorkspaceTabLifecycle } from "@/root/useRemoteWorkspaceTabLifecycle.js";
+import { REMOTE_CONNECTION_CREATION_ENABLED } from "@/hooks/useRemoteConnectionEntryVisibility.js";
 import { useRootProviderStateRefresh } from "@/root/useRootProviderStateRefresh.js";
 import { useModelSelectionServiceView } from "@/hooks/useModelSelectionView.js";
 import { useRootProviderSettingsSnapshot } from "@/root/useRootProviderSettingsSnapshot.js";
@@ -633,7 +634,12 @@ function RootInner({
     allowOpenWorkspace,
     preferDirectoryBrowser: shouldPreferDirectoryBrowser,
     openDirectoryBrowser: handleOpenDirectoryBrowser,
-    onOpenRemoteConnection: allowRemoteWorkspace ? handleOpenRemoteConnection : undefined,
+    // fork（F6.1，D4a(ii)）：新建/部署远程工作区入口摘除；仅移除打开向导的回调，
+    // 已有远程工作区的连接/重连仍由 useRemoteWorkspaceHistory 负责。
+    onOpenRemoteConnection:
+      allowRemoteWorkspace && REMOTE_CONNECTION_CREATION_ENABLED
+        ? handleOpenRemoteConnection
+        : undefined,
     workbenchGroupClientMode: isWebRemoteControlRoot
       ? "web-remote-replayable"
       : "desktop-continuous",
@@ -1040,23 +1046,26 @@ function RootInner({
     }
   }, []);
 
-  const remoteConnectionDialog = allowRemoteWorkspace ? (
-    <SSHDialog
-      onConnect={handleConnectRemote}
-      onSelectProject={handleSelectRemoteProject}
-      onCancelSession={handleCancelRemoteProject}
-      localWorkspacePath={localWorkspacePathForRemoteConnection}
-      isWindowsDesktop={isWindowsDesktop}
-      remoteWorkspaceSessions={remoteWorkspaceSessions}
-      open={remoteConnectionDialogOpen}
-      onOpenChange={handleRemoteConnectionDialogOpenChange}
-      onFlowActiveChange={setRemoteConnectionInProgress}
-      onFlowRequestIdChange={setRemoteConnectionRequestId}
-      preferredKind={remoteConnectionOpenPreference?.preferredKind}
-      preferredWslDistro={remoteConnectionOpenPreference?.preferredWslDistro}
-      hideTriggerWhenClosed
-    />
-  ) : null;
+  // fork（F6.1，D4a(ii)）：新建/部署向导不再可达。组件与 onConnect/onSelectProject
+  // 服务面保留，供 F6.5 自建 CDN 后通过 REMOTE_CONNECTION_CREATION_ENABLED 恢复。
+  const remoteConnectionDialog =
+    allowRemoteWorkspace && REMOTE_CONNECTION_CREATION_ENABLED ? (
+      <SSHDialog
+        onConnect={handleConnectRemote}
+        onSelectProject={handleSelectRemoteProject}
+        onCancelSession={handleCancelRemoteProject}
+        localWorkspacePath={localWorkspacePathForRemoteConnection}
+        isWindowsDesktop={isWindowsDesktop}
+        remoteWorkspaceSessions={remoteWorkspaceSessions}
+        open={remoteConnectionDialogOpen}
+        onOpenChange={handleRemoteConnectionDialogOpenChange}
+        onFlowActiveChange={setRemoteConnectionInProgress}
+        onFlowRequestIdChange={setRemoteConnectionRequestId}
+        preferredKind={remoteConnectionOpenPreference?.preferredKind}
+        preferredWslDistro={remoteConnectionOpenPreference?.preferredWslDistro}
+        hideTriggerWhenClosed
+      />
+    ) : null;
   const directoryBrowserDialog = directoryBrowserOpen ? (
     <ScopedErrorBoundary
       scope="directory-browser"
@@ -1187,8 +1196,12 @@ function RootInner({
             handleResolveConversationWorkspace={handleResolveConversationWorkspace}
             handleOpenWorkspace={handleOpenWorkspace}
             handleOpenFolderFromWorkspaceMenu={handleOpenFolderFromWorkspaceMenu}
+            // fork（F6.1，D4a(ii)）：侧栏「添加项目 → 远程连接」菜单项随入口摘除；
+            // 传 undefined 让 WorkspaceSidebar 不渲染该菜单项（组件与 prop 仍保留）。
             handleOpenRemoteWorkspace={
-              allowRemoteWorkspace ? handleOpenRemoteConnection : undefined
+              allowRemoteWorkspace && REMOTE_CONNECTION_CREATION_ENABLED
+                ? handleOpenRemoteConnection
+                : undefined
             }
             handleCreateScratchWorkspace={handleCreateScratchWorkspace}
             remoteConnectionInProgress={remoteConnectionInProgress}

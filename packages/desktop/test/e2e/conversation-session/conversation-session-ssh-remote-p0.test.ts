@@ -98,7 +98,9 @@ interface TaskCase {
   workspacePath: string;
 }
 
-describe(`${CASE_MARKER}: SSH remote workspace P0`, () => {
+// fork（F6.1，决策门 D4a 方案 ii）：SSH 远程工作区的新建/部署入口已在 UI 层隐藏，
+// 本用例依赖该入口完成首次连接，暂时跳过；F6.5 自建 CDN 恢复入口后需改为“种子化历史快照 + 重连”并重新启用。
+describe.skip(`${CASE_MARKER}: SSH remote workspace P0`, () => {
   let replayTunnel: ReplayTunnel | null = null;
 
   after(async () => {

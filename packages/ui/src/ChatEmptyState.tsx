@@ -240,6 +240,8 @@ export function ChatEmptyWorkspacePreviewMenu({
   const showRemoteConnectionEntry = useRemoteConnectionEntryVisibility();
   // Web 普通模式没有完整远程 workspace 会话链路，不能只依赖全局 feature visibility。
   // 这里叠加壳层能力开关，确保本地 Web 模式的空态菜单不会露出必然失败的远程连接入口。
+  // fork（F6.1，D4a(ii)）：showRemoteConnectionEntry 现在由 REMOTE_CONNECTION_CREATION_ENABLED
+  // 控制，为 false 时同时隐藏 composer 工作区菜单项与新建向导；已有远程工作区的恢复/重连不受影响。
   const canUseRemoteWorkspace =
     allowRemoteWorkspace && showRemoteConnectionEntry;
   const currentWorkspaceTab =

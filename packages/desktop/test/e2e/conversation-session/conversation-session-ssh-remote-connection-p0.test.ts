@@ -20,7 +20,9 @@ import {
 
 const CASE_MARKER = "SSH_P0_CONNECTION";
 
-describe(`${CASE_MARKER}: SSH password 连接 P0`, () => {
+// fork（F6.1，决策门 D4a 方案 ii）：SSH 远程工作区新建/部署入口已隐藏，
+// 本用例依赖该入口发起首次连接；F6.5 恢复入口后重新启用。
+describe.skip(`${CASE_MARKER}: SSH password 连接 P0`, () => {
   after(async () => {
     await browser.electron.restoreAllMocks();
     await clearAppData();
