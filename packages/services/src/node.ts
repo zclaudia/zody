@@ -277,11 +277,7 @@ export { AutomationService, InvalidCronExprError } from "./session/automationSer
 // host 域终态回填 files_changed 复用现有 task diff 汇总。
 export { buildTaskChangeSummary } from "./session/taskChangeSummary.js";
 export { createServiceLogger } from "./logger/serviceLogger.js";
-export {
-  buildOfficialMcpAuthHeaders,
-  createOfficialMcpAuthHeadersResolver,
-  resolveOfficialMcpCredentials,
-} from "./official-mcp/officialMcpCredentials.js";
+// fork（F4.6）：official-mcp/ 的官方 MCP 凭证解析与身份头构造随官方 MCP 删除。
 export {
   computeAutomationNextRunAt,
   computeNextRunAt,
@@ -456,11 +452,7 @@ import { buildHelperOpenArgs, isCuaLocalDevelopmentRuntime } from "@zcode/zcode-
 import { createServiceLogger, type ServiceLogger } from "#src/logger/serviceLogger.js";
 // fork（F4.3）：offPeak 服务的 import 与装配（IOffPeakTaskService/OffPeakTaskService/
 // OffPeakTaskRepo/offPeakServerClient/offPeakRuntimeModel）随闲时任务全链路删除。
-import { createOfficialMcpAuthHeadersResolver } from "./official-mcp/officialMcpCredentials.js";
-import {
-  createOfficialMcpTrustedOriginRegistry,
-  OFFICIAL_MCP_DEV_TRUSTED_ORIGINS_ENV,
-} from "@zcode/shared";
+// fork（F4.6）：官方 MCP host 身份头解析器与可信 origin 注册表随官方 MCP 删除。
 import {
   BROKER_SOCKET_ENV,
   BROKER_UNAVAILABLE_ENV,
@@ -1967,22 +1959,7 @@ export function createLocalServices(options: {
         throw new Error("Topic resource authorization is unavailable");
       return bots.validateTopicResource({ ...request, signal });
     },
-    // 官方 Server MCP 身份头：host 是唯一身份权威，Agent 经反向请求索取。
-    // Provider 存在性读取正式 Model Selection View；不恢复旧 Provider Snapshot。
-    officialMcpAuthHeadersResolver: createOfficialMcpAuthHeadersResolver({
-      accountRequestAuthService,
-      credentialService,
-      modelSelectionService: providerRuntime.modelSelection,
-    }),
-    // host 是身份权威边界：provenance/origin 必须在这里再校验一次，不能只依赖 agent
-    // adapter 的 fetch wrapper。判定实现与 CLI 侧共用 @zcode/shared 的同一份，避免分叉。
-    // origin 解析复用 resolveCurrentZCodeEndpointOrigin——与闲时任务同口径（含 settings
-    // 覆盖），否则会出现"闲时任务能连、官方 MCP 连不上"。
-    // dev 开关必须同样传入，否则本地自测会被 host 单方面拒绝。
-    officialMcpTrustedOrigins: createOfficialMcpTrustedOriginRegistry({
-      devTrustedOriginsRaw: process.env[OFFICIAL_MCP_DEV_TRUSTED_ORIGINS_ENV],
-      resolveZCodeApiOrigin: resolveCurrentZCodeEndpointOrigin,
-    }),
+    // fork（F4.6）：官方 MCP 身份头解析器与可信 origin 装配随官方 MCP 删除。
     cuaOperationStateReporter: shouldEnableCuaOperationStateReporter({
       serviceAuthorityMode: options?.serviceAuthorityMode,
       hasReporter: Boolean(options?.cuaOperationStateReporter),

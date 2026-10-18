@@ -1,4 +1,11 @@
 export const ZCODE_RUNTIME_ENV_KEY = "ZCODE_RUNTIME_ENV";
+/**
+ * Host 在 spawn 时注入的真实 workspace identity；只用于隔离/审计，不用于文件执行。
+ *
+ * fork（F4.6）：原先定义在 `official-mcp-auth.ts`。官方 MCP 删除后该常量仍被
+ * `runtime-tools/agentProxyEnv.ts` 使用，因此迁到通用 runtime env 模块保留。
+ */
+export const ZCODE_WORKSPACE_IDENTITY_ENV = "ZCODE_WORKSPACE_IDENTITY";
 export const ZCODE_HTTP_PROXY_ENV_KEY = "ZCODE_HTTP_PROXY";
 export const ZCODE_NO_PROXY_ENV_KEY = "ZCODE_NO_PROXY";
 /** Desktop Host 只向 desktop-attached remote server 传递一次的网络配置。 */

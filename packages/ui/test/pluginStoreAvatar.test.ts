@@ -9,7 +9,7 @@ describe("PluginStoreAvatar", () => {
     ["pdf", "pdf.png"],
     ["presentations", "presentations.png"],
     ["spreadsheets", "spreadsheets.png"],
-    ["image-search", "image-search.png"],
+    // fork（F4.6）：image-search 图标随官方 MCP 插件删除。
   ])("uses bundled artwork for the official %s plugin", (name, assetName) => {
     const staleIcon = "https://cdn.example.com/old-document-skills.png";
     const render = (id: string) =>

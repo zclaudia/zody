@@ -12,9 +12,7 @@ describe("MCP failure presentation", () => {
     expect(resolveMcpFailureMessageId("server_not_found")).toBe(
       "settings.mcp.failure.server_not_found",
     );
-    expect(resolveMcpFailureMessageId("official_origin_untrusted")).toBe(
-      "settings.mcp.failure.official_origin_untrusted",
-    );
+    // fork（F4.6）：official_origin_untrusted 随官方 MCP 可信 origin 校验删除。
     expect(resolveMcpFailureMessageId(undefined)).toBe("settings.mcp.failure.connection_failed");
     expect(resolveMcpFailureMessageId("not_authenticated")).toBe(
       "settings.mcp.failure.not_authenticated",

@@ -1,10 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import {
-  createOfficialMcpTrustedOriginRegistry,
-  resolveRuntimeZCodeEndpointOrigin,
-} from "@zcode/shared";
+import { resolveRuntimeZCodeEndpointOrigin } from "@zcode/shared";
 import {
   buildAgentCaCertEnv,
   buildAgentEndpointOriginEnv,
@@ -108,10 +105,10 @@ describe("buildAgentRuntimeEnv", () => {
   });
 });
 
-/* CR-01：官方 MCP 信任判定的单源不变量。
-   两侧共用 @zcode/shared 的同一份实现，但只有"输入也相同"时结论才必然一致。
+/* 权威 endpoint origin 的注入不变量（原 CR-01）。
    host 的输入是 env + settings 覆盖，agent 的输入只有 env——因此必须把 host 解析出的
-   权威 origin 通过 ZCODE_BASE_URL 下发，否则 test env + 自定义端点时两侧必然分叉。 */
+   权威 origin 通过 ZCODE_BASE_URL 下发，否则 test env + 自定义端点时两侧会分叉。
+   fork（F4.6）：官方 MCP 信任判定已删除；注入本身仍是 spawn 环境的一部分。 */
 describe("buildAgentEndpointOriginEnv", () => {
   it("returns an empty patch when the origin is missing or blank", () => {
     expect(buildAgentEndpointOriginEnv(undefined)).toEqual({});
@@ -152,89 +149,9 @@ describe("buildAgentWorkspaceIdentityEnv", () => {
   });
 });
 
-describe("official MCP trust: host and agent must agree on the ZCode API origin", () => {
-  // 设置页自定义端点：任何不同于 env base URL 的 origin 都成立；用中性域名，避免开源导出把
-  // 测试环境域名改写成正式域名后与生产 base URL 重合。
-  const SETTINGS_ORIGIN = "https://custom-endpoint.example";
-  const PLUGIN_ID = "official-tools@zcode-plugins-local";
+// fork（F4.6）：official MCP trust 的 host/agent 一致性测试随官方 MCP 鉴权链删除。
 
-  /** host 口径：env + settings 覆盖（node.ts resolveCurrentZCodeEndpointOrigin）。 */
-  function hostRegistry(env: Record<string, string>, overrideOrigin: string | undefined) {
-    return createOfficialMcpTrustedOriginRegistry({
-      resolveZCodeApiOrigin: () => resolveRuntimeZCodeEndpointOrigin(env, { overrideOrigin }),
-    });
-  }
-
-  /** agent 口径：只有 env（zcode-protocol-entrypoint.ts）。 */
-  function agentRegistry(env: Record<string, string>) {
-    return createOfficialMcpTrustedOriginRegistry({
-      resolveZCodeApiOrigin: () => resolveRuntimeZCodeEndpointOrigin(env),
-    });
-  }
-
-  async function verdict(
-    registry: ReturnType<typeof createOfficialMcpTrustedOriginRegistry>,
-    origin: string,
-  ) {
-    return (await registry.isTrusted({ mcpKey: "image_search", origin, pluginId: PLUGIN_ID }))
-      .trusted;
-  }
-
-  it("agrees in test env once the resolved origin is injected", async () => {
-    // 复现场景：ZCODE_ENV=test（桌面测试包显式下发）+ 设置页自定义端点 ≠ env base URL。
-    const hostEnv = { ZCODE_ENV: "test", ZCODE_BASE_URL: "https://env-derived.example" };
-    const agentEnv = {
-      ...hostEnv,
-      ...buildAgentEndpointOriginEnv(
-        resolveRuntimeZCodeEndpointOrigin(hostEnv, { overrideOrigin: SETTINGS_ORIGIN }),
-      ),
-    };
-    const host = hostRegistry(hostEnv, SETTINGS_ORIGIN);
-    const agent = agentRegistry(agentEnv);
-
-    for (const origin of [
-      SETTINGS_ORIGIN,
-      "https://env-derived.example",
-      "https://attacker.example",
-    ]) {
-      expect(await verdict(agent, origin)).toBe(await verdict(host, origin));
-    }
-    // 且两侧都认设置页那个 origin——不是"一致地都拒绝"这种假通过。
-    expect(await verdict(host, SETTINGS_ORIGIN)).toBe(true);
-    expect(await verdict(agent, SETTINGS_ORIGIN)).toBe(true);
-  });
-
-  it("would diverge without the injection (guards against silently dropping it)", async () => {
-    // 反向护栏：去掉注入后本用例必须观察到分叉，否则上面那条就是恒真的假护栏。
-    const hostEnv = { ZCODE_ENV: "test", ZCODE_BASE_URL: "https://env-derived.example" };
-    const host = hostRegistry(hostEnv, SETTINGS_ORIGIN);
-    const agentWithoutInjection = agentRegistry(hostEnv);
-
-    expect(await verdict(host, SETTINGS_ORIGIN)).toBe(true);
-    expect(await verdict(agentWithoutInjection, SETTINGS_ORIGIN)).toBe(false);
-  });
-
-  it("agrees in production, where the settings override is ignored on both sides", async () => {
-    // production 下 override 被忽略，注入值等于 env 派生值，行为不得改变。
-    const hostEnv = { ZCODE_ENV: "production", ZCODE_BASE_URL: "https://zcode.z.ai" };
-    const injected = resolveRuntimeZCodeEndpointOrigin(hostEnv, {
-      overrideOrigin: SETTINGS_ORIGIN,
-    });
-    expect(injected).toBe("https://zcode.z.ai");
-
-    const agentEnv = { ...hostEnv, ...buildAgentEndpointOriginEnv(injected) };
-    const host = hostRegistry(hostEnv, SETTINGS_ORIGIN);
-    const agent = agentRegistry(agentEnv);
-
-    for (const origin of ["https://zcode.z.ai", SETTINGS_ORIGIN]) {
-      expect(await verdict(agent, origin)).toBe(await verdict(host, origin));
-    }
-    expect(await verdict(host, "https://zcode.z.ai")).toBe(true);
-    expect(await verdict(host, SETTINGS_ORIGIN)).toBe(false);
-  });
-});
-
-/* 上面的用例证明"注入之后两侧一致"，但证明不了 node.ts 真的注入了。
+/* 上面的用例只验证注入函数本身，证明不了 node.ts 真的调用了它。
    createNodeServices 是 1200+ 行、107 个 import 的容器，resolveSpawnEnv 又是其中的内联闭包，
    为它搭 mock 不划算；这里退而对接线做源码断言，至少能挡住"整行被删/被接错解析器"。 */
 describe("node.ts wires the authoritative origin into resolveSpawnEnv", () => {

@@ -53,7 +53,6 @@ const items =
             "pdf",
             "presentations",
             "spreadsheets",
-            "image-search",
             "repairable",
           ].map((name) => ({
             id: `${name}@${official}`,

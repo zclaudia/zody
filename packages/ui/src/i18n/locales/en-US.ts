@@ -3032,8 +3032,7 @@ const enUS: Record<string, string> = {
   "settings.mcp.failure.unexpected_disconnect": "The MCP connection was closed unexpectedly.",
   "settings.mcp.failure.oauth_authorization_failed":
     "MCP authorization was not completed or timed out. Authorize again.",
-  "settings.mcp.failure.official_origin_untrusted":
-    "The MCP server URL failed the security check. The connection was blocked.",
+  // fork（F4.6）：official_origin_untrusted 随官方 MCP 可信 origin 校验删除。
   "settings.mcp.failure.not_authenticated":
     "You are not signed in. Sign in to ZCode to use this MCP server.",
   "settings.mcp.failure.coding_plan_required":

@@ -10,7 +10,7 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES = [
   "pdf-plugin",
   "presentations-plugin",
   "spreadsheets-plugin",
-  "image-search-plugin",
+  // fork（F4.6）：image-search-plugin 随官方 MCP 删除。
   "ios-simulator-plugin",
   "restore-legacy-sessions-plugin",
   "skill-creator-plugin",
@@ -85,7 +85,7 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS = [
   "browser-use-plugin/skills/control-browser/SKILL.md",
   "browser-use-plugin/skills/web-gui-tester/SKILL.md",
   // 修复原因：仅校验 manifest 无法发现文档插件缺少技能正文或视觉评审 Agent。
-  "image-search-plugin/.mcp.json",
+  // fork（F4.6）：image-search-plugin/.mcp.json 随官方 MCP 删除。
   "documents-plugin/agents/visual-judge.md",
   "documents-plugin/skills/docx/SKILL.md",
   "pdf-plugin/agents/visual-judge.md",

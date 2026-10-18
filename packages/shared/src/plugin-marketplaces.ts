@@ -18,7 +18,7 @@ export const CLAUDE_OFFICIAL_PLUGIN_MARKETPLACE_ID = "claude-plugins-official";
 /** Settings 三类资源发现共用；Bootstrap 单测与官方 definition 的 defaultEnabled 机械对照。 */
 export const DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS: ReadonlySet<string> = new Set([
   "browser-use@zcode-plugins-official",
-  "image-search@zcode-plugins-official",
+  // fork（F4.6）：image-search 官方 MCP 插件已删除，不再默认启用。
   "documents@zcode-plugins-official",
   "pdf@zcode-plugins-official",
   "presentations@zcode-plugins-official",

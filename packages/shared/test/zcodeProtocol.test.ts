@@ -1556,51 +1556,7 @@ describe("ZCode Protocol", () => {
     });
   });
 
-  it("keeps the official MCP unavailable code in strict v4 tool rows", () => {
-    // 两个 strict schema（CLI contracts 的 display payload 与这里的 row）必须同步加字段，
-    // 少加一处整条 row 会被拒，输入框提示就永远拿不到事实。
-    const row = conversationRowSchema.parse({
-      rowId: 5,
-      turnId: "turn-1",
-      createdAt: 10,
-      createdAtSeq: 5,
-      kind: "toolCall",
-      toolCallId: "tool-official-mcp",
-      toolName: "mcp__zcode-official__search_image",
-      status: "success",
-      inputText: "{}",
-      display: {
-        kind: "mcp_tool",
-        serverName: "zcode-official",
-        toolName: "search_image",
-        unavailable: { code: "quota_exceeded" },
-      },
-    });
-
-    expect(row).toMatchObject({
-      display: { kind: "mcp_tool", unavailable: { code: "quota_exceeded" } },
-    });
-    // internal_error 不在 code 枚举里：它是服务端兜底掩码，不驱动界面提示。枚举外的值因此
-    // **不会被携带**——display 不设门后 row 仍然有效，但这张卡没有载荷（§4.4.5）。
-    const maskedRow = conversationRowSchema.parse({
-      rowId: 6,
-      turnId: "turn-1",
-      createdAt: 10,
-      createdAtSeq: 6,
-      kind: "toolCall",
-      toolCallId: "tool-official-mcp",
-      toolName: "mcp__zcode-official__search_image",
-      status: "success",
-      inputText: "{}",
-      display: {
-        kind: "mcp_tool",
-        serverName: "zcode-official",
-        toolName: "search_image",
-        unavailable: { code: "internal_error" },
-      },
-    });
-    expect(maskedRow.kind === "toolCall" ? maskedRow.display : "unreachable").toBeUndefined();
-  });
+  // fork（F4.6）：官方 MCP unavailable 标识的 v4 row 校验测试随官方 MCP 删除。
 
   it("strictly validates bounded CreateWorkflow display payloads", () => {
     const event = {

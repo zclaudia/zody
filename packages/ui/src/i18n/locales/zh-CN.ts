@@ -2842,7 +2842,7 @@ const zhCN: Record<string, string> = {
   "settings.mcp.failure.tool_list_failed": "已连接 MCP 服务器，但获取工具列表失败。",
   "settings.mcp.failure.unexpected_disconnect": "MCP 连接已意外断开。",
   "settings.mcp.failure.oauth_authorization_failed": "MCP 授权未完成或已超时，请重新授权。",
-  "settings.mcp.failure.official_origin_untrusted": "MCP 服务器地址未通过安全校验，连接已阻止。",
+  // fork（F4.6）：official_origin_untrusted 随官方 MCP 可信 origin 校验删除。
   "settings.mcp.failure.not_authenticated": "当前未登录，请先登录 ZCode。",
   "settings.mcp.failure.coding_plan_required":
     "当前账号没有 Coding Plan，请先购买或配置 Coding Plan。",

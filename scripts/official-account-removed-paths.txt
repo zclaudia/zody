@@ -453,3 +453,29 @@ packages/ui/test/accountProviderAccess.test.ts
 packages/ui/src/settings/model-provider-section/ProviderFamilyModeHeader.tsx
 packages/desktop/test/e2e/helpers/coding-plan-mock-env.ts
 packages/desktop/test/codingPlanE2EMockEnv.test.ts
+
+# F4.6（删除官方 MCP，2026-10-18）：
+# ① image-search 官方 MCP 插件整包、插件定义/默认启用/远程资产/图标；② 官方 MCP 鉴权链
+# （shared 常量与信任判定、CLI adapter 鉴权与协议端口、services 凭证解析与发放审计）。
+# 目录整树删除用目录前缀登记。
+apps/zcode-cli/packages/image-search-plugin/
+packages/services/src/official-mcp/
+packages/shared/src/official-mcp-auth.ts
+packages/shared/src/official-mcp-tool-error.ts
+apps/zcode-cli/packages/adapters/src/plugins/mcp-official-auth.ts
+apps/zcode-cli/packages/adapters/src/mcp/official-auth.ts
+apps/zcode-cli/packages/bootstrap/src/zcode-protocol/official-mcp-auth-port.ts
+packages/ui/src/v4/mcpUnavailableBannerNotice.ts
+packages/ui/src/assets/plugin-icons/image-search.png
+scripts/dev-official-mcp-server.mjs
+apps/zcode-cli/packages/adapters/tests/mcp-official-auth-integration.test.ts
+apps/zcode-cli/packages/adapters/tests/mcp-official-auth-stdio-meta.test.ts
+apps/zcode-cli/packages/adapters/tests/mcp-official-auth.test.ts
+apps/zcode-cli/packages/adapters/tests/plugin-official-mcp-auth.test.ts
+apps/zcode-cli/packages/bootstrap/tests/official-mcp-auth-port.test.ts
+packages/services/test/officialMcpAuthRemoteRouting.test.ts
+packages/services/test/officialMcpCredentials.test.ts
+packages/services/test/officialMcpIssuanceAudit.test.ts
+packages/shared/test/officialMcpAuthProtocol.test.ts
+packages/shared/test/officialMcpToolError.test.ts
+packages/shared/test/officialMcpTrust.test.ts

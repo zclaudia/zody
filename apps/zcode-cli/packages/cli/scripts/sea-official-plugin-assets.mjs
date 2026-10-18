@@ -82,16 +82,7 @@ export const officialSeaPlugins = [
     // 修复原因：SEA manifest 必须与 package、plugin manifest 和官方 definition 同步，避免发布产物嵌入旧版本。
     version: "0.1.8",
   },
-  {
-    marketplace: "zcode-plugins-official",
-    name: "image-search",
-    packageName: "@zcode/image-search-plugin",
-    requiresRuntime: false,
-    requiredSeedPaths: [".mcp.json"],
-    rootPath: join("packages", "image-search-plugin"),
-    // 修复原因：SEA manifest 必须与 package、plugin manifest 和官方 definition 同步，避免发布产物嵌入旧版本。
-    version: "0.1.1",
-  },
+  // fork（F4.6）：image-search 官方 MCP 插件随链删除，不再进入 SEA 资产清单。
   {
     marketplace: "zcode-plugins-official",
     name: "pdf",

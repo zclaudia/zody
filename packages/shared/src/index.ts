@@ -93,8 +93,7 @@ export * from "./remote-workspace-identity.js";
 export * from "./zcode-api-retry-status.js";
 export * from "./zcode-network-debug-status.js";
 export * from "./zcode-session-visible-content.js";
-export * from "./official-mcp-auth.js";
-export * from "./official-mcp-tool-error.js";
+// fork（F4.6）：official-mcp-auth / official-mcp-tool-error 随官方 MCP 全链路删除。
 export * from "./conversation-message-projection-policy.js";
 export * from "./conversation-share.js";
 export * from "./conversation-preview-artifacts.js";
