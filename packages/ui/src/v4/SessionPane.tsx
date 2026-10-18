@@ -28,7 +28,6 @@ import type {
   ConversationShareAccessMode,
   GitChangeSourceId,
   GitRepositorySummary,
-  ModelSelection,
   ZCodeProvider,
   ZCodeTaskChangeSummary,
 } from "@zcode/shared";
@@ -41,7 +40,6 @@ import type {
   ConversationRowTarget,
   SessionErrorInfo,
   SessionModelTransition,
-  UserInputRow,
   V4ConversationFileChangesResult,
 } from "@zcode/shared/zcode-protocol-v4";
 import { logger } from "@/logger.js";
@@ -70,7 +68,6 @@ import { buildChatSessionScrollMemoryKey } from "@/lib/chatSessionScrollMemory.j
 import type { MessageFileLinkTarget } from "@/components/ai-elements/message.js";
 import { useServices } from "@/hooks/useServices.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
-import { browserGlobalNoticeStore } from "@/global-notice/globalNoticeStore.js";
 import type { SessionOpenTrigger } from "@/lib/sessionOpenArmsTelemetry.js";
 import { useDynamicWorkflowAvailability } from "@/hooks/useDynamicWorkflowAvailability.js";
 import { resolveWorkflowResumeHandler } from "@/v4/workflowResumeGate.js";
@@ -90,8 +87,6 @@ import { decodeCustomModelValue, encodeCustomModelValue } from "@/lib/zcodeCusto
 import { parseModelPickerValue } from "@/lib/zcodeSessionProjection.js";
 import { captureComposerRecentSubmission } from "@/lib/composerRecent.js";
 import { resolveProviderLabel } from "@/lib/registryProviderView.js";
-import { resolveEntitledAccountProviderAccess } from "@/lib/accountProviderAccess.js";
-import { getProviderSettingsSnapshot } from "@/lib/providerSettingsSnapshot.js";
 import {
   buildDraftCreateConfigPayload,
   useDraftConfigControl,
@@ -570,7 +565,7 @@ export function SessionPane({
   const {
     conversationShareService,
     modelSelectionService,
-    usageStatsService,
+    usageStatsService: _usageStatsService,
     zcodeSessionService,
     zcodeTaskService,
   } = useServices();
@@ -2664,12 +2659,6 @@ export function SessionPane({
     [dispatchCommand, intl, settleCurrentQueueInputs],
   );
 
-  const readGroupedDraftId = useCallback(
-    () =>
-      useZCodeSessionStore.getState().getWorkspaceState(workspacePath, workspaceIdentity)
-        .groupedDraftTask?.draftId ?? null,
-    [workspacePath, workspaceIdentity],
-  );
   const dispatchSendTextAfterConfig = useCallback(
     async (
       text: string,

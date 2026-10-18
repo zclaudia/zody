@@ -18,7 +18,6 @@ import { usePlatform } from "@/hooks/usePlatform.js";
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
-import type { AutomationsNavigationTab } from "@/lib/taskNavigationHistory.js";
 import { reportPromptTemplateClick } from "@/lib/promptTemplateTelemetry.js";
 import { invalidateDeferredDraftSessionForSkillChange } from "@/lib/zcodeDraftSkillInvalidation.js";
 import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";

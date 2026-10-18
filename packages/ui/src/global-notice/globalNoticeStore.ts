@@ -55,7 +55,7 @@ function emptyState(): PersistedGlobalNoticeState {
 
 function readState(
   storage: GlobalNoticeStorage,
-  onPersistError?: (error: unknown) => void,
+  _onPersistError?: (error: unknown) => void,
 ): PersistedGlobalNoticeState {
   try {
     const raw = storage.getItem(STORAGE_KEY);
