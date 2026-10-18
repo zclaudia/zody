@@ -1146,52 +1146,10 @@ export const zcodeModelOptionSchema = z
   .strict();
 export type ZCodeModelOption = z.infer<typeof zcodeModelOptionSchema>;
 
-export const zcodeAccountAccessSchema = z.discriminatedUnion("planKind", [
-  z
-    .object({
-      type: z.literal("zhipu-account"),
-      family: z.enum(["zai", "bigmodel"]),
-      planKind: z.literal("start-plan"),
-    })
-    .strict(),
-  z
-    .object({
-      type: z.literal("zhipu-account"),
-      family: z.enum(["zai", "bigmodel"]),
-      planKind: z.literal("individual-coding-plan"),
-    })
-    .strict(),
-  z
-    .object({
-      type: z.literal("zhipu-account"),
-      family: z.enum(["zai", "bigmodel"]),
-      planKind: z.literal("team-coding-plan"),
-      productId: nonEmptyString,
-      organizationId: nonEmptyString,
-      projectId: nonEmptyString,
-    })
-    .strict(),
-]);
-export type ZCodeAccountAccess = z.infer<typeof zcodeAccountAccessSchema>;
-
-/** Active Model 固定的账号访问类别；当前商品和 Team scope 由账号服务在请求期解析。 */
-export const zcodeProviderAccountAccessSchema = z
-  .object({
-    type: z.literal("zhipu-account"),
-    accountType: z.enum(["zai", "bigmodel"]),
-    // `highspeed`/`off-peak` 为历史持久化值（加速卡/闲时账号访问类别）：F4.2/F4.3 已删
-    // 全链路，枚举保留仅为容忍历史数据反序列化，不再产生新值。
-    mode: z.enum([
-      "start-plan",
-      "individual-coding-plan",
-      "team-coding-plan",
-      "off-peak",
-      "highspeed",
-    ]),
-    entitled: z.boolean(),
-  })
-  .strict();
-export type ZCodeProviderAccountAccess = z.infer<typeof zcodeProviderAccountAccessSchema>;
+// fork（F4.11）：zcodeAccountAccessSchema / ZCodeAccountAccess 与
+// zcodeProviderAccountAccessSchema / ZCodeProviderAccountAccess 随官方账号 Provider 删除。
+// 旧持久化 settings/provisioning 中的 providerFamily* 字段仍由 validationAppSettings 宽松解析，
+// 但协议层不再承载账号 Access 或 accountAccess 请求字段。
 
 export type ZCodeSessionMode = z.infer<typeof zcodeSessionModeSchema>;
 export type ZCodeSessionKind = z.infer<typeof zcodeSessionKindSchema>;
@@ -2725,7 +2683,8 @@ export const zcodeProviderRuntimeHeadersRequestParamsSchema = z
     workspace: zcodeWorkspaceRefSchema,
     modelSelection: modelSelectionSchema,
     providerId: nonEmptyString,
-    accountAccess: zcodeProviderAccountAccessSchema.optional(),
+    // fork（F4.11）：accountAccess（zhipu-account 访问类别）随官方账号链路删除；
+    // 普通 BYOK/自定义 provider 不需要账号 Access 刷新。
     expectedAccountScope: z
       .string()
       .regex(/^[a-f0-9]{64}$/)

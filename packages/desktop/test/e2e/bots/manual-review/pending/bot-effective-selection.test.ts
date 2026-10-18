@@ -1,5 +1,4 @@
 import {
-  BUILTIN_MODEL_PROVIDER_IDS,
   encodeCustomModelValue,
   type ModelSelection,
 } from "@zcode/shared";
@@ -15,13 +14,13 @@ describe("BOT-E2E-SR99 绑定 Session 后的有效选择", () => {
   for (const available of [true, false]) {
     it(`下一条空闲输入使用 Session 原意图：${available ? "可用" : "不可用"}`, async () => {
       const original: ModelSelection = {
-        providerId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
+        providerId: "account:bigmodel-individual-coding-plan",
         modelId: "GLM-5.3",
         options: { reasoningLevel: "high" },
       };
       const effective = {
         ...original,
-        providerId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan,
+        providerId: "account:bigmodel-team-coding-plan",
       };
       const parsed: Array<ModelSelection | null | undefined> = [];
       const harness = createBotsServiceHarness({
@@ -73,7 +72,7 @@ describe("BOT-E2E-SR99 绑定 Session 后的有效选择", () => {
         expect(parsed).toEqual([original]);
         expect(harness.createTaskCalls).toHaveLength(0);
         expect(harness.readState().bots["feishu-e2e"]?.draftOptions).toBeUndefined();
-        expect(original.providerId).toBe(BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan);
+        expect(original.providerId).toBe("account:bigmodel-individual-coding-plan");
       } finally {
         harness.service.disposeAll();
       }
@@ -155,13 +154,13 @@ describe("BOT-E2E-SR87 有效选择", () => {
         classification: "synthetic",
       });
       const original: ModelSelection = {
-        providerId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
+        providerId: "account:bigmodel-individual-coding-plan",
         modelId: "GLM-5.3",
         options: { reasoningLevel: "high" },
       };
       const effective = {
         ...original,
-        providerId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan,
+        providerId: "account:bigmodel-team-coding-plan",
       };
       const base = createBotModelSelectionView();
       const provider = base.providers[0]!;

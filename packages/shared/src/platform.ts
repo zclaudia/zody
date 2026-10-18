@@ -1,4 +1,4 @@
-/* eslint-disable max-lines -- 跨端 platform contract 集中声明 renderer 能力；OAuth 与 browser lifecycle 必须保持 desktop/web 类型合同，本 MR 不拆分平台边界。 */
+/* eslint-disable max-lines -- 跨端 platform contract 集中声明 renderer 能力；browser lifecycle 必须保持 desktop/web 类型合同，本 MR 不拆分平台边界。 */
 import type {
   DockerConnectOptions,
   RemoteTarget,
@@ -13,7 +13,6 @@ import type {
   MigrateLegacyCommonMcpResult,
   SaveCliMcpToUserDirectoryRequest,
 } from "./mcp.js";
-import type { OAuthStateRegistration } from "./oauth.js";
 import type {
   WebRemoteControlReconnectWorkspaceResult,
   WebRemoteControlStatus,
@@ -901,21 +900,8 @@ export interface IPlatformService {
   /** 从权限浮窗把 Helper.app 拖进 macOS 权限列表。Desktop only。 */
   startCuaHelperPermissionDrag?(): void;
 
-  /** 上报 OAuth state 给 main process，用于 deep link 路由 */
-  registerOAuthState(payload: OAuthStateRegistration): void;
-
-  /**
-   * 注册 OAuth deep link 回调监听
-   * @returns disposer 函数，调用后只移除当前回调
-   */
-  onOAuthCallback(callback: (url: string) => void): () => void;
-
-  /**
-   * 注册支付 deep link 回调监听
-   * @returns disposer 函数，调用后只移除当前回调
-   */
-  onPaymentCallback(callback: (url: string) => void): () => void;
-
+  // fork（F4.11）：registerOAuthState / onOAuthCallback / onPaymentCallback 随官方账号
+  // OAuth 与购买深链删除（对应 preload 实现已在 F4.7 移除）。
   // fork（F4.8）：onShareImport（外部分享页导入深链）随会话分享功能删除。
 
   /** 通知 main process renderer 已就绪，触发缓存的冷启动 deep link 转发 */

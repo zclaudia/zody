@@ -122,10 +122,8 @@ const platform: IPlatformService = {
   listWSLDistros: vi.fn(),
   log: vi.fn(),
   notifyRendererReady: vi.fn(),
-  onOAuthCallback: vi.fn(),
   onRemoteConnectionLog: vi.fn(),
   openExternal: vi.fn(),
-  registerOAuthState: vi.fn(),
   selectDirectory: vi.fn(),
   selectFile: vi.fn(),
 };

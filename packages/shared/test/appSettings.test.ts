@@ -21,13 +21,17 @@ describe("app settings", () => {
       appSettingsPatchSchema.parse({ providerFamilyConnectionSelections: selections })
         .providerFamilyConnectionSelections,
     ).toEqual(selections);
-    expect(
-      appSettingsPatchSchema.safeParse({
-        providerFamilyConnectionSelections: {
-          zai: { kind: "team-coding-plan", productId: "p", organizationId: "o" },
-        },
-      }).success,
-    ).toBe(false);
+    // fork（F4.11）：providerFamily* 为旧账号设置，保留宽松解析——损坏/不完整值不能让
+    // 整份 settings 校验失败，解析结果回落 undefined，且运行时不读取。
+    const loosePatch = appSettingsPatchSchema.safeParse({
+      providerFamilyConnectionSelections: {
+        zai: { kind: "team-coding-plan", productId: "p", organizationId: "o" },
+      },
+      providerFamilyDomain: "retired-domain",
+    });
+    expect(loosePatch.success).toBe(true);
+    expect(loosePatch.success && loosePatch.data.providerFamilyConnectionSelections).toBeUndefined();
+    expect(loosePatch.success && loosePatch.data.providerFamilyDomain).toBeUndefined();
   });
 
   it("defaults and validates the human embedded Browser viewport preference", () => {

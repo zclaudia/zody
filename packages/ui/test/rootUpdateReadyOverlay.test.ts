@@ -251,8 +251,6 @@ async function renderRoot(options?: {
         openCommunity: vi.fn(async () => {}),
         canOpenCommunity: vi.fn(async () => false),
         openInFileManager: vi.fn(async () => ({ success: true })),
-        registerOAuthState: vi.fn(),
-        onOAuthCallback: vi.fn(() => () => {}),
         notifyRendererReady: vi.fn(),
         showTaskNotification: vi.fn(),
         syncWindowTabs: vi.fn(),

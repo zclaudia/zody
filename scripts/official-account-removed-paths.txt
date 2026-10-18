@@ -747,3 +747,24 @@ packages/web/src/auth/
 packages/web/test/browserOAuthCredentialRepo.test.ts
 packages/web/test/oauthStateCodec.test.ts
 packages/web/test/webAuthService.test.ts
+
+# F4.11（shared 与 provider 收尾，2026-10-18）：
+# shared 账号端点/PAT/OAuth 类型、provider 账号判定与 server 设备标识注入整文件删除。
+# plan-identity.ts 源文件在 F4.11 前已不存在（只剩 dist 构建产物，不登记）。
+packages/shared/src/api-key-usage-scene.ts
+packages/shared/src/oauth.ts
+packages/shared/src/project-access-token-client.ts
+packages/shared/src/project-access-token-response.ts
+packages/shared/src/project-access-token.ts
+packages/shared/test/modelProviderTypes.test.ts
+packages/shared/test/oauth.test.ts
+packages/shared/test/projectAccessTokenCache.test.ts
+packages/shared/test/projectAccessTokenClient.test.ts
+packages/shared/test/projectAccessTokenKeyContract.test.ts
+packages/provider/src/account-provider-resolution.ts
+packages/provider/test/account-provider-resolution.test.ts
+packages/server/src/stdioDeviceMid.ts
+packages/server/test/stdioDeviceMid.test.ts
+# 唯一消费者为已删除账号/端点装配的孤儿文件
+packages/ui/src/lib/rendererZCodeEndpoint.ts
+packages/ui/src/hooks/useStableAccountAccess.ts

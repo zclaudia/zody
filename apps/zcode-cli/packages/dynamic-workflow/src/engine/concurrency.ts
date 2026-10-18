@@ -36,7 +36,11 @@ export const CONCURRENCY_FLOOR = 1;
 /** 某 key 空闲这么久（且无在飞）后遗忘学到的 cap，回起点 `initial`（决策 20）。 */
 export const CONCURRENCY_IDLE_RESET_MS = 300_000;
 
-/** 会令 cap 减少的限流类原因。 */
+/**
+ * 会令 cap 减少的限流类原因。
+ * fork（F4.11）：`offpeak_queued` 属引擎既有值域（见 ConcurrencyChangeReason 注释），
+ * 闲时链路已删、不再产生新值，保留以兼容 journal/replay。
+ */
 export type ConcurrencyThrottleReason = Extract<
   ConcurrencyChangeReason,
   "rate_limited" | "provider_overloaded" | "offpeak_queued"

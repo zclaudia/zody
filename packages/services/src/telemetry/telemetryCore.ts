@@ -9,7 +9,7 @@ import {
   sanitizeTelemetryEventDetail,
   type TelemetryEventPayload,
   type TelemetryRendererContext,
-  type OAuthLoginAttribution,
+  type TelemetryMarketingAttribution,
 } from "@zcode/shared";
 import { mkdir, open, readFile, stat, unlink, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
@@ -44,7 +44,7 @@ interface TelemetryCoreDependencies {
   fetchImpl?: typeof fetch;
   loadUserId?: () => Promise<string>;
   loadAuthorization?: (userId: string) => Promise<string | null>;
-  loadMarketingParams?: () => Promise<OAuthLoginAttribution | null>;
+  loadMarketingParams?: () => Promise<TelemetryMarketingAttribution | null>;
   randomUUID?: () => string;
   now?: () => number;
   appVersion?: string;
@@ -306,8 +306,11 @@ async function ensureDeviceMidInLockedState(
  * Bug 根因：远端 zcode-server 所在主机没有 Desktop main 进程，过去没有任何进程会在那里写
  * telemetry-state.json；buildZCodeSourceHeaders() 又只读不生成，于是远端发往 ZCode endpoint 的
  * 请求永远缺 X-Device-Mid，billing/balance 被服务端拒绝为 parameter error，Start Plan 在远程
- * 工作区被判成未开通。这里把 telemetry 上报内部的 ensure 逻辑抽成独立入口，供远端 server 启动时
- * 调用：同一个文件、同一个字段、同一把 telemetry-state.lock，与同机 CLI 得到同一个设备身份。
+ * 工作区被判成未开通。这是 telemetry 上报内部的 ensure 逻辑：同一个文件、同一个字段、
+ * 同一把 telemetry-state.lock，与同机 CLI 得到同一个设备身份。
+ *
+ * fork（F4.11）：远端 server 启动时的设备标识预生成（stdioDeviceMid.ts）随 X-Device-Mid
+ * 停发与官方 billing 链路删除；该入口只保留给 TelemetryCore 在首次上报时按需使用。
  */
 export function ensureTelemetryDeviceMid(
   options: EnsureTelemetryDeviceMidOptions = {},
@@ -417,7 +420,7 @@ export function createTelemetryCore(dependencies: TelemetryCoreDependencies = {}
   ): Promise<void> {
     // 构建期未配置事件上报端点时不上报（见 docs/desktop/build-time-optional-capabilities.md）
     if (!REPORT_ENDPOINT) return;
-    let marketingParams: OAuthLoginAttribution | null = null;
+    let marketingParams: TelemetryMarketingAttribution | null = null;
     try {
       marketingParams = await loadMarketingParams();
     } catch {

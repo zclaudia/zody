@@ -87,9 +87,8 @@ export function createDesktopPlatform(options: {
     startCuaHelperPermissionDrag: window.zcode.startCuaHelperPermissionDrag
       ? () => window.zcode.startCuaHelperPermissionDrag?.()
       : undefined,
-    registerOAuthState: (payload) => window.zcode.registerOAuthState(payload),
-    onOAuthCallback: (callback) => window.zcode.onOAuthCallback(callback),
-    onPaymentCallback: (callback) => window.zcode.onPaymentCallback(callback),
+    // fork（F4.11）：registerOAuthState / onOAuthCallback / onPaymentCallback 随官方账号
+    // OAuth 与购买深链删除（preload 实现已在 F4.7 移除）。
     // fork（F4.8）：onShareImport 随会话分享功能删除。
     notifyRendererReady: () => window.zcode.notifyRendererReady(),
     reportTelemetryEvent: (payload) => window.zcode.reportTelemetryEvent(payload),

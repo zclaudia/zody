@@ -3,7 +3,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it } from "vitest";
-import { BUILTIN_MODEL_PROVIDER_IDS } from "@zcode/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { resolveToolCallRenderer } from "@/ToolCallBlocks/resolveRenderer.js";
 import {
@@ -15,7 +14,7 @@ import type { ToolCallBlockRenderContext } from "@/ToolCallBlocks/shared.js";
 
 // 团队套餐的 providerId 是一个 UUID。它是本卡最重要的负面断言：一个字符都不该上屏。
 const TEAM_PROVIDER_UUID = "4fc7f541-2382-4c32-be11-f021b8d7ed1d";
-const BUILTIN_BIGMODEL_PROVIDER_ID = BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan;
+const BUILTIN_BIGMODEL_PROVIDER_ID = "account:bigmodel-team-coding-plan";
 
 const CURRENT_MODEL_ID = `${BUILTIN_BIGMODEL_PROVIDER_ID}/GLM-5.3-Flash`;
 
@@ -27,6 +26,8 @@ const LIST_MODELS_DISPLAY = {
       id: CURRENT_MODEL_ID,
       providerId: BUILTIN_BIGMODEL_PROVIDER_ID,
       modelId: "GLM-5.3-Flash",
+      // fork（F4.11）：内置家族名解析已删除，改用载荷 providerLabel 展示同一名称。
+      providerLabel: "BigModel",
       reasoningLevels: ["low", "medium", "high"],
       defaultReasoningLevel: "high",
       contextWindow: 128_000,
@@ -35,6 +36,7 @@ const LIST_MODELS_DISPLAY = {
       id: `${BUILTIN_BIGMODEL_PROVIDER_ID}/GLM-5.3`,
       providerId: BUILTIN_BIGMODEL_PROVIDER_ID,
       modelId: "GLM-5.3",
+      providerLabel: "BigModel",
       reasoningLevels: ["low", "medium", "high", "max"],
       defaultReasoningLevel: "max",
       contextWindow: 200_000,
@@ -184,7 +186,7 @@ describe("ListModelsToolCallBlock", () => {
 
     expect(screen.getByText("Available models")).toBeTruthy();
     expect(screen.getByText("4 models")).toBeTruthy();
-    // 内置家族 → 家族名；自定义 provider → 载荷里的 providerLabel。
+    // fork（F4.11）：内置家族名解析已删除；两类 provider 都走载荷里的 providerLabel。
     expect(screen.getByText("BigModel")).toBeTruthy();
     expect(screen.getByText("MyProxy")).toBeTruthy();
     expect(screen.getByText("GLM-5.3-Flash")).toBeTruthy();

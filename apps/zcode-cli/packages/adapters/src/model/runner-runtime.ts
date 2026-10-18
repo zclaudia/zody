@@ -6,7 +6,6 @@ import type {
   ModelTextRequest,
   TraceContext,
 } from "@zcode/contracts";
-import type { ZCodeProviderAccountAccess } from "@zcode/shared";
 import type { AiSdkResolvedModel } from "./model-execution.js";
 
 export type AiSdkGenerateTextOptions = Parameters<typeof aiGenerateText>[0];
@@ -15,8 +14,17 @@ export type AiSdkStreamTextOptions = Parameters<typeof aiStreamText>[0];
 export type AiSdkStreamTextResult = ReturnType<typeof aiStreamText>;
 export type ResolvedAiSdkModel = AiSdkResolvedModel & {
   properties: ModelProperties;
-  accountAccess?: ZCodeProviderAccountAccess;
+  /**
+   * fork（F4.11）：官方账号 Provider 已删除，协议层不再有 ZCodeProviderAccountAccess；
+   * 这里保留结构性账号访问类别，仅用于读取存量 provider config 的派生鉴权分支。
+   */
+  accountAccess?: AiSdkAccountAccess;
 };
+
+export interface AiSdkAccountAccess {
+  readonly type: "zhipu-account";
+  readonly mode?: string;
+}
 
 export interface AiSdkModelRuntime {
   generateText(options: AiSdkGenerateTextOptions): Promise<AiSdkGenerateTextResult>;
@@ -29,7 +37,6 @@ export interface AiSdkModelTextRequest extends ModelTextRequest {
   // Start Plan 的账号鉴权材料按 attempt 刷新；adapter 内部 retry 也是真实模型请求，
   // 必须在每个 attempt 发送前给 core/host 一个刷新机会。
   refreshRuntimeHeadersBeforeAttempt?: (input: {
-    accountAccess?: ZCodeProviderAccountAccess;
     expectedAccountScope?: string;
     rejectedProjectTokenFingerprint?: string;
     attempt: number;

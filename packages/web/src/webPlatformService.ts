@@ -166,11 +166,8 @@ export function createWebPlatform(options?: {
     openInFileManager: () =>
       Promise.resolve({ success: false, error: "Not supported in web mode" }),
     openExternalFile: () => Promise.resolve({ success: false, error: "Not supported in web mode" }),
-    // fork（F4.10）：Web 端 OAuth 登录与支付回调已随官方账号链删除；这三项仍是
-    // IPlatformService 的必填契约（web 端统一空实现），契约条目在 F4.11 清理 shared/platform.ts 时移除。
-    registerOAuthState: (_payload) => {},
-    onOAuthCallback: () => () => {},
-    onPaymentCallback: () => () => {},
+    // fork（F4.11）：registerOAuthState / onOAuthCallback / onPaymentCallback 契约条目已从
+    // shared/platform.ts 移除（F4.10 先删除 Web 端登录实现）。
     // fork（F4.8）：onShareImport 随会话分享功能删除。
     notifyRendererReady: () => {},
     reportTelemetryEvent: async (event) => {

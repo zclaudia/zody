@@ -1,6 +1,6 @@
 import {
-  buildZCodeEndpointUrls,
   buildZCodeSourceHeadersFromContext,
+  normalizeZCodeEndpointOrigin,
   ZCODE_ENV,
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
 } from "@zcode/shared";
@@ -88,7 +88,8 @@ export function createElectronDesktopContextPromptConfigFetcher(options: {
   return async (signal) => {
     const { net } = await import("electron");
     const endpointOrigin = await options.resolveEndpointOrigin();
-    const url = new URL(`${buildZCodeEndpointUrls(endpointOrigin).origin}/api/v1/client/configs`);
+    // fork（F4.11）：buildZCodeEndpointUrls 已随账号端点删除；这里只需要 origin。
+    const url = new URL(`${normalizeZCodeEndpointOrigin(endpointOrigin)}/api/v1/client/configs`);
     url.searchParams.set("app_version", options.appVersion);
     url.searchParams.set("platform", `${process.platform}-${process.arch}`);
 

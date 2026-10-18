@@ -8,6 +8,10 @@ import { modelSelectionSchema } from "./model-selection.js";
  * fork（F4.2）：枚举值 `highspeed_*` 原由加速卡作为唯一写入方；加速卡删除后不再产生新值，
  * 但 selectionFallback 声明随 input intent/transcript 持久化，枚举必须保留以兼容解析存量
  * 会话数据（同步友好原则）。机制本身的收口留给后续任务。
+ *
+ * fork（F4.11）：已确认现网无写入方；评估后仍保留枚举值——selectionFallback 属于
+ * modelExecutionSchema 的严格解析面（不是 z.unknown/strip 可吞掉的展示字段），删除会让
+ * 含该声明的旧 transcript/intent 校验失败。等旧会话数据退役后再删。
  */
 export const modelExecutionSelectionFallbackReasonSchema = z.enum([
   "highspeed_card_expired",

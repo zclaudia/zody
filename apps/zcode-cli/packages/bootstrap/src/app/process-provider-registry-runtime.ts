@@ -6,7 +6,6 @@ import {
   type AccountProviderStates,
 } from "@zcode/provider";
 import {
-  isBuiltinModelProviderId,
   resolveRuntimeZCodeEndpointOrigin,
   ZCODE_VERSION,
 } from "@zcode/shared";
@@ -176,8 +175,9 @@ export function parseProcessAccountProviderConfigSnapshot(input: {
   const providers = parseAccountProviderConfigMap(input.providers);
   for (const [providerId, provider] of providers.entries()) {
     // 仅约束托管 Worker 的普通账号信封；独立 CLI、API 和闲时不需要 current。
+    // fork（F4.11）：账号 Provider 已下线，不再用 builtin 身份表过滤；旧 Worker 发来的
+    // zhipu-account 信封仍要求 current 与 entitled 同时存在，避免发布半份账号事实。
     if (
-      isBuiltinModelProviderId(providerId) &&
       provider.access?.type === "zhipu-account" &&
       provider.access.entitled &&
       typeof input.states?.[providerId]?.current !== "boolean"

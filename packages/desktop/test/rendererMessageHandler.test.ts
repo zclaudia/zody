@@ -47,8 +47,6 @@ vi.stubGlobal("window", {
     listDockerContainers: vi.fn(async () => []),
     listSSHConfigAliases: vi.fn(async () => []),
     openExternal: vi.fn(),
-    registerOAuthState: vi.fn(),
-    onOAuthCallback: vi.fn(() => () => {}),
     notifyRendererReady: vi.fn(),
     reportTelemetryEvent: vi.fn(async () => {}),
     showTaskNotification: vi.fn(),

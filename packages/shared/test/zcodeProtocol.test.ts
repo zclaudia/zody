@@ -993,48 +993,18 @@ describe("ZCode Protocol", () => {
     ).toThrow();
   });
 
-  // fork（F4.3）："off-peak" 为历史持久化 mode 值（协议枚举保留容忍），用例保留。
-  it.each(["start-plan", "individual-coding-plan", "team-coding-plan", "off-peak"] as const)(
-    "runtime headers 直接接受 Registry zhipu access mode: %s",
-    (mode) => {
-      const parsed = zcodeProviderRuntimeHeadersRequestParamsSchema.parse({
-        requestId: `request-${mode}`,
-        sessionId: "sess_1",
-        workspace,
-        modelSelection: model,
-        providerId: `account:${mode}`,
-        accountAccess: {
-          type: "zhipu-account",
-          accountType: "bigmodel",
-          mode,
-          entitled: true,
-        },
-        reason: "model-request",
-      });
-
-      expect(parsed.accountAccess).toEqual({
-        type: "zhipu-account",
-        accountType: "bigmodel",
-        mode,
-        entitled: true,
-      });
-    },
-  );
-
-  it("runtime headers 拒绝已经退出 Registry 的旧 planKind Access 形状", () => {
+  // fork（F4.11）：accountAccess（zhipu-account 访问类别）已从 runtime headers 协议删除；
+  // strict schema 必须拒绝旧字段，避免半断的账号鉴权链重新流入。
+  it("runtime headers 拒绝已删除的 accountAccess 字段", () => {
     expect(() =>
       zcodeProviderRuntimeHeadersRequestParamsSchema.parse({
-        requestId: "request-legacy",
-        sessionId: "sess_1",
-        workspace,
-        modelSelection: model,
-        providerId: "account:legacy",
+        ...params,
         accountAccess: {
           type: "zhipu-account",
           accountType: "bigmodel",
-          planKind: "team-coding-plan",
+          mode: "start-plan",
+          entitled: true,
         },
-        reason: "model-request",
       }),
     ).toThrow();
   });

@@ -17,6 +17,7 @@ export type {
   IntegratedTerminalShellSelection,
   Locale,
   LocalePreference,
+  UserInfo,
   ZCodeInteractionBehavior,
   TabId,
   TabState,
@@ -124,7 +125,6 @@ export * from "./test-ids.js";
 export * from "./test-ids-workflow.js";
 export * from "./channels.js";
 export * from "./storage.js";
-export * from "./oauth.js";
 export * from "./desktopMenu.js";
 export * from "./feedback.js";
 export * from "./e2e-test-bridge.js";
@@ -149,6 +149,7 @@ export type {
   FinalArmsCustomEventPayload,
   RendererTelemetryEventPayload,
   TelemetryEventPayload,
+  TelemetryMarketingAttribution,
   TelemetryRendererContext,
 } from "./telemetry.js";
 export {
@@ -331,16 +332,8 @@ export * from "./clientConfig.js";
 export * from "./pluginStoreOrdering.js";
 export * from "./session-debug.js";
 export { redactFeedbackText } from "./feedbackPrivacy.js";
-export { API_KEY_USAGE_SCENE, type ApiKeyCreationUsageScene } from "./api-key-usage-scene.js";
-export {
-  projectAccessTokenFingerprint,
-  ProjectAccessTokenTransientError,
-} from "./project-access-token.js";
-export {
-  ProjectAccessTokenClient,
-  type ProjectAccessTokenInput,
-  type ProjectAccessTokenMaterial,
-} from "./project-access-token-client.js";
+// fork（F4.11）：project-access-token* / api-key-usage-scene（官方账号 PAT 换证与 Key 用途）
+// 随官方账号链路删除，不再从 shared 公开入口导出。
 
 export * from "./conversationSelection.js";
 export * from "./attachment-source.js";

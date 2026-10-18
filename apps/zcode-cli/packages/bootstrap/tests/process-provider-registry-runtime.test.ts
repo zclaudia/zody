@@ -169,7 +169,7 @@ describe("process provider registry runtime", () => {
       runtime.dispose();
     }
   });
-  it("真实 Built-in 下完整状态跨协议往返；仅切 current 即更新 Worker 的有效选择", async () => {
+  it("真实 Built-in 下完整状态跨协议往返；仅切 current 即更新 Worker 的 Registry 投影", async () => {
     // F4.1a 已从仓库 builtin 配置删除 account:* 官方账号 provider，原用例依赖
     // builtin 物化 account:bigmodel-*-coding-plan 已不可能；跨协议往返与「仅切
     // current 即更新有效选择」的机制改用本地 fixture 验证（与本文件 zcodeBuiltinRelease
@@ -252,9 +252,11 @@ describe("process provider registry runtime", () => {
         expect(
           runtime.runtime.registryService.getProvider(current === personal ? team : personal),
         ).toBeUndefined();
+        // fork（F4.11）：账号分类器与“旧账号自动对应到 current 账号”的改写已删除；
+        // 选择解析只认 Registry 当前发布的事实。
         expect(
           facade.getView(undefined, undefined, { selection: original }).effectiveSelection,
-        ).toEqual({ ...original, providerId: current });
+        ).toEqual(current === personal ? { ...original } : null);
         expect(original.providerId).toBe(personal);
       }
       expect(revisions.size).toBe(2);

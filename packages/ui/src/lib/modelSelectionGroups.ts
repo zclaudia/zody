@@ -1,8 +1,5 @@
 import {
   isZCodeAgentProvider,
-  resolveModelProviderFamilySpecByProviderId,
-  zcodeProviderAccountAccessSchema,
-  type ZCodeProviderAccountAccess,
   type ZCodeProvider,
 } from "@zcode/shared";
 import type { ModelSelectionView } from "@zcode/services";
@@ -33,24 +30,21 @@ function supportsRegistryApiFormat(
 export function buildRegistryModelSelectGroups(
   selectedProvider: ZCodeProvider,
   view: ModelSelectionView,
-  labels: ModelProviderGroupLabelOptions = {},
+  // fork（F4.11）：账号套餐分组标签（Coding Plan/Start Plan/Team）随官方账号体系删除；
+  // 参数保留是为了不一次性改动所有调用方，后续 UI 文案任务（F7.4）再清理。
+  _labels: ModelProviderGroupLabelOptions = {},
 ): ModelSelectGroup[] {
   return view.providers.flatMap((provider) => {
     if (!supportsRegistryApiFormat(selectedProvider, provider.config.api?.type)) {
       return [];
     }
 
-    const accountAccess = zcodeProviderAccountAccessSchema.safeParse(provider.config.access);
-    const accountPresentation = accountAccess.success
-      ? getRegistryAccountProviderGroupPresentation(provider.providerId, accountAccess.data, labels)
-      : null;
-
+    // fork（F4.11）：官方账号 Access（zhipu-account）分组展示随账号链删除；
+    // BYOK/自定义 provider 直接使用配置里的 providerName（缺省回落 providerId）。
     return [
       {
         key: `registry-provider:${provider.providerId}`,
-        label: accountPresentation?.label || provider.providerName?.trim() || provider.providerId,
-        ...(accountPresentation?.labelBadge ? { labelBadge: accountPresentation.labelBadge } : {}),
-        ...(accountPresentation ? { directItems: true } : {}),
+        label: provider.providerName?.trim() || provider.providerId,
         items: provider.models.map(({ modelId, config }) => ({
           key: `registry-provider:${provider.providerId}:${modelId}`,
           value: encodeCustomModelValue(provider.providerId, modelId),
@@ -66,22 +60,6 @@ export function buildRegistryModelSelectGroups(
       },
     ];
   });
-}
-
-function getRegistryAccountProviderGroupPresentation(
-  providerId: string,
-  access: ZCodeProviderAccountAccess,
-  labels: ModelProviderGroupLabelOptions,
-): Pick<ModelSelectGroup, "label" | "labelBadge"> {
-  const familySpec = resolveModelProviderFamilySpecByProviderId(providerId);
-  const label = familySpec?.label ?? providerId;
-  if (access.mode === "start-plan") {
-    return { label: "Start Plan", labelBadge: labels.startPlanBadgeLabel ?? "Free" };
-  }
-  if (access.mode === "team-coding-plan") {
-    return { label, labelBadge: labels.teamPlanBadgeLabel ?? "Team" };
-  }
-  return { label, labelBadge: labels.codingPlanBadgeLabel ?? "Individual" };
 }
 
 export function resolveModelDisplayName(

@@ -1,4 +1,3 @@
-import type { BuiltinModelProviderId } from "@zcode/shared";
 import type { ProviderSettingsFormProvider } from "@/lib/providerSettingsFormTypes.js";
 import { getProviderFormLabel } from "@/lib/providerSettingsFormTypes.js";
 
@@ -14,7 +13,6 @@ export type ModelProviderNavItem =
       logo?: ProviderSettingsFormProvider["config"]["logo"];
       /** 状态圆点展示的 provider。 */
       statusProvider?: ProviderSettingsFormProvider | null;
-      presetId: BuiltinModelProviderId;
       label: string;
       provider: ProviderSettingsFormProvider | null;
       displayName: string;

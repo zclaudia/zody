@@ -1,5 +1,4 @@
 import {
-  BUILTIN_MODEL_PROVIDER_IDS,
   BUILTIN_PROVIDER_TEMPLATE_IDS,
 } from "./model-provider-types.js";
 import { normalizeOfficialGlmModelId } from "./official-glm-model-id.js";
@@ -25,14 +24,17 @@ export function migrateLegacyModelProviderId(providerId: string): string | undef
       return BUILTIN_PROVIDER_TEMPLATE_IDS.bigmodel;
     case "builtin:zai":
       return BUILTIN_PROVIDER_TEMPLATE_IDS.zai;
+    // fork（F4.11）：账号 Provider（account:zai|bigmodel-*）已从运行时删除；这里保留
+    // F4.1a 发布的旧身份落点字面量，只用于存储迁移管线（随后由 Host 启动的
+    // officialAccountDataMigration 清空 account:* 选择），不作为可解析的 Provider 身份。
     case "builtin:bigmodel-start-plan":
-      return BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan;
+      return "account:bigmodel-start-plan";
     case "builtin:zai-start-plan":
-      return BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan;
+      return "account:zai-start-plan";
     case "builtin:bigmodel-coding-plan":
-      return BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan;
+      return "account:bigmodel-individual-coding-plan";
     case "builtin:zai-coding-plan":
-      return BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan;
+      return "account:zai-individual-coding-plan";
     default:
       return providerId.startsWith("builtin:") ? undefined : providerId;
   }

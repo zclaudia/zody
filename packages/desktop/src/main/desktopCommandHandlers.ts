@@ -2,7 +2,6 @@ import { getPluginSandboxHost } from "./pluginSandbox/index.js";
 /* eslint-disable max-lines -- 桌面命令分发需要共享窗口与平台上下文，集中维护更便于一致性 */
 import { readZCodeStdioTapDevState, setZCodeStdioTapDevEnabled } from "@zcode/services/node";
 import {
-  buildZCodeEndpointUrls,
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   DesktopCommandIds,
   isDesktopAutoUpdateActive,
@@ -365,7 +364,9 @@ function resolveChangelogUrl(
 ): string {
   // 帮助菜单里的外链以前只有固定英文地址，切到中文界面后仍会落到英文 changelog。
   // 这里统一收口到主进程按当前应用语言分流，避免菜单模板里手写分支后续再出现多处不一致。
-  const origin = buildZCodeEndpointUrls(endpointOrigin).origin;
+  // fork（F4.11）：buildZCodeEndpointUrls 的账号/分享回调与 plan 计费 URL 已删除，
+  // 帮助外链只需要归一化后的 origin。
+  const origin = normalizeZCodeEndpointOrigin(endpointOrigin);
   return locale === "zh-CN" ? `${origin}/cn/changelog` : `${origin}/en/changelog`;
 }
 

@@ -2,7 +2,6 @@ import { act, createElement, type ComponentProps } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { BUILTIN_MODEL_PROVIDER_IDS } from "@zcode/shared";
 import type { ProviderSettingsView } from "@zcode/services";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import { V4ComposerModelControls } from "@/v4/composer/V4ComposerToolbar.js";
@@ -784,7 +783,7 @@ describe("V4ComposerModelControls recovery", () => {
   });
 
   it("does not route builtin model selection through custom recovery when configOptions failed", async () => {
-    const providerId = BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan;
+    const providerId = "account:bigmodel-individual-coding-plan";
     mocks.modelSelectionView = {
       revision: 2,
       providers: [

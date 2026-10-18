@@ -15,7 +15,6 @@ import {
   parsePersonalProviderConfigMap,
   parseProviderConfigMap,
   ZhipuAccountAccessConfig,
-  resolveAccountProviderConfigs,
 } from "../src/index.js";
 import {
   createAccountProviderConfig,
@@ -195,14 +194,32 @@ describe("ProviderConfigResolver", () => {
       zcodeBuiltinModelRules: new ModelConfigRules([
         { type: "model", modelMatch: ".*", config: completeModelConfig() },
       ]),
-      accountProviders: resolveAccountProviderConfigs({
-        configuredProviders: providers,
-        previousProviders: ProviderConfigMap.empty(),
-        connections: [
-          { providerId: "start", status: "available", models: ["shared", "start-only"] },
-          { providerId: "individual", status: "available" },
+      // fork（F4.11）：resolveAccountProviderConfigs 已随 zhipu-account 解析删除；
+      // 测试直接构造等价 Account Overlay（membership + entitled）。
+      accountProviders: new ProviderConfigMap([
+        [
+          "start",
+          new ProviderConfig({
+            access: new ZhipuAccountAccessConfig({
+              accountType: "zai",
+              mode: "start-plan",
+              entitled: true,
+            }),
+            builtinModelIds: ["shared", "start-only"],
+          }),
         ],
-      }),
+        [
+          "individual",
+          new ProviderConfig({
+            access: new ZhipuAccountAccessConfig({
+              accountType: "zai",
+              mode: "individual-coding-plan",
+              entitled: true,
+            }),
+            builtinModelIds: ["shared", "individual-only"],
+          }),
+        ],
+      ]),
       accountStates: {
         start: { availability: "available", entitled: true, current: true },
         individual: { availability: "available", entitled: true, current: false },

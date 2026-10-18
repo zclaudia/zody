@@ -67,8 +67,6 @@ const mockPlatform = {
   canOpenCommunity: async () => false,
   openInFileManager: async () => ({ success: true }),
   openInEditor: async () => ({ success: true }),
-  registerOAuthState: () => {},
-  onOAuthCallback: () => () => {},
   notifyRendererReady: () => {},
   showTaskNotification: () => {},
   reportTelemetryEvent: async () => {},

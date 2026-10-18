@@ -1,5 +1,3 @@
-import { BUILTIN_MODEL_PROVIDER_IDS } from "@zcode/shared";
-
 /**
  * transcript 和 custom provider 的安全 code/message 证据集中在这里判定：
  * 低基数 allowlist，每条规则原子返回同一份证据决定的 source/reason。
@@ -9,11 +7,13 @@ export interface TelemetryEvidenceAttribution {
   failureReason: string;
 }
 
+// fork（F4.11）：官方账号 Provider 已删除（原 BUILTIN_MODEL_PROVIDER_IDS）；这里保留
+// 历史 account:* 身份的字面量，只为升级前 transcript 的 telemetry 归因兼容，不再代表可解析 Provider。
 const PROVIDER_BUSINESS_CODE_PROVIDER_IDS: ReadonlySet<string> = new Set([
-  BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
-  BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan,
-  BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-  BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan,
+  "account:zai-individual-coding-plan",
+  "account:zai-start-plan",
+  "account:bigmodel-individual-coding-plan",
+  "account:bigmodel-start-plan",
 ]);
 
 const PROVIDER_CODE_FAILURE_REASONS: Readonly<Record<string, string>> = {
