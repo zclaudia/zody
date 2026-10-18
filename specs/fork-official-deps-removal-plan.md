@@ -147,6 +147,35 @@ flowchart TD
 
 验收：端点解析测试按新默认值更新并先于实现提交；断网容器中各受影响功能按「降级或回落」表现；`pnpm knip` 无新增未使用导出。
 
+### 阶段 3 收尾记录（2026-10-19，F3.3）
+
+`pnpm check:official-refs` 在 F3.1/F3.2 合入后重跑，结果如下：
+
+| 范围                                                   | 域名类命中             | 标识类命中                                                                                            |
+| ------------------------------------------------------ | ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| 拦截范围（`packages/ apps/ scripts/ config/ public/`） | **252 处 / 81 个文件** | **524 处 / 102 个文件**（`zhipu` 452、`z-ai` 71、`z_ai` 1；`@zai-ai` / `zai-sdk` / `zai-org` 已归零） |
+| 单列统计 `docs/`                                       | 289 处 / 84 个文件     | 215 处（`zhipu` 193、`z-ai` 22）                                                                      |
+| 单列统计 `apps/dev-docs`                               | 0                      | 0                                                                                                     |
+
+- `packages/shared/src/zcodeEndpoint.ts` 已无域名命中（F3.1：`DEFAULT_*` 为空、`TEST_*` 指向 `example.invalid`）。
+- 基线收紧：复跑 `node scripts/check-official-refs.mjs --update-baseline` 与已入库的 `scripts/official-refs-baseline.json` **无差异**，说明基线已与当前扫描一致；基线中不存在命中数为 0 或指向已删除文件的条目（逐文件核对 81 条，全部存在且计数一致）。
+- **显式白名单**：脚本没有独立的按文件 whitelist 配置，`official-refs-baseline.json` 的「文件 → 命中数」就是显式白名单本身；BYOK 端点（`api.z.ai/api/anthropic`、`api.z.ai/api/paas/v4`、`open.bigmodel.cn/api/anthropic`、`open.bigmodel.cn/api/paas/v4`）由扫描器在统计前剔除，不占基线条目。剩余 81 个条目逐文件核对后的归属如下，没有「本运行删除后应归零」的遗漏项：
+
+| 归属                                                                                     | 文件数 | 命中数 | 处置                                               |
+| ---------------------------------------------------------------------------------------- | ------ | ------ | -------------------------------------------------- |
+| 测试/兼容夹具（保留功能的回归断言）                                                      | 42     | 124    | 保留；断言官方域名的脱敏、端点解析、旧身份兼容读取 |
+| F6.2 插件市场与图标 CDN                                                                  | 11     | 31     | 随 F6.2 替换为 GitHub 源/随包资源                  |
+| F6.5 远程资源 CDN 默认值                                                                 | 6      | 29     | 随 F6.5 改为空默认值                               |
+| `apps/zcode-cli/docs/` 上游设计文档                                                      | 5      | 24     | 文档、无运行时请求；保留在显式白名单               |
+| F6.3 建议提示图标                                                                        | 2      | 17     | 随 F6.3 本地化                                     |
+| F6.4 office 技能字体                                                                     | 7      | 11     | 随 F6.4 改为随包分发                               |
+| BYOK provider 管理链接（`config/provider/zcode-builtin*.json` 的 `apiKeyManagementUrl`） | 2      | 8      | 保留（BYOK 元数据）                                |
+| F7.2 打包元数据                                                                          | 1      | 3      | 随 F7.2 改写                                       |
+| F7.4 产品文档链接                                                                        | 3      | 3      | 随 F7.4 改写                                       |
+| 注释中的站名（无请求）                                                                   | 2      | 2      | 保留，随所在文件维护                               |
+
+复查命令：`pnpm check:official-refs`，结果 `baseline up to date: no regressions`。
+
 ## 阶段 4：移除官方账号体系，仅 BYOK（D2 已决：路线 B，12-18 人日）
 
 目标：fork 不再提供官方账号（Z.ai/BigModel 账号、Coding Plan、Start Plan、闲时、加速卡）的登录、购买与计费能力，只保留自带 API Key（BYOK）与自定义 provider。
