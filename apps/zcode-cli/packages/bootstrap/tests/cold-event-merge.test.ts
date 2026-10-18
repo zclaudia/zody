@@ -106,7 +106,9 @@ const HOOK_LIFECYCLE_EVENT_TYPES_FOR_TEST = new Set<SessionEvent["type"]>([
 ]);
 
 describe("cold conversation three-source merge", () => {
-  it("preserves a Highspeed fallback marker across cold transcript recovery", () => {
+  it("cold 恢复保留 TurnExecutionModelFallback 事件；存量加速身份不再投影到 user row", () => {
+    // fork（F4.2）：原用例断言 fallback marker 投影到 row.highspeed；row.highspeed 已随加速卡
+    // 删除。事件保留与流收口语义不变，存量 metadata.highspeed 不再读取（数据保留不损坏）。
     const turnId = "runtime-turn-highspeed-fallback";
     const user = userMessage("u-highspeed-fallback", "accelerated prompt", 1_000, turnId);
     user.info.metadata = {
@@ -122,6 +124,7 @@ describe("cold conversation three-source merge", () => {
         steer: { state: "notRequested" },
         dispatch: { state: "drained" },
         admittedAt: 1_000,
+        // 存量 intent 中的 highspeed 字段由 schema strip 宽容解析后忽略。
         highspeed: {
           schemaVersion: 1,
           cardId: "hsc-cold-fallback",
@@ -167,9 +170,8 @@ describe("cold conversation three-source merge", () => {
       .rows.window.find((row) => row.kind === "userInput");
     expect(row).toMatchObject({
       sourceCommandId: "command-highspeed-fallback",
-      highspeed: { fallbackAt: fallback.timestamp.getTime() },
     });
-    expect(row?.highspeed).not.toHaveProperty("shareExcludedReason");
+    expect(row).not.toHaveProperty("highspeed");
   });
 
   it("preserves SendMessage resumed subagent lifecycle that the transcript cannot synthesize", () => {

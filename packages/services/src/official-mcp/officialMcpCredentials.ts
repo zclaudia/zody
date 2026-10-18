@@ -1,14 +1,8 @@
 /*
  * ZCode 官方 Server MCP 的凭证解析与身份头构造。
  *
- * 本文件与 Off-Peak 的 offPeakRuntimeModel.ts **逻辑等价但完全独立**：
- * 不复用其函数、不修改其行为。理由是两者的套餐门槛、Team 支持范围与凭证通道预期会独立演进，
- * 共享 helper 会让任一侧的调整都变成需要评估双方影响的改动。
- *
- * 与 Off-Peak 的三处有意差异：
- *   1. 显式产出 Bigmodel-Target-Type（Off-Peak 侧当前没有生产者）；
- *   2. 不存在任何 mock 凭证分支（官方 MCP 无 mock 网关，测试用依赖注入替换来源）；
- *   3. 失败原因使用 official_* 分类，不复用 Off-Peak 的 reason 字符串。
+ * fork（F4.3）：原与 Off-Peak offPeakRuntimeModel.ts（已删）的「逻辑等价但完全独立」
+ * 说明随闲时任务全链路删除——本文件是两套实现中唯一存续的一套。
  *
  * 凭证通道：Coding Plan 凭证走 `X-Bigmodel-Authorization` + MaaS 登录 JWT，
  * 不再发送 `X-Coding-Plan-Api-Key`。服务端把 API key 通道标为"仅存量客户端兼容"，且两个头同时

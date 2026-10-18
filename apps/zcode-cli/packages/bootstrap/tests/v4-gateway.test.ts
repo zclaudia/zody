@@ -722,38 +722,7 @@ describe("订阅与帧调度", () => {
     );
   });
 
-  it("Off-Peak TurnStarted 只透传稳定 task attribution，不透传正文", () => {
-    const host = makeHost();
-    const gateway = makeGateway(host);
-    const log = new EventLog();
-    gateway.ingest("session-1", sessionCreated(log));
-    gateway.ingest(
-      "session-1",
-      log.push(
-        SessionEventType.TurnStarted,
-        {
-          turnNumber: 1,
-          input: "闲时任务 prompt 不能进入 fact",
-          inputId: "message-offpeak-run-1",
-          offPeakTaskId: "offpeak-stable-1",
-          offPeakRunType: "init",
-        },
-        { turnId: "turn-offpeak" },
-      ),
-    );
-
-    expect(host.telemetryFacts).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          kind: "turn.started",
-          sourceCommandId: "message-offpeak-run-1",
-          offPeakTaskId: "offpeak-stable-1",
-          offPeakRunType: "init",
-        }),
-      ]),
-    );
-    expect(JSON.stringify(host.telemetryFacts)).not.toContain("闲时任务 prompt 不能进入 fact");
-  });
+  // fork（F4.3）：Off-Peak TurnStarted attribution 用例随闲时任务全链路删除。
 
   it("manual run 无调度字段；非 runId 输入与 CronCreate 解析失败只降级不误标", () => {
     const host = makeHost();
@@ -3131,7 +3100,10 @@ describe("projection 16MiB fault 与恢复", () => {
     expect(coldHost.errors.some((entry) => entry.scope === "v4.hydrate.payloadTooLarge")).toBe(
       true,
     );
-  });
+    // fork 修复：本用例要构造 16MiB 级 delta 并做 live+cold 两轮投影，单跑就要 ~3.4s，
+    // 全量并行负载下会突破 vitest 缺省 5s 预算被误判超时；给显式预算（同 fault-matrix 的
+    // CELL_TIMEOUT_MS 惯例）。
+  }, 30_000);
 
   it("oversize tool input 不进入 projection，并以同一 protocol fault 终止 turn", async () => {
     const host = makeHost();

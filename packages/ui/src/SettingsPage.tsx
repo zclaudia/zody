@@ -1,11 +1,5 @@
 /* oxlint-disable eslint(max-lines) */
 import { ArrowLeft, Rocket, type LucideIcon } from "lucide-react";
-import { useStore } from "zustand";
-import {
-  marketingNavigation,
-  finishMarketingNavigation,
-  marketingSettingsSections,
-} from "@/lib/marketingNavigation.js";
 import {
   useCallback,
   useEffect,
@@ -269,8 +263,8 @@ export function SettingsPage({
   captionWorkspacePath,
   onBack,
   onCreateTask,
-  onOpenWorkspace,
-  allowOpenWorkspace = true,
+  onOpenWorkspace: _onOpenWorkspace,
+  allowOpenWorkspace: _allowOpenWorkspace = true,
   user,
 }: {
   isDesktop?: boolean;
@@ -342,17 +336,7 @@ export function SettingsPage({
           linuxCloseToTrayCapability.gnomeLikeWithoutTray,
       }
     : undefined;
-  const marketingRequest = useStore(marketingNavigation, (state) => state.request);
-  useEffect(() => {
-    if (marketingRequest?.target.page !== "settings") return;
-    const target = marketingRequest.target;
-    const section = target.section ? marketingSettingsSections[target.section] : activeSection;
-    if (!settingsSections.some((item) => item.id === section)) {
-      finishMarketingNavigation(marketingRequest.id, new Error("marketing_navigation_unavailable"));
-    } else if (activeSection === section && !target.provider_id) {
-      finishMarketingNavigation(marketingRequest.id);
-    }
-  }, [activeSection, marketingRequest, settingsSections]);
+  // fork（F4.4）：营销触达导航（marketingNavigation）随营销链路删除，落地确认 effect 一并移除。
   const [pluginNavigationOrigin, setPluginNavigationOrigin] = useState(() =>
     consumePendingSettingsPluginOrigin(),
   );

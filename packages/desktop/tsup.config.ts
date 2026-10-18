@@ -295,8 +295,8 @@ export default defineConfig([
     name: "preload",
     entry: {
       "preload/embeddedBrowserJavaScriptDialog": "src/preload/embeddedBrowserJavaScriptDialog.ts",
-      "preload/codingPlanWebview": "src/preload/codingPlanWebview.ts",
-      "preload/rewardsWebview": "src/preload/rewardsWebview.ts",
+      // fork（F4.4）：codingPlanWebview / rewardsWebview preload 入口随购买与 Rewards
+      // webview 基础设施删除。
       "preload/browserVideoRecorder": "src/preload/browserVideoRecorder.ts",
       "preload/index": "src/preload/index.ts",
       "preload/resourceManager": "src/preload/resourceManager.ts",

@@ -3,7 +3,7 @@ import { memo, useState } from "react";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import type { UniqueIdentifier } from "@dnd-kit/core";
-import { isCronTask, isOffPeakTask, type ZCodeTaskMeta } from "@zcode/shared";
+import { isCronTask, type ZCodeTaskMeta } from "@zcode/shared";
 import {
   ArrowUpToLine,
   Clock,
@@ -11,7 +11,6 @@ import {
   Folder,
   ListTree,
   LoaderIcon,
-  Moon,
   X,
 } from "lucide-react";
 import { cn } from "@/components/lib/utils.js";
@@ -158,9 +157,7 @@ function GroupedTaskRowComponent({
   );
   const taskTimeLabel = formatTaskRelativeTime(task.updatedAt, intl);
   const isTaskCron = isCronTask(task);
-  // 月亮身份改为持久 meta 标记判断；off-peak store 反查在任务被删除后会丢失
-  // 会话溯源，且让每一行多背一个全局 store 订阅。
-  const isTaskOffPeak = isOffPeakTask(task);
+  // fork（F4.3）：isTaskOffPeak 月亮标记随闲时任务全链路删除。
   const isActive =
     buildTaskWorkspaceKey(activeWorkspacePath, activeWorkspaceIdentity) ===
       workspaceKey && activeTaskId === task.taskId;
@@ -260,12 +257,6 @@ function GroupedTaskRowComponent({
               <Clock
                 data-cron-task-icon="true"
                 aria-label={intl.formatMessage({ id: "taskList.cronTaskLabel" })}
-                className="size-3.5 shrink-0"
-              />
-            ) : !hasPendingInteraction && isTaskOffPeak ? (
-              <Moon
-                data-off-peak-task-icon="true"
-                aria-label={intl.formatMessage({ id: "taskList.offPeakTaskLabel" })}
                 className="size-3.5 shrink-0"
               />
             ) : null}
@@ -470,12 +461,6 @@ function GroupedTaskRowComponent({
                 <Clock
                   data-cron-task-icon="true"
                   aria-label={intl.formatMessage({ id: "taskList.cronTaskLabel" })}
-                  className="size-3.5 shrink-0"
-                />
-              ) : !hasPendingInteraction && isTaskOffPeak ? (
-                <Moon
-                  data-off-peak-task-icon="true"
-                  aria-label={intl.formatMessage({ id: "taskList.offPeakTaskLabel" })}
                   className="size-3.5 shrink-0"
                 />
               ) : null}

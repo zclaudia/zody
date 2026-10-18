@@ -47,7 +47,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import type { Locale, RemoteTarget, UserInfo, ZCodeTaskMeta } from "@zcode/shared";
-import { BUILTIN_MODEL_PROVIDER_IDS } from "@zcode/shared";
 import {
   TID_CONVERSATION_NEW_TASK,
   TID_CONVERSATION_SECTION,
@@ -92,7 +91,6 @@ import {
   reorderSidebarPurposeSections,
 } from "@/lib/sidebarPurposeSectionPreferences.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
-import { setPendingSettingsSectionIntent } from "@/lib/settingsNavigation.js";
 import { buildTaskWorkspaceKey } from "@/lib/taskQueryCache.js";
 import {
   increaseWorkspaceTaskVisibleLimit,
@@ -1642,7 +1640,8 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
                     onGroupedTaskGroupIdsChange={handleGroupedTaskGroupIdsChange}
                     onCollapsedGroupIdsChange={handleCollapsedGroupedTaskGroupIdsChange}
                     onStickyGroupHeaderChange={setGroupedStickyHeader}
-                    onOpenAutomations={handleOpenAutomationsMain}
+                    // fork（F4.3）：WorkspaceGroupedTasksSection 的 onOpenAutomations prop
+                    // （闲时分组「+」跳自动化页）随闲时任务全链路删除，此处不再传递。
                   />
                 ) : taskViewMode === "timeline" ? (
                   <WorkspaceTimelineTasksSection
@@ -1885,7 +1884,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
           </div>
 
           {/* fork（F4.1b）：侧栏左下活动槽位（SidebarBottomActivity = 营销 banner +
-              加速卡分享卡 GlobalNoticeSurface）摘除；组件文件留给 F4.2/F4.4 删除。 */}
+              全局通知 GlobalNoticeSurface）摘除；SidebarBottomActivity/GlobalNoticeSurface 已随 F4.4 删除（F4.2 已删加速卡分享卡）。 */}
           <WorkspaceSidebarFooter
             className="pr-3"
             theme={theme}

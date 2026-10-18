@@ -695,20 +695,7 @@ export const TID_AUTOMATIONS_STATUS_FILTER = "automations-status-filter";
 export const TID_AUTOMATION_CREATE_MENU = "automation-create-menu";
 export const TID_AUTOMATION_CREATE_MANUALLY = "automation-create-manually";
 export const TID_AUTOMATION_CARD = "automation-card";
-// 闲时任务（off-peak，独立面）
-export const TID_OFFPEAK_CREATE_BUTTON = "offpeak-create-button";
-export const TID_OFFPEAK_CARD = "offpeak-card";
-/** 闲时卡片脚注：绑定会话标题（会话内创建）。 */
-export const TID_OFFPEAK_CARD_SESSION = "offpeak-card-session";
-export const TID_OFFPEAK_CARD_MENU = "offpeak-card-menu";
-export const TID_OFFPEAK_EDIT_VIEW = "offpeak-edit-view";
-export const TID_OFFPEAK_EDIT_SUBMIT = "offpeak-edit-submit";
-export const TID_OFFPEAK_FORM_TITLE = "offpeak-form-title";
-export const TID_OFFPEAK_FORM_INSTRUCTIONS = "offpeak-form-instructions";
-export const TID_OFFPEAK_ACTION_PAUSE = "offpeak-action-pause";
-export const TID_OFFPEAK_ACTION_CONTINUE = "offpeak-action-continue";
-export const TID_OFFPEAK_ACTION_DELETE = "offpeak-action-delete";
-export const TID_OFFPEAK_TAB = "offpeak-tab";
+// fork（F4.3）：TID_OFFPEAK_* 闲时测试锚点随闲时任务全链路删除。
 export const TID_AUTOMATION_CARD_MENU = "automation-card-menu";
 export const TID_AUTOMATION_ACTION_TOGGLE = "automation-action-toggle";
 export const TID_AUTOMATION_ACTION_DELETE = "automation-action-delete";
@@ -736,7 +723,6 @@ export const TID_AUTOMATION_SCHEDULE_ADD = "automation-schedule-add";
 export const TID_AUTOMATION_SCHEDULE_DELETE = "automation-schedule-delete";
 export const TID_CRON_CREATE_CARD = "cron-create-card";
 export const TID_CRON_CREATE_OPEN = "cron-create-open";
-export const TID_OFFPEAK_CREATE_CARD = "offpeak-create-card";
 export const TID_OFFPEAK_CREATE_OPEN = "offpeak-create-open";
 export const TID_CONFIRM_DIALOG_CONFIRM = "confirm-dialog-confirm";
 
@@ -745,8 +731,7 @@ export function testId(base: string, suffix: string): string {
   return `${base}-${suffix}`;
 }
 
-/** 左侧栏头像上方的可手动领取 Start Plan banner。 */
-export const TID_MANUAL_CLAIM_PLAN_BANNER = "manual-claim-plan-banner";
+// fork（F4.4）：TID_MANUAL_CLAIM_PLAN_BANNER（手动领取 Start Plan banner）随营销链路删除。
 
 /** 插件 UI 沙箱卡片容器与其中的 webview。 */
 export const TID_PLUGIN_UI_CARD = "plugin-ui-card";

@@ -36,7 +36,6 @@ import type {
   ModelSelection,
   ModelToolCall,
   ModelUsage,
-  OffPeakPort,
   TopicResourcePort,
   PdfDocumentPort,
   PermissionBrokerPort,
@@ -202,7 +201,7 @@ export interface ZCodeAppOptions {
   uiLocale?: UiLocale;
   onWorkflowEvent?: (event: WorkflowEvent) => void | Promise<void>;
   automationPort?: AutomationPort;
-  offPeakPort?: OffPeakPort;
+  // fork（F4.3）：offPeakPort 随闲时任务全链路删除。
   topicResourcePort?: TopicResourcePort;
   /** 首次真实用户执行或 cold-resume fallback 时解析一次，之后由 app 生命周期缓存。 */
   resolveInitialBashShellSelection?: () => Promise<ExecutionShellSelection | undefined>;
@@ -263,7 +262,7 @@ export type SendInputOptions = SubmitPromptOptions & {
   delivery?: InputDelivery;
   /** sendText 的产品 guide/queue 意图；是否 busy 仍由 Core admission 判断。 */
   queueDelivery?: "guide" | "queue";
-  /** Highspeed 等必须延后到独立 turn 的输入，即使 admission 时已转为空闲也保持排队。 */
+  /** 必须延后到独立 turn 的输入（fork 注：原为加速队列设计，F4.2 删加速卡后机制保留）。 */
   requireQueue?: boolean;
   requireIdle?: boolean;
   expectedTurnId?: TurnId;
@@ -714,8 +713,9 @@ export interface ZCodeApp {
     modelId: string | ModelSelection,
     options?: {
       /**
-       * per-turn（off-peak idle plan）：true = 仅切运行态——不写磁盘模型选择、
+       * true = 仅切运行态——不写磁盘模型选择、
        * 不产出 modelChange 聊天通知。用于 turn 级临时切换（应用/还原成对出现）。
+       * fork（F4.3）：唯一消费者 off-peak idle plan 已随闲时任务全链路删除，字段保留。
        */
       transient?: boolean;
     },

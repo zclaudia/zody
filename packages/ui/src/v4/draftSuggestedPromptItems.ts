@@ -6,12 +6,9 @@ export interface DraftSuggestedPromptLocalizedText {
 }
 
 export const DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS = "NAVIGATE:AUTOMATIONS" as const;
-export const DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK =
-  "NAVIGATE:AUTOMATIONS:OFFPEAK" as const;
+// fork（F4.3）：DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK 随闲时任务全链路删除。
 
-export type DraftSuggestedPromptAction =
-  | typeof DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS
-  | typeof DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK;
+export type DraftSuggestedPromptAction = typeof DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS;
 
 export interface DraftSuggestedPromptItem {
   id: string;
@@ -43,11 +40,7 @@ export function parseDraftSuggestedPromptActions(
           actions.push(DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS);
         }
         break;
-      case DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK:
-        if (!actions.includes(DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK)) {
-          actions.push(DRAFT_SUGGESTED_PROMPT_NAVIGATE_AUTOMATIONS_OFFPEAK);
-        }
-        break;
+      // fork（F4.3）：OFFPEAK token 不再解析（远端旧 scene 下发时按未知 token 忽略）。
       default:
         break;
     }

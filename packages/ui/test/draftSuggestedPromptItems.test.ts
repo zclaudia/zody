@@ -121,8 +121,9 @@ describe("draft suggested prompt Client Scenes mapping", () => {
   it("splits, trims, deduplicates, and allowlists on_finish actions", () => {
     const navigationPrompt = createItem({
       id: "open-automations",
+      // fork（F4.3）：NAVIGATE:AUTOMATIONS:OFFPEAK token 不再解析（按未知 token 忽略）。
       on_finish:
-        " UNKNOWN:ACTION, NAVIGATE:AUTOMATIONS, NAVIGATE:AUTOMATIONS:OFFPEAK, NAVIGATE:AUTOMATIONS , NAVIGATE:AUTOMATIONS:OFFPEAK ",
+        " UNKNOWN:ACTION, NAVIGATE:AUTOMATIONS, NAVIGATE:AUTOMATIONS , NAVIGATE:AUTOMATIONS ",
     });
 
     expect(mapClientScenesToDraftSuggestedPromptItems([createScene([navigationPrompt])])).toEqual([
@@ -130,7 +131,7 @@ describe("draft suggested prompt Client Scenes mapping", () => {
         id: "open-automations",
         label: navigationPrompt.labels,
         prompt: navigationPrompt.contents,
-        actions: ["NAVIGATE:AUTOMATIONS", "NAVIGATE:AUTOMATIONS:OFFPEAK"],
+        actions: ["NAVIGATE:AUTOMATIONS"],
       },
     ]);
   });

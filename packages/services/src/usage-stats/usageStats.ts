@@ -3,7 +3,6 @@ import type {
   AppUsageSnapshot,
   CodingPlanUsageRequest,
   CodingPlanUsageSnapshot,
-  CodingPlanRegularTpsRequest,
   CodingPlanResetOpportunityRequest,
   CodingPlanResetOpportunityResult,
   CodingPlanResetScopeRequest,
@@ -21,7 +20,7 @@ import { createServiceDescriptor } from "../descriptors.js";
 export interface IUsageStatsService {
   getAppUsageSnapshot(request: AppUsageRequest): Promise<AppUsageSnapshot>;
   getCodingPlanUsageSnapshot(request: CodingPlanUsageRequest): Promise<CodingPlanUsageSnapshot>;
-  getCodingPlanRegularTps?(request: CodingPlanRegularTpsRequest): Promise<number | undefined>;
+  // fork（F4.2）：getCodingPlanRegularTps 仅服务加速卡 regularTps 采样，随全链路删除。
   getCodingPlanResetStatus(
     request: CodingPlanResetScopeRequest,
   ): Promise<CodingPlanResetStatusSnapshot>;

@@ -20,7 +20,6 @@ import type {
 } from "../interfaces/session-store.port.js";
 import type {
   CollaborationMode,
-  HighspeedMessageMetadata,
   RiskLevel,
   TurnInputIntentMetadata,
   TurnSteerCommandKind,
@@ -112,7 +111,8 @@ export const SessionEventType = {
   UserMessage: "user_message",
   AssistantMessage: "assistant_message",
   AssistantFeedbackUpdated: "assistant_feedback_updated",
-  HighspeedMetricsUpdated: "highspeed_metrics_updated",
+  // fork（F4.2）：HighspeedMetricsUpdated（"highspeed_metrics_updated"）随加速卡删除；
+  // 存量 event store 中的该类型事件在回放时按未知类型忽略。
   // （2026-09-12）：原 ToolWidgetStateUpdated / SessionPluginUiStateUpdated 已删除，
   // 插件 UI widgetState 回退 renderer 内存，不再经 CLI 事件流。
   SystemMessage: "system_message",
@@ -331,15 +331,9 @@ export interface BackgroundResultOriginMeta {
  */
 export type TurnExecutionKind = "agent" | "controlOnly";
 
-export type OffPeakRunType = "init" | "resume";
-
+// fork（F4.3）：OffPeakRunType 与 TurnBackgroundAttribution 的 offPeakTaskId 分支随闲时任务全链路删除。
 export type TurnBackgroundAttribution =
   | { automationId: string; offPeakTaskId?: never; offPeakRunType?: never }
-  | {
-      offPeakTaskId: string;
-      offPeakRunType?: OffPeakRunType;
-      automationId?: never;
-    }
   | {
       automationId?: undefined;
       offPeakTaskId?: undefined;
@@ -655,10 +649,7 @@ export interface AssistantFeedbackUpdatedPayload {
   feedback: "like" | "dislike" | null;
 }
 
-export interface HighspeedMetricsUpdatedPayload {
-  entityId: string;
-  highspeed: HighspeedMessageMetadata;
-}
+// fork（F4.2）：HighspeedMetricsUpdatedPayload 随加速卡全链路删除。
 
 export interface SystemMessagePayload {
   type: "init" | "compact_boundary" | "interrupted";

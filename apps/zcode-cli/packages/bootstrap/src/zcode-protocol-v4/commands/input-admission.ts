@@ -106,7 +106,7 @@ export async function applyHeldQueueDisposition(
   }
   if (disposition === "clearQueueAndSend") {
     await record.app.clearQueueItems();
-    host.clearQueuedTurnExecutions?.(record.app.sessionId);
+    // fork（F4.2）：原 clearQueuedTurnExecutions（加速队列凭据暂存清理）随加速卡删除。
   }
 }
 

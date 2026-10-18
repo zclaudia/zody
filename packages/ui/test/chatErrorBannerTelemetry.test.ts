@@ -780,11 +780,7 @@ describe("chat error banner telemetry", () => {
         message: "stream_read_error",
         expected: { error_source: "network", failure_reason: "network_error" },
       },
-      {
-        name: "off-peak continuation marker",
-        message: "off-peak-ticket-expired: wrong off-peak ticket",
-        expected: { error_source: "runtime", failure_reason: "offpeak_ticket_expired" },
-      },
+      // fork（F4.3）：off-peak ticket expired 归因用例随闲时任务全链路删除。
     ] as const;
 
     for (const testCase of cases) {

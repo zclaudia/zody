@@ -5,7 +5,7 @@ import {
   requiresRequestVerification,
 } from "@zcode/shared";
 import type { AccountRequestAuthMaterial } from "../src/model-provider/accountRequestAuthService.js";
-import { offPeakSelectionView } from "./fixtures/offPeakSelection.js";
+import { testSelectionView } from "./fixtures/testSelectionView.js";
 
 // 账号套餐的 provider runtime headers 由 Host 自动应答，不依赖 Renderer。
 const target = {
@@ -60,7 +60,7 @@ async function setup(
   }));
   const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
   const service = createZCodeAgentService({
-    modelSelectionReadinessSource: { getView: async () => offPeakSelectionView() },
+    modelSelectionReadinessSource: { getView: async () => testSelectionView() },
     accountRequestAuthService: {
       resolveCurrent,
       resolveAccessCurrent: async () => null,
@@ -70,7 +70,7 @@ async function setup(
   await service.initialize(target);
   const workspace = { workspacePath: target.workspacePath, workspaceKey: target.workspacePath };
   const fire = (
-    mode: "start-plan" | "individual-coding-plan" | "off-peak" = "start-plan",
+    mode: "start-plan" | "individual-coding-plan" = "start-plan",
     expectedAccountScope?: string,
     rejectedProjectTokenFingerprint?: string,
   ) =>
@@ -117,7 +117,7 @@ describe("Host 自动应答账号请求鉴权", () => {
     const resolve = vi.fn(async () => ({ apiKey: "fresh-pat", accountScope }));
     const { service, fire, respond } = await setup(resolve);
     try {
-      fire("off-peak", accountScope, "b".repeat(64));
+      fire("individual-coding-plan", accountScope, "b".repeat(64));
       await vi.waitFor(() =>
         expect(respond).toHaveBeenCalledWith("protocol-1", {
           headersApplied: true,
@@ -128,7 +128,7 @@ describe("Host 自动应答账号请求鉴权", () => {
         expect.objectContaining({
           expectedAccountScope: accountScope,
           rejectedProjectTokenFingerprint: "b".repeat(64),
-          accountAccess: expect.objectContaining({ mode: "off-peak" }),
+          accountAccess: expect.objectContaining({ mode: "individual-coding-plan" }),
         }),
       );
     } finally {

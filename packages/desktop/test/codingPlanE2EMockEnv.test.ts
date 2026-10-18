@@ -16,17 +16,12 @@ describe("Coding Plan E2E mock env", () => {
       "./test/e2e/conversation-session/conversation-session-automation-run-title-stable.test.ts",
     ])).toBe(true);
   });
-  it.each([
-    "conversation-session-create-telemetry.test.ts",
-    "conversation-session-offpeak-create.test.ts",
-    "conversation-session-offpeak-create-existing-session.test.ts",
-    "conversation-session-offpeak-subagent-model-inheritance.test.ts",
-    "conversation-session-off-peak-invalid-ticket.test.ts",
-  ])("prepares account facts as well as the off-peak gateway for %s", (spec) => {
+  it("prepares account facts for the create telemetry case", () => {
     expect(shouldPrepareCodingPlanTeamMock([
-      `./test/e2e/conversation-session/manual-review/pending/${spec}`,
+      "./test/e2e/conversation-session/conversation-session-create-telemetry.test.ts",
     ])).toBe(true);
   });
+  // fork（F4.3）：offpeak-create*/subagent-model-inheritance/invalid-ticket 用例随闲时任务全链路删除。
   it("prepares account APIs for the formal real-app provider responsive case", () => {
     expect(
       shouldPrepareCodingPlanTeamMock([
@@ -34,13 +29,7 @@ describe("Coding Plan E2E mock env", () => {
       ]),
     ).toBe(true);
   });
-  it.each([
-    "conversation-session-highspeed-card.test.ts",
-    "conversation-session-highspeed-card-draw-timeout.test.ts",
-    "conversation-session-highspeed-card-draw-miss.test.ts",
-  ])("prepares Coding Plan entitlement for highspeed draw case %s", (spec) => {
-    expect(shouldPrepareCodingPlanTeamMock([`./test/e2e/conversation-session/${spec}`])).toBe(true);
-  });
+  // fork（F4.2）：highspeed draw case 的 entitlement 前置断言随加速卡 E2E 删除。
   it("keeps both prepared mock addresses while a team worker activates only the team mock", () => {
     const environment: Record<string, string | undefined> = {};
     const teamBaseUrl = "http://127.0.0.1:41001";
@@ -86,11 +75,7 @@ describe("Coding Plan E2E mock env", () => {
         "./test/e2e/conversation-session/conversation-session-model-provider-settings-transition.test.ts",
       ]),
     ).toBe(true);
-    expect(
-      shouldPrepareCodingPlanTeamMock([
-        "./test/e2e/conversation-session/manual-review/pending/conversation-session-off-peak-team-plan.test.ts",
-      ]),
-    ).toBe(true);
+    // fork（F4.3）：off-peak-team-plan 断言随闲时任务全链路删除。
     expect(
       shouldPrepareCodingPlanTeamMock([
         "./test/e2e/conversation-session/conversation-session-background.test.ts",

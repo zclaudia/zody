@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { AutomationCreateLimitError, isAutomationCreateLimitError } from "@zcode/contracts";
-import { AUTOMATION_CREATE_LIMIT_ERROR_CODE, isHighspeedProviderId, zcodeProtocolMethods } from "@zcode/shared";
+import { AUTOMATION_CREATE_LIMIT_ERROR_CODE, zcodeProtocolMethods } from "@zcode/shared";
 import {
   AUTOMATION_CREATE_BOUND_SESSION_CHECK_ERROR,
   AUTOMATION_CREATE_FROM_AUTOMATION_RUN_ERROR,
@@ -746,7 +746,7 @@ describe("createProtocolAutomationPort", () => {
     });
   });
 
-  it("Highspeed Turn 中 CronCreate 持久化加速前的会话模型", async () => {
+  it("CronCreate 持久化会话常驻模型（fork 注：原为加速 Turn 场景，F4.2 删加速卡后保留会话模型快照断言）", async () => {
     const requestClient = vi.fn(async (method: string) => {
       if (method === zcodeProtocolMethods.automationCheckTaskBinding) return { bound: false };
       return {
@@ -804,11 +804,8 @@ describe("createProtocolAutomationPort", () => {
       }),
       expect.anything(),
     );
-    // 定时任务禁止落库加速卡 Provider，否则后续触发会拿不到卡凭据而失败。
-    const createdPayload = requestClient.mock.calls.find(
-      (call) => call[0] === zcodeProtocolMethods.automationCreate,
-    )?.[1] as { modelSelection?: { providerId?: string } } | undefined;
-    expect(isHighspeedProviderId(createdPayload?.modelSelection?.providerId)).toBe(false);
+    // fork（F4.2）：原「禁止落库加速卡 Provider」断言随 isHighspeedProviderId 删除；
+    // 自动化任务始终读取会话常驻 Selection，不读单轮执行身份的口径不变。
   });
 
   it("CronCreate 成功后冻结当前会话标题，避免迟到 generated title 覆盖 automation 语义", async () => {

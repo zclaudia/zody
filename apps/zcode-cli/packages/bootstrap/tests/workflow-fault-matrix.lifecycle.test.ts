@@ -39,10 +39,15 @@ async function waitFor(predicate: () => boolean, timeoutMs: number, what: string
   }
 }
 
-function settledEvents(harness: FaultServiceHarness, runId: string): Extract<RunEvent, { type: "run-settled" }>[] {
+function settledEvents(
+  harness: FaultServiceHarness,
+  runId: string,
+): Extract<RunEvent, { type: "run-settled" }>[] {
   return harness
     .eventsOf(runId)
-    .filter((event): event is Extract<RunEvent, { type: "run-settled" }> => event.type === "run-settled");
+    .filter(
+      (event): event is Extract<RunEvent, { type: "run-settled" }> => event.type === "run-settled",
+    );
 }
 
 // ————————————————————————————————————————————————————————————————
@@ -50,7 +55,9 @@ function settledEvents(harness: FaultServiceHarness, runId: string): Extract<Run
 // ————————————————————————————————————————————————————————————————
 
 describe("fault matrix · B15 flip — provider 停下后 resume 从断点续跑", () => {
-  it.each(cells([{ shape: "W4" }], [{ shape: "S-phase" }]).map((cell) => [cellName(cell), cell] as const))(
+  it.each(
+    cells([{ shape: "W4" }], [{ shape: "S-phase" }]).map((cell) => [cellName(cell), cell] as const),
+  )(
     "%s：第一段 stopped(provider)；翻转后 resume 完成，已完结 ask 不再请求",
     async (_name, cell: CellCoordinate) => {
       // 先放行 K+1 个请求（恰好让一个子代理完整走完），之后一律 401：第一段停下时
@@ -97,7 +104,11 @@ describe("fault matrix · B15 flip — provider 停下后 resume 从断点续跑
         expect(resume).toBeDefined();
         const resumed = await resume!(runId);
         expect(resumed).toMatchObject({ ok: true, runId });
-        await waitFor(() => settledEvents(harness, runId).length >= 2, CELL_TIMEOUT_MS - 5_000, "second run-settled");
+        await waitFor(
+          () => settledEvents(harness, runId).length >= 2,
+          CELL_TIMEOUT_MS - 5_000,
+          "second run-settled",
+        );
         await pause(POST_SETTLE_GRACE_MS);
         const second = await harness.service.getTask(runId);
         expect(second?.runStatus).toBe("completed");
@@ -106,7 +117,13 @@ describe("fault matrix · B15 flip — provider 停下后 resume 从断点续跑
         expect(settled[1]).toMatchObject({ status: "completed" });
 
         // 第二段只重问未完结的 ask：已完结的从 journal 回放，一次请求都没有（决策 13）。
-        const secondSegment = server.requests.length - requestsBefore;
+        // fork 修复：第一段停下时 abort 掉的在飞请求，其 handler 与测试共用事件循环，
+        // 负载重时会晚于 requestsBefore 采样才到达假服务器（不变式 5 注释里的同一机理）。
+        // 那是停下之前的尾巴：客户端早已断开（closedByClient，abort 的物证），不是 resume
+        // 的新请求，计数时排除；真正漏撤的退避定时器不会带这个物证，照样抓得到。
+        const secondSegment = server.requests
+          .slice(requestsBefore)
+          .filter((entry) => !entry.closedByClient).length;
         expect(secondSegment).toBe((asks - completedBefore) * (turns + 1));
         for (const node of askNodes(harness.journal, runId)) {
           expect(node.status).toBe("completed");
@@ -291,7 +308,14 @@ describe("fault matrix · B18 close — 宿主关闭停下自己拥有的 run，
         const requestsAtClose = server.requests.length;
         await pause(POST_SETTLE_GRACE_MS);
         expect(first.runEvents.length).toBe(eventsAtClose);
-        expect(server.requests.length).toBe(requestsAtClose);
+        // fork 修复：close 时 abort 掉的在飞请求，其 handler 与测试共用事件循环，负载重时
+        // 会晚于 requestsAtClose 采样才到达假服务器（不变式 5 注释里的同一机理）。那是
+        // close 之前的尾巴：客户端早已断开（closedByClient，abort 的物证），不算 close 之后
+        // 的新请求；真正漏撤的退避定时器不会带这个物证，「零请求」照样抓得到。
+        const servedAfterClose = server.requests
+          .slice(requestsAtClose)
+          .filter((entry) => !entry.closedByClient).length;
+        expect(servedAfterClose).toBe(0);
         // 关闭之后的 launch 是接线错误，不是业务拒绝。
         await expect(first.service.resume!(runId)).rejects.toThrow(/service is closed/);
       } finally {

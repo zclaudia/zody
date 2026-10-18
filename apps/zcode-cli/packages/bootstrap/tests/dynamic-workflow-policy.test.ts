@@ -14,7 +14,6 @@ function makeContext() {
     appRuntimePreferences: {
       askUserQuestionAutoResolutionEnabled: true,
       modelIoFullRetentionEnabled: false,
-      offPeakToolEnabled: false,
       dynamicWorkflowEnabled: false,
     },
   } as unknown as ZCodeProtocolAgentServerContext;

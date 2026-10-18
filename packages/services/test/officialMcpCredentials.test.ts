@@ -7,7 +7,7 @@
  *     packages/services/test/offPeakE2eIntegration.test.ts \
  *     packages/services/test/offPeakClientConfig.test.ts \
  *     packages/services/test/offPeakTaskRepo.test.ts
- * 本次实现后为 6 files / 77 tests 全绿，且未修改 offPeakRuntimeModel.ts 的任何导出。
+ * fork（F4.3）：原并列的 6 个 offPeak* 测试文件随闲时任务全链路删除。
  */
 import { describe, expect, it, vi } from "vitest";
 import { BUILTIN_MODEL_PROVIDER_IDS, type ZCodeAccountAccess } from "@zcode/shared";

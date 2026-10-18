@@ -3,7 +3,6 @@ import { z } from "zod";
 import type {
   ApiClient,
   ApiRequestInit,
-  CodingPlanRegularTpsRequest,
   CodingPlanUsageRequest,
   CodingPlanUsageSnapshot,
   CodingPlanResetOpportunityRequest,
@@ -744,92 +743,8 @@ export class BigModelUsageQuotaProvider {
     });
   }
 
-  async getCodingPlanRegularTps(
-    request: CodingPlanRegularTpsRequest,
-  ): Promise<number | undefined> {
-    const startedAt = Date.now();
-    let requestUrl: string | undefined;
-    let responseHeaders: Record<string, string> = {};
-    let responseStatus: number | undefined;
-    let responseStatusText: string | undefined;
-    let responseCode: number | undefined;
-    try {
-      const resolved = await this.resolveAuthorization({
-        preferredProviderId: request.preferredProviderId,
-        accountAccess: request.accountAccess,
-        requirePreferredProvider: true,
-        allowEnvApiKey: false,
-      });
-      if (!resolved) throw new Error(resolveCodingPlanApiKeyError(request.preferredProviderId));
-
-      const timeRange = resolveModelPerformanceTimeRange(request.timeZone, "7d");
-      requestUrl = buildModelPerformanceMonitorUrl(
-        resolved,
-        timeRange.startTime,
-        timeRange.endTime,
-      );
-      const response = await this.apiClient.request(requestUrl, {
-        method: "GET",
-        timeoutMs: REQUEST_TIMEOUT_MS,
-        headers: createBigModelUsageHeaders(resolved),
-      });
-      responseStatus = response.status;
-      responseStatusText = response.statusText;
-      responseHeaders = readApiDiagnosticHeaders(response.headers) ?? {};
-      let payload: BigModelUsageModelPerformanceEnvelope | undefined;
-      let parseError: unknown;
-      try {
-        payload = JSON.parse(await response.text()) as BigModelUsageModelPerformanceEnvelope;
-        responseCode = typeof payload.code === "number" ? payload.code : undefined;
-      } catch (error) {
-        parseError = error;
-      }
-      if (!response.ok) {
-        throw new ApiError({
-          message: readApiErrorMessage(payload, `HTTP ${response.status}`),
-          url: requestUrl,
-          method: "GET",
-          status: response.status,
-          responseHeaders,
-          cause: parseError,
-        });
-      }
-      if (parseError !== undefined || payload === undefined) {
-        throw new ApiError({
-          message: parseError instanceof Error ? parseError.message : "Invalid JSON response",
-          url: requestUrl,
-          method: "GET",
-          status: response.status,
-          responseHeaders,
-          cause: parseError,
-        });
-      }
-      const data = readSuccessfulBigModelMonitorData<BigModelUsageModelPerformancePayload>(
-        payload,
-        "BigModel model performance failed",
-        EMPTY_MODEL_PERFORMANCE_PAYLOAD,
-        { allowMissingData: true },
-      );
-      return data.proMaxDecodeSpeed?.findLast(
-        (value) => Number.isFinite(value) && value > 0,
-      );
-    } catch (error) {
-      // Bug 原因：Highspeed 仅在 Renderer 记录了 TPS 读取失败文案，Host 层丢失了
-      // monitor 的 HTTP status 和 request id，无法与后端日志对账。只输出 ApiError 中的安全诊断头。
-      log.warn(undefined, "Highspeed 普通 TPS 健康检查失败", {
-        error: error instanceof Error ? error.message : String(error),
-        providerId: request.preferredProviderId,
-        durationMs: Date.now() - startedAt,
-        status: error instanceof ApiError ? error.status : (responseStatus ?? null),
-        statusText: responseStatusText ?? null,
-        responseCode: responseCode ?? null,
-        responseHeaders:
-          error instanceof ApiError ? (error.responseHeaders ?? responseHeaders) : responseHeaders,
-        url: sanitizeMonitorDiagnosticUrl(error instanceof ApiError ? error.url : requestUrl),
-      });
-      throw error;
-    }
-  }
+  // fork（F4.2）：getCodingPlanRegularTps 仅服务加速卡的普通 Pro/Max decode TPS 采样，
+  // 随加速卡全链路删除；monitor 健康数据的其余消费（7d 用量页）保留。
 
   private async resolveAuthorization(
     request: {
@@ -1234,16 +1149,6 @@ async function readBestEffortBigModelMonitorData<TData extends object>(
 
 function readBigModelEnvelopeMessage(payload: { message?: string; msg?: string }): string {
   return payload.msg?.trim() || payload.message?.trim() || "";
-}
-
-function sanitizeMonitorDiagnosticUrl(url: string | undefined): string {
-  if (!url) return "<unknown-monitor-url>";
-  try {
-    const parsed = new URL(url);
-    return `${parsed.origin}${parsed.pathname}`;
-  } catch {
-    return "<invalid-monitor-url>";
-  }
 }
 
 function hasExplicitBigModelSuccessSignal(payload: { code?: number; success?: boolean }): boolean {

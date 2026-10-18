@@ -8,12 +8,7 @@
 # 本清单只做标记，不删 spec；各删除任务删除 spec 时一并清理其独占 helper/fixture，
 # 并从本清单移除对应条目。
 #
-# 共 43 个 spec + 文末 2 条边界备注。
-
-## F4.2 删除加速卡 highspeed（spec 名对话题即加速卡）
-conversation-session/conversation-session-highspeed-card.test.ts
-conversation-session/conversation-session-highspeed-card-draw-miss.test.ts
-conversation-session/conversation-session-highspeed-card-draw-timeout.test.ts
+# 共 40 个 spec + 文末 2 条边界备注。（fork（F4.2）：F4.2 节 3 个加速卡 spec 已删除）
 
 ## F4.3 删除闲时任务 off-peak（主题即闲时创建/调度/门槛）
 off-peak-automations-home-layout.test.ts
@@ -25,12 +20,7 @@ conversation-session/manual-review/pending/conversation-session-offpeak-create.t
 conversation-session/manual-review/pending/conversation-session-offpeak-create-existing-session.test.ts
 conversation-session/manual-review/pending/conversation-session-offpeak-subagent-model-inheritance.test.ts
 
-## F4.4 删除营销触达 / Rewards / 购买 webview（主题即营销触达与领取）
-ui-shell/marketing-touch-anonymous.test.ts
-ui-shell/marketing-touch-delivery.test.ts
-ui-shell/marketing-touch-entitlement.test.ts
-ui-shell/marketing-touch-rewards.test.ts
-ui-shell/manual-review/pending/marketing-touch-task-completion.test.ts
+## F4.4 删除营销触达 / Rewards / 购买 webview —— 已全部删除（fork 2026-10-18）
 
 ## F4.5 删除订阅、官方用量与套餐（Coding Plan/Start Plan/套餐导航与目录面）
 coding-plan-team-usage.test.ts
@@ -84,7 +74,7 @@ settings/manual-review/pending/provider-builtin-refresh.test.ts
 #    spec 中不在下方 OAuth/JWT 保留名单内的（如 off-peak 系列）会失去默认登录展示态，
 #    断言用户身份/套餐展示的用例属预期降级，由对应删除任务处理，不回填账号种入。
 #    仍保留完整账号种子的待删 spec：Coding Plan team/upgrade（bigmodel 域）、
-#    marketing-touch 领取/entitlement/rewards、jwt-401、jwt-expiry（expired 种子分支）、
+#    jwt-401、jwt-expiry（expired 种子分支）、
 #    oauth-credential-recovery（corrupt 种子分支）、access-token-401、
 #    provider-family-responsive、start-plan-manual-claim。
 #    oauth-login-failure-cancel / oauth-completion-race 自带 clearAppData 或运行时

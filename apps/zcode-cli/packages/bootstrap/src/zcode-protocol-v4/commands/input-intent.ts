@@ -49,10 +49,8 @@ export function inputIntentMetadata(
   },
 ): TurnInputIntentMetadata {
   const admission = commandAdmissionOf(envelope);
-  const highspeed =
-    envelope.type === "sendText"
-      ? (envelope.payload as CommandPayloadMap["sendText"]).highspeedMeta
-      : undefined;
+  // fork（F4.2）：原 highspeedMeta→intent.highspeed 的透传随加速卡删除；存量持久化
+  // intent 中的 highspeed 字段由 schema 宽容解析后忽略（兼容读取）。
   return {
     ...(options.inputOrigin ? { inputOrigin: options.inputOrigin } : {}),
     ...(options.conversationQuotes ? { conversationQuotes: options.conversationQuotes } : {}),
@@ -85,7 +83,6 @@ export function inputIntentMetadata(
     ...(options.fallbackReasonCode ? { fallbackReasonCode: options.fallbackReasonCode } : {}),
     ...(options.attachmentRefs ? { attachmentRefs: [...options.attachmentRefs] } : {}),
     ...(options.sharedContextRefs ? { sharedContextRefs: [...options.sharedContextRefs] } : {}),
-    ...(highspeed ? { highspeed } : {}),
     ...(options.source ? { source: options.source } : {}),
   };
 }
@@ -158,7 +155,6 @@ export function inputIntentMetadataFromQueueItem(
       : {}),
     attachmentRefs: item.attachments,
     ...(item.sharedContextRefs ? { sharedContextRefs: [...item.sharedContextRefs] } : {}),
-    ...(item.highspeed ? { highspeed: item.highspeed } : {}),
     ...(item.source ? { source: item.source } : {}),
     // 提升只改变调度状态；重试／编辑原始输入的来源关联不能在此丢失。
     ...(item.provenance ? { provenance: { ...item.provenance } } : {}),

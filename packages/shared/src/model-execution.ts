@@ -4,6 +4,10 @@ import { modelSelectionSchema } from "./model-selection.js";
 /**
  * 执行 Selection 退回 Session Selection 的原因。由发起方在 selectionFallback 规则里声明，
  * CLI 只透传命中规则的原因，不自行解释 provider 错误码。
+ *
+ * fork（F4.2）：枚举值 `highspeed_*` 原由加速卡作为唯一写入方；加速卡删除后不再产生新值，
+ * 但 selectionFallback 声明随 input intent/transcript 持久化，枚举必须保留以兼容解析存量
+ * 会话数据（同步友好原则）。机制本身的收口留给后续任务。
  */
 export const modelExecutionSelectionFallbackReasonSchema = z.enum([
   "highspeed_card_expired",

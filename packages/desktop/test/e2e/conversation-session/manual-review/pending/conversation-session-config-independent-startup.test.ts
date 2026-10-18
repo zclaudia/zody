@@ -70,7 +70,7 @@ describe("配置等待与普通聊天隔离", () => {
           15_000,
         );
         const query = { lastUserMessageIncludes: [marker] };
-        const tools = await getUpstreamRequestToolNames(query);
+        await getUpstreamRequestToolNames(query);
         await waitForV4AssistantMessageContaining(
           ["scb-cold-ok", "scb-warm-ok", "scb-resume-ok"][index]!,
         );
@@ -105,8 +105,7 @@ describe("配置等待与普通聊天隔离", () => {
           CONFIG_REQUEST_TIMEOUT_MS,
         );
         expect(request.status).toBe("complete");
-        expect(tools).toContain("OffPeakCreate");
-        expect(tools).toContain("OffPeakList");
+        // fork（F4.3）：OffPeakCreate/OffPeakList 工具面断言随闲时任务全链路删除。
       }
     } finally {
       const root = join(getE2EAppDataPaths().homeDir, "ZCodeProject", ".zcode-e2e", CASE_NAME);

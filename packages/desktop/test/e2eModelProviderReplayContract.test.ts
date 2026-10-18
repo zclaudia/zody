@@ -27,7 +27,7 @@ function readReplayFixture(relativePath: string): ReplayFixtureFile {
 describe("model provider E2E replay contract", () => {
   it.each([
     "conversation-session-model-provider-effective-selection.test.ts",
-    "off-peak-create-manage.test.ts",
+    // fork（F4.3）：off-peak-create-manage 用例随闲时任务全链路删除。
   ])("isolates account control-plane for %s", (spec) => {
     expect(shouldPrepareCodingPlanTeamMock([`./test/e2e/${spec}`])).toBe(true);
   });

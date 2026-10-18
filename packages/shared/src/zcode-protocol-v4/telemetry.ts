@@ -68,6 +68,8 @@ const turnStartedFactSchema = z
     // `workflow`：dynamic-workflow run 的完成 / 提问通知唤起的独立轮。
     backgroundSource: z.enum(["bash", "subagent", "workflow"]).optional(),
     automationId: z.string().min(1).optional(),
+    // fork（F4.3）兼容保留：off-peak 链路已删，但历史 session 持久化的 turn.started fact
+    // 仍可能带这两个字段；schema 为 strict，删字段会让旧数据整条解析失败，故保留容忍读取。
     offPeakTaskId: z.string().min(1).optional(),
     offPeakRunType: z.enum(["init", "resume"]).optional(),
     taskTrigger: z.enum(["schedule", "manual"]).optional(),
@@ -274,19 +276,7 @@ const conversationTelemetryFactRuntimeSchema = z
     compactionTerminalFactSchema,
   ])
   .superRefine((fact, context) => {
-    if (fact.kind === "turn.started" && fact.automationId && fact.offPeakTaskId) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "automationId and offPeakTaskId are mutually exclusive",
-      });
-    }
-    if (fact.kind === "turn.started" && fact.offPeakRunType && !fact.offPeakTaskId) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "offPeakRunType requires offPeakTaskId",
-        path: ["offPeakRunType"],
-      });
-    }
+    // fork（F4.3）：offPeakTaskId 互斥校验分支随闲时任务全链路删除（新数据不再产生该字段）。
     // discriminatedUnion 的成员必须是裸 ZodObject，按 phase 的条件必填只能写在这里。
     if (
       fact.kind === "workflow.lifecycle" &&

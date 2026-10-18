@@ -23,13 +23,6 @@ export {
   materializeZCodeBuiltinProviderConfig,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
 } from "@zcode/provider-node";
-import { randomUUID } from "node:crypto";
-import { getAppConfigDir as getContentAppConfigDir } from "#src/paths.js";
-import { ICloudContentService } from "#src/cloud-content/cloudContent.js";
-import { createCloudContentService } from "#src/cloud-content/cloudContentService.js";
-import { IMarketingTouchService } from "#src/marketing-touch/marketingTouch.js";
-import { createMarketingTouchService } from "#src/marketing-touch/marketingTouchService.js";
-import { createMarketingAssetRegistry } from "#src/marketing-touch/marketingAssetRegistry.js";
 import type { IChannel } from "@zcode/rpc";
 import {
   readTopicResourceFromRelay,
@@ -51,8 +44,7 @@ export {
   type ProcessResourceSampler,
 } from "./process/processResourceSampler.js";
 export { createMediaPreviewService } from "./media-preview/mediaPreview.js";
-export { createContentBundleCache } from "#src/cloud-content/contentBundleCache.js";
-export type { ContentBundle } from "#src/cloud-content/contentBundleCache.js";
+// fork（F4.4）：createContentBundleCache / ContentBundle（云内容 ZIP 缓存）随 cloud-content 删除。
 export type { CreateFileServiceOptions } from "./file/fileService.js";
 export {
   defaultWorkspaceFileSearchFilter,
@@ -281,26 +273,10 @@ export {
   computeRetryAt,
 } from "./session/automationRepo.js";
 export { AutomationService, InvalidCronExprError } from "./session/automationService.js";
-// 闲时任务与 automation 同库不同表；类型/常量全独立。
-export { OffPeakTaskRepo, OFF_PEAK_CLAIM_STALE_MS } from "./session/offPeakTaskRepo.js";
+// fork（F4.3）：offPeakTaskRepo/offPeakTaskService/offPeakServerClient/offPeakMockGateway/
+// offPeakRuntimeModel 的 re-export（L285-302 一带）随闲时任务全链路删除。
 // host 域终态回填 files_changed 复用现有 task diff 汇总。
 export { buildTaskChangeSummary } from "./session/taskChangeSummary.js";
-export { OffPeakTaskService } from "./session/offPeakTaskService.js";
-export { IOffPeakTaskService } from "./session/offPeakTask.js";
-export { IHighspeedCardService } from "./highspeed/highspeedCard.js";
-export { createOffPeakServerClient, OffPeakServerError } from "./session/offPeakServerClient.js";
-export { isOffPeakMockEnabled, startOffPeakMockGateway } from "./session/offPeakMockGateway.js";
-export {
-  buildOffPeakRequestAuth,
-  createOffPeakOriginResolver,
-  resolveOffPeakCredentials,
-  resolveOffPeakCodingPlanSupport,
-  resolveOffPeakMockUpstream,
-  OffPeakCodingPlanUnavailableError,
-  OffPeakCredentialsUnavailableError,
-  OffPeakModelUnavailableError,
-  OffPeakPermanentDispatchError,
-} from "./session/offPeakRuntimeModel.js";
 export { createServiceLogger } from "./logger/serviceLogger.js";
 export {
   buildOfficialMcpAuthHeaders,
@@ -427,7 +403,6 @@ import {
 } from "./model-provider/providerProvisioningSource.js";
 import { createProviderProvisioningTarget } from "./model-provider/providerProvisioningTarget.js";
 import { IProviderProvisioningTargetService } from "./model-provider/providerProvisioning.js";
-import { buildOffPeakModelSelectionView } from "./model-provider/offPeakModelSelectionView.js";
 import { resolveClientConfigPlatform } from "./runtime-tools/clientPlatform.js";
 import {
   createAccountRequestAuthService,
@@ -482,25 +457,8 @@ import {
 import { ensureAppCaCert } from "./runtime-tools/appCaCert.js";
 import { buildHelperOpenArgs, isCuaLocalDevelopmentRuntime } from "@zcode/zcode-cua/broker/server";
 import { createServiceLogger, type ServiceLogger } from "#src/logger/serviceLogger.js";
-import { IOffPeakTaskService } from "./session/offPeakTask.js";
-import type { HighspeedMockScenario } from "@zcode/shared";
-import { IHighspeedCardService } from "./highspeed/highspeedCard.js";
-import {
-  buildHighspeedCodingPlanAuthHeaders,
-  HighspeedCardService,
-  createHighspeedHttpTransport,
-} from "./highspeed/highspeedCardService.js";
-import { createHighspeedMockTransport } from "./highspeed/highspeedMockTransport.js";
-import { OffPeakTaskService } from "./session/offPeakTaskService.js";
-import { OffPeakTaskRepo } from "./session/offPeakTaskRepo.js";
-import { createOffPeakServerClient } from "./session/offPeakServerClient.js";
-import {
-  buildOffPeakRequestAuth,
-  createOffPeakOriginResolver,
-  resolveOffPeakCredentials,
-  resolveOffPeakCodingPlanSupport,
-  resolveOffPeakMockUpstream,
-} from "./session/offPeakRuntimeModel.js";
+// fork（F4.3）：offPeak 服务的 import 与装配（IOffPeakTaskService/OffPeakTaskService/
+// OffPeakTaskRepo/offPeakServerClient/offPeakRuntimeModel）随闲时任务全链路删除。
 import {
   createOfficialMcpAuthHeadersResolver,
   resolveOfficialMcpCredentials,
@@ -554,12 +512,10 @@ import {
   ZCODE_JWT_INVALID_BROADCAST_CHANNEL,
   formatLogPrefix,
   isCredentialDecryptError,
-  OFF_PEAK_PROVIDER_IDS,
   BIGMODEL_PROVIDER_ID,
   type ProviderFamilyDomain,
   type ServiceAuthorityMode,
   resolveRuntimeZCodeEndpointOrigin,
-  resolveSafeTelemetryHostname,
   type BrowserBackendDescriptor,
   type BrowserClientMode,
   type BrowserCommand,
@@ -572,8 +528,6 @@ import {
   getCapturedZCodeAgentTelemetryEnv,
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
   ZAI_PROVIDER_ID,
-  zcodeAccountAccessSchema,
-  zcodeProviderAccountAccessSchema,
   ZCODE_VERSION,
   ZCODE_ENV,
   buildRuntimeZCodeApiUrl,
@@ -644,16 +598,13 @@ const providerProvisioningTriggerDisposers = new WeakMap<
   ServiceCollection,
   readonly (() => void)[]
 >();
-// TaskIndexRepo / OffPeakTaskRepo 等各自持有 tasks-index.sqlite 的连接句柄；
+// TaskIndexRepo 等各自持有 tasks-index.sqlite 的连接句柄；
 // dispose 链必须统一关闭：Windows 上句柄悬着会让宿主回收后临时目录 rm 撞 EBUSY
 // （stdioDesktopPresentationSurface 单测稳定复现），Linux 的 unlink-while-open 语义掩盖了泄漏。
 // 与其它侧表一样按 ServiceCollection 登记并在 dispose 时统一 close。
 const sharedSqliteRepos = new WeakMap<ServiceCollection, ReadonlyArray<{ close(): void }>>();
 const accountRequestAuthServices = new WeakMap<ServiceCollection, IAccountRequestAuthService>();
-export type OffPeakRequestAuthBuilder = (
-  ticketId: string,
-) => Promise<{ apiKey: string; headers: Record<string, string>; accountScope?: string }>;
-const offPeakRequestAuthBuilders = new WeakMap<ServiceCollection, OffPeakRequestAuthBuilder>();
+// fork（F4.3）：OffPeakRequestAuthBuilder 侧表与 getOffPeakRequestAuthBuilder 随闲时任务全链路删除。
 
 /** Local Host 进程内能力；不会随 ServiceCollection 暴露到通用 RPC Channel。 */
 export function getAccountRequestAuthService(
@@ -667,13 +618,6 @@ export function getProviderProvisioningSource(
   services: ServiceCollection,
 ): ProviderProvisioningSource | undefined {
   return providerProvisioningSources.get(services);
-}
-
-/** Local Host 私有的闲时请求鉴权装配；复用正式 Registry/Account Access 解析，不进入 RPC。 */
-export function getOffPeakRequestAuthBuilder(
-  services: ServiceCollection,
-): OffPeakRequestAuthBuilder | undefined {
-  return offPeakRequestAuthBuilders.get(services);
 }
 const managedHostApiNetworkTransports = new WeakMap<ServiceCollection, HostApiNetworkTransport>();
 
@@ -1150,8 +1094,7 @@ export function createLocalServices(options: {
     automation: ZCodeAutomation;
     run: ZCodeAutomationRun;
   }) => Promise<void>;
-  /** 闲时任务翻 schedulable 后请求宿主立即唤醒 scheduler（desktop host 注入 parentPort 转发）。 */
-  onOffPeakSchedulerWakeRequested?: () => void;
+  // fork（F4.3）：onOffPeakSchedulerWakeRequested（闲时 scheduler 唤醒回调）随闲时任务全链路删除。
   // 注入点：默认 resolver 已能覆盖 dev/桌面/SSH 远端三类形态；
   // 测试或特殊宿主想强制走自定义 binary/参数时从这里注入。
   zcodeAgentCommandResolver?: ZCodeAgentCommandResolver;
@@ -1963,10 +1906,7 @@ export function createLocalServices(options: {
     apiClient,
     credentialService,
     ...(resolveDynamicWorkflowUserMode ? { resolveDynamicWorkflowUserMode } : {}),
-    resolveOffPeakModelSelectionView: async () => {
-      await providerRuntime.start();
-      return buildOffPeakModelSelectionView(providerRuntime.registryService.getView());
-    },
+    // fork（F4.3）：resolveOffPeakModelSelectionView 注入随闲时任务全链路删除。
   });
   // fork（F2.6b）：本地动态工作流 offer 解析（env 三档覆盖 + 用户设置叠加），
   // agent 策略与 client-config 服务消费同一份，避免出现「策略一个答案、界面另一个答案」。
@@ -1977,25 +1917,15 @@ export function createLocalServices(options: {
         ? { resolveUserMode: resolveDynamicWorkflowUserMode }
         : {}),
     });
-  // OffPeakTaskService 单例在下方 DI register IIFE 中创建（晚于 agent service）；
-  // 用前向引用 holder 惰性绑定——offPeak/create 协议请求只会发生在服务集合装配完成后。
-  let offPeakTaskServiceForAgent: OffPeakTaskService | undefined;
-  // desktop-attached-remote 装配不暴露 Off-Peak 工具面（远程不在支持范围）。
-  const offPeakToolWiring =
-    options?.serviceAuthorityMode === "desktop-attached-remote"
-      ? {}
-      : {
-          resolveOffPeakClientConfig: () => codingPlanSubscriptionService.getOffPeakClientConfig(),
-          resolveOffPeakTaskService: () => offPeakTaskServiceForAgent,
-        };
+  // fork（F4.3）：offPeakTaskServiceForAgent 前向引用与 offPeakToolWiring（Off-Peak 工具面装配）
+  // 随闲时任务全链路删除。
   const zcodeAgentService = createZCodeAgentService({
     accountRequestAuthService,
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
     authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
-    ...offPeakToolWiring,
     // fork（F2.6b）：动态工作流 offer 改由本地模块提供（细则 D1b：固定 onDemand、来源 default，
     // ZCODE_DYNAMIC_WORKFLOW_MODE 三档覆盖不变，叠加用户设置），不再经订阅服务读远端。
-    // 与 Off-Peak 不同：这里不按 serviceAuthorityMode 裁剪——SSH/WSL/Docker 的
+    // 不按 serviceAuthorityMode 裁剪——SSH/WSL/Docker 的
     // desktop-attached-remote Host 是它自己那些 workspace 的唯一裁决者，
     // 灰度开启时远程 workspace 同样提供工作流。
     resolveDynamicWorkflowClientConfig: resolveLocalDynamicWorkflowOfferConfig,
@@ -2286,40 +2216,8 @@ export function createLocalServices(options: {
         zcodeJwtLogoutLogger.warn("ZCode JWT logout failed", { error });
       });
   };
-  // Desktop Host 曾从 Settings View 再扫描一次 Account Provider，既绕开
-  // Registry 的 entitlement/executable 事实，也在多个套餐同时可见时无法唯一选择。
-  // 闲时服务与 Host 派发必须共享同一个 Registry-backed 凭据解析闭包。
-  const offPeakCredentialResolverDeps = {
-    credentialService,
-    accountRequestAuthService,
-    resolveAccountProvider: async () => {
-      await providerRuntime.start();
-      // start 缓存的是首次就绪；账号后到或切换后必须读 Registry 最近完成的快照。
-      const snapshot = providerRuntime.registryService.getSnapshot()!;
-      const providers = snapshot.resolution.registryProviders.filter(
-        (candidate) =>
-          candidate.config.access.type === "zhipu-account" &&
-          (candidate.config.access.mode === "individual-coding-plan" ||
-            candidate.config.access.mode === "team-coding-plan"),
-      );
-      if (providers.length !== 1) return null;
-      const provider = providers[0]!;
-      const config = provider.config;
-      const staticAccess = zcodeProviderAccountAccessSchema.parse(config.access.toJSON());
-      const access = await accountRequestAuthService.resolveAccessCurrent(staticAccess);
-      if (!access) return null;
-      return {
-        providerId: provider.providerId,
-        access: zcodeAccountAccessSchema.parse(access),
-        ...(config.api?.baseUrl ? { baseURL: config.api.baseUrl } : {}),
-      };
-    },
-  };
-  const buildOffPeakRequestAuthForTicket: OffPeakRequestAuthBuilder = async (ticketId) =>
-    buildOffPeakRequestAuth({
-      credentials: await resolveOffPeakCredentials(offPeakCredentialResolverDeps),
-      ticketId,
-    });
+  // fork（F4.3）：offPeakCredentialResolverDeps（闲时共享 Registry 凭据解析闭包）与
+  // buildOffPeakRequestAuthForTicket（闲时票据请求鉴权）随闲时任务全链路删除。
   const fileService = createFileService({
     workspaceFileSearchFilter: options?.workspaceFileSearchFilter,
   });
@@ -2352,33 +2250,17 @@ export function createLocalServices(options: {
         client: conversationShareClient,
         artifactSource: createLocalConversationShareArtifactSource(),
       });
-  // 注册链上的懒工厂（如 OffPeak）会各自创建 tasks-index sqlite repo；先收集到本数组，
+  // 注册链上的懒工厂（如 automation）会各自创建 tasks-index sqlite repo；先收集到本数组，
   // services 集合建好后在 return 前统一登记进 sharedSqliteRepos 侧表
   const sqliteReposToClose: Array<{ close(): void }> = [];
-  const marketingAssets = createMarketingAssetRegistry({
-    allowLoopback: ZCODE_ENV === "test" || process.env.NODE_ENV === "development",
-  });
+  // fork（F4.4）：营销触达（IMarketingTouchService，F2.8 起恒返回空）与云内容
+  // （ICloudContentService，仅服务营销素材分发）按官方依赖移除方案整体删除。
   const services = new ServiceCollection()
-    .register(
-      IMarketingTouchService,
-      createMarketingTouchService({
-        apiClient,
-        getToken: () => credentialService.load("zcodejwttoken"),
-        getDeviceMid: () => options?.agentTelemetry?.getDeviceMid?.(),
-        baseUrl: buildRuntimeZCodeApiUrl(process.env, "/"),
-        appVersion: ZCODE_VERSION,
-        onSnapshot: (snapshot) => marketingAssets.accept(snapshot),
-      }),
-    )
     .register(IFileService, fileService)
+    // fork 修复：F4.4 删除 ICloudContentService 注册时误删了链上相邻的 IMediaPreviewService
+    // 与 IGitService 注册，本地工作区的 git 状态/分支切换与媒体预览会因服务无法解析而运行时报错
+    //（单测未拉起完整集合、E2E 未跑，门禁未拦截）。此处按 main 原状恢复。
     .register(IMediaPreviewService, mediaPreviewService)
-    .register(
-      ICloudContentService,
-      createCloudContentService({
-        publishedAssets: marketingAssets,
-        cacheRoot: join(getContentAppConfigDir(), "cache", "content-bundles", randomUUID()),
-      }),
-    )
     .register(IGitService, gitService)
     .register(IGitCheckpointService, gitCheckpointService)
     .register(ISystemService, systemService)
@@ -2429,175 +2311,8 @@ export function createLocalServices(options: {
       }),
     )
     .register(IClientScenesService, createClientScenesService({ apiClient }))
-    .register(
-      IOffPeakTaskService,
-      (() => {
-        // 闲时任务编排服务（与 automation 服务面独立）：
-        // 单例属主在本集合，renderer 经 ProxyChannel 直连，host 派发经 getOptional 取同一实例。
-        const offPeakLogger = createServiceLogger("off-peak");
-        const resolveCredentials = () => resolveOffPeakCredentials(offPeakCredentialResolverDeps);
-        const originResolver = createOffPeakOriginResolver({
-          logger: offPeakLogger,
-          resolveUpstream: () => resolveOffPeakMockUpstream(offPeakCredentialResolverDeps),
-        });
-        const offPeakTaskRepo = new OffPeakTaskRepo();
-        // OffPeakTaskRepo 也持有 tasks-index.sqlite 连接；收集到链前数组，services 建好后统一登记
-        // （工厂在注册链求值期执行，此时 services 常量尚未初始化，不能直接引用）
-        sqliteReposToClose.push(offPeakTaskRepo);
-        const offPeakTaskService = new OffPeakTaskService({
-          repo: offPeakTaskRepo,
-          client: createOffPeakServerClient({
-            resolveOrigin: originResolver.resolveOrigin,
-            resolveCredentials,
-            logger: offPeakLogger,
-          }),
-          resolveCodingPlanSupport: () =>
-            resolveOffPeakCodingPlanSupport(offPeakCredentialResolverDeps),
-          resolveTelemetryProviderName: async () =>
-            resolveSafeTelemetryHostname(await originResolver.resolveOrigin()),
-          resolveModelSelection: async (input) => {
-            await providerRuntime.start();
-            const support = await resolveOffPeakCodingPlanSupport(offPeakCredentialResolverDeps);
-            const providerId = support.supported
-              ? OFF_PEAK_PROVIDER_IDS[support.providerFamily]
-              : undefined;
-            const provider = providerId
-              ? providerRuntime.registryService
-                  .getView()
-                  .providers.find((candidate) => candidate.providerId === providerId)
-              : undefined;
-            const modelId = input.modelId ?? provider?.models[0]?.modelId;
-            if (!provider || !modelId) {
-              return {
-                ok: false as const,
-                validation: {
-                  ok: false as const,
-                  code: "provider-not-found" as const,
-                  providerId: OFF_PEAK_PROVIDER_IDS.zai,
-                },
-              };
-            }
-            // 旧行没有 Provider 身份；只能复用当前账号凭据链已裁定的 Account Family，
-            // 不能靠 Registry/JSON 顺序在 Z.ai 与 BigModel 间猜测。
-            const selection = {
-              providerId: provider.providerId,
-              modelId,
-              ...(input.reasoningLevel
-                ? { options: { reasoningLevel: input.reasoningLevel } }
-                : {}),
-            };
-            const validation = providerRuntime.registryService.validateSelection(selection);
-            return validation.ok
-              ? { ok: true as const, selection }
-              : { ok: false as const, validation };
-          },
-          logger: offPeakLogger,
-          requestSchedulerWake: options?.onOffPeakSchedulerWakeRequested,
-          stopRunningTask: async (params) => {
-            await zcodeTaskService.stopGeneration({
-              taskId: params.conversationId,
-              workspacePath: params.workspacePath,
-              ...(params.workspaceIdentity ? { workspaceIdentity: params.workspaceIdentity } : {}),
-            });
-          },
-          onDispose: () => {
-            void originResolver.close().catch(() => undefined);
-          },
-        });
-        offPeakTaskService.startSync();
-        // 回写前向引用，供 zcodeAgentService 的 offPeak/create、offPeak/list 协议 handler 调用。
-        offPeakTaskServiceForAgent = offPeakTaskService;
-        return offPeakTaskService;
-      })(),
-    )
-    .register(
-      IHighspeedCardService,
-      (() => {
-        const origin = resolveRuntimeZCodeEndpointOrigin(process.env);
-        const rawMockScenario = process.env.ZCODE_HIGHSPEED_MOCK_SCENARIO;
-        const mockScenarios = new Set<HighspeedMockScenario>([
-          "hit-fast",
-          "miss",
-          "hit-after-timeout",
-          "existing-foreign-task-card",
-          "expired-card",
-        ]);
-        const mockScenario = mockScenarios.has(rawMockScenario as HighspeedMockScenario)
-          ? (rawMockScenario as HighspeedMockScenario)
-          : null;
-        const resolveHighspeedLoginHeaders = async (): Promise<Record<string, string>> => {
-          const jwt = (await credentialService.load("zcodejwttoken"))?.trim() ?? "";
-          if (!jwt) throw new Error("highspeed request requires zcode jwt");
-          return { Authorization: /^Bearer\s/i.test(jwt) ? jwt : `Bearer ${jwt}` };
-        };
-        const transport = mockScenario
-          ? createHighspeedMockTransport({ scenario: mockScenario })
-          : createHighspeedHttpTransport({
-              drawUrl: `${origin}/api/v1/highspeed/draw`,
-              healthyBaseUrl: `${origin}/api/v1/highspeed/`,
-              logger: createServiceLogger("highspeed"),
-              drawHeaders: async () => {
-                const credentials = await resolveOffPeakCredentials(offPeakCredentialResolverDeps, {
-                  allowMockCredentials: false,
-                });
-                const codingPlanAuthorization =
-                  (
-                    await credentialService.load(`oauth:${credentials.providerFamily}:access_token`)
-                  )?.trim() ?? "";
-                return buildHighspeedCodingPlanAuthHeaders({
-                  zcodeJwt: credentials.jwt,
-                  codingPlanAuthorization,
-                  targetType:
-                    credentials.organizationId && credentials.projectId ? "TEAM" : "PERSONAL",
-                  ...(credentials.organizationId
-                    ? { organizationId: credentials.organizationId }
-                    : {}),
-                  ...(credentials.projectId ? { projectId: credentials.projectId } : {}),
-                });
-              },
-              healthyHeaders: resolveHighspeedLoginHeaders,
-            });
-        return new HighspeedCardService({
-          transport,
-          inferenceMode: mockScenario ? "session-default" : "highspeed",
-          // 规则 11：draw 只对 Coding Plan 用户开放；mock 场景放行以便本地验证。
-          resolveCodingPlanSupported: mockScenario
-            ? async () => true
-            : async () =>
-                (await resolveOffPeakCodingPlanSupport(offPeakCredentialResolverDeps)).supported,
-          // 规则 14：会话模型必须属于所选 Coding Plan Provider 的模型目录（Built-in Provider
-          // Config 投影）才发起新 draw；mock 场景放行以便本地验证。
-          resolveModelCovered: mockScenario
-            ? async () => true
-            : async (providerId, modelId) => {
-                const view = await providerRuntime.modelSelection.getView();
-                const provider = view.providers.find((item) => item.providerId === providerId);
-                return provider?.models.some((model) => model.modelId === modelId) ?? false;
-              },
-          // 加速推理与 draw 走同一 highspeed 网关、同一 Coding Plan 双 JWT 契约：必须携带
-          // zcode JWT + Coding Plan 业务 JWT + Team 身份头。此前只发 zcode JWT + 卡 ID，网关
-          // 无法校验 Coding Plan 权益，返回 401 auth_failed。与 draw 头复用同一次 selected
-          // connection 解析，避免把 ZAI 身份的卡打到 BigModel 加速 Provider。
-          resolveInferenceAuth: async () => {
-            const credentials = await resolveOffPeakCredentials(offPeakCredentialResolverDeps, {
-              allowMockCredentials: false,
-            });
-            const codingPlanAuthorization =
-              (
-                await credentialService.load(`oauth:${credentials.providerFamily}:access_token`)
-              )?.trim() ?? "";
-            return {
-              zcodeJwt: credentials.jwt,
-              family: credentials.providerFamily,
-              codingPlanAuthorization,
-              targetType: credentials.organizationId && credentials.projectId ? "TEAM" : "PERSONAL",
-              ...(credentials.organizationId ? { organizationId: credentials.organizationId } : {}),
-              ...(credentials.projectId ? { projectId: credentials.projectId } : {}),
-            };
-          },
-        });
-      })(),
-    )
+    // fork（F4.3）：IOffPeakTaskService 注册段（闲时编排服务装配：repo/client/coding plan
+    // support/model selection/telemetry/scheduler 唤醒）随闲时任务全链路删除。
     .register(ISkillsService, skillsService)
     .register(ISkillSyncService, createSkillSyncService())
     .register(IMcpSyncService, mcpSyncService)
@@ -2649,7 +2364,7 @@ export function createLocalServices(options: {
   // 稳定 socket），或用户显式授权流（restartHelper）拉起。启动即零 Helper 常驻。
 
   accountRequestAuthServices.set(services, accountRequestAuthService);
-  offPeakRequestAuthBuilders.set(services, buildOffPeakRequestAuthForTicket);
+  // fork（F4.3）：offPeakRequestAuthBuilders.set 随闲时任务全链路删除。
 
   providerRuntimes.set(services, providerRuntime);
   providerProvisioningSources.set(services, providerProvisioningSource);
@@ -2771,8 +2486,7 @@ function readTelemetryOAuthUserId(rawUserInfo: string | null): string {
 }
 
 export function disposeServiceResources(services: ServiceCollection): void {
-  const content = services.getOptional(ICloudContentService);
-  if (content && hasDisposeAllAndWait(content)) void content.disposeAllAndWait().catch(() => {});
+  // fork（F4.4）：云内容服务（含 content-bundle 缓存）已删除，不再有独立 dispose 段。
   (
     services.getOptional(IGenUiService) as (IGenUiService & { dispose?(): void }) | undefined
   )?.dispose?.();
@@ -2787,7 +2501,6 @@ export function disposeServiceResources(services: ServiceCollection): void {
     services.getOptional(IBotsService),
     services.getOptional(IFileWatcherService),
     services.getOptional(ISubagentsService),
-    services.getOptional(IOffPeakTaskService),
   ].filter((service) => service !== undefined);
 
   for (const service of disposableServices) {
@@ -2818,7 +2531,6 @@ export async function disposeServiceResourcesAndWait(services: ServiceCollection
   // app 关闭时 host 需要等 agent 进程树完成 graceful + force 清理。
   // 旧的同步 dispose 会在 host 退出时丢掉强杀 timer，导致 zcode-cli/app-server 变成孤儿进程。
   const disposableServices = [
-    services.getOptional(ICloudContentService),
     services.getOptional(ITerminalService),
     services.getOptional(IZCodeTaskService),
     services.getOptional(IZCodeAgentService),
@@ -2826,7 +2538,6 @@ export async function disposeServiceResourcesAndWait(services: ServiceCollection
     services.getOptional(IBotsService),
     services.getOptional(IFileWatcherService),
     services.getOptional(ISubagentsService),
-    services.getOptional(IOffPeakTaskService),
   ].filter((service) => service !== undefined);
 
   for (const service of disposableServices) {

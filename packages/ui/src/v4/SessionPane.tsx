@@ -27,10 +27,7 @@ import {
 import type {
   ConversationShareAccessMode,
   GitChangeSourceId,
-  HighspeedCardSnapshot,
-  HighspeedPrepareTurnResult,
   GitRepositorySummary,
-  ModelSelection,
   ZCodeProvider,
   ZCodeTaskChangeSummary,
 } from "@zcode/shared";
@@ -43,7 +40,6 @@ import type {
   ConversationRowTarget,
   SessionErrorInfo,
   SessionModelTransition,
-  UserInputRow,
   V4ConversationFileChangesResult,
 } from "@zcode/shared/zcode-protocol-v4";
 import { logger } from "@/logger.js";
@@ -72,44 +68,6 @@ import { buildChatSessionScrollMemoryKey } from "@/lib/chatSessionScrollMemory.j
 import type { MessageFileLinkTarget } from "@/components/ai-elements/message.js";
 import { useServices } from "@/hooks/useServices.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
-import { browserGlobalNoticeStore } from "@/global-notice/globalNoticeStore.js";
-import {
-  HIGHSPEED_SEND_WAIT_BUDGET_MS,
-  prepareHighspeedSendContext,
-  readRegularTpsWithinSendBudget,
-  resolveHighspeedPrepareSelection,
-  type HighspeedSendContext,
-  type HighspeedTurnPreparer,
-} from "@/highspeed/highspeedSend.js";
-import {
-  calculateHighspeedSavedDurationFromMetrics,
-  readHighspeedRegularTpsFromHealth,
-} from "@/highspeed/highspeedSavedTime.js";
-import { buildHighspeedShareNotice } from "@/highspeed/highspeedShare.js";
-import {
-  claimHighspeedCardAutoShare,
-  claimHighspeedHealthyAttempt,
-  completeHighspeedTurn,
-  discardHighspeedTurn,
-  getHighspeedCardTps,
-  getHighspeedTurnVersion,
-  hydrateHighspeedTurnsFromTranscript,
-  listExpiredHighspeedCardsAwaitingTps,
-  listHighspeedCardAutoShareCandidates,
-  listHighspeedTurnsAwaitingMetricsPersistence,
-  listPendingHighspeedTurns,
-  markHighspeedCardAutoShared,
-  markHighspeedTurnMetricsPersisted,
-  recordHighspeedTurn,
-  resolveNextHighspeedAutoShareAt,
-  setHighspeedCardTps,
-  subscribeHighspeedTurns,
-} from "@/highspeed/highspeedTurnStore.js";
-import { claimHighspeedFallbackToast } from "@/highspeed/highspeedToastClaims.js";
-import {
-  collectHighspeedCardShareBlockers,
-  listHighspeedCardsAwaitingAutoShare,
-} from "@/highspeed/highspeedShareDiagnostics.js";
 import type { SessionOpenTrigger } from "@/lib/sessionOpenArmsTelemetry.js";
 import { useDynamicWorkflowAvailability } from "@/hooks/useDynamicWorkflowAvailability.js";
 import { resolveWorkflowResumeHandler } from "@/v4/workflowResumeGate.js";
@@ -129,8 +87,6 @@ import { decodeCustomModelValue, encodeCustomModelValue } from "@/lib/zcodeCusto
 import { parseModelPickerValue } from "@/lib/zcodeSessionProjection.js";
 import { captureComposerRecentSubmission } from "@/lib/composerRecent.js";
 import { resolveProviderLabel } from "@/lib/registryProviderView.js";
-import { resolveEntitledAccountProviderAccess } from "@/lib/accountProviderAccess.js";
-import { getProviderSettingsSnapshot } from "@/lib/providerSettingsSnapshot.js";
 import {
   buildDraftCreateConfigPayload,
   useDraftConfigControl,
@@ -529,17 +485,6 @@ export function shouldRestoreQueuedComposerFromAck(status: CommandAck["status"])
 }
 
 /**
- * Highspeed 发送起点的 pane 绑定（spec §9.2）：在触发发送的同步阶段冻结，prepare 返回时据此
- * 判断 pane 是否仍停在本轮发送所属的 Task / 草稿，决定是否在本 pane 呈现卡并登记激活。
- */
-interface HighspeedPaneOrigin {
-  sessionId: string | null;
-  /** 发送起点时的 pane 绑定代次；草稿首发据此判断 pane 是否离开过该草稿。 */
-  paneBinding: number;
-  draftId: string | null;
-}
-
-/**
  * 单 pane 竖切：订阅 → 渲染 rows → composer 发送 / stop（06-ui §SessionPane）。
  *
  * React 性能（vercel-react-best-practices）：
@@ -619,9 +564,8 @@ export function SessionPane({
   const platform = useOptionalPlatform();
   const {
     conversationShareService,
-    highspeedCardService,
     modelSelectionService,
-    usageStatsService,
+    usageStatsService: _usageStatsService,
     zcodeSessionService,
     zcodeTaskService,
   } = useServices();
@@ -1169,20 +1113,6 @@ export function SessionPane({
   // 稳定回调读取的最新值经 ref 透传，避免回调依赖高频变化的 snapshot/文本。
   const snapshotRef = useRef<ConversationSnapshot | null>(snapshot);
   const sessionIdRef = useRef(sessionId);
-  const [activeHighspeedCard, setActiveHighspeedCard] = useState<HighspeedCardSnapshot | null>(
-    null,
-  );
-  // 激活动效的一次性请求：只由发送路径 draw 新命中登记，composer 锁定入场方式后消费。
-  const [highspeedActivationCardId, setHighspeedActivationCardId] = useState<string | null>(null);
-  // 本 pane 最近呈现过的卡片身份：恢复与复用同一张卡的发送据此判定不是新命中。
-  const presentedHighspeedCardIdRef = useRef<string | null>(null);
-  const highspeedMetricsInFlightRef = useRef(new Set<string>());
-  const highspeedTurnVersion = useSyncExternalStore(
-    subscribeHighspeedTurns,
-    getHighspeedTurnVersion,
-    getHighspeedTurnVersion,
-  );
-  const [highspeedAutoShareClock, refreshHighspeedAutoShareClock] = useState(0);
   const dispatchCommandRef = useRef<
     | ((
         type: CommandType,
@@ -1251,303 +1181,6 @@ export function SessionPane({
       generation: paneBindingRef.current.generation + 1,
     };
   }
-  useEffect(() => {
-    let disposed = false;
-    if (!sessionId) {
-      setActiveHighspeedCard(null);
-      return () => undefined;
-    }
-    void highspeedCardService
-      .getSnapshot()
-      .then((serviceSnapshot) => {
-        if (disposed) return;
-        const card = serviceSnapshot.card;
-        const now = Date.now();
-        if (!card || card.taskId !== sessionId || card.expiresAt <= now) {
-          setActiveHighspeedCard(null);
-          return;
-        }
-        presentedHighspeedCardIdRef.current = card.cardId;
-        setActiveHighspeedCard(card);
-      })
-      .catch((error) => {
-        if (disposed) return;
-        setActiveHighspeedCard(null);
-        logger.warn("[highspeed] 读取卡片状态失败，输入框按普通状态展示", {
-          error: error instanceof Error ? error.message : String(error),
-          sessionId,
-        });
-      });
-    return () => {
-      disposed = true;
-    };
-  }, [highspeedCardService, sessionId]);
-  useEffect(() => {
-    if (!activeHighspeedCard) return;
-    const cardId = activeHighspeedCard.cardId;
-    const expiresAt = activeHighspeedCard.expiresAt;
-    // Bug 根因：清卡曾只依赖一次性 setTimeout；窗口隐藏/息屏时页面被 Chromium 冻结、
-    // 定时器停摆，唤醒后积压的 timeout 迟迟不触发，而 composer 倒计时是每秒读 Date.now()
-    // 的 interval、唤醒即自愈——出现「倒计时已到 00:00:00 但输入框加速态不退出」的僵尸卡，
-    // 只能等下一条消息的 prepareTurn 救活。回到窗口时按真实时钟重估：已过期立即清卡，
-    // 未过期重挂剩余时长（与下方分享时钟补偿同口径，spec §9.2/§9.3）。
-    const clearIfExpired = () => {
-      if (Date.now() < expiresAt) return false;
-      setActiveHighspeedCard((current) => (current?.cardId === cardId ? null : current));
-      return true;
-    };
-    if (clearIfExpired()) return;
-    let timer: number | undefined;
-    const arm = () => {
-      window.clearTimeout(timer);
-      // Bug 根因：setTimeout 按单调时钟计时，到期判定读墙钟 Date.now()；两者的毫秒级偏差或
-      // NTP 回拨会让 timer 在墙钟到期前触发。只判定不重挂时，窗口常驻前台的加速态永不退出。
-      timer = window.setTimeout(() => {
-        if (!clearIfExpired()) arm();
-      }, expiresAt - Date.now());
-    };
-    arm();
-    const refreshFromWindowWake = () => {
-      if (document.visibilityState === "hidden") return;
-      if (!clearIfExpired()) arm();
-    };
-    document.addEventListener("visibilitychange", refreshFromWindowWake);
-    window.addEventListener("focus", refreshFromWindowWake);
-    return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener("visibilitychange", refreshFromWindowWake);
-      window.removeEventListener("focus", refreshFromWindowWake);
-    };
-  }, [activeHighspeedCard]);
-  useEffect(() => {
-    if (!sessionId) return;
-    const nextAutoShareAt = resolveNextHighspeedAutoShareAt(sessionId);
-    if (nextAutoShareAt === null) return;
-    const delayMs = Math.max(0, nextAutoShareAt - Date.now()) + 20;
-    // Bug 根因：旧逻辑以 Turn 完成为分享时钟，第一轮结束就发布卡片；这里改由整张卡
-    // 的 expiresAt 唤醒聚合流程，卡到期时若仍有 Turn 运行，则等待其完成事件再次触发。
-    const timer = window.setTimeout(
-      () => refreshHighspeedAutoShareClock((revision) => revision + 1),
-      delayMs,
-    );
-    return () => window.clearTimeout(timer);
-  }, [highspeedTurnVersion, sessionId]);
-  useEffect(() => {
-    if (!sessionId) return;
-    // Bug 根因（2026-08-31）：到期唤醒依赖 renderer setTimeout；窗口隐藏/被遮挡时页面被
-    // Chromium 冻结，定时器停摆，卡级 TPS 采样与完成态持久化停在原地，footer 查看按钮
-    // 一直置灰，直到用户再发一条消息才被 store 版本号变化救活（违反 spec 9.3「到期边界
-    // 由会话时间时钟触发重渲染，不要求用户再发送一条消息」）。回到窗口时立即补一次
-    // 时钟；聚合链路各入口均有 claim/幂等保护，重复触发无副作用。
-    const refreshFromWindowWake = () => {
-      if (document.visibilityState === "hidden") return;
-      refreshHighspeedAutoShareClock((revision) => revision + 1);
-    };
-    document.addEventListener("visibilitychange", refreshFromWindowWake);
-    window.addEventListener("focus", refreshFromWindowWake);
-    return () => {
-      document.removeEventListener("visibilitychange", refreshFromWindowWake);
-      window.removeEventListener("focus", refreshFromWindowWake);
-    };
-  }, [refreshHighspeedAutoShareClock, sessionId]);
-  useEffect(() => {
-    if (!sessionId || snapshot?.sessionId !== sessionId) return;
-    const terminalStates = new Set(["completedSuccess", "completedInterrupted", "failed"]);
-    hydrateHighspeedTurnsFromTranscript(
-      sessionId,
-      snapshot.rows.window
-        .filter((row): row is UserInputRow => row.kind === "userInput")
-        .map((row) => ({
-          sourceCommandId: row.sourceCommandId,
-          createdAt: row.createdAt,
-          highspeed: row.highspeed,
-        })),
-    );
-    const pendingTurns = listPendingHighspeedTurns(sessionId);
-    for (const record of pendingTurns) {
-      const userRow = snapshot.rows.window.find(
-        (row) => row.kind === "userInput" && row.sourceCommandId === record.sourceCommandId,
-      );
-      if (userRow?.kind === "userInput" && !userRow.highspeed) {
-        // Bug 根因：Highspeed queue 在 admission ACK 时先登记统计；若真正提升时卡已过期，
-        // CLI 会移除 Highspeed intent 并走原模型。以权威 user row 撤销预登记，避免普通
-        // 输出被错误计入 Highspeed 分享。
-        discardHighspeedTurn(record.sourceCommandId);
-        continue;
-      }
-      const header = snapshot.rows.window.find(
-        (row) => row.kind === "turnHeader" && row.sourceCommandId === record.sourceCommandId,
-      );
-      // 诊断（debug，随 snapshot 高频触发）：完成态统计迟迟收不了口时，日志直接点名卡在哪。
-      if (!header || header.kind !== "turnHeader") {
-        logger.debug("[highspeed] turn 统计未完成：rows.window 中缺少 turnHeader", {
-          sourceCommandId: record.sourceCommandId,
-        });
-        continue;
-      }
-      if (!terminalStates.has(header.state) || header.outputTokens === undefined) {
-        logger.debug("[highspeed] turn 统计未完成：turnHeader 非终态或无 outputTokens", {
-          sourceCommandId: record.sourceCommandId,
-          state: header.state,
-          hasOutputTokens: header.outputTokens !== undefined,
-        });
-        continue;
-      }
-      const durationMs = Math.max(
-        0,
-        header.activeMs ?? (header.endedAt !== undefined ? header.endedAt - header.startedAt : 0),
-      );
-      completeHighspeedTurn({
-        sourceCommandId: record.sourceCommandId,
-        outputTokens: header.outputTokens,
-        durationMs,
-        ...(header.modelDurationMs !== undefined
-          ? { modelDurationMs: header.modelDurationMs }
-          : {}),
-        ...(header.toolDurationMs !== undefined ? { toolDurationMs: header.toolDurationMs } : {}),
-        ...(header.otherDurationMs !== undefined
-          ? { otherDurationMs: header.otherDurationMs }
-          : {}),
-      });
-    }
-
-    const autoShareNow = Date.now();
-    for (const card of listExpiredHighspeedCardsAwaitingTps(sessionId, autoShareNow)) {
-      if (!claimHighspeedHealthyAttempt(card.cardId, card.allTurnsCompleted)) {
-        // 诊断（debug）：每卡到期一次 + 完成后补查一次，机会用尽仍无 TPS 时分享链路必然停摆。
-        logger.debug("[highspeed] 卡级 healthy 查询机会已用尽，仍无有效 TPS", {
-          cardId: card.cardId,
-          allTurnsCompleted: card.allTurnsCompleted,
-        });
-        continue;
-      }
-      void highspeedCardService
-        .healthy(card.cardId)
-        .then((usage) => {
-          if (usage.completionTokens <= 0 || usage.durationSeconds <= 0) {
-            logger.warn("[highspeed] 卡级 healthy 未返回有效 TPS，本轮完成后再补查", {
-              cardId: card.cardId,
-              completionTokens: usage.completionTokens,
-              durationSeconds: usage.durationSeconds,
-            });
-            return;
-          }
-          setHighspeedCardTps(card.cardId, usage.completionTokens / usage.durationSeconds);
-        })
-        .catch((error) => {
-          logger.warn("[highspeed] 卡级 healthy 查询失败，本轮完成后再补查", {
-            cardId: card.cardId,
-            error: error instanceof Error ? error.message : String(error),
-          });
-        });
-    }
-
-    const dispatch = dispatchCommandRef.current;
-    if (dispatch) {
-      for (const record of listHighspeedTurnsAwaitingMetricsPersistence(sessionId)) {
-        if (!record.metrics || highspeedMetricsInFlightRef.current.has(record.sourceCommandId)) {
-          continue;
-        }
-        const userRow = snapshot.rows.window.find(
-          (row): row is UserInputRow =>
-            row.kind === "userInput" && row.sourceCommandId === record.sourceCommandId,
-        );
-        const regularTps = record.card.regularTps ?? userRow?.highspeed?.regularTps;
-        const highspeedTps = getHighspeedCardTps(record.card.cardId);
-        // 诊断（debug）：持久化前置条件缺失会让该轮永远停在等待队列里，静默跳过无法定位。
-        if (!userRow || !userRow.entityId || !regularTps || !highspeedTps) {
-          logger.debug("[highspeed] 完成态持久化前置缺失，本轮暂不派发", {
-            sourceCommandId: record.sourceCommandId,
-            userRowInWindow: userRow !== undefined && userRow !== null,
-            hasEntityId: Boolean(userRow?.entityId),
-            hasRegularTps: Boolean(regularTps),
-            hasCardTps: Boolean(highspeedTps),
-          });
-          continue;
-        }
-        const savedDurationMs = calculateHighspeedSavedDurationFromMetrics(
-          record.metrics,
-          regularTps,
-          highspeedTps,
-        );
-        highspeedMetricsInFlightRef.current.add(record.sourceCommandId);
-        let metricsPersisted = false;
-        void dispatch(
-          "setHighspeedMetrics",
-          {
-            target: { rowId: userRow.rowId, entityId: userRow.entityId },
-            regularTps,
-            outputTokens: record.metrics.outputTokens,
-            durationMs: record.metrics.durationMs,
-            highspeedTps,
-            savedDurationMs,
-            ...(record.metrics.modelDurationMs !== undefined
-              ? { modelDurationMs: record.metrics.modelDurationMs }
-              : {}),
-            ...(record.metrics.toolDurationMs !== undefined
-              ? { toolDurationMs: record.metrics.toolDurationMs }
-              : {}),
-            ...(record.metrics.otherDurationMs !== undefined
-              ? { otherDurationMs: record.metrics.otherDurationMs }
-              : {}),
-          },
-          sessionId,
-          snapshot.revision,
-          snapshot.logEpoch,
-        )
-          .then((ack) => {
-            if (ack.status !== "accepted" && ack.status !== "duplicate") {
-              logger.warn("[highspeed] 完成态统计持久化被拒绝", {
-                reasonCode: ack.reasonCode,
-                sourceCommandId: record.sourceCommandId,
-                status: ack.status,
-              });
-              return;
-            }
-            markHighspeedTurnMetricsPersisted(record.sourceCommandId, savedDurationMs);
-            metricsPersisted = true;
-          })
-          .catch((error) => {
-            logger.warn("[highspeed] 完成态统计持久化失败", {
-              error: error instanceof Error ? error.message : String(error),
-              sourceCommandId: record.sourceCommandId,
-            });
-          })
-          .finally(() => {
-            highspeedMetricsInFlightRef.current.delete(record.sourceCommandId);
-            // Bug 根因：持久化 ACK 触发的 store 更新可能先于 in-flight 清理被 React 消费，
-            // 导致本轮重算被跳过；ACK 成功后显式唤醒一次，避免必须发送下一条 prompt。
-            if (metricsPersisted) {
-              refreshHighspeedAutoShareClock((revision) => revision + 1);
-            }
-          });
-      }
-    }
-
-    for (const candidate of listHighspeedCardAutoShareCandidates(sessionId)) {
-      if (candidate.expiresAt > autoShareNow) continue;
-      // Bug 根因：失败后只清理 in-flight 会让后续 snapshot 重复触发自动分享，最终打到 429。
-      if (!claimHighspeedCardAutoShare(candidate.cardId, autoShareNow)) continue;
-      // 分享卡片改为客户端生成，不再请求后端 share 接口；到期后直接把本地统计发布到左下角。
-      browserGlobalNoticeStore?.publish(
-        buildHighspeedShareNotice({ cardId: candidate.cardId, metrics: candidate.metrics }),
-      );
-      markHighspeedCardAutoShared(candidate.cardId);
-    }
-
-    // 诊断（debug，随 snapshot 高频触发）：卡已到期、从未尝试分享、但也没进候选时，
-    // 直接输出阻塞原因。2026-08-31 左下角分享卡停留在旧卡 36 分钟无任何日志可查，
-    // 根因就是这些门禁此前全部静默跳过。
-    for (const cardId of listHighspeedCardsAwaitingAutoShare(sessionId, autoShareNow)) {
-      const blockers = collectHighspeedCardShareBlockers(cardId);
-      if (blockers.length > 0) {
-        logger.debug("[highspeed] 卡已到期但未进入自动分享，阻塞原因", {
-          cardId,
-          blockers,
-        });
-      }
-    }
-  }, [highspeedAutoShareClock, highspeedCardService, highspeedTurnVersion, sessionId, snapshot]);
   const workspaceConfigOptions = useZCodeSessionStore(
     (store) => store.getWorkspaceState(workspacePath, workspaceIdentity).configOptions,
   );
@@ -1693,35 +1326,6 @@ export function SessionPane({
     agentStartupAllowed: draftAgentStartupAllowed,
     modelSelectionService,
   });
-  useEffect(() => {
-    if (!sessionId || snapshot?.sessionId !== sessionId) return;
-    const now = Date.now();
-    for (const row of snapshot.rows.window) {
-      if (
-        row.kind !== "userInput" ||
-        !row.sourceCommandId ||
-        row.highspeed?.fallbackAt === undefined
-      ) {
-        continue;
-      }
-      if (
-        focused &&
-        now - row.highspeed.fallbackAt >= -5_000 &&
-        now - row.highspeed.fallbackAt <= 15_000 &&
-        claimHighspeedFallbackToast(row.sourceCommandId)
-      ) {
-        // 卡过期与加速服务不可用分别提示；旧数据没有 fallbackReason，按卡过期文案处理。
-        toast(
-          intl.formatMessage({
-            id:
-              row.highspeed.fallbackReason === "highspeed_request_failed"
-                ? "chat.highspeed.requestFailedFallback"
-                : "chat.highspeed.cardExpiredFallback",
-          }),
-        );
-      }
-    }
-  }, [focused, intl, sessionId, snapshot]);
   const modelSelectionView =
     modelSelectionRead.state.status === "ready" ? modelSelectionRead.state.view : null;
   const draftModelSelectionRevisionRef = useRef<number | null>(null);
@@ -1877,15 +1481,14 @@ export function SessionPane({
       baseRevision?: number,
       baseLogEpoch?: string,
       telemetrySeed?: ConversationPromptTelemetrySeed,
-      highspeedCard?: HighspeedCardSnapshot,
       onEnvelopeCreated?: (envelope: CommandEnvelope) => void,
       sessionCreateSource?: SessionCreateSource,
       recentSubmissionOverride?: ComposerSubmissionConfig | null,
     ): Promise<CommandAck> => {
       const submission = submissionConfigFromCommand(type, payload);
-      // 加速轮 payload 的 modelSelection 会被执行材料覆盖为隐藏加速 Provider；Recent 记录的是
-      // 用户在 Composer 的原始选择（新任务草稿的模型种子），加速轮必须由调用方传入发送前
-      // 冻结的 submission（spec §5.1）。captureComposerRecentSubmission 另有加速身份兜底拦截。
+      // Recent 记录的是用户在 Composer 的原始选择（新任务草稿的模型种子），当 payload 的
+      // modelSelection 被调用方改写时必须由调用方传入发送前冻结的 submission（spec §5.1）。
+      // fork（F4.2）：加速卡已删除，该参数保留供其他 payload 改写场景复用。
       const recentSubmission = recentSubmissionOverride ?? submission;
       const acceptRecent = recentSubmission
         ? captureComposerRecentSubmission(workspacePath, recentSubmission, workspaceIdentity)
@@ -2005,14 +1608,6 @@ export function SessionPane({
             memoryEnabled: ack.memoryEnabled,
           });
         }
-      }
-      if (ack.status === "accepted" && highspeedCard && targetSessionId) {
-        recordHighspeedTurn({
-          sessionId: targetSessionId,
-          sourceCommandId: envelope.commandId,
-          card: highspeedCard,
-          createdAt: Date.now(),
-        });
       }
       if (telemetrySeed) {
         // 队列二次确认的 ACK 返回 null（非终态），落定会让 first-wins 吃掉真实结果。
@@ -3064,157 +2659,13 @@ export function SessionPane({
     [dispatchCommand, intl, settleCurrentQueueInputs],
   );
 
-  const readGroupedDraftId = useCallback(
-    () =>
-      useZCodeSessionStore.getState().getWorkspaceState(workspacePath, workspaceIdentity)
-        .groupedDraftTask?.draftId ?? null,
-    [workspacePath, workspaceIdentity],
-  );
-  /**
-   * 冻结本次发送起点（spec §9.2）。必须在触发发送的同步阶段调用：早于配置屏障、草稿模型就绪、
-   * Start 套餐推荐、空 session 创建等所有发送前 await，否则起点会被读成用户切换后的 Task。
-   */
-  const captureHighspeedPaneOrigin = useCallback(
-    (): HighspeedPaneOrigin => ({
-      sessionId: sessionIdRef.current,
-      paneBinding: paneBindingRef.current.generation,
-      draftId: sessionIdRef.current === null ? readGroupedDraftId() : null,
-    }),
-    [readGroupedDraftId],
-  );
-
-  const prepareHighspeedTurnFrom = useCallback(
-    (origin: HighspeedPaneOrigin): HighspeedTurnPreparer =>
-      async (
-        taskId: string,
-        submissionSelection?: ModelSelection,
-      ): Promise<HighspeedPrepareTurnResult | null> => {
-        // 规则 15：prepare 的选择与本次提交同源——用户刚切换的模型必须在首次发送就驱动
-        // admission。曾按会话投影旧组合抽卡，抽中后把用户切到非 Coding Plan 模型的提交
-        // 覆盖成卡模型，表现为"选了别的模型还是抽中加速"。
-        const selection = resolveHighspeedPrepareSelection({
-          submissionSelection,
-          projectedConfig:
-            snapshotRef.current?.sessionId === taskId ? snapshotRef.current.config : null,
-          draftConfig: draftConfigRef.current,
-          initialDraftConfig: resolveInitialDraftConfig(),
-        });
-        if (!selection) return null;
-        // 加速卡沿用会话模型，必须带上会话生效的思考档位；缺档位时 CLI 会因 execution 选择
-        // 不完整报 "Reasoning level is required" 让整轮发送失败。优先取提交选择的 options，
-        // 再回落 thought（CLI 投影的生效档位）；空串表示该模型无档位，交给 service 省略 options。
-        const { provider, model, reasoningLevel } = selection;
-        try {
-          const sendStartedAt = Date.now();
-          const result = await highspeedCardService.prepareTurn({
-            taskId,
-            providerId: provider,
-            model,
-            ...(reasoningLevel ? { reasoningLevel } : {}),
-            waitBudgetMs: HIGHSPEED_SEND_WAIT_BUDGET_MS,
-          });
-          if (result.kind === "accelerated") {
-            // Bug 根因：该查询只决定节省时间展示，却曾在抽中后同步 await；monitor 侧 15s 超时把
-            // 1s 发送承诺拉长到最多 16s（新会话首发尤其明显：空 session 已建、正文长期未发）。
-            // 现在只在剩余发送预算内 best-effort 等待，超时/失败本轮不附加 regularTps，
-            // 请求由 Service 层继续完成并缓存供下一轮（spec §3 规则 12、§9.4）。
-            const regularTps = await readRegularTpsWithinSendBudget({
-              read: async () => {
-                // 节省时间的基准 TPS 来自 Coding Plan 用量健康接口，请求期鉴权只能由账号访问
-                // 上下文解析。这里按当前选中的 Coding Plan Provider 现取快照，不订阅配置面
-                // （SessionPane 不需要为此重渲染）；未连接或无权益时直接不展示节省时间。
-                const providerSettingsState = getProviderSettingsSnapshot();
-                const accountAccess =
-                  providerSettingsState.status === "ready"
-                    ? resolveEntitledAccountProviderAccess(providerSettingsState.view, provider)
-                    : null;
-                if (!accountAccess) return undefined;
-                return readHighspeedRegularTpsFromHealth({
-                  usageStatsService,
-                  preferredProviderId: provider,
-                  accountAccess: accountAccess.access,
-                  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                });
-              },
-              elapsedMs: Date.now() - sendStartedAt,
-              onError: (error) =>
-                logger.warn("[highspeed] 读取普通 Decode TPS 失败，本轮不展示节省时间", {
-                  error: error instanceof Error ? error.message : String(error),
-                  provider,
-                  taskId,
-                }),
-              onTimeout: (budgetMs) =>
-                logger.info(
-                  "[highspeed] 普通 Decode TPS 未在发送预算内返回，本轮不附加 regularTps",
-                  {
-                    budgetMs,
-                    provider,
-                    taskId,
-                  },
-                ),
-            });
-            const acceleratedResult: HighspeedPrepareTurnResult = regularTps
-              ? { ...result, card: { ...result.card, regularTps } }
-              : result;
-            const cardId = acceleratedResult.card.cardId;
-            // Bug 根因：SessionPane 跨 Task 复用同一实例，发送前的配置屏障、套餐推荐、建会话以及
-            // prepare 与 TPS 读取 await 期间用户都可能切到其他 Task；此时写卡片状态会把旧 Task 的卡
-            // 呈现到新 Task 的输入框并播放激活。起点曾在 prepare 入口才读取，切换发生在 prepare 之前时
-            // 起点已是新 Task，判定失效；现由调用方在发送同步阶段冻结。只有 pane 正显示卡所属 Task，
-            // 或草稿首发且 pane 从未离开该草稿（首发 session 尚未绑定回 pane）时才呈现。卡仍交给本轮
-            // 发送继续加速，只跳过本 pane 的呈现；切回所属 Task 由快照恢复按 restore 呈现。
-            const paneSessionId = sessionIdRef.current;
-            const paneShowsSendTarget =
-              paneSessionId === taskId ||
-              (origin.sessionId === null &&
-                paneSessionId === null &&
-                paneBindingRef.current.generation === origin.paneBinding &&
-                readGroupedDraftId() === origin.draftId);
-            if (!paneShowsSendTarget) {
-              return acceleratedResult;
-            }
-            // Bug 根因：恢复链路与 draw 命中共用同一条卡片渲染路径，按“卡片出现”触发激活动效会在
-            // 切回 Task 时重播；prepare 复用已有卡同样返回 accelerated。只有本 pane 首次呈现的卡才登记。
-            if (presentedHighspeedCardIdRef.current !== cardId) {
-              presentedHighspeedCardIdRef.current = cardId;
-              setHighspeedActivationCardId(cardId);
-            }
-            setActiveHighspeedCard(acceleratedResult.card);
-            return acceleratedResult;
-          } else if (
-            !result.card ||
-            result.card.taskId !== taskId ||
-            result.card.expiresAt <= Date.now()
-          ) {
-            setActiveHighspeedCard((current) => (current?.taskId === taskId ? null : current));
-          }
-          return result;
-        } catch (error) {
-          logger.warn("[highspeed] 抽卡失败，本轮按普通模型发送", {
-            error: error instanceof Error ? error.message : String(error),
-            taskId,
-          });
-          return null;
-        }
-      },
-    [
-      draftConfigRef,
-      highspeedCardService,
-      readGroupedDraftId,
-      resolveInitialDraftConfig,
-      usageStatsService,
-    ],
-  );
-
   const dispatchSendTextAfterConfig = useCallback(
     async (
       text: string,
       options: ConversationComposerSendOptions | undefined,
       createSourceAtSend: SessionCreateSource,
-      highspeedOriginAtSend: HighspeedPaneOrigin,
     ) => {
       let onAcceptedSelection: (() => void) | undefined;
-      const prepareHighspeedTurn = prepareHighspeedTurnFrom(highspeedOriginAtSend);
       const dispatchSubmissionCommand = async (...args: Parameters<typeof dispatchCommand>) => {
         if (
           args[0] === "sendText" &&
@@ -3450,11 +2901,6 @@ export function SessionPane({
         const prewarm = prewarmBindingRef.current;
         if (prewarm?.beginPromotion()) {
           try {
-            const highspeed = await prepareHighspeedSendContext(
-              prewarm.sessionId,
-              prepareHighspeedTurn,
-              submission.modelSelection,
-            );
             const ack = await dispatchSubmissionCommand(
               "sendText",
               {
@@ -3467,14 +2913,11 @@ export function SessionPane({
                 ...(readyAttachments.length > 0 ? { attachments: readyAttachments } : {}),
                 ...(sharedContextRefs?.length ? { context_refs: sharedContextRefs } : {}),
                 ...(options?.source ? { source: options.source } : {}),
-                // 加速材料必须最后展开：本轮抽到卡时，Selection 由卡决定并覆盖草稿选择。
-                ...highspeed.override,
               },
               prewarm.sessionId,
               undefined,
               undefined,
               options?.telemetrySeed,
-              highspeed.acceleratedCard,
               undefined,
               undefined,
               // Recent 记录加速前的 Composer 原始选择，不用被覆盖的 payload Selection。
@@ -3517,12 +2960,9 @@ export function SessionPane({
           { ...draftConfigRef.current, modelSelection: submission.modelSelection },
           appFollowupMode,
         );
-        // Highspeed 卡由服务端绑定 task_id，因此首发也必须先创建空 session，拿到真实
-        // sessionId 后再抽卡并发送。走 createSession(firstInput) 会绕过“点击发送先抽卡”的
-        // 统一 admission，导致无附件首轮永远不可能加速，所以这里不再保留 firstInput 特例。
-        // 本地 desktop localPath 是零拷贝 ready，不依赖 attachment transaction；极短窗口内
-        // 预热 session 可能还未返回。此时仍可先创建空 session，再提交现成 ref，发送点击内
-        // 不做任何附件上传，也不会让非 ready 附件绕过 composer 门禁。
+        // fork（F4.2）：原「Highspeed 卡由服务端绑定 task_id，首发必须先建空 session 再抽卡」
+        // 的约束已随加速卡删除；「先建空 session、再提交发送」的现序保留不动（本地
+        // desktop localPath 零拷贝 ready 的说明仍然成立），不做行为重构。
         const createAck = await dispatchSubmissionCommand(
           "createSession",
           { workspaceId: workspaceKey, ...draftConfigPayload },
@@ -3536,11 +2976,6 @@ export function SessionPane({
           throw new Error("createSession 缺少 sessionId");
         }
         const newSessionId = createResult.sessionId;
-        const highspeed = await prepareHighspeedSendContext(
-          newSessionId,
-          prepareHighspeedTurn,
-          submission.modelSelection,
-        );
         const sendAck = await dispatchSubmissionCommand(
           "sendText",
           {
@@ -3550,14 +2985,12 @@ export function SessionPane({
             ...(readyAttachments.length > 0 ? { attachments: readyAttachments } : {}),
             ...(sharedContextRefs?.length ? { context_refs: sharedContextRefs } : {}),
             ...(options?.source ? { source: options.source } : {}),
-            ...highspeed.override,
             conversationQuotes: options?.conversationQuotes,
           },
           newSessionId,
           undefined,
           undefined,
           options?.telemetrySeed,
-          highspeed.acceleratedCard,
           undefined,
           undefined,
           // Recent 记录加速前的 Composer 原始选择，不用被覆盖的 payload Selection。
@@ -3575,11 +3008,6 @@ export function SessionPane({
         return;
       }
       // 附件 ref 已在 composer 预传状态机中收口。
-      const highspeed = await prepareHighspeedSendContext(
-        sessionId,
-        prepareHighspeedTurn,
-        submission.modelSelection,
-      );
       const ack = await dispatchSubmissionCommand(
         "sendText",
         {
@@ -3592,13 +3020,11 @@ export function SessionPane({
           ...(expectedHeldQueueItemIds ? { expectedHeldQueueItemIds } : {}),
           ...(sharedContextRefs?.length ? { context_refs: sharedContextRefs } : {}),
           ...(options?.source ? { source: options.source } : {}),
-          ...highspeed.override,
         },
         sessionId,
         undefined,
         undefined,
         options?.telemetrySeed,
-        highspeed.acceleratedCard,
         undefined,
         undefined,
         // Recent 记录加速前的 Composer 原始选择，不用被覆盖的 payload Selection。
@@ -3629,7 +3055,6 @@ export function SessionPane({
       handleDraftSwitchMode,
       handleOpenSelectionSideConversationWithPrompt,
       intl,
-      prepareHighspeedTurnFrom,
       resolveInitialDraftConfig,
       createSubmissionFromComposer,
       sessionId,
@@ -3650,18 +3075,11 @@ export function SessionPane({
         submission:
           options?.submission === undefined ? createSubmissionFromComposer() : options.submission,
       };
-      // 进入配置屏障前冻结 Highspeed 发送起点；屏障与后续 await 期间用户可能切换 Task。
-      const highspeedOrigin = captureHighspeedPaneOrigin();
       // followupMode 仍通过 Session CAS 同步；模型和模式已封装进 Submission，不再
       // 依赖“配置命令先到、sendText 后到”的跨命令时序。
       return configCommandBarrier.enqueue(async () => {
         try {
-          return await dispatchSendTextAfterConfig(
-            text,
-            submissionOptions,
-            createSource,
-            highspeedOrigin,
-          );
+          return await dispatchSendTextAfterConfig(text, submissionOptions, createSource);
         } catch (error) {
           if (sessionId === null && isProviderNotReadyError(error)) {
             // UI 预检查与 Host getClient 之间 registry 仍可能失效。竞态命中时收敛成
@@ -3674,7 +3092,6 @@ export function SessionPane({
       });
     },
     [
-      captureHighspeedPaneOrigin,
       configCommandBarrier,
       createSubmissionFromComposer,
       dispatchSendTextAfterConfig,
@@ -3751,8 +3168,8 @@ export function SessionPane({
     },
     [clearQueueEditOperation],
   );
-  // fork（F4.1b）：handleHighspeedActivationApplied 只服务已摘除的 Composer 加速卡入口，
-  // 随之移除；highspeedActivationCardId 状态与 turn 链路留给 F4.2 删除。
+  // fork（F4.1b/F4.2）：handleHighspeedActivationApplied 与加速卡状态/turn 链路已随加速卡
+  // 全链路删除，无遗留引用。
 
   const handleFork = useCallback(
     (target: ConversationRowTarget) => {
@@ -3797,13 +3214,9 @@ export function SessionPane({
         logger.warn("[v4-pane] edit 跳过：行内编辑内容为空且无附件");
         return false;
       }
-      const highspeed = await prepareHighspeedSendContext(
-        sessionId,
-        prepareHighspeedTurnFrom(captureHighspeedPaneOrigin()),
-      );
       const latest = snapshotRef.current;
       if (!latest || latest.sessionId !== sessionId) {
-        logger.warn("[v4-pane] edit 跳过：Highspeed prepare 后 session 已切换");
+        logger.warn("[v4-pane] edit 跳过：session 已切换");
         return false;
       }
       const ack = await dispatchCommand(
@@ -3816,13 +3229,10 @@ export function SessionPane({
           // editUserQuery 的 attachments 缺省表示保留 canonical 原附件；
           // 只有显式透传 []，CLI 才能区分“用户删除全部”与“调用方未修改附件”。
           ...(attachments ? { attachments: [...attachments] } : {}),
-          ...highspeed.override,
         },
         sessionId,
         latest.revision,
         latest.logEpoch,
-        undefined,
-        highspeed.acceleratedCard,
       );
       if (ack.status !== "accepted" && ack.status !== "duplicate") {
         logger.warn(`[v4-pane] edit 被拒绝: ${ack.status} ${ack.reasonCode ?? ""}`);
@@ -3831,7 +3241,7 @@ export function SessionPane({
       // fork ACK 只做旧协议解码兼容；新 edit 永不导航 child。blocked 由行内冲突弹窗处理。
       return ack;
     },
-    [captureHighspeedPaneOrigin, dispatchCommand, prepareHighspeedTurnFrom, sessionId],
+    [dispatchCommand, sessionId],
   );
 
   const dispatchRetryTurn = useCallback(
@@ -3982,37 +3392,18 @@ export function SessionPane({
       // 用户明确点击“立即发送”时，视觉意图等价于点击“滚动到底部”；command 的
       // reserve/stop/promote 生命周期仍由 CLI 裁决，不把滚动状态混入协议。
       focusTimelineToLatest();
-      const highspeedOrigin = captureHighspeedPaneOrigin();
       void (async () => {
-        const queueItem = current.queue.items.find((item) => item.queueItemId === queueItemId);
-        let highspeedOverride: HighspeedSendContext["override"] = {};
-        if (queueItem?.highspeed && queueItem.highspeed.expiresAt > Date.now()) {
-          const refreshed = await prepareHighspeedSendContext(
-            sessionId,
-            prepareHighspeedTurnFrom(highspeedOrigin),
-          );
-          // Bug 原因：CLI 暂存 runtime 可能跨异步边界缺失；手动提升时补充同一张卡的
-          // 新 runtime。若服务返回了不同卡，不得把原队列意图悄悄改绑到另一张卡。
-          if (refreshed.acceleratedCard?.cardId === queueItem.highspeed.cardId) {
-            highspeedOverride = refreshed.override;
-          }
-        }
         const latest = snapshotRef.current;
         const latestQueueItem = latest?.queue.items.find(
           (item) => item.queueItemId === queueItemId,
         );
         if (!latest || latest.sessionId !== sessionId || !latestQueueItem) {
-          logger.warn("[v4-pane] sendQueuedNow 跳过：Highspeed prepare 后队列状态已变化", {
+          logger.warn("[v4-pane] sendQueuedNow 跳过：队列状态已变化", {
             queueItemId,
           });
           return null;
         }
-        return dispatchCommand(
-          "sendQueuedNow",
-          { queueItemId, ...highspeedOverride },
-          sessionId,
-          latest.revision,
-        );
+        return dispatchCommand("sendQueuedNow", { queueItemId }, sessionId, latest.revision);
       })().then((ack) => {
         if (!ack) return;
         if (ack.status !== "accepted" && ack.status !== "noop") {
@@ -4020,13 +3411,7 @@ export function SessionPane({
         }
       });
     },
-    [
-      captureHighspeedPaneOrigin,
-      dispatchCommand,
-      focusTimelineToLatest,
-      prepareHighspeedTurnFrom,
-      sessionId,
-    ],
+    [dispatchCommand, focusTimelineToLatest, sessionId],
   );
 
   const handleReorderQueueItem = useCallback(
@@ -4200,12 +3585,7 @@ export function SessionPane({
   // 在 Submission 真正开跑（Guide 为下一次 model-step）时由 CLI/Core 更新。
   const handleSelectModel = useCallback(
     (modelProvider: string, model: string, sourceModel: ModelSelectionSource | null) => {
-      // 加速卡在本轮已把 Selection 锁定成卡上模型，选型菜单此时不可用；仍有快捷键
-      // 或竞态调用进来时明确提示，不能静默把草稿改成另一个模型。
-      if (activeHighspeedCard) {
-        toast(intl.formatMessage({ id: "chat.highspeed.modelLocked" }));
-        return;
-      }
+      // fork（F4.2）：加速卡的模型锁定提示（activeHighspeedCard 分支）已随加速卡全链路删除。
       const resolvedProvider =
         modelProvider || draftConfigRef.current.provider || sourceModel?.provider || "";
       logger.debug("[v4-pane] onSelectModel", {
@@ -4215,7 +3595,7 @@ export function SessionPane({
       });
       handleDraftSelectModel(resolvedProvider, model);
     },
-    [activeHighspeedCard, draftConfigRef, handleDraftSelectModel, intl],
+    [draftConfigRef, handleDraftSelectModel],
   );
 
   const handleSelectThought = useCallback(
@@ -5183,8 +4563,7 @@ export function SessionPane({
       telemetryVisible={telemetryVisible && conversationTelemetryForegroundEnabled}
       readPlanIdentitySnapshot={readPlanIdentitySnapshot}
       onSendText={handleSendText}
-      // fork（F4.1b）：加速卡在输入框的入口（卡片动效、模型锁定、倒计时）摘除——
-      // 不再向 Composer 传递 highspeedCard；会话内 turn 展示留给 F4.2 删除。
+      // fork（F4.1b/F4.2）：加速卡在输入框的入口与 turn 展示均已随加速卡全链路删除。
       onDraftStateChange={handleComposerDraftStateChange}
       composerRestoreRequest={composerRestoreRequest}
       onComposerRestoreApplied={handleComposerRestoreApplied}
@@ -5325,9 +4704,10 @@ export function SessionPane({
         <ConversationDraftSuggestedPromptsContainer
           className={isOfficeMode ? "mt-4" : "mt-6"}
           proactive={isOfficeMode}
+          // fork（F4.3）：automationTab（闲时 tab 导航）随闲时任务全链路删除。
           onOpenAutomations={
             onOpenAutomationsMain && !compactForRemoteControl
-              ? (automationTab) => onOpenAutomationsMain(undefined, automationTab)
+              ? () => onOpenAutomationsMain(undefined)
               : undefined
           }
           workspacePath={workspacePath}

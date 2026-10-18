@@ -19,7 +19,14 @@ import type {
   TurnFileChangeSummary,
   TurnInputIntentMetadata,
 } from "@zcode/contracts";
-import { isHighspeedProviderId } from "@zcode/shared";
+// fork（F4.2）：shared 的 isHighspeedProviderId 随加速卡删除；冷恢复仍需识别存量数据中的
+// 加速身份，改用本地字面量判定（兼容读取）。
+/** fork（F4.2）：判定已删除的加速卡隐藏 Provider id（存量数据兼容判定）。 */
+function isRemovedHighspeedProviderId(providerId: string | undefined): boolean {
+  return (
+    providerId === "account:zai-highspeed-card" || providerId === "account:bigmodel-highspeed-card"
+  );
+}
 import type { EventId, SessionEvent, SessionId, TraceId, TurnId } from "@zcode/contracts";
 import {
   CompactTimelineStatus,
@@ -34,7 +41,6 @@ import {
 import {
   getConversationModelOnlyTurnTriggerSource,
   getConversationMessageProjectionPolicy,
-  highspeedMessageMetaSchema,
   isConversationRealUserTurnStarter,
 } from "@zcode/shared";
 import {
@@ -398,7 +404,8 @@ function stringField(
 }
 
 function inputIntentOfMessage(message: MessageWithParts): TurnInputIntentMetadata | undefined {
-  const persistedHighspeed = highspeedMessageMetaSchema.safeParse(message.info.metadata?.highspeed);
+  // fork（F4.2）：原 persistedHighspeed（metadata.highspeed 的兼容回读）随加速卡删除；
+  // 存量 transcript metadata.highspeed 不再读取，数据保留不损坏。
   const fullIntent = conversationInputIntentSchema.safeParse(
     message.info.metadata?.conversationInputIntent,
   );
@@ -426,11 +433,6 @@ function inputIntentOfMessage(message: MessageWithParts): TurnInputIntentMetadat
         ? { fallbackReasonCode: value.delivery.fallbackReasonCode }
         : {}),
       ...(value.attachments.length > 0 ? { attachmentRefs: value.attachments } : {}),
-      ...(value.highspeed
-        ? { highspeed: value.highspeed }
-        : persistedHighspeed.success
-          ? { highspeed: persistedHighspeed.data }
-          : {}),
       ...(value.inputOrigin ? { inputOrigin: value.inputOrigin } : {}),
       ...(value.conversationQuotes ? { conversationQuotes: value.conversationQuotes } : {}),
       ...(value.botGroupSource ? { botGroupSource: value.botGroupSource } : {}),
@@ -460,10 +462,7 @@ function inputIntentOfMessage(message: MessageWithParts): TurnInputIntentMetadat
   ) {
     return undefined;
   }
-  return {
-    ...(value as unknown as TurnInputIntentMetadata),
-    ...(persistedHighspeed.success ? { highspeed: persistedHighspeed.data } : {}),
-  };
+  return value as unknown as TurnInputIntentMetadata;
 }
 
 function executionKindOfMessage(message: MessageWithParts): "agent" | "controlOnly" | undefined {
@@ -1114,7 +1113,8 @@ function sessionModelSelectionOfHydratedMessage(
   // Bug 原因：加速卡是单轮执行 Selection（selectionScope=execution），消息保留它用于记录
   // 真实执行模型；但冷恢复曾把该字段误当成会话选型，重启后因此生成「加速 → 原模型」的
   // 虚假切换提示。live 路径的 execution 作用域本就不发 ModelSelected，cold 必须同语义。
-  return isHighspeedProviderId(modelSelection.providerId) ? null : modelSelection;
+  // fork（F4.2）：isHighspeedProviderId 已删，改用本地同语义字面量判定存量加速 Selection。
+  return isRemovedHighspeedProviderId(modelSelection.providerId) ? null : modelSelection;
 }
 
 function turnModelSelectionOfUserMessage(message: MessageWithParts): ModelSelection | null {

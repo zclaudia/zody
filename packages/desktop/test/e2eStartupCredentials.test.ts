@@ -9,18 +9,19 @@ const restoredOAuthCredentials = {
 };
 
 describe("desktop e2e startup credentials", () => {
-  it.each([
-    "coding-plan-upgrade-webview-refresh-provider.test.ts",
-    "marketing-touch-rewards.test.ts",
-  ])("%s 保留本地 Start 余额/请求鉴权所需 JWT", (spec) => {
-    expect(
-      createE2EStartupCredentialSeed({
-        specs: [spec],
-        legacyAuthToken: "fake-auth-token",
-        restoredOAuthCredentials,
-      }).zcodejwttoken,
-    ).toBe("fake-zcode-jwt");
-  });
+  // fork（F4.4）：marketing-touch-rewards 随营销 spec 删除，不再保留其 JWT 种子断言。
+  it.each(["coding-plan-upgrade-webview-refresh-provider.test.ts"])(
+    "%s 保留本地 Start 余额/请求鉴权所需 JWT",
+    (spec) => {
+      expect(
+        createE2EStartupCredentialSeed({
+          specs: [spec],
+          legacyAuthToken: "fake-auth-token",
+          restoredOAuthCredentials,
+        }).zcodejwttoken,
+      ).toBe("fake-zcode-jwt");
+    },
+  );
   it("供应商响应式 spec 保留本地 balance mock 所需的 JWT", () => {
     expect(
       createE2EStartupCredentialSeed({
@@ -121,16 +122,6 @@ describe("desktop e2e startup credentials", () => {
     });
   });
 
-  it("Start Plan 手动领取 spec 保留调用 claim API 所需的 zcode JWT", () => {
-    expect(
-      createE2EStartupCredentialSeed({
-        specs: ["/repo/packages/desktop/test/e2e/ui-shell/marketing-touch-entitlement.test.ts"],
-        legacyAuthToken: "fake-auth-token",
-        restoredOAuthCredentials,
-      }),
-    ).toEqual({
-      auth_token: "fake-auth-token",
-      ...restoredOAuthCredentials,
-    });
-  });
+  // fork（F4.4）：Start Plan 手动领取 spec（marketing-touch-entitlement）已删除，
+  // 其 JWT 种子白名单条目与断言一并移除。
 });

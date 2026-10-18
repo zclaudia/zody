@@ -57,6 +57,7 @@ export function resolveAccountProviderInspectionAccess(
   )
     return null;
   const parsed = zcodeProviderAccountAccessSchema.safeParse(provider.effectiveConfig.access);
+  // fork（F4.3）兼容保留：mode === "off-peak" 的历史 provider 配置不再暴露为可用账号访问。
   if (!parsed.success || parsed.data.mode === "off-peak") return null;
   if (!provider.accountState && parsed.data.entitled !== true) return null;
   return { providerId, access: parsed.data };

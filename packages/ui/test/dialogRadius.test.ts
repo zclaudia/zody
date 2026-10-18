@@ -31,7 +31,7 @@ describe("dialog shell radius", () => {
     // 原生购买面板已下线（购买走 webview 弹窗），不再纳入 dialog 圆角契约。
     "quickpick/TaskFindDialog",
     "components/ui/command",
-    "components/cloud-content-dialog/CloudContentDialog",
+    // fork（F4.4）：营销云内容弹窗（cloud-content-dialog）已删除，不再纳入契约。
     "v4/ConversationComposer",
   ]) {
     it(`${file} does not override the standard shell with xl or 3xl`, async () => {

@@ -6,7 +6,6 @@ import {
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   DesktopCommandIds,
   isDesktopAutoUpdateActive,
-  REWARDS_PARTITION,
   TEST_ZCODE_ENDPOINT_ORIGIN,
   normalizeZCodeEndpointOrigin,
   PlatformChannels,
@@ -18,7 +17,7 @@ import {
   type Locale,
 } from "@zcode/shared";
 import type { MessageBoxOptions } from "electron";
-import { app, BrowserWindow, dialog, session, shell } from "electron";
+import { app, BrowserWindow, dialog, shell } from "electron";
 import { showAboutDialog } from "./about.js";
 import { checkForUpdateMenuClick } from "./autoUpdater.js";
 import { resolveCuaOsSupport } from "./cuaOsSupport.js";
@@ -39,7 +38,6 @@ export const HELP_TOGGLE_DEV_TOOLS_MENU_ID = "help.toggle-dev-tools";
 export const HELP_TOGGLE_ZCODE_STDIO_TAP_MENU_ID = "help.toggle-zcode-stdio-tap";
 const ZCODE_ENDPOINT_PROMPT_WIDTH = 460;
 const ZCODE_ENDPOINT_PROMPT_HEIGHT = 210;
-const CODING_PLAN_WEBVIEW_PARTITION = "persist:zcode-coding-plan";
 
 function resolveTargetWindow(senderWindow?: BrowserWindow | null) {
   if (senderWindow && !senderWindow.isDestroyed()) {
@@ -128,25 +126,9 @@ async function clearAllDataAndRelaunch(options: {
   app.exit(0);
 }
 
-export async function clearCodingPlanWebviewStorage(options: {
-  logger: {
-    info: (...args: unknown[]) => void;
-    warn: (...args: unknown[]) => void;
-  };
-}) {
-  try {
-    // Coding Plan webview 使用独立持久 partition，默认窗口 session.clearStorageData()
-    // 不会覆盖它；退出登录/清理数据时必须显式清除，避免旧账号 token 被下一次官网首屏读到。
-    await session.fromPartition(CODING_PLAN_WEBVIEW_PARTITION).clearStorageData();
-    await session.fromPartition(REWARDS_PARTITION).clearStorageData();
-    options.logger.info("[coding-plan-webview] cleared persistent partition storage");
-  } catch (error) {
-    options.logger.warn(
-      "[coding-plan-webview] failed to clear persistent partition storage:",
-      error,
-    );
-  }
-}
+// fork（F4.4）：clearCodingPlanWebviewStorage（购买 webview / Rewards 持久 partition 清理）
+// 随购买与 Rewards webview 基础设施删除；renderer 侧残留的 ClearCodingPlanWebviewStorage
+// 命令调用成为 no-op，待 F4.7 删除账号登出链时一并清理（shared 命令 id 暂保留，避免越界）。
 
 /** fork（F2.7）：反馈与社群链接只读内置 config/default.json，不再请求远端 /api/v1/client/configs。 */
 export async function resolveFeedbackUrl(options: {
@@ -608,14 +590,11 @@ export async function executeDesktopCommand(options: {
       });
       return;
     case DesktopCommandIds.ClearAllData:
-      await clearCodingPlanWebviewStorage({ logger: options.logger });
+      // fork（F4.4）：购买 webview / Rewards partition 随基础设施删除，无需单独清理。
       await clearAllDataAndRelaunch({
         credentialsDir: options.credentialsDir,
         logger: options.logger,
       });
-      return;
-    case DesktopCommandIds.ClearCodingPlanWebviewStorage:
-      await clearCodingPlanWebviewStorage({ logger: options.logger });
       return;
     case DesktopCommandIds.GetCuaOsSupport:
       return resolveCuaOsSupport();

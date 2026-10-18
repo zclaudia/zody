@@ -288,8 +288,6 @@ describe("v4 原生 sendText", () => {
 
     await facade.sendInput("hi", {
       inputId: "cmd-1",
-      offPeakTaskId: "off-peak-task-1",
-      offPeakRunType: "init",
       modelExecution,
     });
 
@@ -298,8 +296,6 @@ describe("v4 原生 sendText", () => {
       "hi",
       undefined,
       expect.objectContaining({
-        offPeakTaskId: "off-peak-task-1",
-        offPeakRunType: "init",
         modelExecution,
       }),
     );
@@ -430,209 +426,15 @@ describe("v4 原生 sendText", () => {
     });
   });
 
-  it("Highspeed turn 运行中再次发送仍进入 queue，加速执行材料只暂存在 CLI 内存", async () => {
-    const app = makeApp();
-    const record = makeRecord({ app, activeAbortController: new AbortController() });
-    const retainQueuedTurnExecution = vi.fn();
-    const host = makeHost(record, {
-      getInputRoutingMode: () => "enqueue",
-      retainQueuedTurnExecution,
-    });
+  // fork（F4.2）：原「加速轮运行中再次发送入队 + 材料暂存」测试随加速入队机制
+  //（highspeedRequiresQueue/queueHighspeedTurn/retainQueuedTurnExecution）一起删除；
+  // 普通 busy 入队由 Core admission 通用路径覆盖。
 
-    await expect(
-      new V4CommandExecutor(host).execute(
-        envelope("sendText", {
-          text: "排队继续问",
-          highspeedMeta: {
-            schemaVersion: 1,
-            cardId: "card-1",
-            taskId: "s1",
-            provider: "bigmodel",
-            model: "GLM-5.3",
-            issuedAt: 1,
-            expiresAt: Date.now() + 60_000,
-          },
-          modelSelection: {
-            providerId: "account:bigmodel-highspeed-card",
-            modelId: "GLM-5.3",
-          },
-          modelExecution: {
-            selectionScope: "execution",
-            requestAuth: { apiKey: "card-jwt", headers: { "X-Highspeed-Card-ID": "card-1" } },
-            selectionFallback: {
-              providerId: "account:bigmodel-highspeed-card",
-              rules: [
-                { reason: "highspeed_card_expired", providerErrorCode: "3402" },
-                { reason: "highspeed_request_failed" },
-              ],
-            },
-          },
-        }),
-      ),
-    ).resolves.toEqual({
-      type: "inputAccepted",
-      delivery: "queue",
-      inputId: "cmd-1",
-    });
+  // fork（F4.2）：原「加速输入 guide 模式入队」测试随 HIGHSPEED_QUEUE_FALLBACK_REASON
+  // 与加速入队机制一起删除；普通 guide/queue 路由由通用 admission 覆盖。
 
-    expect(app.sendInput).toHaveBeenCalledWith(
-      { text: "排队继续问" },
-      expect.objectContaining({
-        requireQueue: true,
-        intent: expect.objectContaining({
-          highspeed: expect.objectContaining({ cardId: "card-1" }),
-          // 加速轮的 Selection 必须进 canonical intent，提升时不再回看会话模型。
-          modelSelection: {
-            providerId: "account:bigmodel-highspeed-card",
-            modelId: "GLM-5.3",
-          },
-        }),
-      }),
-    );
-    // 凭据不进队列事件，只按 (sessionId, sourceCommandId) 暂存在 CLI 进程内。
-    expect(retainQueuedTurnExecution).toHaveBeenCalledWith(
-      "s1",
-      "cmd-1",
-      expect.objectContaining({
-        selectionScope: "execution",
-        requestAuth: expect.objectContaining({ apiKey: "card-jwt" }),
-      }),
-    );
-  });
-
-  it("Highspeed 运行中输入在 guide 模式下仍进入 queue", async () => {
-    const app = makeApp({
-      runtime: { getActiveTurnInfo: vi.fn().mockReturnValue({ steerable: true }) },
-    });
-    const record = makeRecord({ app, activeAbortController: new AbortController() });
-    const retainQueuedTurnExecution = vi.fn();
-    const host = makeHost(record, {
-      getInputRoutingMode: () => "guide",
-      hasQueuedDelivery: () => false,
-      retainQueuedTurnExecution,
-    });
-
-    await new V4CommandExecutor(host).execute(
-      envelope("sendText", {
-        text: "加速输入不应内联当前轮",
-        highspeedMeta: {
-          schemaVersion: 1,
-          cardId: "card-guide",
-          taskId: "s1",
-          provider: "bigmodel",
-          model: "GLM-5.3",
-          issuedAt: 1,
-          expiresAt: Date.now() + 60_000,
-        },
-        modelSelection: {
-          providerId: "account:bigmodel-highspeed-card",
-          modelId: "GLM-5.3",
-        },
-        modelExecution: {
-          selectionScope: "execution",
-          requestAuth: { apiKey: "card-jwt", headers: { "X-Highspeed-Card-ID": "card-guide" } },
-          selectionFallback: {
-            providerId: "account:bigmodel-highspeed-card",
-            rules: [
-              { reason: "highspeed_card_expired", providerErrorCode: "3402" },
-              { reason: "highspeed_request_failed" },
-            ],
-          },
-        },
-      }),
-    );
-
-    expect(app.sendInput).toHaveBeenCalledWith(
-      { text: "加速输入不应内联当前轮" },
-      expect.objectContaining({
-        requireQueue: true,
-        intent: expect.objectContaining({
-          requestedDelivery: "guide",
-          admittedDelivery: "queue",
-          fallbackReasonCode: "highspeed.requiresQueue",
-          highspeed: expect.objectContaining({ cardId: "card-guide" }),
-        }),
-      }),
-    );
-    expect(retainQueuedTurnExecution).toHaveBeenCalledWith(
-      "s1",
-      "cmd-1",
-      expect.objectContaining({ selectionScope: "execution" }),
-    );
-  });
-
-  it("Core active turn 已存在但 controller 与投影尚未同步时，Highspeed 输入仍进入 queue", async () => {
-    const app = makeApp({
-      runtime: {
-        getActiveTurnInfo: vi.fn().mockReturnValue({
-          kind: "regular",
-          steerable: true,
-          turnId: "turn-highspeed",
-        }),
-      },
-    });
-    const record = makeRecord({ app });
-    const retainQueuedTurnExecution = vi.fn();
-    const host = makeHost(record, {
-      ensureModelReady: vi.fn(),
-      getInputRoutingMode: () => "startNow",
-      retainQueuedTurnExecution,
-    });
-
-    await expect(
-      new V4CommandExecutor(host).execute(
-        envelope("sendText", {
-          text: "controller 同步前也要排队",
-          highspeedMeta: {
-            schemaVersion: 1,
-            cardId: "card-1",
-            taskId: "s1",
-            provider: "bigmodel",
-            model: "GLM-5.3",
-            issuedAt: 1,
-            expiresAt: Date.now() + 60_000,
-          },
-          modelSelection: {
-            providerId: "account:bigmodel-highspeed-card",
-            modelId: "GLM-5.3",
-          },
-          modelExecution: {
-            selectionScope: "execution",
-            requestAuth: { apiKey: "card-jwt", headers: { "X-Highspeed-Card-ID": "card-1" } },
-            selectionFallback: {
-              providerId: "account:bigmodel-highspeed-card",
-              rules: [
-                { reason: "highspeed_card_expired", providerErrorCode: "3402" },
-                { reason: "highspeed_request_failed" },
-              ],
-            },
-          },
-        }),
-      ),
-    ).resolves.toEqual({
-      type: "inputAccepted",
-      delivery: "queue",
-      inputId: "cmd-1",
-    });
-
-    expect(app.sendInput).toHaveBeenCalledWith(
-      { text: "controller 同步前也要排队" },
-      expect.objectContaining({
-        requireQueue: true,
-        intent: expect.objectContaining({
-          highspeed: expect.objectContaining({ cardId: "card-1" }),
-        }),
-      }),
-    );
-    // 入队时不下发 modelExecution（凭据只驻留内存），因此仍按普通轮做 Session 模型 preflight：
-    // 该输入被提升时若卡已过期会退回会话常驻 Selection，会话模型不可用必须在 admission 就暴露。
-    expect(host.ensureModelReady).toHaveBeenCalledWith(record);
-    expect(retainQueuedTurnExecution).toHaveBeenCalledWith(
-      "s1",
-      "cmd-1",
-      expect.objectContaining({ selectionScope: "execution" }),
-    );
-  });
+  // fork（F4.2）：原「controller 未同步时加速输入仍入队」测试随加速入队机制一起删除；
+  // controller 同步窗口的普通输入准入由 Core admission 与 preempt 机制覆盖。
 
   it("execution-scoped Selection 直接进入 Core，Session 模型从不临时切换", async () => {
     const order: string[] = [];
@@ -803,23 +605,6 @@ describe("v4 原生 sendText", () => {
       envelope("sendText", {
         text: "automation prompt",
         automationId: "automation-1",
-        highspeedMeta: {
-          schemaVersion: 1,
-          cardId: "card-1",
-          taskId: "s1",
-          provider: "bigmodel",
-          model: "GLM-5.3",
-          issuedAt: 1,
-          expiresAt: Date.now() + 60_000,
-        },
-        modelSelection: {
-          providerId: "account:bigmodel-highspeed-card",
-          modelId: "GLM-5.3",
-        },
-        modelExecution: {
-          selectionScope: "execution",
-          requestAuth: { apiKey: "card-jwt" },
-        },
       }),
     );
     await settle();
@@ -831,50 +616,29 @@ describe("v4 原生 sendText", () => {
         toolDisallowlist: ["CronCreate", "CronUpdate", "CronDelete"],
       }),
     );
-    expect(app.sendInput.mock.calls[0]?.[1]?.intent).not.toHaveProperty("highspeed");
-    // 定时执行身份优先：加速 Selection 与执行材料必须在 admission 前被整体丢弃。intent 仍会
-    // 固化本会话常驻 Selection（普通轮的通用行为），但绝不能是加速卡 Provider，否则本轮会
-    // 拿加速卡凭据发请求，或把普通输出持久化成 Highspeed 消息。
-    expect(app.sendInput.mock.calls[0]?.[1]?.intent?.modelSelection).toEqual({
-      providerId: "account:bigmodel-start-plan",
-      modelId: "glm-5",
-    });
+    // fork（F4.2）：原「加速 Selection 与执行材料在 admission 前被整体丢弃」断言随 dropsHighspeed
+    // 净化分支删除；automationId 的 turn 级工具面隔离行为保持不变。
     expect(app.sendInput.mock.calls[0]?.[1]).not.toHaveProperty("modelExecution");
     expect(app.sendInput.mock.calls[1]?.[1]).not.toHaveProperty("toolDisallowlist");
     expect(record.activeAutomationId).toBeUndefined();
   });
 
-  it("Highspeed 用户 turn 保留 CronCreate 工具可见性", async () => {
+  it("普通用户 turn 保留 CronCreate 工具可见性", async () => {
+    // fork（F4.2）：原「加速用户 turn」用例以加速材料触发；加速材料删除后改以普通用户
+    // 输入表达同一断言（automationId 缺省时工具不被隐藏）。
     const app = makeApp();
     const record = makeRecord({ app });
     const host = makeHost(record);
 
     await new V4CommandExecutor(host).execute(
       envelope("sendText", {
-        text: "加速期间创建一个定时任务",
-        highspeedMeta: {
-          schemaVersion: 1,
-          cardId: "card-1",
-          taskId: "s1",
-          provider: "bigmodel",
-          model: "GLM-5.3",
-          issuedAt: 1,
-          expiresAt: Date.now() + 60_000,
-        },
-        modelSelection: {
-          providerId: "account:bigmodel-highspeed-card",
-          modelId: "GLM-5.3",
-        },
-        modelExecution: {
-          selectionScope: "execution",
-          requestAuth: { apiKey: "card-jwt" },
-        },
+        text: "帮我创建一个定时任务",
       }),
     );
     await settle();
 
     expect(app.sendInput).toHaveBeenCalledWith(
-      { text: "加速期间创建一个定时任务" },
+      { text: "帮我创建一个定时任务" },
       expect.not.objectContaining({ toolDisallowlist: expect.anything() }),
     );
   });
@@ -909,39 +673,7 @@ describe("v4 原生 sendText", () => {
     expect(record.activeBotDeliveryTarget).toBeUndefined();
   });
 
-  it("off-peak sendText 保留本轮归因与独立创建限制，普通后续轮不继承", async () => {
-    const app = makeApp();
-    const record = makeRecord({ app });
-    const host = makeHost(record);
-
-    await new V4CommandExecutor(host).execute(
-      envelope("sendText", {
-        text: "off-peak prompt",
-        offPeakTaskId: "off-peak-task-1",
-        offPeakRunType: "resume",
-      }),
-    );
-    await settle();
-    await new V4CommandExecutor(host).execute(envelope("sendText", { text: "manual follow-up" }));
-    await settle();
-
-    expect(app.sendInput.mock.calls[0]?.[1]).toEqual(
-      expect.objectContaining({
-        offPeakTaskId: "off-peak-task-1",
-        offPeakRunType: "resume",
-      }),
-    );
-    // D49 新增闲时自建限制、D52 追加 SendMessage/Workflow；不混入 automation 写工具集，
-    // Host 的额外 denylist 另行合并。
-    expect(app.sendInput.mock.calls[0]?.[1].toolDisallowlist).toEqual([
-      "OffPeakCreate",
-      "SendMessage",
-      "Workflow",
-    ]);
-    expect(app.sendInput.mock.calls[1]?.[1]).not.toHaveProperty("offPeakTaskId");
-    expect(app.sendInput.mock.calls[1]?.[1]).not.toHaveProperty("offPeakRunType");
-    expect(app.sendInput.mock.calls[1]?.[1]).not.toHaveProperty("toolDisallowlist");
-  });
+  // fork（F4.3）：off-peak sendText 归因与闲时 deny 名单用例随闲时任务全链路删除。
 
   it("automation runId inputId 漏传 automationId 时也隐藏全部写工具", async () => {
     const app = makeApp();
@@ -1847,7 +1579,7 @@ describe("supports 分流", () => {
       "editUserQuery",
       "retryTurn",
       "setAssistantFeedback",
-      "setHighspeedMetrics",
+      // fork（F4.2）：原 "setHighspeedMetrics" 随加速卡全链路删除。
       "sendQueuedNow",
       "editQueueItem",
       "reorderQueueItem",

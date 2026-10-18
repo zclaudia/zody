@@ -57,8 +57,7 @@ export {
 // File service — IFileService is both a type (interface) and value (descriptor)
 export { IFileService } from "./file/file.js";
 export { IMediaPreviewService } from "./media-preview/mediaPreview.js";
-export { ICloudContentService } from "#src/cloud-content/cloudContent.js";
-export { IMarketingTouchService } from "#src/marketing-touch/marketingTouch.js";
+// fork（F4.4）：ICloudContentService / IMarketingTouchService（营销触达与云内容）已删除。
 export type { MediaPreviewPreparation } from "./media-preview/mediaPreview.js";
 
 // Git service — IGitService is both a type (interface) and value (descriptor)
@@ -237,10 +236,7 @@ export { IUsageStatsService } from "./usage-stats/usageStats.js";
 export type { IStorageService } from "./storage/contract.js";
 
 // CodingPlanSubscription service — ICodingPlanSubscriptionService is both a type (interface) and value (descriptor)
-export {
-  ICodingPlanSubscriptionService,
-  type OffPeakClientConfig,
-} from "./coding-plan-subscription/codingPlanSubscription.js";
+export { ICodingPlanSubscriptionService } from "./coding-plan-subscription/codingPlanSubscription.js";
 export {
   IClientScenesService,
   type ClientSceneConfig,
@@ -250,9 +246,7 @@ export {
   type ClientScenesResponse,
 } from "./client-scenes/clientScenes.js";
 export { isValidCronExpr } from "./session/automationCronValidation.js";
-// 闲时任务管理服务（与 automation 服务面独立）；接口/描述符 browser-safe。
-export { IOffPeakTaskService } from "./session/offPeakTask.js";
-export type { OffPeakUpdateTaskParams } from "./session/offPeakTask.js";
+// fork（F4.3）：IOffPeakTaskService / OffPeakUpdateTaskParams（闲时任务服务面）随闲时任务全链路删除。
 
 // Skills service — ISkillsService is both a type (interface) and value (descriptor)
 export { ISkillsService } from "./skills/skills.js";
@@ -348,13 +342,6 @@ export {
 } from "./plugin-ui-bridge/contract.js";
 export { IClientConfigService } from "./client-config/clientConfig.js";
 
-export { IHighspeedCardService } from "./highspeed/highspeedCard.js";
-export {
-  HighspeedCardService,
-  createHighspeedHttpTransport,
-  buildHighspeedTurnExecution,
-} from "./highspeed/highspeedCardService.js";
-export { createHighspeedMockTransport } from "./highspeed/highspeedMockTransport.js";
 
 export { IGenUiService } from "./gen-ui/contract.js";
 export type { GenUiPrepareParams } from "./gen-ui/contract.js";

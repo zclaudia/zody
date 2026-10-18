@@ -8,8 +8,14 @@ import type {
   CommandPayloadMap,
   CommandResult,
 } from "@zcode/shared/zcode-protocol-v4";
-import { isHighspeedProviderId } from "@zcode/shared";
-import { createModelExecutionContext } from "../../../model-execution.js";
+// fork（F4.2）：加速队列项的同卡执行材料补供/暂存机制随加速卡全链路删除；
+// 存量队列项仍可能带加速 providerId Selection，用本地字面量判定回落会话模型（兼容读取）。
+/** fork（F4.2）：判定已删除的加速卡隐藏 Provider id（存量数据兼容判定）。 */
+function isRemovedHighspeedProviderId(providerId: string | undefined): boolean {
+  return (
+    providerId === "account:zai-highspeed-card" || providerId === "account:bigmodel-highspeed-card"
+  );
+}
 import { mapAttachmentRefsToTurnAttachments } from "../attachment-refs.js";
 import { inputIntentMetadataFromQueueItem } from "../input-intent.js";
 import { startPromptTurn } from "../prompt-turn.js";
@@ -88,9 +94,6 @@ async function deleteQueueItem(
     // 未命中曾返回 undefined，gateway 会把并发 drain/重复删除误报为 accepted；
     // queue 撤回编辑因此可能把已消费的旧投影再次恢复到 composer。
     throw new V4CommandNoopError("queue.itemMissing");
-  }
-  if (queueItem) {
-    host.deleteQueuedTurnExecution?.(record.app.sessionId, queueItem.sourceCommandId);
   }
   return undefined;
 }
@@ -251,44 +254,15 @@ async function sendQueuedNow(
       leaseReleaseOwnedByBackground = goalContinuationWillStart;
     } else {
       const intent = inputIntentMetadataFromQueueItem(queueItem, queueItem.text);
-      // 手动提升允许 Renderer 为同一张卡补一份新执行材料；卡不同一律忽略，避免跨卡换凭据。
-      const refreshedHighspeedMatchesQueue =
-        payload.highspeedMeta !== undefined &&
-        queueItem.highspeed !== undefined &&
-        payload.highspeedMeta.cardId === queueItem.highspeed.cardId &&
-        payload.highspeedMeta.taskId === queueItem.highspeed.taskId;
-      if (refreshedHighspeedMatchesQueue && payload.highspeedMeta) {
-        intent.highspeed = payload.highspeedMeta;
-        // Selection 与执行材料必须同批替换（协议已用 superRefine 保证成对到达）。
-        if (payload.modelSelection) intent.modelSelection = payload.modelSelection;
-      }
-      // 凭据不入队列持久化面：先用本次补供的材料，其次取 CLI 内存按 sourceCommandId 的暂存。
-      const stagedExecution =
-        (refreshedHighspeedMatchesQueue ? payload.modelExecution : undefined) ??
-        host.readQueuedTurnExecution?.(record.app.sessionId, queueItem.sourceCommandId);
-      const highspeedSelected = isHighspeedProviderId(intent.modelSelection?.providerId);
-      // 规则 9：卡在排队期间可能过期。提升前重新判定有效性，过期或凭据缺失都退回会话模型。
-      const highspeedStillValid =
-        highspeedSelected &&
-        intent.highspeed !== undefined &&
-        intent.highspeed.expiresAt > Date.now() &&
-        stagedExecution !== undefined;
-      if (highspeedSelected && !highspeedStillValid) {
-        if (intent.highspeed && intent.highspeed.expiresAt > Date.now()) {
-          // Bug 原因：现场出现有效卡的队列项在手动提升时静默退回普通模型，原日志只覆盖
-          // provider 安装失败，无法区分「凭据暂存缺失」与「卡本身已过期」。
-          host.logger?.warn?.("v4 queued Highspeed execution unavailable; using session model", {
-            cardId: intent.highspeed.cardId,
-            queueItemId: queueItem.queueItemId,
-            reason: "execution_missing",
-            sessionId: record.app.sessionId,
-          });
-        }
-        // 退回必须同时改写 Selection：只删卡标记会让本轮带着加速 provider 却没有任何凭据。
-        // 与 retry/edit 重发共用同一 fallback resolver（spec §3 规则 13）。
-        delete intent.highspeed;
+      // fork（F4.2）：原「手动提升补供同卡执行材料 + CLI 内存暂存」链路随加速卡删除。
+      // 存量队列项仍可能带加速 providerId Selection：提升时退回会话常驻 Selection，防止
+      // 带着已删除的隐藏 Provider 发送（与 retry/edit 重发共用同一 fallback resolver）。
+      if (isRemovedHighspeedProviderId(intent.modelSelection?.providerId)) {
+        host.logger?.warn?.("v4 queued legacy highspeed selection demoted; using session model", {
+          queueItemId: queueItem.queueItemId,
+          sessionId: record.app.sessionId,
+        });
         intent.modelSelection = resolveSessionFallbackModelSelection(record);
-        host.deleteQueuedTurnExecution?.(record.app.sessionId, queueItem.sourceCommandId);
       }
       const started = await startPromptTurn(host, record, {
         content: queueItem.text,
@@ -298,9 +272,6 @@ async function sendQueuedNow(
         intent,
         requireIdle: true,
         toolDisallowlist: queueItem.toolDisallowlist,
-        ...(highspeedStillValid && stagedExecution
-          ? { modelExecution: createModelExecutionContext(stagedExecution) }
-          : {}),
         ...(attachments ? { attachments } : {}),
       });
       // 旧 fake app/兼容命令可能不返回 admission receipt；真实 app 已在 Core admission
@@ -308,8 +279,6 @@ async function sendQueuedNow(
       if (started.admission.kind === "queued" || started.admission.kind === "rejected") {
         throw new V4QueuePromotionLeaseUnavailableError();
       }
-      // 凭据已随本轮冻结进 Core；启动成功后立刻销毁暂存副本，失败路径保留以便重试仍能加速。
-      host.deleteQueuedTurnExecution?.(record.app.sessionId, queueItem.sourceCommandId);
     }
     startAdmitted = true;
     const removed = await record.app.removeQueueItem(payload.queueItemId, {

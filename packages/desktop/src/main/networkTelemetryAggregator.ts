@@ -91,7 +91,7 @@ const STATIC_HTTP_PATH_SEGMENTS = new Set([
   "mobile-view-state",
   "models",
   "oauth",
-  "off-peak",
+  // fork（F4.3）："off-peak" 路由段随闲时任务全链路删除。
   "order",
   "orders",
   "organization",

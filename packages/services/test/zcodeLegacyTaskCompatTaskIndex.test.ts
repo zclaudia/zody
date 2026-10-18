@@ -1034,16 +1034,16 @@ describe("ZCode legacy task compat task index", () => {
   });
 
   it("applies a caller-scoped CronCreate denylist to a first-run prompt", async () => {
+    // fork（F4.3）：原用例以 offPeakTaskId 触发闲时派发轮 denylist 补充；
+    // 闲时链路删除后改为验证调用方 toolDenylist 原样透传、不补 OffPeakCreate。
     const { agent, service, taskIndexRepo } = createService();
     const task = await service.createTask({ workspacePath: "/repo", provider: "glm" });
     vi.mocked(agent.sendConversationCommandV4).mockClear();
 
     await service.sendPrompt({
       taskId: task.taskId,
-      traceId: "trace-off-peak-first-run",
-      content: "run off-peak prompt",
-      offPeakTaskId: "offpeak-stable-1",
-      offPeakRunType: "init",
+      traceId: "trace-first-run",
+      content: "run prompt",
       toolDenylist: ["CronCreate"],
     });
 
@@ -1051,15 +1051,11 @@ describe("ZCode legacy task compat task index", () => {
       expect.objectContaining({
         envelope: expect.objectContaining({
           type: "sendText",
-          commandId: "trace-off-peak-first-run",
+          commandId: "trace-first-run",
           payload: {
-            text: "run off-peak prompt",
+            text: "run prompt",
             heldQueueDisposition: "keepQueueAndSend",
-            offPeakTaskId: "offpeak-stable-1",
-            offPeakRunType: "init",
-            // D49-2：闲时派发轮在调用方 CronCreate 之外，纵深补 OffPeakCreate
-            // （免费池自我放大）；OffPeakList 只读保留。
-            toolDisallowlist: ["CronCreate", "OffPeakCreate"],
+            toolDisallowlist: ["CronCreate"],
           },
         }),
       }),
@@ -1073,6 +1069,7 @@ describe("ZCode legacy task compat task index", () => {
   });
 
   it("applies a caller-scoped CronCreate denylist after resuming a normal session", async () => {
+    // fork（F4.3）：原用例以 offPeakTaskId 触发续跑归因与 denylist 补充，随闲时任务全链路删除。
     const { agent, service } = createService();
     const task = await service.createTask({ workspacePath: "/repo", provider: "glm" });
     await service.resumeTask({ workspacePath: "/repo", taskId: task.taskId });
@@ -1080,10 +1077,8 @@ describe("ZCode legacy task compat task index", () => {
 
     await service.sendPrompt({
       taskId: task.taskId,
-      traceId: "trace-off-peak-resume",
-      content: "continue off-peak prompt",
-      offPeakTaskId: "offpeak-stable-1",
-      offPeakRunType: "resume",
+      traceId: "trace-resume",
+      content: "continue prompt",
       toolDenylist: ["CronCreate"],
     });
 
@@ -1091,14 +1086,11 @@ describe("ZCode legacy task compat task index", () => {
       expect.objectContaining({
         envelope: expect.objectContaining({
           type: "sendText",
-          commandId: "trace-off-peak-resume",
+          commandId: "trace-resume",
           payload: {
-            text: "continue off-peak prompt",
+            text: "continue prompt",
             heldQueueDisposition: "keepQueueAndSend",
-            offPeakTaskId: "offpeak-stable-1",
-            offPeakRunType: "resume",
-            // D49-2：续跑段与首跑同语义。
-            toolDisallowlist: ["CronCreate", "OffPeakCreate"],
+            toolDisallowlist: ["CronCreate"],
           },
         }),
       }),
@@ -4347,13 +4339,28 @@ describe("ZCode legacy task compat task index", () => {
     );
   });
 
-  it("stamps offPeakTaskId on normal snapshot resume (D48)", async () => {
-    // SG-01：legacy 分支已补写闲时标记，正常 snapshot 续跑路径必须同语义，
-    // 否则 pre-D48 会话被闲时续跑后月亮标识与系统分组归属不会出现。
+  it("preserves a historical offPeakTaskId meta across normal snapshot resume (fork F4.3)", async () => {
+    // 兼容红线：off-peak 链路已删，resumeTask 不再接受 offPeakTaskId 入参；
+    // 但历史库 meta 中的闲时标记必须在快照续跑同步时保全（taskIndexRepo 兜底保留）。
     const { agent, service, taskIndexRepo } = createService();
     const taskId = "resume_offpeak_stamp_task";
     const workspacePath = "/repo";
     await seedIndexedTask(taskIndexRepo, { taskId, workspacePath, provider: "glm" });
+    // 在 seed 之上补写历史闲时标记（新链路不再产生，仅复刻存量数据形态）。
+    await taskIndexRepo.syncTaskMeta({
+      meta: {
+        taskId,
+        traceId: `trace_${taskId}`,
+        title: taskId,
+        workspacePath,
+        createdAt: 10,
+        updatedAt: 20,
+        mode: "build",
+        status: "completed",
+        provider: "glm",
+        offPeakTaskId: "offpeak-resume-stamp",
+      },
+    });
     vi.mocked(agent.resumeSession).mockResolvedValueOnce(
       makeSnapshot({
         sessionId: taskId,
@@ -4364,9 +4371,9 @@ describe("ZCode legacy task compat task index", () => {
     const meta = await service.resumeTask({
       workspacePath,
       taskId,
-      offPeakTaskId: "offpeak-resume-stamp",
     });
 
+    // 快照不带闲时标记 → 既有值兜底保全。
     expect(meta.offPeakTaskId).toBe("offpeak-resume-stamp");
     const indexed = await taskIndexRepo.getTaskMeta({ workspacePath, taskId });
     expect(indexed?.offPeakTaskId).toBe("offpeak-resume-stamp");

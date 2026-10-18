@@ -337,10 +337,7 @@ export class ConversationTelemetryFactNormalizer {
           kind: "turn.started",
           ...(inputId ? { sourceCommandId: inputId } : {}),
           ...automationAdmission(inputId, optionalString(payload.automationId)),
-          ...(optionalString(payload.offPeakTaskId)
-            ? { offPeakTaskId: optionalString(payload.offPeakTaskId) }
-            : {}),
-          ...(payload.offPeakRunType ? { offPeakRunType: payload.offPeakRunType } : {}),
+          // fork（F4.3）：offPeakTaskId/offPeakRunType fact 随闲时任务全链路删除。
           ...(payload.executionKind ? { executionKind: payload.executionKind } : {}),
           ...(payload.inputSource ? { inputSource: payload.inputSource } : {}),
           ...(backgroundSource ? { backgroundSource } : {}),

@@ -24,7 +24,8 @@ export interface AccountRequestAuthInput {
   accountAccess: ZCodeProviderAccountAccess | ZCodeAccountAccess;
   expectedAccountScope?: string;
   rejectedProjectTokenFingerprint?: string;
-  reason: RequestVerificationReason | "off-peak" | "usage";
+  // fork（F4.3）："off-peak" reason（闲时票据鉴权请求）随闲时任务全链路删除。
+  reason: RequestVerificationReason | "usage";
 }
 
 export interface AccountAccessIdentityInput {

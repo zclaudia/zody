@@ -27,7 +27,6 @@ import {
   zcodeBrowserAmbientContextSchema,
   zcodeProtocolMcpServerSchema,
 } from "../zcode-protocol/index.js";
-import { highspeedMessageMetaSchema } from "../highspeed.js";
 import { sharedContextRefSchema } from "./shared-context-ref.js";
 import { conversationInputSourceSchema } from "./input-intent.js";
 export type { SharedContextRef } from "./shared-context-ref.js";
@@ -66,11 +65,8 @@ export const commandPayloadSchemas = {
     config: createSessionRequestedConfigSchema.optional(),
     // MCP 是 runtime 启动期配置，必须随 create 一次性进入 record，不能在首发后补写。
     mcpServers: z.array(zcodeProtocolMcpServerSchema).optional(),
-    // Off-Peak 工具面 flag，与 legacy session/create 等价——V4 createSession 是桌面
-    // 新会话的实际创建路径，不透传则 OffPeakCreate/OffPeakList 永不注册。additive，
-    // 旧 CLI 的 z.object 会静默丢弃该键（fail-closed）。
-    offPeakToolEnabled: z.boolean().optional(),
-    // 动态工作流灰度 flag，与 offPeakToolEnabled 同一模式。
+    // fork（F4.3）：offPeakToolEnabled 随闲时任务全链路删除。
+    // 动态工作流灰度 flag，与原 offPeakToolEnabled 同一模式。
     dynamicWorkflowEnabled: z.boolean().optional(),
     // 灰度 mode 与布尔同行（launch.md「On demand: activation」）；旧 CLI 的 z.object 静默丢弃。
     dynamicWorkflowMode: z.enum(DYNAMIC_WORKFLOW_MODES).optional(),
@@ -114,13 +110,11 @@ export const commandPayloadSchemas = {
       // 本次执行仍使用上面的标准 Selection；这里只携带不持久化语义、动态鉴权和 child 策略。
       // 仅 idle startNow 接受，防止 Secret/Ticket 进入普通 CommandInbox。
       modelExecution: modelExecutionSchema.optional(),
-      // Highspeed 卡快照随输入事实进入 message.data；不包含 runtime 凭据或 header。
-      // 加速本轮的模型与凭据走上面的 modelSelection + modelExecution，见
-      // docs/highspeed/highspeed-access-mode-migration.md。
-      highspeedMeta: highspeedMessageMetaSchema.optional(),
+      // fork（F4.2）：原 highspeedMeta 字段（加速卡快照随输入事实进入 message.data）随加速
+      // 卡删除；zod 对未知键默认 strip，存量持久化数据仍可被宽容解析（兼容读取）。
       automationId: z.string().min(1).optional(),
-      offPeakTaskId: z.string().min(1).optional(),
-      offPeakRunType: z.enum(["init", "resume"]).optional(),
+      // fork（F4.3）：offPeakTaskId/offPeakRunType（闲时派发归因）随闲时任务全链路删除；
+      // zod 对未知键默认 strip，存量持久化数据仍可被宽容解析（兼容读取）。
       // Bot 来源只由 Host 注入，用于 CronCreate 在当前 turn 内读取并持久化回推地址。
       botDeliveryTarget: zcodeAutomationBotDeliveryTargetSchema.optional(),
       inputOrigin: z.enum(["desktop", "mobile"]).optional(),
@@ -131,19 +125,6 @@ export const commandPayloadSchemas = {
       toolDisallowlist: z.array(z.string().min(1)).optional(),
     })
     .superRefine((payload, context) => {
-      if (payload.automationId && payload.offPeakTaskId) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "automationId and offPeakTaskId are mutually exclusive",
-        });
-      }
-      if (payload.offPeakRunType && !payload.offPeakTaskId) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "offPeakRunType requires offPeakTaskId",
-          path: ["offPeakRunType"],
-        });
-      }
       requireModelSelectionForExecution(payload, context);
     }),
   sendGoalCommand: z.object({
@@ -175,7 +156,7 @@ export const commandPayloadSchemas = {
       // 不从被 rewind 的历史消息复用旧凭据。
       modelSelection: modelSelectionSchema.optional(),
       modelExecution: modelExecutionSchema.optional(),
-      highspeedMeta: highspeedMessageMetaSchema.optional(),
+      // fork（F4.2）：原 highspeedMeta 字段随加速卡删除。
       // 缺省 preserve：仅切 conversation branch；rewind 会先安全恢复该轮文件。
       workspaceMode: z.enum(["preserve", "rewind"]).optional(),
     })
@@ -187,24 +168,14 @@ export const commandPayloadSchemas = {
     target: conversationRowTargetSchema,
     feedback: z.enum(["like", "dislike"]).nullable(),
   }),
-  setHighspeedMetrics: z.object({
-    target: conversationRowTargetSchema,
-    regularTps: z.number().positive(),
-    outputTokens: z.number().int().nonnegative(),
-    durationMs: z.number().nonnegative(),
-    highspeedTps: z.number().positive(),
-    savedDurationMs: z.number().nonnegative(),
-    modelDurationMs: z.number().nonnegative().optional(),
-    toolDurationMs: z.number().nonnegative().optional(),
-    otherDurationMs: z.number().nonnegative().optional(),
-  }),
+  // fork（F4.2）：setHighspeedMetrics 命令随加速卡删除。
   sendQueuedNow: z
     .object({
       queueItemId: z.string(),
-      // 手动提升允许 Renderer 为原队列项补充同卡执行材料；凭据不入队列持久化面。
+      // fork（F4.2）：原 modelSelection/modelExecution/highspeedMeta（手动提升时为加速队列
+      // 项补充同卡执行材料）随加速卡删除；队列项仍可携带其余字段正常提升。
       modelSelection: modelSelectionSchema.optional(),
       modelExecution: modelExecutionSchema.optional(),
-      highspeedMeta: highspeedMessageMetaSchema.optional(),
     })
     .superRefine(requireModelSelectionForExecution),
   editQueueItem: z.object({ queueItemId: z.string(), newText: z.string() }),
@@ -333,7 +304,6 @@ export const ROW_TARGETING_COMMANDS: ReadonlySet<CommandType> = new Set([
   "editUserQuery",
   "retryTurn",
   "setAssistantFeedback",
-  "setHighspeedMetrics",
 ]);
 
 // ── 信封 ──

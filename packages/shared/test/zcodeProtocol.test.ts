@@ -397,31 +397,8 @@ describe("ZCode Protocol", () => {
     ).toThrow();
   });
 
-  it("session/send accepts Off-Peak turn attribution but rejects competing automation identity", () => {
-    expect(
-      zcodeSessionSendParamsSchema.parse({
-        sessionId: "sess_1",
-        content: "continue",
-        offPeakTaskId: "offpeak-1",
-        offPeakRunType: "resume",
-      }),
-    ).toMatchObject({ offPeakTaskId: "offpeak-1", offPeakRunType: "resume" });
-    expect(() =>
-      zcodeSessionSendParamsSchema.parse({
-        sessionId: "sess_1",
-        content: "invalid",
-        offPeakRunType: "init",
-      }),
-    ).toThrow();
-    expect(() =>
-      zcodeSessionSendParamsSchema.parse({
-        sessionId: "sess_1",
-        content: "continue",
-        automationId: "automation-1",
-        offPeakTaskId: "offpeak-1",
-      }),
-    ).toThrow();
-  });
+  // fork（F4.3）：Off-Peak turn attribution 用例（offPeakTaskId/offPeakRunType 互斥校验）
+  // 随闲时任务全链路删除；session/send schema 中的对应字段与 superRefine 一并移除。
 
   it("session/send and automation/create validate the bot delivery target strictly", () => {
     const botDeliveryTarget = {
@@ -1016,6 +993,7 @@ describe("ZCode Protocol", () => {
     ).toThrow();
   });
 
+  // fork（F4.3）："off-peak" 为历史持久化 mode 值（协议枚举保留容忍），用例保留。
   it.each(["start-plan", "individual-coding-plan", "team-coding-plan", "off-peak"] as const)(
     "runtime headers 直接接受 Registry zhipu access mode: %s",
     (mode) => {

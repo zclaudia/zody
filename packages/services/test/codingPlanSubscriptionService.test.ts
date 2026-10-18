@@ -56,42 +56,7 @@ describe("BigModelCodingPlanSubscriptionProvider", () => {
     vi.unstubAllEnvs();
   });
 
-  it("off-peak mock 直接使用 Built-in 模型，不等待远端 client config", async () => {
-    vi.stubEnv("ZCODE_OFFPEAK_MOCK", "1");
-    const apiClient: ApiClient = {
-      request: vi.fn(async () => {
-        throw new Error("mock mode must not request remote client config");
-      }),
-    };
-    const provider = new BigModelCodingPlanSubscriptionProvider({
-      apiClient,
-      credentialService: { load: vi.fn() },
-      resolveOffPeakModelSelectionView: async () =>
-        ({
-          revision: 1,
-          providers: [
-            {
-              providerId: "account:zai-offpeak-idle-plan",
-              config: { visibility: "hidden" },
-              models: [{ modelId: "GLM-5.2", config: {} }],
-            },
-          ],
-        }) as never,
-    });
-
-    await expect(provider.getOffPeakClientConfig({ forceRefresh: true })).resolves.toMatchObject({
-      enabled: true,
-      modelSelectionView: expect.objectContaining({
-        providers: [
-          expect.objectContaining({
-            providerId: "account:zai-offpeak-idle-plan",
-          }),
-        ],
-      }),
-      codingPlanActive: true,
-    });
-    expect(apiClient.request).not.toHaveBeenCalled();
-  });
+  // fork（F4.3）：off-peak mock 灰度用例随闲时任务全链路删除。
 
   it("读取手动领取 preview 并归一化 plans", async () => {
     vi.stubEnv("ZCODE_ENDPOINT_ORIGIN", "https://preview.example.com");

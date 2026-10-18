@@ -149,26 +149,7 @@ function createUsageStatsServiceForTest(params: {
                 planKind: "individual-coding-plan",
               }),
       }),
-    // Highspeed 的普通 TPS 查询同样按 accountAccess 鉴权；默认补个人套餐访问上下文，
-    // 让用例专注缓存与诊断行为，需要 Team scope 的用例显式传入。
-    getCodingPlanRegularTps: (
-      request: Omit<
-        Parameters<NonNullable<typeof service.getCodingPlanRegularTps>>[0],
-        "accountAccess"
-      > & {
-        accountAccess?: ZCodeAccountAccess;
-      },
-    ) =>
-      service.getCodingPlanRegularTps?.({
-        ...request,
-        accountAccess:
-          request.accountAccess ??
-          ({
-            type: "zhipu-account",
-            family: request.preferredProviderId.includes("zai") ? "zai" : "bigmodel",
-            planKind: "individual-coding-plan",
-          } satisfies ZCodeAccountAccess),
-      }),
+    // fork（F4.2）：原 getCodingPlanRegularTps 包装（加速卡普通 TPS 查询）随加速卡全链路删除。
   };
 }
 
@@ -182,179 +163,17 @@ describe("createUsageStatsService", () => {
     vi.restoreAllMocks();
   });
 
-  it("Highspeed 普通 TPS 只请求 7 天健康接口，并缓存及合并同 key 并发请求", async () => {
-    vi.useFakeTimers({ now: new Date("2026-05-19T10:00:00.000Z") });
-    const apiClient: ApiClient = {
-      request: vi.fn(async () =>
-        createJsonResponse({
-          code: 200,
-          data: { x_time: ["2026-05-18", "2026-05-19"], proMaxDecodeSpeed: [68, 73] },
-        }),
-      ),
-    };
-    const service = createUsageStatsServiceForTest({
-      apiClient,
-      providers: [
-        createProvider({
-          id: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-          name: "BigModel - Coding Plan",
-          apiKey: "coding-plan-api-key",
-        }),
-      ],
-    });
-    const request = {
-      preferredProviderId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-      timeZone: "UTC",
-    };
+  // fork（F4.2）：原加速卡普通 TPS 测试（"Highspeed 普通 TPS 只请求 7 天健康接口，并缓存及合并同 key 并发请求"）随 getCodingPlanRegularTps 删除。
 
-    await expect(
-      Promise.all([
-        service.getCodingPlanRegularTps(request),
-        service.getCodingPlanRegularTps(request),
-      ]),
-    ).resolves.toEqual([73, 73]);
-    await expect(service.getCodingPlanRegularTps(request)).resolves.toBe(73);
 
-    expect(apiClient.request).toHaveBeenCalledTimes(1);
-    const requestedUrl = String(vi.mocked(apiClient.request).mock.calls[0]?.[0]);
-    expect(requestedUrl).toContain("/model-performance-day");
-    expect(requestedUrl).not.toContain("credit-usage");
-    vi.advanceTimersByTime(5 * 60_000 + 1);
-    await expect(service.getCodingPlanRegularTps(request)).resolves.toBe(73);
-    expect(apiClient.request).toHaveBeenCalledTimes(2);
-  });
+  // fork（F4.2）：原加速卡普通 TPS 测试（"Highspeed 普通 TPS 按账号访问上下文隔离缓存"）随 getCodingPlanRegularTps 删除。
 
-  it("Highspeed 普通 TPS 按账号访问上下文隔离缓存", async () => {
-    const apiClient: ApiClient = {
-      request: vi.fn(async () =>
-        createJsonResponse({
-          code: 200,
-          data: { x_time: ["2026-05-18", "2026-05-19"], proMaxDecodeSpeed: [68, 73] },
-        }),
-      ),
-    };
-    const service = createUsageStatsServiceForTest({
-      apiClient,
-      providers: [
-        createProvider({
-          id: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-          name: "BigModel - Coding Plan",
-          apiKey: "coding-plan-api-key",
-        }),
-      ],
-    });
-    const preferredProviderId = BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan;
 
-    await expect(
-      service.getCodingPlanRegularTps({ preferredProviderId, timeZone: "UTC" }),
-    ).resolves.toBe(73);
-    // Team scope 已内含在 accountAccess 中；缓存键必须整体覆盖它，否则同一 provider 下
-    // 切换团队项目会读到上一个项目的基准 TPS。
-    await expect(
-      service.getCodingPlanRegularTps({
-        preferredProviderId,
-        timeZone: "UTC",
-        accountAccess: {
-          type: "zhipu-account",
-          family: "bigmodel",
-          planKind: "team-coding-plan",
-          productId: "test-product",
-          organizationId: "org-1",
-          projectId: "project-1",
-        },
-      }),
-    ).resolves.toBe(73);
+  // fork（F4.2）：原加速卡普通 TPS 测试（"Highspeed 普通 TPS 健康检查失败时记录 HTTP 链路诊断"）随 getCodingPlanRegularTps 删除。
 
-    expect(apiClient.request).toHaveBeenCalledTimes(2);
-  });
 
-  it("Highspeed 普通 TPS 健康检查失败时记录 HTTP 链路诊断", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const apiClient: ApiClient = {
-      request: vi.fn(async () =>
-        Response.json(
-          { code: 5030, msg: "monitor unavailable" },
-          {
-            status: 503,
-            statusText: "Service Unavailable",
-            headers: {
-              "x-request-id": "req-regular-tps",
-              "x-trace-id": "trace-regular-tps",
-            },
-          },
-        ),
-      ),
-    };
-    const service = createUsageStatsServiceForTest({
-      apiClient,
-      providers: [
-        createProvider({
-          id: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-          name: "BigModel - Coding Plan",
-          apiKey: "coding-plan-api-key",
-        }),
-      ],
-    });
+  // fork（F4.2）：原加速卡普通 TPS 测试（"Highspeed 普通 TPS 健康检查业务失败时保留 request id"）随 getCodingPlanRegularTps 删除。
 
-    await expect(
-      service.getCodingPlanRegularTps({
-        preferredProviderId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-        timeZone: "UTC",
-      }),
-    ).rejects.toThrow("monitor unavailable");
-
-    expect(warn).toHaveBeenCalledWith(
-      expect.any(String),
-      "Highspeed 普通 TPS 健康检查失败",
-      expect.objectContaining({
-        providerId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-        status: 503,
-        responseHeaders: {
-          "x-request-id": "req-regular-tps",
-          "x-trace-id": "trace-regular-tps",
-        },
-        url: expect.stringContaining("/api/monitor/usage/model-performance-day"),
-      }),
-    );
-  });
-
-  it("Highspeed 普通 TPS 健康检查业务失败时保留 request id", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const service = createUsageStatsServiceForTest({
-      apiClient: {
-        request: vi.fn(async () =>
-          Response.json(
-            { code: 2007, msg: "monitor dependency failed" },
-            { headers: { "x-request-id": "req-regular-tps-business" } },
-          ),
-        ),
-      },
-      providers: [
-        createProvider({
-          id: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-          name: "BigModel - Coding Plan",
-          apiKey: "coding-plan-api-key",
-        }),
-      ],
-    });
-
-    await expect(
-      service.getCodingPlanRegularTps({
-        preferredProviderId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
-        timeZone: "UTC",
-      }),
-    ).rejects.toThrow("monitor dependency failed");
-
-    expect(warn).toHaveBeenCalledWith(
-      expect.any(String),
-      "Highspeed 普通 TPS 健康检查失败",
-      expect.objectContaining({
-        status: 200,
-        responseCode: 2007,
-        responseHeaders: { "x-request-id": "req-regular-tps-business" },
-      }),
-    );
-  });
 
   it("Coding Plan 按当日/7日/30日生成稳定时间轴", () => {
     vi.useFakeTimers({ now: new Date("2026-05-19T10:00:00.000Z") });

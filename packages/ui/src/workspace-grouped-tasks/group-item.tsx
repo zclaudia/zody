@@ -15,7 +15,6 @@ import type {
 } from "@zcode/services";
 import {
   CRON_DEFAULT_GROUP_ID,
-  OFF_PEAK_DEFAULT_GROUP_ID,
   type ZCodeTaskMeta,
 } from "@zcode/shared";
 import {
@@ -155,14 +154,13 @@ export function GroupItem({
   const shouldShowEmptyDropZone = !hasDraftTask && node.tasks.length === 0;
   const visualCollapsed = collapsed;
   const titleEditorText = renameDraft || node.group.title;
-  // 系统分组（cron / 闲时）：固定归类，禁止重命名与删除(解散)；颜色可改（与 cron 既有行为一致）。
+  // 系统分组（cron）：固定归类，禁止重命名与删除(解散)；颜色可改（与 cron 既有行为一致）。
+  // fork（F4.3）：isOffPeakGroup 与 offPeak 标题随闲时任务全链路删除。
   const isCronGroup = node.group.id === CRON_DEFAULT_GROUP_ID;
-  const isOffPeakGroup = node.group.id === OFF_PEAK_DEFAULT_GROUP_ID;
-  const isSystemGroup = isCronGroup || isOffPeakGroup;
-  // 系统分组的标题按语言环境本地化展示，忽略 DB 里存的固定占位标题（'cron' / 'off-peak'）。
+  const isSystemGroup = isCronGroup;
+  // 系统分组的标题按语言环境本地化展示，忽略 DB 里存的固定占位标题（'cron'）。
   const displayTitle = getTaskGroupDisplayTitle(node.group, {
     cron: intl.formatMessage({ id: "taskGroup.cronGroupName" }),
-    offPeak: intl.formatMessage({ id: "offPeak.sidebar.groupTitle" }),
   });
   const dragging = activeDragGroupId === node.group.id;
   const groupDraggable = useDraggable({

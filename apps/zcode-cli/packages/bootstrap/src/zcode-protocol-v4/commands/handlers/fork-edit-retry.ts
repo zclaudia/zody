@@ -9,7 +9,6 @@ import type {
   CommandPayloadMap,
   CommandResult,
 } from "@zcode/shared/zcode-protocol-v4";
-import { isHighspeedProviderId } from "@zcode/shared";
 import {
   RewindStrategy,
   traceContextToLogContext,
@@ -211,22 +210,8 @@ async function editUserQuery(
   if (!conversationRewindCommitted) {
     await submitConversationRewind(host, record, editTarget.transcriptMessageId);
   }
-  // 编辑重发按新的主动发送处理：只认本次重新 prepare 的卡（本会话 taskId、未过期），
-  // 且 Selection 必须真的指向加速 Provider，避免拿旧凭据或跨会话卡加速。
-  const highspeedEdit =
-    editTarget.intent.kind === "sendText" &&
-    payload.highspeedMeta !== undefined &&
-    payload.highspeedMeta.taskId === record.app.sessionId &&
-    payload.highspeedMeta.expiresAt > Date.now() &&
-    payload.modelSelection !== undefined &&
-    payload.modelExecution !== undefined &&
-    isHighspeedProviderId(payload.modelSelection.providerId)
-      ? {
-          card: payload.highspeedMeta,
-          modelSelection: payload.modelSelection,
-          execution: payload.modelExecution,
-        }
-      : undefined;
+  // fork（F4.2）：原「编辑重发只认本次重新 prepare 的加速卡」的 highspeedEdit 组装随加速卡
+  // 全链路删除；重放中的存量加速 Selection 由 startCanonicalIntent 内的兼容分支回落会话模型。
   try {
     await startCanonicalIntent(
       host,
@@ -236,7 +221,6 @@ async function editUserQuery(
       payload.newText,
       attachmentRefs,
       attachments,
-      highspeedEdit,
     );
   } catch (error) {
     if (
@@ -244,9 +228,9 @@ async function editUserQuery(
       error instanceof V4PromptRejectedError &&
       error.reasonCode === "activePrompt"
     ) {
-      // Bug 根因：rewind 已经提交后，Core 仍可能在收口旧 turn，带加速执行材料的 admission
-      // 不能 steer，只会返回 turn_not_steerable。此时必须把新文本原子入队，
-      // 否则旧消息已被截断而新消息会随异常一起丢失。
+      // Bug 根因：rewind 已经提交后，Core 仍可能在收口旧 turn，admission 不能 steer
+      // （返回 turn_not_steerable）。此时必须把新文本原子入队，否则旧消息已被截断而
+      // 新消息会随异常一起丢失。
       host.logger?.warn?.("v4 editUserQuery admission recovered by queue", {
         reason: error.message,
         sessionId: record.app.sessionId,
@@ -260,7 +244,6 @@ async function editUserQuery(
         payload.newText,
         attachmentRefs,
         attachments,
-        highspeedEdit,
         { requireQueue: true },
       );
     } else {

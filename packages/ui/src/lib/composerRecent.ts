@@ -1,4 +1,3 @@
-import { isHighspeedProviderId } from "@zcode/shared";
 import { modelSelectionSchema, type ModelSelection } from "@zcode/shared/model-selection";
 import { submissionModeSchema, type SubmissionMode } from "@zcode/shared/zcode-protocol-v4";
 import type { ModelSelectionView } from "@zcode/services";
@@ -6,6 +5,15 @@ import { logger } from "@/logger.js";
 
 // 沿用旧 key，读取时兼容只保存 ModelSelection 的历史记录。
 const COMPOSER_RECENT_KEY_PREFIX = "zcode-model-selection-recent-v1";
+
+// fork（F4.2）：加速卡隐藏 Provider（account:zai|bigmodel-highspeed-card）已随加速卡全链路
+// 删除；shared 的 isHighspeedProviderId 一并移除。存量 localStorage 仍可能记有加速选型，
+// 这里内联同语义判断保留「丢弃加速身份」的自愈/兜底行为（与 F4.1a 存量迁移同口径）。
+function isRemovedHighspeedProviderId(providerId: string | undefined): boolean {
+  return (
+    providerId === "account:zai-highspeed-card" || providerId === "account:bigmodel-highspeed-card"
+  );
+}
 
 interface StorageLike {
   getItem(key: string): string | null;
@@ -43,9 +51,10 @@ export function readComposerRecent(
     const mode = submissionModeSchema.safeParse("mode" in record ? record.mode : undefined);
     // 自愈（spec §5.1）：存量 Recent 可能被加速轮覆盖写入隐藏加速 Provider，模型视图里它
     // 解析为 provider-not-found，会让新任务草稿的模型选择器卡在空态。按叶子丢弃模型、保留
-    // mode，新草稿回落默认选择；与 readSessionModelSelection 丢弃加速常驻 entry 同口径。
+    // mode，新草稿回落默认选择。fork（F4.2）：isHighspeedProviderId 已删，改用本地同语义
+    // isRemovedHighspeedProviderId 判定存量加速选型。
     const healedSelection =
-      selection.success && !isHighspeedProviderId(selection.data.providerId)
+      selection.success && !isRemovedHighspeedProviderId(selection.data.providerId)
         ? selection.data
         : undefined;
     if (!healedSelection && !mode.success) return null;
@@ -69,10 +78,10 @@ export function captureComposerRecentSubmission(
   const key = resolveComposerRecentKey(workspacePath, workspaceIdentity);
   const mode = submissionModeSchema.safeParse(submission.mode);
   const modelSelection = normalizeSparseModelSelection(submission.modelSelection);
-  if (modelSelection && isHighspeedProviderId(modelSelection.providerId)) {
+  if (modelSelection && isRemovedHighspeedProviderId(modelSelection.providerId)) {
     // 兜底（spec §5.1）：加速 Provider 是单轮执行身份，不在任何模型目录里，写进 Recent 会让
-    // 新任务草稿种子解析为空。正常链路由 SessionPane 在加速轮传入 Composer 原始选择，这里
-    // 只拦截直接拿覆盖后 payload 调用的路径；跳过不推进序号，保留上一次合法记录。
+    // 新任务草稿种子解析为空。fork（F4.2）：加速发送链路已删，此处仅防御存量/异常输入，
+    // 跳过不推进序号，保留上一次合法记录。
     logger.warn("[ComposerRecent] 提交指向加速卡 Provider，跳过偏好记录", {
       workspacePath,
       workspaceIdentity,

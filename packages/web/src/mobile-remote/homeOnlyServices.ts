@@ -224,13 +224,7 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
     clientScenesService: createEmptyHomeOnlyService<RootServices["clientScenesService"]>({
       list: async () => ({ code: 0, msg: "", data: [] }),
     }),
-    // 闲时任务仅桌面本地（D13）；web home-only 环境按不支持处理。
-    offPeakTaskService:
-      createUnsupportedHomeOnlyService<RootServices["offPeakTaskService"]>("offPeakTaskService"),
-    highspeedCardService:
-      createUnsupportedHomeOnlyService<RootServices["highspeedCardService"]>(
-        "highspeedCardService",
-      ),
+    // fork（F4.3）：offPeakTaskService（闲时任务仅桌面本地 D13）随闲时任务全链路删除。
     skillsService: createEmptyHomeOnlyService<RootServices["skillsService"]>({
       list: async () => ({
         skills: [],

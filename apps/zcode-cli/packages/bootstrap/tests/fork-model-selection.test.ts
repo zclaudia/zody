@@ -2,7 +2,12 @@
 // Bug：加速中的会话分叉后没有把原模型带过去——分叉点消息记录的是加速卡的单轮执行
 // Selection（highspeed-card-spec §5），旧实现把它当成会话选型继承给 child。
 import { describe, expect, it } from "vitest";
-import { HIGHSPEED_PROVIDER_IDS } from "@zcode/shared";
+// fork（F4.2）：HIGHSPEED_PROVIDER_IDS 常量已随加速卡删除；测试改用存量身份字面量
+// 表达「历史 transcript 中遗留的加速 Selection」，兼容回落行为不变。
+const LEGACY_HIGHSPEED_PROVIDER_IDS = [
+  "account:zai-highspeed-card",
+  "account:bigmodel-highspeed-card",
+] as const;
 import {
   cloneModelSelection,
   derivedSessionModelSelection,
@@ -16,8 +21,8 @@ const sessionSelection = {
 };
 
 describe("派生会话的常驻 Selection", () => {
-  it("分叉点是加速轮时退回父会话常驻 Selection，不继承加速 Provider", () => {
-    for (const providerId of Object.values(HIGHSPEED_PROVIDER_IDS)) {
+  it("分叉点是存量加速轮时退回父会话常驻 Selection，不继承加速 Provider", () => {
+    for (const providerId of LEGACY_HIGHSPEED_PROVIDER_IDS) {
       const derived = derivedSessionModelSelection(
         { providerId, modelId: "glm-5", options: { reasoningLevel: "max" } },
         sessionSelection,
@@ -32,7 +37,7 @@ describe("派生会话的常驻 Selection", () => {
   it("父会话也没有常驻 Selection 时宁可留空，也不把加速 Provider 写进 child", () => {
     expect(
       derivedSessionModelSelection(
-        { providerId: HIGHSPEED_PROVIDER_IDS.zai, modelId: "glm-5" },
+        { providerId: LEGACY_HIGHSPEED_PROVIDER_IDS[0], modelId: "glm-5" },
         undefined,
       ),
     ).toBeUndefined();

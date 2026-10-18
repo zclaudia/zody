@@ -443,7 +443,7 @@ function errorCategory(event: ModelRequestFailedStatusEvent): AgentTelemetryErro
     case ModelFailureReason.ServerError:
     case ModelFailureReason.ProxyError:
     case ModelFailureReason.AuthRefresh:
-    case ModelFailureReason.OffpeakQueued:
+      // fork（F4.3）：case ModelFailureReason.OffpeakQueued 随闲时任务全链路删除。
       return "provider";
     default:
       return "unknown";

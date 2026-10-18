@@ -526,16 +526,18 @@ describe("coding plan embedded webview bridge", () => {
     expect(source).toContain('raw?.provider !== "bigmodel"');
   });
 
-  it("exposes getReportContext on the coding plan webview preload bridge", () => {
+  it("injects and clears __zcodeReportContext__ via the embedded webview scripts", () => {
+    // fork（F4.4）：desktop preload 桥（preload/codingPlanWebview.ts 的
+    // zcodeBridge.getReportContext）随购买 webview preload 整体删除；购买来源上下文
+    // 改由 renderer 对 webview executeJavaScript 的注入脚本直接写官网页
+    // window.__zcodeReportContext__，凭据清理脚本负责 delete。断言随之换到新载体。
     const source = readFileSync(
-      resolve("packages/desktop/src/preload/codingPlanWebview.ts"),
+      resolve("packages/ui/src/settings/model-provider-section/codingPlanEmbeddedWebview.ts"),
       "utf8",
     );
 
-    expect(source).toContain("getReportContext()");
-    expect(source).toContain("__zcodeReportContext__");
-    expect(source).toContain("REPORT_CONTEXT_VAR");
-    expect(source).toContain("return value as CodingPlanReportContext");
+    expect(source).toContain("window.__zcodeReportContext__ = zcodeReportContext;");
+    expect(source).toContain("delete window.__zcodeReportContext__;");
   });
 
   it("exposes webview i18n keys in both locales", () => {

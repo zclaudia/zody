@@ -4,7 +4,7 @@ import {
   setRequestSecurityReporter,
 } from "@/request-security-edition/index.js";
 /* eslint-disable max-lines -- Root 当前集中编排启动和 workspace shell wiring，先保持入口收口避免跨层状态拆散。 */
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LucideProvider, RefreshCw } from "lucide-react";
 import {
   APP_RUNTIME_PREFERENCES_CHANGED_BROADCAST_CHANNEL,
@@ -245,9 +245,9 @@ export function Root(props: RootProps) {
                     <AssistantCodeCommentFeatureProvider
                       enabled={props.assistantCodeCommentCardsEnabled}
                     >
-                      {/* fork（F4.1b）：CodingPlanUpgradeDialogProvider（套餐升级弹窗）、
-                          RewardsProvider（营销 Rewards）、MarketingTouchProvider（营销触达）
-                          三层挂载摘除；组件文件留给 F4.4/F4.5 删除。 */}
+                      {/* fork（F4.1b）：CodingPlanUpgradeDialogProvider（套餐升级弹窗，F4.5 删）、
+                          RewardsProvider（营销 Rewards，F4.4 已删）、MarketingTouchProvider
+                          （营销触达，F4.4 已删）三层挂载摘除。 */}
                       <RequestSecurityHost />
                       <RootInner {...props} />
                     </AssistantCodeCommentFeatureProvider>

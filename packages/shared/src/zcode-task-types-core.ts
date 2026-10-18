@@ -159,16 +159,10 @@ export type ZCodeTaskMode =
   | "autoEdit"
   | "build";
 
-export type ZCodeOffPeakRunType = "init" | "resume";
-
-/** 单个自动输入轮的来源归因；两种后台业务身份禁止同时存在。 */
+/** 单个自动输入轮的来源归因。
+ * fork（F4.3）：offPeakTaskId/offPeakRunType 归因分支随闲时任务全链路删除。 */
 export type ZCodeBackgroundTurnAttribution =
   | { automationId: string; offPeakTaskId?: never; offPeakRunType?: never }
-  | {
-      offPeakTaskId: string;
-      offPeakRunType?: ZCodeOffPeakRunType;
-      automationId?: never;
-    }
   | { automationId?: undefined; offPeakTaskId?: undefined; offPeakRunType?: never };
 /** 当前 workspace 下任务的运行时状态 */
 export type ZCodeTaskRuntimeStatus =
@@ -330,9 +324,8 @@ export interface ZCodeTaskMeta {
    */
   cronAutomationId?: string;
   /**
-   * 闲时任务身份标记：该 session/幻影行属于哪条 off-peak 任务。
-   * 与 cronAutomationId 是兄弟标记（闲时不复用 cron 标记）；行 id = 创建时
-   * 预分配的 sessionId，标记从创建到运行恒定，供月亮图标与系统分组归属使用。
+   * fork（F4.3）兼容保留字段：off-peak 链路已删，但历史数据库 meta_json 中仍持久化
+   * 该标记，类型契约保留以便解析容忍（不再产生新值；UI 分组/月亮标记已随链路删除）。
    */
   offPeakTaskId?: string;
   /** fork 产物保留来源 taskId，供 UI 做本地化标题兜底和后续追溯。 */

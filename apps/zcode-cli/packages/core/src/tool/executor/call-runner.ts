@@ -404,7 +404,7 @@ async function executeToolCallImpl(
         toolCallId: canonicalToolCall.id,
         telemetry,
         automationTurn: options?.automationTurn,
-        offPeakTurn: options?.offPeakTurn,
+        // fork（F4.3）：offPeakTurn 透传随闲时任务全链路删除。
         traceContext,
         traceId,
         spanId: traceContext.spanId,
@@ -437,7 +437,7 @@ async function executeToolCallImpl(
         workflowEscalatePort: deps.workflowEscalatePort,
         artifactStore: deps.artifactStore,
         automationPort: deps.automationPort,
-        offPeakPort: deps.offPeakPort,
+        // fork（F4.3）：offPeakPort 透传随闲时任务全链路删除。
         topicResourcePort: deps.topicResourcePort,
         sessionStore: deps.sessionStore,
         sessionModePort: deps.sessionModePort,

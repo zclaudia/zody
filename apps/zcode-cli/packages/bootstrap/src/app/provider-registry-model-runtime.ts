@@ -76,6 +76,8 @@ export class ApiProviderModelRuntime {
       modelId: registryModel.modelId,
       providerConfig: provider.config,
       modelConfig: config,
+      // fork（F4.3）：Off-Peak 链路已删；历史持久化配置可能仍带 off-peak/highspeed mode，
+      // 门禁保留（与 runner.ts 的 requestAuthRequired 门禁对应）。
       // Off-Peak 与 Highspeed 都靠执行作用域的动态 requestAuth（JWT / 计划 Key / 卡 ID header）
       // 发送，必须把承载它的 source 透传给 adapter。此门禁与 runner.ts 的 requestAuthRequired
       // 门禁一一对应：漏掉 highspeed 会在这里丢掉 source，导致 runner 端 requestAuth 缺失、

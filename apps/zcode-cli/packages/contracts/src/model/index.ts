@@ -39,7 +39,7 @@ export const ModelRequestSessionType = {
  *   给 workflow actor（taskType workflow_child / nested_workflow_child）使用：模型错误绝不是
  *   workflow 错误，唯一出口是用户 cancel。
  * - `single-attempt`：本次请求 maxAttempts 收敛为 1，瞬态失败也不重试、首次失败即上抛。
- *   给带 selectionFallback 声明的执行作用域 Selection（如 Highspeed 加速卡）使用：失败后由 core
+ *   给带 selectionFallback 声明的执行作用域 Selection 使用：失败后由 core（加速卡已随 F4.2 删除，机制保留兼容存量执行声明）
  *   退回会话模型继续本轮，适配层再按默认 10 次退避重试只会把降级拖到数分钟之后。
  */
 export const ModelRetryBudget = {
@@ -134,8 +134,7 @@ export const ModelRetryReason = {
   AuthRefresh: "auth_refresh",
   /** Anthropic 明确拒绝历史 thinking signature 后，对请求副本清理并立即重试一次。 */
   ReasoningSignatureRepair: "reasoning_signature_repair",
-  /** off-peak 闲时排队（429/3105+Retry-After）：豁免重试预算、无限探测（仅 idle plan provider）。 */
-  OffpeakQueued: "offpeak_queued",
+  // fork（F4.3）：OffpeakQueued（off-peak 闲时排队重试原因）随闲时任务全链路删除。
 } as const;
 
 export type ModelRetryReason = (typeof ModelRetryReason)[keyof typeof ModelRetryReason];

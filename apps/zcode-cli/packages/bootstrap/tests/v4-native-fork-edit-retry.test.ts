@@ -171,6 +171,8 @@ async function settle() {
  * 加速轮的协议原形：Selection 指向隐藏的加速卡内建 Provider（端点/能力都由 Provider Config
  * 提供），只有卡 JWT 与卡 ID 作为本次执行的动态鉴权随 modelExecution 下发。
  */
+// fork（F4.2）：加速卡 Provider 已删除；该常量仅表达「存量 transcript 中遗留的加速身份」，
+// 供兼容回落测试构造 canonical intent。
 const HIGHSPEED_MODEL_SELECTION = {
   providerId: "account:bigmodel-highspeed-card",
   modelId: "GLM-5.3",
@@ -279,57 +281,13 @@ describe("v4 原生 editUserQuery", () => {
     expect(editLogFields).not.toHaveProperty("text");
   });
 
-  it("编辑重发会应用本次新准备的 Highspeed Selection 与执行材料", async () => {
-    const app = makeApp();
-    const record = makeRecord({ app });
-    const highspeedMeta = {
-      schemaVersion: 1 as const,
-      cardId: "card-edit",
-      taskId: "s1",
-      provider: "bigmodel",
-      model: "GLM-5.3",
-      issuedAt: 1,
-      expiresAt: Date.now() + 60_000,
-    };
-    const host = makeHost(record, { getTurnRewindAnchor: () => "msg-user" });
-
-    await new V4CommandExecutor(host).execute(
-      envelope("editUserQuery", {
-        target: { rowId: 7, entityId: "entity-7" },
-        newText: "改过的问题",
-        highspeedMeta,
-        modelSelection: HIGHSPEED_MODEL_SELECTION,
-        modelExecution: HIGHSPEED_MODEL_EXECUTION,
-      }),
-    );
-    await settle();
-
-    // Selection 可投影（要进 intent 让 transcript 复原时知道这轮走了加速 Provider）。
-    expect(app.sendInput).toHaveBeenCalledWith(
-      { text: "改过的问题" },
-      expect.objectContaining({
-        intent: expect.objectContaining({
-          highspeed: highspeedMeta,
-          modelSelection: HIGHSPEED_MODEL_SELECTION,
-        }),
-      }),
-    );
-    const options = app.sendInput.mock.calls[0]?.[1];
-    expect(options.modelExecution.selectionScope).toBe("execution");
-    expect(options.modelExecution.selectionFallback).toEqual(
-      HIGHSPEED_MODEL_EXECUTION.selectionFallback,
-    );
-    // 卡 JWT 只能作为本轮执行依赖惰性解析，绝不能进入可持久化的 intent。
-    await expect(
-      options.modelExecution.requestDependencies.requestAuth.source.resolve(),
-    ).resolves.toEqual(HIGHSPEED_MODEL_EXECUTION.requestAuth);
-    expect(options.intent).not.toHaveProperty("modelExecution");
-  });
-
-  it("卡已过期的编辑重发退回会话常驻 Selection，不保留无鉴权的加速 Selection", async () => {
-    // CR-01 回归：被编辑的那轮是 Highspeed 轮，canonical intent 里留着 account:*-highspeed-card；
-    // 本次没有有效新卡（已过期），旧实现只是不传 modelExecution 却沿用该 Selection，Core 会以
-    // ModelRequestAuthMissing 失败，且该 Selection 被固定进新 intent，污染后续普通发送。
+  // fork（F4.2）：原「编辑重发应用本次新准备的加速 Selection 与执行材料」测试随加速发送链
+  // 删除（editUserQuery 不再携带 highspeedMeta/执行材料；存量的兼容回落由下一用例覆盖）。
+  it("存量加速 Selection 的编辑重发退回会话常驻 Selection，不保留无鉴权的加速 Selection", async () => {
+    // CR-01 回归（fork（F4.2）改为存量兼容口径）：被编辑的那轮是历史加速轮，canonical intent
+    // 里留着 account:*-highspeed-card；加速卡已删除、不会再有新卡，重发必须退回会话常驻
+    // Selection，否则 Core 以 ModelRequestAuthMissing 失败，且该 Selection 被固定进新 intent，
+    // 污染后续普通发送。
     const setModel = vi.fn();
     const app = makeApp({ getModel: () => "builtin:bigmodel-coding-plan/GLM-5.3", setModel });
     const record = makeRecord({ app });
@@ -356,17 +314,6 @@ describe("v4 原生 editUserQuery", () => {
       envelope("editUserQuery", {
         target: { rowId: 7, entityId: "entity-7" },
         newText: "改过的问题",
-        highspeedMeta: {
-          schemaVersion: 1 as const,
-          cardId: "card-edit",
-          taskId: "s1",
-          provider: "bigmodel",
-          model: "GLM-5.3",
-          issuedAt: 1,
-          expiresAt: Date.now() - 1,
-        },
-        modelSelection: HIGHSPEED_MODEL_SELECTION,
-        modelExecution: HIGHSPEED_MODEL_EXECUTION,
       }),
     );
     await settle();
@@ -382,7 +329,7 @@ describe("v4 原生 editUserQuery", () => {
     expect(setModel).not.toHaveBeenCalled();
   });
 
-  it("Highspeed admission 遇到收口竞态时保留编辑文本并进入队列", async () => {
+  it("editUserQuery admission 遇到收口竞态时保留编辑文本并进入队列", async () => {
     const app = makeApp({
       sendInput: vi.fn().mockImplementation(async (_input, options) => {
         if (options?.requireQueue) {
@@ -392,60 +339,57 @@ describe("v4 原生 editUserQuery", () => {
       }),
     });
     const record = makeRecord({ app });
-    const highspeedMeta = {
-      schemaVersion: 1 as const,
-      cardId: "card-edit",
-      taskId: "s1",
-      provider: "bigmodel",
-      model: "GLM-5.3",
-      issuedAt: 1,
-      expiresAt: Date.now() + 60_000,
+    // fork（F4.2）：原用例以加速执行材料触发竞态并借加速分支改写 intent Selection；加速
+    // 分支已删除，改以 canonical intent 自带的通用 Selection 表达，竞态入队行为不变。
+    const canonicalModelSelection = {
+      providerId: "builtin:bigmodel-team-coding-plan",
+      modelId: "GLM-5.3",
     };
     const host = makeHost(record, {
       getTurnRewindAnchor: () => "msg-user",
-      retainQueuedTurnExecution: vi.fn(),
-      deleteQueuedTurnExecution: vi.fn(),
+      resolveRowActionTarget: () => ({
+        ok: true,
+        action: "editUserQuery",
+        row: {} as never,
+        editTarget: {
+          entityId: "entity-7",
+          productTurnId: "turn-7",
+          transcriptMessageId: "msg-user",
+          coveredByStableCompact: false,
+          intent: {
+            kind: "sendText",
+            text: "原始问题",
+            modelSelection: canonicalModelSelection,
+          },
+        },
+      }),
     });
 
     await new V4CommandExecutor(host).execute(
       envelope("editUserQuery", {
         target: { rowId: 7, entityId: "entity-7" },
         newText: "竞态下的新问题",
-        highspeedMeta,
-        modelSelection: HIGHSPEED_MODEL_SELECTION,
-        modelExecution: HIGHSPEED_MODEL_EXECUTION,
       }),
     );
 
     expect(app.runtime.rewindConversationToMessage).toHaveBeenCalledWith(
       expect.objectContaining({ targetMessageId: "msg-user" }),
     );
-    expect(app.sendInput).toHaveBeenNthCalledWith(
-      1,
-      { text: "竞态下的新问题" },
-      expect.objectContaining({
-        modelExecution: expect.objectContaining({ selectionScope: "execution" }),
-      }),
-    );
-    // 入队路径不能把凭据交给 turn（此时还没有 turn），只投影 Selection + 卡元数据。
+    // fork（F4.2）：原第一次 sendInput 携带加速执行材料；editUserQuery 重发不再透传
+    // execution 材料，第一次调用只带 intent。
+    expect(app.sendInput).toHaveBeenNthCalledWith(1, { text: "竞态下的新问题" }, expect.anything());
+    // 入队路径不能把执行材料交给 turn（此时还没有 turn），只投影 Selection。
     expect(app.sendInput).toHaveBeenNthCalledWith(
       2,
       { text: "竞态下的新问题" },
       expect.objectContaining({
         requireQueue: true,
         intent: expect.objectContaining({
-          highspeed: highspeedMeta,
-          modelSelection: HIGHSPEED_MODEL_SELECTION,
+          modelSelection: canonicalModelSelection,
         }),
       }),
     );
     expect(app.sendInput.mock.calls[1]?.[1]).not.toHaveProperty("modelExecution");
-    // 凭据改由宿主按 commandId 暂存在内存，提升队列项时再冻结成执行上下文。
-    expect(host.retainQueuedTurnExecution).toHaveBeenCalledWith(
-      "s1",
-      "cmd-1",
-      HIGHSPEED_MODEL_EXECUTION,
-    );
   });
 
   it("attachments 缺省时稳定保留 canonical 原 refs", async () => {
@@ -892,9 +836,10 @@ describe("v4 原生 retryTurn", () => {
     );
   });
 
-  it("retry Highspeed 轮时没有新执行材料，退回会话常驻 Selection 且不改 session 模型", async () => {
-    // CR-01 回归：retry 从 canonical intent 复制历史 Selection；Highspeed 轮的 Selection 是
-    // account:*-highspeed-card，本次 retry 没有任何执行材料，必须显式改写回会话常驻 Selection。
+  it("retry 存量加速轮时没有执行材料，退回会话常驻 Selection 且不改 session 模型", async () => {
+    // CR-01 回归（fork（F4.2）改为存量兼容口径）：retry 从 canonical intent 复制历史 Selection；
+    // 历史加速轮的 Selection 是 account:*-highspeed-card，加速卡已删除、不再产生执行材料，
+    // 必须显式改写回会话常驻 Selection。
     const setModel = vi.fn();
     const app = makeApp({ getModel: () => "builtin:bigmodel-coding-plan/GLM-5.3", setModel });
     const record = makeRecord({ app });

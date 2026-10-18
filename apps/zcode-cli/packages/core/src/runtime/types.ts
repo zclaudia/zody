@@ -73,7 +73,6 @@ import type {
   BrowserControlPort,
   ExecutionShellSelection,
   AutomationPort,
-  OffPeakPort,
   TopicResourcePort,
   FileSystemPort,
   HttpClientPort,
@@ -383,7 +382,7 @@ export interface AgentRuntimeDeps {
   runtimeTaskRegistry?: RuntimeTaskRegistry;
   artifactStore?: ToolArtifactStorePort;
   automationPort?: AutomationPort;
-  offPeakPort?: OffPeakPort;
+  // fork（F4.3）：offPeakPort 随闲时任务全链路删除。
   topicResourcePort?: TopicResourcePort;
   contextSourcePort?: ContextSourcePort;
   eventSink?: SessionEventSink;
@@ -765,7 +764,7 @@ export interface PermissionDecisionResult {
 
 export interface ExecuteToolsOptions {
   automationTurn?: boolean;
-  offPeakTurn?: boolean;
+  // fork（F4.3）：offPeakTurn 随闲时任务全链路删除。
   signal?: AbortSignal;
   traceContext?: TraceContext;
   /** 仅透传给当前 turn 同步等待的 Agent child。 */

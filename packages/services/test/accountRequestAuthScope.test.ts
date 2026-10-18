@@ -23,9 +23,14 @@ function fixture() {
     },
   });
   const input = {
-    providerId: "account:bigmodel-off-peak",
-    accountAccess: { type: "zhipu-account", accountType: "bigmodel", mode: "off-peak" },
-    reason: "off-peak",
+    // fork（F4.3）：reason "off-peak" 随闲时任务全链路删除；竞态覆盖改用 model-request。
+    providerId: "account:bigmodel-coding-plan",
+    accountAccess: {
+      type: "zhipu-account",
+      accountType: "bigmodel",
+      mode: "individual-coding-plan",
+    },
+    reason: "model-request",
   } as const;
   return {
     service,

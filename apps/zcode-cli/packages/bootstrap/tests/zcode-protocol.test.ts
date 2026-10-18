@@ -4910,8 +4910,6 @@ describe("ZCodeProtocolAgentServer", () => {
     let sendInputSettled = false;
     let receivedInputId: string | undefined;
     let receivedBrowserAmbientContext: unknown;
-    let receivedOffPeakTaskId: string | undefined;
-    let receivedOffPeakRunType: string | undefined;
     const sendInputCompletion = new Promise<void>((resolve) => {
       resolveSendInput = resolve;
     });
@@ -4921,8 +4919,6 @@ describe("ZCodeProtocolAgentServer", () => {
           sendInput: async (_input, options) => {
             receivedInputId = options?.inputId;
             receivedBrowserAmbientContext = options?.browserAmbientContext;
-            receivedOffPeakTaskId = options?.offPeakTaskId;
-            receivedOffPeakRunType = options?.offPeakRunType;
             await sendInputCompletion;
             sendInputSettled = true;
             return { kind: "rejected", reason: "no_active_turn" };
@@ -4946,8 +4942,6 @@ describe("ZCodeProtocolAgentServer", () => {
         sessionId: created.session.sessionId,
         content: "hello",
         inputId: "t-sess_test-run",
-        offPeakTaskId: "off-peak-task-1",
-        offPeakRunType: "resume",
         browserAmbientContext: {
           tabCount: 1,
           currentUrl: "https://example.com/current",
@@ -4968,8 +4962,6 @@ describe("ZCodeProtocolAgentServer", () => {
       tabCount: 1,
       currentUrl: "https://example.com/current",
     });
-    expect(receivedOffPeakTaskId).toBe("off-peak-task-1");
-    expect(receivedOffPeakRunType).toBe("resume");
     expect(sendInputSettled).toBe(false);
     resolveSendInput();
     await sendInputCompletion;

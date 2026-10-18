@@ -74,7 +74,8 @@ export const rendererActionTraceAttributesSchema = z
     admission_result: z
       .enum(["accepted", "rejected", "stale", "duplicate", "noop", "not_applicable"])
       .optional(),
-    automation_kind: z.enum(["scheduled", "off_peak"]).optional(),
+    // fork（F4.3）：枚举值 "off_peak" 随闲时任务全链路删除（写入端已不存在；历史 trace 不回读校验）。
+    automation_kind: z.enum(["scheduled"]).optional(),
     action_id: z.string().uuid(),
   })
   .strict();

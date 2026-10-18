@@ -59,7 +59,7 @@ export class ToolExecutorImpl implements ToolExecutor {
       workflowEscalatePort: options.workflowEscalatePort,
       artifactStore: options.artifactStore,
       automationPort: options.automationPort,
-      offPeakPort: options.offPeakPort,
+      // fork（F4.3）：offPeakPort 透传随闲时任务全链路删除。
       topicResourcePort: options.topicResourcePort,
       sessionStore: options.sessionStore,
       sessionModePort: options.sessionModePort,

@@ -105,7 +105,7 @@ export function buildUserInputRow(base: RowBaseInput, payload: TurnStartedPayloa
     ...(sourceCommandId ? { sourceCommandId } : {}),
     ...(rootSourceCommandId ? { rootSourceCommandId } : {}),
     ...(payload.intent?.clientId ? { clientId: payload.intent.clientId } : {}),
-    ...(payload.intent?.highspeed ? { highspeed: payload.intent.highspeed } : {}),
+    // fork（F4.2）：原 highspeed 投影随加速卡删除。
     ...(payload.epilogueStart === undefined ? {} : { epilogueStart: payload.epilogueStart }),
     ...(attachments && attachments.length > 0 ? { attachments } : {}),
   };

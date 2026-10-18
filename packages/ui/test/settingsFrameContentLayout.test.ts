@@ -9,7 +9,7 @@ const settingsPagePartsSource = readSource("../src/settings/SettingsPageParts.ts
 const settingsPageSource = readSource("../src/SettingsPage.tsx");
 const automationsSectionSource = readSource("../src/settings/AutomationsSection.tsx");
 const automationEditViewSource = readSource("../src/settings/AutomationEditView.tsx");
-const offPeakEditViewSource = readSource("../src/settings/OffPeakEditView.tsx");
+// fork（F4.3）：offPeakEditViewSource（已删文件）随闲时任务全链路移除。
 const workspaceShellSource = readSource("../src/app-shell/WorkspaceShellLayout.tsx");
 const automationsBreadcrumbFrameSource = readSource(
   "../src/settings/AutomationsMainBreadcrumbFrame.tsx",
@@ -25,7 +25,6 @@ describe("settings frame content layout", () => {
       settingsPageSource,
       automationsSectionSource,
       automationEditViewSource,
-      offPeakEditViewSource,
     ]) {
       expect(source).toContain("SETTINGS_FRAME_CONTENT_CLASSNAME");
     }
@@ -33,7 +32,6 @@ describe("settings frame content layout", () => {
     for (const source of [
       automationsSectionSource,
       automationEditViewSource,
-      offPeakEditViewSource,
     ]) {
       expect(source).not.toContain("max-w-[866px]");
     }

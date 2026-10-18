@@ -1,7 +1,14 @@
 // 会话派生（stable fork / 编辑前分叉 / 辅助对话）的常驻 Selection 推导。
 // 从 v4-bridge 抽出：这些函数是纯选型推导，与网关接线无关，需要独立回归测试。
 import type { ModelSelection } from "@zcode/contracts";
-import { isHighspeedProviderId } from "@zcode/shared";
+// fork（F4.2）：shared 的 isHighspeedProviderId 随加速卡删除；存量消息选型仍可能记有加速
+// 身份，跳过判定改用本地同语义字面量（兼容读取）。
+/** fork（F4.2）：判定已删除的加速卡隐藏 Provider id（存量数据兼容判定）。 */
+function isRemovedHighspeedProviderId(providerId: string | undefined): boolean {
+  return (
+    providerId === "account:zai-highspeed-card" || providerId === "account:bigmodel-highspeed-card"
+  );
+}
 
 export function cloneModelSelection(
   selection: ModelSelection | undefined,
@@ -43,7 +50,7 @@ export function derivedSessionModelSelection(
   sessionSelection: ModelSelection | undefined,
 ): ModelSelection | undefined {
   const inheritable =
-    messageSelection && isHighspeedProviderId(messageSelection.providerId)
+    messageSelection && isRemovedHighspeedProviderId(messageSelection.providerId)
       ? undefined
       : messageSelection;
   return modelSelectionWithOptionFallback(inheritable, sessionSelection);

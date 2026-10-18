@@ -1,10 +1,6 @@
-export { cloudContentPayloadSchema, contentBundleSchema } from "./cloudContent.js";
+// fork（F4.4）：cloudContent / marketingTouch / rewardsBridge / rewardsEmbedded（营销触达、
+// 云内容与 Rewards 注入桥）已整体删除。
 export * from "./networkCapture.js";
-export type {
-  CloudContentPayload,
-  CloudContentBundle,
-  CloudContentHeroType,
-} from "./cloudContent.js";
 export type {
   FileBinaryPreview,
   FileEntry,
@@ -255,7 +251,7 @@ export type {
 export type { ZCodeTaskCreateResult } from "./zcode-task-types.js";
 export * from "./zcode-task-types.js";
 export * from "./automation-types.js";
-export * from "./off-peak-types.js";
+// fork（F4.3）：off-peak-types（闲时任务领域类型）随闲时任务全链路删除。
 export * from "./background-task-control-merge.js";
 export * from "./background-task-controls.js";
 export * from "./background-task-notifications.js";
@@ -317,7 +313,6 @@ export * from "./skill-scan-policy.js";
 export * from "./browser-use/index.js";
 
 export * from "./coding-plan-reset.js";
-export * from "./highspeed.js";
 export {
   parseSubagentMarkdownSelection,
   formatSubagentMarkdownModel,
@@ -338,9 +333,6 @@ export * from "./localTtft.js";
 export * from "./pluginStoreOrder.js";
 export * from "./clientConfig.js";
 export * from "./pluginStoreOrdering.js";
-export * from "./marketingTouch.js";
-export * from "./rewardsEmbedded.js";
-export * from "./rewardsBridge.js";
 export * from "./session-debug.js";
 export { redactFeedbackText } from "./feedbackPrivacy.js";
 export { API_KEY_USAGE_SCENE, type ApiKeyCreationUsageScene } from "./api-key-usage-scene.js";

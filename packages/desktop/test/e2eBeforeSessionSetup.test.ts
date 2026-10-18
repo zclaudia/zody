@@ -39,9 +39,6 @@ describe("desktop e2e beforeSession setup", () => {
       startPluginCdnZipFixtureIfNeeded: async () => {
         events.push("plugin-cdn");
       },
-      startOffPeakMockIfNeeded: async () => {
-        events.push("off-peak-mock");
-      },
     }).then(() => {
       events.push("setup-resolved");
     });
@@ -56,7 +53,6 @@ describe("desktop e2e beforeSession setup", () => {
       "upstream-http",
       "coding-plan-upgrade",
       "plugin-cdn",
-      "off-peak-mock",
       "reset-started",
     ]);
     expect(configureCodingPlanTeamMockForSpecs).toHaveBeenCalledWith([

@@ -12,7 +12,14 @@ import {
   type ProjectId,
 } from "@zcode/contracts";
 import type { ModelSelection } from "@zcode/provider";
-import { isHighspeedProviderId } from "@zcode/shared";
+// fork（F4.2）：shared 的 isHighspeedProviderId 随加速卡删除；存量 child 会话 model_selection
+// entry 仍可能记有加速身份，读取时用本地同语义字面量判定丢弃（兼容读取）。
+/** fork（F4.2）：判定已删除的加速卡隐藏 Provider id（存量数据兼容判定）。 */
+function isRemovedHighspeedProviderId(providerId: string | undefined): boolean {
+  return (
+    providerId === "account:zai-highspeed-card" || providerId === "account:bigmodel-highspeed-card"
+  );
+}
 import { StartupTimer } from "../startup-logging.js";
 
 export function isClosableSessionStore(
@@ -80,7 +87,7 @@ export async function readSessionModelSelection(
  */
 function residentModelSelection(selection: ModelSelection | undefined): ModelSelection | undefined {
   if (!selection) return undefined;
-  return isHighspeedProviderId(selection.providerId) ? undefined : selection;
+  return isRemovedHighspeedProviderId(selection.providerId) ? undefined : selection;
 }
 
 export function closeSessionStore(store: SqliteSessionStore): void {
