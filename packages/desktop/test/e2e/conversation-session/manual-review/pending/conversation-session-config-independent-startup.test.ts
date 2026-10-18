@@ -70,7 +70,7 @@ describe("配置等待与普通聊天隔离", () => {
           15_000,
         );
         const query = { lastUserMessageIncludes: [marker] };
-        const tools = await getUpstreamRequestToolNames(query);
+        await getUpstreamRequestToolNames(query);
         await waitForV4AssistantMessageContaining(
           ["scb-cold-ok", "scb-warm-ok", "scb-resume-ok"][index]!,
         );

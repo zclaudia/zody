@@ -10,10 +10,7 @@ import type {
   TurnHeaderRow,
   UserInputRow,
 } from "@zcode/shared/zcode-protocol-v4";
-import {
-  buildConversationTurnRenderUnits,
-  resolveNextHighspeedExpiryMs,
-} from "@/v4/conversationTurnRenderUnits.js";
+import { buildConversationTurnRenderUnits } from "@/v4/conversationTurnRenderUnits.js";
 import { resolveAssistantCopyText } from "@/v4/ConversationTurnRow.js";
 
 function baseRow<T extends ConversationRow>(

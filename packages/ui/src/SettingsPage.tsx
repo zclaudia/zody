@@ -1,6 +1,5 @@
 /* oxlint-disable eslint(max-lines) */
 import { ArrowLeft, Rocket, type LucideIcon } from "lucide-react";
-import { useStore } from "zustand";
 import {
   useCallback,
   useEffect,
@@ -264,8 +263,8 @@ export function SettingsPage({
   captionWorkspacePath,
   onBack,
   onCreateTask,
-  onOpenWorkspace,
-  allowOpenWorkspace = true,
+  onOpenWorkspace: _onOpenWorkspace,
+  allowOpenWorkspace: _allowOpenWorkspace = true,
   user,
 }: {
   isDesktop?: boolean;

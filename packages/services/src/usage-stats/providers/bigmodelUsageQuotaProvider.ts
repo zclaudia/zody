@@ -1151,16 +1151,6 @@ function readBigModelEnvelopeMessage(payload: { message?: string; msg?: string }
   return payload.msg?.trim() || payload.message?.trim() || "";
 }
 
-function sanitizeMonitorDiagnosticUrl(url: string | undefined): string {
-  if (!url) return "<unknown-monitor-url>";
-  try {
-    const parsed = new URL(url);
-    return `${parsed.origin}${parsed.pathname}`;
-  } catch {
-    return "<invalid-monitor-url>";
-  }
-}
-
 function hasExplicitBigModelSuccessSignal(payload: { code?: number; success?: boolean }): boolean {
   return payload.success === true || payload.code === 0 || payload.code === 200;
 }

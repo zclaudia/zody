@@ -57,7 +57,6 @@ import {
   disposeServiceResourcesAndWait,
   AutomationRepo,
   createServiceLogger,
-  buildTaskChangeSummary,
   createHostApiNetworkTransport,
   createSettingServiceWithMigrations,
   type HostApiNetworkTransport,

@@ -427,4 +427,25 @@ describe("createLocalServices remote authority", () => {
       disposeServiceResources(services);
     }
   });
+
+  it("本地服务集合注册 IGitService 与 IMediaPreviewService（F4.4 误删回归防护）", async () => {
+    // fork 修复依据：F4.4 删除 ICloudContentService 注册时连带删掉了链上相邻的
+    // IMediaPreviewService/IGitService 注册，本地 git 状态与媒体预览运行时无法解析；
+    // 单测不拉起完整集合、E2E 未跑，两道门禁都拦不住，故用注册断言直接防回归。
+    const home = makeTempHome();
+    process.env.HOME = home;
+
+    const [{ createLocalServices, disposeServiceResources }, { IGitService, IMediaPreviewService }] =
+      await Promise.all([import("../src/node.js"), import("../src/index.js")]);
+    const services = createLocalServices({
+      zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
+    });
+
+    try {
+      expect(await services.get(IGitService)).toBeDefined();
+      expect(await services.get(IMediaPreviewService)).toBeDefined();
+    } finally {
+      disposeServiceResources(services);
+    }
+  });
 });

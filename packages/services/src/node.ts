@@ -2257,6 +2257,11 @@ export function createLocalServices(options: {
   // （ICloudContentService，仅服务营销素材分发）按官方依赖移除方案整体删除。
   const services = new ServiceCollection()
     .register(IFileService, fileService)
+    // fork 修复：F4.4 删除 ICloudContentService 注册时误删了链上相邻的 IMediaPreviewService
+    // 与 IGitService 注册，本地工作区的 git 状态/分支切换与媒体预览会因服务无法解析而运行时报错
+    //（单测未拉起完整集合、E2E 未跑，门禁未拦截）。此处按 main 原状恢复。
+    .register(IMediaPreviewService, mediaPreviewService)
+    .register(IGitService, gitService)
     .register(IGitCheckpointService, gitCheckpointService)
     .register(ISystemService, systemService)
     .register(ITerminalService, createTerminalService({ settingService }))
