@@ -106,7 +106,7 @@ export async function persistUserPrompt(
               ? { inputClientId: options?.intent?.clientId ?? options?.clientId }
               : {}),
             ...(options?.executionKind ? { executionKind: options.executionKind } : {}),
-            ...(options?.intent?.highspeed ? { highspeed: options.intent.highspeed } : {}),
+            // fork（F4.2）：原 intent.highspeed → metadata.highspeed 持久化随加速卡删除。
             ...(options?.epilogueStart === undefined
               ? {}
               : { epilogueStart: options.epilogueStart }),

@@ -175,8 +175,7 @@ export const ServiceChannels = {
   PromptAttachmentTransfer: "prompt-attachment-transfer",
   /** 闲时任务管理服务（与 automation 服务面独立） */
   OffPeakTask: "off-peak-task",
-  /** Highspeed 加速卡抽取与分享服务 */
-  HighspeedCard: "highspeed-card",
+  // fork（F4.2）：HighspeedCard channel（"highspeed-card"）随加速卡全链路删除。
   /** Onboarding 完成记录服务（本地持久化，后续上传服务器） */
   OnboardingRecord: "onboarding-record",
 } as const;

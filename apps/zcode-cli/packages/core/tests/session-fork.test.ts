@@ -12,7 +12,9 @@ import type {
   TraceContext,
 } from "@zcode/contracts";
 import { SESSION_ENTRY_MODEL_SELECTION } from "@zcode/contracts";
-import { HIGHSPEED_PROVIDER_IDS } from "@zcode/shared";
+// fork（F4.2）：HIGHSPEED_PROVIDER_IDS 常量已随加速卡删除；测试改用存量身份字面量
+// 表达「历史消息中遗留的加速 Selection」，分叉兼容跳过行为不变。
+const LEGACY_HIGHSPEED_PROVIDER_ID = "account:zai-highspeed-card";
 import {
   activeSessionMessages,
   hydrateMessageHistoryFromSession,
@@ -778,9 +780,9 @@ describe("session fork history", () => {
     // 加速轮的 user/assistant 按 highspeed-card-spec §5 记录本轮真实执行模型（单轮执行事实）。
     user.info.modelSelection = {
       modelId: "glm-4.6" as never,
-      providerId: HIGHSPEED_PROVIDER_IDS.zai as never,
+      providerId: LEGACY_HIGHSPEED_PROVIDER_ID as never,
     };
-    assistant.info.providerId = HIGHSPEED_PROVIDER_IDS.zai as never;
+    assistant.info.providerId = LEGACY_HIGHSPEED_PROVIDER_ID as never;
     assistant.info.modelId = "glm-4.6" as never;
     assistant.info.reasoningLevel = "max";
     const parentSession = {
@@ -827,7 +829,7 @@ describe("session fork history", () => {
     // 不带显式选型（回落历史/常驻）与调用方显式传入加速选型，child 结果必须一致。
     const explicitCases: (ModelSelection | undefined)[] = [
       undefined,
-      { modelId: "glm-4.6" as never, providerId: HIGHSPEED_PROVIDER_IDS.zai as never },
+      { modelId: "glm-4.6" as never, providerId: LEGACY_HIGHSPEED_PROVIDER_ID as never },
     ];
     for (const [index, explicit] of explicitCases.entries()) {
       committedBundle = null;
@@ -856,7 +858,7 @@ describe("session fork history", () => {
         modelId: "glm-4-air",
         providerId: "glm",
       });
-      expect(JSON.stringify(committedBundle!.entries)).not.toContain(HIGHSPEED_PROVIDER_IDS.zai);
+      expect(JSON.stringify(committedBundle!.entries)).not.toContain(LEGACY_HIGHSPEED_PROVIDER_ID);
     }
   });
 

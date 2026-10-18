@@ -286,25 +286,8 @@ export type TurnSteerSource = "plan_approval_feedback" | "workflow_refine_feedba
  */
 export type TurnSteerDeliveryMode = "guide" | "queue";
 
-/** message.data metadata.highspeed 的持久化契约；不包含运行时凭据。 */
-export interface HighspeedMessageMetadata {
-  schemaVersion: 1;
-  cardId: string;
-  taskId: string;
-  provider: string;
-  model: string;
-  issuedAt: number;
-  expiresAt: number;
-  regularTps?: number;
-  outputTokens?: number;
-  durationMs?: number;
-  savedDurationMs?: number;
-  modelDurationMs?: number;
-  toolDurationMs?: number;
-  otherDurationMs?: number;
-  fallbackAt?: number;
-  fallbackReason?: "highspeed_card_expired" | "highspeed_request_failed";
-}
+// fork（F4.2）：HighspeedMessageMetadata（message.data metadata.highspeed 持久化契约）随
+// 加速卡全链路删除；存量 transcript metadata.highspeed 不再读取（数据保留不损坏）。
 
 /** 协议无关的输入 intent metadata；bootstrap v4 在事件边界组装为 ConversationInputIntent。 */
 export type TurnInputSourceMetadata =
@@ -387,7 +370,7 @@ export interface TurnInputIntentMetadata {
     sourceKind?: "clipboard-text" | "topic-history";
     messageCount?: number;
   }>;
-  highspeed?: HighspeedMessageMetadata;
+  // fork（F4.2）：原 highspeed 字段随加速卡删除；存量 intent metadata 中的该字段被忽略。
   sharedContextRefs?: Array<{
     kind: "shared_context_import";
     context_id: string;

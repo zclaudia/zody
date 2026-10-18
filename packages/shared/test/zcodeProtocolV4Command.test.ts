@@ -57,28 +57,8 @@ describe("zcode-protocol-v4 command", () => {
     expect(payload.toolDisallowlist).toEqual(["CronCreate"]);
   });
 
-  it("parses strict Highspeed message metadata on sendText", () => {
-    const highspeedMeta = {
-      schemaVersion: 1 as const,
-      cardId: "hsc-1",
-      taskId: "task-1",
-      provider: "zai",
-      model: "glm-5",
-      issuedAt: 1_000,
-      expiresAt: 10_000,
-    };
-
-    expect(commandPayloadSchemas.sendText.parse({ text: "accelerate", highspeedMeta })).toEqual({
-      text: "accelerate",
-      highspeedMeta,
-    });
-    expect(() =>
-      commandPayloadSchemas.sendText.parse({
-        text: "invalid",
-        highspeedMeta: { ...highspeedMeta, runtimeApiKey: "must-not-persist" },
-      }),
-    ).toThrow();
-  });
+  // fork（F4.2）：原「sendText 严格解析 Highspeed message metadata」测试随 highspeedMeta
+  // 字段删除；存量数据由 zod strip 宽容解析。
 
   it("preserves strict shared-context references on sendText", () => {
     const payload = commandPayloadSchemas.sendText.parse({
@@ -356,61 +336,8 @@ describe("zcode-protocol-v4 command", () => {
     }
   });
 
-  it.each(["editUserQuery", "sendQueuedNow"] as const)(
-    "%s accepts a refreshed Highspeed execution model for an explicit rerun",
-    (type) => {
-      const target = { rowId: 12, entityId: "message-user-12" };
-      const highspeedMeta = {
-        schemaVersion: 1 as const,
-        cardId: "hsc-edit",
-        taskId: "s-1",
-        provider: "builtin:bigmodel-coding-plan",
-        model: "GLM-5.3",
-        issuedAt: 1_000,
-        expiresAt: 60_000,
-      };
-      // 显式重跑会重新抽卡，因此 Selection 与执行材料必须能整体刷新；加速轮永远是
-      // execution 作用域，不允许改写 Session Selection。
-      const modelSelection = {
-        providerId: "account:bigmodel-highspeed-card",
-        modelId: "GLM-5.3",
-      };
-      const modelExecution = {
-        selectionScope: "execution" as const,
-        requestAuth: {
-          apiKey: "card-jwt",
-          headers: { "X-Highspeed-Card-ID": "hsc-edit" },
-        },
-        selectionFallback: {
-          providerId: "account:bigmodel-highspeed-card",
-          rules: [
-            { reason: "highspeed_card_expired" as const, providerErrorCode: "3402" },
-            { reason: "highspeed_request_failed" as const },
-          ],
-          // 退回目标随声明下发：重跑时也必须带上当时的会话原模型，CLI 不再依赖运行态常驻选择。
-          target: { providerId: "account:bigmodel-team-coding-plan", modelId: "GLM-5.3" },
-        },
-      };
-      const result = parseCommandEnvelope({
-        commandId: `cmd-${type}`,
-        clientId: "client-1",
-        sessionId: "s-1",
-        baseRevision: 7,
-        baseLogEpoch: "epoch-7",
-        type,
-        payload:
-          type === "editUserQuery"
-            ? { target, newText: "edited", highspeedMeta, modelSelection, modelExecution }
-            : { queueItemId: "queue-1", highspeedMeta, modelSelection, modelExecution },
-        issuedAt: 1_000,
-      });
-
-      expect(result).toMatchObject({
-        ok: true,
-        envelope: { payload: { highspeedMeta, modelSelection, modelExecution } },
-      });
-    },
-  );
+  // fork（F4.2）：原「editUserQuery/sendQueuedNow 接受刷新的 Highspeed 执行材料」测试随
+  // highspeedMeta 字段删除；两个字段保留的 modelSelection/modelExecution 由既有用例覆盖。
 
   it.each(["editUserQuery", "sendQueuedNow"] as const)(
     "%s rejects modelExecution without the Selection it constrains",
@@ -669,29 +596,10 @@ describe("zcode-protocol-v4 command", () => {
     expect(COMMANDS_REQUIRING_BASE_REVISION.has("compact")).toBe(false);
     expect(COMMANDS_REQUIRING_BASE_REVISION.has("stop")).toBe(false);
     expect(COMMANDS_REQUIRING_BASE_REVISION.has("resolveInteraction")).toBe(false);
-    // 完成态统计是同一 user message 的幂等后台补写，不能被 Renderer revision 漂移丢弃。
-    expect(COMMANDS_REQUIRING_BASE_REVISION.has("setHighspeedMetrics")).toBe(false);
+    // fork（F4.2）：原 setHighspeedMetrics 非 CAS 断言随命令删除。
   });
 
-  it("parses persisted Highspeed completion metrics", () => {
-    const parsed = parseCommandEnvelope({
-      commandId: "cmd-highspeed-metrics",
-      clientId: "desktop-1",
-      sessionId: "s-1",
-      baseLogEpoch: "epoch-1",
-      type: "setHighspeedMetrics",
-      payload: {
-        target: { rowId: 8, entityId: "user-1" },
-        regularTps: 73,
-        outputTokens: 120_000,
-        durationMs: 881_000,
-        highspeedTps: 90,
-        savedDurationMs: 762_836,
-      },
-      issuedAt: 1000,
-    });
-    expect(parsed.ok).toBe(true);
-  });
+  // fork（F4.2）：原「setHighspeedMetrics 命令解析」测试随命令删除。
 
   // M5 additive：switchCollaborationMode——值域 = core CollaborationMode 可切换子集。
   it("parses switchCollaborationMode and rejects out-of-catalog mode", () => {

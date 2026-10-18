@@ -29,10 +29,7 @@ const CODING_PLAN_TEAM_SPEC_MARKERS = [
   "conversation-session-worker-effective-selection.test.ts",
   "conversation-session-model-provider-turbo-recovery.test.ts",
   "conversation-session-model-provider-turbo-switch.test.ts",
-  // Highspeed 抽卡 case 要按 Coding Plan 权益判定资格，缺 team mock 时抽卡入口不曝光。
-  "conversation-session-highspeed-card.test.ts",
-  "conversation-session-highspeed-card-draw-timeout.test.ts",
-  "conversation-session-highspeed-card-draw-miss.test.ts",
+  // fork（F4.2）：加速卡抽卡 case 的 spec 名单随加速卡 E2E 删除。
   "conversation-session-model-provider-plan-surface.test.ts",
   // Bug 原因：连续切模回放也播种了模拟登录态；未隔离控制面时，线上 401
   // 会触发登录过期弹窗，遮住第二轮的模型菜单，导致与切模无关的失败。

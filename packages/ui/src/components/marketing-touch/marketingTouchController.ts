@@ -32,7 +32,7 @@ export type MarketingActionResult = {
 
 // 左下角活动槽位的唯一可见性判断：Banner 与 ConnectedBanner 的渲染守卫共用此谓词，
 // 避免仲裁层（SidebarBottomActivity）与展示层对「Banner 是否可见」出现两套判断而漂移。
-// 领取 pending 期间 banner 仍非空 → 判定可见，Highspeed 分享卡继续让位。
+// 领取 pending 期间 banner 仍非空 → 判定可见，其他槽位内容继续让位。
 // 用类型谓词收窄 delivery 到 banner 变体，保留调用点原有的 narrowing。
 type RenderableBannerCandidate = Candidate & {
   delivery: Extract<MarketingDelivery, { resource_position: "banner" }>;

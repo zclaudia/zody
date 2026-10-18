@@ -1,5 +1,13 @@
 import { randomUUID } from "node:crypto";
-import { isHighspeedProviderId, resolveExecutionState, type ExecutionState } from "@zcode/shared";
+import { resolveExecutionState, type ExecutionState } from "@zcode/shared";
+// fork（F4.2）：shared 的 isHighspeedProviderId 随加速卡删除；存量消息选型仍可能记有加速
+// 身份，跳过判定改用本地同语义字面量（兼容读取）。
+/** fork（F4.2）：判定已删除的加速卡隐藏 Provider id（存量数据兼容判定）。 */
+function isRemovedHighspeedProviderId(providerId: string | undefined): boolean {
+  return (
+    providerId === "account:zai-highspeed-card" || providerId === "account:bigmodel-highspeed-card"
+  );
+}
 import { buildExecutionStateEntry, readRuntimeExecutionState } from "../execution-state.js";
 import {
   createModelId,
@@ -73,7 +81,7 @@ function modelSelectionFromMessage(message: MessageWithParts): ModelSelection | 
   // 只有与同一轮 requestAuth 成对才有效。child 继承它会常驻在无凭据的加速 Provider 上：
   // 用户看到「分叉后原模型没带过来」，子会话首轮还会以 ModelRequestAuthMissing 失败。
   // 因此跳过该消息，继续向前找最近一次普通选型，最终回落 runtime 常驻 Selection。
-  return selection && isHighspeedProviderId(selection.providerId) ? undefined : selection;
+  return selection && isRemovedHighspeedProviderId(selection.providerId) ? undefined : selection;
 }
 
 function persistedModelSelectionOfMessage(message: MessageWithParts): ModelSelection | undefined {
@@ -97,7 +105,8 @@ function resolveForkModelSelection(
 ): ModelSelection | undefined {
   // 加速 Provider 不能成为 child 的常驻 Selection（理由见 modelSelectionFromMessage），
   // 调用方显式传入时同样跳过，回落历史普通选型 / runtime 常驻 Selection。
-  if (explicit && !isHighspeedProviderId(explicit.providerId)) return cloneModelSelection(explicit);
+  if (explicit && !isRemovedHighspeedProviderId(explicit.providerId))
+    return cloneModelSelection(explicit);
   const historical = [...messages].reverse().map(modelSelectionFromMessage).find(Boolean);
   const runtimeSelection = runtime.getSessionModelSelection();
   const identity = historical ?? runtimeSelection;

@@ -317,7 +317,6 @@ export * from "./skill-scan-policy.js";
 export * from "./browser-use/index.js";
 
 export * from "./coding-plan-reset.js";
-export * from "./highspeed.js";
 export {
   parseSubagentMarkdownSelection,
   formatSubagentMarkdownModel,

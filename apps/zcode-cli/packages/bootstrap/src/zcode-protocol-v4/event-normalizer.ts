@@ -1,6 +1,5 @@
 import type {
   BackgroundResultOriginMeta,
-  HighspeedMessageMetadata,
   ModelStreamingPayload,
   SessionEvent,
   SyntheticUserMessageSource,
@@ -82,7 +81,7 @@ export interface CanonicalUserIntentFact extends CanonicalConversationFactBase {
   sourceCommandId?: string;
   foregroundExecutionId?: string;
   clientId?: string;
-  highspeed?: HighspeedMessageMetadata;
+  // fork（F4.2）：原 highspeed 字段（加速元数据进 canonical 投影）随加速卡删除。
   attachments?: readonly CanonicalTurnAttachment[];
   queueItemId?: string;
   admissionSeq?: number;
@@ -266,7 +265,6 @@ function normalizeTurnStarted(
       ? { foregroundExecutionId: payload.foregroundExecutionId }
       : {}),
     ...(payload.intent?.clientId ? { clientId: payload.intent.clientId } : {}),
-    ...(payload.intent?.highspeed ? { highspeed: payload.intent.highspeed } : {}),
     ...(payload.intent?.queueItemId ? { queueItemId: payload.intent.queueItemId } : {}),
     ...(payload.intent?.admissionSeq !== undefined
       ? { admissionSeq: payload.intent.admissionSeq }

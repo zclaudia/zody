@@ -1885,7 +1885,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
           </div>
 
           {/* fork（F4.1b）：侧栏左下活动槽位（SidebarBottomActivity = 营销 banner +
-              加速卡分享卡 GlobalNoticeSurface）摘除；组件文件留给 F4.2/F4.4 删除。 */}
+              全局通知 GlobalNoticeSurface）摘除；组件文件留给 F4.4 删除（F4.2 已删加速卡分享卡）。 */}
           <WorkspaceSidebarFooter
             className="pr-3"
             theme={theme}

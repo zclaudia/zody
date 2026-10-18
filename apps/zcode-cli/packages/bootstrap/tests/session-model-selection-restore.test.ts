@@ -8,7 +8,12 @@ import {
   type SessionId,
   type SessionStorePort,
 } from "@zcode/contracts";
-import { HIGHSPEED_PROVIDER_IDS } from "@zcode/shared";
+// fork（F4.2）：HIGHSPEED_PROVIDER_IDS 常量已随加速卡删除；测试改用存量身份字面量
+// 表达「历史 child 会话 entry 中遗留的加速选型」，兼容读取行为不变。
+const LEGACY_HIGHSPEED_PROVIDER_IDS = [
+  "account:zai-highspeed-card",
+  "account:bigmodel-highspeed-card",
+] as const;
 import { readSessionModelSelection } from "../src/app/session-store.js";
 
 const SESSION_ID = "sess_restore" as SessionId;
@@ -26,7 +31,7 @@ function storeWithEntryData(data: unknown): Pick<SessionStorePort, "sessionEntri
 
 describe("恢复会话常驻 Selection", () => {
   it("丢弃持久化的加速卡选型，让会话回到未绑定", async () => {
-    for (const providerId of Object.values(HIGHSPEED_PROVIDER_IDS)) {
+    for (const providerId of LEGACY_HIGHSPEED_PROVIDER_IDS) {
       await expect(
         readSessionModelSelection(
           storeWithEntryData({
@@ -62,7 +67,7 @@ describe("恢复会话常驻 Selection", () => {
     await expect(
       readSessionModelSelection(
         storeWithEntryData({
-          providerId: HIGHSPEED_PROVIDER_IDS.bigmodel,
+          providerId: LEGACY_HIGHSPEED_PROVIDER_IDS[1],
           modelId: "GLM-5.3",
           options: { reasoningLevel: 3 },
         }),

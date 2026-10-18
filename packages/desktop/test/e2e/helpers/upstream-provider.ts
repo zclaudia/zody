@@ -66,7 +66,8 @@ function readUpstreamThoughtLevel() {
   if (process.env.E2E_PROVIDER_THOUGHT_LEVEL !== undefined) {
     return process.env.E2E_PROVIDER_THOUGHT_LEVEL.trim();
   }
-  return process.env.E2E_PROVIDER_PRESET?.trim() === "glmhighspeed" ? "" : "high";
+  // fork（F4.2）：原 glmhighspeed preset（空 thought level）随加速卡 E2E 删除，统一默认 high。
+  return "high";
 }
 
 export function getUpstreamApiKey() {
@@ -77,8 +78,8 @@ export function getUpstreamApiKey() {
   const apiKey = process.env.E2E_PROVIDER_API_KEY?.trim();
   if (!apiKey || apiKey === "xxx") {
     // 修复原因：只有 capture 模式会访问真实 上游；采集 fixture 时不能用
-    // placeholder，否则后续 replay 会固化一份失败响应。真实录制可切到 GLM highspeed
-    // preset，但测试 helper 仍复用这组历史 env 名以保持旧 case 兼容。
+    // placeholder，否则后续 replay 会固化一份失败响应。测试 helper 仍复用这组历史
+    // env 名以保持旧 case 兼容（fork 注：原 glmhighspeed 录制 preset 已随 F4.2 删除）。
     throw new Error("E2E_PROVIDER_HTTP_MODE=capture requires E2E_PROVIDER_API_KEY");
   }
   return apiKey;

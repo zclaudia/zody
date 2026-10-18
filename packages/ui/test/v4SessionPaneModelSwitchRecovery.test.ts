@@ -141,16 +141,7 @@ const sessionOpenTelemetryMock = vi.hoisted(() => ({
 }));
 
 const mocks = vi.hoisted(() => ({
-  highspeedCardService: {
-    getSnapshot: vi.fn(async () => ({ card: null, nextDrawAt: null, drawing: false })),
-    prepareTurn: vi.fn(async () => ({
-      kind: "fallback" as const,
-      reason: "draw-miss" as const,
-      nextDrawAt: null,
-    })),
-    healthy: vi.fn(),
-    share: vi.fn(),
-  },
+  // fork（F4.2）：原 highspeedCardService mock 随加速卡全链路删除。
   recoverFromStaleAuthority: vi.fn(),
   layer: {
     acquire: vi.fn((sessionId: string) => {
@@ -247,7 +238,6 @@ vi.mock("@/v4/ConversationDraftSuggestedPromptsContainer.js", () => ({
 vi.mock("@/hooks/useServices.js", () => ({
   useOptionalServices: () => null,
   useServices: () => ({
-    highspeedCardService: mocks.highspeedCardService,
     modelSelectionService: mocks.modelSelectionService,
     zcodeSessionService: mocks.zcodeSessionService,
     zcodeTaskService: mocks.zcodeTaskService,
@@ -1652,96 +1642,8 @@ describe("SessionPane model switch recovery", () => {
     }
   });
 
-  it("Highspeed 降级行按 fallbackReason 区分 Toast 文案；旧数据无原因时按卡过期处理", async () => {
-    // docs/highspeed/highspeed-card-spec.md §2.2：卡过期与加速服务不可用分别提示，且每轮只提示一次。
-    const fallbackAt = Date.now();
-    const highspeedRow = (
-      sourceCommandId: string,
-      fallbackReason: "highspeed_card_expired" | "highspeed_request_failed" | undefined,
-    ): ConversationSnapshot["rows"]["window"][number] => ({
-      rowId: 1,
-      turnId: "turn-1",
-      createdAt: fallbackAt - 1_000,
-      createdAtSeq: 1,
-      kind: "userInput",
-      text: "accelerated prompt",
-      origin: "realUser",
-      sourceCommandId,
-      highspeed: {
-        schemaVersion: 1,
-        cardId: "hsc-1",
-        taskId: "session-1",
-        provider: "builtin:zai-coding-plan",
-        model: "GLM-5.3",
-        issuedAt: fallbackAt - 60_000,
-        expiresAt: fallbackAt + 60_000,
-        fallbackAt,
-        ...(fallbackReason ? { fallbackReason } : {}),
-      },
-    });
-    const renderWithRow = async (
-      row: ConversationSnapshot["rows"]["window"][number],
-    ): Promise<Root> => {
-      const snapshot = makeSnapshot();
-      projectionState.current = {
-        status: "live",
-        snapshot: { ...snapshot, rows: { window: [row], totalCount: 1, firstRowId: 1 } },
-        subscriptionId: "sub-1",
-        lastError: null,
-        optimisticCommands: [],
-        loadingOlder: false,
-      };
-      return renderPane();
-    };
-
-    const failedRoot = await renderWithRow(
-      highspeedRow("command-hs-request-failed", "highspeed_request_failed"),
-    );
-    try {
-      expect(mocks.toast).toHaveBeenCalledTimes(1);
-      expect(mocks.toast).toHaveBeenCalledWith(
-        "加速服务暂不可用，本轮后续内容将使用原模型继续生成",
-      );
-    } finally {
-      await act(async () => {
-        failedRoot.unmount();
-      });
-    }
-
-    mocks.toast.mockClear();
-    const expiredRoot = await renderWithRow(
-      highspeedRow("command-hs-card-expired", "highspeed_card_expired"),
-    );
-    try {
-      expect(mocks.toast).toHaveBeenCalledWith("加速卡已到期，本轮后续内容将使用原模型继续生成");
-    } finally {
-      await act(async () => {
-        expiredRoot.unmount();
-      });
-    }
-
-    mocks.toast.mockClear();
-    const legacyRoot = await renderWithRow(highspeedRow("command-hs-legacy", undefined));
-    try {
-      expect(mocks.toast).toHaveBeenCalledWith("加速卡已到期，本轮后续内容将使用原模型继续生成");
-    } finally {
-      await act(async () => {
-        legacyRoot.unmount();
-      });
-    }
-
-    // 同一 sourceCommandId 重挂载不重复提示（模块级 claim）。
-    mocks.toast.mockClear();
-    const remountRoot = await renderWithRow(highspeedRow("command-hs-legacy", undefined));
-    try {
-      expect(mocks.toast).not.toHaveBeenCalled();
-    } finally {
-      await act(async () => {
-        remountRoot.unmount();
-      });
-    }
-  });
-
+  // fork（F4.2）：原「Highspeed 降级 fallbackReason Toast」测试随加速卡降级提示链删除
+  //（row.highspeed.fallbackAt 投影与 toast claim 已一并移除）。
   it("does not show an automatic fallback toast for a draft prewarm session", async () => {
     seedModelProviderNames();
     prewarmHookMock.binding = {
@@ -1912,92 +1814,8 @@ describe("SessionPane model switch recovery", () => {
     });
   });
 
-  it("加速轮 accepted 后 Recent 记录 Composer 原始选择，不记隐藏加速 Provider（spec §5.1）", async () => {
-    prewarmHookMock.binding = {
-      workspaceKey: "/workspace",
-      sessionId: "session-1",
-      promote: vi.fn(),
-      discard: vi.fn(),
-    };
-    projectionState.current = {
-      status: "live",
-      snapshot: makeSnapshot(),
-      subscriptionId: "sub-1",
-      lastError: null,
-      optimisticCommands: [],
-      loadingOlder: false,
-    };
-    mocks.sendCommand.mockImplementation(async (envelope: CommandEnvelope) =>
-      ackFor(envelope, { status: "accepted" }),
-    );
-    // 抽中卡：execution 携带隐藏加速 Provider 的执行 Selection，会覆盖 payload.modelSelection。
-    mocks.highspeedCardService.prepareTurn.mockResolvedValueOnce({
-      kind: "accelerated",
-      card: {
-        cardId: "card-1",
-        taskId: "session-1",
-        provider: "builtin:zai-coding-plan",
-        model: "GLM-5.3",
-        issuedAt: 1,
-        expiresAt: Date.now() + 60_000,
-      },
-      nextDrawAt: Date.now() + 60_000,
-      execution: {
-        modelSelection: { providerId: "account:zai-highspeed-card", modelId: "GLM-5.3" },
-        requestAuth: { apiKey: "jwt", headers: {} },
-        selectionFallback: {
-          providerId: "account:zai-highspeed-card",
-          rules: [
-            { reason: "highspeed_card_expired", providerErrorCode: "3402" },
-            { reason: "highspeed_request_failed" },
-          ],
-        },
-      },
-    });
-
-    const root = await renderPane();
-    await act(async () => {
-      captured.composerProps?.onSelectModel("alternate-provider", "deepseek-v4-pro", {
-        provider: "primary-provider",
-        model: "deepseek-v4-flash",
-      });
-      await flushMicrotasks();
-    });
-
-    await act(async () => {
-      await captured.composerProps?.onSendText("accelerated turn keeps recent on the original");
-      await flushMicrotasks();
-    });
-
-    // payload 的 Selection 确已被执行材料覆盖为隐藏加速 Provider（证明本轮真的加速）。
-    expect(mocks.sendCommand).toHaveBeenCalledTimes(1);
-    expect(mocks.sendCommand.mock.calls[0]?.[0]).toMatchObject({
-      type: "sendText",
-      payload: {
-        modelSelection: { providerId: "account:zai-highspeed-card", modelId: "GLM-5.3" },
-        mode: "build",
-      },
-    });
-    // Recent 只记发送前 Composer 冻结的原始选择；否则新任务草稿种子解析为空选择器。
-    expect(composerRecentMocks.acceptSubmission).toHaveBeenCalledWith(
-      "/workspace",
-      {
-        modelSelection: {
-          providerId: "alternate-provider",
-          modelId: "deepseek-v4-pro",
-          options: { reasoningLevel: "high" },
-        },
-        mode: "build",
-        planEnabled: false,
-      },
-      undefined,
-    );
-
-    await act(async () => {
-      root.unmount();
-    });
-  });
-
+  // fork（F4.2）：原「加速轮 accepted 后 Recent 记录 Composer 原始选择」测试随加速发送链
+  // 删除；Recent 的「payload 被改写时由调用方传冻结 submission」行为由其他改写场景覆盖。
   it.each(["accepted", "rejected", "failed", "duplicate"] as const)(
     "运行中提交的 %s ACK 只在 accepted 时记住提交瞬间的权限",
     async (status) => {
@@ -2106,7 +1924,8 @@ describe("SessionPane model switch recovery", () => {
       await flushMicrotasks();
     });
 
-    // Highspeed 抽卡依赖真实 taskId，首发先创建空 session，再按统一 sendText admission 发送。
+    // fork（F4.2）：原注释解释加速抽卡需真实 taskId 才先建空 session；现序保留
+    //（createSession → sendText），断言不变。
     expect(mocks.sendCommand).toHaveBeenCalledTimes(3);
     expect(mocks.sendCommand.mock.calls[1]?.[0]).toMatchObject({
       type: "createSession",

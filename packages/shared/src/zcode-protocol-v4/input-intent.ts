@@ -5,7 +5,6 @@ import { botGroupInputSourceSchema } from "../bots.js";
 import { z } from "zod";
 import { timestampSchema } from "./core.js";
 import { attachmentRefSchema } from "./attachment-ref.js";
-import { highspeedMessageMetaSchema } from "../highspeed.js";
 import { modelSelectionSchema } from "../model-selection.js";
 import { submissionModeSchema } from "./submission.js";
 import { sharedContextRefSchema } from "./shared-context-ref.js";
@@ -84,7 +83,15 @@ export const conversationInputIntentSchema = z
     steer: conversationInputSteerSchema,
     dispatch: conversationInputDispatchSchema,
     admittedAt: timestampSchema,
-    highspeed: highspeedMessageMetaSchema.optional(),
+    /**
+     * fork（F4.2）：原 highspeed 字段（highspeedMessageMetaSchema，加速卡元数据）随加速卡
+     * 全链路删除。本 schema 是 `.strict()`：直接删键会让存量持久化 intent（transcript
+     * metadata.conversationInputIntent、session store 队列项）在 hydration 的 safeParse 中
+     * 整体失败、丢掉整个 canonical intent（不只是加速字段）。这里保留一个无约束的废弃
+     * 占位（z.unknown），让旧数据继续解析成功、字段值被忽略（兼容读取，同步友好原则）；
+     * 新写入方已不存在。
+     */
+    highspeed: z.unknown().optional(),
     provenance: z
       .object({
         sourceCommandId: z.string().min(1),

@@ -96,18 +96,8 @@ export interface V4CommandCoreHost {
   /** guide eligibility：只阻止已有 ordinary queue；已有 guide 仍允许继续按 FIFO admission。 */
   hasQueuedDelivery?(sessionId: string, delivery: "guide" | "queue"): boolean;
   getQueueLength?(sessionId: string): number;
-  /** Highspeed queue 的执行材料含凭据，只允许驻留内存，禁止进入 queue event/snapshot。 */
-  retainQueuedTurnExecution?(
-    sessionId: string,
-    sourceCommandId: string,
-    execution: V4QueuedTurnExecution,
-  ): void;
-  readQueuedTurnExecution?(
-    sessionId: string,
-    sourceCommandId: string,
-  ): V4QueuedTurnExecution | undefined;
-  deleteQueuedTurnExecution?(sessionId: string, sourceCommandId: string): void;
-  clearQueuedTurnExecutions?(sessionId: string): void;
+  // fork（F4.2）：原 retain/read/delete/clearQueuedTurnExecutions（加速队列凭据的 CLI 内存
+  // 暂存能力）随加速卡全链路删除。
   /** timeline/child 这类无 user message 的成功副作用持久化查重事实。 */
   recordPersistentCommandFact?(
     sessionId: string,
@@ -206,24 +196,7 @@ export interface V4CommandCoreHost {
       feedback: "like" | "dislike" | null;
     },
   ): Promise<void>;
-  /** Highspeed 完成态统计先更新 user transcript metadata，再发布同一 entity 的投影事件。 */
-  setHighspeedMetrics?(
-    sessionId: string,
-    input: {
-      entityId: string;
-      messageId: string;
-      metrics: {
-        regularTps: number;
-        outputTokens: number;
-        durationMs: number;
-        highspeedTps: number;
-        savedDurationMs: number;
-        modelDurationMs?: number;
-        toolDurationMs?: number;
-        otherDurationMs?: number;
-      };
-    },
-  ): Promise<void>;
+  // fork（F4.2）：setHighspeedMetrics（加速完成态统计持久化）随加速卡全链路删除。
   /**
    * 交互应答登记表（v4 原生基础设施，非过渡钩子）：interaction-broker 发起
    * 反向请求（permission/AskUserQuestion）时注册 deferred，resolveInteraction 命令

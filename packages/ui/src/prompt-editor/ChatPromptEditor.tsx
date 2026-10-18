@@ -61,7 +61,6 @@ export function ChatPromptEditor({
   isDraggingOver = false,
   dragAttachmentHint,
   topContent,
-  inputLeadingContent,
   leadingActions,
   attachmentAction,
   betweenCancelAndSubmitAction,
@@ -114,8 +113,7 @@ export function ChatPromptEditor({
   isDraggingOver?: boolean;
   dragAttachmentHint?: string;
   topContent?: ReactNode;
-  /** 与输入正文同一行的前置内容；Highspeed 使用紧凑 Fast 标签。 */
-  inputLeadingContent?: ReactNode;
+  // fork（F4.2）：原 inputLeadingContent prop 仅服务加速卡的紧凑 Fast 标签，随全链路删除。
   leadingActions?: ReactNode;
   attachmentAction?: {
     label: string;
@@ -394,14 +392,7 @@ export function ChatPromptEditor({
         ) : null}
 
         {topContent}
-        {inputLeadingContent ? (
-          <div className="flex min-w-0 items-start gap-2">
-            <div className="shrink-0">{inputLeadingContent}</div>
-            <div className="min-w-0 flex-1">{editorNode}</div>
-          </div>
-        ) : (
-          editorNode
-        )}
+        {editorNode}
         <div ref={toolbarRef} className="group/toolbar flex items-end gap-3">
           <div className="flex min-w-0 flex-1 items-center" data-composer-leading-actions>
             <div className="flex shrink-0 items-center gap-1" data-composer-leading-content>

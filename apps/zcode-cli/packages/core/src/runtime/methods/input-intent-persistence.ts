@@ -49,7 +49,7 @@ export function buildPersistedConversationInputIntent(
     steer,
     dispatch: { state: dispatchState },
     admittedAt: intent.admittedAt,
-    ...(intent.highspeed ? { highspeed: intent.highspeed } : {}),
+    // fork（F4.2）：原 intent.highspeed 持久化透传随加速卡删除。
     ...(intent.provenance ? { provenance: intent.provenance } : {}),
     ...(intent.source ? { source: intent.source } : {}),
   };

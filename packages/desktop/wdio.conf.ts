@@ -64,10 +64,6 @@ import {
   clearCodingPlanUpgradeMockEnv,
   shouldPrepareCodingPlanTeamMock,
 } from "./test/e2e/helpers/coding-plan-mock-env.js";
-import {
-  HIGHSPEED_MOCK_SCENARIO_ENV,
-  resolveHighspeedE2EMockScenario,
-} from "./test/e2e/helpers/highspeed-mock-env.js";
 import { createE2ERendererBridgeRootHooks } from "./test/e2e/helpers/e2e-renderer-bridge-root-hook.js";
 import { installHookTrustFixture } from "./test/e2e/helpers/hook-trust-fixture.js";
 import { resolveUpstreamModels } from "./test/e2e/helpers/upstream-recorded-models.js";
@@ -375,9 +371,8 @@ const E2E_USER_PROFILE = {
   id: "zcode-e2e-user",
   username: "zcode-e2e-user",
 };
-const GLM_HIGHSPEED_E2E_PROVIDER_ID = "e2e-glmhighspeed";
-const GLM_HIGHSPEED_E2E_MODEL = "glm-5.1-highspeed";
-const GLM_HIGHSPEED_E2E_BASE_URL = "https://open.bigmodel.cn/api";
+// fork（F4.2）：原 glmhighspeed E2E provider preset（GLM-5.1-Highspeed 模型人工验收链路）
+// 随加速卡全链路删除；模型名 GLM-5.1-Highspeed 本身仍存在于官方模型目录，与本桩无关。
 const BIGMODEL_GLM53_E2E_PROVIDER_ID = "e2e-bigmodel-glm53";
 const BIGMODEL_GLM53_E2E_MODEL = "GLM-5.3";
 const BIGMODEL_GLM53_E2E_BASE_URL = "https://open.bigmodel.cn/api";
@@ -394,21 +389,6 @@ const E2E_PROVIDER_PRESETS = {
     providerId: E2E_PROVIDER_ID,
     providerName: "Upstream E2E",
     thoughtLevel: "high",
-  },
-  glmhighspeed: {
-    apiKeyEnvNames: [
-      "GLM_HIGHSPEED_E2E_API_KEY",
-      "BIGMODEL_API_KEY",
-      "ZHIPUAI_API_KEY",
-      "E2E_PROVIDER_API_KEY",
-    ],
-    baseUrl: GLM_HIGHSPEED_E2E_BASE_URL,
-    expectedHost: "open.bigmodel.cn",
-    expectedProtocol: "https",
-    model: GLM_HIGHSPEED_E2E_MODEL,
-    providerId: GLM_HIGHSPEED_E2E_PROVIDER_ID,
-    providerName: "GLM Highspeed E2E",
-    thoughtLevel: "",
   },
   bigmodel53: {
     apiKeyEnvNames: ["BIGMODEL_GLM53_E2E_API_KEY"],
@@ -828,7 +808,6 @@ function readE2EProviderPresetName(): E2EProviderPresetName {
   }
   if (
     configured === "env" ||
-    configured === "glmhighspeed" ||
     configured === "bigmodel53" ||
     configured === "stagingmodel"
   ) {
@@ -836,7 +815,7 @@ function readE2EProviderPresetName(): E2EProviderPresetName {
   }
   throw new Error(
     `Unsupported E2E_PROVIDER_PRESET=${configured}. ` +
-      "Expected env, glmhighspeed, bigmodel53, or stagingmodel.",
+      "Expected env, bigmodel53, or stagingmodel.",
   );
 }
 
@@ -2085,12 +2064,6 @@ async function stopCodingPlanTeamMock() {
   clearCodingPlanTeamMockEnv(process.env, ownedBaseUrl);
 }
 
-const HIGHSPEED_DATA_PLANE_FIXTURE_PATHS = [
-  "test/e2e/fixtures/upstream/conversation-session/conversation-session-highspeed-card.json",
-  "test/e2e/fixtures/upstream/conversation-session/conversation-session-highspeed-card-draw-timeout.json",
-  "test/e2e/fixtures/upstream/conversation-session/conversation-session-highspeed-card-draw-miss.json",
-];
-
 interface DataPlaneTurnFixture {
   match: { lastUserMessageIncludes: string[] };
   response: { body: string };
@@ -2172,17 +2145,8 @@ async function startCodingPlanDataPlaneProxy(specs: readonly string[]) {
         "test/e2e/fixtures/upstream/conversation-session/conversation-session-start-plan-independent.json",
       )
     : null;
-  // Highspeed 抽卡 case 的每轮请求都走 Team Coding Plan 内建 HTTPS Endpoint（spec §7）；
-  // 静态 body 无法区分轮次，多轮 case 会在首轮就误判完成，必须按轮次标记回放。
-  const highspeedFixtures = specs.some((spec) =>
-    spec.includes("conversation-session-highspeed-card"),
-  )
-    ? (
-        await Promise.all(
-          HIGHSPEED_DATA_PLANE_FIXTURE_PATHS.map((path) => readDataPlaneTurnFixtures(path)),
-        )
-      ).flat()
-    : null;
+  // fork（F4.2）：原 highspeed 抽卡 case 的按轮次回放分支（HIGHSPEED_DATA_PLANE_FIXTURE_PATHS）
+  // 随加速卡 E2E 删除；数据面代理的其余 fixture（model-provider/start-plan）保留。
   codingPlanDataPlaneProxy = await startE2ENetworkCaptureProxy({
     artifactPath: CODING_PLAN_DATA_PLANE_ARTIFACT_PATH,
     caDir: E2E_CODING_PLAN_DATA_PLANE_CA_DIR,
@@ -2209,12 +2173,7 @@ async function startCodingPlanDataPlaneProxy(specs: readonly string[]) {
           ]
         : []),
       {
-        body: highspeedFixtures
-          ? createDataPlaneTurnResponder(highspeedFixtures, {
-              fallbackBody: modelResponseBody,
-              title: { id: "highspeed-title", text: '{"title":"Highspeed draw"}' },
-            })
-          : modelResponseBody,
+        body: modelResponseBody,
         headers: { "content-type": "text/event-stream; charset=utf-8" },
         host: "open.bigmodel.cn",
         method: "POST",
@@ -2428,16 +2387,8 @@ async function materializeOffPeakMockZCodeBuiltinProviderConfig(port: number): P
   );
 }
 
-// Highspeed E2E 使用 Host 内置的确定性 transport；按 spec 注入场景，避免普通会话
-// 在默认测试套件里意外抽到卡。该变量必须在 Electron 启动前设置，Host 才能装配 mock。
-function configureHighspeedE2EMock(specs: string[] = []): void {
-  const scenario = resolveHighspeedE2EMockScenario(specs);
-  if (scenario) {
-    process.env[HIGHSPEED_MOCK_SCENARIO_ENV] = scenario;
-  } else {
-    delete process.env[HIGHSPEED_MOCK_SCENARIO_ENV];
-  }
-}
+// fork（F4.2）：configureHighspeedE2EMock（按 spec 注入 ZCODE_HIGHSPEED_MOCK_SCENARIO，
+// 驱动 Host 内置加速 mock transport）随加速卡全链路删除；services 装配段已一并移除。
 
 async function stopCodingPlanUpgradeE2EMock() {
   const ownedBaseUrl =
@@ -4729,7 +4680,6 @@ export const config: WebdriverIO.Config = {
     applyUpstreamE2EHttpModeForWorker(specs);
     applyAskUserQuestionClockScaleForWorker(specs);
     applyE2EProviderEnv(specs);
-    configureHighspeedE2EMock(specs);
     currentE2EBeforeSessionError = null;
     applyE2EWorkerModelRetryEnv(process.env, specs, configuredModelRetryMaxRetries);
     currentE2EChromiumUserDataDir = resolveE2EWorkerChromiumProfileDir(

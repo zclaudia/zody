@@ -263,7 +263,7 @@ export type SendInputOptions = SubmitPromptOptions & {
   delivery?: InputDelivery;
   /** sendText 的产品 guide/queue 意图；是否 busy 仍由 Core admission 判断。 */
   queueDelivery?: "guide" | "queue";
-  /** Highspeed 等必须延后到独立 turn 的输入，即使 admission 时已转为空闲也保持排队。 */
+  /** 必须延后到独立 turn 的输入（fork 注：原为加速队列设计，F4.2 删加速卡后机制保留）。 */
   requireQueue?: boolean;
   requireIdle?: boolean;
   expectedTurnId?: TurnId;

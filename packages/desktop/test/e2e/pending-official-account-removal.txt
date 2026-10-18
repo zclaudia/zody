@@ -8,12 +8,7 @@
 # 本清单只做标记，不删 spec；各删除任务删除 spec 时一并清理其独占 helper/fixture，
 # 并从本清单移除对应条目。
 #
-# 共 43 个 spec + 文末 2 条边界备注。
-
-## F4.2 删除加速卡 highspeed（spec 名对话题即加速卡）
-conversation-session/conversation-session-highspeed-card.test.ts
-conversation-session/conversation-session-highspeed-card-draw-miss.test.ts
-conversation-session/conversation-session-highspeed-card-draw-timeout.test.ts
+# 共 40 个 spec + 文末 2 条边界备注。（fork（F4.2）：F4.2 节 3 个加速卡 spec 已删除）
 
 ## F4.3 删除闲时任务 off-peak（主题即闲时创建/调度/门槛）
 off-peak-automations-home-layout.test.ts

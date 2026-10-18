@@ -3,7 +3,6 @@ import {
   browserGlobalNoticeStore,
   type GlobalNoticeStore,
 } from "@/global-notice/globalNoticeStore.js";
-import { HighspeedShareNoticeCard } from "@/highspeed/HighspeedShareNoticeCard.js";
 
 const subscribeNoop = () => () => undefined;
 const getNullSnapshot = () => null;
@@ -30,15 +29,8 @@ export function GlobalNoticeSurface({
 
   if (!notice) return null;
 
-  if (notice.type === "highspeed-share" && notice.schemaVersion === 1) {
-    return (
-      <HighspeedShareNoticeCard
-        notice={notice}
-        onDismiss={() => store?.dismiss(notice.noticeId)}
-      />
-    );
-  }
-
-  // 未注册的通知类型由 surface 安全忽略，避免未知 payload 破坏全局侧栏。
+  // fork（F4.2）：加速卡分享卡分支（notice.type === "highspeed-share"）已随加速卡全链路
+  // 删除；骨架保留供营销 banner（F4.4 前仍在）等共用。未注册的通知类型由 surface 安全
+  // 忽略，避免未知 payload 破坏全局侧栏。
   return null;
 }

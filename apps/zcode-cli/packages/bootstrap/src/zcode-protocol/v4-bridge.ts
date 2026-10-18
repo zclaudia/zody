@@ -39,10 +39,7 @@ import {
   mergeColdConversationEvents,
 } from "../zcode-protocol-v4/cold-event-merge.js";
 import { lookupGlobalCreateSessionCommand } from "../zcode-protocol-v4/create-session-command-fact.js";
-import type {
-  V4CommandCoreHost,
-  V4QueuedTurnExecution,
-} from "../zcode-protocol-v4/commands/types.js";
+import type { V4CommandCoreHost } from "../zcode-protocol-v4/commands/types.js";
 import type {
   ConversationRowTargetResolution,
   SessionUsageSeed,
@@ -52,10 +49,7 @@ import { queueItemIdForCommand } from "../zcode-protocol-v4/command-inbox.js";
 import { resolveStableForkTargetFromTranscript } from "../zcode-protocol-v4/stable-fork-target.js";
 import { shouldAutoDrainV4QueueHead } from "../zcode-protocol-v4/queue-auto-drain.js";
 import { persistAssistantFeedback } from "../zcode-protocol-v4/assistant-feedback-persistence.js";
-import {
-  persistHighspeedMetrics,
-  persistHighspeedTiming,
-} from "../zcode-protocol-v4/highspeed-metrics-persistence.js";
+// fork（F4.2）：highspeed-metrics-persistence（加速完成态统计/耗时落 transcript）随加速卡删除。
 import {
   TASK_LIST_SESSION_TYPES,
   isTaskListSessionType,
@@ -257,7 +251,7 @@ interface InputCommandForAdmission {
   requestedDelivery?: ConversationInputIntent["delivery"]["requested"];
   admittedDelivery?: ConversationInputIntent["delivery"]["admitted"];
   fallbackReasonCode?: string;
-  highspeed?: ConversationInputIntent["highspeed"];
+  // fork（F4.2）：原 highspeed 字段透传随加速卡删除；存量持久化数据由 schema strip 兼容。
   provenance?: ConversationInputIntent["provenance"];
 }
 
@@ -329,7 +323,6 @@ export function resolveInputCommandForAdmission(
       text: string;
       attachments?: AttachmentRef[];
       context_refs?: ConversationInputIntent["sharedContextRefs"];
-      highspeedMeta?: ConversationInputIntent["highspeed"];
       inputOrigin?: "desktop" | "mobile";
       conversationQuotes?: import("@zcode/contracts").TurnInputIntentMetadata["conversationQuotes"];
       botGroupSource?: ConversationInputIntent["botGroupSource"];
@@ -339,7 +332,6 @@ export function resolveInputCommandForAdmission(
       text: payload.text,
       attachments: payload.attachments ?? [],
       ...(payload.context_refs ? { sharedContextRefs: payload.context_refs } : {}),
-      ...(payload.highspeedMeta ? { highspeed: payload.highspeedMeta } : {}),
       ...(payload.inputOrigin ? { inputOrigin: payload.inputOrigin } : {}),
       ...(payload.conversationQuotes ? { conversationQuotes: payload.conversationQuotes } : {}),
       ...(payload.botGroupSource ? { botGroupSource: payload.botGroupSource } : {}),
@@ -441,7 +433,6 @@ function buildForkInitialInput(
       : { state: "notRequested" },
     dispatch: { state: "admitted" },
     admittedAt: admission.admittedAt,
-    ...(input.highspeed ? { highspeed: input.highspeed } : {}),
     ...(input.provenance ? { provenance: input.provenance } : {}),
   });
   return {
@@ -574,85 +565,8 @@ export async function registerCommittedForkBestEffort(
   }
 }
 
-/** turn 终态耗时持久化所需的窄化上下文；结构化类型保证与完整 server context 兼容。 */
-export interface HighspeedTurnTerminalPersistenceContext {
-  sessions: Map<
-    string,
-    { eventStore: SessionEventStorePort; traceContext: { traceId: string | number } }
-  >;
-  deps: { sessionStore?: SessionStorePort };
-  v4Gateway?: { ingest(sessionId: string, event: SessionEvent): unknown };
-  logger?: { warn(message: string, data?: Record<string, unknown>): void };
-}
-
-/**
- * turn 终态钩子：把投影累计的真实耗时拆分落到 transcript 的 metadata.highspeed。
- * Bug 根因（2026-08-31 审计 #1）：该钩子由 gateway 对所有 TurnComplete/TurnError 触发，
- * 且投影对普通 turn 也写入 modelDurationMs/toolDurationMs，原“双 undefined 才返回”的
- * 守卫永不生效——每个普通 turn 终态都会先做一次全量 sessionStore.messages() 扫描，
- * 最后才因 metadata.highspeed 缺失返回，长会话热路径白白承担 O(N) I/O。
- * userInput row 自带持久化的 highspeed 身份，进入扫描前先按它短路。
- */
-export function persistHighspeedTimingOnTurnTerminal(
-  context: HighspeedTurnTerminalPersistenceContext,
-  sessionId: string,
-  event: SessionEvent,
-  snapshot: ConversationSnapshot,
-): void {
-  const record = context.sessions.get(sessionId);
-  const sessionStore = context.deps.sessionStore;
-  const payload = event.payload as { inputId?: unknown; duration?: unknown };
-  const inputId = typeof payload.inputId === "string" ? payload.inputId : undefined;
-  const header = snapshot.rows.window
-    .filter(
-      (row): row is Extract<(typeof snapshot.rows.window)[number], { kind: "turnHeader" }> =>
-        row.kind === "turnHeader" &&
-        (inputId === undefined
-          ? row.turnId === String(event.turnId)
-          : row.sourceCommandId === inputId),
-    )
-    .at(-1);
-  if (!record || !sessionStore || !header?.sourceCommandId) return;
-  const user = snapshot.rows.window.find(
-    (row) => row.kind === "userInput" && row.sourceCommandId === header.sourceCommandId,
-  );
-  if (!user || user.kind !== "userInput") return;
-  if (!user.highspeed) return;
-  if (header.modelDurationMs === undefined && header.toolDurationMs === undefined) {
-    return;
-  }
-  void persistHighspeedTiming({
-    sessionStore,
-    eventStore: record.eventStore,
-    sessionId,
-    sourceCommandId: header.sourceCommandId,
-    timing: {
-      modelDurationMs: header.modelDurationMs ?? 0,
-      toolDurationMs: header.toolDurationMs ?? 0,
-      otherDurationMs: header.otherDurationMs ?? 0,
-    },
-    ...(header.outputTokens !== undefined ? { outputTokens: header.outputTokens } : {}),
-    ...(header.activeMs !== undefined ? { durationMs: header.activeMs } : {}),
-    // fallbackAt 只存在于 live 投影：终态一并写入 transcript，HighspeedMetricsUpdated 与 cold
-    // hydration 才不会丢掉它（spec §5）。
-    ...(user.highspeed.fallbackAt !== undefined ? { fallbackAt: user.highspeed.fallbackAt } : {}),
-    ...(user.highspeed.fallbackReason !== undefined
-      ? { fallbackReason: user.highspeed.fallbackReason }
-      : {}),
-    traceId: String(record.traceContext.traceId),
-    onPersistedEvent: (persisted) => context.v4Gateway?.ingest(sessionId, persisted),
-    onLiveProjectionError: (error) =>
-      context.logger?.warn("v4 highspeed timing live projection failed", {
-        error: error instanceof Error ? error.message : String(error),
-        sessionId,
-      }),
-  }).catch((error) => {
-    context.logger?.warn("v4 highspeed timing persistence failed", {
-      error: error instanceof Error ? error.message : String(error),
-      sessionId,
-    });
-  });
-}
+// fork（F4.2）：persistHighspeedTimingOnTurnTerminal（turn 终态把加速真实耗时落
+// transcript metadata.highspeed）随加速卡全链路删除；存量 metadata.highspeed 不再读取。
 
 export function createConversationV4Gateway(
   context: ZCodeProtocolAgentServerContext,
@@ -682,9 +596,7 @@ export function createConversationV4Gateway(
   });
   let nativeExecutor: V4CommandExecutor;
   const autoDrainRetryTimers = new Map<string, ReturnType<typeof setTimeout>>();
-  // Highspeed 执行材料含临时凭据：只按 session/sourceCommandId 驻留内存，绝不进入
-  // TurnSteerQueued、snapshot 或 transcript。CLI 重启后缺失时队列提升自动走原模型。
-  const queuedTurnExecutions = new Map<string, Map<string, V4QueuedTurnExecution>>();
+  // fork（F4.2）：queuedTurnExecutions（加速执行材料的 CLI 内存暂存）随加速卡全链路删除。
   const autoDrainV4QueueIfReady = async (record: ZCodeProtocolSessionRecord): Promise<void> => {
     const head = context.v4Gateway?.getQueueHead(record.app.sessionId);
     if (!head) {
@@ -795,21 +707,6 @@ export function createConversationV4Gateway(
     hasQueuedDelivery: (sessionId, delivery) =>
       context.v4Gateway?.hasQueuedDelivery(sessionId, delivery) ?? false,
     getQueueLength: (sessionId) => context.v4Gateway?.getQueueLength(sessionId) ?? 0,
-    retainQueuedTurnExecution: (sessionId, sourceCommandId, execution) => {
-      const sessionExecutions = queuedTurnExecutions.get(sessionId) ?? new Map();
-      sessionExecutions.set(sourceCommandId, execution);
-      queuedTurnExecutions.set(sessionId, sessionExecutions);
-    },
-    readQueuedTurnExecution: (sessionId, sourceCommandId) =>
-      queuedTurnExecutions.get(sessionId)?.get(sourceCommandId),
-    deleteQueuedTurnExecution: (sessionId, sourceCommandId) => {
-      const sessionExecutions = queuedTurnExecutions.get(sessionId);
-      sessionExecutions?.delete(sourceCommandId);
-      if (sessionExecutions?.size === 0) queuedTurnExecutions.delete(sessionId);
-    },
-    clearQueuedTurnExecutions: (sessionId) => {
-      queuedTurnExecutions.delete(sessionId);
-    },
     waitForProjectionEventCommit: (sessionId, eventId, options) => {
       const gateway = context.v4Gateway;
       if (!gateway) {
@@ -886,7 +783,6 @@ export function createConversationV4Gateway(
             : { state: "notRequested" },
         dispatch: { state: "admitted" },
         admittedAt: admission.admittedAt,
-        ...(input.highspeed ? { highspeed: input.highspeed } : {}),
         ...(input.provenance ? { provenance: input.provenance } : {}),
       });
       await context.deps.sessionStore.saveSessionInput({
@@ -1172,26 +1068,7 @@ export function createConversationV4Gateway(
           }),
       });
     },
-    setHighspeedMetrics: async (sessionId, input) => {
-      const record = context.sessions.get(sessionId);
-      const sessionStore = context.deps.sessionStore;
-      if (!record || !sessionStore) throw new Error("proto.sessionNotFound");
-      await persistHighspeedMetrics({
-        sessionStore,
-        eventStore: record.eventStore,
-        sessionId,
-        messageId: input.messageId,
-        entityId: input.entityId,
-        metrics: input.metrics,
-        traceId: String(record.traceContext.traceId),
-        onPersistedEvent: (persisted) => context.v4Gateway?.ingest(sessionId, persisted),
-        onLiveProjectionError: (error) =>
-          context.logger?.warn("v4 highspeed metrics live projection failed", {
-            error: error instanceof Error ? error.message : String(error),
-            sessionId,
-          }),
-      });
-    },
+    // fork（F4.2）：setHighspeedMetrics 宿主实现随加速卡全链路删除。
     // ── 过渡钩子（死期 = M5 波次 2）──────────────────────────────
     ensureModelReady: (record) =>
       ensureSessionModelAvailableForNextTurn(context, record as ZCodeProtocolSessionRecord),
@@ -1225,7 +1102,6 @@ export function createConversationV4Gateway(
       // session.removed 推给 sessions-index 订阅者；先 delete 再 dispose 时 workspaceId
       // 恒为 null，删除会话后侧栏列表项永不消失（e2e conversation-session-v4-sidebar 抓出）。
       context.v4Gateway?.disposeSession(sessionId);
-      queuedTurnExecutions.delete(sessionId);
       context.sessions.delete(sessionId);
     },
     // createSession 的执行面：record 建立/事件接线/catalog 同步/失败自清理全在旧
@@ -1595,9 +1471,6 @@ export function createConversationV4Gateway(
             sessionId,
           });
         });
-    },
-    onHighspeedTurnTerminal: (sessionId, event, snapshot) => {
-      persistHighspeedTimingOnTurnTerminal(context, sessionId, event, snapshot);
     },
     // Gateway 的单一 READY promise 负责并发与水位；binder 只恢复 runtime 并返回 M0/M1。
     resumePersistedSession: async (
