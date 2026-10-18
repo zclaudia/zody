@@ -768,3 +768,14 @@ packages/server/test/stdioDeviceMid.test.ts
 # 唯一消费者为已删除账号/端点装配的孤儿文件
 packages/ui/src/lib/rendererZCodeEndpoint.ts
 packages/ui/src/hooks/useStableAccountAccess.ts
+
+# F6.2（插件市场仅 GitHub 源与本地 seed，2026-10-19）：
+# 官方市场改为随包 seed 的本地 file 源；删除 10 分钟 CDN 自动刷新链路及其测试，
+# 同时删除依赖官方 CDN 的 E2E（真实官方 CDN smoke 与自动刷新两个用例）。
+packages/ui/src/settings/officialMarketplaceAutoRefresh.ts
+packages/ui/test/officialMarketplaceAutoRefresh.test.ts
+packages/desktop/test/e2e/plugins/manual-review/pending/plugin-store-auto-refresh-on-enter.test.ts
+packages/desktop/test/e2e/plugins/manual-review/pending/plugin-store-auto-refresh-throttled.test.ts
+packages/desktop/test/e2e/plugins/manual-review/pending/plugin-cdn-zip-official-cdn-smoke.test.ts
+packages/desktop/test/e2e/fixtures/cases/plugins/plugin-cdn-zip-official-cdn-smoke.json
+packages/desktop/test/e2e/fixtures/upstream/plugin-management/plugin-cdn-zip-official-cdn-smoke.json

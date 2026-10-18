@@ -92,7 +92,6 @@ import {
 } from "./test/e2e/helpers/model-context-budget-config-mock-server.js";
 // fork（F4.3）：client-scenes-mock-server（off-peak 自动化首页布局 spec 专属 fixture）随闲时任务全链路删除。
 import {
-  resolvePluginCdnZipMarketplaceLastUpdated,
   seedPluginCdnZipMarketplaceFixture,
   shouldUsePluginCdnZipMarketplaceFixture,
   startPluginCdnZipFixtureServer,
@@ -1784,7 +1783,6 @@ function seedE2EPluginCdnZipMarketplace(specs: string[] = []) {
   seedPluginCdnZipMarketplaceFixture({
     e2eHomeDir: E2E_HOME_DIR,
     server: pluginCdnZipFixtureServer,
-    lastUpdated: resolvePluginCdnZipMarketplaceLastUpdated(specs),
   });
 }
 

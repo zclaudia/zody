@@ -55,9 +55,8 @@ import type {
 
 export {
   addMarketplace,
-  applyClaudePluginIcons,
   describeMarketplacePlugin,
-  enrichCachedClaudeMarketplaceIcons,
+  ensureBundledOfficialMarketplaceRecordSync,
   ensureDefaultPluginMarketplaces,
   ensureMarketplaceManifestAvailable,
   getPluginDataDir,
@@ -67,7 +66,6 @@ export {
   loadMarketplaceManifestSync,
   normalizeAuthorValue,
   parseEntryStoreListing,
-  parsePluginIconSources,
   parseMarketplaceSourceInput,
   readPluginSourceIdentityPin,
   readPluginSourceSha,
@@ -89,10 +87,7 @@ export {
   type PluginMarketplaceManifest,
 } from "./marketplace.js";
 
-export {
-  writeBundledOfficialMarketplacePartitionSync,
-  writeCdnOfficialMarketplacePartitionSync,
-} from "./official-marketplace.js";
+export { writeBundledOfficialMarketplacePartitionSync } from "./official-marketplace.js";
 
 export { getPluginSourceDiagnosticCode } from "./source-errors.js";
 
