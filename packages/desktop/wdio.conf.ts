@@ -2635,9 +2635,10 @@ This child must fail before sending a provider request when the Team scope is un
 }
 
 async function seedUpstreamE2EModelConfig(specs: string[] = []) {
-  if (isOAuthCredentialRecoverySpec(specs) || usesProviderReadinessColdStartFixture(specs)) {
-    // Bugfix: OAuth 凭据恢复及 provider-readiness 冷启动 fixture 必须保持
-    // 无可用本地模型配置，避免默认 上游 回放 provider 绕过登录/执行门禁。
+  if (usesProviderReadinessColdStartFixture(specs)) {
+    // Bugfix: provider-readiness 冷启动 fixture 必须保持无可用本地模型配置，
+    // 避免默认 上游 回放 provider 绕过登录/执行门禁。
+    // fork（F4.7）：OAuth 凭据恢复 spec 及其 fixture 已删除，条件同步收窄。
     return;
   }
 
