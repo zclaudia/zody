@@ -9,7 +9,6 @@ import { BUILTIN_MODEL_PROVIDER_IDS } from "@zcode/shared";
 
 
 export type CodingPlanUpgradeMockScenario =
-  | "manual-claim-experience"
   | "personal-sold-out"
   | "personal-system-busy"
   | "webview-refresh-provider";
@@ -36,10 +35,6 @@ interface CodingPlanUpgradeMockState {
   inventoryMode: "hold" | "fail" | "ready";
   inventoryWaiters: Array<() => void>;
   clientConfigPayload: CodingPlanClientConfigFixture;
-  manualClaimBucketReady: boolean;
-  manualClaimCompleted: boolean;
-  manualClaimShouldFail: boolean;
-  startPlanExpired: boolean;
   purchaseCompleted: boolean;
   scenario: CodingPlanUpgradeMockScenario;
 }
@@ -195,123 +190,7 @@ async function handleRequest(
     return;
   }
 
-  if (
-    request.method === "POST" &&
-    url.pathname === "/__e2e/coding-plan/manual-claim-failure" &&
-    state.scenario === "manual-claim-experience"
-  ) {
-    state.manualClaimShouldFail = true;
-    sendJson(response, { ok: true });
-    return;
-  }
-
-  if (
-    request.method === "POST" &&
-    url.pathname === "/__e2e/coding-plan/manual-claim-bucket-ready" &&
-    state.scenario === "manual-claim-experience"
-  ) {
-    state.manualClaimBucketReady = true;
-    sendJson(response, { ok: true });
-    return;
-  }
-
-  if (
-    request.method === "POST" &&
-    url.pathname === "/__e2e/coding-plan/manual-claim-next-window" &&
-    state.scenario === "manual-claim-experience"
-  ) {
-    // Bug 原因：下一时段只重置 completed 会让失败用例的一次性开关泄漏到后续成功用例。
-    state.manualClaimCompleted = false;
-    state.manualClaimShouldFail = false;
-    sendJson(response, { ok: true });
-    return;
-  }
-
   const recordedRequest = recordRequest(requests, request, url);
-
-  if (
-    request.method === "POST" &&
-    url.pathname === "/__e2e/coding-plan/start-expired" &&
-    state.scenario === "manual-claim-experience"
-  ) {
-    state.startPlanExpired = true;
-    sendJson(response, { ok: true });
-    return;
-  }
-
-  if (
-    request.method === "GET" &&
-    url.pathname === "/api/v1/zcode-plan/billing/preview" &&
-    state.scenario === "manual-claim-experience"
-  ) {
-    sendJson(response, {
-      code: 0,
-      msg: "ok",
-      data: {
-        server_time: Math.floor(Date.now() / 1_000),
-        plans: state.manualClaimCompleted
-          ? []
-          : [
-              {
-                plan_id: "weekend-plan-e2e",
-                name: "ZCode Weekend Build",
-                description: "Deterministic manual claim fixture",
-                priority: 100,
-                entitlements: [
-                  {
-                    entitlement_id: "weekend-glm-flash",
-                    show_name: "GLM-5.3-Flash",
-                    meter: "model_usage",
-                    unit_type: "token",
-                    capabilities: ["model:glm-5.3-flash"],
-                    grant_units: 10_000_000_000,
-                    period: "one_time",
-                    priority: 10,
-                  },
-                ],
-              },
-            ],
-      },
-    });
-    return;
-  }
-
-  if (
-    request.method === "POST" &&
-    url.pathname === "/api/v1/zcode-plan/billing/claim" &&
-    state.scenario === "manual-claim-experience"
-  ) {
-    if (state.manualClaimShouldFail) {
-      state.manualClaimShouldFail = false;
-      state.manualClaimCompleted = true;
-      sendJson(response, { code: 1003, data: null, msg: "already claimed" });
-      return;
-    }
-    state.manualClaimCompleted = true;
-    const nowSeconds = Math.floor(Date.now() / 1_000);
-    sendJson(response, {
-      code: 0,
-      msg: "ok",
-      data: {
-        server_time: nowSeconds,
-        plan: {
-          user_plan_id: "user-weekend-plan-e2e",
-          plan_id: "weekend-plan-e2e",
-          status: "active",
-          starts_at: nowSeconds,
-          ends_at: nowSeconds + 86_400,
-          entitlements: [
-            {
-              entitlement_id: "weekend-glm-flash",
-              show_name: "GLM-5.3-Flash",
-              effective_at: nowSeconds + 3_600,
-            },
-          ],
-        },
-      },
-    });
-    return;
-  }
 
   if (request.method === "GET" && url.pathname === "/coding-plan") {
     if (state.webviewMode === "hold")
@@ -347,27 +226,9 @@ async function handleRequest(
   if (
     request.method === "GET" &&
     url.pathname === "/api/v1/zcode-plan/billing/balance" &&
-    (state.scenario === "manual-claim-experience" || state.scenario === "webview-refresh-provider")
+    state.scenario === "webview-refresh-provider"
   ) {
-    // Bug 原因：领取 fixture 只 mock 了旧 quota 接口；当前 Start 可用性以
-    // billing/balance 为准，缺失时刷新会把刚写入的 Start selectedKey 收敛回 Individual。
-    sendJson(
-      response,
-      state.startPlanExpired
-        ? {
-            code: 0,
-            msg: "ok",
-            data: {
-              server_time: Math.floor(Date.now() / 1000),
-              plans: [],
-              balances: [],
-            },
-          }
-        : buildManualClaimStartPlanBalance(
-            state.manualClaimCompleted,
-            state.manualClaimBucketReady,
-          ),
-    );
+    sendJson(response, buildWebviewRefreshStartPlanBalance());
     return;
   }
 
@@ -406,39 +267,6 @@ async function handleRequest(
       sendJson(response, { code: 200, data: { level: "pro", limits: [] } });
       return;
     }
-    if (state.scenario === "manual-claim-experience") {
-      const nowSeconds = Math.floor(Date.now() / 1_000);
-      sendJson(response, {
-        code: 0,
-        msg: "ok",
-        data: {
-          plans: [
-            {
-              plan_id: "weekend-plan-e2e",
-              name: "ZCode Weekend Build",
-              status: "active",
-              starts_at: nowSeconds,
-              ends_at: nowSeconds + 86_400,
-              entitlements: [{ meter: "model_usage", period: "one_time" }],
-            },
-          ],
-          balances: [
-            {
-              plan_id: "weekend-plan-e2e",
-              entitlement_id: "weekend-glm-flash",
-              show_name: "GLM-5.3-Flash",
-              capabilities: ["model:glm-5.3-flash"],
-              total_units: 10_000_000_000,
-              used_units: 0,
-              remaining_units: 10_000_000_000,
-              available_units: 10_000_000_000,
-              expires_at: nowSeconds + 86_400,
-            },
-          ],
-        },
-      });
-      return;
-    }
     // 修复原因：sidebar 升级入口通过 entitlement 判断账号是已连接但未开通套餐；
     // mock 必须用 HTTP 200 承载业务 no_plan，否则 readApiJson 会提前抛错，
     // 购买面板会被当成不可用账号并跳过 batch-preview。
@@ -454,8 +282,7 @@ async function handleRequest(
     sendJson(response, {
       code: 200,
       data:
-        state.scenario === "webview-refresh-provider" ||
-        (state.scenario === "manual-claim-experience" && state.manualClaimCompleted)
+        state.scenario === "webview-refresh-provider"
           ? [
               {
                 productId: "glm-coding-pro-e2e",
@@ -479,8 +306,7 @@ async function handleRequest(
       data:
         state.purchaseCompleted ||
         // 当前账号服务通过组织/项目取得凭据；库存场景购买前已经拥有个人套餐，不能只伪造订阅列表。
-        state.scenario === "webview-refresh-provider" ||
-        (state.scenario === "manual-claim-experience" && state.manualClaimCompleted)
+        state.scenario === "webview-refresh-provider"
           ? {
               organizations: [
                 {
@@ -601,10 +427,6 @@ function createCodingPlanUpgradeMockState(
   enrichClientConfigPayloadForUpgradeE2E(clientConfigPayload, scenario);
   return {
     clientConfigPayload,
-    manualClaimBucketReady: false,
-    manualClaimCompleted: false,
-    manualClaimShouldFail: false,
-    startPlanExpired: false,
     customerInfoHeld: false,
     customerInfoWaiters: [],
     inventoryMode: "ready",
@@ -616,67 +438,42 @@ function createCodingPlanUpgradeMockState(
   };
 }
 
-function buildManualClaimStartPlanBalance(claimed: boolean, newBucketReady: boolean) {
+function buildWebviewRefreshStartPlanBalance() {
   const nowSeconds = Math.floor(Date.now() / 1_000);
-  const oldPlanId = "zcode-v3-start-plan";
-  const newPlanId = "weekend-plan-e2e";
-  const oldPlan = {
-    ends_at: nowSeconds + 4 * 86_400,
-    entitlements: [
-      {
-        effective_at: 0,
-        entitlement_id: "start-glm-turbo-e2e",
-        show_name: "GLM-5-Turbo",
-      },
-    ],
-    name: "ZCode V3 Start Plan",
-    plan_id: oldPlanId,
-    starts_at: nowSeconds - 86_400,
-    status: "active",
-  };
-  const oldBalance = {
-    available_units: 1_000_000_000,
-    capabilities: ["model:glm-5-turbo"],
-    entitlement_id: "start-glm-turbo-e2e",
-    expires_at: nowSeconds + 4 * 86_400,
-    plan_id: oldPlanId,
-    remaining_units: 500_000_000,
-    show_name: "GLM-5-Turbo",
-    total_units: 1_000_000_000,
-    used_units: 500_000_000,
-  };
-  const newPlan = {
-    ends_at: nowSeconds + 86_400,
-    entitlements: [
-      {
-        // 已到达排期时间但额度桶尚未生成，驱动设置页显示「刷新权益」。
-        effective_at: nowSeconds - 60,
-        entitlement_id: "weekend-glm-flash",
-        show_name: "GLM-5.3-Flash",
-      },
-    ],
-    name: "ZCode Weekend Build",
-    plan_id: newPlanId,
-    starts_at: nowSeconds - 60,
-    status: "active",
-  };
-  const newBalance = {
-    available_units: 10_000_000_000,
-    capabilities: ["model:glm-5.3-flash"],
-    entitlement_id: "weekend-glm-flash",
-    expires_at: nowSeconds + 86_400,
-    plan_id: newPlanId,
-    remaining_units: 10_000_000_000,
-    show_name: "GLM-5.3-Flash",
-    total_units: 10_000_000_000,
-    used_units: 0,
-  };
+  const planId = "zcode-v3-start-plan";
   return {
     code: 0,
     data: {
       server_time: nowSeconds,
-      balances: [oldBalance, ...(claimed && newBucketReady ? [newBalance] : [])],
-      plans: [oldPlan, ...(claimed ? [newPlan] : [])],
+      balances: [
+        {
+          available_units: 1_000_000_000,
+          capabilities: ["model:glm-5-turbo"],
+          entitlement_id: "start-glm-turbo-e2e",
+          expires_at: nowSeconds + 4 * 86_400,
+          plan_id: planId,
+          remaining_units: 500_000_000,
+          show_name: "GLM-5-Turbo",
+          total_units: 1_000_000_000,
+          used_units: 500_000_000,
+        },
+      ],
+      plans: [
+        {
+          ends_at: nowSeconds + 4 * 86_400,
+          entitlements: [
+            {
+              effective_at: 0,
+              entitlement_id: "start-glm-turbo-e2e",
+              show_name: "GLM-5-Turbo",
+            },
+          ],
+          name: "ZCode V3 Start Plan",
+          plan_id: planId,
+          starts_at: nowSeconds - 86_400,
+          status: "active",
+        },
+      ],
     },
     msg: "ok",
     success: true,
@@ -685,7 +482,6 @@ function buildManualClaimStartPlanBalance(claimed: boolean, newBucketReady: bool
 
 function isCodingPlanUpgradeMockScenario(value: unknown): value is CodingPlanUpgradeMockScenario {
   return (
-    value === "manual-claim-experience" ||
     value === "personal-sold-out" ||
     value === "personal-system-busy" ||
     value === "webview-refresh-provider"
@@ -741,45 +537,6 @@ function enrichClientConfigPayloadForUpgradeE2E(
   payload: CodingPlanClientConfigFixture,
   scenario: CodingPlanUpgradeMockScenario,
 ) {
-  if (scenario === "manual-claim-experience") {
-    // Bug 原因：领取 fixture 需要同时下发 Individual 与 Start；且 BigModel OAuth
-    // resolver 会从同 family 的远端列表选择首个 Anthropic provider，Individual 必须排在前面，
-    // 否则会把 Start 模型错误复用到 Individual，无法覆盖真实切换链路。
-    payload.data.builtinProviders = [
-      {
-        id: BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan,
-        name: "BigModel - Coding Plan",
-        schema: "anthropic",
-        baseUrl: "https://open.bigmodel.cn/api/anthropic",
-        models: ["GLM-5.3-Flash"],
-      },
-      {
-        id: BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan,
-        name: "BigModel - Start Plan",
-        schema: "anthropic",
-        baseUrl: "https://open.bigmodel.cn/api/anthropic",
-        models: ["GLM-5.3-Flash", "GLM-5-Turbo"],
-      },
-    ];
-    payload.data.builtinModels = [
-      {
-        modelId: "GLM-5-Turbo",
-        name: "GLM-5-Turbo",
-        contextWindow: 1_048_576,
-        maxCompletionTokens: 131_072,
-        priority: 101,
-      },
-      {
-        modelId: "GLM-5.3-Flash",
-        name: "GLM-5.3-Flash",
-        contextWindow: 1_048_576,
-        maxCompletionTokens: 131_072,
-        priority: 100,
-      },
-    ];
-    Object.assign(payload.data.configs, requestSecurityClientConfig());
-    return;
-  }
   if (scenario !== "webview-refresh-provider") {
     return;
   }

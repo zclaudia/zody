@@ -148,12 +148,6 @@ vi.mock("@/store/TabStoreProvider.js", () => ({
   useTabStore: (selector: (state: typeof tabStoreState) => unknown) => selector(tabStoreState),
 }));
 
-vi.mock("@/settings/CodingPlanUpgradeDialogProvider.js", () => ({
-  useCodingPlanUpgradeDialog: () => ({
-    openCodingPlanUpgrade: vi.fn(),
-  }),
-}));
-
 vi.mock("@/lib/settingsNavigation.js", () => ({
   setPendingSettingsSection: setPendingSettingsSectionMock,
 }));

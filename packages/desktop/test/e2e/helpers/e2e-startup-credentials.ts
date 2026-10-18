@@ -14,8 +14,6 @@ export interface E2EStartupCredentialSeedOptions {
 const OFFICIAL_ACCOUNT_SEED_WITH_JWT_SPEC_NAMES = new Set([
   // fork（F4.4）：marketing-touch-entitlement / marketing-touch-rewards 随营销 spec 删除。
   "jwt-401-auto-logout.test.ts",
-  "coding-plan-upgrade-webview-refresh-provider.test.ts",
-  "start-plan-manual-claim-experience.test.ts",
   "provider-family-responsive.test.ts",
 ]);
 // 级别 1（仅 OAuth 展示态，不带 zcodejwttoken——假 JWT 打到未 mock 的官方路径会 401
@@ -23,9 +21,6 @@ const OFFICIAL_ACCOUNT_SEED_WITH_JWT_SPEC_NAMES = new Set([
 // 只需要 bigmodel 账号展示态。fork（F4.1a）：「旧版本升级」场景也种官方账号存量，
 // 供 Host 启动迁移在真实启动路径上清理（spec 断言清理后的最终态）。
 const OFFICIAL_ACCOUNT_SEED_OAUTH_ONLY_SPEC_NAMES = new Set([
-  "coding-plan-team-usage.test.ts",
-  "coding-plan-upgrade-personal-sold-out.test.ts",
-  "coding-plan-upgrade-personal-system-busy.test.ts",
   "official-account-removal-upgrade.test.ts",
 ]);
 

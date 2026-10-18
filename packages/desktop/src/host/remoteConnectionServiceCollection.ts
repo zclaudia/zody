@@ -13,7 +13,6 @@ import {
   IZCodeSessionService,
   IFileWatcherService,
   IOAuthService,
-  ICodingPlanSubscriptionService,
   IClientConfigService,
   IClientScenesService,
   ISkillsService,
@@ -33,7 +32,6 @@ import {
   createOAuthService,
   createOAuthProviderLogoutHandler,
   createAccountProviderCredentialStore,
-  createCodingPlanSubscriptionService,
   createClientScenesService,
   createSettingsSyncService,
   createMediaPreviewService,
@@ -82,13 +80,6 @@ export function createRemoteConnectionServiceCollection(params: {
         createOAuthService(params.credentialService, {
           apiClient: params.apiClient,
           onProviderLogout: handleOAuthProviderLogout,
-        }),
-      )
-      .register(
-        ICodingPlanSubscriptionService,
-        createCodingPlanSubscriptionService({
-          apiClient: params.apiClient,
-          credentialService: params.credentialService,
         }),
       )
       .register(IClientScenesService, createClientScenesService({ apiClient: params.apiClient }))

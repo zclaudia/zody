@@ -150,7 +150,7 @@ describe("createAccountProviderConnectionResolver", () => {
     ).resolves.toBeNull();
   });
 
-  it("真实账号缺 Key 保持权益未知，且不阻断另一个可用套餐", async () => {
+  it("fork F4.5：官方套餐权益查询下线后账号 provider 一律不可用", async () => {
     const configured = configuredProviders();
     const resolve = createAccountProviderConfigResolver(
       createAccountProviderConnectionResolver({
@@ -195,12 +195,11 @@ describe("createAccountProviderConnectionResolver", () => {
       BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
     ]) {
       expect(parsed.states[id]).toMatchObject({
-        availability: "unknown",
+        availability: "unavailable",
       });
     }
     expect(parsed.states[BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan]).toMatchObject({
-      availability: "available",
-      entitled: true,
+      availability: "unavailable",
     });
   });
   it.each(["connection", "identity"] as const)(

@@ -90,9 +90,11 @@ describe("startup has no force-update gate", () => {
     const remoteAppConfig = readSourceFromRepoRoot("packages/shared/src/remoteAppConfig.ts");
     expect(remoteAppConfig).not.toContain("getForceUpdateMinimalVersionFromConfig");
 
-    const codingPlanSubscription = readSourceFromRepoRoot(
-      "packages/shared/src/coding-plan-subscription.ts",
-    );
-    expect(codingPlanSubscription).not.toContain("ForceUpdateConfig");
+    // fork（F4.5）：订阅协议文件已整体删除，ForceUpdateConfig 不可能再被重新引入。
+    expect(
+      existsSync(
+        new URL("../../../packages/shared/src/coding-plan-subscription.ts", import.meta.url),
+      ),
+    ).toBe(false);
   });
 });

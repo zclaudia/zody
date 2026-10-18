@@ -38,16 +38,6 @@ export function useAccountConnectionLossNotification(
       }
       if (!event.isCurrent()) return;
       const { intl: copy } = latest.current;
-      const label =
-        suggestion?.label ??
-        (suggestion
-          ? copy.formatMessage({
-              id:
-                suggestion.selection.kind === "start-plan"
-                  ? "settings.modelProvider.codingPlan.purchaseBanner.startPlanTitle"
-                  : "settings.modelProvider.codingPlan.purchase.individualsSectionTitle",
-            })
-          : "");
       const target = suggestion;
       let id: number;
       let submitting = false;
@@ -97,12 +87,7 @@ export function useAccountConnectionLossNotification(
       id = toast(copy.formatMessage({ id: "settings.modelProvider.connectionUnavailableNotice" }), {
         variant: "info",
         durationMs: 12000,
-        actionLabel: target
-          ? copy.formatMessage(
-              { id: "settings.modelProvider.switchConnection" },
-              { connection: label },
-            )
-          : undefined,
+        actionLabel: undefined,
         onAction: target ? submit : undefined,
       });
       noticeRef.current = { id, event };

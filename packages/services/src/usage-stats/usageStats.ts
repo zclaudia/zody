@@ -1,36 +1,13 @@
-import type {
-  AppUsageRequest,
-  AppUsageSnapshot,
-  CodingPlanUsageRequest,
-  CodingPlanUsageSnapshot,
-  CodingPlanResetOpportunityRequest,
-  CodingPlanResetOpportunityResult,
-  CodingPlanResetScopeRequest,
-  CodingPlanResetStatusSnapshot,
-  CodingPlanResetUseRequest,
-  CodingPlanResetUseResult,
-  UsageEntitlementRequest,
-  UsageEntitlementSnapshot,
-  UsageStatsRequest,
-  UsageStatsSnapshot,
-} from "@zcode/shared";
+import type { AppUsageRequest, AppUsageSnapshot } from "@zcode/shared";
 import { ServiceChannels } from "@zcode/shared";
 import { createServiceDescriptor } from "../descriptors.js";
 
+/**
+ * fork（F4.5）：官方 Coding Plan / Start Plan 额度、用量 monitor 与额度重置链路已删除。
+ * 保留 App Usage：经 ZCode Protocol 读取 agent 数据库的真实本地统计。
+ */
 export interface IUsageStatsService {
   getAppUsageSnapshot(request: AppUsageRequest): Promise<AppUsageSnapshot>;
-  getCodingPlanUsageSnapshot(request: CodingPlanUsageRequest): Promise<CodingPlanUsageSnapshot>;
-  // fork（F4.2）：getCodingPlanRegularTps 仅服务加速卡 regularTps 采样，随全链路删除。
-  getCodingPlanResetStatus(
-    request: CodingPlanResetScopeRequest,
-  ): Promise<CodingPlanResetStatusSnapshot>;
-  requestCodingPlanResetOpportunity(
-    request: CodingPlanResetOpportunityRequest,
-  ): Promise<CodingPlanResetOpportunityResult>;
-  useCodingPlanReset(request: CodingPlanResetUseRequest): Promise<CodingPlanResetUseResult>;
-  markCodingPlanResetHistoryRead(request: CodingPlanResetScopeRequest): Promise<void>;
-  getSnapshot(request: UsageStatsRequest): Promise<UsageStatsSnapshot>;
-  getEntitlementSnapshot(request?: UsageEntitlementRequest): Promise<UsageEntitlementSnapshot>;
 }
 
 export const IUsageStatsService = createServiceDescriptor<IUsageStatsService>(

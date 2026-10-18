@@ -233,21 +233,12 @@ describe("AppUsageLifetimeSummaryStrip", () => {
   });
 
   it("uses small typography for chart content while keeping chart titles unchanged", async () => {
-    const [
-      chartUiSource,
-      dailyChartSource,
-      modelChartSource,
-      heatmapSource,
-      codingPlanSource,
-      codingPlanLineSource,
-    ] = await Promise.all(
+    const [chartUiSource, dailyChartSource, modelChartSource, heatmapSource] = await Promise.all(
       [
         "packages/ui/src/components/ui/chart.tsx",
         "packages/ui/src/settings/usage-stats/AppUsageDailyModelTrendChart.tsx",
         "packages/ui/src/settings/usage-stats/AppUsageModelUsagePieChart.tsx",
         "packages/ui/src/settings/usage-stats/UsageHeatmap.tsx",
-        "packages/ui/src/settings/usage-stats/CodingPlanUsagePanel.tsx",
-        "packages/ui/src/settings/usage-stats/CodingPlanUsageLineChart.tsx",
       ].map((path) => readFile(path, "utf8")),
     );
 
@@ -263,15 +254,6 @@ describe("AppUsageLifetimeSummaryStrip", () => {
     );
     expect(heatmapSource).toContain(
       '<h3 className="min-w-0 truncate text-ui-base font-medium text-foreground">',
-    );
-    expect(codingPlanSource).toContain(
-      'className="mt-3 flex flex-wrap items-center gap-3 text-ui-sm"',
-    );
-    expect(codingPlanSource).toContain(
-      'className="flex min-w-0 items-center gap-1 rounded-md px-2 py-1 text-ui-sm"',
-    );
-    expect(codingPlanLineSource).toContain(
-      'className="flex min-w-0 items-center gap-2 text-ui-sm"',
     );
   });
 });

@@ -177,7 +177,6 @@ function Fixture() {
               },
             ]}
             selectedNodeKey="fixture"
-            presetLoading={false}
             customLoading={false}
             onSelectNavItem={() => setPicker(false)}
             onReorderProviderIds={async (ids) => {

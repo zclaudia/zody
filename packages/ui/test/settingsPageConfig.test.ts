@@ -104,9 +104,10 @@ describe("settingsPageConfig", () => {
     const usageSection = SETTINGS_SECTIONS.find((section) => section.id === "usage");
 
     expect(usageSection?.icon).toBe(BarChart3);
-    expect(enUS["settings.usageTitle"]).toBe(enUS["sidebar.usage.plan.openStats"]);
-    expect(enUS["settings.usage.sectionTitle"]).toBe(enUS["sidebar.usage.plan.openStats"]);
-    expect(zhCN["settings.usageTitle"]).toBe(zhCN["sidebar.usage.plan.openStats"]);
+    // fork（F4.5）：侧栏「打开用量统计」套餐入口随官方套餐删除，这里只校验设置分区文案存在。
+    expect(enUS["settings.usageTitle"]).toBeTruthy();
+    expect(enUS["settings.usage.sectionTitle"]).toBeTruthy();
+    expect(zhCN["settings.usageTitle"]).toBeTruthy();
   });
 
   it("侧栏分组标题同时提供中英文文案", () => {

@@ -9,19 +9,6 @@ const restoredOAuthCredentials = {
 };
 
 describe("desktop e2e startup credentials", () => {
-  // fork（F4.4）：marketing-touch-rewards 随营销 spec 删除，不再保留其 JWT 种子断言。
-  it.each(["coding-plan-upgrade-webview-refresh-provider.test.ts"])(
-    "%s 保留本地 Start 余额/请求鉴权所需 JWT",
-    (spec) => {
-      expect(
-        createE2EStartupCredentialSeed({
-          specs: [spec],
-          legacyAuthToken: "fake-auth-token",
-          restoredOAuthCredentials,
-        }).zcodejwttoken,
-      ).toBe("fake-zcode-jwt");
-    },
-  );
   it("供应商响应式 spec 保留本地 balance mock 所需的 JWT", () => {
     expect(
       createE2EStartupCredentialSeed({
