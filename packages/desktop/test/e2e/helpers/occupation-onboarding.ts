@@ -3,10 +3,21 @@ import { sel } from "./selectors.js";
 
 // 新隔离 profile 的职业引导会覆盖工作区；通过真实 UI 完成，不伪造业务记录。
 export async function skipOccupationOnboardingIfPresent() {
+  // 修复原因：首启停在「职业引导与设置入口都尚未渲染」的过渡态（如 fork 的 BYOK
+  // WelcomeScreen 阶段）时，$().isExisting() 会以 no such element 直接抛错而不是
+  // 返回 false，waitUntil 把条件函数的异常原样上抛导致用例误报；轮询条件必须
+  // 自吞元素缺失，让 waitUntil 只按超时语义判定。
+  const isExistingSafe = async (selector: string) => {
+    try {
+      return await $(selector).isExisting();
+    } catch {
+      return false;
+    }
+  };
   await browser.waitUntil(
     async () =>
-      (await $('[data-testid="onboarding-page"]').isExisting()) ||
-      (await $(sel(TID_TASK_SETTINGS_BUTTON)).isExisting()),
+      (await isExistingSafe('[data-testid="onboarding-page"]')) ||
+      (await isExistingSafe(sel(TID_TASK_SETTINGS_BUTTON))),
     { timeout: 30000 },
   );
   // 新隔离 profile 可能进入职业引导，按真实 UI 跳过三步，不改全局测试夹具。

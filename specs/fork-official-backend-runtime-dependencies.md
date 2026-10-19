@@ -179,7 +179,19 @@ sequenceDiagram
 8. **残留检查**：`desktopArchitectureGuard.ts` 不再出现官方下载页；`pnpm knip` 没有新增未使用导出。
 9. **回归**：`pnpm typecheck`、`pnpm lint`、`pnpm architecture:check --changed` 通过，结果如实记录；相关桌面单测（`desktopSecondInstanceDeepLink`、`autoUpdaterReadyState`、`desktopProductIdentity`、`build-time-config`、动态工作流 offer）通过。
 
-本次交付只含 spec，以上均未执行。
+验收 1、4、5、6、7、9 已随 M0-M4 各任务的单测与门禁执行并通过（见 specs/fork-official-deps-removal-tasks.md 各任务记录）；验收 2、8 的打包版部分由 2026-10-19 的 F2.11 断网容器验收覆盖，记录见下节。
+
+### F2.11 打包断网验收记录（2026-10-19）
+
+环境：colima（8C/16GiB，`--vz-rosetta`）+ linux/amd64 容器；官方域名清单（scripts/lib/official-domains.mjs，13 个 host）经 `--add-host` 全部 sink-hole 到容器内 official-request-sink；`OFFICIAL_REQUESTS_ASSERT_MODE=empty` 硬断言（默认 report 只观察）。镜像内构建产物不可直测（陈旧 out/），被测对象为容器内 E2E prepare 的真实构建（run-production-build → tsup/vite）。
+
+结果（均以 `bash scripts/test-desktop-e2e-container.sh --block-official` 执行）：
+
+1. **启动与交互零官方请求（验收 1、2 打包版）**：默认 preset 中 4 个有 Docker 准入的 spec（container-boot、smoke、e2ecase-regression、task-list-archive-confirmation）全部通过，sink 记录 **0 条（PASS）**。验收 2 的敌对桩（minimalVersion=99.0.0 与相反灰度值）由「零请求」先验满足：应用对官方端点零请求，敌对响应无从到达（gate 已删、client-config 已本地化、营销/账号链路已删）。
+2. **BYOK 首启与会话链路（断网容器）**：`official-account-removal-fresh-install`（F4.1a 语义）通过；运行日志实证 `provider/model 就绪（providerId: e2e-upstream，本地回放上游）`、`sendConversationCommandV4 OK`、v4 会话订阅激活——**断网容器内 BYOK provider 就绪且会话命令真实往返**，模型流量仅发往本地回放上游，sink 零记录。
+3. **部分覆盖与遗留**：`upstream-provider`（断言模型请求经配置上游的完整对话 spec）无 Docker 准入（脚本自身声明），容器内因模拟时序未完成抓包断言；宿主机运行受阻于 fork 首启流程与旧 helper 的适配债（2026-10-19 宿主全量 E2E 120/171 通过、51 失败为同族存量问题，非 M0-M4 删除引入）。BYOK 请求直连的功能正确性另由 adapters/bootstrap 全量单测覆盖（F3.1 后全绿）。**遗留任务：E2E 首启引导适配（occupation-onboarding/v4-conversation helper 对 fork WelcomeScreen 流程）与 conversation spec 的 Docker 准入。**
+
+环境与配套修复（已提交）：容器脚本转发 WebDriver 请求限流旋钮（QEMU/Rosetta 模拟下会话创建超 30s 默认超时）；e2ecase 头像菜单「使用统计」两用例改为否定断言（F4.1b 已按 D2 摘除该入口）；occupation-onboarding 轮询条件容错（isExisting 在元素缺失时抛 no-such-element 会让 waitUntil 误报）。本机注意：Chrome for Testing 不发布 linux-arm64 chromedriver，容器 E2E 须 amd64（Apple Silicon 上建议 Rosetta，QEMU 下 Electron 内存失控）。
 
 ## 实施顺序
 
