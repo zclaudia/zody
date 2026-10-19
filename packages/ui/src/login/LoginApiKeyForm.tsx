@@ -20,6 +20,7 @@ import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
+import { Label } from "@/components/ui/label.js";
 import {
   Select,
   SelectContent,
@@ -149,13 +150,16 @@ export function LoginApiKeyForm({ onSaved, onSkipped }: LoginApiKeyFormProps) {
 
   const busy = saving || skipping;
 
+  // 未选择 provider 时密钥没有归属模板，禁用输入，引导用户先选提供方（spec: docs/ui/login-page.md）。
+  const apiKeyInputDisabled = busy || !selectedTemplate;
+
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <h2 className="text-ui-base font-medium text-foreground">
-          {intl.formatMessage({ id: "login.apiKey.title" })}
-        </h2>
+    <div className="space-y-6">
+      <div className="space-y-5">
         <div className="space-y-2">
+          <Label htmlFor="login-api-key-provider" className="text-foreground">
+            {intl.formatMessage({ id: "login.apiKey.providerLabel" })}
+          </Label>
           <div>
             <Select
               value={selectedTemplateId ?? ""}
@@ -170,11 +174,10 @@ export function LoginApiKeyForm({ onSaved, onSkipped }: LoginApiKeyFormProps) {
                 size="lg"
                 className="h-10 w-full text-ui-base"
                 data-testid={TID_LOGIN_API_KEY_PROVIDER_TRIGGER}
-                aria-label={intl.formatMessage({
-                  id: "login.apiKey.providerLabel",
-                })}
               >
-                <SelectValue />
+                <SelectValue
+                  placeholder={intl.formatMessage({ id: "login.apiKey.providerPlaceholder" })}
+                />
               </SelectTrigger>
               <SelectContent align="end" className="rounded-lg">
                 {apiKeyTemplates.map((template) => (
@@ -190,6 +193,14 @@ export function LoginApiKeyForm({ onSaved, onSkipped }: LoginApiKeyFormProps) {
               </SelectContent>
             </Select>
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label
+            htmlFor="login-api-key"
+            className={selectedTemplate ? "text-foreground" : "text-foreground-subtle"}
+          >
+            {intl.formatMessage({ id: "login.apiKey.title" })}
+          </Label>
           <div className="relative">
             <Input
               id="login-api-key"
@@ -197,13 +208,13 @@ export function LoginApiKeyForm({ onSaved, onSkipped }: LoginApiKeyFormProps) {
               size="lg"
               className={`h-10 w-full text-ui-base ${showApiKeyLink ? "pr-28" : ""}`}
               data-testid={TID_LOGIN_API_KEY_INPUT}
-              aria-label={intl.formatMessage({
-                id: "login.apiKey.placeholder",
-              })}
               value={apiKeyValue}
               placeholder={intl.formatMessage({
-                id: "login.apiKey.placeholder",
+                id: selectedTemplate
+                  ? "login.apiKey.placeholder"
+                  : "login.apiKey.providerFirstPlaceholder",
               })}
+              disabled={apiKeyInputDisabled}
               autoComplete="off"
               onChange={(event) => {
                 setApiKeyValue(event.target.value);
@@ -262,6 +273,7 @@ export function LoginApiKeyForm({ onSaved, onSkipped }: LoginApiKeyFormProps) {
           onClick={() => void skipApiKeyProvider()}
         >
           {skipping ? <Loader2Icon className="size-4 animate-spin" /> : null}
+          {/* 修复：login.apiKey.skip 曾在两份语言包中缺失，按钮直接显示 key；现已补齐并由 welcomeScreenI18n 测试守护。 */}
           {intl.formatMessage({ id: "login.apiKey.skip" })}
         </Button>
       </div>

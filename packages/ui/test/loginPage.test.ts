@@ -115,17 +115,41 @@ describe("WelcomeScreen（fork BYOK 引导）", () => {
     expect(html).not.toContain("login.apiKey.getApiKey");
   });
 
-  it("保留主题背景与登录面板外壳样式", async () => {
+  it("采用左右分栏：左侧 zcoder 品牌栏，右侧标题与表单", async () => {
     providerTemplatesState.templates = [];
     const { WelcomeScreen } = await import("@/WelcomeScreen.js");
     const html = renderToStaticMarkup(createElement(WelcomeScreen, { onComplete: vi.fn() }));
 
     expect(html).toContain("overflow-hidden bg-background");
-    expect(html).toContain("absolute inset-0");
-    expect(html).toContain("bg-[linear-gradient");
-    expect(html).toContain("border-popover-border");
-    expect(html).toContain("shadow-md");
+    // 左侧品牌栏：md 以下隐藏，使用 sidebar 结构色与价值说明。
+    expect(html).toContain("data-testid=\"welcome-brand-panel\"");
+    expect(html).toContain("hidden");
+    expect(html).toContain("md:flex");
+    expect(html).toContain("bg-sidebar");
+    expect(html).toContain("login.hero.title");
+    expect(html).toContain("login.hero.anyProvider.title");
+    expect(html).toContain("login.hero.localKeys.title");
+    expect(html).toContain("login.hero.switchModels.title");
+    // 品牌名为专有名词，不走 i18n；新 logo 以图片渲染。
+    expect(html).toContain(">zcoder<");
+    expect(html).toContain("<img");
+    // 不再叠加主题 hero 渐变背景和旧 Z 字形 logo 壳。
+    expect(html).not.toContain("bg-[linear-gradient");
     expect(html).toContain("<h1");
+    expect(html).toContain("login.title");
     expect(html).not.toContain("DialogTitle");
+  });
+
+  it("未选择 provider 时展示占位文案并禁用 API key 输入", async () => {
+    providerTemplatesState.templates = [];
+    const { WelcomeScreen } = await import("@/WelcomeScreen.js");
+    const html = renderToStaticMarkup(createElement(WelcomeScreen, { onComplete: vi.fn() }));
+
+    expect(html).toContain("login.apiKey.providerPlaceholder");
+    expect(html).toContain("login.apiKey.providerFirstPlaceholder");
+    const inputTag = html.match(/<input[^>]*data-testid="login-api-key-input"[^>]*>/)?.[0];
+    expect(inputTag).toContain("disabled=\"\"");
+    expect(html).toContain("login.apiKey.providerLabel");
+    expect(html).toContain("login.apiKey.skip");
   });
 });

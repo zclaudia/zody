@@ -216,6 +216,7 @@ feature-scoped token family:
 | `--color-command-node` | Command mention node 背景 |
 | `--color-command-node-hover` | Command mention node hover 背景 |
 | `--color-command-node-foreground` | Command mention node 文字 / 图标 |
+| `--color-logo-accent` | 取自 zcoder logo 的薄荷绿，仅用于欢迎页品牌栏图标等品牌强调；不得替代 success 等语义色（spec: `docs/ui/login-page.md`） |
 
 Git file statuses must use `text-git-*` / `bg-git-*`, rather than borrowing diff or warning tokens.
 Mention tokens belong to prompt-editor and UserPrompt mention nodes; their background, hover,

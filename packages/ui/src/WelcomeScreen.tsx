@@ -1,16 +1,20 @@
-/* oxlint-disable eslint(max-lines) */
 /**
  * WelcomeScreen —— 首启 BYOK（自带 API Key）provider 配置引导。
  *
  * fork（F4.1b）：官方账号入口摘除后，本页不再提供 OAuth 登录区（z.ai / BigModel
  * 账号登录、等待与错误态、loginEntryRequest 自动续接全部下线），只保留通用
- * provider 模板 + API Key 引导。原 OAuth 组件文件（useOAuth 等）留给 F4.5 删除。
+ * provider 模板 + API Key 引导。
+ *
+ * 布局为 Split onboarding：左侧 zcoder 品牌栏（md 以下隐藏），右侧标题与表单
+ * （spec: docs/ui/login-page.md）。
  */
+import type { ReactNode } from "react";
+import { ArrowLeftRightIcon, CpuIcon, LockIcon } from "lucide-react";
+import zcoderLogoUrl from "@/assets/brand/zcoder-logo.png";
+import { cn } from "@/components/lib/utils.js";
 import { DesktopOverlayWindowControls } from "@/DesktopOverlayWindowControls.js";
-import { ZCodeAboutLogo } from "@/components/ui/ZCodeAboutLogo.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { LoginApiKeyForm } from "@/login/LoginApiKeyForm.js";
-import { ThemeHeroVisual } from "@/openWorkspacePageThemeHero.js";
 
 interface WelcomeScreenProps {
   onComplete: (reason: LoginCompleteReason) => void | Promise<void>;
@@ -22,17 +26,108 @@ interface WelcomeScreenProps {
  */
 export type LoginCompleteReason = "oauth" | "apiKey" | "skip";
 
+/** 品牌名是专有名词，不进入 i18n，各语言一致。 */
+const BRAND_NAME = "zcoder";
+
 export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
   return (
-    <main className="relative flex h-full min-h-dvh items-center justify-center overflow-hidden bg-background px-4 py-6 text-foreground sm:px-6">
-      <ThemeHeroVisual className="absolute inset-0" />
+    <main className="relative flex h-full min-h-dvh overflow-hidden bg-background text-foreground">
       {/* 原生拖拽命中不受 pointer-events/z-index 约束；拖拽层必须避开窗控，且先于 no-drag 区声明。 */}
       <div className="pointer-events-none absolute left-0 top-0 right-0 z-10 flex h-12 items-center [app-region:drag] platform-windows-desktop:right-[134px] platform-linux-desktop:right-[134px]" />
       <DesktopOverlayWindowControls />
-      <section className="relative z-10 w-full flex flex-col gap-10 max-w-sm rounded-2xl border border-popover-border bg-background p-8 text-ui-base/relaxed shadow-md sm:p-10">
-        <LoginPanel active onComplete={onComplete} />
+      <WelcomeBrandPanel />
+      <section className="relative z-0 flex min-w-0 flex-1 items-center justify-center overflow-y-auto px-4 py-12 sm:px-6">
+        <div className="flex w-full max-w-sm flex-col gap-8">
+          <LoginPanel active onComplete={onComplete} />
+        </div>
       </section>
     </main>
+  );
+}
+
+function WelcomeBrandPanel() {
+  const { intl } = useZCodeIntl();
+  return (
+    <aside
+      data-testid="welcome-brand-panel"
+      className="relative z-0 hidden w-[min(600px,46%)] shrink-0 flex-col justify-between gap-10 overflow-y-auto border-r border-border bg-sidebar px-12 pb-12 pt-24 md:flex lg:px-16"
+    >
+      <div className="flex flex-col gap-9">
+        <BrandMark />
+        <h2 className="text-3xl font-semibold leading-tight tracking-tight text-foreground">
+          {intl.formatMessage({ id: "login.hero.title" })}
+        </h2>
+        <ul className="flex flex-col gap-5">
+          <BrandFeature
+            icon={<CpuIcon className="size-4" />}
+            title={intl.formatMessage({ id: "login.hero.anyProvider.title" })}
+            description={intl.formatMessage({ id: "login.hero.anyProvider.description" })}
+          />
+          <BrandFeature
+            icon={<LockIcon className="size-4" />}
+            title={intl.formatMessage({ id: "login.hero.localKeys.title" })}
+            description={intl.formatMessage({ id: "login.hero.localKeys.description" })}
+          />
+          <BrandFeature
+            icon={<ArrowLeftRightIcon className="size-4" />}
+            title={intl.formatMessage({ id: "login.hero.switchModels.title" })}
+            description={intl.formatMessage({ id: "login.hero.switchModels.description" })}
+          />
+        </ul>
+      </div>
+      {/* 纯装饰的会话预览，读屏无需朗读。 */}
+      <div
+        aria-hidden="true"
+        className="rounded-lg border border-card-border bg-background px-4 py-3.5 font-mono text-ui-sm/relaxed text-foreground-subtle"
+      >
+        <div>
+          <span className="text-logo-accent">›</span>{" "}
+          <span className="text-foreground">
+            {intl.formatMessage({ id: "login.hero.preview.prompt" })}
+          </span>
+        </div>
+        <div>● {intl.formatMessage({ id: "login.hero.preview.reading" })}</div>
+        <div>
+          ● {intl.formatMessage({ id: "login.hero.preview.editing" })}{" "}
+          <span className="text-diff-added">+42</span>{" "}
+          <span className="text-diff-removed">−18</span>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function BrandFeature({
+  icon,
+  title,
+  description,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <li className="flex gap-3.5">
+      <span
+        aria-hidden="true"
+        className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-card-border bg-card text-logo-accent"
+      >
+        {icon}
+      </span>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-ui-base font-medium text-foreground">{title}</span>
+        <span className="text-ui-caption/relaxed text-foreground-subtle">{description}</span>
+      </div>
+    </li>
+  );
+}
+
+function BrandMark({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex items-center gap-2.5", className)}>
+      <img src={zcoderLogoUrl} alt="" width={36} height={36} className="size-9 shrink-0" />
+      <span className="text-ui-lg font-semibold tracking-tight text-foreground">{BRAND_NAME}</span>
+    </div>
   );
 }
 
@@ -48,11 +143,11 @@ export function LoginPanel({ active, onComplete }: LoginPanelProps) {
   void active;
   return (
     <>
-      <header className="flex flex-col items-center gap-3 text-center">
-        <LoginPanelLogo />
-        <div className="flex flex-col items-center gap-1 text-center">
-          {/* i18n key 沿用原登录页文案（任务约定：F4.1b 不清理 i18n，F7.4 统一处理）。 */}
-          <h1 className="text-3xl font-semibold tracking-tight">
+      <header className="flex flex-col gap-6">
+        {/* 窄窗口隐藏左侧品牌栏，品牌行移到表单上方，DOM 顺序保持“品牌 → 标题 → 表单”。 */}
+        <BrandMark className="md:hidden" />
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-ui-xl font-semibold tracking-tight text-foreground">
             {intl.formatMessage({ id: "login.title" })}
           </h1>
           <p className="text-ui-base/relaxed text-foreground-subtle">
@@ -60,25 +155,7 @@ export function LoginPanel({ active, onComplete }: LoginPanelProps) {
           </p>
         </div>
       </header>
-      <div className="space-y-6">
-        <LoginApiKeyForm
-          onSaved={() => onComplete("apiKey")}
-          onSkipped={() => onComplete("skip")}
-        />
-      </div>
+      <LoginApiKeyForm onSaved={() => onComplete("apiKey")} onSkipped={() => onComplete("skip")} />
     </>
-  );
-}
-
-function LoginPanelLogo() {
-  return (
-    // 登录 logo 壳是固定深色底，边框不能跟随浅色主题 token，否则浅色主题下边框过重。
-    <div
-      className="relative mb-1 flex size-16 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,#000000_0%,#151718_100%)] text-[#ffffff] shadow-lg/20 before:pointer-events-none before:absolute before:inset-0 before:rounded-2xl before:border before:border-[rgba(255,255,255,0.1)]"
-      aria-label="ZCode"
-      role="img"
-    >
-      <ZCodeAboutLogo className="h-auto w-10" />
-    </div>
   );
 }

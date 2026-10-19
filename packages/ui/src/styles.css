@@ -185,6 +185,7 @@ html[data-document-hidden] *::after {
   --color-background-alt: color-mix(in oklab, var(--color-neutral-100) 60%, transparent);
   --color-background-win-alt: var(--color-neutral-200);
   --color-brand: var(--color-sky-400);
+  --color-logo-accent: #047857;
   --color-icon-blue: var(--color-terminal-bright-blue);
   --color-icon-purple: var(--color-terminal-bright-magenta);
   --color-trajectory-user: #2563eb;
@@ -340,6 +341,7 @@ html[data-document-hidden] *::after {
   --color-background-alt: color-mix(in oklab, var(--color-neutral-800) 60%, transparent);
   --color-background-win-alt: var(--color-neutral-800);
   --color-brand: var(--color-sky-500);
+  --color-logo-accent: #6ee7b7;
   --color-trajectory-user: #60a5fa;
   --color-trajectory-assistant: #2dd4bf;
   --color-trajectory-reasoning: #a78bfa;
@@ -494,6 +496,7 @@ html[data-document-hidden] *::after {
   --color-background-win-alt: #ececee;
   --color-background-alt: color-mix(in oklab, var(--color-background) 70%, transparent);
   --color-brand: #000000;
+  --color-logo-accent: #047857;
   --color-trajectory-user: #2563eb;
   --color-trajectory-assistant: #0f766e;
   --color-trajectory-reasoning: #7c3aed;
@@ -640,6 +643,7 @@ html[data-document-hidden] *::after {
   --color-background-win-alt: #2b2b2b;
   --color-background-alt: color-mix(in oklab, var(--color-background-win-alt) 60%, transparent);
   --color-brand: #ffffff;
+  --color-logo-accent: #6ee7b7;
   --color-trajectory-user: #60a5fa;
   --color-trajectory-assistant: #2dd4bf;
   --color-trajectory-reasoning: #a78bfa;
