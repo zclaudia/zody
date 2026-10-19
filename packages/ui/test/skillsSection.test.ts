@@ -296,7 +296,7 @@ vi.mock("@/hooks/useServices.js", () => ({
       })),
       checkRemoteUserSkillWriteAccess: vi.fn(async () => ({
         ok: true,
-        path: "/home/dev/.zcode/skills",
+        path: "/home/dev/.zcoder/skills",
       })),
       importSkillsArchive: vi.fn(async () => ({ results: [] })),
     },
@@ -334,7 +334,7 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => ({
         })),
         checkRemoteUserSkillWriteAccess: vi.fn(async () => ({
           ok: true,
-          path: "/home/dev/.zcode/skills",
+          path: "/home/dev/.zcoder/skills",
         })),
         importSkillsArchive: vi.fn(async () => ({ results: [] })),
       },
@@ -367,7 +367,7 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => ({
       })),
       checkRemoteUserSkillWriteAccess: vi.fn(async () => ({
         ok: true,
-        path: "/home/dev/.zcode/skills",
+        path: "/home/dev/.zcoder/skills",
       })),
       importSkillsArchive: vi.fn(async () => ({ results: [] })),
     },
@@ -652,7 +652,7 @@ describe("SkillsSection", () => {
         name: "global-skill",
         description: "user skill",
         body: "",
-        path: "/Users/dev/.zcode/skills/global-skill/SKILL.md",
+        path: "/Users/dev/.zcoder/skills/global-skill/SKILL.md",
         scope: "user",
         enabled: true,
       },
@@ -671,7 +671,7 @@ describe("SkillsSection", () => {
       name: "lark-approval",
       description: "approval",
       body: "",
-      path: "/root/.zcode/skills/lark-approval/SKILL.md",
+      path: "/root/.zcoder/skills/lark-approval/SKILL.md",
       scope: "user" as const,
       enabled: true,
     };
@@ -723,7 +723,7 @@ describe("SkillsSection", () => {
       name: "lark-approval",
       description: "approval",
       body: "",
-      path: "/root/.zcode/skills/lark-approval/SKILL.md",
+      path: "/root/.zcoder/skills/lark-approval/SKILL.md",
       scope: "user" as const,
       enabled: true,
     };
@@ -732,7 +732,7 @@ describe("SkillsSection", () => {
       name: "local-helper",
       description: "local",
       body: "",
-      path: "/Users/alice/.zcode/skills/local-helper/SKILL.md",
+      path: "/Users/alice/.zcoder/skills/local-helper/SKILL.md",
       scope: "user" as const,
       enabled: true,
     };

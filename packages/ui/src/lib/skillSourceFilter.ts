@@ -1,13 +1,18 @@
-import type { ZCodeProvider } from "@zcode/shared";
+import { ZCODE_DATA_ROOT_DIR_NAME, type ZCodeProvider } from "@zcode/shared";
 
 type SkillSourceType = "glm" | "unknown";
 
 export function resolveSkillSourceType(skillPath: string): SkillSourceType {
   const normalized = skillPath.replaceAll("\\", "/").toLowerCase();
-  if (normalized.includes("/.zcode/skills/")) {
+  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用；
+  // workspace 级技能仍在 `/.zcode/skills/`，因此两个前缀都算原生来源。
+  if (
+    normalized.includes("/.zcode/skills/") ||
+    normalized.includes(`/${ZCODE_DATA_ROOT_DIR_NAME}/skills/`)
+  ) {
     return "glm";
   }
-  if (normalized.includes("/.zcode/cli/plugins/cache/")) {
+  if (normalized.includes(`/${ZCODE_DATA_ROOT_DIR_NAME}/cli/plugins/cache/`)) {
     return "glm";
   }
   return "unknown";

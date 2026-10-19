@@ -230,7 +230,7 @@ describe("agent V4 connection transports", () => {
     const agent = setupAgent();
     agent.attachmentPreviewSourceV4.mockResolvedValue({
       kind: "local_path",
-      path: "/Users/test/.zcode/cli/video-cache/session/demo.mov",
+      path: "/Users/test/.zcoder/cli/video-cache/session/demo.mov",
       mediaType: "video/quicktime",
     });
     const createLocalMediaPreviewUrl = vi.fn(
@@ -262,7 +262,7 @@ describe("agent V4 connection transports", () => {
       }),
     );
     expect(createLocalMediaPreviewUrl).toHaveBeenCalledWith(
-      "/Users/test/.zcode/cli/video-cache/session/demo.mov",
+      "/Users/test/.zcoder/cli/video-cache/session/demo.mov",
     );
     expect(agent.attachmentReadV4).not.toHaveBeenCalled();
   });

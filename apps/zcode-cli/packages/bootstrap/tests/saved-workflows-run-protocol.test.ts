@@ -66,7 +66,7 @@ function projectDir() {
 }
 
 function globalDir() {
-  return join(home, ".zcode", "workflows");
+  return join(home, ".zcoder", "workflows");
 }
 
 async function seed(dir: string, name: string, script: string, description = "已有") {

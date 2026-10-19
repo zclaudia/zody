@@ -87,7 +87,7 @@ export function seedProviderReadinessHistoryFixture(
 
   const databasePath = join(
     options.e2eHomeDir,
-    ".zcode",
+    ".zcoder",
     "cli",
     "db",
     "db.sqlite",
@@ -233,7 +233,7 @@ function writeTaskIndex(
   timestamps: ProviderReadinessHistoryTimestamps,
   history: ProviderReadinessHistoryFixture,
 ): void {
-  const appConfigDir = join(options.e2eHomeDir, ".zcode", "v2");
+  const appConfigDir = join(options.e2eHomeDir, ".zcoder", "v2");
   mkdirSync(appConfigDir, { recursive: true });
   const database = new DatabaseSync(join(appConfigDir, "tasks-index.sqlite"));
   const meta = {

@@ -5,6 +5,7 @@ import { cp, lstat, mkdir, readFile, readdir, realpath, rm, stat } from "node:fs
 import { homedir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { parse as parseYaml } from "yaml";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 import type {
   SkillSyncArchiveExportResult,
   SkillSyncCandidate,
@@ -131,7 +132,8 @@ function resolveUserHomeDir(): string {
 }
 
 function getUserZcodeSkillRoot(): string {
-  return join(resolveUserHomeDir(), ".zcode", "skills");
+  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "skills");
 }
 
 function getUserAgentsSkillRoot(): string {

@@ -325,7 +325,7 @@ test("plugins disable --all disables every enabled plugin and rejects mixed usag
         assert.equal(options.enabled, false);
         const target = plugins.find((plugin) => plugin.id === options.plugin);
         if (target) target.enabled = false;
-        return { enabled: false, path: "/home/u/.zcode/config.json", plugin: loadedPlugin({ id: options.plugin, enabled: false }) };
+        return { enabled: false, path: "/home/u/.zcoder/config.json", plugin: loadedPlugin({ id: options.plugin, enabled: false }) };
       }) as never,
     },
     ["disable"],
@@ -361,7 +361,7 @@ test("plugins disable --all reports plugins still enabled by a higher-priority c
       if (options.plugin === "broken@market") throw new Error("config write failed");
       const target = plugins.find((plugin) => plugin.id === options.plugin);
       if (target && options.plugin !== "pinned@market") target.enabled = false;
-      return { enabled: false, path: "/home/u/.zcode/config.json", plugin: loadedPlugin({ id: options.plugin, enabled: false }) };
+      return { enabled: false, path: "/home/u/.zcoder/config.json", plugin: loadedPlugin({ id: options.plugin, enabled: false }) };
     }) as never,
   };
 

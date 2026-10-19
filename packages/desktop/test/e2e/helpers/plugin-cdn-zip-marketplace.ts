@@ -78,7 +78,7 @@ export function seedPluginCdnZipMarketplaceFixture(input: {
   e2eHomeDir: string;
   server: PluginCdnZipFixtureServer;
 }): void {
-  const pluginStorageRoot = join(input.e2eHomeDir, ".zcode", "cli", "plugins");
+  const pluginStorageRoot = join(input.e2eHomeDir, ".zcoder", "cli", "plugins");
   const marketplaceSourceRoot = join(
     input.e2eHomeDir,
     "fixtures",

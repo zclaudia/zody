@@ -126,7 +126,7 @@ mcpServers:
   it("preserves concrete provider and custom model values from frontmatter", () => {
     const providerModel = parseAgentProfileFromMarkdown({
       source: "user",
-      path: "/home/user/.zcode/agents/reviewer.md",
+      path: "/home/user/.zcoder/agents/reviewer.md",
       content: `---
 name: reviewer
 description: Use a concrete provider model
@@ -137,7 +137,7 @@ Review carefully.`,
     });
     const customModel = parseAgentProfileFromMarkdown({
       source: "user",
-      path: "/home/user/.zcode/agents/reviewer-custom.md",
+      path: "/home/user/.zcoder/agents/reviewer-custom.md",
       content: `---
 name: reviewer-custom
 description: Use the UI custom model value

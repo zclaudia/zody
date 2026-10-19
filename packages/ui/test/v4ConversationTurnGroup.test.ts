@@ -2209,7 +2209,7 @@ const LAUNCH_META: WorkflowLaunchMeta = {
   toolCallId: "launch-abc",
   name: "deep-research",
   scope: "global",
-  path: "/home/u/.zcode/workflows/deep-research.dwf.ts",
+  path: "/home/u/.zcoder/workflows/deep-research.dwf.ts",
   description: "跨网深挖一个话题并写简报。",
   args: { topic: "adaptive concurrency" },
 };

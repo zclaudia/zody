@@ -477,7 +477,7 @@ describe("WorkflowRunSidePane 状态头与阶段清单", () => {
       toolCallId: "tool-wf-1",
       name: "Fan-out review",
       scope: "global" as const,
-      path: "/home/u/.zcode/workflows/fan-out-review.dwf.ts",
+      path: "/home/u/.zcoder/workflows/fan-out-review.dwf.ts",
       description: "Review a change from several angles.",
       args: { topic: "adaptive concurrency", depth: 3 },
       display: graphRow.display,

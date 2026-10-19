@@ -1,6 +1,6 @@
 /**
  * Renderer 端日志工具
- * 通过 IPC 将日志传到 main 进程统一写入 ~/.zcode/v2/logs/YYYY-MM-DD.log
+ * 通过 IPC 将日志传到 main 进程统一写入 ~/.zcoder/v2/logs/YYYY-MM-DD.log
  * 同时保留 console 输出方便开发调试
  */
 import { formatLogPrefix } from "@zcode/shared";

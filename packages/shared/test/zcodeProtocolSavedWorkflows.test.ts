@@ -58,15 +58,15 @@ describe("zcode-protocol saved workflows", () => {
           name: "x",
           description: "d",
           scope: "global",
-          path: "/home/me/.zcode/workflows/x.dwf.ts",
+          path: "/home/me/.zcoder/workflows/x.dwf.ts",
           args: { branch: { type: "string", required: true } },
         },
       ],
       invalid: [{ path: "/repo/.zcode/workflows/bad.dwf.ts", reason: "invalid_yaml" }],
-      dir: "/home/me/.zcode/workflows",
+      dir: "/home/me/.zcoder/workflows",
     });
     expect(result.workflows[0]?.args?.branch?.required).toBe(true);
-    expect(result.dir).toBe("/home/me/.zcode/workflows");
+    expect(result.dir).toBe("/home/me/.zcoder/workflows");
     // dir 缺席即拒（GUI 的文件监听没有它就无处可 watch）。
     expect(() =>
       zcodeWorkflowsListResultSchema.parse({
@@ -265,12 +265,12 @@ describe("zcode-protocol saved workflows", () => {
 
     const ok = zcodeWorkflowsMoveResultSchema.parse({
       ok: true,
-      from: "/home/me/.zcode/workflows/x.dwf.ts",
+      from: "/home/me/.zcoder/workflows/x.dwf.ts",
       to: "/repo/.zcode/workflows/x.dwf.ts",
     });
     expect(ok).toEqual({
       ok: true,
-      from: "/home/me/.zcode/workflows/x.dwf.ts",
+      from: "/home/me/.zcoder/workflows/x.dwf.ts",
       to: "/repo/.zcode/workflows/x.dwf.ts",
     });
     for (const reason of [

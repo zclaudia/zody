@@ -4,6 +4,7 @@ import type { CollaborationMode } from "../interfaces/session.port.js";
 import type { McpServerConfig } from "../interfaces/mcp.port.js";
 import type { HooksRuntimeConfig, HooksRuntimeConfigPatch } from "../hooks/index.js";
 import type { PluginConfig, PluginOptionValues } from "../plugins/index.js";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 
 // ============================================================
 // Config Key Types
@@ -299,8 +300,9 @@ export const DefaultRuntimeConfig: RuntimeConfig = {
     allowMediumRiskInAuto: false,
   },
   storage: {
-    dir: "~/.zcode",
-    sessionDbPath: "~/.zcode/cli/db/db.sqlite",
+    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    dir: `~/${ZCODE_DATA_ROOT_DIR_NAME}`,
+    sessionDbPath: `~/${ZCODE_DATA_ROOT_DIR_NAME}/cli/db/db.sqlite`,
   },
   network: {
     timeout: 180000,

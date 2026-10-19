@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 import {
   BUILTIN_WORKFLOW_COMMAND_NAME,
   expandBuiltinWorkflowCommandPrompt,
@@ -101,7 +102,8 @@ function buildInitAgentsPrompt(params: {
     `- Instruction file: ${params.targetPath}`,
     `- Existing hidden instruction candidates: ${join(params.workingDirectory, ".zcode", "AGENTS.md")} and ${join(params.workingDirectory, ".agents", "AGENTS.md")}`,
     "- File name must be exactly AGENTS.md.",
-    "- This command targets the current workspace only. Do not write ~/.zcode/AGENTS.md.",
+    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    `- This command targets the current workspace only. Do not write ~/${ZCODE_DATA_ROOT_DIR_NAME}/AGENTS.md.`,
     additionalInstructions,
     "",
     "Process:",

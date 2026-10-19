@@ -21,7 +21,7 @@ describe("redactTelemetryText", () => {
 
   it("覆盖 /home、/root 与 macOS 临时目录", () => {
     const redacted = redactTelemetryText(
-      "read /home/bob/.zcode failed; tmp /var/folders/xy/zz/T/zcode-123 missing",
+      "read /home/bob/.zcoder failed; tmp /var/folders/xy/zz/T/zcode-123 missing",
     );
     expect(redacted).not.toContain("bob");
     expect(redacted).not.toContain("/var/folders");

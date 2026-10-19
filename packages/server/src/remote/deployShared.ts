@@ -3,8 +3,10 @@ import { access } from "node:fs/promises";
 import type { StdioStream } from "@zcode/server/remote/backend.js";
 import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
 import type { RemoteAssetNetworkPort } from "@zcode/server/remote/remoteAssetNetwork.js";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 
-export const REMOTE_BASE = "~/.zcode/server";
+// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+export const REMOTE_BASE = `~/${ZCODE_DATA_ROOT_DIR_NAME}/server`;
 
 export interface RemoteAssetDeployOptions {
   /** 取消当前连接初始化；共享 cache 仍可独立完成，但不得继续写入远端 staging。 */

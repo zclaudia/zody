@@ -585,9 +585,12 @@ function sanitizeFileSegment(value?: string): string {
 }
 
 // storage profile 回滚删除了自定义 CLI 根模块，遗留 import 会让 adapters 无法构建。
-// 这里保持历史语义：开发态写 ~/.zcode/cli/debug，生产态写 ~/.zcode/cli/rollout。
+// 这里保持历史语义：开发态写 ~/.zcoder/cli/debug，生产态写 ~/.zcoder/cli/rollout。
 function getModelIOBaseDir(isDev: boolean): string {
-  return join(homedir(), ".zcode", "cli", isDev ? "debug" : "rollout");
+  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // 该目录名同时由 @zcode/shared 的 ZCODE_DATA_ROOT_DIR_NAME 定义；这里保留字面量以匹配
+  // 既有的源码级回归断言（runner-debug-storage-rollback.test.ts）。
+  return join(homedir(), ".zcoder", "cli", isDev ? "debug" : "rollout");
 }
 
 function stringifyDebugRecord(record: Record<string, unknown>): string {

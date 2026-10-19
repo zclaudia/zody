@@ -485,7 +485,7 @@ describe("ListSavedWorkflowsToolCallBlock", () => {
     const withGlobal = {
       workflows: [
         LIST_RESULT.workflows[0],
-        { name: "deep-research", description: "深度调研", scope: "global", path: "/home/.zcode/workflows/deep-research.dwf.ts" },
+        { name: "deep-research", description: "深度调研", scope: "global", path: "/home/.zcoder/workflows/deep-research.dwf.ts" },
       ],
       invalid: [],
     };

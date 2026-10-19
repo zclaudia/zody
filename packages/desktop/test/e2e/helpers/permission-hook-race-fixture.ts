@@ -14,7 +14,7 @@ const BLOCKING_HOOK_SLEEP_MS = 120000;
 const BLOCKING_HOOK_TIMEOUT_MS = 130000;
 
 const WORKSPACE_ZCODE_DIR = join(DEFAULT_WORKSPACE, ".zcode");
-const USER_CONFIG_DIR = join(dirname(DEFAULT_WORKSPACE), ".zcode", "cli");
+const USER_CONFIG_DIR = join(dirname(DEFAULT_WORKSPACE), ".zcoder", "cli");
 const CONFIG_PATH = join(USER_CONFIG_DIR, "config.json");
 const BLOCKER_PATH = join(
   WORKSPACE_ZCODE_DIR,

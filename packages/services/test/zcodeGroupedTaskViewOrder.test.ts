@@ -329,14 +329,14 @@ describe("grouped task view order", () => {
   it("keeps conversation tasks ungrouped during the legacy workspace bootstrap", async () => {
     const repo = createTrackedRepo();
     await seedTask(repo, "conversation-task", 100, {
-      workspacePath: "/Users/demo/.zcode/workspace/default",
+      workspacePath: "/Users/demo/.zcoder/workspace/default",
       workspacePurpose: "conversation",
     });
 
     const view = await repo.queryGroupedTaskView({
       workspaceScopes: [
         {
-          workspacePath: "/Users/demo/.zcode/workspace/default",
+          workspacePath: "/Users/demo/.zcoder/workspace/default",
           workspacePurpose: "conversation",
         },
       ],
@@ -348,7 +348,7 @@ describe("grouped task view order", () => {
 
   it("stamps conversation purpose from the query scope onto task-list results", async () => {
     const repo = createTrackedRepo();
-    const workspacePath = "/Users/demo/.zcode/workspace/default";
+    const workspacePath = "/Users/demo/.zcoder/workspace/default";
     await seedTask(repo, "conversation-list-task", 100, { workspacePath });
 
     const result = await repo.queryTaskList({

@@ -59,7 +59,7 @@ function makeDir(prefix: string): string {
   return dir;
 }
 
-// 全局根默认取 os.homedir()：把 HOME 指到空临时目录，避免扫到开发机真实的 ~/.zcode/workflows。
+// 全局根默认取 os.homedir()：把 HOME 指到空临时目录，避免扫到开发机真实的 ~/.zcoder/workflows。
 let originalHome: string | undefined;
 let originalUserProfile: string | undefined;
 beforeEach(() => {

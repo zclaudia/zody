@@ -19,8 +19,8 @@ describe("localMediaPreviewProtocol", () => {
   });
 
   it.each([
-    "/Users/test/.zcode/cli/video-cache/session/demo.mov",
-    "C:\\Users\\test\\.zcode\\cli\\video-cache\\session\\demo.mp4",
+    "/Users/test/.zcoder/cli/video-cache/session/demo.mov",
+    "C:\\Users\\test\\.zcoder\\cli\\video-cache\\session\\demo.mp4",
     "\\\\server\\share\\demo.avi",
   ])("passes an exactly authorized media path to Electron's file loader: %s", async (path) => {
     let handler:

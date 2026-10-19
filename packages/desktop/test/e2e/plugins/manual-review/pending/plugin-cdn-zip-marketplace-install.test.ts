@@ -56,7 +56,7 @@ describe("PLM-LC-007 Desktop local URL ZIP plugin UI lifecycle", () => {
     await installPluginThroughUi(PLUGIN_CDN_ZIP_ID);
 
     const paths = getE2EAppDataPaths();
-    const pluginStorageRoot = join(paths.homeDir, ".zcode", "cli", "plugins");
+    const pluginStorageRoot = join(paths.homeDir, ".zcoder", "cli", "plugins");
     const cacheRoot = join(
       pluginStorageRoot,
       "cache",

@@ -37,7 +37,7 @@ describe("desktop main logger", () => {
 
       expect(() => logger.info("main log append fault")).not.toThrow();
 
-      const logDir = join(tempRoot, ".zcode", "v2", "logs");
+      const logDir = join(tempRoot, ".zcoder", "v2", "logs");
       await expect(readdir(logDir)).resolves.toEqual([]);
 
       expect(services.getProcessFsFaultInjector().getHits()).toMatchObject([
