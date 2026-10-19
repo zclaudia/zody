@@ -62,36 +62,32 @@ describe("e2ecase.md 回归", () => {
     await waitForWorkspaceApp(DEFAULT_WORKSPACE, 30000);
   });
 
-  it("工作区头像菜单点击使用统计应打开设置页用量分区", async () => {
+  // fork（F4.1b/F4.5，D2 路线 B）：头像菜单的「升级套餐 / 使用统计」入口已按官方账号
+  // 移除产品规则摘除，本地 App Usage 仍可从设置页导航进入 usage 分区。原 upstream 用例
+  // 期望点击头像菜单「使用统计」打开/停留 usage 分区，此处改为否定断言锁定 fork 行为。
+  it("工作区头像菜单不再出现使用统计入口（fork 摘除）", async () => {
     await waitForDefaultWorkspaceReady(30000);
 
-    await openUsageStatsFromProfileMenu();
-    await $(sel(TID_SETTINGS_PAGE)).waitForDisplayed({ timeout: 15000 });
-    await expectSettingsSectionActive("usage");
-
-    await clickTestIdByDom(TID_SETTINGS_BACK_BUTTON, {
+    await clickVisibleTestIdByDom(TID_LOGIN_TRIGGER, {
       timeout: 15000,
-      timeoutMsg: "设置页返回按钮没有出现",
+      timeoutMsg: "没有找到可见的头像菜单入口",
     });
-    await waitForWorkspaceApp(DEFAULT_WORKSPACE, 30000);
+    const usageEntry = await $(sel(TID_SIDEBAR_CODING_PLAN_USAGE_BUTTON));
+    await expect(await usageEntry.isExisting()).toBe(false);
   });
 
-  it("设置页头像菜单点击使用统计应停留设置页用量分区", async () => {
+  it("设置页头像菜单不再出现使用统计入口（fork 摘除）", async () => {
     await waitForDefaultWorkspaceReady(30000);
     await openSettingsPage();
     await selectSettingsSection("general");
     await expectSettingsSectionActive("general");
 
-    await openUsageStatsFromProfileMenu();
-    await $(sel(TID_SETTINGS_PAGE)).waitForDisplayed({ timeout: 15000 });
-    await expect($(sel(TID_SETTINGS_PAGE))).toBeDisplayed();
-    await expectSettingsSectionActive("usage");
-
-    await clickTestIdByDom(TID_SETTINGS_BACK_BUTTON, {
+    await clickVisibleTestIdByDom(TID_LOGIN_TRIGGER, {
       timeout: 15000,
-      timeoutMsg: "设置页返回按钮没有出现",
+      timeoutMsg: "没有找到可见的头像菜单入口",
     });
-    await waitForWorkspaceApp(DEFAULT_WORKSPACE, 30000);
+    const usageEntry = await $(sel(TID_SIDEBAR_CODING_PLAN_USAGE_BUTTON));
+    await expect(await usageEntry.isExisting()).toBe(false);
   });
 
   it.skip("任务运行中应允许快速发送下一条并保留输入框草稿", async function () {
@@ -231,17 +227,6 @@ async function openSettingsPage() {
     timeoutMsg: "没有找到设置入口按钮",
   });
   await $(sel(TID_SETTINGS_PAGE)).waitForDisplayed({ timeout: 15000 });
-}
-
-async function openUsageStatsFromProfileMenu() {
-  await clickVisibleTestIdByDom(TID_LOGIN_TRIGGER, {
-    timeout: 15000,
-    timeoutMsg: "没有找到可见的头像菜单入口",
-  });
-  await clickVisibleTestIdByDom(TID_SIDEBAR_CODING_PLAN_USAGE_BUTTON, {
-    timeout: 15000,
-    timeoutMsg: "头像菜单没有出现可见的使用统计入口",
-  });
 }
 
 async function selectSettingsSection(section: string) {
