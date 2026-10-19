@@ -1,6 +1,8 @@
 # 手机远控改走 gateway：实施任务拆分
 
-状态：草案（2026-10-17）。对应方案见 [mobile-remote-control-via-gateway.md](mobile-remote-control-via-gateway.md)（下称「方案」）。本文只拆任务，规则以方案为准；两者冲突时先改方案。
+状态：**superseded（2026-10-19）**——功能已整体移除，见 [mobile-remote-control-removal-tasks.md](mobile-remote-control-removal-tasks.md)。本文仅作历史存档。
+
+（原状态：草案（2026-10-17）。对应方案见 [mobile-remote-control-via-gateway.md](mobile-remote-control-via-gateway.md)。）
 
 ## 拆分原则
 
