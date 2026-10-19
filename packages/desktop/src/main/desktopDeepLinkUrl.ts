@@ -1,63 +1,25 @@
 const DEEP_LINK_SCHEME = "zcode";
 const DEEP_LINK_RE = /\bzcode:(?:\/\/|\/)?[^\s"'<>]+/i;
-const OAUTH_CALLBACK_HOSTS = new Set(["oauth"]);
-const PAYMENT_CALLBACK_HOST = "payment";
 const WORKSPACE_OPEN_HOST = "workspace";
-const SHARE_IMPORT_HOST = "share";
+// fork（F4.8）：SHARE_IMPORT_HOST（zcode://share/import）随会话分享功能删除。
 const DEEP_LINK_ADDITIONAL_DATA_KEY = "deepLinkUrl";
 const OPEN_WORKSPACE_ADDITIONAL_DATA_KEY = "openWorkspacePath";
 const OPEN_WORKSPACE_ARG = "--open-workspace";
 
-function normalizeOAuthCallbackPath(pathname: string): string {
+function normalizeDeepLinkPath(pathname: string): string {
   const withoutTrailingSlash = pathname.replace(/\/+$/, "");
   const normalized = withoutTrailingSlash === "" ? "/" : withoutTrailingSlash;
   return `/${normalized.replace(/^\/+/, "")}`;
 }
 
-export function isOAuthCallbackUrl(parsedUrl: URL): boolean {
-  if (parsedUrl.protocol !== `${DEEP_LINK_SCHEME}:`) {
-    return false;
-  }
-
-  const normalizedPath = normalizeOAuthCallbackPath(parsedUrl.pathname);
-  if (OAUTH_CALLBACK_HOSTS.has(parsedUrl.hostname)) {
-    return normalizedPath === "/callback";
-  }
-
-  if (parsedUrl.hostname) {
-    return false;
-  }
-
-  const [, host, ...pathParts] = normalizedPath.split("/");
-  return Boolean(
-    host && OAUTH_CALLBACK_HOSTS.has(host) && `/${pathParts.join("/")}` === "/callback",
-  );
-}
-
-export function isPaymentCallbackUrl(parsedUrl: URL): boolean {
-  if (parsedUrl.protocol !== `${DEEP_LINK_SCHEME}:`) {
-    return false;
-  }
-
-  const normalizedPath = normalizeOAuthCallbackPath(parsedUrl.pathname);
-  if (parsedUrl.hostname === PAYMENT_CALLBACK_HOST) {
-    return normalizedPath === "/callback";
-  }
-
-  if (parsedUrl.hostname) {
-    return false;
-  }
-
-  const [, host, ...pathParts] = normalizedPath.split("/");
-  return Boolean(host === PAYMENT_CALLBACK_HOST && `/${pathParts.join("/")}` === "/callback");
-}
+// fork（F4.7）：zcode://oauth/callback 与 zcode://payment/callback 判定随官方账号链删除。
 
 export function isWorkspaceOpenUrl(parsedUrl: URL): boolean {
   if (parsedUrl.protocol !== `${DEEP_LINK_SCHEME}:`) {
     return false;
   }
 
-  const normalizedPath = normalizeOAuthCallbackPath(parsedUrl.pathname);
+  const normalizedPath = normalizeDeepLinkPath(parsedUrl.pathname);
   if (parsedUrl.hostname === WORKSPACE_OPEN_HOST) {
     return normalizedPath === "/open";
   }
@@ -79,19 +41,7 @@ export function extractWorkspaceOpenPath(parsedUrl: URL): string | null {
   return path && path.length > 0 ? path : null;
 }
 
-export function isShareImportUrl(parsedUrl: URL): boolean {
-  return (
-    parsedUrl.protocol === `${DEEP_LINK_SCHEME}:` &&
-    parsedUrl.hostname === SHARE_IMPORT_HOST &&
-    normalizeOAuthCallbackPath(parsedUrl.pathname) === "/import"
-  );
-}
-
-export function extractShareImportCode(parsedUrl: URL): string | null {
-  if (!isShareImportUrl(parsedUrl)) return null;
-  const code = parsedUrl.searchParams.get("code")?.trim();
-  return code && /^[A-Za-z0-9._~-]{1,512}$/u.test(code) ? code : null;
-}
+// fork（F4.8）：isShareImportUrl / extractShareImportCode 随分享导入深链删除。
 
 function decodeDeepLinkCandidate(value: string): string | null {
   try {
@@ -160,26 +110,11 @@ function isCompleteDeepLinkUrl(value: string): boolean {
     return false;
   }
 
-  if (isOAuthCallbackUrl(parsedUrl)) {
-    return parsedUrl.searchParams.has("state");
-  }
-
-  if (isPaymentCallbackUrl(parsedUrl)) {
-    return (
-      parsedUrl.searchParams.has("provider") &&
-      parsedUrl.searchParams.has("channel") &&
-      parsedUrl.searchParams.has("status")
-    );
-  }
-
   if (isWorkspaceOpenUrl(parsedUrl)) {
     return parsedUrl.searchParams.has("path");
   }
 
-  if (isShareImportUrl(parsedUrl)) {
-    return extractShareImportCode(parsedUrl) !== null;
-  }
-
+  // fork（F4.8）：share import 深链校验随会话分享功能删除。
   return true;
 }
 

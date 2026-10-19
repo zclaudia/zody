@@ -536,10 +536,14 @@ const appSettingsObjectSchema = z.object({
     ...ZCODE_ENABLED_AGENT_PROVIDERS,
   ]),
   startPlanRecommendationDismissed: z.boolean().default(false),
-  providerFamilyConnectionSelections: providerFamilyConnectionSelectionSettingsSchema.default({}),
-  providerFamilyDomain: providerFamilyDomainSchema.optional(),
-  providerFamilyDomainUpdatedAt: z.number().int().nonnegative().optional(),
-  providerFamilyDomainMigrated: z.boolean().default(false),
+  // fork（F4.11）：providerFamily* 是官方账号时代的存量设置；官方账号链路删除后运行时不读取，
+  // 但必须继续宽松解析（catch 兜底）以免旧 settings 因历史值让整份 AppSettings 校验失败。
+  providerFamilyConnectionSelections: providerFamilyConnectionSelectionSettingsSchema
+    .default({})
+    .catch({}),
+  providerFamilyDomain: providerFamilyDomainSchema.optional().catch(undefined),
+  providerFamilyDomainUpdatedAt: z.number().int().nonnegative().optional().catch(undefined),
+  providerFamilyDomainMigrated: z.boolean().default(false).catch(false),
   nativeSearchEnhancementsEnabled: z.boolean().default(true),
   onboardingOccupation: appSettingsOccupationSchema.nullish(),
   proactiveSuggestionsEnabled: z.boolean().optional(),
@@ -620,10 +624,16 @@ export const appSettingsPatchSchema = z.object({
   dynamicWorkflowMode: z.union([z.enum(DYNAMIC_WORKFLOW_MODES), z.literal("")]).optional(),
   enabledBuiltinAgentCliProviders: enabledBuiltinAgentCliProvidersSchema.optional(),
   startPlanRecommendationDismissed: z.boolean().optional(),
-  providerFamilyConnectionSelections: providerFamilyConnectionSelectionSettingsSchema.optional(),
-  providerFamilyDomain: z.union([providerFamilyDomainSchema, z.literal("")]).optional(),
-  providerFamilyDomainUpdatedAt: z.number().int().nonnegative().optional(),
-  providerFamilyDomainMigrated: z.boolean().optional(),
+  // fork（F4.11）：同 AppSettings 主 schema，旧账号字段保持宽松解析、运行时不读取。
+  providerFamilyConnectionSelections: providerFamilyConnectionSelectionSettingsSchema
+    .optional()
+    .catch(undefined),
+  providerFamilyDomain: z
+    .union([providerFamilyDomainSchema, z.literal("")])
+    .optional()
+    .catch(undefined),
+  providerFamilyDomainUpdatedAt: z.number().int().nonnegative().optional().catch(undefined),
+  providerFamilyDomainMigrated: z.boolean().optional().catch(undefined),
   nativeSearchEnhancementsEnabled: z.boolean().optional(),
   onboardingOccupation: z
     .enum([

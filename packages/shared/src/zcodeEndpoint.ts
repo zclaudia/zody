@@ -1,27 +1,27 @@
 import type { ZCodeEnv } from "./env.js";
 
-export const DEFAULT_ZCODE_ENDPOINT_ORIGIN = "https://zcode.z.ai";
-export const TEST_ZCODE_ENDPOINT_ORIGIN = "https://zcode.z.ai";
-export const CODING_PLAN_LOCAL_WEBVIEW_ORIGIN = "http://localhost:3000";
-export const DEFAULT_BIGMODEL_API_ORIGIN = "https://bigmodel.cn";
-export const TEST_BIGMODEL_API_ORIGIN = "https://bigmodel.cn";
-export const DEFAULT_ZAI_OAUTH_ORIGIN = "https://chat.z.ai";
-export const TEST_ZAI_OAUTH_ORIGIN = "https://chat.z.ai";
-export const DEFAULT_ZAI_BUSINESS_BASE_URL = "https://api.z.ai";
-export const TEST_ZAI_BUSINESS_BASE_URL = "https://api.z.ai";
-export const DEFAULT_ZAI_OAUTH_CLIENT_ID = "client_P8X5CMWmlaRO9gyO-KSqtg";
-export const TEST_ZAI_OAUTH_CLIENT_ID = "client_P8X5CMWmlaRO9gyO-KSqtg";
+/**
+ * fork（F3.1）：默认端点为「未配置」。
+ *
+ * 空字符串是唯一未配置语义：消费方必须关闭对应远端能力或回落内置值，
+ * 不得再默认指向官方地址。历史实现与 TEST_* 同址指向官方域名，
+ * 导致未配置环境仍会向官方发请求（见 specs/fork-official-deps-removal-plan.md 3b）。
+ */
+export const DEFAULT_ZCODE_ENDPOINT_ORIGIN = "";
 
-export interface ZCodeEndpointUrls {
-  origin: string;
-  apiBaseUrl: string;
-  webRemoteCallbackUrl: string;
-  webShareCallbackUrl: string;
-  zcodePlanOpenAiBaseUrl: string;
-  zcodePlanAnthropicBaseUrl: string;
-  zcodePlanBillingCurrentUrl: string;
-  zcodePlanBillingBalanceUrl: string;
-}
+/**
+ * fork（F3.1）：测试环境占位端点。
+ *
+ * `example.invalid` 是 RFC 2606 保留域名，保证测试环境即使漏配也不会命中真实服务；
+ * 真实的 fork 测试域由部署方通过 ZCODE_TEST_BASE_URL / ZCODE_BASE_URL 显式注入。
+ */
+export const TEST_ZCODE_ENDPOINT_ORIGIN = "https://example.invalid";
+
+// fork（F4.11）：BigModel/OAuth/business 端点常量与解析函数（DEFAULT_BIGMODEL_API_ORIGIN、
+// DEFAULT_ZAI_OAUTH_ORIGIN、DEFAULT_ZAI_BUSINESS_BASE_URL、ZAI_OAUTH_CLIENT_ID 及对应
+// resolve/build 函数、RuntimeProductEndpointConfig）随官方账号体系删除。
+// BYOK 的公开 API 地址（https://api.z.ai/api/anthropic、https://open.bigmodel.cn/api/anthropic
+// 及标准 API 模板地址）在 config/provider/zcode-builtin.json 与 provider 配置中保留，不经过本文件。
 
 export interface RuntimeZCodeEndpointEnv {
   [key: string]: string | undefined;
@@ -32,57 +32,12 @@ export interface RuntimeZCodeEndpointEnv {
   ZCODE_PRODUCTION_BASE_URL?: string;
 }
 
-export interface RuntimeBigModelApiEnv {
-  [key: string]: string | undefined;
-  ZCODE_ENV?: string;
-  BIGMODEL_API_BASE_URL?: string;
-  BIGMODEL_TEST_API_BASE_URL?: string;
-  BIGMODEL_PRODUCTION_API_BASE_URL?: string;
-}
-
-export interface RuntimeZaiEndpointEnv {
-  [key: string]: string | undefined;
-  ZCODE_ENV?: string;
-  ZAI_OAUTH_ORIGIN?: string;
-  ZAI_TEST_OAUTH_ORIGIN?: string;
-  ZAI_PRODUCTION_OAUTH_ORIGIN?: string;
-  ZAI_BUSINESS_BASE_URL?: string;
-  ZAI_TEST_BUSINESS_BASE_URL?: string;
-  ZAI_PRODUCTION_BUSINESS_BASE_URL?: string;
-  ZAI_OAUTH_CLIENT_ID?: string;
-  ZAI_TEST_OAUTH_CLIENT_ID?: string;
-  ZAI_PRODUCTION_OAUTH_CLIENT_ID?: string;
-  ZAI_OAUTH_APP_ID?: string;
-}
-
-export interface RuntimeProductEndpointEnv
-  extends RuntimeZCodeEndpointEnv, RuntimeBigModelApiEnv, RuntimeZaiEndpointEnv {}
-
-export interface RuntimeProductEndpointConfig {
-  zcodeEnv: ZCodeEnv;
-  zcodeEndpointOrigin: string;
-  zcodeEndpointUrls: ZCodeEndpointUrls;
-  zaiOAuthOrigin: string;
-  zaiBusinessBaseUrl: string;
-  zaiOAuthClientId: string;
-  bigModelApiOrigin: string;
-}
-
 function readRuntimeEnvValue(
   env: Record<string, string | undefined>,
   key: string,
 ): string | undefined {
   const value = env[key]?.trim();
   return value ? value : undefined;
-}
-
-function readRuntimeZCodeEnvScopedValue(
-  env: Record<string, string | undefined>,
-  zcodeEnv: ZCodeEnv,
-  testKey: string,
-  productionKey: string,
-): string | undefined {
-  return readRuntimeEnvValue(env, zcodeEnv === "production" ? productionKey : testKey);
 }
 
 export function normalizeZCodeEndpointOrigin(value: string): string {
@@ -98,33 +53,6 @@ export function normalizeZCodeEndpointOrigin(value: string): string {
   return parsed.origin;
 }
 
-function isLoopbackHostname(hostname: string): boolean {
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
-}
-
-export function isTrustedCodingPlanWebviewOrigin(
-  value: string | null | undefined,
-  options?: {
-    e2eStoreBridgeEnabled?: boolean;
-  },
-): boolean {
-  if (!value) return false;
-  try {
-    const origin = normalizeZCodeEndpointOrigin(value);
-    if (
-      origin === DEFAULT_ZCODE_ENDPOINT_ORIGIN ||
-      origin === TEST_ZCODE_ENDPOINT_ORIGIN ||
-      origin === CODING_PLAN_LOCAL_WEBVIEW_ORIGIN
-    ) {
-      return true;
-    }
-    const parsed = new URL(origin);
-    return options?.e2eStoreBridgeEnabled === true && isLoopbackHostname(parsed.hostname);
-  } catch {
-    return false;
-  }
-}
-
 export function resolveZCodeEndpointOrigin(options?: {
   env?: ZCodeEnv;
   envBaseOrigin?: string | null;
@@ -133,6 +61,7 @@ export function resolveZCodeEndpointOrigin(options?: {
   const env = options?.env ?? "test";
   const envBaseOrigin = options?.envBaseOrigin?.trim();
   if (env === "production") {
+    // fork（F3.1）：生产环境未显式配置时返回空（未配置），不再回落官方地址。
     return envBaseOrigin
       ? normalizeZCodeEndpointOrigin(envBaseOrigin)
       : DEFAULT_ZCODE_ENDPOINT_ORIGIN;
@@ -147,7 +76,9 @@ export function resolveZCodeEndpointOrigin(options?: {
 }
 
 export function resolveRuntimeZCodeEnv(env: RuntimeZCodeEndpointEnv = {}): ZCodeEnv {
-  // 独立 CLI / 服务测试未注入 ZCODE_ENV 时默认生产域；桌面测试包会显式下发 ZCODE_ENV=test。
+  // 独立 CLI / 服务测试未注入 ZCODE_ENV 时默认生产环境；桌面测试包会显式下发 ZCODE_ENV=test。
+  // fork（F3.1）：「生产环境」只决定读取 ZCODE_PRODUCTION_BASE_URL，不再意味着官方地址；
+  // 端点未配置时 resolveRuntimeZCodeEndpointOrigin 返回空字符串。
   return env.ZCODE_ENV?.trim().toLowerCase() === "test" ? "test" : "production";
 }
 
@@ -171,157 +102,55 @@ export function resolveRuntimeZCodeEndpointOrigin(
   });
 }
 
-export function buildRuntimeZCodeEndpointUrls(
-  env: RuntimeZCodeEndpointEnv = {},
-): ZCodeEndpointUrls {
-  return buildZCodeEndpointUrls(resolveRuntimeZCodeEndpointOrigin(env));
-}
-
 export function buildRuntimeZCodeApiUrl(env: RuntimeZCodeEndpointEnv = {}, path: string): string {
+  const endpointOrigin = resolveRuntimeZCodeEndpointOrigin(env);
+  // fork（F3.1）：未配置端点时返回空字符串，消费方据此关闭远端能力；
+  // 不能返回 `${""}${path}` 这类相对 URL（Node fetch 会直接抛 TypeError）。
+  if (!endpointOrigin) {
+    return "";
+  }
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${resolveRuntimeZCodeEndpointOrigin(env)}${normalizedPath}`;
+  return `${endpointOrigin}${normalizedPath}`;
 }
 
-export function resolveBigModelApiOrigin(env: RuntimeBigModelApiEnv = {}): string {
-  const zcodeEnv = resolveRuntimeZCodeEnv(env);
-  const scopedBaseOrigin =
-    zcodeEnv === "production"
-      ? readRuntimeEnvValue(env, "BIGMODEL_PRODUCTION_API_BASE_URL")
-      : readRuntimeEnvValue(env, "BIGMODEL_TEST_API_BASE_URL");
-  const fallbackOrigin =
-    zcodeEnv === "production" ? DEFAULT_BIGMODEL_API_ORIGIN : TEST_BIGMODEL_API_ORIGIN;
+export function rewriteZCodeEndpointUrl(
+  input: string | URL,
+  endpointOrigin: string,
+  options: {
+    /**
+     * 要改写的源 origin。缺省使用 DEFAULT_ZCODE_ENDPOINT_ORIGIN。
+     *
+     * fork（F3.1）：DEFAULT 为空（未配置）时不做任何改写；需要改写构建期配置地址的
+     * 调用方（例如遥测上报）必须显式传入自己的源 origin，不能再假设存在官方默认源。
+     */
+    sourceOrigin?: string;
+  } = {},
+): string | URL {
+  const targetValue = endpointOrigin.trim();
+  // 目标端点为「未配置」时保持原地址，避免拼出相对 URL。
+  if (!targetValue) {
+    return input;
+  }
+  const sourceValue = (options.sourceOrigin ?? DEFAULT_ZCODE_ENDPOINT_ORIGIN).trim();
+  // fork（F3.1）：没有显式源 origin 就没有可改写的默认地址。
+  if (!sourceValue) {
+    return input;
+  }
 
-  return normalizeZCodeEndpointOrigin(
-    readRuntimeEnvValue(env, "BIGMODEL_API_BASE_URL") ?? scopedBaseOrigin ?? fallbackOrigin,
-  );
-}
-
-export function buildBigModelApiUrl(env: RuntimeBigModelApiEnv = {}, path: string): string {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${resolveBigModelApiOrigin(env)}${normalizedPath}`;
-}
-
-export function buildBigModelCodingPlanPersonalManageUrl(env: RuntimeBigModelApiEnv = {}): string {
-  // 修复原因：BigModel Coding Plan 管理页要跟随 ZCODE_ENV；
-  // 测试环境如果继续写死 bigmodel.cn，会把测试账号带到生产套餐页。
-  return buildBigModelApiUrl(env, "/coding-plan/personal/overview");
-}
-
-export function buildBigModelCodingPlanTeamManageUrl(env: RuntimeBigModelApiEnv = {}): string {
-  return buildBigModelApiUrl(env, "/coding-plan/team/plans");
-}
-
-export function resolveZaiOAuthOrigin(env: RuntimeZaiEndpointEnv = {}): string {
-  const zcodeEnv = resolveRuntimeZCodeEnv(env);
-  const scopedOrigin = readRuntimeZCodeEnvScopedValue(
-    env,
-    zcodeEnv,
-    "ZAI_TEST_OAUTH_ORIGIN",
-    "ZAI_PRODUCTION_OAUTH_ORIGIN",
-  );
-  const fallbackOrigin =
-    zcodeEnv === "production" ? DEFAULT_ZAI_OAUTH_ORIGIN : TEST_ZAI_OAUTH_ORIGIN;
-
-  return normalizeZCodeEndpointOrigin(
-    readRuntimeEnvValue(env, "ZAI_OAUTH_ORIGIN") ?? scopedOrigin ?? fallbackOrigin,
-  );
-}
-
-export function resolveZaiBusinessBaseUrl(env: RuntimeZaiEndpointEnv = {}): string {
-  const zcodeEnv = resolveRuntimeZCodeEnv(env);
-  const scopedOrigin = readRuntimeZCodeEnvScopedValue(
-    env,
-    zcodeEnv,
-    "ZAI_TEST_BUSINESS_BASE_URL",
-    "ZAI_PRODUCTION_BUSINESS_BASE_URL",
-  );
-  const fallbackOrigin =
-    zcodeEnv === "production" ? DEFAULT_ZAI_BUSINESS_BASE_URL : TEST_ZAI_BUSINESS_BASE_URL;
-
-  return normalizeZCodeEndpointOrigin(
-    readRuntimeEnvValue(env, "ZAI_BUSINESS_BASE_URL") ?? scopedOrigin ?? fallbackOrigin,
-  );
-}
-
-export function resolveZaiOAuthClientId(env: RuntimeZaiEndpointEnv = {}): string {
-  const zcodeEnv = resolveRuntimeZCodeEnv(env);
-  const scopedClientId = readRuntimeZCodeEnvScopedValue(
-    env,
-    zcodeEnv,
-    "ZAI_TEST_OAUTH_CLIENT_ID",
-    "ZAI_PRODUCTION_OAUTH_CLIENT_ID",
-  );
-  const fallbackClientId =
-    zcodeEnv === "production" ? DEFAULT_ZAI_OAUTH_CLIENT_ID : TEST_ZAI_OAUTH_CLIENT_ID;
-
-  return (
-    readRuntimeEnvValue(env, "ZAI_OAUTH_CLIENT_ID") ??
-    scopedClientId ??
-    readRuntimeEnvValue(env, "ZAI_OAUTH_APP_ID") ??
-    fallbackClientId
-  );
-}
-
-export function buildZaiOAuthUrl(origin: string, path: string): string {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${normalizeZCodeEndpointOrigin(origin)}${normalizedPath}`;
-}
-
-export function buildRuntimeZaiOAuthUrl(env: RuntimeZaiEndpointEnv = {}, path: string): string {
-  return buildZaiOAuthUrl(resolveZaiOAuthOrigin(env), path);
-}
-
-export function buildRuntimeZaiBusinessUrl(env: RuntimeZaiEndpointEnv = {}, path: string): string {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${resolveZaiBusinessBaseUrl(env)}${normalizedPath}`;
-}
-
-export function resolveRuntimeProductEndpointConfig(
-  env: RuntimeProductEndpointEnv = {},
-): RuntimeProductEndpointConfig {
-  const zcodeEnv = resolveRuntimeZCodeEnv(env);
-  const zcodeEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(env);
-
-  return {
-    zcodeEnv,
-    zcodeEndpointOrigin,
-    zcodeEndpointUrls: buildZCodeEndpointUrls(zcodeEndpointOrigin),
-    zaiOAuthOrigin: resolveZaiOAuthOrigin(env),
-    zaiBusinessBaseUrl: resolveZaiBusinessBaseUrl(env),
-    zaiOAuthClientId: resolveZaiOAuthClientId(env),
-    bigModelApiOrigin: resolveBigModelApiOrigin(env),
-  };
-}
-
-export function buildZCodeEndpointUrls(origin: string): ZCodeEndpointUrls {
-  const normalizedOrigin = normalizeZCodeEndpointOrigin(origin);
-
-  return {
-    origin: normalizedOrigin,
-    apiBaseUrl: `${normalizedOrigin}/api/v1`,
-    webRemoteCallbackUrl: `${normalizedOrigin}/web-remote/callback`,
-    webShareCallbackUrl: `${normalizedOrigin}/cn/share/callback`,
-    zcodePlanOpenAiBaseUrl: `${normalizedOrigin}/api/v1/zcode-plan`,
-    zcodePlanAnthropicBaseUrl: `${normalizedOrigin}/api/v1/zcode-plan/anthropic`,
-    zcodePlanBillingCurrentUrl: `${normalizedOrigin}/api/v1/zcode-plan/billing/current`,
-    zcodePlanBillingBalanceUrl: `${normalizedOrigin}/api/v1/zcode-plan/billing/balance`,
-  };
-}
-
-export function rewriteZCodeEndpointUrl(input: string | URL, endpointOrigin: string): string | URL {
   const originalUrl = typeof input === "string" ? input : input.toString();
   let parsed: URL;
+  let sourceOrigin: string;
   try {
     parsed = new URL(originalUrl);
+    sourceOrigin = new URL(sourceValue).origin;
   } catch {
     return input;
   }
-  const sourceOrigin = DEFAULT_ZCODE_ENDPOINT_ORIGIN;
   if (parsed.origin !== sourceOrigin) {
     return input;
   }
 
-  const targetOrigin = normalizeZCodeEndpointOrigin(endpointOrigin);
+  const targetOrigin = normalizeZCodeEndpointOrigin(targetValue);
   if (targetOrigin === sourceOrigin) {
     return input;
   }

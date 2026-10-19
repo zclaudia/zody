@@ -108,13 +108,7 @@ const officialPluginPackages = [
     requiredSeedPaths: ["agents/visual-judge.md", "skills/docx/SKILL.md"],
     stagedPath: "packages/documents-plugin",
   },
-  {
-    packageName: "@zcode/image-search-plugin",
-    relativePath: "apps/zcode-cli/packages/image-search-plugin",
-    requiresRuntime: false,
-    requiredSeedPaths: [".mcp.json"],
-    stagedPath: "packages/image-search-plugin",
-  },
+  // fork（F4.6）：image-search 官方 MCP 插件随链删除。
   {
     packageName: "@zcode/pdf-plugin",
     relativePath: "apps/zcode-cli/packages/pdf-plugin",

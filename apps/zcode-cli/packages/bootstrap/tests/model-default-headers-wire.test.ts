@@ -81,7 +81,12 @@ function createFixture(
   );
   if (!provider.ok || !model.ok) throw new Error("invalid header fixture");
   const executionConfig = createRuntimeAiSdkModelExecutionConfig(
-    options.env ?? { ZCODE_APP_VERSION: CLIENT_VERSION, ZCODE_ENV: "production" },
+    options.env ?? {
+      ZCODE_APP_VERSION: CLIENT_VERSION,
+      ZCODE_ENV: "production",
+      // fork（F3.1）：端点未配置时不再发送 HTTP-Referer；这里显式配置来源地址验证 header 链路。
+      ZCODE_BASE_URL: "https://endpoint.example.test",
+    },
     { sourceTitle: options.sourceTitle ?? "electron", appVersion: options.appVersion },
   );
   const adapter = createModelAdapter({ executionConfig, env: {} });
@@ -188,7 +193,7 @@ describe("模型请求默认 Header：Bootstrap → Adapter → 真实 SDK", () 
         expect(headers.get("user-agent")).toContain(`ZCode/${CLIENT_VERSION}`);
         expect(headers.get("x-zcode-app-version")).toBe(CLIENT_VERSION);
         expect(headers.get("x-title")).toBe("Z Code@electron");
-        expect(headers.get("http-referer")).toBe("https://zcode.z.ai");
+        expect(headers.get("http-referer")).toBe("https://endpoint.example.test");
         expect(headers.get("x-zcode-agent")).toBe("glm");
         expect(headers.get("x-release-channel")).toBe("production");
         for (const key of [

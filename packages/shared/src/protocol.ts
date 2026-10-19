@@ -79,6 +79,17 @@ export type Locale = "zh-CN" | "en-US";
 /** 界面语言偏好；system 表示跟随当前运行端系统语言。 */
 export type LocalePreference = "system" | Locale;
 
+/**
+ * fork（F4.11）：官方账号 OAuth 已删除；该类型仅保留给 UI 既有的用户资料展示字段
+ * （运行时不再有账号登录写入，值恒为 null/undefined），随 UI 清理时可删除。
+ */
+export interface UserInfo {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl?: string;
+}
+
 /** ZCode 运行中继续输入时的交互行为 */
 export type ZCodeInteractionBehavior = "queue" | "guide";
 

@@ -34,7 +34,6 @@ describe("createHomeOnlyWebRemoteControlServices", () => {
       await import("../src/mobile-remote/homeOnlyServices.js");
     const services = createHomeOnlyWebRemoteControlServices();
 
-    await expect(services.oauthService.restoreCachedSession()).resolves.toBeNull();
     await expect(services.modelSelectionService.getView()).resolves.toEqual({
       revision: 0,
       providers: [],

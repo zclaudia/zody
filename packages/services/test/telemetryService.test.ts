@@ -193,8 +193,9 @@ describe("telemetryCore", () => {
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    // fork（F3.2）：上报端点由 vitest.config.ts 注入为预留域名 example.invalid。
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://zcode.z.ai/api/v1/event/report",
+      "https://example.invalid/api/v1/event/report",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ "Content-Type": "application/json" }),

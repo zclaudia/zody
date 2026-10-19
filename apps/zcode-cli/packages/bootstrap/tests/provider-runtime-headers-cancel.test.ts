@@ -34,12 +34,6 @@ it("真实工厂同样装配唯一请求端口，完整账号事实透传而不�
     providerId: "account:zai-team-coding-plan",
     modelId: "glm",
     traceContext: { traceId: "test-trace" },
-    accountAccess: {
-      type: "zhipu-account",
-      accountType: "zai",
-      mode: "team-coding-plan",
-      entitled: true,
-    } as const,
     reason: "model-request" as const,
   };
   vi.spyOn(Date, "now").mockReturnValue(1);
@@ -54,7 +48,6 @@ it("真实工厂同样装配唯一请求端口，完整账号事实透传而不�
     expect(first).toMatchObject({
       workspace,
       modelSelection: { providerId: input.providerId, modelId: "glm" },
-      accountAccess: input.accountAccess,
     });
     expect(first).not.toHaveProperty("modelRef");
     expect(second.requestId).not.toBe(first.requestId);
@@ -229,12 +222,6 @@ it("闲时 scope 经过执行投影和私有反向 RPC 保留，SSH workspace �
       traceContext: { traceId: "test-trace" },
       expectedAccountScope: auth?.accountScope,
       rejectedProjectTokenFingerprint: "b".repeat(64),
-      accountAccess: {
-        type: "zhipu-account",
-        accountType: "bigmodel",
-        mode: "off-peak",
-        entitled: true,
-      },
     }),
   ).resolves.toMatchObject({ requestAuth: { apiKey: "fresh-pat", accountScope } });
 });

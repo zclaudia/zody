@@ -321,25 +321,24 @@ describe("Provider Facades", () => {
     expect(view.providers[1]?.config).not.toHaveProperty("label");
   });
 
-  it("消费者有效选择不进入共享 View，旧账号身份即使不在 Registry 也能对应", async () => {
+  it("消费者有效选择不进入共享 View，存在时原样返回", async () => {
     const service = await createService();
-    const facade = new ModelSelectionFacade(service, (id) =>
-      ["old-account", "account"].includes(id) ? "account-plan" : "ordinary",
-    );
+    const facade = new ModelSelectionFacade(service);
+    // fork（F4.11）：账号分类器已删除，选择只按 Registry 中存在的 provider/model 解析。
     const original = {
-      providerId: "old-account",
+      providerId: "account",
       modelId: "m1",
       options: { reasoningLevel: "disabled" },
     };
     const view = facade.getView(undefined, undefined, { selection: original });
-    expect(view.effectiveSelection).toEqual({ ...original, providerId: "account" });
+    expect(view.effectiveSelection).toEqual(original);
     expect(view.selectionIssue).toBeUndefined();
     expect(facade.getView()).not.toHaveProperty("effectiveSelection");
     expect(facade.getView(undefined, undefined, { selection: null }).effectiveSelection).toBeNull();
     expect(
       facade.getView(undefined, undefined, { selection: original }).effectiveSelection,
     ).toEqual(view.effectiveSelection);
-    expect(original.providerId).toBe("old-account");
+    expect(original.providerId).toBe("account");
   });
 
   it("Settings 写操作只接收可序列化配置，并在 Registry 刷新后返回同一份 View", async () => {

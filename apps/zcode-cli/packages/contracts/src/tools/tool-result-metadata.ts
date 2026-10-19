@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { OFFICIAL_MCP_TOOL_ERROR_CODES } from "@zcode/shared";
 import {
   MCP_APPS_RESOURCE_URI_MAX_CHARS,
   MCP_APPS_CONTENT_MAX_BYTES,
@@ -236,15 +235,7 @@ export const mcpToolResultDisplayPayloadSchema = z
     serverName: z.string().min(1).max(MCP_TOOL_DISPLAY_MAX_NAME_CHARS),
     toolName: z.string().min(1).max(MCP_TOOL_DISPLAY_MAX_NAME_CHARS),
     description: z.string().min(1).max(MCP_TOOL_DISPLAY_MAX_DESCRIPTION_CHARS).optional(),
-    /**
-     * 官方 Server MCP 判定本次调用不可用时下发的结构化标识（额度耗尽 / 无 Coding Plan）。
-     * 只在 tool result 为 isError 且该 MCP 为官方来源时出现，UI 据此在输入框上方提示。
-     * 与 code 同源：`@zcode/shared` 的 OFFICIAL_MCP_TOOL_ERROR_CODES。
-     */
-    unavailable: z
-      .object({ code: z.enum(OFFICIAL_MCP_TOOL_ERROR_CODES) })
-      .strict()
-      .optional(),
+    // fork（F4.6）：官方 MCP 的 unavailable 载荷随官方 MCP 删除。
     // 与 `@zcode/shared` v4 toolDisplay 的 mcp_tool.ui 同步；两侧都是 strict，缺一处会被 zod 静默 strip。
     ui: mcpToolDisplayUiPayloadSchema.optional(),
   })

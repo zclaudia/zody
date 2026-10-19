@@ -42,7 +42,6 @@ import {
   ISettingService,
   IOnboardingRecordService,
   IWindowControllerService,
-  IConversationShareService,
   IZCodeAgentService,
   IZCodeTaskService,
   IZCodeSessionService,
@@ -140,7 +139,6 @@ import {
 import { connectServerRemote, type ServerRemoteConnection } from "./serverRemoteConnection.js";
 import { bindBotGroupTaskScope } from "./botGroupTaskScope.js";
 import { createWindowHostAttachmentRegistry } from "./windowHostAttachmentRegistry.js";
-import { scopeConversationShareServiceForAttachment } from "./conversationShareAttachmentService.js";
 import {
   createWindowRemoteConnectionRegistry,
   type WindowRemoteConnectionCloseEvent,
@@ -1786,19 +1784,7 @@ function exposeServicesOnMessagePort(
   if (connectionScope) {
     overrides.set(IZCodeAgentService.channelName, connectionScope.service);
   }
-  const conversationShareService = services.getOptional(IConversationShareService);
-  if (conversationShareService) {
-    // Share service 若继续持有 raw Agent，会绕过当前 MessagePort 已握手的 trusted carrier，
-    // rowsRange 会以 connection untrusted 拒绝。必须复用同一 attachment connection scope。
-    overrides.set(
-      IConversationShareService.channelName,
-      scopeConversationShareServiceForAttachment(
-        conversationShareService,
-        clientMode,
-        connectionScope?.service,
-      ),
-    );
-  }
+  // fork（F4.8）：会话分享服务的 attachment connection scope 覆盖随分享功能删除。
   services.exposeOnChannelServer(server, overrides);
   let disposed = false;
   let flowUpdateChain = Promise.resolve();
@@ -2552,10 +2538,9 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
       initializeServices: async () => {
         logger.info("initializing local services");
         activeSessionRealtimePort = createTaskRealtimeBridgeForHostInit(msg, parentPort);
-        // 旧 Team 补组织必须与网络代理读取共用同一个 Setting 实例及写队列。
-        // 只注入 service 会跳过默认装配分支，导致缺组织的升级用户永远无法恢复连接。
-        const { service: settingService, prepareLegacyAccountConnections } =
-          createSettingServiceWithMigrations();
+        // fork（F4.7）：旧 Team 账号补组织入口随 OAuth/账号链删除；注入同一个
+        // Setting 实例即可与网络代理读取共用写队列。
+        const { service: settingService } = createSettingServiceWithMigrations();
         const hostApiNetworkTransport = createHostApiNetworkTransport(async () => {
           const settings = await settingService.get();
           return {
@@ -2571,7 +2556,6 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
             const initializedServices = createLocalServices({
               parentPort,
               settingService,
-              prepareLegacyAccountConnections,
               hostApiNetworkTransport,
               authorizeLocalMediaPreviewPath,
               // launch.md「The user's choice」：本机用户选择变化后，推给本窗口所有在线的远程 Host。

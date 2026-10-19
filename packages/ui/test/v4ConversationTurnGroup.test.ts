@@ -311,11 +311,6 @@ function renderUnit(
     onFeedbackChange?: (target: ConversationRowTarget, feedback: "like" | "dislike" | null) => void;
     /** 覆盖行渲染上下文的若干键（产物 chips 的门就是 `sessionId` + `onOpenWorkflowArtifact`）。 */
     context?: Partial<ConversationRowRenderContext>;
-    shareSelection?: {
-      eligibleRowIds: ReadonlySet<number>;
-      selectedRowIds: ReadonlySet<number>;
-      onToggle: (rowId: number) => void;
-    };
   } = {},
 ): string {
   return renderToStaticMarkup(
@@ -347,7 +342,6 @@ function renderUnit(
               onFork: options.onFork,
               onRetry: options.onRetry,
               onFeedbackChange: options.onFeedbackChange,
-              shareSelection: options.shareSelection,
             }),
           ),
         ),
@@ -357,59 +351,7 @@ function renderUnit(
 }
 
 describe("ConversationTurnGroup layout", () => {
-  it("shows a checked share toggle before a selectable conversation turn", () => {
-    const [unit] = buildConversationTurnRenderUnits([turnHeader(), userInputRow(2)]);
-    const html = renderUnit(unit!, {
-      shareSelection: {
-        eligibleRowIds: new Set([2]),
-        selectedRowIds: new Set([2]),
-        onToggle: vi.fn(),
-      },
-    });
-
-    expect(html).toContain('data-conversation-share-turn-toggle="true"');
-    expect(html).toContain('data-conversation-share-turn-toggle-state="selected"');
-    expect(html).toContain("top-1/2");
-    expect(html).toContain("-translate-y-1/2");
-    expect(html).toContain('data-state="checked"');
-  });
-
-  it("marks the share toggle indeterminate when a steered turn is only partially selected", () => {
-    const [unit] = buildConversationTurnRenderUnits([
-      turnHeader(),
-      userInputRow(2),
-      userInputRow(3, { text: "顺便看看测试" }),
-    ]);
-    const html = renderUnit(unit!, {
-      shareSelection: {
-        eligibleRowIds: new Set([2, 3]),
-        selectedRowIds: new Set([2]),
-        onToggle: vi.fn(),
-      },
-    });
-
-    expect(html).toContain('data-conversation-share-turn-toggle-state="partial"');
-    expect(html).toContain('data-state="indeterminate"');
-    expect(html).not.toContain('data-conversation-share-turn-toggle-state="unselected"');
-  });
-
-  it("keeps the share toggle unselected when no row of a steered turn is selected", () => {
-    const [unit] = buildConversationTurnRenderUnits([
-      turnHeader(),
-      userInputRow(2),
-      userInputRow(3, { text: "顺便看看测试" }),
-    ]);
-    const html = renderUnit(unit!, {
-      shareSelection: {
-        eligibleRowIds: new Set([2, 3]),
-        selectedRowIds: new Set(),
-        onToggle: vi.fn(),
-      },
-    });
-
-    expect(html).toContain('data-conversation-share-turn-toggle-state="unselected"');
-    expect(html).not.toContain('data-state="indeterminate"');
-  });
+  // fork（F4.8）：分享勾选用例随会话分享功能删除。
 
   it("uses the conversation container for narrow horizontal padding", () => {
     const [unit] = buildConversationTurnRenderUnits([turnHeader(), userInputRow(2)]);

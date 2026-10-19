@@ -4,20 +4,17 @@ import { WorkspaceTerminalToggleButton } from "@/WorkspaceTerminalToggleButton.j
 import { cn } from "@/components/lib/utils.js";
 import type { WorkspaceHeaderActionSectionProps } from "@/WorkspaceHeaderSections/shared.js";
 import { WorkspaceHelpMenuButton } from "@/WorkspaceHelpMenuButton.js";
-import { ConversationShareMenu } from "@/ConversationShareMenu.js";
+// fork（F4.8）：ConversationShareMenu 顶栏分享入口随会话分享功能删除。
 import { DesktopWindowControls } from "@/DesktopWindowControls.js";
 
 export type { WorkspaceHeaderActionSectionProps } from "@/WorkspaceHeaderSections/shared.js";
 
 export function WorkspaceHeaderActionSection({
   variant = "task",
-  activeTaskId,
-  user,
   readOnlyReason,
   workspaceAbsPath,
   workspaceIdentity,
   remoteTarget,
-  isWebRemoteControl = false,
   isDesktop,
   isTerminalOpen,
   isSidePaneOpen,
@@ -48,17 +45,7 @@ export function WorkspaceHeaderActionSection({
           onSelectedEditorChange={onSelectedEditorChange}
         />
       ) : null}
-      {/* 分享发布接口依赖登录态；未登录时隐藏入口，避免用户打开后只能得到鉴权失败。 */}
-      {activeTaskId &&
-      user &&
-      isDesktop !== false &&
-      !isWebRemoteControl &&
-      remoteTarget?.kind !== "server" ? (
-        <ConversationShareMenu
-          taskId={activeTaskId}
-          useWindowsCaptionSpacing={useWindowsCaptionSpacing}
-        />
-      ) : null}
+      {/* fork（F4.8）：顶栏分享入口随会话分享功能删除。 */}
       {!simplifyForNarrowRemote ? (
         <>
           {!hideHelpMenu ? <WorkspaceHelpMenuButton isDesktop={Boolean(isDesktop)} /> : null}

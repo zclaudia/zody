@@ -43,7 +43,6 @@ import {
   type ReconnectRemoteWorkspaceOptions,
   type SshReconnectCredentials,
 } from "@/root/reconnectRemoteWorkspaceHistoryEntry.js";
-import { useRemoteConnectionEntryVisibility } from "@/hooks/useRemoteConnectionEntryVisibility.js";
 import { markRemoteWorkspaceRunningTasksFailed } from "@/lib/remoteWorkspaceSessionRuntime.js";
 
 export { reconnectRemoteWorkspaceHistoryEntry };
@@ -651,8 +650,10 @@ export function useRemoteWorkspaceHistory({
   ) => void;
   onWorkspaceActivated?: (target: { workspacePath: string; workspaceIdentity: string }) => void;
 }) {
-  const showRemoteConnectionEntry = useRemoteConnectionEntryVisibility();
-  const canUseRemoteWorkspace = allowRemoteWorkspace && showRemoteConnectionEntry;
+  // fork（F6.1，决策门 D4a 方案 ii）：隐藏“新建/部署远程工作区”入口不再等同于关闭远程能力。
+  // 已有远程工作区的持久化快照必须继续恢复并允许重连，因此这里只受壳层能力开关控制，
+  // 不与入口可见性（REMOTE_CONNECTION_CREATION_ENABLED）绑定；F6.5 恢复入口时无需再改本处。
+  const canUseRemoteWorkspace = allowRemoteWorkspace;
   const allowRemoteWorkspaceRestore = canUseRemoteWorkspace;
   const [remoteWorkspaceSessions, setRemoteWorkspaceSessions] = useState<
     RemoteWorkspaceSessionEntry[]

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { BUILTIN_MODEL_PROVIDER_IDS } from "@zcode/shared";
 import type { ModelSelectionView } from "@zcode/services";
 import { buildRegistryModelSelectGroups } from "../src/lib/modelSelectionGroups.js";
 
@@ -131,8 +130,8 @@ describe("model selection groups", () => {
     ]);
   });
 
-  it("直接把 Registry Account Provider 投影为已选连接，不重新裁决 Family", () => {
-    const providerId = BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan;
+  it("Account Provider 配置按普通 providerName 投影（账号分组展示已删除）", () => {
+    const providerId = "account:bigmodel-team-coding-plan";
     const selectionView: ModelSelectionView = {
       revision: 8,
       providers: [
@@ -160,9 +159,8 @@ describe("model selection groups", () => {
     expect(buildRegistryModelSelectGroups("glm", selectionView)).toEqual([
       {
         key: `registry-provider:${providerId}`,
-        label: "BigModel",
-        labelBadge: "Team",
-        directItems: true,
+        // fork（F4.11）：zhipu-account 分组标签/徽标已删除，直接使用配置中的 providerName。
+        label: "BigModel Coding Plan",
         items: [
           {
             key: `registry-provider:${providerId}:GLM-5.2`,

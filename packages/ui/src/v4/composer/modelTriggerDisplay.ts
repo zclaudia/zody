@@ -1,7 +1,3 @@
-import {
-  BUILTIN_MODEL_PROVIDER_IDS,
-  resolveModelProviderFamilyIdByProviderId,
-} from "@zcode/shared";
 import type { IntlInstance } from "@/i18n/IntlProvider.js";
 import type { ModelSelectGroup } from "@/ModelConfigSelect.js";
 
@@ -15,27 +11,11 @@ export function formatModelChangeLabel(
   providerId: string | undefined,
   providerName: string | undefined,
   modelName: string,
-  intl: Pick<IntlInstance, "formatMessage">,
+  _intl: Pick<IntlInstance, "formatMessage">,
 ): string {
-  let planLabelId: string;
-  // 切换记录必须保留当时的套餐身份，不能从当前连接或可用模型目录反推历史套餐。
-  switch (providerId) {
-    case BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan:
-    case BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan:
-      planLabelId = "settings.modelProvider.connectionMode.codingPlan";
-      break;
-    case BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan:
-    case BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan:
-      planLabelId = "settings.modelProvider.connectionMode.startPlan";
-      break;
-    case BUILTIN_MODEL_PROVIDER_IDS.zaiTeamCodingPlan:
-    case BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan:
-      planLabelId = "settings.modelProvider.connectionMode.teamPlan";
-      break;
-    default:
-      return formatProviderModelLabel(providerId, providerName, modelName);
-  }
-  return `${modelName}(${intl.formatMessage({ id: planLabelId })})`;
+  // fork（F4.11）：官方账号套餐身份（Individual/Team/Start Plan）随账号体系删除，
+  // 历史切换记录不再有套餐后缀；统一按 provider/model 通用格式展示。
+  return formatProviderModelLabel(providerId, providerName, modelName);
 }
 
 export function formatProviderModelLabel(
@@ -43,12 +23,8 @@ export function formatProviderModelLabel(
   providerName: string | undefined,
   modelName: string,
 ): string {
-  // Z.ai / BigModel 的内置连接名属于产品固定入口，拼进模型文案会重复展示
-  // “Coding Plan”等连接信息；切换提示额外通过 formatModelChangeLabel 标明套餐类型。
-  if (providerId && resolveModelProviderFamilyIdByProviderId(providerId)) {
-    return modelName;
-  }
-
+  // fork（F4.11）：官方账号内置连接（Z.ai / BigModel 套餐）已删除，不再需要按家族隐藏
+  // 内置连接名；BYOK/自定义 provider 统一按 providerName/model 展示。
   const normalizedProviderName = providerName?.trim();
   return normalizedProviderName ? `${normalizedProviderName}/${modelName}` : modelName;
 }
@@ -114,10 +90,7 @@ export function resolveV4ModelTriggerDisplay({
 
   const modelLabel = selectedItem.name;
   const normalizedProviderName = providerName?.trim() || providerId;
-  if (
-    !normalizedProviderName ||
-    (providerId && resolveModelProviderFamilyIdByProviderId(providerId))
-  ) {
+  if (!normalizedProviderName) {
     return { fullLabel, modelLabel };
   }
 

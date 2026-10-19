@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { ModelSelectGroup } from "@/ModelConfigSelect.js";
-import { BUILTIN_MODEL_PROVIDER_IDS } from "@zcode/shared";
 import {
   buildAutomationModelSelectGroups,
   buildAutomationModelSelection,
@@ -64,7 +63,7 @@ describe("automation model/thought linkage", () => {
         revision: 1,
         providers: [
           {
-            providerId: BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan,
+            providerId: "account:bigmodel-individual-coding-plan",
             providerName: "BigModel Coding",
             config: {
               access: {
@@ -160,8 +159,8 @@ describe("automation model/thought linkage", () => {
     ).toBe("Registry Provider/model-a");
   });
 
-  it("模型触发器继续遵循会话侧内置 family 的裁剪规则", () => {
-    const providerId = BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan;
+  it("模型触发器不再裁剪内置 family，缺失 providerName 时回落 providerId", () => {
+    const providerId = "account:bigmodel-individual-coding-plan";
     const modelGroups: ModelSelectGroup[] = [
       {
         key: `provider:${providerId}`,
@@ -182,11 +181,13 @@ describe("automation model/thought linkage", () => {
         modelValue: encodeCustomModelValue(providerId, "glm-5.2"),
         fallbackLabel: "选择模型",
       }),
-    ).toBe("glm-5.2");
+    // fork（F4.11）：账号 family 裁剪已删除；没有 modelSelectionView 时按会话侧统一规则
+    // 回落到 providerId/model。
+    ).toBe("account:bigmodel-individual-coding-plan/glm-5.2");
   });
 
   it("已保存模型不在当前候选中时仍回显模型名", () => {
-    const providerId = BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan;
+    const providerId = "account:bigmodel-individual-coding-plan";
     const staleModel = encodeCustomModelValue(providerId, "glm-5.2");
 
     expect(

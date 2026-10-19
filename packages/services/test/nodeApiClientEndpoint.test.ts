@@ -2,10 +2,11 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_ZCODE_ENDPOINT_ORIGIN } from "@zcode/shared";
 import { setDataBaseDir } from "../src/paths.js";
 import { createNodeApiClient } from "../src/providers/api/nodeApiClient.js";
 import { buildZCodeSourceHeaders } from "../src/providers/sourceHeaders.js";
+
+const TEST_ZCODE_ORIGIN = "https://zcode.endpoint.test";
 
 describe("NodeApiClient endpoint rewriting", () => {
   const tempDirs: string[] = [];
@@ -17,20 +18,21 @@ describe("NodeApiClient endpoint rewriting", () => {
     }
   });
 
-  it("rewrites only the configured zcode endpoint origin", async () => {
+  it("fork（F3.1）：默认端点为空后不再隐式改写请求地址", async () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
       resolveZCodeEndpointOrigin: async () => "http://localhost:3030",
     });
 
-    await client.request(`${DEFAULT_ZCODE_ENDPOINT_ORIGIN}/api/v1/event/report?x=1`);
+    await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/event/report?x=1`);
     await client.request("https://example.com/static/config.json");
     await client.request("https://feedback.example.invalid/api/v1/tickets");
     await client.request("https://api.z.ai/v1/models");
 
+    // 调用方必须直接使用当前 endpoint 构造 URL；默认源已不存在，不再有改写来源。
     expect(fetchImpl.mock.calls.map(([input]) => String(input))).toEqual([
-      "http://localhost:3030/api/v1/event/report?x=1",
+      `${TEST_ZCODE_ORIGIN}/api/v1/event/report?x=1`,
       "https://example.com/static/config.json",
       "https://feedback.example.invalid/api/v1/tickets",
       "https://api.z.ai/v1/models",
@@ -41,10 +43,10 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => "https://zcode.z.ai",
+      resolveZCodeEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
     });
 
-    await client.request(`${DEFAULT_ZCODE_ENDPOINT_ORIGIN}/api/v1/client/configs`);
+    await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/client/configs`);
     await client.request("https://api.z.ai/v1/models");
 
     const zcodeHeaders = new Headers(fetchImpl.mock.calls[0]?.[1]?.headers);
@@ -78,10 +80,10 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => "https://zcode.z.ai",
+      resolveZCodeEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
     });
 
-    await client.request(`${DEFAULT_ZCODE_ENDPOINT_ORIGIN}/api/v1/oauth/token`, {
+    await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/oauth/token`, {
       headers: {
         "User-Agent": "CustomAgent/1.0",
         "X-Custom-Client-Ref": "caller-ref",
@@ -119,10 +121,10 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => "https://zcode.z.ai",
+      resolveZCodeEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
     });
 
-    await client.request(`${DEFAULT_ZCODE_ENDPOINT_ORIGIN}/api/v1/client/configs`);
+    await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/client/configs`);
 
     const headers = new Headers(fetchImpl.mock.calls[0]?.[1]?.headers);
     // F2.10：设备标识停发，来源头构造不再读取 telemetry-state.json。

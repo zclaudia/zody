@@ -71,7 +71,9 @@ test("resolves the development ZCode Built-in Config and shared Personal Config"
     appVersion: "test-version",
     platform: "test-platform",
   });
-  assert.equal(loginPrepared[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV], activeFilePath);
+  // fork（F4.9）：/login 与 /logout 命令已删除，这两个入口不再需要 provider runtime，
+  // 原断言随登录命令删除同步为「不解析资源」。
+  assert.deepEqual(loginPrepared, {});
   const logoutPrepared = await prepareCliProviderRuntimeEnv({
     argv: ["logout"],
     dataBaseDir: join(root, "home"),
@@ -80,7 +82,7 @@ test("resolves the development ZCode Built-in Config and shared Personal Config"
     appVersion: "test-version",
     platform: "test-platform",
   });
-  assert.equal(logoutPrepared[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV], activeFilePath);
+  assert.deepEqual(logoutPrepared, {});
   // 临时目录本身可能经过软链接（macOS 的 /tmp、/var），随包配置报告的是真实路径。
   assert.equal(
     prepared.ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE,
@@ -165,7 +167,9 @@ function assertActiveConfigPath(filePath: string | undefined, dataBaseDir: strin
     dirname(dirname(filePath)),
     join(dataBaseDir, ".zcode", "v2", "runtime", "provider", "test-platform", "test-version"),
   );
-  assert.match(basename(dirname(filePath)), /^endpoint-[a-f0-9]{32}$/u);
+  // fork（F3.1）：这些用例没有配置 ZCODE_BASE_URL，Endpoint 为「未配置」，
+  // 使用固定本地目录而不是伪造/回落官方 Endpoint。
+  assert.equal(basename(dirname(filePath)), "endpoint-unconfigured");
   assert.equal(basename(filePath), "zcode-builtin.json");
 }
 

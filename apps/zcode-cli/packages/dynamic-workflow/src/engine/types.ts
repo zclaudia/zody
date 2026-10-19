@@ -375,6 +375,10 @@ export interface AskWaitInfo {
  * （一个上界更高的 run 结算或被调低），cap 被拉到新上限（docs/dynamic-workflow/concurrency.md
  * 「The governor」）。`seeded`：用户调高了一个 run 的上界，cap 直接跳到它（同文档「Seeding」）。
  * 线上是开放字符串，旧读者按普通变化显示。
+ *
+ * fork（F4.3/F4.11）：`offpeak_queued` 源自从 contracts 的 ModelRetryReason 投影，闲时任务
+ * 链路已删除、不再产生新值；它仍是动态工作流引擎的既有值域（journal/replay 与开放字符串
+ * 读取都可能遇到），按值域保留并注释，不从引擎枚举中删除。
  */
 export type ConcurrencyChangeReason =
   | "rate_limited"

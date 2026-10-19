@@ -359,14 +359,11 @@ describe("AccountProviderService", () => {
       basedOnZCodeBuiltinRevision: "config-1",
       providers: expect.any(ProviderConfigMap),
     });
-    expect((await service.read()).providers.get("account-plan")?.access).toMatchObject({
-      type: "zhipu-account",
-      entitled: false,
-    });
-    expect((await service.read()).providers.get(offPeakProviderId)?.access).toMatchObject({
-      type: "zhipu-account",
-      entitled: false,
-    });
+    // fork（F4.11）：fail-closed Overlay 不再扫描 Built-in 里的 zhipu-account Provider（已无
+    // 生产写入方），首轮失败时发布空 Overlay，仅保留与 Built-in revision 对齐的发布门禁。
+    expect((await service.read()).providers.entries()).toHaveLength(0);
+    expect((await service.read()).providers.has("account-plan")).toBe(false);
+    expect((await service.read()).providers.has(offPeakProviderId)).toBe(false);
     expect((await service.read()).providers.has("api-provider")).toBe(false);
     expect(refreshError).toHaveBeenCalledWith(
       expect.objectContaining({ error: expect.any(Error), reasons: ["start"] }),

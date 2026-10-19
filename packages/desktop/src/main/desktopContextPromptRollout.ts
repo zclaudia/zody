@@ -1,6 +1,6 @@
 import {
-  buildZCodeEndpointUrls,
   buildZCodeSourceHeadersFromContext,
+  normalizeZCodeEndpointOrigin,
   ZCODE_ENV,
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
 } from "@zcode/shared";
@@ -86,9 +86,19 @@ export function createElectronDesktopContextPromptConfigFetcher(options: {
   resolveEndpointOrigin: () => Promise<string>;
 }): (signal: AbortSignal) => Promise<unknown> {
   return async (signal) => {
+    const endpointOrigin = (await options.resolveEndpointOrigin()).trim();
+    // fork（F3.1）：未配置端点时关闭该项灰度拉取，返回显式 disabled 配置；
+    // 不能把空 origin 交给 URL 解析，也不能回落官方地址。
+    if (!endpointOrigin) {
+      return {
+        code: 0,
+        success: true,
+        data: { configs: { desktopContextPrompt: { enabled: false } } },
+      };
+    }
     const { net } = await import("electron");
-    const endpointOrigin = await options.resolveEndpointOrigin();
-    const url = new URL(`${buildZCodeEndpointUrls(endpointOrigin).origin}/api/v1/client/configs`);
+    // fork（F4.11）：buildZCodeEndpointUrls 已随账号端点删除；这里只需要 origin。
+    const url = new URL(`${normalizeZCodeEndpointOrigin(endpointOrigin)}/api/v1/client/configs`);
     url.searchParams.set("app_version", options.appVersion);
     url.searchParams.set("platform", `${process.platform}-${process.arch}`);
 

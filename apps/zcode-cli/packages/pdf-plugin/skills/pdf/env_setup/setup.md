@@ -134,31 +134,38 @@ Alternative Windows package managers:
 
 ## Step 3: Font Installation
 
-Fonts are downloaded individually from CDN on first setup.
+This fork does not download fonts from the upstream CDN. Fonts already present in the user font
+directory (local cache) are skipped first; missing fonts are resolved from these sources, in order:
 
-- **CDN base**: `https://z-cdn.chatglm.cn/office-skill/fonts/`
-- **Font list**: `env_setup/font_list.txt` (78 fonts, one relative path per line)
+1. **Bundled fonts** — `env_setup/fonts/` next to `font_list.txt`. Relative paths match the entries
+   in `font_list.txt` with the leading `/` stripped, e.g.
+   `env_setup/fonts/usr/share/fonts/truetype/chinese/NotoSansSC-Regular.ttf`.
+2. **Fork-hosted mirror** — set `ZCODE_OFFICE_FONTS_BASE_URL` to a base URL serving the same
+   relative layout, e.g. `https://fonts.example.com/office-skill/fonts`. The script appends the
+   leading-slash-stripped path and URL-encodes `[`, `]` and spaces.
+3. **Manual placement** — copy the fonts listed in `font_list.txt` into the user font directory
+   (flat filenames); the script skips files that are already present.
+
+If neither a bundled directory nor `ZCODE_OFFICE_FONTS_BASE_URL` is available, the script reports an
+error for the still-missing fonts and lists these options. It never falls back to the upstream CDN.
+
+- **Font list**: `env_setup/font_list.txt` (82 fonts, one path per line)
 - **Marker file**: `.office-skill-fonts-installed` in the user font directory prevents re-download
-- Special characters in filenames (e.g., `[`, `]`) are URL-encoded automatically by the setup script
+- Files are saved flat (filename only) to the user font directory
 
-The setup scripts read `font_list.txt`, check which fonts are already installed, and download only the missing ones. Each font is saved flat (filename only) to the user font directory.
+### Font Groups (82 fonts)
 
-### CDN Directory Structure (78 fonts)
-
-| Directory | Count | Description |
-|-----------|-------|-------------|
-| `truetype/lxgw-wenkai/` | 6 | LXGW WenKai — Chinese handwriting style |
-| `truetype/noto-serif-sc/` | 9 | Noto Serif SC — Chinese serif (variable + 8 static weights) |
-| `chinese/` | 14 | Noto Sans SC, Sarasa Mono SC, Liberation fallbacks |
-| `dejavu/` | 8 | DejaVu Sans/Serif/Mono — Latin/symbol fallback |
-| `emoji/` | 1 | Noto Color Emoji |
-| `english/` | 12 | Tinos, Carlito, Calibri |
-| `freefont/` | 12 | FreeSans/FreeSerif/FreeMono — open-source fallback |
-| `liberation/` | 12 | Liberation Sans/Serif/Mono — MS-metric-compatible |
-| `libreoffice/` | 1 | OpenSymbol |
-| `noto/` | 1 | Noto Color Emoji (duplicate) |
-| `wqy/` | 1 | WenQuanYi Zen Hei — CJK fallback |
-| *(root)* | 1 | Japanese Gothic |
+| Directory | Description |
+|-----------|-------------|
+| `truetype/chinese/` | Noto Sans SC, Sarasa Mono SC, Liberation fallbacks |
+| `truetype/noto-serif-sc/` | Noto Serif SC — variable + static weights |
+| `truetype/lxgw-wenkai/` | LXGW WenKai — Chinese handwriting style |
+| `truetype/wqy/` | WenQuanYi Zen Hei — CJK fallback |
+| `truetype/dejavu/` | DejaVu Sans/Serif/Mono — Latin/symbol fallback |
+| `truetype/liberation/` | Liberation Sans/Serif/Mono — MS-metric-compatible |
+| `truetype/english/` | Tinos, Carlito |
+| `truetype/freefont/` | FreeSans/FreeSerif/FreeMono — open-source fallback |
+| `truetype/libreoffice/` | OpenSymbol |
 
 ### Install Targets by Platform
 
@@ -170,21 +177,17 @@ The setup scripts read `font_list.txt`, check which fonts are already installed,
 
 ### Manual Font Installation
 
-If CDN is unreachable, download fonts manually. Example:
+Point the script at a fork-hosted mirror:
 
 ```bash
-# Download a single font (use static-weight files, NOT variable fonts)
-curl -fSLO "https://z-cdn.chatglm.cn/office-skill/fonts/chinese/NotoSansSC-Regular.ttf"
-# Copy to user font dir
-cp "NotoSansSC-Regular.ttf" ~/Library/Fonts/   # macOS
+export ZCODE_OFFICE_FONTS_BASE_URL="https://fonts.example.com/office-skill/fonts"
 ```
 
-Or download all fonts listed in `font_list.txt`:
+Or copy fonts directly from a local mirror (flat filenames):
 
 ```bash
 while read f; do
-    encoded=$(echo "$f" | sed 's/\[/%5B/g; s/\]/%5D/g')
-    curl -fSLO "https://z-cdn.chatglm.cn/office-skill/fonts/$encoded"
+    cp "/path/to/font-mirror/${f#/}" "$HOME/Library/Fonts/$(basename "$f")"   # macOS
 done < env_setup/font_list.txt
 ```
 

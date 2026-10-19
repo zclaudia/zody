@@ -80,7 +80,7 @@ import {
 } from "../browser-use/backend.js";
 import { browserClientModeSchema, browserCommandSchema } from "../browser-use/commands.js";
 import { browserCommandResultSchema } from "../browser-use/result.js";
-import { OFFICIAL_MCP_AUTH_PORT_FAILURE_REASONS } from "../official-mcp-auth.js";
+// fork（F4.6）：OFFICIAL_MCP_AUTH_PORT_FAILURE_REASONS 随官方 MCP 鉴权链删除。
 import { integratedTerminalShellSelectionSchema } from "../validationAppSettings.js";
 import {
   zcodeSyntheticUserMessageSourceSchema as legacyZcodeSyntheticUserMessageSourceSchema,
@@ -783,7 +783,7 @@ export const MCP_SERVER_FAILURE_KINDS = [
   "tool_list_failed",
   "unexpected_disconnect",
   "oauth_authorization_failed",
-  "official_origin_untrusted",
+  // fork（F4.6）：official_origin_untrusted 只由已删除的官方 MCP 可信 origin 校验产生。
   "not_authenticated",
   "coding_plan_required",
   "server_not_found",
@@ -1146,52 +1146,10 @@ export const zcodeModelOptionSchema = z
   .strict();
 export type ZCodeModelOption = z.infer<typeof zcodeModelOptionSchema>;
 
-export const zcodeAccountAccessSchema = z.discriminatedUnion("planKind", [
-  z
-    .object({
-      type: z.literal("zhipu-account"),
-      family: z.enum(["zai", "bigmodel"]),
-      planKind: z.literal("start-plan"),
-    })
-    .strict(),
-  z
-    .object({
-      type: z.literal("zhipu-account"),
-      family: z.enum(["zai", "bigmodel"]),
-      planKind: z.literal("individual-coding-plan"),
-    })
-    .strict(),
-  z
-    .object({
-      type: z.literal("zhipu-account"),
-      family: z.enum(["zai", "bigmodel"]),
-      planKind: z.literal("team-coding-plan"),
-      productId: nonEmptyString,
-      organizationId: nonEmptyString,
-      projectId: nonEmptyString,
-    })
-    .strict(),
-]);
-export type ZCodeAccountAccess = z.infer<typeof zcodeAccountAccessSchema>;
-
-/** Active Model 固定的账号访问类别；当前商品和 Team scope 由账号服务在请求期解析。 */
-export const zcodeProviderAccountAccessSchema = z
-  .object({
-    type: z.literal("zhipu-account"),
-    accountType: z.enum(["zai", "bigmodel"]),
-    // `highspeed`/`off-peak` 为历史持久化值（加速卡/闲时账号访问类别）：F4.2/F4.3 已删
-    // 全链路，枚举保留仅为容忍历史数据反序列化，不再产生新值。
-    mode: z.enum([
-      "start-plan",
-      "individual-coding-plan",
-      "team-coding-plan",
-      "off-peak",
-      "highspeed",
-    ]),
-    entitled: z.boolean(),
-  })
-  .strict();
-export type ZCodeProviderAccountAccess = z.infer<typeof zcodeProviderAccountAccessSchema>;
+// fork（F4.11）：zcodeAccountAccessSchema / ZCodeAccountAccess 与
+// zcodeProviderAccountAccessSchema / ZCodeProviderAccountAccess 随官方账号 Provider 删除。
+// 旧持久化 settings/provisioning 中的 providerFamily* 字段仍由 validationAppSettings 宽松解析，
+// 但协议层不再承载账号 Access 或 accountAccess 请求字段。
 
 export type ZCodeSessionMode = z.infer<typeof zcodeSessionModeSchema>;
 export type ZCodeSessionKind = z.infer<typeof zcodeSessionKindSchema>;
@@ -2725,7 +2683,8 @@ export const zcodeProviderRuntimeHeadersRequestParamsSchema = z
     workspace: zcodeWorkspaceRefSchema,
     modelSelection: modelSelectionSchema,
     providerId: nonEmptyString,
-    accountAccess: zcodeProviderAccountAccessSchema.optional(),
+    // fork（F4.11）：accountAccess（zhipu-account 访问类别）随官方账号链路删除；
+    // 普通 BYOK/自定义 provider 不需要账号 Access 刷新。
     expectedAccountScope: z
       .string()
       .regex(/^[a-f0-9]{64}$/)
@@ -2783,51 +2742,8 @@ export type ZCodeProviderRuntimeHeadersResponse = z.infer<
   typeof zcodeProviderRuntimeHeadersResponseSchema
 >;
 
-// ── 官方 Server MCP 鉴权──
-// Agent 进程不是用户身份权威：它把 (pluginId, mcpKey, targetOrigin) 报给 host，由 host
-// 解析当前 Coding Plan 凭证并回传本次请求的身份头。请求侧不含任何秘密。
-// 与 interaction/requestProviderRuntimeHeaders 同类：Agent 发起、host 自动响应、零 UI。
-export const zcodeOfficialMcpAuthHeadersRequestParamsSchema = z
-  .object({
-    requestId: nonEmptyString,
-    workspace: zcodeWorkspaceRefSchema,
-    pluginId: nonEmptyString,
-    mcpKey: nonEmptyString,
-    targetOrigin: nonEmptyString,
-  })
-  .strict();
-export type ZCodeOfficialMcpAuthHeadersRequestParams = z.infer<
-  typeof zcodeOfficialMcpAuthHeadersRequestParamsSchema
->;
-
-/**
- * 失败原因必须可枚举，避免调用方按文本分流；因此响应不含 errorMessage。
- *
- * `official_mcp_origin_untrusted` 是 host 侧二次校验的拒绝原因：`targetOrigin` 不等于当前
- * ZCode API origin。判定只看 origin，`pluginId` / `mcpKey` 仅用于日志归属。与"未登录/无凭据"
- * 分开，才能在排查时区分"被拒绝"和"没身份"。
- */
-export const zcodeOfficialMcpAuthFailureReasonSchema = z.enum(
-  OFFICIAL_MCP_AUTH_PORT_FAILURE_REASONS,
-);
-
-export const zcodeOfficialMcpAuthHeadersResponseSchema = z.discriminatedUnion("ok", [
-  z
-    .object({
-      ok: z.literal(true),
-      headers: z.record(z.string(), z.string()),
-    })
-    .strict(),
-  z
-    .object({
-      ok: z.literal(false),
-      reason: zcodeOfficialMcpAuthFailureReasonSchema,
-    })
-    .strict(),
-]);
-export type ZCodeOfficialMcpAuthHeadersResponse = z.infer<
-  typeof zcodeOfficialMcpAuthHeadersResponseSchema
->;
+// fork（F4.6）：官方 Server MCP 鉴权的
+// interaction/requestOfficialMcpAuthHeaders 请求/响应 schema 随鉴权链删除。
 
 // ── Plugin management (list + enable/disable) ──
 // 镜像 @zcode/contracts 的 PluginMetadata, 仅保留 UI 需要的可序列化字段。
@@ -4098,7 +4014,7 @@ export const zcodeProtocolMethods = {
   interactionRequestPermission: "interaction/requestPermission",
   interactionRequestUserInput: "interaction/requestUserInput",
   interactionRequestProviderRuntimeHeaders: "interaction/requestProviderRuntimeHeaders",
-  interactionRequestOfficialMcpAuthHeaders: "interaction/requestOfficialMcpAuthHeaders",
+  // fork（F4.6）：interaction/requestOfficialMcpAuthHeaders 随官方 MCP 鉴权链删除。
   // browser-use 反向请求由 agent 发起，host 转给 main 中的 CDP executor。
   interactionBrowserList: "interaction/browserList",
   interactionBrowserExecute: "interaction/browserExecute",

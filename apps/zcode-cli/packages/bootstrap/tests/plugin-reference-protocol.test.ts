@@ -158,9 +158,9 @@ describe("plugins/referenceCatalog protocol", () => {
       const zcodeGuide = result.plugins.find(
         (entry) => entry.pluginId === "zcode-guide@zcode-plugins-official",
       );
-      expect(zcodeGuide?.icon).toBe(
-        "https://cdn-zcode.z.ai/zcode/official-plugin/assets/zcode-guide/icon.png",
-      );
+      // fork（F6.2）：官方 CDN 图标已移除；内置插件由 UI 按 pluginId 使用客户端图标，
+      // 协议 catalog 不再携带远端 icon。
+      expect(zcodeGuide?.icon).toBeUndefined();
       // 内置 seed listing 的本地化显示名沿 display-only 通道进入 catalog，
       // 供 Picker 中文搜索/展示（插件 @ 引用中文搜索）。
       expect(zcodeGuide?.category).toBeUndefined();

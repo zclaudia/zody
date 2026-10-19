@@ -29,7 +29,9 @@ const FILE_MARKER = "SSH_P0_REMOTE_FILE_MARKER";
 const TERMINAL_MARKER = "SSH_P0_REMOTE_TERMINAL_MARKER";
 const DIFF_MARKER = "SSH_P0_REMOTE_GIT_DIFF_MARKER";
 
-describe(`${CASE_MARKER}: SSH 远端开发基础能力 P0`, () => {
+// fork（F6.1，决策门 D4a 方案 ii）：SSH 远程工作区新建/部署入口已隐藏，
+// 本用例依赖该入口完成首次连接；F6.5 恢复入口后重新启用。
+describe.skip(`${CASE_MARKER}: SSH 远端开发基础能力 P0`, () => {
   let config: SSHRuntimeConfig | null = null;
   let fixturePath = "";
 

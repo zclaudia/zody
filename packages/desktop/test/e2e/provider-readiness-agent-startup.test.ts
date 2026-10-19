@@ -3,8 +3,8 @@ import {
   TID_CHAT_ERROR_BANNER,
   TID_CHAT_MODEL_SELECT_TRIGGER,
   TID_MODEL_PROVIDER_API_KEY_INPUT,
-  TID_MODEL_PROVIDER_CONNECTION_MODE_ITEM,
-  TID_MODEL_PROVIDER_CONNECTION_MODE_TRIGGER,
+  TID_MODEL_PROVIDER_ADD_PROVIDER_BUTTON,
+  TID_MODEL_PROVIDER_TEMPLATE_ITEM,
   TID_LOGIN_API_KEY_SKIP_BUTTON,
   TID_LOGIN_USE_API_KEY_BUTTON,
   TID_SETTINGS_SECTION_NAV,
@@ -17,7 +17,7 @@ import {
 import {
   clearAppData,
   clickTestIdByDom,
-  readModelProvider,
+  readModelProviders,
   setInputValueByTestIdDom,
   waitForDefaultWorkspaceReady,
   waitForTestIdByDom,
@@ -120,12 +120,12 @@ describe("Provider/model readiness 只门禁模型执行", () => {
 
     await switchToElectronRendererTarget(isMainRendererUrl);
     await clickModelSettingsFromMissingBanner();
-    await selectActiveFamilyApiKeyProvider();
+    const providerId = await createBigModelProviderFromTemplate();
     await setInputValueByTestIdDom(TID_MODEL_PROVIDER_API_KEY_INPUT, E2E_PROVIDER_API_KEY, {
       timeout: 15000,
       timeoutMsg: "缺模型横幅没有打开 API Key provider 配置",
     });
-    const provider = await waitForSavedApiKeyProvider();
+    const provider = await waitForSavedApiKeyProvider(providerId);
     await clickTestIdByDom(TID_SETTINGS_BACK_BUTTON, {
       timeout: 15000,
       timeoutMsg: "模型供应商设置页没有返回入口",
@@ -188,11 +188,9 @@ async function clickModelSettingsFromMissingBanner() {
   );
 }
 
-async function selectActiveFamilyApiKeyProvider() {
-  // ProviderFamilyPlanModeSwitch 只展示当前 family 的连接方式；从缺模型横幅进入时
-  // 默认会落在 BigModel Coding Plan，并按当前 OAuth family 隐藏 Z.ai。I23/I24 的
-  // 业务目标是配置一个可用 API Key provider，不是跨 family 切换，因此在当前 family
-  // 的连接方式下拉框选择 BigModel API Key，触发产品规定的 apiKey mode 持久化。
+async function createBigModelProviderFromTemplate(): Promise<string> {
+  // fork（F4.7）：官方账号 family 连接方式（ProviderFamilyPlanModeSwitch）随账号链删除，
+  // BYOK 用例直接从通用 provider 模板创建 BigModel API Key provider。
   const modelProviderSectionTestId = testId(TID_SETTINGS_SECTION_NAV, "modelProvider");
   await waitForTestIdByDom(modelProviderSectionTestId, {
     timeout: 15_000,
@@ -202,27 +200,47 @@ async function selectActiveFamilyApiKeyProvider() {
     timeout: 15_000,
     timeoutMsg: "设置页没有模型设置分区入口",
   });
-  await clickTestIdByDom(TID_MODEL_PROVIDER_CONNECTION_MODE_TRIGGER, {
-    timeout: 15_000,
-    timeoutMsg: "模型设置页没有当前 family 的连接方式选择器",
+  const providerIdsBeforeCreate = new Set(
+    (await readModelProviders()).map((provider) => provider.id),
+  );
+  await clickTestIdByDom(TID_MODEL_PROVIDER_ADD_PROVIDER_BUTTON, {
+    timeout: 30_000,
+    timeoutMsg: "设置页没有出现从模板添加供应商入口",
   });
   await clickTestIdByDom(
-    testId(
-      TID_MODEL_PROVIDER_CONNECTION_MODE_ITEM,
-      `preset:${BUILTIN_PROVIDER_TEMPLATE_IDS.bigmodel}`,
-    ),
+    testId(TID_MODEL_PROVIDER_TEMPLATE_ITEM, BUILTIN_PROVIDER_TEMPLATE_IDS.bigmodel),
     {
       timeout: 15_000,
-      timeoutMsg: "模型设置页没有 BigModel API Key 连接方式",
+      timeoutMsg: "Provider Template 选择页没有出现 BigModel API Key 模板",
     },
   );
-}
-
-async function waitForSavedApiKeyProvider() {
-  let latest = await readModelProvider(BUILTIN_PROVIDER_TEMPLATE_IDS.bigmodel);
+  let createdProviderId: string | undefined;
   await browser.waitUntil(
     async () => {
-      latest = await readModelProvider(BUILTIN_PROVIDER_TEMPLATE_IDS.bigmodel);
+      createdProviderId = (await readModelProviders()).find(
+        (provider) => !providerIdsBeforeCreate.has(provider.id),
+      )?.id;
+      return Boolean(createdProviderId);
+    },
+    {
+      timeout: 15_000,
+      timeoutMsg: "选择 BigModel 模板后没有创建新的 Personal Provider 实例",
+    },
+  );
+  if (!createdProviderId) {
+    throw new Error("选择 BigModel 模板后缺少新 Provider ID");
+  }
+  return createdProviderId;
+}
+
+async function waitForSavedApiKeyProvider(providerId: string) {
+  let latest = await readModelProviders().then(
+    (providers) => providers.find((provider) => provider.id === providerId) ?? null,
+  );
+  await browser.waitUntil(
+    async () => {
+      latest =
+        (await readModelProviders()).find((provider) => provider.id === providerId) ?? null;
       const provider = latest;
       return Boolean(
         provider?.apiKey?.trim() &&

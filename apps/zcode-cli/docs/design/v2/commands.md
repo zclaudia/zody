@@ -20,9 +20,7 @@ TUI 的 slash command 候选列表见 [`tui-slash-command-suggestions.md`](./tui
 - `/effort [list|<level>]`: 查询或切换当前 session 的 reasoning/thinking 深度；可选 level 来自当前模型 catalog/config 的 reasoning metadata。交互式 TUI 在 composer 内用类似 `/model` 的候选 popup 选择，提交显式 `/effort <level>`。`/variant` 是输入兼容别名。
 - `/fork [latest|checkpointId]`: 从 workspace checkpoint 分叉新 session；无参数或 `latest` 使用最新 checkpoint，有参数时按 checkpoint id 分叉。
 - `/help [command]`: 本地只读展示 slash command 帮助；不创建 session、不发模型请求、不访问外部 I/O。有参数时只展示目标命令的用法，参数可带或不带开头的 `/`。
-- `/login`: 使用 ZCode/Z.AI CLI OAuth device flow 登录；命令层调用 bootstrap 登录服务，不创建普通模型 session。Init 返回授权 URL 后必须立刻通过 assistant transcript message 展示链接，避免 SSH/远程终端场景只在宿主机打开浏览器而用户看不到可复制链接。
 - `/locale [auto|en-US|zh-CN]`: 查询或切换当前 UI 语言，并把请求值持久化到配置文件；`/language` 是输入兼容别名。
-- `/logout`: 清理共享 credential store 中的 ZAI 登录态；不创建普通模型 session。
 - `/mcp [list|status|connect <server>|disconnect <server>]`: 查询或管理当前 session 可见的 MCP server 连接状态；命令层只调用 app/server 暴露的 MCP 管理接口。
 - `/mode [plan|build|edit|yolo]`: 查询或切换当前 TUI session 的 permission mode；交互式 composer 输入 `/mode` 时打开与 `/model` 同形态的本地 popup，选择项提交显式 `/mode <mode>`；`edit` 自动接受 `Write`、`Edit`、`ApplyPatch` 等文件编辑工具，其他高风险或非编辑操作仍按 build 策略确认；`auto` 可显示但暂不允许从 TUI 切入。
 - `/model [list|main|lite|provider/model]`: 查询或切换当前 session 的主模型；可选模型来自 `model.main`、`model.lite` 和所有已配置 `provider.*.models`，状态归 app/server 保存，TUI 不持有模型状态。
@@ -43,13 +41,11 @@ TUI 的 slash command 候选列表见 [`tui-slash-command-suggestions.md`](./tui
 - 全局 `--prompt <text>`: 作为脚本友好的单轮 headless 入口。未显式传入 `--mode` 时，CLI 必须以 `yolo` permission mode 创建 runtime，避免无交互 broker 的 headless prompt 在常见写文件、执行命令路径上停在审批流；显式 `--mode build|edit|plan|yolo` 仍然优先于该默认值。该默认只属于 `--prompt` 入口，不改变无参数 TUI、`zcode tui`、ZCode app-server session 或单独 `--target` 的初始化 mode。
 - 全局 `--browser-use=headless`: 为 `--prompt`、`--target` 和 TUI 显式启用 CLI managed CDP Browser Use。CLI 在首次 backend discovery 时启动 native headless Chromium，只有完成 CDP handshake 后才返回 `type: "cdp"` descriptor。该参数不使用 `agent-browser`，不改变 browser-use plugin/node_repl 模型入口；plugin 禁用时不得启动 Chromium。`zcode app-server` 使用该参数必须 fail closed，避免 Desktop/Web Remote shared-host 链路获得第二个 browser runtime。
 - 全局 `--browser-executable <absolute-path>`: 指定 `--browser-use=headless` 使用的 Chrome/Chromium 可执行文件；不能单独使用。省略时只查找本机已安装 browser 和 Playwright cache，P0 不联网下载。路径或可执行性错误必须发生在 app/session 创建前；实现使用跨平台 path/fs API 和参数数组 spawn，不经 shell，不默认添加 `--no-sandbox`。
-- 全局 `--workflow-mode <disabled|onDemand|alwaysOn>`: 决定本进程 TUI 与 headless（`--prompt`、`--target`）会话的动态工作流面，语义同服务端 `dynamicWorkflow.mode`（`docs/dynamic-workflow/launch.md`「The standalone CLI: `--workflow-mode`」）。**缺省为 `disabled`**。取值用 shared 的 `normalizeDynamicWorkflowMode`（精确拼写、忽略首尾空白），非法值在 CLI 入口报错并列出三个取值，退出码 1，不创建 app/session。`app-server`/`agent-server` 由 Host 决定 mode，带该参数即报作用域错误；`login`、`plugins`、`skills`、`doctor` 等不建会话的子命令同样报错。入口把 mode 一次性折成两个显式 runtime 字段 `dynamicWorkflowEnabled = mode !== "disabled"`、`dynamicWorkflowToolsOnDemand = mode === "onDemand"`，写进本进程创建的每个 app（含 `/new`、`/resume`、fork）；mode 不落盘，resume 到不同 mode 静默切换。不新增环境变量或配置键。
+- 全局 `--workflow-mode <disabled|onDemand|alwaysOn>`: 决定本进程 TUI 与 headless（`--prompt`、`--target`）会话的动态工作流面，语义同服务端 `dynamicWorkflow.mode`（`docs/dynamic-workflow/launch.md`「The standalone CLI: `--workflow-mode`」）。**缺省为 `disabled`**。取值用 shared 的 `normalizeDynamicWorkflowMode`（精确拼写、忽略首尾空白），非法值在 CLI 入口报错并列出三个取值，退出码 1，不创建 app/session。`app-server`/`agent-server` 由 Host 决定 mode，带该参数即报作用域错误；`plugins`、`skills`、`doctor` 等不建会话的子命令同样报错。入口把 mode 一次性折成两个显式 runtime 字段 `dynamicWorkflowEnabled = mode !== "disabled"`、`dynamicWorkflowToolsOnDemand = mode === "onDemand"`，写进本进程创建的每个 app（含 `/new`、`/resume`、fork）；mode 不落盘，resume 到不同 mode 静默切换。不新增环境变量或配置键。
 - 全局 `--target <objective>`: 用于兼容 headless goal 场景，等价于在 headless session 里执行 `/goal <objective>`；CLI 必须复用 command center 的 goal 语义，而不是重新发明一套 target-only 控制流。`--resume` / `--continue` 时作用于恢复出来的 session；未指定时作用于新建 session。`--target` 不与 `--prompt` 组合；需要显式 slash command 形态时使用 `--prompt "/goal ..."`。实现不得把 `--target` 改造成环境变量。
 - 全局 `--target-replace`: `--target` 的显式覆盖确认开关。若当前 session 已有 goal，而未显式提供 `--target-replace`，CLI 必须在本地返回明确错误，不得静默覆盖 goal，也不得发送模型请求。`--target-replace` 单独出现时必须报错。
 - `zcode skills list`: 只读列举当前工作目录可发现的 skills。它复用 bootstrap 的 skill discovery 接口，不启动 TUI、不创建 session、不发模型请求；`zcode skills` 等价于 `zcode skills list`。普通输出展示 name、scope/source、description 和 path；`--json` 输出结构化 skills 与 diagnostics；`--verbose` 在普通输出后追加 diagnostics。
 - `zcode commands list`: 只读列举当前工作目录可发现的自定义 prompt commands。它复用 bootstrap 的 custom command discovery 接口，不启动 TUI、不创建 session、不发模型请求；`zcode commands` 等价于 `zcode commands list`。普通输出展示 `/name`、argument hint、scope/source、description 和 path；`--json` 输出结构化 commands 与 diagnostics；`--verbose` 追加 diagnostics。
-- `zcode login`: 使用 ZCode/Z.AI CLI OAuth device flow 登录，浏览器授权后把敏感 token 写入与桌面 Z Code 共享的 `~/.zcode/v2/credentials.json`，并只在 `~/.zcode/cli/config.json` patch 非敏感 provider/model 默认配置。`--no-browser` 只打印授权 URL，不自动打开浏览器，仍继续轮询。
-- `zcode logout`: 清理共享 credential store 中的 ZAI 登录态；如果 `oauth:active_provider` 当前是 `zai`，同步清空 active provider。
 - `zcode doctor`: 输出运行时和打包假设检查，是 CLI 健康检查和 smoke-test 的唯一进程级入口。
 
 `zcode hello` 不再是受支持命令。CLI 不保留无业务语义的 greeting/smoke-test 命令；脚本、文档和测试需要使用 `zcode doctor` 或 `zcode --version` 表达健康检查意图。
@@ -70,7 +66,7 @@ ZCode app-server 的 command 广播使用 `available_commands_update` session up
 
 命令识别、参数解析和会话切换在 command 层，UI 只负责触发和显示结果。后续如果要加 command palette、自定义命令或 MCP prompt command，继续扩展 command center，不把具体命令分支塞进 TUI。
 
-成功处理的 slash command 应通过 input-history 端口 best-effort 记录原始命令文本，供 TUI `Up` 历史召回使用；例如 `/help` 召回应恢复 `/help`，而不是丢失本地命令或恢复展开后的 prompt。历史写入失败不得影响命令响应。包含 API key 等敏感参数的 `/login` 形态不得写入历史。
+成功处理的 slash command 应通过 input-history 端口 best-effort 记录原始命令文本，供 TUI `Up` 历史召回使用；例如 `/help` 召回应恢复 `/help`，而不是丢失本地命令或恢复展开后的 prompt。历史写入失败不得影响命令响应。包含密钥等敏感参数的命令不得写入历史。
 
 自定义 prompt command 的设计见 [`custom-commands.md`](./custom-commands.md)。该能力规划为 command center 的动态命令来源：markdown 文件只定义可复用 prompt 模板，发现和读取通过 adapter，TUI/ZCode app-server 只消费只读命令面，最终执行仍进入普通 runtime turn。P0 目标兼容常见的 `.claude/commands/*.md` 文件形态，同时优先支持 ZCode 原生 `.zcode/commands` 与 `.agents/commands`，并把 `allowed-tools`、`model`、动态 shell/file 展开等高风险能力纳入权限和 I/O 边界。
 
@@ -78,7 +74,7 @@ ZCode app-server 的 command 广播使用 `available_commands_update` session up
 
 - slash command parser 将 `/help` 与 `/help model` 识别为已知命令。
 - command center 执行 `/help` 时不创建 app、不发送模型 prompt，并返回当前 command surface。
-- command center 在 history source 可用时把 `/help` 记录为 `slash_command`，但不记录 API-key login 命令。
+- command center 在 history source 可用时把 `/help` 记录为 `slash_command`。
 - 非交互 `zcode --prompt /help` 直接输出同一份 command surface，不创建 runtime。
 
 CLI process identity 测试覆盖：
@@ -104,7 +100,7 @@ CLI Browser Use 测试覆盖：
 `--workflow-mode` 测试覆盖（launch.md DWG-14 ～ DWG-17）：
 
 - TUI 与 `--prompt` 缺省写 `dynamicWorkflowEnabled: false`；`onDemand` / `alwaysOn` 写对应两个布尔；TUI 的 `/new`、`/resume` 沿用同一对；非法值退出 1 且不建 app。
-- `app-server`、`agent-server`、`login`、`skills` 带该参数退出 1；`--prompt`、`--target`、`tui` 接受。
+- `app-server`、`agent-server`、`skills` 带该参数退出 1；`--prompt`、`--target`、`tui` 接受。
 - `disabled` 下 TUI 的 `/` 建议与 `/help` 不含 `workflow`；`/workflow` 给本地提示且不调 `submitPrompt`；`/dwf list`/`cancel` 照常，`/dwf resume` 不调 `resumeWorkflowRun`。
 - `disabled` 下 headless `-p "/workflow ..."` 报错退出 1、不建 app；`--workflow-mode alwaysOn` 时照旧走普通 prompt 路径。
 
@@ -179,16 +175,3 @@ Headless `--target` 测试覆盖：
 - command center 执行 `/clear` 时复用 `/new` 的同一路径，返回同样的 session reset/session id 结果。
 - CLI TUI wiring 在 `/new` 后把后续 prompt 发送到新创建的 active app。
 - TUI transcript 合并在 session reset 且没有 `restoredMessages` 时清空旧消息，避免新 session 继续占用旧会话显示空间。
-
-## Auth Login Setup
-
-`/login`、`/logout` 与进程级 `zcode login` / `zcode logout` 共用 [`auth-login.md`](./auth-login.md) 的 bootstrap service。OAuth、打开浏览器、credential 读写、配置 patch 都放在 adapter/bootstrap 层；core 不读取环境变量、不直接网络请求、不直接写配置文件。
-
-保存 token 时复用桌面 Z Code 的 `~/.zcode/v2/credentials.json` 加密 key-value store。`~/.zcode/cli/config.json` 只 patch provider/model 相关非敏感字段，保留已有 `mcp`、`skills`、`permission` 等配置；新配置使用 provider-first shape，不恢复 bak 的 flat `provider/model/baseURL/apiKey` 配置。
-
-测试覆盖：
-
-- slash command parser 将 `/login`、`/logout` 识别为已知命令。
-- command center 执行 `/login`、`/logout` 时不创建 app、不发送模型 prompt。
-- 进程级 `zcode login` 能通过注入的 bootstrap login service 输出授权 URL 与登录成功用户。
-- 进程级 `zcode logout` 能通过注入的 bootstrap logout service 输出清理结果。

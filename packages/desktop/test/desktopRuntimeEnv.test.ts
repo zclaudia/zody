@@ -54,10 +54,10 @@ vi.mock("@zcode/shared", () => ({
   },
   ZCODE_COMMIT: "commit-test",
   ZCODE_VERSION: "0.0.0-test",
-  DEFAULT_ZCODE_ENDPOINT_ORIGIN: "https://zcode.z.ai",
-  TEST_ZCODE_ENDPOINT_ORIGIN: "https://zcode.z.ai",
+  DEFAULT_ZCODE_ENDPOINT_ORIGIN: "",
+  TEST_ZCODE_ENDPOINT_ORIGIN: "https://example.invalid",
   resolveRuntimeZCodeEndpointOrigin: (env: Record<string, string | undefined>) =>
-    env.ZCODE_BASE_URL ?? env.ZCODE_TEST_BASE_URL ?? "https://zcode.z.ai",
+    env.ZCODE_BASE_URL ?? env.ZCODE_TEST_BASE_URL ?? "",
   sanitizeZCodeRuntimeEnv: (env: Record<string, string | undefined>) => {
     const sanitizedKeys = new Set([
       "NODE_ENV",
@@ -781,7 +781,7 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     ).toBe("http://127.0.0.1:18765");
   });
 
-  it("打包后的测试环境 host 进程只内置测试环境 API 端点，不再注入 ZAI 登录入口", async () => {
+  it("打包后的测试环境未配置端点时不内置 ZCODE_BASE_URL，也不注入 ZAI 登录入口", async () => {
     appMock.isPackaged = true;
     Object.defineProperty(process, "resourcesPath", {
       value: "/mock/resources",
@@ -799,7 +799,9 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     const env = buildHostProcessEnv(loadHostProcessEnvFromLocalFiles());
 
     expect(env.ZCODE_ENV).toBe("test");
-    expect(env.ZCODE_BASE_URL).toBe("https://zcode.z.ai");
+    // fork（F3.1）：默认端点为空即未配置，打包环境不再内置官方地址；
+    // 未配置时连空字符串都不注入，下游按「键不存在」关闭远端能力。
+    expect(env.ZCODE_BASE_URL).toBeUndefined();
     // fork（F4.1a）：官方账号下线后 ZAI_* 只会误导残留的账号链代码，必须停止注入。
     expect(env.ZAI_OAUTH_ORIGIN).toBeUndefined();
     expect(env.ZAI_BUSINESS_BASE_URL).toBeUndefined();

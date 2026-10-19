@@ -1,4 +1,3 @@
-import type { AccountProviderStates } from "./account-provider-state.js";
 import type { EffectiveModelSelectionResult } from "@zcode/shared/model-selection";
 export type { EffectiveModelSelectionResult } from "@zcode/shared/model-selection";
 import {
@@ -7,8 +6,9 @@ import {
   type ProviderRegistryView,
 } from "./registry.js";
 
-export type ModelSelectionProviderKind = "ordinary" | "account-plan" | "account-offpeak";
-export type ModelSelectionProviderClassifier = (providerId: string) => ModelSelectionProviderKind;
+// fork（F4.11）：ModelSelectionProviderKind（"account-plan" / "account-offpeak"）与
+// ModelSelectionProviderClassifier 随官方账号 Provider 与闲时任务删除；当前 Provider 身份
+// 只有普通（BYOK/自定义）一类，选择解析不再按账号类别改写 providerId 或放宽 hidden 限制。
 
 /**
  * 只解析未来执行的意图，不改原选择、持久记录或已固定请求。
@@ -17,31 +17,16 @@ export type ModelSelectionProviderClassifier = (providerId: string) => ModelSele
 export function resolveEffectiveModelSelection(input: {
   readonly selection: ModelSelection | null;
   readonly registry: ProviderRegistryView;
-  readonly accountStates?: AccountProviderStates;
-  readonly classifyProvider: ModelSelectionProviderClassifier;
   readonly resolveLegacyReasoningLevel?: (selection: ModelSelection) => string | undefined;
 }): EffectiveModelSelectionResult {
   const original = input.selection;
   if (!original)
     return Object.freeze({ effectiveSelection: null, selectionIssue: "selection-missing" });
-  const kind = input.classifyProvider(original.providerId);
-  let providerId = original.providerId;
-  if (kind === "account-plan") {
-    const current = Object.entries(input.accountStates ?? {}).filter(
-      ([id, state]) => state.current === true && input.classifyProvider(id) === "account-plan",
-    );
-    if (current.length !== 1) {
-      return Object.freeze({
-        effectiveSelection: null,
-        selectionIssue: "account-connection-unavailable",
-      });
-    }
-    providerId = current[0]![0];
-  }
+  const providerId = original.providerId;
   const provider = input.registry.providers.find(
     (candidate) => candidate.providerId === providerId,
   );
-  if (!provider || (provider.config.visibility === "hidden" && kind !== "account-offpeak")) {
+  if (!provider || provider.config.visibility === "hidden") {
     return Object.freeze({ effectiveSelection: null, selectionIssue: "provider-not-found" });
   }
   const model = provider.models.find((candidate) => candidate.modelId === original.modelId);

@@ -17,7 +17,6 @@ function makeServices(id: string): IServiceAccessor {
     zcodeAgentService: { id, service: "zcode-agent" },
     zcodeTaskService: { id, service: "zcode-task" },
     zcodeSessionService: { id, service: "zcode-session" },
-    conversationShareService: { id, service: "conversation-share" },
     fileWatcherService: { id, service: "fileWatcher" },
     skillsService: { id, service: "skills" },
     skillSyncService: { id, service: "skill-sync" },
@@ -29,7 +28,6 @@ function makeServices(id: string): IServiceAccessor {
     clientScenesService: { id, service: "clientScenes" },
     settingService: { id, service: "setting" },
     credentialService: { id, service: "credential" },
-    oauthService: { id, service: "oauth" },
     broadcastService: { id, service: "broadcast" },
     modelSelectionService: { id, service: "model-selection" },
     providerSettingsService: { id, service: "provider-settings" },
@@ -54,7 +52,6 @@ describe("buildRemoteWorkspaceSessionServices", () => {
     expect(merged.zcodeAgentService).toBe(remoteServices.zcodeAgentService);
     expect(merged.zcodeTaskService).toBe(remoteServices.zcodeTaskService);
     expect(merged.zcodeSessionService).toBe(remoteServices.zcodeSessionService);
-    expect(merged.conversationShareService).toBe(remoteServices.conversationShareService);
     expect(merged.fileWatcherService).toBe(remoteServices.fileWatcherService);
     // Provider/Model View 属于目标 Remote Environment；不能随 ...baseServices 回落到本地。
     expect(merged.modelSelectionService).toBe(remoteServices.modelSelectionService);
@@ -73,7 +70,6 @@ describe("buildRemoteWorkspaceSessionServices", () => {
     expect(merged.clientScenesService).toBe(baseServices.clientScenesService);
     expect(merged.settingService).toBe(baseServices.settingService);
     expect(merged.credentialService).toBe(baseServices.credentialService);
-    expect(merged.oauthService).toBe(baseServices.oauthService);
     expect(merged.broadcastService).toBe(baseServices.broadcastService);
   });
 
@@ -90,7 +86,6 @@ describe("buildRemoteWorkspaceSessionServices", () => {
     );
     expect(merged.settingService).toBe(remoteServices.settingService);
     expect(merged.credentialService).toBe(remoteServices.credentialService);
-    expect(merged.oauthService).toBe(remoteServices.oauthService);
     expect(merged.clientScenesService).toBe(remoteServices.clientScenesService);
     expect(merged.broadcastService).toBe(remoteServices.broadcastService);
   });

@@ -1302,6 +1302,5 @@ async function writeDocumentPluginFixtures(root) {
     await writeTestFile(root, `packages/${name}-plugin/agents/visual-judge.md`, "");
     await writeTestFile(root, `packages/${name}-plugin/skills/${skill}/SKILL.md`, "");
   }
-  await writeTestFile(root, "packages/image-search-plugin/.zcode-plugin/plugin.json", "{}");
-  await writeTestFile(root, "packages/image-search-plugin/.mcp.json", "{}");
+  // fork（F4.6）：image-search 官方 MCP 插件已删除，不再需要 fixture。
 }

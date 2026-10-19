@@ -201,8 +201,7 @@ export function createMcpToolEntry(
         serverName: descriptor.serverName,
         toolName: descriptor.toolName,
         ...(descriptor.description ? { description: descriptor.description } : {}),
-        // 只有官方 MCP 的结果才允许携带被客户端信任的结构化标识（额度耗尽 / 无套餐）。
-        ...(descriptor.official ? { official: true } : {}),
+        // fork（F4.6）：官方 MCP 的 official 标记随链删除。
         ...(presentation.pluginId ? { pluginId: presentation.pluginId } : {}),
         ...(descriptor.ui ? { ui: descriptor.ui } : {}),
       },

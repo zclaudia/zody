@@ -36,7 +36,9 @@ interface RootWorkspaceContentProps {
   handleBackFromSettings: () => void;
   handleLogout?: () => void;
   onLogin?: () => void;
-  user: AppProps["user"];
+  // fork（F4.7）：OAuth 登录态不再产生，Root 不再传递 user；保留可选透传，
+  // 下游 App/设置页仍按可选字段读取。
+  user?: AppProps["user"];
   reconnectingRemoteWorkspaceKeys: AppProps["reconnectingRemoteWorkspaceKeys"];
   remoteWorkspaceErrorByWorkspaceKey: AppProps["remoteWorkspaceErrorByWorkspaceKey"];
   reconnectingRemoteWorkspaceLogsByWorkspaceKey: AppProps["reconnectingRemoteWorkspaceLogsByWorkspaceKey"];

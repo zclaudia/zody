@@ -1,4 +1,4 @@
-/* eslint-disable max-lines -- 远程连接、OAuth 回调、遥测和通知 IPC 共用窗口级上下文，集中注册避免跨文件状态漂移。 */
+/* eslint-disable max-lines -- 远程连接、深链、遥测和通知 IPC 共用窗口级上下文，集中注册避免跨文件状态漂移。 */
 import { app, BrowserWindow, ipcMain, shell } from "electron";
 import armsRum from "@arms/rum-electron";
 import {
@@ -16,12 +16,7 @@ import {
   type TelemetryEventPayload,
 } from "@zcode/shared";
 import { dispatchTaskNotification } from "./desktopNotifications.js";
-import {
-  clearOAuthRoutesForWindow,
-  deliverPendingDeepLink,
-  parseOAuthStateRegistration,
-  registerOAuthState,
-} from "./desktopOAuthDeepLink.js";
+import { clearDeepLinkRoutesForWindow, deliverPendingDeepLink } from "./desktopDeepLink.js";
 import {
   dispatchFinalArmsCustomEvent,
   enableSharedFinalArmsCustomEventE2EController,
@@ -84,12 +79,9 @@ export function registerRemoteIpcHandlers(options: {
     error: (...args: unknown[]) => void;
   };
   appTelemetryRuntime: {
-    onRendererReady(payload: { hasPendingOAuthCallback: boolean; rendererId: number }): void;
+    onRendererReady(payload: { rendererId: number }): void;
     syncRendererContext(payload: { rendererId: number; context: unknown }): void;
-    onOAuthCallbackHandled(payload: { rendererId: number }): void;
   };
-  /** OAuth 回调处理完成后的额外副作用（如刷新 ARMS user.id）；不影响既有 runtime 流程 */
-  onOAuthCallbackHandledSideEffect?: () => void;
   appTelemetryCore: {
     reportEvent(payload: unknown): Promise<void>;
   };
@@ -206,15 +198,7 @@ export function registerRemoteIpcHandlers(options: {
     registerRemoteAccessIpcHandlers(options.remoteAccessIpc);
   }
 
-  ipcMain.on(PlatformChannels.OAuthRegisterState, (event, payload: unknown) => {
-    const registration = parseOAuthStateRegistration(payload);
-    if (!registration) {
-      options.logger.warn("[oauth-register-state] invalid payload", payload);
-      return;
-    }
-
-    registerOAuthState(event.sender.id, registration);
-  });
+  // fork（F4.7）：OAuth state 登记 IPC 随官方账号链删除。
 
   ipcMain.on(PlatformChannels.OpenExternal, (event, payload: unknown) => {
     const request = parseOpenExternalRequest(payload);
@@ -246,11 +230,8 @@ export function registerRemoteIpcHandlers(options: {
   );
 
   ipcMain.on(PlatformChannels.RendererReady, (event) => {
-    const hasPendingOAuthCallback = deliverPendingDeepLink(event.sender);
-    options.appTelemetryRuntime.onRendererReady({
-      hasPendingOAuthCallback,
-      rendererId: event.sender.id,
-    });
+    deliverPendingDeepLink(event.sender);
+    options.appTelemetryRuntime.onRendererReady({ rendererId: event.sender.id });
   });
 
   ipcMain.on(PlatformChannels.SyncTelemetryContext, (event, context) => {
@@ -304,10 +285,7 @@ export function registerRemoteIpcHandlers(options: {
     }
   });
 
-  ipcMain.on(PlatformChannels.OAuthCallbackHandled, (event) => {
-    options.appTelemetryRuntime.onOAuthCallbackHandled({ rendererId: event.sender.id });
-    options.onOAuthCallbackHandledSideEffect?.();
-  });
+  // fork（F4.7）：OAuth 回调完成 IPC 随官方账号链删除。
 
   ipcMain.on(PlatformChannels.ShowTaskNotification, (event, payload: unknown) => {
     dispatchTaskNotification({ event, payload, logger: options.logger });
@@ -322,7 +300,7 @@ export function registerRemoteIpcHandlers(options: {
       // BrowserWindow 的 closed 阶段里 webContents 可能已被 Electron 释放。
       // 之前这里直接读取 win.webContents.id，会把正常关窗流程变成主进程未捕获异常。
       // 提前缓存 id 后再做清理，避免访问已经销毁的对象。
-      clearOAuthRoutesForWindow(windowWebContentsId);
+      clearDeepLinkRoutesForWindow(windowWebContentsId);
     });
   });
 

@@ -91,6 +91,14 @@ export function isZCodeFileLockTimeoutError(error: unknown): boolean {
   return normalizeUnknownError(error).code === ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE;
 }
 
+// fork（F4.11）：以下凭据解密错误常量原先定义在 oauth.ts；OAuth 类型删除后迁到通用
+// errors 模块，credentialCipherProvider 继续通过 shared 公开入口使用，行为保持不变。
+/** 凭据解密失败错误前缀 */
+export const CREDENTIAL_DECRYPT_ERROR_PREFIX = "凭据解密失败：" as const;
+
+/** 凭据解密失败稳定错误码 */
+export const CREDENTIAL_DECRYPT_ERROR_CODE = "ZCODE_CREDENTIAL_DECRYPT_FAILED" as const;
+
 /**
  * 不可自动重试的 workspace ZCode Agent 预热错误模式列表。
  *

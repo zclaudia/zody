@@ -147,6 +147,35 @@ flowchart TD
 
 验收：端点解析测试按新默认值更新并先于实现提交；断网容器中各受影响功能按「降级或回落」表现；`pnpm knip` 无新增未使用导出。
 
+### 阶段 3 收尾记录（2026-10-19，F3.3）
+
+`pnpm check:official-refs` 在 F3.1/F3.2 合入后重跑，结果如下：
+
+| 范围                                                   | 域名类命中             | 标识类命中                                                                                            |
+| ------------------------------------------------------ | ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| 拦截范围（`packages/ apps/ scripts/ config/ public/`） | **252 处 / 81 个文件** | **524 处 / 102 个文件**（`zhipu` 452、`z-ai` 71、`z_ai` 1；`@zai-ai` / `zai-sdk` / `zai-org` 已归零） |
+| 单列统计 `docs/`                                       | 289 处 / 84 个文件     | 215 处（`zhipu` 193、`z-ai` 22）                                                                      |
+| 单列统计 `apps/dev-docs`                               | 0                      | 0                                                                                                     |
+
+- `packages/shared/src/zcodeEndpoint.ts` 已无域名命中（F3.1：`DEFAULT_*` 为空、`TEST_*` 指向 `example.invalid`）。
+- 基线收紧：复跑 `node scripts/check-official-refs.mjs --update-baseline` 与已入库的 `scripts/official-refs-baseline.json` **无差异**，说明基线已与当前扫描一致；基线中不存在命中数为 0 或指向已删除文件的条目（逐文件核对 81 条，全部存在且计数一致）。
+- **显式白名单**：脚本没有独立的按文件 whitelist 配置，`official-refs-baseline.json` 的「文件 → 命中数」就是显式白名单本身；BYOK 端点（`api.z.ai/api/anthropic`、`api.z.ai/api/paas/v4`、`open.bigmodel.cn/api/anthropic`、`open.bigmodel.cn/api/paas/v4`）由扫描器在统计前剔除，不占基线条目。剩余 81 个条目逐文件核对后的归属如下，没有「本运行删除后应归零」的遗漏项：
+
+| 归属                                                                                     | 文件数 | 命中数 | 处置                                               |
+| ---------------------------------------------------------------------------------------- | ------ | ------ | -------------------------------------------------- |
+| 测试/兼容夹具（保留功能的回归断言）                                                      | 42     | 124    | 保留；断言官方域名的脱敏、端点解析、旧身份兼容读取 |
+| F6.2 插件市场与图标 CDN                                                                  | 11     | 31     | 随 F6.2 替换为 GitHub 源/随包资源                  |
+| F6.5 远程资源 CDN 默认值                                                                 | 6      | 29     | 随 F6.5 改为空默认值                               |
+| `apps/zcode-cli/docs/` 上游设计文档                                                      | 5      | 24     | 文档、无运行时请求；保留在显式白名单               |
+| F6.3 建议提示图标                                                                        | 2      | 17     | 随 F6.3 本地化                                     |
+| F6.4 office 技能字体                                                                     | 7      | 11     | 随 F6.4 改为随包分发                               |
+| BYOK provider 管理链接（`config/provider/zcode-builtin*.json` 的 `apiKeyManagementUrl`） | 2      | 8      | 保留（BYOK 元数据）                                |
+| F7.2 打包元数据                                                                          | 1      | 3      | 随 F7.2 改写                                       |
+| F7.4 产品文档链接                                                                        | 3      | 3      | 随 F7.4 改写                                       |
+| 注释中的站名（无请求）                                                                   | 2      | 2      | 保留，随所在文件维护                               |
+
+复查命令：`pnpm check:official-refs`，结果 `baseline up to date: no regressions`。
+
 ## 阶段 4：移除官方账号体系，仅 BYOK（D2 已决：路线 B，12-18 人日）
 
 目标：fork 不再提供官方账号（Z.ai/BigModel 账号、Coding Plan、Start Plan、闲时、加速卡）的登录、购买与计费能力，只保留自带 API Key（BYOK）与自定义 provider。
@@ -246,7 +275,7 @@ flowchart TD
 | D1b   | 灰度开关的本地默认值，及是否建 fork 自有配置源              | 已决（2026-10-17） | 上下文提示开、动作追踪关、动态工作流 `onDemand`、闲时任务关；不建配置源      |
 | D2    | 官方账号体系：路线 A / B / C                                | 已决（2026-10-17） | 路线 B：移除官方账号，仅 BYOK                                                |
 | D3    | gateway 细节（namespace、扫码导入等）                       | 阶段 5 前          | 见原 spec 待决 1-5                                                           |
-| D4a/b | 远程运行时 CDN 自建 vs 隐藏；插件市场自托管 vs 仅 GitHub 源 | 阶段 6 前          | 先隐藏/仅 GitHub 源，后续自建                                                |
+| D4a/b | 远程运行时 CDN 自建 vs 隐藏；插件市场自托管 vs 仅 GitHub 源 | 阶段 6 前          | 先隐藏/仅 GitHub 源，后续自建。**调研结论（D4a，F6.1，2026-10-19）**：`LocalUploadAssetInstaller` 可作为打包版「从本机上传运行时」方案，代码层已具备——非 `remote-download` 模式即走本地上传（`deploy.ts:552-563`），默认安装模式本就是 `local-download-upload`（`remoteAssetInstallMode.ts:5`）；`remoteAssetDeployDecision.ts:139,179` 只用 `instanceof LocalUploadAssetInstaller` 做 node-pty 缺件告警，不依赖 mock-cdn 路径，可直接复用；本地 `releaseDir` 优先、缺失时回退 CDN 缓存（`remoteAssetInstaller.ts:257-343`）；上传/解包带 owner staging、取消保护与临时归档（`remoteAssetInstaller.ts:348-512`）。改动面：①打包时随包分发 `prepare-prebuilds.mjs` 的 `releases/<version>/<platform-arch>` 布局（`scripts/prepare-prebuilds.mjs:59,999-1069`，覆盖 linux/darwin 四平台与 server-bundle/node-runtime/node-pty/glm/bfs/ripgrep/ugrep）；②`desktopRuntimeEnv.resolveRemoteAssetDirs` 在打包态返回该本地目录（当前刻意只返回 CDN+cache，`desktopRuntimeEnv.ts:337-353`）；③`deploy.ts` 的 `mockCdnDir`/`releaseDir` 分支改为通用本地运行时目录并优先于 CDN；若只要本机上传，还需把 `remoteCdnBaseUrl(s)` 置空，避免本地缺件时回退到官方 CDN（`remoteAssetInstaller.ts:514-530` 的无基址短路已支持）。风险：安装包与更新包体积显著增大、四平台产物矩阵和签名/公证成本、版本升级必须整包刷新远端组件、用户上行带宽与上传耗时可能高于服务器直连 CDN。结论：可行，但不宜替代自建 CDN，适合作离线/内网备选；D4a 仍维持「先隐藏、后续自建」。 |
 | D5    | fork 产品名、appId、域名、渠道、签名证书                    | 阶段 7 前          | —                                                                            |
 | D-XDM | 设备与来源标识停发范围                                      | 阶段 2             | 全部停发（D2 路线 B 不保留官方计费链）                                       |
 | D6    | 会话分享：移除，或自建分享服务                              | 阶段 4（F4.8）前   | 移除（发布、导入、分享落地页）；需要时另立 spec                              |

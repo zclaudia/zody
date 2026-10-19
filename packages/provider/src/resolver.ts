@@ -22,6 +22,7 @@ import {
 import { resolveOwnedOrder } from "./owned-order.js";
 import type { AccountProviderStates } from "./account-provider-state.js";
 
+/** fork（F4.11）：仅为存量 zhipu-account provider config 的兼容解析保留。 */
 export type RegistryZhipuAccountAccessConfig = ZhipuAccountAccessConfig &
   z.infer<typeof completeZhipuAccountAccessDataSchema>;
 

@@ -294,10 +294,13 @@ function applySelectedZCodeEnvLinks(env: Record<string, string>): Record<string,
     ...env,
     ZCODE_ENV,
   };
+  const endpointOrigin = env.ZCODE_BASE_URL ?? resolveRuntimeZCodeEndpointOrigin(endpointEnv);
 
   return {
     ...env,
-    ZCODE_BASE_URL: env.ZCODE_BASE_URL ?? resolveRuntimeZCodeEndpointOrigin(endpointEnv),
+    // fork（F3.1）：未配置端点时不再注入空 ZCODE_BASE_URL；下游按「键不存在 = 未配置」
+    // 关闭远端能力，避免空字符串在子进程里被误当成有效地址。
+    ...(endpointOrigin ? { ZCODE_BASE_URL: endpointOrigin } : {}),
     // fork（F4.1a）：官方账号下线后不再向 Host/Agent 进程注入 ZAI_*（OAuth/Business/ClientId），
     // 这些变量只服务已移除的官方账号换证与 Business 计费链（shared 内解析函数随 F4.5/F4.9 删除）。
   };

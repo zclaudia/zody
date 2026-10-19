@@ -30,7 +30,6 @@ import { resolveInitialModelSelection } from "./model-selection-config.js";
 import {
   resolveEffectiveModelSelection,
   type EffectiveModelSelectionResult,
-  type ModelSelectionProviderClassifier,
 } from "./effective-model-selection.js";
 import type { ModelSelection } from "./registry.js";
 import type {
@@ -151,7 +150,6 @@ export interface ProviderSettingsProviderView extends Pick<
   "providerName" | "templateId"
 > {
   readonly enabled: boolean;
-  readonly accountState?: import("./account-provider-state.js").AccountProviderState;
   readonly providerId: ProviderId;
   /** 当前 Effective Config 是否已经进入 Registry，可用于模型选择和创建。 */
   readonly executable: boolean;
@@ -497,22 +495,21 @@ export class ProviderSettingsFacade {
 
 export class ModelSelectionFacade {
   readonly #source: ProviderRegistryFacadeSource;
-  readonly #classifyProvider: ModelSelectionProviderClassifier;
   readonly #resolveLegacyReasoningLevel?: (
     snapshot: ProviderRegistryServiceSnapshot,
     selection: ModelSelection,
   ) => string | undefined;
 
+  // fork（F4.11）：classifyProvider（账号类 Provider 分类）随官方账号 Provider 删除，
+  // 构造参数只保留 legacy reasoning level 解析。
   constructor(
     source: ProviderRegistryFacadeSource,
-    classifyProvider: ModelSelectionProviderClassifier = () => "ordinary",
     resolveLegacyReasoningLevel?: (
       snapshot: ProviderRegistryServiceSnapshot,
       selection: ModelSelection,
     ) => string | undefined,
   ) {
     this.#source = source;
-    this.#classifyProvider = classifyProvider;
     this.#resolveLegacyReasoningLevel = resolveLegacyReasoningLevel;
   }
 
@@ -534,7 +531,6 @@ export class ModelSelectionFacade {
         ? (resolveEffectiveModelSelection({
             selection: configuredDefault,
             registry,
-            classifyProvider: () => "ordinary",
             resolveLegacyReasoningLevel,
           }).effectiveSelection ?? undefined)
         : configuredDefault;
@@ -554,8 +550,6 @@ export class ModelSelectionFacade {
         ? resolveEffectiveModelSelection({
             selection: input.selection,
             registry,
-            accountStates: snapshot?.account.states,
-            classifyProvider: this.#classifyProvider,
             resolveLegacyReasoningLevel,
           })
         : {}),

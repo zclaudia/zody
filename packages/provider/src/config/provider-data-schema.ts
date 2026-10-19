@@ -11,12 +11,19 @@ export const providerGroupDataSchema = z.enum([
   "zai-family",
   "bigmodel-family",
 ]);
+/**
+ * 官方账号访问类别。
+ *
+ * fork（F4.11）：Built-in 配置已不再声明 zhipu-account Provider，运行时也不会产生新值；
+ * 保留 `off-peak` / `highspeed`（F4.2/F4.3 删除的加速卡与闲时）以及其余账号模式，
+ * 仅用于读取存量 provider config，避免升级时整份配置解析失败（同步友好原则）。
+ */
 export const zhipuAccountModeDataSchema = z.enum([
   "start-plan",
   "individual-coding-plan",
   "team-coding-plan",
   "off-peak",
-  // 加速卡访问类别；与 zcodeProviderAccountAccessSchema.mode 同值，改动需同步两处。
+  // 加速卡访问类别；与已删除的 zcodeProviderAccountAccessSchema.mode 曾同值。
   "highspeed",
 ]);
 export const providerVisibilityDataSchema = z.enum(["visible", "hidden"]);

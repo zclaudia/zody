@@ -25,7 +25,6 @@ import { loadPluginAgentProfiles } from "./helpers/subagents.js";
 import {
   configureZCodePlugin,
   describeZCodePlugin,
-  enrichCachedClaudeMarketplaceIconsForOverview,
   getZCodePluginsOverview,
   installZCodeMarketplacePlugin,
   listZCodePlugins,
@@ -140,59 +139,6 @@ const BUNDLED_ANDROID_PLUGIN_DIST_PATH = fileURLToPath(
 );
 
 describe("ZCode plugins", () => {
-  it("starts cached Claude icon migration without blocking overview callers", async () => {
-    const root = await mkdtemp(join(tmpdir(), "zcode-bootstrap-icon-migration-"));
-    const pluginStorageRoot = join(root, "plugins");
-    const marketplaceRoot = join(pluginStorageRoot, "marketplaces", "claude-plugins-official");
-    try {
-      await mkdir(marketplaceRoot, { recursive: true });
-      await writeFile(
-        join(marketplaceRoot, "marketplace.json"),
-        JSON.stringify({
-          name: "claude-plugins-official",
-          plugins: [{ name: "figma", source: "./figma" }],
-        }),
-      );
-      let resolveFetch!: (response: Response) => void;
-      vi.stubGlobal(
-        "fetch",
-        vi.fn(
-          () =>
-            new Promise<Response>((resolve) => {
-              resolveFetch = resolve;
-            }),
-        ),
-      );
-
-      expect(
-        enrichCachedClaudeMarketplaceIconsForOverview({
-          env: {},
-          pluginStorageRoot,
-          skipUserConfig: true,
-          workingDirectory: root,
-        }),
-      ).toBeUndefined();
-
-      resolveFetch(
-        new Response(
-          JSON.stringify([{ name: "figma", icon: "figma/icon.png", mimeType: "image/png" }]),
-          { status: 200 },
-        ),
-      );
-      await vi.waitFor(async () => {
-        const saved = JSON.parse(
-          await readFile(join(marketplaceRoot, "marketplace.json"), "utf8"),
-        ) as { plugins: Array<{ icon?: string }> };
-        expect(saved.plugins[0]?.icon).toBe(
-          "https://cdn-zcode.z.ai/zcode/official-plugin/assets/figma/icon.png",
-        );
-      });
-    } finally {
-      vi.unstubAllGlobals();
-      await rm(root, { force: true, recursive: true });
-    }
-  });
-
   it("keeps every bundled plugin package, manifest, and seed version aligned", async () => {
     const packagesRoot = fileURLToPath(new URL("../../", import.meta.url));
     expect(
@@ -238,7 +184,7 @@ describe("ZCode plugins", () => {
     ).toEqual([OFFICIAL_BROWSER_USE_REQUIRED_SEED_PATHS.at(-1)]);
   });
 
-  it("can disable one document plugin without disabling the other formats or search", async () => {
+  it("can disable one document plugin without disabling the other formats", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-document-toggle-"));
     try {
       const userConfigPath = join(root, "config.json");
@@ -255,7 +201,8 @@ describe("ZCode plugins", () => {
         workingDirectory: root,
       });
       expect(outcome.plugins.find((plugin) => plugin.name === "documents")?.enabled).toBe(false);
-      for (const name of ["pdf", "presentations", "spreadsheets", "image-search"])
+      // fork（F4.6）：image-search 官方 MCP 插件已删除。
+      for (const name of ["pdf", "presentations", "spreadsheets"])
         expect(outcome.plugins.find((plugin) => plugin.name === name)?.enabled).toBe(true);
     } finally {
       await rm(root, { recursive: true, force: true });
@@ -611,7 +558,7 @@ describe("ZCode plugins", () => {
     }
   });
 
-  it("includes the merged ZCode official marketplace and Claude marketplace for empty storage", async () => {
+  it("includes the local ZCode official seed and the GitHub Claude marketplace for empty storage", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-bootstrap-default-marketplace-"));
 
     try {
@@ -629,10 +576,16 @@ describe("ZCode plugins", () => {
             id: "zcode-plugins-official",
             isOfficial: true,
             name: "zcode-plugins-official",
-            pluginCount: 14,
+            pluginCount: 13,
+            // fork（F6.2）：官方目录只来自随包 seed，登记为本地 file 源，断网可读。
             source: {
-              source: "url",
-              url: "https://cdn-zcode.z.ai/zcode/official-plugin/marketplace.json",
+              source: "file",
+              path: join(
+                pluginStorageRoot,
+                "marketplaces",
+                "zcode-plugins-official",
+                "marketplace.json",
+              ),
             },
           }),
           expect.objectContaining({
@@ -647,15 +600,31 @@ describe("ZCode plugins", () => {
           }),
         ]),
       );
+      expect(overview.marketplaces).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            source: expect.objectContaining({ source: "url" }),
+          }),
+        ]),
+      );
       expect(
         JSON.parse(await readFile(join(pluginStorageRoot, "known_marketplaces.json"), "utf8")),
       ).toMatchObject({
         marketplaces: [
           expect.objectContaining({
-            id: "zcode-plugins-official",
+            id: "claude-plugins-official",
           }),
           expect.objectContaining({
-            id: "claude-plugins-official",
+            id: "zcode-plugins-official",
+            source: {
+              source: "file",
+              path: join(
+                pluginStorageRoot,
+                "marketplaces",
+                "zcode-plugins-official",
+                "marketplace.json",
+              ),
+            },
           }),
         ],
       });
@@ -2388,10 +2357,15 @@ describe("ZCode plugins", () => {
       expect(
         overview.marketplaces.find((marketplace) => marketplace.id === "zcode-plugins-official"),
       ).toMatchObject({
-        pluginCount: 14,
+        pluginCount: 13,
         source: {
-          source: "url",
-          url: "https://cdn-zcode.z.ai/zcode/official-plugin/marketplace.json",
+          source: "file",
+          path: join(
+            pluginStorageRoot,
+            "marketplaces",
+            "zcode-plugins-official",
+            "marketplace.json",
+          ),
         },
       });
       expect(overview.diagnostics).toEqual(

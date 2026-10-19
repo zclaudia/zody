@@ -1,8 +1,6 @@
 import {
-  ProviderConfig,
   ProviderConfigMap,
   ProviderTemplateMap,
-  ZhipuAccountAccessConfig,
   type ModelConfigRules,
 } from "./config/index.js";
 import type { AccountProviderStates } from "./account-provider-state.js";
@@ -35,21 +33,12 @@ export interface AccountProviderConfigSnapshot {
 export function createFailClosedAccountProviderConfigSnapshot(
   config: ProviderConfigSnapshot,
 ): AccountProviderConfigSnapshot {
-  const unentitledProviders = new ProviderConfigMap(
-    config.zcodeBuiltinProviders.entries().flatMap(([providerId, provider]) =>
-      provider.access?.type === "zhipu-account"
-        ? ([
-            [
-              providerId,
-              new ProviderConfig({
-                access: new ZhipuAccountAccessConfig({ entitled: false }),
-              }),
-            ],
-          ] as const)
-        : [],
-    ),
+  // fork（F4.11）：Built-in 配置已无 zhipu-account Provider（F4.1a），账号 Overlay 恒为空；
+  // revision 仍与 Built-in revision 对齐，保留 Registry 的“账号事实未到达”发布门禁。
+  return createAccountProviderConfigSnapshot(
+    config.zcodeBuiltinRevision,
+    ProviderConfigMap.empty(),
   );
-  return createAccountProviderConfigSnapshot(config.zcodeBuiltinRevision, unentitledProviders);
 }
 
 export function createAccountProviderConfigSnapshot(

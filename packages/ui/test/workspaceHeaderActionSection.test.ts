@@ -149,51 +149,7 @@ describe("WorkspaceHeaderActionSection", () => {
     expect(html).toContain("sidePane.expand");
   });
 
-  it("只在 Desktop local/SSH/WSL/Docker 已有任务显示分享入口", async () => {
-    const { WorkspaceHeaderActionSection } =
-      await import("@/WorkspaceHeaderSections/WorkspaceHeaderActionSection.js");
-    const renderSection = (extra: Record<string, unknown>) =>
-      renderToStaticMarkup(
-        withSettingsServices(WorkspaceHeaderActionSection, {
-          activeTaskId: "task-1",
-          workspaceAbsPath: "/workspace",
-          isTerminalOpen: false,
-          isSidePaneOpen: false,
-          onToggleTerminal: vi.fn(),
-          onToggleSidePane: vi.fn(),
-          isDesktop: true,
-          user: { id: "user-1" },
-          ...extra,
-        }),
-      );
-
-    expect(renderSection({})).toContain("conversationShare.trigger");
-    expect(renderSection({ remoteTarget: { kind: "ssh" } })).toContain("conversationShare.trigger");
-    expect(renderSection({ isWebRemoteControl: true })).not.toContain("conversationShare.trigger");
-    expect(renderSection({ remoteTarget: { kind: "server" } })).not.toContain(
-      "conversationShare.trigger",
-    );
-  });
-
-  it("未登录时不展示分享入口", async () => {
-    const { WorkspaceHeaderActionSection } =
-      await import("@/WorkspaceHeaderSections/WorkspaceHeaderActionSection.js");
-
-    const html = renderToStaticMarkup(
-      withSettingsServices(WorkspaceHeaderActionSection, {
-        activeTaskId: "task-1",
-        workspaceAbsPath: "/workspace",
-        isTerminalOpen: false,
-        isSidePaneOpen: false,
-        onToggleTerminal: vi.fn(),
-        onToggleSidePane: vi.fn(),
-        isDesktop: true,
-        user: null,
-      }),
-    );
-
-    expect(html).not.toContain("conversationShare.trigger");
-  });
+  // fork（F4.8）：顶栏分享入口用例随会话分享功能删除。
 
   it("renders the help menu trigger before the terminal toggle", async () => {
     const { WorkspaceHeaderActionSection } =

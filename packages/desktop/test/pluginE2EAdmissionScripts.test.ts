@@ -5,10 +5,19 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const repoRoot = process.cwd();
 const desktopDir = resolve(repoRoot, "packages/desktop");
+const pendingDir = resolve(desktopDir, "test/e2e/plugins/manual-review/pending");
 const pendingSpec =
   "./packages/desktop/test/e2e/plugins/manual-review/pending/plugin-management-personal-lifecycle.test.ts";
-const manualOnlySpec =
-  "./packages/desktop/test/e2e/plugins/manual-review/pending/plugin-cdn-zip-official-cdn-smoke.test.ts";
+// fork（F6.2）：真实官方 CDN smoke 用例已随官方 CDN 移除。用临时 manual-only probe
+// 继续验证「manual-only 用例不可晋升」这条准入规则。
+const manualOnlyProbeName = "plugin-manual-only-probe";
+const manualOnlySpec = `./packages/desktop/test/e2e/plugins/manual-review/pending/${manualOnlyProbeName}.test.ts`;
+const manualOnlyProbeSpec = resolve(pendingDir, `${manualOnlyProbeName}.test.ts`);
+const manualOnlyProbeManifest = resolve(
+  desktopDir,
+  "test/e2e/fixtures/cases/plugins",
+  `${manualOnlyProbeName}.json`,
+);
 const fixtureCheckCase = "plugin-fixture-check-probe";
 const formalProbeSpec = resolve(desktopDir, "test/e2e/plugins", `${fixtureCheckCase}.test.ts`);
 const formalProbeFixture = resolve(
@@ -73,12 +82,32 @@ beforeAll(() => {
       2,
     )}\n`,
   );
+  writeProbeFile(manualOnlyProbeSpec, 'describe("E2E_PLUGIN_MANUAL_ONLY_PROBE", () => {});\n');
+  writeProbeFile(
+    manualOnlyProbeManifest,
+    `${JSON.stringify(
+      {
+        version: 1,
+        caseName: manualOnlyProbeName,
+        spec: `./test/e2e/plugins/${manualOnlyProbeName}.test.ts`,
+        formalAdmission: "never",
+        providerFixtures: [],
+        providerRequestPolicy: "none",
+        fileFixtures: [],
+        requests: [],
+      },
+      null,
+      2,
+    )}\n`,
+  );
 });
 
 afterAll(() => {
   rmSync(formalProbeSpec, { force: true });
   rmSync(formalProbeFixture, { force: true });
   rmSync(formalProbeManifest, { force: true });
+  rmSync(manualOnlyProbeSpec, { force: true });
+  rmSync(manualOnlyProbeManifest, { force: true });
 });
 
 describe("plugin lifecycle E2E admission scripts", () => {
@@ -108,7 +137,7 @@ describe("plugin lifecycle E2E admission scripts", () => {
     expect(result.stdout).toContain("Fixture check passed");
   });
 
-  it("never promotes the real official CDN manual smoke", () => {
+  it("never promotes a manual-only plugin spec", () => {
     const result = runScript("promote-plugin-e2e.mjs", ["--spec", manualOnlySpec, "--reviewed"]);
     expect(result.status).toBe(1);
     expect(result.stdout).toContain("manual-only and cannot be promoted");

@@ -53,6 +53,26 @@ describe("ManifestUpdateProvider helpers", () => {
     // F2.10：自带的旧 device_mid 也不再被程序写入；不再主动覆盖第三方 URL 的查询串。
     expect(url.searchParams.get("device_mid")).toBe("old");
   });
+
+  it("fork（F3.1）：未配置 endpoint 且无 manifestUrl 时明确失败关闭", () => {
+    expect(() =>
+      buildElectronManifestUrl({
+        endpointOrigin: "",
+        platform: "darwin-aarch64",
+        channel: "stable",
+      }),
+    ).toThrow(/未配置/);
+  });
+
+  it("fork（F3.1）：未配置 endpoint 时构造不抛错，检查更新失败关闭", async () => {
+    const provider = new ManifestUpdateProvider(
+      { provider: "custom" },
+      Object.create(DebUpdater.prototype),
+      { platform: "linux", isUseMultipleRangeRequest: false, executor: {} as never },
+    );
+
+    await expect(provider.getLatestVersion()).rejects.toThrow(/endpoint 未配置/);
+  });
 });
 
 const linuxUpdaters = [

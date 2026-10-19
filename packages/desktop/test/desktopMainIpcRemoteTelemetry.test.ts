@@ -39,11 +39,9 @@ vi.mock("../src/main/desktopNotifications.js", () => ({
   dispatchTaskNotification: vi.fn(),
 }));
 
-vi.mock("../src/main/desktopOAuthDeepLink.js", () => ({
-  clearOAuthRoutesForWindow: vi.fn(),
-  deliverPendingDeepLink: vi.fn(() => false),
-  parseOAuthStateRegistration: vi.fn(),
-  registerOAuthState: vi.fn(),
+vi.mock("../src/main/desktopDeepLink.js", () => ({
+  clearDeepLinkRoutesForWindow: vi.fn(),
+  deliverPendingDeepLink: vi.fn(),
 }));
 
 vi.mock("../src/main/desktopArmsCustomEvent.js", () => ({
@@ -70,7 +68,6 @@ function createOptions(overrides?: Partial<RemoteIpcOptions>): RemoteIpcOptions 
     appTelemetryRuntime: {
       onRendererReady: vi.fn(),
       syncRendererContext: vi.fn(),
-      onOAuthCallbackHandled: vi.fn(),
     },
     appTelemetryCore: {
       reportEvent: vi.fn(async () => {}),

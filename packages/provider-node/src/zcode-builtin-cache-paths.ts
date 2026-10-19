@@ -41,9 +41,20 @@ export function resolveZCodeBuiltinCachePaths(
   };
 }
 
+/**
+ * fork（F3.1）：端点未配置时的稳定缓存目录名。
+ * 不再为「未配置」伪造官方 origin；该目录只读取随包/本地缓存，远端刷新在调用方关闭。
+ */
+const ZCODE_BUILTIN_UNCONFIGURED_ENDPOINT_KEY = "endpoint-unconfigured";
+
 /** 将 ZCode 控制面 Origin 规范化后映射为安全、稳定且碰撞风险可忽略的缓存路径段。 */
 export function createZCodeBuiltinEndpointKey(zcodeEndpointOrigin: string): string {
-  const normalized = normalizeZCodeBuiltinEndpointOrigin(zcodeEndpointOrigin);
+  const trimmed = zcodeEndpointOrigin.trim();
+  // fork（F3.1）：未配置端点不再回落官方地址，使用固定目录保证缓存隔离且可稳定读取。
+  if (!trimmed) {
+    return ZCODE_BUILTIN_UNCONFIGURED_ENDPOINT_KEY;
+  }
+  const normalized = normalizeZCodeBuiltinEndpointOrigin(trimmed);
   const digest = createHash("sha256").update(normalized).digest("hex").slice(0, 32);
   return `endpoint-${digest}`;
 }

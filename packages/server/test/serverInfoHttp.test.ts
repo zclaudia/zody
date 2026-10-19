@@ -129,6 +129,12 @@ describe("server info HTTP endpoint", () => {
     expect(fallback.headers.get("content-type")).toContain("text/html");
     await expect(fallback.text()).resolves.toBe("<html>lite</html>");
 
+    // F4.10：`/web-remote` 不再有 OAuth 登录门，必须由 SPA fallback 直接返回 Web 入口。
+    const webRemoteEntry = await fetch(`${baseUrl}/web-remote`);
+    expect(webRemoteEntry.status).toBe(200);
+    expect(webRemoteEntry.headers.get("content-type")).toContain("text/html");
+    await expect(webRemoteEntry.text()).resolves.toBe("<html>lite</html>");
+
     const apiFallback = await fetch(`${baseUrl}/api/missing`);
     expect(apiFallback.status).toBe(404);
   });

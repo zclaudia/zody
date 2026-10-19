@@ -44,10 +44,8 @@ No Proxy 对以上代理来源都生效，支持 `*`、精确 host、host:port�
 ## 行为
 
 - 代理解析逻辑由 adapter 统一实现，并同时服务模型请求与 `HttpClientPort`。
-- 只代理 AI SDK provider 发起的模型 HTTP(S) 请求，不改写 provider `baseURL`。
-- 动态 provider endpoint routing 必须先按
-  [`provider-endpoint-routing.md`](./provider-endpoint-routing.md) 解析最终 URL，再执行 Proxy/No Proxy
-  匹配；配置接口自身使用独立 `HttpClientPort`，不得进入 routing 形成递归。
+- 只代理 AI SDK provider 发起的模型 HTTP(S) 请求，不改写 provider `baseURL`；
+  fork（F4.9）已删除 provider endpoint routing，模型请求直接使用用户配置的地址。
 - 无代理配置或命中显式 No Proxy 时继续使用原生 `fetch`。
 - 启用代理时通过 adapter 层统一 fetch 转发，保留响应流，避免破坏 streaming。
 - 当命中了自定义 CA 配置时，adapter 必须确保直连 HTTPS、HTTPS proxy 和 HTTP CONNECT 路径都使用同一份额外信任链。

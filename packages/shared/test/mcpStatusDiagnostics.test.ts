@@ -42,7 +42,6 @@ describe("MCP status diagnostics protocol", () => {
       "tool_list_failed",
       "unexpected_disconnect",
       "oauth_authorization_failed",
-      "official_origin_untrusted",
       "not_authenticated",
       "coding_plan_required",
       "server_not_found",

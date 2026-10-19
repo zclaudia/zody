@@ -4,6 +4,16 @@ export interface TelemetryRendererContext {
   screenResolution: string;
 }
 
+/**
+ * fork（F4.11）：原 OAuthLoginAttribution 从 oauth.ts 迁出。它只描述归因参数
+ * （官网中转页/投放链接），与账号登录无关；OAuth 类型删除后由 telemetry 拥有。
+ */
+export interface TelemetryMarketingAttribution {
+  channel_id?: string;
+  utm_source?: string;
+  utm_campaign?: string;
+}
+
 export interface TelemetryEventPayload {
   elementName: string;
   eventRegion: string;

@@ -151,7 +151,11 @@ type ActorPlan =
   // 拒绝接续它的在飞 ask，见 workflow-driver-quiescence.ts）。本种类才是正常形状。
   | { kind: "hang-until-cancelled" }
   // 模型请求以 adapter 错误 reject（模型侧错误收容用例）。
-  | { kind: "throw"; error: unknown };
+  | { kind: "throw"; error: unknown }
+  // 等某个前置条件成立后再以 adapter 错误 reject。脚本跑在沙箱子进程里，ask 是跨进程
+  // 请求，父进程何时读到兄弟的 ask 行由管道与负载决定——「兄弟已在飞」必须先被观察到，
+  // 再触发模型错误，否则 stop(provider) 可能先于兄弟准入，断言就成了时序彩票。
+  | { kind: "throw-when"; error: unknown; ready: Promise<void> };
 
 /** 一次 generateText 请求的观察面：模型这一轮看见的消息与被提供的工具。 */
 interface ModelRequestLog {
@@ -190,6 +194,10 @@ function scriptedModelAdapter(
         });
       }
       if (planned.kind === "throw") throw planned.error;
+      if (planned.kind === "throw-when") {
+        await planned.ready;
+        throw planned.error;
+      }
       const usage = { inputTokens: 12, outputTokens: 8, totalTokens: 20 };
       if (planned.kind === "submit") {
         return {
@@ -8104,11 +8112,20 @@ describe("dynamic workflow run service — 模型侧错误的收容（apps/zcode
     });
 
   it("一个子代理撞上确定性模型错误 → run stopped(provider)，兄弟在飞 ask 被 abort，可恢复", async () => {
+    // 「兄弟在飞」是本题的前置条件，不是结果：脚本在子进程里把两次 ask 写成两条 NDJSON
+    // 请求，父进程逐行受理（dynamic-workflow-runtime/harness.ts）。并行负载下 beta 的请求
+    // 可能晚于 alpha 的模型错误到达，此时 stop(provider) 先结算 run，beta 连节点都没有，
+    // 断言 cancelled 回声就会偶发落空。因此让 alpha 的 adapter 等到 ask#2 的 node-queued
+    // 再抛错——兄弟已准入后才可能被 abort，断言因此是确定的。
+    let admitSibling!: () => void;
+    const siblingAdmitted = new Promise<void>((resolve) => {
+      admitSibling = resolve;
+    });
     const harness = makeHarness({
       actorScripts: {
         "actor#1@1": [
           {
-            kind: "throw",
+            kind: "throw-when",
             error: adapterError(
               {
                 reason: "auth_failed",
@@ -8119,9 +8136,16 @@ describe("dynamic workflow run service — 模型侧错误的收容（apps/zcode
               },
               "[1006] token expired",
             ),
+            ready: siblingAdmitted,
           },
         ],
         "actor#2@1": [{ kind: "hang" }],
+      },
+      onRunEvent: (progress) => {
+        const instance = progress.payload.instance as { siteId?: string } | undefined;
+        if (progress.eventType === "node-queued" && instance?.siteId === "ask#2") {
+          admitSibling();
+        }
       },
     });
     const runId = await submitRun(harness, {
@@ -8144,12 +8168,12 @@ describe("dynamic workflow run service — 模型侧错误的收容（apps/zcode
       subagentName: "alpha",
       rawMessage: "[1006] token expired",
     });
-    // 节点：所有 node-settled 收场都是 cancelled（没有 failed 节点）；hang 的兄弟必被 abort、
-    // 必有回声。fork 修复：node-settled(cancelled) 只对 abort 时刻仍在飞的 ask 各发一条
-    // （execution-engine.md「A cancel travels one path」：emits node-settled cancelled for
-    // each）；触发者节点在 stop(provider) 下若已随 stopRun 终态化，就不再补发 abort 回声，
-    // 条数因此是时序因变量（并行负载下 1 或 2 条都对），钉死条数会在慢机器上偶发翻车。
-    // journal 的节点行保持 running（与 cancel 同：resume 时重新派发），那才是「兄弟不丢」的载体。
+    // 节点：所有 node-settled 收场都是 cancelled（没有 failed 节点）；上面的门保证 hang 的
+    // 兄弟在 stop(provider) 时确实在飞，因此必有 abort 回声。node-settled(cancelled) 只对
+    // abort 时刻仍在飞的 ask 各发一条（execution-engine.md「A cancel travels one path」：
+    // emits node-settled cancelled for each）；触发者节点是否也补发回声取决于它与 stopRun
+    // 的先后（同为时序因变量），所以只逐站断言兄弟，不钉死总条数。journal 的节点行保持
+    // running（与 cancel 同：resume 时重新派发），那才是「兄弟不丢」的载体。
     const settledNodes = harness.runEvents.filter(
       (event) => event.runId === runId && event.eventType === "node-settled",
     );

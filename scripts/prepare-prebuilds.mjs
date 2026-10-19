@@ -114,12 +114,7 @@ const remoteOfficialPluginPackages = [
     requiresRuntime: false,
     stagedPath: "packages/documents-plugin",
   },
-  {
-    packageName: "@zcode/image-search-plugin",
-    relativePath: "apps/zcode-cli/packages/image-search-plugin",
-    requiresRuntime: false,
-    stagedPath: "packages/image-search-plugin",
-  },
+  // fork（F4.6）：image-search 官方 MCP 插件随链删除。
   {
     packageName: "@zcode/pdf-plugin",
     relativePath: "apps/zcode-cli/packages/pdf-plugin",
@@ -276,8 +271,6 @@ const remoteOfficialPluginRequiredPaths = [
   "packages/android-emulator-plugin/.zcode-plugin/plugin.json",
   "packages/browser-use-plugin/.zcode-plugin/plugin.json",
   "packages/zcode-cua-plugin/.zcode-plugin/plugin.json",
-  "packages/image-search-plugin/.zcode-plugin/plugin.json",
-  "packages/image-search-plugin/.mcp.json",
   "packages/documents-plugin/.zcode-plugin/plugin.json",
   "packages/pdf-plugin/.zcode-plugin/plugin.json",
   "packages/presentations-plugin/.zcode-plugin/plugin.json",

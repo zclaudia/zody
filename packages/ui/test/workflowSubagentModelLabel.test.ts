@@ -30,20 +30,21 @@ const zh = formatter(zhCN);
 const TEAM_PLAN_PROVIDER = "4fc7f541-2382-4c32-be11-f021b8d7ed1d";
 
 describe("describeWorkflowSubagentModel", () => {
-  it("内置家族只说模型名，档位单独成词（zh 说「高」，en 说「High」）", () => {
+  it("模型名带 provider 名，档位单独成词（zh 说「高」，en 说「High」）", () => {
     const canonical = "account:zai-team-coding-plan/GLM-5.3-Flash$high";
-    // 连接名属于产品固定入口，就算查得到也不拼进去。
+    // fork（F4.11）：官方账号内置连接已删除，不再按家族隐藏连接名；历史 run 里的
+    // account:* 规范串与普通 provider 一样展示 providerName/model。
     const providerName = () => "Coding Plan";
 
     expect(describeWorkflowSubagentModel(canonical, { formatMessage: zh, providerName })).toEqual({
       canonical,
       level: "高",
-      name: "GLM-5.3-Flash",
+      name: "Coding Plan/GLM-5.3-Flash",
     });
     expect(describeWorkflowSubagentModel(canonical, { formatMessage: en, providerName })).toEqual({
       canonical,
       level: "High",
-      name: "GLM-5.3-Flash",
+      name: "Coding Plan/GLM-5.3-Flash",
     });
   });
 

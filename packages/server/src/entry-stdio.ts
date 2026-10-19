@@ -12,7 +12,6 @@ import type { HelloMessage, HelloAckMessage } from "@zcode/shared";
 import { createStdioServer } from "./stdio.js";
 import { registerStdioProcessLifecycle } from "./stdio-lifecycle.js";
 import { createStdioServices } from "./stdioServices.js";
-import { ensureRemoteServerDeviceMid } from "./stdioDeviceMid.js";
 import {
   materializeBundledZCodeBuiltinProviderConfig,
   readBundledZCodeBuiltinProviderConfig,
@@ -53,10 +52,9 @@ async function main() {
   const ack = await waitForAck();
   log(`client connected: ${ack.clientId} (v${ack.version})`);
 
-  // 远端主机没有 Desktop main，没人写 telemetry-state.json，services 发往 ZCode endpoint
-  // 的请求缺 X-Device-Mid，Start Plan 的 billing/balance 被拒。远端 server 是本机设备身份的
-  // 生命周期所有者，必须在 services 创建前确保 deviceMid 存在（详见 stdioDeviceMid.ts）。
-  await ensureRemoteServerDeviceMid({ log });
+  // fork（F4.11）：远端 server 启动时的 deviceMid 预生成随 X-Device-Mid 停发（F2.10）
+  // 与官方账号 billing/balance 链路（F4.7）删除；遥测 body 的 device_mid 由
+  // TelemetryCore 在首次上报时自行按需生成。
 
   // Phase 3: Initialize services and start stdio RPC server
   let topicResourceChannel: IChannel | undefined;

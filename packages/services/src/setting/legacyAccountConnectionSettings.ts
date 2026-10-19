@@ -16,7 +16,10 @@ export interface LegacyTeamConnection {
   readonly projectId: string;
 }
 
-/** 仅迁移器解释旧键；组织信息由 Host 的只读 OAuth 查询注入。退役旧版后删除。 */
+/**
+ * 仅旧文件读取边界解释旧键。fork（F4.7）：补组织的 OAuth 查询已随账号链删除，
+ * 这里只用于判断旧 team-plan 连接是否仍未迁移（保留旧字段缺席语义）；退役旧版后删除。
+ */
 export function readIncompleteLegacyTeamConnections(value: unknown): LegacyTeamConnection[] {
   if (!needsLegacyAccountConnectionMigration(value)) return [];
   const raw = record(value);

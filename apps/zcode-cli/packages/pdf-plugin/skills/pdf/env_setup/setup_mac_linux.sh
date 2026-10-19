@@ -269,10 +269,16 @@ else
 fi
 echo ""
 
-# ── Step 2i: Font Installation (from CDN) ──
+# ── Step 2i: Font Installation (bundled fonts or fork-hosted mirror) ──
 echo "--- [9/10] Font Installation ---"
-FONT_CDN_BASE="https://z-cdn.chatglm.cn/office-skill/fonts"
+# fork（F6.4）：不再从官方 CDN 下载字体。来源优先级：
+#   1. 随技能分发的 env_setup/fonts/（相对路径与 font_list.txt 一致）；
+#   2. ZCODE_OFFICE_FONTS_BASE_URL 指向的 fork 托管镜像；
+#   3. 本地缓存与上述来源都不足时明确报错并提示手动放置，不静默回退官方 CDN。
 FONT_LIST="$SCRIPT_DIR/font_list.txt"
+FONT_BUNDLED_DIR="$SCRIPT_DIR/fonts"
+FONT_REMOTE_BASE="${ZCODE_OFFICE_FONTS_BASE_URL:-}"
+FONT_REMOTE_BASE="${FONT_REMOTE_BASE%/}"
 
 if [ "$PLATFORM" = "mac" ]; then
     USER_FONT_DIR="$HOME/Library/Fonts"
@@ -293,40 +299,88 @@ else
         INSTALLED=0
         SKIPPED=0
         FAILED=0
-        info "Downloading $TOTAL fonts from CDN..."
-        
-        while IFS= read -r rel_path || [ -n "$rel_path" ]; do
-            [ -z "$rel_path" ] && continue
-            fname="$(basename "$rel_path")"
-            
-            if [ -f "$USER_FONT_DIR/$fname" ]; then
-                SKIPPED=$((SKIPPED + 1))
-                continue
-            fi
-            
-            # URL-encode special chars (brackets)
-            encoded=$(echo "$rel_path" | sed 's/\[/%5B/g; s/\]/%5D/g; s/ /%20/g')
-            url="$FONT_CDN_BASE/$encoded"
-            
-            if curl -fSL --connect-timeout 15 --retry 2 -o "$USER_FONT_DIR/$fname" "$url" 2>/dev/null; then
-                INSTALLED=$((INSTALLED + 1))
-            else
-                warn "Failed to download: $rel_path"
-                FAILED=$((FAILED + 1))
-                rm -f "$USER_FONT_DIR/$fname" 2>/dev/null
-            fi
-        done < "$FONT_LIST"
-        
-        if [ "$PLATFORM" = "linux" ] && [ $INSTALLED -gt 0 ]; then
-            fc-cache -f "$USER_FONT_DIR" 2>/dev/null
+        FROM_BUNDLE=0
+        FROM_MIRROR=0
+
+        HAS_BUNDLED=false
+        if [ -d "$FONT_BUNDLED_DIR" ] && [ -n "$(find "$FONT_BUNDLED_DIR" -type f \( -name '*.ttf' -o -name '*.ttc' -o -name '*.otf' \) 2>/dev/null | head -n 1)" ]; then
+            HAS_BUNDLED=true
         fi
-        
-        if [ $FAILED -eq 0 ]; then
-            touch "$MARKER"
-            ok "Fonts: $INSTALLED newly installed, $SKIPPED already present (target: $USER_FONT_DIR)"
+        info "Installing $TOTAL fonts (bundled: $HAS_BUNDLED, mirror: ${FONT_REMOTE_BASE:-<unset>})..."
+
+        if [ "$HAS_BUNDLED" = false ] && [ -z "$FONT_REMOTE_BASE" ]; then
+            # 优先本地缓存：用户可能已手动放置字体，逐项确认后再决定是否报错。
+            LOCAL_MISSING=0
+            while IFS= read -r rel_path || [ -n "$rel_path" ]; do
+                [ -z "$rel_path" ] && continue
+                fname="$(basename "$rel_path")"
+                [ -f "$USER_FONT_DIR/$fname" ] || LOCAL_MISSING=$((LOCAL_MISSING + 1))
+            done < "$FONT_LIST"
+
+            if [ "$LOCAL_MISSING" -eq 0 ]; then
+                touch "$MARKER"
+                ok "All $TOTAL fonts already present in $USER_FONT_DIR (no download source needed)"
+            else
+                # 明确失败而不是静默跳过：用户需要知道字体从哪来，且不能落到官方 CDN。
+                fail "No bundled fonts and ZCODE_OFFICE_FONTS_BASE_URL is not set — $LOCAL_MISSING/$TOTAL fonts missing."
+                info "This fork does not download fonts from the upstream CDN. Choose one source:"
+                info "  1) bundle fonts under $FONT_BUNDLED_DIR (same relative paths as font_list.txt)"
+                info "  2) set ZCODE_OFFICE_FONTS_BASE_URL to a fork-hosted mirror of the same layout"
+                info "  3) copy the fonts listed in font_list.txt into $USER_FONT_DIR manually"
+                ERRORS=$((ERRORS + 1))
+            fi
         else
-            warn "Fonts: $INSTALLED installed, $SKIPPED skipped, $FAILED failed (marker not written, will retry next run)"
-            ERRORS=$((ERRORS + 1))
+            while IFS= read -r rel_path || [ -n "$rel_path" ]; do
+                [ -z "$rel_path" ] && continue
+                fname="$(basename "$rel_path")"
+
+                if [ -f "$USER_FONT_DIR/$fname" ]; then
+                    SKIPPED=$((SKIPPED + 1))
+                    continue
+                fi
+
+                # 去掉开头 /：随包目录与镜像使用同一相对布局，避免拼出双斜杠。
+                rel_key="${rel_path#/}"
+
+                if [ "$HAS_BUNDLED" = true ] && [ -f "$FONT_BUNDLED_DIR/$rel_key" ]; then
+                    if cp "$FONT_BUNDLED_DIR/$rel_key" "$USER_FONT_DIR/$fname" 2>/dev/null; then
+                        INSTALLED=$((INSTALLED + 1))
+                        FROM_BUNDLE=$((FROM_BUNDLE + 1))
+                        continue
+                    fi
+                    warn "Failed to copy bundled font: $rel_path"
+                    rm -f "$USER_FONT_DIR/$fname" 2>/dev/null
+                fi
+
+                if [ -n "$FONT_REMOTE_BASE" ]; then
+                    # URL-encode special chars (brackets)
+                    encoded=$(echo "$rel_key" | sed 's/\[/%5B/g; s/\]/%5D/g; s/ /%20/g')
+                    url="$FONT_REMOTE_BASE/$encoded"
+
+                    if curl -fSL --connect-timeout 15 --retry 2 -o "$USER_FONT_DIR/$fname" "$url" 2>/dev/null; then
+                        INSTALLED=$((INSTALLED + 1))
+                        FROM_MIRROR=$((FROM_MIRROR + 1))
+                        continue
+                    fi
+                    warn "Failed to download: $rel_path ($url)"
+                    rm -f "$USER_FONT_DIR/$fname" 2>/dev/null
+                else
+                    warn "Font not bundled and no mirror configured: $rel_path"
+                fi
+                FAILED=$((FAILED + 1))
+            done < "$FONT_LIST"
+
+            if [ "$PLATFORM" = "linux" ] && [ $INSTALLED -gt 0 ]; then
+                fc-cache -f "$USER_FONT_DIR" 2>/dev/null
+            fi
+
+            if [ $FAILED -eq 0 ]; then
+                touch "$MARKER"
+                ok "Fonts: $INSTALLED installed ($FROM_BUNDLE bundled, $FROM_MIRROR mirror), $SKIPPED already present (target: $USER_FONT_DIR)"
+            else
+                warn "Fonts: $INSTALLED installed, $SKIPPED skipped, $FAILED failed (marker not written, will retry next run)"
+                ERRORS=$((ERRORS + 1))
+            fi
         fi
     fi
 fi
@@ -357,7 +411,7 @@ elif [ "$PLATFORM" = "linux" ]; then
 fi
 
 if [ "$CJK_FOUND" = false ]; then
-    warn "No CJK font detected — fonts were downloaded and copied; rebuild font cache if needed"
+    warn "No CJK font detected — fonts were installed into $USER_FONT_DIR; rebuild font cache if needed"
 fi
 echo ""
 

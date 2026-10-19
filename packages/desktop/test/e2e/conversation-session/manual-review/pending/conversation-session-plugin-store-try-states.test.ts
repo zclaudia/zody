@@ -214,9 +214,8 @@ async function seedLifecycleMarketplaceCache(
       {
         version: 1,
         marketplaces: [
-          // Settings 首次进入会按需刷新两个官方市场；若不预置成功时间，Claude
-          // marketplace 的 git clone 会占用插件协议串行锁 90 秒，令本地 fixture 的
-          // install/enable 操作看似卡死。该隔离 HOME 只需声明已刷新，PLG12 不验证公网目录。
+          // fork（F6.2）：官方市场由随包 seed 提供，预置为本地 file 源；seed 在
+          // overview 前写入 manifest，因此这里不会触发任何公网请求。
           {
             addedAt: "2026-07-31T00:00:00.000Z",
             description: "Deterministic offline ZCode marketplace marker",
@@ -225,8 +224,8 @@ async function seedLifecycleMarketplaceCache(
             name: "zcode-plugins-official",
             pluginCount: 1,
             source: {
-              source: "url",
-              url: "https://cdn-zcode.z.ai/zcode/official-plugin/marketplace.json",
+              source: "file",
+              path: pluginStoragePath("marketplaces", "zcode-plugins-official", "marketplace.json"),
             },
           },
           {

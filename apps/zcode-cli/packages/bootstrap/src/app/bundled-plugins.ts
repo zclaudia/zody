@@ -9,7 +9,10 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
-import { writeBundledOfficialMarketplacePartitionSync } from "@zcode/adapters";
+import {
+  ensureBundledOfficialMarketplaceRecordSync,
+  writeBundledOfficialMarketplacePartitionSync,
+} from "@zcode/adapters";
 import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE, type Logger } from "@zcode/contracts";
 import { isZCodeCuaInternalFeatureEnabled, ZCODE_CUA_OFFICIAL_PLUGIN_ID } from "@zcode/shared";
 import {
@@ -428,6 +431,9 @@ function writeOfficialMarketplace(storageRoot: string, source: OfficialPluginSee
     },
     storageRoot,
   });
+  // fork（F6.2，D4b 方案 ii）：官方市场没有远端 CDN 源，seed 写入合并目录后
+  // 立即登记本地 file 市场，同一次 overview 即可在断网下浏览内置插件。
+  ensureBundledOfficialMarketplaceRecordSync(storageRoot);
 }
 
 /** 从 seed 文件集中读插件 plugin.json 的 description；读取/解析失败按 undefined 降级。 */

@@ -79,8 +79,14 @@ export function buildElectronManifestUrl(options: {
   platform: string;
   channel: ElectronReleaseChannel;
 }): URL {
-  const url = options.manifestUrl?.trim()
-    ? new URL(options.manifestUrl.trim())
+  const manifestUrl = options.manifestUrl?.trim();
+  if (!manifestUrl && !options.endpointOrigin.trim()) {
+    // fork（F3.1）：默认端点为空表示未配置。没有显式 manifest URL 时直接失败关闭，
+    // 不再把空 origin 交给 URL 解析（也不回落官方地址）。
+    throw new Error("ZCode endpoint 未配置，无法构建更新 manifest URL");
+  }
+  const url = manifestUrl
+    ? new URL(manifestUrl)
     : new URL(ELECTRON_MANIFEST_API_PATH, normalizeZCodeEndpointOrigin(options.endpointOrigin));
   url.searchParams.set("platform", options.platform);
   // fork（F2.10）：设备标识停发，manifest 请求不再携带 device_mid 查询参数。
@@ -178,7 +184,9 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
   private readonly options: ManifestUpdateProviderOptions;
   private readonly releasePlatform: string;
   private readonly linuxExtensions: readonly string[] | null;
-  private resolveBaseUrl = new URL(DEFAULT_ZCODE_ENDPOINT_ORIGIN);
+  // fork（F3.1）：默认端点为空（未配置），构造时不再解析空 origin；
+  // getLatestVersion 成功取得 manifest 后才建立文件解析的 base URL。
+  private resolveBaseUrl: URL | null = null;
 
   constructor(
     options: ManifestUpdateProviderOptions,
@@ -189,9 +197,10 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
     this.options = options;
     this.linuxExtensions = getLinuxUpdateExtensions(updater);
     this.releasePlatform = options.releasePlatform?.trim() || getElectronReleasePlatform();
-    this.resolveBaseUrl = new URL(
-      normalizeZCodeEndpointOrigin(options.endpointOrigin ?? DEFAULT_ZCODE_ENDPOINT_ORIGIN),
-    );
+    const endpointOrigin = (options.endpointOrigin ?? DEFAULT_ZCODE_ENDPOINT_ORIGIN).trim();
+    this.resolveBaseUrl = endpointOrigin
+      ? new URL(normalizeZCodeEndpointOrigin(endpointOrigin))
+      : null;
   }
 
   override get isUseMultipleRangeRequest(): boolean {
@@ -235,14 +244,26 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
   }
 
   override resolveFiles(updateInfo: UpdateInfo): ResolvedUpdateFileInfo[] {
+    if (!this.resolveBaseUrl) {
+      throw new Error("更新 manifest 尚未解析，无法解析更新文件");
+    }
     return resolveManifestFiles(updateInfo, this.resolveBaseUrl, this.linuxExtensions);
   }
 
   private async resolveEndpointOrigin(): Promise<string> {
-    const resolved =
+    const resolved = (
       (await this.options.resolveEndpointOrigin?.()) ??
       this.options.endpointOrigin ??
-      DEFAULT_ZCODE_ENDPOINT_ORIGIN;
+      DEFAULT_ZCODE_ENDPOINT_ORIGIN
+    ).trim();
+    // fork（F3.1）：默认端点为空即未配置。显式 manifest URL 仍可工作；
+    // 没有 manifest URL 时必须失败关闭，不能回落到官方地址。
+    if (!resolved) {
+      if (this.options.manifestUrl?.trim()) {
+        return "";
+      }
+      throw new Error("ZCode endpoint 未配置，无法检查更新");
+    }
     return normalizeZCodeEndpointOrigin(resolved);
   }
 

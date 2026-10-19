@@ -166,10 +166,9 @@ export function createWebPlatform(options?: {
     openInFileManager: () =>
       Promise.resolve({ success: false, error: "Not supported in web mode" }),
     openExternalFile: () => Promise.resolve({ success: false, error: "Not supported in web mode" }),
-    registerOAuthState: (_payload) => {},
-    onOAuthCallback: () => () => {},
-    onPaymentCallback: () => () => {},
-    onShareImport: () => () => {},
+    // fork（F4.11）：registerOAuthState / onOAuthCallback / onPaymentCallback 契约条目已从
+    // shared/platform.ts 移除（F4.10 先删除 Web 端登录实现）。
+    // fork（F4.8）：onShareImport 随会话分享功能删除。
     notifyRendererReady: () => {},
     reportTelemetryEvent: async (event) => {
       // 手机只开放 session_create；不能把原有 Desktop conversation 事件一并启用。

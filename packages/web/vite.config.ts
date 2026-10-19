@@ -9,11 +9,7 @@ import { thirdPartyNoticesVitePlugin } from "../../scripts/third-party-notices.m
 import { resolveRemoteFrontendVersion } from "./vite/remoteFrontendVersion.mjs";
 // Bugfix: Vite 配置在 Node 加载期执行，不能导入 @zcode/shared 根入口。
 // 根入口包含 NodeNext 风格的源码 re-export，Node 会按真实文件查找 .js 并在 bootstrap 阶段失败。
-import {
-  resolveRuntimeZCodeEndpointOrigin,
-  resolveZaiOAuthClientId,
-  resolveZaiOAuthOrigin,
-} from "@zcode/shared/zcodeEndpoint";
+import { resolveRuntimeZCodeEndpointOrigin } from "@zcode/shared/zcodeEndpoint";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = resolve(HERE, "../..");
@@ -29,7 +25,7 @@ export default defineConfig(({ mode }) => {
   const mobileEntry = mode === "mobile";
   // `.env*` 只提供链接常量；当前产品环境由启动脚本或 CI 注入 ZCODE_ENV。
   // 启动脚本通过 process.env 显式选择 test/production；它必须优先于 .env 文件，
-  // 否则 share:test 可能被 mode 的旧配置误解析到错误 endpoint。
+  // 否则 mode 对应的旧配置可能被误解析到错误 endpoint。
   const env = { ...loadEnv(mode, REPO_ROOT, ""), ...process.env };
   const zcodeEnv = resolveZCodeEnv(env.ZCODE_ENV);
   const endpointEnv = {
@@ -37,9 +33,6 @@ export default defineConfig(({ mode }) => {
     ZCODE_ENV: zcodeEnv,
   };
   const zcodeEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(endpointEnv);
-  const zaiOAuthOrigin = resolveZaiOAuthOrigin(endpointEnv);
-  // ZAI OAuth client_id 是公开标识，允许注入浏览器包；secret/token 不得走 VITE_。
-  const zaiOAuthClientId = resolveZaiOAuthClientId(endpointEnv);
 
   return {
     plugins: [pdfJsCMapsPlugin(), react(), tailwindcss(), thirdPartyNoticesVitePlugin()],
@@ -59,13 +52,6 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       proxy: {
-        // Web 登录本地调试时，OAuth token 交换必须先命中线上同源接口。
-        // 该专用代理放在 `/api` 通配代理之前，避免被转发到本地 server 导致 404。
-        "/api/v1/oauth/token": {
-          target: zcodeEndpointOrigin,
-          changeOrigin: true,
-          secure: true,
-        },
         // 将 /ws 和 /api 请求代理到 server（默认 3030 端口）
         "/ws": { target: "ws://localhost:3030", ws: true },
         "/api": { target: "http://localhost:3030" },
@@ -93,9 +79,6 @@ export default defineConfig(({ mode }) => {
       "import.meta.env.VITE_ZCODE_BASE_URL": JSON.stringify(zcodeEndpointOrigin),
       // 兼容旧 Web runtime 读取名；新代码统一读 VITE_ZCODE_BASE_URL。
       "import.meta.env.VITE_ZCODE_ENDPOINT_ORIGIN": JSON.stringify(zcodeEndpointOrigin),
-      // 明确注入 OAuth 公开配置，避免 Web 端在不同 mode 下隐式依赖源码 fallback。
-      "import.meta.env.VITE_ZAI_OAUTH_CLIENT_ID": JSON.stringify(zaiOAuthClientId),
-      "import.meta.env.VITE_ZAI_OAUTH_ORIGIN": JSON.stringify(zaiOAuthOrigin),
     },
     build: {
       // 手机入口产物单独放到 dist-mobile-remote，避免与普通 Web 客户端互相清空（两边都是待打包产物，

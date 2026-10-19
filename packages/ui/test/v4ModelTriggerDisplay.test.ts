@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { BUILTIN_MODEL_PROVIDER_IDS } from "@zcode/shared";
 import type { ModelSelectGroup } from "@/ModelConfigSelect.js";
 import {
   formatProviderModelLabel,
@@ -48,29 +47,6 @@ describe("resolveV4ModelTriggerLabel", () => {
         providerId: "dev-model",
       }),
     ).toBe("dev-model/glm-5.2");
-  });
-
-  it.each([
-    [BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan, "Z.ai - Coding Plan"],
-    [BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan, "Z.ai - Start Plan"],
-    [BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan, "BigModel - Coding Plan"],
-    [BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan, "BigModel - Start Plan"],
-  ])("%s 内置供应商只显示模型名", (providerId, providerName) => {
-    const group = createGroup({
-      key: providerId,
-      label: providerName,
-      modelName: "GLM-5.2",
-    });
-
-    expect(
-      resolveV4ModelTriggerLabel({
-        modelGroups: [group],
-        normalizedValue: `custom:${providerId}:GLM-5.2`,
-        fallbackLabel: "选择模型",
-        providerId,
-        providerName,
-      }),
-    ).toBe("GLM-5.2");
   });
 
   it("DeepSeek 自定义 provider 收起后显示 providerName/modelName", () => {
@@ -186,9 +162,9 @@ describe("resolveV4ModelTriggerDisplay", () => {
     });
   });
 
-  it("内置供应商没有可隐藏的 provider 前缀", () => {
+  it("所有 provider 统一展示 provider 前缀（账号特权展示已删除）", () => {
     const group = createGroup({
-      key: BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
+      key: "account:zai-individual-coding-plan",
       label: "Z.ai - Coding Plan",
       modelName: "GLM-5.2",
     });
@@ -196,26 +172,28 @@ describe("resolveV4ModelTriggerDisplay", () => {
     expect(
       resolveV4ModelTriggerDisplay({
         modelGroups: [group],
-        normalizedValue: `custom:${BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan}:GLM-5.2`,
+        normalizedValue: "custom:account:zai-individual-coding-plan:GLM-5.2",
         fallbackLabel: "选择模型",
-        providerId: BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan,
+        providerId: "account:zai-individual-coding-plan",
         providerName: "Z.ai - Coding Plan",
       }),
     ).toEqual({
-      fullLabel: "GLM-5.2",
+      fullLabel: "Z.ai - Coding Plan/GLM-5.2",
+      providerPrefix: "Z.ai - Coding Plan/",
       modelLabel: "GLM-5.2",
     });
   });
 });
 
 describe("formatProviderModelLabel", () => {
-  it.each([
-    [BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan, "Z.ai - Coding Plan"],
-    [BUILTIN_MODEL_PROVIDER_IDS.zaiStartPlan, "Z.ai - Start Plan"],
-    [BUILTIN_MODEL_PROVIDER_IDS.bigmodelIndividualCodingPlan, "BigModel - Coding Plan"],
-    [BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan, "BigModel - Start Plan"],
-  ])("%s 内置供应商在通用模型文案中只显示模型名", (providerId, providerName) => {
-    expect(formatProviderModelLabel(providerId, providerName, "GLM-5.2")).toBe("GLM-5.2");
+  it("所有 provider 统一保留 providerName/modelName", () => {
+    expect(
+      formatProviderModelLabel(
+        "account:zai-individual-coding-plan",
+        "Z.ai - Coding Plan",
+        "GLM-5.2",
+      ),
+    ).toBe("Z.ai - Coding Plan/GLM-5.2");
   });
 
   it("自定义供应商保留 providerName/modelName", () => {

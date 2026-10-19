@@ -91,8 +91,7 @@ export interface ToolMetadata {
     serverName: string;
     toolName: string;
     description?: string;
-    /** 来自声明 zcode_official 鉴权的 MCP server；仅用于信任其结果里的结构化标识。 */
-    official?: boolean;
+    // fork（F4.6）：official 标记只服务官方 MCP 结果，随官方 MCP 链删除。
     /** 该 server 所属插件的稳定 id（`${name}@${marketplace}`）；非插件 MCP 为空。 */
     pluginId?: string;
     /** 工具 `_meta` 归一化后的 MCP App 描述；存在即投影 display.ui（pluginId 缺省时用 serverName 顶替）。 */

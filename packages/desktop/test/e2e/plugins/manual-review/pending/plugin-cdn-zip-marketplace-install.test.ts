@@ -11,6 +11,7 @@ import {
 } from "../../../helpers/plugin-cdn-zip-marketplace.js";
 import {
   capturePluginManualReview,
+  clickPluginControl,
   getPluginList,
   getPluginOverview,
   installPluginThroughUi,
@@ -22,17 +23,20 @@ import {
 
 const ZIP_PLUGIN_INSTALL_TIMEOUT_MS = 180000;
 
-describe("PLM-LC-007 Desktop official CDN ZIP plugin UI lifecycle", () => {
+// fork（F6.2）：官方市场只由本地 seed 提供，本用例改用独立 URL zip 市场验证通用安装链路。
+describe("PLM-LC-007 Desktop local URL ZIP plugin UI lifecycle", () => {
   after(async () => {
     await browser.electron.restoreAllMocks();
     await clearAppData();
   });
 
-  it("从 Public 卡片和详情入口安装本地确定性 official CDN ZIP", async function () {
+  it("从个人市场卡片和详情入口安装本地确定性 URL ZIP", async function () {
     this.timeout(ZIP_PLUGIN_INSTALL_TIMEOUT_MS);
     requirePluginManualReview();
 
     await openPluginSettings();
+    // 独立 URL 市场属于个人分段；先切换分段再等待卡片。
+    await clickPluginControl("plugin-store-segment-personal");
     await waitForPluginCard(PLUGIN_CDN_ZIP_ID, 60000);
     const before = await getPluginOverview();
     expect(

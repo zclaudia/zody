@@ -5,16 +5,12 @@ import type { AddressInfo } from "node:net";
 import { dirname, join } from "node:path";
 
 export const PLUGIN_CDN_ZIP_MARKETPLACE_SPEC = "plugin-cdn-zip-marketplace-install.test.ts";
-export const PLUGIN_STORE_AUTO_REFRESH_THROTTLED_SPEC =
-  "plugin-store-auto-refresh-throttled.test.ts";
-export const PLUGIN_STORE_AUTO_REFRESH_ON_ENTER_SPEC = "plugin-store-auto-refresh-on-enter.test.ts";
-// 固定未来时间阻止正式离线用例启动时自动刷新真实官方 CDN。
+// 固定未来时间作为确定性 lastUpdated；fork（F6.2）已移除商店进入自动刷新，仅保持 fixture 稳定。
 export const PLUGIN_CDN_ZIP_OFFLINE_LAST_UPDATED = "2099-01-01T00:00:00.000Z";
-// 远古时间让「进入商店页即刷新官方市场」用例必然落在节流窗口之外（且 pluginCount>0，
-// 确保走的是节流路径而不是「从未加载过」路径）。
-export const PLUGIN_STORE_AUTO_REFRESH_STALE_LAST_UPDATED = "2000-01-01T00:00:00.000Z";
-export const PLUGIN_CDN_ZIP_MARKETPLACE_ID = "zcode-plugins-official";
-export const PLUGIN_CDN_ZIP_MARKETPLACE_NAME = "ZCode Official Plugins";
+// fork（F6.2）：官方市场只由本地 seed 提供，URL zip fixture 改用独立市场 id，
+// 避免与 zcode-plugins-official 的 seed 记录冲突。
+export const PLUGIN_CDN_ZIP_MARKETPLACE_ID = "e2e-cdn-zip-marketplace";
+export const PLUGIN_CDN_ZIP_MARKETPLACE_NAME = "E2E CDN Zip Marketplace";
 export const PLUGIN_CDN_ZIP_NAME = "e2e-cdn-zip-plugin";
 export const PLUGIN_CDN_ZIP_ID = `${PLUGIN_CDN_ZIP_NAME}@${PLUGIN_CDN_ZIP_MARKETPLACE_ID}`;
 export const PLUGIN_CDN_ZIP_VERSION = "7.8.9";
@@ -26,11 +22,7 @@ export interface PluginCdnZipFixtureServer {
   sha256: string;
 }
 
-const PLUGIN_CDN_ZIP_FIXTURE_SPECS = [
-  PLUGIN_CDN_ZIP_MARKETPLACE_SPEC,
-  PLUGIN_STORE_AUTO_REFRESH_THROTTLED_SPEC,
-  PLUGIN_STORE_AUTO_REFRESH_ON_ENTER_SPEC,
-];
+const PLUGIN_CDN_ZIP_FIXTURE_SPECS = [PLUGIN_CDN_ZIP_MARKETPLACE_SPEC];
 
 function matchesSpec(specName: string, specs: string[]): boolean {
   return process.argv.concat(specs).some((spec) => spec.includes(specName));
@@ -38,22 +30,6 @@ function matchesSpec(specName: string, specs: string[]): boolean {
 
 export function shouldUsePluginCdnZipMarketplaceFixture(specs: string[] = []): boolean {
   return PLUGIN_CDN_ZIP_FIXTURE_SPECS.some((specName) => matchesSpec(specName, specs));
-}
-
-/**
- * 按 spec 决定 seed 进 known_marketplaces.json 的官方市场 lastUpdated：
- * - 节流跳过用例：启动前 1 分钟，进入商店页应命中 10 分钟窗口而不刷新（离线可跑）；
- * - 进入即刷新用例：远古时间，进入商店页必须真打 CDN 刷新；
- * - 其余离线用例：未来时间，阻止任何自动访问公网。
- */
-export function resolvePluginCdnZipMarketplaceLastUpdated(specs: string[] = []): string {
-  if (matchesSpec(PLUGIN_STORE_AUTO_REFRESH_THROTTLED_SPEC, specs)) {
-    return new Date(Date.now() - 60_000).toISOString();
-  }
-  if (matchesSpec(PLUGIN_STORE_AUTO_REFRESH_ON_ENTER_SPEC, specs)) {
-    return PLUGIN_STORE_AUTO_REFRESH_STALE_LAST_UPDATED;
-  }
-  return PLUGIN_CDN_ZIP_OFFLINE_LAST_UPDATED;
 }
 
 export async function startPluginCdnZipFixtureServer(): Promise<PluginCdnZipFixtureServer> {
@@ -101,7 +77,6 @@ export async function stopPluginCdnZipFixtureServer(
 export function seedPluginCdnZipMarketplaceFixture(input: {
   e2eHomeDir: string;
   server: PluginCdnZipFixtureServer;
-  lastUpdated?: string;
 }): void {
   const pluginStorageRoot = join(input.e2eHomeDir, ".zcode", "cli", "plugins");
   const marketplaceSourceRoot = join(
@@ -134,18 +109,15 @@ export function seedPluginCdnZipMarketplaceFixture(input: {
     marketplaces: [
       {
         id: PLUGIN_CDN_ZIP_MARKETPLACE_ID,
-        source: {
-          source: "url",
-          url: "https://cdn-zcode.z.ai/zcode/official-plugin/marketplace.json",
-        },
+        // 独立市场用本地目录作为规范 source；测试不依赖远端刷新，manifest 已直接落盘。
+        source: { source: "directory", path: marketplaceSourceRoot },
         name: PLUGIN_CDN_ZIP_MARKETPLACE_NAME,
         description: manifest.description,
         addedAt: "2026-01-01T00:00:00.000Z",
-        lastUpdated: input.lastUpdated ?? PLUGIN_CDN_ZIP_OFFLINE_LAST_UPDATED,
+        lastUpdated: PLUGIN_CDN_ZIP_OFFLINE_LAST_UPDATED,
         pluginCount: manifest.plugins.length,
       },
-      // 商店页已不再自动拉取 claude-plugins-official；这里仍预置成「已加载」，一是与其它离线
-      // fixture 惯例一致，二是让 PLM-LC-018 能断言进入商店页后该记录没有任何刷新/失败痕迹。
+      // 预置 claude-plugins-official 为已加载，避免任何通用刷新路径在离线 fixture 中触发 git clone。
       {
         id: "claude-plugins-official",
         source: { source: "github", repo: "anthropics/claude-plugins-official" },
@@ -159,12 +131,7 @@ export function seedPluginCdnZipMarketplaceFixture(input: {
   };
 
   writeJsonFileSync(join(marketplaceSourceRoot, ".claude-plugin", "marketplace.json"), manifest);
-  // 官方市场由 bundled/CDN 两个分片重建。把确定性条目写入 CDN 分片，应用启动 seed
-  // bundled 分片时才不会覆盖本地 fixture；lastUpdated 则阻止 UI 自动访问公网。
-  writeJsonFileSync(
-    join(pluginStorageRoot, "marketplaces", PLUGIN_CDN_ZIP_MARKETPLACE_ID, "cdn-marketplace.json"),
-    manifest,
-  );
+  // 运行时读取托管缓存根目录的 marketplace.json；独立市场 id 不会被 bundled seed 重建。
   writeJsonFileSync(
     join(pluginStorageRoot, "marketplaces", PLUGIN_CDN_ZIP_MARKETPLACE_ID, "marketplace.json"),
     manifest,

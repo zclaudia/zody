@@ -73,6 +73,14 @@ export type ZhipuAccountAccessConfigInput = Omit<ZhipuAccountAccessConfigObject,
 
 export type ZhipuAccountAccessConfigObject = Readonly<z.infer<typeof zhipuAccountAccessDataSchema>>;
 
+/**
+ * 官方账号 Access 配置。
+ *
+ * fork（F4.11）：运行时不再注册 zhipu-account Provider，也不再产生新值；类型保留仅为
+ * 读取存量 provider config（同步友好原则），不得用于新增配置或账号判定。
+ *
+ * @deprecated 仅用于旧配置兼容解析。
+ */
 export class ZhipuAccountAccessConfig extends ConfigOverlay<ZhipuAccountAccessConfig> {
   readonly type = "zhipu-account" as const;
   readonly accountType?: ZhipuAccountAccessConfigInput["accountType"];

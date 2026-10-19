@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  BUILTIN_MODEL_PROVIDER_IDS,
   buildCustomSupplierKey,
   type ZCodeError,
   type ZCodeConfigOption,
@@ -198,8 +197,8 @@ describe("useZCodeSessionStore provider preference", () => {
   });
 
   it.each([
-    [BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan, "glm-5.2-pro"],
-    [BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan, "GLM-5.2"],
+    ["account:zai-individual-coding-plan", "glm-5.2-pro"],
+    ["account:bigmodel-start-plan", "GLM-5.2"],
     ["default-glm", "glm-0606[1m]"],
   ])("setConfigOptions 保留 %s/%s 的 high 思考强度", (providerId, modelId) => {
     const workspacePath = `/tmp/workspace-hide-high-${providerId}-${modelId}`;

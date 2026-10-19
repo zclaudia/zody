@@ -1,10 +1,11 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE } from "@zcode/contracts";
 
 const BUNDLED_PARTITION_FILE = "bundled-marketplace.json";
-const CDN_PARTITION_FILE = "cdn-marketplace.json";
 const MERGED_MARKETPLACE_FILE = "marketplace.json";
+// fork（F6.2）：官方 CDN 分片已移除，只用于清理旧版本留下的本地缓存文件。
+const LEGACY_CDN_PARTITION_FILE = "cdn-marketplace.json";
 
 interface BundledMarketplacePartition {
   manifest: Record<string, unknown>;
@@ -20,15 +21,6 @@ export function writeBundledOfficialMarketplacePartitionSync(input: {
     manifest: input.manifest,
     version: 1,
   } satisfies BundledMarketplacePartition);
-  return rebuildOfficialMarketplaceSync(input.storageRoot);
-}
-
-export function writeCdnOfficialMarketplacePartitionSync(input: {
-  manifest: Record<string, unknown>;
-  storageRoot: string;
-}): Record<string, unknown> {
-  assertOfficialManifest(input.manifest);
-  writeJsonFileSync(partitionPath(input.storageRoot, CDN_PARTITION_FILE), input.manifest);
   return rebuildOfficialMarketplaceSync(input.storageRoot);
 }
 
@@ -61,25 +53,17 @@ export function loadBundledOfficialPluginRootsSync(
 }
 
 function rebuildOfficialMarketplaceSync(storageRoot: string): Record<string, unknown> {
-  const bundledPartition = readBundledPartition(storageRoot);
-  const cdnManifest = readJsonRecord(partitionPath(storageRoot, CDN_PARTITION_FILE));
-  const bundledManifest = bundledPartition?.manifest;
-  const cdnPlugins = readPluginEntries(cdnManifest);
-  const cdnPluginNames = new Set(cdnPlugins.map(readPluginName).filter(isDefined));
-  const bundledPlugins = readPluginEntries(bundledManifest).filter((plugin) => {
-    const name = readPluginName(plugin);
-    return name !== undefined && !cdnPluginNames.has(name);
-  });
+  const bundledManifest = readBundledPartition(storageRoot)?.manifest;
 
-  // 内置插件与 CDN 插件曾使用两个 marketplace id，UI 会把内置市场当成
-  // 无 source 的独立市场并在刷新时报 not found。两个分片必须独立持久化后再合并，
-  // 否则应用启动时的 seed 会覆盖 CDN 目录，或 CDN 刷新会覆盖内置目录。同名时以
-  // 可刷新的 CDN 市场条目为准，但只过滤合并目录，不删除应用内置缓存。
+  // fork（F6.2，D4b 方案 ii）：官方市场只由随包 seed 提供，不再合并 CDN 分片。
+  // 旧版本落盘的 cdn-marketplace.json 若继续参与合并，升级用户的商店会重新露出
+  // 官方 CDN 目录并产生 CDN 请求，因此这里直接忽略并清理该派生缓存。
+  removeLegacyCdnPartitionSync(storageRoot);
+
   const merged = {
     ...(bundledManifest ?? {}),
-    ...(cdnManifest ?? {}),
     name: ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
-    plugins: [...cdnPlugins, ...bundledPlugins],
+    plugins: readPluginEntries(bundledManifest),
   };
   writeJsonFileSync(partitionPath(storageRoot, MERGED_MARKETPLACE_FILE), merged);
   return merged;
@@ -104,10 +88,6 @@ function readPluginName(plugin: Record<string, unknown>): string | undefined {
   return typeof plugin.name === "string" && plugin.name.length > 0 ? plugin.name : undefined;
 }
 
-function isDefined<T>(value: T | undefined): value is T {
-  return value !== undefined;
-}
-
 function isStrictDescendant(parentPath: string, childPath: string): boolean {
   const relativePath = relative(parentPath, childPath);
   return (
@@ -123,6 +103,14 @@ function assertOfficialManifest(manifest: Record<string, unknown>): void {
     throw new Error(
       `Official marketplace manifest must be named ${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE}`,
     );
+  }
+}
+
+function removeLegacyCdnPartitionSync(storageRoot: string): void {
+  try {
+    rmSync(partitionPath(storageRoot, LEGACY_CDN_PARTITION_FILE), { force: true });
+  } catch {
+    // 清理失败不影响本地 seed 目录；该文件已不参与合并，仅为丢弃派生缓存。
   }
 }
 

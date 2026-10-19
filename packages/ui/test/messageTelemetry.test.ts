@@ -704,7 +704,7 @@ describe("messageTelemetry", () => {
     });
   });
 
-  it("freezes plan identity fields from send button into message completion", () => {
+  it("fork F4.5：plan identity fields stay unknown in send and completion", () => {
     const sendButtonExtra = queuePromptTelemetry({
       workspacePath: "/tmp/workspace-a",
       taskId: "task-a",
@@ -715,11 +715,6 @@ describe("messageTelemetry", () => {
         modelName: "glm-5.1",
         provider: "glm",
         providerBaseURL: "https://api.z.ai/api/paas/v4",
-        planIdentitySnapshot: {
-          generatedAt: 100,
-          planStatus: "coding_plan",
-          planProductId: "product-coding-pro",
-        },
       }),
     });
     activatePromptTelemetry("task-a", "message-a");
@@ -733,13 +728,13 @@ describe("messageTelemetry", () => {
     });
 
     expect(sendButtonExtra).toMatchObject({
-      plan_status: "coding_plan",
-      plan_product_id: "product-coding-pro",
+      plan_status: "unknown",
+      plan_product_id: "",
       provider_name: "api.z.ai",
     });
     expect(completion?.eventExtraDetail).toMatchObject({
-      plan_status: "coding_plan",
-      plan_product_id: "product-coding-pro",
+      plan_status: "unknown",
+      plan_product_id: "",
       provider_name: "api.z.ai",
     });
   });

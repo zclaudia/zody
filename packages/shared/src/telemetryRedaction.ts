@@ -11,7 +11,6 @@
 
 import { decodeCustomModelValue } from "./custom-model-value.js";
 import { migrateLegacyModelProviderId } from "./legacy-model-provider-identity.js";
-import { isBuiltinModelProviderId } from "./model-provider-types.js";
 import { OFFICIAL_GLM_MODEL_IDS } from "./official-glm-model-id.js";
 
 /** 单字段默认上限；ARMS 单字段过长会被截断或拒绝，主动截断保证关键头部一定上得去。 */
@@ -175,6 +174,14 @@ function isLegacyBuiltinTelemetryProviderId(providerId: string): boolean {
   return migrated !== undefined && migrated !== providerId;
 }
 
+/**
+ * fork（F4.11）：account:* 官方账号 Provider 已删除；保留前缀识别只为延迟到达的历史
+ * telemetry（升级前 run 的 /report detail）继续按内置身份脱敏，不再代表可解析的 Provider。
+ */
+function isRetiredOfficialAccountProviderId(providerId: string): boolean {
+  return providerId.startsWith("account:");
+}
+
 /** 内置 provider 保留稳定 ID；自定义 provider 由用户命名，原样上报会泄露私有名称并制造高基数。 */
 export function resolveTelemetryProviderScope(
   providerId: string | undefined | null,
@@ -183,7 +190,10 @@ export function resolveTelemetryProviderScope(
   if (!normalized) {
     return { providerId: "", providerScope: "unknown" };
   }
-  if (isBuiltinModelProviderId(normalized) || isLegacyBuiltinTelemetryProviderId(normalized)) {
+  if (
+    isRetiredOfficialAccountProviderId(normalized) ||
+    isLegacyBuiltinTelemetryProviderId(normalized)
+  ) {
     return { providerId: normalized, providerScope: "builtin" };
   }
   return { providerId: "custom", providerScope: "custom" };

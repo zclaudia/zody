@@ -19,7 +19,6 @@ describe("useProviderAvailabilityLoginEntryGuard", () => {
     const setLoginEntryOpen = vi.fn();
     const { result } = renderHook(() =>
       useProviderAvailabilityLoginEntryGuard({
-        isRestoringOAuthSession: false,
         modelSelectionView: null,
         modelSelectionError: new Error("registry unavailable"),
         refreshProviderState: vi.fn(async () => {}),
@@ -39,8 +38,7 @@ describe("useProviderAvailabilityLoginEntryGuard", () => {
     const { rerender } = renderHook(
       (props: { hydrated: boolean }) =>
         useProviderAvailabilityLoginEntryGuard({
-          isRestoringOAuthSession: false,
-          modelSelectionView: props.hydrated ? view : null,
+            modelSelectionView: props.hydrated ? view : null,
           refreshProviderState,
           readModelSelectionView: async () => view,
           setLoginEntryOpen,
@@ -62,7 +60,6 @@ describe("useProviderAvailabilityLoginEntryGuard", () => {
     const setLoginEntryOpen = vi.fn();
     renderHook(() =>
       useProviderAvailabilityLoginEntryGuard({
-        isRestoringOAuthSession: false,
         modelSelectionView: registryViewModel,
         refreshProviderState: vi.fn(async () => {}),
         readModelSelectionView: async () => registryViewModel,
@@ -77,7 +74,6 @@ describe("useProviderAvailabilityLoginEntryGuard", () => {
     const setLoginEntryOpen = vi.fn();
     renderHook(() =>
       useProviderAvailabilityLoginEntryGuard({
-        isRestoringOAuthSession: false,
         modelSelectionView: { revision: 1, providers: [] },
         refreshProviderState: vi.fn(async () => {}),
         readModelSelectionView: async () => ({ revision: 1, providers: [] }),

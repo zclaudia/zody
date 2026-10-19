@@ -155,7 +155,6 @@ function renderComposerWithError(
   message: string,
   actions: {
     onOpenModelSettings?: () => void;
-    onOpenModelUpgrade?: () => void;
     contextHeader?: ReactNode;
   } = {},
 ): string {
@@ -303,15 +302,12 @@ describe("ConversationComposer error banner", () => {
 
   it("forwards model recovery actions to the shared error banner", () => {
     const onOpenModelSettings = vi.fn();
-    const onOpenModelUpgrade = vi.fn();
 
     renderComposerWithError("No model", {
       onOpenModelSettings,
-      onOpenModelUpgrade,
     });
 
     expect(captured.chatErrorBannerProps?.onOpenModelSettings).toBe(onOpenModelSettings);
-    expect(captured.chatErrorBannerProps?.onOpenUpgrade).toBe(onOpenModelUpgrade);
   });
 
   it("does not render local queue behavior toggles in the composer", () => {

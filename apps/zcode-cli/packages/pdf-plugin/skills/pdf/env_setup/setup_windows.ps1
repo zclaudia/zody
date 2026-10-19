@@ -252,10 +252,16 @@ if (Test-Path $SofficePath) {
 }
 Write-Host ""
 
-# ── Step 2h: Font Installation (from CDN) ──
+# ── Step 2h: Font Installation (bundled fonts or fork-hosted mirror) ──
 Write-Host "--- [8/9] Font Installation ---"
-$FontCdnBase = "https://z-cdn.chatglm.cn/office-skill/fonts"
+# fork（F6.4）：不再从官方 CDN 下载字体。来源优先级：
+#   1. 随技能分发的 env_setup\fonts\（相对路径与 font_list.txt 一致）；
+#   2. ZCODE_OFFICE_FONTS_BASE_URL 指向的 fork 托管镜像；
+#   3. 本地缓存与上述来源都不足时明确报错并提示手动放置，不静默回退官方 CDN。
 $FontList = Join-Path $ScriptDir "font_list.txt"
+$FontBundledDir = Join-Path $ScriptDir "fonts"
+$FontRemoteBase = $env:ZCODE_OFFICE_FONTS_BASE_URL
+if ($FontRemoteBase) { $FontRemoteBase = $FontRemoteBase.Trim().TrimEnd('/') }
 
 $UserFontDir = Join-Path $env:LOCALAPPDATA "Microsoft\Windows\Fonts"
 if (-not (Test-Path $UserFontDir)) { New-Item -ItemType Directory -Path $UserFontDir -Force | Out-Null }
@@ -270,39 +276,93 @@ if (Test-Path $Marker) {
     } else {
         $lines = Get-Content $FontList | Where-Object { $_.Trim() -ne "" }
         $Total = $lines.Count
-        $Installed = 0; $Skipped = 0; $Failed = 0
-        Write-Info "Downloading $Total fonts from CDN..."
-        
-        foreach ($relPath in $lines) {
-            $fname = Split-Path $relPath -Leaf
-            $dest = Join-Path $UserFontDir $fname
-            
-            if (Test-Path $dest) {
-                $Skipped++
-                continue
+        $Installed = 0; $Skipped = 0; $Failed = 0; $FromBundle = 0; $FromMirror = 0
+        $HasBundled = (Test-Path $FontBundledDir) -and (@(Get-ChildItem -Path $FontBundledDir -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in ".ttf", ".ttc", ".otf" } | Select-Object -First 1).Count -gt 0)
+        $MirrorLabel = if ($FontRemoteBase) { $FontRemoteBase } else { "<unset>" }
+        Write-Info "Installing $Total fonts (bundled: $HasBundled, mirror: $MirrorLabel)..."
+
+        if (-not $HasBundled -and -not $FontRemoteBase) {
+            # 优先本地缓存：用户可能已手动放置字体，逐项确认后再决定是否报错。
+            $LocalMissing = 0
+            foreach ($relPath in $lines) {
+                $fname = Split-Path $relPath -Leaf
+                if (-not (Test-Path (Join-Path $UserFontDir $fname))) { $LocalMissing++ }
             }
-            
-            $encoded = $relPath -replace '\[','%5B' -replace '\]','%5D' -replace ' ','%20'
-            $url = "$FontCdnBase/$encoded"
-            
-            try {
-                Invoke-WebRequest -Uri $url -OutFile $dest -TimeoutSec 30 -ErrorAction Stop
-                $regPath = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"
-                $null = New-ItemProperty -Path $regPath -Name $fname -Value $dest -PropertyType String -Force -ErrorAction SilentlyContinue
-                $Installed++
-            } catch {
-                Write-Warn "Failed to download: $relPath"
-                $Failed++
-                Remove-Item $dest -Force -ErrorAction SilentlyContinue
+
+            if ($LocalMissing -eq 0) {
+                New-Item -ItemType File -Path $Marker -Force | Out-Null
+                Write-Ok "All $Total fonts already present in $UserFontDir (no download source needed)"
+            } else {
+                # 明确失败而不是静默跳过：用户需要知道字体从哪来，且不能落到官方 CDN。
+                Write-Fail "No bundled fonts and ZCODE_OFFICE_FONTS_BASE_URL is not set - $LocalMissing/$Total fonts missing."
+                Write-Info "This fork does not download fonts from the upstream CDN. Choose one source:"
+                Write-Info "  1) bundle fonts under $FontBundledDir (same relative paths as font_list.txt)"
+                Write-Info "  2) set ZCODE_OFFICE_FONTS_BASE_URL to a fork-hosted mirror of the same layout"
+                Write-Info "  3) copy the fonts listed in font_list.txt into $UserFontDir manually"
+                $Errors++
             }
-        }
-        
-        if ($Failed -eq 0) {
-            New-Item -ItemType File -Path $Marker -Force | Out-Null
-            Write-Ok "Fonts: $Installed newly installed, $Skipped already present (target: $UserFontDir)"
         } else {
-            Write-Warn "Fonts: $Installed installed, $Skipped skipped, $Failed failed (marker not written, will retry next run)"
-            $Errors++
+            foreach ($relPath in $lines) {
+                $fname = Split-Path $relPath -Leaf
+                $dest = Join-Path $UserFontDir $fname
+
+                if (Test-Path $dest) {
+                    $Skipped++
+                    continue
+                }
+
+                # 去掉开头 /：随包目录与镜像使用同一相对布局，避免拼出双斜杠。
+                $relKey = $relPath.TrimStart('/')
+                $copiedFromBundle = $false
+
+                if ($HasBundled) {
+                    $bundledPath = Join-Path $FontBundledDir $relKey
+                    if (Test-Path $bundledPath) {
+                        try {
+                            Copy-Item -Path $bundledPath -Destination $dest -Force -ErrorAction Stop
+                            $copiedFromBundle = $true
+                        } catch {
+                            Write-Warn "Failed to copy bundled font: $relPath"
+                            Remove-Item $dest -Force -ErrorAction SilentlyContinue
+                        }
+                    }
+                }
+
+                if ($copiedFromBundle) {
+                    $regPath = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"
+                    $null = New-ItemProperty -Path $regPath -Name $fname -Value $dest -PropertyType String -Force -ErrorAction SilentlyContinue
+                    $Installed++
+                    $FromBundle++
+                    continue
+                }
+
+                if ($FontRemoteBase) {
+                    $encoded = $relKey -replace '\[','%5B' -replace '\]','%5D' -replace ' ','%20'
+                    $url = "$FontRemoteBase/$encoded"
+                    try {
+                        Invoke-WebRequest -Uri $url -OutFile $dest -TimeoutSec 30 -ErrorAction Stop
+                        $regPath = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"
+                        $null = New-ItemProperty -Path $regPath -Name $fname -Value $dest -PropertyType String -Force -ErrorAction SilentlyContinue
+                        $Installed++
+                        $FromMirror++
+                        continue
+                    } catch {
+                        Write-Warn "Failed to download: $relPath ($url)"
+                        Remove-Item $dest -Force -ErrorAction SilentlyContinue
+                    }
+                } else {
+                    Write-Warn "Font not bundled and no mirror configured: $relPath"
+                }
+                $Failed++
+            }
+
+            if ($Failed -eq 0) {
+                New-Item -ItemType File -Path $Marker -Force | Out-Null
+                Write-Ok "Fonts: $Installed installed ($FromBundle bundled, $FromMirror mirror), $Skipped already present (target: $UserFontDir)"
+            } else {
+                Write-Warn "Fonts: $Installed installed, $Skipped skipped, $Failed failed (marker not written, will retry next run)"
+                $Errors++
+            }
         }
     }
 }

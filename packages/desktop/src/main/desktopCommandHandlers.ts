@@ -2,7 +2,6 @@ import { getPluginSandboxHost } from "./pluginSandbox/index.js";
 /* eslint-disable max-lines -- 桌面命令分发需要共享窗口与平台上下文，集中维护更便于一致性 */
 import { readZCodeStdioTapDevState, setZCodeStdioTapDevEnabled } from "@zcode/services/node";
 import {
-  buildZCodeEndpointUrls,
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   DesktopCommandIds,
   isDesktopAutoUpdateActive,
@@ -127,8 +126,8 @@ async function clearAllDataAndRelaunch(options: {
 }
 
 // fork（F4.4）：clearCodingPlanWebviewStorage（购买 webview / Rewards 持久 partition 清理）
-// 随购买与 Rewards webview 基础设施删除；renderer 侧残留的 ClearCodingPlanWebviewStorage
-// 命令调用成为 no-op，待 F4.7 删除账号登出链时一并清理（shared 命令 id 暂保留，避免越界）。
+// 随购买与 Rewards webview 基础设施删除。
+// fork（F4.7）：renderer 登出链与 shared 命令 id 已一并删除。
 
 /** fork（F2.7）：反馈与社群链接只读内置 config/default.json，不再请求远端 /api/v1/client/configs。 */
 export async function resolveFeedbackUrl(options: {
@@ -236,8 +235,9 @@ function buildZCodeEndpointPromptHtml(currentValue: string): string {
   <body>
     <form id="form">
       <label for="endpoint">ZCode endpoint origin</label>
-      <input id="endpoint" value="${value}" placeholder="https://zcode.z.ai" spellcheck="false" />
-      <div class="hint">Use an http or https origin, for example https://zcode.z.ai.</div>
+      <!-- fork（F3.2）：占位与提示改用中性示例，不再引导用户填写官方地址。 -->
+      <input id="endpoint" value="${value}" placeholder="https://example.com" spellcheck="false" />
+      <div class="hint">Use an http or https origin for your own deployment, for example https://example.com.</div>
       <div class="actions">
         <button id="cancel" type="button">Cancel</button>
         <button type="submit">Save</button>
@@ -362,10 +362,16 @@ function toggleZCodeStdioTapDevProxy(options: {
 function resolveChangelogUrl(
   locale: Locale,
   endpointOrigin = DEFAULT_ZCODE_ENDPOINT_ORIGIN,
-): string {
+): string | undefined {
   // 帮助菜单里的外链以前只有固定英文地址，切到中文界面后仍会落到英文 changelog。
   // 这里统一收口到主进程按当前应用语言分流，避免菜单模板里手写分支后续再出现多处不一致。
-  const origin = buildZCodeEndpointUrls(endpointOrigin).origin;
+  // fork（F4.11）：buildZCodeEndpointUrls 的账号/分享回调与 plan 计费 URL 已删除，
+  // 帮助外链只需要归一化后的 origin。
+  // fork（F3.1）：默认端点为空表示未配置；没有自有站点时关闭 changelog 能力，不回落官方地址。
+  if (!endpointOrigin.trim()) {
+    return undefined;
+  }
+  const origin = normalizeZCodeEndpointOrigin(endpointOrigin);
   return locale === "zh-CN" ? `${origin}/cn/changelog` : `${origin}/en/changelog`;
 }
 
@@ -373,7 +379,11 @@ export async function openChangelog(
   locale: Locale,
   endpointOrigin = DEFAULT_ZCODE_ENDPOINT_ORIGIN,
 ) {
-  await shell.openExternal(resolveChangelogUrl(locale, endpointOrigin));
+  const url = resolveChangelogUrl(locale, endpointOrigin);
+  if (!url) {
+    return;
+  }
+  await shell.openExternal(url);
 }
 
 async function resolveCurrentZCodeEndpointOrigin(settingService: {
@@ -520,11 +530,7 @@ export async function executeDesktopCommand(options: {
       await openFeedback(options.logger, targetWindow, options.readHelpConfig);
       return;
     case DesktopCommandIds.OpenCommunity:
-      await openCommunity(
-        options.currentApplicationLocale,
-        options.logger,
-        options.readHelpConfig,
-      );
+      await openCommunity(options.currentApplicationLocale, options.logger, options.readHelpConfig);
       return;
     case DesktopCommandIds.ExportLogs:
       await exportLogs();

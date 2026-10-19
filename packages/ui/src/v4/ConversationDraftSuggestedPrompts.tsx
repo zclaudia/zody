@@ -1,4 +1,5 @@
 import { useState } from "react";
+import githubIconUrl from "@/assets/plugin-icons/github.png";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -31,6 +32,12 @@ const PLUGIN_SUCCESS_ROLL_TRANSITION = {
   duration: 0.2,
   ease: [0.4, 0, 0.2, 1],
 } as const;
+
+// fork（F6.3）：建议提示图标改为随包资源后，GitHub 白色方形底的判断按导入 URL 匹配；
+// 同时保留旧 CDN 路径判断，兼容远端 Client Scene 仍下发官方路径的历史数据。
+function isGitHubSuggestedPromptIcon(iconUrl: string | undefined): boolean {
+  return iconUrl === githubIconUrl || iconUrl?.includes("/github/icon.png") === true;
+}
 
 function DraftSuggestedPromptIcon({ name }: { name?: string }) {
   return (
@@ -265,7 +272,7 @@ export function ConversationDraftSuggestedPrompts({
                         className={cn(
                           "shrink-0 rounded-sm object-contain",
                           // GitHub 素材自带白色方形底，再缩小一圈以露出与其他图标一致的外层留白。
-                          item.iconUrl?.includes("/github/icon.png") ? "size-4.5" : "size-full",
+                          isGitHubSuggestedPromptIcon(item.iconUrl) ? "size-4.5" : "size-full",
                         )}
                       />
                     </span>

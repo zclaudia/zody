@@ -2,7 +2,6 @@ import { DatabaseSync } from "node:sqlite";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
-  BUILTIN_MODEL_PROVIDER_IDS,
   BUILTIN_PROVIDER_TEMPLATE_IDS,
   TID_CHAT_MODEL_SELECT_TRIGGER,
   TID_V4_MODEL_CONFIG,
@@ -33,8 +32,8 @@ const MODEL_SELECTION_RECENT_KEY_PREFIX = "zcode-model-selection-recent-v1";
 
 export { seedTurboAgentStartupModel } from "./model-provider-restart-runtime.js";
 
-export const E2E_BIGMODEL_PLAN_PROVIDER_ID = BUILTIN_MODEL_PROVIDER_IDS.bigmodelTeamCodingPlan;
-export const E2E_BIGMODEL_START_PROVIDER_ID = BUILTIN_MODEL_PROVIDER_IDS.bigmodelStartPlan;
+export const E2E_BIGMODEL_PLAN_PROVIDER_ID = "account:bigmodel-team-coding-plan";
+export const E2E_BIGMODEL_START_PROVIDER_ID = "account:bigmodel-start-plan";
 export const E2E_BIGMODEL_API_PROVIDER_ID = BUILTIN_PROVIDER_TEMPLATE_IDS.bigmodel;
 export const E2E_PLAN_FIRST_MODEL = "GLM-5.3";
 export const E2E_PLAN_DEFAULT_MODEL = "GLM-5.2";

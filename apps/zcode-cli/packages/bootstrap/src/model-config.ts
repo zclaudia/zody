@@ -3,7 +3,6 @@ import type {
   AiSdkNetworkConfig,
   EnvRecord,
 } from "@zcode/adapters/model";
-import type { ProviderEndpointRoutingPort } from "@zcode/contracts";
 import {
   resolveRuntimeZCodeEnv,
   resolveRuntimeZCodeEndpointOrigin,
@@ -18,7 +17,6 @@ export type ModelProviderSourceTitle = "cli" | "electron";
 
 interface RuntimeExecutionConfigOptions {
   appVersion?: string;
-  endpointRoutingPort?: ProviderEndpointRoutingPort;
   network?: AiSdkNetworkConfig;
   sourceTitle?: ModelProviderSourceTitle;
 }
@@ -32,7 +30,6 @@ export function createRuntimeAiSdkModelExecutionConfig(
     defaultHeaders: buildCliZCodeSourceHeaders(env, options),
     env,
     ...(network ? { network } : {}),
-    ...(options.endpointRoutingPort ? { endpointRoutingPort: options.endpointRoutingPort } : {}),
   };
 }
 
@@ -55,8 +52,11 @@ export function buildCliZCodeSourceHeaders(
   const appVersion = resolveAppVersionForHeaders(env, options);
   const locale = normalizePrintableHeaderValue(Intl.DateTimeFormat().resolvedOptions().locale);
   const timezone = normalizePrintableHeaderValue(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  // fork（F3.1）：端点未配置（空）时不发送 HTTP-Referer，避免空 header；
+  // 也不再通过默认常量回落到官方地址。
+  const zcodeEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(env);
   return {
-    "HTTP-Referer": resolveRuntimeZCodeEndpointOrigin(env),
+    ...(zcodeEndpointOrigin ? { "HTTP-Referer": zcodeEndpointOrigin } : {}),
     "User-Agent": `ZCode/${appVersion ?? "unknown"}`,
     ...(appVersion ? { "X-ZCode-App-Version": appVersion } : {}),
     "X-Title": `Z Code@${sourceTitle}`,

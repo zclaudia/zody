@@ -17,6 +17,7 @@ export type {
   IntegratedTerminalShellSelection,
   Locale,
   LocalePreference,
+  UserInfo,
   ZCodeInteractionBehavior,
   TabId,
   TabState,
@@ -93,10 +94,9 @@ export * from "./remote-workspace-identity.js";
 export * from "./zcode-api-retry-status.js";
 export * from "./zcode-network-debug-status.js";
 export * from "./zcode-session-visible-content.js";
-export * from "./official-mcp-auth.js";
-export * from "./official-mcp-tool-error.js";
+// fork（F4.6）：official-mcp-auth / official-mcp-tool-error 随官方 MCP 全链路删除。
 export * from "./conversation-message-projection-policy.js";
-export * from "./conversation-share.js";
+// fork（F4.8）：conversation-share（发布/预览/导入协议）随会话分享功能删除。
 export * from "./conversation-preview-artifacts.js";
 export * from "./zcode-session-task-status.js";
 export * from "./zcode-session-content-profile.js";
@@ -125,7 +125,6 @@ export * from "./test-ids.js";
 export * from "./test-ids-workflow.js";
 export * from "./channels.js";
 export * from "./storage.js";
-export * from "./oauth.js";
 export * from "./desktopMenu.js";
 export * from "./feedback.js";
 export * from "./e2e-test-bridge.js";
@@ -135,7 +134,6 @@ export * from "./remoteAssetInstallMode.js";
 export * from "./onboardingRecord.js";
 export * from "./remoteResourcePackages.js";
 export * from "./remoteAccess.js";
-export * from "./plan-identity.js";
 export {
   BROWSER_SCREENSHOT_SURFACE_PREPARE_TIMEOUT_MS,
   BROWSER_VIEW_RESTORE_BOOTSTRAP_URL,
@@ -151,6 +149,7 @@ export type {
   FinalArmsCustomEventPayload,
   RendererTelemetryEventPayload,
   TelemetryEventPayload,
+  TelemetryMarketingAttribution,
   TelemetryRendererContext,
 } from "./telemetry.js";
 export {
@@ -301,7 +300,6 @@ export * from "./web-remote-control-rpc-transport.js";
 export * from "./settings-sync.js";
 export * from "./uuid.js";
 export * from "./usage-stats.js";
-export * from "./coding-plan-subscription.js";
 export * from "./intranetProbe.js";
 export * from "./intranetDefaults.js";
 export * from "./hooks.js";
@@ -312,7 +310,6 @@ export * from "./workspaceSessionRestore.js";
 export * from "./skill-scan-policy.js";
 export * from "./browser-use/index.js";
 
-export * from "./coding-plan-reset.js";
 export {
   parseSubagentMarkdownSelection,
   formatSubagentMarkdownModel,
@@ -335,16 +332,8 @@ export * from "./clientConfig.js";
 export * from "./pluginStoreOrdering.js";
 export * from "./session-debug.js";
 export { redactFeedbackText } from "./feedbackPrivacy.js";
-export { API_KEY_USAGE_SCENE, type ApiKeyCreationUsageScene } from "./api-key-usage-scene.js";
-export {
-  projectAccessTokenFingerprint,
-  ProjectAccessTokenTransientError,
-} from "./project-access-token.js";
-export {
-  ProjectAccessTokenClient,
-  type ProjectAccessTokenInput,
-  type ProjectAccessTokenMaterial,
-} from "./project-access-token-client.js";
+// fork（F4.11）：project-access-token* / api-key-usage-scene（官方账号 PAT 换证与 Key 用途）
+// 随官方账号链路删除，不再从 shared 公开入口导出。
 
 export * from "./conversationSelection.js";
 export * from "./attachment-source.js";

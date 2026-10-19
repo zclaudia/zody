@@ -155,6 +155,8 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
       const currentPersonal = current.providers.get(providerId);
       const currentEffectiveProviders = zcodeBuiltin.providers.overlay(current.providers);
       // 账号总禁用已撤销；在公共写入边界拒绝新操作，避免隐藏 UI 后仍能写出无效状态。
+      // fork（F4.11）：Built-in 已不再声明 zhipu-account Provider；这里保留对存量
+      // built-in 配置的防御，防止旧快照下的账号条目被个人 Overlay 改写。
       if (builtin?.access?.type === "zhipu-account" && metadata?.enabled === false) {
         throw new Error(`Account Provider 不允许禁用: ${providerId}`);
       }

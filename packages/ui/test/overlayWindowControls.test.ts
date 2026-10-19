@@ -55,11 +55,7 @@ it("升级和奖励的网页关闭与窗口关闭分开，三种窗口操作走�
 it("登录、升级均接入覆盖层窗控", async () => {
   const read = (file: string) => readFile(resolve(__dirname, "../src", file), "utf8");
   expect(await read("WelcomeScreen.tsx")).toContain("<DesktopOverlayWindowControls />");
-  // fork（F4.4）：Rewards webview（rewards/RewardsWebview.tsx）已删除，不再纳入断言；
-  // CodingPlanEmbeddedWebviewDialog 属套餐购买（F4.5 删除），契约保留。
-  for (const file of ["settings/CodingPlanEmbeddedWebviewDialog.tsx"]) {
-    expect(await read(file)).toContain("<EmbeddedWebsiteHeader");
-  }
+  // fork（F4.4/F4.5）：Rewards 与 Coding Plan 购买 webview 均已删除，不再纳入断言。
 });
 
 it("登录页原生拖拽层避开窗控，并先于 no-drag 按钮声明", async () => {

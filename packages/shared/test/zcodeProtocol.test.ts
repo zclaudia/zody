@@ -993,48 +993,18 @@ describe("ZCode Protocol", () => {
     ).toThrow();
   });
 
-  // fork（F4.3）："off-peak" 为历史持久化 mode 值（协议枚举保留容忍），用例保留。
-  it.each(["start-plan", "individual-coding-plan", "team-coding-plan", "off-peak"] as const)(
-    "runtime headers 直接接受 Registry zhipu access mode: %s",
-    (mode) => {
-      const parsed = zcodeProviderRuntimeHeadersRequestParamsSchema.parse({
-        requestId: `request-${mode}`,
-        sessionId: "sess_1",
-        workspace,
-        modelSelection: model,
-        providerId: `account:${mode}`,
-        accountAccess: {
-          type: "zhipu-account",
-          accountType: "bigmodel",
-          mode,
-          entitled: true,
-        },
-        reason: "model-request",
-      });
-
-      expect(parsed.accountAccess).toEqual({
-        type: "zhipu-account",
-        accountType: "bigmodel",
-        mode,
-        entitled: true,
-      });
-    },
-  );
-
-  it("runtime headers 拒绝已经退出 Registry 的旧 planKind Access 形状", () => {
+  // fork（F4.11）：accountAccess（zhipu-account 访问类别）已从 runtime headers 协议删除；
+  // strict schema 必须拒绝旧字段，避免半断的账号鉴权链重新流入。
+  it("runtime headers 拒绝已删除的 accountAccess 字段", () => {
     expect(() =>
       zcodeProviderRuntimeHeadersRequestParamsSchema.parse({
-        requestId: "request-legacy",
-        sessionId: "sess_1",
-        workspace,
-        modelSelection: model,
-        providerId: "account:legacy",
+        ...params,
         accountAccess: {
           type: "zhipu-account",
           accountType: "bigmodel",
-          planKind: "team-coding-plan",
+          mode: "start-plan",
+          entitled: true,
         },
-        reason: "model-request",
       }),
     ).toThrow();
   });
@@ -1556,51 +1526,7 @@ describe("ZCode Protocol", () => {
     });
   });
 
-  it("keeps the official MCP unavailable code in strict v4 tool rows", () => {
-    // 两个 strict schema（CLI contracts 的 display payload 与这里的 row）必须同步加字段，
-    // 少加一处整条 row 会被拒，输入框提示就永远拿不到事实。
-    const row = conversationRowSchema.parse({
-      rowId: 5,
-      turnId: "turn-1",
-      createdAt: 10,
-      createdAtSeq: 5,
-      kind: "toolCall",
-      toolCallId: "tool-official-mcp",
-      toolName: "mcp__zcode-official__search_image",
-      status: "success",
-      inputText: "{}",
-      display: {
-        kind: "mcp_tool",
-        serverName: "zcode-official",
-        toolName: "search_image",
-        unavailable: { code: "quota_exceeded" },
-      },
-    });
-
-    expect(row).toMatchObject({
-      display: { kind: "mcp_tool", unavailable: { code: "quota_exceeded" } },
-    });
-    // internal_error 不在 code 枚举里：它是服务端兜底掩码，不驱动界面提示。枚举外的值因此
-    // **不会被携带**——display 不设门后 row 仍然有效，但这张卡没有载荷（§4.4.5）。
-    const maskedRow = conversationRowSchema.parse({
-      rowId: 6,
-      turnId: "turn-1",
-      createdAt: 10,
-      createdAtSeq: 6,
-      kind: "toolCall",
-      toolCallId: "tool-official-mcp",
-      toolName: "mcp__zcode-official__search_image",
-      status: "success",
-      inputText: "{}",
-      display: {
-        kind: "mcp_tool",
-        serverName: "zcode-official",
-        toolName: "search_image",
-        unavailable: { code: "internal_error" },
-      },
-    });
-    expect(maskedRow.kind === "toolCall" ? maskedRow.display : "unreachable").toBeUndefined();
-  });
+  // fork（F4.6）：官方 MCP unavailable 标识的 v4 row 校验测试随官方 MCP 删除。
 
   it("strictly validates bounded CreateWorkflow display payloads", () => {
     const event = {

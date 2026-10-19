@@ -16,18 +16,9 @@ import {
 } from "@zcode/provider-node";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  createSharedZCodeCredentialStore,
-  type SharedZCodeCredentialStore,
-} from "@zcode/adapters/auth";
-import {
   parseProcessAccountProviderConfigSnapshot,
   startProcessProviderRegistryRuntime,
 } from "../src/app/process-provider-registry-runtime.js";
-import {
-  standaloneAccountAuthSourceCredentialKey,
-  standaloneAccountIdentityCredentialKey,
-  standaloneAccountProviderCredentialKey,
-} from "../src/app/standalone-account-provider-runtime.js";
 
 const temporaryDirectories: string[] = [];
 
@@ -69,19 +60,18 @@ describe("process provider registry runtime", () => {
       await wait;
       return new Response(JSON.stringify(builtin));
     });
-    const credentialStore = createSharedZCodeCredentialStore({
-      env: { ZCODE_DATA_BASE_DIR: root },
-    });
     const env = {
       [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: active,
       [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: join(root, "personal.json"),
       ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE: bundled,
       // fork：远程刷新默认关闭，此处显式开启以验证机制本身。
       ZCODE_BUILTIN_REMOTE_REFRESH: "1",
+      // fork（F3.1）：默认端点为空（未配置）时远端刷新会被关闭，
+      // 因此显式注入测试端点，验证下载与 Release 跟进机制本身。
+      ZCODE_BASE_URL: "https://endpoint.example.test",
     };
     const runtime = await startProcessProviderRegistryRuntime(env, {
       standalone: {
-        credentialStore,
         request,
         legacyCliUserConfigFilePath: join(root, "absent.json"),
       },
@@ -125,9 +115,6 @@ describe("process provider registry runtime", () => {
     await writeFile(bundled, JSON.stringify(builtin));
     await writeFile(active, JSON.stringify(builtin));
     const request = vi.fn(async () => new Response("{}"));
-    const credentialStore = createSharedZCodeCredentialStore({
-      env: { ZCODE_DATA_BASE_DIR: root },
-    });
     // 不设置 ZCODE_BUILTIN_REMOTE_REFRESH：fork 默认关闭官方远程刷新，
     // 防止官方 release 把已删除的 account:* provider 带回运行时（F4.1a followUp）。
     const runtime = await startProcessProviderRegistryRuntime(
@@ -138,7 +125,6 @@ describe("process provider registry runtime", () => {
       },
       {
         standalone: {
-          credentialStore,
           request,
           legacyCliUserConfigFilePath: join(root, "absent.json"),
         },
@@ -154,7 +140,7 @@ describe("process provider registry runtime", () => {
       runtime.dispose();
     }
   });
-  it("Standalone 无凭据时 Built-in 文件更新仍重新解析 Account 并整体发布 Registry", async () => {
+  it("Built-in 文件更新仍整体发布 Registry（Standalone 账号运行时已删除）", async () => {
     const root = await temporaryDirectory();
     const builtin = JSON.parse(
       await readFile(
@@ -164,15 +150,12 @@ describe("process provider registry runtime", () => {
     );
     const filePath = join(root, "builtin.json");
     await writeFile(filePath, JSON.stringify(builtin));
-    const credentialStore = createSharedZCodeCredentialStore({
-      env: { ZCODE_DATA_BASE_DIR: root },
-    });
     const runtime = await startProcessProviderRegistryRuntime(
       {
         [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: filePath,
         [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: join(root, "personal.json"),
       },
-      { standalone: { credentialStore, legacyCliUserConfigFilePath: join(root, "absent.json") } },
+      { standalone: { legacyCliUserConfigFilePath: join(root, "absent.json") } },
     );
     try {
       builtin.revision += 1;
@@ -189,7 +172,7 @@ describe("process provider registry runtime", () => {
       runtime.dispose();
     }
   });
-  it("真实 Built-in 下完整状态跨协议往返；仅切 current 即更新 Worker 的有效选择", async () => {
+  it("真实 Built-in 下完整状态跨协议往返；仅切 current 即更新 Worker 的 Registry 投影", async () => {
     // F4.1a 已从仓库 builtin 配置删除 account:* 官方账号 provider，原用例依赖
     // builtin 物化 account:bigmodel-*-coding-plan 已不可能；跨协议往返与「仅切
     // current 即更新有效选择」的机制改用本地 fixture 验证（与本文件 zcodeBuiltinRelease
@@ -272,9 +255,11 @@ describe("process provider registry runtime", () => {
         expect(
           runtime.runtime.registryService.getProvider(current === personal ? team : personal),
         ).toBeUndefined();
+        // fork（F4.11）：账号分类器与“旧账号自动对应到 current 账号”的改写已删除；
+        // 选择解析只认 Registry 当前发布的事实。
         expect(
           facade.getView(undefined, undefined, { selection: original }).effectiveSelection,
-        ).toEqual({ ...original, providerId: current });
+        ).toEqual(current === personal ? { ...original } : null);
         expect(original.providerId).toBe(personal);
       }
       expect(revisions.size).toBe(2);
@@ -506,202 +491,6 @@ describe("process provider registry runtime", () => {
     expect(started.runtime.registryService.getProvider("account")).toBeUndefined();
     expect(started.runtime.registryService.getProvider("personal-api")).toBeDefined();
     started?.dispose();
-  });
-
-  it("Standalone 从账号凭据生成 Account Overlay，并在请求前返回当前 API Key", async () => {
-    const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
-    const personalFilePath = join(root, "personal.json");
-    const credentialStore = createSharedZCodeCredentialStore({
-      baseDir: join(root, "home"),
-      env: { ZCODE_CREDENTIAL_SECRET: "process-registry-test" },
-    });
-    const providerId = "configured-standalone-provider";
-    const accountIdentity = "account-1";
-    const accountProviderCredentialKey = standaloneAccountProviderCredentialKey({
-      providerId,
-      accountIdentity,
-    });
-    await writeFile(
-      zcodeBuiltinFilePath,
-      JSON.stringify(
-        zcodeBuiltinRelease({
-          providers: {
-            [providerId]: {
-              group: "zai-family",
-              access: {
-                type: "zhipu-account",
-                accountType: "zai",
-                mode: "individual-coding-plan",
-              },
-              api: {
-                type: "anthropic-messages",
-                baseUrl: "https://account.example.com",
-              },
-              builtinModelIds: ["model-a"],
-            },
-          },
-          templates: {},
-          models: [
-            {
-              modelMatch: "model-a",
-              config: {
-                enabled: true,
-
-                properties: {
-                  requiresMfjsToolSchema: false,
-                  contextWindow: 200000,
-                  inputFormat: {
-                    supportsText: true,
-                    supportsImage: false,
-                    supportsVideo: false,
-                    supportsAudio: false,
-                    supportsPdf: false,
-                  },
-                  outputFormat: { supportsText: true },
-                  supportsToolCall: true,
-                  supportsJsonSchemaOutput: true,
-                  supportsNativeWebSearch: false,
-                  supportsMidConversationSystem: false,
-                },
-                optionSpecs: {
-                  reasoningLevel: { values: ["disabled"], map: "{}" },
-                  maxOutputTokens: {
-                    max: 32000,
-                    map: '{"max_completion_tokens":maxOutputTokens}',
-                  },
-                },
-              },
-            },
-          ],
-        }),
-      ),
-      "utf8",
-    );
-    await writeFile(personalFilePath, JSON.stringify(personalRelease([])), "utf8");
-    await credentialStore.saveMany({
-      [standaloneAccountIdentityCredentialKey(providerId)]: accountIdentity,
-      [accountProviderCredentialKey]: "runtime-api-key",
-      [standaloneAccountAuthSourceCredentialKey(providerId)]: "manual",
-    });
-
-    const started = await startProcessProviderRegistryRuntime(
-      {
-        [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zcodeBuiltinFilePath,
-        [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: personalFilePath,
-      },
-      { standalone: { credentialStore } },
-    );
-
-    expect(started?.runtime.registryService.getProvider(providerId)?.config.access).toMatchObject({
-      type: "zhipu-account",
-      accountType: "zai",
-      mode: "individual-coding-plan",
-    });
-    await expect(
-      started?.providerRuntimeHeadersPort.refreshBeforeModelRequest({
-        accountAccess: {
-          type: "zhipu-account",
-          accountType: "zai",
-          entitled: true,
-          mode: "individual-coding-plan",
-        },
-        modelId: "model-a",
-        providerId,
-        reason: "model-request",
-        sessionId: "session-1" as never,
-        traceContext: { traceId: "trace-1" } as never,
-      }),
-    ).resolves.toMatchObject({
-      headersApplied: true,
-      requestAuth: { apiKey: "runtime-api-key" },
-    });
-
-    await credentialStore.save(accountProviderCredentialKey, "rotated-runtime-api-key");
-    await expect(
-      started?.providerRuntimeHeadersPort.refreshBeforeModelRequest({
-        accountAccess: {
-          type: "zhipu-account",
-          accountType: "zai",
-          entitled: true,
-          mode: "individual-coding-plan",
-        },
-        modelId: "model-a",
-        providerId,
-        reason: "model-request",
-        sessionId: "session-1" as never,
-        traceContext: { traceId: "trace-2" } as never,
-      }),
-    ).resolves.toMatchObject({
-      requestAuth: { apiKey: "rotated-runtime-api-key" },
-    });
-
-    await credentialStore.deleteIfValues({
-      [standaloneAccountIdentityCredentialKey(providerId)]: accountIdentity,
-      [accountProviderCredentialKey]: "rotated-runtime-api-key",
-    });
-    await vi.waitFor(() => {
-      expect(started?.runtime.registryService.getProvider(providerId)).toBeUndefined();
-    });
-    started?.dispose();
-  });
-
-  it("Standalone 首次账号凭据读取失败时仍以 fail-closed Account 启动 Personal API Provider", async () => {
-    const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
-    const personalFilePath = join(root, "personal.json");
-    await writeFile(
-      zcodeBuiltinFilePath,
-      JSON.stringify(
-        zcodeBuiltinRelease({
-          providers: {},
-          templates: {
-            api: {
-              access: { type: "api-key" },
-              api: { type: "anthropic-messages", baseUrl: "https://api.example.com" },
-              builtinModelIds: ["model-a"],
-            },
-          },
-          models: [completeZCodeBuiltinModelRule()],
-        }),
-      ),
-      "utf8",
-    );
-    await writeFile(
-      personalFilePath,
-      JSON.stringify(
-        personalRelease([
-          {
-            providerId: "api",
-            templateId: "api",
-            config: {
-              group: "standard-personal",
-              access: { type: "api-key", apiKey: "secret" },
-            },
-          },
-        ]),
-      ),
-      "utf8",
-    );
-    const accountError = new Error("credential store unavailable");
-    const onAccountInitializationError = vi.fn();
-    const credentialStore = {
-      loadMany: vi.fn(async () => {
-        throw accountError;
-      }),
-    } as unknown as SharedZCodeCredentialStore;
-
-    const started = await startProcessProviderRegistryRuntime(
-      {
-        [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zcodeBuiltinFilePath,
-        [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: personalFilePath,
-      },
-      { standalone: { credentialStore, onAccountInitializationError } },
-    );
-
-    expect(started.runtime.registryService.getProvider("api")).toBeDefined();
-    expect(onAccountInitializationError).toHaveBeenCalledWith(accountError);
-    started.dispose();
   });
 
   it("只有显式开启 Standalone 导入时才迁移旧 CLI 用户 Provider", async () => {

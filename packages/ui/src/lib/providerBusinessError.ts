@@ -51,8 +51,7 @@ export type ProviderBusinessErrorUiAction =
   | "refresh-quota"
   | "switch-model"
   | RequestVerificationRecoveryAction
-  | "retry-later"
-  | "upgrade";
+  | "retry-later";
 
 export const PROVIDER_BUSINESS_ERROR_MESSAGE_IDS: Record<ProviderBusinessErrorCode, string> = {
   "1006": "zcode.error.providerBusiness.1006",
@@ -78,7 +77,6 @@ export const PROVIDER_BUSINESS_ERROR_ACTION_MESSAGE_IDS: Record<
   "switch-model": "chat.error.action.switchModel",
   ...requestVerificationActionMessages,
   "retry-later": "chat.error.action.retryLater",
-  upgrade: "chat.quota.action.upgrade",
 };
 
 const PROVIDER_BUSINESS_ERROR_UI_ACTIONS: Record<
@@ -90,10 +88,10 @@ const PROVIDER_BUSINESS_ERROR_UI_ACTIONS: Record<
   "3006": "switch-model",
   "3001": null,
   "3007": requestVerificationRecoveryAction,
-  // 3008/3009/3010 并发上限：Start Plan 下走升级横幅，非 Start Plan 走 upgrade 动作
-  "3008": "upgrade",
-  "3009": "upgrade",
-  "3010": "upgrade",
+  // fork（F4.5）：官方套餐升级入口删除，并发上限不再提供 upgrade 动作。
+  "3008": null,
+  "3009": null,
+  "3010": null,
   "3002": "retry-later",
   // 3102 闲时票据不可用：只能新建闲时任务续跑，横幅里的重试/切模型都救不回来。
   "3102": null,

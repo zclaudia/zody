@@ -1,8 +1,12 @@
 import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE } from "@zcode/contracts";
 
-// 内置插件的商店信息 seed（原样写入官方 marketplace.json 的条目 raw，键名与 CDN 目录
+// 内置插件的商店信息 seed（原样写入官方 marketplace.json 的条目 raw，键名与目录
 // schema 一致：displayName_i18n / examplePrompts_i18n 等），解析复用 adapter 的
-// parseEntryStoreListing。icon 指向官方 assets CDN；请求失败时 UI 会安全降级为默认图标。
+// parseEntryStoreListing。
+//
+// fork（F6.2，D4b 方案 ii）：官方 CDN 已移除，这里不再下发远端 icon 地址——内置插件包
+// 未随包携带图标资源，UI 会按插件 id 使用客户端内置图标（pluginIconSource.ts），
+// 没有映射时降级为默认图标，避免断网时产生官方 CDN 请求。
 export interface OfficialPluginListingSeed {
   displayName?: string;
   displayName_i18n?: Record<string, string>;
@@ -55,7 +59,6 @@ export interface OfficialPluginDefinition {
 }
 
 const ZAI_AUTHOR = { name: "Z.ai", url: "https://z.ai" } as const;
-const OFFICIAL_PLUGIN_ASSETS_BASE_URL = "https://cdn-zcode.z.ai/zcode/official-plugin/assets";
 
 export const OFFICIAL_NODE_REPL_HOST_REQUIRED_SEED_PATHS = ["dist/mcp/server.js"] as const;
 
@@ -154,7 +157,6 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       category: "developer-tools",
       displayName: "Android Emulator",
       displayName_i18n: { "zh-CN": "Android 模拟器" },
-      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/android-emulator/icon.png`,
       description_i18n: {
         "zh-CN": "提供 Android 开发工作流与模拟器自动化能力。",
       },
@@ -178,7 +180,6 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       category: "productivity",
       displayName: "Browser Use",
       displayName_i18n: { "zh-CN": "浏览器操作" },
-      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/browser-use/icon.png`,
       description_i18n: {
         "zh-CN": "操作 ZCode 内置浏览器，检查网页并验证交互。",
       },
@@ -210,8 +211,6 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
         category: "productivity",
         displayName,
         displayName_i18n: { "zh-CN": chineseName },
-        // 复用已发布的文档图标，拆分插件无需依赖新 CDN 资源。
-        icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/document-skills/icon.png`,
         description_i18n: { "zh-CN": `创建、编辑与审阅${chineseName}（${skill.toUpperCase()}）。` },
       },
       name,
@@ -225,33 +224,13 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       version: "0.1.8",
     }),
   ),
-  {
-    // 沿用原聚合文档插件的官方搜图能力，仅拆出独立开关；认证仍由官方 MCP adapter 注入。
-    defaultEnabled: true,
-    listing: {
-      author: ZAI_AUTHOR,
-      category: "productivity",
-      displayName: "Image Search",
-      displayName_i18n: { "zh-CN": "搜图" },
-      description_i18n: { "zh-CN": "查找插图与参考配图。" },
-    },
-    name: "image-search",
-    requiredSeedPaths: [".mcp.json"],
-    rootCandidates: [
-      "packages/image-search-plugin",
-      "../image-search-plugin",
-      "../../image-search-plugin",
-      "../../../image-search-plugin",
-    ],
-    version: "0.1.1",
-  },
+  // fork（F4.6）：image-search 官方 MCP 插件定义随插件包一起删除。
   {
     listing: {
       author: ZAI_AUTHOR,
       category: "developer-tools",
       displayName: "iOS Simulator",
       displayName_i18n: { "zh-CN": "iOS 模拟器" },
-      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/ios-simulator/icon.png`,
       description_i18n: {
         "zh-CN": "提供 iOS 开发工作流与模拟器自动化能力。",
       },
@@ -271,7 +250,6 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       category: "utilities",
       displayName: "Restore Legacy Sessions",
       displayName_i18n: { "zh-CN": "恢复旧版会话" },
-      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/restore-legacy-sessions/icon.png`,
       description_i18n: {
         "zh-CN": "将旧版会话恢复为 ZCode 任务与会话记录。",
       },
@@ -323,7 +301,6 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       category: "utilities",
       displayName: "Skill Creator",
       displayName_i18n: { "zh-CN": "技能创建器" },
-      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/skill-creator/icon.png`,
       description_i18n: { "zh-CN": "创建、编辑和验证可复用的 ZCode 技能。" },
     },
     name: "skill-creator",
@@ -344,7 +321,6 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       category: "utilities",
       displayName: "ZCode Guide",
       displayName_i18n: { "zh-CN": "ZCode 使用指南" },
-      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/zcode-guide/icon.png`,
       description_i18n: {
         "zh-CN": "提供 ZCode 配置指南与插件、技能、MCP、命令和钩子诊断。",
       },
@@ -388,8 +364,6 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       description_i18n: {
         "zh-CN": "自动化桌面应用：智能体驱动鼠标、键盘与界面元素，代你完成实际任务。",
       },
-      // 插件更名为 computer-use 后，CDN 图标仍发布在 zcode-cua 目录；沿用资源路径避免 404。
-      icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/zcode-cua/icon.png`,
     },
     rootCandidates: [
       "packages/zcode-cua-plugin",

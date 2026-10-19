@@ -41,7 +41,6 @@ import type {
   WebRemoteControlStatus,
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceTarget,
-  OAuthStateRegistration,
   PostUpdateReleaseNotesPayload,
   RemoteConnectionRuntimeLog,
   RemoteSessionClosedEvent,
@@ -283,12 +282,8 @@ declare global {
       prepareCuaHelperPermissionDrag?(): Promise<PrepareCuaHelperPermissionDragResult>;
       /** 从权限浮窗拖拽 Helper.app 到 macOS 权限列表 */
       startCuaHelperPermissionDrag?(): void;
-      /** 上报 OAuth state 用于 deep link 路由 */
-      registerOAuthState(payload: OAuthStateRegistration): void;
-      /** 注册 OAuth deep link 回调，返回 disposer */
-      onOAuthCallback(cb: (url: string) => void): () => void;
-      /** 注册支付 deep link 回调，返回 disposer */
-      onPaymentCallback(cb: (url: string) => void): () => void;
+      // fork（F4.11）：registerOAuthState / onOAuthCallback / onPaymentCallback 随官方账号
+      // OAuth 与购买深链删除。
       /** 通知 main process renderer 已就绪 */
       notifyRendererReady(): void;
       /** 同步当前 renderer 的 telemetry 上下文到 main process */

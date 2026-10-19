@@ -22,35 +22,11 @@ conversation-session/manual-review/pending/conversation-session-offpeak-subagent
 
 ## F4.4 删除营销触达 / Rewards / 购买 webview —— 已全部删除（fork 2026-10-18）
 
-## F4.5 删除订阅、官方用量与套餐（Coding Plan/Start Plan/套餐导航与目录面）
-coding-plan-team-usage.test.ts
-coding-plan-upgrade-personal-sold-out.test.ts
-coding-plan-upgrade-personal-system-busy.test.ts
-coding-plan-upgrade-webview-refresh-provider.test.ts
-subagent-coding-plan-login-catalog-stale.test.ts
-settings/coding-plan-entitlement-presentation.test.ts
-settings/provider-plan-navigation-labels.test.ts
-conversation-session/manual-review/pending/conversation-session-model-provider-plan-surface.test.ts
+## F4.5 删除订阅、官方用量与套餐（Coding Plan/Start Plan/套餐导航与目录面）—— 已全部删除（fork 2026-10-18）
 
-## F4.7 删除 OAuth 与账号链（OAuth/JWT/401/账号 provider 的模型选择与切换）
-oauth-credential-recovery.test.ts
-oauth-login-failure-cancel.test.ts
-manual-review/pending/oauth-completion-race.test.ts
-manual-review/pending/jwt-401-auto-logout.test.ts
-manual-review/pending/jwt-expiry-reauthentication.test.ts
-manual-review/pending/access-token-401-auto-logout.test.ts
-manual-review/pending/account-key-usage-scene.test.ts
-provider-family-responsive.test.ts
-conversation-session/conversation-session-model-provider-turbo-switch.test.ts
-conversation-session/conversation-session-model-provider-turbo-recovery.test.ts
-conversation-session/conversation-session-model-provider-restart-recovery.test.ts
-conversation-session/conversation-session-model-provider-settings-transition.test.ts
-conversation-session/manual-review/pending/conversation-session-model-provider-effective-selection.test.ts
-conversation-session/manual-review/pending/conversation-session-worker-effective-selection.test.ts
+## F4.7 删除 OAuth 与账号链（OAuth/JWT/401/账号 provider 的模型选择与切换）—— 已全部删除（fork 2026-10-18）
 
-## F4.8 会话分享（D6 已决：移除官方分享服务）
-conversation-session/manual-review/pending/conversation-session-share-publish-import.test.ts
-conversation-session/manual-review/pending/conversation-session-share-ssh-artifact.test.ts
+## F4.8 会话分享（D6 已决：移除官方分享服务）—— 已全部删除（fork 2026-10-18）
 
 ## F4.5/F4.11 边界：设置页仍绑定 providerFamilyDomain / Coding Plan key / 官方目录刷新
 settings/manual-review/pending/provider-connectivity-prompt.test.ts
@@ -62,21 +38,15 @@ settings/manual-review/pending/provider-builtin-refresh.test.ts
 # 1. conversation-session/manual-review/pending/conversation-session-mcp-oauth-status-isolation.test.ts：
 #    主题是插件 MCP OAuth（第三方服务器授权），F4.1b 明确保留，不是官方账号。
 # 2. provider-readiness-agent-startup.test.ts 与 windows-agent-metric-probe-absence.test.ts：
-#    使用空凭据冷启动 fixture + 欢迎页 API Key 跳过，主体是 BYOK 就绪门禁；F4.7 只需
-#    处理 provider-readiness 中依赖登录的段落，不需要整删。
+#    使用空凭据冷启动 fixture + 欢迎页 API Key 跳过，主体是 BYOK 就绪门禁；F4.7 已把
+#    provider-readiness 中依赖账号 family 连接方式的段落改为通用 provider 模板选择。
 # 3. conversation-session/manual-review/pending/conversation-session-ssh-provisioning-failure.test.ts：
-#    主题是 SSH 供应失败诊断，但故障注入通过写坏 oauth:bigmodel:refresh_token 触发
-#    （依赖 F4.7 删除的凭据解密链）；F4.7 需改用其它注入方式或删除该注入分支。
-# 4. wdio.conf.ts 中仍为待删 spec 保留的桩（Coding Plan team/upgrade mock、OAuth 桩、
-#    corrupt/expired credential fixture、bigmodel 域种入）随上述 spec 的删除一并移除。
-# 5. F4.1c 起基座默认不再种入 OAuth/JWT 凭据；providerFamilyDomain:"zai" 种入仅为
-#    绕开现行首启登录门而临时保留（F4.1a 改门为 !hasUsableProvider 时移除）。待删
-#    spec 中不在下方 OAuth/JWT 保留名单内的（如 off-peak 系列）会失去默认登录展示态，
-#    断言用户身份/套餐展示的用例属预期降级，由对应删除任务处理，不回填账号种入。
-#    仍保留完整账号种子的待删 spec：Coding Plan team/upgrade（bigmodel 域）、
-#    jwt-401、jwt-expiry（expired 种子分支）、
-#    oauth-credential-recovery（corrupt 种子分支）、access-token-401、
-#    provider-family-responsive、start-plan-manual-claim。
-#    oauth-login-failure-cancel / oauth-completion-race 自带 clearAppData 或运行时
-#    fixture 自建登录态，不依赖基座默认种子；subagent-login-catalog-stale 与
-#    built-in-subagent-model-overrides 显式要求空凭据，均不受影响。
+#    主题是 SSH 供应失败诊断，故障注入仍写坏 provisioning allowlist 内的凭据密文。
+#    F4.7 删除了账号运行时消费方，但 Credential Store 解密与 provisioning allowlist 属
+#    F4.11 收尾范围，因此该注入方式在 F4.7 后仍有效，保留。
+# 4. F4.5 已移除 wdio.conf.ts 的 Coding Plan team/upgrade mock、coding-plan-mock-env
+#    与 bigmodel 域种入；OAuth 桩、corrupt/expired credential fixture 仍为 F4.7 待删
+#    spec 保留，随对应 spec 删除一并移除。
+# 5. F4.1c 起基座默认不再种入 OAuth/JWT 凭据；F4.7 删除 OAuth/JWT 专项 spec 后，
+#    仅 official-account-removal-upgrade 保留 OAuth 存量种子（供启动迁移清理断言）。
+#    其它 spec 一律空凭据启动；providerFamilyDomain:"zai" 仅为升级场景模拟旧版本遗留。

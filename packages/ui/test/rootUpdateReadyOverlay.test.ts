@@ -78,13 +78,6 @@ vi.mock("@/hooks/useServices.js", () => ({
   useOptionalServices: () => null,
 }));
 
-vi.mock("@/settings/CodingPlanUpgradeDialogProvider.js", () => ({
-  CodingPlanUpgradeDialogProvider: ({ children }: { children: unknown }) => children,
-  useCodingPlanUpgradeDialog: () => ({
-    openCodingPlanUpgrade: vi.fn(),
-  }),
-}));
-
 vi.mock("@/hooks/useWorkspaceServices.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/hooks/useWorkspaceServices.js")>();
 
@@ -114,13 +107,6 @@ vi.mock("@/hooks/useTabPersistence.js", () => ({
 
 vi.mock("@/hooks/useGlobalTaskList.js", () => ({
   useGlobalTaskList: mockUseGlobalTaskList,
-}));
-
-vi.mock("@/hooks/useTokenRefresh.js", () => ({
-  useTokenRefresh: () => ({
-    tryRefresh: vi.fn(),
-    clearCredentials: vi.fn(),
-  }),
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
@@ -250,12 +236,6 @@ async function renderRoot(options?: {
           get: vi.fn(),
           update: vi.fn(),
         },
-        oauthService: {
-          restoreCachedSession: vi.fn(),
-          restoreSession: vi.fn(),
-          handleCallback: vi.fn(),
-          logout: vi.fn(),
-        },
       },
       platform: {
         selectDirectory: vi.fn(async () => null),
@@ -271,8 +251,6 @@ async function renderRoot(options?: {
         openCommunity: vi.fn(async () => {}),
         canOpenCommunity: vi.fn(async () => false),
         openInFileManager: vi.fn(async () => ({ success: true })),
-        registerOAuthState: vi.fn(),
-        onOAuthCallback: vi.fn(() => () => {}),
         notifyRendererReady: vi.fn(),
         showTaskNotification: vi.fn(),
         syncWindowTabs: vi.fn(),

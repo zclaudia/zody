@@ -1,8 +1,6 @@
 import {
   ApiError,
-  DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   normalizeZCodeEndpointOrigin,
-  rewriteZCodeEndpointUrl,
   type ApiClient,
   type ApiRequestInit,
 } from "@zcode/shared";
@@ -112,6 +110,11 @@ function readHeaderKeys(headers: RequestInit["headers"] | undefined): string[] {
 }
 
 function isRequestForEndpoint(input: string | URL, endpointOrigin: string): boolean {
+  // fork（F3.1）：未配置端点（空字符串）时没有任何请求属于 ZCode endpoint，
+  // 也不能让 normalizeZCodeEndpointOrigin 对空值抛错。
+  if (!endpointOrigin.trim()) {
+    return false;
+  }
   try {
     return new URL(resolveUrl(input)).origin === normalizeZCodeEndpointOrigin(endpointOrigin);
   } catch {
@@ -171,8 +174,10 @@ export class NodeApiClient implements ApiClient {
     const endpointOrigin = this.resolveZCodeEndpointOrigin
       ? await this.resolveZCodeEndpointOrigin()
       : undefined;
-    const activeEndpointOrigin = endpointOrigin ?? DEFAULT_ZCODE_ENDPOINT_ORIGIN;
-    const requestInput = rewriteZCodeEndpointUrl(input, activeEndpointOrigin);
+    // fork（F3.1）：默认端点为空（未配置），不再存在「官方默认 origin → 活动 origin」的
+    // 隐式改写；请求 URL 由调用方用 buildRuntimeZCodeApiUrl / 当前 endpoint 构造。
+    const activeEndpointOrigin = endpointOrigin?.trim() ?? "";
+    const requestInput = input;
     const url = resolveUrl(requestInput);
     const method = resolveMethod(init);
     const timeoutMs = init?.timeoutMs;

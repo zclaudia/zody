@@ -24,7 +24,6 @@ import {
   Copy,
   PencilRuler,
   Globe,
-  Loader2,
   Maximize,
   Palette,
   Settings,
@@ -111,11 +110,9 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
   const zoomInShortcutLabel = useShortcutCommandLabel("zoomIn");
   const zoomOutShortcutLabel = useShortcutCommandLabel("zoomOut");
   const resetZoomShortcutLabel = useShortcutCommandLabel("resetZoom");
-  const isRestoringOAuthSession = useZCodeStore((state) => state.isRestoringOAuthSession);
   const profileBadge = getSidebarProfileBadge(user, intl.formatMessage);
   const avatarFallbackText = getAvatarFallbackText(user);
   const avatarKey = user?.avatarUrl ?? user?.id ?? "guest";
-  const showAuthRestoreLoading = !user && isRestoringOAuthSession;
   const copyUserId = async () => {
     if (!user?.id) return;
     try {
@@ -130,19 +127,8 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
       <Avatar key={avatarKey} size="default">
         {user?.avatarUrl ? <AvatarImage src={user.avatarUrl} alt={profileBadge} /> : null}
         <AvatarFallback className="bg-background text-foreground">
-          {user ? (
-            avatarFallbackText
-          ) : showAuthRestoreLoading ? (
-            <>
-              {/* Bugfix: OAuth 启动恢复未落定前，footer 之前会直接显示未登录头像，
-                  用户很容易把“还在校验”误判成“已经退出”。
-                  这里用 loading 图标明确表达“状态确认中”，等恢复成功或失败后再展示最终状态。 */}
-              <Loader2 className="size-4 animate-spin" />
-              <span className="sr-only">{intl.formatMessage({ id: "common.loading" })}</span>
-            </>
-          ) : (
-            <User className="size-4" />
-          )}
+          {/* fork（F4.7）：OAuth 启动恢复态已删除，未登录直接展示默认头像。 */}
+          {user ? avatarFallbackText : <User className="size-4" />}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1 overflow-hidden text-left">
@@ -391,7 +377,7 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
             ) : null}
             {/* fork（F4.1b）：侧栏头像菜单的用量摘要（打开用量统计 + 升级套餐）、
                 Rewards 菜单项、登录/登出菜单项全部摘除（官方账号入口下线）。
-                WorkspaceSidebarFooterUsageSummary 组件文件留给 F4.5 删除；RewardsProvider 已随 F4.4 删除。 */}
+                WorkspaceSidebarFooterUsageSummary 组件文件已随 F4.5 删除；RewardsProvider 已随 F4.4 删除。 */}
           </DropdownMenuContent>
         </DropdownMenu>
         <div className="flex shrink-0 items-center gap-1.5">

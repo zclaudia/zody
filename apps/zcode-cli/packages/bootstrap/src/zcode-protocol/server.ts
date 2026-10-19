@@ -238,11 +238,6 @@ export class ZCodeProtocolAgentServer {
   private readonly runtimeResources: ProtocolRuntimeResources;
   private shutdownPromise?: Promise<void>;
   readonly browserControlPort: BrowserControlPort;
-  /**
-   * 官方 MCP 身份头端口所需的最小上下文。
-   * MCP 连接池的构造早于 server，需要在 server 就绪后回填闭包持有的引用——
-   * 与 v4Gateway 同样的构造顺序收口方式。只暴露 requestClient，不外泄整个 context。
-   */
   /** MCP server 发起的 elicitation/create → 用户提问。 */
   requestMcpElicitation(
     request: McpElicitationRequest,
@@ -254,10 +249,6 @@ export class ZCodeProtocolAgentServer {
   /** MCP server 通知 → 会话 live 事件 / agent 日志。 */
   handleMcpNotification(notification: McpServerNotification): void {
     routeMcpServerNotification(this.context, notification);
-  }
-
-  get officialMcpAuthRequestContext(): Pick<ZCodeProtocolAgentServerContext, "requestClient"> {
-    return this.context;
   }
 
   private messageSink?: (message: ZCodeProtocolOutboundMessage) => void;

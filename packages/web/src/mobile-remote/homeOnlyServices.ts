@@ -61,7 +61,7 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
     isRepository: false,
   });
   // Bugfix: 手机端只有断开的远程 workspace 时，不能为了进入任务首页强行创建 bridge。
-  // 这里提供只读/空结果服务，吸收 Root 首屏 OAuth、模型供应商、Git、技能等后台初始化，
+  // 这里提供只读/空结果服务，吸收 Root 首屏的模型供应商、Git、技能等后台初始化，
   // 避免断连这种预期状态被误报成未处理异常；真正聊天能力仍需重连成功后切到 bridge services。
   const homeOnlyZCodeTaskService = createEmptyHomeOnlyService<RootServices["zcodeTaskService"]>({
     initialize: async () => ({ available: false }),
@@ -174,10 +174,7 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
         reason: "ZCode session service is not available before workspace bridge is connected.",
       }),
     }),
-    // 分享发布首期只属于 desktop local host；Web 首页和 /remote 不建立独立发布权威。
-    conversationShareService: createUnsupportedHomeOnlyService<
-      RootServices["conversationShareService"]
-    >("conversationShareService"),
+    // fork（F4.8）：conversationShareService 随会话分享功能删除。
     promptAttachmentTransferService: createEmptyHomeOnlyService<
       RootServices["promptAttachmentTransferService"]
     >({
@@ -191,17 +188,6 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
     fileWatcherService: createEmptyHomeOnlyService<RootServices["fileWatcherService"]>({
       watch: async () => ({ dispose: () => {} }),
     }),
-    oauthService: createEmptyHomeOnlyService<RootServices["oauthService"]>({
-      getProviders: async () => [],
-      getActiveProvider: async () => null,
-      restoreCachedSession: async () => null,
-      restoreCachedSessionState: async () => ({ status: "signed-out" }),
-      restoreSession: async () => null,
-      refreshToken: async () => {},
-      logout: async () => {},
-      logoutAll: async () => {},
-      cancelPending: async () => {},
-    }),
     providerSettingsService: createEmptyHomeOnlyService<RootServices["providerSettingsService"]>({
       getView: async () => ({ revision: 0, providers: [] }),
       refresh: async () => ({ revision: 0, providers: [] }),
@@ -214,9 +200,6 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
     }),
     usageStatsService:
       createUnsupportedHomeOnlyService<RootServices["usageStatsService"]>("usageStatsService"),
-    codingPlanSubscriptionService: createUnsupportedHomeOnlyService<
-      RootServices["codingPlanSubscriptionService"]
-    >("codingPlanSubscriptionService"),
     clientConfigService: createEmptyHomeOnlyService<RootServices["clientConfigService"]>({
       getSnapshot: async () => ({ pluginStoreOrder: null, zsrcUrl: null }),
     }),

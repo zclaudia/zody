@@ -339,11 +339,6 @@ describe("ConversationTelemetrySupervisor", () => {
             configProvider: team,
             modelName: "GLM-5.3",
             providerBaseURL: "https://example.com/api",
-            planIdentitySnapshot: {
-              generatedAt: 1,
-              planStatus: "coding_plan",
-              planProductId: "team",
-            },
           }),
         });
         supervisor.handleFact({
@@ -486,11 +481,6 @@ describe("ConversationTelemetrySupervisor", () => {
         modelName: "custom-model",
         askMode: "plan",
         providerBaseURL: "https://api.example.com/v1/messages?token=secret",
-        planIdentitySnapshot: {
-          generatedAt: 123,
-          planStatus: "coding_plan",
-          planProductId: "product-1",
-        },
       }),
     ).toEqual({
       ask_mode: "plan",
@@ -498,8 +488,8 @@ describe("ConversationTelemetrySupervisor", () => {
       model_provider: "custom-provider-id",
       provider_name: "api.example.com",
       agent: "glm",
-      plan_status: "coding_plan",
-      plan_product_id: "product-1",
+      plan_status: "unknown",
+      plan_product_id: "",
       message_source: "chat",
       task_trigger: "",
     });

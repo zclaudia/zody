@@ -59,7 +59,6 @@ export { normalizeUsage, toModelStreamEvent } from "./runner-normalization.js";
 export interface AiSdkModelAdapterOptions {
   defaultHeaders?: AiSdkModelExecutionConfig["defaultHeaders"];
   requestSecurityState?: ModelRequestSecurityState;
-  endpointRoutingPort?: import("@zcode/contracts").ProviderEndpointRoutingPort;
   network?: AiSdkNetworkConfig;
   runtime?: AiSdkModelRuntime;
   env?: EnvRecord;
@@ -96,9 +95,6 @@ export class AiSdkModelAdapter {
     this.execution = new AiSdkModelExecution(
       {
         defaultHeaders: options.defaultHeaders,
-        ...(options.endpointRoutingPort
-          ? { endpointRoutingPort: options.endpointRoutingPort }
-          : {}),
         ...(options.network ? { network: options.network } : {}),
         ...(options.env ? { env: options.env } : {}),
       },
@@ -157,6 +153,8 @@ export class AiSdkModelAdapter {
     const resolved = {
       ...boundResolution.resolved,
       properties,
+      // fork（F4.11）：accountAccess 不再进入 shared 协议；这里只为存量 zhipu-account
+      // provider config 保留派生鉴权分支（Start Plan / 离线票据）所需的内部结构。
       ...(options.providerConfig.access.type === "zhipu-account"
         ? { accountAccess: options.providerConfig.access }
         : {}),
@@ -171,18 +169,12 @@ export class AiSdkModelAdapter {
       const shouldAttachReasoningTelemetry = request.options.reasoningLevel !== undefined;
       const selectedReasoningLevel = request.options.reasoningLevel;
       const requestAuthDependency = options.requestDependencies?.requestAuth;
-      // Bug 根因：Off-Peak 为 Coding Plan 派生模式，本轮动态鉴权经 modelExecution.requestAuth
-      // 下发到执行作用域 Source。若门禁只认账号 runtime-header 刷新分支，会把整包 requestAuth
-      // 丢弃导致 401。fork（F4.2）：原门禁同时含 access.mode === "highspeed"（加速卡免签网关），
-      // 加速卡已删除；mode 枚举值保留于 provider schema 以兼容存量 provider config 解析，
-      // 该分支随账号访问类别体系（F4.7）收口。
+      // 存量 zhipu-account provider 的 off-peak/highspeed 派生模式需要执行作用域鉴权；
+      // 普通 API-key Model 不消费该分支，避免把静态鉴权误送到 Host 刷新。
       const requestAuthRequired =
         options.providerConfig.access.type === "zhipu-account" &&
         (options.providerConfig.access.mode === "off-peak" ||
           options.providerConfig.access.mode === "highspeed");
-      // 调用级 runtime header Port 只服务绑定完整 Account Access 的账号型 Model；
-      // 普通 API-key Model 若也消费该 Port，会把静态鉴权误送到 Host 刷新并在请求前失败。
-      // 派生模式保留执行作用域票据/卡身份。
       const refreshRuntimeHeadersBeforeAttempt = requestAuthRequired
         ? async (input: ModelRequestAuthSourceInput) => {
             const requestAuth = await requestAuthDependency?.source?.resolve(input);
@@ -192,8 +184,6 @@ export class AiSdkModelAdapter {
                 `Model request auth is unavailable: ${resolved.providerId}/${resolved.modelId}`,
               );
             }
-            // fork（F4.3）：refreshOffPeakRequestAuth 分支（闲时票据逐请求换发 PAT）
-            // 随闲时任务全链路删除。
             return { headersApplied: true, requestAuth };
           }
         : options.providerConfig.access.type === "zhipu-account"
@@ -227,12 +217,14 @@ export class AiSdkModelAdapter {
           : {}),
         ...(refreshRuntimeHeadersBeforeAttempt
           ? {
+              // fork（F4.11）：账号 Access 不再随 runtime-headers 请求发送（协议字段已删除）。
               refreshRuntimeHeadersBeforeAttempt: (input) =>
                 refreshRuntimeHeadersBeforeAttempt({
-                  ...input,
-                  ...(options.providerConfig.access.type === "zhipu-account"
-                    ? { accountAccess: options.providerConfig.access }
-                    : {}),
+                  attempt: input.attempt,
+                  ...(input.abortSignal ? { abortSignal: input.abortSignal } : {}),
+                  providerId: input.providerId,
+                  modelId: input.modelId,
+                  ...(input.traceContext ? { traceContext: input.traceContext } : {}),
                 }),
             }
           : {}),

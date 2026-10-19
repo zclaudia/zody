@@ -31,13 +31,18 @@ describe("desktop e2e worker isolation", () => {
   });
 
   it("matches fixture markers against the current worker specs only", () => {
-    const requestedBatch = ["smoke.test.ts", "oauth-credential-recovery.test.ts"];
+    const requestedBatch = ["smoke.test.ts", "official-account-removal-fresh-install.test.ts"];
     const currentWorkerSpecs = [requestedBatch[0] as string];
 
     // Bugfix: launcher 的完整请求列表不能决定当前 worker 的 credential/provider fixture。
-    expect(workerSpecsContain(currentWorkerSpecs, "oauth-credential-recovery.test.ts")).toBe(false);
     expect(
-      workerSpecsContain([requestedBatch[1] as string], "oauth-credential-recovery.test.ts"),
+      workerSpecsContain(currentWorkerSpecs, "official-account-removal-fresh-install.test.ts"),
+    ).toBe(false);
+    expect(
+      workerSpecsContain(
+        [requestedBatch[1] as string],
+        "official-account-removal-fresh-install.test.ts",
+      ),
     ).toBe(true);
   });
 

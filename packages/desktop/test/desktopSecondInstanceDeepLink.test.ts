@@ -219,18 +219,18 @@ describe("desktop second-instance workspace deep link routing", () => {
 });
 
 async function importHarness() {
-  const [{ createDeepLinkSingleInstanceData }, oauthDeepLink, secondInstance] = await Promise.all([
+  const [{ createDeepLinkSingleInstanceData }, deepLinkModule, secondInstance] = await Promise.all([
     import("../src/main/desktopDeepLinkUrl.js"),
-    import("../src/main/desktopOAuthDeepLink.js"),
+    import("../src/main/desktopDeepLink.js"),
     import("../src/main/desktopSecondInstanceDeepLink.js"),
   ]);
   return {
     createDeepLinkSingleInstanceData,
-    deliverPendingDeepLink: oauthDeepLink.deliverPendingDeepLink,
-    handleDeepLink: oauthDeepLink.handleDeepLink,
-    handleOpenWorkspacePath: oauthDeepLink.handleOpenWorkspacePath,
+    deliverPendingDeepLink: deepLinkModule.deliverPendingDeepLink,
+    handleDeepLink: deepLinkModule.handleDeepLink,
+    handleOpenWorkspacePath: deepLinkModule.handleOpenWorkspacePath,
     handleSecondInstanceWorkspaceRequest: secondInstance.handleSecondInstanceWorkspaceRequest,
-    resolveExternalWorkspaceOpenDialogCopy: oauthDeepLink.resolveExternalWorkspaceOpenDialogCopy,
+    resolveExternalWorkspaceOpenDialogCopy: deepLinkModule.resolveExternalWorkspaceOpenDialogCopy,
   };
 }
 

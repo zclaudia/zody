@@ -7,7 +7,6 @@ import type {
   MigrateLegacyCommonMcpResult,
   SaveCliMcpToUserDirectoryRequest,
 } from "./index.js";
-import type { OAuthStateRegistration } from "./oauth.js";
 import type {
   WebRemoteControlReconnectWorkspaceRequest,
   WebRemoteControlReconnectWorkspaceResult,
@@ -118,12 +117,10 @@ export const ServiceChannels = {
   ZCodeAgent: "zcode-agent",
   /** ZCode session 应用服务 */
   ZCodeSession: "zcode-session",
-  /** 会话分享发布、预览与 continuation API 编排 */
-  ConversationShare: "conversation-share",
+  // fork（F4.8）：ConversationShare 服务通道随会话分享功能删除。
   /** 文件系统监视服务 */
   FileWatcher: "file-watcher",
-  /** OAuth 认证服务 */
-  OAuth: "oauth",
+  // fork（F4.11）：OAuth 认证服务通道随官方账号 OAuth 链路删除。
   /** 新 Provider Config 的设置读写 Facade */
   ProviderSettings: "provider-settings",
   /** 新 Provider Registry 的模型选择 Facade */
@@ -132,8 +129,6 @@ export const ServiceChannels = {
   ProviderProvisioningTarget: "provider-provisioning-target",
   /** 本地 usage 统计服务 */
   UsageStats: "usage-stats",
-  /** Coding Plan 订阅购买服务 */
-  CodingPlanSubscription: "coding-plan-subscription",
   ClientConfig: "client-config",
   /** ZCode 客户端场景配置服务 */
   ClientScenes: "client-scenes",
@@ -344,7 +339,7 @@ export const PlatformChannels = {
   StorageRevealPath: "zcode:storage-reveal-path",
   /** Main → 资源管理器 renderer：扫描进度快照推送 */
   StorageScanProgress: "zcode:storage-scan-progress",
-  /** Renderer → Main：打开外部 URL（用于 OAuth 跳转浏览器） */
+  /** Renderer → Main：打开外部 URL */
   OpenExternal: "zcode:open-external",
   /** Renderer → Main：查询当前语言下是否存在可用的用户社群入口 */
   CanOpenCommunity: "zcode:can-open-community",
@@ -370,16 +365,8 @@ export const PlatformChannels = {
    * 立刻消失可能打断正在进行的拖拽。
    */
   NotifyCuaHelperPermissionDragEnded: "zcode:notify-cua-helper-permission-drag-ended",
-  /** Renderer → Main：上报 OAuth state 用于 deep link 路由 */
-  OAuthRegisterState: "zcode:oauth-register-state",
-  /** Main → Renderer：转发 deep link URL */
-  OAuthCallback: "zcode:oauth-callback",
-  /** Main → Renderer：转发支付 deep link URL */
-  PaymentCallback: "zcode:payment-callback",
-  /** Main → Renderer：外部分享页请求导入 share code。 */
-  ShareImport: "zcode:share-import",
-  /** Renderer → Main：OAuth 回调已处理完成，可继续后置启动流程 */
-  OAuthCallbackHandled: "zcode:oauth-callback-handled",
+  // fork（F4.11）：OAuth 注册/回调、支付回调与 OAuthCallbackHandled 通道随官方账号
+  // OAuth 与购买链路删除；工作区深链仍由 notifyRendererReady 触发 main 投递。
   /** Renderer → Main：renderer 已就绪，可接收缓存的 deep link */
   RendererReady: "zcode:renderer-ready",
   /** Renderer → Main：同步当前 renderer 的 telemetry 上下文 */
@@ -1059,26 +1046,8 @@ export interface PlatformChannelMap {
     request: { operationId: string };
     response: void;
   };
-  [PlatformChannels.OAuthRegisterState]: {
-    request: OAuthStateRegistration;
-    response: void;
-  };
-  [PlatformChannels.OAuthCallback]: {
-    request: string;
-    response: void;
-  };
-  [PlatformChannels.PaymentCallback]: {
-    request: string;
-    response: void;
-  };
-  [PlatformChannels.ShareImport]: {
-    request: { shareCode: string };
-    response: void;
-  };
-  [PlatformChannels.OAuthCallbackHandled]: {
-    request: void;
-    response: void;
-  };
+  // fork（F4.11）：OAuthRegisterState / OAuthCallback / PaymentCallback / OAuthCallbackHandled
+  // 请求响应映射随官方账号 OAuth 与购买链路删除。
   [PlatformChannels.RendererReady]: {
     request: void;
     response: void;
