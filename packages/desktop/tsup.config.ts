@@ -225,7 +225,8 @@ const desktopNodeRuntimeExternals = [
   "node-pty",
   "ssh2",
   "undici",
-  "@larksuiteoapi/node-sdk",
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：@larksuiteoapi/node-sdk
+  // external 随第三方 IM bot（飞书）provider 删除。
   "yaml",
   // node-forge 内部用动态 require("crypto")，内联进 ESM main/host bundle 后 Electron 会报
   // Dynamic require of "crypto" is not supported。和 undici 同样保留为运行时外部依赖。

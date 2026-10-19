@@ -27,7 +27,8 @@ export * from "./interfaces/dynamic-workflow-snippet.port.js";
 export * from "./interfaces/model-catalog.port.js";
 export * from "./interfaces/automation.port.js";
 // fork（F4.3）：off-peak.port（闲时任务创建端口）随闲时任务全链路删除。
-export * from "./interfaces/topic-resource.port.js";
+// fork（bots 移除）：topic-resource.port（bot 话题附件读取/渠道回复端口）随 bot channels
+// 全量删除（specs/bot-channels-removal.md）；配套 reply-to-channel 工具与 CLI 侧 port 装配一并摘除。
 export * from "./interfaces/mcp.port.js";
 
 export * from "./interfaces/runtime-input-presentation.js";

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
-import { createElement, type ContextType } from "react";
-import { DeliveryContext } from "@/v4/botGroupDeliveryContext.js";
-import { withTopicPreparationMessages } from "@/v4/topicPreparationRenderUnits.js";
+import { createElement } from "react";
+// fork（bot-channels 移除）：DeliveryContext / withTopicPreparationMessages 引用随 bot
+// 群投递与话题准备链删除（specs/bot-channels-removal.md）。
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { IPlatformService } from "@zcode/shared";
@@ -45,11 +45,8 @@ vi.mock("@/hooks/useServices.js", () => ({
   // fork（F4.2）：原 highspeedCardService mock（分享接口断言用）随加速卡全链路删除。
   useOptionalServices: () => ({}),
 }));
-const topicInterrupted = vi.hoisted(() => vi.fn(() => false));
-vi.mock("@/v4/botGroupDeliveryContext.js", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/v4/botGroupDeliveryContext.js")>()),
-  useBotTopicInterruption: topicInterrupted,
-}));
+// fork（bot-channels 移除）：botGroupDeliveryContext 的 useBotTopicInterruption mock 随 bot
+// 群投递链删除，打断文案统一回落 stopped。
 
 const rowContext: ConversationRowRenderContext = {
   workspacePath: "/workspace",
@@ -298,7 +295,6 @@ function renderUnit(
   unit: ConversationTurnRenderUnit,
   options: {
     locale?: "zh-CN" | "en-US";
-    botContext?: ContextType<typeof DeliveryContext>;
     chatLoadingBlockedByActiveWork?: boolean;
     chatLoadingBlockedByInteraction?: boolean;
     compactForRemoteControl?: boolean;
@@ -315,35 +311,31 @@ function renderUnit(
 ): string {
   return renderToStaticMarkup(
     createElement(
-      DeliveryContext.Provider,
-      { value: options.botContext ?? null },
+      ZCodeIntlProvider,
+      { initialLocale: options.locale ?? "zh-CN" },
       createElement(
-        ZCodeIntlProvider,
-        { initialLocale: options.locale ?? "zh-CN" },
+        PlatformProvider,
+        { platform: noopPlatform },
         createElement(
-          PlatformProvider,
-          { platform: noopPlatform },
-          createElement(
-            TooltipProvider,
-            null,
-            createElement(ConversationTurnGroup, {
-              unit,
-              nowMs: options.nowMs,
-              apiRetry: options.apiRetry,
-              context: {
-                ...rowContext,
-                chatLoadingBlockedByActiveWork: options.chatLoadingBlockedByActiveWork,
-                chatLoadingBlockedByInteraction: options.chatLoadingBlockedByInteraction,
-                compactForRemoteControl: options.compactForRemoteControl,
-                messageStreamShowReasoning: options.messageStreamShowReasoning,
-                messageStreamShowTodos: options.messageStreamShowTodos,
-                ...options.context,
-              },
-              onFork: options.onFork,
-              onRetry: options.onRetry,
-              onFeedbackChange: options.onFeedbackChange,
-            }),
-          ),
+          TooltipProvider,
+          null,
+          createElement(ConversationTurnGroup, {
+            unit,
+            nowMs: options.nowMs,
+            apiRetry: options.apiRetry,
+            context: {
+              ...rowContext,
+              chatLoadingBlockedByActiveWork: options.chatLoadingBlockedByActiveWork,
+              chatLoadingBlockedByInteraction: options.chatLoadingBlockedByInteraction,
+              compactForRemoteControl: options.compactForRemoteControl,
+              messageStreamShowReasoning: options.messageStreamShowReasoning,
+              messageStreamShowTodos: options.messageStreamShowTodos,
+              ...options.context,
+            },
+            onFork: options.onFork,
+            onRetry: options.onRetry,
+            onFeedbackChange: options.onFeedbackChange,
+          }),
         ),
       ),
     ),
@@ -800,23 +792,8 @@ describe("ConversationTurnGroup assistant history status", () => {
     expect(html).not.toContain("工作中 5 秒");
   });
 
-  it("labels an authoritative topic interruption separately from a manual stop", () => {
-    topicInterrupted.mockReturnValue(true);
-    try {
-      const row = reasoningRow();
-      const unit = baseUnit({
-        workStatus: { state: "interrupted", durationMs: 1000 },
-        assistantHistoryDefaultOpen: true,
-        assistantWorkRows: [row],
-        assistantHistoryRows: [row],
-        renderRows: [row],
-      });
-      expect(renderUnit(unit, { locale: "zh-CN" })).toContain("已被新消息中断");
-      expect(renderUnit(unit, { locale: "en-US" })).toContain("Interrupted by a new message");
-    } finally {
-      topicInterrupted.mockReturnValue(false);
-    }
-  });
+  // fork（bot-channels 移除）：原「authoritative topic interruption」用例随 bot 话题打断
+  // 链删除（useBotTopicInterruption 摘除后打断文案统一为通用 stopped，由下一用例覆盖）。
 
   it("labels an interrupted turn as stopped without duration", () => {
     const row = reasoningRow();
@@ -2666,31 +2643,6 @@ describe("ConversationTurnGroup — 完成卡（workflow completion card）", ()
   });
 });
 
-describe("topic preparation flow membership", () => {
-  it("renders preparing messages inside the conversation turn with a source loading indicator", () => {
-    const items = [
-      {
-        messageId: "pending-a",
-        senderName: "Alice",
-        text: "weather",
-        status: "preparing" as const,
-      },
-    ];
-    const unit = withTopicPreparationMessages([], [], items)[0]!;
-    const botContext = {
-      taskId: "task",
-      context: { activeTaskId: "task", group: { threadId: "topic" } },
-      busyId: null,
-      retryPreparation: async () => {},
-    } as NonNullable<ContextType<typeof DeliveryContext>>;
-    for (const compactForRemoteControl of [false, true]) {
-      const html = renderUnit(unit, { botContext, compactForRemoteControl });
-      expect(html).toContain('data-topic-preparation="pending-a"');
-      const preparation = html.indexOf('data-topic-preparation="pending-a"');
-      expect(html.indexOf("<section")).toBeLessThan(preparation);
-      expect(html.indexOf("</section>")).toBeGreaterThan(preparation);
-      expect(html).toContain('data-v4-user-input-collapsible-content="true"');
-      expect(html).toContain('aria-label="正在准备材料"');
-    }
-  });
-});
+// fork（bot-channels 移除）：原「topic preparation flow membership」describe 随
+// withTopicPreparationMessages / BotTopicPreparation 链整体删除
+//（specs/bot-channels-removal.md），对应行为已不存在。

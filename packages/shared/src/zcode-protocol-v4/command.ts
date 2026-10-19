@@ -11,7 +11,7 @@ import { v4ConversationFileRewindPreviewResultSchema } from "./transport.js";
 import { modelSelectionSchema } from "../model-selection.js";
 import { modelExecutionSchema } from "../model-execution.js";
 import { submissionModeSchema } from "./submission.js";
-import { botGroupInputSourceSchema, zcodeAutomationBotDeliveryTargetSchema } from "../bots.js";
+// fork（bots移除）：定时任务 Bot 回推目标与 Bot 群来源 schema 随第三方 IM bot channels 全量删除。
 import { DYNAMIC_WORKFLOW_MODES } from "../dynamic-workflow-feature.js";
 import {
   amendWorkflowRunSettingsPayloadSchema,
@@ -115,10 +115,9 @@ export const commandPayloadSchemas = {
       automationId: z.string().min(1).optional(),
       // fork（F4.3）：offPeakTaskId/offPeakRunType（闲时派发归因）随闲时任务全链路删除；
       // zod 对未知键默认 strip，存量持久化数据仍可被宽容解析（兼容读取）。
-      // Bot 来源只由 Host 注入，用于 CronCreate 在当前 turn 内读取并持久化回推地址。
-      botDeliveryTarget: zcodeAutomationBotDeliveryTargetSchema.optional(),
+      // fork（bots移除）：定时任务 Bot 回推目标与 Bot 群来源字段随第三方 IM bot channels
+      // 全量删除（specs/bot-channels-removal.md）；zod strip 语义同上，存量数据可宽容解析。
       inputOrigin: z.enum(["desktop", "mobile"]).optional(),
-      botGroupSource: botGroupInputSourceSchema.optional(),
       conversationQuotes: conversationQuotesSchema.optional(),
       // 定时任务会话的后续用户输入也必须保持 turn-scoped 工具面隔离；不能借用
       // automationId，否则会把普通用户输入误标成一次 automation 派发。

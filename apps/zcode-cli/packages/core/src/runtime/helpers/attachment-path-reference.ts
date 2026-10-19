@@ -4,10 +4,11 @@ import type { ResolvedTurnAttachment } from "../types.js";
 import { safeAttachmentOriginalRef } from "./attachment-artifacts.js";
 import { inferVideoMimeFromPath } from "./attachment-video.js";
 
+// fork（bots 移除）："deferred_topic_history"（bot 话题历史附件延迟交付原因）随 bot
+// channels 全量删除（specs/bot-channels-removal.md）。
 type PathReferenceReason =
   | "binary_file"
   | "deferred_clipboard_text"
-  | "deferred_topic_history"
   | "image_too_large"
   | "pdf_too_large"
   | "text_too_large"
@@ -94,7 +95,6 @@ export function inferAttachmentMimeFromPath(path: string): string {
 }
 
 function formatPathReferenceReason(reason: PathReferenceReason): string {
-  if (reason === "deferred_topic_history") return "topic history is provided for on-demand reading";
   if (reason === "deferred_clipboard_text") {
     return "it is a pasted-text temporary attachment that is deferred to keep the model context small";
   }

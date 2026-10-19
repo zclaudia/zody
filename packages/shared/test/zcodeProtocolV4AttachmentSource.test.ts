@@ -24,7 +24,9 @@ describe("V4 attachment source across row transport", () => {
       v4AttachmentReadResultSchema.parse({ ...response, mediaType: "text/html" }),
     ).toThrow();
   });
-  it.each(["clipboard-text", "topic-history"])(
+  // fork（bots 移除）："topic-history" 随 bot channels 全量删除（specs/bot-channels-removal.md），
+  // attachmentSourceKindSchema 已收窄为 "clipboard-text"，移除对应参数化用例。
+  it.each(["clipboard-text"])(
     "preserves %s on the executed user row",
     (sourceKind) => {
       const attachment = {

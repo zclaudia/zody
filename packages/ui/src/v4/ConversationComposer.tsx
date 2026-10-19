@@ -1955,12 +1955,8 @@ function ConversationComposerImpl({
                           className="block truncate text-ui-base font-medium text-foreground"
                           title={attachment.filename}
                         >
-                          {attachment.sourceKind === "topic-history"
-                            ? intl.formatMessage(
-                                { id: "chat.attachments.topicHistory" },
-                                { count: attachment.messageCount ?? 0 },
-                              )
-                            : attachment.filename}
+                          {/* fork（bots 移除）：原 "topic-history" 话题历史标签分支随 bot channels 全量删除。 */}
+                          {attachment.filename}
                         </span>
                         <span className="block truncate text-ui-sm font-normal text-foreground-subtle">
                           {getComposerAttachmentTypeLabel(attachment.filename, attachment.mimeType)}

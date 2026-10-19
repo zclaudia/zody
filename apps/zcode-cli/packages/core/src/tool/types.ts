@@ -22,7 +22,6 @@ import type {
   ModelContentProtection,
   ModelMessageContent,
   ModelToolSideEffectScope,
-  TopicResourcePort,
   PdfDocumentPort,
   PermissionBrokerReasonSource,
   PermissionCapabilityGroup,
@@ -169,7 +168,8 @@ export interface ToolExecutionContext {
   artifactStore?: ToolArtifactStorePort;
   automationPort?: AutomationPort;
   // fork（F4.3）：offPeakPort 随闲时任务全链路删除。
-  topicResourcePort?: TopicResourcePort;
+  // fork（bots 移除）：topicResourcePort（bot 话题附件读取/渠道回复端口）随 bot channels
+  // 全量删除（specs/bot-channels-removal.md）。
   sessionStore?: SessionStorePort;
   sessionModePort?: SessionModePort;
   workflowPort?: WorkflowPort;

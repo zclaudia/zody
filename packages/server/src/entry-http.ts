@@ -1,4 +1,4 @@
-import { createLocalServices, createTopicResourcePeers, getAppConfigDir } from "@zcode/services/node";
+import { createLocalServices, getAppConfigDir } from "@zcode/services/node";
 import {
   materializeBundledZCodeBuiltinProviderConfig,
   readBundledZCodeBuiltinProviderConfig,
@@ -14,15 +14,14 @@ async function main(): Promise<void> {
   const host = process.env["ZCODE_SERVER_HOST"]?.trim() || process.env["HOST"]?.trim() || undefined;
   const staticRoot = process.env["ZCODE_WEB_STATIC_ROOT"]?.trim() || undefined;
   const authToken = process.env["ZCODE_SERVER_AUTH_TOKEN"]?.trim() || undefined;
-  const topicResourcePeers = createTopicResourcePeers();
+  // fork（bot channels 移除）：topic-resource relay（createTopicResourcePeers /
+  // topicResourceRelayChannel）是第三方 IM bot 的资源回传链，随 bot channels 整体删除。
   const services = createLocalServices({
-    topicResourceRelayChannel: (request) => topicResourcePeers.getChannel(request),
     zcodeBuiltinProviderConfigFilePath,
     providerProvisioningTargetEnabled: Boolean(authToken),
   });
 
   createHttpServer(services, port, {
-    topicResourcePeers,
     ...(host ? { host } : {}),
     ...(staticRoot ? { staticRoot, spaFallback: true } : {}),
     ...(authToken ? { authToken, authRequired: true } : {}),

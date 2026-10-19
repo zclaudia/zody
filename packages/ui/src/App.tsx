@@ -816,12 +816,8 @@ export function App({
   const testActions = useMemo<TestActions>(
     () => ({
       ...taskListE2EActions,
-      sendBotMessage: (message) => services.botsService.handleInboundMessage(message),
-      submitBotGroupInput: (params) => {
-        const submit = services.zcodeTaskService.submitBotGroupInput;
-        if (!submit) throw new Error("Task material admission unavailable");
-        return submit.call(services.zcodeTaskService, params);
-      },
+      // fork（bot-channels 移除）：sendBotMessage / submitBotGroupInput 随 BotsService
+      // 与 bot 群投递链删除（specs/bot-channels-removal.md）。
       getTheme: () => theme,
       setTheme,
       getLocale: () => locale,
@@ -841,7 +837,7 @@ export function App({
     }),
     [
       locale,
-      services.botsService,
+      // fork（bot-channels 移除）：services.botsService 依赖随 BotsService 删除。
       services.zcodeTaskService,
       services.zcodeAgentService,
       setLocale,

@@ -1,8 +1,6 @@
 import { disposeServiceResourcesAndWait, getAppConfigDir } from "@zcode/services/node";
-import type { IChannel } from "@zcode/rpc";
 import {
   ZCODE_VERSION,
-  TOPIC_RESOURCE_RELAY_CHANNEL,
   SERVICE_AUTHORITY_MODE_ENV,
   formatLogPrefix,
   formatZodError,
@@ -57,7 +55,8 @@ async function main() {
   // TelemetryCore 在首次上报时自行按需生成。
 
   // Phase 3: Initialize services and start stdio RPC server
-  let topicResourceChannel: IChannel | undefined;
+  // fork（bot channels 移除）：TOPIC_RESOURCE_RELAY_CHANNEL 反向频道（Desktop topic resource
+  // 回传链）随第三方 IM bot channels 整体删除；stdio 的 onReverseClientReady 结构保留但无注入方。
   const zcodeBuiltinProviderConfigFilePath = await materializeBundledZCodeBuiltinProviderConfig({
     environmentConfigRoot: getAppConfigDir(),
     content: readBundledZCodeBuiltinProviderConfig(),
@@ -65,24 +64,13 @@ async function main() {
   const { authorityModeParseResult, services } = createStdioServices({
     env: process.env,
     zcodeBuiltinProviderConfigFilePath,
-    topicResourceRelayChannel: () => {
-      if (!topicResourceChannel) throw new Error("Desktop topic resource channel is unavailable");
-      return topicResourceChannel;
-    },
   });
   if (authorityModeParseResult.invalidRawValue) {
     log(
       `${SERVICE_AUTHORITY_MODE_ENV}=${authorityModeParseResult.invalidRawValue} 非法，按默认本机 Environment 权威模式启动`,
     );
   }
-  const stdioServer = createStdioServer(
-    services,
-    authorityModeParseResult.mode === "desktop-attached-remote"
-      ? (client) => {
-          topicResourceChannel = client.getChannel(TOPIC_RESOURCE_RELAY_CHANNEL);
-        }
-      : undefined,
-  );
+  const stdioServer = createStdioServer(services);
   registerStdioProcessLifecycle({
     stdin: process.stdin,
     signalSource: process,

@@ -112,46 +112,9 @@ describe("zcode-protocol-v4 command", () => {
     ).toEqual({ text: "opposite follow-up", requestedDelivery: "queue" });
   });
 
-  it("validates bot delivery target on sendText", () => {
-    const payload = commandPayloadSchemas.sendText.parse({
-      text: "创建一个定时任务",
-      botDeliveryTarget: {
-        provider: "feishu",
-        botId: "bot-feishu",
-        providerUserId: "chat-1",
-        chatType: "group",
-      },
-    });
-    expect(payload.botDeliveryTarget).toEqual({
-      provider: "feishu",
-      botId: "bot-feishu",
-      providerUserId: "chat-1",
-      chatType: "group",
-    });
-    expect(
-      commandPayloadSchemas.sendText.safeParse({
-        text: "invalid",
-        botDeliveryTarget: {
-          provider: "telegram",
-          botId: "bot-telegram",
-          providerUserId: "chat-1",
-          chatType: "private",
-        },
-      }).success,
-    ).toBe(false);
-    expect(
-      commandPayloadSchemas.sendText.safeParse({
-        text: "invalid",
-        botDeliveryTarget: {
-          provider: "weixin",
-          botId: "bot-weixin",
-          providerUserId: "chat-1",
-          chatType: "private",
-          providerMessageId: "must-not-persist",
-        },
-      }).success,
-    ).toBe(false);
-  });
+  // fork（bots移除）：Bot 回推目标校验用例随第三方 IM bot channels 全量删除
+  // （specs/bot-channels-removal.md）；sendText 的对应字段已摘除，
+  // 旧发送端历史字段按 zod strip 丢弃（strip 语义由下方 F4.3 用例覆盖）。
 
   it("sendText strips unknown attribution fields after off-peak removal (fork F4.3)", () => {
     // offPeakTaskId/offPeakRunType 已从 schema 移除；旧发送端的历史字段按 zod strip 丢弃。

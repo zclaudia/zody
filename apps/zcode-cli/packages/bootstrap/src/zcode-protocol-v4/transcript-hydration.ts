@@ -435,7 +435,8 @@ function inputIntentOfMessage(message: MessageWithParts): TurnInputIntentMetadat
       ...(value.attachments.length > 0 ? { attachmentRefs: value.attachments } : {}),
       ...(value.inputOrigin ? { inputOrigin: value.inputOrigin } : {}),
       ...(value.conversationQuotes ? { conversationQuotes: value.conversationQuotes } : {}),
-      ...(value.botGroupSource ? { botGroupSource: value.botGroupSource } : {}),
+      // fork（bots 移除）：value.botGroupSource 冷恢复组装随 bot channels 全量删除
+      // （specs/bot-channels-removal.md）；存量 transcript 中的该字段不再读取。
       ...(value.provenance ? { provenance: value.provenance } : {}),
       ...(value.source ? { source: value.source } : {}),
     };

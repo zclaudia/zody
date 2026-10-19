@@ -1048,41 +1048,6 @@ describe("prompt attachment provider content order", () => {
   });
 });
 
-describe("话题历史文本附件", () => {
-  it("在目标 runtime 落盘，只把路径交给模型", async () => {
-    const text = "PRIVATE_TOPIC_HISTORY";
-    const writeToolResultBinaryArtifact = vi.fn(async () => ({ path: "/target/history.txt" }));
-    const result = await resolveTurnAttachments(
-      [
-        {
-          type: "file",
-          content: "zcode-artifact://history",
-          filename: "topic-history.txt",
-          mimeType: "text/plain",
-          sourceKind: "topic-history",
-        },
-      ],
-      {
-        workingDirectory: "/target",
-        sessionId: "s1" as never,
-        traceContext: {} as never,
-        artifactStore: {
-          readToolResultArtifact: vi.fn(async () => ({
-            content: `data:text/plain;base64,${Buffer.from(text).toString("base64")}`,
-          })),
-          writeToolResultBinaryArtifact,
-        } as never,
-      },
-    );
-    expect(writeToolResultBinaryArtifact).toHaveBeenCalledWith(
-      expect.objectContaining({
-        content: Buffer.from(text),
-        extension: "txt",
-        retention: "session",
-      }),
-      expect.anything(),
-    );
-    expect(JSON.stringify(result)).not.toContain(text);
-    expect(JSON.stringify(result)).toContain("/target/history.txt");
-  });
-});
+// fork（bots 移除）：原「话题历史文本附件」用例组（topic-history 附件在目标 runtime
+// 落盘、deferred_topic_history 延迟交付）随 bot channels 全量删除
+// （specs/bot-channels-removal.md）；resolveTurnAttachments 的 topic-history 分支已摘除。

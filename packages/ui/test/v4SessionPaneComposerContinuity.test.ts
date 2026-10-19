@@ -168,11 +168,8 @@ const servicesMock = vi.hoisted(() => ({
 
 vi.mock("@/components/ui/toast.js", () => ({ toast: vi.fn() }));
 
-// 本组只验证输入框连续性；群同步服务由独立组件测试和真实 Host/CLI E2E 覆盖。
-vi.mock("@/v4/BotGroupDeliveryAction.js", () => ({
-  BotGroupDeliveryProvider: ({ children }: { children: unknown }) => children,
-  ConnectedBotGroupDeliveryAction: () => null,
-}));
+// fork（bot-channels 移除）：BotGroupDeliveryAction mock 随 bot 群投递链删除
+//（specs/bot-channels-removal.md）。
 
 // Bugfix：本文件只验证 SessionPane 的 composer 连续性，隔离闲时入口对真实 TabStore 的依赖。
 vi.mock("@/v4/OffPeakNewTaskEntry.js", () => ({

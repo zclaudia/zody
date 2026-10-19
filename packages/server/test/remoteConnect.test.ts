@@ -1,8 +1,7 @@
 import { PassThrough } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
-import { Emitter, ChannelClient, SocketProtocol, type IDisposable, type Event } from "@zcode/rpc";
-import { ZCODE_VERSION, TOPIC_RESOURCE_RELAY_CHANNEL } from "@zcode/shared";
-import { wrapStdioStream } from "../src/remote/stdio-socket.js";
+import { Emitter, type IDisposable, type Event } from "@zcode/rpc";
+import { ZCODE_VERSION } from "@zcode/shared";
 import { connectRemote, pickRemoteRuntimeEnv } from "../src/remote/connect.js";
 import type { IRemoteBackend, RemoteDisconnectEvent, StdioStream } from "../src/remote/backend.js";
 
@@ -97,43 +96,9 @@ class FakeConnectBackend implements IRemoteBackend {
 }
 
 describe("connectRemote", () => {
-  it("serves a private reverse channel on the existing stdio connection", async () => {
-    const backend = new FakeConnectBackend();
-    const call = vi.fn(async () => ({ valid: true }));
-    const connection = await connectRemote(backend, {
-      clientId: "test-client",
-      skipDeploy: true,
-      topicResourceChannel: {
-        call,
-        listen() {
-          throw new Error("No events");
-        },
-      },
-    });
-    const stream = backend.stream!;
-    // hello-ack 是文本握手；反向 RPC 复用它之后的原始字节流。
-    const stdin = stream.stdin as PassThrough;
-    const buffered = stdin.read() as Buffer;
-    const boundary = buffered.indexOf(10) + 1;
-    const remaining = buffered.subarray(boundary);
-    const inverse = wrapStdioStream({
-      ...stream,
-      stdin: stream.stdout as PassThrough,
-      stdout: stdin,
-    });
-    const protocol = new SocketProtocol(inverse);
-    const remote = new ChannelClient(protocol);
-    if (remaining.length) stdin.unshift(remaining);
-    try {
-      expect(
-        await remote.getChannel(TOPIC_RESOURCE_RELAY_CHANNEL).call("validate", { taskId: "task" }),
-      ).toEqual({ valid: true });
-      expect(call).toHaveBeenCalledOnce();
-    } finally {
-      remote.dispose();
-      connection.dispose();
-    }
-  });
+  // fork（bot channels 移除）：原「serves a private reverse channel on the existing stdio
+  // connection」用例验证的 TOPIC_RESOURCE_RELAY_CHANNEL 反向频道是第三方 IM bot 资源回传链，
+  // 随 bot channels 整体删除（connect.ts 的 topicResourceChannel 参数已移除）。
   it("透传 Desktop SP 灰度结果到远端 server，但不透传未列入白名单的变量", () => {
     expect(
       pickRemoteRuntimeEnv({

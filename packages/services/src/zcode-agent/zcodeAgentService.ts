@@ -4,11 +4,8 @@ import {
 } from "@zcode/shared";
 import { zcodeMcpUiSamplingResultSchema } from "@zcode/shared";
 import { MCP_APPS_SAMPLING_TRANSPORT_TIMEOUT_MS } from "@zcode/shared/mcp-apps";
-import {
-  channelReplyRequestSchema,
-  type ChannelReplyHostRequest,
-  type ChannelReplyResult,
-} from "@zcode/shared";
+// fork（bot channels 移除，specs/bot-channels-removal.md）：channelReply 与 topicResource
+// host 侧消费随第三方 IM bot 接入整体删除（协议方法由 B2 同波删除）。
 import { requestPluginReferenceCatalog } from "#src/zcode-agent/pluginReferenceCatalogRequest.js";
 import {
   localTtftFactsSchema,
@@ -18,14 +15,6 @@ import {
 /* oxlint-disable eslint(max-lines) -- ZCode Protocol transport、通知 wiring 和 app-facing session 方法必须共享同一个 client/emitter 上下文。 */
 import { ensureIndependentPlanSupport } from "./independentPlanSupport.js";
 import { randomUUID } from "node:crypto";
-import { createTopicResourceBridge } from "./topicResourceBridge.js";
-import { uploadTopicResourceToClient } from "./topicResourceUpload.js";
-import {
-  zcodeTopicResourceCancelParamsSchema,
-  type ZCodeTopicResourceReadParams,
-  type ZCodeProtocolTrace,
-  type ZCodePromptAttachment,
-} from "@zcode/shared";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { Emitter } from "@zcode/rpc";
@@ -416,7 +405,6 @@ type SessionResumeCompatField =
 type SessionSendCompatField =
   | "browserAmbientContext"
   | "automationId"
-  | "botDeliveryTarget"
   | "toolDenylist";
 
 const SESSION_CREATE_OPTIONAL_COMPAT_FIELDS = new Set<SessionCreateCompatField>([
@@ -445,7 +433,6 @@ const SESSION_RESUME_OPTIONAL_COMPAT_FIELDS = new Set<SessionResumeCompatField>(
 const SESSION_SEND_OPTIONAL_COMPAT_FIELDS = new Set<SessionSendCompatField>([
   "browserAmbientContext",
   "automationId",
-  "botDeliveryTarget",
   "toolDenylist",
 ]);
 // onDynamicSessionEvent 建立上游订阅时若 getClient / sessionSubscribe 瞬时失败
@@ -785,9 +772,7 @@ function buildSessionSendParams(
       ? { automationId: params.automationId }
       : {}),
     // fork（F4.3）：offPeakTaskId/offPeakRunType 下发随闲时任务全链路删除。
-    ...(params.botDeliveryTarget !== undefined && !omittedFields.has("botDeliveryTarget")
-      ? { botDeliveryTarget: params.botDeliveryTarget }
-      : {}),
+    // fork（bot channels 移除）：botDeliveryTarget 下发随第三方 IM bot 接入整体删除。
     ...(params.toolDenylist !== undefined && !omittedFields.has("toolDenylist")
       ? { toolDenylist: params.toolDenylist }
       : {}),
@@ -970,17 +955,9 @@ interface CreateZCodeAgentServiceOptions extends Omit<
    * browser 命令返回 backend_unavailable，不影响其它功能。
    */
   browserControlExecutor?: BrowserAmbientContextExecutor;
-  channelReplyExecutor?: (request: ChannelReplyHostRequest) => Promise<ChannelReplyResult>;
-  topicResourceExecutor?: (
-    request: ZCodeTopicResourceReadParams &
-      ZCodeAgentWorkspaceTarget & { trace?: ZCodeProtocolTrace },
-    signal: AbortSignal,
-  ) => Promise<ZCodePromptAttachment>;
-  topicResourceValidator?: (
-    request: ZCodeTopicResourceReadParams &
-      ZCodeAgentWorkspaceTarget & { trace?: ZCodeProtocolTrace },
-    signal: AbortSignal,
-  ) => Promise<void>;
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：channelReplyExecutor /
+  // topicResourceExecutor / topicResourceValidator 参数随第三方 IM bot 接入整体删除；
+  // 装配传递处（node.ts executor 三件套）由 B1a 同波删除。
   // fork（F4.6）：officialMcpAuthHeadersResolver / officialMcpTrustedOrigins
   // 随官方 MCP 鉴权链删除。
   /** desktop-local Host 注入；只消费已校验、已去重的 live session event。 */
@@ -1802,39 +1779,10 @@ export function createZCodeAgentService(
       return;
     }
     wiredClients.add(client);
-    const topicResources = createTopicResourceBridge(() => {
-      // 预热可能没有 remoteSessionId；不能永久捕获 wireClient 首次参数。
-      // 从同一个实际 CLI 的当前可信入口取路由，并在一次资源操作内保持不变。
-      const active = activeClientsByWorkspaceKey.get(resolveWorkspaceKey(workspace));
-      const resourceWorkspace =
-        active?.client === client ? { ...active.workspace } : { ...workspace };
-      return {
-        validate: (request, signal, trace) => {
-          if (!options?.topicResourceValidator)
-            throw new Error("Topic resource authorization is unavailable");
-          return options.topicResourceValidator(
-            { ...request, ...resourceWorkspace, trace },
-            signal,
-          );
-        },
-        read: (request, signal, trace) => {
-          if (!options?.topicResourceExecutor)
-            throw new Error("Topic attachment retrieval is unavailable on this host");
-          return options.topicResourceExecutor({ ...request, ...resourceWorkspace, trace }, signal);
-        },
-        upload: (request, attachment, signal, trace) =>
-          uploadTopicResourceToClient(
-            client,
-            v4ConnectionId,
-            { ...resourceWorkspace, sessionId: request.taskId },
-            attachment,
-            signal,
-            trace,
-          ),
-      };
-    });
+    // fork（bot channels 移除，specs/bot-channels-removal.md）：topicResource bridge 装配
+    // （validator/executor/upload）随第三方 IM bot 接入整体删除；CLI 侧 topic-resource
+    // 端口由 B5 同波删除，协议方法由 B2 同波删除。
     const disposables = [
-      topicResources,
       client.onNotification((message) => {
         if (message.method === zcodeProtocolNotifications.providerRuntimeHeadersCancelled) {
           const parsed = zcodeProviderRuntimeHeadersCancelledSchema.safeParse(message.params);
@@ -2103,50 +2051,9 @@ export function createZCodeAgentService(
           );
           return;
         }
-        if (request.method === zcodeProtocolMethods.channelReply) {
-          void (async () => {
-            const params = channelReplyRequestSchema.parse(request.params);
-            if (!options?.channelReplyExecutor) throw new Error("Channel reply unavailable");
-            const active = activeClientsByWorkspaceKey.get(resolveWorkspaceKey(workspace));
-            if (active?.client !== client)
-              throw new Error("Channel reply client is no longer active");
-            const currentWorkspace = active.workspace;
-            const result = await options.channelReplyExecutor({
-              ...params,
-              // 活跃连接还携带 V4 envelope 等内部字段；跨回复契约只能投影工作区身份，不能展开整个对象。
-              workspacePath: currentWorkspace.workspacePath,
-              workspaceIdentity: currentWorkspace.workspaceIdentity,
-              remoteSessionId: currentWorkspace.remoteSessionId,
-              trace: request.trace,
-            });
-            await client.respond(request.id, result);
-          })().catch((error: unknown) =>
-            client.respondError(request.id, {
-              code: -32603,
-              message: error instanceof Error ? error.message : "Channel reply failed",
-            }),
-          );
-          return;
-        }
-        if (request.method === zcodeProtocolMethods.topicResourceRead) {
-          void topicResources
-            .read(request.params, request.trace)
-            .then((result) => client.respond(request.id, result))
-            .catch((error: unknown) =>
-              client.respondError(request.id, {
-                code: -32603,
-                message: error instanceof Error ? error.message : "Topic resource read failed",
-              }),
-            );
-          return;
-        }
-        if (request.method === zcodeProtocolMethods.topicResourceCancel) {
-          const parsed = zcodeTopicResourceCancelParamsSchema.safeParse(request.params);
-          void client.respond(request.id, {
-            cancelled: parsed.success && topicResources.cancel(parsed.data),
-          });
-          return;
-        }
+        // fork（bot channels 移除，specs/bot-channels-removal.md）：channelReply 与
+        // topicResource read/cancel 反向请求处理随第三方 IM bot 接入整体删除
+        // （协议方法由 B2 同波删除）。
         if (request.method === zcodeProtocolMethods.sessionRequestRuntimePreferences) {
           const reportResponseFailure = (error: unknown): void => {
             logger.debug(undefined, "运行时偏好响应发送失败", {
@@ -2453,7 +2360,7 @@ export function createZCodeAgentService(
                 modelSelection: parsed.data.modelSelection,
                 mode: parsed.data.mode,
                 targetTaskId: parsed.data.targetTaskId,
-                botDeliveryTarget: parsed.data.botDeliveryTarget,
+                // fork（bot channels 移除）：botDeliveryTarget 不再进入 automation 创建链。
                 workspacePath: workspace.workspacePath,
                 workspaceIdentity: workspace.workspaceIdentity,
                 recurring: parsed.data.recurring ?? true,

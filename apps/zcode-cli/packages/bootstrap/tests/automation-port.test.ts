@@ -305,60 +305,8 @@ describe("createProtocolAutomationPort", () => {
     expect(listed[0]?.scheduleRule).toMatchObject({ unit: "hourly", interval: 200, minute: 49 });
   });
 
-  it("将当前 Bot turn 的回推目标注入 automation/create，普通模型输入不能自行指定", async () => {
-    const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationCheckTaskBinding) return { bound: false };
-      if (method === zcodeProtocolMethods.automationCreate) {
-        return {
-          automation: {
-            automationId: "automation-bot",
-            title: "Bot 日报",
-            cronExpr: "0 9 * * *",
-            prompt: "生成日报",
-            enabled: true,
-            lifecycleStatus: "active" as const,
-            runCount: 0,
-            recurring: true,
-          },
-        };
-      }
-      throw new Error(`unexpected method ${method}`);
-    });
-    const botDeliveryTarget = {
-      provider: "feishu" as const,
-      botId: "bot-feishu",
-      providerUserId: "chat-1",
-      chatType: "group" as const,
-    };
-    const port = createProtocolAutomationPort(
-      { requestClient, sessions: new Map() } as unknown as ZCodeProtocolAgentServerContext,
-      () =>
-        ({
-          activeBotDeliveryTarget: botDeliveryTarget,
-          app: {
-            runtime: { getSessionModelSelection: () => undefined },
-            sessionId: "session-1",
-            getModel: () => undefined,
-            getMode: () => undefined,
-            getThoughtLevel: () => undefined,
-            setCustomSessionTitle: vi.fn(async () => undefined),
-          },
-          traceContext: { traceId: "trace-session-1" },
-        }) as never,
-    );
-
-    await port.create(
-      { cron: "0 9 * * *", delayMinutes: null, prompt: "生成日报", title: "Bot 日报" },
-      { sessionId: "session-1" },
-    );
-
-    expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
-      expect.objectContaining({ botDeliveryTarget }),
-      expect.anything(),
-    );
-  });
-
+  // fork（bots 移除）：原「CronCreate 透传 activeBotDeliveryTarget」用例随 bot channels
+  // 全量删除（specs/bot-channels-removal.md）；automation create 不再携带 bot 投递目标。
   it("旧 Host 缺少归属查询方法时回退 automation/list，并允许未绑定会话 CronCreate", async () => {
     const requestClient = vi.fn(async (method: string) => {
       if (method === zcodeProtocolMethods.automationCheckTaskBinding) {

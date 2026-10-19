@@ -36,7 +36,6 @@ import type {
   ZCodePermissionResponse,
   ModelSelection,
   ZCodeBackgroundTurnAttribution,
-  ZCodeAutomationBotDeliveryTarget,
 } from "@zcode/shared";
 import type {
   SessionMessageDeliveryResult,
@@ -245,63 +244,10 @@ export interface IZCodeTaskService {
     permissionScope?: "session";
   }): Promise<ZCodeTaskCreateResult>;
 
-  readBotTopicSummaries?(params: {
-    taskId: string;
-    workspacePath: string;
-    workspaceIdentity?: string;
-    remoteSessionId?: string;
-  }): Promise<Array<{ checkpoint: string; text: string }>>;
-
-  invalidateBotTopicInputs?(params: {
-    taskId: string;
-    workspacePath: string;
-    workspaceIdentity?: string;
-    remoteSessionId?: string;
-  }): Promise<void>;
-  readBotTopicExecution?(params: {
-    taskId: string;
-    workspacePath: string;
-    workspaceIdentity?: string;
-    remoteSessionId?: string;
-  }): Promise<{ executionId: string; sourceCommandId?: string } | undefined>;
-  stopBotTopicExecution?(params: {
-    taskId: string;
-    workspacePath: string;
-    workspaceIdentity?: string;
-    remoteSessionId?: string;
-    executionId: string;
-  }): Promise<void>;
-
-  /** 从 CLI 权威快照读取群任务切换的阻塞原因；空闲时返回 null。 */
-  getBotGroupTaskBlockReason?(params: {
-    taskId: string;
-    remoteSessionId?: string;
-    workspacePath: string;
-    workspaceIdentity?: string;
-  }): Promise<"running" | "queued" | "interaction" | null>;
-  cancelBotGroupInput?(params: {
-    workspacePath?: string;
-    workspaceIdentity?: string;
-    taskId: string;
-    remoteSessionId?: string;
-    commandId: string;
-    sourceCommandId: string;
-    actorId: string;
-    ownerId: string;
-    botId: string;
-    chatId: string;
-  }): Promise<import("@zcode/shared/zcode-protocol-v4").CommandAck>;
-  submitBotGroupInput?(params: {
-    workspacePath?: string;
-    workspaceIdentity?: string;
-    taskId: string;
-    remoteSessionId?: string;
-    commandId: string;
-    content: string;
-    conversationQuotes?: import("@zcode/shared").ConversationSelectionText[];
-    attachments?: ZCodePromptAttachment[];
-    source: import("@zcode/shared").BotGroupInputSource;
-  }): Promise<import("@zcode/shared/zcode-protocol-v4").CommandAck>;
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：bot 话题/群输入六方法接口
+  // （readBotTopicSummaries/invalidateBotTopicInputs/readBotTopicExecution/
+  // stopBotTopicExecution/getBotGroupTaskBlockReason/cancelBotGroupInput/submitBotGroupInput）
+  // 随第三方 IM bot 接入整体删除，实现同步摘除（zcodeTaskServiceAdapter.ts）。
 
   /** 发送 prompt 到指定 task */
   sendPrompt(
@@ -318,8 +264,6 @@ export interface IZCodeTaskService {
       clientMode?: ZCodeTaskClientMode;
       /** 当前 turn 额外隐藏的工具；与 session/automation 自带的工具隔离规则合并。 */
       toolDenylist?: string[];
-      /** Bot 来源 turn 的稳定回推地址；由 BotsService 注入，模型不可控。 */
-      botDeliveryTarget?: ZCodeAutomationBotDeliveryTarget;
       /** 标准模型选择；闲时任务同样经 Registry / ModelFactory 创建 Model。 */
       modelSelection?: CommandPayloadMap["sendText"]["modelSelection"];
       /** 单次执行约束与动态鉴权；仅 idle start-now 接受，不进入普通队列。 */
@@ -824,7 +768,8 @@ export interface IZCodeTaskService {
     workspaceIdentity?: string;
     taskId: string;
     clientId?: string;
-    deliveryKind?: "continuous" | "bot-channel-continuous" | "replayable" | "mixed";
+    // fork（bot channels 移除）：联合删除 "bot-channel-continuous"。
+    deliveryKind?: "continuous" | "replayable" | "mixed";
   }): Event<ZCodeStreamEvent>;
 
   /**

@@ -12,7 +12,7 @@ import { commandAdmissionOf } from "./executor.js";
 export interface CanonicalCommandIntent {
   inputOrigin?: "desktop" | "mobile";
   conversationQuotes?: import("@zcode/contracts").TurnInputIntentMetadata["conversationQuotes"];
-  botGroupSource?: TurnInputIntentMetadata["botGroupSource"];
+  // fork（bots 移除）：botGroupSource 字段随 bot channels 全量删除（specs/bot-channels-removal.md）。
   kind: "sendText" | "sendGoalCommand";
   text: string;
   modelSelection?: ModelSelection;
@@ -36,7 +36,7 @@ export function inputIntentMetadata(
     text: string;
     inputOrigin?: "desktop" | "mobile";
     conversationQuotes?: import("@zcode/contracts").TurnInputIntentMetadata["conversationQuotes"];
-    botGroupSource?: TurnInputIntentMetadata["botGroupSource"];
+    // fork（bots 移除）：options.botGroupSource 随 bot channels 全量删除（specs/bot-channels-removal.md）。
     requestedDelivery: TurnInputIntentMetadata["requestedDelivery"];
     admittedDelivery?: TurnInputIntentMetadata["admittedDelivery"];
     fallbackReasonCode?: string;
@@ -54,7 +54,7 @@ export function inputIntentMetadata(
   return {
     ...(options.inputOrigin ? { inputOrigin: options.inputOrigin } : {}),
     ...(options.conversationQuotes ? { conversationQuotes: options.conversationQuotes } : {}),
-    ...(options.botGroupSource ? { botGroupSource: options.botGroupSource } : {}),
+    // fork（bots 移除）：options.botGroupSource 组装随 bot channels 全量删除。
     sourceCommandId: envelope.commandId,
     queueItemId: admission.queueItemId,
     clientId: envelope.clientId || "cli",
@@ -99,7 +99,7 @@ export function inputIntentMetadataFromCanonical(
   return {
     ...(canonical.inputOrigin ? { inputOrigin: canonical.inputOrigin } : {}),
     ...(canonical.conversationQuotes ? { conversationQuotes: canonical.conversationQuotes } : {}),
-    ...(canonical.botGroupSource ? { botGroupSource: canonical.botGroupSource } : {}),
+    // fork（bots 移除）：canonical.botGroupSource 组装随 bot channels 全量删除。
     sourceCommandId: envelope.commandId,
     queueItemId: admission.queueItemId,
     clientId: envelope.clientId || canonical.clientId || "cli",
@@ -136,7 +136,7 @@ export function inputIntentMetadataFromQueueItem(
   return {
     ...(item.inputOrigin ? { inputOrigin: item.inputOrigin } : {}),
     ...(item.conversationQuotes ? { conversationQuotes: item.conversationQuotes } : {}),
-    ...(item.botGroupSource ? { botGroupSource: item.botGroupSource } : {}),
+    // fork（bots 移除）：item.botGroupSource 组装随 bot channels 全量删除。
     sourceCommandId: item.sourceCommandId,
     queueItemId: item.queueItemId,
     clientId: item.clientId,

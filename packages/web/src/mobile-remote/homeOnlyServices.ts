@@ -184,7 +184,7 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
       cleanup: async () => {},
       onDynamicProgress: () => () => ({ dispose: () => {} }),
     }),
-    botsService: createUnsupportedHomeOnlyService<RootServices["botsService"]>("botsService"),
+    // fork（bot channels 移除）：botsService 随第三方 IM bot channels（飞书/微信/Telegram/webhook）整体删除。
     fileWatcherService: createEmptyHomeOnlyService<RootServices["fileWatcherService"]>({
       watch: async () => ({ dispose: () => {} }),
     }),

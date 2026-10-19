@@ -101,26 +101,8 @@ const pathRef = {
 };
 
 describe("attachment-refs 映射（AttachmentRef → TurnAttachment）", () => {
-  it("话题历史 artifact 保留引用，禁止自动解码正文", async () => {
-    const app = makeApp();
-    const mapped = await mapAttachmentRefsToTurnAttachments(app as never, [
-      {
-        ref: "zcode-artifact://history",
-        fileName: "topic-history.txt",
-        mime: "text/plain",
-        bytes: 12,
-        sourceKind: "topic-history",
-      },
-    ]);
-    expect(mapped).toEqual([
-      expect.objectContaining({
-        type: "file",
-        content: "zcode-artifact://history",
-        sourceKind: "topic-history",
-      }),
-    ]);
-    expect(app.readToolResultArtifact).not.toHaveBeenCalled();
-  });
+  // fork（bots 移除）：原「话题历史 artifact 保留引用，禁止自动解码正文」用例随 bot channels
+  // 全量删除（specs/bot-channels-removal.md）；attachment-refs 的 topic-history 分支已摘除。
 
   it("本地路径 ref：图片/视频/文件按 mime 分型为 path 引用，展示元信息保真", async () => {
     const app = makeApp() as unknown as V4SessionRecordView["app"];
@@ -717,9 +699,10 @@ describe("gateway v4 chunked attachment transaction", () => {
     expect(stat).not.toHaveBeenCalled();
     gateway.dispose();
   });
-  it.each(["topic-history", "clipboard-text"] as const)(
-    "%s 文本按权威行授权预览，拒绝其他行及引用",
-    async (sourceKind) => {
+  // fork（bots 移除）：原 "topic-history" 参数（bot 话题历史文本预览授权）随 bot channels
+  // 全量删除（specs/bot-channels-removal.md）；文本材料来源仅剩 clipboard-text。
+  it("clipboard-text 文本按权威行授权预览，拒绝其他行及引用", async () => {
+    const sourceKind = "clipboard-text" as const;
       const bytes = Buffer.from("Sender: 群成员 | open_id: ou_member\n原文第二行");
       const attachment = {
         ref: "zcode-artifact://history",

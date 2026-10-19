@@ -14,7 +14,6 @@ import {
   IZCodeTaskService,
   IZCodeAgentService,
   IZCodeSessionService,
-  IBotsService,
   IFileWatcherService,
   IModelSelectionService,
   IProviderSettingsService,
@@ -44,7 +43,6 @@ import {
   createHostApiNetworkTransport,
   registerHostApiNetworkTransportForDispose,
   createSettingsSyncService,
-  createBotsService,
   createUsageStatsService,
   createMediaPreviewService,
   createClientScenesService,
@@ -229,19 +227,8 @@ export function createRemoteWorkspaceServiceCollection(params: {
     .register(IZCodeAgentService, params.connectionServices.zcodeAgentService)
     .register(IZCodeSessionService, remoteZCodeSessionService)
     // fork（F4.8）：IConversationShareService 注册随会话分享功能删除。
-    .register(
-      IBotsService,
-      createBotsService({
-        credentialService: localCredentialService,
-        zcodeTaskService: remoteZCodeTaskService,
-        broadcastService: localBroadcastService,
-        settingService: localSettingService,
-        modelSelectionService: params.connectionServices.modelSelectionService,
-        // 修复原因：remote workspace host 首屏只需要远端文件/agent 能力；
-        // bot 启动后台任务如果立即轮询或 getAll，会重复拉本机 preset 并放大 SSH/Docker 连接耗时。
-        runStartupBackgroundTasks: false,
-      }),
-    )
+    // fork（bot channels 移除，specs/bot-channels-removal.md）：IBotsService 注册随
+    // 第三方 IM bot 功能删除；其余 ~30 个注册（手机 replayable 直连 remote host 依赖）保留。
     .register(IFileWatcherService, params.connectionServices.fileWatcherService)
     // Provider/Model 事实属于目标 Environment。远端 workspace 的选择和设置视图
     // 必须直接读取远端 Registry，不能继续显示 Desktop 本地 Provider。
@@ -307,7 +294,8 @@ export function createServerRemoteWorkspaceServiceCollection(params: {
     .register(IZCodeAgentService, params.connectionServices.zcodeAgentService)
     .register(IZCodeSessionService, params.connectionServices.zcodeSessionService)
     // fork（F4.8）：IConversationShareService 兜底注册随会话分享功能删除。
-    .register(IBotsService, params.connectionServices.botsService)
+    // fork（bot channels 移除，specs/bot-channels-removal.md）：server 透传的
+    // IBotsService 注册随第三方 IM bot 功能删除。
     .register(IFileWatcherService, params.connectionServices.fileWatcherService)
     .register(IModelSelectionService, params.connectionServices.modelSelectionService)
     .register(IProviderSettingsService, params.connectionServices.providerSettingsService)

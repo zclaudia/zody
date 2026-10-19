@@ -133,9 +133,8 @@ export function createProtocolAutomationPort(
             ...(runtimeModelSelection ? { modelSelection: runtimeModelSelection } : {}),
             ...(runtimeMode ? { mode: runtimeMode === "auto" ? "build" : runtimeMode } : {}),
             ...(createContext?.sessionId ? { targetTaskId: createContext.sessionId } : {}),
-            ...(activeSession?.activeBotDeliveryTarget
-              ? { botDeliveryTarget: activeSession.activeBotDeliveryTarget }
-              : {}),
+            // fork（bots 移除）：原 activeBotDeliveryTarget → botDeliveryTarget 透传（cron 回推
+            // bot 群）随 bot channels 全量删除（specs/bot-channels-removal.md）；投递目标仅剩原路径。
             ...(hasIntervalCarrier
               ? {
                   // 新建 carrier 不透传有限上限；create 协议没有 maxRuns=null 清除语义。

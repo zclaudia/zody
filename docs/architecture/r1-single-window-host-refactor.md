@@ -15,10 +15,10 @@
 | 决策 | R1 结论 |
 | --- | --- |
 | Host 聚合边界 | Host 持有 workspace/task membership、在线/运行/等待事实和列表写路由；Renderer 只持有展示偏好 |
-| 进程边界 | 每窗口唯一 Local Host；UI、手机和 Bot 不再创建独立 Remote Host |
+| 进程边界 | 每窗口唯一 Local Host；UI 和手机不再创建独立 Remote Host |
 | 端口拓扑 | 同一 Local Host 同时暴露 base port 和多个 remote-scoped port |
 | 连接入口 | 保留 `IPlatformService -> Main`；Main 只做请求、状态事件和 MessagePort 薄转发 |
-| Remote Host 合并 | 合并 UI、手机、Bot 创建的全部 Desktop Remote Host |
+| Remote Host 合并 | 合并 UI、手机创建的全部 Desktop Remote Host |
 | 投影持久化 | `ControllerProjection` 仅驻内存并可从 source 重建，不增加数据库 |
 | 远端协议 | 不修改现有 SSH/WSL/Docker/Server 的 zcode-server service channel |
 | 列表写路由 | 跨 workspace 列表操作由 Controller 路由；进入 workspace/conversation 后继续使用 scoped facade |
@@ -48,7 +48,6 @@ Renderer ─┬─ base port ────> Local Host ────────�
           └─ remote port ──> Docker/Server Host ─> remote service
 
 Mobile -> relay/Main -> Local Host 或独立 Remote Host
-Bot ---------------------> 临时 Remote Host
 ```
 
 R1：
@@ -56,7 +55,7 @@ R1：
 ```text
 Renderer ───────────────────┐
 Mobile -> relay/Main ───────┼─> WindowHostRuntime（每窗口唯一 Local Host PID）
-Bot/后台入口 ────────────────┘       │
+后台入口 ────────────────┘       │
                                     ├─ LocalSource -> Local CLI
                                     ├─ RemoteConnectionRegistry
                                     │    ├─ SSH pooled connection
@@ -203,7 +202,7 @@ Mobile relay port
 
 - 调用方 payload 内的 `clientMode`/`deliveryKind` 一律清除，由 Host 根据可信 attachment context 注入。
 - 每个 port 独立维护订阅、seq、背压和 dispose；手机慢消费不得阻塞桌面实时链路。
-- attachment 断开只释放 attachment 自身；仍有 workspace tab、手机 owner、Bot 或其他 attachment 使用时不得销毁连接。
+- attachment 断开只释放 attachment 自身；仍有 workspace tab、手机 owner 或其他 attachment 使用时不得销毁连接。
 - Renderer reload 只重建 attachment，复用原 Local Host、registry 和 logical sessions。
 - `remoteSessionId` 只用于窗口内 source 路由，不替代 `workspaceIdentity`。
 
@@ -232,7 +231,7 @@ BindRemoteWorkspaceContext IPC 返回；调用方重新读取 B 的 services
 - Host generation 换代继续 fail-closed，允许 A 到 B 之间存在有界不可用窗口；调用方不得在 bind 返回前继续向 A 发起 RPC。
 - B 投递失败、ready 超时或收到过期 ACK 时不得把 B 提升为当前 attachment；失败流程回收候选 B，再由连接、绑定或 reload 调用方按既有策略释放或重试该 logical session。
 - ready 后调用方不得继续使用 bind 前捕获的 A services，必须按相同 `remoteSessionId` 从 renderer session store 重新读取 B。
-- attachment 换代只改变 desktop `desktop-continuous` port，不创建新 Host、远程连接或 Agent，也不触碰手机/Bot 的 `web-remote-replayable` attachment。
+- attachment 换代只改变 desktop `desktop-continuous` port，不创建新 Host、远程连接或 Agent，也不触碰手机的 `web-remote-replayable` attachment。
 
 ## 7. Controller 投影协议
 
@@ -362,7 +361,7 @@ R1 以 `LegacyRemoteWorkspaceRpcContract` 对现有远端 service channel 做类
 2. 先写控制协议、registry、scoped attachment、投影、断连/恢复契约测试。
 3. 把远程连接、logical session 和 generation 生命周期迁入 WindowHostRuntime。
 4. Main 收敛为请求、事件和 MessagePort 薄转发。
-5. base、remote、手机和 Bot 统一为同一 Host 的 scoped attachment。
+5. base、remote 和手机统一为同一 Host 的 scoped attachment。
 6. Host 聚合任务事实和列表写路由；Renderer 改为窗口投影消费者。
 7. 删除旧 Remote Host 架构，补齐日志、事实文档、全量门禁和代表链路 E2E。
 
@@ -370,7 +369,7 @@ R1 以 `LegacyRemoteWorkspaceRpcContract` 对现有远端 service channel 做类
 
 接受用例登记在 `docs/conversation-session-case-catalog.md` 的 R1H 组，覆盖矩阵登记在 `docs/testing/conversation-session-e2e-coverage-matrix.md`。
 
-已确认的 E2E 剪枝：SSH 覆盖完整代表链路；双窗口和 Renderer reload 单独覆盖；WSL、Docker、Server 的 transport 差异主要由契约/集成测试覆盖并做平台 smoke。手机 attachment 和 Bot 复用必须覆盖“不会创建额外 Host/Agent”的断言。Grouped 只验证本地-only 语义未扩张。
+已确认的 E2E 剪枝：SSH 覆盖完整代表链路；双窗口和 Renderer reload 单独覆盖；WSL、Docker、Server 的 transport 差异主要由契约/集成测试覆盖并做平台 smoke。手机 attachment 复用必须覆盖“不会创建额外 Host/Agent”的断言。Grouped 只验证本地-only 语义未扩张。
 
 门禁顺序：定向测试、`pnpm test:unit`、conversation coverage audit、Desktop E2E typecheck、`pnpm typecheck`、`pnpm lint`、Electron 代表 E2E、container conversation E2E、平台 smoke，以及改造前后 PID/连接数/任务列表/路由/退出残留对比。
 

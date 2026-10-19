@@ -59,7 +59,8 @@ import { useRootProviderSettingsSnapshot } from "@/root/useRootProviderSettingsS
 import { useDesktopNativeThemeSync } from "@/root/useDesktopNativeThemeSync.js";
 import { useRootPlatformEffects } from "@/root/useRootPlatformEffects.js";
 import { useRootWorkspaceActions } from "@/root/useRootWorkspaceActions.js";
-import { useBotBroadcastEffects } from "@/root/useBotBroadcastEffects.js";
+// fork（bot-channels 移除）：useBotBroadcastEffects（bot 任务广播订阅）随第三方 IM bot
+// 接入整体删除（specs/bot-channels-removal.md），zclaudia-gateway 手机远控链路不受影响。
 import { registerBaseWorkspaceServices } from "@/store/remoteWorkspaceSessionStore.js";
 import type { RootProps } from "@/root/types.js";
 import { DiffsWorkerPoolProvider } from "@/root/DiffsWorkerPoolProvider.js";
@@ -326,10 +327,7 @@ function RootInner({
 
   const { intl, locale } = useZCodeIntl();
   const theme = useZCodeStore((state) => state.theme);
-  const {
-    settings: appSettings,
-    refresh: refreshAppSettings,
-  } = useSettings();
+  const { settings: appSettings, refresh: refreshAppSettings } = useSettings();
   // docs/dynamic-workflow/launch.md「The user's choice」：设置里的动态工作流选择变化后，通知本窗口
   // 的 Host 重发 CLI 策略（并转发给远程 Host），再重读灰度快照（经 clientConfigService，fork F2.6b）。
   useDynamicWorkflowUserModeSync({
@@ -401,9 +399,7 @@ function RootInner({
         void services.zcodeAgentService.syncAppRuntimePreferences(parsed.data).catch((error) => {
           logger.warn("[settings] 同步跨窗口运行时偏好失败", error);
         });
-        void services.botsService.syncAppRuntimePreferences(parsed.data).catch((error) => {
-          logger.warn("[settings] 同步跨窗口 Bot 运行时偏好失败", error);
-        });
+        // fork（bot-channels 移除）：botsService 的跨窗口偏好同步分支随 BotsService 删除。
         return;
       }
 
@@ -437,7 +433,7 @@ function RootInner({
     };
   }, [
     refreshAppSettings,
-    services.botsService,
+    // fork（bot-channels 移除）：services.botsService 依赖随 BotsService 删除。
     services.broadcastService,
     services.zcodeAgentService,
   ]);
@@ -455,19 +451,11 @@ function RootInner({
       .catch((error) => {
         logger.warn("[settings] 初始化运行时偏好失败", error);
       });
-    void services.botsService
-      .syncAppRuntimePreferences({
-        askUserQuestionAutoResolutionEnabled:
-          appSettings.askUserQuestionAutoResolutionEnabled !== false,
-        modelIoFullRetentionEnabled: appSettings.modelIoFullRetentionEnabled === true,
-      })
-      .catch((error) => {
-        logger.warn("[settings] 初始化 Bot 运行时偏好失败", error);
-      });
+    // fork（bot-channels 移除）：botsService 的启动偏好初始化随 BotsService 删除。
   }, [
     appSettings?.askUserQuestionAutoResolutionEnabled,
     appSettings?.modelIoFullRetentionEnabled,
-    services.botsService,
+    // fork（bot-channels 移除）：services.botsService 依赖随 BotsService 删除。
     services.zcodeAgentService,
   ]);
 
@@ -592,7 +580,7 @@ function RootInner({
     registerBaseWorkspaceServices(services);
   }, [services]);
 
-  useBotBroadcastEffects(services, tabStoreApi);
+  // fork（bot-channels 移除）：useBotBroadcastEffects 挂载随 bot 任务广播链删除。
 
   useEffect(() => {
     // fork（F4.7）：OAuth 生命周期 hook 删除后仍需通知 Main renderer 已就绪；

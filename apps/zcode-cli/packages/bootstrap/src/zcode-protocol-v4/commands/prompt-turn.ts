@@ -5,7 +5,6 @@
 // starting/active 状态都会继续挡住同一 session 的第二次 start。
 import { type TurnBackgroundAttribution, type TurnInputIntentMetadata } from "@zcode/contracts";
 import type { TurnAttachment } from "@zcode/core";
-import type { ZCodeAutomationBotDeliveryTarget } from "@zcode/shared";
 import type { SendInputOptions, SendInputResult } from "../../app/types.js";
 import { runWithSessionResidencyFinalization } from "../../session-residency-lease.js";
 import type { V4CommandCoreHost, V4SessionRecordView } from "./types.js";
@@ -27,8 +26,8 @@ export interface StartPromptTurnParamsBase {
   requireQueue?: boolean;
   /** sendQueuedNow 已持有 Core promotion lease，要求这次 admission 只能占用空闲位。 */
   requireIdle?: boolean;
-  /** Bot 入站 turn 的稳定回推地址；仅在本 turn 内暴露给 CronCreate。 */
-  botDeliveryTarget?: ZCodeAutomationBotDeliveryTarget;
+  // fork（bots 移除）：botDeliveryTarget（Bot 入站 turn 的回推地址，供 CronCreate 读取）
+  // 随 bot channels 全量删除（specs/bot-channels-removal.md）。
 }
 
 export type StartPromptTurnParams = StartPromptTurnParamsBase & TurnBackgroundAttribution;
@@ -94,12 +93,12 @@ export async function startPromptTurn(
   if (record.persistence === "deferred") record.persistence = "immediate";
 
   const previousAutomationId = record.activeAutomationId;
-  const previousBotDeliveryTarget = record.activeBotDeliveryTarget;
   const activeAutomationId = resolveTurnAutomationId(params);
   const turnToolDisallowlist = buildTurnToolDisallowlist(params, activeAutomationId);
   if (activeAutomationId) record.activeAutomationId = activeAutomationId;
   // fork（F4.3）：activeOffPeakTaskId 标记随闲时任务全链路删除。
-  record.activeBotDeliveryTarget = params.botDeliveryTarget;
+  // fork（bots 移除）：record.activeBotDeliveryTarget 暂存随 bot channels 全量删除
+  // （specs/bot-channels-removal.md）。
 
   let admission: SendInputResult;
   try {
@@ -134,13 +133,13 @@ export async function startPromptTurn(
       },
     );
   } catch (error) {
-    clearPromptRecordState(record, previousAutomationId, previousBotDeliveryTarget);
+    clearPromptRecordState(record, previousAutomationId);
     await host.afterLegacyStateMutation?.(record, "prompt_failed");
     throw error;
   }
 
   if (admission.kind === "rejected") {
-    clearPromptRecordState(record, previousAutomationId, previousBotDeliveryTarget);
+    clearPromptRecordState(record, previousAutomationId);
     throw new V4PromptRejectedError(
       "activePrompt",
       `Core prompt admission rejected: ${admission.reason}`,
@@ -148,7 +147,7 @@ export async function startPromptTurn(
   }
 
   if (admission.kind === "queued") {
-    clearPromptRecordState(record, previousAutomationId, previousBotDeliveryTarget);
+    clearPromptRecordState(record, previousAutomationId);
     return { admission, turnStarted: Promise.resolve() };
   }
 
@@ -164,7 +163,7 @@ export async function startPromptTurn(
         sessionId: record.app.sessionId,
       });
     } finally {
-      clearPromptRecordState(record, previousAutomationId, previousBotDeliveryTarget);
+      clearPromptRecordState(record, previousAutomationId);
       await host.afterLegacyStateMutation?.(record, mutationReason);
     }
   });
@@ -181,11 +180,10 @@ export async function startPromptTurn(
 function clearPromptRecordState(
   record: V4SessionRecordView,
   previousAutomationId: string | undefined,
-  previousBotDeliveryTarget: V4SessionRecordView["activeBotDeliveryTarget"],
 ): void {
   record.activeAutomationId = previousAutomationId;
   // fork（F4.3）：activeOffPeakTaskId 还原随闲时任务全链路删除。
-  record.activeBotDeliveryTarget = previousBotDeliveryTarget;
+  // fork（bots 移除）：activeBotDeliveryTarget 还原随 bot channels 全量删除。
 }
 
 export function buildTurnToolDisallowlist(

@@ -72,7 +72,6 @@ import {
   getConversationMessageProjectionPolicy,
   isRemoteWorkspaceIdentity,
   parseRemoteWorkspaceIdentity,
-  type ZCodeAutomationBotDeliveryTarget,
   type ZCodeSessionCreateParams,
   type ZCodeDeliveryKind,
   type IntegratedTerminalShellSelection,
@@ -113,7 +112,8 @@ import { createWorkspaceZCodeApp, ensureSessionModelAvailable } from "./workspac
 import { buildAppUsageSnapshot, resolveTzOffsetMs } from "./usage-stats-builder.js";
 import { createProtocolInteractionBroker } from "./interaction-broker.js";
 import { createProtocolAutomationPort } from "./automation-port.js";
-import { createProtocolTopicResourcePort } from "./topic-resource-port.js";
+// fork（bots 移除）：createProtocolTopicResourcePort（bot 话题附件/渠道回复协议端口）随
+// bot channels 全量删除（specs/bot-channels-removal.md）。
 import { createProtocolBrowserControlBroker } from "./browser-control-broker.js";
 import { mapComputerUseOperationEvent } from "./computer-use-operation-event.js";
 import { protocolMcpServersToRuntimeMcpConfig } from "./protocol-mcp-config.js";
@@ -584,10 +584,9 @@ function mapProtocolPromptAttachment(attachment: unknown): TurnAttachment | unde
     if (localPath) {
       return {
         path: localPath,
-        ...(kind === "file" &&
-        (stringValue(record.sourceKind) === "clipboard-text" ||
-          stringValue(record.sourceKind) === "topic-history")
-          ? { sourceKind: stringValue(record.sourceKind) as "clipboard-text" | "topic-history" }
+        // fork（bots 移除）：原 "topic-history" sourceKind 还原随 bot channels 全量删除。
+        ...(kind === "file" && stringValue(record.sourceKind) === "clipboard-text"
+          ? { sourceKind: "clipboard-text" as const }
           : {}),
         type: "file",
         ...displayMeta,
@@ -2018,7 +2017,7 @@ export async function sendPrompt(context: ZCodeProtocolAgentServerContext, rawPa
       ...(params.automationId ? { automationId: params.automationId } : {}),
       // fork（F4.3）：offPeakTaskId/offPeakRunType 归因随闲时任务全链路删除。
       toolDenylist: params.toolDenylist,
-      botDeliveryTarget: params.botDeliveryTarget,
+      // fork（bots 移除）：botDeliveryTarget 透传随 bot channels 全量删除（specs/bot-channels-removal.md）。
     }),
   ).catch(() => {
     // 后台 turn 的错误会通过状态/事件流降级上报；这里兜底防止协议进程出现 unhandled rejection。
@@ -2390,7 +2389,7 @@ async function runPromptTurnInBackground(
     queryId?: QueryId;
     content: string;
     toolDenylist?: readonly string[];
-    botDeliveryTarget?: ZCodeAutomationBotDeliveryTarget;
+    // fork（bots 移除）：botDeliveryTarget 参数随 bot channels 全量删除（specs/bot-channels-removal.md）。
   } & TurnBackgroundAttribution,
 ): Promise<void> {
   const startedAt = Date.now();
@@ -2403,7 +2402,6 @@ async function runPromptTurnInBackground(
   });
   let mutationReason = "prompt_completed";
   const previousAutomationId = record.activeAutomationId;
-  const previousBotDeliveryTarget = record.activeBotDeliveryTarget;
   const activeAutomationId = resolvePromptTurnAutomationId(params);
   const turnToolDisallowlist = buildPromptTurnToolDisallowlist(params, activeAutomationId);
   if (activeAutomationId) {
@@ -2413,7 +2411,8 @@ async function runPromptTurnInBackground(
     record.activeAutomationId = activeAutomationId;
   }
   // fork（F4.3）：activeOffPeakTaskId 兜底标记随闲时任务全链路删除。
-  record.activeBotDeliveryTarget = params.botDeliveryTarget;
+  // fork（bots 移除）：record.activeBotDeliveryTarget 暂存/恢复随 bot channels 全量删除
+  // （specs/bot-channels-removal.md）。
   try {
     const admission = await record.app.sendInput(
       {
@@ -2472,9 +2471,8 @@ async function runPromptTurnInBackground(
     }
     record.activeAutomationId = previousAutomationId;
     // fork（F4.3）：activeOffPeakTaskId 恢复随闲时任务全链路删除。
-    // Bug 原因：legacy record 会跨 turn 复用；必须恢复 Bot 地址，避免后续普通 UI turn
-    // 创建的定时任务错误继承上一轮 Bot 会话。
-    record.activeBotDeliveryTarget = previousBotDeliveryTarget;
+    // fork（bots 移除）：原 previousBotDeliveryTarget 恢复（防普通 UI turn 的定时任务继承
+    // 上一轮 Bot 地址）随 bot channels 全量删除（specs/bot-channels-removal.md）。
   }
   await afterStateMutation(context, record, mutationReason);
 }
@@ -3369,7 +3367,7 @@ async function createRecord(
     // 这里把阻塞交互转换成 server-to-client JSON-RPC request，由 app 通过 response 释放 runtime。
     permissionBroker: createProtocolInteractionBroker(context),
     automationPort: createProtocolAutomationPort(context, () => ownSessionRecord),
-    topicResourcePort: createProtocolTopicResourcePort(context),
+    // fork（bots 移除）：topicResourcePort 注入随 bot channels 全量删除（specs/bot-channels-removal.md）。
     // fork（F4.3）：offPeakPort 注入（offPeakToolEnabled 门）随闲时任务全链路删除。
     resolveInitialBashShellSelection: startupPreferences.resolveInitialBashShellSelection,
     ...(startupPreferences.subagentRuntimeConfigEnabled &&

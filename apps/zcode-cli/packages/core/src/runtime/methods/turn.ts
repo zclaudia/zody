@@ -1,7 +1,8 @@
 import { beginLocalTurnPreparation, type LocalTtftDetail } from "@zcode/contracts";
 import { runtimeInputMetadata } from "../../agent/runtime-input-presentation.js";
 import { withConversationQuotes } from "../helpers/conversation-quotes.js";
-import { ensureGroupTaskPermissionScope } from "./input-intent-persistence.js";
+// fork（bots 移除）：原 ensureGroupTaskPermissionScope（bot 群任务会话级授权收紧）随
+// bot channels 全量删除（specs/bot-channels-removal.md）；权限审批管线本体保留。
 import {
   CoreErrorType,
   HookEventName,
@@ -295,7 +296,8 @@ export async function executeTurnCommand(
       turnMachine = new TurnMachineImpl(turnMachine.start());
       phaseStartedAt = startTurnPhase("session_persistence");
       await this.ensureSessionPersisted(displayInput, turnTraceContext);
-      await ensureGroupTaskPermissionScope(this.sessionStore, this.sessionId, options?.intent);
+      // fork（bots 移除）：原 ensureGroupTaskPermissionScope 调用随 bot channels 全量删除
+      // （specs/bot-channels-removal.md），普通输入不触发会话级授权收紧。
       // execution-scoped 临时 Provider（例如闲时任务）拥有本轮自己的模型，不改写
       // Session Selection；普通 Submission 才在真正开跑时应用其原子选择。
       const submissionModel = await applySubmissionExecutionState(
@@ -515,11 +517,8 @@ export async function executeTurnCommand(
         } else if (options?.skipInputRecord !== true) {
           this.messageHistory.addEntries(
             buildRuntimeUserEntriesFromTurn(
-              withConversationQuotes(
-                input,
-                options?.intent?.conversationQuotes,
-                options?.intent?.botGroupSource,
-              ),
+              // fork（bots 移除）：原第三参 botGroupSource 随 bot channels 全量删除（specs/bot-channels-removal.md）。
+              withConversationQuotes(input, options?.intent?.conversationQuotes),
               resolvedAttachments,
               {
                 browserAmbientContext: options?.browserAmbientContext,

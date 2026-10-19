@@ -4,7 +4,6 @@ import { WebSocket, type RawData } from "ws";
 import { Emitter, Event, SocketProtocol, VSBuffer, type ISocket } from "@zcode/rpc";
 import { ServiceCollection, ISystemService, IZCodeAgentService } from "@zcode/services";
 import { createHttpServer } from "@zcode/server";
-import { createTopicResourcePeers, createTopicResourceRelayChannel } from "@zcode/services/node";
 import { connectViaProtocol, connectViaWebSocket } from "@zcode/client";
 import {
   connectServerRemote,
@@ -124,48 +123,10 @@ describe("server remote connection", () => {
     });
   });
 
-  it("routes reverse resource RPC to the exact authenticated Desktop peer and removes it on close", async () => {
-    const peers = createTopicResourcePeers();
-    const services = new ServiceCollection().register(IZCodeAgentService, {
-      queryConversationCommandsV4: async () => ({ results: [] }),
-    } as never);
-    const server = createHttpServer(services, 0, { topicResourcePeers: peers });
-    servers.push(server);
-    const address = server.address() as AddressInfo;
-    const validate = vi.fn(async () => undefined);
-    const relay = createTopicResourceRelayChannel({
-      validate,
-      read: async () => {
-        throw new Error("Not requested");
-      },
-    });
-    const connection = await connectServerRemote(
-      { kind: "server", url: `http://127.0.0.1:${address.port}` },
-      { topicResourceChannel: relay.channel },
-    );
-    disposables.push(connection, relay);
-    const request = {
-      requestId: "r",
-      taskId: "t",
-      inputId: "i",
-      authorizationId: "a",
-      messageId: "m",
-      resourceIndex: 0,
-      workspacePath: "/work",
-      workspaceIdentity: "server://host/work",
-      remoteSessionId: "remote-a",
-    };
-    await connection.services.zcodeAgentService.queryConversationCommandsV4({
-      ...request,
-      commands: [],
-    });
-    expect(await peers.getChannel(request).call("validate", request)).toEqual({ valid: true });
-    expect(validate).toHaveBeenCalledOnce();
-    expect(() => peers.getChannel({ ...request, remoteSessionId: "other" })).toThrow();
-    connection.dispose();
-    await vi.waitFor(() => expect(() => peers.getChannel(request)).toThrow());
-  });
-
+  // fork（bot channels 移除）：原「routes reverse resource RPC to the exact authenticated
+  // Desktop peer and removes it on close」用例验证的 TOPIC_RESOURCE_RELAY_CHANNEL 反向 relay
+  // 是第三方 IM bot 资源回传链，随 bot channels 整体删除（serverRemoteConnection.ts 的
+  // topicResourceChannel 参数与 server 端 topicResourcePeers 选项已移除）。
   it("connects to a running zcode server over websocket RPC", async () => {
     const info = vi.fn(async () => ({
       homedir: "/home/dev",

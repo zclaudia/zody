@@ -6,10 +6,9 @@ import { seedSettings, waitForDefaultWorkspaceReady } from "../helpers/desktop-a
  * RC-E2E-DIALOG-02（T4.1）：远控弹层只展示 App 级远程访问状态并提供快捷开关。
  *
  * 旧弹层在打开时自动启动 relay 会话并生成二维码；改走 gateway 后，开关、gateway 地址和
- * backend 凭证都归设置页管理。这条用例锁住三件事：
+ * backend 凭证都归设置页管理。这条用例锁住两件事：
  * 1. 打开弹层不会启动任何远控会话（没有二维码/链接）；
- * 2. 弹层展示全局 gateway 与手机状态；
- * 3. Bot Channel 入口保持可用。
+ * 2. 弹层展示全局 gateway 与手机状态。
  */
 // 侧边栏入口和弹层文案都由 locale 决定：同时接受中英文标签，避免 locale 未生效时误判入口不存在。
 const REMOTE_CONTROL_TRIGGER =
@@ -20,8 +19,6 @@ const REMOTE_ACCESS_SWITCH = '[data-testid="web-remote-control-remote-access-swi
 const GATEWAY_STATUS = '[data-testid="web-remote-control-gateway-status"]';
 const MOBILE_STATUS = '[data-testid="web-remote-control-mobile-status"]';
 const SETTINGS_HINT = '[data-testid="web-remote-control-settings-hint"]';
-const OPEN_BOTS_ENTRY = '[data-testid="web-remote-control-open-bots"]';
-const BOTS_DIALOG_TITLE = "机器人";
 
 async function openRemoteControlDialog() {
   await browser.waitUntil(async () => (await $(REMOTE_CONTROL_TRIGGER)).isExisting(), {
@@ -37,7 +34,9 @@ async function openRemoteControlDialog() {
 }
 
 describe("远控弹层展示全局远程访问状态", () => {
-  it("打开弹层不启动远控，展示全局状态并保留 Bots 入口", async () => {
+  // fork（bot channels 移除）：Bots 入口与 web-remote-control-open-bots testid 已随
+  // bot channels 删除，原「保留 Bots 入口」断言一并移除；远控弹窗本体改为单列布局。
+  it("打开弹层不启动远控，展示全局状态", async () => {
     await dismissOccupationOnboarding();
     await seedSettings({
       locale: "zh-CN",
@@ -70,20 +69,6 @@ describe("远控弹层展示全局远程访问状态", () => {
     await browser.pause(3000);
     expect(await remoteAccessSwitch.getAttribute("data-state")).toBe("unchecked");
     expect(await $(GATEWAY_STATUS).getAttribute("data-state")).toBe("disabled");
-
-    // Bots 入口抽成独立组件后 data-testid 不变，并且仍然能打开 Bots 弹窗。
-    const openBots = await $(OPEN_BOTS_ENTRY);
-    await openBots.waitForClickable({ timeout: 20000 });
-    await openBots.click();
-    await browser.waitUntil(
-      () =>
-        browser.execute((titleText) => {
-          return Array.from(document.querySelectorAll<HTMLElement>("[role=dialog]")).some(
-            (candidate) => Boolean(candidate.textContent?.includes(titleText)),
-          );
-        }, BOTS_DIALOG_TITLE),
-      { interval: 500, timeout: 20000, timeoutMsg: "Bots 入口没有打开 Bots 弹窗" },
-    );
 
     const artifactDir = process.env.ZCODE_E2E_ARTIFACT_DIR?.trim();
     if (artifactDir) {

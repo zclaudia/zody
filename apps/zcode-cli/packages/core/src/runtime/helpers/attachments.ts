@@ -113,10 +113,7 @@ async function resolveTurnAttachment(
     };
   }
 
-  if (
-    attachment.content &&
-    (attachment.sourceKind === "topic-history" || attachment.sourceKind === "clipboard-text")
-  ) {
+  if (attachment.content && attachment.sourceKind === "clipboard-text") {
     // 上传后的文本材料在所属 runtime 落盘，禁止解码后当正文注入，也不使用 Host 本机路径。
     const inline = await readInlineAttachmentContent(attachment, options);
     const write = options.artifactStore?.writeToolResultBinaryArtifact?.bind(options.artifactStore);
@@ -146,10 +143,8 @@ async function resolveTurnAttachment(
       filename: attachment.filename,
       mime: "text/plain",
       sizeBytes: data.length,
-      reason:
-        attachment.sourceKind === "topic-history"
-          ? "deferred_topic_history"
-          : "deferred_clipboard_text",
+      // fork（bots 移除）：原 "deferred_topic_history" 分支随 bot channels 全量删除。
+      reason: "deferred_clipboard_text",
     });
   }
   if (attachment.content) {
@@ -281,7 +276,7 @@ async function resolveLocalFileAttachment(
       });
     }
 
-    if (attachment.sourceKind === "clipboard-text" || attachment.sourceKind === "topic-history") {
+    if (attachment.sourceKind === "clipboard-text") {
       // 长粘贴文本已经落成临时文件，预读会重新把正文塞进 prompt_attachment 系统提示。
       // 这里只交付真实本地附件引用，等模型明确需要时再通过文件读取工具进入上下文。
       return resolvedPathReferenceAttachment(attachment, attachment.path!, {
@@ -289,10 +284,8 @@ async function resolveLocalFileAttachment(
         mime,
         sizeBytes: stat.sizeBytes,
         source,
-        reason:
-          attachment.sourceKind === "topic-history"
-            ? "deferred_topic_history"
-            : "deferred_clipboard_text",
+        // fork（bots 移除）：原 "deferred_topic_history" 分支随 bot channels 全量删除。
+        reason: "deferred_clipboard_text",
       });
     }
 

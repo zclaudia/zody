@@ -16,7 +16,6 @@ import { useRemoteAccessStatus } from "@/hooks/useRemoteAccessStatus.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { getGatewayStatusDotClassName, getGatewayStatusLabelId } from "@/remoteAccessStatusUi.js";
-import { WebRemoteControlBotsEntry } from "@/WebRemoteControlBotsEntry.js";
 
 function getFailureDescription(
   failure: WebRemoteControlFailure | undefined,
@@ -90,7 +89,9 @@ function getRemoteAccessStatusSummary(
  * 远控弹层（T4.1）。
  *
  * 只展示 App 级远程访问状态并提供快捷开关：gateway 地址、namespace 和 backend 凭证都在
- * 设置页配置，这里不再生成二维码，也不会在打开弹层时自动启动远控。Bot Channel 入口保留。
+ * 设置页配置，这里不再生成二维码，也不会在打开弹层时自动启动远控。
+ * 原 Bot Channel 入口卡已随 bot channels 功能整体移除（specs/bot-channels-removal.md），
+ * 弹层由双列网格回归单列，宽度同步收窄（原 max-w-4xl 为双列等高设计）。
  */
 export const WebRemoteControlDialog = memo(function WebRemoteControlDialogComponent({
   open,
@@ -222,7 +223,7 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-h-[calc(100vh-6rem)] max-w-4xl gap-0 overflow-hidden rounded-2xl p-0"
+        className="max-h-[calc(100vh-6rem)] max-w-xl gap-0 overflow-hidden rounded-2xl p-0"
       >
         <Button
           type="button"
@@ -252,13 +253,11 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
             </div>
           </DialogHeader>
 
-          <div
-            data-testid="web-remote-control-main-grid"
-            className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1.45fr)_minmax(300px,1fr)]"
-          >
+          {/* bot channels 移除后右列入口卡删除（specs/bot-channels-removal.md），保留 main-grid testid 供布局测试与远控链路断言。 */}
+          <div data-testid="web-remote-control-main-grid" className="mt-5 grid gap-4">
             <section
               data-testid="web-remote-control-status-card"
-              className="flex min-h-[360px] flex-col rounded-xl border border-border bg-card p-4"
+              className="flex flex-col rounded-xl border border-border bg-card p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-2">
@@ -362,11 +361,6 @@ export const WebRemoteControlDialog = memo(function WebRemoteControlDialogCompon
                 {intl.formatMessage({ id: "webRemoteControl.remoteAccess.managedInSettings" })}
               </div>
             </section>
-
-            <WebRemoteControlBotsEntry
-              workspacePath={workspacePath}
-              workspaceIdentity={workspaceIdentity}
-            />
           </div>
         </div>
       </DialogContent>

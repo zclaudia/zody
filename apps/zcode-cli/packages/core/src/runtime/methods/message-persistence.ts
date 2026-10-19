@@ -120,11 +120,8 @@ export async function persistUserPrompt(
       sessionID: this.sessionId,
       messageID,
       type: "text",
-      text: withConversationQuotes(
-        input,
-        options?.intent?.conversationQuotes,
-        options?.intent?.botGroupSource,
-      ),
+      // fork（bots 移除）：原第三参 botGroupSource 随 bot channels 全量删除（specs/bot-channels-removal.md）。
+      text: withConversationQuotes(input, options?.intent?.conversationQuotes),
       time: {
         start: created,
         end: created,

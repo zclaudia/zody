@@ -573,12 +573,8 @@ export interface EmbeddedBrowserSitePermissionResetRequest {
   origin: string;
 }
 
-export interface BotRemoteWorkspaceReconnectedEvent {
-  sessionId: string;
-  workspacePath: string;
-  workspaceIdentity: string;
-  target: RemoteTarget;
-}
+// fork（bots移除）：Bot 远端 workspace 重连成功事件类型随第三方 IM bot channels 全量删除
+// （specs/bot-channels-removal.md）；手机远控 gateway 链路的 RemoteTarget/事件设施不受影响。
 
 export interface ConnectRemoteRequest {
   target: RemoteTarget;
@@ -767,10 +763,7 @@ export interface IPlatformService {
   /** 订阅远程 workspace session 关闭事件，返回 disposer */
   onRemoteSessionClosed(handler: (event: RemoteSessionClosedEvent) => void): () => void;
 
-  /** 订阅 Bot 触发的远程 workspace 重连成功事件，返回 disposer */
-  onBotRemoteWorkspaceReconnected(
-    handler: (event: BotRemoteWorkspaceReconnectedEvent) => void,
-  ): () => void;
+  // fork（bots移除）：Bot 触发的远程 workspace 重连成功订阅随第三方 IM bot channels 全量删除。
 
   /** 检查目录是否已在其他窗口打开；如果是则激活该窗口并切到对应 tab */
   activateOrSetWorkspace(path: string): Promise<{ activated: boolean }>;

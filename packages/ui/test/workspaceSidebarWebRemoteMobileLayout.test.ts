@@ -77,10 +77,6 @@ vi.mock("@/TaskSearchDialog.js", () => ({
   TaskSearchDialog: () => null,
 }));
 
-vi.mock("@/BotsDialog.js", () => ({
-  BotsDialog: () => null,
-}));
-
 vi.mock("@/WebRemoteControlTaskIndex.js", () => ({
   WebRemoteControlTaskIndex: ({
     renderBeforePinnedTasks,
@@ -222,7 +218,6 @@ describe("WorkspaceSidebar Web remote mobile layout", () => {
     // 这里显式断言缺失，防止回归到“同屏两段列表”。
     expect(html).not.toContain('data-testid="workspace-sidebar-item"');
     expect(html).toContain("max-md:hidden");
-    expect(html).not.toContain("bots.title");
     expect(html).not.toContain("workspace.openWorkspace");
 
     const newTaskIndex = html.indexOf('data-testid="new-task-button-group"');

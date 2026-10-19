@@ -105,6 +105,12 @@ vi.mock("@zcode/shared", () => ({
     return envMock.value === "production" ? "production" : "preview";
   },
   isDesktopAutoUpdateActive: () => envMock.autoUpdateActive,
+  // Bugfix: 774ac7ec 把缩放档位规则移到 @zcode/shared（desktopZoom.ts 变为 re-export），
+  // 本用例的 shared mock 未同步补齐，desktopApplicationMenu 无条件调用 clampDesktopZoomLevel 时
+  // 拿到 undefined 直接 TypeError。此处按 shared/desktopZoom.ts 原实现如实补入（-3..5 档位）。
+  DESKTOP_ZOOM_MIN_LEVEL: -3,
+  DESKTOP_ZOOM_MAX_LEVEL: 5,
+  clampDesktopZoomLevel: (level: number) => Math.min(5, Math.max(-3, level)),
   getDesktopMenuMessage: (_locale: string, id: string) => {
     const enLabels: Record<string, string> = {
       "titleBar.menu.help.zcodeEndpoint": "ZCode Endpoint",

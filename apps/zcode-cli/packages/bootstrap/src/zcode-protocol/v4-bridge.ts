@@ -243,7 +243,7 @@ async function previewConversationFileRewind(
 interface InputCommandForAdmission {
   inputOrigin?: "desktop" | "mobile";
   conversationQuotes?: import("@zcode/contracts").TurnInputIntentMetadata["conversationQuotes"];
-  botGroupSource?: ConversationInputIntent["botGroupSource"];
+  // fork（bots 移除）：botGroupSource 字段随 bot channels 全量删除（specs/bot-channels-removal.md）。
   kind: ConversationInputIntent["kind"];
   text: string;
   attachments: readonly AttachmentRef[];
@@ -325,7 +325,7 @@ export function resolveInputCommandForAdmission(
       context_refs?: ConversationInputIntent["sharedContextRefs"];
       inputOrigin?: "desktop" | "mobile";
       conversationQuotes?: import("@zcode/contracts").TurnInputIntentMetadata["conversationQuotes"];
-      botGroupSource?: ConversationInputIntent["botGroupSource"];
+      // fork（bots 移除）：payload.botGroupSource 读取随 bot channels 全量删除（specs/bot-channels-removal.md）。
     };
     return {
       kind: envelope.type,
@@ -334,7 +334,6 @@ export function resolveInputCommandForAdmission(
       ...(payload.context_refs ? { sharedContextRefs: payload.context_refs } : {}),
       ...(payload.inputOrigin ? { inputOrigin: payload.inputOrigin } : {}),
       ...(payload.conversationQuotes ? { conversationQuotes: payload.conversationQuotes } : {}),
-      ...(payload.botGroupSource ? { botGroupSource: payload.botGroupSource } : {}),
     };
   }
   if (envelope.type === "compact") {
@@ -361,7 +360,7 @@ export function resolveInputCommandForAdmission(
     ...((payload.conversationQuotes ?? canonical.intent.conversationQuotes)
       ? { conversationQuotes: payload.conversationQuotes ?? canonical.intent.conversationQuotes }
       : {}),
-    ...(canonical.intent.botGroupSource ? { botGroupSource: canonical.intent.botGroupSource } : {}),
+    // fork（bots 移除）：原 canonical.intent.botGroupSource 沿传随 bot channels 全量删除。
     text:
       envelope.type === "editUserQuery"
         ? (payload.newText ?? canonical.intent.text)
@@ -419,7 +418,7 @@ function buildForkInitialInput(
     kind: input.kind,
     ...(input.inputOrigin ? { inputOrigin: input.inputOrigin } : {}),
     ...(input.conversationQuotes ? { conversationQuotes: input.conversationQuotes } : {}),
-    ...(input.botGroupSource ? { botGroupSource: input.botGroupSource } : {}),
+    // fork（bots 移除）：fork initial input 的 botGroupSource 装配随 bot channels 全量删除。
     text: input.text,
     attachments: input.attachments,
     delivery: {
@@ -762,7 +761,7 @@ export function createConversationV4Gateway(
       const conversationInputIntent = conversationInputIntentSchema.parse({
         ...(input.inputOrigin ? { inputOrigin: input.inputOrigin } : {}),
         ...(input.conversationQuotes ? { conversationQuotes: input.conversationQuotes } : {}),
-        ...(input.botGroupSource ? { botGroupSource: input.botGroupSource } : {}),
+        // fork（bots 移除）：admission intent 的 botGroupSource 装配随 bot channels 全量删除。
         sourceCommandId: envelope.commandId,
         queueItemId: admission.queueItemId,
         clientId: envelope.clientId || "cli",

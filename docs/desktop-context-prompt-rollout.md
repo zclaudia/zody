@@ -103,9 +103,10 @@ app.whenReady
    - `spawnHostProcess` 签名/返回类型**不变**，`spawnLocalHost` 保持同步。
 
 4. **Remote 路径**（`desktopRemoteSessions.ts`）
-   - `createRemoteWorkspaceSession`（覆盖 SSH/WSL/Dedicated 三个 fork 点）与
-     `createBotRemoteWorkspaceRuntimePort`（第 4 个 fork 点，不经 createRemoteWorkspaceSession）
+   - `createRemoteWorkspaceSession`（覆盖 SSH/WSL/Dedicated 三个 fork 点）
      在 `appShutdownStarted` 检查之后 await gate。
+   - （fork 注：原文的第 4 个 fork 点 `createBotRemoteWorkspaceRuntimePort` 随 bot channels
+     移除整体删除，见 `specs/bot-channels-removal.md`；gate 只需覆盖剩余三个 fork 点。）
    - **teardown re-check**：参考 `:1841` 既有"跨 await 期间窗口/app 可能 teardown"防护，await 越过点后
      必须重新校验 `appShutdownStarted` 与 `win.isDestroyed()`，命中则 throw，禁止在退出 barrier 之外再 fork。
    - `spawnHostProcess` 签名/类型**不变**，4 个 fork 点无需 async 化、无 pool 连带改动。

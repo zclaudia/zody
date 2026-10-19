@@ -1,7 +1,7 @@
-import { BotChannelMessageContent } from "@/v4/ChannelMentionContent.js";
+// fork（bot-channels 移除）：BotChannelMessageContent（ChannelMentionContent）与
+// BotGroupSourceLabel 引用随 bot channel 渲染链删除（specs/bot-channels-removal.md）。
 import { parsePromptConversationSelections } from "@/lib/conversationSelectionReference.js";
 import { ConversationSelectionReferenceChip } from "@/v4/composer/ConversationSelectionReferenceChip.js";
-import { BotGroupSourceLabel } from "@/v4/BotGroupSourceLabel.js";
 import {
   closestCenter,
   DndContext,
@@ -141,14 +141,8 @@ const QueueRow = memo(function QueueRow({
     ...parsePromptConversationSelections(item.text),
     ...(item.conversationQuotes ? { references: item.conversationQuotes } : {}),
   };
-  const attachmentNames = item.attachments.map((attachment) =>
-    attachment.sourceKind === "topic-history"
-      ? intl.formatMessage(
-          { id: "chat.attachments.topicHistory" },
-          { count: attachment.messageCount ?? 0 },
-        )
-      : attachment.fileName,
-  );
+  // fork（bots 移除）：原 "topic-history" 话题历史标签分支随 bot channels 全量删除。
+  const attachmentNames = item.attachments.map((attachment) => attachment.fileName);
   const {
     attributes,
     isDragging,
@@ -221,13 +215,9 @@ const QueueRow = memo(function QueueRow({
         title={parsedInput.visibleContent}
       >
         <span className="flex min-w-0 flex-col">
-          <BotGroupSourceLabel source={item.botGroupSource} />
-          <span className="truncate">
-            <BotChannelMessageContent
-              source={isCompact ? undefined : item.botGroupSource}
-              text={isCompact ? "/compact" : parsedInput.visibleContent}
-            />
-          </span>
+          {/* fork（bot-channels 移除）：BotGroupSourceLabel 来源标签与 BotChannelMessageContent
+              富文本分支随 bot channel 删除，队列项正文回落纯文本。 */}
+          <span className="truncate">{isCompact ? "/compact" : parsedInput.visibleContent}</span>
           {parsedInput.references.length ? (
             <ConversationSelectionReferenceChip references={parsedInput.references} />
           ) : null}

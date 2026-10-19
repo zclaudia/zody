@@ -17,7 +17,8 @@ import { createHostDatabaseStartup } from "./hostDatabaseStartup.js";
 import { createHostNetworkCapture } from "./hostNetworkCapture.js";
 import { randomUUID } from "node:crypto";
 import { createPluginSandboxRegistrationBridge } from "./pluginSandbox/index.js";
-import { createWindowTopicResourceRelay } from "./windowTopicResourceRelay.js";
+// fork（bot channels 移除，specs/bot-channels-removal.md）：windowTopicResourceRelay
+// 随第三方 IM bot 的 topic/resource 反向 relay 删除；ChannelClient/反向 attach 结构由 server 侧保留。
 import {
   MessagePortProtocol,
   ChannelServer,
@@ -34,7 +35,6 @@ import { createBrowserControlMainBridge } from "./browserControlMainBridge.js";
 import { materializeBrowserRecordingArtifact } from "./browserRecordingArtifactMaterializer.js";
 import {
   ServiceCollection,
-  IBotsService,
   IFileService,
   IClientConfigService,
   IMediaPreviewService,
@@ -112,7 +112,6 @@ import {
   createRemoteMediaPreviewProxy,
   type RemoteMediaPreviewProxy,
 } from "./remoteMediaPreviewProxy.js";
-import { watchCronRunBotDelivery } from "./cronBotDelivery.js";
 import { createHostRemoteWorkspaceProxyState } from "./hostRemoteWorkspaceProxyState.js";
 import {
   createRemoteWorkspaceServiceCollection,
@@ -137,7 +136,6 @@ import {
   materializeRemotePromptAttachments,
 } from "./remotePromptAttachments.js";
 import { connectServerRemote, type ServerRemoteConnection } from "./serverRemoteConnection.js";
-import { bindBotGroupTaskScope } from "./botGroupTaskScope.js";
 import { createWindowHostAttachmentRegistry } from "./windowHostAttachmentRegistry.js";
 import {
   createWindowRemoteConnectionRegistry,
@@ -593,27 +591,9 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
         mode: request.mode,
       });
     }
-    const botsService = targetServices.getOptional(IBotsService);
-    if (botsService) {
-      try {
-        await watchCronRunBotDelivery({
-          automationId: request.automationId,
-          runId: promptTraceId,
-          workspaceKey,
-          workspacePath: request.workspacePath,
-          ...(request.workspaceIdentity ? { workspaceIdentity: request.workspaceIdentity } : {}),
-          taskId: task.taskId,
-          repo: cronAutomationRepo,
-          botsService,
-        });
-      } catch (error) {
-        // Bot 回推是 best-effort 辅助通道；配置/凭据/订阅失败不能阻断 automation 派发与结算。
-        logger.warn(
-          `automation Bot delivery subscription failed automation=${request.automationId} provider=unknown`,
-          error,
-        );
-      }
-    }
+    // fork（bot channels 移除，specs/bot-channels-removal.md）：cron 回推订阅
+    // watchCronRunBotDelivery 随第三方 IM bot 投递链删除；automation 派发主链
+    // （createTask→resumeTask→sendPrompt）与结算保持不变。
     trackedKey = cronRunSubscriptionKey(task.taskId, promptTraceId);
     trackCronRunOutcome({
       zcodeTaskService,
@@ -967,7 +947,9 @@ function createReportingRemoteZCodeTaskService<T extends object>(
     const leaseResult = await taskRealtimePort
       .acquireTaskRunLease(mirrorTarget)
       .catch((error: unknown) => {
-        logger.warn("Bot remote runtime realtime lease failed:", error);
+        // fork（bot channels 移除）：本镜像服务手机 web-remote-replayable 恢复链路，
+        // 日志措辞同步去掉原「Bot remote runtime」历史叫法，行为不变。
+        logger.warn("Remote replayable runtime realtime lease failed:", error);
         return null;
       });
     if (!leaseResult?.acquired) {
@@ -1328,44 +1310,32 @@ async function createWindowRemoteConnectionHandle(params: {
     throw new Error("远程连接已取消");
   }
   const closeListeners = new Set<(event: WindowRemoteConnectionCloseEvent) => void>();
-  let peerServices: ServiceCollection | undefined;
-  const topicResourceRelay = createWindowTopicResourceRelay({
-    getPeerServices: () => peerServices,
-    resolveServices: (scope) => windowRemoteConnectionRegistry.resolveScopedServices(scope),
-    getBots: () => activeServices?.getOptional(IBotsService),
-  });
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：windowTopicResourceRelay
+  // 与 peerServices 关联只服务 bot 的 topic/resource 反向 relay，随功能删除；
+  // ChannelClient/反向 attach 结构由 server 侧保留。
   const notifyClose = (event: WindowRemoteConnectionCloseEvent) => {
-    topicResourceRelay?.dispose();
     for (const listener of closeListeners) {
       listener(event);
     }
   };
   let connection: HostRemoteConnection;
-  try {
-    connection =
-      params.target.kind === "server"
-        ? await connectServerRemote(params.target, {
-            topicResourceChannel: topicResourceRelay.channel,
-            onClose: ({ code, reason }) =>
-              notifyClose({ exitCode: code, signal: null, ...(reason ? { error: reason } : {}) }),
-          })
-        : await setupRemoteConnection(
-            params.target,
-            params.remoteAssets,
-            { fetch: requireActiveHostApiNetworkTransport().fetch },
-            await resolveDesktopRemoteRuntimeNetwork(params.target),
-            (exitCode) => notifyClose({ exitCode, signal: null }),
-            params.target.kind === "ssh" ? "caller-serialized" : "remote",
-            params.target.kind === "ssh" ? params.signal : undefined,
-            topicResourceRelay?.channel,
-          );
-  } catch (error) {
-    topicResourceRelay?.dispose();
-    throw error;
-  }
+  connection =
+    params.target.kind === "server"
+      ? await connectServerRemote(params.target, {
+          onClose: ({ code, reason }) =>
+            notifyClose({ exitCode: code, signal: null, ...(reason ? { error: reason } : {}) }),
+        })
+      : await setupRemoteConnection(
+          params.target,
+          params.remoteAssets,
+          { fetch: requireActiveHostApiNetworkTransport().fetch },
+          await resolveDesktopRemoteRuntimeNetwork(params.target),
+          (exitCode) => notifyClose({ exitCode, signal: null }),
+          params.target.kind === "ssh" ? "caller-serialized" : "remote",
+          params.target.kind === "ssh" ? params.signal : undefined,
+        );
 
   if (params.signal.aborted) {
-    topicResourceRelay?.dispose();
     await disposeHostRemoteConnection(connection);
     throw new Error("远程连接已取消");
   }
@@ -1437,7 +1407,6 @@ async function createWindowRemoteConnectionHandle(params: {
     );
   }
 
-  peerServices = services;
   let disposed = false;
   // 远端 workspace 的 CLI 与 MCP 样本走与本地同一条路径：远端 zcode-server → 本地 Host → main。
   // 订阅寿命等于这份远端 services 的寿命：由 connection handle 持有，registry 释放 entry
@@ -1490,7 +1459,6 @@ async function createWindowRemoteConnectionHandle(params: {
         return;
       }
       disposed = true;
-      topicResourceRelay?.dispose();
       closeListeners.clear();
       resourceTelemetry.dispose();
       await disposeServiceResourcesAndWait(services);
@@ -1720,18 +1688,9 @@ function createControllerRoutedTaskService(
         };
       }
       const value = Reflect.get(target, property, receiver) as unknown;
-      if (
-        typeof value === "function" &&
-        [
-          "getBotGroupTaskBlockReason",
-          "cancelBotGroupInput",
-          "submitBotGroupInput",
-          "readBotTopicSummaries",
-        ].includes(String(property))
-      ) {
-        return (params: Record<string, unknown>) =>
-          value.call(target, bindBotGroupTaskScope(params, attachmentScope));
-      }
+      // fork（bot channels 移除，specs/bot-channels-removal.md）：bot 群四方法
+      // （getBotGroupTaskBlockReason/cancelBotGroupInput/submitBotGroupInput/readBotTopicSummaries）
+      // 的 bindBotGroupTaskScope 包装随第三方 IM bot 群协作删除。
       return typeof value === "function" ? value.bind(target) : value;
     },
   });
@@ -2435,15 +2394,9 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
     return;
   }
 
-  if (
-    msg.type === HostMessageTypes.BotRemoteWorkspaceReconnectResult ||
-    msg.type === HostMessageTypes.BotRemoteWorkspaceConnectionStatusResult ||
-    msg.type === HostMessageTypes.BotRemoteWorkspaceRuntimePort
-  ) {
-    // Bugfix: Bot bridge 也监听 parentPort，main 回传的 runtime MessagePort 是给 Bot 作为
-    // 远端 RPC client 使用的。host 入口必须跳过这些控制消息，避免误把同一个端口注册成 ChannelServer。
-    return;
-  }
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：parentPort 上的
+  // BotRemoteWorkspace{ReconnectResult,ConnectionStatusResult,RuntimePort} 跳过分支随
+  // bot 远端 workspace bridge 删除；下方 AttachServicePort 处理保持不动。
 
   if (msg.type === HostMessageTypes.AttachServicePort) {
     if (!port) {
@@ -2671,7 +2624,6 @@ async function setupRemoteConnection(
   onDidRemoteClose: (exitCode: number) => void,
   deployLockMode: DeployLockMode = "remote",
   signal?: AbortSignal,
-  topicResourceChannel?: ReturnType<typeof createWindowTopicResourceRelay>["channel"],
 ): Promise<HostRemoteConnection> {
   if (target.kind === "server") {
     throw new Error("server remote target must use the server remote connector");
@@ -2680,8 +2632,9 @@ async function setupRemoteConnection(
   const { createRemoteBackend, connectRemote, pickRemoteRuntimeEnv } =
     await import("@zcode/server/remote");
   const backend = await createRemoteBackend(target);
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：connectRemote 的
+  // topicResourceChannel 透传随 bot topic/resource 反向 relay 删除。
   const connection = await connectRemote(backend, {
-    topicResourceChannel,
     ...remoteAssets,
     remoteAssetNetwork,
     remoteRuntimeNetwork,

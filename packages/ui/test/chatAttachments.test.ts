@@ -47,15 +47,21 @@ const OVERSIZED_INLINE_PDF_BASE64 = "A".repeat(
 );
 
 describe("serializeChatComposerAttachment", () => {
-  it("keeps deferred text source metadata in Web file serialization", async () => {
+  // fork（bots 移除）：原用例以已删除的 "topic-history" 为载体；改用存活的 "clipboard-text"
+  // 验证同一序列化元数据透传行为（specs/bot-channels-removal.md）。
+  it("keeps attachment source metadata in Web file serialization", async () => {
     const file = createClipboardTextComposerAttachment("original text");
     expect(
       await serializeChatComposerAttachment({
         ...file,
-        sourceKind: "topic-history",
+        sourceKind: "clipboard-text",
         messageCount: 2,
       }),
-    ).toMatchObject({ sourceKind: "topic-history", messageCount: 2, textContent: "original text" });
+    ).toMatchObject({
+      sourceKind: "clipboard-text",
+      messageCount: 2,
+      textContent: "original text",
+    });
   });
   it("文本文件会作为普通 file 附件序列化，并保留可读内容", async () => {
     const file = new File(["hello zcode"], "notes.txt", {

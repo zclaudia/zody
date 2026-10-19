@@ -33,13 +33,13 @@ function setup() {
   };
   const report = vi.fn();
   const taskKey = Symbol(),
-    modelKey = Symbol(),
-    botsKey = Symbol();
+    modelKey = Symbol();
   const selection = { providerId: "test", modelId: "test" };
   const dispatch = createDispatch({
     IZCodeTaskService: taskKey,
     IModelSelectionService: modelKey,
-    IBotsService: botsKey,
+    // fork（bot channels 移除，specs/bot-channels-removal.md）：IBotsService 依赖随
+    // cron 回推订阅（watchCronRunBotDelivery）删除。
     resolveAutomationTargetServices: () => ({
       getOptional: (key: symbol) => (key === taskKey ? service : key === modelKey ? {} : undefined),
     }),

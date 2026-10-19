@@ -400,35 +400,8 @@ describe("ZCode Protocol", () => {
   // fork（F4.3）：Off-Peak turn attribution 用例（offPeakTaskId/offPeakRunType 互斥校验）
   // 随闲时任务全链路删除；session/send schema 中的对应字段与 superRefine 一并移除。
 
-  it("session/send and automation/create validate the bot delivery target strictly", () => {
-    const botDeliveryTarget = {
-      provider: "weixin" as const,
-      botId: "bot-weixin",
-      providerUserId: "chat-1",
-      chatType: "private" as const,
-    };
-    expect(
-      zcodeSessionSendParamsSchema.parse({
-        sessionId: "sess_1",
-        content: "创建定时任务",
-        botDeliveryTarget,
-      }).botDeliveryTarget,
-    ).toEqual(botDeliveryTarget);
-    expect(
-      zcodeAutomationCreateParamsSchema.parse({
-        cronExpr: "0 9 * * *",
-        prompt: "日报",
-        botDeliveryTarget,
-      }).botDeliveryTarget,
-    ).toEqual(botDeliveryTarget);
-    expect(() =>
-      zcodeAutomationCreateParamsSchema.parse({
-        cronExpr: "0 9 * * *",
-        prompt: "日报",
-        botDeliveryTarget: { ...botDeliveryTarget, provider: "discord" },
-      }),
-    ).toThrow();
-  });
+  // fork（bots移除）：定时任务 Bot 回推目标的严格校验用例随第三方 IM bot channels 全量删除
+  // （specs/bot-channels-removal.md）；session/send 与 automation/create 的对应字段已摘除。
 
   it("keeps protocol methods session-first and private", () => {
     const methods = Object.values(zcodeProtocolMethods);

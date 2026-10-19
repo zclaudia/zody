@@ -1,4 +1,3 @@
-import type { SessionStorePort, SessionId } from "@zcode/contracts";
 import type { TurnInputIntentMetadata } from "../deps.js";
 
 /**
@@ -24,7 +23,8 @@ export function buildPersistedConversationInputIntent(
   return {
     ...(intent.inputOrigin ? { inputOrigin: intent.inputOrigin } : {}),
     ...(intent.conversationQuotes ? { conversationQuotes: intent.conversationQuotes } : {}),
-    ...(intent.botGroupSource ? { botGroupSource: intent.botGroupSource } : {}),
+    // fork（bots 移除）：原 intent.botGroupSource 持久化透传随 bot channels 全量删除
+    // （specs/bot-channels-removal.md）；存量 transcript 中的该字段由消费端忽略。
     sourceCommandId: intent.sourceCommandId,
     queueItemId: intent.queueItemId,
     clientId: intent.clientId,
@@ -53,21 +53,4 @@ export function buildPersistedConversationInputIntent(
     ...(intent.provenance ? { provenance: intent.provenance } : {}),
     ...(intent.source ? { source: intent.source } : {}),
   };
-}
-
-/** 在工具执行前收紧群任务授权；普通正文不能改变这个可信 metadata 标记。 */
-export async function ensureGroupTaskPermissionScope(
-  store: SessionStorePort | undefined,
-  sessionId: SessionId,
-  intent: TurnInputIntentMetadata | undefined,
-): Promise<void> {
-  if (!intent?.botGroupSource) return;
-  if (!store) throw new Error("Group task permission scope requires persistence");
-  const session = await store.getSession(sessionId);
-  if (!session) throw new Error("Group task permission scope requires a persisted session");
-  if (session.permission?.scope === "session") return;
-  await store.updateSession({
-    id: sessionId,
-    permission: { version: 1, scope: "session", mode: "build" },
-  });
 }

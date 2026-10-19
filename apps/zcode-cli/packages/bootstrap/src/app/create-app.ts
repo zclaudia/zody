@@ -878,7 +878,7 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
       modelCatalogPort,
       automationPort: options.automationPort,
       // fork（F4.3）：offPeakPort 透传随闲时任务全链路删除。
-      topicResourcePort: options.topicResourcePort,
+      // fork（bots 移除）：topicResourcePort 透传随 bot channels 全量删除（specs/bot-channels-removal.md）。
       appVersion,
       traceContext,
     });

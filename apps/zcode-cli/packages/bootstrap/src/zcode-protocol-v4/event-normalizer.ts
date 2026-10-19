@@ -49,7 +49,8 @@ interface CanonicalConversationFactBase {
 export interface CanonicalUserIntentFact extends CanonicalConversationFactBase {
   inputOrigin?: "desktop" | "mobile";
   conversationQuotes?: import("@zcode/contracts").TurnInputIntentMetadata["conversationQuotes"];
-  botGroupSource?: import("@zcode/shared").BotGroupInputSource;
+  // fork（bots 移除）：botGroupSource（BotGroupInputSource）字段随 bot channels 全量删除
+  // （specs/bot-channels-removal.md）。
   semanticKind: "userIntent";
   visibility: "visible" | "modelOnly";
   origin:
@@ -291,7 +292,7 @@ function normalizeTurnStarted(
     ...(payload.intent?.conversationQuotes
       ? { conversationQuotes: payload.intent.conversationQuotes }
       : {}),
-    ...(payload.intent?.botGroupSource ? { botGroupSource: payload.intent.botGroupSource } : {}),
+    // fork（bots 移除）：intent.botGroupSource 归一化随 bot channels 全量删除。
     ...(payload.intent?.provenance ? { provenance: payload.intent.provenance } : {}),
     ...(payload.intent?.source ? { source: payload.intent.source } : {}),
     ...normalizeAttachments(payload),

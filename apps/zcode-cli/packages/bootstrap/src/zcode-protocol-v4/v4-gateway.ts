@@ -2201,8 +2201,8 @@ export class ConversationV4Gateway {
         mime.startsWith("image/") ||
         mime.startsWith("video/") ||
         mime === "application/pdf" ||
-        (mime === "text/plain" &&
-          (attachment.sourceKind === "topic-history" || attachment.sourceKind === "clipboard-text"))
+        // fork（bots 移除）：原 "topic-history" 文本材料放行随 bot channels 全量删除。
+        (mime === "text/plain" && attachment.sourceKind === "clipboard-text")
       );
     };
     const matchesRef = (attachment: AttachmentRef) =>

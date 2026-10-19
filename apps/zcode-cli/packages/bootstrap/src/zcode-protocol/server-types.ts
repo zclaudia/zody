@@ -15,7 +15,6 @@ import type { WorkspaceHookPolicyProvider } from "@zcode/core";
 import type { AccountProviderConfigSnapshot } from "@zcode/provider";
 import {
   zcodeProtocolErrorCodes,
-  type ZCodeAutomationBotDeliveryTarget,
   type ZCodeDeliveryKind,
   type ModelSelection,
   type ZCodeModelContextBudgetStrategy,
@@ -111,8 +110,8 @@ export interface ZCodeProtocolSessionRecord {
   /** 当前正在执行的 automation 派发 turn；只在 turn 运行期间存在，禁止递归 CronCreate。 */
   activeAutomationId?: string;
   // fork（F4.3）：activeOffPeakTaskId 随闲时任务全链路删除。
-  /** 当前 Bot 入站 turn 的稳定回推地址；只允许 CronCreate 在本轮读取。 */
-  activeBotDeliveryTarget?: ZCodeAutomationBotDeliveryTarget;
+  // fork（bots 移除）：activeBotDeliveryTarget（Bot 入站 turn 的回推地址暂存）随 bot channels
+  // 全量删除（specs/bot-channels-removal.md）；cron 回推订阅链在 desktop host 侧同步摘除。
   restoreWarning?: { message: string; type: string };
   /** 冷恢复候选只供初始投影；新的选模事件立即清除，不能替代 Runtime 执行绑定。 */
   restoredModelSelection?: ModelSelection;
