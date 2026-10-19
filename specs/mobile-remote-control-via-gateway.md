@@ -1,8 +1,6 @@
 # 手机远控：App 级远程访问，改走 zclaudia-gateway
 
-状态：**superseded（2026-10-19）**。本 spec 描述的功能已实施并合入后，又被决策整体移除——手机侧访问由 zclaudia-gateway 生态自身承担，zcoder 不再内置远控。见 [mobile-remote-control-removal.md](mobile-remote-control-removal.md)。本文仅作历史设计存档。
-
-（原状态：草案（2026-10-17），待评审后实现。）
+状态：草案（2026-10-17），待评审后实现。
 
 ## 背景与决策
 
