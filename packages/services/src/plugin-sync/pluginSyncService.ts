@@ -14,11 +14,12 @@ import {
 } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
-import type {
-  PluginSyncCandidate,
-  PluginSyncComponentType,
-  PluginSyncImportResult,
-  PluginSyncRemoteStatus,
+import {
+  ZCODE_DATA_ROOT_DIR_NAME,
+  type PluginSyncCandidate,
+  type PluginSyncComponentType,
+  type PluginSyncImportResult,
+  type PluginSyncRemoteStatus,
 } from "@zcode/shared";
 import type { IPluginSyncService } from "./pluginSync.js";
 import {
@@ -216,12 +217,13 @@ function resolveUserHomeDir(): string {
   return process.env.HOME?.trim() || process.env.USERPROFILE?.trim() || homedir();
 }
 
+// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
 function getUserZcodeConfigPath(): string {
-  return join(resolveUserHomeDir(), ".zcode", "cli", "config.json");
+  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json");
 }
 
 function getUserZcodePluginRoot(): string {
-  return join(resolveUserHomeDir(), ".zcode", "plugins");
+  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "plugins");
 }
 
 async function collectLocalUserPluginCandidates(): Promise<PluginSyncCandidate[]> {

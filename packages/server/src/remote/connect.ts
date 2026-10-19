@@ -11,6 +11,7 @@ import {
   ZCODE_REMOTE_HTTP_PROXY_ENV_KEY,
   ZCODE_REMOTE_NO_PROXY_ENV_KEY,
   ZCODE_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
+  ZCODE_DATA_ROOT_DIR_NAME,
 } from "@zcode/shared";
 import type { IRemoteBackend } from "./backend.js";
 import { wrapStdioStream } from "./stdio-socket.js";
@@ -372,7 +373,8 @@ function buildRemoteServerCommand(
 ): string {
   const envParts = [
     `${SERVICE_AUTHORITY_MODE_ENV}="desktop-attached-remote"`,
-    'ZCODE_SERVER_RUNTIME_ROOT="$HOME/.zcode/server"',
+    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    `ZCODE_SERVER_RUNTIME_ROOT="$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server"`,
   ];
   for (const [key, value] of Object.entries(
     pickRemoteRuntimeEnv(options?.remoteRuntimeEnv ?? {}),
@@ -398,5 +400,5 @@ function buildRemoteServerCommand(
       );
     }
   }
-  return `${envParts.join(" ")} ~/.zcode/server/node ~/.zcode/server/zcode-server.cjs`;
+  return `${envParts.join(" ")} ~/${ZCODE_DATA_ROOT_DIR_NAME}/server/node ~/${ZCODE_DATA_ROOT_DIR_NAME}/server/zcode-server.cjs`;
 }

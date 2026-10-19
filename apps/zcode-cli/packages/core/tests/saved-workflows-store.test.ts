@@ -24,7 +24,7 @@ function makeCwd(): string {
   return dir;
 }
 
-/** 一个隔离的家目录，供全局档用例注入——绝不碰开发机真实的 `~/.zcode/workflows`。 */
+/** 一个隔离的家目录，供全局档用例注入——绝不碰开发机真实的 `~/.zcoder/workflows`。 */
 function makeHome(): string {
   const dir = mkdtempSync(join(tmpdir(), "dwf-home-"));
   created.push(dir);
@@ -294,7 +294,7 @@ describe("saved workflow store", () => {
     const roots = savedWorkflowRoots(cwd, { homeDir: home });
     expect(roots).toHaveLength(2);
     expect(roots[0]).toEqual({ scope: "project", dir: join(cwd, ".zcode/workflows") });
-    expect(roots[1]).toEqual({ scope: "global", dir: join(home, ".zcode/workflows") });
+    expect(roots[1]).toEqual({ scope: "global", dir: join(home, ".zcoder/workflows") });
 
     saveSavedWorkflow({ cwd, name: "shadowed", meta: { description: "project" }, script: SCRIPT });
     const resolved = resolveSavedWorkflow({ cwd, name: "shadowed" });
@@ -319,7 +319,7 @@ describe("saved workflow global scope", () => {
     });
 
     expect(written.scope).toBe("global");
-    expect(written.path).toBe(join(home, ".zcode/workflows/research.dwf.ts"));
+    expect(written.path).toBe(join(home, ".zcoder/workflows/research.dwf.ts"));
 
     const resolved = resolveSavedWorkflow({ cwd, name: "research", homeDir: home });
     expect(resolved.ok).toBe(true);

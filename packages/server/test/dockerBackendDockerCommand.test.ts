@@ -126,11 +126,11 @@ describe("DockerBackend docker command resolution", () => {
     });
     const backend = createBackend();
 
-    await backend.upload(fileURLToPath(import.meta.url), "~/.zcode/server/server.tgz");
+    await backend.upload(fileURLToPath(import.meta.url), "~/.zcoder/server/server.tgz");
 
     expect(mocks.spawn).toHaveBeenCalledWith(
       RESOLVED_DOCKER_COMMAND,
-      ["exec", "-i", "zcode-dev", "sh", "-lc", "cat > '/root/.zcode/server/server.tgz'"],
+      ["exec", "-i", "zcode-dev", "sh", "-lc", "cat > '/root/.zcoder/server/server.tgz'"],
       expect.any(Object),
     );
     expect(mocks.execFile.mock.calls.some((call) => (call[1] as string[])[0] === "cp")).toBe(false);
@@ -174,13 +174,13 @@ describe("DockerBackend docker command resolution", () => {
     const backend = createBackend();
     const progress: Array<{ uploadedBytes: number; totalBytes: number }> = [];
 
-    await backend.upload(localPath, "~/.zcode/tmp/attachment.bin", {
+    await backend.upload(localPath, "~/.zcoder/tmp/attachment.bin", {
       onProgress: (event) => progress.push(event),
     });
 
     expect(mocks.spawn).toHaveBeenCalledWith(
       RESOLVED_DOCKER_COMMAND,
-      ["exec", "-i", "zcode-dev", "sh", "-lc", "cat > '/root/.zcode/tmp/attachment.bin'"],
+      ["exec", "-i", "zcode-dev", "sh", "-lc", "cat > '/root/.zcoder/tmp/attachment.bin'"],
       expect.any(Object),
     );
     expect(progress.at(-1)).toEqual({

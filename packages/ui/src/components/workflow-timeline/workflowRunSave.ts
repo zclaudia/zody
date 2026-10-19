@@ -2,7 +2,10 @@
 // 「Saving the run, and running it again」）：名字规则、落点预览、交给 ZCode 的那条消息。
 //
 // 与组件分文件的理由同 globalWorkflowGroupHelpers：这些判定没有 React，也该能被单独测。
-import type { ZCodeSavedWorkflowScope } from "@zcode/shared";
+import {
+  ZCODE_DATA_ROOT_DIR_NAME,
+  type ZCodeSavedWorkflowScope,
+} from "@zcode/shared";
 
 /**
  * 名字的合法形状，与 agent 侧 `isValidSavedWorkflowName`（@zcode/contracts）**逐字相同**。
@@ -25,7 +28,10 @@ export function isValidSavedWorkflowNameText(name: string): boolean {
  */
 export function savedWorkflowPathPreview(scope: ZCodeSavedWorkflowScope, name: string): string {
   const file = `${name}.dwf.ts`;
-  return scope === "global" ? `~/.zcode/workflows/${file}` : `.zcode/workflows/${file}`;
+  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用；项目级仍是 .zcode。
+  return scope === "global"
+    ? `~/${ZCODE_DATA_ROOT_DIR_NAME}/workflows/${file}`
+    : `.zcode/workflows/${file}`;
 }
 
 export interface WorkflowSaveDraft {

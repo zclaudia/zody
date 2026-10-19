@@ -17,6 +17,7 @@ import {
   type WorkflowTaskSnapshot,
   type WorkflowTaskStatus,
 } from "@zcode/contracts";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 import { readWorkflowScriptDocument } from "./script-workflow-meta.js";
 import type { ScriptWorkflowRuntime } from "./script-workflow-runtime.js";
 import { isScriptWorkflowStore } from "./script-workflow-utils.js";
@@ -315,7 +316,8 @@ async function resolveNamedWorkflowPath(
   const fileName = workflowFileName(name);
   const candidates = [
     join(deps.workingDirectory, ".zcode", "workflows", fileName),
-    join(homedir(), ".zcode", "workflows", fileName),
+    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "workflows", fileName),
   ];
   const builtIn = BUILTIN_WORKFLOW_ALLOWLIST.get(name);
   if (builtIn) candidates.push(builtIn);

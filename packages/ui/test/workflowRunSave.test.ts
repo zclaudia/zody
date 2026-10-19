@@ -55,7 +55,7 @@ describe("名字规则的前置回声", () => {
 
   it("落点预览：项目档相对路径，全局档 ~ 开头（agent 机器的家目录）", () => {
     expect(savedWorkflowPathPreview("project", "x")).toBe(".zcode/workflows/x.dwf.ts");
-    expect(savedWorkflowPathPreview("global", "x")).toBe("~/.zcode/workflows/x.dwf.ts");
+    expect(savedWorkflowPathPreview("global", "x")).toBe("~/.zcoder/workflows/x.dwf.ts");
   });
 });
 

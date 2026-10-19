@@ -32,7 +32,7 @@ const visibleDescriptor: HookExecutionDescriptor = {
   executionMode: "foreground",
   executionType: "process",
   sourceKind: "user",
-  sourcePath: "/Users/example/.zcode/cli/config.json",
+  sourcePath: "/Users/example/.zcoder/cli/config.json",
   timeoutMs: 60_000,
 };
 

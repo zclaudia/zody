@@ -950,7 +950,7 @@ describe("gateway v4 chunked attachment transaction", () => {
     };
     const resolveSource = vi.fn().mockResolvedValue({
       kind: "local_path",
-      path: "/tmp/.zcode/video-cache/demo.mov",
+      path: "/tmp/.zcoder/video-cache/demo.mov",
       mediaType: "video/quicktime",
     });
     const gateway = makeGateway({ resolveSessionAttachmentPreviewSource: resolveSource });
@@ -966,7 +966,7 @@ describe("gateway v4 chunked attachment transaction", () => {
       }),
     ).resolves.toEqual({
       kind: "local_path",
-      path: "/tmp/.zcode/video-cache/demo.mov",
+      path: "/tmp/.zcoder/video-cache/demo.mov",
       mediaType: "video/quicktime",
     });
     expect(resolveSource).toHaveBeenCalledWith("s1", {

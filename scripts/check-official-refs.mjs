@@ -63,6 +63,12 @@ const alwaysIgnoredSegments = new Set([
   ".vite",
   ".e2e-cache",
   ".e2e-home",
+  // 修复原因：E2E 打包/断网验收会把网络抓包等运行产物写到 .e2e-artifacts、
+  // .e2e-network-capture（两者均已被 .gitignore 忽略）。抓包里的 http-referer
+  // 等头字段带有官方域名，按源码扫描会误判为新增残留（2026-10-19 打包验收
+  // 产物触发 F0.1 门禁失败）。运行产物不是源码，整体跳过。
+  ".e2e-artifacts",
+  ".e2e-network-capture",
   "bundled-agents",
   "bundled-resources",
   "mock-cdn",

@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { TuiClipboardImage, TuiImageMediaType, TuiReadClipboardImage } from "@zcode/tui";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 
 const DEFAULT_MAX_CLIPBOARD_IMAGE_BYTES = 20 * 1024 * 1024;
 
@@ -30,7 +31,9 @@ type NodeClipboardImageReaderOptions = {
 };
 
 function resolveDefaultClipboardDirectory(processEnv: NodeJS.ProcessEnv = process.env): string {
-  const storageRoot = processEnv.ZCODE_STORAGE_DIR?.trim() || join(homedir(), ".zcode");
+  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  const storageRoot =
+    processEnv.ZCODE_STORAGE_DIR?.trim() || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME);
   return join(storageRoot, "clipboard");
 }
 

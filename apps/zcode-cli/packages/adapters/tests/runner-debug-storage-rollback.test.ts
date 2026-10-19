@@ -9,6 +9,6 @@ describe("runner debug storage rollback", () => {
     );
 
     expect(source).not.toContain("zcode-storage-root");
-    expect(source).toContain('join(homedir(), ".zcode", "cli"');
+    expect(source).toContain('join(homedir(), ".zcoder", "cli"');
   });
 });

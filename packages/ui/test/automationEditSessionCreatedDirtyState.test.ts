@@ -482,7 +482,7 @@ describe("AutomationEditView session-created dirty state", () => {
   });
 
   it("编辑无项目任务时继续展示会话侧文案与图标", () => {
-    const conversationWorkspacePath = "/Users/test/.zcode/workspace/default";
+    const conversationWorkspacePath = "/Users/test/.zcoder/workspace/default";
     stableHookValues.projectOptions.push({
       workspacePath: conversationWorkspacePath,
       label: "default",

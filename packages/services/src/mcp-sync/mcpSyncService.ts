@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, posix, win32 } from "node:path";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 import type {
   LoadCliMcpFromUserDirectoryRequest,
   LoadCliMcpFromUserDirectoryResult,
@@ -43,7 +44,8 @@ interface UserMcpRecord {
 const ZCODE_MCP_DESCRIPTOR: DirectoryMcpDescriptor = {
   source: "zcode",
   directorySource: "zcode",
-  userConfigDirSegments: [".zcode", "cli"],
+  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用；workspace 段保持 .zcode。
+  userConfigDirSegments: [ZCODE_DATA_ROOT_DIR_NAME, "cli"],
   workspaceConfigDirSegments: [".zcode"],
   fileName: "config.json",
   configKeyName: "mcp.servers",

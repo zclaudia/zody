@@ -1,5 +1,9 @@
 /* eslint-disable max-lines -- 开发态 agent 部署包含本地打包、远端 owner staging 与 wrapper 安装，后续独立拆分上传事务。 */
-import { ZCODE_AGENT_PROVIDER, resolveZCodeRuntimeEnv } from "@zcode/shared";
+import {
+  ZCODE_AGENT_PROVIDER,
+  ZCODE_DATA_ROOT_DIR_NAME,
+  resolveZCodeRuntimeEnv,
+} from "@zcode/shared";
 import { createHash, randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { cp, lstat, mkdir, mkdtemp, readdir, readFile, readlink, rm } from "node:fs/promises";
@@ -251,7 +255,8 @@ async function shouldSkipDevelopmentZCodeAgentDeploy(params: {
   try {
     await waitForClose(
       await params.backend.exec(
-        `"\${ZCODE_SERVER_RUNTIME_ROOT:-$HOME/.zcode/server}/node" -e ${quotePosixShellArg(verifyBundleScript)} ${quotePosixPathArg(params.remoteBundlePath)} ${quotePosixShellArg(params.localBundleSha256)}`,
+        // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+        `"\${ZCODE_SERVER_RUNTIME_ROOT:-$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server}/node" -e ${quotePosixShellArg(verifyBundleScript)} ${quotePosixPathArg(params.remoteBundlePath)} ${quotePosixShellArg(params.localBundleSha256)}`,
       ),
     );
   } catch {

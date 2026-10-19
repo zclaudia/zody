@@ -1,6 +1,7 @@
 // fork（F4.4）：cloudContent / marketingTouch / rewardsBridge / rewardsEmbedded（营销触达、
 // 云内容与 Rewards 注入桥）已整体删除。
 export * from "./networkCapture.js";
+export { ZCODE_DATA_ROOT_DIR_NAME } from "./dataDir.js";
 export type {
   FileBinaryPreview,
   FileEntry,

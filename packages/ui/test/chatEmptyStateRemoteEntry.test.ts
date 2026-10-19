@@ -317,10 +317,10 @@ describe("ChatEmptyWorkspacePreviewMenu", () => {
     >;
     const html = renderToStaticMarkup(
       createElement(Menu, {
-        workspacePath: "/Users/tester/.zcode/workspace/default",
+        workspacePath: "/Users/tester/.zcoder/workspace/default",
         workspaceTabs: [
           {
-            workspacePath: "/Users/tester/.zcode/workspace/default",
+            workspacePath: "/Users/tester/.zcoder/workspace/default",
             label: "default",
             workspacePurpose: "conversation",
           },
@@ -350,7 +350,7 @@ describe("ChatEmptyWorkspacePreviewMenu", () => {
         workspacePath: "/Users/tester/project",
         workspaceTabs: [
           {
-            workspacePath: "/Users/tester/.zcode/workspace/default",
+            workspacePath: "/Users/tester/.zcoder/workspace/default",
             label: "default",
             workspacePurpose: "conversation",
           },

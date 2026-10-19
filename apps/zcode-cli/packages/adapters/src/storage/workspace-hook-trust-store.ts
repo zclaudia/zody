@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { homedir, uptime } from "node:os";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 import type { WorkspaceHookTrustRecord, WorkspaceHookTrustStoreFile } from "@zcode/contracts";
 import {
   WORKSPACE_HOOK_TRUST_STORE_SCHEMA_VERSION,
@@ -132,12 +133,15 @@ export async function resolveWorkspaceHookTrustStorePath(
 ): Promise<string> {
   const home = resolve(options.homeDir ?? homedir());
   const userConfigPath = resolve(
-    options.userConfigPath ?? join(home, ".zcode", "cli", "config.json"),
+    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    options.userConfigPath ?? join(home, ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json"),
   );
   const config = await readUserConfig(userConfigPath);
   const storage = isRecord(config.storage) ? config.storage : {};
   const configured = typeof storage.dir === "string" ? storage.dir.trim() : "";
-  const storageRoot = configured ? resolveTrustedUserPath(configured, home) : join(home, ".zcode");
+  const storageRoot = configured
+    ? resolveTrustedUserPath(configured, home)
+    : join(home, ZCODE_DATA_ROOT_DIR_NAME);
   return join(storageRoot, SECURITY_DIRECTORY, TRUST_STORE_FILE);
 }
 

@@ -337,8 +337,8 @@ describe("config adapters", () => {
     const result = createConfig({ env: {}, skipUserConfig: true });
 
     expect(result.config.model).toBeUndefined();
-    expect(DefaultRuntimeConfig.storage.sessionDbPath).toBe("~/.zcode/cli/db/db.sqlite");
-    expect(result.config.storage.sessionDbPath).toBe("~/.zcode/cli/db/db.sqlite");
+    expect(DefaultRuntimeConfig.storage.sessionDbPath).toBe("~/.zcoder/cli/db/db.sqlite");
+    expect(result.config.storage.sessionDbPath).toBe("~/.zcoder/cli/db/db.sqlite");
   });
 
   it("defaults model stream idle timeout to ten minutes", () => {

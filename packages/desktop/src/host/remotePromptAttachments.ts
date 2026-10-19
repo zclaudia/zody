@@ -1,10 +1,11 @@
 import type { IRemoteBackend, RemoteUploadOptions } from "@zcode/server/remote";
 import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
-import type { TraceId, ZCodePromptAttachment } from "@zcode/shared";
+import { ZCODE_DATA_ROOT_DIR_NAME, type TraceId, type ZCodePromptAttachment } from "@zcode/shared";
 import { randomUUID } from "node:crypto";
 
-export const REMOTE_PROMPT_ATTACHMENT_ROOT = "~/.zcode/tmp/prompt-attachments";
-const REMOTE_PROMPT_ATTACHMENT_RELATIVE_ROOT = ".zcode/tmp/prompt-attachments";
+// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+export const REMOTE_PROMPT_ATTACHMENT_ROOT = `~/${ZCODE_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
+const REMOTE_PROMPT_ATTACHMENT_RELATIVE_ROOT = `${ZCODE_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
 
 export interface RemotePromptAttachmentMaterializeInput {
   taskId?: string;

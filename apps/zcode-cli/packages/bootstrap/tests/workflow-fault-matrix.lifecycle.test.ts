@@ -278,6 +278,9 @@ describe("fault matrix · B18 close — 宿主关闭停下自己拥有的 run，
           "first retry_scheduled",
         );
 
+        // close 之前快照客户端侧的事件账：close() 的第一个同步片就 abort，之后到 pause
+        // 之间的任何 model_request_started 都是 close 之后才发起的新请求。
+        const statusEventsAtClose = first.statusEvents.length;
         await first.service.close();
 
         // 1) close 解析时那一笔已经写完：引擎自己的 finishRun 尾巴，不是 service 补的。
@@ -303,19 +306,21 @@ describe("fault matrix · B18 close — 宿主关闭停下自己拥有的 run，
           { status: "stopped", stopReason: "interrupted", server },
         );
 
-        // 2) 关闭之后零事件、零请求：退避定时器全被撤，没有落后的进度事件。
+        // 2) 关闭之后零事件、零新请求：退避定时器全被撤，没有落后的进度事件。
         const eventsAtClose = first.runEvents.length;
-        const requestsAtClose = server.requests.length;
         await pause(POST_SETTLE_GRACE_MS);
         expect(first.runEvents.length).toBe(eventsAtClose);
-        // fork 修复：close 时 abort 掉的在飞请求，其 handler 与测试共用事件循环，负载重时
-        // 会晚于 requestsAtClose 采样才到达假服务器（不变式 5 注释里的同一机理）。那是
-        // close 之前的尾巴：客户端早已断开（closedByClient，abort 的物证），不算 close 之后
-        // 的新请求；真正漏撤的退避定时器不会带这个物证，「零请求」照样抓得到。
-        const servedAfterClose = server.requests
-          .slice(requestsAtClose)
-          .filter((entry) => !entry.closedByClient).length;
-        expect(servedAfterClose).toBe(0);
+        // fork 修复：不能用假服务器的到达记账断言「close 之后零请求」。close 时已经在飞的
+        // 请求，其 handler 与测试共用事件循环，负载重时会晚于采样才跑到（不变式 5 注释里的
+        // 同一机理）；而 429 应答很小，服务器往往在客户端 abort 传到之前就写完了，
+        // closedByClient 因此并不可靠——它只说明应答写完时客户端还没断，不说明请求是 close
+        // 之后发起的。真正要钉的是没有**新发起**的请求：adapter 在每一次物理请求发出前都会
+        // 发布 model_request_started，所以 close 之后不得再有 started 事件。漏撤的退避定时器
+        // 一旦上膛，下一次尝试必然在这里显形。
+        const startedAfterClose = first.statusEvents
+          .slice(statusEventsAtClose)
+          .filter((event) => event.type === "model_request_started");
+        expect(startedAfterClose).toEqual([]);
         // 关闭之后的 launch 是接线错误，不是业务拒绝。
         await expect(first.service.resume!(runId)).rejects.toThrow(/service is closed/);
       } finally {

@@ -75,3 +75,8 @@ packages/desktop/resources/macos-window-bounds/
 __pycache__/
 *.pyc
 .zcode-runtime
+.zcode/
+.claude/
+.codex/
+.cursor/
+.claudia/

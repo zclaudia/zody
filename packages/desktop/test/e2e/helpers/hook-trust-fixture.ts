@@ -27,7 +27,7 @@ const EVIDENCE_PATH = join(EVIDENCE_DIR, "executions.jsonl");
 // 与 adapters 的 resolveWorkspaceHookTrustStorePath 默认值一致。
 const TRUST_STORE_PATH = join(
   dirname(DEFAULT_WORKSPACE),
-  ".zcode",
+  ".zcoder",
   "security",
   "workspace-hook-trust-v1.json",
 );

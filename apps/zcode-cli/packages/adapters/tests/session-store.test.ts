@@ -379,7 +379,7 @@ describe("SQLite session store", () => {
   });
 
   it("defaults the session database under the db directory", () => {
-    expect(getDefaultSessionDbPath()).toBe(join(homedir(), ".zcode", "cli", "db", "db.sqlite"));
+    expect(getDefaultSessionDbPath()).toBe(join(homedir(), ".zcoder", "cli", "db", "db.sqlite"));
   });
 
   it("keeps the existing in-memory session store path working", () => {

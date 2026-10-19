@@ -7,7 +7,11 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { LogContext, LogEntry, Logger, LoggerFactory, LogRedactor } from "@zcode/contracts";
 import { LogLevel, LogLevelName } from "@zcode/contracts";
-import { ZCODE_RUNTIME_ENV_KEY, normalizeZCodeRuntimeEnv } from "@zcode/shared";
+import {
+  ZCODE_RUNTIME_ENV_KEY,
+  ZCODE_DATA_ROOT_DIR_NAME,
+  normalizeZCodeRuntimeEnv,
+} from "@zcode/shared";
 import {
   formatLocalLogDate,
   scheduleLogRetentionCleanup as scheduleRetentionCleanup,
@@ -220,7 +224,8 @@ export function createNodeLoggerFactory(options: NodeLoggerFactoryOptions = {}):
 }
 
 export function getDefaultLogDir(): string {
-  return join(homedir(), ".zcode", "cli", "log");
+  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  return join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "log");
 }
 
 function getDefaultMinLevel(env: NodeJS.ProcessEnv | undefined): LogLevel {

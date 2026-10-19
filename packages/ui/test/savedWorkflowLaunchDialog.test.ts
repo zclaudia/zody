@@ -37,7 +37,7 @@ const GLOBAL_ENTRY: ZCodeSavedWorkflowEntry = {
   name: "deep-research",
   description: "深度调研",
   scope: "global",
-  path: "/home/.zcode/workflows/deep-research.dwf.ts",
+  path: "/home/.zcoder/workflows/deep-research.dwf.ts",
 };
 
 const ALPHA: AutomationWorkspaceOption = { workspacePath: "/repo/alpha", label: "Alpha" };

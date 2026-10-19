@@ -70,6 +70,7 @@ import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   TEST_ZCODE_ENDPOINT_ORIGIN,
   ZCODE_VERSION,
+  ZCODE_DATA_ROOT_DIR_NAME,
   resolveZCodeEndpointOrigin,
   shouldEnableE2ETestBridge,
   type UpdateStatePayload,
@@ -558,7 +559,8 @@ async function runBrowserCommandOnView(params: {
 let currentDesktopZoomLevel = 0;
 let currentDesktopWindowSize: DesktopWindowSize | undefined;
 const preloadPath = join(import.meta.dirname, "../preload/index.cjs");
-const settingsFile = join(homedir(), ".zcode", "v2", "setting.json");
+// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+const settingsFile = join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "v2", "setting.json");
 let activeAppShutdownPolicy = resolveAppShutdownPolicy("normal", process.platform);
 let activeAppShutdownKind: AppShutdownKind | null = null;
 const WINDOWS_AGENT_FORCE_KILL_TIMEOUT_MS = 2_000;

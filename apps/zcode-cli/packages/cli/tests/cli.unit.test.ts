@@ -2827,7 +2827,7 @@ test("command center toggles plugins and refreshes the picker", async () => {
           enabled = nextEnabled;
           return {
             enabled,
-            path: "/home/test/.zcode/cli/config.json",
+            path: "/home/test/.zcoder/cli/config.json",
             plugin: {
               commandRootCount: 1,
               dataPath: "/tmp/zcode/plugins/data/ios-simulator@zcode-plugins-official",
@@ -4229,7 +4229,7 @@ test("zcode plugins enable persists the selected plugin", async () => {
       assert.equal(options.workingDirectory, "/workspace/project");
       return {
         enabled: true,
-        path: "/home/test/.zcode/cli/config.json",
+        path: "/home/test/.zcoder/cli/config.json",
         plugin: {
           commandRootCount: 1,
           dataPath: "/tmp/zcode/plugins/data/ios-dev@zcode-plugins-official",
@@ -4251,7 +4251,7 @@ test("zcode plugins enable persists the selected plugin", async () => {
   assert.equal(exitCode, 0);
   assert.match(
     ctx.stdout.output(),
-    /Enabled plugin ios-dev@zcode-plugins-official in \/home\/test\/.zcode\/cli\/config\.json/,
+    /Enabled plugin ios-dev@zcode-plugins-official in \/home\/test\/.zcoder\/cli\/config\.json/,
   );
 });
 
@@ -6185,7 +6185,7 @@ test("headless prompt reports exact Workspace Hook pretrust diagnostics without 
           event: "SessionStart",
           matcher: null,
           displayCommand: "./start.sh",
-          sourcePath: ".zcode/config.json",
+          sourcePath: ".zcoder/config.json",
           configuredEnabled: true,
           hookDeclarationDigest: "a".repeat(64),
           trustState: "pending_trust",

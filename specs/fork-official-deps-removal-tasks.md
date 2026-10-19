@@ -172,7 +172,7 @@ A、B、C 可以从第一天同时开工；F2.1 不依赖任何任务，应最�
 - **改动**：
   - 新增 `scripts/check-official-refs.mjs`（结构参照 `scripts/audit-zcode-agent-remnants.mjs`），词表放在可被 F0.3 复用的模块 `scripts/lib/official-domains.mjs`。
   - 三类规则：**域名类**（拦截）、**标识类**（只统计）、**允许的 BYOK 端点**（`https://api.z.ai/api/anthropic`、`https://api.z.ai/api/paas/v4`、`https://open.bigmodel.cn/api/anthropic`、`https://open.bigmodel.cn/api/paas/v4` 等作为第三方模型服务的公开 API 地址，不计入残留）。
-  - 扫描范围 `packages/ apps/ scripts/ config/ public/`，`docs/`、`apps/dev-docs` 单列统计；排除二进制与 `dist/`。
+  - 扫描范围 `packages/ apps/ scripts/ config/ public/`，`docs/`、`apps/dev-docs` 单列统计；排除二进制、构建产物与 gitignored 的 E2E 运行产物目录（`.e2e-cache`、`.e2e-home`、`.e2e-artifacts`、`.e2e-network-capture`）。运行产物不是源码，其中的抓包头字段不得计入残留基线。
   - 基线 `scripts/official-refs-baseline.json`（文件 → 域名命中数），`--update-baseline` 生成；检查模式下新增文件或命中数增加即失败。
   - 根 `package.json` 增加 `check:official-refs`。
 - **测试**：`scripts/check-official-refs.test.mjs`（加入 `vitest.config.ts` 的 scripts 测试列表）：正则转义（`fooz.ai` 不命中）、`z-ai` 不计入域名、BYOK 端点放行、基线增减判定。

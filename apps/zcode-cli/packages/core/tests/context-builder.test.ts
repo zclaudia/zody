@@ -903,7 +903,7 @@ describe("ContextBuilder meta user context", () => {
         sources: [
           {
             scope: "user",
-            filePath: "/Users/test/.zcode/AGENTS.md",
+            filePath: "/Users/test/.zcoder/AGENTS.md",
             fileName: "AGENTS.md",
             content: "default instructions",
             bytesRead: 20,
@@ -927,7 +927,7 @@ describe("ContextBuilder meta user context", () => {
     expect(meta).toContain("Codebase and user instructions are shown below.");
     expect(meta.match(/# agentsMd/gu)).toHaveLength(1);
     expect(meta).not.toContain("# claudeMd");
-    expect(meta).toContain("Contents of /Users/test/.zcode/AGENTS.md (user default instructions):");
+    expect(meta).toContain("Contents of /Users/test/.zcoder/AGENTS.md (user default instructions):");
     expect(meta).toContain("Contents of /workspace/AGENTS.md (workspace instructions):");
     expect(meta.indexOf("default instructions")).toBeLessThan(
       meta.indexOf("workspace instructions"),

@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { atomicWritePrivateTextFile, backupCorruptFile, withFileLock } from "@zcode/shared/node";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 import { createZCodeCredentialCipher, type ZCodeCredentialCipher } from "./credential-cipher.js";
 
 const ZCODE_DATA_BASE_DIR_ENV_KEY = "ZCODE_DATA_BASE_DIR";
@@ -232,7 +233,8 @@ export function resolveSharedZCodeCredentialsPath(
 
   const env = options.env ?? process.env;
   const baseDir = options.baseDir ?? env[ZCODE_DATA_BASE_DIR_ENV_KEY] ?? homedir();
-  return join(resolveUserPath(baseDir), ".zcode", "v2", "credentials.json");
+  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  return join(resolveUserPath(baseDir), ZCODE_DATA_ROOT_DIR_NAME, "v2", "credentials.json");
 }
 
 async function readRawCredentialRecord(filePath: string): Promise<Record<string, string>> {

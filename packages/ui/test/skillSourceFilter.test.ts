@@ -32,12 +32,12 @@ const demoSkills = [
   },
   {
     id: "skill-plugin-by-scope",
-    path: "/tmp/home/.zcode/cli/plugins/cache/zcode-plugins-official/document-skills/0.1.0/skills/pdf/SKILL.md",
+    path: "/tmp/home/.zcoder/cli/plugins/cache/zcode-plugins-official/document-skills/0.1.0/skills/pdf/SKILL.md",
     scope: "plugin",
   },
   {
     id: "skill-plugin-by-path",
-    path: "/tmp/home/.zcode/cli/plugins/cache/zcode-plugins-official/document-skills/0.1.0/skills/docx/SKILL.md",
+    path: "/tmp/home/.zcoder/cli/plugins/cache/zcode-plugins-official/document-skills/0.1.0/skills/docx/SKILL.md",
   },
 ];
 
@@ -48,7 +48,7 @@ describe("skillSourceFilter", () => {
     );
     expect(
       resolveSkillSourceType(
-        "/tmp/home/.zcode/cli/plugins/cache/zcode-plugins-official/document-skills/0.1.0/skills/pdf/SKILL.md",
+        "/tmp/home/.zcoder/cli/plugins/cache/zcode-plugins-official/document-skills/0.1.0/skills/pdf/SKILL.md",
       ),
     ).toBe("glm");
     expect(resolveSkillSourceType("/tmp/workspace/.zcode/cli/skills/my-skill/SKILL.md")).toBe(

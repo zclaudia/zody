@@ -11,6 +11,7 @@ import type {
   TelemetryResourceContext,
 } from "@zcode/contracts/telemetry";
 import type { ModelStatusSink } from "@zcode/contracts/model";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/contracts";
 import { NoopAgentExecutionTelemetry } from "./agent-trace-runtime.js";
 
 type EnvRecord = Record<string, string | undefined>;
@@ -225,7 +226,8 @@ async function resolveStandaloneDeviceMid(
 ): Promise<string | undefined> {
   const stateFile = zcodeHome
     ? join(zcodeHome, "v2", "telemetry-state.json")
-    : join(homedir(), ".zcode", "v2", "telemetry-state.json");
+    : // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+      join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
   const pending = pendingStandaloneDeviceMidByStateFile.get(stateFile);
   if (pending) return pending;
   const resolution = resolveStandaloneDeviceMidFromFile(stateFile);

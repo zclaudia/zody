@@ -1391,7 +1391,7 @@ describe("HK08 Hook lifecycle product delivery boundary", () => {
   const descriptor = {
     clientVisible: true as const,
     sourceKind: "user" as const,
-    sourcePath: "/Users/example/.zcode/cli/config.json",
+    sourcePath: "/Users/example/.zcoder/cli/config.json",
     executionType: "command" as const,
     executionMode: "foreground" as const,
     commandDisplay: "./hooks/check.sh",

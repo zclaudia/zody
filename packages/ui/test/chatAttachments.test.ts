@@ -366,7 +366,7 @@ describe("clipboard text attachments", () => {
     const attachment = await serializeChatComposerAttachment(
       createClipboardTextPathComposerAttachment(text, {
         filename: "pasted-text-20260630-104512-a1b2c3.txt",
-        localPath: "/Users/test/.zcode/tmp/paste-attachments/2026-06-30/pasted-text.txt",
+        localPath: "/Users/test/.zcoder/tmp/paste-attachments/2026-06-30/pasted-text.txt",
         mimeType: "text/plain",
         sizeBytes: Buffer.byteLength(text, "utf8"),
       }),
@@ -375,7 +375,7 @@ describe("clipboard text attachments", () => {
     expect(attachment).toEqual({
       kind: "file",
       filename: "pasted-text-20260630-104512-a1b2c3.txt",
-      localPath: "/Users/test/.zcode/tmp/paste-attachments/2026-06-30/pasted-text.txt",
+      localPath: "/Users/test/.zcoder/tmp/paste-attachments/2026-06-30/pasted-text.txt",
       mimeType: "text/plain",
       sourceKind: "clipboard-text",
       sizeBytes: 15_360,

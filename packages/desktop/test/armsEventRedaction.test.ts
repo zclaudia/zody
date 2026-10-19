@@ -162,7 +162,7 @@ describe("redactArmsEventBatch - api / resource", () => {
         event_type: "resource",
         type: "api",
         url: "https://zcode.z.ai/api/v1/ping",
-        message: "connect ECONNREFUSED for /Users/erin/.zcode/socket",
+        message: "connect ECONNREFUSED for /Users/erin/.zcoder/socket",
       },
     ]);
     expect(event!.message).not.toContain("erin");

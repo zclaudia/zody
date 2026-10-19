@@ -6,6 +6,7 @@ import { readFile, stat } from "node:fs/promises";
 import { arch, homedir, release } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { formatLocalIsoDate } from "@zcode/contracts";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 import type {
   ContextSourceDiagnostic,
   ContextSourcePort,
@@ -234,7 +235,8 @@ async function findDefaultUserInstructionFile(
     return undefined;
   }
 
-  const filePath = join(resolveUserHomeDir(env), ".zcode", "AGENTS.md");
+  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  const filePath = join(resolveUserHomeDir(env), ZCODE_DATA_ROOT_DIR_NAME, "AGENTS.md");
   if (await isFile(filePath)) {
     return { filePath, fileName: "AGENTS.md" };
   }

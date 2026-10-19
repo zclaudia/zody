@@ -326,10 +326,10 @@ describe("root new task workbench context", () => {
     const { addTab, getHandleSelectConversationWorkspace } = renderRootActions();
 
     act(() => {
-      getHandleSelectConversationWorkspace()("/Users/demo/.zcode/workspace/default");
+      getHandleSelectConversationWorkspace()("/Users/demo/.zcoder/workspace/default");
     });
 
-    expect(addTab).toHaveBeenCalledWith("/Users/demo/.zcode/workspace/default", {
+    expect(addTab).toHaveBeenCalledWith("/Users/demo/.zcoder/workspace/default", {
       workspacePurpose: "conversation",
     });
   });

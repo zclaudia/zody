@@ -179,7 +179,7 @@ describe("v4 chunked attachment protocol", () => {
   it("share attachment read accepts non-media text/plain and requires row/index authority", () => {
     const params = {
       sessionId: "session-1",
-      ref: "/Users/test/.zcode/tmp/paste-attachments/pasted.txt",
+      ref: "/Users/test/.zcoder/tmp/paste-attachments/pasted.txt",
       target: { rowId: 42, entityId: "message-42" },
       attachmentIndex: 0,
       offset: 0,
@@ -200,7 +200,7 @@ describe("v4 chunked attachment protocol", () => {
   it("share attachment stat is metadata-only and keeps row/index authority", () => {
     const params = {
       sessionId: "session-1",
-      ref: "/Users/test/.zcode/tmp/paste-attachments/pasted.txt",
+      ref: "/Users/test/.zcoder/tmp/paste-attachments/pasted.txt",
       target: { rowId: 42, entityId: "message-42" },
       attachmentIndex: 0,
     };

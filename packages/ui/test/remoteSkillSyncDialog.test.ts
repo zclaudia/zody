@@ -157,7 +157,7 @@ function createSkillSyncServiceStub(): ISkillSyncService {
     })),
     checkRemoteUserSkillWriteAccess: vi.fn(async () => ({
       ok: true,
-      path: "/home/dev/.zcode/skills",
+      path: "/home/dev/.zcoder/skills",
     })),
     importSkillsArchive: vi.fn(async () => ({ results: [] })),
   };
@@ -214,7 +214,7 @@ describe("RemoteSkillSyncDialog helpers", () => {
           name: "review",
           directoryName: "review",
           description: "Review code",
-          path: "/Users/me/.zcode/skills/review/SKILL.md",
+          path: "/Users/me/.zcoder/skills/review/SKILL.md",
           sizeBytes: 128,
         },
         {
@@ -222,7 +222,7 @@ describe("RemoteSkillSyncDialog helpers", () => {
           name: "docs",
           directoryName: "docs",
           description: "Write docs",
-          path: "/Users/me/.zcode/skills/docs/SKILL.md",
+          path: "/Users/me/.zcoder/skills/docs/SKILL.md",
           sizeBytes: 64,
         },
       ],
@@ -307,7 +307,7 @@ describe("RemoteSkillSyncDialog helpers", () => {
           name: "review",
           directoryName: "review",
           description: "Review code",
-          path: "/Users/me/.zcode/skills/review/SKILL.md",
+          path: "/Users/me/.zcoder/skills/review/SKILL.md",
           sizeBytes: 128,
         },
         {
@@ -315,7 +315,7 @@ describe("RemoteSkillSyncDialog helpers", () => {
           name: "docs",
           directoryName: "docs",
           description: "Write docs",
-          path: "/Users/me/.zcode/skills/docs/SKILL.md",
+          path: "/Users/me/.zcoder/skills/docs/SKILL.md",
           sizeBytes: 64,
         },
       ],

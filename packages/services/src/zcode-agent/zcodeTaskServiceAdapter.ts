@@ -119,6 +119,7 @@ import {
   type ZCodeUserInputRequestParams,
   type ZCodeUserInputResponse,
   type ZCodeAgentMcpServer,
+  ZCODE_DATA_ROOT_DIR_NAME,
 } from "@zcode/shared";
 import type {
   ZCodeTaskListQuery,
@@ -256,7 +257,8 @@ function formatZCodeAgentLogDate(now: Date): string {
 
 function resolveZCodeAgentCurrentLogFilePath(now = new Date()): string {
   const configuredLogDir = process.env.ZCODE_LOG_DIR?.trim();
-  const logDir = configuredLogDir || join(homedir(), ".zcode", "cli", "log");
+  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  const logDir = configuredLogDir || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "log");
   return join(logDir, `zcode-${formatZCodeAgentLogDate(now)}.jsonl`);
 }
 

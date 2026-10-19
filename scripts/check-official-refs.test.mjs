@@ -1,6 +1,10 @@
 // F0.1 残留检查脚本的定向测试（specs/fork-official-deps-removal-tasks.md「F0.1」）。
 // 覆盖任务文档点名的四类判定：正则转义（fooz.ai 不命中）、z-ai 不计入域名、
 // BYOK 端点放行、基线增减判定。
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { allowedByokEndpointPattern, officialDomainPatterns } from "./lib/official-domains.mjs";
@@ -9,6 +13,7 @@ import {
   compareBaseline,
   scanLine,
   scanText,
+  walk,
 } from "./check-official-refs.mjs";
 
 function domainKeywords(line) {
@@ -160,5 +165,30 @@ describe("scanText 汇总", () => {
     expect(result.domainLines.map((entry) => entry.line)).toEqual([2, 4]);
     expect(result.identifierTotals).toEqual({ "z-ai": 1 });
     expect(result.identifierHits).toBe(1);
+  });
+});
+
+describe("walk 扫描范围", () => {
+  it("跳过 .e2e-artifacts / .e2e-network-capture 等 E2E 运行产物", async () => {
+    const root = await mkdtemp(join(tmpdir(), "official-refs-walk-"));
+    try {
+      const captureDir = join(root, ".e2e-artifacts", "run-1", "network-capture");
+      await mkdir(captureDir, { recursive: true });
+      await writeFile(join(captureDir, "capture.json"), '{"http-referer":"https://zcode.z.ai"}');
+      await mkdir(join(root, ".e2e-network-capture"), { recursive: true });
+      await writeFile(
+        join(root, ".e2e-network-capture", "upstream.json"),
+        '{"url":"https://z.ai/api"}',
+      );
+      await writeFile(join(root, "source.ts"), "export const value = 1;");
+
+      const scanned = [...walk(root)].map((file) => file.relativePath);
+
+      expect(scanned.some((path) => path.includes(".e2e-artifacts"))).toBe(false);
+      expect(scanned.some((path) => path.includes(".e2e-network-capture"))).toBe(false);
+      expect(scanned.some((path) => path.endsWith("/source.ts"))).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });

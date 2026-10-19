@@ -1556,7 +1556,7 @@ describe("ProductProjection 黄金测试（L1）", () => {
           {
             name: "nightly-sync",
             scope: "project",
-            path: ".zcode/workflows/nightly-sync.dwf.ts",
+            path: ".zcoder/workflows/nightly-sync.dwf.ts",
             argNames: ["question"],
           },
         ],
@@ -8010,7 +8010,7 @@ describe("Desktop Hook invocation projection", () => {
   const descriptor = {
     clientVisible: true as const,
     sourceKind: "user" as const,
-    sourcePath: "/Users/example/.zcode/cli/config.json",
+    sourcePath: "/Users/example/.zcoder/cli/config.json",
     executionType: "process" as const,
     executionMode: "foreground" as const,
     commandDisplay: "node hooks/check.mjs",
@@ -8791,7 +8791,7 @@ describe("Desktop Hook invocation projection", () => {
       sourceFiles: [
         {
           path: "/workspace/.zcode/config.json",
-          displayPath: ".zcode/config.json",
+          displayPath: ".zcoder/config.json",
           editable: true,
         },
       ],
@@ -8804,7 +8804,7 @@ describe("Desktop Hook invocation projection", () => {
           type: "command",
           displayName: "SessionStart · startup",
           displayCommand: "echo project",
-          sourcePath: ".zcode/config.json",
+          sourcePath: ".zcoder/config.json",
           resolvedTimeoutMs: 60_000,
           resolvedMaxOutputBytes: 32_768,
           executionMode: "foreground",
@@ -9806,7 +9806,7 @@ describe("workflow-direct-launch 启动轮投影", () => {
     toolCallId: "launch-abc",
     name: "deep-research",
     scope: "global" as const,
-    path: "/home/u/.zcode/workflows/deep-research.ts",
+    path: "/home/u/.zcoder/workflows/deep-research.ts",
     args: { topic: "adaptive concurrency" },
     description: "Deep-dive a topic",
   };

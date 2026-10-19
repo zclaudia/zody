@@ -17,7 +17,7 @@ describe("user service descriptors", () => {
   it.each(["darwin", "linux", "win32"] as const)(
     "pins the %s daemon descriptor to the data-root stable launcher and explicit server root",
     (platform) => {
-      const layout = resolveServerLayout("/var/lib/zcode-custom/.zcode/server");
+      const layout = resolveServerLayout("/var/lib/zcode-custom/.zcoder/server");
       const descriptor = createDaemonServiceDescriptor({ platform, layout });
       const launcher = join(layout.stableBinDir, platform === "win32" ? "zcode.cmd" : "zcode");
       if (platform === "win32") {
@@ -38,8 +38,8 @@ describe("user service descriptors", () => {
   );
 
   it("isolates service identity and descriptor filenames by server root", () => {
-    const firstLayout = resolveServerLayout("/var/lib/zcode-first/.zcode/server");
-    const secondLayout = resolveServerLayout("/var/lib/zcode-second/.zcode/server");
+    const firstLayout = resolveServerLayout("/var/lib/zcode-first/.zcoder/server");
+    const secondLayout = resolveServerLayout("/var/lib/zcode-second/.zcoder/server");
     const first = createDaemonServiceDescriptor({ platform: "linux", layout: firstLayout });
     const second = createDaemonServiceDescriptor({ platform: "linux", layout: secondLayout });
 
