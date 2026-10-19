@@ -2,6 +2,13 @@
 // 云内容与 Rewards 注入桥）已整体删除。
 export * from "./networkCapture.js";
 export { ZCODE_DATA_ROOT_DIR_NAME } from "./dataDir.js";
+export {
+  DESKTOP_ZOOM_MAX_LEVEL,
+  DESKTOP_ZOOM_MIN_LEVEL,
+  clampDesktopZoomLevel,
+  resolveDesktopZoomFactorForLevel,
+  resolveDesktopZoomLevelFromFactor,
+} from "./desktopZoom.js";
 export type {
   FileBinaryPreview,
   FileEntry,

@@ -119,13 +119,14 @@ describe("通用与编程模式 M1", () => {
 
 async function switchMode(mode: "general" | "coding") {
   // Radix 的退出动画期间仍有旧菜单层；等待它卸载，避免下一次点击被当作关闭旧层。
-  await browser.waitUntil(
-    async () => !(await $('[data-slot="dropdown-menu-content"]').isExisting()),
-  );
+  await browser.waitUntil(async () => !(await $('[data-slot="popover-content"]').isExisting()));
   await $(`[data-testid="${TID_LOGIN_TRIGGER}"]`).waitForDisplayed();
   await $(`[data-testid="${TID_LOGIN_TRIGGER}"]`).click();
-  await clickText('[role="menuitem"]', "界面模式");
-  await clickText('[role="menuitemradio"]', mode === "general" ? "通用模式" : "编程模式");
+  // 左下偏好面板（spec: docs/ui/workspace-sidebar-footer.md）：界面模式为行内分段单选。
+  await clickText(
+    '[data-pref="interfaceMode"] [role="radio"]',
+    mode === "general" ? "办公" : "编程",
+  );
   await browser.keys("Escape");
   await waitForMode(mode);
   await browser.waitUntil(

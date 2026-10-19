@@ -106,19 +106,20 @@ describe("设置页 UI polish E2E", () => {
     ).toEqual({ helpTop: 15, closeTop: 15, closeRightInset: 13 });
   });
 
-  it("UP-01: 头像菜单按 language、theme、zoom 顺序展示偏好入口", async function () {
+  it("UP-01: 左下偏好面板按 theme、language、interface mode、zoom 顺序展示标签行", async function () {
     this.timeout(60000);
 
     await clickVisibleTestId(TID_LOGIN_TRIGGER, {
       timeout: 15000,
-      timeoutMsg: "侧边栏头像菜单入口没有出现",
+      timeoutMsg: "侧边栏偏好面板入口没有出现",
     });
 
-    await browser.waitUntil(async () => (await readVisibleProfileMenuItems()).length >= 3, {
+    // spec: docs/ui/workspace-sidebar-footer.md——账号入口下线后改为 Popover 偏好面板（方案 1A）。
+    await browser.waitUntil(async () => (await readVisiblePreferenceRows()).length >= 3, {
       timeout: 15000,
-      timeoutMsg: "头像菜单的偏好入口没有完整展开",
+      timeoutMsg: "偏好面板的标签行没有完整展开",
     });
-    const menuSnapshot = await readVisibleProfileMenuItems();
+    const preferenceRows = await readVisiblePreferenceRows();
     if (process.platform === "darwin") {
       // macOS 根框架使用 background-alt；比较语义 utility 的运行时主题色，避免绑定具体色值格式。
       const backgrounds = await browser.execute(() => {
@@ -148,39 +149,14 @@ describe("设置页 UI polish E2E", () => {
       expect(shellChrome).toEqual({ radius: "16px", clipPath: "inset(0px round 16px)" });
     }
 
-    // 圆角规范：独立菜单外壳 lg，选项 md；读取计算样式以覆盖实际 CSS 和业务覆盖。
-    const radii = await browser.execute(() => {
-      const menu = Array.from(
-        document.querySelectorAll<HTMLElement>('[data-slot="dropdown-menu-content"]'),
-      ).find((element) => element.getBoundingClientRect().width > 0);
-      if (!menu) throw new Error("头像菜单浮层没有出现");
-      return {
-        shell: getComputedStyle(menu).borderTopLeftRadius,
-        items: Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]')).map(
-          (item) => getComputedStyle(item).borderTopLeftRadius,
-        ),
-      };
-    });
-    expect(radii.shell).toBe("8px");
-    expect(radii.items.length).toBeGreaterThanOrEqual(3);
-    expect(radii.items.every((radius) => radius === "6px")).toBe(true);
-
-    const languageIndex = menuSnapshot.findIndex((text) => /界面语言|Language/.test(text));
-    const themeIndex = menuSnapshot.findIndex((text) => /界面主题|App theme/.test(text));
-    const zoomIndex = menuSnapshot.findIndex((text) => /界面缩放|Interface zoom/.test(text));
-
-    if (languageIndex < 0 || themeIndex < 0 || zoomIndex < 0) {
-      throw new Error(`头像菜单偏好入口不完整：${JSON.stringify(menuSnapshot)}`);
-    }
-    expect(themeIndex).toBeGreaterThan(languageIndex);
-    expect(zoomIndex).toBeGreaterThan(themeIndex);
+    expect(preferenceRows).toEqual(["theme", "locale", "interfaceMode", "zoom"]);
     // 本例遗留的模态菜单会屏蔽下一例真实滚轮；DOM click 不受遮挡，曾掩盖该污染。
     await browser.keys("Escape");
     await browser.waitUntil(
       async () =>
-        (await readVisibleProfileMenuItems()).length === 0 &&
+        (await readVisiblePreferenceRows()).length === 0 &&
         (await browser.execute(() => getComputedStyle(document.body).pointerEvents)) !== "none",
-      { timeout: 10000, timeoutMsg: "头像菜单未关闭或指针屏障尚未释放" },
+      { timeout: 10000, timeoutMsg: "偏好面板未关闭或指针屏障尚未释放" },
     );
   });
 
@@ -206,16 +182,15 @@ describe("设置页 UI polish E2E", () => {
     ).toEqual({ sidebarWidth: 268, contentOffset: 268, gap: 0 });
   });
 
-  async function readVisibleProfileMenuItems() {
-    return browser.execute(() => {
-      const visibleItems = Array.from(
-        document.querySelectorAll<HTMLElement>('[role="menuitem"]'),
-      ).filter((element) => {
-        const rect = element.getBoundingClientRect();
-        return rect.width > 0 && rect.height > 0;
-      });
-      return visibleItems.map((element) => element.innerText.trim());
-    });
+  async function readVisiblePreferenceRows() {
+    return browser.execute(() =>
+      Array.from(document.querySelectorAll<HTMLElement>('[data-testid="sidebar-preference-row"]'))
+        .filter((element) => {
+          const rect = element.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        })
+        .map((element) => element.dataset.pref ?? ""),
+    );
   }
 
   it("MP-UI-01: 点击新增供应商后原子创建并直接进入普通详情卡", async function () {

@@ -27,7 +27,7 @@
 - desktop main 在缩放命令成功后向对应窗口发送最新档位，写入 `setting.json`，并继续刷新原生 View 菜单禁用态。
 - desktop main 启动读取 `AppSettings.desktopZoomLevel`，创建窗口时通过 `initialDesktopZoomLevel` 传入窗口创建流程。
 - desktop preload 缓存最新档位，提供 `getDesktopZoomLevel` / `onDesktopZoomLevelChanged`。
-- `WorkspaceSidebarFooter` 仅在 `isDesktop` 时显示 `Interface zoom` 二级菜单，并复用现有 View 菜单命令文案；头像菜单恢复原有显示偏好顺序：`Language`、`App theme`、`Interface zoom`。
+- `WorkspaceSidebarFooter` 仅在 `isDesktop` 时显示缩放入口。自账号入口下线后，入口改为偏好面板中的 Zoom 步进行（`−` / 百分比 / `+`），布局与顺序见 `docs/ui/workspace-sidebar-footer.md`；倍率规则 `1.1 ^ level` 统一由 `@zcode/shared` 的 `resolveDesktopZoomFactorForLevel` 提供。
 - 桌面系统 View 菜单的可见缩放项顺序与 sidebar 二级菜单保持一致：`Zoom In`、`Zoom Out`、`Actual Size`。
 
 ## 验证

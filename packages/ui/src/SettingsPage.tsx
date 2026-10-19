@@ -14,7 +14,6 @@ import type {
   IntegratedTerminalShellOption,
   IntegratedTerminalShellSelection,
   Locale,
-  UserInfo,
   ZCodeInteractionBehavior,
 } from "@zcode/shared";
 import {
@@ -166,7 +165,6 @@ export function SettingsPage({
   onCreateTask,
   onOpenWorkspace: _onOpenWorkspace,
   allowOpenWorkspace: _allowOpenWorkspace = true,
-  user,
 }: {
   isDesktop?: boolean;
   isWindowsDesktop?: boolean;
@@ -178,7 +176,6 @@ export function SettingsPage({
   onCreateTask?: (request?: CreateTaskRequest) => void;
   onOpenWorkspace?: () => void;
   allowOpenWorkspace?: boolean;
-  user?: UserInfo | null;
 }) {
   const { intl, localePreference, setLocalePreference } = useZCodeIntl();
   const { settingsSectionGroups, settingsSections } = useMemo(
@@ -1179,7 +1176,6 @@ export function SettingsPage({
                   // fork（F4.1b）：头像菜单 onUsageClick/onUpgradeClick/onLogin/onLogout
                   // 摘除——设置页不再出现用量、升级、登录/登出入口。
                   settingsButtonMode="back"
-                  user={user}
                   // 头像菜单是 WorkspaceSidebarFooter 的共享菜单，Settings 场景不能丢失桌面平台能力。
                   // 之前这里没透传 isDesktop，导致同一个头像菜单在设置页缺少界面缩放入口。
                   isDesktop={isDesktop}
