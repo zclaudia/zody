@@ -209,6 +209,15 @@ for provider_env_name in E2E_PROVIDER_BASE_URL E2E_PROVIDER_MODEL E2E_PROVIDER_S
   fi
 done
 
+# F2.11：本机/CI 在模拟环境（如 arm64 宿主机跑 amd64 容器）里 Electron renderer 冷启动
+# 可能超过 wdio.conf.ts 的默认 WebDriver 请求超时（会话创建 POST 30s 即超时）。转发
+# wdio.conf.ts 已支持的请求限流旋钮，让慢环境显式调大而不是改默认值。
+for webdriver_limit_env_name in ZCODE_E2E_WEBDRIVER_REQUEST_TIMEOUT_MS ZCODE_E2E_WEBDRIVER_REQUEST_RETRY_COUNT; do
+  if [ -n "${!webdriver_limit_env_name:-}" ]; then
+    docker_run_args+=(-e "${webdriver_limit_env_name}=${!webdriver_limit_env_name}")
+  fi
+done
+
 # F0.3：--block-official 时从官方域名词表（scripts/lib/official-domains.mjs）生成
 # --add-host 清单，把官方域名解析到容器内 sink 地址。sink 与 E2E 同容器、监听容器内
 # 80/443，因此 --network none（replay-isolated 默认）下同样生效。生成失败直接中止：
