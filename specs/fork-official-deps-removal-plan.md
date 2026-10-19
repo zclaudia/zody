@@ -59,7 +59,7 @@ flowchart TD
 - 词表分两类，分别统计、分别设白名单：
   - **域名类**（真正的外部依赖）：正则需转义并加边界，如 `(?<![\w.-])(?:[\w-]+\.)*z\.ai\b`、`bigmodel\.cn`、`codegeex\.cn`、`chatglm\.cn`、`zcode-ai\.com`。裸写 `z.ai` 会把 `.` 当通配符。
   - **标识类**（品牌/内部命名，不产生请求）：`zhipu`、`@zai-ai`、`zai-sdk`、`zai-org` 等。注意 `z-ai`、`z_ai`、`z-ai-pc` 等 provider id 有上百处（评审统计 `z-ai` 81 处），属于标识，不应计入域名残留，否则阶段 3 会被误导去改 provider id。
-- 扫描范围：`packages/ apps/ scripts/ config/ public/`；`docs/`、`apps/dev-docs` 单列统计，不参与拦截（文档在阶段 7 处理）。
+- 扫描范围：`packages/ apps/ scripts/ config/ public/`；`docs/`、`apps/dev-docs` 单列统计，不参与拦截（文档在阶段 7 处理）。同 `dist/` 等构建产物一样，gitignored 的 E2E 运行产物目录（`.e2e-cache`、`.e2e-home`、`.e2e-artifacts`、`.e2e-network-capture`）整体跳过：抓包 JSON 里的 `http-referer` 等头字段会带官方域名，但运行产物不是源码。
 - 基线文件 `scripts/official-refs-baseline.json` 由脚本 `--update-baseline` 生成并入库，记录「文件 → 命中数」；检查模式下**新增文件或命中数增加即失败**，减少则提示收紧基线。本文不再手写基线数字。
 
 ### 0.2 接入方式
