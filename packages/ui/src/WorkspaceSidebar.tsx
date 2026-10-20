@@ -1893,7 +1893,6 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
             workspacePath={workspacePath}
             workspaceIdentity={workspaceIdentity}
             workspaceRemoteSessionId={workspaceRemoteSessionId}
-            activeTaskId={activeTaskId}
             isDesktop={isDesktop}
           />
         </div>

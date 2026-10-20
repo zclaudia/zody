@@ -1266,27 +1266,6 @@ const enUS: Record<string, string> = {
   "webRemoteControl.triggerStatus.connecting": "Connecting phone",
   "webRemoteControl.triggerStatus.connected": "Phone connected",
   "webRemoteControl.triggerStatus.error": "Remote control failed",
-  "webRemoteControl.title": "Mobile remote control",
-  "webRemoteControl.description": "Control this computer from your phone through the gateway.",
-  "webRemoteControl.remoteAccess.title": "Remote access",
-  "webRemoteControl.remoteAccess.offDetail":
-    "Remote access is off, so your phone cannot see this computer.",
-  "webRemoteControl.remoteAccess.connectingDetail": "Connecting to the gateway…",
-  "webRemoteControl.remoteAccess.waitingPhoneDetail":
-    "The gateway is connected and waiting for a phone.",
-  "webRemoteControl.remoteAccess.phoneConnectedDetail":
-    "Your phone is connected and can control this computer.",
-  "webRemoteControl.remoteAccess.errorDetail":
-    "The gateway connection failed. Check the address and credential in Settings.",
-  "webRemoteControl.remoteAccess.settingsHint":
-    "Enter the gateway URL, namespace, and backend credential in Settings → Remote access.",
-  "webRemoteControl.remoteAccess.managedInSettings":
-    "Remote access configuration and credentials are managed in Settings.",
-  "webRemoteControl.remoteAccess.enabledToast": "Remote access enabled",
-  "webRemoteControl.remoteAccess.disabledToast": "Remote access disabled",
-  "webRemoteControl.remoteAccess.toggleFailed": "Could not change remote access: {error}",
-  "webRemoteControl.remoteAccess.disconnectSuccess": "Phone disconnected",
-  "webRemoteControl.remoteAccess.disconnectFailed": "Could not disconnect the phone: {error}",
   "webRemoteControl.statusLabel": "Session status",
   "webRemoteControl.status.idle": "Idle",
   "webRemoteControl.status.starting": "Starting",
@@ -1313,30 +1292,6 @@ const enUS: Record<string, string> = {
   "webRemoteControl.singlePageNote":
     "This relay pairing supports one phone page at a time. If it is already open elsewhere, close the old page first.",
   "webRemoteControl.copyLink.description": "Can't scan? Open the link on your phone.",
-  "webRemoteControl.failure.gatewayUnreachable":
-    "Cannot reach the remote access gateway. Check the phone network and the gateway address; it reconnects automatically.",
-  "webRemoteControl.failure.gatewayCredentialInvalid":
-    "The gateway rejected this device credential. It may have been revoked or entered incorrectly; check it in settings.",
-  "webRemoteControl.failure.sessionConflict":
-    "This link is already being used by another page. Close the other page and scan again.",
-  "webRemoteControl.failure.kicked":
-    "The relay kicked this pairing. Close the other page and generate a new QR code from desktop.",
-  "webRemoteControl.failure.workspaceClosed":
-    "The shared desktop window has been closed. Go back to desktop and start Web remote control again.",
-  "webRemoteControl.failure.desktopDisconnected":
-    "The desktop side disconnected, so this Web remote control session can no longer continue.",
-  "webRemoteControl.failure.incompatibleVersion":
-    "The phone and desktop application protocol versions are incompatible. Upgrade one side as indicated and reconnect.",
-  "webRemoteControl.failure.desktopBootstrapTimeout":
-    "The desktop window did not respond in time. Make sure it is still running, then reload.",
-  "webRemoteControl.failure.connectionRecoveryTimeout":
-    "The mobile connection did not recover in time, so Web remote control cannot keep syncing yet.",
-  "webRemoteControl.failure.backendUnsupported":
-    "The selected desktop is online but does not support the ZCode remote-control capability. Choose another desktop.",
-  "webRemoteControl.failure.unsupportedAction":
-    "Web remote control mode can only open workspaces that are already open in the current desktop window.",
-  "webRemoteControl.failure.unexpectedError":
-    "Could not start mobile remote control. Try again from desktop.",
   "webRemoteControl.copyLink": "Copy link",
   "webRemoteControl.copyLink.copied": "Remote control link copied",
   "webRemoteControl.copyLinkFailed": "Could not copy remote control link: {error}",

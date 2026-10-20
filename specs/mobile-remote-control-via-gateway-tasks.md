@@ -320,7 +320,7 @@ A、B、C、D、E 五条车道可以同时开工。车道汇合点是 T3.3（A �
 - **目标**：在桌面上完成远程访问的配置、开关和状态展示。方案对应「产品规则 · 桌面」。
 - **改动**：
   - `packages/ui`：设置页新增「远程访问」分区，包含地址、namespace、凭证（只写不读）、开关、测试连接（有手机连接时禁用并说明原因）、连接状态、当前手机和断开操作；
-  - 对话框和 `WorkspaceWebRemoteControlTrigger` 改为显示全局状态并提供快捷开关，失败文案更新；
+  - `WorkspaceWebRemoteControlTrigger` 改为纯状态入口：gateway online 高亮、其余置灰，点击跳转设置页「远程访问」；`WebRemoteControlDialog` 已删除（2026-10-20，职责与设置页重复）；
   - 遵循 DESIGN.md，提供中英文 i18n；
   - 通过 `packages/ui/src/hooks/` 访问服务，不直接调用 `window.zcode`。
 - **验证**：方案「验收」第 8 条（桌面 E2E，使用 T0.2 的 gateway 或 fake gateway）。

@@ -27,7 +27,6 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
   workspacePath,
   workspaceIdentity,
   workspaceRemoteSessionId,
-  activeTaskId,
   isDesktop = false,
   banner,
   className,
@@ -41,7 +40,6 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
   workspacePath?: string;
   workspaceIdentity?: string;
   workspaceRemoteSessionId?: string;
-  activeTaskId?: string | null;
   isDesktop?: boolean;
   banner?: ReactNode;
   className?: string;
@@ -98,7 +96,6 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
               workspacePath={workspacePath}
               workspaceIdentity={workspaceIdentity}
               remoteSessionId={workspaceRemoteSessionId}
-              initialTaskId={activeTaskId ?? undefined}
               compact
             />
           ) : null}

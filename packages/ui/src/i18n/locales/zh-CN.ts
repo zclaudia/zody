@@ -1209,22 +1209,6 @@ const zhCN: Record<string, string> = {
   "webRemoteControl.triggerStatus.connecting": "正在连接手机",
   "webRemoteControl.triggerStatus.connected": "手机已连接",
   "webRemoteControl.triggerStatus.error": "远程控制连接失败",
-  "webRemoteControl.title": "移动端远程控制",
-  "webRemoteControl.description": "通过 gateway 用手机远程控制这台电脑。",
-  "webRemoteControl.remoteAccess.title": "远程访问",
-  "webRemoteControl.remoteAccess.offDetail": "远程访问已关闭，手机看不到这台电脑。",
-  "webRemoteControl.remoteAccess.connectingDetail": "正在连接 gateway…",
-  "webRemoteControl.remoteAccess.waitingPhoneDetail": "Gateway 已连接，等待手机接入。",
-  "webRemoteControl.remoteAccess.phoneConnectedDetail": "手机已连接，可以远程控制这台电脑。",
-  "webRemoteControl.remoteAccess.errorDetail": "Gateway 连接失败，请检查设置中的地址和凭证。",
-  "webRemoteControl.remoteAccess.settingsHint":
-    "在「设置 → 远程访问」中填写 gateway 地址、namespace 和 backend 凭证。",
-  "webRemoteControl.remoteAccess.managedInSettings": "远控配置与凭证统一在设置页管理。",
-  "webRemoteControl.remoteAccess.enabledToast": "已开启远程访问",
-  "webRemoteControl.remoteAccess.disabledToast": "已关闭远程访问",
-  "webRemoteControl.remoteAccess.toggleFailed": "切换远程访问失败：{error}",
-  "webRemoteControl.remoteAccess.disconnectSuccess": "已断开手机",
-  "webRemoteControl.remoteAccess.disconnectFailed": "断开手机失败：{error}",
   "webRemoteControl.statusLabel": "会话状态",
   "webRemoteControl.status.idle": "未开启",
   "webRemoteControl.status.starting": "启动中",
@@ -1251,29 +1235,6 @@ const zhCN: Record<string, string> = {
   "webRemoteControl.singlePageNote":
     "当前 relay 配对同一时间只支持一个手机页面；如果已经在别的页面打开，请先关闭旧页面。",
   "webRemoteControl.copyLink.description": "无法扫码？可以在手机上打开链接。",
-  "webRemoteControl.failure.gatewayUnreachable":
-    "无法稳定连接远程访问 gateway，请检查手机网络和 gateway 地址；恢复后会自动重连。",
-  "webRemoteControl.failure.gatewayCredentialInvalid":
-    "gateway 拒绝了当前设备凭证，可能已被吊销或填写有误，请回到设置页确认。",
-  "webRemoteControl.failure.sessionConflict":
-    "这个链接已经被其他页面占用，请关闭旧页面后重新扫码。",
-  "webRemoteControl.failure.kicked":
-    "relay 已踢出这次配对，请关闭其他页面后从桌面端重新生成二维码。",
-  "webRemoteControl.failure.workspaceClosed":
-    "桌面端共享的窗口已经关闭，请回到桌面端重新发起访问。",
-  "webRemoteControl.failure.desktopDisconnected":
-    "桌面端已经断开连接，当前 Web 远程控制无法继续使用。",
-  "webRemoteControl.failure.incompatibleVersion":
-    "手机与电脑端的应用协议版本不兼容，请按提示升级其中一端后重新连接。",
-  "webRemoteControl.failure.desktopBootstrapTimeout":
-    "桌面端响应超时，请确认窗口仍在运行后刷新页面。",
-  "webRemoteControl.failure.connectionRecoveryTimeout":
-    "手机端连接恢复超时，当前 Web 远程控制暂时无法继续同步。",
-  "webRemoteControl.failure.backendUnsupported":
-    "选中的电脑在线，但不支持 ZCode 远程控制能力，请选择另一台电脑。",
-  "webRemoteControl.failure.unsupportedAction":
-    "当前是 Web 远程控制模式，只支持访问桌面端当前窗口已经打开的工作区。",
-  "webRemoteControl.failure.unexpectedError": "无法启动移动端远程控制，请回到桌面端重试。",
   "webRemoteControl.copyLink": "复制链接",
   "webRemoteControl.copyLink.copied": "已复制远程控制链接",
   "webRemoteControl.copyLinkFailed": "复制远程控制链接失败：{error}",

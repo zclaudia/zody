@@ -49,9 +49,7 @@ const TEST_CONNECTION_BUTTON = "remote-access-test-connection";
 
 const REMOTE_CONTROL_TRIGGER =
   'button[aria-label="移动端远程控制"], button[aria-label="Mobile remote control"]';
-const DIALOG_SCROLL = '[data-testid="web-remote-control-dialog-scroll"]';
-const DIALOG_MOBILE_STATUS = '[data-testid="web-remote-control-mobile-status"]';
-const DIALOG_DISCONNECT_CLIENT = '[data-testid="web-remote-control-disconnect-client"]';
+const DISCONNECT_CLIENT_BUTTON = "remote-access-disconnect-client";
 
 let gatewayConfig: GatewayE2EConfig | null = null;
 
@@ -176,6 +174,24 @@ async function waitForMobileConnected(connected: boolean, timeout = 30000): Prom
   );
 }
 
+/** 侧栏入口图标：gateway online 时带 text-success，其余状态置灰（text-foreground-subtle）。 */
+async function expectTriggerHighlighted(highlighted: boolean) {
+  await browser.waitUntil(
+    async () => {
+      const isHighlighted = await browser.execute((selector) => {
+        const icon = document.querySelector<HTMLElement>(selector)?.querySelector("svg");
+        return icon?.classList.contains("text-success") ?? false;
+      }, REMOTE_CONTROL_TRIGGER);
+      return isHighlighted === highlighted;
+    },
+    {
+      interval: 500,
+      timeout: 20000,
+      timeoutMsg: `侧栏远控入口没有${highlighted ? "高亮" : "置灰"}`,
+    },
+  );
+}
+
 async function configureAndEnableRemoteAccess(config: GatewayE2EConfig, credential: string) {
   await seedRemoteAccessConfig(config);
   await saveCredential(credential);
@@ -282,6 +298,19 @@ describe("桌面设置页远程访问", () => {
     expect(settings.remoteAccess?.namespace).toBe(config.namespace);
   });
 
+  it("RA-SET-08: 未连接 gateway 时侧栏入口置灰，点击跳转设置页远程访问且不弹窗", async () => {
+    await expectTriggerHighlighted(false);
+    const trigger = await $(REMOTE_CONTROL_TRIGGER);
+    await trigger.waitForClickable({ timeout: 20000 });
+    await trigger.click();
+
+    await $(`[data-testid="${TID_SETTINGS_PAGE}"]`).waitForDisplayed({ timeout: 15000 });
+    await $(`[${REMOTE_ACCESS_SETTINGS}]`).waitForDisplayed({ timeout: 15000 });
+    // 入口只导航，不改变开关。
+    expect(await $(`[data-testid="${TOGGLE}"]`).getAttribute("data-state")).toBe("unchecked");
+    expect(await $('[role="dialog"]').isExisting()).toBe(false);
+  });
+
   it("RA-SET-05: 凭证错误时显示 credential-invalid", async function () {
     const config = requireGatewayConfig(this);
     await configureAndEnableRemoteAccess(config, "zgb_e2e_invalid_credential");
@@ -293,7 +322,7 @@ describe("桌面设置页远程访问", () => {
     await waitForGatewayState("disabled");
   });
 
-  it("RA-SET-06: 手机连接后弹层显示已连接，断开手机生效", async function () {
+  it("RA-SET-06: 手机连接后侧栏入口高亮，点击跳转设置页并可断开手机", async function () {
     const config = requireGatewayConfig(this);
     await configureAndEnableRemoteAccess(config, config.backendCredential);
     await waitForGatewayState("online", undefined, 60000);
@@ -314,18 +343,14 @@ describe("桌面设置页远程访问", () => {
       await closeSettings();
       const trigger = await $(REMOTE_CONTROL_TRIGGER);
       await trigger.waitForClickable({ timeout: 20000 });
+      await expectTriggerHighlighted(true);
       await trigger.click();
-      await $(DIALOG_SCROLL).waitForDisplayed({ timeout: 20000 });
-      await browser.waitUntil(
-        async () => (await $(DIALOG_MOBILE_STATUS).getAttribute("data-connected")) === "true",
-        { interval: 500, timeout: 20000, timeoutMsg: "弹层没有显示手机已连接" },
-      );
+      // 入口不弹窗，只落到设置页「远程访问」分区；断开手机在设置页完成。
+      await $(`[${REMOTE_ACCESS_SETTINGS}]`).waitForDisplayed({ timeout: 20000 });
+      await waitForMobileConnected(true);
 
-      await $(DIALOG_DISCONNECT_CLIENT).click();
-      await browser.waitUntil(
-        async () => (await $(DIALOG_MOBILE_STATUS).getAttribute("data-connected")) === "false",
-        { interval: 500, timeout: 20000, timeoutMsg: "断开手机后弹层仍显示已连接" },
-      );
+      await clickTestIdByDom(DISCONNECT_CLIENT_BUTTON, { timeout: 15000 });
+      await waitForMobileConnected(false);
     } finally {
       phone?.close();
       await setRemoteAccessEnabledSafe(false);

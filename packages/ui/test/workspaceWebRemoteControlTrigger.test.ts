@@ -62,25 +62,9 @@ vi.mock("@/hooks/useRemoteAccessStatus.js", () => ({
   useRemoteAccessStatus: () => ({ status: null, loading: false, refresh: async () => {} }),
 }));
 
-vi.mock("@/WebRemoteControlDialog.js", () => ({
-  WebRemoteControlDialog: ({
-    initialTaskId,
-    remoteSessionId,
-  }: {
-    initialTaskId?: string;
-    remoteSessionId?: string;
-  }) =>
-    createElement("div", {
-      "data-testid": "web-remote-control-dialog",
-      "data-initial-task-id": initialTaskId ?? "",
-      "data-remote-session-id": remoteSessionId ?? "",
-    }),
-}));
-
 async function renderTriggerWithEnv(
   env: "test" | "production",
   options?: {
-    initialTaskId?: string;
     featureEnabled?: boolean;
     workspaceIdentity?: string;
     remoteSessionId?: string;
@@ -98,7 +82,6 @@ async function renderTriggerWithEnv(
     workspacePath: "/tmp/project",
     workspaceIdentity: options?.workspaceIdentity,
     remoteSessionId: options?.remoteSessionId,
-    initialTaskId: options?.initialTaskId,
   });
 
   return renderToStaticMarkup(
@@ -132,31 +115,6 @@ describe("WorkspaceWebRemoteControlTrigger", () => {
     });
 
     expect(html).toContain("webRemoteControl.trigger");
-  });
-
-  it("把当前 active task 作为 Web 远程控制初始 task 传给弹层", async () => {
-    const html = await renderTriggerWithEnv("test", {
-      initialTaskId: "task-from-desktop",
-    });
-
-    expect(html).toContain('data-initial-task-id="task-from-desktop"');
-  });
-
-  it("用 workspaceIdentity 精确解析远控 session，并只向弹层传递已验证结果", async () => {
-    resolvedRemoteSessionIdMock.mockReturnValue(null);
-
-    const html = await renderTriggerWithEnv("test", {
-      workspaceIdentity: "remote:ssh:localhost:2222:root:/tmp/project",
-      remoteSessionId: "stale-session",
-    });
-
-    expect(resolvedRemoteSessionIdMock).toHaveBeenCalledWith(
-      "/tmp/project",
-      "stale-session",
-      "remote:ssh:localhost:2222:root:/tmp/project",
-    );
-    expect(html).toContain('data-remote-session-id=""');
-    expect(html).not.toContain('data-remote-session-id="stale-session"');
   });
 
   it("把入口名称和手机连接状态合并到同一个 tooltip", async () => {

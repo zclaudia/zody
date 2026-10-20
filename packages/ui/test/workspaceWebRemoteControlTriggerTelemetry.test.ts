@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const h = vi.hoisted(() => ({
   reportAppTelemetryEvent: vi.fn(async () => {}),
+  setPendingSettingsSectionIntent: vi.fn(),
+  openSettingsTab: vi.fn(),
 }));
 
 vi.mock("@/ControlHintTooltip.js", () => ({
@@ -45,13 +47,20 @@ vi.mock("@/hooks/useRemoteAccessStatus.js", () => ({
   useRemoteAccessStatus: () => ({ status: null, loading: false, refresh: async () => {} }),
 }));
 
-vi.mock("@/WebRemoteControlDialog.js", () => ({
-  WebRemoteControlDialog: () => null,
+vi.mock("@/lib/settingsNavigation.js", () => ({
+  setPendingSettingsSectionIntent: h.setPendingSettingsSectionIntent,
+}));
+
+vi.mock("@/store/TabStoreProvider.js", () => ({
+  useOptionalTabStore: (selector: (state: { openSettingsTab: () => void }) => unknown) =>
+    selector({ openSettingsTab: h.openSettingsTab }),
 }));
 
 afterEach(() => {
   cleanup();
   h.reportAppTelemetryEvent.mockClear();
+  h.setPendingSettingsSectionIntent.mockClear();
+  h.openSettingsTab.mockClear();
 });
 
 async function renderTrigger(input: {
@@ -124,6 +133,17 @@ describe("WorkspaceWebRemoteControlTrigger telemetry", () => {
         },
       },
       "web-remote-control-entry",
+    );
+  });
+
+  it("点击入口只跳转设置页「远程访问」分区，不弹窗", async () => {
+    await renderTrigger({ workspacePath: "/workspace/local" });
+
+    expect(h.setPendingSettingsSectionIntent).toHaveBeenCalledWith("remoteAccess");
+    expect(h.openSettingsTab).toHaveBeenCalledTimes(1);
+    // intent 必须先于打开标签页写入，已打开的设置页和刚挂载的设置页才都能消费到。
+    expect(h.setPendingSettingsSectionIntent.mock.invocationCallOrder[0]).toBeLessThan(
+      h.openSettingsTab.mock.invocationCallOrder[0],
     );
   });
 });

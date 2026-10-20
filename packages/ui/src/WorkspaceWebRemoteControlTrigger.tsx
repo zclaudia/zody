@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback } from "react";
 import { Smartphone } from "lucide-react";
 import type { RemoteAccessStatus } from "@zcode/shared";
 import {
@@ -14,72 +14,68 @@ import { useRemoteAccessStatus } from "@/hooks/useRemoteAccessStatus.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { reportAppTelemetryEvent } from "@/lib/appTelemetry.js";
-import { WebRemoteControlDialog } from "@/WebRemoteControlDialog.js";
+import { setPendingSettingsSectionIntent } from "@/lib/settingsNavigation.js";
+import { useOptionalTabStore } from "@/store/TabStoreProvider.js";
 import { useWebRemoteControlFeatureEnabled } from "@/WebRemoteControlFeatureProvider.js";
 
 type FormatMessage = ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"];
 
 /**
- * 侧边栏入口展示 App 级远程访问状态：开关、gateway 连接和手机连接共同决定图标颜色。
- * 这里不读窗口级 runtime 状态，避免多窗口时同一条远控链路显示成互相矛盾的状态。
+ * 侧边栏入口是 App 级远程访问的纯状态按钮：开关已打开且 gateway 为 online 时高亮，
+ * 其余（关闭、连接中、配置不完整、出错）一律置灰。具体原因只放在 tooltip，
+ * 配置和排障都在设置页「远程访问」完成，这里不读窗口级 runtime 状态，
+ * 避免多窗口时同一条远控链路显示成互相矛盾的状态。
  */
 export function getRemoteAccessTriggerPresentation(
   status: RemoteAccessStatus | null,
   formatMessage: FormatMessage,
 ): { iconClassName: string; tooltip: string } {
+  const dim = "text-foreground-subtle";
   if (!status?.enabled) {
     return {
-      iconClassName: "text-foreground-subtle",
+      iconClassName: dim,
       tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.idle" }),
     };
   }
 
-  if (status.gateway.state === "error") {
-    return {
-      iconClassName: "text-destructive",
-      tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.error" }),
-    };
+  switch (status.gateway.state) {
+    case "online":
+      return {
+        iconClassName: "text-success",
+        tooltip: formatMessage({
+          id: status.status.mobileConnected
+            ? "webRemoteControl.triggerStatus.connected"
+            : "webRemoteControl.triggerStatus.waiting",
+        }),
+      };
+    case "connecting":
+      return {
+        iconClassName: dim,
+        tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.starting" }),
+      };
+    case "error":
+      return {
+        iconClassName: dim,
+        tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.error" }),
+      };
+    case "disabled":
+      return {
+        iconClassName: dim,
+        tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.idle" }),
+      };
   }
-
-  if (status.gateway.state === "connecting") {
-    return {
-      iconClassName: "text-warning",
-      tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.starting" }),
-    };
-  }
-
-  if (status.status.mobileConnected) {
-    return {
-      iconClassName: "text-success",
-      tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.connected" }),
-    };
-  }
-
-  if (status.gateway.state === "online") {
-    return {
-      iconClassName: "text-warning",
-      tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.waiting" }),
-    };
-  }
-
-  return {
-    iconClassName: "text-foreground-subtle",
-    tooltip: formatMessage({ id: "webRemoteControl.triggerStatus.idle" }),
-  };
 }
 
 export function WorkspaceWebRemoteControlTrigger({
   workspacePath,
   workspaceIdentity,
   remoteSessionId,
-  initialTaskId,
   compact = false,
   className,
 }: {
   workspacePath: string;
   workspaceIdentity?: string;
   remoteSessionId?: string;
-  initialTaskId?: string;
   compact?: boolean;
   className?: string;
 }) {
@@ -96,7 +92,6 @@ export function WorkspaceWebRemoteControlTrigger({
       workspacePath={workspacePath}
       workspaceIdentity={workspaceIdentity}
       remoteSessionId={remoteSessionId}
-      initialTaskId={initialTaskId}
       compact={compact}
       className={className}
     />
@@ -107,14 +102,12 @@ function WorkspaceWebRemoteControlTriggerContent({
   workspacePath,
   workspaceIdentity,
   remoteSessionId,
-  initialTaskId,
   compact = false,
   className,
 }: {
   workspacePath: string;
   workspaceIdentity?: string;
   remoteSessionId?: string;
-  initialTaskId?: string;
   compact?: boolean;
   className?: string;
 }) {
@@ -125,82 +118,68 @@ function WorkspaceWebRemoteControlTriggerContent({
     remoteSessionId,
     workspaceIdentity,
   );
-  // 修复原因：tab 上的 remoteSessionId 可能在断线重连期间失效；远控链路同时携带
-  // identity 与 session，若继续透传未注册的旧值会组合成错误 endpoint。这里只采用
-  // resolver 按 identity 校验后的 live session，未恢复时让弹层保持 remote-waiting。
+  // 仅用于入口埋点的 local/remote 维度：tab 上的 remoteSessionId 可能在断线重连期间失效，
+  // 只采用 resolver 按 identity 校验后的 live session。
   const currentRemoteSessionId = mappedRemoteSessionId ?? undefined;
-  const [webRemoteControlOpen, setWebRemoteControlOpen] = useState(false);
-  const remoteAccessStatusRead = useRemoteAccessStatus({
-    enabled: !webRemoteControlOpen,
-  });
+  const openSettingsTab = useOptionalTabStore((state) => state.openSettingsTab);
+  const remoteAccessStatusRead = useRemoteAccessStatus();
   const triggerPresentation = getRemoteAccessTriggerPresentation(
     remoteAccessStatusRead.status,
     intl.formatMessage,
   );
 
+  const handleClick = useCallback(() => {
+    if (platform) {
+      void reportAppTelemetryEvent(
+        platform,
+        buildWebRemoteControlEntryViewTelemetry({
+          workspaceKind: workspaceIdentity?.trim() || currentRemoteSessionId ? "remote" : "local",
+          remoteKind: workspaceIdentity
+            ? parseRemoteWorkspaceIdentity(workspaceIdentity)?.kind
+            : undefined,
+        }),
+        "web-remote-control-entry",
+      );
+    }
+    logger.info("[WorkspaceWebRemoteControlTrigger] 跳转设置页远程访问分区", {
+      workspacePath,
+      workspaceIdentity: workspaceIdentity ?? "none",
+    });
+    // 与 WorkspaceHookPendingBanner 相同的两步：先写分区 intent，再打开（或激活）设置标签页。
+    setPendingSettingsSectionIntent("remoteAccess");
+    openSettingsTab?.();
+  }, [currentRemoteSessionId, openSettingsTab, platform, workspaceIdentity, workspacePath]);
+
   return (
-    <>
-      <ControlHintTooltip
-        title={intl.formatMessage({ id: "webRemoteControl.trigger" })}
-        description={triggerPresentation.tooltip}
-        side="top"
-        align="center"
-        triggerClassName={compact ? undefined : "w-full"}
+    <ControlHintTooltip
+      title={intl.formatMessage({ id: "webRemoteControl.trigger" })}
+      description={triggerPresentation.tooltip}
+      side="top"
+      align="center"
+      triggerClassName={compact ? undefined : "w-full"}
+    >
+      <Button
+        variant="ghost"
+        onClick={handleClick}
+        size={compact ? "icon-lg" : "lg"}
+        aria-label={intl.formatMessage({ id: "webRemoteControl.trigger" })}
+        className={cn(
+          compact
+            ? "text-foreground hover:bg-surface-hover hover:text-foreground"
+            : "w-full justify-start gap-2 text-foreground hover:bg-surface-hover hover:text-foreground",
+          className,
+        )}
       >
-        <Button
-          variant="ghost"
-          onClick={() => {
-            if (platform) {
-              void reportAppTelemetryEvent(
-                platform,
-                buildWebRemoteControlEntryViewTelemetry({
-                  workspaceKind:
-                    workspaceIdentity?.trim() || currentRemoteSessionId ? "remote" : "local",
-                  remoteKind: workspaceIdentity
-                    ? parseRemoteWorkspaceIdentity(workspaceIdentity)?.kind
-                    : undefined,
-                }),
-                "web-remote-control-entry",
-              );
-            }
-            logger.info("[WorkspaceWebRemoteControlTrigger] 打开 Web 远程控制弹层", {
-              workspacePath,
-              workspaceIdentity: workspaceIdentity ?? "none",
-              remoteSessionId: currentRemoteSessionId ?? "none",
-              initialTaskId: initialTaskId ?? "none",
-            });
-            setWebRemoteControlOpen(true);
-          }}
-          size={compact ? "icon-lg" : "lg"}
-          aria-label={intl.formatMessage({ id: "webRemoteControl.trigger" })}
-          className={cn(
-            compact
-              ? "text-foreground hover:bg-surface-hover hover:text-foreground"
-              : "w-full justify-start gap-2 text-foreground hover:bg-surface-hover hover:text-foreground",
-            className,
-          )}
-        >
-          {/* Bugfix: 触发入口以前只显示固定手机图标，用户无法从桌面端判断手机是否已连上。
-              这里复用远控状态轮询结果，用语义色表达连接状态，并把入口名称和状态文案合进同一个 tooltip，
-              避免桌面端 footer 外层和按钮内层同时弹出两份提示。 */}
-          <Smartphone className={cn("size-4", triggerPresentation.iconClassName)} />
-          {compact ? (
-            <span className="sr-only">
-              {intl.formatMessage({ id: "webRemoteControl.trigger" })}
-            </span>
-          ) : (
-            intl.formatMessage({ id: "webRemoteControl.trigger" })
-          )}
-        </Button>
-      </ControlHintTooltip>
-      <WebRemoteControlDialog
-        open={webRemoteControlOpen}
-        onOpenChange={setWebRemoteControlOpen}
-        workspacePath={workspacePath}
-        workspaceIdentity={workspaceIdentity}
-        remoteSessionId={currentRemoteSessionId}
-        initialTaskId={initialTaskId}
-      />
-    </>
+        {/* Bugfix: 触发入口以前只显示固定手机图标，用户无法从桌面端判断手机是否已连上。
+            这里复用远控状态轮询结果，用语义色表达连接状态，并把入口名称和状态文案合进同一个 tooltip，
+            避免桌面端 footer 外层和按钮内层同时弹出两份提示。 */}
+        <Smartphone className={cn("size-4", triggerPresentation.iconClassName)} />
+        {compact ? (
+          <span className="sr-only">{intl.formatMessage({ id: "webRemoteControl.trigger" })}</span>
+        ) : (
+          intl.formatMessage({ id: "webRemoteControl.trigger" })
+        )}
+      </Button>
+    </ControlHintTooltip>
   );
 }
