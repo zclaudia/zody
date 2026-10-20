@@ -60,7 +60,7 @@ describe("dev desktop remote production-like script", () => {
     );
 
     expect(env.ZCODE_ENV).toBe("production");
-    expect(env.ZCODE_DEV_REMOTE_ASSET_USE_CDN).toBe("1");
+    expect(env.ZCODE_DEV_REMOTE_ASSET_USE_CDN).toBe("0");
     expect(env.ZCODE_REMOTE_ASSET_CACHE_DIR).toBe("/tmp/custom-cache");
   });
 

@@ -2,11 +2,17 @@
 
 ## Scope
 
-For Desktop-attached SSH/Docker/WSL workspaces, Desktop Main starts or reuses a local Electron
-Remote Host utility process. That Remote Host connects to `zcode-server` and the ZCode Agent runtime
-on the remote machine, where file, git, terminal, and agent execution observe the remote filesystem
-and process environment. The window-scoped Local Host remains a separate process; a remote workspace
-does not replace it or receive a second Local Host.
+Desktop-attached SSH/WSL workspaces use the existing window-scoped Local Host and its
+in-process remote connection registry. Main routes attachments; it does not start a separate
+Desktop Remote Host. File, Git, terminal and Agent execution remain authoritative in the target
+Environment. See `specs/ssh-wsl-local-runtime-restoration.md` for the 0.1.0 local-only resource policy.
+
+Desktop supplies `assetSource: { kind: "local-only", rootDir }` from packaged `remote-runtime`
+resources (development uses local prepared component archives). This overrides legacy remote-download
+choices and CDN configuration. Manifest/schema/platform/version, required files and archive SHA-256
+are checked before component uploads. Missing or corrupt assets fail without network fallback.
+The cache validates extracted content rather than trusting a ready marker. Existing version/SHA,
+pending refresh, cancellation, staging and install-root transaction semantics remain in force.
 
 Current remote deployment only prepares the default ZCode resource set:
 

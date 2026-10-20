@@ -182,7 +182,8 @@ export async function deployZCodeAgentRuntime(
   );
 
   if (
-    await deployDevelopmentZCodeAgentRuntime(
+    !options.assetSource &&
+    (await deployDevelopmentZCodeAgentRuntime(
       backend,
       {
         runtimeVersion: runtime.version,
@@ -193,7 +194,7 @@ export async function deployZCodeAgentRuntime(
         force: Boolean(options.force),
       },
       loggers,
-    )
+    ))
   ) {
     return;
   }

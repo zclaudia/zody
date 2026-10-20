@@ -516,6 +516,7 @@ export class LocalUploadAssetInstaller implements RemoteAssetInstaller {
     requiredReleasePaths?: string[],
     forceRefresh = false,
   ): Promise<string | null> {
+    if (this.options.assetSource) return null;
     const platformArch = this.options.platformArch?.trim();
     const version = this.options.version?.trim();
     if (!platformArch || !version || !this.options.remoteCacheDir) {

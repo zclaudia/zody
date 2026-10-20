@@ -33,3 +33,5 @@ export {
   type WSLDistro,
   parseWSLDistroList,
 } from "./wsl-detect.js";
+
+export { prepareLocalRemoteAssets, type PreparedLocalRemoteAssets } from "./localRemoteAssets.js";

@@ -175,7 +175,7 @@ const remoteMediaRangePreviewEnabled =
 
 type RemoteAssetDirs = Pick<
   ConnectOptions,
-  "mockCdnDir" | "remoteCdnBaseUrl" | "remoteCdnBaseUrls" | "remoteCacheDir"
+  "assetSource" | "mockCdnDir" | "remoteCdnBaseUrl" | "remoteCdnBaseUrls" | "remoteCacheDir"
 >;
 
 const { parentPort } = process;

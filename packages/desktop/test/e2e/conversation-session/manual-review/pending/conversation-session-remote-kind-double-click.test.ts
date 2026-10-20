@@ -39,7 +39,7 @@ describe(`${CASE_MARKER}: 远程连接类型卡片`, () => {
     await $(dialogSelector).waitForDisplayed();
 
     expect(await $(`[data-testid="${TID_REMOTE_KIND_SSH}"]`).isDisplayed()).toBe(true);
-    expect(await $(`[data-testid="${TID_REMOTE_KIND_DOCKER}"]`).isDisplayed()).toBe(true);
+    expect(await $(`[data-testid="${TID_REMOTE_KIND_DOCKER}"]`).isExisting()).toBe(false);
 
     for (const { card, field } of kindCases) {
       if (!(await $(`[data-testid="${card}"]`).isExisting())) continue;
@@ -52,8 +52,9 @@ describe(`${CASE_MARKER}: 远程连接类型卡片`, () => {
       await backToKinds(card);
 
       // 先切到另一类型，确保双击进入的是目标配置而不是旧选中项。
-      const otherCard = card === TID_REMOTE_KIND_SSH ? TID_REMOTE_KIND_DOCKER : TID_REMOTE_KIND_SSH;
-      await clickTestIdByWebDriver(otherCard);
+      const otherCard = card === TID_REMOTE_KIND_SSH ? TID_REMOTE_KIND_WSL : TID_REMOTE_KIND_SSH;
+      if (await $(`[data-testid="${otherCard}"]`).isExisting())
+        await clickTestIdByWebDriver(otherCard);
       await $(`[data-testid="${card}"]`).doubleClick();
       await expectSettings(field);
       await backToKinds(card);

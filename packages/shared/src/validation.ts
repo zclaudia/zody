@@ -573,6 +573,9 @@ export const broadcastMessageSchema = z.object({
 });
 
 export const remoteAssetDirsSchema = z.object({
+  assetSource: z
+    .object({ kind: z.literal("local-only"), rootDir: nonEmptyStringSchema })
+    .optional(),
   mockCdnDir: z.string().optional(),
   remoteCdnBaseUrl: z.string().optional(),
   remoteCdnBaseUrls: z.array(z.string()).optional(),

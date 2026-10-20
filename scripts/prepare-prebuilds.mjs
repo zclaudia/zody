@@ -16,6 +16,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { createHash } from "node:crypto";
+import { readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import process from "node:process";
@@ -57,6 +58,13 @@ const ZCODE_AGENT_RUNTIME = {
 };
 const releaseDir = join(mockCdnDir, "releases", version);
 const nodeVersion = "v22.16.0";
+// Node 官方 v22.16.0 SHASUMS256.txt 固定摘要；镜像只提供字节，不能改变信任根。
+const remoteNodeArchiveSha256 = {
+  "linux-arm64": "eab80cb88f8fda1e65f5e8d0420c9809bdb320b03fd34976ab7161b6e703b910",
+  "linux-x64": "f4cb75bb036f0d0eddf6b79d9596df1aaab9ddccd6a20bf489be5abe9467e84e",
+  "darwin-arm64": "aaf7fc3c936f1b359bc312b63638e41f258689ac2303966ad932cda18c54ea00",
+  "darwin-x64": "5c34638f2c0e3f3aaa7b3a94b58304765a169730da1896ebba8515ea4d987a9c",
+};
 const componentSchemaVersion = 1;
 const remotePlatforms = ["linux-arm64", "linux-x64", "darwin-arm64", "darwin-x64"];
 const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
@@ -336,12 +344,19 @@ async function downloadWithRetry(url, destinationPath, maxAttempts = 3) {
   }
 }
 
-async function extractArchiveMember(url, destinationDir, archiveMember) {
+async function extractArchiveMember(url, destinationDir, archiveMember, expectedSha256) {
   const tempDir = mkdtempSync(join(tmpdir(), "zcode-node-dist-"));
   const archivePath = join(tempDir, "node.tar.xz");
 
   try {
     await downloadWithRetry(url, archivePath);
+    if (
+      createHash("sha256")
+        .update(await readFile(archivePath))
+        .digest("hex") !== expectedSha256
+    ) {
+      throw new Error(`[prepare-prebuilds] Node archive sha256 mismatch: ${url}`);
+    }
     // Bugfix: Windows 下绝对路径带盘符冒号（C:\...），GNU tar（Git Bash）会把 "C:" 当成
     // 远程主机名报 "Cannot connect to C"。改用 cwd + 相对归档名，避开 -f 参数里的冒号。
     // 反斜杠路径同样会被 MSYS tar 参数转换破坏（\3 被当转义），-C 目标统一转正斜杠，
@@ -419,7 +434,12 @@ async function prepareNodeBinaries() {
     // 远端 node 组件独立下载；复用缓存时也要刷新精确版本的 Node 许可原文。
     await stageNodeNotices(nodeDir, nodeVersion, rootDir);
 
-    if (existsSync(nodeBinaryPath)) {
+    if (
+      existsSync(nodeBinaryPath) &&
+      existsSync(join(nodeDir, ".verified-archive")) &&
+      (await readFile(join(nodeDir, ".verified-archive"), "utf8")) ===
+        remoteNodeArchiveSha256[platformKey]
+    ) {
       console.log(`  [skip] mock-cdn node/${platformKey} already exists`);
       continue;
     }
@@ -431,7 +451,13 @@ async function prepareNodeBinaries() {
     console.log(`  [download] ${url}`);
 
     try {
-      await extractArchiveMember(url, nodeDir, `node-${nodeVersion}-${platformKey}/bin/node`);
+      await extractArchiveMember(
+        url,
+        nodeDir,
+        `node-${nodeVersion}-${platformKey}/bin/node`,
+        remoteNodeArchiveSha256[platformKey],
+      );
+      await writeFile(join(nodeDir, ".verified-archive"), remoteNodeArchiveSha256[platformKey]);
       chmodSync(nodeBinaryPath, 0o755);
       console.log(`  [ok] mock-cdn node/${platformKey}`);
     } catch (error) {

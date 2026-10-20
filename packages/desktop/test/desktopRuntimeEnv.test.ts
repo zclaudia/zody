@@ -307,75 +307,35 @@ describe("desktopRuntimeEnv resolveRemoteAssetDirs", () => {
     }
   });
 
-  it("开发态当前版本 mock-cdn 存在时默认走 mock-cdn", async () => {
-    await withTestMockCdnReleaseDir("present", async () => {
-      const { resolveRemoteAssetDirs } = await import("../src/main/desktopRuntimeEnv.js");
-      const dirs = resolveRemoteAssetDirs({
-        locale: "zh-CN",
-        timeZone: "Asia/Shanghai",
+  it.each(["present", "missing"] as const)(
+    "开发态资源 %s 时仍固定本地来源，缺件不回退 CDN",
+    async (state) => {
+      await withTestMockCdnReleaseDir(state, async () => {
+        process.env["ZCODE_DEV_REMOTE_ASSET_USE_CDN"] = "1";
+        process.env["ZCODE_REMOTE_ASSET_CDN_BASE_URL"] = "https://example.invalid/forbidden";
+        const { resolveRemoteAssetDirs } = await import("../src/main/desktopRuntimeEnv.js");
+        const dirs = resolveRemoteAssetDirs();
+        expect(dirs.assetSource?.kind).toBe("local-only");
+        expect(dirs.assetSource?.rootDir).toMatch(/[\\/]mock-cdn$/);
+        expect(dirs.remoteCdnBaseUrl).toBeUndefined();
+        expect(dirs.remoteCdnBaseUrls).toBeUndefined();
+        expect(dirs.mockCdnDir).toBeUndefined();
       });
+    },
+  );
 
-      expect(dirs.mockCdnDir).toMatch(/[\\/]mock-cdn$/);
-      expect(dirs.remoteCdnBaseUrl).toBe(
-        "http://intranet.example.invalid:12345/ssh-remote-assets/0.0.0-test",
-      );
-      expect(dirs.remoteCdnBaseUrls).toEqual([
-        "http://intranet.example.invalid:12345/ssh-remote-assets/0.0.0-test",
-      ]);
-      expect(dirs.remoteCacheDir).toMatch(/[\\/]userData[\\/]remote-assets-cache$/);
-    });
-  });
-
-  it("开发态当前版本 mock-cdn 缺失时回退到 CDN cache", async () => {
-    await withTestMockCdnReleaseDir("missing", async () => {
-      const { resolveRemoteAssetDirs } = await import("../src/main/desktopRuntimeEnv.js");
-      const dirs = resolveRemoteAssetDirs({
-        locale: "zh-CN",
-        timeZone: "Asia/Shanghai",
-      });
-
-      expect(dirs.mockCdnDir).toBeUndefined();
-      expect(dirs.remoteCdnBaseUrl).toBe(
-        "http://intranet.example.invalid:12345/ssh-remote-assets/0.0.0-test",
-      );
-      expect(dirs.remoteCdnBaseUrls).toEqual([
-        "http://intranet.example.invalid:12345/ssh-remote-assets/0.0.0-test",
-      ]);
-      expect(dirs.remoteCacheDir).toMatch(/[\\/]userData[\\/]remote-assets-cache$/);
-    });
-  });
-  it("开发态打开开关后应直接走 CDN", async () => {
-    process.env["ZCODE_DEV_REMOTE_ASSET_USE_CDN"] = "TRUE";
-    const { resolveRemoteAssetDirs } = await import("../src/main/desktopRuntimeEnv.js");
-    const dirs = resolveRemoteAssetDirs({
-      locale: "en-US",
-      timeZone: "Asia/Shanghai",
-    });
-
-    expect(dirs.mockCdnDir).toBeUndefined();
-    expect(dirs.remoteCdnBaseUrl).toBe(
-      "http://intranet.example.invalid:12345/ssh-remote-assets/0.0.0-test",
-    );
-    expect(dirs.remoteCdnBaseUrls).toEqual([
-      "http://intranet.example.invalid:12345/ssh-remote-assets/0.0.0-test",
-    ]);
-    expect(dirs.remoteCacheDir).toMatch(/[\\/]userData[\\/]remote-assets-cache$/);
-  });
-
-  it("生产态应始终走 CDN 分支", async () => {
+  it("打包态使用 resources 下随包资源且不接受旧 CDN 环境变量", async () => {
     appMock.isPackaged = true;
-    process.env["ZCODE_DEV_REMOTE_ASSET_USE_CDN"] = "0";
-    process.env["ZCODE_REMOTE_ASSET_CDN_BASE_URL"] = "https://cdn.example.com/releases///";
-    const { resolveRemoteAssetDirs } = await import("../src/main/desktopRuntimeEnv.js");
-    const dirs = resolveRemoteAssetDirs({
-      locale: "zh-CN",
-      timeZone: "Asia/Shanghai",
+    Object.defineProperty(process, "resourcesPath", {
+      configurable: true,
+      value: "/mock/resources",
     });
-
-    expect(dirs.mockCdnDir).toBeUndefined();
-    expect(dirs.remoteCdnBaseUrl).toBe("https://cdn.example.com/releases");
-    expect(dirs.remoteCdnBaseUrls).toEqual(["https://cdn.example.com/releases"]);
-    expect(dirs.remoteCacheDir).toMatch(/[\\/]userData[\\/]remote-assets-cache$/);
+    process.env["ZCODE_REMOTE_ASSET_CDN_BASE_URL"] = "https://example.invalid/forbidden";
+    const { resolveRemoteAssetDirs } = await import("../src/main/desktopRuntimeEnv.js");
+    expect(resolveRemoteAssetDirs()).toEqual({
+      assetSource: { kind: "local-only", rootDir: join("/mock/resources", "remote-runtime") },
+      remoteCacheDir: join("/mock/userData", "remote-assets-cache"),
+    });
   });
 
   it("remote asset cache 目录支持环境变量覆盖", async () => {
@@ -406,7 +366,7 @@ describe("desktopRuntimeEnv resolveRemoteAssetDirs", () => {
     expect(dirs.remoteCacheDir).toBe(overrideCacheDir);
   });
 
-  it("开发态本地 env 文件可切到 CDN 并覆盖 CDN 与 cache", async () => {
+  it("开发态本地 env 中 CDN 配置无效，cache 仍可覆盖", async () => {
     const overrideCacheDir = join(tmpdir(), "zcode-local-env-cdn-remote-assets-cache");
     const { resolveRemoteAssetDirs } = await import("../src/main/desktopRuntimeEnv.js");
     const dirs = resolveRemoteAssetDirs(
@@ -422,8 +382,8 @@ describe("desktopRuntimeEnv resolveRemoteAssetDirs", () => {
     );
 
     expect(dirs.mockCdnDir).toBeUndefined();
-    expect(dirs.remoteCdnBaseUrl).toBe("https://cdn.example.com/releases");
-    expect(dirs.remoteCdnBaseUrls).toEqual(["https://cdn.example.com/releases"]);
+    expect(dirs.remoteCdnBaseUrl).toBeUndefined();
+    expect(dirs.remoteCdnBaseUrls).toBeUndefined();
     expect(dirs.remoteCacheDir).toBe(overrideCacheDir);
   });
 });

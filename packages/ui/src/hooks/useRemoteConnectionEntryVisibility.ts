@@ -1,13 +1,7 @@
 import type { ZCodeEnv } from "@zcode/shared";
 
-/**
- * fork（F6.1，决策门 D4a 方案 ii）：暂时隐藏 SSH/远程工作区的「部署/新建」入口。
- *
- * 原因：打包版不再随包携带远端运行时资源，fork 版本号在官方 CDN 上也没有对应制品，
- * 新建远程工作区会在部署阶段失败。仅摘除 UI 入口，不删除连接、部署与持久化类型/服务面，
- * 已有远程工作区仍按历史快照恢复并可重连；D4a 选择自建 CDN 后（F6.5）把本开关置回 true 即可恢复。
- */
-export const REMOTE_CONNECTION_CREATION_ENABLED = false;
+// 随包运行时已接入本地上传；目标类型由 useRemoteConnectionForm 限定为 SSH/Windows WSL。
+export const REMOTE_CONNECTION_CREATION_ENABLED = true;
 
 export function shouldShowRemoteConnectionEntry(params: {
   env: ZCodeEnv;

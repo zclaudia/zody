@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-wsl-local-runtime",
+  "spec": "./test/e2e/conversation-session/conversation-session-wsl-local-runtime.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-wsl-local-runtime.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "LOCAL-02 只验证 Windows WSL 本地上传、目录选择和单 Host，不发送模型请求。",
+  "requests": []
+}

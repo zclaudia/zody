@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   DockerContainerInfo,
-  RemoteAssetInstallMode,
   RemoteTarget,
   SSHConfigAliasOption,
   WSLDistro,
 } from "@zcode/shared";
-import { DEFAULT_REMOTE_ASSET_INSTALL_MODE } from "@zcode/shared";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import {
   loadRemoteConnectionDockerOptions,
@@ -20,21 +18,9 @@ export function buildAvailableKinds(options: {
   isWindowsDesktop: boolean;
   isLocalDevelopmentRuntime: boolean;
 }): RemoteKind[] {
+  // 本轮只恢复 SSH/WSL，不能因共用向导把 Docker/Server 一并放行。
   const kinds: RemoteKind[] = ["ssh"];
-  // Bugfix: Server remote 目前只是本地开发能力。之前无条件放入可选列表，
-  // 导致 production-mode 打包也会露出未对外开放的入口。
-  if (options.isLocalDevelopmentRuntime) {
-    kinds.push("server");
-  }
-  // Bugfix: 远程连接入口里 WSL 和 SSH 同属主机类连接。
-  // Windows 下先放 WSL 再放 Docker，避免 WSL 被 Docker 隔开后在选择页显得离 SSH 很远。
-  if (options.isWindowsDesktop) {
-    kinds.push("wsl");
-  }
-  // Docker入口之前完全依赖预探测结果决定是否展示。
-  // 当探测能力暂时不可用、或用户还没切到 Docker 时，入口会直接消失，
-  // 用户甚至不知道这里支持 Docker 连接。改为始终展示入口，切换后再懒加载探测结果。
-  kinds.push("docker");
+  if (options.isWindowsDesktop) kinds.push("wsl");
   return kinds;
 }
 
@@ -55,9 +41,6 @@ export function useRemoteConnectionForm({
   const [port, setPortState] = useState("22");
   const [username, setUsernameState] = useState("");
   const [sshAuthMethod, setSshAuthMethod] = useState<SSHAuthMethod>("password");
-  const [assetInstallMode, setAssetInstallMode] = useState<RemoteAssetInstallMode>(
-    DEFAULT_REMOTE_ASSET_INSTALL_MODE,
-  );
   const [password, setPassword] = useState("");
   const [privateKeyPath, setPrivateKeyPathState] = useState("");
   const [privateKeyPassphrase, setPrivateKeyPassphrase] = useState("");
@@ -345,7 +328,6 @@ export function useRemoteConnectionForm({
     port,
     username,
     sshAuthMethod,
-    assetInstallMode,
     password,
     privateKeyPath,
     privateKeyPassphrase,
@@ -370,7 +352,6 @@ export function useRemoteConnectionForm({
     setPort,
     setUsername,
     setSshAuthMethod,
-    setAssetInstallMode,
     setPassword,
     setPrivateKeyPath,
     setPrivateKeyPassphrase,

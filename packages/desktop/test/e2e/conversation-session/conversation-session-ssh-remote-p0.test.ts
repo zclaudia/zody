@@ -98,9 +98,8 @@ interface TaskCase {
   workspacePath: string;
 }
 
-// fork（F6.1，决策门 D4a 方案 ii）：SSH 远程工作区的新建/部署入口已在 UI 层隐藏，
-// 本用例依赖该入口完成首次连接，暂时跳过；F6.5 自建 CDN 恢复入口后需改为“种子化历史快照 + 重连”并重新启用。
-describe.skip(`${CASE_MARKER}: SSH remote workspace P0`, () => {
+// 随包运行时恢复 SSH 入口，继续使用真实 UI 连接验收本地上传路径。
+describe(`${CASE_MARKER}: SSH remote workspace P0`, () => {
   let replayTunnel: ReplayTunnel | null = null;
 
   after(async () => {
@@ -882,9 +881,7 @@ function readRemoteTabSnapshot(expectedIdentity: string): Promise<RemoteTabSnaps
   }, expectedIdentity);
 }
 
-async function readHostProcesses(): Promise<
-  Array<{ name: string; pid: number }>
-> {
+async function readHostProcesses(): Promise<Array<{ name: string; pid: number }>> {
   await openResourceManager();
   await switchToElectronRendererTarget(isResourceManagerUrl);
   await waitForResourceManagerReady();

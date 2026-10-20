@@ -47,6 +47,8 @@ import {
   REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS,
 } from "@zcode/server/remote/zcodeAgentOfficialPluginAssets.js";
 
+import { createLocalRuntimeFixture } from "./helpers/localRuntimeFixture.js";
+
 const retiredProtocolPrefix = `${"a"}${"cp"}`;
 const retiredProxyRuntimeId = `${retiredProtocolPrefix}-proxy-runtime`;
 // 远端 ZCode Agent bundle 文件名（与 REMOTE_AGENT_BUNDLE_NAME 保持一致）。
@@ -1195,6 +1197,7 @@ const DEV_CLI_BUNDLE_TEST_SUFFIX = join(
 );
 
 afterEach(async () => {
+  vi.unstubAllGlobals();
   process.chdir(originalCwd);
   if (originalRemoteDevAgentBundleEnv === undefined) {
     delete process.env.ZCODE_REMOTE_DEV_AGENT_BUNDLE;
@@ -1212,6 +1215,64 @@ afterEach(async () => {
 });
 
 describe("deployServer legacy agent node-script bundle deployment", () => {
+  it("本地来源忽略 remote-download/CDN，完整上传且不调用任何资源网络出口", async () => {
+    const fixture = await createLocalRuntimeFixture("linux-arm64");
+    tempDirs.push(fixture.root);
+    process.env.ZCODE_REMOTE_DEV_AGENT_BUNDLE = "1";
+    process.env[ZCODE_RUNTIME_ENV_KEY] = "development";
+    const backend = new FakeRemoteBackend({}, { serverVersion: "old" });
+    const networkFetch = vi.fn(() => {
+      throw new Error("network forbidden");
+    });
+    vi.stubGlobal("fetch", networkFetch);
+    await deployServer(
+      backend,
+      { platform: "linux", arch: "arm64" },
+      {
+        assetSource: fixture.source,
+        remoteCacheDir: fixture.cacheDir,
+        assetInstallMode: "remote-download",
+        remoteCdnBaseUrl: "https://example.invalid/forbidden",
+        remoteAssetNetwork: { fetch: networkFetch },
+        deployLockMode: "caller-serialized",
+      },
+    );
+    expect(networkFetch).not.toHaveBeenCalled();
+    expect(backend.uploads.some(({ remotePath }) => remotePath.includes("zcode-server.cjs"))).toBe(
+      true,
+    );
+    expect(backend.uploads.some(({ remotePath }) => remotePath.includes("zcode.cjs"))).toBe(true);
+    expect(backend.commands.join("\n")).not.toMatch(/curl|wget/);
+  });
+
+  it("本地来源损坏时不上传、不回退 CDN", async () => {
+    const fixture = await createLocalRuntimeFixture("linux-arm64");
+    tempDirs.push(fixture.root);
+    await writeFile(
+      join(fixture.source.rootDir, fixture.manifest.components[0]!.artifactPath),
+      "corrupt",
+    );
+    const backend = new FakeRemoteBackend();
+    const networkFetch = vi.fn(() => {
+      throw new Error("network forbidden");
+    });
+    await expect(
+      deployServer(
+        backend,
+        { platform: "linux", arch: "arm64" },
+        {
+          assetSource: fixture.source,
+          remoteCacheDir: fixture.cacheDir,
+          remoteAssetNetwork: { fetch: networkFetch },
+          deployLockMode: "caller-serialized",
+        },
+      ),
+    ).rejects.toThrow(/sha256/);
+    expect(backend.uploads).toEqual([]);
+    expect(networkFetch).not.toHaveBeenCalled();
+  });
+
+
   it("调用方已串行化部署时不创建远端 install-root lock", async () => {
     const rootDir = await mkdtemp(join(tmpdir(), "zcode-remote-deploy-"));
     tempDirs.push(rootDir);

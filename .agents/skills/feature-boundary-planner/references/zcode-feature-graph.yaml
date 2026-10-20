@@ -1687,6 +1687,23 @@ nodes:
       - "docs/ssh-remote-app-global-state-authority.md"
       - "docs/v4-refactor/14-sessions-index.md"
 
+  - id: "capability.local-remote-runtime"
+    kind: "capability"
+    label: "Packaged SSH and WSL runtime with local-only upload"
+    aliases: ["随包运行时", "本机上传运行时", "SSH WSL 恢复"]
+    docs:
+      - "specs/ssh-wsl-local-runtime-restoration.md"
+    codeSeeds:
+      - symbol: "prepareLocalRemoteAssets"
+        file: "packages/server/src/remote/localRemoteAssets.ts"
+      - symbol: "resolveRemoteAssetDirs"
+        file: "packages/desktop/src/main/desktopRuntimeEnv.ts"
+      - symbol: "stageRemoteRuntime"
+        file: "packages/desktop/scripts/stage-remote-runtime.mjs"
+    invariants:
+      - "Explicit local-only source overrides remote-download and all CDN fallbacks; missing or corrupt runtime assets fail before upload."
+      - "Manifest decisions, installed component bytes and remote SHA markers share one pinned manifest; Computer Use remains unchanged."
+
   - id: "capability.remote-provider-provisioning"
     kind: "capability"
     label: "Remote Environment Provider Provisioning v0"
@@ -5844,6 +5861,16 @@ edges:
     type: "must-not-report-through"
     rank: "invariant-only"
     condition: "Mobile attachments reuse the existing Agent/MCP runtime and never subscribe to, cache or replay MCP telemetry."
+  - from: "capability.local-remote-runtime"
+    to: "service.window-host-remote-connection-registry"
+    type: "deploys-through"
+    rank: "must-inspect"
+    condition: "The window Host owns remote connection readiness and passes Main-resolved local source to the existing deployment transaction."
+  - from: "capability.local-remote-runtime"
+    to: "capability.workspace-identity"
+    type: "must-preserve-isolation"
+    rank: "invariant-only"
+    condition: "Runtime resource distribution does not change workspace identity, owner leases or desktop/mobile delivery semantics."
   - from: "capability.workspace-identity"
     to: "service.telemetry-core"
     type: "reports-remote-workspace-lifecycle-through"

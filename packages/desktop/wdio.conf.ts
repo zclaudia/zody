@@ -727,11 +727,7 @@ function readE2EProviderPresetName(): E2EProviderPresetName {
     // 修复原因：rebase 后默认曾落到 GLM highspeed，会请求 open.bigmodel.cn 且人工验收链路不一致。
     return "env";
   }
-  if (
-    configured === "env" ||
-    configured === "bigmodel53" ||
-    configured === "stagingmodel"
-  ) {
+  if (configured === "env" || configured === "bigmodel53" || configured === "stagingmodel") {
     return configured;
   }
   throw new Error(
@@ -876,7 +872,8 @@ async function stageDesktopE2EAppOutput() {
     hasRequiredSshE2EEnvironment(process.env) ||
     process.env.ZCODE_E2E_SSH_HOST?.trim() ||
     process.env.ZCODE_E2E_SSH_A_HOST?.trim() ||
-    process.env.ZCODE_E2E_SSH_B_HOST?.trim()
+    process.env.ZCODE_E2E_SSH_B_HOST?.trim() ||
+    process.env.ZCODE_E2E_WSL_WORKSPACE_PATH?.trim()
   ) {
     // Bug 根因：CI 只有 build:remote:assets job 产出 mock-cdn/releases/<version>，且跑在通用
     // macos runner 槽位；conversation e2e 在专用 runner 上，mock-cdn 工作区持久化目录互不
@@ -895,7 +892,12 @@ async function stageDesktopE2EAppOutput() {
     // Bug 根因：dual-SSH case 只配置 A/B target；若这里只识别 common host，就不会把
     // 当前源码构建的 remote release 放进 runId 隔离目录，远端会继续复用同版本的旧
     // server bundle，并用旧协议 schema 拒绝 enabledSource 等新字段。
-    await stageE2EAppOutput(E2E_REMOTE_RELEASE_SOURCE_DIR, E2E_REMOTE_RELEASE_OUTPUT_DIR);
+    // local-only 依赖 manifest 引用的 components 归档；只复制松散 release 会导致真实部署缺件。
+    runPnpmWorkspaceCommand(["--filter", "@zcode/desktop", "stage:remote-runtime"]);
+    await stageE2EAppOutput(
+      resolve(REPO_ROOT, "packages/desktop/resources/remote-runtime"),
+      resolve(E2E_REMOTE_RELEASE_OUTPUT_DIR, "../.."),
+    );
   }
   if (!existsSync(E2E_APP_ENTRY_POINT)) {
     throw new Error(`[e2e] staged desktop main entrypoint missing: ${E2E_APP_ENTRY_POINT}`);
@@ -1970,15 +1972,15 @@ function seedE2EStartupState(specs: string[] = []) {
           : // fork（F4.7）：OAuth/JWT 专项 fixture 随 spec 删除；仅「旧版本升级」场景
             // 保留官方账号种子，供 Host 启动迁移在真实启动路径上清理。
             createE2EStartupCredentialSeed({
-                    specs,
-                    legacyAuthToken: E2E_AUTH_TOKEN,
-                    restoredOAuthCredentials: {
-                      "oauth:active_provider": authProviderId,
-                      [`oauth:${E2E_AUTH_PROVIDER_ID}:access_token`]: E2E_AUTH_TOKEN,
-                      [`oauth:${E2E_AUTH_PROVIDER_ID}:user_info`]: JSON.stringify(E2E_USER_PROFILE),
-                      zcodejwttoken: E2E_AUTH_TOKEN,
-                    },
-                  }),
+              specs,
+              legacyAuthToken: E2E_AUTH_TOKEN,
+              restoredOAuthCredentials: {
+                "oauth:active_provider": authProviderId,
+                [`oauth:${E2E_AUTH_PROVIDER_ID}:access_token`]: E2E_AUTH_TOKEN,
+                [`oauth:${E2E_AUTH_PROVIDER_ID}:user_info`]: JSON.stringify(E2E_USER_PROFILE),
+                zcodejwttoken: E2E_AUTH_TOKEN,
+              },
+            }),
       null,
       2,
     ),
@@ -2940,11 +2942,15 @@ async function seedUpstreamE2EModelConfig(specs: string[] = []) {
     await mkdir(E2E_APP_CONFIG_DIR, { recursive: true });
     await writeFile(
       resolve(E2E_APP_CONFIG_DIR, "agents-state.json"),
-      `${JSON.stringify({
-        builtInModelSelectionOverrides: {
-          "general-purpose": { providerId: "account:zai-start-plan", modelId: "GLM-5.2" },
+      `${JSON.stringify(
+        {
+          builtInModelSelectionOverrides: {
+            "general-purpose": { providerId: "account:zai-start-plan", modelId: "GLM-5.2" },
+          },
         },
-      }, null, 2)}\n`,
+        null,
+        2,
+      )}\n`,
       "utf-8",
     );
   }

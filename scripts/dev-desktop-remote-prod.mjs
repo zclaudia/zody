@@ -37,10 +37,8 @@ export function buildDesktopRemoteProdEnv(
 
   return {
     ...baseEnv,
-    // remote CDN 基址现在跟随 ZCODE_ENV 分流；该脚本用于复现生产态下载链路，
-    // 因此需要同时强制 production 和 CDN 开关，避免默认 test 环境落到测试资源 CDN。
+    // Desktop 已固定 local-only；该命令只复用生产环境与可写 cache，不再启用 CDN 下载。
     ZCODE_ENV: "production",
-    ZCODE_DEV_REMOTE_ASSET_USE_CDN: "1",
     ZCODE_REMOTE_ASSET_CACHE_DIR: cacheDir,
   };
 }

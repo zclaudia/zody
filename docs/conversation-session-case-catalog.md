@@ -3563,3 +3563,17 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 | ------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | CMDPREVIEW-01 | 桌面/手机、深浅主题下长 Bash 命令等待授权 | 默认三行；link 控件无水平 padding 和边框且对齐正文；展开后可滚动至末尾，$ 同步滚动；收起按钮不滚动；无空输出占位；默认第一项 Shift+Tab 可达展开按钮，Tab 返回选项，展开后反向 Tab 可达滚动视口；查看不触发授权，允许仍可提交 | accepted |
 | CMDPREVIEW-02 | 短命令与已完成空输出                      | 短命令不显示展开入口；实际执行完成的空输出提示仍保留                                                                                                                                                                         | accepted |
+
+
+## SSH/WSL local-only runtime（2026-10-20）
+
+用户已确认恢复纳入 0.1.0；产品规格为 `specs/ssh-wsl-local-runtime-restoration.md`。
+
+| 场景 | Setup → Action → Assertions | 证据/状态 |
+| --- | --- | --- |
+| LOCAL-01/07 | 无远端 runtime、清空资源 cache → SSH UI 连接、多工作区 → 本地上传成功、一个窗口 Host、identity 隔离 | 重新启用现有 SSH connection/development/P0 formal spec；真实环境结果另行记录 |
+| LOCAL-06 | pending SSH → 取消后重试 → 无旧 owner 提交，新连接成功 | 既有 pending `conversation-session-ssh-remote-cancel-retry.test.ts` |
+| LOCAL-09 | Desktop 空白页/侧栏 → 打开连接向导 → SSH 存在、WSL 仅 Windows、Docker/Server 不出现、无远端下载选项 | 新增 pending `conversation-session-local-runtime-remote-entry.test.ts` |
+| LOCAL-02 | Windows + distro/user → WSL UI 连接与选择目录 → Linux runtime 启动、原 Host 未重复创建、workspace 可用 | 新增 pending `conversation-session-wsl-local-runtime.test.ts`；需 Windows 原生验证 |
+
+剪枝：不把认证方式、Provider/model 与所有组件做笛卡尔积；部署来源的 HTTP 零调用、损坏归档、固定 SHA、缓存修复由 server 单测证明。Desktop continuous 与手机 replayable 保持隔离，不以 Desktop 证据声称手机链路已验证。新增 pending 用例未经 review 不晋升。

@@ -36,7 +36,8 @@ const REMOTE_ASSET_ENV_KEYS = [
   "ZCODE_REMOTE_ASSET_CACHE_DIR",
 ] as const;
 
-describe(`${CASE_MARKER}: SSH 本地下载遵循应用代理`, () => {
+// Desktop local-only 不再发起资源 HTTP 请求，本代理下载场景按 LOCAL-01 网络零调用规则剪枝。
+describe.skip(`${CASE_MARKER}: SSH 本地下载遵循应用代理`, () => {
   let proxy: RemoteAssetHttpProxy | null = null;
   let cacheDir: string | null = null;
   const originalEnv = new Map<string, string | undefined>();

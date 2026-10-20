@@ -122,3 +122,8 @@ formal/covered；必须在真实 SSH 环境完成 capture/replay 与人工审阅
 
 这些 case 的 case-local replay fixture 和 manifest 已建立，fixture check 通过；真实运行前仍需确认
 provider stream、SSH server PID 归属、断连事件和重连分组行为。
+
+
+## 0.1.0 随包运行时恢复
+
+SSH P0 formal specs 重新启用；使用 Desktop local-only source。LOCAL-01/06/07 场景沿用既有 setup/action/assertion，不新增第二套连接驱动。Docker 隔离的真实 SSH target 可以作为本地验收环境，但 WSL 仍需 Windows。运行时资源 HTTP 零调用、缺件与错误摘要由 server 单测显式拦截出口证明；本计划不把“网络不可达”误当作“无网络调用”。

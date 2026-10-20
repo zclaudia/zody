@@ -48,7 +48,7 @@ import { buildAvailableKinds } from "@/hooks/useRemoteConnectionForm.js";
 
 afterEach(cleanup);
 
-const allKinds: RemoteTarget["kind"][] = ["ssh", "server", "wsl", "docker"];
+const allKinds: RemoteTarget["kind"][] = ["ssh", "wsl"];
 
 function KindStepHarness() {
   const [kind, setKind] = useState<RemoteTarget["kind"]>("ssh");
@@ -95,35 +95,35 @@ describe("RemoteConnectionKindStep interactions", () => {
 });
 
 describe("RemoteConnectionDialogContent layout", () => {
-  it("shows Server between SSH and Windows-only kinds in local development", () => {
+  it("only offers SSH and WSL on Windows, including development", () => {
     expect(
       buildAvailableKinds({
         isWindowsDesktop: true,
         isLocalDevelopmentRuntime: true,
       }),
-    ).toEqual(["ssh", "server", "wsl", "docker"]);
+    ).toEqual(["ssh", "wsl"]);
   });
 
-  it("hides Server from production-mode packaged runtimes", () => {
+  it("keeps Docker and Server outside the restored product scope", () => {
     expect(
       buildAvailableKinds({
         isWindowsDesktop: true,
         isLocalDevelopmentRuntime: false,
       }),
-    ).toEqual(["ssh", "wsl", "docker"]);
+    ).toEqual(["ssh", "wsl"]);
     expect(
       buildAvailableKinds({
         isWindowsDesktop: false,
         isLocalDevelopmentRuntime: false,
       }),
-    ).toEqual(["ssh", "docker"]);
+    ).toEqual(["ssh"]);
   });
 
   it("renders the kind chooser as compact tiles", () => {
     const html = renderToStaticMarkup(
       createElement(RemoteConnectionKindStep, {
         kind: "ssh",
-        availableKinds: ["ssh", "server", "wsl", "docker"],
+        availableKinds: ["ssh", "wsl"],
         onKindChange: vi.fn(),
         onCancel: vi.fn(),
         onNext: vi.fn(),
@@ -144,7 +144,6 @@ describe("RemoteConnectionDialogContent layout", () => {
         port: "22",
         username: "user",
         sshAuthMethod: "privateKey",
-        assetInstallMode: "local",
         password: "",
         privateKeyPath: "/Users/test/.ssh/id_rsa",
         privateKeyPassphrase: "",
@@ -172,7 +171,6 @@ describe("RemoteConnectionDialogContent layout", () => {
         onPortChange: vi.fn(),
         onUsernameChange: vi.fn(),
         onSshAuthMethodChange: vi.fn(),
-        onAssetInstallModeChange: vi.fn(),
         onPasswordChange: vi.fn(),
         onPrivateKeyPathChange: vi.fn(),
         onPrivateKeyPassphraseChange: vi.fn(),

@@ -1,5 +1,7 @@
 # Fork 官方依赖移除：实施方案总纲
 
+> 2026-10-20 决策更新：SSH/WSL 恢复纳入 Zody 0.1.0，采用随包运行时、本机上传，禁止 CDN 回退；执行规格见 [SSH/WSL 本地运行时恢复](ssh-wsl-local-runtime-restoration.md)。本文 D4a/F6.1/F6.5 的“继续隐藏/等待自建 CDN”记录为历史决策，由新规格替代；Computer Use 不在本次改动范围。
+
 状态：草案（2026-10-17，已按首轮评审修订，修订点见文末「修订记录」），待评审。本文是移除 z.ai 官方依赖的总纲，负责阶段划分、决策门与验收；两份已有 spec 是其中两个阶段的实施细则：
 
 - `specs/fork-official-backend-runtime-dependencies.md` → 阶段 2

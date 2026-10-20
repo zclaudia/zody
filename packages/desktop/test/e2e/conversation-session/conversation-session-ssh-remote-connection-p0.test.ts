@@ -1,8 +1,5 @@
 import { buildRemoteWorkspaceIdentity, type RemoteTarget } from "@zcode/shared";
-import {
-  clearAppData,
-  waitForWorkspaceApp,
-} from "../helpers/desktop-app.js";
+import { clearAppData, waitForWorkspaceApp } from "../helpers/desktop-app.js";
 import { prepareV4ConversationE2E } from "../helpers/v4-conversation.js";
 import {
   clickLastEnabledSSHDialogButton,
@@ -20,9 +17,8 @@ import {
 
 const CASE_MARKER = "SSH_P0_CONNECTION";
 
-// fork（F6.1，决策门 D4a 方案 ii）：SSH 远程工作区新建/部署入口已隐藏，
-// 本用例依赖该入口发起首次连接；F6.5 恢复入口后重新启用。
-describe.skip(`${CASE_MARKER}: SSH password 连接 P0`, () => {
+// 随包运行时恢复 SSH 入口，继续使用真实 UI 连接验收本地上传路径。
+describe(`${CASE_MARKER}: SSH password 连接 P0`, () => {
   after(async () => {
     await browser.electron.restoreAllMocks();
     await clearAppData();
@@ -80,10 +76,7 @@ describe.skip(`${CASE_MARKER}: SSH password 连接 P0`, () => {
 async function closeSSHDialogAfterFailure(): Promise<void> {
   await browser.keys("Escape");
   await browser.waitUntil(
-    () =>
-      browser.execute(
-        () => !document.querySelector('[data-testid="ssh-dialog"]'),
-      ),
+    () => browser.execute(() => !document.querySelector('[data-testid="ssh-dialog"]')),
     {
       timeout: 15_000,
       timeoutMsg: `${CASE_MARKER}: 失败后的 SSH 向导没有关闭`,

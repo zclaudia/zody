@@ -80,3 +80,7 @@ __pycache__/
 .codex/
 .cursor/
 .claudia/
+
+# Generated offline SSH/WSL runtime archives
+packages/desktop/resources/remote-runtime/
+packages/desktop/resources/remote-runtime.staging-*/

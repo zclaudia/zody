@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from "vitest";
 import type {
   DockerContainerInfo,
   IPlatformService,
-  RemoteAssetInstallMode,
   RemoteTarget,
   SSHConfigAliasOption,
   WSLDistro,
@@ -68,7 +67,6 @@ type RemoteConnectionFieldsTestProps = {
   port: string;
   username: string;
   sshAuthMethod: "password" | "privateKey";
-  assetInstallMode: RemoteAssetInstallMode;
   password: string;
   privateKeyPath: string;
   privateKeyPassphrase: string;
@@ -94,7 +92,6 @@ type RemoteConnectionFieldsTestProps = {
   setPort: (value: string) => void;
   setUsername: (value: string) => void;
   setSshAuthMethod: (value: "password" | "privateKey") => void;
-  setAssetInstallMode: (value: RemoteAssetInstallMode) => void;
   setPassword: (value: string) => void;
   setPrivateKeyPath: (value: string) => void;
   setPrivateKeyPassphrase: (value: string) => void;
@@ -159,7 +156,6 @@ function renderDockerFields({
     port: "22",
     username: "",
     sshAuthMethod: "password",
-    assetInstallMode: "local-download-upload",
     password: "",
     privateKeyPath: "",
     privateKeyPassphrase: "",
@@ -185,7 +181,6 @@ function renderDockerFields({
     setPort: vi.fn(),
     setUsername: vi.fn(),
     setSshAuthMethod: vi.fn(),
-    setAssetInstallMode: vi.fn(),
     setPassword: vi.fn(),
     setPrivateKeyPath: vi.fn(),
     setPrivateKeyPassphrase: vi.fn(),
@@ -207,11 +202,7 @@ function renderDockerFields({
     createElement(
       PlatformProvider,
       { platform },
-      createElement(
-        ZCodeIntlProvider,
-        { initialLocale: "zh-CN" },
-        createElement(Component, props),
-      ),
+      createElement(ZCodeIntlProvider, { initialLocale: "zh-CN" }, createElement(Component, props)),
     ),
   );
 }
@@ -281,8 +272,6 @@ describe("RemoteConnectionFields Docker refresh", () => {
       refreshDockerContainers: vi.fn(),
     });
 
-    expect(html).toContain(
-      "如果运行中的容器列表不完整，可以手动输入容器名或 ID 连接。",
-    );
+    expect(html).toContain("如果运行中的容器列表不完整，可以手动输入容器名或 ID 连接。");
   });
 });

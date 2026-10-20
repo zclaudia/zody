@@ -5,6 +5,7 @@ import {
   formatLogPrefix,
   normalizeRemoteResourcePackageSelection,
   type RemoteAssetInstallMode,
+  type RemoteAssetSource,
   type RemoteResourcePackageId,
   type RemoteResourcePackageSelection,
 } from "@zcode/shared";
@@ -27,7 +28,8 @@ import {
 import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
 import { checkServerBundleRequiredMarkers } from "@zcode/server/remote/serverBundleDeployCheck.js";
 import { deployRuntimeTools } from "@zcode/server/remote/runtimeToolDeploy.js";
-import { REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS } from "@zcode/server/remote/zcodeAgentOfficialPluginAssets.js";
+import { resolveRequiredLocalReleasePaths } from "./remoteAssetLocalPaths.js";
+import { prepareLocalRemoteAssets } from "./localRemoteAssets.js";
 import {
   ensureRemoteReleaseDirFromCdn,
   selectRemoteAssetManifestComponents,
@@ -60,6 +62,7 @@ const SERVER_BUNDLE_COMPONENT_ID = "server-bundle";
 export type DeployLockMode = "remote" | "caller-serialized";
 
 export interface DeployOptions {
+  assetSource?: RemoteAssetSource;
   /** 取消当前远端连接初始化与其拥有的上传。 */
   signal?: AbortSignal;
   /** 开发态本地“伪 CDN”目录，运行时从这里读取 remote 资源 */
@@ -99,6 +102,26 @@ export async function deployServer(
 ): Promise<boolean> {
   const platformArch = `${env.platform}-${env.arch}`;
   assertSupportedRemoteEnvironment(env);
+  // 修复依据：本机上传曾在 manifest/缺件路径回退 CDN；本地策略必须在部署入口剥离全部网络来源。
+  if (options?.assetSource) {
+    options = {
+      ...options,
+      assetInstallMode: "local-download-upload",
+      mockCdnDir: undefined,
+      remoteCdnBaseUrl: undefined,
+      remoteCdnBaseUrls: [],
+    };
+    if (!options.remoteCacheDir)
+      throw new Error("[remote-assets] local-only requires remoteCacheDir");
+  }
+  let preparedLocalAssets: ReturnType<typeof prepareLocalRemoteAssets> | undefined;
+  const getPreparedLocalAssets = () =>
+    (preparedLocalAssets ??= prepareLocalRemoteAssets(
+      options!.assetSource!,
+      platformArch,
+      options!.remoteCacheDir!,
+      options?.signal,
+    ));
   const selectedResourcePackageIds = normalizeRemoteResourcePackageSelection();
   const shouldDeployResourcePackage = (packageId: RemoteResourcePackageId): boolean =>
     selectedResourcePackageIds.includes(packageId);
@@ -143,7 +166,12 @@ export async function deployServer(
     // deploy lock 可能等待较久；在获锁前就启动 fresh manifest
     // 会让等待者用旧 SHA 覆盖新 owner 的部署。改为锁内首次需要时才固定，
     // 后续 GLM 身份判断与 release materialize 仍复用同一份快照。
-    localManifestRefPromise ??= resolveFreshAssetManifestRef();
+    localManifestRefPromise ??= options?.assetSource
+      ? getPreparedLocalAssets().then(({ manifest }) => ({
+          manifest,
+          releaseBaseCandidatesForComponents: [],
+        }))
+      : resolveFreshAssetManifestRef();
     return localManifestRefPromise;
   };
   const getManifestRefForComponents = async (
@@ -173,6 +201,7 @@ export async function deployServer(
     componentIds?: string[],
     resolutionOptions?: { forceRefresh?: boolean },
   ): Promise<string | null> => {
+    if (options?.assetSource) return (await getPreparedLocalAssets()).releaseDir;
     const forceRefresh = Boolean(resolutionOptions?.forceRefresh);
     const cacheKey = buildReleaseDirCacheKey(componentIds, forceRefresh);
     if (resolvedReleaseDirs.has(cacheKey)) {
@@ -203,6 +232,7 @@ export async function deployServer(
       : null;
   };
   const assetDeployOptions = {
+    assetSource: options?.assetSource,
     signal: options?.signal,
     resolveReleaseDir: getReleaseDir,
     resolveComponentSha256: getComponentSha256,
@@ -696,57 +726,12 @@ async function findMissingMockReleasePaths(
   componentIds: string[] | undefined,
 ): Promise<string[]> {
   const missingPaths: string[] = [];
-  for (const relativePath of resolveRequiredMockReleasePaths(platformArch, componentIds)) {
+  for (const relativePath of resolveRequiredLocalReleasePaths(platformArch, componentIds)) {
     if (!(await fileExists(releaseDir, ...relativePath.split("/")))) {
       missingPaths.push(relativePath);
     }
   }
   return missingPaths;
-}
-
-function resolveRequiredMockReleasePaths(
-  platformArch: string,
-  componentIds: string[] | undefined,
-): string[] {
-  const ids =
-    componentIds && componentIds.length > 0
-      ? componentIds
-      : [SERVER_BUNDLE_COMPONENT_ID, "node-runtime"];
-  const requiredPaths = new Set<string>();
-
-  for (const componentId of ids) {
-    switch (componentId) {
-      case SERVER_BUNDLE_COMPONENT_ID:
-        requiredPaths.add("server/zcode-server.cjs");
-        break;
-      case "node-runtime":
-        requiredPaths.add(`node/${platformArch}/node`);
-        break;
-      case "node-pty":
-        requiredPaths.add(`node-pty/${platformArch}/pty.node`);
-        if (platformArch.startsWith("darwin-")) {
-          requiredPaths.add(`node-pty/${platformArch}/spawn-helper`);
-        }
-        break;
-      case "glm":
-        requiredPaths.add(`glm/${platformArch}/zcode.cjs`);
-        for (const relativePath of REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS) {
-          requiredPaths.add(`glm/${platformArch}/packages/${relativePath}`);
-        }
-        break;
-      case "bfs":
-        requiredPaths.add(`tools/${platformArch}/bfs/bfs`);
-        break;
-      case "ripgrep":
-        requiredPaths.add(`tools/${platformArch}/ripgrep/rg`);
-        break;
-      case "ugrep":
-        requiredPaths.add(`tools/${platformArch}/ugrep/ugrep`);
-        break;
-    }
-  }
-
-  return [...requiredPaths];
 }
 
 function collectStdout(stream: import("./backend.js").StdioStream): Promise<string> {

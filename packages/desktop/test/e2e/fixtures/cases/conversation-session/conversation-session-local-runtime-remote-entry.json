@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-local-runtime-remote-entry",
+  "spec": "./test/e2e/conversation-session/conversation-session-local-runtime-remote-entry.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-local-runtime-remote-entry.json"
+  ],
+  "fileFixtures": [],
+  "providerRequestPolicy": "none",
+  "noProviderRequests": true,
+  "providerRequestReason": "LOCAL-09 只验证 SSH/WSL UI 类型和随包来源展示，不发送模型请求。",
+  "requests": []
+}

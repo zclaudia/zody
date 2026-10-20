@@ -2824,3 +2824,17 @@ PA158 合并最新 staging 后 Linux Electron 复跑 1/1 通过，run `desktop-e
 | --- | --- | --- | --- |
 | CMDPREVIEW-01 | partial | `packages/ui/test/browser/manual-review/pending/permission-full-access.test.mjs`：390/1200 × 深浅主题长命令回归 4/4，原审批交互 4/4；实际 DOM 对齐、三行、4px 滚动条及 $ 滚动断言通过；CR-01 补充从默认选项出发的真实 Tab/Shift+Tab 导航，移除按钮程序化 focus | Electron 和手机 relay 整链路、人工准入 |
 | CMDPREVIEW-02 | partial | 同一 browser 用例包含短命令；`packages/ui/test/executePermissionPreview.test.ts` 2/2 验证权限预览与已完成空输出区别 | Electron 完成态整链路 |
+
+
+## SSH/WSL local-only runtime（2026-10-20）
+
+用户已确认恢复纳入 0.1.0；产品规格为 `specs/ssh-wsl-local-runtime-restoration.md`。
+
+| 场景 | Setup → Action → Assertions | 证据/状态 |
+| --- | --- | --- |
+| LOCAL-01/07 | 无远端 runtime、清空资源 cache → SSH UI 连接、多工作区 → 本地上传成功、一个窗口 Host、identity 隔离 | 重新启用现有 SSH connection/development/P0 formal spec；真实环境结果另行记录 |
+| LOCAL-06 | pending SSH → 取消后重试 → 无旧 owner 提交，新连接成功 | 既有 pending `conversation-session-ssh-remote-cancel-retry.test.ts` |
+| LOCAL-09 | Desktop 空白页/侧栏 → 打开连接向导 → SSH 存在、WSL 仅 Windows、Docker/Server 不出现、无远端下载选项 | 新增 pending `conversation-session-local-runtime-remote-entry.test.ts` |
+| LOCAL-02 | Windows + distro/user → WSL UI 连接与选择目录 → Linux runtime 启动、原 Host 未重复创建、workspace 可用 | 新增 pending `conversation-session-wsl-local-runtime.test.ts`；需 Windows 原生验证 |
+
+剪枝：不把认证方式、Provider/model 与所有组件做笛卡尔积；部署来源的 HTTP 零调用、损坏归档、固定 SHA、缓存修复由 server 单测证明。Desktop continuous 与手机 replayable 保持隔离，不以 Desktop 证据声称手机链路已验证。新增 pending 用例未经 review 不晋升。

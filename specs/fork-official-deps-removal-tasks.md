@@ -1,5 +1,7 @@
 # Fork 官方依赖移除：实施任务拆分
 
+> 2026-10-20 决策更新：SSH/WSL 恢复纳入 Zody 0.1.0，采用随包运行时、本机上传，禁止 CDN 回退；执行规格见 [SSH/WSL 本地运行时恢复](ssh-wsl-local-runtime-restoration.md)。本文 D4a/F6.1/F6.5 的“继续隐藏/等待自建 CDN”记录为历史决策，由新规格替代；Computer Use 不在本次改动范围。
+
 状态：草案（2026-10-17）。对应方案见 [fork-official-deps-removal-plan.md](fork-official-deps-removal-plan.md)（下称「总纲」）与 [fork-official-backend-runtime-dependencies.md](fork-official-backend-runtime-dependencies.md)（下称「阶段 2 细则」）。本文只拆任务，规则以总纲和细则为准；两者冲突时先改方案。手机远控（总纲阶段 5）的任务见 [mobile-remote-control-via-gateway-tasks.md](mobile-remote-control-via-gateway-tasks.md)，本文只记录与它的交汇点。
 
 任务编号统一用 `F` 前缀（如 F2.1），避免与 gateway 任务的 `T` 编号混淆。
@@ -39,7 +41,7 @@
 | 门   | 问题                                | 影响任务                   | 推荐                                            |
 | ---- | ----------------------------------- | -------------------------- | ----------------------------------------------- |
 | D3   | gateway 细节                        | gateway 任务               | 见 gateway 方案待决 1-5                         |
-| D4a  | SSH 远程运行时：自建 CDN 或暂时隐藏 | F6.1、F6.5                 | 先隐藏（F6.1），后自建（F6.5）                  |
+| D4a  | SSH 远程运行时：自建 CDN 或暂时隐藏 | F6.1、F6.5                 | 已决（2026-10-20）：0.1.0 恢复 SSH/WSL；随包运行时、本机上传、禁止 CDN 回退；见 `ssh-wsl-local-runtime-restoration.md` |
 | D4b  | 插件市场：自托管或仅 GitHub 源      | F6.2                       | 仅 GitHub 源 + 本地 seed                        |
 | D5   | 产品名、appId、域名、渠道、证书     | F2.10（来源头取值）、F7.\* | —                                               |
 | D6   | 会话分享：移除或自建分享服务        | F4.8                       | 移除（发布、导入、分享落地页）；需要时另立 spec |

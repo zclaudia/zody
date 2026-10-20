@@ -27,6 +27,7 @@ describe("buildRemoteTarget", () => {
     expect(result).toEqual({
       target: {
         kind: "ssh",
+        assetInstallMode: "local-download-upload",
         host: "demo.internal",
         port: 22,
         username: "root",
@@ -36,7 +37,7 @@ describe("buildRemoteTarget", () => {
     });
   });
 
-  it("includes the selected SSH asset install mode", () => {
+  it("normalizes a legacy remote-download choice to local upload", () => {
     const result = buildRemoteTarget(intl, {
       kind: "ssh",
       host: "demo.internal",
@@ -53,7 +54,7 @@ describe("buildRemoteTarget", () => {
 
     expect(result.target).toMatchObject({
       kind: "ssh",
-      assetInstallMode: "remote-download",
+      assetInstallMode: "local-download-upload",
     });
   });
 

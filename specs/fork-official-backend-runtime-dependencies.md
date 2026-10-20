@@ -1,5 +1,7 @@
 # Fork 对官方后端的运行时依赖：强制升级 gate、自动更新与启动期请求
 
+> 2026-10-20 决策更新：SSH/WSL 恢复纳入 Zody 0.1.0，采用随包运行时、本机上传，禁止 CDN 回退；执行规格见 [SSH/WSL 本地运行时恢复](ssh-wsl-local-runtime-restoration.md)。本文 D4a/F6.1/F6.5 的“继续隐藏/等待自建 CDN”记录为历史决策，由新规格替代；Computer Use 不在本次改动范围。
+
 状态：草案（2026-10-16；2026-10-17 按总纲 `fork-official-deps-removal-plan.md` 的决策门 D1、D1b、D2 修订），待评审后实现。本文只描述规则和改动范围，不含代码改动。
 
 ## 背景与决策

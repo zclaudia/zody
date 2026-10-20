@@ -7,9 +7,7 @@ import { remoteTargetSchema } from "../src/validation.js";
 
 describe("remote asset install mode", () => {
   it("defaults missing SSH assetInstallMode to local download upload", () => {
-    expect(normalizeRemoteAssetInstallMode()).toBe(
-      DEFAULT_REMOTE_ASSET_INSTALL_MODE,
-    );
+    expect(normalizeRemoteAssetInstallMode()).toBe(DEFAULT_REMOTE_ASSET_INSTALL_MODE);
   });
 
   it("accepts remote-download on SSH targets", () => {
@@ -32,5 +30,21 @@ describe("remote asset install mode", () => {
         assetInstallMode: "auto-install-tools",
       }),
     ).toThrow();
+  });
+});
+
+import { remoteAssetDirsSchema } from "../src/validation.js";
+
+describe("remote asset source contract", () => {
+  it("Main→Host 运行时校验保留本地来源策略并拒绝空路径", () => {
+    const assetSource = { kind: "local-only", rootDir: "/runtime" };
+    expect(remoteAssetDirsSchema.parse({ assetSource }).assetSource).toEqual(assetSource);
+    expect(
+      remoteAssetDirsSchema.safeParse({ assetSource: { ...assetSource, rootDir: "" } }).success,
+    ).toBe(false);
+    expect(
+      remoteAssetDirsSchema.safeParse({ assetSource: { ...assetSource, kind: "fallback" } })
+        .success,
+    ).toBe(false);
   });
 });

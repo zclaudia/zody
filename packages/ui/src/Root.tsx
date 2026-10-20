@@ -622,8 +622,7 @@ function RootInner({
     allowOpenWorkspace,
     preferDirectoryBrowser: shouldPreferDirectoryBrowser,
     openDirectoryBrowser: handleOpenDirectoryBrowser,
-    // fork（F6.1，D4a(ii)）：新建/部署远程工作区入口摘除；仅移除打开向导的回调，
-    // 已有远程工作区的连接/重连仍由 useRemoteWorkspaceHistory 负责。
+    // SSH/WSL 恢复入口仍受壳层能力约束；历史重连由 useRemoteWorkspaceHistory 负责。
     onOpenRemoteConnection:
       allowRemoteWorkspace && REMOTE_CONNECTION_CREATION_ENABLED
         ? handleOpenRemoteConnection
@@ -1034,8 +1033,7 @@ function RootInner({
     }
   }, []);
 
-  // fork（F6.1，D4a(ii)）：新建/部署向导不再可达。组件与 onConnect/onSelectProject
-  // 服务面保留，供 F6.5 自建 CDN 后通过 REMOTE_CONNECTION_CREATION_ENABLED 恢复。
+  // 新建向导复用现有连接服务，随包资源策略由 Main/Host 注入。
   const remoteConnectionDialog =
     allowRemoteWorkspace && REMOTE_CONNECTION_CREATION_ENABLED ? (
       <SSHDialog
@@ -1184,8 +1182,7 @@ function RootInner({
             handleResolveConversationWorkspace={handleResolveConversationWorkspace}
             handleOpenWorkspace={handleOpenWorkspace}
             handleOpenFolderFromWorkspaceMenu={handleOpenFolderFromWorkspaceMenu}
-            // fork（F6.1，D4a(ii)）：侧栏「添加项目 → 远程连接」菜单项随入口摘除；
-            // 传 undefined 让 WorkspaceSidebar 不渲染该菜单项（组件与 prop 仍保留）。
+            // 本地 Web/手机壳层不增加远程部署入口。
             handleOpenRemoteWorkspace={
               allowRemoteWorkspace && REMOTE_CONNECTION_CREATION_ENABLED
                 ? handleOpenRemoteConnection

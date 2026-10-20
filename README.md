@@ -65,7 +65,9 @@ ZCODE_DATA_BASE_DIR="$HOME/.zcode-dev-home" pnpm dev:desktop:test
 
 ### 远程功能（SSH/WSL）
 
-先执行 `pnpm bootstrap:with-remote` 准备远程资源（mock-cdn），再 `pnpm dev:desktop`；连接远程项目时资源选择「本地下载后上传」。开发态资源取自本地 `packages/desktop/mock-cdn` 和本地构建产物，经 SFTP 上传到远程，不访问 CDN。
+SSH / Windows WSL 远程工作区纳入 0.1.0。开发前执行 `pnpm bootstrap:with-remote`（或已有依赖下执行 `pnpm prepare:remote-assets`），再运行 `pnpm dev:desktop`。连接时固定从本机上传运行时；缺件或校验失败直接报错，不访问 CDN。
+
+发行包通过 `pnpm --filter @zcode/desktop stage:remote-runtime` 校验并暂存当前四平台 manifest 引用的组件归档，打包前再次校验；运行时从随包资源解包到本地缓存后上传。见 [SSH/WSL 恢复规格](specs/ssh-wsl-local-runtime-restoration.md)。
 
 ### Web 开发
 
