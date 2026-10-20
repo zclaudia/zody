@@ -10,7 +10,7 @@
  */
 import type { ReactNode } from "react";
 import { ArrowLeftRightIcon, CpuIcon, LockIcon } from "lucide-react";
-import zcoderLogoUrl from "@/assets/brand/zcoder-logo.png";
+import { ZCODER_BRAND_NAME, zcoderLogoUrl } from "@/brand.js";
 import { cn } from "@/components/lib/utils.js";
 import { DesktopOverlayWindowControls } from "@/DesktopOverlayWindowControls.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -25,9 +25,6 @@ interface WelcomeScreenProps {
  * 类型保留待 F4.5 清理（Root 的 onComplete 只区分日志语义）。
  */
 export type LoginCompleteReason = "oauth" | "apiKey" | "skip";
-
-/** 品牌名是专有名词，不进入 i18n，各语言一致。 */
-const BRAND_NAME = "zcoder";
 
 export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
   return (
@@ -126,7 +123,9 @@ function BrandMark({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
       <img src={zcoderLogoUrl} alt="" width={36} height={36} className="size-9 shrink-0" />
-      <span className="text-ui-lg font-semibold tracking-tight text-foreground">{BRAND_NAME}</span>
+      <span className="text-ui-lg font-semibold tracking-tight text-foreground">
+        {ZCODER_BRAND_NAME}
+      </span>
     </div>
   );
 }

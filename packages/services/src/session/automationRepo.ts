@@ -12,11 +12,9 @@ import {
   AUTOMATION_CREATE_LIMIT,
   AUTOMATION_CREATE_LIMIT_ERROR_CODE,
   resolveWorkspaceKey,
-  zcodeAutomationBotDeliveryTargetSchema,
   modelSelectionSchema,
   zcodeTaskModeSchema,
   type ZCodeAutomation,
-  type ZCodeAutomationBotDeliveryTarget,
   type ZCodeAutomationCreateParams,
   type ZCodeAutomationDispatchStatus,
   type ZCodeAutomationLifecycleStatus,
@@ -67,7 +65,8 @@ interface AutomationRow {
   workspace_path: string;
   workspace_identity: string | null;
   target_task_id: string | null;
-  bot_delivery_target: string | null;
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：SQLite 里的 bot_delivery_target
+  // 列保留不读（历史库兼容，参照 off_peak_tasks 先例），读写代码全部摘除，不做数据迁移。
   location_kind: string;
   recurring: number;
   max_runs: number | null;
@@ -336,7 +335,7 @@ export class AutomationRepo {
       db.prepare(
         `INSERT INTO automations (
           automation_id, title, cron_expr, prompt, model, provider, model_selection,
-          workspace_key, workspace_path, workspace_identity, target_task_id, bot_delivery_target, location_kind,
+          workspace_key, workspace_path, workspace_identity, target_task_id, location_kind,
           recurring, max_runs, end_at, schedule_rule, schedule_edited_by_user,
           run_count, enabled, lifecycle_status,
           next_run_at, last_run_at, running, claimed_at,
@@ -345,7 +344,7 @@ export class AutomationRepo {
           created_at, updated_at
         ) VALUES (
           @automation_id, @title, @cron_expr, @prompt, @model, @provider, @model_selection,
-          @workspace_key, @workspace_path, @workspace_identity, @target_task_id, @bot_delivery_target, 'local',
+          @workspace_key, @workspace_path, @workspace_identity, @target_task_id, 'local',
           @recurring, @max_runs, @end_at, @schedule_rule, 0,
           0, @enabled, @lifecycle_status,
           @next_run_at, NULL, 0, NULL,
@@ -368,9 +367,6 @@ export class AutomationRepo {
         workspace_path: params.workspacePath,
         workspace_identity: params.workspaceIdentity ?? null,
         target_task_id: params.targetTaskId ?? null,
-        bot_delivery_target: params.botDeliveryTarget
-          ? JSON.stringify(params.botDeliveryTarget)
-          : null,
         recurring: params.recurring ? 1 : 0,
         max_runs: params.maxRuns ?? null,
         end_at: params.endAt ?? null,
@@ -426,24 +422,8 @@ export class AutomationRepo {
     return undefined;
   }
 
-  /**
-   * 仅供后台派发读取 Bot 回推目标；该内部来源信息不进入 automation 展示模型。
-   */
-  async getBotDeliveryTarget(
-    automationId: string,
-    workspaceKey?: string,
-  ): Promise<ZCodeAutomationBotDeliveryTarget | undefined> {
-    await this.ensureReady();
-    const raw = this.getRow(automationId, workspaceKey)?.bot_delivery_target;
-    if (!raw) return undefined;
-    try {
-      const parsed = zcodeAutomationBotDeliveryTargetSchema.safeParse(JSON.parse(raw));
-      return parsed.success ? parsed.data : undefined;
-    } catch {
-      // Bug 原因：历史/外部写入的脏 JSON 不能拖垮任务列表或 scheduler；无效来源按未配置处理。
-      return undefined;
-    }
-  }
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：getBotDeliveryTarget 随
+  // bot 回推链整体删除；历史行里的 bot_delivery_target 列不再读取。
 
   async hasTaskBinding(scope: {
     workspacePath: string;
@@ -821,7 +801,6 @@ export class AutomationRepo {
             a.dispatch_attempts AS a_dispatch_attempts,
             a.retry_at AS a_retry_at,
             a.last_error AS a_last_error,
-            a.bot_delivery_target AS a_bot_delivery_target,
             a.created_at AS a_created_at,
             a.updated_at AS a_updated_at,
             r.run_id AS r_run_id,
@@ -898,7 +877,6 @@ export class AutomationRepo {
             dispatch_attempts: row["a_dispatch_attempts"] as number,
             retry_at: (row["a_retry_at"] as number | null) ?? null,
             last_error: (row["a_last_error"] as string | null) ?? null,
-            bot_delivery_target: (row["a_bot_delivery_target"] as string | null) ?? null,
             created_at: row["a_created_at"] as number,
             updated_at: now,
           }),

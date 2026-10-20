@@ -55,14 +55,7 @@ describe("v4 input admission canonical intent", () => {
           kind: "sendGoalCommand",
           text: "original objective",
           inputOrigin: "mobile",
-          botGroupSource: {
-            provider: "feishu",
-            botId: "bot",
-            chatId: "group",
-            senderId: "member",
-            senderName: "Member",
-            messageId: "message",
-          },
+          // fork（bots 移除）：原 fixture botGroupSource 随 bot channels 全量删除。
           sourceCommandId: "cmd-original",
           clientId: "client-original",
           queueItemId: "queue-original",
@@ -75,7 +68,9 @@ describe("v4 input admission canonical intent", () => {
               fileName: "a.txt",
               mime: "text/plain",
               bytes: 1,
-              sourceKind: "topic-history",
+              // fork（bots 移除）：sourceKind "topic-history" 随 bot channels 全量删除，
+              // 附件来源枚举收窄为 "clipboard-text"。
+              sourceKind: "clipboard-text",
               messageCount: 1,
             },
           ],
@@ -96,21 +91,16 @@ describe("v4 input admission canonical intent", () => {
       kind: "sendGoalCommand",
       text: "original objective",
       inputOrigin: "mobile",
-      botGroupSource: {
-        provider: "feishu",
-        botId: "bot",
-        chatId: "group",
-        senderId: "member",
-        senderName: "Member",
-        messageId: "message",
-      },
+      // fork（bots 移除）：原 botGroupSource 断言随 bot channels 全量删除。
       attachments: [
         {
           ref: "attachment://a",
           fileName: "a.txt",
           mime: "text/plain",
           bytes: 1,
-          sourceKind: "topic-history",
+          // fork（bots 移除）：sourceKind "topic-history" 随 bot channels 全量删除，
+          // 附件来源枚举收窄为 "clipboard-text"。
+          sourceKind: "clipboard-text",
           messageCount: 1,
         },
       ],

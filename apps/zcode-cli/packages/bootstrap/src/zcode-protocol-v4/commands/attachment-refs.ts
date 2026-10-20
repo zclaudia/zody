@@ -72,7 +72,8 @@ async function mapAttachmentRef(app: ZCodeApp, ref: AttachmentRef): Promise<Turn
       ...displayMeta,
     };
   }
-  if (ref.sourceKind === "topic-history" || ref.sourceKind === "clipboard-text") {
+  if (ref.sourceKind === "clipboard-text") {
+    // fork（bots 移除）：原 "topic-history" 分支随 bot channels 全量删除（specs/bot-channels-removal.md）。
     // 文本材料必须保留 durable 引用；按普通小文件解码会重新隐藏注入整份历史。
     return { content: ref.ref, type: "file", ...displayMeta };
   }

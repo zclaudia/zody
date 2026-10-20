@@ -61,17 +61,6 @@ const feedbackMocks = vi.hoisted(() => ({
 
 vi.mock("@/components/ui/toast.js", () => ({ toast: feedbackMocks.toast }));
 
-const botsDialogMock = vi.hoisted(() => ({
-  props: [] as Array<{ open?: boolean; entryProvider?: unknown }>,
-}));
-
-vi.mock("@/BotsDialog.js", () => ({
-  BotsDialog: (props: { open?: boolean; entryProvider?: unknown }) => {
-    botsDialogMock.props.push(props);
-    return props.open ? createElement("div", { "data-testid": "bots-dialog" }) : null;
-  },
-}));
-
 const platformMock = vi.hoisted(() => ({
   setRemoteAccessEnabled: vi.fn(async () => {}),
   disconnectRemoteClient: vi.fn(async () => {}),
@@ -144,7 +133,6 @@ describe("WebRemoteControlDialog", () => {
     feedbackMocks.error.mockClear();
     feedbackMocks.info.mockClear();
     feedbackMocks.toast.mockClear();
-    botsDialogMock.props.length = 0;
   });
 
   it("只展示 App 级远程访问状态，不再生成二维码", () => {
@@ -249,6 +237,25 @@ describe("WebRemoteControlDialog", () => {
     expect(source).toContain("disconnectRemoteClient");
   });
 
+  // fork（bot-channels 移除）：原双列 max-w-4xl 布局随右列 Bots 入口卡删除回归单列
+  // （specs/bot-channels-removal.md），弹层收窄为 max-w-xl 并去掉等高 min-h-[360px]。
+  it("renders single column without the removed bots entry", () => {
+    const html = renderToStaticMarkup(
+      createElement(WebRemoteControlDialog, {
+        open: true,
+        onOpenChange: vi.fn(),
+        workspacePath: "/tmp/project",
+      }),
+    );
+
+    expect(html).toContain('data-testid="web-remote-control-main-grid"');
+    expect(html).toContain('data-testid="web-remote-control-status-card"');
+    expect(html).not.toContain("md:grid-cols-");
+    expect(html).not.toContain("min-h-[360px]");
+    expect(html).not.toContain('data-testid="web-remote-control-open-bots"');
+    expect(html).not.toContain("webRemoteControl.botChannel.title");
+  });
+
   it("uses Remote Connect width without forcing the lighter dialog to full height", () => {
     const html = renderToStaticMarkup(
       createElement(WebRemoteControlDialog, {
@@ -259,43 +266,11 @@ describe("WebRemoteControlDialog", () => {
     );
 
     expect(html).toContain("max-h-[calc(100vh-6rem)]");
-    expect(html).toContain("max-w-4xl");
+    expect(html).toContain("max-w-xl");
+    expect(html).not.toContain("max-w-4xl");
     expect(html).toContain("overflow-hidden");
     expect(html).toContain('data-testid="web-remote-control-dialog-scroll"');
     expect(html).not.toContain('class="h-[calc(100vh-6rem)]');
     expect(html).toContain("overflow-y-auto");
-  });
-
-  it("保留可用的 Bots 入口卡片", () => {
-    const html = renderToStaticMarkup(
-      createElement(WebRemoteControlDialog, {
-        open: true,
-        onOpenChange: vi.fn(),
-        workspacePath: "/tmp/project",
-      }),
-    );
-
-    expect(html).toContain('data-testid="web-remote-control-main-grid"');
-    expect(html).toContain("webRemoteControl.botChannel.title");
-    expect(html).toContain("webRemoteControl.botChannel.weixin.title");
-    expect(html).toContain("webRemoteControl.botChannel.feishu.title");
-    expect(html).toContain("webRemoteControl.botChannel.lark.title");
-    expect(html).toContain("webRemoteControl.botChannel.telegram.title");
-    expect(html).toContain('data-testid="web-remote-control-open-bots"');
-    expect(html).toContain("webRemoteControl.botChannel.manageBots");
-  });
-
-  it("standalone bots entry works without touching remote access", async () => {
-    remoteAccessStatusMock.status = makeStatus({ enabled: false, gateway: { state: "disabled" } });
-
-    const view = renderDialog();
-    expect(view.container.querySelector('[data-testid="bots-dialog"]')).toBeNull();
-
-    fireEvent.click(await view.findByTestId("web-remote-control-open-bots"));
-
-    expect(await view.findByTestId("bots-dialog")).toBeTruthy();
-    expect(botsDialogMock.props.at(-1)?.entryProvider ?? null).toBeNull();
-    expect(platformMock.setRemoteAccessEnabled).not.toHaveBeenCalled();
-    expect(platformMock.disconnectRemoteClient).not.toHaveBeenCalled();
   });
 });

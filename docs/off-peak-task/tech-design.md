@@ -928,7 +928,7 @@ id/enabled/systemDisabledReason，不读取或选择 API Key。导航进入创�
 `min(Retry-After ?? 60s, 5min)` 的 abort-aware 等待。stream 跨越可见输出边界后禁止重试。
 
 **⑤ `files_changed` 复用 task diff —— ✅ 成立（MR4 直接照 bots 先例）。**
-权威源是 session `fileChanges` 快照（工具写盘型，非 git diff），host 域 `getTaskSnapshot({taskId,...})` + `buildTaskChangeSummary(snapshot.fileChanges).fileCount`（`taskChangeSummary.ts:80`）；bots 完成通知已在终态这么用（`botsService.ts:4875`）。注意：**勿在 host 读 `meta.changeSummary`**（仅 renderer 合并缓存）；Bash 产生的改动不计入（相对 git status 偏少，接受）；off-peak 专属新 session 下 task 级 == run 级。`off_peak_tasks.files_changed` 列已随 MR1 建好，终态回填即可。
+权威源是 session `fileChanges` 快照（工具写盘型，非 git diff），host 域 `getTaskSnapshot({taskId,...})` + `buildTaskChangeSummary(snapshot.fileChanges).fileCount`（`taskChangeSummary.ts:80`）。（fork 注：MR4 参照的 bots 完成通知终态用法 `botsService.ts:4875` 已随 bot channels 移除删除，见 `specs/bot-channels-removal.md`。）注意：**勿在 host 读 `meta.changeSummary`**（仅 renderer 合并缓存）；Bash 产生的改动不计入（相对 git status 偏少，接受）；off-peak 专属新 session 下 task 级 == run 级。`off_peak_tasks.files_changed` 列已随 MR1 建好，终态回填即可。
 
 **⑥ `client/configs` 拉取 —— ✅ 仅保留产品曝光开关。**
 `bigmodelCodingPlanSubscriptionProvider` 只解析 `enable_offpeak_task`，UI 进入相关入口时请求强刷；

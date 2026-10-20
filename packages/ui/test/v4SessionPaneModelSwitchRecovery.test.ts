@@ -39,11 +39,8 @@ vi.mock("@/hooks/useModelSelectionView.js", () => ({
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-// 本组只验证模型恢复；群同步服务由独立组件测试和真实 Host/CLI E2E 覆盖。
-vi.mock("@/v4/BotGroupDeliveryAction.js", () => ({
-  BotGroupDeliveryProvider: ({ children }: { children: unknown }) => children,
-  ConnectedBotGroupDeliveryAction: () => null,
-}));
+// fork（bot-channels 移除）：BotGroupDeliveryAction mock 随 bot 群投递链删除
+//（specs/bot-channels-removal.md）。
 
 type ComposerProps = ComponentProps<typeof ConversationComposer>;
 

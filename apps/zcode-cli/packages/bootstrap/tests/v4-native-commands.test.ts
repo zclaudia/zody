@@ -643,36 +643,8 @@ describe("v4 原生 sendText", () => {
     );
   });
 
-  it("Bot delivery target 仅在当前 turn 可见，并在 turn 结束后恢复", async () => {
-    let releaseTurn!: () => void;
-    const turnGate = new Promise<void>((resolve) => {
-      releaseTurn = resolve;
-    });
-    const app = makeApp({
-      sendInput: vi.fn().mockResolvedValue({
-        completion: turnGate,
-        kind: "started_turn",
-        turnId: "turn-bot",
-      }),
-    });
-    const record = makeRecord({ app });
-    const host = makeHost(record);
-    const botDeliveryTarget = {
-      provider: "weixin" as const,
-      botId: "bot-weixin",
-      providerUserId: "chat-1",
-      chatType: "private" as const,
-    };
-
-    await new V4CommandExecutor(host).execute(
-      envelope("sendText", { text: "创建提醒", botDeliveryTarget }),
-    );
-    expect(record.activeBotDeliveryTarget).toEqual(botDeliveryTarget);
-    releaseTurn();
-    await settle();
-    expect(record.activeBotDeliveryTarget).toBeUndefined();
-  });
-
+  // fork（bots 移除）：原「Bot delivery target 仅在当前 turn 可见」用例随 bot channels
+  // 全量删除（specs/bot-channels-removal.md）；record.activeBotDeliveryTarget 已不存在。
   // fork（F4.3）：off-peak sendText 归因与闲时 deny 名单用例随闲时任务全链路删除。
 
   it("automation runId inputId 漏传 automationId 时也隐藏全部写工具", async () => {

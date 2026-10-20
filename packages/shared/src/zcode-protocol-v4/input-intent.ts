@@ -1,5 +1,5 @@
 import { conversationQuotesSchema } from "../conversationSelection.js";
-import { botGroupInputSourceSchema } from "../bots.js";
+// fork（bots移除）：Bot 群来源 schema 依赖随第三方 IM bot channels 全量删除。
 // CLI admission 后的自包含输入事实。
 // queue / guide / runtime / transcript 只能携带同一个 intent，不允许各层重建字段。
 import { z } from "zod";
@@ -64,7 +64,7 @@ export const conversationInputDispatchSchema = z
 export const conversationInputIntentSchema = z
   .object({
     inputOrigin: z.enum(["desktop", "mobile"]).optional(),
-    botGroupSource: botGroupInputSourceSchema.optional(),
+    // fork（bots移除）：Bot 群来源字段随第三方 IM bot channels 全量删除。
     conversationQuotes: conversationQuotesSchema.optional(),
     sourceCommandId: z.string().min(1),
     queueItemId: z.string().min(1),

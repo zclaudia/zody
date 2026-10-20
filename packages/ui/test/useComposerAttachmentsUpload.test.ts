@@ -863,7 +863,8 @@ describe("useComposerAttachments eager upload", () => {
         fileName: "a.txt",
         mime: "text/plain",
         bytes: 1,
-        sourceKind: "topic-history" as const,
+        // fork（bots 移除）：载体由已删除的 "topic-history" 改为存活的 "clipboard-text"。
+        sourceKind: "clipboard-text" as const,
         messageCount: 2,
       },
     ];
@@ -871,7 +872,7 @@ describe("useComposerAttachments eager upload", () => {
     act(() => expect(latestApi?.restoreSessionOwnedAttachments(refs)).toBe(true));
     expect(latestApi?.attachments.map((item) => item.filename)).toEqual(["b.png", "a.txt"]);
     expect(latestApi?.attachments[1]).toMatchObject({
-      sourceKind: "topic-history",
+      sourceKind: "clipboard-text",
       messageCount: 2,
     });
     expect(latestApi?.attachments).toEqual(

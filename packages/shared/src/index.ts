@@ -2,6 +2,13 @@
 // 云内容与 Rewards 注入桥）已整体删除。
 export * from "./networkCapture.js";
 export { ZCODE_DATA_ROOT_DIR_NAME } from "./dataDir.js";
+export {
+  DESKTOP_ZOOM_MAX_LEVEL,
+  DESKTOP_ZOOM_MIN_LEVEL,
+  clampDesktopZoomLevel,
+  resolveDesktopZoomFactorForLevel,
+  resolveDesktopZoomLevelFromFactor,
+} from "./desktopZoom.js";
 export type {
   FileBinaryPreview,
   FileEntry,
@@ -180,7 +187,7 @@ export { LAUNCH_MARKS_QUERY_KEY, parseLaunchMarks, serializeLaunchMarks } from "
 export type {
   CancelPendingRemoteConnectionRequest,
   BindRemoteWorkspaceSessionContextRequest,
-  BotRemoteWorkspaceReconnectedEvent,
+  // fork（bots移除）：Bot 远端 workspace 重连成功事件类型随第三方 IM bot channels 全量删除。
   BrowserTabResidencyState,
   BrowserViewCloseTabNotification,
   BrowserViewCloseTabRequest,
@@ -286,7 +293,8 @@ export * from "./process-names.js";
 export * from "./mcp.js";
 export * from "./runtime-tool-runtime.js";
 export * from "./git.js";
-export * from "./bots.js";
+// fork（bots移除）：bots 合约与频道@提及两个模块的整文件及其公开导出
+// 随第三方 IM bot channels 全量删除（specs/bot-channels-removal.md）。
 export * from "./assistant-message-parts.js";
 export * from "./zcodePersistedMessageMerge.js";
 export * from "./assistant-presentation.js";
@@ -338,8 +346,6 @@ export { redactFeedbackText } from "./feedbackPrivacy.js";
 
 export * from "./conversationSelection.js";
 export * from "./attachment-source.js";
-
-export * from "./channel-mention.js";
 
 export {
   requestSecuritySensitiveHeaders,

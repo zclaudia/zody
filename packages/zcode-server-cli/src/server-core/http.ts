@@ -19,10 +19,9 @@ import {
   IZCodeAgentService,
   ServiceCollection,
 } from "@zcode/services";
-import { createServiceLogger, type TopicResourcePeers } from "@zcode/services/node";
+import { createServiceLogger } from "@zcode/services/node";
 import {
   SERVER_REMOTE_PROTOCOL_VERSION,
-  TOPIC_RESOURCE_RELAY_CHANNEL,
   ZCODE_RPC_HOST_CAPABILITY_HEADER,
   ZCODE_VERSION,
   type ServerRemoteInfo,
@@ -91,20 +90,19 @@ function exposeWebSocket(
   ws: WebSocket,
   services: ServiceCollection,
   clientMode: "desktop-continuous" | "web-remote-replayable",
-  resourcePeers?: TopicResourcePeers,
 ): void {
   const socket = wrapWebSocket(ws);
   const protocol = new SocketProtocol(socket);
   const rawServer = new ChannelServer(protocol, "server");
   const server = new LoggingChannelServer(rawServer, (...args) => log.debug(undefined, ...args));
   const agentService = services.getOptional(IZCodeAgentService);
+  // fork（bot channels 移除）：第三方 IM bot 的 topic-resource relay 注册（TopicResourcePeers
+  // attach + wrapAgent）随 bot channels 整体删除；desktop-continuous 受信 Host 连接仍保留
+  // 反向 ChannelClient 结构，仅不再挂载 relay 频道（与 packages/server/src/http.ts 成对）。
   const reverseClient =
-    clientMode === "desktop-continuous" && resourcePeers ? new ChannelClient(protocol) : undefined;
-  const peer = reverseClient
-    ? resourcePeers?.attach(reverseClient.getChannel(TOPIC_RESOURCE_RELAY_CHANNEL))
-    : undefined;
+    clientMode === "desktop-continuous" ? new ChannelClient(protocol) : undefined;
   const scope = agentService
-    ? createZCodeAgentConnectionScope(peer ? peer.wrapAgent(agentService) : agentService, {
+    ? createZCodeAgentConnectionScope(agentService, {
         connectionId: `server-core-ws-${randomUUID()}`,
         clientMode,
         role: clientMode === "desktop-continuous" ? "trusted-host-relay" : "terminal-client",
@@ -115,7 +113,6 @@ function exposeWebSocket(
     scope ? new Map([[IZCodeAgentService.channelName, scope.service]]) : new Map(),
   );
   socket.onClose(() => {
-    peer?.dispose();
     reverseClient?.dispose();
     void scope?.dispose();
     rawServer.dispose();
@@ -129,7 +126,6 @@ export async function createCoreHttpServer(
     port?: number;
     serverId?: string;
     hostCapabilityStore?: HostCapabilityStore;
-    topicResourcePeers?: TopicResourcePeers;
   } = {},
 ): Promise<CoreHttpServer> {
   const app = new Hono();
@@ -176,12 +172,8 @@ export async function createCoreHttpServer(
     "/ws/host",
     upgradeWebSocket(() => ({
       onOpen(_event, socket) {
-        exposeWebSocket(
-          socket.raw as WebSocket,
-          services,
-          "desktop-continuous",
-          options.topicResourcePeers,
-        );
+        // fork（bot channels 移除）：trusted host 连接不再透传 topicResourcePeers。
+        exposeWebSocket(socket.raw as WebSocket, services, "desktop-continuous");
       },
     })),
   );

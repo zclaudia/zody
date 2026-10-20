@@ -56,7 +56,7 @@ const DIRECT_BRANCH_EXPECTED_PROVIDER_TOOL_ORDER = [
   "Write",
   "SendMessage",
   "ReadSessionContext",
-  "ReplyToChannel",
+  // fork（bots 移除）：原 "ReplyToChannel" 名单项随 bot channels 全量删除（specs/bot-channels-removal.md）。
   "CreateWorkflow",
   // 修订入口紧随 CreateWorkflow 注册（docs/dynamic-workflow/launch.md「The `AmendWorkflow` tool」）。
   "AmendWorkflow",

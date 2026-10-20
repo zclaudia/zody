@@ -12,7 +12,7 @@ import type {
   StableForkGoalBoundaryMetadata,
   TraceContext,
 } from "@zcode/contracts";
-import type { DynamicWorkflowMode, ZCodeAutomationBotDeliveryTarget } from "@zcode/shared";
+import type { DynamicWorkflowMode } from "@zcode/shared";
 import type {
   CommandAck,
   CommandEnvelope,
@@ -75,8 +75,8 @@ export interface V4SessionRecordView {
   /** 当前正在执行的 automation 派发 turn；只在 turn 运行期间存在。 */
   activeAutomationId?: string;
   // fork（F4.3）：activeOffPeakTaskId 随闲时任务全链路删除。
-  /** 当前 Bot 入站 turn 的稳定回推地址；turn 结束后必须恢复。 */
-  activeBotDeliveryTarget?: ZCodeAutomationBotDeliveryTarget;
+  // fork（bots 移除）：activeBotDeliveryTarget（Bot 入站 turn 的回推地址）随 bot channels
+  // 全量删除（specs/bot-channels-removal.md）。
   /** 恢复失败告警：存在时拒绝新 turn（历史损坏不能静默续写）。 */
   restoreWarning?: { message: string; type: string };
   taskType?: SessionTaskType;

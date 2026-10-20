@@ -5,10 +5,10 @@ import { TID_V4_USER_INPUT_DIALOG } from "@zcode/shared";
 import type { ConversationSnapshot } from "@zcode/shared/zcode-protocol-v4";
 import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
 import {
-  buildV4ElicitationProgressKey,
+  // fork（bot-channels 移除）：buildV4ElicitationProgressKey / resolveV4ElicitationRequest
+  // 的 bot 代答进度用例删除后不再被本文件引用。
   createInteractionAutoResolutionIntentTracker,
   getCurrentSessionInteractionSnapshot,
-  resolveV4ElicitationRequest,
   V4InteractionDialogs,
 } from "../src/v4/V4InteractionDialogs.js";
 
@@ -29,35 +29,9 @@ describe("V4InteractionDialogs", () => {
     expect(getCurrentSessionInteractionSnapshot("task-b", staleSnapshot)).toBe(staleSnapshot);
   });
 
-  it("uses Bot question progress for the same v4 elicitation request", () => {
-    const projected = {
-      type: "elicitation_request" as const,
-      taskId: "sess-1",
-      traceId: "trace-1",
-      requestId: "ask-1",
-      message: "第一题",
-      options: [],
-      currentQuestionIndex: 0,
-      questions: [],
-    };
-    const botProgress = {
-      ...projected,
-      message: "第二题",
-      currentQuestionIndex: 1,
-      answerDrafts: { answer_0: ["first-answer"] },
-    };
-
-    expect(resolveV4ElicitationRequest(projected, botProgress)).toBe(botProgress);
-    expect(buildV4ElicitationProgressKey(botProgress)).toBe(
-      'ask-1:1:{"answer_0":["first-answer"]}',
-    );
-    expect(
-      resolveV4ElicitationRequest(projected, {
-        ...botProgress,
-        requestId: "ask-other",
-      }),
-    ).toBe(projected);
-  });
+  // fork（bot-channels 移除）：原「uses Bot question progress for the same v4 elicitation
+  // request」用例随 Bot 代答进度链（botsTaskBroadcast 写入 elicitationRequest）删除
+  //（specs/bot-channels-removal.md），progress 覆盖场景不再有生产者。
 
   it("remembers early user input and consumes the snooze intent exactly once", () => {
     const tracker = createInteractionAutoResolutionIntentTracker();

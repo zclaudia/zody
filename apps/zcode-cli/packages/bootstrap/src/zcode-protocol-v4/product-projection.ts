@@ -315,7 +315,8 @@ export interface ConversationEditTarget {
   intent: {
     inputOrigin?: "desktop" | "mobile";
     conversationQuotes?: import("@zcode/contracts").TurnInputIntentMetadata["conversationQuotes"];
-    botGroupSource?: CanonicalUserIntentFact["botGroupSource"];
+    // fork（bots 移除）：edit target intent 的 botGroupSource 随 bot channels 全量删除
+    // （specs/bot-channels-removal.md）。
     kind: "sendText" | "sendGoalCommand";
     text: string;
     sourceCommandId?: string;
@@ -2098,8 +2099,10 @@ export class ProductProjection {
       const row: UserInputRow = {
         ...rowBase,
         kind: "userInput",
+        // fork（bots 移除）：canonical text 回退条件中的 botGroupSource 随 bot channels
+        // 全量删除（specs/bot-channels-removal.md），仅剩 conversationQuotes。
         text:
-          fact.conversationQuotes || fact.botGroupSource
+          fact.conversationQuotes
             ? (fact.intentText ?? fact.input)
             : fact.input,
         origin: fact.origin,
@@ -2107,7 +2110,6 @@ export class ProductProjection {
         ...(rootSourceCommandId ? { rootSourceCommandId } : {}),
         ...(fact.inputOrigin ? { inputOrigin: fact.inputOrigin } : {}),
         ...(fact.conversationQuotes ? { conversationQuotes: fact.conversationQuotes } : {}),
-        ...(fact.botGroupSource ? { botGroupSource: fact.botGroupSource } : {}),
         ...(fact.clientId ? { clientId: fact.clientId } : {}),
         // fork（F4.2）：原 highspeed 字段写入 userInput row 随加速卡删除。
         ...(fact.workflowLaunch ? { workflowLaunch: fact.workflowLaunch } : {}),
@@ -2133,7 +2135,6 @@ export class ProductProjection {
                 ...(fact.sourceCommandId ? { sourceCommandId: fact.sourceCommandId } : {}),
                 ...(fact.inputOrigin ? { inputOrigin: fact.inputOrigin } : {}),
                 ...(fact.conversationQuotes ? { conversationQuotes: fact.conversationQuotes } : {}),
-                ...(fact.botGroupSource ? { botGroupSource: fact.botGroupSource } : {}),
                 ...(fact.clientId ? { clientId: fact.clientId } : {}),
                 ...(fact.attachments ? { attachments: fact.attachments } : {}),
                 ...(fact.queueItemId ? { queueItemId: fact.queueItemId } : {}),
@@ -3561,9 +3562,7 @@ export class ProductProjection {
       ...((payload.intent?.conversationQuotes ?? existing?.conversationQuotes)
         ? { conversationQuotes: payload.intent?.conversationQuotes ?? existing?.conversationQuotes }
         : {}),
-      ...((payload.intent?.botGroupSource ?? existing?.botGroupSource)
-        ? { botGroupSource: payload.intent?.botGroupSource ?? existing?.botGroupSource }
-        : {}),
+      // fork（bots 移除）：queue 原地编辑的 botGroupSource 保留逻辑随 bot channels 全量删除。
       delivery: {
         requested: requestedDelivery,
         admitted: admittedDelivery,
@@ -3739,8 +3738,10 @@ export class ProductProjection {
       const row = {
         ...this.rowBase(event, productTurnId, entityId),
         kind: "userInput" as const,
+        // fork（bots 移除）：canonical text 回退条件中的 botGroupSource 随 bot channels
+        // 全量删除（specs/bot-channels-removal.md），仅剩 conversationQuotes。
         text:
-          item.intent?.conversationQuotes || item.intent?.botGroupSource
+          item.intent?.conversationQuotes
             ? (item.intent.text ?? item.text)
             : item.text,
         origin: "realUser" as const,
@@ -3751,7 +3752,6 @@ export class ProductProjection {
         ...(item.intent?.conversationQuotes
           ? { conversationQuotes: item.intent.conversationQuotes }
           : {}),
-        ...(item.intent?.botGroupSource ? { botGroupSource: item.intent.botGroupSource } : {}),
         ...(item.intent?.clientId ? { clientId: item.intent.clientId } : {}),
         // fork（F4.2）：原 queue/guide 消费行的 highspeed 字段随加速卡删除。
         ...(item.intent?.attachmentRefs?.length ? { attachments: item.intent.attachmentRefs } : {}),
@@ -3777,9 +3777,6 @@ export class ProductProjection {
                 ...(item.intent?.inputOrigin ? { inputOrigin: item.intent.inputOrigin } : {}),
                 ...(item.intent?.conversationQuotes
                   ? { conversationQuotes: item.intent.conversationQuotes }
-                  : {}),
-                ...(item.intent?.botGroupSource
-                  ? { botGroupSource: item.intent.botGroupSource }
                   : {}),
                 ...(item.intent?.clientId ? { clientId: item.intent.clientId } : {}),
                 ...(item.intent?.attachmentRefs ? { attachments: item.intent.attachmentRefs } : {}),

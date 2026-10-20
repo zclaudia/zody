@@ -119,7 +119,8 @@ async function sendText(
     const intent = submissionIntent({
       text: payload.text,
       inputOrigin: payload.inputOrigin,
-      botGroupSource: payload.botGroupSource,
+      // fork（bots 移除）：payload.botGroupSource 组装随 bot channels 全量删除
+      // （specs/bot-channels-removal.md）。
       conversationQuotes: payload.conversationQuotes,
       requestedDelivery:
         payload.requestedDelivery ??
@@ -143,7 +144,8 @@ async function sendText(
       intent,
       ...(payload.context_refs ? { sharedContextRefs: payload.context_refs } : {}),
       ...turnBackgroundAttributionOf(payload),
-      ...(payload.botDeliveryTarget ? { botDeliveryTarget: payload.botDeliveryTarget } : {}),
+      // fork（bots 移除）：payload.botDeliveryTarget 透传随 bot channels 全量删除
+      // （specs/bot-channels-removal.md）。
       toolDisallowlist: payload.toolDisallowlist,
       ...(payload.modelExecution
         ? { modelExecution: createModelExecutionContext(payload.modelExecution) }

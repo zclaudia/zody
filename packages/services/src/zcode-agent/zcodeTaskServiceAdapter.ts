@@ -1,12 +1,5 @@
-import { createBotTopicAdmission } from "#src/zcode-agent/botTopicAdmission.js";
-import {
-  readBotGroupRuntimeSnapshot,
-  waitBotGroupExecutionEnd,
-} from "#src/zcode-agent/groupRuntimeSnapshot.js";
-import { uploadBotGroupAttachments } from "./groupAttachmentUpload.js";
 /* oxlint-disable eslint(max-lines) -- 迁移期需要在一个门面里集中维护旧 task projection 到 ZCode session 的协议适配。 */
-import { createHash, randomUUID } from "node:crypto";
-import { createZCodeAgentConnectionScope } from "#src/zcode-agent/zcodeAgentConnectionScope.js";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -57,7 +50,6 @@ import {
   type ZCodeBackgroundTaskNotificationInfo,
   type ZCodeBackgroundTaskControlItem,
   type ZCodeBackgroundTurnAttribution,
-  type ZCodeAutomationBotDeliveryTarget,
   type ZCodeCancelTaskCommandResult,
   type ZCodeCodexConnectivityCheckResult,
   type ZCodeConfigOption,
@@ -265,28 +257,13 @@ function resolveZCodeAgentCurrentLogFilePath(now = new Date()): string {
 export function createZCodeTaskServiceAdapter(
   options: CreateZCodeTaskServiceAdapterOptions,
 ): IZCodeTaskService {
-  // Bot 原来绕过连接 facade，导致真实附件 admission 缺少可信身份；复用既有 scope，
-  // 同一 Bot 接入的附件、命令及对账共用连接，不改变桌面与手机各自的传输模式。
-  const botConnectionScopes = new Map<string, ReturnType<typeof createZCodeAgentConnectionScope>>();
-  function botAgent(workspace: ZCodeAgentWorkspaceTarget) {
-    const key = JSON.stringify([resolveWorkspaceKey(workspace), workspace.remoteSessionId ?? ""]);
-    let scope = botConnectionScopes.get(key);
-    if (!scope) {
-      scope = createZCodeAgentConnectionScope(options.zcodeAgentService, {
-        connectionId: `bot-${randomUUID()}`,
-        clientMode: "desktop-continuous",
-        role: "trusted-host-relay",
-      });
-      botConnectionScopes.set(key, scope);
-    }
-    return scope.service;
-  }
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：bot 专用连接 scope
+  // （botConnectionScopes/botAgent）随第三方 IM bot 接入整体删除。
   const errorEmitter = new Emitter<ZCodeError>();
   const taskEmitters = new Map<string, Emitter<ZCodeStreamEvent>>();
   const globalTaskEmitters = new Map<string, Emitter<ZCodeStreamEvent>>();
   const overlays = new Map<string, TaskOverlay>();
   const taskTargets = new Map<string, TaskTarget>();
-  const topicAdmission = createBotTopicAdmission();
   const runtimeCommands = new Map<string, ZCodeTaskRuntimeCommand[]>();
   const runtimeCommandDrains = new Map<string, Promise<void>>();
   const apiRetryByTaskKey = new Map<string, ZCodeApiRetryStatus | null>();
@@ -404,7 +381,6 @@ export function createZCodeTaskServiceAdapter(
       content: string;
       attachments?: ZCodePromptAttachment[];
       toolDenylist?: string[];
-      botDeliveryTarget?: ZCodeAutomationBotDeliveryTarget;
       clientId?: string;
       clientMode?: ZCodeTaskClientMode;
       logReason?: string;
@@ -455,7 +431,6 @@ export function createZCodeTaskServiceAdapter(
           modelExecution: params.modelExecution,
           ...turnAttributionOf(params),
           toolDenylist: promptToolDenylist,
-          botDeliveryTarget: params.botDeliveryTarget,
           ...(params.clientMode ? { clientMode: params.clientMode } : {}),
         });
       } else {
@@ -477,7 +452,6 @@ export function createZCodeTaskServiceAdapter(
               ...(params.modelSelection ? { modelSelection: params.modelSelection } : {}),
               ...(params.modelExecution ? { modelExecution: params.modelExecution } : {}),
               ...turnAttributionOf(params),
-              ...(params.botDeliveryTarget ? { botDeliveryTarget: params.botDeliveryTarget } : {}),
               ...(promptToolDenylist ? { toolDisallowlist: promptToolDenylist } : {}),
             },
             sessionId: target.taskId,
@@ -2044,232 +2018,10 @@ export function createZCodeTaskServiceAdapter(
       };
     },
 
-    async readBotTopicSummaries(params) {
-      const target = taskTargets.get(params.taskId);
-      if (target && taskKey(target) !== taskKey(params))
-        throw new Error("Topic task workspace mismatch");
-      const messages = await options.zcodeAgentService.readSessionMessages({
-        workspacePath: params.workspacePath,
-        workspaceIdentity: params.workspaceIdentity,
-        remoteSessionId: params.remoteSessionId ?? target?.remoteSessionId,
-        sessionId: params.taskId,
-        limit: 200,
-      });
-      return messages
-        .flatMap(({ info, parts }) => {
-          if (info.role !== "user" || info.source !== "bot_topic_context") return [];
-          return [
-            {
-              checkpoint: String(info.metadata?.checkpoint ?? ""),
-              text:
-                typeof info.metadata?.displayText === "string"
-                  ? info.metadata.displayText
-                  : textFromParts(parts),
-            },
-          ];
-        })
-        .slice(-20);
-    },
-
-    async invalidateBotTopicInputs(params) {
-      const target = getTaskTarget(params.taskId);
-      if (taskKey(target) !== taskKey(params)) throw new Error("Group task workspace mismatch");
-      const key = JSON.stringify([
-        taskKey(params),
-        params.remoteSessionId ?? target.remoteSessionId ?? null,
-      ]);
-      await topicAdmission.invalidate(key);
-    },
-    async readBotTopicExecution(params) {
-      const target = getTaskTarget(params.taskId);
-      if (taskKey(target) !== taskKey(params)) throw new Error("Group task workspace mismatch");
-      const workspace = {
-        ...params,
-        remoteSessionId: params.remoteSessionId ?? target.remoteSessionId,
-      };
-      const snapshot = await readBotGroupRuntimeSnapshot(botAgent(workspace), {
-        ...workspace,
-        sessionId: params.taskId,
-      });
-      if (snapshot.control.stopState === "idle") return undefined;
-      const execution = snapshot.control.activeWorks.find((work) => work.foregroundExecutionId);
-      if (!execution?.foregroundExecutionId)
-        throw new Error("Topic execution identity is unavailable");
-      return {
-        executionId: execution.foregroundExecutionId,
-        sourceCommandId: execution.sourceCommandId,
-      };
-    },
-    async stopBotTopicExecution(params) {
-      const target = getTaskTarget(params.taskId);
-      if (taskKey(target) !== taskKey(params)) throw new Error("Group task workspace mismatch");
-      const workspace = {
-        workspacePath: params.workspacePath,
-        workspaceIdentity: params.workspaceIdentity,
-        remoteSessionId: params.remoteSessionId ?? target.remoteSessionId,
-      };
-      const agent = botAgent(workspace);
-      // 先注册终态监听再停止，避免快速结束发生在 ACK 与订阅之间。
-      const observation = new AbortController();
-      const ended = waitBotGroupExecutionEnd(
-        agent,
-        { ...workspace, sessionId: params.taskId },
-        params.executionId,
-        observation.signal,
-      );
-      void ended.catch(() => undefined);
-      try {
-        const ack = await agent.sendConversationCommandV4({
-          ...workspace,
-          envelope: createHostCommandEnvelope({
-            type: "stop",
-            sessionId: params.taskId,
-            payload: { expectedForegroundExecutionId: params.executionId },
-          }),
-        });
-        assertV4CommandAckOk("stop", ack, `session=${params.taskId}`);
-        await ended;
-      } finally {
-        observation.abort();
-      }
-    },
-
-    async getBotGroupTaskBlockReason(params) {
-      const target = taskTargets.get(params.taskId);
-      if (target && taskKey(target) !== taskKey({ ...params, taskId: params.taskId }))
-        throw new Error("Group task workspace mismatch");
-      const snapshot = await readBotGroupRuntimeSnapshot(botAgent(params), {
-        ...params,
-        ...((params.remoteSessionId ?? target?.remoteSessionId)
-          ? { remoteSessionId: params.remoteSessionId ?? target?.remoteSessionId }
-          : {}),
-        sessionId: params.taskId,
-      });
-      if (snapshot.pendingInteractions.length > 0) return "interaction";
-      if (snapshot.control.phase === "running" || snapshot.control.phase === "prewarming")
-        return "running";
-      if (snapshot.queue.items.length > 0) return "queued";
-      return null;
-    },
-    async cancelBotGroupInput(params) {
-      const target = getTaskTarget(params.taskId);
-      if (
-        params.workspacePath &&
-        taskKey(target) !== taskKey({ ...params, workspacePath: params.workspacePath })
-      )
-        throw new Error("Group task workspace mismatch");
-      const workspace = {
-        workspacePath: params.workspacePath ?? target.workspacePath,
-        workspaceIdentity: params.workspaceIdentity ?? target.workspaceIdentity,
-        ...((params.remoteSessionId ?? target.remoteSessionId)
-          ? { remoteSessionId: params.remoteSessionId ?? target.remoteSessionId }
-          : {}),
-      };
-      const snapshot = await readBotGroupRuntimeSnapshot(botAgent(workspace), {
-        ...workspace,
-        sessionId: target.taskId,
-      });
-      const item = snapshot.queue.items.find(
-        (entry) => entry.sourceCommandId === params.sourceCommandId,
-      );
-      if (!item || item.dispatch.state !== "queued") throw new Error("Input is no longer queued");
-      const source = item.botGroupSource;
-      if (
-        !source ||
-        source.botId !== params.botId ||
-        source.chatId !== params.chatId ||
-        (params.actorId !== params.ownerId && source.senderId !== params.actorId)
-      )
-        throw new Error("Queue cancellation is not authorized");
-      return botAgent(workspace).sendConversationCommandV4({
-        ...workspace,
-        envelope: createHostCommandEnvelope({
-          type: "deleteQueueItem",
-          sessionId: target.taskId,
-          commandId: params.commandId,
-          baseRevision: snapshot.revision,
-          payload: { queueItemId: item.queueItemId },
-        }),
-      });
-    },
-
-    async submitBotGroupInput(params) {
-      const target = getTaskTarget(params.taskId);
-      if (
-        params.workspacePath &&
-        taskKey(target) !== taskKey({ ...params, workspacePath: params.workspacePath })
-      )
-        throw new Error("Group task workspace mismatch");
-      const workspace = {
-        workspacePath: params.workspacePath ?? target.workspacePath,
-        workspaceIdentity: params.workspaceIdentity ?? target.workspaceIdentity,
-        ...((params.remoteSessionId ?? target.remoteSessionId)
-          ? { remoteSessionId: params.remoteSessionId ?? target.remoteSessionId }
-          : {}),
-      };
-      const admissionKey = JSON.stringify([
-        taskKey({ ...workspace, taskId: target.taskId }),
-        workspace.remoteSessionId ?? null,
-      ]);
-      const version = topicAdmission.capture(admissionKey);
-      // Bug 原因：Host 重启后任务索引仍在，但 CLI 尚未加载原会话；直接 admission
-      // 会返回 sessionNotFound。复用后台订阅的冷恢复屏障，不依赖 Desktop 打开任务。
-      await readBotGroupRuntimeSnapshot(botAgent(workspace), {
-        ...workspace,
-        sessionId: target.taskId,
-      });
-      const attachments = await uploadBotGroupAttachments(
-        botAgent(workspace),
-        { ...workspace, sessionId: target.taskId },
-        params.attachments ?? [],
-      );
-      // 停止可以发生在附件上传期间；完成上传不代表旧输入仍允许被接受。
-      if (params.source.threadId && version !== topicAdmission.capture(admissionKey)) {
-        throw new Error("Topic input was cancelled during preparation");
-      }
-      const envelope = createHostCommandEnvelope({
-        type: "sendText",
-        sessionId: target.taskId,
-        commandId: params.commandId,
-        clientId: `bot:${params.source.botId}:${params.source.chatId}:${params.source.senderId}`,
-        payload: {
-          text: params.content,
-          attachments,
-          requestedDelivery: params.source.threadId ? "startNow" : "queue",
-          botGroupSource: params.source,
-          conversationQuotes: params.conversationQuotes,
-          botDeliveryTarget: {
-            provider: params.source.provider,
-            botId: params.source.botId,
-            providerUserId: params.source.chatId,
-            chatType: "group",
-            ...(params.source.threadId
-              ? { threadId: params.source.threadId, rootMessageId: params.source.rootMessageId }
-              : {}),
-          },
-        },
-      });
-      const send = async () => {
-        try {
-          return await botAgent(workspace).sendConversationCommandV4({
-            ...workspace,
-            envelope,
-          });
-        } catch (error) {
-          // ACK 丢失时查询同一个命令，不能生成新 ID 重发输入。
-          const query = await botAgent(workspace)
-            .queryConversationCommandsV4({
-              ...workspace,
-              commands: [{ sessionId: target.taskId, commandId: params.commandId }],
-            })
-            .catch(() => null);
-          const result = query?.results[0]?.result;
-          if (result && result !== "unknown") return result;
-          throw error;
-        }
-      };
-      return params.source.threadId ? topicAdmission.run(admissionKey, version, send) : send();
-    },
+    // fork（bot channels 移除，specs/bot-channels-removal.md）：bot 话题/群输入六方法
+    // （readBotTopicSummaries/invalidateBotTopicInputs/readBotTopicExecution/
+    // stopBotTopicExecution/getBotGroupTaskBlockReason/cancelBotGroupInput/submitBotGroupInput）
+    // 随第三方 IM bot 接入整体删除，接口同步收窄（session/zcodeTaskService.ts）。
 
     async sendPrompt(params): Promise<void> {
       const storedTarget = getTaskTarget(params.taskId);
@@ -2285,7 +2037,6 @@ export function createZCodeTaskServiceAdapter(
         attachments: params.attachments,
         ...turnAttributionOf(params),
         toolDenylist: params.toolDenylist,
-        botDeliveryTarget: params.botDeliveryTarget,
         clientId: params.clientId,
         clientMode: params.clientMode,
         modelSelection: params.modelSelection,
@@ -3541,8 +3292,6 @@ export function createZCodeTaskServiceAdapter(
       // 必须在 agentService.disposeAll 前释放，否则 emitter dispose 时仍会回调到已失效的 syncer。
       // workspaceEmitters 已下沉到 syncer，由 syncer.disposeAll 统一回收。
       taskIndexSyncer.disposeAll();
-      for (const scope of botConnectionScopes.values()) void scope.dispose();
-      botConnectionScopes.clear();
       options.zcodeAgentService.disposeAll();
       disposeLocalTaskState();
     },
@@ -3555,8 +3304,6 @@ export function createZCodeTaskServiceAdapter(
       // app 退出必须先断开 task index syncer 的订阅，再等待 agent 进程树完成清理；
       // 否则 host 退出时会把 zcode-cli 的 SIGKILL 兜底 timer 一起带走。
       taskIndexSyncer.disposeAll();
-      await Promise.all([...botConnectionScopes.values()].map((scope) => scope.dispose()));
-      botConnectionScopes.clear();
       await disposeZCodeAgentServiceAndWait();
       disposeLocalTaskState();
     },
@@ -3877,8 +3624,11 @@ function getSnapshotGoalActiveIterationCount(snapshot: ZCodeSessionStateSnapshot
   });
 }
 
+// fork（bot channels 移除，specs/bot-channels-removal.md）：deliveryKind 联合删除
+// "bot-channel-continuous"；"replayable" → "web-remote-replayable" 映射是手机远控
+// 恢复链路语义，保留不动。
 function toZCodeDeliveryKind(
-  deliveryKind: "continuous" | "bot-channel-continuous" | "replayable" | "mixed" | undefined,
+  deliveryKind: "continuous" | "replayable" | "mixed" | undefined,
 ): ZCodeDeliveryKind {
   return deliveryKind === "replayable" ? "web-remote-replayable" : "desktop-continuous";
 }

@@ -2439,8 +2439,7 @@ export const WorkspaceShellLayout = memo(
                     reconnectingRemoteWorkspaceLogsByWorkspaceKey={
                       reconnectingRemoteWorkspaceLogsByWorkspaceKey
                     }
-                    // fork（F4.1b）：onLogout/onLogin 不再传给侧栏（入口摘除）。
-                    user={user}
+                    // fork（F4.1b）：onLogout/onLogin/user 不再传给侧栏（账号入口摘除）。
                     isDesktop={isDesktop}
                     isWebRemoteControl={isWebRemoteControlShell}
                     isMacDesktop={isMacDesktop}

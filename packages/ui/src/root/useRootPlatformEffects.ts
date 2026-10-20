@@ -273,11 +273,11 @@ export function useRootPlatformEffects({
 
     const connectedRemoteWorkspaces = buildConnectedRemoteWorkspaceSessionTargets({ tabs });
     if (connectedRemoteWorkspaces.length > 0) {
-      // T1.3 核实：这条同步不再承担 Bot 远端连接状态查询。Bot 的「远端工作区是否已连接」由 main 的
-      // remoteSessionManager.hasRemoteWorkspaceSessionForTarget（desktop/src/main/index.ts）按
-      // connectRemote / bindRemoteWorkspaceSessionContext 建立的 live session 表回答；而
-      // webRemoteControlManager.syncAvailableWorkspaces 在没有 window 远控 runtime 时会直接 return，
-      // 只服务手机端 workspace 列表。保留调用是因为它同时会触发 main 的 restorePreviouslyEnabled。
+      // fork（bot-channels 移除）：注释原提及 Bot 远端连接状态查询，bot channel 删除后该职责消失；
+      // 本调用服务手机端（zclaudia-gateway）workspace 列表——webRemoteControlManager.syncAvailableWorkspaces
+      // 在没有 window 远控 runtime 时会直接 return，保留调用是因为它同时会触发 main 的 restorePreviouslyEnabled
+      // （远程访问自启恢复）。远端连接状态由 main 按 connectRemote / bindRemoteWorkspaceSessionContext
+      // 建立的 live session 表回答。
       platform.syncWebRemoteControlWorkspaces(connectedRemoteWorkspaces);
     }
 

@@ -415,7 +415,9 @@ afterEach(() => {
 });
 
 describe("ConversationRowView reasoning summary", () => {
-  it("opens topic history from the owning transport only after clicking the attachment", async () => {
+  // fork（bots 移除）：原用例以已删除的 "topic-history" 为载体；文本材料点击打开行为
+  // 对存活的 "clipboard-text" 保持不变，改用其验证同一链路（specs/bot-channels-removal.md）。
+  it("opens text material from the owning transport only after clicking the attachment", async () => {
     const readAttachment = vi.fn(async () => ({
       bytes: new TextEncoder().encode("Alice | ou_a\nOriginal history"),
       mediaType: "text/plain",
@@ -427,7 +429,7 @@ describe("ConversationRowView reasoning summary", () => {
           fileName: "topic-history.txt",
           mime: "text/plain",
           bytes: 30,
-          sourceKind: "topic-history",
+          sourceKind: "clipboard-text",
           messageCount: 2,
         },
       ],
@@ -475,109 +477,9 @@ describe("ConversationRowView reasoning summary", () => {
 });
 
 describe("ConversationRowView user query editing", () => {
-  it.each([false, true])(
-    "renders topic originals separately (mobile=%s)",
-    async (compactForRemoteControl) => {
-      const container = installMinimalDom();
-      const root = createRoot(container);
-      const row = userInputRow({
-        text: "combined execution payload",
-        botGroupSource: {
-          provider: "feishu",
-          botId: "bot",
-          chatId: "chat",
-          threadId: "topic",
-          senderId: "b",
-          senderName: "乙",
-          messageId: "b",
-          messages: [
-            {
-              messageId: "a",
-              senderId: "a",
-              senderName: "甲",
-              text: "第一条需求",
-              attachmentIndexes: [],
-              conversationQuotes: [{ text: "根原文" }],
-            },
-            {
-              messageId: "b",
-              senderId: "b",
-              senderName: "乙",
-              text: "第二条补充",
-              attachmentIndexes: [],
-            },
-          ],
-        },
-      });
-      await act(async () => {
-        root.render(
-          createElement(
-            ZCodeIntlProvider,
-            { initialLocale: "zh-CN" },
-            createElement(ConversationRowView, {
-              context: { ...rowContext, compactForRemoteControl },
-              row,
-            }),
-          ),
-        );
-      });
-      const first = findElementByAttribute(container, "data-topic-message-id", "a");
-      const second = findElementByAttribute(container, "data-topic-message-id", "b");
-      expect(first).not.toBeNull();
-      expect(second).not.toBeNull();
-      expect(collectText(first)).toContain("第一条需求");
-      expect(collectText(first)).toContain("甲");
-      expect(collectText(second)).toContain("第二条补充");
-      expect(collectText(second)).toContain("乙");
-      expect(findElementByAttribute(first, "data-v4-user-input-quotes", "true")).not.toBeNull();
-      expect(findElementByAttribute(second, "data-v4-user-input-quotes", "true")).toBeNull();
-      expect(collectText(container)).not.toContain("combined execution payload");
-      await act(async () => root.unmount());
-    },
-  );
-
-  it("orders group sender, quote and attachments without an invented message bubble", async () => {
-    const container = installMinimalDom();
-    const root = createRoot(container);
-    const row = userInputRow({
-      text: "",
-      conversationQuotes: [
-        {
-          text: "actual quoted request",
-          senderName: "Ryan Bot",
-          senderId: "ou_bot",
-          sentAt: "2026-09-09T10:32:44+08:00",
-        },
-      ],
-      botGroupSource: {
-        provider: "feishu",
-        botId: "bot",
-        chatId: "chat",
-        senderId: "member",
-        senderName: "测试成员",
-        messageId: "message",
-      },
-    });
-    await act(async () => {
-      root.render(
-        createElement(
-          ZCodeIntlProvider,
-          { initialLocale: "zh-CN" },
-          createElement(ConversationRowView, { context: rowContext, row }),
-        ),
-      );
-    });
-    const source = findElementByAttribute(container, "data-v4-user-input-source", "true");
-    const area = findElementByAttribute(container, "data-v4-user-input-attachments", "true");
-    const quotes = findElementByAttribute(container, "data-v4-user-input-quotes", "true");
-    expect(source).not.toBeNull();
-    expect(quotes).not.toBeNull();
-    const siblings = [...source!.parentNode.childNodes];
-    expect(siblings.indexOf(source)).toBeLessThan(siblings.indexOf(area));
-    expect([...area!.childNodes][0]).toBe(quotes);
-    expect(findElementByAttribute(container, "data-v4-user-input-bubble", "true")).toBeNull();
-    await act(async () => root.unmount());
-  });
+  // fork（bot-channels 移除）：原「renders topic originals separately」与「orders group sender,
+  // quote and attachments」两个用例随 expandTopicInputMessages 一拆多展开与 botGroupSource
+  // 群来源渲染删除（specs/bot-channels-removal.md），对应行为已不存在。
 
   it.each([
     {

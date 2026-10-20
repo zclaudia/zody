@@ -15,7 +15,6 @@ import {
   IZCodeAgentService,
   IZCodeSessionService,
   ICuaPermissionService,
-  IBotsService,
   IFileWatcherService,
   IModelSelectionService,
   IProviderSettingsService,
@@ -68,7 +67,7 @@ export class RemoteServiceAccess implements IServiceAccessor {
   // 经 RPC 一定能拿到（main host 始终注册此 descriptor；非 macOS / 未启用时方法返回 available:false）。
   readonly cuaPermissionService: ICuaPermissionService;
   // fork（F4.8）：conversationShareService 代理随会话分享功能删除。
-  readonly botsService: IBotsService;
+  // fork（bots移除）：Bots 服务代理随第三方 IM bot channels 全量删除（specs/bot-channels-removal.md）。
   readonly fileWatcherService: IFileWatcherService;
   // fork（F4.7）：oauthService 代理随官方账号 OAuth 链删除。
   readonly providerSettingsService: IProviderSettingsService;
@@ -145,9 +144,6 @@ export class RemoteServiceAccess implements IServiceAccessor {
     );
     this.cuaPermissionService = ProxyChannel.toService<ICuaPermissionService>(
       channelClient.getChannel(ICuaPermissionService.channelName),
-    );
-    this.botsService = ProxyChannel.toService<IBotsService>(
-      channelClient.getChannel(IBotsService.channelName),
     );
     this.fileWatcherService = ProxyChannel.toService<IFileWatcherService>(
       channelClient.getChannel(IFileWatcherService.channelName),

@@ -1,7 +1,6 @@
 import { requestVerificationReasons } from "../request-security-edition/verification-policy.js";
 import { zcodeProtocolTraceSchema } from "./trace.js";
-// Bot 反向回复的名字解析/待澄清结果与 App、CLI 使用同一严格 schema。
-export { channelReplyRequestSchema, channelReplyResultSchema } from "../channel-mention.js";
+// fork（bots移除）：Bot 反向回复（bot/channel/reply）的严格 schema 随第三方 IM bot channels 全量删除。
 export { zcodeProtocolTraceSchema, type ZCodeProtocolTrace } from "./trace.js";
 import {
   databaseMigrationFactsSchema,
@@ -34,7 +33,7 @@ export { conversationQuoteSchema, conversationQuotesSchema } from "../conversati
 import { z } from "zod";
 import { accountProviderUnavailableReasonSchema } from "../account-provider-state.js";
 import { bashOutputDisplaySchema } from "../bash-output-display.js";
-import { zcodeAutomationBotDeliveryTargetSchema } from "../bots.js";
+// fork（bots移除）：定时任务 Bot 回推目标 schema 随第三方 IM bot channels 全量删除。
 import { executionOutputPreviewSchema } from "../execution-output-preview.js";
 import { completeModelPropertiesDataSchema } from "../model-config.js";
 import { modelExecutionSchema } from "../model-execution.js";
@@ -2067,7 +2066,7 @@ export const zcodeSessionSendParamsSchema = z
     expectedProviderRevision: nonEmptyString.optional(),
     automationId: nonEmptyString.optional(),
     // fork（F4.3）：offPeakTaskId/offPeakRunType（闲时派发归因）随闲时任务全链路删除。
-    botDeliveryTarget: zcodeAutomationBotDeliveryTargetSchema.optional(),
+    // fork（bots移除）：定时任务 Bot 回推目标字段随第三方 IM bot channels 全量删除。
     toolDenylist: z.array(nonEmptyString).optional(),
   })
   .strict()
@@ -3767,7 +3766,7 @@ export const zcodeAutomationCreateParamsSchema = z
     modelSelection: modelSelectionSchema.optional(),
     mode: zcodeTaskModeSchema.optional(),
     targetTaskId: nonEmptyString.optional(),
-    botDeliveryTarget: zcodeAutomationBotDeliveryTargetSchema.optional(),
+    // fork（bots移除）：定时任务 Bot 回推目标字段随第三方 IM bot channels 全量删除。
     recurring: z.boolean().optional(),
     maxRuns: z.number().int().positive().optional(),
     // 会话侧自定义重复 carrier：每 N 分钟/小时/天/周/月/年均通过此字段归一化为权威 scheduleRule，
@@ -3994,9 +3993,8 @@ export const zcodeProtocolMethods = {
   pluginsValidate: "plugins/validate",
   pluginsDescribe: "plugins/describe",
   automationCreate: "automation/create",
-  topicResourceRead: "topic/resource/read",
-  channelReply: "bot/channel/reply",
-  topicResourceCancel: "topic/resource/cancel",
+  // fork（bots移除）：bot/channel/reply 与 topic/resource/* 协议方法
+  // 随第三方 IM bot channels 全量删除（specs/bot-channels-removal.md）。
   automationUpdate: "automation/update",
   automationCheckTaskBinding: "automation/checkTaskBinding",
   automationList: "automation/list",
@@ -4139,16 +4137,5 @@ export const zcodeStoragePathReadySchema = z
 
 // 桌面本地 TTFT 的严格事实合同；检查点不能替代实际内容帧。
 export { localTtftFactsSchema } from "../localTtft.js";
-// 群来源由可信 Host 注入，V4 命令与持久化输入使用相同运行时校验。
-export {
-  botIdentitySchema,
-  botTopicInputMessageSchema,
-  botGroupInputSourceSchema,
-  type BotGroupInputSource,
-} from "../bots.js";
-export {
-  botTopicContextSchema,
-  botTopicMessageSchema,
-  type BotTopicHistoryBatch,
-  type BotTopicMessage,
-} from "../bots.js";
+// fork（bots移除）：botIdentity/botTopic/botGroupInputSource 等 re-export
+// 随第三方 IM bot channels 全量删除（specs/bot-channels-removal.md）。

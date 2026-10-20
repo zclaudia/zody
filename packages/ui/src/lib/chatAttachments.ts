@@ -43,7 +43,9 @@ const INLINE_VIDEO_ATTACHMENT_MAX_BYTES = Math.min(
 );
 const INLINE_TEXT_ATTACHMENT_MAX_CHARS = 64 * 1024;
 
-export type ChatComposerAttachmentSourceKind = "clipboard-text" | "topic-history";
+// fork（bots 移除）："topic-history"（bot 话题历史附件来源）随 bot channels 全量删除
+// （specs/bot-channels-removal.md），与 shared 侧 attachmentSourceKindSchema 的收窄保持一致。
+export type ChatComposerAttachmentSourceKind = "clipboard-text";
 
 export interface ChatComposerAttachment {
   id: string;
@@ -176,8 +178,8 @@ export function restoreChatComposerAttachment(
       filename: attachment.filename,
       localPath: attachment.localPath,
       mimeType,
-      ...("sourceKind" in attachment &&
-      (attachment.sourceKind === "clipboard-text" || attachment.sourceKind === "topic-history")
+      // fork（bots 移除）：存量草稿中残留的 "topic-history" 不再识别，恢复为普通路径附件。
+      ...("sourceKind" in attachment && attachment.sourceKind === "clipboard-text"
         ? { sourceKind: attachment.sourceKind, messageCount: attachment.messageCount }
         : {}),
       sizeBytes,

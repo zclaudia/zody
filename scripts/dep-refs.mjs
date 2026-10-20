@@ -267,8 +267,8 @@ function printHelp() {
   -h, --help              查看帮助
 
 示例:
-  pnpm dep:refs packages/services/src/bots/botsService.ts:createBotSession
-  pnpm dep:refs --list-exports packages/services/src/bots/botsService.ts
+  pnpm dep:refs packages/services/src/node.ts:createFileService
+  pnpm dep:refs --list-exports packages/services/src/node.ts
 
 推荐用法:
   1. 先跑 pnpm knip 拿到 unused exports 列表（瞬秒）

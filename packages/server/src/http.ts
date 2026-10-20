@@ -16,8 +16,6 @@ import {
   LoggingChannelServer,
   type ISocket,
 } from "@zcode/rpc";
-import type { TopicResourcePeers } from "@zcode/services/node";
-import { TOPIC_RESOURCE_RELAY_CHANNEL } from "@zcode/shared";
 import {
   ServiceCollection,
   IZCodeAgentService,
@@ -26,18 +24,15 @@ import {
   IGitService,
   ISystemService,
   ITerminalService,
-  IBotsService,
   IProviderProvisioningTargetService,
 } from "@zcode/services";
 import {
-  botProviders,
   formatLogPrefix,
   formatZodError,
   remoteTargetSchema,
   SERVER_REMOTE_PROTOCOL_VERSION,
   ZCODE_RPC_HOST_CAPABILITY_HEADER,
   ZCODE_VERSION,
-  type BotProvider,
   type ServerRemoteInfo,
   type ServerRemoteWorkspaceInfo,
 } from "@zcode/shared";
@@ -90,7 +85,6 @@ function setupChannelServer(
   ws: WebSocket,
   services: ServiceCollection,
   clientMode: "desktop-continuous" | "web-remote-replayable",
-  resourcePeers?: TopicResourcePeers,
 ) {
   const socket = wrapWebSocket(ws);
   const protocol = new SocketProtocol(socket);
@@ -98,13 +92,13 @@ function setupChannelServer(
   // 用日志中间件包装，统一记录所有 RPC 调用
   const server = new LoggingChannelServer(rawServer, log);
   const agentService = services.getOptional(IZCodeAgentService);
+  // fork（bot channels 移除）：第三方 IM bot 的 topic-resource relay 注册（TopicResourcePeers
+  // attach + wrapAgent）随 bot channels 整体删除；desktop-continuous 受信 Host 连接仍保留
+  // 反向 ChannelClient 结构（Server→Host 方向的通道客户端），仅不再挂载 relay 频道。
   const reverseClient =
-    clientMode === "desktop-continuous" && resourcePeers ? new ChannelClient(protocol) : undefined;
-  const peer = reverseClient
-    ? resourcePeers?.attach(reverseClient.getChannel(TOPIC_RESOURCE_RELAY_CHANNEL))
-    : undefined;
+    clientMode === "desktop-continuous" ? new ChannelClient(protocol) : undefined;
   const connectionScope = agentService
-    ? createZCodeAgentConnectionScope(peer ? peer.wrapAgent(agentService) : agentService, {
+    ? createZCodeAgentConnectionScope(agentService, {
         connectionId: `server-ws-${randomUUID()}`,
         clientMode,
         role: clientMode === "desktop-continuous" ? "trusted-host-relay" : "terminal-client",
@@ -128,7 +122,6 @@ function setupChannelServer(
   }
   services.exposeOnChannelServer(server, overrides);
   socket.onClose(() => {
-    peer?.dispose();
     reverseClient?.dispose();
     void connectionScope?.dispose();
     rawServer.dispose();
@@ -143,7 +136,6 @@ function generateId(): string {
 }
 
 export interface HttpServerOptions {
-  topicResourcePeers?: TopicResourcePeers;
   serverId?: string;
   name?: string;
   host?: string;
@@ -345,12 +337,8 @@ export function createHttpServer(
 
   const upgradeTrustedHostWebSocket = upgradeWebSocket(() => ({
     onOpen(_event, ws) {
-      setupChannelServer(
-        ws.raw as WebSocket,
-        services,
-        "desktop-continuous",
-        options.topicResourcePeers,
-      );
+      // fork（bot channels 移除）：trusted host 连接不再透传 topicResourcePeers。
+      setupChannelServer(ws.raw as WebSocket, services, "desktop-continuous");
     },
   }));
   app.use("/ws/host", async (c, next) => {
@@ -384,52 +372,9 @@ export function createHttpServer(
     }
   });
 
-  const handleBotCallback = async (c: Context) => {
-    const provider = c.req.param("provider") as BotProvider;
-    if (!botProviders.includes(provider)) {
-      return c.json({ error: `Unsupported provider: ${provider}` }, 400);
-    }
-    if (provider !== "webhook") {
-      return c.json({ error: `Provider ${provider} does not support HTTP callbacks.` }, 400);
-    }
-    const botsService = services.getOptional(IBotsService);
-    if (!botsService) {
-      return c.json({ error: "Bots service is not available." }, 503);
-    }
-    const rawBodyText = await c.req.text().catch(() => "");
-    let rawBody: unknown = {};
-    if (rawBodyText) {
-      try {
-        rawBody = JSON.parse(rawBodyText) as unknown;
-      } catch {
-        rawBody = { payload: rawBodyText };
-      }
-    }
-    const webhookSecret = c.req.header("x-zcode-bot-secret");
-    const botId = c.req.param("botId");
-    const result = await botsService.handleProviderCallbackResponse(provider, {
-      ...(typeof rawBody === "object" && rawBody !== null ? rawBody : { payload: rawBody }),
-      rawBody: rawBodyText,
-      ...(botId ? { botId } : {}),
-      ...(webhookSecret ? { webhookSecret } : {}),
-    });
-    const responseBody = result.responseBody ?? { ok: result.ok, replies: result.replies };
-    if (result.status === 400) {
-      return c.json(responseBody, 400);
-    }
-    if (result.status === 401) {
-      return c.json(responseBody, 401);
-    }
-    if (result.status === 503) {
-      // Bugfix：Bot 业务失败必须把可重试状态透传给 HTTP provider；返回 200 会让
-      // webhook/网关误以为消息已消费，效果与提前提交 Telegram offset 相同。
-      return c.json(responseBody, 503);
-    }
-    return c.json(responseBody, 200);
-  };
-
-  app.post("/api/bots/:provider", handleBotCallback);
-  app.post("/api/bots/:provider/:botId", handleBotCallback);
+  // fork（bot channels 移除）：第三方 IM bot 的 webhook 回调端点 /api/bots/:provider(/:botId)
+  // 与 handleBotCallback 随 bot channels（飞书/微信/Telegram/webhook）整体删除，专用安卓
+  // 远控端（zclaudia-gateway 链路）为其上位替代。
 
   // 远程连接的 WebSocket 端点，将远程 services 桥接给浏览器
   app.get(

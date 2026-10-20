@@ -1,6 +1,7 @@
 import { IGenUiService } from "./gen-ui/contract.js";
 import { createGenUiService } from "./gen-ui/node.js";
-import { channelReplyHostRequestSchema, channelReplyResultSchema } from "@zcode/shared";
+// fork（bots 移除）：channelReplyHostRequestSchema / channelReplyResultSchema 只被 bot channel
+// reply executor 使用，随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
 /* eslint-disable max-lines -- host process 服务注册和启动装配需要集中维护，拆散后会更难追踪依赖注入顺序 */
 // Node.js service implementations — NOT safe to import in browser code
 import { randomBytes } from "node:crypto";
@@ -24,16 +25,12 @@ export {
   materializeZCodeBuiltinProviderConfig,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
 } from "@zcode/provider-node";
-import type { IChannel } from "@zcode/rpc";
-import {
-  readTopicResourceFromRelay,
-  validateTopicResourceFromRelay,
-} from "./zcode-agent/topicResourceRelayClient.js";
-export {
-  createTopicResourcePeers,
-  type TopicResourcePeers,
-} from "./zcode-agent/topicResourcePeers.js";
-export { createTopicResourceRelayChannel } from "./zcode-agent/topicResourceRelayChannel.js";
+// fork（bots 移除）：readTopicResourceFromRelay / validateTopicResourceFromRelay 只被 topic
+// resource executor 使用，随 bot channels 功能整体删除；IChannel import 只服务已删除的
+// topicResourceRelayChannel options 槽位，随槽位一并摘除（消费方 windowTopicResourceRelay
+// 由 B4a 同波删除）。createTopicResourcePeers / TopicResourcePeers 的唯一生产消费方是
+// server http.ts 的 topic-resource relay 注册，该注册删除后此再导出失去消费方，
+// 模块 topicResourcePeers.ts 一并删除（specs/bot-channels-removal.md）。
 
 export { createFileService } from "./file/fileService.js";
 export {
@@ -136,7 +133,7 @@ export type {
   CuaHelperInstaller,
   CuaHelperInstallerOptions,
 } from "./cua-permission-broker/index.js";
-export { createBotsService } from "./bots/botsService.js";
+// fork（bots 移除）：createBotsService 随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
 export { createFileWatcherService } from "./fileWatcher/fileWatcherService.js";
 // fork（F4.7）：OAuth 服务、logout handler 与 OAuth 凭据仓库随官方账号链删除。
 export { createTelemetryCore, ensureTelemetryDeviceMid } from "./telemetry/telemetryCore.js";
@@ -270,7 +267,7 @@ import { IZCodeTaskService } from "./session/zcodeTaskService.js";
 import { IZCodeAgentService } from "./zcode-agent/zcodeAgent.js";
 import type { CuaOperationStateReporter } from "./zcode-agent/cuaOperationTurnTracker.js";
 import { IZCodeSessionService } from "./zcode-session/zcodeSession.js";
-import { IBotsService } from "./bots/bots.js";
+// fork（bots 移除）：IBotsService 随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
 import { IFileWatcherService } from "./fileWatcher/fileWatcher.js";
 import { IUsageStatsService } from "./usage-stats/usageStats.js";
 import { IClientScenesService } from "./client-scenes/clientScenes.js";
@@ -309,8 +306,8 @@ import { createZCodeTaskServiceAdapter } from "./zcode-agent/zcodeTaskServiceAda
 import { createZCodeSessionService } from "./zcode-session/zcodeSessionService.js";
 import { createZCodeTaskIndexSyncer } from "./zcode-agent/zcodeTaskIndexSyncer.js";
 import { TaskIndexRepo } from "./session/taskIndexRepo.js";
-import { createBotsService } from "./bots/botsService.js";
-import { createBotRemoteWorkspaceService } from "./bots/botRemoteWorkspaceBridge.js";
+// fork（bots 移除）：createBotsService / createBotRemoteWorkspaceService 随 bot channels
+// 功能整体删除（specs/bot-channels-removal.md）。
 import type { SessionMessageSendRequested } from "#src/session/sessionMailbox.js";
 import { createFileWatcherService } from "./fileWatcher/fileWatcherService.js";
 import { readLegacyZCodeConfigProviders } from "./model-provider/legacyZCodeConfigProviderReader.js";
@@ -965,8 +962,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  *        用于 BroadcastService 跨窗口中转。传 null 则广播为空操作。
  */
 export function createLocalServices(options: {
-  /** 已鉴权 Desktop stdio 连接提供的私有回查频道；不作为公共 service 暴露。 */
-  topicResourceRelayChannel?: (request: unknown) => IChannel;
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：topicResourceRelayChannel 槽位
+  // （第三方 IM bot 话题资源回传频道的注入口）随 bot channels 功能整体删除；传入方
+  // （server stdioServices / entry-http / zcode-server-cli core.ts）已同批摘除。
   parentPort?: Parameters<typeof createBroadcastService>[0];
   /** Host 装配层注入的设置权威；与网络 transport 必须来自同一 Window Host 生命周期。 */
   settingService?: ISettingService;
@@ -1693,52 +1691,9 @@ export function createLocalServices(options: {
     spawnFallbackCwd: options?.zcodeAgentSpawnFallbackCwd,
     // browser-use：host→main 执行桥透传给 agent service 的 onRequest browserExecute 路由。
     browserControlExecutor: options?.browserControlExecutor,
-    // 机器人凭据只归属于授权 Host；远端独立服务不能借用本机配置扩大读取范围。
-    channelReplyExecutor: async (value) => {
-      const request = channelReplyHostRequestSchema.parse(value);
-      if (
-        options?.topicResourceRelayChannel &&
-        (isDesktopAttachedRemote || request.remoteSessionId)
-      )
-        return channelReplyResultSchema.parse(
-          await options.topicResourceRelayChannel(request).call("reply", request),
-        );
-      if (isDesktopAttachedRemote) throw new Error("Desktop channel reply peer unavailable");
-      const bots = services.getOptional(IBotsService);
-      if (!bots?.replyToChannel) throw new Error("Bot channel reply unavailable");
-      return bots.replyToChannel(request);
-    },
-    topicResourceExecutor: async (request, signal) => {
-      if (
-        options?.topicResourceRelayChannel &&
-        (isDesktopAttachedRemote || request.remoteSessionId)
-      )
-        return readTopicResourceFromRelay(
-          options.topicResourceRelayChannel(request),
-          request,
-          signal,
-        );
-      if (isDesktopAttachedRemote) throw new Error("Desktop topic resource peer unavailable");
-      const bots = services.getOptional(IBotsService);
-      if (!bots?.readTopicResource) throw new Error("Topic resource service is unavailable");
-      return bots.readTopicResource({ ...request, signal });
-    },
-    topicResourceValidator: async (request, signal) => {
-      if (
-        options?.topicResourceRelayChannel &&
-        (isDesktopAttachedRemote || request.remoteSessionId)
-      )
-        return validateTopicResourceFromRelay(
-          options.topicResourceRelayChannel(request),
-          request,
-          signal,
-        );
-      if (isDesktopAttachedRemote) throw new Error("Desktop topic resource peer unavailable");
-      const bots = services.getOptional(IBotsService);
-      if (!bots?.validateTopicResource)
-        throw new Error("Topic resource authorization is unavailable");
-      return bots.validateTopicResource({ ...request, signal });
-    },
+    // fork（bots 移除）：channelReplyExecutor / topicResourceExecutor / topicResourceValidator
+    // 三个 bot channel 装配项随 bot channels 功能整体删除（specs/bot-channels-removal.md）；
+    // zcodeAgentService 侧的参数与消费由 B1b 同波删除。
     // fork（F4.6）：官方 MCP 身份头解析器与可信 origin 装配随官方 MCP 删除。
     cuaOperationStateReporter: shouldEnableCuaOperationStateReporter({
       serviceAuthorityMode: options?.serviceAuthorityMode,
@@ -1919,11 +1874,9 @@ export function createLocalServices(options: {
     settingService,
     cuaProductMcpServerResolver,
   });
-  const botRemoteWorkspaceService = createBotRemoteWorkspaceService({
-    parentPort: options?.parentPort,
-    settingService,
-    credentialService,
-  });
+  // fork（bots 移除）：botRemoteWorkspaceService（bot 远端 workspace 桥，监听 parentPort 建
+  // bot 远控会话）随 bot channels 功能整体删除（specs/bot-channels-removal.md）；
+  // parentPort 选项本身保留——broadcastService 仍用它做跨窗口广播。
   // fork（F4.7）：OAuth 服务与 401 条件登出/广播随官方账号链删除。
   // fork（F4.3）：offPeakCredentialResolverDeps（闲时共享 Registry 凭据解析闭包）与
   // buildOffPeakRequestAuthForTicket（闲时票据请求鉴权）随闲时任务全链路删除。
@@ -1962,20 +1915,10 @@ export function createLocalServices(options: {
     .register(ICuaPermissionService, cuaPermissionService)
     .register(ICuaPipSessionService, cuaPipSessionService)
     // fork（F4.8）：IConversationShareService 注册随会话分享功能删除。
-    .register(
-      IBotsService,
-      createBotsService({
-        credentialService,
-        zcodeTaskService,
-        broadcastService,
-        settingService,
-        modelSelectionService: providerRuntime.modelSelection,
-        remoteWorkspaceService: botRemoteWorkspaceService,
-        // 远端与本地 Bot 都读取所属 Environment 的 Model Selection View。
-        // 远端启动期不再轮询旧 Preset，避免重新制造一套模型候选事实。
-        runStartupBackgroundTasks: !isDesktopAttachedRemote,
-      }),
-    )
+    // fork（bots 移除）：IBotsService 注册块（createBotsService 装配，依赖
+    // botRemoteWorkspaceService 桥）随 bot channels 功能整体删除
+    // （specs/bot-channels-removal.md）；相邻的 ICuaPipSessionService 注册、上方 F4.8 注释与
+    // 下方 IFileWatcherService 注册一律不动。
     .register(IFileWatcherService, createFileWatcherService())
     .register(
       IUsageStatsService,
@@ -2105,7 +2048,8 @@ export function disposeServiceResources(services: ServiceCollection): void {
     services.getOptional(IZCodeTaskService),
     services.getOptional(IZCodeAgentService),
     services.getOptional(IZCodeSessionService),
-    services.getOptional(IBotsService),
+    // fork（bots 移除）：IBotsService dispose 项随 bot channels 功能整体删除
+    // （specs/bot-channels-removal.md）。
     services.getOptional(IFileWatcherService),
     services.getOptional(ISubagentsService),
   ].filter((service) => service !== undefined);
@@ -2142,7 +2086,8 @@ export async function disposeServiceResourcesAndWait(services: ServiceCollection
     services.getOptional(IZCodeTaskService),
     services.getOptional(IZCodeAgentService),
     services.getOptional(IZCodeSessionService),
-    services.getOptional(IBotsService),
+    // fork（bots 移除）：IBotsService dispose 项随 bot channels 功能整体删除
+    // （specs/bot-channels-removal.md）。
     services.getOptional(IFileWatcherService),
     services.getOptional(ISubagentsService),
   ].filter((service) => service !== undefined);

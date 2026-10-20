@@ -1,7 +1,8 @@
 import { GenUiMessageResponse } from "@/gen-ui/index.js";
 import { ConversationUserInputBubble } from "@/v4/ConversationUserInputBubble.js";
-import { expandTopicInputMessages } from "@/v4/topicInputMessages.js";
-import { ConnectedBotGroupDeliveryAction } from "@/v4/BotGroupDeliveryAction.js";
+// fork（bot-channels 移除）：expandTopicInputMessages（bot 群消息展开）、
+// ConnectedBotGroupDeliveryAction、BotGroupSourceLabel 引用随 bot channel 删除
+// （specs/bot-channels-removal.md）。
 /* oxlint-disable eslint(max-lines) -- v4 逐行 row 渲染分发集中收口（每种 row 一个 memo 叶子 + timelineMarker 分隔线），拆分会打散行类型对照。 */
 import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
 import {
@@ -134,7 +135,6 @@ import { ConversationSelectionReferenceChip } from "@/v4/composer/ConversationSe
 import { PptxElementReferenceChip } from "@/v4/composer/PptxElementReferenceChip.js";
 import { useOpenPptxElementReference } from "@/v4/composer/useOpenPptxElementReference.js";
 import { ConversationFileRewindDialog } from "@/v4/ConversationFileRewindDialog.js";
-import { BotGroupSourceLabel } from "@/v4/BotGroupSourceLabel.js";
 import { splitUserInputEpilogue } from "@/v4/ConversationUserInputEpilogue.js";
 import { ConversationHookDetailsAction } from "@/v4/ConversationHookDetailsAction.js";
 import { formatModelChangeLabel } from "@/v4/composer/modelTriggerDisplay.js";
@@ -741,8 +741,8 @@ const UserInputAttachmentList = memo(function UserInputAttachmentList({
     setPreviewOpen(true);
   };
   const items = visibleAttachments.map(({ attachment, index }) => {
-    const isTextMaterial =
-      attachment.sourceKind === "topic-history" || attachment.sourceKind === "clipboard-text";
+    // fork（bots 移除）："topic-history" 文本材料来源随 bot channels 全量删除，仅剩剪贴板文本。
+    const isTextMaterial = attachment.sourceKind === "clipboard-text";
     const ref = attachment.previewRef ?? attachment.ref;
     const isImage = attachment.mime.startsWith("image/");
     const isVideo = attachment.mime.startsWith("video/");
@@ -843,13 +843,7 @@ const UserInputAttachmentList = memo(function UserInputAttachmentList({
               </span>
             </div>
           </>
-        ) : attachment.sourceKind === "topic-history" ? (
-          <span className="truncate text-ui-base font-medium text-foreground">
-            {intl.formatMessage(
-              { id: "chat.attachments.topicHistory" },
-              { count: attachment.messageCount ?? 0 },
-            )}
-          </span>
+          /* fork（bots 移除）：原 "topic-history"（话题历史）标签分支随 bot channels 全量删除。 */
         ) : (
           <FileDisplayInline
             path={attachment.fileName}
@@ -1022,7 +1016,9 @@ const SingleUserInputRowView = memo(function SingleUserInputRowView({
     codeCommentContexts.length > 0 ||
     webElementContexts.length > 0 ||
     pptxElementReferences.length > 0 ||
-    (!row.botGroupSource && conversationSelections.length > 0);
+    // fork（bot-channels 移除）：原条件含 !row.botGroupSource（bot 群消息的引用 chip 走独立分支），
+    // 随 bot channel 删除后统一回落到本行 chip 渲染。
+    conversationSelections.length > 0;
   // Bug 根因：旧逻辑只接受 schedule runId，导致用户点击「立即运行」产生的 manual run
   // 没有来源标识。两种合法 automation runId 都应展示；普通会话输入仍因解析失败而不展示。
   const isScheduledAutomationPrompt = parseAutomationRunId(row.sourceCommandId ?? "") !== null;
@@ -1305,12 +1301,8 @@ const SingleUserInputRowView = memo(function SingleUserInputRowView({
           <span>{intl.formatMessage({ id: "chat.message.sentByScheduledTask" })}</span>
         </div>
       ) : null}
-      {row.botGroupSource ? (
-        // 群来源原先插在材料与正文之间，割裂同一输入；统一放在材料之前。
-        <div data-v4-user-input-source="true" className="mb-2 flex min-w-0 max-w-full">
-          <BotGroupSourceLabel source={row.botGroupSource} />
-        </div>
-      ) : null}
+      {/* fork（bot-channels 移除）：row.botGroupSource 群来源标签（BotGroupSourceLabel）
+          随 bot channel 删除（specs/bot-channels-removal.md）。 */}
 
       {hasAttachmentArea ? (
         <div
@@ -1318,14 +1310,9 @@ const SingleUserInputRowView = memo(function SingleUserInputRowView({
           data-testid={testId(TID_V4_ROW_ATTACHMENTS, String(row.rowId))}
           className="mb-2 flex max-w-xl flex-col items-end gap-2"
         >
-          {row.botGroupSource && conversationSelections.length > 0 ? (
-            <div data-v4-user-input-quotes="true" className="flex max-w-full justify-end">
-              <ConversationSelectionReferenceChip
-                references={conversationSelections}
-                contentAlign="end"
-              />
-            </div>
-          ) : null}
+          {/* fork（bot-channels 移除）：原「row.botGroupSource && conversationSelections.length > 0」
+              的 quotes 顶部渲染位是 bot 群消息专属（普通用户输入只在下方 pills 区渲染一次），
+              随 bot channel 整块删除，普通 row 的对话引用 chip 仍只在 pills 区出现。 */}
           {hasMediaAttachments ? (
             <div
               data-v4-user-input-media-attachments="true"
@@ -1369,12 +1356,12 @@ const SingleUserInputRowView = memo(function SingleUserInputRowView({
                 contentAlign="end"
                 onOpen={context.onOpenCodeViewer ? openPptxElementReference : undefined}
               />
-              {!row.botGroupSource ? (
-                <ConversationSelectionReferenceChip
-                  references={conversationSelections}
-                  contentAlign="end"
-                />
-              ) : null}
+              {/* fork（bot-channels 移除）：原 !row.botGroupSource 条件随 bot channel 删除，
+                  对话引用 chip 恢复无条件渲染。 */}
+              <ConversationSelectionReferenceChip
+                references={conversationSelections}
+                contentAlign="end"
+              />
               <PluginUiModelContextChip contexts={pluginUiContexts} contentAlign="end" />
             </div>
           ) : null}
@@ -1386,7 +1373,6 @@ const SingleUserInputRowView = memo(function SingleUserInputRowView({
         // 气泡保留 flex item 的自动宽度；宿主至少 624px 时再以 36rem 封顶并保留 48px 余量。
         <ConversationUserInputBubble
           text={visibleText}
-          contentParts={row.botGroupSource?.contentParts}
           rowId={row.rowId}
           epilogue={epilogue}
           attachments={row.attachments}
@@ -1455,25 +1441,12 @@ const SingleUserInputRowView = memo(function SingleUserInputRowView({
 const UserInputRowView = memo(function UserInputRowView(
   props: ComponentProps<typeof SingleUserInputRowView>,
 ) {
-  const rows = useMemo(() => expandTopicInputMessages(props.row), [props.row]);
-  if (rows.length === 1) return <SingleUserInputRowView {...props} row={rows[0]!} />;
-  return (
-    <div className="flex min-w-0 flex-col gap-3" data-v4-topic-messages="true">
-      {rows.map((row) => (
-        <div
-          key={row.botGroupSource!.messageId}
-          data-topic-message-id={row.botGroupSource!.messageId}
-        >
-          {/* 多条原文共用一个已接收输入，不能把局部编辑误当作替换整批。 */}
-          <SingleUserInputRowView {...props} row={row} onEdit={undefined} />
-        </div>
-      ))}
-    </div>
-  );
+  // fork（bot-channels 移除）：expandTopicInputMessages（bot 群消息一拆多展开）随 bot
+  // channel 删除，用户输入 row 恢复一对一渲染。
+  return <SingleUserInputRowView {...props} />;
 });
 
 // memo 组件的数组默认值必须是模块级常量：内联 [] 每次渲染都是新引用，会让 memo 比较失效。
-const EMPTY_SOURCE_COMMAND_IDS: readonly string[] = [];
 
 export const ConversationAssistantTextActions = memo(function ConversationAssistantTextActions({
   rowId,
@@ -1485,7 +1458,6 @@ export const ConversationAssistantTextActions = memo(function ConversationAssist
   hookInvocations,
   sessionId,
   turnId,
-  sourceCommandIds = EMPTY_SOURCE_COMMAND_IDS,
   onFork,
   onFeedbackChange,
   className,
@@ -1499,7 +1471,6 @@ export const ConversationAssistantTextActions = memo(function ConversationAssist
   hookInvocations?: readonly HookInvocationRow[];
   sessionId?: string | null;
   turnId?: string;
-  sourceCommandIds?: readonly string[];
   onFork?: (target: ConversationRowTarget) => void;
   onRetry?: (target: ConversationRowTarget) => void;
   onFeedbackChange?: AssistantFeedbackHandler;
@@ -1577,7 +1548,8 @@ export const ConversationAssistantTextActions = memo(function ConversationAssist
     }
   }, [entityId, onFork, rowId]);
   return (
-    <MessageActions className={cn(className, "has-[[data-bot-group-delivery]]:opacity-100")}>
+    // fork（bot-channels 移除）：has-[[data-bot-group-delivery]] hover 选择器随 bot 群投递动作删除。
+    <MessageActions className={className}>
       <CopyRowAction
         text={text}
         rowId={rowId}
@@ -1643,9 +1615,8 @@ export const ConversationAssistantTextActions = memo(function ConversationAssist
       {timeLabel ? (
         <span className="select-none text-ui-sm text-foreground-subtlest">{timeLabel}</span>
       ) : null}
-      {turnId ? (
-        <ConnectedBotGroupDeliveryAction turnId={turnId} sourceCommandIds={sourceCommandIds} />
-      ) : null}
+      {/* fork（bot-channels 移除）：ConnectedBotGroupDeliveryAction（bot 群投递重试动作）
+          随 bot channel 删除（specs/bot-channels-removal.md）。 */}
     </MessageActions>
   );
 });

@@ -15,7 +15,7 @@ import type { IZCodeTaskService } from "./session/zcodeTaskService.js";
 import type { IZCodeAgentService } from "./zcode-agent/zcodeAgent.js";
 import type { IZCodeSessionService } from "./zcode-session/zcodeSession.js";
 import type { ICuaPermissionService } from "./cua-permission-broker/cuaPermissionService.js";
-import type { IBotsService } from "./bots/bots.js";
+// fork（bots 移除）：IBotsService 随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
 import type { IFileWatcherService } from "./fileWatcher/fileWatcher.js";
 import type {
   IModelSelectionService,
@@ -63,7 +63,8 @@ export interface IServiceAccessor {
   // CUA 是 opt-in 内测特性：local macOS host 提供，远端 等 host 没有。可选避免连锁必填。
   readonly cuaPermissionService?: ICuaPermissionService;
   // fork（F4.8）：conversationShareService（会话分享发布/导入）随分享功能删除。
-  readonly botsService: IBotsService;
+  // fork（bots 移除）：botsService（第三方 IM bot 接入）随 bot channels 功能整体删除；
+  // 相邻的 fileWatcherService 字段保持不动。
   readonly fileWatcherService: IFileWatcherService;
   // fork（F4.7）：oauthService 随官方账号 OAuth 链删除。
   /** 当前 Environment 的 Provider 配置与设置视图。 */

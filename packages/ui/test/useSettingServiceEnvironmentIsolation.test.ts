@@ -20,9 +20,7 @@ function createServices(settings: AppSettings) {
       get: vi.fn(async () => settings),
       update: vi.fn(async () => {}),
     },
-    botsService: {
-      syncAppRuntimePreferences: vi.fn(async () => {}),
-    },
+    // fork（bot-channels 移除）：botsService mock 随 BotsService 删除（specs/bot-channels-removal.md）。
     broadcastService: {
       send: vi.fn(async () => {}),
     },

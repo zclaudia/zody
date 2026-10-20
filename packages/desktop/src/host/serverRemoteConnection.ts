@@ -4,14 +4,11 @@ import {
   Emitter,
   SocketProtocol,
   VSBuffer,
-  ChannelServer,
-  type IServerChannel,
   type ISocket,
 } from "@zcode/rpc";
 import type { IServiceAccessor } from "@zcode/services";
 import {
   ZCODE_RPC_HOST_CAPABILITY_HEADER,
-  TOPIC_RESOURCE_RELAY_CHANNEL,
   serverRemoteHostCapabilitySchema,
   serverRemoteInfoSchema,
   type ServerConnectOptions,
@@ -32,7 +29,6 @@ export interface ServerRemoteConnection {
 }
 
 export interface ServerRemoteConnectionOptions {
-  topicResourceChannel?: IServerChannel;
   fetchImpl?: typeof fetch;
   onClose?: (event: { code: number; reason: string }) => void;
 }
@@ -238,12 +234,9 @@ function connectNodeWebSocket(
       settled = true;
       const rpcSocket = wrapNodeWebSocket(socket, options.onClose);
       const protocol = new SocketProtocol(rpcSocket);
-      const reverseServer = options.topicResourceChannel
-        ? new ChannelServer(protocol, "desktop-resource")
-        : undefined;
-      if (reverseServer && options.topicResourceChannel)
-        reverseServer.registerChannel(TOPIC_RESOURCE_RELAY_CHANNEL, options.topicResourceChannel);
-      rpcSocket.onClose(() => reverseServer?.dispose());
+      // fork（bot channels 移除）：desktop-resource 反向 ChannelServer 对
+      // TOPIC_RESOURCE_RELAY_CHANNEL 的注册是第三方 IM bot 的资源回传链，随 bot
+      // channels 整体删除；与 server 端 relay 摘除（packages/server/src/http.ts）成对。
       resolve({
         socket,
         services: connectViaProtocol(protocol),

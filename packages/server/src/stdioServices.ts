@@ -1,5 +1,4 @@
 import { createLocalServices, type ZCodeAgentCommandResolver } from "@zcode/services/node";
-import type { IChannel } from "@zcode/rpc";
 import {
   parseServiceAuthorityMode,
   ZCODE_REMOTE_HTTP_PROXY_ENV_KEY,
@@ -8,7 +7,6 @@ import {
 } from "@zcode/shared";
 
 export interface CreateStdioServicesOptions {
-  topicResourceRelayChannel?: () => IChannel;
   env?: Record<string, string | undefined>;
   zcodeBuiltinProviderConfigFilePath: string;
   zcodeAgentCommandResolver?: ZCodeAgentCommandResolver;
@@ -39,7 +37,7 @@ export function createStdioServices(options: CreateStdioServicesOptions) {
   // 测试注入 resolver 只用于在 spawn 前观察最终命令，不改变生产默认 resolver。
   const services = createLocalServices({
     zcodeBuiltinProviderConfigFilePath: options.zcodeBuiltinProviderConfigFilePath,
-    topicResourceRelayChannel: options.topicResourceRelayChannel,
+    // fork（bot channels 移除）：topicResourceRelayChannel（第三方 IM bot 资源回传链）不再注入。
     serviceAuthorityMode: authorityModeParseResult.mode,
     zcodeAgentCommandResolver: options.zcodeAgentCommandResolver,
     remoteAgentNetwork,

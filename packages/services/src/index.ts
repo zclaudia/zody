@@ -169,15 +169,8 @@ export type {
   ZCodeSessionWorkspaceTarget,
 } from "./zcode-session/zcodeSession.js";
 
-// Bots service — IBotsService is both a type (interface) and value (descriptor).
-export { IBotsService } from "./bots/bots.js";
-export type {
-  BotBindCodeResult,
-  BotCreateBindCodeParams,
-  BotListWorkspaceRefsParams,
-  BotSaveBotParams,
-  BotTestResult,
-} from "./bots/bots.js";
+// fork（bots 移除）：IBotsService 及 Bot* 类型导出随 bot channels 功能整体删除
+// （specs/bot-channels-removal.md）。
 
 // Hooks service — IHooksService is both a type (interface) and value (descriptor).
 export { IHooksService } from "./hooks/hooks.js";

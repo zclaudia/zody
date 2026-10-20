@@ -1,4 +1,5 @@
-import { replyToChannelToolEntry } from "./reply-to-channel.js";
+// fork（bots 移除）：reply-to-channel 工具（bot 渠道回复）随 bot channels 全量删除
+// （specs/bot-channels-removal.md），不注册任何替代工具；正常最终答复即全部交付路径。
 // ============================================================
 // Built-in Tool Handlers
 // ============================================================
@@ -104,7 +105,8 @@ export const builtInTools: ToolEntry[] = [
   taskOutputToolEntry,
   taskStopToolEntry,
   readSessionContextToolEntry,
-  replyToChannelToolEntry,
+  // fork（bots 移除）：原 replyToChannelToolEntry 注册行随 bot channels 全量删除
+  // （specs/bot-channels-removal.md）；相邻的 readSessionContextToolEntry / agentToolEntry 不变。
   agentToolEntry,
   taskToolEntry,
   skillToolEntry,

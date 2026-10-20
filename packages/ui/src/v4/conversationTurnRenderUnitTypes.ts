@@ -1,5 +1,5 @@
 import type { PluginUiRowPinResolver } from "@/plugin-ui/index.js";
-import type { BotTopicPreparation } from "@zcode/shared";
+// fork（bot-channels 移除）：BotTopicPreparation 类型引用随 bot 话题准备链删除（specs/bot-channels-removal.md）。
 import type {
   AssistantTextRow,
   ConversationRow,
@@ -17,8 +17,8 @@ import type {
 } from "@/v4/conversationTurnWorkSegments.js";
 
 export interface ConversationTurnRenderUnit {
-  /** 未接受的 Bot 消息展示投影，不写入 CLI rows 或导航/分享索引。 */
-  topicPreparations?: readonly BotTopicPreparation[];
+  // fork（bot-channels 移除）：topicPreparations（未接受 Bot 消息展示投影）字段随 bot
+  // 话题准备链删除（specs/bot-channels-removal.md）。
   key: string;
   turnId: string;
   header?: TurnHeaderRow;

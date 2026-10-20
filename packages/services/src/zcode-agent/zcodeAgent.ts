@@ -82,7 +82,6 @@ import type {
   ZCodeWorkspaceGenerateTextResult,
   ZCodeWorkspaceGenerateTextParams,
   ZCodeWorkspaceHookTrustGrantResult,
-  ZCodeAutomationBotDeliveryTarget,
 } from "@zcode/shared";
 import type {
   ClientHello,
@@ -300,8 +299,8 @@ export interface ZCodeAgentSendPromptParamsBase extends ZCodeAgentSessionTarget 
   expectedProviderRevision?: string;
   runtimeProviderHeaders?: Record<string, string>;
   toolDenylist?: string[];
-  /** Bot 来源 turn 的稳定回推地址；只在当前 turn 内供 CronCreate 读取。 */
-  botDeliveryTarget?: ZCodeAutomationBotDeliveryTarget;
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：botDeliveryTarget 回推地址
+  // 随第三方 IM bot 接入整体删除；sendPrompt 不再承载 bot 回推语义。
 }
 
 export type ZCodeAgentSendPromptParams = ZCodeAgentSendPromptParamsBase &

@@ -72,7 +72,6 @@ zclaudia-gateway（鉴权、配对、心跳、帧级转发；无业务状态）
 | snapshot 字节预算                  | [Snapshot 字节预算](./snapshot-byte-budget.md)                            |
 | 单一 owner 的流式渲染              | [Single Owner Stream Rendering](./single-owner-stream-rendering.md)       |
 | 输入 admission、队列与跨端命令路由 | [任务命令队列](../web-remote-control-task-command-queue.md)               |
-| Bot Channel 入口                   | [Remote Control Bot Channel Entry](./remote-control-bot-channel-entry.md) |
 | Android 壳与自建部署               | [Android 远程控制壳](../mobile-remote-control-android.md)                 |
 
 [最小跑通规划](./web-remote-control-minimal-plan.md)仅作为历史记录，其中描述的仓库内 relay、
@@ -278,7 +277,8 @@ gateway 下发的 `channel_closed.reason` 取值是 `closed`、`rejected`、`tim
 
 - **同步条件**：只要远程访问开关打开，每个窗口在完成标签页恢复（`hasCompletedFullTabRestore`）
   之后都同步整份 workspace 目标和任务索引；窗口关闭时 Main 删除该窗口的快照。
-  「无远控会话时只推送已连接的远程 workspace 供 Bot 绑定」的行为保留。
+  「无远控会话时只推送已连接的远程 workspace」的行为保留（fork 注：原措辞「供 Bot 绑定」随
+  bot channels 移除删除，行为本身服务手机远控自启恢复，见 removal spec 保留面第 7 条）。
 - **聚合**：workspace 列表按 `workspaceKey`（`workspaceIdentity?.trim() || workspacePath`）去重；
   任务列表按 `workspaceKey + taskId` 去重。同一个 `workspaceKey` 出现在多个窗口时，
   `resolveWindow` 依次选择「当前聚焦窗口 → 最近同步窗口」。聚合结果变化时按签名去重后推送

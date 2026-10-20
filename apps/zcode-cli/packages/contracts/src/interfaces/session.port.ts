@@ -305,46 +305,8 @@ export interface TurnInputIntentMetadata {
     sentAt?: string;
   }>;
   inputOrigin?: "desktop" | "mobile";
-  botGroupSource?: {
-    botIdentity?: { name: string; openId?: string };
-    mentionedBot?: boolean;
-    appId?: string;
-    contentParts?: import("@zcode/shared").ChannelContentPart[];
-    messages?: Array<{
-      mentionedBot?: boolean;
-      messageId: string;
-      senderId: string;
-      senderName: string;
-      text: string;
-      attachmentIndexes: number[];
-      contentParts?: import("@zcode/shared").ChannelContentPart[];
-    }>;
-    /** 入队时由 Host 注入，历史资源请求不能借用后续重新授权的版本。 */
-    authorizationId?: string;
-    botId: string;
-    provider: "feishu" | "lark";
-    chatId: string;
-    threadId?: string;
-    rootMessageId?: string;
-    topicContext?: {
-      checkpoint: string;
-      hasGap: boolean;
-      messages: Array<{
-        id: string;
-        chatId: string;
-        threadId: string;
-        senderId: string;
-        senderType: "user" | "app";
-        text: string;
-        createdAt: number;
-        kind: string;
-        deleted?: boolean;
-      }>;
-    };
-    senderId: string;
-    senderName: string;
-    messageId: string;
-  };
+  // fork（bots 移除）：botGroupSource（飞书/Lark bot 群输入来源与话题授权上下文）随 bot
+  // channels 全量删除（specs/bot-channels-removal.md）；存量 transcript 中的该字段不再读取。
   sourceCommandId: string;
   queueItemId: string;
   clientId: string;
@@ -367,7 +329,9 @@ export interface TurnInputIntentMetadata {
     mime: string;
     bytes: number;
     previewRef?: string;
-    sourceKind?: "clipboard-text" | "topic-history";
+    // fork（bots 移除）：sourceKind "topic-history"（bot 话题历史附件来源）随 bot channels
+    // 全量删除（specs/bot-channels-removal.md），附件来源仅剩剪贴板文本。
+    sourceKind?: "clipboard-text";
     messageCount?: number;
   }>;
   // fork（F4.2）：原 highspeed 字段随加速卡删除；存量 intent metadata 中的该字段被忽略。
@@ -390,7 +354,9 @@ export interface PendingTurnAttachment {
   type: "file" | "image" | "video" | "pdf" | "url";
   path?: string;
   content?: string;
-  sourceKind?: "clipboard-text" | "topic-history";
+  // fork（bots 移除）：sourceKind "topic-history" 随 bot channels 全量删除
+  // （specs/bot-channels-removal.md），与 attachmentRefs.sourceKind 同步收窄。
+  sourceKind?: "clipboard-text";
   messageCount?: number;
   filename?: string;
   mimeType?: string;

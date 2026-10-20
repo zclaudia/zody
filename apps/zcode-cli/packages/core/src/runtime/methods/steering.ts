@@ -1222,11 +1222,8 @@ async function drainPendingInputUnlocked(
         : undefined;
     const runtimeEntry = createRuntimeUserEntry(
       buildUserContentFromTurn(
-        withConversationQuotes(
-          pendingInput.input,
-          pendingInput.intent?.conversationQuotes,
-          pendingInput.intent?.botGroupSource,
-        ),
+        // fork（bots 移除）：原第三参 botGroupSource 随 bot channels 全量删除（specs/bot-channels-removal.md）。
+        withConversationQuotes(pendingInput.input, pendingInput.intent?.conversationQuotes),
         resolvedAttachments,
       ),
       runtimeInputMetadata(inputPresentation) ?? realUserRuntimeMetadata(),

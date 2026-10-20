@@ -190,23 +190,8 @@ export class PermissionService {
       );
     }
 
-    // 原会话回复的接收范围由 Host 再次校验；network 副作用不能让这个免审批契约重新弹窗。
-    // 放在显式 deny/ask 之后，且同时匹配内置工具名和能力，不能扩大其他网络工具的权限。
-    if (
-      context.toolName === "ReplyToChannel" &&
-      capability.permissionName === "channel.reply" &&
-      capability.sideEffectScope === "network" &&
-      capability.riskLevel === "medium" &&
-      !capability.destructive &&
-      !capability.needsApproval
-    ) {
-      return this.allow(
-        context,
-        capability,
-        "tool.channelReply.preapproved",
-        "The originating bot conversation is already authorized",
-      );
-    }
+    // fork（bots 移除）：原 ReplyToChannel（channel.reply）免审批分支随 bot channels 全量
+    // 删除（specs/bot-channels-removal.md）；权限审批管线的 deny/ask/project 规则链保持不变。
 
     if (planEnabled) {
       return this.checkPlanMode(context, capability);
