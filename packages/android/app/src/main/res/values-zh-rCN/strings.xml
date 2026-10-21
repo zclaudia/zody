@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ZCode</string>
+    <string name="app_name">Zody</string>
     <string name="remote_retry_button">重试</string>
     <string name="remote_load_failed_title">远程控制加载失败</string>
-    <string name="remote_keep_alive_title">ZCode 远程控制运行中</string>
+    <string name="remote_keep_alive_title">Zody 远程控制运行中</string>
     <string name="remote_keep_alive_text">正在保持本次手机远控会话可恢复。</string>
     <string name="remote_keep_alive_channel">远程控制</string>
-    <string name="remote_keep_alive_channel_description">ZCode 手机远控会话的连接状态。</string>
+    <string name="remote_keep_alive_channel_description">Zody 手机远控会话的连接状态。</string>
     <string name="remote_attachment_source_title">添加附件</string>
     <string name="remote_attachment_source_message">拍照，或从手机中选择文件。</string>
     <string name="remote_attachment_take_photo">拍照</string>

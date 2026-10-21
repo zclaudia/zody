@@ -38,6 +38,7 @@ import {
 } from "@zcode/shared";
 import { connectRemote, createRemoteBackend, type RemoteConnection } from "./remote/index.js";
 import { createHostCapabilityStore } from "./hostCapability.js";
+import { isAllowedHttpRequest, resolveHttpBinding } from "./httpSecurity.js";
 
 function wrapWebSocket(ws: WebSocket): ISocket {
   const onData = new Emitter<VSBuffer>();
@@ -178,7 +179,7 @@ function createServerInfo(options: HttpServerOptions): ServerRemoteInfo {
       : {}),
     version: ZCODE_VERSION,
     protocolVersion: SERVER_REMOTE_PROTOCOL_VERSION,
-    authRequired: options.authRequired ?? Boolean(readTrimmedEnv("ZCODE_SERVER_TOKEN")),
+    authRequired: Boolean(options.authToken?.trim()),
     workspaces: resolveServerWorkspaces(options),
     capabilities: {
       desktopContinuous: true,
@@ -304,11 +305,27 @@ export function createHttpServer(
   port = 3030,
   options: HttpServerOptions = {},
 ) {
+  const binding = resolveHttpBinding(options);
   const app = new Hono();
   const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
   const hostCapabilities = createHostCapabilityStore();
 
-  const authToken = options.authToken?.trim();
+  const authToken = binding.authToken;
+  app.use("*", async (c, next) => {
+    const pathname = new URL(c.req.url).pathname;
+    if (
+      isTokenProtectedPath(pathname) &&
+      !isAllowedHttpRequest(
+        c.req.url,
+        c.req.header("Origin"),
+        Boolean(authToken),
+        c.req.header("Host"),
+      )
+    ) {
+      return c.json({ error: "Forbidden request origin or host" }, 403);
+    }
+    await next();
+  });
   if (authToken) {
     app.use("*", async (c, next) => {
       const pathname = new URL(c.req.url).pathname;
@@ -425,10 +442,10 @@ export function createHttpServer(
     });
   }
 
-  const server = serve({ fetch: app.fetch, hostname: options.host, port }, () => {
+  const server = serve({ fetch: app.fetch, hostname: binding.host, port }, () => {
     const address = server.address();
     const listenPort = typeof address === "object" && address ? address.port : port;
-    const listenHost = options.host?.trim() || "localhost";
+    const listenHost = binding.host;
     log(`http://${listenHost}:${listenPort}`);
   });
 

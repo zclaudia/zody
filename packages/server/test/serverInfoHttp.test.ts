@@ -1,11 +1,18 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { AddressInfo } from "node:net";
+import { once } from "node:events";
+import { request } from "node:http";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ServiceCollection } from "@zcode/services";
 import { SERVER_REMOTE_PROTOCOL_VERSION } from "@zcode/shared";
 import { createHttpServer } from "../src/http.js";
+
+async function boundAddress(server: ReturnType<typeof createHttpServer>): Promise<AddressInfo> {
+  if (!server.listening) await once(server, "listening");
+  return server.address() as AddressInfo;
+}
 
 describe("server info HTTP endpoint", () => {
   const servers: Array<{ close(callback?: (err?: Error) => void): void }> = [];
@@ -31,6 +38,67 @@ describe("server info HTTP endpoint", () => {
     tempDirs.length = 0;
   });
 
+  it("binds only to loopback when no host is configured", async () => {
+    const server = createHttpServer(new ServiceCollection(), 0);
+    servers.push(server);
+    expect((await boundAddress(server)).address).toBe("127.0.0.1");
+  });
+
+  it.each(["0.0.0.0", "::"])(
+    "rejects an unauthenticated network listener on %s before listening",
+    (host) => {
+      expect(() => {
+        const server = createHttpServer(new ServiceCollection(), 0, { host });
+        servers.push(server);
+      }).toThrow("Non-loopback HTTP listeners require an authToken");
+    },
+  );
+
+  it("rejects a declared authentication requirement without a token", () => {
+    expect(() => {
+      const server = createHttpServer(new ServiceCollection(), 0, { authRequired: true });
+      servers.push(server);
+    }).toThrow("authRequired requires an authToken");
+  });
+
+  it("rejects cross-site browser requests and rebinding hosts before capability issuance", async () => {
+    const server = createHttpServer(new ServiceCollection(), 0);
+    servers.push(server);
+    const address = await boundAddress(server);
+    const baseUrl = `http://127.0.0.1:${address.port}`;
+    for (const origin of ["https://untrusted.example", "null"]) {
+      const rejected = await fetch(`${baseUrl}/api/rpc-host-capability`, {
+        method: "POST",
+        headers: { origin },
+      });
+      expect(rejected.status).toBe(403);
+      const upgrade = await fetch(`${baseUrl}/ws`, { headers: { origin } });
+      expect(upgrade.status).toBe(403);
+    }
+    // Node fetch 会规范化 Host；使用真实 HTTP 请求验证重绑定头。
+    const reboundStatus = await new Promise<number | undefined>((resolve, reject) => {
+      const req = request(
+        `${baseUrl}/api/rpc-host-capability`,
+        {
+          method: "POST",
+          headers: { host: `untrusted.example:${address.port}` },
+        },
+        (response) => {
+          response.resume();
+          resolve(response.statusCode);
+        },
+      );
+      req.on("error", reject);
+      req.end();
+    });
+    expect(reboundStatus).toBe(403);
+    const accepted = await fetch(`${baseUrl}/api/rpc-host-capability`, {
+      method: "POST",
+      headers: { origin: baseUrl },
+    });
+    expect(accepted.status).toBe(200);
+  });
+
   it("returns desktop connector bootstrap metadata", async () => {
     const server = createHttpServer(new ServiceCollection(), 0, {
       serverId: "studio",
@@ -43,7 +111,7 @@ describe("server info HTTP endpoint", () => {
       ],
     });
     servers.push(server);
-    const address = server.address() as AddressInfo;
+    const address = await boundAddress(server);
 
     const response = await fetch(`http://127.0.0.1:${address.port}/api/server-info`);
 
@@ -73,7 +141,7 @@ describe("server info HTTP endpoint", () => {
       authToken: "secret-token",
     });
     servers.push(server);
-    const address = server.address() as AddressInfo;
+    const address = await boundAddress(server);
     const baseUrl = `http://127.0.0.1:${address.port}`;
 
     const rejected = await fetch(`${baseUrl}/api/server-info`);
@@ -81,6 +149,7 @@ describe("server info HTTP endpoint", () => {
 
     const accepted = await fetch(`${baseUrl}/api/server-info?token=secret-token`);
     expect(accepted.status).toBe(200);
+    await expect(accepted.clone().json()).resolves.toMatchObject({ authRequired: true });
     expect(accepted.headers.get("set-cookie")).toContain("zcode_lite_token=");
 
     const cookieAccepted = await fetch(`${baseUrl}/api/server-info`, {
@@ -116,7 +185,7 @@ describe("server info HTTP endpoint", () => {
       spaFallback: true,
     });
     servers.push(server);
-    const address = server.address() as AddressInfo;
+    const address = await boundAddress(server);
     const baseUrl = `http://127.0.0.1:${address.port}`;
 
     const asset = await fetch(`${baseUrl}/app.js`);

@@ -1,6 +1,6 @@
 # Android 远程控制壳
 
-`packages/android` 是 ZCode 手机远控的 Android 壳。壳不重写 Agent 或 RPC 协议，它只做三件事：
+`packages/android` 是 Zody 手机远控的 Android 壳。壳不重写 Agent 或 RPC 协议，它只做三件事：
 加载随 APK 内置的手机页面、提供少量原生能力（安全存储、前后台、返回键），以及维持一个不携带
 URL 的前台保活服务。页面自身通过 zclaudia-gateway 连接桌面，架构见
 [手机远控架构](./web-remote-control/web-remote-control-architecture.md)。
@@ -31,7 +31,7 @@ pnpm build:mobile-web
 cd packages/android
 ./gradlew assembleDebug
 
-# release APK
+# release APK：先配置下述专用签名环境变量
 ./gradlew assembleRelease
 ```
 
@@ -94,10 +94,15 @@ POST_NOTIFICATIONS
 - **WebView 下载**：`DownloadListener` 交给 `MobileDownloadHandler`，与页面 `saveFile` 共用同一套
   保存/打开路径；`blob:` URL 只存在于渲染进程，原生读不到，会记录警告。
 
-### 当前限制
+### 身份与 release 签名
 
-- `applicationId`、`namespace` 和 Java 包路径仍是模板值 `com.example.zcode_mobile`，品牌信息待
-  方案「待决事项 1」确定后再替换。
+显示名为 `Zody`，applicationId / namespace 为 `io.github.zclaudia.zody.mobile`。versionName 读取仓库根 `package.json`（首版 `0.1.0`），初始 versionCode 为 `1`。
+
+release 构建要求四个环境变量：`ZODY_ANDROID_KEYSTORE_FILE`、`ZODY_ANDROID_KEYSTORE_PASSWORD`、`ZODY_ANDROID_KEY_ALIAS`、`ZODY_ANDROID_KEY_PASSWORD`。文件必须存在；缺失配置会在 release 编译前失败，不回退 debug key。debug 构建不需要这些变量。
+
+使用专用 release keystore，并离线备份 keystore、alias 与恢复口令；后续 APK 更新必须使用相同签名。CI Secrets 的对应关系见 [构建与发布](fork/build.md)。验证产物可使用 Android SDK 的 `apksigner verify --verbose --print-certs <apk>`；公开前还需真机安装与升级验证。
+
+Zody 不提供托管 gateway，下面的服务器和凭据由用户自行部署、提供和配置。
 
 ## 部署与运维
 

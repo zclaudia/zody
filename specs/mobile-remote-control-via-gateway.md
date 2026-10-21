@@ -1,5 +1,7 @@
 # 手机远控：App 级远程访问，改走 zclaudia-gateway
 
+2026-10-20 首发决策更新：Android 远控随 Zody 0.1.0 公开预览；gateway 由用户自行提供和配置，Zody 不提供托管服务。应用名、applicationId、版本、分发与支持边界以 [Zody 0.1.0 首发规格](zody-0.1.0-release.md) 为准。以下旧调查不作为当前实现完成情况。
+
 状态：草案（2026-10-17），待评审后实现。
 
 ## 背景与决策
@@ -10,7 +12,7 @@
 
 1. 只做 Android，不做 iOS。
 2. 不使用官方 relay 及其协议，改用自研 zclaudia-gateway（`/Users/zhvala/SourceCode/zclaudia-gateway`，Gateway Protocol v4）。
-3. 本 fork 与官方 ZCode 是两个完全独立的产品，不考虑共存。
+3. 本 fork 与官方 ZCode 是两个完全独立的产品，采用独立安装身份；Zody 首发身份和数据目录按上述首发规格实施。
 4. 删除 ZCode 原有的 relay 配对体系，包括：设备注册、HMAC 挑战、`pass_hash`/`device_sid`、二维码 `/remote/v4?sid&hash…`、`pair_status` 心跳、`KICKED`，以及旧的 `remoteControlToken` 和 `/web-remote` 路径。
 5. 远控从「按窗口、按 workspace 开启」改为 **App 级**：桌面只有一个总开关，手机连上这台电脑后可以访问它打开的所有 workspace。这一点参考 zclaudia：每台电脑一个 backend，手机选中电脑后直接看到整台电脑的项目和会话。
 6. 手机仍只 attach 桌面已有的 Host，桌面必须在线。
