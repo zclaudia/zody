@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { zodyLogoUrl } from "@/brand.js";
 import { cn } from "@/components/lib/utils.js";
+import "./rootStartupLogo.css";
 
 interface RootStartupLoadingProps {
   label: string;
@@ -24,13 +26,9 @@ export function RootStartupLoading({ label, children, busy = true }: RootStartup
   );
 }
 
-/** 初始化与引导共用品牌图标，保持底色、描边、圆角和标志比例一致。 */
+/** 初始化与引导共用应用图标。图标文件自带圆角底板，不再套旧的深色 Z 标壳。 */
 export function ZCodeStartupLogoBadge({ animated = true }: { animated?: boolean }) {
-  return (
-    <div className="relative flex size-24 items-center justify-center rounded-3xl bg-[linear-gradient(180deg,#000000_0%,#151718_100%)] text-[#ffffff] shadow-xl/20 before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit] before:border before:border-[rgba(255,255,255,0.1)] before:content-['']">
-      <ZCodeStartupLogo className="h-auto w-14" animated={animated} />
-    </div>
-  );
+  return <ZCodeStartupLogo className="size-24" animated={animated} />;
 }
 
 export function ZCodeStartupLogo({
@@ -41,34 +39,12 @@ export function ZCodeStartupLogo({
   animated?: boolean;
 }) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="118"
-      height="100"
-      fill="none"
-      viewBox="0 0 256 218"
-      className={cn("shrink-0 text-current", className)}
-      aria-hidden="true"
-      focusable="false"
-    >
-      {animated ? (
-        <animate
-          attributeName="opacity"
-          begin="3s"
-          dur="1.8s"
-          repeatCount="indefinite"
-          values="1;0.4;1"
-        />
-      ) : null}
-      <path
-        fill="currentColor"
-        d="M134.4 0.130152L116.48 25.6022C113.665 29.5699 109.054 32.0019 104.064 32.0019H6.3999V0C6.3999 0.130149 134.4 0.130152 134.4 0.130152Z"
-      />
-      <path fill="currentColor" d="M256 0.130127L102.401 217.732H0L153.599 0.130127H256Z" />
-      <path
-        fill="currentColor"
-        d="M121.601 217.732L139.65 192.134C142.465 188.166 147.076 185.734 152.067 185.734H249.604V217.736H121.601V217.732Z"
-      />
-    </svg>
+    <img
+      src={zodyLogoUrl}
+      alt=""
+      width={96}
+      height={96}
+      className={cn("shrink-0", className, animated && "zcode-startup-logo-breathe")}
+    />
   );
 }

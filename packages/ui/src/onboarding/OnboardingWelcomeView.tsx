@@ -1,6 +1,6 @@
 import { ArrowRightIcon } from "lucide-react";
+import { zodyLogoUrl } from "@/brand.js";
 import { Button } from "@/components/ui/button.js";
-import { ZCodeAboutLogo } from "@/components/ui/ZCodeAboutLogo.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { OnboardingWelcomeAsciiVisual } from "@/onboarding/OnboardingWelcomeAsciiVisual.js";
 
@@ -16,14 +16,8 @@ export function OnboardingWelcomeView(props: { onStart: () => void; onOpenMigrat
           </div>
 
           <div className="space-y-2">
-            {/* 欢迎 logo 壳是固定深色底，边框不能跟随浅色主题 token，否则浅色主题下边框过重。*/}
-            <div
-              className="relative flex size-14 items-center justify-center rounded-xl bg-[linear-gradient(180deg,#000000_0%,#151718_100%)] text-[#ffffff] shadow-lg/20 before:pointer-events-none before:absolute before:inset-0 before:rounded-xl before:border before:border-[rgba(255,255,255,0.1)]"
-              aria-label="Zody"
-              role="img"
-            >
-              <ZCodeAboutLogo className="h-auto w-8" />
-            </div>
+            {/* 新图标自带圆角底板，不再套旧的深色 Z 标壳。 */}
+            <img src={zodyLogoUrl} alt="Zody" width={56} height={56} className="size-14 shrink-0" />
             <div className="text-4xl font-bold tracking-tight text-foreground">
               {intl.formatMessage({ id: "onboarding.welcome.title" })}
             </div>

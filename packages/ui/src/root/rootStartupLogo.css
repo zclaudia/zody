@@ -1,0 +1,16 @@
+@media (prefers-reduced-motion: no-preference) {
+  .zcode-startup-logo-breathe {
+    animation: zcode-startup-logo-breathe 1.8s ease-in-out 3s infinite;
+  }
+}
+
+@keyframes zcode-startup-logo-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
