@@ -1,0 +1,10 @@
+import { resolveStoredCredentialSecret } from "@zcode/shared/node";
+import { createCredentialCipherProvider } from "./credentialCipherProvider.js";
+
+export async function createStoredCredentialCipher(
+  credentialsFile: string,
+  env: NodeJS.ProcessEnv = process.env,
+) {
+  const secret = await resolveStoredCredentialSecret(credentialsFile, env);
+  return createCredentialCipherProvider({ env: { ZCODE_CREDENTIAL_SECRET: secret } });
+}

@@ -22,6 +22,10 @@ export {
   type SharedFileLockOptions,
 } from "./node/privateFilePersistence.js";
 export {
+  readStoredCredentialSecretSync,
+  resolveStoredCredentialSecret,
+} from "./node/storedCredentialSecret.js";
+export {
   createNodeSelfResourceSampler,
   NODE_SELF_RESOURCE_SAMPLE_INTERVAL_MS,
   type NodeSelfResourceSampler,

@@ -8,10 +8,8 @@ import {
   formatZodError,
 } from "@zcode/shared";
 import type { ICredentialService } from "./credential.js";
-import {
-  createCredentialCipherProvider,
-  type CredentialCipherProvider,
-} from "./providers/credentialCipherProvider.js";
+import type { CredentialCipherProvider } from "./providers/credentialCipherProvider.js";
+import { createStoredCredentialCipher } from "./providers/credentialKeyStore.js";
 import { createServiceLogger } from "../logger/serviceLogger.js";
 import { getAppConfigDir } from "../paths.js";
 
@@ -87,7 +85,8 @@ interface CredentialServiceDependencies {
 export function createCredentialService(
   dependencies: CredentialServiceDependencies = {},
 ): ICredentialService {
-  const cipherProvider = dependencies.cipherProvider ?? createCredentialCipherProvider();
+  const getCipher = (file: string) =>
+    dependencies.cipherProvider ?? createStoredCredentialCipher(file);
 
   return {
     async load(key: string): Promise<string | null> {
@@ -98,19 +97,18 @@ export function createCredentialService(
         return null;
       }
 
-      return cipherProvider.decrypt(rawValue);
+      return (await getCipher(getCredentialsFile())).decrypt(rawValue);
     },
 
     async save(key: string, value: string): Promise<void> {
       const validatedKey = credentialKeySchema.parse(key);
       const validatedValue = credentialValueSchema.parse(value);
-      const encryptedValue = cipherProvider.encrypt(validatedValue);
       const credentialsFile = getCredentialsFile();
       // desktop host 与 CLI adapter 是独立进程，进程内排队不能阻止 whole-file
       // read-modify-write 丢更新；共享目录锁必须覆盖读取、变更和原子替换全过程。
       await withFileLock(credentialsFile, async () => {
         const creds = await readAll(credentialsFile);
-        creds[validatedKey] = encryptedValue;
+        creds[validatedKey] = (await getCipher(credentialsFile)).encrypt(validatedValue);
         await writeAll(credentialsFile, creds);
       });
       dependencies.onDidMutate?.({ operation: "save", key: validatedKey });

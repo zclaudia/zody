@@ -1,5 +1,4 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
-import { homedir, platform, userInfo } from "node:os";
 import { CREDENTIAL_DECRYPT_ERROR_CODE, CREDENTIAL_DECRYPT_ERROR_PREFIX } from "@zcode/shared";
 
 const ENCRYPTED_VALUE_PREFIX = "enc:v1:";
@@ -27,14 +26,7 @@ function defaultCredentialSecret(env: NodeJS.ProcessEnv): string {
     return configuredSecret;
   }
 
-  let username = "unknown";
-  try {
-    username = userInfo().username;
-  } catch {
-    // 部分运行环境可能拿不到系统用户，失败时退回默认占位值。
-  }
-
-  return `zcode-credential-fallback:${platform()}:${homedir()}:${username}`;
+  throw new Error("Credential encryption requires a stored random key or explicit secret.");
 }
 
 function base64urlToBuffer(raw: string): Buffer {
