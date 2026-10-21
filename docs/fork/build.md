@@ -44,6 +44,6 @@ node scripts/licenses.mjs check --strict
 
 `.github/workflows/zody-release.yml` 在 `v*` tag 上执行版本一致性、检查、桌面/CLI 四目标矩阵及 Android 签名构建。制品以 SHA-256 汇总，创建草稿并标记 Pre-release；已有公开同版本不得覆盖。维护者下载验收后手动公开草稿。提交工作流不等于已运行或发布。
 
-Android 必须配置 GitHub Secrets：`ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`。工作流临时解码后通过 `ZODY_ANDROID_KEYSTORE_FILE`、`ZODY_ANDROID_KEYSTORE_PASSWORD`、`ZODY_ANDROID_KEY_ALIAS`、`ZODY_ANDROID_KEY_PASSWORD` 传给 Gradle，结束后清理。专用 keystore 的离线备份由维护者持有，密钥及口令不进入源码、日志或制品。
+Android 必须配置 GitHub Secrets：`ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`。工作流把 keystore 解码到 runner 临时目录（`$RUNNER_TEMP/zody-release.keystore`），通过 `ZODY_ANDROID_KEYSTORE_FILE`、`ZODY_ANDROID_KEYSTORE_PASSWORD`、`ZODY_ANDROID_KEY_ALIAS`、`ZODY_ANDROID_KEY_PASSWORD` 传给 Gradle；工作流不显式删除该文件，依赖 GitHub 托管 runner 在作业结束后整体销毁。改用自托管 runner 时必须补充显式清理。专用 keystore 的离线备份由维护者持有，密钥及口令不进入源码、日志或制品。
 
 预览版 macOS / Windows 不配置发行者签名。Android 不能使用 debug key 冒充 release key。Windows、Linux、Intel Mac 的安装与 CLI/Web 验收，以及真实 Android/gateway 连通和恢复，需要在相应设备执行并记录。

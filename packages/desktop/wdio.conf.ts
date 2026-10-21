@@ -149,8 +149,8 @@ const E2E_HOME_DIR = resolve(
 const E2E_PACKAGED_APP_BINARY_PATH = process.env.ZCODE_E2E_PACKAGED_APP_PATH?.trim()
   ? resolve(process.env.ZCODE_E2E_PACKAGED_APP_PATH)
   : null;
-// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
-const E2E_STORAGE_ROOT = resolve(E2E_HOME_DIR, ".zcoder");
+// fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
+const E2E_STORAGE_ROOT = resolve(E2E_HOME_DIR, ".zody");
 const E2E_APP_CONFIG_DIR = resolve(E2E_STORAGE_ROOT, "v2");
 const E2E_APP_SETTINGS_FILE = resolve(E2E_APP_CONFIG_DIR, "setting.json");
 const E2E_APP_CREDENTIALS_FILE = resolve(E2E_APP_CONFIG_DIR, "credentials.json");
@@ -520,7 +520,7 @@ process.env.ZCODE_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA = "1";
 // Bugfix: renderer E2E store bridge 只能由 WDIO 进程显式打开，避免 ZCODE_ENV=test 的产品测试环境暴露全局可变 store。
 process.env.VITE_ZCODE_E2E_STORE_BRIDGE = "1";
 // Bugfix: e2e session 由 Chromedriver 管理调试端口；禁用主进程开发态固定的 9229，
-// 避免和本机已打开的 ZCode Dev 冲突后出现空白窗口并卡在 session 创建阶段。
+// 避免和本机已打开的 Zody Dev 冲突后出现空白窗口并卡在 session 创建阶段。
 process.env.ZCODE_DISABLE_FIXED_REMOTE_DEBUGGING_PORT = "1";
 
 let upstreamCaptureProxy: E2ENetworkCaptureProxy | null = null;
@@ -1678,7 +1678,7 @@ async function resetE2EHome(specs: string[] = []) {
     seedProviderReadinessHistoryFixture({
       cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
-      workspacePath: resolve(E2E_HOME_DIR, "ZCodeProject"),
+      workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
     });
   }
   if (usesTaskIndexRowAuthorityFixture(specs)) {
@@ -1687,14 +1687,14 @@ async function resetE2EHome(specs: string[] = []) {
     seedTaskIndexRowAuthorityFixture({
       cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
-      workspacePath: resolve(E2E_HOME_DIR, "ZCodeProject"),
+      workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
     });
   }
   if (workerSpecsContain(specs, "conversation-session-delete-all-archived-tasks.test.ts")) {
     seedDeleteAllArchivedTasksFixture({
       cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
-      workspacePath: resolve(E2E_HOME_DIR, "ZCodeProject"),
+      workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
     });
   }
   if (
@@ -1706,14 +1706,14 @@ async function resetE2EHome(specs: string[] = []) {
     seedTaskTitleMarqueeFixture({
       cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
-      workspacePath: resolve(E2E_HOME_DIR, "ZCodeProject"),
+      workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
     });
   }
   if (specs.some((spec) => spec.includes("usage-stats-app-usage.test.ts"))) {
     seedAppUsageE2EFixture({
       cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
-      workspacePath: resolve(E2E_HOME_DIR, "ZCodeProject"),
+      workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
     });
   }
   seedE2EWorkerModelStreamConfig(specs);
@@ -1789,9 +1789,9 @@ function seedE2EPluginCdnZipMarketplace(specs: string[] = []) {
 }
 
 // 把插件 MCP skill lifecycle spec 需要的 installed_plugins.json 写到
-// `~/.zcoder/cli/plugins/installed_plugins.json`；仅在 spec 命中且 state != not-installed
-// 时执行。注意 storageRoot 在 agent 视角是 `<home>/.zcoder`，而 pluginStorageRoot
-// 是 `<home>/.zcoder/cli/plugins`，installed_plugins.json 必须落在后者下面才会被
+// `~/.zody/cli/plugins/installed_plugins.json`；仅在 spec 命中且 state != not-installed
+// 时执行。注意 storageRoot 在 agent 视角是 `<home>/.zody`，而 pluginStorageRoot
+// 是 `<home>/.zody/cli/plugins`，installed_plugins.json 必须落在后者下面才会被
 // bootstrap 的 `listInstalledPluginRecords(pluginStorageRoot)` 读到（见
 // `apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts:347`）。
 function seedE2EPluginMcpSkillInstalledPlugins(specs: string[] = []) {
@@ -1804,7 +1804,7 @@ function seedE2EPluginMcpSkillInstalledPlugins(specs: string[] = []) {
   const fixturePath = resolve(DESKTOP_DIR, "test/e2e/fixtures/plugin-mcp-skill", templateName);
   const pluginRoot = resolve(DESKTOP_DIR, "test/e2e/fixtures/plugin-mcp-skill/e2e-plugin-mcp-ping");
   const template = readFileSync(fixturePath, "utf-8").replaceAll("__INSTALL_PATH__", pluginRoot);
-  // pluginStorageRoot = <home>/.zcoder/cli/plugins
+  // pluginStorageRoot = <home>/.zody/cli/plugins
   const targetDir = resolve(E2E_STORAGE_ROOT, "cli/plugins");
   mkdirSync(targetDir, { recursive: true });
   writeFileSync(resolve(targetDir, "installed_plugins.json"), template, "utf-8");
@@ -1819,7 +1819,7 @@ function seedE2EGitCommitDialogWorkspace(specs: string[] = []) {
     return;
   }
 
-  const workspacePath = resolve(E2E_HOME_DIR, "ZCodeProject");
+  const workspacePath = resolve(E2E_HOME_DIR, "ZodyProject");
   mkdirSync(resolve(workspacePath, "src"), { recursive: true });
   writeFileSync(resolve(workspacePath, "README.md"), "Git commit dialog E2E workspace\n", "utf-8");
   runGitE2ECommand(workspacePath, ["init"]);
@@ -1856,7 +1856,7 @@ function seedE2EStartupState(specs: string[] = []) {
   const useFreshConversationWorkspace = specs.some((spec) =>
     spec.includes("conversation-session-conversation-workspace.test.ts"),
   );
-  const legacyDefaultProjectPath = resolve(E2E_HOME_DIR, "ZCodeProject");
+  const legacyDefaultProjectPath = resolve(E2E_HOME_DIR, "ZodyProject");
   const agentWarmupFixture = AGENT_WARMUP_FIXTURE_SPECS.some((marker) =>
     workerSpecsContain(specs, marker),
   );
@@ -2019,7 +2019,7 @@ function usesGitReviewEntryFixture(specs: string[] = []) {
 async function seedE2EGitReviewEntryWorkspace(specs: string[] = []) {
   if (!usesGitReviewEntryFixture(specs)) return;
 
-  const workspacePath = resolve(E2E_HOME_DIR, "ZCodeProject");
+  const workspacePath = resolve(E2E_HOME_DIR, "ZodyProject");
   const caseRoot = resolve(workspacePath, ".zcode-e2e/conversation-session-git-review-entry");
   await mkdir(caseRoot, { recursive: true });
   await runGitReviewEntryCommand(workspacePath, ["init"]);
@@ -2105,7 +2105,7 @@ function resolvePluginMcpSkillState(
 
 // 状态 A 不需要写任何文件；B/C 才落 fixture。
 // 这一段必须在 `seedUpstreamE2EModelConfig` 之后调用，因为它要 patch
-// 我们刚写好的 `~/.zcoder/cli/config.json`，把 `plugins.enabledPlugins[id]`
+// 我们刚写好的 `~/.zody/cli/config.json`，把 `plugins.enabledPlugins[id]`
 // 置为 false 以表达"已安装但关闭"。
 function seedE2EPluginMcpSkillState(specs: string[] = []) {
   const state = resolvePluginMcpSkillState(specs);
@@ -2145,7 +2145,7 @@ function seedE2EWorkspacePluginState(specs: string[] = []) {
   const state = resolvePluginMcpSkillState(specs);
   if (!state?.startsWith("workspace-")) return;
 
-  const workspacePath = resolve(E2E_HOME_DIR, "ZCodeProject");
+  const workspacePath = resolve(E2E_HOME_DIR, "ZodyProject");
   const userConfigPath = resolve(E2E_CLI_CONFIG_DIR, "config.json");
   const workspaceConfigPath = resolve(workspacePath, ".zcode", "config.json");
   const pluginId = "e2e-plugin-mcp-ping@e2e-fixture";
@@ -2214,7 +2214,7 @@ function seedE2EBuiltinWorkspacePluginDisable(specs: string[] = []) {
   }
 
   const pluginId = "skill-creator@zcode-plugins-official";
-  const workspaceA = resolve(E2E_HOME_DIR, "ZCodeProject");
+  const workspaceA = resolve(E2E_HOME_DIR, "ZodyProject");
   const workspaceB = resolve(E2E_HOME_DIR, "WorkspaceB");
   const userConfig = JSON.parse(readFileSync(E2E_CLI_CONFIG_FILE, "utf-8")) as Record<
     string,
@@ -2621,7 +2621,7 @@ This child must fail before sending a provider request when the Team scope is un
 
   for (const agentsDir of [E2E_USER_AGENTS_DIR, E2E_CLI_AGENTS_DIR]) {
     // 修复原因：CLI runtime 从 storageRoot/agents 加载用户 subagent profile，
-    // 而设置页/历史路径曾使用 .zcoder/cli/agents。双写只作用于本复现 spec，
+    // 而设置页/历史路径曾使用 .zody/cli/agents。双写只作用于本复现 spec，
     // 避免路径差异让 case 停在 agent type not found，而不是 provider registry 缺失。
     mkdirSync(agentsDir, { recursive: true });
     for (const profile of profileEntries) {
@@ -3184,7 +3184,7 @@ export const config: WebdriverIO.Config = {
     });
   },
   async beforeSession(_config, capabilities, specs, cid) {
-    // Bugfix: 现有 e2e 会读写 ~/.zcoder/v2；如果多个 spec 复用真实 HOME，
+    // Bugfix: 现有 e2e 会读写 ~/.zody/v2；如果多个 spec 复用真实 HOME，
     // 上一个 spec 的凭据、最近项目和 localStorage 会串到下一个 spec，
     // 既污染开发者本机数据，也让“首次启动”类断言变得随机。
     // 这里为 e2e 单独准备隔离 HOME，并在每个 session 启动前重置，保证每个 spec 都从干净环境开始。

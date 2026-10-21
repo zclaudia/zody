@@ -15,7 +15,7 @@ const TEST_ENV = {
 
 // fork（F4.9）：账号登录键与 OAuth 客户端已随 CLI 登录链删除；
 // 本文件只保留 MCP OAuth 也依赖的通用共享凭据库行为。
-describe("shared ZCode credentials", () => {
+describe("shared Zody credentials", () => {
   it("reads legacy plaintext credential values", async () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-auth-"));
     const credentialsDir = join(dir, ".zody", "v2");
@@ -189,11 +189,11 @@ describe("shared ZCode credentials", () => {
 
       await Promise.all(
         Array.from({ length: 8 }, () =>
-          expect(store.load("safe-key")).rejects.toThrow("Shared ZCode credentials are corrupt"),
+          expect(store.load("safe-key")).rejects.toThrow("Shared Zody credentials are corrupt"),
         ),
       );
       await expect(store.save("safe-key", "safe-value")).rejects.toThrow(
-        "Shared ZCode credentials are corrupt",
+        "Shared Zody credentials are corrupt",
       );
       await expect(readFile(credentialsPath, "utf-8")).resolves.toBe("{not-json");
       const backups = (await readdir(dir)).filter((file) =>

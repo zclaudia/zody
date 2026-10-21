@@ -46,9 +46,9 @@ describe("createRuntimeAiSdkModelExecutionConfig", () => {
     );
     expect(config).toMatchObject({
       defaultHeaders: {
-        "User-Agent": "ZCode/3.9.0",
-        "X-ZCode-App-Version": "3.9.0",
-        "X-Title": "Z Code@electron",
+        "User-Agent": "Zody/3.9.0",
+        "X-Zody-App-Version": "3.9.0",
+        "X-Title": "Zody@electron",
       },
       network: {
         caCertFile: "/tmp/test-ca.pem",
@@ -76,9 +76,9 @@ describe("buildCliZCodeSourceHeaders", () => {
       { sourceTitle: "cli" },
     );
     expect(headers).toMatchObject({
-      "User-Agent": "ZCode/3.9.0",
-      "X-Title": "Z Code@cli",
-      "X-ZCode-App-Version": "3.9.0",
+      "User-Agent": "Zody/3.9.0",
+      "X-Title": "Zody@cli",
+      "X-Zody-App-Version": "3.9.0",
     });
     // fork（F3.1）：端点未配置时不发送 HTTP-Referer（也不回落官方地址）。
     expect(headers).not.toHaveProperty("HTTP-Referer");

@@ -173,7 +173,7 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
           "settings.skills.agent.agents": "Codex",
           "settings.skills.agent.opencode": "OpenCode",
           "settings.skills.agent.gemini": "Gemini",
-          "settings.modelProvider.testModel.agentName.zcode_agent": "ZCode Agent",
+          "settings.modelProvider.testModel.agentName.zcode_agent": "Zody Agent",
           "settings.skills.empty": "No skills found",
           "settings.skills.noDescription": "No description",
           "settings.skills.detail.description": "Description",

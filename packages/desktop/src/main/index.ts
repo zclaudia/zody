@@ -189,6 +189,7 @@ import {
 import { handleSecondInstanceWorkspaceRequest } from "./desktopSecondInstanceDeepLink.js";
 import { installFinderOpenFolderWorkflow } from "./desktopFinderOpenFolderWorkflow.js";
 import { installWindowsOpenFolderContextMenu } from "./desktopWindowsOpenFolderContextMenu.js";
+import { resolveDesktopShellIntegrationIdentity } from "./desktopShellIntegrationIdentity.js";
 import {
   createDeepLinkSingleInstanceData,
   extractWorkspaceOpenPath,
@@ -212,7 +213,6 @@ import { createDesktopHelpConfigReader } from "./desktopHelpConfig.js";
 import { registerPlatformIpcHandlers } from "./desktopMainIpcPlatform.js";
 import {
   loadCliMcpFromUserDirectory,
-  migrateLegacyCommonMcp,
   saveCliMcpToUserDirectory,
 } from "./mcpUserDirectory/index.js";
 import { registerRemoteIpcHandlers } from "./desktopMainIpcRemote.js";
@@ -559,7 +559,7 @@ async function runBrowserCommandOnView(params: {
 let currentDesktopZoomLevel = 0;
 let currentDesktopWindowSize: DesktopWindowSize | undefined;
 const preloadPath = join(import.meta.dirname, "../preload/index.cjs");
-// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+// fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
 const settingsFile = join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "v2", "setting.json");
 let activeAppShutdownPolicy = resolveAppShutdownPolicy("normal", process.platform);
 let activeAppShutdownKind: AppShutdownKind | null = null;
@@ -923,7 +923,6 @@ const webRemoteControlManager = createWebRemoteControlManager({
         return { success: false, error: message };
       }
     },
-    migrateLegacyCommonMcp: (payload) => migrateLegacyCommonMcp(payload),
   },
   reconnectWorkspace: reconnectWebRemoteControlWorkspaceInRenderer,
   // T5.1：gateway channel 是 App 级 runtime 唯一的 device transport。
@@ -1446,7 +1445,8 @@ function confirmAppQuit(originWindow?: BrowserWindow | null) {
     defaultId: 1,
     cancelId: 1,
     title: isZh ? "退出确认" : "Confirm Quit",
-    message: isZh ? "确认退出 Z Code?" : "Quit Z Code?",
+    // 修复依据：退出确认沿用了上游 "Z Code" 名称；按运行时产品名（Zody / Zody Preview）展示。
+    message: isZh ? `确认退出 ${runtimeApplicationName}?` : `Quit ${runtimeApplicationName}?`,
     detail: detailLines.join("\n"),
     icon: nativeImage.createFromPath(iconPath),
   };
@@ -2087,6 +2087,7 @@ app.whenReady().then(async () => {
   installFinderOpenFolderWorkflow({
     platform: process.platform,
     locale: currentApplicationLocale,
+    identity: resolveDesktopShellIntegrationIdentity(app.name),
     homeDir: app.getPath("home"),
     logger,
   });
@@ -2096,6 +2097,7 @@ app.whenReady().then(async () => {
     argv: process.argv,
     isDefaultApp: Boolean(process.defaultApp),
     locale: currentApplicationLocale,
+    identity: resolveDesktopShellIntegrationIdentity(app.name),
     logger,
   });
   try {
@@ -2249,6 +2251,7 @@ app.whenReady().then(async () => {
       installFinderOpenFolderWorkflow({
         platform: process.platform,
         locale: currentApplicationLocale,
+        identity: resolveDesktopShellIntegrationIdentity(app.name),
         homeDir: app.getPath("home"),
         logger,
       });
@@ -2260,6 +2263,7 @@ app.whenReady().then(async () => {
         argv: process.argv,
         isDefaultApp: Boolean(process.defaultApp),
         locale: currentApplicationLocale,
+        identity: resolveDesktopShellIntegrationIdentity(app.name),
         logger,
       });
       configureDockMenu(
@@ -2419,7 +2423,7 @@ app.whenReady().then(async () => {
     isZCodeBusy: () => getRunningAgentSessionCount() > 0,
     logger,
     rootPath: getZCodeDataRootDir(),
-    stateFile: join(app.getPath("userData"), "zcode-data-size-telemetry.json"),
+    stateFile: join(app.getPath("userData"), "zody-data-size-telemetry.json"),
   });
   registerDesktopNetworkTelemetry(logger);
 

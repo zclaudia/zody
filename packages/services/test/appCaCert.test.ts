@@ -12,12 +12,15 @@ describe("ensureAppCaCert", () => {
   });
 
   it("generates a self-signed CA certificate and private key on first run", () => {
-    setDataBaseDir(mkdtempSync(join(tmpdir(), "zcode-ca-")));
+    setDataBaseDir(mkdtempSync(join(tmpdir(), "zody-ca-")));
     const certPath = ensureAppCaCert();
     const { keyPath } = getAppCaCertPaths();
 
     const cert = new X509Certificate(readFileSync(certPath));
-    expect(cert.subject).toContain("ZCode Network CA");
+    expect(cert.subject).toContain("CN=Zody Network CA");
+    expect(cert.subject).toContain("O=Zody");
+    expect(certPath.endsWith("zody-network-ca.pem")).toBe(true);
+    expect(keyPath.endsWith("zody-network-ca.key")).toBe(true);
     // 自签：issuer == subject
     expect(cert.issuer).toBe(cert.subject);
     expect(cert.ca).toBe(true);
@@ -31,7 +34,7 @@ describe("ensureAppCaCert", () => {
   });
 
   it("is idempotent: reuses the existing certificate", () => {
-    setDataBaseDir(mkdtempSync(join(tmpdir(), "zcode-ca-")));
+    setDataBaseDir(mkdtempSync(join(tmpdir(), "zody-ca-")));
     const certPath = ensureAppCaCert();
     const firstPem = readFileSync(certPath, "utf8");
     const secondPath = ensureAppCaCert();

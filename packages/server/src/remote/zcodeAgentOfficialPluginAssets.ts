@@ -12,7 +12,7 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES = [
   "spreadsheets-plugin",
   // fork（F4.6）：image-search-plugin 随官方 MCP 删除。
   "ios-simulator-plugin",
-  "restore-legacy-sessions-plugin",
+  // restore-legacy-sessions-plugin 不再随发行提供（specs/zody-brand-residual-cleanup.md），远程部署同步移除。
   "skill-creator-plugin",
   "plugin-creator-plugin",
   "zcode-guide-plugin",

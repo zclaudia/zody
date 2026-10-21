@@ -32,7 +32,7 @@ test("image clipboard reader uses the ZCode storage root for native temp files",
     assert.equal(image?.mediaType, "image/png");
     assert.match(
       imagePaths[0] ?? "",
-      new RegExp(`^${escapeRegExp(join(storageRoot, "clipboard", "zcode-clipboard-"))}`),
+      new RegExp(`^${escapeRegExp(join(storageRoot, "clipboard", "zody-clipboard-"))}`),
     );
     assert.deepEqual(await readdir(join(storageRoot, "clipboard")), []);
   } finally {

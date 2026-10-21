@@ -2,6 +2,8 @@ import { existsSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, parse, resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
+// env.ts 会被插件宿主入口提前求值，只能走独立子路径，不能拉起 shared 总入口。
+import { getUserZodyRoot } from "@zcode/shared/zody-paths";
 import {
   ZCODE_RUNTIME_ENV_KEY,
   buildZCodeToolEnvPassthroughEnv,
@@ -133,7 +135,9 @@ function resolveCliRuntimeEnv(env: CliEnv, argv: readonly string[]): ZCodeRuntim
 function applyBetaStorageDefault(env: CliEnv, argv: readonly string[]): void {
   if (env.ZCODE_STORAGE_DIR?.trim()) return;
   const explicitBeta = env.ZCODE_BETA === "1" || env.ZCODE_ENV === "beta";
-  const invokedAsBeta = argv.some((arg) => /(^|[/\\])zcode-beta(?:$|\.)/u.test(arg));
+  // 品牌迁移：beta 入口按发行名 zody-beta 识别，存储根位于 ~/.zody/beta，
+  // 不再写入上游 ~/.zcode-beta，避免与上游 ZCode beta 共用数据。
+  const invokedAsBeta = argv.some((arg) => /(^|[/\\])zody-beta(?:$|\.)/u.test(arg));
   if (!explicitBeta && !invokedAsBeta) return;
-  env.ZCODE_STORAGE_DIR = join(homedir(), ".zcode-beta");
+  env.ZCODE_STORAGE_DIR = join(getUserZodyRoot(homedir()), "beta");
 }

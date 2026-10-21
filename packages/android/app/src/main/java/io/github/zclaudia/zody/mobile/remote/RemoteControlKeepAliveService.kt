@@ -85,7 +85,7 @@ class RemoteControlKeepAliveService : Service() {
     }
 
     companion object {
-        private const val CHANNEL_ID = "zcode_remote_control"
+        private const val CHANNEL_ID = "zody_remote_control"
         private const val NOTIFICATION_ID = 1001
 
         fun start(context: Context) {

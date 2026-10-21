@@ -190,11 +190,11 @@ describe("模型请求默认 Header：Bootstrap → Adapter → 真实 SDK", () 
         } else await model.generateText(requestInput);
         expect(requests).toHaveLength(1);
         const headers = requests[0]!.headers;
-        expect(headers.get("user-agent")).toContain(`ZCode/${CLIENT_VERSION}`);
-        expect(headers.get("x-zcode-app-version")).toBe(CLIENT_VERSION);
-        expect(headers.get("x-title")).toBe("Z Code@electron");
+        expect(headers.get("user-agent")).toContain(`Zody/${CLIENT_VERSION}`);
+        expect(headers.get("x-zody-app-version")).toBe(CLIENT_VERSION);
+        expect(headers.get("x-title")).toBe("Zody@electron");
         expect(headers.get("http-referer")).toBe("https://endpoint.example.test");
-        expect(headers.get("x-zcode-agent")).toBe("glm");
+        expect(headers.get("x-zody-agent")).toBe("glm");
         expect(headers.get("x-release-channel")).toBe("production");
         for (const key of [
           "x-client-language",
@@ -220,7 +220,7 @@ describe("模型请求默认 Header：Bootstrap → Adapter → 真实 SDK", () 
   ])("按真实 URL 匹配 OpenRouter，不按 Provider 名称：%s", async (baseUrl, matches) => {
     const { model, requests } = createFixture({ baseUrl, apiType: "openai-chat-completions" });
     await model.generateText(requestInput);
-    expect(requests[0]!.headers.get("x-openrouter-title")).toBe(matches ? "ZCode" : null);
+    expect(requests[0]!.headers.get("x-openrouter-title")).toBe(matches ? "Zody" : null);
     expect(requests[0]!.headers.get("x-openrouter-categories")).toBe(
       matches ? "programming-app" : null,
     );
@@ -237,7 +237,7 @@ describe("模型请求默认 Header：Bootstrap → Adapter → 真实 SDK", () 
     await model.generateText(requestInput);
     expect(requests[0]!.headers.get("x-title")).toBe("User Title");
     expect(requests[0]!.headers.get("user-agent")).toMatch(/^Custom\/1(?: |$)/);
-    expect(requests[0]!.headers.get("user-agent")).not.toContain("ZCode/");
+    expect(requests[0]!.headers.get("user-agent")).not.toContain("Zody/");
     expect(requests[0]!.headers.get("x-openrouter-title")).toBe("User Router");
     expect(requests[0]!.headers.get("http-referer")).toBe("https://user.example.test");
     expect(headers["x-title"]).toBe("User Title");
@@ -262,10 +262,10 @@ describe("模型请求默认 Header：Bootstrap → Adapter → 真实 SDK", () 
     const { model, requests } = createFixture(options);
     await model.generateText(requestInput);
     expect(requests[0]!.headers.get("user-agent")).toContain(
-      `ZCode/${options.expected ?? "unknown"}`,
+      `Zody/${options.expected ?? "unknown"}`,
     );
-    expect(requests[0]!.headers.get("x-zcode-app-version")).toBe(options.expected ?? null);
-    expect(requests[0]!.headers.get("x-title")).toBe(`Z Code@${options.sourceTitle}`);
+    expect(requests[0]!.headers.get("x-zody-app-version")).toBe(options.expected ?? null);
+    expect(requests[0]!.headers.get("x-title")).toBe(`Zody@${options.sourceTitle}`);
   });
 
   it("真实 Runtime 标题 sidecar 沿公共工厂携带版本、宿主分类和会话追踪", async () => {
@@ -306,14 +306,14 @@ describe("模型请求默认 Header：Bootstrap → Adapter → 真实 SDK", () 
       ),
     );
     expect(requests).toHaveLength(1);
-    expect(requests[0]!.headers.get("x-zcode-app-version")).toBe(CLIENT_VERSION);
+    expect(requests[0]!.headers.get("x-zody-app-version")).toBe(CLIENT_VERSION);
     // session type 现在统一绑定在 runtime 模型句柄上（core/runtime-model.ts
     // withRuntimeInvocationLayer）：标题 sidecar 不再覆写 other，跟随宿主
     // taskType 分类（interactive → main）。
-    expect(requests[0]!.headers.get("x-zcode-session-type")).toBe("main");
+    expect(requests[0]!.headers.get("x-zody-session-type")).toBe("main");
     // 既有请求归因会去掉内部 sess_ 前缀；本次不改变服务端看到的会话身份格式。
     expect(requests[0]!.headers.get("x-session-id")).toBe("header-title-session");
-    expect(requests[0]!.headers.get("x-zcode-trace-id")).toBeTruthy();
+    expect(requests[0]!.headers.get("x-zody-trace-id")).toBeTruthy();
     expect(JSON.stringify(await requests[0]!.json())).toContain(
       "This is a title-generation task, not a conversation.",
     );

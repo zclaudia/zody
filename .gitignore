@@ -7,6 +7,8 @@ packages/desktop/dist-*/
 # 手机远控入口（mobile.html）的独立构建产物；与普通 Web 客户端的 dist/ 相互独立，不入库。
 packages/web/dist-mobile-remote/
 out/
+# 本地生成的草稿与临时产物；需要保留的品牌草稿已移到 docs/brand/。
+/output/
 prebuilds/
 bundled-resources/
 mock-cdn/
@@ -24,6 +26,8 @@ packages/desktop/.e2e-network-capture/
 .DS_Store
 coverage/
 .env.local
+# mise 本机覆盖（如 ELECTRON_MIRROR 等下载镜像），不入库。
+mise.local.toml
 .env.*.local
 .env
 .VSCodeCounter
@@ -39,7 +43,7 @@ coverage/
 z-work/
 openclaw/
 .run-logs/
-# 旧开发目录：开发版运行时已改名为 .zcode-runtime，老机器上残留的目录仍需忽略，避免误提交 Electron.app 副本。
+# 旧开发目录：开发版运行时已改名为 .zody-runtime，老机器上残留的 .codex-runtime / .zcode-runtime 目录仍需忽略，避免误提交 Electron.app 副本。
 .codex-runtime/
 .worktrees/
 packages/stream-animate/dist-server/
@@ -75,6 +79,7 @@ packages/desktop/resources/macos-window-bounds/
 __pycache__/
 *.pyc
 .zcode-runtime
+.zody-runtime
 .zcode/
 .claude/
 .codex/

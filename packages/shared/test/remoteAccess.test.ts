@@ -72,6 +72,7 @@ describe("normalizeRemoteAccessGatewayUrl", () => {
 
 describe("remoteAccess settings schema", () => {
   it("缺省时给出关闭 + 未配置 + 默认 namespace", () => {
+    expect(DEFAULT_REMOTE_ACCESS_NAMESPACE).toBe("zody");
     expect(remoteAccessSettingsSchema.parse({})).toEqual({
       enabled: false,
       gatewayUrl: "",

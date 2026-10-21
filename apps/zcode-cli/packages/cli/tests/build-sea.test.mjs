@@ -676,7 +676,6 @@ test("includes bundled official plugin assets", async () => {
     const androidPlugin = manifest.plugins.find((item) => item.name === "android-emulator");
     const browserUsePlugin = manifest.plugins.find((item) => item.name === "browser-use");
     const documentPlugin = manifest.plugins.find((item) => item.name === "documents");
-    const restorePlugin = manifest.plugins.find((item) => item.name === "restore-legacy-sessions");
     const skillCreatorPlugin = manifest.plugins.find((item) => item.name === "skill-creator");
     const zcodeGuidePlugin = manifest.plugins.find((item) => item.name === "zcode-guide");
     const iosPaths = new Set(iosPlugin?.files.map((file) => file.path));
@@ -689,7 +688,6 @@ test("includes bundled official plugin assets", async () => {
         )
         .flatMap((plugin) => plugin.files.map((file) => file.path)),
     );
-    const restorePaths = new Set(restorePlugin?.files.map((file) => file.path));
     const skillCreatorPaths = new Set(skillCreatorPlugin?.files.map((file) => file.path));
     const zcodeGuidePaths = new Set(zcodeGuidePlugin?.files.map((file) => file.path));
 
@@ -698,9 +696,13 @@ test("includes bundled official plugin assets", async () => {
     assert.equal(androidPlugin?.marketplace, "zcode-plugins-official");
     assert.equal(browserUsePlugin?.marketplace, "zcode-plugins-official");
     assert.equal(documentPlugin?.marketplace, "zcode-plugins-official");
-    assert.equal(restorePlugin?.marketplace, "zcode-plugins-official");
     assert.equal(skillCreatorPlugin?.marketplace, "zcode-plugins-official");
     assert.equal(zcodeGuidePlugin?.marketplace, "zcode-plugins-official");
+    // Zody 首发不再随发行提供 restore-legacy-sessions（包源码暂留）。
+    assert.equal(
+      manifest.plugins.some((item) => item.name === "restore-legacy-sessions"),
+      false,
+    );
     // superpowers 已从内置 SEA 清单移除，断言它不再出现在 manifest 里。
     assert.equal(
       manifest.plugins.some((item) => item.name === "superpowers"),
@@ -750,18 +752,6 @@ test("includes bundled official plugin assets", async () => {
       ),
       false,
     );
-    assert.equal(restorePaths.has(".zcode-plugin/plugin.json"), true);
-    assert.equal(restorePaths.has("commands/restore-legacy-sessions.md"), true);
-    assert.equal(restorePaths.has("skills/restore-legacy-sessions/SKILL.md"), true);
-    assert.equal(
-      restorePaths.has("skills/restore-legacy-sessions/scripts/scan-legacy-sessions.mjs"),
-      true,
-    );
-    assert.equal(
-      restorePaths.has("skills/restore-legacy-sessions/scripts/restore-conversation.mjs"),
-      true,
-    );
-    assert.equal(restorePaths.has("dist/mcp/server.js"), false);
     assert.equal(skillCreatorPaths.has(".zcode-plugin/plugin.json"), true);
     assert.equal(skillCreatorPaths.has("skills/skill-creator/SKILL.md"), true);
     assert.equal(zcodeGuidePaths.has(".zcode-plugin/plugin.json"), true);
@@ -852,16 +842,6 @@ test("allows skill-only official plugins when SEA runtime assets are required", 
     await writeDocumentPluginFixtures(root);
     await writeTestFile(root, "packages/ios-simulator-plugin/.zcode-plugin/plugin.json", "{}");
     await writeTestFile(root, "packages/ios-simulator-plugin/dist/mcp/server.js", "");
-    await writeTestFile(
-      root,
-      "packages/restore-legacy-sessions-plugin/.zcode-plugin/plugin.json",
-      "{}",
-    );
-    await writeTestFile(
-      root,
-      "packages/restore-legacy-sessions-plugin/skills/restore-legacy-sessions/SKILL.md",
-      "",
-    );
     await writeTestFile(root, "packages/skill-creator-plugin/.zcode-plugin/plugin.json", "{}");
     await writeTestFile(root, "packages/skill-creator-plugin/skills/skill-creator/SKILL.md", "");
     // 新增官方内容插件后也要提供 fixture，否则采集会先报 manifest 缺失，无法验证免运行时资源。
@@ -884,7 +864,6 @@ test("allows skill-only official plugins when SEA runtime assets are required", 
       stagingDirectory,
     });
     const browserUsePlugin = manifest.plugins.find((item) => item.name === "browser-use");
-    const restorePlugin = manifest.plugins.find((item) => item.name === "restore-legacy-sessions");
     const skillCreatorPlugin = manifest.plugins.find((item) => item.name === "skill-creator");
     const pluginCreatorPlugin = manifest.plugins.find((item) => item.name === "plugin-creator");
     const documentPaths = new Set(
@@ -895,7 +874,6 @@ test("allows skill-only official plugins when SEA runtime assets are required", 
         .flatMap((plugin) => plugin.files.map((file) => file.path)),
     );
     const browserUsePaths = new Set(browserUsePlugin?.files.map((file) => file.path));
-    const restorePaths = new Set(restorePlugin?.files.map((file) => file.path));
     const skillCreatorPaths = new Set(skillCreatorPlugin?.files.map((file) => file.path));
     const skillCreatorRunHook = skillCreatorPlugin?.files.find(
       (file) => file.path === "hooks/run-hook.cmd",
@@ -933,8 +911,6 @@ test("allows skill-only official plugins when SEA runtime assets are required", 
     assert.equal(browserUsePaths.has("scripts/computer-use-client.mjs"), false);
     // CUA 的文档同理：唯一那份属于 computer-use 插件。
     assert.equal(browserUsePaths.has("docs/computer-use.md"), false);
-    assert.equal(restorePaths.has("skills/restore-legacy-sessions/SKILL.md"), true);
-    assert.equal(restorePaths.has("dist/mcp/server.js"), false);
     assert.equal(skillCreatorPaths.has("skills/skill-creator/SKILL.md"), true);
     assert.equal(skillCreatorPaths.has("hooks/hooks.json"), true);
     assert.equal(skillCreatorPaths.has("hooks/run-hook.cmd"), true);
@@ -965,11 +941,6 @@ test("requires SEA runtime assets for runtime-backed official plugins", async ()
     await writeTestFile(root, "packages/documents-plugin/.zcode-plugin/plugin.json", "{}");
     await writeTestFile(root, "packages/ios-simulator-plugin/.zcode-plugin/plugin.json", "{}");
     await writeTestFile(root, "packages/ios-simulator-plugin/dist/mcp/server.js", "");
-    await writeTestFile(
-      root,
-      "packages/restore-legacy-sessions-plugin/.zcode-plugin/plugin.json",
-      "{}",
-    );
     await writeTestFile(root, "packages/skill-creator-plugin/.zcode-plugin/plugin.json", "{}");
     await writeTestFile(root, "packages/zcode-guide-plugin/.zcode-plugin/plugin.json", "{}");
 
@@ -1003,7 +974,6 @@ test("requires the Browser Use client alongside the SEA MCP runtime", async () =
       "browser-use-plugin",
       "documents-plugin",
       "ios-simulator-plugin",
-      "restore-legacy-sessions-plugin",
       "skill-creator-plugin",
       "zcode-guide-plugin",
     ]) {

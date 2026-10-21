@@ -21,8 +21,8 @@ describe("buildZCodeSourceHeadersFromContext", () => {
       }),
     ).toEqual({
       ...ZCODE_SOURCE_HEADERS,
-      "User-Agent": "ZCode/2.14.0",
-      "X-ZCode-App-Version": "2.14.0",
+      "User-Agent": "Zody/2.14.0",
+      "X-Zody-App-Version": "2.14.0",
       "X-Platform": "darwin-arm64",
       "X-Release-Channel": "test",
       "X-Client-Language": "zh-CN",
@@ -42,19 +42,19 @@ describe("buildZCodeSourceHeadersFromContext", () => {
     });
 
     expect(headers).toMatchObject({
-      "User-Agent": "ZCode/unknown",
+      "User-Agent": "Zody/unknown",
       "X-Client-Language": "unknown",
       "X-Client-Timezone": "unknown",
       "X-Os-Category": "windows",
     });
     expect(headers).not.toHaveProperty("X-Device-Mid");
-    expect(headers).not.toHaveProperty("X-ZCode-App-Version");
+    expect(headers).not.toHaveProperty("X-Zody-App-Version");
     expect(headers).not.toHaveProperty("HTTP-Referer");
     expect(headers).not.toHaveProperty("X-Title");
   });
 
   it("未注入构建期 define 时来源标识常量为空，即默认不发", () => {
-    expect(ZCODE_SOURCE_HEADERS).toEqual({ "User-Agent": "ZCode/unknown" });
+    expect(ZCODE_SOURCE_HEADERS).toEqual({ "User-Agent": "Zody/unknown" });
     expect(ZCODE_SOURCE_REFERER_URL).toBe("");
     expect(ZCODE_SOURCE_TITLE).toBe("");
   });

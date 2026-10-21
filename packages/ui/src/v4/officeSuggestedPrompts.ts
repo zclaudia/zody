@@ -364,7 +364,7 @@ export const officeSuggestedPrompts: RecommendedPrompt[] = [
       stableId: "zcode-guide@zcode-plugins-official",
       label: {
         cn: "Zody 使用指南",
-        en: "zcode-guide",
+        en: "Zody Guide",
       },
     },
   },

@@ -218,7 +218,20 @@ test("prepares beta CLI runtime env with beta storage root", () => {
     ["/usr/bin/node", "/workspace/bin/zcode.js"],
   );
 
-  assert.equal(env.ZCODE_STORAGE_DIR, join(homedir(), ".zcode-beta"));
+  assert.equal(env.ZCODE_STORAGE_DIR, join(homedir(), ".zody", "beta"));
+});
+
+test("detects zody-beta executable name and stores data under ~/.zody/beta", () => {
+  const env = prepareCliRuntimeEnv({}, ["/usr/bin/node", "/usr/local/bin/zody-beta"]);
+  assert.equal(env.ZCODE_STORAGE_DIR, join(homedir(), ".zody", "beta"));
+
+  const windowsEnv = prepareCliRuntimeEnv({}, ["C:\\node.exe", "C:\\Zody\\zody-beta.exe"]);
+  assert.equal(windowsEnv.ZCODE_STORAGE_DIR, join(homedir(), ".zody", "beta"));
+});
+
+test("does not treat the upstream zcode-beta executable name as beta", () => {
+  const env = prepareCliRuntimeEnv({}, ["/usr/bin/node", "/usr/local/bin/zcode-beta"]);
+  assert.equal(env.ZCODE_STORAGE_DIR, undefined);
 });
 
 test("preserves explicit storage root when beta mode is enabled", () => {
@@ -2783,7 +2796,7 @@ test("command center resolves plugin labels from listings by stable plugin id", 
   );
   assert.equal(
     items.find((item) => item.id === "zcode-cua@unlisted-marketplace")?.primary,
-    "○ ZCode Cua",
+    "○ Zody Cua",
   );
 });
 
@@ -3788,7 +3801,7 @@ test("official plugin host runs a seeded official plugin server main", async () 
   try {
     await mkdir(join(pluginRoot, "dist", "mcp"), { recursive: true });
     await writeFile(
-      join(pluginRoot, ".zcode-plugin-seed.json"),
+      join(pluginRoot, ".zody-plugin-seed.json"),
       JSON.stringify({
         marketplace: ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
         plugin: "ios-simulator",
@@ -3871,7 +3884,7 @@ export async function main() {
     assert.equal(exitCode, 1);
     assert.match(
       ctx.stderr.output(),
-      /Captured ZCode CUA broker credentials may only launch the trusted shared node_repl host/,
+      /Captured Zody CUA broker credentials may only launch the trusted shared node_repl host/,
     );
     await assert.rejects(readFile(outputPath, "utf8"), { code: "ENOENT" });
   } finally {
@@ -4044,7 +4057,7 @@ export async function main() {
     assert.equal(await run(ctx), 1);
     assert.match(
       ctx.stderr.output(),
-      /Captured ZCode CUA broker credentials may only launch the trusted shared node_repl host/,
+      /Captured Zody CUA broker credentials may only launch the trusted shared node_repl host/,
     );
     await assert.rejects(readFile(outputPath, "utf8"), { code: "ENOENT" });
   } finally {
@@ -4404,7 +4417,7 @@ test("rejects unknown skills subcommands", async () => {
 
   assert.equal(exitCode, 1);
   assert.match(ctx.stderr.output(), /Unknown skills command: missing/);
-  assert.match(ctx.stderr.output(), /Usage: zcode skills \[list\|inspect <name>\]/);
+  assert.match(ctx.stderr.output(), /Usage: zody skills \[list\|inspect <name>\]/);
   assert.equal(ctx.stdout.output(), "");
 });
 
@@ -6190,7 +6203,7 @@ test("headless prompt reports exact Workspace Hook pretrust diagnostics without 
   assert.equal(ctx.stdout.output(), "ok\n");
   assert.match(ctx.stderr.output(), /Workspace Hooks skipped: workspace_hooks_pending_trust/);
   assert.match(ctx.stderr.output(), new RegExp("a{64}"));
-  assert.match(ctx.stderr.output(), /zcode hooks trust review/);
+  assert.match(ctx.stderr.output(), /zody hooks trust review/);
 });
 
 test("headless rollout-off diagnostics preserve the runtime feature-disabled reason", async () => {

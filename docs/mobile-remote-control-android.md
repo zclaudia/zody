@@ -107,12 +107,13 @@ Zody 不提供托管 gateway，下面的服务器和凭据由用户自行部署�
 ## 部署与运维
 
 以下指南用于在自有服务器上部署 zclaudia-gateway（Gateway Protocol v4），并给桌面和手机签发凭证。
-仓库地址示例为 `~/SourceCode/zclaudia-gateway`，以实际检出为准。
+gateway 源码位于 <https://github.com/zclaudia/zclaudia-gateway>，下面的命令在其检出目录中执行。
 
 ### 1. 部署 gateway
 
 ```bash
-cd ~/SourceCode/zclaudia-gateway
+git clone https://github.com/zclaudia/zclaudia-gateway.git
+cd zclaudia-gateway
 cp .env.example .env
 # 必填：编辑 .env，设置 GATEWAY_ADMIN_TOKEN（签发凭证的信任根）
 docker compose up -d
@@ -168,15 +169,15 @@ GATEWAY_ALLOWED_ORIGINS=https://appassets.androidplatform.net
 用 `/admin` 管理控制台（`https://gateway.example.com/admin`）或仓库脚本：
 
 ```bash
-cd ~/SourceCode/zclaudia-gateway
+cd zclaudia-gateway  # 上一步的检出目录
 export GATEWAY_URL=https://gateway.example.com
 export GATEWAY_ADMIN_TOKEN=...
 
-# 每台电脑一张 backend 凭证（namespace 约定为 zcode）
-./scripts/gateway-admin.sh issue-backend zcode my-desktop
+# 每台电脑一张 backend 凭证（namespace 与桌面设置页一致，默认 zody）
+./scripts/gateway-admin.sh issue-backend zody my-desktop
 
 # 每部手机一张 device 凭证；默认 180 天，可限定只能访问哪些 backend
-./scripts/gateway-admin.sh issue-device zcode my-phone 180 <backend-id,...>
+./scripts/gateway-admin.sh issue-device zody my-phone 180 <backend-id,...>
 
 # 查看与吊销（吊销立即生效：在线连接被 close 1008 断开，后续认证回 401）
 ./scripts/gateway-admin.sh list
@@ -186,7 +187,7 @@ export GATEWAY_ADMIN_TOKEN=...
 - 凭证只在签发时显示一次，立即保存；不要写进日志、截图或仓库。
 - `issue-device` 的末位参数是设备可访问的 backend 范围，省略表示整个 namespace。
 - backend 凭证填桌面设置页；device 凭证填手机设置页。手机只在 registry 显示电脑在线且具备
-  `zcode-remote-control` 能力位时才允许连接。
+  `zcode-remote-control` 能力位（协议常量，不随品牌改名）时才允许连接。
 
 ### 5. 排障
 
@@ -209,7 +210,8 @@ export GATEWAY_ADMIN_TOKEN=...
 ## 本地开发
 
 ```bash
-# 起本地 gateway 并签发凭证（默认 ../zclaudia-gateway 的 docker-compose）
+# 起本地 gateway 并签发凭证（默认使用与本仓库同级的 ../zclaudia-gateway 检出，
+# 可用 ZCLAUDIA_GATEWAY_DIR 覆盖；凭证 namespace 默认 zody）
 pnpm dev:gateway
 
 # 桌面 dev 进程 + 手机页面 Vite dev server（http://localhost:5173/mobile.html）

@@ -144,7 +144,7 @@ for (const [width, locale, theme] of [
       assert.deepEqual(await cards(sections().nth(0)), ["p1", "p0"]);
       assert.equal(requests, 1);
       assert.equal(
-        await page.evaluate(() => localStorage.getItem("zcode-interface-mode")),
+        await page.evaluate(() => localStorage.getItem("zody-interface-mode")),
         "general",
       );
       // 个人与全量搜索继续按各自原来的名称顺序。

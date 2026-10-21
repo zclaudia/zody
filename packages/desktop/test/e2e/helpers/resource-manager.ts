@@ -121,7 +121,7 @@ export async function waitForResourceManagerReady(): Promise<void> {
   await browser.waitUntil(
     async () => {
       const snapshot = await readResourceUsageSnapshot();
-      return Boolean(snapshot?.processes.some((process) => process.name === "zcode-main"));
+      return Boolean(snapshot?.processes.some((process) => process.name === "zody-main"));
     },
     {
       timeout: 15_000,
@@ -162,7 +162,7 @@ export async function listAgentProcessIdentities(
   return snapshot.processes
     .filter(
       (process) =>
-        process.name.startsWith("zcode-agent-") && (!suffix || process.name.endsWith(suffix)),
+        process.name.startsWith("zody-agent-") && (!suffix || process.name.endsWith(suffix)),
     )
     .map((process) => ({ pid: process.pid, name: process.name }))
     .sort((left, right) =>
@@ -170,12 +170,12 @@ export async function listAgentProcessIdentities(
     );
 }
 
-/** Host 进程行（`zcode-host-*`），按 pid 升序 */
+/** Host 进程行（`zody-host-*`），按 pid 升序 */
 export async function listHostProcessIdentities(): Promise<AgentProcessIdentity[]> {
   const snapshot = await readResourceUsageSnapshot();
   if (!snapshot) return [];
   return snapshot.processes
-    .filter((process) => process.name.startsWith("zcode-host-"))
+    .filter((process) => process.name.startsWith("zody-host-"))
     .map((process) => ({ pid: process.pid, name: process.name }))
     .sort((left, right) => left.pid - right.pid);
 }

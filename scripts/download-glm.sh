@@ -7,7 +7,12 @@
 # - 远程专用平台输出到 mock-cdn，供 remote deploy 按平台拉取
 
 set -euo pipefail
-INTRANET_MACHINE_HOST="${INTRANET_MACHINE_HOST:-10.0.0.100}"
+# 修改原因：不内置上游内网机器地址；与 download-glm.mjs / intranetDefaults.mjs 一致，必须显式配置下载源。
+INTRANET_MACHINE_HOST="${INTRANET_MACHINE_HOST:-}"
+if [ -z "${GLM_BINARY_DOWNLOAD_BASE_URL:-}" ] && [ -z "$INTRANET_MACHINE_HOST" ]; then
+  echo "Configure GLM_BINARY_DOWNLOAD_BASE_URL or INTRANET_MACHINE_HOST before downloading GLM binaries" >&2
+  exit 1
+fi
 
 PLATFORM="${1:-${ZCODE_TARGET_OS:-$(uname -s | tr '[:upper:]' '[:lower:]')}}"
 RAW_ARCH="${2:-${ZCODE_TARGET_ARCH:-$(uname -m)}}"

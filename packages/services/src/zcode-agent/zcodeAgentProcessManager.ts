@@ -396,11 +396,11 @@ function resolveDeployedZCodeAgentBinaryCommand(
   context: ZCodeAgentCommandResolverContext,
 ): ZCodeAgentCommand | null {
   // 旧 resolver 只识别 ZCODE_AGENT_SERVER_COMMAND env 和 monorepo 源码树。
-  // SSH 远端把 zcode-server.cjs 单文件部署到 ~/.zcoder/server/，宿主进程的 cwd 不在仓库内、
-  // env 也不会被 ssh exec 继承，即使 zcode-agent 已经部署到 ~/.zcoder/server/agents/glm/，
-  // resolver 也找不到，第一次 getClient 就抛 "ZCode agent server command is not configured"。
+  // SSH 远端把 zcode-server.cjs 单文件部署到 ~/.zody/server/，宿主进程的 cwd 不在仓库内、
+  // env 也不会被 ssh exec 继承，即使 zcode-agent 已经部署到 ~/.zody/server/agents/glm/，
+  // resolver 也找不到，第一次 getClient 就抛 "Zody agent server command is not configured"。
   // 这里复用 findZCodeAgentRuntimeBinary 的候选链（含 GLM_BINARY_PATH env、
-  // packagedResourcesPath、~/.zcoder/server/agents/glm、bundled-agents 等），
+  // packagedResourcesPath、~/.zody/server/agents/glm、bundled-agents 等），
   // 把已部署的原生 binary 当成最终兜底，远端/桌面打包形态都能命中。
   const binaryPath = findZCodeAgentRuntimeBinary();
   if (!binaryPath) {
@@ -970,11 +970,11 @@ export class ZCodeAgentProcessManager {
     const resolveCommandDurationMs = Date.now() - resolveCommandStartedAt;
     if (!command) {
       throw new Error(
-        "ZCode agent server command is not configured. Set ZCODE_AGENT_SERVER_COMMAND before integration.",
+        "Zody agent server command is not configured. Set ZCODE_AGENT_SERVER_COMMAND before integration.",
       );
     }
     if (admissionSignal.aborted) {
-      throw admissionSignal.reason ?? new Error("ZCode agent process start was cancelled.");
+      throw admissionSignal.reason ?? new Error("Zody agent process start was cancelled.");
     }
     const effectiveCommand = wrapZCodeAgentCommandWithStdioTapDevProxy(command, workspaceKey);
     log("ZCode agent command resolved", {
@@ -999,7 +999,7 @@ export class ZCodeAgentProcessManager {
     if ((this.restartGenerationByWorkspaceKey.get(workspaceKey) ?? 0) !== startGeneration) {
       // 切模型会重启单个 workspace。旧启动请求如果在重启后才恢复，
       // 不能继续 spawn 并写回进程池，否则新配置会被旧 agent 覆盖。
-      throw new Error("ZCode agent process start was cancelled.");
+      throw new Error("Zody agent process start was cancelled.");
     }
     // cwd 探测也让出事件循环，必须放在最终 admission 与销毁/代际检查之前。
     const spawnPreflight = await buildZCodeAgentSpawnPreflight(
@@ -1015,7 +1015,7 @@ export class ZCodeAgentProcessManager {
       throw new Error("ZCode agent process manager is disposed.");
     }
     if ((this.restartGenerationByWorkspaceKey.get(workspaceKey) ?? 0) !== startGeneration) {
-      throw new Error("ZCode agent process start was cancelled.");
+      throw new Error("Zody agent process start was cancelled.");
     }
     // app 以本地开发方式启动时，让 agent 子进程也带上 ZCODE_RUNTIME_ENV=development；
     // 不再传 NODE_ENV，避免用户 shell/runtime 变量影响 ZCode 运行模式或泄漏到 Bash 工具。
@@ -1422,7 +1422,7 @@ export class ZCodeAgentProcessManager {
 
   private abortPendingStarts(
     workspaceKey: string,
-    reason = new Error("ZCode agent process start was cancelled."),
+    reason = new Error("Zody agent process start was cancelled."),
   ): void {
     const controllers = this.startAdmissionAbortControllersByWorkspaceKey.get(workspaceKey);
     if (!controllers) {

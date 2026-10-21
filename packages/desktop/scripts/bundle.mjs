@@ -121,7 +121,6 @@ const requiredRuntimeModules = [
 const electronBuilderRetryCount = 3;
 const electronBuilderRetryDelayMs = 5_000;
 const electronBuilderHeartbeatIntervalMs = 30_000;
-export const DEFAULT_ELECTRON_MIRROR = "https://npmmirror.com/mirrors/electron/";
 export const NPMMIRROR_ELECTRON_BUILDER_BINARIES_MIRROR =
   "https://registry.npmmirror.com/-/binary/electron-builder-binaries/";
 export const OFFICIAL_ELECTRON_BUILDER_BINARIES_MIRROR =
@@ -141,16 +140,14 @@ export function resolveElectronMirror(env = process.env) {
     env.npm_config_electron_mirror ||
     env.npm_package_config_electron_mirror ||
     env.ELECTRON_MIRROR;
-  if (existingMirror?.trim()) {
-    return existingMirror.trim();
-  }
-
-  return DEFAULT_ELECTRON_MIRROR;
+  // 修改原因：默认不再强制国内镜像；未显式配置 ELECTRON_MIRROR 等变量时使用 Electron 官方下载源。
+  return existingMirror?.trim() || undefined;
 }
 
 export function createElectronRuntimeMirrorEnv(mirror) {
   return {
-    ZCODE_ELECTRON_RUNTIME_MIRROR: mirror,
+    // 空串表示未配置镜像，electron-builder.config.js 回落到官方下载源。
+    ZCODE_ELECTRON_RUNTIME_MIRROR: mirror ?? "",
     // @electron/get 的 Electron runtime 环境变量是全局读取的。
     // 如果传给 electron-builder 主进程，会覆盖 dmg-builder 等 generic artifact 的 mirrorOptions。
     ELECTRON_MIRROR: "",

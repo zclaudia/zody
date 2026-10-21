@@ -24,7 +24,7 @@ Read this file in full before authoring. Reread truncated ranges in smaller call
 - For each new or updated visualization, choose a concise ASCII lowercase-hyphenated title and write `<title>.html` in an explicitly writable, durable, task-owned location. Prefer the thread-scoped visualization directory when it appears in the writable roots or is explicitly supplied by the host. Do not write inline fragments into the project; if no visualization directory is supplied, inline rendering is unavailable.
 - Never add `sandbox:` links to inline visualization HTML unless the user specifically requests a download.
 - Do not choose system temp as a separate fallback. Write access alone does not guarantee that the conversation can read the file.
-- Use the absolute path on the executor that creates the file. Never assume `~/.zcode` is writable beyond the session directory explicitly supplied by the host.
+- Use the absolute path on the executor that creates the file. Never assume `~/.zody` is writable beyond the session directory explicitly supplied by the host.
 - Build the visual in the conversation. Use the open project when the user asks for a site, app page, component, or change to existing project files.
 
 ### Fragment
@@ -64,8 +64,8 @@ Read this file in full before authoring. Reread truncated ranges in smaller call
 
 - Keep the fragment as the editable inline source. When the user explicitly asks to save, export, or publish a visualization that is already shown in the conversation, render it with `python3 scripts/render.py <absolute-fragment-path> <destination>.html`.
 - Apply this export flow only when the user explicitly asks to turn the existing inline source or visualization into a website. For a general website request, build a new responsive site in the output directory or open project, without applying this skill's guidance.
-- Keep only `window.zcode.widgetState` and `window.zcode.setWidgetState` calls from window\.zcode.\* when exporting: the standalone wrapper supplies fallback state storage. Replace other host-only interactions before using the standalone HTML outside ZCode.
-- The ZCode inline host does not provide Sites publishing. Export standalone HTML when requested; use an available hosting workflow only when the user asks to publish.
+- Keep only `window.zcode.widgetState` and `window.zcode.setWidgetState` calls from window\.zcode.\* when exporting: the standalone wrapper supplies fallback state storage. Replace other host-only interactions before using the standalone HTML outside Zody.
+- The Zody inline host does not provide Sites publishing. Export standalone HTML when requested; use an available hosting workflow only when the user asks to publish.
 
 ## Runtime styles
 
@@ -97,7 +97,7 @@ Read this file in full before authoring. Reread truncated ranges in smaller call
 Choose the smallest composition that fits.
 
 - Prefer interaction detail over permanent panels, toolbars, repeated legends, or long stacks. Add only requested controls, use one mechanism per state, and never invent search, filter, or reset controls.
-- Keep filters, selections, and other presentation-only interactions local. For drill-down actions that ask ZCode to investigate or explain selected data, call `await window.zcode.sendFollowUpMessage({ prompt, title })`, where the optional `title` is a concise confirmation-dialog heading of up to 250 characters. Include the selected values and requested investigation in the prompt, and label the action clearly.
+- Keep filters, selections, and other presentation-only interactions local. For drill-down actions that ask Zody to investigate or explain selected data, call `await window.zcode.sendFollowUpMessage({ prompt, title })`, where the optional `title` is a concise confirmation-dialog heading of up to 250 characters. Include the selected values and requested investigation in the prompt, and label the action clearly.
 - For external destinations, use a normal `<a href="https://example.com/subscribe">` link. If a button needs scripted handling, call `await window.zcode.openExternal({ href })` from its user click handler; see [API](references/api.md#external-links). Use an absolute HTTP(S) URL. Keep `#fragment` links for navigation within the page.
 - Show only metrics that explain the requested behavior. Put live values in control headers or on the visual before cards. Treat maxima as ceilings, not targets. Never invent qualitative scores, status cards, or secondary fact grids to fill space.
 
@@ -269,7 +269,7 @@ Choose the smallest composition that fits.
 - Use visibly labeled buttons and inputs for small interactions. Keep all presentation-only interaction local to the fragment and make the first render useful before input changes.
 - Use semantic controls, realistic spacing, and restrained chrome for mockups. Never fake product screenshots when inspectable UI is needed.
 
-## ZCode host compatibility
+## Zody host compatibility
 
 - Emit inline references only when the Desktop context advertises Gen UI and supplies its session output directory; otherwise return an ordinary HTML artifact. Paths must be absolute on the executor, inside that session directory, with no symlinks or parent traversal. The host renders completed assistant messages only.
 - The frame starts at 240px, follows content height up to 10,000px, and has a host-compensated 5px paint gutter. These are implementation limits, not a target height or a reason to add padding. Secondary annotations are optional; there is no required footer.

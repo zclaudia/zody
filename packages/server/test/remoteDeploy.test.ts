@@ -1081,6 +1081,19 @@ afterEach(async () => {
   await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { force: true, recursive: true })));
 });
 
+describe("remote official plugin assets", () => {
+  it("不再部署已停止分发的 restore-legacy-sessions 插件", () => {
+    expect(REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES).not.toContain(
+      "restore-legacy-sessions-plugin",
+    );
+    expect(
+      REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS.some((path) =>
+        path.startsWith("restore-legacy-sessions-plugin/"),
+      ),
+    ).toBe(false);
+  });
+});
+
 describe("deployServer legacy agent node-script bundle deployment", () => {
   it("本地来源忽略 remote-download/CDN，完整上传且不调用任何资源网络出口", async () => {
     const fixture = await createLocalRuntimeFixture("linux-arm64");

@@ -106,7 +106,7 @@ describe("Provider/model readiness 只门禁模型执行", () => {
       },
     );
     expect(
-      await browser.execute(() => window.localStorage.getItem("zcode-v4-pending-commands:v1")),
+      await browser.execute(() => window.localStorage.getItem("zody-v4-pending-commands:v1")),
     ).toBeNull();
     await waitForModelConfigMissingBanner();
 

@@ -234,7 +234,7 @@ const adHocSignMacBinary = (target, binaryPath) => {
 
 const smokeTestHostTarget = async (target, binaryPath) => {
   if (isHostTarget(target)) {
-    const storageRoot = await mkdtemp(join(tmpdir(), "zcode-sea-smoke-"));
+    const storageRoot = await mkdtemp(join(tmpdir(), "zody-sea-smoke-"));
     try {
       const env = {
         ...process.env,

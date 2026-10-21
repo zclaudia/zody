@@ -114,11 +114,11 @@ describe("credentialService encryption", () => {
     try {
       await Promise.all(
         Array.from({ length: 8 }, () =>
-          expect(service.load("oauth:test:new")).rejects.toThrow("ZCode credentials are corrupt"),
+          expect(service.load("oauth:test:new")).rejects.toThrow("Zody credentials are corrupt"),
         ),
       );
       await expect(service.save("oauth:test:new", "value")).rejects.toThrow(
-        "ZCode credentials are corrupt",
+        "Zody credentials are corrupt",
       );
       expect(readFileSync(credentialsFile, "utf-8")).toBe("{not-json");
       const backups = readdirSync(credentialsDir).filter((file) =>

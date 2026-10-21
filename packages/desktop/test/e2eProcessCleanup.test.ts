@@ -190,7 +190,7 @@ describe("desktop e2e process cleanup", () => {
       { command: "chromedriver --port=55089", pid: 10, ppid: 9 },
       { command: "ZCode E2E", pid: 11, ppid: 10 },
       {
-        command: `Electron Helper (Renderer) --user-data-dir=/repo/.e2e-cache/run-a/chromium-profiles/0-51 --config=${currentHome}/.zcoder/config.json`,
+        command: `Electron Helper (Renderer) --user-data-dir=/repo/.e2e-cache/run-a/chromium-profiles/0-51 --config=${currentHome}/.zody/config.json`,
         pid: 12,
         ppid: 11,
       },
@@ -219,7 +219,7 @@ describe("desktop e2e process cleanup", () => {
       { command: "chromedriver --port=55089", pid: 10, ppid: 9 },
       { command: "ZCode E2E", pid: 11, ppid: 10 },
       {
-        command: `Electron Helper (Renderer) --config=${currentHome}/.zcoder/config.json`,
+        command: `Electron Helper (Renderer) --config=${currentHome}/.zody/config.json`,
         pid: 12,
         ppid: 11,
       },
@@ -245,7 +245,7 @@ describe("desktop e2e process cleanup", () => {
       { command: "ZCode E2E", pid: 11, ppid: 10 },
       {
         command:
-          "Electron Helper --user-data-dir=/repo/.e2e-cache/run-a/chromium-profiles/0-51 --config=/tmp/zcode-e2e-run-a/.zcoder/config.json",
+          "Electron Helper --user-data-dir=/repo/.e2e-cache/run-a/chromium-profiles/0-51 --config=/tmp/zcode-e2e-run-a/.zody/config.json",
         pid: 12,
         ppid: 11,
       },
@@ -282,7 +282,7 @@ describe("desktop e2e process cleanup", () => {
     const runCommand = vi.fn(async () =>
       [
         "10 1 ZCode E2E",
-        "11 10 zcode-host-local-1",
+        "11 10 zody-host-local-1",
         "12 11 zcode-cli",
         "13 12 zcode-browser-use-mcp",
         "20 1 unrelated",
@@ -296,7 +296,7 @@ describe("desktop e2e process cleanup", () => {
 
     expect(collectProcessTreeByRootPids(processes, [10])).toEqual([
       { command: "ZCode E2E", pid: 10, ppid: 1 },
-      { command: "zcode-host-local-1", pid: 11, ppid: 10 },
+      { command: "zody-host-local-1", pid: 11, ppid: 10 },
       { command: "zcode-cli", pid: 12, ppid: 11 },
       { command: "zcode-browser-use-mcp", pid: 13, ppid: 12 },
     ]);
@@ -357,7 +357,7 @@ describe("desktop e2e process cleanup", () => {
         pid: 101,
       },
       {
-        command: "node.exe --config=C:/e2e/shards/current/.zcoder/cli/config.json",
+        command: "node.exe --config=C:/e2e/shards/current/.zody/cli/config.json",
         parentPid: 101,
         pid: 102,
       },

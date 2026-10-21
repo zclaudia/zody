@@ -46,7 +46,7 @@ export interface EnsureSeaRuntimeToolsOptions {
 
 const assetPrefix = "zcode-runtime-tools/";
 const manifestAssetKey = `${assetPrefix}manifest.json`;
-const markerFileName = ".zcode-runtime-tool.json";
+const markerFileName = ".zody-runtime-tool.json";
 const runtimeToolIds = new Set<RuntimeToolId>(["bfs", "ripgrep", "ugrep"]);
 
 export async function ensureSeaRuntimeTools(

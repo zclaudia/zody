@@ -16,6 +16,11 @@ import {
   isSkippableWorkspaceFileListError,
 } from "../src/file/fileService.js";
 import { setDataBaseDir } from "../src/paths.js";
+import {
+  LEGACY_WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER,
+  WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER,
+  WORKSPACE_FILE_SEARCH_IGNORE_SYNC_MARKER,
+} from "../src/file/workspaceFileIgnore.js";
 import { unpackWorkspaceFileEntries } from "@zcode/shared/workspaceFileEntriesCodec";
 import type { IFileService } from "../src/file/file.js";
 
@@ -336,7 +341,7 @@ describe("fileService", () => {
   // ── createScratchWorkspace ───────────────────────────────────────
 
   describe("createScratchWorkspace", () => {
-    const scratchRoot = join(homedir(), "ZCodeProject");
+    const scratchRoot = join(homedir(), "ZodyProject");
     const testWorkspaceName = `zcode-file-service-test-${Date.now()}`;
     const testWorkspacePath = join(scratchRoot, testWorkspaceName);
 
@@ -881,9 +886,9 @@ describe("fileService", () => {
       mkdirSync(join(rootPath, "node_modules"));
       writeFileSync(join(rootPath, "node_modules", "package.js"), "");
       writeFileSync(join(rootPath, ".env"), "SECRET=123");
-      // 预置空 .zcodeignore 隔离掉 ignore 规则层：本用例专测"注入 filter 完整替换内置过滤"
-      // 的旧契约；.zcodeignore 剪枝行为由独立用例覆盖。
-      writeFileSync(join(rootPath, ".zcodeignore"), "\n");
+      // 预置空 .zodyignore 隔离掉 ignore 规则层：本用例专测"注入 filter 完整替换内置过滤"
+      // 的旧契约；.zodyignore 剪枝行为由独立用例覆盖。
+      writeFileSync(join(rootPath, ".zodyignore"), "\n");
 
       const service = createFileService({
         workspaceFileSearchFilter: {
@@ -944,8 +949,8 @@ describe("fileService", () => {
       expect(relativePaths).toEqual(["a", "b", "a/x.ts", "b/z.ts", "root.ts"]);
     });
 
-    // .zcodeignore 单一真相源（spec 2026-09-15 增补）：目录排除的唯一规则来源。
-    describe(".zcodeignore", () => {
+    // .zodyignore 单一真相源（spec 2026-09-15 增补）：目录排除的唯一规则来源。
+    describe(".zodyignore", () => {
       it("prunes gitignored build directories like obj and bin (ZCT-2096811705629528064)", async () => {
         const rootPath = makeTempDir("zcode-file-service-dotnet-");
         writeFileSync(join(rootPath, ".gitignore"), "obj/\nbin/\n");
@@ -966,10 +971,10 @@ describe("fileService", () => {
         // 自动创建暂时停用，内存中的 gitignore + 默认规则仍剪枝 obj/bin。
         expect(entries.map((e) => e.relativePath)).toEqual(["src", ".gitignore", "src/Program.cs"]);
         // 规则文件自身是工具配置，不进入候选。
-        expect(existsSync(join(rootPath, ".zcodeignore"))).toBe(false);
+        expect(existsSync(join(rootPath, ".zodyignore"))).toBe(false);
       });
 
-      it("uses .gitignore plus builtin defaults without creating .zcodeignore", async () => {
+      it("uses .gitignore plus builtin defaults without creating .zodyignore", async () => {
         const rootPath = makeTempDir("zcode-file-service-create-");
         writeFileSync(join(rootPath, ".gitignore"), "dist/\n");
         mkdirSync(join(rootPath, "node_modules", "pkg"), { recursive: true });
@@ -985,7 +990,7 @@ describe("fileService", () => {
 
         // .gitignore 未声明 node_modules：内存默认段仍剪枝（行为兼容）。
         expect(entries.map((e) => e.relativePath)).toEqual([".gitignore"]);
-        expect(existsSync(join(rootPath, ".zcodeignore"))).toBe(false);
+        expect(existsSync(join(rootPath, ".zodyignore"))).toBe(false);
       });
 
       it("dedupes builtin defaults against gitignore rules on creation", async () => {
@@ -1006,14 +1011,14 @@ describe("fileService", () => {
 
         // 去重：gitignore 区已有 node_modules/ 与 coverage，默认段不再重复写这两条
         // ——文件中每条规则最多一份，删除 gitignore 区那一行即完全放开。
-        const created = readFileSync(join(rootPath, ".zcodeignore"), "utf8");
+        const created = readFileSync(join(rootPath, ".zodyignore"), "utf8");
         expect(created.match(/^node_modules\/$/gm)).toHaveLength(1);
         expect(created.match(/^coverage\/?$/gm)).toHaveLength(1);
         // 剪枝仍然生效（gitignore 区那条在起作用）；.gitignore 自身保持可搜。
         expect(entries.map((e) => e.relativePath)).toEqual([".gitignore", "keep.ts"]);
       });
 
-      it("uses builtin defaults without creating .zcodeignore when no .gitignore exists", async () => {
+      it("uses builtin defaults without creating .zodyignore when no .gitignore exists", async () => {
         const rootPath = makeTempDir("zcode-file-service-create-no-gitignore-");
         mkdirSync(join(rootPath, "node_modules"));
         writeFileSync(join(rootPath, "node_modules", "x.js"), "");
@@ -1026,7 +1031,7 @@ describe("fileService", () => {
         );
 
         expect(entries.map((e) => e.relativePath)).toEqual(["keep.ts"]);
-        expect(existsSync(join(rootPath, ".zcodeignore"))).toBe(false);
+        expect(existsSync(join(rootPath, ".zodyignore"))).toBe(false);
       });
 
       it("honors gitignore semantics: negation, anchored patterns and directory suffix", async () => {
@@ -1035,7 +1040,7 @@ describe("fileService", () => {
         mkdirSync(join(rootPath, "sub", "build"), { recursive: true });
         mkdirSync(join(rootPath, "build"));
         writeFileSync(
-          join(rootPath, ".zcodeignore"),
+          join(rootPath, ".zodyignore"),
           ["logs/*", "!logs/keep.log", "/build", "*.tmp"].join("\n"),
         );
         writeFileSync(join(rootPath, "logs", "keep.log"), "");
@@ -1063,12 +1068,12 @@ describe("fileService", () => {
         ]);
       });
 
-      it("lets users re-include builtin defaults by editing .zcodeignore (single source of truth)", async () => {
+      it("lets users re-include builtin defaults by editing .zodyignore (single source of truth)", async () => {
         const rootPath = makeTempDir("zcode-file-service-reinclude-");
         mkdirSync(join(rootPath, "node_modules", "pkg"), { recursive: true });
         writeFileSync(join(rootPath, "node_modules", "pkg", "index.js"), "");
         // 用户显式反选内置默认排除：node_modules 必须恢复为可搜（无代码级并集）。
-        writeFileSync(join(rootPath, ".zcodeignore"), "!node_modules/\n");
+        writeFileSync(join(rootPath, ".zodyignore"), "!node_modules/\n");
 
         const service = createFileService();
         const entries = unpackWorkspaceFileEntries(
@@ -1092,7 +1097,7 @@ describe("fileService", () => {
         // 尚未落盘：预览初始内容（gitignore 拷贝 + 默认段）。
         expect(initial.source).toBe("template");
         expect(initial.content).toContain("out/");
-        expect(existsSync(join(rootPath, ".zcodeignore"))).toBe(false);
+        expect(existsSync(join(rootPath, ".zodyignore"))).toBe(false);
 
         await service.writeWorkspaceFileSearchIgnore({ rootPath, content: "custom/\n" });
         const afterWrite = await service.readWorkspaceFileSearchIgnore({ rootPath });
@@ -1180,7 +1185,7 @@ describe("fileService", () => {
         const rootPath = makeTempDir("zcode-file-service-section-fallback-");
         writeFileSync(join(rootPath, ".gitignore"), "out/\n");
         // 用户删掉了分区标记（旧格式/手动清理），无法结构化定位分区。
-        writeFileSync(join(rootPath, ".zcodeignore"), "legacy-rules/\n");
+        writeFileSync(join(rootPath, ".zodyignore"), "legacy-rules/\n");
 
         const service = createFileService();
         const synced = await service.applyWorkspaceFileSearchIgnoreTransform({
@@ -1191,6 +1196,140 @@ describe("fileService", () => {
         expect(synced.content).toContain("out/");
         expect(synced.content).toContain("node_modules/");
         expect(synced.content).not.toContain("legacy-rules/");
+      });
+
+      // 品牌兼容（specs/zody-brand-residual-cleanup.md）：.zodyignore 优先，缺失时只读回退 .zcodeignore。
+      describe("legacy .zcodeignore compatibility", () => {
+        it("reads only .zodyignore when it is the sole rule file", async () => {
+          const rootPath = makeTempDir("zody-file-service-ignore-new-");
+          mkdirSync(join(rootPath, "generated"));
+          writeFileSync(join(rootPath, "generated", "a.ts"), "");
+          writeFileSync(join(rootPath, "keep.ts"), "");
+          writeFileSync(join(rootPath, ".zodyignore"), "generated/\n");
+
+          const service = createFileService();
+          const entries = unpackWorkspaceFileEntries(
+            await readAllPacked(service, rootPath),
+            rootPath,
+          );
+          expect(entries.map((e) => e.relativePath)).toEqual(["keep.ts"]);
+          expect(await service.readWorkspaceFileSearchIgnore({ rootPath })).toEqual({
+            content: "generated/\n",
+            source: "file",
+          });
+        });
+
+        it("falls back to a legacy-only .zcodeignore read-only", async () => {
+          const rootPath = makeTempDir("zody-file-service-ignore-legacy-");
+          mkdirSync(join(rootPath, "legacy-out"));
+          writeFileSync(join(rootPath, "legacy-out", "a.ts"), "");
+          writeFileSync(join(rootPath, "keep.ts"), "");
+          writeFileSync(join(rootPath, ".zcodeignore"), "legacy-out/\n");
+
+          const service = createFileService();
+          const entries = unpackWorkspaceFileEntries(
+            await readAllPacked(service, rootPath),
+            rootPath,
+          );
+          // 遗留规则生效，且遗留规则文件本身同样不进入候选。
+          expect(entries.map((e) => e.relativePath)).toEqual(["keep.ts"]);
+          expect(await service.readWorkspaceFileSearchIgnore({ rootPath })).toEqual({
+            content: "legacy-out/\n",
+            source: "file",
+          });
+          expect(existsSync(join(rootPath, ".zodyignore"))).toBe(false);
+        });
+
+        it("prefers .zodyignore when both files exist", async () => {
+          const rootPath = makeTempDir("zody-file-service-ignore-both-");
+          mkdirSync(join(rootPath, "legacy-out"));
+          mkdirSync(join(rootPath, "new-out"));
+          writeFileSync(join(rootPath, "legacy-out", "a.ts"), "");
+          writeFileSync(join(rootPath, "new-out", "b.ts"), "");
+          writeFileSync(join(rootPath, ".zcodeignore"), "legacy-out/\n");
+          writeFileSync(join(rootPath, ".zodyignore"), "new-out/\n");
+
+          const service = createFileService();
+          const entries = unpackWorkspaceFileEntries(
+            await readAllPacked(service, rootPath),
+            rootPath,
+          );
+          expect(entries.map((e) => e.relativePath)).toEqual(["legacy-out", "legacy-out/a.ts"]);
+          expect((await service.readWorkspaceFileSearchIgnore({ rootPath })).content).toBe(
+            "new-out/\n",
+          );
+        });
+
+        it("writes settings edits to .zodyignore and never modifies the legacy file", async () => {
+          const rootPath = makeTempDir("zody-file-service-ignore-write-");
+          mkdirSync(join(rootPath, "legacy-out"));
+          mkdirSync(join(rootPath, "extra"));
+          writeFileSync(join(rootPath, "legacy-out", "a.ts"), "");
+          writeFileSync(join(rootPath, "extra", "b.ts"), "");
+          writeFileSync(join(rootPath, ".zcodeignore"), "legacy-out/\n");
+
+          const service = createFileService();
+          // 首次扫描命中遗留文件指纹并缓存；新文件出现后指纹按生效文件切换，缓存必须失效。
+          expect(
+            unpackWorkspaceFileEntries(await readAllPacked(service, rootPath), rootPath).map(
+              (e) => e.relativePath,
+            ),
+          ).toEqual(["extra", "extra/b.ts"]);
+
+          // 编辑框以遗留完整内容为起点，保存后落到 .zodyignore。
+          const preview = await service.readWorkspaceFileSearchIgnore({ rootPath });
+          await service.writeWorkspaceFileSearchIgnore({
+            rootPath,
+            content: `${preview.content}extra/\n`,
+          });
+
+          expect(readFileSync(join(rootPath, ".zodyignore"), "utf8")).toBe("legacy-out/\nextra/\n");
+          expect(readFileSync(join(rootPath, ".zcodeignore"), "utf8")).toBe("legacy-out/\n");
+          expect(
+            unpackWorkspaceFileEntries(await readAllPacked(service, rootPath), rootPath).map(
+              (e) => e.relativePath,
+            ),
+          ).toEqual([]);
+        });
+
+        it("recognizes the legacy ZCode defaults marker when transforming legacy content", async () => {
+          const rootPath = makeTempDir("zody-file-service-ignore-legacy-marker-");
+          writeFileSync(join(rootPath, ".gitignore"), "out/\nnewdir/\n");
+          writeFileSync(
+            join(rootPath, ".zcodeignore"),
+            [
+              "out/",
+              WORKSPACE_FILE_SEARCH_IGNORE_SYNC_MARKER,
+              "coverage/",
+              LEGACY_WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER,
+              "my-private-assets/",
+              "",
+            ].join("\n"),
+          );
+
+          const service = createFileService();
+          const synced = await service.applyWorkspaceFileSearchIgnoreTransform({
+            rootPath,
+            transform: "sync-gitignore",
+          });
+          // 旧 marker 被识别为分区：自定义区与用户裁剪过的默认段都保留，未退化为整体重建。
+          expect(synced.content).toContain("newdir/");
+          expect(synced.content).toContain("my-private-assets/");
+          expect(synced.content).not.toContain("node_modules/");
+          // 重写后统一使用 Zody 文案的新 marker。
+          expect(synced.content).toContain(WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER);
+          expect(synced.content).not.toContain(LEGACY_WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER);
+          expect(WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER).toContain("Zody");
+        });
+
+        it("writes Zody header comments into new templates", async () => {
+          const rootPath = makeTempDir("zody-file-service-ignore-header-");
+          const service = createFileService();
+          const preview = await service.readWorkspaceFileSearchIgnore({ rootPath });
+          expect(preview.source).toBe("template");
+          expect(preview.content).toContain("# Zody 工作区文件搜索忽略规则（.zodyignore）");
+          expect(preview.content).not.toContain("ZCode");
+        });
       });
     });
   });

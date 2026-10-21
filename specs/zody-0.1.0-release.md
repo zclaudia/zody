@@ -194,6 +194,7 @@ Z10 的许可、测试与安全缺口应在涉及模块实施时同步处理，�
 
 ## 相关规格
 
+- [首发品牌残留清理](zody-brand-residual-cleanup.md)：对外 header、MCP/进程/内部名称等经确认的改名例外。
 - [Fork 官方依赖移除总纲](fork-official-deps-removal-plan.md) 与 [任务拆分](fork-official-deps-removal-tasks.md)。
 - [官方后端运行时依赖](fork-official-backend-runtime-dependencies.md)。
 - [手机远控 gateway 规格](mobile-remote-control-via-gateway.md) 与 [任务拆分](mobile-remote-control-via-gateway-tasks.md)。

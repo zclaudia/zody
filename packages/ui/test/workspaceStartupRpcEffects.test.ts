@@ -228,12 +228,6 @@ describe("workspace startup RPC effects", () => {
     const platformLoadMcpFromUserDirectory = vi.fn(async () => ({ servers: [] }));
     setMcpStorePlatform({
       loadMcpFromUserDirectory: platformLoadMcpFromUserDirectory,
-      migrateLegacyCommonMcp: vi.fn(async () => ({
-        importedCount: 0,
-        servers: {},
-        skippedCount: 0,
-        totalCount: 0,
-      })),
       saveMcpToUserDirectory: vi.fn(async () => ({ success: true })),
     });
 

@@ -300,7 +300,7 @@ export const DefaultRuntimeConfig: RuntimeConfig = {
     allowMediumRiskInAuto: false,
   },
   storage: {
-    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
     dir: `~/${ZCODE_DATA_ROOT_DIR_NAME}`,
     sessionDbPath: `~/${ZCODE_DATA_ROOT_DIR_NAME}/cli/db/db.sqlite`,
   },

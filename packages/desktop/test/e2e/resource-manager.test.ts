@@ -82,9 +82,7 @@ describe("资源管理器", () => {
     await browser.waitUntil(
       async () => {
         const snapshot = await readResourceUsageSnapshot();
-        const agent = snapshot?.processes.find((process) =>
-          process.name.startsWith("zcode-agent-"),
-        );
+        const agent = snapshot?.processes.find((process) => process.name.startsWith("zody-agent-"));
         return Boolean(agent && agent.sampled && agent.memoryBytes > 0);
       },
       {
@@ -96,10 +94,8 @@ describe("资源管理器", () => {
 
     const snapshot = await readResourceUsageSnapshot();
     expect(snapshot).not.toBeNull();
-    expect(snapshot!.processes.some((process) => process.name === "zcode-main")).toBe(true);
-    expect(snapshot!.processes.some((process) => process.name.startsWith("zcode-host-"))).toBe(
-      true,
-    );
+    expect(snapshot!.processes.some((process) => process.name === "zody-main")).toBe(true);
+    expect(snapshot!.processes.some((process) => process.name.startsWith("zody-host-"))).toBe(true);
     // 所有进程行的 CPU 都是整机口径，总和不能超过 100%。
     expect(snapshot!.app.cpuPercent).toBeLessThanOrEqual(100);
     expect(snapshot!.app.memoryBytes).toBeGreaterThan(0);
@@ -110,7 +106,7 @@ describe("资源管理器", () => {
         document.querySelectorAll<HTMLElement>('[data-testid="resource-manager-process-row"]'),
       ).map((element) => element.dataset.processName ?? ""),
     );
-    expect(rowNames.some((name) => name.startsWith("zcode-agent-"))).toBe(true);
+    expect(rowNames.some((name) => name.startsWith("zody-agent-"))).toBe(true);
 
     await switchToElectronRendererTarget(isMainRendererUrl);
   });

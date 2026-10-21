@@ -23,7 +23,7 @@ export interface ServerLayout {
 
 export function getDefaultServerDataRoot(): string {
   const configured = process.env.ZCODE_DATA_BASE_DIR?.trim();
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
   return join(configured || homedir(), ZCODE_DATA_ROOT_DIR_NAME, "server");
 }
 
@@ -44,7 +44,7 @@ export function resolveServerLayout(serverRoot = getDefaultServerDataRoot()): Se
     lockFile: join(runDir, "server.lock"),
     controlEndpoint:
       process.platform === "win32"
-        ? `\\\\.\\pipe\\zcode-server-${stablePathId(root)}`
+        ? `\\\\.\\pipe\\zody-server-${stablePathId(root)}`
         : join(runDir, "control.sock"),
     serviceDir: join(root, "service"),
     uninstalledFile: join(root, "uninstalled.json"),

@@ -10,7 +10,7 @@ interface ChromiumHardwareAccelerationApp {
 export function resolveChromiumHardwareAccelerationSettingsFile(
   homePath: string = homedir(),
 ): string {
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
   return join(homePath, ZCODE_DATA_ROOT_DIR_NAME, "v2", "setting.json");
 }
 

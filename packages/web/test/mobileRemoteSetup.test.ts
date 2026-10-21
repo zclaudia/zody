@@ -92,7 +92,7 @@ describe("mobile remote setup flow (375px)", () => {
 
     await expect(resolved).resolves.toEqual({
       gatewayUrl: "http://localhost:3200",
-      namespace: "zcode",
+      namespace: "zody",
       credential: "zgd_test",
       backendId: "backend-1",
     });

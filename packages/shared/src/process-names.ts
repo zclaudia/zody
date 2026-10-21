@@ -1,4 +1,7 @@
-const ZCODE_PROCESS_PREFIX = "zcode";
+const ZCODE_PROCESS_PREFIX = "zody";
+// 主窗口标题随产品名（Zody）；Preview/Dev 构建若以带渠道后缀的产品名作标题也视为主窗口。
+const MAIN_WINDOW_TITLE_PATTERN = /^Zody(?: Preview| Dev)?$/;
+const REMOTE_WINDOW_TITLE_PATTERN = /^Zody(?: Preview| Dev)? - /;
 const MAX_PROCESS_NAME_SEGMENT_LENGTH = 24;
 
 function sanitizeProcessNameSegment(value: string | null | undefined): string | null {
@@ -49,7 +52,7 @@ export function formatZCodeHostProcessName(label?: string): string {
 
 export function formatZCodeRendererProcessName(windowTitle?: string): string {
   const normalizedTitle = windowTitle?.trim();
-  if (!normalizedTitle || normalizedTitle === "ZCode") {
+  if (!normalizedTitle || MAIN_WINDOW_TITLE_PATTERN.test(normalizedTitle)) {
     return joinZCodeProcessName("renderer", "main");
   }
 
@@ -57,8 +60,8 @@ export function formatZCodeRendererProcessName(windowTitle?: string): string {
     return joinZCodeProcessName("renderer", "resource-manager");
   }
 
-  const remoteWindowPrefix = "ZCode - ";
-  if (normalizedTitle.startsWith(remoteWindowPrefix)) {
+  const remoteWindowPrefix = REMOTE_WINDOW_TITLE_PATTERN.exec(normalizedTitle)?.[0];
+  if (remoteWindowPrefix) {
     return joinZCodeProcessName(
       "renderer",
       "remote",

@@ -226,7 +226,7 @@ async function resolveStandaloneDeviceMid(
 ): Promise<string | undefined> {
   const stateFile = zcodeHome
     ? join(zcodeHome, "v2", "telemetry-state.json")
-    : // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    : // fork 数据隔离：家目录级数据根为 .zody，与上游 ZCode 的数据目录分开。
       join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
   const pending = pendingStandaloneDeviceMidByStateFile.get(stateFile);
   if (pending) return pending;

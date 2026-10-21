@@ -50,7 +50,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     await client.request("https://api.z.ai/v1/models");
 
     const zcodeHeaders = new Headers(fetchImpl.mock.calls[0]?.[1]?.headers);
-    expect(zcodeHeaders.get("User-Agent")).toMatch(/^ZCode\//);
+    expect(zcodeHeaders.get("User-Agent")).toMatch(/^Zody\//);
     // F2.10：来源标识（HTTP-Referer/X-Title）默认不发，设备标识（X-Device-Mid）停发。
     expect(zcodeHeaders.get("X-Title")).toBeNull();
     expect(zcodeHeaders.get("X-Device-Mid")).toBeNull();
@@ -58,7 +58,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     expect(zcodeHeaders.get("X-OpenRouter-Categories")).toBeNull();
     expect(zcodeHeaders.get("HTTP-Referer")).toBeNull();
     expect(zcodeHeaders.get("X-App-Version")).toBeNull();
-    expect(zcodeHeaders.get("X-ZCode-App-Version")).toBeTruthy();
+    expect(zcodeHeaders.get("X-Zody-App-Version")).toBeTruthy();
     expect(zcodeHeaders.get("X-Platform")).toBe(`${process.platform}-${process.arch}`);
     expect(zcodeHeaders.get("X-Release-Channel")).toBeTruthy();
     expect(zcodeHeaders.get("X-Client-Language")).toBeTruthy();
@@ -148,7 +148,7 @@ describe("NodeApiClient endpoint rewriting", () => {
       "X-Client-Timezone": "Asia/Shanghai",
       "X-Os-Category": "macos",
       "X-Os-Version": "Darwin 25.0.0",
-      "X-ZCode-App-Version": "2.14.0",
+      "X-Zody-App-Version": "2.14.0",
     });
     expect(headers).not.toHaveProperty("X-Device-Mid");
     expect(headers).not.toHaveProperty("HTTP-Referer");

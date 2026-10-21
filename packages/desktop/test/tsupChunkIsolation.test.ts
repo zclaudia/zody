@@ -108,19 +108,26 @@ describe("desktop tsup chunk isolation", () => {
   it("remote runtime CDN 根应可由 CI 的 CDN_DOMAIN/OSS_PATH_PREFIX 多值注入", () => {
     expect(
       resolveBuildRemoteCdnReleaseRoots({
-        CDN_DOMAIN: "cdn-zcode.z.ai,cdn.zcode-ai.com",
-        OSS_PATH_PREFIX: "zcode/electron/releases",
+        CDN_DOMAIN: "cdn-a.example.com,cdn-b.example.com",
+        OSS_PATH_PREFIX: "zody/releases",
       }),
     ).toEqual([
-      "https://cdn-zcode.z.ai/zcode/electron/releases",
-      "https://cdn.zcode-ai.com/zcode/electron/releases",
+      "https://cdn-a.example.com/zody/releases",
+      "https://cdn-b.example.com/zody/releases",
     ]);
+  });
+
+  it("未配置 CDN_DOMAIN 时不注入任何 CDN 根，配置域名但缺少路径前缀时应失败", () => {
+    expect(resolveBuildRemoteCdnReleaseRoots({})).toEqual([]);
+    expect(() => resolveBuildRemoteCdnReleaseRoots({ CDN_DOMAIN: "cdn-a.example.com" })).toThrow(
+      "OSS_PATH_PREFIX is required when CDN_DOMAIN is set",
+    );
   });
 
   it("remote runtime CDN 根的路径前缀数量不匹配时应失败", () => {
     expect(() =>
       resolveBuildRemoteCdnReleaseRoots({
-        CDN_DOMAIN: "cdn-zcode.z.ai,cdn.zcode-ai.com",
+        CDN_DOMAIN: "cdn-a.example.com,cdn-b.example.com",
         OSS_PATH_PREFIX: "new-prefix,old-prefix,extra-prefix",
       }),
     ).toThrow("OSS_PATH_PREFIX must contain one value or match CDN_DOMAIN count");

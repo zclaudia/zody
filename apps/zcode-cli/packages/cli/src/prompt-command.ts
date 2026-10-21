@@ -170,7 +170,7 @@ export const runPrompt = async (
     const sessionId = await resolveResumeSession(resumeRequest, workingDirectory, env, deps);
     const bootstrapModule = deps.createZCodeApp ? undefined : await loadBootstrapModule();
     const createApp = deps.createZCodeApp ?? bootstrapModule?.createZCodeApp;
-    if (!createApp) throw new Error("ZCode app factory is unavailable.");
+    if (!createApp) throw new Error("Zody app factory is unavailable.");
     const streamsEvents = wantsEventStream(options);
     let mapSessionEvent: NonNullable<RunDependencies["mapSessionEvent"]> | undefined;
     if (streamsEvents) {
@@ -637,7 +637,7 @@ function writeHeadlessWorkspaceHookTrustDiagnostic(
       ...status.items
         .filter((item) => item.configuredEnabled && item.trustState !== "trusted_persistent")
         .map((item) => `pending digest: ${item.hookDeclarationDigest}`),
-      `Review with: zcode hooks trust review --workspace ${JSON.stringify(status.workspaceIdentity)}`,
+      `Review with: zody hooks trust review --workspace ${JSON.stringify(status.workspaceIdentity)}`,
     ].join("\n") + "\n",
   );
 }

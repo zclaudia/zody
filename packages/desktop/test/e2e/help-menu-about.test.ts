@@ -103,7 +103,7 @@ async function assertLogExport(label: string, pendingLabel: string) {
       { timeout: 30_000, timeoutMsg: "点击导出日志后未生成归档并请求系统定位" },
     );
     const archivePath = String(reveal.mock.calls[0]?.[0]);
-    expect(archivePath).toMatch(/zcode-logs-[^/\\]+\.zip$/);
+    expect(archivePath).toMatch(/zody-logs-[^/\\]+\.zip$/);
     const archive = await readFile(archivePath);
     expect(archive.subarray(0, 4).toString("hex")).toBe("504b0304");
     await browser.waitUntil(
@@ -130,7 +130,7 @@ async function assertAboutWindow() {
           );
           return (
             typeof title === "string" &&
-            title.includes("ZCode") &&
+            title.includes("Zody") &&
             title.includes(electron.app.getVersion())
           );
         }),
@@ -190,13 +190,13 @@ describe(`问号菜单应用入口（${expectedFlavor}）`, () => {
       "Export logs",
       "Resource manager",
       ...(production ? ["Check for updates"] : []),
-      "About ZCode",
+      "About Zody",
     ]);
     expect(await $$('[role="menu"] [role="separator"]')).toHaveLength(1);
-    await browser.saveScreenshot(join(tmpdir(), "zcode-help-export-en-light.png"));
+    await browser.saveScreenshot(join(tmpdir(), "zody-help-export-en-light.png"));
     await assertLogExport("Export logs", "Exporting logs...");
     await openMenu();
-    await $('[role="menuitem"]*=About ZCode').click();
+    await $('[role="menuitem"]*=About Zody').click();
     await assertAboutWindow();
   });
 
@@ -300,13 +300,13 @@ describe(`问号菜单应用入口（${expectedFlavor}）`, () => {
       "导出日志",
       "资源管理器",
       ...(production ? ["检查更新"] : []),
-      "关于 ZCode",
+      "关于 Zody",
     ]);
     expect(await $$('[role="menu"] [role="separator"]')).toHaveLength(1);
-    await browser.saveScreenshot(join(tmpdir(), "zcode-help-export-zh-dark.png"));
+    await browser.saveScreenshot(join(tmpdir(), "zody-help-export-zh-dark.png"));
     await assertLogExport("导出日志", "正在导出日志中");
     await openMenu();
-    await $('[role="menuitem"]*=关于 ZCode').click();
+    await $('[role="menuitem"]*=关于 Zody').click();
     await assertAboutWindow();
   });
 });

@@ -624,6 +624,24 @@ describe("ZCode legacy task compat task index", () => {
   // - does not admit an uploaded topic input after cancellation
   // - uploads Bot attachments and admits input on the same trusted connection
   // - keeps trusted remote session routing on group admission and rejects a foreign workspace before IO
+  it("points the native session log at the Zody CLI log file name", async () => {
+    const logDir = mkdtempSync(join(tmpdir(), "zody-cli-log-"));
+    vi.stubEnv("ZCODE_LOG_DIR", logDir);
+    try {
+      const { service } = createService();
+      const result = await service.getTaskNativeSessionLogFile({
+        taskId: "t1",
+        workspacePath: "/repo",
+      });
+      // CLI 日志文件名已随品牌改为 zody-YYYY-MM-DD.jsonl。
+      expect(result.path).toMatch(/[\\/]zody-\d{4}-\d{2}-\d{2}\.jsonl$/);
+      expect(result.path.startsWith(logDir)).toBe(true);
+    } finally {
+      vi.unstubAllEnvs();
+      rmSync(logDir, { recursive: true, force: true });
+    }
+  });
+
   it("exposes task ready only after the indexed session returns to an input-ready phase", async () => {
     const { indexFrameEmitter, service } = createService();
     const task = await service.createTask({ workspacePath: "/repo", provider: "glm" });

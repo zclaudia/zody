@@ -60,12 +60,6 @@ function createHarness(
       }),
       loadMcpFromUserDirectory: async () => ({ servers: [] }),
       saveMcpToUserDirectory: async () => ({ success: true }),
-      migrateLegacyCommonMcp: async () => ({
-        servers: {},
-        totalCount: 0,
-        importedCount: 0,
-        skippedCount: 0,
-      }),
     },
     getRecentProjects: async () => recentProjects,
     hasOpenWindow: () => hasOpenWindow,

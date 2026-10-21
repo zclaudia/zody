@@ -213,7 +213,7 @@ for sub in [XLSX_SKILL_DIR, os.path.join(XLSX_SKILL_DIR, "templates")]:
 | **templates/base.py** | Design tokens, font resolution, style factories, utilities (single source of truth) |
 | **xlsx.py** | QA commands (see `quality/pipeline.md`) |
 
-Workbook metadata: `wb.properties.creator = "Z.ai"`
+Workbook metadata: `wb.properties.creator = "Zody"`
 
 > **All code MUST import from `templates/base.py`** for colors, fonts, and style helpers. Never hardcode hex values or font names.
 

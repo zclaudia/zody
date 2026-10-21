@@ -1093,7 +1093,7 @@ export const stdioTrafficReadSteps: StdioTrafficReadStep[] = [
   {
     id: "tail-current",
     title: "实时跟随当前文件",
-    command: "cat ~/.zcode/v2/dev/stdio-traffic/<workspaceHash>/latest.txt",
+    command: "cat ~/.zody/v2/dev/stdio-traffic/<workspaceHash>/latest.txt",
     detail: "适合临时排查，按写入顺序看每一行 traffic record。",
   },
   {

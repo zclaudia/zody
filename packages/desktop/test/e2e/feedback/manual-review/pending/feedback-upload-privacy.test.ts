@@ -106,7 +106,7 @@ describe("反馈上传授权（manual review）", () => {
         await logs.scrollIntoView();
         await expect(logs).toBeDisplayed();
         // E2E runtime path guard 禁止源码出现裸系统临时目录字面量，须走 tmpdir() 拼接。
-        await browser.saveScreenshot(join(tmpdir(), `zcode-feedback-${locale}-${theme}.png`));
+        await browser.saveScreenshot(join(tmpdir(), `zody-feedback-${locale}-${theme}.png`));
       }
       await browser.keys("Escape");
     });

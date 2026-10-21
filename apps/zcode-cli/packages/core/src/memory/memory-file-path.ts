@@ -15,6 +15,9 @@ const SENSITIVE_MEMORY_PATH_SEGMENTS = new Set([
   "objects",
   "refs",
   ".claude",
+  // 品牌迁移后项目配置写入 .zody（agents/skills/hooks 等可执行配置），必须与 .zcode 同等视为敏感目录，
+  // 否则记忆写入可借此落入可被加载执行的配置目录。
+  ".zody",
   ".zcode",
   "skills",
   "commands",

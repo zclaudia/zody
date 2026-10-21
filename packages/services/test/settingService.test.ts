@@ -1047,7 +1047,7 @@ describe("settingService", () => {
   it("在用户目录下兜底创建默认项目，并准确返回是否首次创建", async () => {
     const home = makeTempHome();
     const service = await createSettingServiceInHome(home);
-    const defaultProjectPath = join(home, "ZCodeProject");
+    const defaultProjectPath = join(home, "ZodyProject");
 
     await expect(service.ensureDefaultProject(home)).resolves.toEqual({
       path: defaultProjectPath,

@@ -24,7 +24,7 @@ function isZCodeAgentUserServer(server: NativeMcpServerRecord): boolean {
   );
 }
 
-export async function importLegacyCommonServersToZCodeAgent(
+async function importLegacyCommonServersToZCodeAgent(
   platform: McpPlatformService | null,
   legacyServers: Record<string, McpServerConfig>,
   nativeServers: NativeMcpServerRecord[],

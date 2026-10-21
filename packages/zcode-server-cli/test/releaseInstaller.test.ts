@@ -60,7 +60,7 @@ describe("release installer", () => {
     await new ReleaseInstaller(layout).installArchive({ archivePath, target: "win32-x64", version: "1.2.4" });
     const launcher = await readFile(join(layout.stableBinDir, "zcode.cmd"), "utf8");
     expect(launcher).toContain("ZCODE_SERVER_ROOT");
-    expect(launcher).toContain("Invalid current ZCode Server release");
+    expect(launcher).toContain("Invalid current Zody Server release");
   });
 
   // Bugfix: 该用例验证 POSIX shell 版 stable launcher 的 fail-closed 输出，靠 shebang
@@ -76,7 +76,7 @@ describe("release installer", () => {
         if (error) reject(new Error(`${error.message}: ${stderr}`));
         else resolve();
       });
-    })).rejects.toThrow(/Invalid current ZCode Server release/);
+    })).rejects.toThrow(/Invalid current Zody Server release/);
   });
 
   it("reuses an identical immutable release without deleting or replacing its live directory", async () => {

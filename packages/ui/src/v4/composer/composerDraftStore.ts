@@ -34,7 +34,7 @@ interface V4DraftFile {
   scopes: Record<string, V4ComposerDraft>;
 }
 
-const STORAGE_KEY_PREFIX = "zcode-v4-composer-drafts:v1:";
+const STORAGE_KEY_PREFIX = "zody-v4-composer-drafts:v1:";
 export const V4_DRAFT_SCOPE_ROOT = "__draft__";
 const warnedStorageKeys = new Set<string>();
 

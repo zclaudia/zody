@@ -31,7 +31,8 @@ describe("desktop product identity", () => {
     expect(builderConfig).toContain('name: "zclaudia"');
     expect(builderConfig).toContain('url: "https://github.com/zclaudia"');
     expect(builderConfig).toContain('maintainer: "zclaudia (https://github.com/zclaudia)"');
-    expect(builderConfig).not.toContain("dev@zcode.z.ai");
+    // 不携带任何联系邮箱（上游 author.email 已移除，fork 也不虚构联系邮箱）。
+    expect(builderConfig).not.toMatch(/\bemail\s*:/);
     expect(builderConfig).not.toContain("ZCode <");
   });
 
@@ -143,6 +144,8 @@ describe("desktop product identity", () => {
   });
 
   it("开发态继续使用独立 AUMID，避免污染打包版 Shell 身份", () => {
-    expect(resolveWindowsAppUserModelId({}, { isPackaged: false })).toBe("cn.aminer.zcode");
+    expect(resolveWindowsAppUserModelId({}, { isPackaged: false })).toBe(
+      "io.github.zclaudia.zody.dev",
+    );
   });
 });

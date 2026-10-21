@@ -89,7 +89,7 @@ describe("dwf run 进度汇：降级路径（run 绝不能被观察面打挂）"
   it("runtime 尚未构造（getRuntime 同步抛错）→ 记日志的 no-op", () => {
     const { appended, sink, warnings } = makeSink({
       getRuntime: () => {
-        throw new Error("ZCode runtime is not initialized yet.");
+        throw new Error("Zody runtime is not initialized yet.");
       },
     });
 

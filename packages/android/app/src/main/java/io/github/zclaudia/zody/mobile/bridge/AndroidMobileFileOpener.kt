@@ -46,6 +46,6 @@ class AndroidMobileFileOpener(private val context: Context) : MobileFileOpener {
     }
 
     private companion object {
-        const val TAG = "ZcodeMobileFileOpener"
+        const val TAG = "ZodyMobileFileOpener"
     }
 }

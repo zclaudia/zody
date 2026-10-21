@@ -16,7 +16,7 @@ vi.mock("electron", () => ({
   app: {
     getLocale: vi.fn(() => envMock.locale),
     getPreferredSystemLanguages: vi.fn(() => envMock.preferredSystemLanguages),
-    name: "ZCode",
+    name: "Zody",
     get isPackaged() {
       return envMock.isPackaged;
     },
@@ -113,7 +113,7 @@ vi.mock("@zcode/shared", () => ({
   clampDesktopZoomLevel: (level: number) => Math.min(5, Math.max(-3, level)),
   getDesktopMenuMessage: (_locale: string, id: string) => {
     const enLabels: Record<string, string> = {
-      "titleBar.menu.help.zcodeEndpoint": "ZCode Endpoint",
+      "titleBar.menu.help.zcodeEndpoint": "Zody Endpoint",
       "titleBar.menu.help.zcodeEndpoint.production": "Production (default)",
       "titleBar.menu.help.zcodeEndpoint.test": "Test",
       "titleBar.menu.help.zcodeEndpoint.custom": "Custom...",
@@ -208,7 +208,7 @@ describe("desktopApplicationMenu endpoint submenu", () => {
 
     const template = buildFromTemplateMock.mock
       .calls[0]?.[0] as Electron.MenuItemConstructorOptions[];
-    const endpointItem = findMenuItem(template, "ZCode Endpoint");
+    const endpointItem = findMenuItem(template, "Zody Endpoint");
     const testItem = findMenuItem(template, undefined, HELP_ZCODE_ENDPOINT_TEST_MENU_ID);
     expect(endpointItem).toBeTruthy();
     expect(testItem?.checked).toBe(true);
@@ -226,7 +226,7 @@ describe("desktopApplicationMenu endpoint submenu", () => {
 
     const template = buildFromTemplateMock.mock
       .calls[0]?.[0] as Electron.MenuItemConstructorOptions[];
-    expect(findMenuItem(template, "ZCode Endpoint")).toBeUndefined();
+    expect(findMenuItem(template, "Zody Endpoint")).toBeUndefined();
   });
 
   it("自动更新未生效时隐藏更新入口，生效时显示（production 身份但 fork 关闭更新也不显示）", async () => {
@@ -330,7 +330,7 @@ describe("desktopApplicationMenu endpoint submenu", () => {
     expect(findMenuItem(template, "粘贴")?.role).toBe("paste");
     expect(findMenuItem(template, "最小化")?.role).toBe("minimize");
     if (process.platform === "darwin") {
-      expect(findMenuItem(template, "隐藏 ZCode")?.role).toBe("hide");
+      expect(findMenuItem(template, "隐藏 Zody")?.role).toBe("hide");
     }
   });
 

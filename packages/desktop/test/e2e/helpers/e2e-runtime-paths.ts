@@ -2,7 +2,7 @@ import { join, posix, resolve } from "node:path";
 
 export const E2E_RUNTIME_RELATIVE_ROOT = ".zcode-e2e";
 export const E2E_RUNTIME_ROOT_REPLAY_TOKEN = "{{e2eRuntimeRoot}}";
-const E2E_AGENT_WORKSPACE_NAME = "ZCodeProject";
+const E2E_AGENT_WORKSPACE_NAME = "ZodyProject";
 
 interface ResolveE2EHomeDirOptions {
   cwd?: string;
@@ -22,13 +22,13 @@ export function resolveE2EHomeDir({
 
 export function resolveE2EStorageRoot(e2eHomeDir = resolveE2EHomeDir()): string {
   // Bug 根因：回滚 storage profile 时删除了仍被 E2E 用例依赖的路径 helper。
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用；E2E 继续隔离 HOME，不再区分 dev/stable profile。
-  return join(e2eHomeDir, ".zcoder");
+  // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody；E2E 继续隔离 HOME，不再区分 dev/stable profile。
+  return join(e2eHomeDir, ".zody");
 }
 
 export function resolveE2ERuntimeRoot(e2eHomeDir = resolveE2EHomeDir()): string {
   // Bug 根因：conversation E2E 的 Agent 实际 cwd 是隔离 HOME 下的
-  // ZCodeProject，而不是 conversation backing workspace。Node 若写到后者，
+  // ZodyProject，而不是 conversation backing workspace。Node 若写到后者，
   // Bash 的相对路径就会永远等不到同一个文件，Windows 上还会叠加 shell 路径差异。
   return join(e2eHomeDir, E2E_AGENT_WORKSPACE_NAME, E2E_RUNTIME_RELATIVE_ROOT);
 }

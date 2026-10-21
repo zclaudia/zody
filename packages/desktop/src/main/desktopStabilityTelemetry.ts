@@ -714,10 +714,12 @@ function mapChildProcessGoneToProcessRoleWithName(
   type: string,
   processName?: string,
 ): StabilityProcessRole {
-  if (processName?.startsWith("zcode-host")) {
+  // 修复原因：进程名前缀已随品牌改为 zody（见 @zcode/shared process-names），
+  // 继续匹配 zcode-* 会把 Host/Agent 崩溃误归类为 utility/child。
+  if (processName?.startsWith("zody-host")) {
     return "host";
   }
-  if (processName?.startsWith("zcode-agent")) {
+  if (processName?.startsWith("zody-agent")) {
     return "agent";
   }
   switch (type) {

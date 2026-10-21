@@ -2052,8 +2052,8 @@ export async function closeV4SplitPane() {
 // ── 布局持久化 / 拖拽调宽 / 侧栏分屏入口 ──
 
 /** paneLayoutStore 的 localStorage 键（packages/ui paneLayoutStore.PANE_LAYOUT_STORAGE_KEY，分屏二期 v2）。 */
-export const V4_PANE_LAYOUT_STORAGE_KEY = "zcode-v4-pane-layout:v2";
-export const V4_WORKBENCH_GROUP_STORAGE_KEY = "zcode-v4-session-workbench-groups:v1";
+export const V4_PANE_LAYOUT_STORAGE_KEY = "zody-v4-pane-layout:v2";
+export const V4_WORKBENCH_GROUP_STORAGE_KEY = "zody-v4-session-workbench-groups:v1";
 
 /** v2 持久化载荷形态（与 packages/ui paneLayoutStore PersistedPaneLayoutV2 对偶，e2e 断言/篡改用）。 */
 export interface V4PersistedPaneLayout {

@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "ZCode Desktop: Main",
+      "name": "Zody Desktop: Main",
       "type": "pwa-node",
       "request": "attach",
       "port": 9231,
@@ -23,7 +23,7 @@
       "console": "integratedTerminal"
     },
     {
-      "name": "ZCode Desktop: Main (with host inspect)",
+      "name": "Zody Desktop: Main (with host inspect)",
       "type": "pwa-node",
       "request": "attach",
       "port": 9231,
@@ -42,7 +42,7 @@
       ]
     },
     {
-      "name": "ZCode Desktop: Renderer",
+      "name": "Zody Desktop: Renderer",
       "type": "pwa-chrome",
       "request": "attach",
       "port": 9229,
@@ -50,7 +50,7 @@
       "timeout": 30000
     },
     {
-      "name": "ZCode Desktop: Host",
+      "name": "Zody Desktop: Host",
       "type": "pwa-node",
       "request": "attach",
       "port": 9230,
@@ -70,19 +70,19 @@
   ],
   "compounds": [
     {
-      "name": "ZCode Desktop: F5",
+      "name": "Zody Desktop: F5",
       "configurations": [
-        "ZCode Desktop: Main",
-        "ZCode Desktop: Renderer"
+        "Zody Desktop: Main",
+        "Zody Desktop: Renderer"
       ],
       "stopAll": true
     },
     {
-      "name": "ZCode Desktop: F5 (with host inspect)",
+      "name": "Zody Desktop: F5 (with host inspect)",
       "configurations": [
-        "ZCode Desktop: Main (with host inspect)",
-        "ZCode Desktop: Renderer",
-        "ZCode Desktop: Host"
+        "Zody Desktop: Main (with host inspect)",
+        "Zody Desktop: Renderer",
+        "Zody Desktop: Host"
       ],
       "stopAll": true
     }

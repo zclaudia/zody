@@ -153,13 +153,13 @@ export const readSessionContextHandler: ToolHandler = async (input, context) => 
 };
 
 export const readSessionContextToolEntry: ToolEntry = {
-  capability: "Read bounded session context from a persisted ZCode session",
+  capability: "Read bounded session context from a persisted Zody session",
   metadata: {
     name: READ_SESSION_CONTEXT_TOOL_NAME,
     description:
-      "Read relevant or handoff context from a persisted ZCode session by explicit session id.",
+      "Read relevant or handoff context from a persisted Zody session by explicit session id.",
     modelInstructions: [
-      "Use for context from a prior ZCode session mentioned by id, or to verify an original message referenced in the current topic background.",
+      "Use for context from a prior Zody session mentioned by id, or to verify an original message referenced in the current topic background.",
       "Pass a focused query describing what you need; do not ask for the whole session unless the user explicitly wants a handoff.",
       "Use strategy='handoff' when the user wants to continue or resume work from that session.",
       // fork（bots 移除）：原 strategy='topic' 指令行（bot 话题归档/附件物化）随 bot channels 全量删除。

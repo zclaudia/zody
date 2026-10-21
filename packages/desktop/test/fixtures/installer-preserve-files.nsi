@@ -1,7 +1,7 @@
 Unicode true
-Name "ZCode preserve-files smoke"
+Name "Zody preserve-files smoke"
 OutFile "${OUTPUT_FILE}"
-InstallDir "$TEMP\zcode-preserve-files-smoke"
+InstallDir "$TEMP\zody-preserve-files-smoke"
 RequestExecutionLevel user
 SilentInstall silent
 
@@ -10,8 +10,8 @@ SilentInstall silent
 !addplugindir /x86-unicode "${NSIS_PLUGIN_DIR}"
 !include "LogicLib.nsh"
 
-!define APP_FILENAME "ZCode"
-!define APP_ID "dev.zcode.preserve-files-smoke"
+!define APP_FILENAME "Zody"
+!define APP_ID "dev.zody.preserve-files-smoke"
 !define UNINSTALL_FILENAME "uninstaller.exe"
 !define isUpdated `1 == 1`
 ; This fixture has no electron-builder uninstaller.nsh section; use a normal function for log smoke coverage.
@@ -25,20 +25,20 @@ Var appExe
 
 Section
   SetOutPath "$INSTDIR"
-  File /oname=ZCode.exe "${FIXTURE_EXE}"
-  StrCpy $appExe "$INSTDIR\ZCode.exe"
+  File /oname=Zody.exe "${FIXTURE_EXE}"
+  StrCpy $appExe "$INSTDIR\Zody.exe"
   !ifndef OMIT_MANIFEST
-    FileOpen $0 "$INSTDIR\.zcode-install-manifest" w
-    FileWrite $0 "owned-by-zcode.txt$\r$\n"
+    FileOpen $0 "$INSTDIR\.zody-install-manifest" w
+    FileWrite $0 "owned-by-zody.txt$\r$\n"
     FileWrite $0 "..\user-data.txt$\r$\n"
     FileClose $0
   !endif
   !ifdef FAIL_DELETE
     ; Keep the file handle open so Windows denies the manifest cleanup delete.
-    FileOpen $0 "$INSTDIR\owned-by-zcode.txt" w
+    FileOpen $0 "$INSTDIR\owned-by-zody.txt" w
     FileWrite $0 "locked app payload"
   !else
-    FileOpen $0 "$INSTDIR\owned-by-zcode.txt" w
+    FileOpen $0 "$INSTDIR\owned-by-zody.txt" w
     FileWrite $0 "old app payload"
     FileClose $0
   !endif
@@ -46,7 +46,7 @@ Section
   FileWrite $0 "keep me"
   FileClose $0
   !insertmacro customRemoveFiles
-  IfFileExists "$INSTDIR\owned-by-zcode.txt" 0 zcodeOwnedRemoved
+  IfFileExists "$INSTDIR\owned-by-zody.txt" 0 zcodeOwnedRemoved
     StrCpy $1 "present"
     Goto zcodeWriteMarker
   zcodeOwnedRemoved:

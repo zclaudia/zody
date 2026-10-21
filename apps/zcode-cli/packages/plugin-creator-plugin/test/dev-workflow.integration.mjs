@@ -9,9 +9,9 @@ import { upsertDevMarketplace } from "../skills/plugin-creator/scripts/upsert-de
 
 // 明确传入真实 CLI 入口；隔离全部注册与安装写入，不能修改开发者的个人插件库。
 if (!process.argv[2])
-  throw new Error("Usage: node dev-workflow.integration.mjs <built-zcode-cli-js>");
+  throw new Error("Usage: node dev-workflow.integration.mjs <built-zody-cli-js>");
 const cli = resolve(process.argv[2]);
-const root = await mkdtemp(join(tmpdir(), "zcode-dev-workflow-"));
+const root = await mkdtemp(join(tmpdir(), "zody-dev-workflow-"));
 const execute = promisify(execFile);
 const env = { ...process.env, ZCODE_STORAGE_DIR: join(root, "storage") };
 async function command(...args) {

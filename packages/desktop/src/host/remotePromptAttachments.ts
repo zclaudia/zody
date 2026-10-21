@@ -3,7 +3,7 @@ import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
 import { ZCODE_DATA_ROOT_DIR_NAME, type TraceId, type ZCodePromptAttachment } from "@zcode/shared";
 import { randomUUID } from "node:crypto";
 
-// fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
+// fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
 export const REMOTE_PROMPT_ATTACHMENT_ROOT = `~/${ZCODE_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
 const REMOTE_PROMPT_ATTACHMENT_RELATIVE_ROOT = `${ZCODE_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
 

@@ -20,7 +20,7 @@ let browser;
 let origin;
 before(async () => {
   workspace = await mkdtemp(join(tmpdir(), "zcode-mfh-browser-"));
-  await writeFile(join(workspace, ".zcodeignore"), "");
+  await writeFile(join(workspace, ".zodyignore"), "");
   await Promise.all(
     Array.from({ length: 1200 }, (_, index) =>
       writeFile(join(workspace, `MFH_BULK_${index}.ts`), ""),

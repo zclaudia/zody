@@ -212,7 +212,7 @@ describe("stdio Desktop presentation surface", () => {
         }),
       ).resolves.toMatchObject({
         available: false,
-        reason: expect.stringContaining("ZCode agent server command is not configured"),
+        reason: expect.stringContaining("Zody agent server command is not configured"),
       });
 
       expect(bootstrap.authorityModeParseResult.mode).toBe("desktop-attached-remote");

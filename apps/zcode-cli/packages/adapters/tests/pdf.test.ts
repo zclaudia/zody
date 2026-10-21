@@ -57,7 +57,7 @@ describe("Poppler PDF adapter", () => {
       timeoutMs: 120_000,
     });
     expect(dirname((requests[1]!.command as { args: string[] }).args.at(-1)!)).toMatch(
-      new RegExp(`^${escapeRegExp(tempRoot)}/zcode-read-pdf-`, "u"),
+      new RegExp(`^${escapeRegExp(tempRoot)}/zody-read-pdf-`, "u"),
     );
     expect(basename((requests[1]!.command as { args: string[] }).args.at(-1)!)).toBe("page");
   });

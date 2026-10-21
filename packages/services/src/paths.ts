@@ -12,6 +12,8 @@ import {
 
 let _dataBaseDir: string | null = null;
 export const ZCODE_WINDOWS_APP_INSTALL_DIR_ENV = "ZCODE_WINDOWS_APP_INSTALL_DIR";
+/** Windows 安装器按产品名生成的默认安装目录名（正式版 / Preview）。 */
+const WINDOWS_APP_INSTALL_DIR_NAMES = ["Zody", "Zody Preview"] as const;
 const envDataBaseDir = process.env.ZCODE_DATA_BASE_DIR?.trim() || null;
 const defaultDataBaseDir = process.env.HOME?.trim() || homedir();
 
@@ -115,13 +117,18 @@ function collectWindowsForbiddenAppInstallDirs(
   const programFilesX86 = readEnvValue(env, "ProgramFiles(x86)");
   const programW6432 = readEnvValue(env, "ProgramW6432");
   const localAppData = readEnvValue(env, "LOCALAPPDATA");
+  // 修复：默认安装目录候选曾沿用上游目录名 `ZCode`，而 Zody 安装器按产品名落在
+  // `Program Files\Zody` / `%LOCALAPPDATA%\Programs\Zody`（Preview 为 `Zody Preview`），
+  // 未显式传 appInstallDir 时保护失效，数据目录可被选进安装目录、随卸载/升级被清除。
   const candidates = [
     options.appInstallDir,
     readEnvValue(env, ZCODE_WINDOWS_APP_INSTALL_DIR_ENV),
-    programFiles ? win32.join(programFiles, "ZCode") : null,
-    programFilesX86 ? win32.join(programFilesX86, "ZCode") : null,
-    programW6432 ? win32.join(programW6432, "ZCode") : null,
-    localAppData ? win32.join(localAppData, "Programs", "ZCode") : null,
+    ...WINDOWS_APP_INSTALL_DIR_NAMES.flatMap((name) => [
+      programFiles ? win32.join(programFiles, name) : null,
+      programFilesX86 ? win32.join(programFilesX86, name) : null,
+      programW6432 ? win32.join(programW6432, name) : null,
+      localAppData ? win32.join(localAppData, "Programs", name) : null,
+    ]),
   ];
   const seen = new Set<string>();
   const result: string[] = [];

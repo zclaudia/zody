@@ -10,7 +10,7 @@ function outside(root, path) {
   const value = relative(root, path);
   return value === ".." || value.startsWith(`..${sep}`) || isAbsolute(value);
 }
-/** 附加完整性检查，不复制 ZCode 的 manifest schema。 */
+/** 附加完整性检查，不复制 Zody 的 manifest schema。 */
 export async function preflightPlugin(path) {
   const root = await realpath(path);
   const errors = [];
@@ -67,12 +67,12 @@ export async function preflightPlugin(path) {
   }
   return errors;
 }
-export async function validatePlugin(path, cli = "zcode") {
+export async function validatePlugin(path, cli = "zody") {
   const errors = await preflightPlugin(path);
   if (errors.length) throw new Error(errors.join("\n"));
   const nodeEntry = /\.[cm]?js$/u.test(cli);
   if (process.platform === "win32" && /\.cmd$/iu.test(cli))
-    throw new Error("Use --cli with zcode.exe or the CLI JavaScript entrypoint on Windows");
+    throw new Error("Use --cli with zody.exe or the CLI JavaScript entrypoint on Windows");
   const args = [...(nodeEntry ? [cli] : []), "plugins", "validate", resolve(path)];
   const code = await new Promise((accept, reject) => {
     const child = spawn(nodeEntry ? process.execPath : cli, args, {
@@ -82,7 +82,7 @@ export async function validatePlugin(path, cli = "zcode") {
     child.once("error", reject);
     child.once("close", (exitCode) => accept(exitCode ?? 1));
   });
-  if (code !== 0) throw new Error(`ZCode plugin validation failed (${code})`);
+  if (code !== 0) throw new Error(`Zody plugin validation failed (${code})`);
 }
 async function main() {
   const { values, positionals } = parseArgs({
@@ -91,7 +91,7 @@ async function main() {
   });
   if (positionals.length !== 1)
     throw new Error(
-      "Usage: node validate-plugin.mjs <plugin-path> [--cli zcode-executable-or-js-entry]",
+      "Usage: node validate-plugin.mjs <plugin-path> [--cli zody-executable-or-js-entry]",
     );
   await validatePlugin(positionals[0], values.cli);
 }

@@ -143,7 +143,7 @@ function createWebRemoteControlRequestId(prefix: string): string {
 }
 
 function seedStableWebRemoteControlClientId(clientInstanceId: string): void {
-  const storageKey = `zcode-web-remote-client-id:${clientInstanceId}`;
+  const storageKey = `zody-web-remote-client-id:${clientInstanceId}`;
   try {
     const existing = globalThis.localStorage?.getItem(storageKey)?.trim();
     if (existing) {
@@ -551,7 +551,7 @@ async function startGatewaySession(
     credential: gatewayConfig.credential,
     backendId: gatewayConfig.backendId,
     clientInstanceId,
-    clientName: "ZCode Mobile",
+    clientName: "Zody Mobile",
     appVersion: ZCODE_VERSION,
     onRawTransportPayload: (payload) => activeRelayProtocol?.acceptPayload(payload) ?? false,
     onRawTransportFault: (reasonCode) => {

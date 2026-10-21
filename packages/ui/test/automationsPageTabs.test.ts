@@ -99,8 +99,8 @@ describe("automationsPageTabMemory", () => {
     expect(readAutomationsPageTab()).toBe("workflow");
     // 只用一个 key，与活动项目无关。
     expect(sessionStorage.length).toBe(1);
-    expect(sessionStorage.getItem("zcode-automations-page-tab")).toBe("workflow");
-    sessionStorage.setItem("zcode-automations-page-tab", "bogus");
+    expect(sessionStorage.getItem("zody-automations-page-tab")).toBe("workflow");
+    sessionStorage.setItem("zody-automations-page-tab", "bogus");
     expect(readAutomationsPageTab()).toBe("automation");
     writeAutomationsPageTab("automation");
     expect(readAutomationsPageTab()).toBe("automation");

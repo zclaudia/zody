@@ -13,7 +13,7 @@ export const ZCODE_SOURCE_TITLE: string =
 
 // fork（F2.10）：设备标识 X-Device-Mid 与官方来源标识不再进入默认基础头。
 export const ZCODE_SOURCE_HEADERS = {
-  "User-Agent": "ZCode/unknown",
+  "User-Agent": "Zody/unknown",
 } as const;
 
 export interface BuildZCodeSourceHeadersFromContextOptions {
@@ -52,8 +52,8 @@ export function buildZCodeSourceHeadersFromContext(
 
   return {
     ...ZCODE_SOURCE_HEADERS,
-    "User-Agent": `ZCode/${appVersion ?? "unknown"}`,
-    ...(appVersion ? { "X-ZCode-App-Version": appVersion } : {}),
+    "User-Agent": `Zody/${appVersion ?? "unknown"}`,
+    ...(appVersion ? { "X-Zody-App-Version": appVersion } : {}),
     ...(sourceRefererUrl ? { "HTTP-Referer": sourceRefererUrl } : {}),
     ...(sourceTitleBase ? { "X-Title": `${sourceTitleBase}@${sourceTitle}` } : {}),
     ...(platform && arch ? { "X-Platform": `${platform}-${arch}` } : {}),

@@ -150,11 +150,11 @@ describe("server info HTTP endpoint", () => {
     const accepted = await fetch(`${baseUrl}/api/server-info?token=secret-token`);
     expect(accepted.status).toBe(200);
     await expect(accepted.clone().json()).resolves.toMatchObject({ authRequired: true });
-    expect(accepted.headers.get("set-cookie")).toContain("zcode_lite_token=");
+    expect(accepted.headers.get("set-cookie")).toContain("zody_lite_token=");
 
     const cookieAccepted = await fetch(`${baseUrl}/api/server-info`, {
       headers: {
-        cookie: "zcode_lite_token=secret-token",
+        cookie: "zody_lite_token=secret-token",
       },
     });
     expect(cookieAccepted.status).toBe(200);

@@ -5,12 +5,12 @@
  * 账号登录、等待与错误态、loginEntryRequest 自动续接全部下线），只保留通用
  * provider 模板 + API Key 引导。
  *
- * 布局为 Split onboarding：左侧 zcoder 品牌栏（md 以下隐藏），右侧标题与表单
+ * 布局为 Split onboarding：左侧 Zody 品牌栏（md 以下隐藏），右侧标题与表单
  * （spec: docs/ui/login-page.md）。
  */
 import type { ReactNode } from "react";
 import { ArrowLeftRightIcon, CpuIcon, LockIcon } from "lucide-react";
-import { ZCODER_BRAND_NAME, zcoderLogoUrl } from "@/brand.js";
+import { ZODY_BRAND_NAME, zodyLogoUrl } from "@/brand.js";
 import { cn } from "@/components/lib/utils.js";
 import { DesktopOverlayWindowControls } from "@/DesktopOverlayWindowControls.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -122,9 +122,9 @@ function BrandFeature({
 function BrandMark({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <img src={zcoderLogoUrl} alt="" width={36} height={36} className="size-9 shrink-0" />
+      <img src={zodyLogoUrl} alt="" width={36} height={36} className="size-9 shrink-0" />
       <span className="text-ui-lg font-semibold tracking-tight text-foreground">
-        {ZCODER_BRAND_NAME}
+        {ZODY_BRAND_NAME}
       </span>
     </div>
   );

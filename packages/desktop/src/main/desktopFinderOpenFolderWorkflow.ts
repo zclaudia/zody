@@ -3,16 +3,33 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
 import type { Locale } from "@zcode/shared";
+import type { DesktopShellIntegrationIdentity } from "./desktopShellIntegrationIdentity.js";
 
-const WORKFLOW_NAME = "Open in ZCode.workflow";
-const WORKFLOW_BUNDLE_ID = "dev.zcode.app.finder-open-workflow";
-const WORKFLOW_VERSION = "5";
-const SERVICES_MENU_LABELS: Record<Locale, string> = {
-  "zh-CN": "在ZCode中打开",
-  "en-US": "Open in ZCode",
-};
+// 修复原因：上游写死 “Open in ZCode.workflow” 与 zcode:// 协议，Zody 安装后会与上游同名服务冲突，
+// 且唤起的协议并非本构建注册的 scheme。名称、Bundle id、菜单文字与协议统一按产品身份生成，
+// Preview/Dev 使用 Preview 身份，不覆盖正式版服务；上游已安装的同名 workflow 保持不动。
+// 版本号随身份改名递增，确保已安装副本重写 Info.plist 并刷新 Services 索引。
+const WORKFLOW_VERSION = "6";
 
-const workflowScript = `first=""
+function getWorkflowName(identity: DesktopShellIntegrationIdentity): string {
+  return `Open in ${identity.productName}.workflow`;
+}
+
+function getWorkflowBundleId(identity: DesktopShellIntegrationIdentity): string {
+  return `${identity.appId}.finder-open-workflow`;
+}
+
+export function getFinderOpenFolderServicesMenuLabel(
+  locale: Locale,
+  identity: DesktopShellIntegrationIdentity,
+): string {
+  return locale === "zh-CN"
+    ? `在 ${identity.productName} 中打开`
+    : `Open in ${identity.productName}`;
+}
+
+function buildWorkflowScript(identity: DesktopShellIntegrationIdentity): string {
+  return `first=""
 for item in "$@"; do
   if [ -d "$item" ]; then
     first="$item"
@@ -22,9 +39,10 @@ done
 
 if [ -n "$first" ]; then
   encoded=$(/usr/bin/osascript -l JavaScript -e 'function run(argv) { return encodeURIComponent(argv[0]); }' "$first")
-  /usr/bin/open "zcode://workspace/open?path=\${encoded}"
+  /usr/bin/open "${identity.protocolScheme}://workspace/open?path=\${encoded}"
 fi
 `;
+}
 
 function escapeXml(value: string): string {
   return value
@@ -35,12 +53,8 @@ function escapeXml(value: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function getServicesMenuLabel(locale: Locale): string {
-  return SERVICES_MENU_LABELS[locale] ?? SERVICES_MENU_LABELS["en-US"];
-}
-
-function buildInfoPlist(locale: Locale): string {
-  const servicesMenuName = escapeXml(getServicesMenuLabel(locale));
+function buildInfoPlist(locale: Locale, identity: DesktopShellIntegrationIdentity): string {
+  const servicesMenuName = escapeXml(getFinderOpenFolderServicesMenuLabel(locale, identity));
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -51,7 +65,7 @@ function buildInfoPlist(locale: Locale): string {
   <key>CFBundleExecutable</key>
   <string></string>
   <key>CFBundleIdentifier</key>
-  <string>${WORKFLOW_BUNDLE_ID}</string>
+  <string>${escapeXml(getWorkflowBundleId(identity))}</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
@@ -89,8 +103,8 @@ function buildInfoPlist(locale: Locale): string {
 `;
 }
 
-function buildDocumentWorkflow(): string {
-  const escapedScript = escapeXml(workflowScript);
+function buildDocumentWorkflow(identity: DesktopShellIntegrationIdentity): string {
+  const escapedScript = escapeXml(buildWorkflowScript(identity));
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -248,6 +262,7 @@ function refreshMacServicesIndex(): void {
 export function installFinderOpenFolderWorkflow(options: {
   platform: NodeJS.Platform;
   locale: Locale;
+  identity: DesktopShellIntegrationIdentity;
   homeDir?: string;
   logger: { info: (...args: unknown[]) => void; warn: (...args: unknown[]) => void };
   refreshServicesIndex?: () => void;
@@ -257,7 +272,7 @@ export function installFinderOpenFolderWorkflow(options: {
   }
 
   const servicesDir = join(options.homeDir ?? homedir(), "Library", "Services");
-  const workflowDir = join(servicesDir, WORKFLOW_NAME);
+  const workflowDir = join(servicesDir, getWorkflowName(options.identity));
   const contentsDir = join(workflowDir, "Contents");
   const resourcesDir = join(contentsDir, "Resources");
   const infoPlistPath = join(contentsDir, "Info.plist");
@@ -267,8 +282,11 @@ export function installFinderOpenFolderWorkflow(options: {
   try {
     mkdirSync(resourcesDir, { recursive: true });
 
-    const infoChanged = writeFileIfChanged(infoPlistPath, buildInfoPlist(options.locale));
-    const workflowContent = buildDocumentWorkflow();
+    const infoChanged = writeFileIfChanged(
+      infoPlistPath,
+      buildInfoPlist(options.locale, options.identity),
+    );
+    const workflowContent = buildDocumentWorkflow(options.identity);
     const workflowChanged = writeFileIfChanged(documentWorkflowPath, workflowContent);
     // 用户 Automator workflow 通常读取 Contents/document.wflow；
     // 系统内置 workflow 也存在 Resources/document.wflow 形态。两个位置都写同一份，

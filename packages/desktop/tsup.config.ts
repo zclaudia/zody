@@ -64,7 +64,7 @@ function loadEnvFiles(): Record<string, string> {
 
 const env = loadEnvFiles();
 const { environment: zcodeEnv } = await loadBuiltinProviderConfig();
-// 安装包身份与后端环境分轴：ZCODE_PREVIEW_IDENTITY=1 让生产后端的构建仍以 ZCode Preview 身份打包运行。
+// 安装包身份与后端环境分轴：ZCODE_PREVIEW_IDENTITY=1 让生产后端的构建仍以 Zody Preview 身份打包运行。
 const zcodeProductFlavor = resolveDesktopProductFlavor({ ...process.env, ZCODE_ENV: zcodeEnv });
 console.log(`[tsup] ZCODE_ENV=${zcodeEnv} ZCODE_PRODUCT_FLAVOR=${zcodeProductFlavor}`);
 
@@ -77,9 +77,14 @@ function parseCsvEnv(value: string | undefined): string[] {
 
 export function resolveBuildRemoteCdnReleaseRoots(runtimeEnv: Record<string, string | undefined>) {
   const domains = parseCsvEnv(runtimeEnv.CDN_DOMAIN);
-  const pathPrefixes = parseCsvEnv(runtimeEnv.OSS_PATH_PREFIX || "zcode/electron/releases");
   if (domains.length === 0) {
     return [];
+  }
+  // 修复原因：上游在未设置 OSS_PATH_PREFIX 时默认拼 `zcode/electron/releases`，那是上游 CDN 的
+  // 目录布局，Zody 发布没有这套路径。配置 CDN_DOMAIN 时必须同时显式给出路径前缀。
+  const pathPrefixes = parseCsvEnv(runtimeEnv.OSS_PATH_PREFIX);
+  if (pathPrefixes.length === 0) {
+    throw new Error("OSS_PATH_PREFIX is required when CDN_DOMAIN is set");
   }
   if (pathPrefixes.length !== 1 && pathPrefixes.length !== domains.length) {
     throw new Error(
@@ -155,7 +160,7 @@ function createSharedDefines() {
       process.env.ZCODE_CUA_HELPER_BUILD_ID?.trim() ?? "",
     ),
     // Bugfix: remote runtime CDN 根之前硬编码在 main bundle 里，OSS/CDN 切换必须改代码。
-    // 这里改成构建期从 CI 的 CDN_DOMAIN/OSS_PATH_PREFIX 注入；没有配置时保留旧默认。
+    // 这里改成构建期从 CI 的 CDN_DOMAIN/OSS_PATH_PREFIX 注入；没有配置时注入空列表，remote runtime 只走随包本地制品。
     __ZCODE_REMOTE_CDN_RELEASE_ROOTS__: JSON.stringify(resolveBuildRemoteCdnReleaseRoots(env)),
   };
 }

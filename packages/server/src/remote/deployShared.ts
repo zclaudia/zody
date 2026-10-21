@@ -5,7 +5,7 @@ import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
 import type { RemoteAssetNetworkPort } from "@zcode/server/remote/remoteAssetNetwork.js";
 import { ZCODE_DATA_ROOT_DIR_NAME, type RemoteAssetSource } from "@zcode/shared";
 
-// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+// fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
 export const REMOTE_BASE = `~/${ZCODE_DATA_ROOT_DIR_NAME}/server`;
 
 export interface RemoteAssetDeployOptions {

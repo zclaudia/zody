@@ -38,8 +38,8 @@ export function startResourceManagerNetwork(
   // 只订阅 App 拥有的 session；内置浏览器/录屏的独立 session 不进入采集。
   const sessions = [
     session.defaultSession,
-    session.fromPartition("persist:zcode-coding-plan"),
-    session.fromPartition("persist:zcode-rewards"),
+    session.fromPartition("persist:zody-coding-plan"),
+    session.fromPartition("persist:zody-rewards"),
   ];
   for (const appSession of sessions) {
     disposers.push(

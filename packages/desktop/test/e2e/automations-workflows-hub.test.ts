@@ -126,7 +126,7 @@ describe("已保存工作流中枢 E2E", () => {
       timeoutMsg: "自动化页标题没有「工作流」切换",
     });
 
-    // 2) 全局视图按项目分组：默认工作区（folder 名 ZCodeProject）自成一组，组头带名字，
+    // 2) 全局视图按项目分组：默认工作区（folder 名 ZodyProject）自成一组，组头带名字，
     //    组内「通过对话创建」按钮带以 workspaceKey 收尾的 test id。
     //    group / create 的 test id 后缀是 workspaceKey（本地通常 = workspacePath），但
     //    resolveWorkspaceKey 若对本地路径做归一化（大小写 / 去尾斜杠 / realpath）后缀就不等于
@@ -160,9 +160,9 @@ describe("已保存工作流中枢 E2E", () => {
     );
     const seen = groupInfo as GroupHeaderInfo | null;
     expect(seen?.groupTestId?.startsWith(TID_WORKFLOW_PROJECT_GROUP)).toBe(true);
-    expect(seen?.text).toContain("ZCodeProject");
+    expect(seen?.text).toContain("ZodyProject");
     expect(seen?.createTestId?.startsWith(testId(TID_WORKFLOWS_CREATE_VIA_CHAT, ""))).toBe(true);
-    expect(seen?.createTestId).toContain("ZCodeProject");
+    expect(seen?.createTestId).toContain("ZodyProject");
 
     // 3) 预置文件以卡片出现：名字 + frontmatter 里的说明。
     const cardTestId = testId(TID_WORKFLOW_CARD, WORKFLOW_NAME);
@@ -216,10 +216,10 @@ describe("已保存工作流中枢 E2E", () => {
 
 // ── 全局工作流：置顶「全局」组 + 全局→项目搬文件 + 项目→全局 AI 概括（docs/dynamic-workflow/launch.md）──
 // E2E_HOME_DIR 由 wdio 配置设为隔离目录并写进 HOME（wdio.conf.ts:520），app / agent 进程都继承它，
-// 因此 agent 的 os.homedir() 解析到这里，全局根 = `<E2E_HOME>/.zcoder/workflows/`。
+// 因此 agent 的 os.homedir() 解析到这里，全局根 = `<E2E_HOME>/.zody/workflows/`。
 const E2E_HOME = dirname(DEFAULT_WORKSPACE);
 const GLOBAL_WORKFLOW_NAME = "global-note";
-const GLOBAL_WORKFLOWS_DIR = join(E2E_HOME, ".zcoder", "workflows");
+const GLOBAL_WORKFLOWS_DIR = join(E2E_HOME, ".zody", "workflows");
 const GLOBAL_WORKFLOW_FILE = join(GLOBAL_WORKFLOWS_DIR, `${GLOBAL_WORKFLOW_NAME}.dwf.ts`);
 const GLOBAL_PROJECT_WORKFLOWS_DIR = join(DEFAULT_WORKSPACE, ".zcode", "workflows");
 const GLOBAL_PROJECT_WORKFLOW_FILE = join(

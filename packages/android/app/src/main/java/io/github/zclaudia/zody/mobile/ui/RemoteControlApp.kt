@@ -80,7 +80,7 @@ private const val APP_ASSETS_PATH_PREFIX = "/assets/remote/"
 private const val REMOTE_PAGE_PATH = "${APP_ASSETS_PATH_PREFIX}index.html"
 private const val REMOTE_PAGE_URL = "https://$APP_ASSETS_HOST$REMOTE_PAGE_PATH"
 private const val FILE_PROVIDER_SUFFIX = ".fileprovider"
-private const val TAG = "ZcodeRemoteControlApp"
+private const val TAG = "ZodyRemoteControlApp"
 
 private data class PendingFileChooser(
     val callback: ValueCallback<Array<Uri>>,
@@ -558,7 +558,7 @@ private fun createCameraCapture(context: Context): CameraCapture? {
         return null
     }
     return try {
-        val file = File.createTempFile("zcode-photo-", ".jpg", directory)
+        val file = File.createTempFile("zody-photo-", ".jpg", directory)
         val uri = FileProvider.getUriForFile(
             context,
             "${context.packageName}$FILE_PROVIDER_SUFFIX",

@@ -4,7 +4,8 @@ pnpm = "10.33.2"
 
 [env]
 COREPACK_ENABLE_PROJECT_SPEC = "0"
-ELECTRON_MIRROR = "https://npmmirror.com/mirrors/electron/"
+# 默认从官方源下载 Electron。需要镜像时在本机 shell 或 mise.local.toml 中显式设置，例如：
+# ELECTRON_MIRROR = "https://npmmirror.com/mirrors/electron/"
 
 [tasks.install]
 description = "Install root workspace dependencies with the pinned pnpm."
@@ -17,7 +18,7 @@ run = "mise exec -- node scripts/mise-run.mjs pnpm bootstrap"
 
 [tasks.dev]
 description = "Start the desktop app in an isolated local test environment."
-env = { ZCODE_DATA_BASE_DIR = "{{env.HOME}}/.zcode-dev-home" }
+env = { ZCODE_DATA_BASE_DIR = "{{env.HOME}}/.zody-dev-home" }
 run = "mise exec -- node scripts/mise-run.mjs pnpm dev:desktop:test"
 
 [tasks.dev-desktop-prod]

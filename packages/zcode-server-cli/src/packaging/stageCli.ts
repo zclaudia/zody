@@ -88,7 +88,7 @@ async function ensureNodeBinary(repoRoot: string, target: ServerTarget): Promise
   const archiveName = `node-${nodeVersion}-${nodeTarget}.${isWindows ? "zip" : "tar.xz"}`;
   const url = `${resolveNodeDistBase()}/${nodeVersion}/${archiveName}`;
   log(`download node runtime: ${url}`);
-  const tempDir = await mkdtemp(join(tmpdir(), "zcode-server-node-"));
+  const tempDir = await mkdtemp(join(tmpdir(), "zody-server-node-"));
   try {
     const archivePath = join(tempDir, archiveName);
     await downloadFile(url, archivePath);

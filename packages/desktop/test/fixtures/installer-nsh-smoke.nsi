@@ -1,7 +1,7 @@
 Unicode true
-Name "ZCode installer.nsh smoke"
+Name "Zody installer.nsh smoke"
 OutFile "${OUTPUT_FILE}"
-InstallDir "$TEMP\zcode-installer-nsh-smoke"
+InstallDir "$TEMP\zody-installer-nsh-smoke"
 RequestExecutionLevel user
 SilentInstall silent
 
@@ -14,9 +14,9 @@ SilentInstall silent
   !include "StrContains.nsh"
 !endif
 
-!define APP_DESCRIPTION "ZCode NSIS smoke fixture"
-!define APP_FILENAME "ZCode"
-!define APP_ID "dev.zcode.installer-nsh-smoke"
+!define APP_DESCRIPTION "Zody NSIS smoke fixture"
+!define APP_FILENAME "Zody"
+!define APP_ID "dev.zody.installer-nsh-smoke"
 !define UNINSTALL_FILENAME "uninstaller.exe"
 ; This fixture invokes the cleanup macro from a normal section; electron-builder's real uninstaller uses un.*.
 !ifdef BUILD_UNINSTALLER
@@ -56,8 +56,8 @@ Var keepShortcuts
 
 Section
   SetOutPath "$INSTDIR"
-  File /oname=ZCode.exe "${FIXTURE_EXE}"
-  StrCpy $appExe "$INSTDIR\ZCode.exe"
+  File /oname=Zody.exe "${FIXTURE_EXE}"
+  StrCpy $appExe "$INSTDIR\Zody.exe"
   StrCpy $launchLink "$INSTDIR\stale-target.exe"
   StrCpy $newStartMenuLink "$INSTDIR\start-menu.lnk"
   StrCpy $newDesktopLink "$INSTDIR\desktop.lnk"

@@ -65,12 +65,6 @@ describe("mcpStore", () => {
       loadMcpFromUserDirectory: vi.fn(async () => {
         throw new SyntaxError("invalid MCP config");
       }),
-      migrateLegacyCommonMcp: vi.fn(async () => ({
-        importedCount: 0,
-        servers: {},
-        skippedCount: 0,
-        totalCount: 0,
-      })),
       saveMcpToUserDirectory: vi.fn(async () => ({ success: true })),
     });
     useMcpStore.setState({
@@ -99,12 +93,6 @@ describe("mcpStore", () => {
     }));
     setMcpStorePlatform({
       loadMcpFromUserDirectory: platformLoad,
-      migrateLegacyCommonMcp: vi.fn(async () => ({
-        importedCount: 0,
-        servers: {},
-        skippedCount: 0,
-        totalCount: 0,
-      })),
       saveMcpToUserDirectory: vi.fn(async () => ({ success: true })),
     });
     const directoryService = {
@@ -167,12 +155,6 @@ describe("mcpStore", () => {
     );
     setMcpStorePlatform({
       loadMcpFromUserDirectory: platformLoad,
-      migrateLegacyCommonMcp: vi.fn(async () => ({
-        importedCount: 0,
-        servers: {},
-        skippedCount: 0,
-        totalCount: 0,
-      })),
       saveMcpToUserDirectory: vi.fn(async () => ({ success: true })),
     });
     const directoryService = {
@@ -319,12 +301,6 @@ describe("mcpStore", () => {
     const platformSave = vi.fn(async () => ({ success: true }));
     setMcpStorePlatform({
       loadMcpFromUserDirectory: platformLoad,
-      migrateLegacyCommonMcp: vi.fn(async () => ({
-        importedCount: 0,
-        servers: {},
-        skippedCount: 0,
-        totalCount: 0,
-      })),
       saveMcpToUserDirectory: platformSave,
     });
     const directoryService = {
@@ -992,12 +968,6 @@ describe("mcpStore", () => {
     );
     setMcpStorePlatform({
       loadMcpFromUserDirectory: vi.fn(async () => ({ servers: [] })),
-      migrateLegacyCommonMcp: vi.fn(async () => ({
-        importedCount: 0,
-        servers: {},
-        skippedCount: 0,
-        totalCount: 0,
-      })),
       saveMcpToUserDirectory,
     });
     useMcpStore.setState({

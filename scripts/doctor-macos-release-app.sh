@@ -2,10 +2,10 @@
 
 set -euo pipefail
 
-APP_PATH="${1:-${ZCODE_MACOS_RELEASE_APP_PATH:-/Applications/ZCode.app}}"
-ZCODE_HOME_DIR="${ZCODE_HOME:-${HOME:+$HOME/.zcode}}"
+APP_PATH="${1:-${ZCODE_MACOS_RELEASE_APP_PATH:-/Applications/Zody.app}}"
+ZCODE_HOME_DIR="${ZCODE_HOME:-${HOME:+$HOME/.zody}}"
 CUA_HELPER_INSTALL_VARIANT="${ZCODE_CUA_HELPER_INSTALL_VARIANT:-}"
-# 安装包身份与后端环境分轴：ZCODE_PREVIEW_IDENTITY=1 让生产后端的构建仍是 ZCode Preview。
+# 安装包身份与后端环境分轴：ZCODE_PREVIEW_IDENTITY=1 让生产后端的构建仍是 Zody Preview。
 # 只认 "1"，与 CI workflow / release 门的精确比较同一套语义（其它拼写由 resolve_zcode_env 拒绝）。
 is_preview_identity_requested() {
   [[ "${ZCODE_PREVIEW_IDENTITY:-}" = "1" ]]
@@ -22,7 +22,8 @@ CUA_HELPER_INSTALL_SUBDIR="${CUA_HELPER_INSTALL_VARIANT:+$CUA_HELPER_INSTALL_VAR
 # @zcode/zcode-cua/broker/helperConstants so a future producer rename fails loudly.
 ZCODE_HOME_HELPER_APP_PATH="${ZCODE_HOME_DIR:+$ZCODE_HOME_DIR/computer-use/${CUA_HELPER_INSTALL_SUBDIR}ZCode Computer Use.app}"
 HELPER_APP_PATH="${ZCODE_CUA_HELPER_APP_PATH:-$ZCODE_HOME_HELPER_APP_PATH}"
-APP_BUNDLE_NAME="$(basename "$APP_PATH")"
+# 修复原因：`--help` 作为首参时 basename 会把它当作选项报错退出，导致帮助无法显示；用 `--` 结束选项解析。
+APP_BUNDLE_NAME="$(basename -- "$APP_PATH")"
 APP_DISPLAY_NAME="${APP_BUNDLE_NAME%.app}"
 APP_EXECUTABLE_NAME="${ZCODE_APP_EXECUTABLE_NAME:-$APP_DISPLAY_NAME}"
 HELPER_EXECUTABLE_NAME="${ZCODE_CUA_HELPER_EXECUTABLE_NAME:-ZCode Computer Use}"
@@ -35,10 +36,10 @@ fi
 if [ "${APP_PATH:-}" = "--help" ] || [ "${APP_PATH:-}" = "-h" ]; then
   cat <<'USAGE'
 Usage:
-  bash scripts/doctor-macos-release-app.sh /Applications/ZCode.app
-  ZCODE_CUA_REQUIRE_HELPER=1 bash scripts/doctor-macos-release-app.sh /Applications/ZCode.app
-  ZCODE_CUA_HELPER_APP_PATH=/path/to/ZCode\ Computer\ Use.app ZCODE_CUA_REQUIRE_HELPER=1 bash scripts/doctor-macos-release-app.sh /Applications/ZCode.app
-  ZCODE_MACOS_RELEASE_APP_PATH=/Applications/ZCode.app pnpm run doctor:macos-release
+  bash scripts/doctor-macos-release-app.sh /Applications/Zody.app
+  ZCODE_CUA_REQUIRE_HELPER=1 bash scripts/doctor-macos-release-app.sh /Applications/Zody.app
+  ZCODE_CUA_HELPER_APP_PATH=/path/to/ZCode\ Computer\ Use.app ZCODE_CUA_REQUIRE_HELPER=1 bash scripts/doctor-macos-release-app.sh /Applications/Zody.app
+  ZCODE_MACOS_RELEASE_APP_PATH=/Applications/Zody.app pnpm run doctor:macos-release
 
 Always validates the installed macOS release app with:
   codesign --verify --deep --strict <app>
@@ -49,11 +50,11 @@ also validates the independently signed Helper bundle selected below with the
 same codesign/spctl checks and a local notarization staple check.
 
 Helper lookup order:
-  1. ZCODE_CUA_HELPER_APP_PATH (CI passes the Helper bundled inside ZCode.app)
-  2. ${ZCODE_HOME:-$HOME/.zcode}/computer-use/<optional variant>/ZCode Computer Use.app
+  1. ZCODE_CUA_HELPER_APP_PATH (CI passes the Helper bundled inside Zody.app)
+  2. ${ZCODE_HOME:-$HOME/.zody}/computer-use/<optional variant>/ZCode Computer Use.app
 
 CI release acceptance validates the copy actually shipped at
-ZCode.app/Contents/Resources/cua-helper/ZCode Computer Use.app. Post-install checks
+Zody.app/Contents/Resources/cua-helper/ZCode Computer Use.app. Post-install checks
 may omit the override to validate the user-level installed copy. A missing selected
 Helper.app fails closed.
 USAGE
@@ -108,7 +109,7 @@ run_quiet_validation() {
   local label="$1"
   shift
   local output_file
-  output_file="$(mktemp "${TMPDIR:-/tmp}/zcode-macos-release-doctor.XXXXXX")"
+  output_file="$(mktemp "${TMPDIR:-/tmp}/zody-macos-release-doctor.XXXXXX")"
   if "$@" >"$output_file" 2>&1; then
     rm -f "$output_file"
     return 0
@@ -143,7 +144,7 @@ require_command spctl
 # Bugfix: 过去 release/notarization 成功只说明 DMG 通过了 gate，不能证明安装后的主 app
 # 和 Computer Use Helper.app 都能被 Gatekeeper 以 exec 类型放行。这里先 fail-closed 检查 bundle
 # 结构，再分别跑 codesign/spctl，避免 helper 缺失或未独立签名时误报发布成功。
-# CI 显式传入最终 ZCode.app 内的 Helper；安装后验收则默认检查用户级复制品。
+# CI 显式传入最终 Zody.app 内的 Helper；安装后验收则默认检查用户级复制品。
 assert_bundle_dir "$APP_BUNDLE_NAME" "$APP_PATH"
 assert_executable "$APP_BUNDLE_NAME" "$APP_PATH/Contents/MacOS/$APP_EXECUTABLE_NAME"
 validate_release_bundle "$APP_BUNDLE_NAME" "$APP_PATH"

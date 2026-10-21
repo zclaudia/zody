@@ -4,6 +4,7 @@ import {
   WebRemoteControlMobileSettingsScreen,
   type WebRemoteControlMobileSettingsDraft,
 } from "@zcode/ui";
+import { DEFAULT_REMOTE_ACCESS_NAMESPACE } from "@zcode/shared";
 import {
   startMobileRemoteBackendDiscovery,
   type MobileRemoteBackendDiscoverySnapshot,
@@ -66,7 +67,8 @@ function renderSettingsPage(
               Boolean(draft.credential) ||
               draft.gatewayUrl.trim().replace(/\/+$/, "") !==
                 (initialGatewayUrl ?? "").replace(/\/+$/, "") ||
-              (draft.namespace.trim() || "zcode") !== (initialNamespace ?? "zcode");
+              (draft.namespace.trim() || DEFAULT_REMOTE_ACCESS_NAMESPACE) !==
+                (initialNamespace ?? DEFAULT_REMOTE_ACCESS_NAMESPACE);
             const next = validateMobileRemoteGatewayConfig(
               {
                 gatewayUrl: draft.gatewayUrl,

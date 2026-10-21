@@ -85,28 +85,57 @@ describe("paths", () => {
     expect(existsSync(join(newV2Dir, "setting.json.123.tmp"))).toBe(false);
   });
 
-  it("Windows 数据目录不能选择 ZCode 安装目录或其子目录", async () => {
+  it("Windows 数据目录不能选择 Zody 安装目录或其子目录", async () => {
     vi.resetModules();
 
     const { validateDataBaseDirTarget } = await import("../src/paths.js");
     const env = {
       ProgramFiles: "C:\\Program Files",
       LOCALAPPDATA: "C:\\Users\\tester\\AppData\\Local",
-      ZCODE_WINDOWS_APP_INSTALL_DIR: "C:\\Users\\tester\\AppData\\Local\\Programs\\ZCode",
+      ZCODE_WINDOWS_APP_INSTALL_DIR: "C:\\Users\\tester\\AppData\\Local\\Programs\\Zody",
     };
 
     expect(
-      validateDataBaseDirTarget("c:\\program files\\zcode", {
+      validateDataBaseDirTarget("c:\\program files\\zody", {
         platform: "win32",
         env,
       }),
     ).toMatchObject({ ok: false });
     expect(
-      validateDataBaseDirTarget("C:\\Users\\tester\\AppData\\Local\\Programs\\ZCode\\data", {
+      validateDataBaseDirTarget("C:\\Users\\tester\\AppData\\Local\\Programs\\Zody\\data", {
         platform: "win32",
         env,
       }),
     ).toMatchObject({ ok: false });
+  });
+
+  // 回归：未注入安装目录（无 appInstallDir / ZCODE_WINDOWS_APP_INSTALL_DIR）时，
+  // 仍须按 Zody 产品名的默认安装目录拦截；上游 `ZCode` 目录不再是 Zody 的安装位置。
+  it("Windows 默认安装目录候选按 Zody 产品名生成", async () => {
+    vi.resetModules();
+
+    const { validateDataBaseDirTarget } = await import("../src/paths.js");
+    const env = {
+      ProgramFiles: "C:\\Program Files",
+      LOCALAPPDATA: "C:\\Users\\tester\\AppData\\Local",
+    };
+
+    for (const target of [
+      "C:\\Program Files\\Zody\\data",
+      "C:\\Program Files\\Zody Preview",
+      "C:\\Users\\tester\\AppData\\Local\\Programs\\Zody",
+      "C:\\Users\\tester\\AppData\\Local\\Programs\\Zody Preview\\data",
+    ]) {
+      expect(validateDataBaseDirTarget(target, { platform: "win32", env })).toMatchObject({
+        ok: false,
+      });
+    }
+    expect(
+      validateDataBaseDirTarget("C:\\Users\\tester\\AppData\\Local\\Programs\\ZCode", {
+        platform: "win32",
+        env,
+      }),
+    ).toEqual({ ok: true });
   });
 
   it("Windows 数据目录保护不会误伤同名前缀的普通目录", async () => {
@@ -115,17 +144,17 @@ describe("paths", () => {
     const { validateDataBaseDirTarget } = await import("../src/paths.js");
     const env = {
       LOCALAPPDATA: "C:\\Users\\tester\\AppData\\Local",
-      ZCODE_WINDOWS_APP_INSTALL_DIR: "C:\\Users\\tester\\AppData\\Local\\Programs\\ZCode",
+      ZCODE_WINDOWS_APP_INSTALL_DIR: "C:\\Users\\tester\\AppData\\Local\\Programs\\Zody",
     };
 
     expect(
-      validateDataBaseDirTarget("C:\\Users\\tester\\AppData\\Local\\Programs\\ZCodeData", {
+      validateDataBaseDirTarget("C:\\Users\\tester\\AppData\\Local\\Programs\\ZodyData", {
         platform: "win32",
         env,
       }),
     ).toEqual({ ok: true });
     expect(
-      validateDataBaseDirTarget("C:\\Users\\tester\\Documents\\ZCode", {
+      validateDataBaseDirTarget("C:\\Users\\tester\\Documents\\Zody", {
         platform: "win32",
         env,
       }),

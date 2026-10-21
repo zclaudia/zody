@@ -6,21 +6,21 @@ import { createRegistryProviderConfig, parseProviderConfig } from "@zcode/provid
 
 describe("模型 Header 合并与绑定边界", () => {
   it("默认值、用户值、鉴权值依次覆盖，保留其他字段且不改变输入", () => {
-    const defaults = { "X-Title": "Z Code@cli", "X-ZCode-App-Version": "3.12.0" };
+    const defaults = { "X-Title": "Zody@cli", "X-Zody-App-Version": "3.12.0" };
     const personal = { "x-title": "User", authorization: "old" };
     const auth = { Authorization: "Bearer fresh", "X-Once": "once" };
     expect(mergeModelRequestHeaders(defaults, personal, auth)).toEqual({
-      "X-ZCode-App-Version": "3.12.0",
+      "X-Zody-App-Version": "3.12.0",
       "x-title": "User",
       Authorization: "Bearer fresh",
       "X-Once": "once",
     });
-    expect(defaults["X-Title"]).toBe("Z Code@cli");
+    expect(defaults["X-Title"]).toBe("Zody@cli");
     expect(personal.authorization).toBe("old");
   });
 
   it("绑定后默认值/Provider 修改不影响旧 Model，鉴权只覆盖本次请求", async () => {
-    const defaults = { "X-Title": "Z Code@electron", "X-ZCode-App-Version": "3.12.0" };
+    const defaults = { "X-Title": "Zody@electron", "X-Zody-App-Version": "3.12.0" };
     const requests: Request[] = [];
     const execution = new AiSdkModelExecution(
       { defaultHeaders: defaults, env: {} },
@@ -62,7 +62,7 @@ describe("模型 Header 合并与绑定边界", () => {
         optionSpecs: { reasoningLevel: { map: "{}" }, maxOutputTokens: { map: "{}" } },
       });
     const old = bind("Personal");
-    defaults["X-ZCode-App-Version"] = "changed";
+    defaults["X-Zody-App-Version"] = "changed";
     const next = bind("New Personal");
     const options = { reasoningLevel: "disabled", maxOutputTokens: 1024 };
     const resolved = [
@@ -80,7 +80,7 @@ describe("模型 Header 合并与绑定边界", () => {
       "Personal",
       "New Personal",
     ]);
-    expect(requests.map((r) => r.headers.get("x-zcode-app-version"))).toEqual([
+    expect(requests.map((r) => r.headers.get("x-zody-app-version"))).toEqual([
       "3.12.0",
       "3.12.0",
       "3.12.0",
@@ -91,6 +91,6 @@ describe("模型 Header 合并与绑定边界", () => {
       "Bearer key",
       "Bearer key",
     ]);
-    expect(requests.every((r) => r.headers.get("x-openrouter-title") === "ZCode")).toBe(true);
+    expect(requests.every((r) => r.headers.get("x-openrouter-title") === "Zody")).toBe(true);
   });
 });

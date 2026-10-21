@@ -10,7 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import io.github.zclaudia.zody.mobile.remote.RemoteControlKeepAliveService
 import io.github.zclaudia.zody.mobile.ui.RemoteControlApp
-import io.github.zclaudia.zody.mobile.ui.theme.ZcodemobileTheme
+import io.github.zclaudia.zody.mobile.ui.theme.ZodymobileTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
         RemoteControlKeepAliveService.start(this)
 
         setContent {
-            ZcodemobileTheme {
+            ZodymobileTheme {
                 RemoteControlApp()
             }
         }

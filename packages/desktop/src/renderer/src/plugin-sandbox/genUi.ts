@@ -22,7 +22,7 @@ const initial = JSON.parse(
 ) as unknown;
 let state: GenUiWidgetState | null =
   initial === null ? null : genUiWidgetStateSchema.parse(initial);
-const app = new App({ name: "zcode-gen-ui", version: "1" }, {}, { autoResize: false });
+const app = new App({ name: "zody-gen-ui", version: "1" }, {}, { autoResize: false });
 
 function observeContentSize() {
   const body = document.body;

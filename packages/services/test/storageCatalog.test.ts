@@ -27,7 +27,7 @@ describe("classifyStoragePath", () => {
     ["v2/dev/stdio-traffic/abc/x.ndjson", "devTraces", "v2/dev/stdio-traffic"],
     ["v2/acp-traffic-proxy/captures/t.ndjson", "devTraces", "v2/acp-traffic-proxy/captures"],
     ["v2/logs/2026-09-04.log", "logs", "v2/logs/2026-09-04.log"],
-    ["cli/log/zcode-2026-09-04.jsonl", "logs", "cli/log/zcode-2026-09-04.jsonl"],
+    ["cli/log/zody-2026-09-04.jsonl", "logs", "cli/log/zody-2026-09-04.jsonl"],
     ["v2/crash/archive/x.dmp", "logs", "v2/crash/archive"],
     ["feedback/logs/a.zip", "logs", "feedback/logs/a.zip"],
     ["feedback/attachments/a.png", "exports", "feedback/attachments"],
@@ -121,7 +121,7 @@ describe("cleanability, protection and clean scopes", () => {
       "v2/setting.json.lock",
       "v2/credentials.json",
       "computer-use/run/.tokens",
-      "v2/dev/zcode-stdio-tap.json",
+      "v2/dev/zody-stdio-tap.json",
       "v2/crash/live/current.dmp",
     ]) {
       expect(isProtectedStoragePath(path), path).toBe(true);

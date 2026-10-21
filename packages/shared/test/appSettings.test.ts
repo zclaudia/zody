@@ -269,7 +269,7 @@ describe("remoteAccess 设置（gateway 远程访问）", () => {
     expect(appSettingsSchema.parse({}).remoteAccess).toEqual({
       enabled: false,
       gatewayUrl: "",
-      namespace: "zcode",
+      namespace: "zody",
     });
   });
 
@@ -282,7 +282,7 @@ describe("remoteAccess 设置（gateway 远程访问）", () => {
     });
 
     // relay 的配对与凭证对 gateway 无效：带过来的只能是「未配置且关闭」，等用户重新配置。
-    expect(parsed.remoteAccess).toEqual({ enabled: false, gatewayUrl: "", namespace: "zcode" });
+    expect(parsed.remoteAccess).toEqual({ enabled: false, gatewayUrl: "", namespace: "zody" });
     // 旧字段已从 AppSettings 删除，读取时被 schema 丢弃。
     expect(parsed).not.toHaveProperty("webRemoteControlLastEnabledContext");
   });
@@ -310,7 +310,7 @@ describe("remoteAccess 设置（gateway 远程访问）", () => {
       remoteAccess: { enabled: "yes", gatewayUrl: "not-a-url", namespace: 7 },
     });
 
-    expect(parsed.remoteAccess).toEqual({ enabled: false, gatewayUrl: "", namespace: "zcode" });
+    expect(parsed.remoteAccess).toEqual({ enabled: false, gatewayUrl: "", namespace: "zody" });
     expect(parsed.locale).toBe("en-US");
   });
 
@@ -327,7 +327,7 @@ describe("remoteAccess 设置（gateway 远程访问）", () => {
       remoteAccess: {
         enabled: true,
         gatewayUrl: "https://gateway.example.com",
-        namespace: "zcode",
+        namespace: "zody",
       },
     });
     expect(appSettingsPatchSchema.safeParse({ remoteAccess: { enabled: true } }).success).toBe(

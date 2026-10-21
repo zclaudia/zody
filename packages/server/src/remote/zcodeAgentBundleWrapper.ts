@@ -14,7 +14,7 @@ export function buildRemoteAgentBundleWrapper(runtimeResourceDir: string): strin
   return [
     "#!/bin/sh",
     "set -eu",
-    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
     `runtime_root="\${ZCODE_SERVER_RUNTIME_ROOT:-$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server}"`,
     `exec "$runtime_root/node" "$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server/agents/${runtimeResourceDir}/${REMOTE_AGENT_BUNDLE_NAME}" "$@"`,
     "",

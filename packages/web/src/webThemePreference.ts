@@ -13,7 +13,7 @@ import {
 export function resolveWebThemePreference(
   defaultTheme: Theme = WEB_REMOTE_CONTROL_DEFAULT_THEME,
 ): Theme {
-  const saved = localStorage.getItem("zcode-theme");
+  const saved = localStorage.getItem("zody-theme");
   return resolveWebRemoteControlInitialTheme({ storedTheme: saved, defaultTheme });
 }
 

@@ -38,7 +38,7 @@ it("compiles real UAC calls when the plugin directory follows the custom include
         ? "mac/makensis"
         : "linux/makensis",
   );
-  const temp = await mkdtemp(join(tmpdir(), "zcode-nsis-compile-"));
+  const temp = await mkdtemp(join(tmpdir(), "zody-nsis-compile-"));
   try {
     for (const uninstaller of [false, true]) {
       const output = join(temp, uninstaller ? "uninstaller.exe" : "installer.exe");

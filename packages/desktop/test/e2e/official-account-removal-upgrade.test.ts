@@ -120,14 +120,14 @@ describe("F4.1a 从带官方账号数据的旧版本升级", () => {
     // 先种入旧版本遗留的 localStorage 记录（providerId 指向已下线 account:*）。
     await browser.execute(() => {
       window.localStorage.setItem(
-        "zcode-model-selection-recent-v1:/e2e-upgrade-workspace",
+        "zody-model-selection-recent-v1:/e2e-upgrade-workspace",
         JSON.stringify({
           modelSelection: { providerId: "account:zai-individual-coding-plan", modelId: "GLM-5.3" },
           mode: "build",
         }),
       );
       window.localStorage.setItem(
-        `zcode-v4-composer-drafts:v1:${encodeURIComponent("/e2e-upgrade-workspace")}`,
+        `zody-v4-composer-drafts:v1:${encodeURIComponent("/e2e-upgrade-workspace")}`,
         JSON.stringify({
           version: 1,
           scopes: {
@@ -163,10 +163,10 @@ describe("F4.1a 从带官方账号数据的旧版本升级", () => {
             return raw ? (JSON.parse(raw) as Record<string, unknown>) : null;
           };
           const recent = readRecord(
-            "zcode-model-selection-recent-v1:/e2e-upgrade-workspace",
+            "zody-model-selection-recent-v1:/e2e-upgrade-workspace",
           ) as { modelSelection?: { providerId?: string }; mode?: string } | null;
           const draftFile = readRecord(
-            `zcode-v4-composer-drafts:v1:${encodeURIComponent("/e2e-upgrade-workspace")}`,
+            `zody-v4-composer-drafts:v1:${encodeURIComponent("/e2e-upgrade-workspace")}`,
           ) as {
             scopes?: Record<string, { modelSelection?: { providerId?: string }; text?: string }>;
           } | null;
@@ -190,10 +190,10 @@ describe("F4.1a 从带官方账号数据的旧版本升级", () => {
     // waitUntil 收口后复核细节字段，让失败信息可诊断。
     const state = (await browser.execute(() => {
       const recent = window.localStorage.getItem(
-        "zcode-model-selection-recent-v1:/e2e-upgrade-workspace",
+        "zody-model-selection-recent-v1:/e2e-upgrade-workspace",
       );
       const draftFile = window.localStorage.getItem(
-        `zcode-v4-composer-drafts:v1:${encodeURIComponent("/e2e-upgrade-workspace")}`,
+        `zody-v4-composer-drafts:v1:${encodeURIComponent("/e2e-upgrade-workspace")}`,
       );
       return { recent, draftFile };
     })) as { recent: string | null; draftFile: string | null };

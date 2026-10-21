@@ -6,7 +6,9 @@ import type { Logger } from "@zcode/contracts";
 export const LOG_RETENTION_DAYS = 7;
 export const LOG_CLEANUP_STARTUP_DELAY_MS = 60_000;
 
-const LOG_FILE_NAME_PATTERN = /^zcode-(\d{4})-(\d{2})-(\d{2})\.jsonl$/;
+// 日志文件名随品牌改为 zody-YYYY-MM-DD.jsonl；同目录内改名前写下的 zcode-* 日志仍按同一保留期清理，
+// 否则旧文件会在 ~/.zody/cli/log 中永久残留。
+const LOG_FILE_NAME_PATTERN = /^(?:zody|zcode)-(\d{4})-(\d{2})-(\d{2})\.jsonl$/;
 const MIN_RETENTION_DAYS = 1;
 
 export interface LogRetentionCleanupOptions {

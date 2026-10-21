@@ -70,7 +70,7 @@ describe("mobile remote secure store (T4.2)", () => {
     const store = createDevelopmentMobileRemoteSecureStore({ storage });
 
     await store.set("config", "value");
-    expect(storage.setItem).toHaveBeenCalledWith("zcode-mobile-remote:config", "value");
+    expect(storage.setItem).toHaveBeenCalledWith("zody-mobile-remote:config", "value");
     expect(await store.get("config")).toBe("value");
     await store.remove("config");
     expect(await store.get("config")).toBeNull();

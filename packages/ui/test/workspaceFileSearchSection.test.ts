@@ -59,7 +59,7 @@ describe("WorkspaceFileSearch settings section", () => {
     );
 
     // 保存语义是"落盘编辑框内容"：template 态（文件未创建）即使未编辑也可保存，
-    // 用户第一次进页面不改任何内容也能创建 .zcodeignore；已落盘态才有修改才可保存。
+    // 用户第一次进页面不改任何内容也能创建 .zodyignore；已落盘态才有修改才可保存。
     expect(source).toContain(
       'const canSave = loaded === null || loaded.source === "template" || draft !== loaded.content;',
     );

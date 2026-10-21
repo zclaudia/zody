@@ -19,15 +19,15 @@ describe("dev desktop remote production-like script", () => {
     );
   });
 
-  it("macOS 默认应复用正式版 ZCode remote cache", () => {
+  it("macOS 默认应复用正式版 Zody remote cache", () => {
     expect(resolveProductionRemoteAssetCacheDir({}, "darwin", "/Users/alice")).toBe(
-      "/Users/alice/Library/Application Support/ZCode/remote-assets-cache",
+      "/Users/alice/.zody/desktop/Zody/remote-assets-cache",
     );
   });
 
-  it("Linux 默认应复用正式版 ZCode remote cache", () => {
+  it("Linux 默认应复用正式版 Zody remote cache，且不再跟随 XDG_CONFIG_HOME", () => {
     expect(resolveProductionRemoteAssetCacheDir({}, "linux", "/home/alice")).toBe(
-      "/home/alice/.config/ZCode/remote-assets-cache",
+      "/home/alice/.zody/desktop/Zody/remote-assets-cache",
     );
     expect(
       resolveProductionRemoteAssetCacheDir(
@@ -35,17 +35,17 @@ describe("dev desktop remote production-like script", () => {
         "linux",
         "/home/alice",
       ),
-    ).toBe("/home/alice/.config-custom/ZCode/remote-assets-cache");
+    ).toBe("/home/alice/.zody/desktop/Zody/remote-assets-cache");
   });
 
-  it("Windows 默认应复用正式版 ZCode remote cache", () => {
+  it("Windows 默认应复用正式版 Zody remote cache", () => {
     expect(
       resolveProductionRemoteAssetCacheDir(
         { APPDATA: "C:\\Users\\Alice\\AppData\\Roaming" },
         "win32",
         "C:\\Users\\Alice",
       ),
-    ).toBe("C:\\Users\\Alice\\AppData\\Roaming\\ZCode\\remote-assets-cache");
+    ).toBe("C:\\Users\\Alice\\.zody\\desktop\\Zody\\remote-assets-cache");
   });
 
   it("启动 env 应强制走 CDN，并允许显式 cache 覆盖", () => {

@@ -1294,7 +1294,7 @@ const zhCN: Record<string, string> = {
   "webRemoteControl.mobileSetup.gatewayUrl.invalid":
     "Gateway 地址必须是完整的 http(s) 地址，且不能包含凭据、查询串或片段。",
   "webRemoteControl.mobileSetup.namespace.label": "Namespace",
-  "webRemoteControl.mobileSetup.namespace.description": "通常保持默认的 zcode。",
+  "webRemoteControl.mobileSetup.namespace.description": "通常保持默认的 zody。",
   "webRemoteControl.mobileSetup.credential.label": "设备凭证",
   "webRemoteControl.mobileSetup.credential.placeholder": "粘贴 zgd_ 开头的设备凭证",
   "webRemoteControl.mobileSetup.credential.savedPlaceholder": "已保存凭证；留空保持不变",
@@ -2041,7 +2041,7 @@ const zhCN: Record<string, string> = {
   "settings.remoteAccess.gatewayUrl.invalid":
     "请输入有效的 http(s) gateway 地址；正式构建只允许 https。",
   "settings.remoteAccess.namespace.label": "Namespace",
-  "settings.remoteAccess.namespace.description": "gateway 的 namespace，通常保持默认的 zcode。",
+  "settings.remoteAccess.namespace.description": "gateway 的 namespace，通常保持默认的 zody。",
   "settings.remoteAccess.config.save": "保存配置",
   "settings.remoteAccess.config.saveSuccess": "远程访问配置已保存",
   "settings.remoteAccess.config.saveFailed": "保存远程访问配置失败：{error}",
@@ -2521,7 +2521,7 @@ const zhCN: Record<string, string> = {
   "settings.modelProvider.slot.opus": "Opus（复杂任务）",
   "settings.modelProvider.slot.reasoning": "Reasoning（推理任务）",
   "settings.modelProvider.mappingNotSet": "未设置",
-  "settings.modelProvider.presetTitle": "智谱",
+  "settings.modelProvider.presetTitle": "供应商",
   "settings.modelProvider.presetDescription":
     "内置 Z.ai 与 BigModel 供应商，支持通过 OAuth 辅助完成配置。",
   "settings.modelProvider.presetEmpty": "尚未同步，请先完成 OAuth 登录。",
@@ -3222,9 +3222,9 @@ const zhCN: Record<string, string> = {
   "settings.hooks.title": "钩子",
   "settings.workspaceFileSearch.title": "工作区搜索范围",
   "settings.workspaceFileSearch.description":
-    "编辑 .zcodeignore 忽略规则（语法与 .gitignore 一致），控制工作区文件搜索的范围。保存后下次搜索生效。",
+    "编辑 .zodyignore 忽略规则（语法与 .gitignore 一致），控制工作区文件搜索的范围。仅在 .zodyignore 不存在时读取遗留的 .zcodeignore，保存始终写入 .zodyignore。保存后下次搜索生效。",
   "settings.workspaceFileSearch.templateHint":
-    ".zcodeignore 尚未创建：下方为初始内容预览（.gitignore 拷贝 + 默认排除规则），保存后才会写入工作区。",
+    ".zodyignore 尚未创建：下方为初始内容预览（.gitignore 拷贝 + 默认排除规则），保存后才会写入工作区。",
   "settings.workspaceFileSearch.editorLabel": "工作区搜索忽略规则编辑框",
   "settings.workspaceFileSearch.save": "保存",
   "settings.workspaceFileSearch.saved": "已保存，下次搜索生效",
@@ -3234,7 +3234,7 @@ const zhCN: Record<string, string> = {
   "settings.workspaceFileSearch.restoreDefaults": "恢复默认规则",
   "settings.workspaceFileSearch.transformFailed": "应用分区操作失败，请查看日志",
   "settings.workspaceFileSearch.reveal": "打开文件位置",
-  "settings.workspaceFileSearch.revealHint": "保存后即可在工作区根目录找到 .zcodeignore",
+  "settings.workspaceFileSearch.revealHint": "保存后即可在工作区根目录找到 .zodyignore",
   "settings.workspaceFileSearch.unsaved": "有未保存的修改",
   "settings.workspaceFileSearch.noWorkspace": "当前没有打开的工作区，无法配置搜索忽略规则。",
   "settings.hooks.description": "管理任务生命周期钩子，在特定事件发生时自动执行命令。",
@@ -4503,7 +4503,7 @@ const zhCN: Record<string, string> = {
   "chat.toolCall.workflow.run.artifacts.nextVersion": "下一版",
   "chat.toolCall.workflow.run.artifacts.open": "打开产物",
   // 动作。「下载」（存到用户挑的位置）仍缺席；「作为文件打开」
-  // 落的是宿主 ~/.zcoder/tmp 下的副本，不是用户挑的位置。
+  // 落的是宿主 ~/.zody/tmp 下的副本，不是用户挑的位置。
   "chat.toolCall.workflow.run.artifacts.reveal": "在工作区显示",
   "chat.toolCall.workflow.run.artifacts.copy": "复制",
   "chat.toolCall.workflow.run.artifacts.copied": "已复制",

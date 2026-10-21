@@ -160,7 +160,7 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
       initialize: async (params: { workspacePath: string; workspaceIdentity?: string }) => ({
         available: false,
         workspaceKey: params.workspaceIdentity?.trim() || params.workspacePath,
-        reason: "ZCode agent service is not available before workspace bridge is connected.",
+        reason: "Zody agent service is not available before workspace bridge is connected.",
       }),
       disposeAll: () => {},
     }),
@@ -171,7 +171,7 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
       }) => ({
         available: false,
         workspaceKey: params.workspaceIdentity?.trim() || params.workspacePath,
-        reason: "ZCode session service is not available before workspace bridge is connected.",
+        reason: "Zody session service is not available before workspace bridge is connected.",
       }),
     }),
     // fork（F4.8）：conversationShareService 随会话分享功能删除。

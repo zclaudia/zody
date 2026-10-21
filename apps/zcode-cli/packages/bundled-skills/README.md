@@ -1,6 +1,6 @@
 # bundled-skills
 
-Skills that ship with the ZCode CLI as a built-in capability, outside the plugin system.
+Skills that ship with the Zody CLI as a built-in capability, outside the plugin system.
 
 A skill lives here when a product feature depends on it: the feature's tools are registered
 by the runtime, so the skill that teaches the model how to use them must be just as
@@ -20,7 +20,7 @@ or the composer's `$` skill picker. The runtime discovers its `skills/` director
   use) and read in place; nothing is copied.
 - **SEA binaries**: `scripts/sea-bundled-skill-assets.mjs` embeds `skills/**` under the
   `zcode-bundled-skills/` asset prefix. On start the CLI extracts them once into
-  `~/.zcode/cli/bundled-skills/<content-hash>/` and reads from there.
+  `~/.zody/cli/bundled-skills/<content-hash>/` and reads from there.
 - **Remote hosts**: `scripts/prepare-prebuilds.mjs` stages the directory next to the remote
   `zcode.cjs`, like the official plugin packages.
 

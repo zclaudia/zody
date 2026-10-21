@@ -1,6 +1,6 @@
 export type InterfaceMode = "office" | "coding";
 
-export const INTERFACE_MODE_STORAGE_KEY = "zcode-interface-mode";
+export const INTERFACE_MODE_STORAGE_KEY = "zody-interface-mode";
 
 export function normalizeInterfaceMode(value: unknown): InterfaceMode {
   // localStorage（zcode-interface-mode）里可能还存着改名前的旧值 "general"/"concise"，

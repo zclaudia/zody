@@ -31,7 +31,7 @@ Plugin state lives under `~/.zody/cli/plugins`:
 - `data/<plugin-id>/`: persistent plugin data. MCP servers should write runtime output here, not into the plugin source directory.
 - `marketplaces/zcode-plugins-official/`: bundled and CDN partitions plus the merged metadata for the single official marketplace.
 
-This repository also ships built-in official plugins as workspace packages. The bundled Browser Use, Document Skills, Skill Creator, and ZCode Guide content plugins are default-enabled and appear as `browser-use@zcode-plugins-official`, `document-skills@zcode-plugins-official`, `skill-creator@zcode-plugins-official`, and `zcode-guide@zcode-plugins-official`. Runtime-heavy official plugins, and local-data migration plugins such as `ios-simulator@zcode-plugins-official`, `android-emulator@zcode-plugins-official`, and `restore-legacy-sessions@zcode-plugins-official`, are discovered by Zody but stay disabled until the user enables them.
+This repository also ships built-in official plugins as workspace packages. The bundled Browser Use, Document Skills, Skill Creator, and Zody Guide content plugins are default-enabled and appear as `browser-use@zcode-plugins-official`, `document-skills@zcode-plugins-official`, `skill-creator@zcode-plugins-official`, and `zcode-guide@zcode-plugins-official`. Runtime-heavy official plugins such as `ios-simulator@zcode-plugins-official` and `android-emulator@zcode-plugins-official` are discovered by Zody but stay disabled until the user enables them.
 
 ```sh
 zody plugins list
@@ -116,7 +116,7 @@ Unsupported Claude plugin fields are ignored with diagnostics rather than execut
 
 ### Variables
 
-Plugin MCP config can use both zcode and Claude-compatible variable names:
+Plugin MCP config can use both Zody (`ZCODE_*`) and Claude-compatible variable names:
 
 - `${ZCODE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_ROOT}`
 - `${ZCODE_PLUGIN_DATA}` and `${CLAUDE_PLUGIN_DATA}`
@@ -140,7 +140,7 @@ my-plugin/
   src/
 ```
 
-Keep reusable content in Claude-compatible locations. Add a `.zcode-plugin/plugin.json` only for zcode-specific package names, built artifacts, or command paths. For MCP servers, prefer Node's normal package build and `bin` output when targeting zcode-cli, and keep all process/file/network side effects inside the MCP server boundary.
+Keep reusable content in Claude-compatible locations. Add a `.zcode-plugin/plugin.json` only for Zody-specific package names, built artifacts, or command paths. For MCP servers, prefer Node's normal package build and `bin` output when targeting the Zody CLI, and keep all process/file/network side effects inside the MCP server boundary.
 
 ## MCP Configuration
 

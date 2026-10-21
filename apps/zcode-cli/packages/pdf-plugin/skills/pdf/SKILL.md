@@ -556,7 +556,7 @@ These CSS properties **silently break** in Playwright's PDF renderer:
 After generating any Playwright PDF, **verify every page has content** (pypdf text extraction, check non-empty).
 
 ### PDF Metadata (all briefs)
-ALL PDFs must have: Title, Author (default "Z.ai"), Creator, Subject.
+ALL PDFs must have: Title, Author (default "Zody"), Creator, Subject.
 
 ### Delivery Summary (all briefs)
 Report to user: file path, size, page count. Academic adds word/image count. Creative adds per-page verification.
@@ -585,7 +585,7 @@ env.fix                      # Auto-install missing
 # Quality
 code.sanitize <script>       # Sanitize forbidden Unicode
 content.sanitize <file> [--apply]  # Fix content issues (CJK, encoding)
-meta.brand <pdf>             # Add Z.ai metadata
+meta.brand <pdf>             # Add Zody metadata
 font.check <pdf>             # Scan for missing glyphs
 toc.check <pdf>              # Validate TOC
 

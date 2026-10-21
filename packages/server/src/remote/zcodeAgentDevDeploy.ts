@@ -255,7 +255,7 @@ async function shouldSkipDevelopmentZCodeAgentDeploy(params: {
   try {
     await waitForClose(
       await params.backend.exec(
-        // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+        // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
         `"\${ZCODE_SERVER_RUNTIME_ROOT:-$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server}/node" -e ${quotePosixShellArg(verifyBundleScript)} ${quotePosixPathArg(params.remoteBundlePath)} ${quotePosixShellArg(params.localBundleSha256)}`,
       ),
     );
@@ -304,7 +304,7 @@ async function uploadDevelopmentOfficialPluginPackages(params: {
   remoteProviderDir: string;
   loggers: DeployLoggers;
 }): Promise<void> {
-  const tempDir = await mkdtemp(join(tmpdir(), "zcode-remote-agent-packages-"));
+  const tempDir = await mkdtemp(join(tmpdir(), "zody-remote-agent-packages-"));
   const packagesDir = join(tempDir, REMOTE_AGENT_OFFICIAL_PLUGIN_DIR_NAME);
   const archivePath = join(tempDir, `${REMOTE_AGENT_OFFICIAL_PLUGIN_DIR_NAME}.tar.gz`);
   try {

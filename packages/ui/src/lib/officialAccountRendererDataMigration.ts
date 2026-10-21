@@ -6,17 +6,17 @@ import { logger } from "@/logger.js";
  *
  * 覆盖键空间（与写入方保持同一 workspaceIdentity 键规则，迁移按前缀全局清理，
  * 不需要逐 workspace 枚举）：
- * - `zcode-v4-composer-drafts:v1:<encodeURIComponent(workspaceKey)>`：仅剔除
+ * - `zody-v4-composer-drafts:v1:<encodeURIComponent(workspaceKey)>`：仅剔除
  *   各 scope 的 modelSelection 字段，草稿正文与其余状态保留；
- * - `zcode-model-selection-recent-v1:<workspaceKey>`：剔除 modelSelection；
+ * - `zody-model-selection-recent-v1:<workspaceKey>`：剔除 modelSelection；
  *   与 mode 一起全空时整个键删除。
  *
  * 读取路径的兜底自愈不在这里做：composer 读取对 Registry 中不存在的 provider
  * 本来就会回落空选择，不会静默改选其他付费 provider。
  */
 
-const V4_DRAFT_STORAGE_KEY_PREFIX = "zcode-v4-composer-drafts:v1:";
-const COMPOSER_RECENT_KEY_PREFIX = "zcode-model-selection-recent-v1";
+const V4_DRAFT_STORAGE_KEY_PREFIX = "zody-v4-composer-drafts:v1:";
+const COMPOSER_RECENT_KEY_PREFIX = "zody-model-selection-recent-v1";
 
 export interface OfficialAccountRendererMigrationResult {
   cleanedDraftKeys: number;

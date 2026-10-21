@@ -87,7 +87,7 @@ describe("resourceManagerWindow", () => {
       createMetric(mainPid, "Browser", 1.2, 1024),
       createMetric(gpuPid, "GPU", 0.4, 2048),
       createMetric(rendererPid, "Tab", 18.8, 4096),
-      createMetric(hostPid, "Utility", 0.2, 512, "zcode-host-local-1"),
+      createMetric(hostPid, "Utility", 0.2, 512, "zody-host-local-1"),
       createMetric(utilityPid, "Utility", 0.1, 256, "network-service"),
       createMetric(guestPid, "Tab", 3, 8192),
     ]);
@@ -95,7 +95,7 @@ describe("resourceManagerWindow", () => {
       {
         id: 1,
         isDestroyed: () => false,
-        getTitle: () => "ZCode",
+        getTitle: () => "Zody",
         webContents: { getOSProcessId: () => rendererPid },
       },
     ]);
@@ -119,7 +119,7 @@ describe("resourceManagerWindow", () => {
       const snapshot = await module.buildResourceUsageSnapshot({ includeHosts: false });
       const byPid = new Map(snapshot.processes.map((row) => [row.pid, row]));
       expect(byPid.get(mainPid)).toMatchObject({
-        name: "zcode-main",
+        name: "zody-main",
         category: "base",
         groupKey: "main",
         cpuPercent: 1.2,
@@ -131,7 +131,7 @@ describe("resourceManagerWindow", () => {
         groupKey: "gpu",
       });
       expect(byPid.get(rendererPid)).toMatchObject({
-        name: formatZCodeRendererProcessName("ZCode"),
+        name: formatZCodeRendererProcessName("Zody"),
         groupKey: "renderer",
       });
       expect(byPid.get(hostPid)).toMatchObject({
@@ -181,7 +181,7 @@ describe("resourceManagerWindow", () => {
             processes: [
               {
                 pid: agentPid,
-                name: "zcode-agent-glm-demo",
+                name: "zody-agent-glm-demo",
                 category: "base",
                 groupKey: "cli",
                 groupLabel: "cli",

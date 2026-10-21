@@ -24,7 +24,7 @@ function readCssRule(source: string, selector: string): string {
 function createBootstrapDocument(theme: "zai-dark" | "zai-light"): JSDOM {
   return new JSDOM(readWebIndexHtml(), {
     beforeParse(window) {
-      window.localStorage.setItem("zcode-theme", theme);
+      window.localStorage.setItem("zody-theme", theme);
       Object.defineProperty(window, "matchMedia", {
         configurable: true,
         value: () => ({ matches: false }),

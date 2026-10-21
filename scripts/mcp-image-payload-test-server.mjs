@@ -30,7 +30,7 @@ server.registerTool(
   {
     title: "Emit image with configurable base64 size",
     description:
-      "Return a valid PNG image block whose base64 payload is near the requested size. Use this to test ZCode MCP image output budgeting.",
+      "Return a valid PNG image block whose base64 payload is near the requested size. Use this to test Zody MCP image output budgeting.",
     inputSchema: {
       preset: z
         .enum(["tiny", "below_limit", "just_over_limit", "large", "huge"])
@@ -45,11 +45,7 @@ server.registerTool(
         .max(8 * 1024 * 1024)
         .optional()
         .describe("Target base64 payload bytes. Overrides preset when provided."),
-      label: z
-        .string()
-        .max(80)
-        .optional()
-        .describe("Optional label included in the text summary."),
+      label: z.string().max(80).optional().describe("Optional label included in the text summary."),
       dataUrl: z
         .boolean()
         .optional()
@@ -75,7 +71,7 @@ server.registerTool(
         {
           type: "text",
           text: [
-            "ZCode MCP image payload test",
+            "Zody MCP image payload test",
             `label=${label?.trim() || selectedPreset}`,
             `preset=${selectedPreset}`,
             `targetBase64Bytes=${targetBase64Bytes}`,

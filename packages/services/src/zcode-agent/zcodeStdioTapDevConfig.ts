@@ -21,7 +21,7 @@ export function getZCodeStdioTapDevLogDir(): string {
 }
 
 export function getZCodeStdioTapDevStatePath(): string {
-  return join(getZCodeStdioTapDevDir(), "zcode-stdio-tap.json");
+  return join(getZCodeStdioTapDevDir(), "zody-stdio-tap.json");
 }
 
 function readStateFile(path: string): ZCodeStdioTapStateFile {

@@ -67,7 +67,7 @@ export async function resolveGatewayE2EConfig(): Promise<GatewayE2EConfig | null
   }
   return {
     gatewayUrl,
-    namespace: read("ZCODE_GATEWAY_NAMESPACE") || "zcode",
+    namespace: read("ZCODE_GATEWAY_NAMESPACE") || "zody",
     backendCredential,
     deviceCredential,
   };

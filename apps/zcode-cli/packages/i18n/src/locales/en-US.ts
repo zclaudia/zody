@@ -15,7 +15,7 @@ Usage:
 With no command, zody opens the full-screen TUI.
 
 Commands:
-  app-server Run the ZCode Protocol stdio app server
+  app-server Run the Zody Protocol stdio app server
   commands   List custom slash commands (\`commands list\`)
   doctor     Inspect runtime and packaging assumptions
   plugins    Manage plugins and marketplaces (\`plugins list|install|uninstall|enable|disable|update|validate|marketplace ...\`; alias: plugin)

@@ -8,7 +8,7 @@
 
 同一套网络出口策略还必须进入子进程与扩展边界。ZCode 自己启动的 `Bash`、后台终端、stdio MCP server 等子进程如果可能发起网络请求，应先隔离 app/provider 运行时，再在 tool 边界恢复用户 shell 里的 `HTTP_PROXY` / `http_proxy` / `NODE_EXTRA_CA_CERTS` 等网络变量，避免这些变量意外污染模型请求，同时保留用户命令自己的网络环境。
 
-桌面端 renderer 里的 `fetch`、XHR、页面资源和内嵌浏览器 WebView 同样属于 ZCode 自身出口。它们必须从设置页的显式 HTTP 代理读取策略，通过 Electron `session.setProxy` 分别应用到 `defaultSession` 与 `persist:zcode-embedded-browser`；不得依赖用户 shell 环境变量，即不继承 `HTTP_PROXY` / `HTTPS_PROXY` / `NODE_EXTRA_CA_CERTS`。设置页留空时两个 Session 的兜底行为不同：`defaultSession` 直连，把 ZCode 自身的后端与模型流量收敛到显式配置；`persist:zcode-embedded-browser` 跟随本机系统代理，因为它承载的是用户自己的浏览行为，必须与用户本机浏览器可达的站点保持一致。系统代理读取的是 OS 网络设置而非 shell 环境变量，因此不与上面的「不继承 shell 环境变量」冲突。
+桌面端 renderer 里的 `fetch`、XHR、页面资源和内嵌浏览器 WebView 同样属于 ZCode 自身出口。它们必须从设置页的显式 HTTP 代理读取策略，通过 Electron `session.setProxy` 分别应用到 `defaultSession` 与 `persist:zody-embedded-browser`；不得依赖用户 shell 环境变量，即不继承 `HTTP_PROXY` / `HTTPS_PROXY` / `NODE_EXTRA_CA_CERTS`。设置页留空时两个 Session 的兜底行为不同：`defaultSession` 直连，把 ZCode 自身的后端与模型流量收敛到显式配置；`persist:zody-embedded-browser` 跟随本机系统代理，因为它承载的是用户自己的浏览行为，必须与用户本机浏览器可达的站点保持一致。系统代理读取的是 OS 网络设置而非 shell 环境变量，因此不与上面的「不继承 shell 环境变量」冲突。
 
 Desktop Window Host 在 SSH/WSL/Docker 部署期间发起的远程资源 manifest、组件归档和进度 `HEAD` 请求也属于 app-managed 出口。它们必须通过 Host 生命周期内冻结的 request-scoped transport 消费同一份设置页代理、No Proxy 和自定义 CA；禁止依赖裸 `globalThis.fetch` 或进程全局 dispatcher。`remote-download` 的组件归档仍由远端 `curl`/`wget` 下载，不继承桌面代理。
 
@@ -49,10 +49,10 @@ No Proxy 对以上代理来源都生效，支持 `*`、精确 host、host:port�
 - 无代理配置或命中显式 No Proxy 时继续使用原生 `fetch`。
 - 启用代理时通过 adapter 层统一 fetch 转发，保留响应流，避免破坏 streaming。
 - 当命中了自定义 CA 配置时，adapter 必须确保直连 HTTPS、HTTPS proxy 和 HTTP CONNECT 路径都使用同一份额外信任链。
-- Desktop main 必须在创建首个窗口前把 Electron 网络策略独立应用到 `defaultSession` 与 `persist:zcode-embedded-browser`：设置页存在 `httpProxy` 时两个 Session 都使用 `session.setProxy({ mode: "fixed_servers", proxyRules, proxyBypassRules })`，其中 `proxyBypassRules` 来自 `httpProxyNoProxy`；留空时 `defaultSession` 使用 `mode: "direct"`，`persist:zcode-embedded-browser` 使用 `mode: "system"`，并在更新策略后关闭旧连接池。留空时不下发 `proxyBypassRules`——bypass 规则只对 `fixed_servers` 有意义，`system` 模式的例外列表由 OS 自己维护。两个 Session 中任意一个应用失败都不得阻止另一个继续配置；配置变更只保证下次应用启动生效，设置页必须提示用户重启。
+- Desktop main 必须在创建首个窗口前把 Electron 网络策略独立应用到 `defaultSession` 与 `persist:zody-embedded-browser`：设置页存在 `httpProxy` 时两个 Session 都使用 `session.setProxy({ mode: "fixed_servers", proxyRules, proxyBypassRules })`，其中 `proxyBypassRules` 来自 `httpProxyNoProxy`；留空时 `defaultSession` 使用 `mode: "direct"`，`persist:zody-embedded-browser` 使用 `mode: "system"`，并在更新策略后关闭旧连接池。留空时不下发 `proxyBypassRules`——bypass 规则只对 `fixed_servers` 有意义，`system` 模式的例外列表由 OS 自己维护。两个 Session 中任意一个应用失败都不得阻止另一个继续配置；配置变更只保证下次应用启动生效，设置页必须提示用户重启。
 - Desktop Window Host 必须把其托管的 proxy-aware transport 作为 `RemoteAssetNetworkPort` 注入 desktop-attached remote 部署。manifest、组件归档和进度 `HEAD` 不得在 transport 缺失或失败时回退裸 `fetch`；standalone server 未注入该 port 时保持原有直连合同。
 - Chromium Session 的自定义 CA 不读取 `NODE_EXTRA_CA_CERTS`。仅当设置页存在 `httpProxyCaCertPath` 时，main 进程读取 PEM bundle，并分别用两个 Session 的 `setCertificateVerifyProc` 对链路中包含该 CA 的证书放行；留空时恢复 Chromium 默认校验。
-- `persist:zcode-coding-plan` 等其它专用 WebView Session 不继承内置浏览器的网络策略。该边界只修复 renderer 与内置 Browser / Browser Use 的显式出口配置，不增加全局证书忽略开关，也不放行未配置的自签名证书。
+- `persist:zody-coding-plan` 等其它专用 WebView Session 不继承内置浏览器的网络策略。该边界只修复 renderer 与内置 Browser / Browser Use 的显式出口配置，不增加全局证书忽略开关，也不放行未配置的自签名证书。
 - adapter 自己发请求（代理、自定义 CA、`WebFetch` 公网 DNS 校验）时，对上游状态码的处理必须与原生 `fetch` 一致，且**一次响应永远不能打死 agent 进程**：`HttpClientPort` 原样带回任何状态码，包括 200–599 之外的非标准码（LinkedIn 对爬虫回 `999`），由调用方按普通非 2xx 处理；204 / 205 / 304 等无正文状态得到空正文。proxy-aware fetch 必须返回 WHATWG `Response`，它表示不了 200–599 之外的状态，所以那一次请求以带 `code: "ZCODE_UNSUPPORTED_HTTP_STATUS"` 与 `status` 的 `TypeError` 失败，与网络错误同一条路径。把 Node 响应转成上层对象的代码一律在 `http.request` 回调里 try/catch，失败即销毁响应并 reject 这一次请求。
 - `HttpClientPort` 响应应携带脱敏后的 `egress` 摘要，至少包含是否走代理、代理来源、代理 host、是否命中 `NO_PROXY`、是否使用自定义 CA。
 - `ExecutionPort` 在 spawn 子进程前必须从基础设施层构造环境变量：先选择继承或空环境并过滤通用运行时/代理/证书变量，再恢复已封存的用户 tool 网络环境，然后注入显式网络出口策略，最后应用单次执行的 `env.set` / `env.unset` overlay。这样普通命令默认拿到用户 shell 网络配置，同时保留 app/provider 的显式网络边界和命令级例外。
@@ -73,11 +73,11 @@ No Proxy 对以上代理来源都生效，支持 `*`、精确 host、host:port�
 - `ZCODE_AGENT_CA_CERT` 能让 `WebFetch` 信任自定义 CA；`WebSearch` handler 内部模型请求会复用 provider 证书策略。
 - `network.httpProxy` 或 `ZCODE_HTTP_PROXY` 能注入到 `ExecutionPort` 子进程环境，并补齐大小写代理变量。
 - `network.caCertFile`、`AppSettings.httpProxyCaCertPath` 或 `ZCODE_AGENT_CA_CERT` 能被补齐到 Node、curl、git、Python requests 常见变量。
-- 桌面端设置页 `httpProxy` 能在重启后同时应用到 Electron `defaultSession` 与 `persist:zcode-embedded-browser`，使 renderer 和内置 Browser / Browser Use 流量走显式代理；留空时 `defaultSession` 直连，`persist:zcode-embedded-browser` 跟随系统代理，使内置浏览器与用户本机浏览器可达的站点保持一致。
+- 桌面端设置页 `httpProxy` 能在重启后同时应用到 Electron `defaultSession` 与 `persist:zody-embedded-browser`，使 renderer 和内置 Browser / Browser Use 流量走显式代理；留空时 `defaultSession` 直连，`persist:zody-embedded-browser` 跟随系统代理，使内置浏览器与用户本机浏览器可达的站点保持一致。
 - 桌面端设置页 `httpProxyNoProxy` 能在重启后同时应用到两个目标 Session 的 `proxyBypassRules`，并注入 agent 的 `ZCODE_NO_PROXY` / `NO_PROXY` / `no_proxy`。
 - 桌面端设置页 `httpProxyCaCertPath` 能在重启后注入 agent `NODE_EXTRA_CA_CERTS`，并让两个目标 Session 信任由该 CA 签发的 TLS 证书；其它专用 WebView Session 不受影响。
 - 桌面端设置页 `httpProxy`、`httpProxyNoProxy` 和 `httpProxyCaCertPath` 能控制 Window Host 的远程资源 manifest、组件归档和进度 `HEAD` 请求；显式代理失败时不得发生直连请求。
-- `defaultSession` 网络策略应用失败时，`persist:zcode-embedded-browser` 仍继续配置；反向同理，并按 Session 名称记录可诊断日志。
+- `defaultSession` 网络策略应用失败时，`persist:zody-embedded-browser` 仍继续配置；反向同理，并按 Session 名称记录可诊断日志。
 - 用户 shell 里的标准代理/证书变量不会直接进入模型请求、app runtime 或 `WebFetch`；`WebFetch` 只读取 `ZCODE_TOOL_ENV_PASSTHROUGH_JSON` 中封存的标准 proxy/no-proxy fallback。它们也会经该封存变量恢复到继承式 tool/MCP/Bash 子进程。命令级 env overlay 仍可显式覆盖或删除。
 - stdio MCP server 能继承统一网络环境，HTTP/SSE MCP transport 能获得 proxy-aware fetch。
 - 走代理时上游回 `999` / `204` / `304`：`HttpClientPort` 带回原状态码（204 / 304 正文为空）；proxy-aware fetch 对 204 / 304 返回空正文的 `Response`，对 `999` 以 `ZCODE_UNSUPPORTED_HTTP_STATUS` 失败；两者都不产生 uncaughtException（`packages/adapters/tests/http-response-status.test.ts`）。

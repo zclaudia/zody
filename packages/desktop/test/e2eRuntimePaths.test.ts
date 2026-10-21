@@ -21,7 +21,7 @@ describe("Desktop E2E runtime paths", () => {
   it("keeps runtime files below the isolated Agent execution workspace", () => {
     const e2eHomeDir = resolve("root", "isolated-e2e-home");
 
-    expect(resolveE2ERuntimeRoot(e2eHomeDir)).toBe(join(e2eHomeDir, "ZCodeProject", ".zcode-e2e"));
+    expect(resolveE2ERuntimeRoot(e2eHomeDir)).toBe(join(e2eHomeDir, "ZodyProject", ".zcode-e2e"));
     expect(resolveE2ERuntimePath("bg25", "release-child-bash")).toBe(
       join(resolveE2ERuntimeRoot(), "bg25", "release-child-bash"),
     );
@@ -59,10 +59,10 @@ describe("Desktop E2E runtime paths", () => {
     ).toBe(resolve("root", "explicit-home"));
   });
 
-  it("keeps the E2E CLI storage under the .zcoder directory", () => {
+  it("keeps the E2E CLI storage under the .zody directory", () => {
     const homeDir = resolve("root", "isolated-e2e-home");
 
-    expect(resolveE2EStorageRoot(homeDir)).toBe(join(homeDir, ".zcoder"));
+    expect(resolveE2EStorageRoot(homeDir)).toBe(join(homeDir, ".zody"));
   });
 
   it("does not allow raw system /tmp paths in Desktop E2E runtime sources", () => {

@@ -122,7 +122,7 @@ describe("dev-gateway.mjs", () => {
       expect(result.code).toBe(0);
       expect(result.stdout).toBe(`${envFile}\n`);
       expect(gateway.state.issued.map(({ type }) => type)).toEqual(["backend", "device"]);
-      expect(gateway.state.issued.map(({ namespace }) => namespace)).toEqual(["zcode", "zcode"]);
+      expect(gateway.state.issued.map(({ namespace }) => namespace)).toEqual(["zody", "zody"]);
       expectNoCredentialLeak(result.stdout + result.stderr, [
         adminToken,
         ...gateway.state.issued.map(({ token }) => token),
@@ -131,7 +131,7 @@ describe("dev-gateway.mjs", () => {
       const written = parseEnv(await readFile(envFile, "utf8"));
       expect(written.ZCODE_GATEWAY_IT_URL).toBe(gateway.url);
       expect(written.ZCODE_GATEWAY_IT_ADMIN_TOKEN).toBe(adminToken);
-      expect(written.ZCODE_GATEWAY_NAMESPACE).toBe("zcode");
+      expect(written.ZCODE_GATEWAY_NAMESPACE).toBe("zody");
       expect(written.ZCODE_GATEWAY_BACKEND_CREDENTIAL).toBe(gateway.state.issued[0].token);
       expect(written.ZCODE_GATEWAY_DEVICE_CREDENTIAL).toBe(gateway.state.issued[1].token);
     } finally {
@@ -183,7 +183,7 @@ describe("dev-gateway.mjs", () => {
       const written = parseEnv(await readFile(envFile, "utf8"));
       expect(written.ZCODE_GATEWAY_DEVICE_CREDENTIAL).toBe(gateway.state.issued[2].token);
       expect(written.ZCODE_GATEWAY_BACKEND_CREDENTIAL).toBe(backend.token);
-      expect(gateway.state.issued[2].namespace).toBe("zcode");
+      expect(gateway.state.issued[2].namespace).toBe("zody");
     } finally {
       await gateway.close();
     }

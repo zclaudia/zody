@@ -10,6 +10,7 @@ import { type Locale, PlatformChannels } from "@zcode/shared";
 // fork（F4.7）：OAuth/支付回调判定随官方账号链删除，深链只剩工作区打开。
 import { extractWorkspaceOpenPath, isWorkspaceOpenUrl } from "./desktopDeepLinkUrl.js";
 import { registerLinuxDeepLinkProtocol } from "./desktopLinuxDeepLinkRegistration.js";
+import { resolveDesktopShellIntegrationIdentity } from "./desktopShellIntegrationIdentity.js";
 
 interface DeepLinkWorkspaceGateOptions {
   canOpenWorkspace?: (workspacePath: string) => boolean;
@@ -239,7 +240,8 @@ export function registerDeepLinkProtocol(
   },
   options: { iconPath?: string } = {},
 ) {
-  const scheme = app.name === "Zody" ? "zody" : "zody-preview";
+  // 协议与 Finder 快捷操作、Windows 右键菜单共用同一份产品身份解析，避免各自硬编码分叉。
+  const scheme = resolveDesktopShellIntegrationIdentity(app.name).protocolScheme;
 
   // 外部 URL 必须位于 -- 后；否则 Windows 引号拆分可把 URL 内容变成 Electron 启动参数。
   // Inspector 早于应用 JS 和单实例锁启动，不能依赖后续 handleDeepLink 校验拦截。

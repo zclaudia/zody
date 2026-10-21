@@ -4,7 +4,7 @@ type SkillSourceType = "glm" | "unknown";
 
 export function resolveSkillSourceType(skillPath: string): SkillSourceType {
   const normalized = skillPath.replaceAll("\\", "/").toLowerCase();
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用；
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用；
   // workspace 级技能仍在 `/.zcode/skills/`，因此两个前缀都算原生来源。
   if (
     normalized.includes("/.zcode/skills/") ||

@@ -2,8 +2,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { stripOfficialAccountSelectionsFromStorage } from "@/lib/officialAccountRendererDataMigration.js";
 
-const V4_DRAFT_PREFIX = "zcode-v4-composer-drafts:v1:";
-const RECENT_PREFIX = "zcode-model-selection-recent-v1";
+const V4_DRAFT_PREFIX = "zody-v4-composer-drafts:v1:";
+const RECENT_PREFIX = "zody-model-selection-recent-v1";
 
 describe("F4.1a 渲染端官方账号模型选择清理", () => {
   beforeEach(() => {

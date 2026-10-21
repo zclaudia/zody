@@ -11,7 +11,8 @@ CDN_OPERATION="${CDN_OPERATION:-preload}"
 CDN_PRELOAD_MAX_ATTEMPTS="${CDN_PRELOAD_MAX_ATTEMPTS:-3}"
 CDN_PRELOAD_RETRY_SLEEP="${CDN_PRELOAD_RETRY_SLEEP:-5}"
 SIGNATURE_NONCE_USED_SENTINEL="__ZCODE_SIGNATURE_NONCE_USED__"
-CDN_DOMAIN_RAW="${CDN_DOMAIN:-cdn-zcode.z.ai}"
+# 修改原因：上游默认 CDN 域名不属于 Zody，不能在未显式配置时向其提交预热；CDN_DOMAIN 改为必填（逗号分隔多域名）。
+CDN_DOMAIN_RAW="${CDN_DOMAIN:-}"
 CDN_PRELOAD_PROFILE_RAW="${CDN_PRELOAD_PROFILE:-${ALIYUN_CDN_PROFILE:-}}"
 CDN_DOMAIN_TARGETS=()
 CDN_PRELOAD_PROFILE_TARGETS=()
@@ -56,7 +57,7 @@ while IFS= read -r value; do CDN_DOMAIN_TARGETS+=("$value"); done < <(parse_csv_
 while IFS= read -r value; do CDN_PRELOAD_PROFILE_TARGETS+=("$value"); done < <(parse_csv_values "$CDN_PRELOAD_PROFILE_RAW")
 
 if [[ ${#CDN_DOMAIN_TARGETS[@]} -eq 0 ]]; then
-  echo "Error: CDN_DOMAIN must contain at least one domain" >&2
+  echo "Error: CDN_DOMAIN is required and must contain at least one domain (comma-separated)" >&2
   exit 1
 fi
 

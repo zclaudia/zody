@@ -278,8 +278,8 @@ describe("createStreamTextOptions", () => {
       "x-query-id": "generate",
       "x-request-id": "req_generate",
       "x-session-id": "generate",
-      "x-zcode-session-type": "main",
-      "x-zcode-trace-id": "trace_generate",
+      "x-zody-session-type": "main",
+      "x-zody-trace-id": "trace_generate",
     });
   });
 
@@ -294,7 +294,7 @@ describe("createStreamTextOptions", () => {
           "X-Os-Category": "macos",
           "X-Os-Version": "25.0.0",
           "X-Platform": "darwin-arm64",
-          "x-zcode-session-type": "spoofed",
+          "x-zody-session-type": "spoofed",
         },
         model: {} as ResolvedAiSdkModel["model"],
         ref: { providerId: "test", modelId: "model-a" },
@@ -317,8 +317,8 @@ describe("createStreamTextOptions", () => {
       "X-Platform": "darwin-arm64",
       "x-request-id": "req_platform",
       "x-session-id": "platform",
-      "x-zcode-session-type": "subagent",
-      "x-zcode-trace-id": "trace_platform",
+      "x-zody-session-type": "subagent",
+      "x-zody-trace-id": "trace_platform",
     });
   });
 
@@ -380,8 +380,8 @@ describe("createStreamTextOptions", () => {
       "x-query-id": "stream",
       "x-request-id": "req_stream",
       "x-session-id": "stream",
-      "x-zcode-session-type": "other",
-      "x-zcode-trace-id": "trace_stream",
+      "x-zody-session-type": "other",
+      "x-zody-trace-id": "trace_stream",
     });
   });
 

@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { LoaderCircle, ShieldCheck } from "lucide-react";
-import { MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE } from "@zcode/shared";
+import {
+  DEFAULT_REMOTE_ACCESS_NAMESPACE,
+  MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE,
+} from "@zcode/shared";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
@@ -69,7 +72,7 @@ export function WebRemoteControlMobileSettingsScreen({
 }: WebRemoteControlMobileSettingsScreenProps) {
   const { intl } = useZCodeIntl();
   const [gatewayUrl, setGatewayUrl] = useState(initial?.gatewayUrl ?? "");
-  const [namespace, setNamespace] = useState(initial?.namespace ?? "zcode");
+  const [namespace, setNamespace] = useState(initial?.namespace ?? DEFAULT_REMOTE_ACCESS_NAMESPACE);
   const [credential, setCredential] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +109,7 @@ export function WebRemoteControlMobileSettingsScreen({
     try {
       await onSubmit({
         gatewayUrl: gatewayUrl.trim(),
-        namespace: namespace.trim() || "zcode",
+        namespace: namespace.trim() || DEFAULT_REMOTE_ACCESS_NAMESPACE,
         credential: trimmedCredential,
       });
     } catch (submitError) {
@@ -183,7 +186,7 @@ export function WebRemoteControlMobileSettingsScreen({
               id="mobile-remote-namespace"
               value={namespace}
               onChange={(event) => setNamespace(event.target.value)}
-              placeholder="zcode"
+              placeholder={DEFAULT_REMOTE_ACCESS_NAMESPACE}
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}

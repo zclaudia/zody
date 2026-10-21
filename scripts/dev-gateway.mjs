@@ -4,7 +4,7 @@
  *
  * 1. 起实例：设置 `ZCODE_GATEWAY_IT_URL` 时直接使用该已有实例；否则用 zclaudia-gateway 仓库的
  *    `docker-compose.yml` 起本地实例（目录用 `ZCLAUDIA_GATEWAY_DIR` 覆盖，默认 `../zclaudia-gateway`）。
- * 2. 签凭证：用管理令牌在 `zcode` namespace 下签发一张 backend 凭证（桌面）和一张 device 凭证（手机）。
+ * 2. 签凭证：用管理令牌在 `zody` namespace 下签发一张 backend 凭证（桌面）和一张 device 凭证（手机）。
  *    读回本地配置里仍然有效的凭证直接复用，所以脚本可以重复执行，不会越签越多。
  * 3. 写配置：地址、管理令牌和两张凭证写入 `.env.gateway.local`，命中根 .gitignore 的 `.env.*.local`。
  *
@@ -21,7 +21,7 @@
  *   ZCODE_GATEWAY_IT_ADMIN_TOKEN         已有实例的管理令牌（优先）
  *   GATEWAY_ADMIN_TOKEN                  管理令牌；本地实例模式下也用于启动 docker compose
  *   GATEWAY_PORT                         本地实例端口（默认取网关仓库 .env，再默认 3200）
- *   ZCODE_GATEWAY_NAMESPACE              凭证 namespace（默认 zcode）
+ *   ZCODE_GATEWAY_NAMESPACE              凭证 namespace（默认 zody，与 DEFAULT_REMOTE_ACCESS_NAMESPACE 一致）
  *   ZCODE_GATEWAY_ENV_FILE               本地配置写入路径（默认 .env.gateway.local；测试与多 worktree 并行用）
  */
 import { spawn } from "node:child_process";
@@ -37,8 +37,8 @@ const envFileOverride = process.env.ZCODE_GATEWAY_ENV_FILE?.trim();
 const stateFile = envFileOverride
   ? resolve(envFileOverride)
   : resolve(repoRoot, ".env.gateway.local");
-const backendCredentialName = "zcode-desktop-dev";
-const deviceCredentialName = "zcode-mobile-dev";
+const backendCredentialName = "zody-desktop-dev";
+const deviceCredentialName = "zody-mobile-dev";
 const requestTimeoutMs = 15_000;
 const healthTimeoutMs = 120_000;
 
@@ -116,7 +116,7 @@ const composeFile = resolve(gatewayDir, "docker-compose.yml");
 const gatewayEnvFile = externalUrl ? {} : await readEnvFile(resolve(gatewayDir, ".env"));
 const port = envValue("GATEWAY_PORT") ?? gatewayEnvFile.GATEWAY_PORT ?? "3200";
 const url = externalUrl ? externalUrl.replace(/\/+$/, "") : `http://127.0.0.1:${port}`;
-const namespace = envValue("ZCODE_GATEWAY_NAMESPACE") ?? "zcode";
+const namespace = envValue("ZCODE_GATEWAY_NAMESPACE") ?? "zody";
 const stored = await readEnvFile(stateFile);
 const storedMatchesUrl = stored.ZCODE_GATEWAY_IT_URL === url;
 

@@ -31,7 +31,7 @@ class MobileDownloadHandler(
     // 单线程队列：连续下载按触发顺序落盘，避免同时打开多个 MediaStore 写入。
     private val executor = Executors.newSingleThreadExecutor(
         ThreadFactory { runnable ->
-            Thread(runnable, "zcode-mobile-download").apply { isDaemon = true }
+            Thread(runnable, "zody-mobile-download").apply { isDaemon = true }
         },
     )
 
@@ -201,7 +201,7 @@ class MobileDownloadHandler(
     )
 
     private companion object {
-        const val TAG = "ZcodeMobileDownload"
+        const val TAG = "ZodyMobileDownload"
         const val TIMEOUT_MS = 30_000
         const val BUFFER_BYTES = 16 * 1024
     }

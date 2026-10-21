@@ -17,14 +17,14 @@
 
 - Node 固定为 `24.14.0`，与 `apps/zcode-cli/.node-version` 保持一致。
 - pnpm 固定为 `10.33.2`，与 `apps/zcode-cli/package.json` 的 `packageManager` 保持一致。
-- Electron 安装阶段通过 `ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/` 下载，避免首次安装依赖时直连 GitHub release 超时。
+- `mise.toml` 不设置 `ELECTRON_MIRROR`，依赖安装阶段的 Electron 默认从官方源下载。访问 GitHub release 不稳定时，在本机 shell 或未入库的 `mise.local.toml` 中显式设置镜像，例如 `ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/`；预构建脚本的 Node 下载源同理用 `ZCODE_NODE_DIST_MIRROR` 覆盖，默认 `https://nodejs.org/dist`。
 - 任务入口仍调用根目录 `package.json` 中已有脚本，避免 desktop / web / agent 的启动语义分叉。
-- `dev` 任务调用 `pnpm dev:desktop:test`，并注入 `ZCODE_DATA_BASE_DIR=$HOME/.zcode-dev-home`；实际应用数据落到 `$HOME/.zcode-dev-home/.zcode/`。
+- `dev` 任务调用 `pnpm dev:desktop:test`，并注入 `ZCODE_DATA_BASE_DIR=$HOME/.zody-dev-home`；实际应用数据落到 `$HOME/.zody-dev-home/.zody/`。
 - Dev 数据目录不会从正式环境自动复制凭据、设置、任务历史或插件状态；首次启动需要重新登录和配置。
 - `pnpm dev:desktop:test` 本身仍保持原有数据目录语义；隔离只属于 `mise run dev` 入口。
 - 生产环境桌面启动使用 `dev-desktop-prod`，不继承 `dev` 任务的数据目录变量。
-- 若 `$HOME/.zcode/v2/setting.json` 里配置过自定义 `dataBaseDir`，它会经 `applyEarlyDataBaseDirBootstrap()` 覆盖本变量（`setDataBaseDir()` 优先级高于 env）；需要隔离时先清掉该字段。
-- 数据目录隔离不改变 OAuth 回调协议。正式包与 Dev 仍使用 `zcode://`，因此 Dev 登录时应先退出其他 ZCode 实例，避免回调被错误进程接收。
+- 若 `$HOME/.zody/v2/setting.json` 里配置过自定义 `dataBaseDir`，它会经 `applyEarlyDataBaseDirBootstrap()` 覆盖本变量（`setDataBaseDir()` 优先级高于 env）；需要隔离时先清掉该字段。
+- 数据目录隔离不改变 OAuth 回调协议（按构建身份解析，见 `packages/desktop/src/main/desktopDeepLink.ts`），Dev 登录时应先退出其他使用同一协议的 Zody 实例，避免回调被错误进程接收。
 
 ## 与 3996dcbdb3 回滚的关系
 

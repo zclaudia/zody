@@ -367,7 +367,7 @@ function buildRemoteServerCommand(
 ): string {
   const envParts = [
     `${SERVICE_AUTHORITY_MODE_ENV}="desktop-attached-remote"`,
-    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
     `ZCODE_SERVER_RUNTIME_ROOT="$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server"`,
   ];
   for (const [key, value] of Object.entries(

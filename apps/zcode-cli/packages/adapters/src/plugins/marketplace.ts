@@ -780,7 +780,7 @@ export async function uninstallMarketplacePlugin(input: {
   pluginId: string;
   storageRoot: string;
   removeCache?: boolean;
-  /** `zcode plugins uninstall --keep-data`：删安装缓存但保留 data/<plugin-id> 用户数据目录。 */
+  /** `zody plugins uninstall --keep-data`：删安装缓存但保留 data/<plugin-id> 用户数据目录。 */
   keepData?: boolean;
 }): Promise<InstalledPluginRecord | null> {
   const state = loadInstalledPluginsSync(input.storageRoot);
@@ -1542,7 +1542,7 @@ async function clonePluginSource(
   sha?: string,
   signal?: AbortSignal,
 ): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), "zcode-plugin-src-"));
+  const dir = await mkdtemp(join(tmpdir(), "zody-plugin-src-"));
   const args = ["clone"];
   if (!sha) args.push("--depth", "1");
   if (ref) args.push("--branch", ref);
@@ -1773,7 +1773,7 @@ async function cloneMarketplaceSource(
   sparsePaths: string[] | undefined,
   signal?: AbortSignal,
 ): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), "zcode-marketplace-src-"));
+  const dir = await mkdtemp(join(tmpdir(), "zody-marketplace-src-"));
   const args = ["clone", "--depth", "1"];
   if (ref) args.push("--branch", ref);
   if (sparsePaths?.length) args.push("--filter=blob:none", "--sparse");
@@ -2409,7 +2409,7 @@ function pushManifestCompatibilityDiagnostics(input: {
     if (key in input.manifest) {
       input.diagnostics.push({
         code: "plugin_unsupported_component",
-        message: `Plugin component is diagnostic-only in this ZCode runtime: ${key}`,
+        message: `Plugin component is diagnostic-only in this Zody runtime: ${key}`,
         path: input.manifestPath,
         pluginId: input.pluginId,
         severity: "warning",

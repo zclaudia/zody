@@ -138,7 +138,7 @@ async function downloadRemoteFile(
   destinationPath: string,
 ): Promise<void> {
   const controller = new AbortController();
-  const temporaryDirectory = await mkdtemp(join(tmpdir(), "zcode-save-file-"));
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), "zody-save-file-"));
   const temporaryPath = join(temporaryDirectory, "download");
   let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
   let file: Awaited<ReturnType<typeof open>> | null = null;

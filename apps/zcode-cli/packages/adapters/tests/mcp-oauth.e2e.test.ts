@@ -189,7 +189,7 @@ describe("MCP OAuth client credentials e2e", () => {
         url: mcpUrl,
         oauth: {
           type: "authorization_code",
-          clientName: "ZCode Test",
+          clientName: "Zody Test",
           scope: MCP_SCOPE,
         },
       });
@@ -207,7 +207,7 @@ describe("MCP OAuth client credentials e2e", () => {
       ]);
       expect(registrationRequests).toHaveLength(1);
       expect(registrationRequests[0]).toMatchObject({
-        client_name: "ZCode Test",
+        client_name: "Zody Test",
         grant_types: ["authorization_code", "refresh_token"],
         response_types: ["code"],
         scope: MCP_SCOPE,
@@ -314,7 +314,7 @@ describe("MCP OAuth client credentials e2e", () => {
       url: mcpUrl,
       oauth: {
         type: "authorization_code" as const,
-        clientName: "ZCode Concurrent Test",
+        clientName: "Zody Concurrent Test",
         scope: MCP_SCOPE,
       },
     };
@@ -399,7 +399,7 @@ describe("MCP OAuth client credentials e2e", () => {
     });
     const oauthConfig = {
       type: "authorization_code" as const,
-      clientName: "ZCode exa",
+      clientName: "Zody exa",
       scope: MCP_SCOPE,
     };
     const keyPrefix = createCredentialKeyPrefix("exa", mcpUrl, oauthConfig);
@@ -1412,7 +1412,7 @@ describe("MCP OAuth client credentials e2e", () => {
       ]);
       expect(registrationRequests).toHaveLength(1);
       expect(registrationRequests[0]).toMatchObject({
-        client_name: "ZCode notion",
+        client_name: "Zody notion",
         grant_types: ["authorization_code", "refresh_token"],
         response_types: ["code"],
         scope: MCP_SCOPE,
@@ -1451,12 +1451,12 @@ describe("MCP OAuth client credentials e2e", () => {
     const serverUrl = "https://mcp.example.test/mcp";
     const keyPrefixA = createCredentialKeyPrefix(serverName, serverUrl, {
       type: "authorization_code",
-      clientName: "ZCode Test",
+      clientName: "Zody Test",
       scope: MCP_SCOPE,
     });
     const keyPrefixB = createCredentialKeyPrefix(serverName, serverUrl, {
       type: "authorization_code",
-      clientName: "ZCode Test",
+      clientName: "Zody Test",
       scope: "mcp:tools:readonly",
     });
 
@@ -1743,7 +1743,7 @@ async function handleProtectedMcpRequest(
     sendJson(res, 200, {
       authorization_servers: [options.authBaseUrl],
       resource: options.mcpUrl,
-      resource_name: "ZCode OAuth E2E MCP",
+      resource_name: "Zody OAuth E2E MCP",
       scopes_supported: [MCP_SCOPE],
     });
     return;
@@ -1886,7 +1886,7 @@ async function createTestOAuthSession(
 function testAuthorizationCodeConfig() {
   return {
     type: "authorization_code" as const,
-    clientName: "ZCode Credential Pair Test",
+    clientName: "Zody Credential Pair Test",
     scope: MCP_SCOPE,
   };
 }

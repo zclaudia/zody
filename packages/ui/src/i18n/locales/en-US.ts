@@ -1352,7 +1352,7 @@ const enUS: Record<string, string> = {
   "webRemoteControl.mobileSetup.gatewayUrl.invalid":
     "Gateway address must be an absolute http(s) URL without credentials, query or fragment.",
   "webRemoteControl.mobileSetup.namespace.label": "Namespace",
-  "webRemoteControl.mobileSetup.namespace.description": "Usually keep the default zcode.",
+  "webRemoteControl.mobileSetup.namespace.description": "Usually keep the default zody.",
   "webRemoteControl.mobileSetup.credential.label": "Device credential",
   "webRemoteControl.mobileSetup.credential.placeholder": "Paste the zgd_ device credential",
   "webRemoteControl.mobileSetup.credential.savedPlaceholder":
@@ -2131,7 +2131,7 @@ const enUS: Record<string, string> = {
     "Enter a valid http(s) gateway URL. Release builds require https.",
   "settings.remoteAccess.namespace.label": "Namespace",
   "settings.remoteAccess.namespace.description":
-    "The gateway namespace. Keep the default zcode unless your gateway administrator says otherwise.",
+    "The gateway namespace. Keep the default zody unless your gateway administrator says otherwise.",
   "settings.remoteAccess.config.save": "Save configuration",
   "settings.remoteAccess.config.saveSuccess": "Remote access configuration saved",
   "settings.remoteAccess.config.saveFailed":
@@ -3404,9 +3404,9 @@ const enUS: Record<string, string> = {
   "settings.hooks.title": "Hooks",
   "settings.workspaceFileSearch.title": "Workspace Search Scope",
   "settings.workspaceFileSearch.description":
-    "Edit .zcodeignore rules (gitignore syntax) that scope workspace file search. Takes effect on the next search after saving.",
+    "Edit .zodyignore rules (gitignore syntax) that scope workspace file search. A legacy .zcodeignore is read only when .zodyignore is absent; saving always writes .zodyignore. Takes effect on the next search after saving.",
   "settings.workspaceFileSearch.templateHint":
-    ".zcodeignore does not exist yet: the content below is the initial preview (.gitignore copy + default exclusions); it is written to the workspace only after saving.",
+    ".zodyignore does not exist yet: the content below is the initial preview (.gitignore copy + default exclusions); it is written to the workspace only after saving.",
   "settings.workspaceFileSearch.editorLabel": "Workspace search ignore rules editor",
   "settings.workspaceFileSearch.save": "Save",
   "settings.workspaceFileSearch.saved": "Saved; effective on the next search",
@@ -3417,7 +3417,7 @@ const enUS: Record<string, string> = {
   "settings.workspaceFileSearch.transformFailed":
     "Failed to apply the section operation; check the logs",
   "settings.workspaceFileSearch.reveal": "Reveal file location",
-  "settings.workspaceFileSearch.revealHint": "Save first; .zcodeignore lives at the workspace root",
+  "settings.workspaceFileSearch.revealHint": "Save first; .zodyignore lives at the workspace root",
   "settings.workspaceFileSearch.unsaved": "Unsaved changes",
   "settings.workspaceFileSearch.noWorkspace":
     "No workspace is open, so search ignore rules cannot be configured.",
@@ -4680,7 +4680,7 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.run.artifacts.nextVersion": "Next version",
   "chat.toolCall.workflow.run.artifacts.open": "Open artifact",
   // 动作。「下载」（存到用户挑的位置）仍缺席；「作为文件打开」
-  // 落的是宿主 ~/.zcoder/tmp 下的副本，不是用户挑的位置。
+  // 落的是宿主 ~/.zody/tmp 下的副本，不是用户挑的位置。
   "chat.toolCall.workflow.run.artifacts.reveal": "Reveal in workspace",
   "chat.toolCall.workflow.run.artifacts.copy": "Copy",
   "chat.toolCall.workflow.run.artifacts.copied": "Copied",

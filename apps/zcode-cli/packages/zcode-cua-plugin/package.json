@@ -3,7 +3,7 @@
   "name": "@zcode/zcode-cua-plugin",
   "version": "0.6.4",
   "private": true,
-  "description": "ZCode CUA SDK and skill package; execution is provided by the shared node_repl host.",
+  "description": "Zody CUA SDK and skill package; execution is provided by the shared node_repl host.",
   "license": "MIT",
   "type": "module",
   "main": "./scripts/computer-use-client.mjs",

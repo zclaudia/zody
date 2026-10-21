@@ -37,7 +37,7 @@ describe("ZCode API endpoints", () => {
       method: "GET",
       url: `${TEST_ZCODE_ORIGIN}/api/v1/client/scenes`,
     });
-    expect(requests[0]?.headers.get("X-ZCode-App-Version")).toBeTruthy();
+    expect(requests[0]?.headers.get("X-Zody-App-Version")).toBeTruthy();
     expect(requests[0]?.headers.get("X-Platform")).toBe(`${process.platform}-${process.arch}`);
     expect(requests[0]?.headers.get("x-request-id")).toBeTruthy();
   });

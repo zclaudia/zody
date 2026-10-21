@@ -2446,7 +2446,7 @@ export class BrowserGuestManager {
 
   private async installRecordingCursorOverlay(guest: GuestWebContents): Promise<void> {
     await guest.executeJavaScript(`(() => {
-      const id = "__zcode_browser_recording_cursor";
+      const id = "__zody_browser_recording_cursor";
       document.getElementById(id)?.remove();
       const cursor = document.createElement("div");
       cursor.id = id;
@@ -2463,16 +2463,16 @@ export class BrowserGuestManager {
       const up = () => {
         cursor.style.transform = "translate(-50%,-50%) scale(1)";
       };
-      window["__zcodeBrowserRecordingCursorCleanup"]?.();
+      window["__zodyBrowserRecordingCursorCleanup"]?.();
       window.addEventListener("mousemove", move, true);
       window.addEventListener("mousedown", down, true);
       window.addEventListener("mouseup", up, true);
-      window["__zcodeBrowserRecordingCursorCleanup"] = () => {
+      window["__zodyBrowserRecordingCursorCleanup"] = () => {
         window.removeEventListener("mousemove", move, true);
         window.removeEventListener("mousedown", down, true);
         window.removeEventListener("mouseup", up, true);
         cursor.remove();
-        delete window["__zcodeBrowserRecordingCursorCleanup"];
+        delete window["__zodyBrowserRecordingCursorCleanup"];
       };
     })()`);
   }
@@ -2480,7 +2480,7 @@ export class BrowserGuestManager {
   private async removeRecordingCursorOverlay(guest: GuestWebContents): Promise<void> {
     if (guest.isDestroyed()) return;
     await guest
-      .executeJavaScript('window["__zcodeBrowserRecordingCursorCleanup"]?.()')
+      .executeJavaScript('window["__zodyBrowserRecordingCursorCleanup"]?.()')
       .catch(() => undefined);
   }
 

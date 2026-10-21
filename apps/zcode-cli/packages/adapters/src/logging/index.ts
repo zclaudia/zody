@@ -250,5 +250,5 @@ function ensureLogDir(logDir: string): void {
 }
 
 function getLogFileName(): string {
-  return `zcode-${formatLocalLogDate(new Date())}.jsonl`;
+  return `zody-${formatLocalLogDate(new Date())}.jsonl`;
 }

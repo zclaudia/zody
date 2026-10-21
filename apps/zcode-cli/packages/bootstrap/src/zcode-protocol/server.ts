@@ -397,7 +397,7 @@ export class ZCodeProtocolAgentServer {
   shutdown(): Promise<void> {
     if (this.shutdownPromise) return this.shutdownPromise;
     this.shutdownPromise = this.runtimeResources.close();
-    const error = new Error("ZCode Protocol runtime stopping");
+    const error = new Error("Zody Protocol runtime stopping");
     this.disconnectClient(error);
     this.messageSink = undefined;
     this.clearPostResponseMessages();
@@ -897,7 +897,7 @@ export class ZCodeProtocolAgentServer {
     if (!this.messageSink) {
       throw new ProtocolRequestError(
         PROTOCOL_CLIENT_REQUEST_ERROR_CODES.noClientAttached,
-        `No ZCode Protocol client is attached for ${method}`,
+        `No Zody Protocol client is attached for ${method}`,
       );
     }
 

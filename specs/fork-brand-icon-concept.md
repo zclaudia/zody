@@ -2,7 +2,7 @@
 
 ## 目标与范围
 
-为基于 ZCode 独立迭代的项目设计新的应用图标。当前尚未确定独立品牌名，采用无文字符号。初轮设计提案 PNG 保存在 `output/brand/`。用户已选定缩小主体后的第一版，并授权替换 Desktop 与 Android 应用图标；接入规则见 [应用图标接入](fork-app-icon-integration.md)。
+为基于 ZCode 独立迭代的项目设计新的应用图标。当前尚未确定独立品牌名，采用无文字符号。初轮设计提案 PNG 保存在 `docs/brand/`。用户已选定缩小主体后的第一版，并授权替换 Desktop 与 Android 应用图标；接入规则见 [应用图标接入](fork-app-icon-integration.md)。
 
 ## 设计规则
 
@@ -32,7 +32,7 @@
 
 内置 imagegen 编辑按 85% 的目标比例进行多轮校准。最终生成图为近似比例调整，薄荷青主体的像素包围盒相对原版宽度缩小约 16.4%、高度缩小约 17.6%；不将生成式编辑视为像素级精确变换。
 
-本提案由 `output/brand/fork-icon-v1.png` 保存，生成提示词由同目录 `prompt.txt` 保存。现有 Desktop、Web 图标入口继续使用各自现有资源。本轮不修改状态、服务、协议或运行时接口。
+本提案由 `docs/brand/fork-icon-v1.png` 保存，生成提示词由同目录 `prompt.txt` 保存。现有 Desktop、Web 图标入口继续使用各自现有资源。本轮不修改状态、服务、协议或运行时接口。
 
 ## 验收
 

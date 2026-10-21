@@ -14,13 +14,15 @@ import { isOpenCodeGoBaseUrl } from "./opencode-session.js";
 import { MODEL_QUERY_SOURCE_HEADER } from "./model-request-headers.js";
 import type { ModelStatusContext } from "./runner-status.js";
 
-const MODEL_TRACE_HEADER = "x-zcode-trace-id";
+const MODEL_TRACE_HEADER = "x-zody-trace-id";
 const MODEL_REQUEST_HEADER = "x-request-id";
 const MODEL_SESSION_HEADER = "x-session-id";
 const MODEL_QUERY_HEADER = "x-query-id";
-// Coding Plan 服务端使用该请求级 Header 区分 main/subagent/side_chat/other 来源。
+// 该请求级 Header 区分 main/subagent/side_chat/other 来源。
 // 它不是 Provider 静态能力或鉴权材料，必须由调用上下文生成并覆盖同名静态 Header。
-const MODEL_SESSION_TYPE_HEADER = "x-zcode-session-type";
+// 品牌改名：头名随 Zody 改为 x-zody-*（见 specs/zody-brand-residual-cleanup.md）；已知代价是
+// 上游 Coding Plan 服务端按旧头名 x-zcode-session-type 做的来源统计不再生效。
+const MODEL_SESSION_TYPE_HEADER = "x-zody-session-type";
 const SESSION_ID_INTERNAL_PREFIX = "sess_";
 const SESSION_ID_SUBAGENT_PREFIX = "subagent_agent_";
 const QUERY_ID_INTERNAL_PREFIX = "query_";

@@ -83,7 +83,7 @@ export function buildElectronManifestUrl(options: {
   if (!manifestUrl && !options.endpointOrigin.trim()) {
     // fork（F3.1）：默认端点为空表示未配置。没有显式 manifest URL 时直接失败关闭，
     // 不再把空 origin 交给 URL 解析（也不回落官方地址）。
-    throw new Error("ZCode endpoint 未配置，无法构建更新 manifest URL");
+    throw new Error("Zody endpoint 未配置，无法构建更新 manifest URL");
   }
   const url = manifestUrl
     ? new URL(manifestUrl)
@@ -262,7 +262,7 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
       if (this.options.manifestUrl?.trim()) {
         return "";
       }
-      throw new Error("ZCode endpoint 未配置，无法检查更新");
+      throw new Error("Zody endpoint 未配置，无法检查更新");
     }
     return normalizeZCodeEndpointOrigin(resolved);
   }

@@ -37,7 +37,7 @@ export interface McpSourceDescriptor {
 export const MCP_SOURCE_DESCRIPTORS: McpSourceDescriptor[] = [
   {
     source: "zcodeagentmcp",
-    // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
+    // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
     configDirSegments: [ZCODE_DATA_ROOT_DIR_NAME, "cli"],
     fileName: "config.json",
     format: "json",

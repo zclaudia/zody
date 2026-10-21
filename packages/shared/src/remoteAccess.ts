@@ -9,7 +9,7 @@ import type { WebRemoteControlStatus } from "./web-remote-control.js";
  */
 
 /** namespace 默认值；设备凭证的 discovery 接口不返回 namespace，手机设置页可编辑。 */
-export const DEFAULT_REMOTE_ACCESS_NAMESPACE = "zcode";
+export const DEFAULT_REMOTE_ACCESS_NAMESPACE = "zody";
 
 /**
  * 手机 release 构建缺少原生安全存储时的固定错误文案。

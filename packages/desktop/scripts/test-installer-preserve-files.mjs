@@ -26,7 +26,7 @@ if (process.platform !== "win32") {
     getBinFromUrl("nsis-3.0.4.1", "nsis-3.0.4.1.7z", NSIS_CHECKSUM),
     getBinFromUrl("nsis-resources-3.4.1", "nsis-resources-3.4.1.7z", NSIS_RESOURCES_CHECKSUM),
   ]);
-  const tempRoot = mkdtempSync(join(tmpdir(), "zcode-preserve-files-"));
+  const tempRoot = mkdtempSync(join(tmpdir(), "zody-preserve-files-"));
   try {
     const makensisPath = resolve(nsisDir, "makensis.exe");
     const uninstallerOutput = join(tempRoot, "uninstaller.exe");
@@ -69,14 +69,14 @@ if (process.platform !== "win32") {
         stdio: ["ignore", "pipe", "pipe"],
       });
       execFileSync(outputPath, ["/S", `/D=${installDir}`], { encoding: "utf-8" });
-      const ownedFileExists = existsSync(join(installDir, "owned-by-zcode.txt"));
+      const ownedFileExists = existsSync(join(installDir, "owned-by-zody.txt"));
       if (omitManifest !== ownedFileExists) {
         throw new Error(`${scenario}: ownership fallback mismatch`);
       }
       if (!existsSync(join(installDir, "user-data.txt"))) {
         throw new Error(`${scenario}: unrelated file was removed`);
       }
-      if (readFileSync(join(installDir, "ZCode.exe")).length === 0) {
+      if (readFileSync(join(installDir, "Zody.exe")).length === 0) {
         throw new Error(`${scenario}: application payload was not installed`);
       }
     }

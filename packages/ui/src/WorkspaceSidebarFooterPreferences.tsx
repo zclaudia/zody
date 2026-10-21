@@ -14,7 +14,7 @@ import {
   resolveDesktopZoomFactorForLevel,
 } from "@zcode/shared";
 import { Minus, Monitor, Moon, Plus, Sun } from "lucide-react";
-import { ZCODER_BRAND_NAME, zcoderLogoUrl } from "@/brand.js";
+import { ZODY_BRAND_NAME, zodyLogoUrl } from "@/brand.js";
 import { cn } from "@/components/lib/utils.js";
 import {
   Select,
@@ -231,8 +231,8 @@ export function WorkspaceSidebarFooterPreferences({
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-2.5 px-2 py-2">
-        <img src={zcoderLogoUrl} alt="" width={28} height={28} className="size-7 shrink-0" />
-        <span className="text-ui-base font-semibold text-foreground">{ZCODER_BRAND_NAME}</span>
+        <img src={zodyLogoUrl} alt="" width={28} height={28} className="size-7 shrink-0" />
+        <span className="text-ui-base font-semibold text-foreground">{ZODY_BRAND_NAME}</span>
       </div>
       <Separator className="my-1" />
       <PreferenceRow pref="theme" label={intl.formatMessage({ id: "settings.themeMode" })}>

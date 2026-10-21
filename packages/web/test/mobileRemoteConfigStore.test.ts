@@ -40,7 +40,7 @@ describe("mobile remote config store (T4.2)", () => {
 
     expect(await store.load()).toEqual({
       gatewayUrl: "http://localhost:3200",
-      namespace: "zcode",
+      namespace: "zody",
       credential: "zgd_abc",
       backendId: "backend-1",
     });
@@ -67,7 +67,7 @@ describe("mobile remote config store (T4.2)", () => {
         { gatewayUrl: "https://gateway.example.com", credential: "zgd_abc" },
         release,
       ),
-    ).toMatchObject({ gatewayUrl: "https://gateway.example.com", namespace: "zcode" });
+    ).toMatchObject({ gatewayUrl: "https://gateway.example.com", namespace: "zody" });
   });
 
   it("treats corrupt or invalid stored values as unconfigured", async () => {

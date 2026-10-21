@@ -86,7 +86,6 @@ vi.mock("../src/main/desktopWindowButtonPosition.js", () => ({
 
 vi.mock("../src/main/mcpUserDirectory/index.js", () => ({
   loadCliMcpFromUserDirectory: vi.fn(),
-  migrateLegacyCommonMcp: vi.fn(),
   saveCliMcpToUserDirectory: vi.fn(),
 }));
 

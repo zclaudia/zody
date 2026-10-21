@@ -247,7 +247,7 @@ describe("createMcpAdapter", () => {
 
     expect(capturedClientInfo).toEqual([
       {
-        name: "zcode",
+        name: "zody",
         version: "9.8.7",
       },
     ]);
@@ -264,7 +264,7 @@ describe("createMcpAdapter", () => {
     };
     logger.child.mockReturnValue(logger);
     const adapter = createMcpAdapter({
-      clientName: "zcode-test",
+      clientName: "zody-test",
       clientVersion: "9.8.7",
       connectionContext: {
         mcpConnectionId: "connection-session-1",
@@ -289,7 +289,7 @@ describe("createMcpAdapter", () => {
       "MCP server connected",
       expect.objectContaining({
         event: "mcp.server.connected",
-        mcpClientName: "zcode-test",
+        mcpClientName: "zody-test",
         mcpClientVersion: "9.8.7",
         mcpConnectionId: "connection-session-1",
         mcpIsolation: "session",
@@ -306,7 +306,7 @@ describe("createMcpAdapter", () => {
       "MCP server connected",
       expect.objectContaining({
         event: "mcp.server.connected",
-        mcpClientName: "zcode-test",
+        mcpClientName: "zody-test",
         mcpClientVersion: "9.8.7",
         mcpProtocolEra: "legacy",
         mcpProtocolVersion: "2025-11-25",
@@ -921,7 +921,7 @@ describe("createMcpAdapter", () => {
 
   it("passes OAuth client credentials providers into HTTP and SSE MCP transports", async () => {
     const adapter = createMcpAdapter({
-      clientName: "zcode-test",
+      clientName: "zody-test",
     });
 
     await adapter.connectServer("http-demo", {
@@ -971,7 +971,7 @@ describe("createMcpAdapter", () => {
       client_secret: "http-secret",
     });
     expect(httpOptions.authProvider?.clientMetadata).toMatchObject({
-      client_name: "zcode-test-http-demo",
+      client_name: "zody-test-http-demo",
       grant_types: ["client_credentials"],
       scope: "mcp:tools",
     });
@@ -980,7 +980,7 @@ describe("createMcpAdapter", () => {
       client_secret: "sse-secret",
     });
     expect(sseOptions.authProvider?.clientMetadata).toMatchObject({
-      client_name: "zcode-test-sse-demo",
+      client_name: "zody-test-sse-demo",
       grant_types: ["client_credentials"],
     });
   });
@@ -996,7 +996,7 @@ describe("createMcpAdapter", () => {
       url: "https://mcp.example.test/mcp",
       oauth: {
         type: "authorization_code",
-        clientName: "ZCode",
+        clientName: "Zody",
       },
     });
 
@@ -1029,7 +1029,7 @@ describe("createMcpAdapter", () => {
         url: "https://mcp.example.test/mcp",
         oauth: {
           type: "authorization_code",
-          clientName: "ZCode",
+          clientName: "Zody",
         },
       },
     });
@@ -1048,7 +1048,7 @@ describe("createMcpAdapter", () => {
         url: "https://mcp.example.test/mcp",
         oauth: {
           type: "authorization_code",
-          clientName: "ZCode",
+          clientName: "Zody",
         },
       },
     });
@@ -1087,7 +1087,7 @@ describe("createMcpAdapter", () => {
         url: "https://mcp.example.test/mcp",
         oauth: {
           type: "authorization_code" as const,
-          clientName: "ZCode",
+          clientName: "Zody",
         },
       },
     };
@@ -1132,7 +1132,7 @@ describe("createMcpAdapter", () => {
         url: "https://mcp.example.test/mcp",
         oauth: {
           type: "authorization_code" as const,
-          clientName: "ZCode",
+          clientName: "Zody",
         },
       },
     };
@@ -1187,7 +1187,7 @@ describe("createMcpAdapter", () => {
         timeoutMs: 2_000,
         oauth: {
           type: "authorization_code",
-          clientName: "ZCode",
+          clientName: "Zody",
         },
       },
       {
@@ -1477,7 +1477,7 @@ describe("createMcpAdapter", () => {
   });
 
   it("converges Phase 2 orchestration errors to a retryable failed server status", async () => {
-    const credentialError = new Error("Unable to read shared ZCode credentials");
+    const credentialError = new Error("Unable to read shared Zody credentials");
     const credentialStore = {
       filePath: "/tmp/zcode-unreadable-credentials.json",
       load: vi.fn(async () => {
@@ -1505,7 +1505,7 @@ describe("createMcpAdapter", () => {
       await expect(adapter.connectConfiguredServers({ broken: config })).resolves.toMatchObject({
         statuses: {
           broken: {
-            error: "Unable to read shared ZCode credentials",
+            error: "Unable to read shared Zody credentials",
             failureKind: "oauth_authorization_failed",
             status: "failed",
           },
@@ -1548,7 +1548,7 @@ describe("createMcpAdapter", () => {
       url: "https://mcp.example.test/mcp",
       oauth: {
         type: "authorization_code",
-        clientName: "ZCode",
+        clientName: "Zody",
       },
     });
 
@@ -1575,7 +1575,7 @@ describe("createMcpAdapter", () => {
 
   it("passes OAuth client credentials providers into HTTP and SSE MCP transports", async () => {
     const adapter = createMcpAdapter({
-      clientName: "zcode-test",
+      clientName: "zody-test",
     });
 
     await adapter.connectServer("http-demo", {
@@ -1625,7 +1625,7 @@ describe("createMcpAdapter", () => {
       client_secret: "http-secret",
     });
     expect(httpOptions.authProvider?.clientMetadata).toMatchObject({
-      client_name: "zcode-test-http-demo",
+      client_name: "zody-test-http-demo",
       grant_types: ["client_credentials"],
       scope: "mcp:tools",
     });
@@ -1634,7 +1634,7 @@ describe("createMcpAdapter", () => {
       client_secret: "sse-secret",
     });
     expect(sseOptions.authProvider?.clientMetadata).toMatchObject({
-      client_name: "zcode-test-sse-demo",
+      client_name: "zody-test-sse-demo",
       grant_types: ["client_credentials"],
     });
   });
@@ -1650,7 +1650,7 @@ describe("createMcpAdapter", () => {
       url: "https://mcp.example.test/mcp",
       oauth: {
         type: "authorization_code",
-        clientName: "ZCode",
+        clientName: "Zody",
       },
     });
 
@@ -1688,7 +1688,7 @@ describe("createMcpAdapter", () => {
       url: "https://mcp.example.test/mcp",
       oauth: {
         type: "authorization_code",
-        clientName: "ZCode",
+        clientName: "Zody",
       },
     });
 

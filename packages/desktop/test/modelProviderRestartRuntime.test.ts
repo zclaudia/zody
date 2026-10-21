@@ -50,7 +50,7 @@ describe("model provider restart runtime", () => {
     await seedTurboAgentStartupModel("provider-a", "model-a");
 
     expect(
-      JSON.parse(await readFile(join(homeDir, ".zcoder", "v2", "provider_config.json"), "utf-8")),
+      JSON.parse(await readFile(join(homeDir, ".zody", "v2", "provider_config.json"), "utf-8")),
     ).toEqual({
       schemaVersion: 1,
       config: {
@@ -60,8 +60,11 @@ describe("model provider restart runtime", () => {
         defaultModelSelection: { providerId: "provider-a", modelId: "model-a" },
       },
     });
-    await expect(
-      stat(join(homeDir, "ZCodeProject", ".zcode", "config.json")),
-    ).rejects.toMatchObject({ code: "ENOENT" });
+    // 新旧项目级配置目录都不应被写入。
+    for (const projectConfigDir of [".zody", ".zcode"]) {
+      await expect(
+        stat(join(homeDir, "ZodyProject", projectConfigDir, "config.json")),
+      ).rejects.toMatchObject({ code: "ENOENT" });
+    }
   });
 });

@@ -71,19 +71,16 @@ const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const isBootstrapWithRemote = process.env.ZCODE_BOOTSTRAP_WITH_REMOTE === "1";
 
 /**
- * Node dist 下载源。默认走国内镜像，`ZCODE_NODE_DIST_MIRROR` 可覆盖（与
- * `.gitlab/ci/00-workflow.yml` 的同名 CI 变量、`scripts/cua-helper-sea-base.mjs` 同一约定）。
+ * Node dist 下载源。默认使用官方 `https://nodejs.org/dist`；需要镜像时用
+ * `ZCODE_NODE_DIST_MIRROR` 显式覆盖，例如
+ * `ZCODE_NODE_DIST_MIRROR=https://cdn.npmmirror.com/binaries/node`
+ * （与 `packages/zcode-server-cli/src/packaging/nodeDistMirror.ts` 同一约定）。
  *
- * 这里原本硬编码 `https://nodejs.org/dist`，而 macOS
- * runner 连不上它 —— 3 次尝试全部 `UND_ERR_CONNECT_TIMEOUT`（10s）。更糟的是本文件的报错文案
- * 一直在让人「检查 Node.js 镜像地址」，可当时根本没有这个旋钮。
- *
- * 为什么之前没暴露：`mock-cdn` 靠 GIT_CLEAN_FLAGS 排除项跨 job 持久化，而
- * `build:remote:assets` 每次都 `rm -rf` 掉除自己 $VERSION 以外的所有 release 目录。
- * 不同版本目录因此互相驱逐持久化产物，谁被驱逐谁就必须回源下载。
- * 平时都是 `[skip] already exists`，所以这条网络路径长期没被真正走过。
+ * 修改原因：Zody 首发规格要求默认官方下载源，镜像只能显式启用
+ * （specs/zody-brand-residual-cleanup.md「下载镜像」）。保留环境变量覆盖，
+ * 供连不上 nodejs.org 的 runner 或本机使用。
  */
-export const DEFAULT_NODE_DIST_BASE = "https://cdn.npmmirror.com/binaries/node";
+export const DEFAULT_NODE_DIST_BASE = "https://nodejs.org/dist";
 
 export function nodeDistBase(env = process.env) {
   const mirror = env.ZCODE_NODE_DIST_MIRROR?.trim();

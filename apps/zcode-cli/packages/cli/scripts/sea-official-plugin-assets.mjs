@@ -138,14 +138,6 @@ export const officialSeaPlugins = [
   },
   {
     marketplace: "zcode-plugins-official",
-    name: "restore-legacy-sessions",
-    packageName: "@zcode/restore-legacy-sessions-plugin",
-    requiresRuntime: false,
-    rootPath: join("packages", "restore-legacy-sessions-plugin"),
-    version: "0.1.0",
-  },
-  {
-    marketplace: "zcode-plugins-official",
     name: "skill-creator",
     packageName: "@zcode/skill-creator-plugin",
     requiresRuntime: false,

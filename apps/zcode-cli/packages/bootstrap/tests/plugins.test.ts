@@ -576,7 +576,7 @@ describe("ZCode plugins", () => {
             id: "zcode-plugins-official",
             isOfficial: true,
             name: "zcode-plugins-official",
-            pluginCount: 13,
+            pluginCount: 12,
             // fork（F6.2）：官方目录只来自随包 seed，登记为本地 file 源，断网可读。
             source: {
               source: "file",
@@ -1559,7 +1559,7 @@ describe("ZCode plugins", () => {
       await writeTestFile(join(targetRoot, ".zcode-plugin", "plugin.json"), "{}");
       await writeTestFile(join(targetRoot, "hooks", "run-hook.cmd"), "#!/usr/bin/env bash\n");
       await writeTestFile(
-        join(targetRoot, ".zcode-plugin-seed.json"),
+        join(targetRoot, ".zody-plugin-seed.json"),
         JSON.stringify({
           hash: hashText(JSON.stringify(seedFiles.map(({ path, sha256 }) => [path, sha256]))),
           marketplace: "zcode-plugins-official",
@@ -1581,8 +1581,14 @@ describe("ZCode plugins", () => {
     }
   });
 
-  it("projects restore legacy sessions skills and commands only when enabled", async () => {
-    const root = await mkdtemp(join(tmpdir(), "zcode-bootstrap-restore-plugin-enabled-"));
+  it("does not ship restore-legacy-sessions as an official plugin even when enabled in config", async () => {
+    // Zody 首发不再随发行提供 restore-legacy-sessions：官方定义中移除后，即使旧配置启用它也不会被解析出来。
+    expect(
+      OFFICIAL_PLUGIN_DEFINITIONS.some(
+        (definition) => definition.name === "restore-legacy-sessions",
+      ),
+    ).toBe(false);
+    const root = await mkdtemp(join(tmpdir(), "zody-bootstrap-restore-plugin-removed-"));
     const configPath = join(root, "config.json");
     const pluginStorageRoot = join(root, "plugins");
 
@@ -1604,41 +1610,17 @@ describe("ZCode plugins", () => {
         userConfigPath: configPath,
         workingDirectory: root,
       });
-      const plugin = outcome.plugins.find((item) => item.id === RESTORE_LEGACY_SESSIONS_PLUGIN_ID);
-      const expectedRoot = join(
-        pluginStorageRoot,
-        OFFICIAL_RESTORE_LEGACY_SESSIONS_PLUGIN_CACHE_PATH,
+      expect(outcome.plugins.some((item) => item.id === RESTORE_LEGACY_SESSIONS_PLUGIN_ID)).toBe(
+        false,
       );
-
-      expect(plugin).toMatchObject({
-        commandRootCount: 1,
-        declaredMcpServerNames: [],
-        enabled: true,
-        mcpServerNames: [],
-        name: "restore-legacy-sessions",
-        rootPath: expectedRoot,
-        skillCount: 1,
-        skillRootCount: 1,
-      });
-      expect(outcome.skillRoots).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            path: join(expectedRoot, "skills"),
-            scope: "system",
-            source: "plugin",
-          }),
-        ]),
-      );
-      expect(outcome.commandRoots).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            path: join(expectedRoot, "commands"),
-            scope: "system",
-            source: "plugin",
-          }),
-        ]),
-      );
-      expect(Object.keys(outcome.mcpServers)).not.toContain("restore-legacy-sessions");
+      expect(
+        existsSync(join(pluginStorageRoot, OFFICIAL_RESTORE_LEGACY_SESSIONS_PLUGIN_CACHE_PATH)),
+      ).toBe(false);
+      expect(
+        [...outcome.skillRoots, ...outcome.commandRoots].some((item) =>
+          item.path.includes("restore-legacy-sessions"),
+        ),
+      ).toBe(false);
     } finally {
       await rm(root, { force: true, recursive: true });
     }
@@ -1709,7 +1691,7 @@ describe("ZCode plugins", () => {
           "utf8",
         ),
       ).resolves.toContain(IOS_SIMULATOR_PLUGIN_ID.split("@")[0] ?? "ios-simulator");
-      expect(existsSync(join(expectedRoot, ".zcode-plugin-seed.json"))).toBe(true);
+      expect(existsSync(join(expectedRoot, ".zody-plugin-seed.json"))).toBe(true);
       expect(existsSync(join(expectedRoot, "dist", "mcp", "server.js"))).toBe(
         existsSync(BUNDLED_PLUGIN_DIST_PATH),
       );
@@ -1801,7 +1783,7 @@ describe("ZCode plugins", () => {
           "server.js",
         ),
       );
-      expect(existsSync(join(expectedRoot, ".zcode-plugin-seed.json"))).toBe(true);
+      expect(existsSync(join(expectedRoot, ".zody-plugin-seed.json"))).toBe(true);
       expect(existsSync(join(expectedRoot, "dist", "mcp", "server.js"))).toBe(
         existsSync(BUNDLED_ANDROID_PLUGIN_DIST_PATH),
       );
@@ -2357,7 +2339,7 @@ describe("ZCode plugins", () => {
       expect(
         overview.marketplaces.find((marketplace) => marketplace.id === "zcode-plugins-official"),
       ).toMatchObject({
-        pluginCount: 13,
+        pluginCount: 12,
         source: {
           source: "file",
           path: join(

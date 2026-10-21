@@ -488,7 +488,7 @@ export function App() {
                 <Network className="size-4 text-brand" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-ui-lg font-medium">ZCode Developer Docs</h1>
+                <h1 className="text-ui-lg font-medium">Zody Developer Docs</h1>
                 <p className="text-ui-sm text-foreground-subtle">{viewDescription}</p>
               </div>
             </div>
@@ -1067,7 +1067,7 @@ function StdioTrafficView() {
   const [lastUpdatedAt, setLastUpdatedAt] = useState("--:--:--.---");
   const [realTraffic, setRealTraffic] = useState<RealTrafficState>({
     status: "loading",
-    logDir: "~/.zcode/v2/dev/stdio-traffic",
+    logDir: "~/.zody/v2/dev/stdio-traffic",
     records: [],
   });
   const liveSequenceRef = useRef(0);
@@ -1243,7 +1243,7 @@ function StdioTrafficView() {
   const sourcePath =
     trafficSourceMode === "mock"
       ? "mock replay"
-      : (realTraffic.filePath ?? realTraffic.logDir ?? "~/.zcode/v2/dev/stdio-traffic");
+      : (realTraffic.filePath ?? realTraffic.logDir ?? "~/.zody/v2/dev/stdio-traffic");
   const emptyTrafficMessage =
     trafficSourceMode === "mock"
       ? "mock replay 暂无 frame。"

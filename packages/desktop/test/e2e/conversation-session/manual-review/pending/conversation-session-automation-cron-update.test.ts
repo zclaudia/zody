@@ -192,7 +192,7 @@ interface AutomationRecord {
 }
 
 function automationDatabasePath(): string {
-  return join(homedir(), ".zcoder", "v2", "tasks-index.sqlite");
+  return join(homedir(), ".zody", "v2", "tasks-index.sqlite");
 }
 
 function readAutomationRecordById(

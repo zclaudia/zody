@@ -115,7 +115,7 @@ describe("WelcomeScreen（fork BYOK 引导）", () => {
     expect(html).not.toContain("login.apiKey.getApiKey");
   });
 
-  it("采用左右分栏：左侧 zcoder 品牌栏，右侧标题与表单", async () => {
+  it("采用左右分栏：左侧 Zody 品牌栏，右侧标题与表单", async () => {
     providerTemplatesState.templates = [];
     const { WelcomeScreen } = await import("@/WelcomeScreen.js");
     const html = renderToStaticMarkup(createElement(WelcomeScreen, { onComplete: vi.fn() }));
@@ -131,7 +131,7 @@ describe("WelcomeScreen（fork BYOK 引导）", () => {
     expect(html).toContain("login.hero.localKeys.title");
     expect(html).toContain("login.hero.switchModels.title");
     // 品牌名为专有名词，不走 i18n；新 logo 以图片渲染。
-    expect(html).toContain(">zcoder<");
+    expect(html).toContain(">Zody<");
     expect(html).toContain("<img");
     // 不再叠加主题 hero 渐变背景和旧 Z 字形 logo 壳。
     expect(html).not.toContain("bg-[linear-gradient");

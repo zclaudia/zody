@@ -293,7 +293,7 @@ test("plugins scope validation rejects local and unknown scopes", async () => {
   );
   assert.match(
     local.stderr.output(),
-    /Scope 'local' is not supported by zcode\. Use: user, project/,
+    /Scope 'local' is not supported by zody\. Use: user, project/,
   );
 
   const bogus = context([]);
@@ -480,7 +480,7 @@ test("plugins update reports version transitions and up-to-date state", async ()
   assert.equal(code, 0);
   assert.match(
     changed.stdout.output(),
-    /Updated plugin hello@market from 1\.2\.0 to 2\.0\.0\. Restart zcode to apply\./,
+    /Updated plugin hello@market from 1\.2\.0 to 2\.0\.0\. Restart zody to apply\./,
   );
 
   const same = context([]);

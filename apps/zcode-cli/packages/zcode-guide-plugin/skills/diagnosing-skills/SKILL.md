@@ -1,6 +1,6 @@
 ---
 name: diagnosing-skills
-description: Use to diagnose and fix ZCode skill configuration problems in the ZCode client. Applies when a skill is not discovered, is installed but does not trigger automatically, is shadowed by a higher-precedence skill of the same name, is disabled by configuration, has a SKILL.md frontmatter error, fails to load because its description is too long, or disappears because the plugin providing it is disabled. Provides the discovery order, how to inspect skills in the client, common pitfalls, and a step-by-step localization and repair workflow.
+description: Use to diagnose and fix Zody skill configuration problems in the Zody client. Applies when a skill is not discovered, is installed but does not trigger automatically, is shadowed by a higher-precedence skill of the same name, is disabled by configuration, has a SKILL.md frontmatter error, fails to load because its description is too long, or disappears because the plugin providing it is disabled. Provides the discovery order, how to inspect skills in the client, common pitfalls, and a step-by-step localization and repair workflow.
 ---
 
 > Path contract: write user-level Zody configuration under `~/.zody/` and new project configuration/resources under `.zody/`. Existing project `.zcode/` content is a read-only legacy fallback; do not direct users to create or edit it. Keep `.agents/` paths for shared agent conventions and `.zcode-plugin/plugin.json` for plugin manifests.

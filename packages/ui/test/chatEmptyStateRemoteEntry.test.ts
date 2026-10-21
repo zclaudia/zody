@@ -289,8 +289,8 @@ describe("ChatEmptyWorkspacePreviewMenu", () => {
       getScratchWorkspaceNameErrorKind,
     } = await import("../src/ChatEmptyState.js");
 
-    expect(getScratchWorkspaceLocationHint("")).toBe("~/ZCodeProject/");
-    expect(getScratchWorkspaceLocationHint("demo")).toBe("~/ZCodeProject/demo");
+    expect(getScratchWorkspaceLocationHint("")).toBe("~/ZodyProject/");
+    expect(getScratchWorkspaceLocationHint("demo")).toBe("~/ZodyProject/demo");
     expect(getScratchWorkspaceNameErrorKind("")).toBe("required");
     expect(getScratchWorkspaceNameErrorKind("bad/name")).toBe("separator");
     expect(getScratchWorkspaceNameErrorKind("bad\\name")).toBe("separator");

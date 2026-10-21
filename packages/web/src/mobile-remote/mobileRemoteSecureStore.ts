@@ -101,7 +101,7 @@ export interface CreateMobileRemoteSecureStoreOptions {
   storagePrefix?: string;
 }
 
-const DEFAULT_STORAGE_PREFIX = "zcode-mobile-remote:";
+const DEFAULT_STORAGE_PREFIX = "zody-mobile-remote:";
 
 /**
  * 生产/发布构建使用的实现：只有原生桥。

@@ -40,7 +40,7 @@ interface StorageLike {
 }
 
 const WEB_REMOTE_CONTROL_MOBILE_TASK_HOME_PREFERENCES_STORAGE_KEY =
-  "zcode-web-remote-control-mobile-task-home-preferences";
+  "zody-web-remote-control-mobile-task-home-preferences";
 
 const DEFAULT_WEB_REMOTE_CONTROL_MOBILE_TASK_HOME_PREFERENCES: WebRemoteControlMobileTaskHomePreferences =
   {

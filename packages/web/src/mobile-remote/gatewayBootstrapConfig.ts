@@ -18,7 +18,7 @@ import type { MobileRemoteGatewayConfig } from "./mobileRemoteConfigStore.js";
  * 正式入口只读安全存储。
  */
 
-/** 方案「Gateway 使用约定」：namespace 默认 `zcode`，设置页可修改。 */
+/** 方案「Gateway 使用约定」：namespace 默认 `zody`，设置页可修改。 */
 export const WEB_REMOTE_CONTROL_GATEWAY_DEFAULT_NAMESPACE = DEFAULT_REMOTE_ACCESS_NAMESPACE;
 
 function readParam(params: URLSearchParams, ...names: string[]): string | undefined {

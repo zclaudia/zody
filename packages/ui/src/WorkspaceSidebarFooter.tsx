@@ -2,7 +2,7 @@ import type { Locale } from "@zcode/shared";
 import { memo, useState, type ReactNode } from "react";
 import { TID_LOGIN_TRIGGER, TID_TASK_SETTINGS_BUTTON } from "@zcode/shared";
 import { ChevronUp, Settings } from "lucide-react";
-import { ZCODER_BRAND_NAME, zcoderLogoUrl } from "@/brand.js";
+import { ZODY_BRAND_NAME, zodyLogoUrl } from "@/brand.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
@@ -13,7 +13,7 @@ import { WorkspaceSidebarFooterPreferences } from "@/WorkspaceSidebarFooterPrefe
 import { WorkspaceWebRemoteControlTrigger } from "@/WorkspaceWebRemoteControlTrigger.js";
 
 /**
- * 侧栏左下：zcoder 品牌触发器 + 偏好面板（方案 1A，spec: docs/ui/workspace-sidebar-footer.md）。
+ * 侧栏左下：Zody 品牌触发器 + 偏好面板（方案 1A，spec: docs/ui/workspace-sidebar-footer.md）。
  * fork（F4.1b / F4.7）：官方账号下线后 UI 不再持有 UserInfo，头像、Connect 文案与账号头部
  * （昵称、用户 ID 复制）一并删除。
  */
@@ -67,10 +67,10 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
               data-testid={TID_LOGIN_TRIGGER}
               aria-label={intl.formatMessage({ id: "sidebar.preferences.title" })}
             >
-              <img src={zcoderLogoUrl} alt="" width={24} height={24} className="size-6 shrink-0" />
+              <img src={zodyLogoUrl} alt="" width={24} height={24} className="size-6 shrink-0" />
               {/* Button 默认 whitespace-nowrap；文本列允许收缩，避免窄侧栏被撑出。 */}
               <span className="min-w-0 flex-1 truncate text-left text-ui-base font-semibold text-foreground">
-                {ZCODER_BRAND_NAME}
+                {ZODY_BRAND_NAME}
               </span>
               <ChevronUp className="size-3.5 shrink-0 text-foreground-subtle" />
             </Button>

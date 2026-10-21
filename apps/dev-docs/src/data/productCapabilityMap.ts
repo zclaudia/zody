@@ -88,7 +88,7 @@ const systemDefinitions: readonly CapabilitySystemDefinition[] = [
   ],
   [
     "zcode-cli",
-    "智能体运行层（ZCode CLI）",
+    "智能体运行层（Zody CLI）",
     "CLI 运行时负责人（CLI Runtime Owner）",
     "Agent、Conversation、Model、Tool 与 Extension 的权威运行时、投影、持久化和恢复。",
   ],
@@ -482,7 +482,7 @@ const nodeDefinitions: readonly CapabilityNodeDefinition[] = [
   ["desktop-e2e-harness", "test-automation-platform", "桌面 E2E Harness（Desktop E2E Harness）", "WDIO/Electron service、窗口与进程生命周期、workspace seed、截图和视频。", "Desktop WDIO test harness"],
   ["capture-replay-fixtures", "test-automation-platform", "捕获、回放与确定性夹具（Capture, Replay & Deterministic Fixtures）", "model/SSE/network capture、fixture matching、fake time 与可重复 provider 响应。", "E2E replay infrastructure"],
   ["cross-platform-e2e", "test-automation-platform", "跨平台与远程 E2E（Cross-platform & Remote E2E）", "macOS/Windows shard、Docker、SSH/WSL/remote workspace 与隔离运行。", "CI E2E runners"],
-  ["cli-tool-replay", "test-automation-platform", "CLI 与工具回放验证（CLI & Tool Replay Verification）", "ZCode CLI E2E、distillation proxy、tool capture/replay 与 parity compare。", "CLI/distillation test runtime"],
+  ["cli-tool-replay", "test-automation-platform", "CLI 与工具回放验证（CLI & Tool Replay Verification）", "Zody CLI E2E、distillation proxy、tool capture/replay 与 parity compare。", "CLI/distillation test runtime"],
   ["fault-injection", "test-automation-platform", "故障注入与生命周期压力（Fault Injection & Lifecycle Stress）", "网络、SSE、文件系统、进程、重连、竞态和 session lifecycle stress。", "E2E fault harness"],
   ["case-admission-promotion", "test-automation-platform", "用例准入、晋级与夹具治理（Case Admission, Promotion & Fixture Governance）", "manual-review、verified、Docker admission、fixture 校验和 promotion transaction。", "E2E admission scripts"],
   ["static-quality-gates", "quality-intelligence", "静态质量与单元门禁（Static Quality & Unit Gates）", "lint、typecheck、unit/affected test、schema 和 CI fail-fast。", "Repository quality commands"],

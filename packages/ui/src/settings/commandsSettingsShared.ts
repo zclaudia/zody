@@ -20,7 +20,7 @@ export const COMMAND_AGENT_SOURCE_META: Record<
 > = {
   zcodeAgent: {
     labelId: "settings.commands.source.zcodeAgent",
-    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
     pathHint: `~/${ZCODE_DATA_ROOT_DIR_NAME}/commands`,
     provider: ZCODE_AGENT_PROVIDER,
   },

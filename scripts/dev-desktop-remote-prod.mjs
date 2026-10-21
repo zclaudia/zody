@@ -7,23 +7,22 @@ function pathApiForPlatform(platform) {
   return platform === "win32" ? win32 : posix;
 }
 
+/**
+ * 正式版 Zody 的 remote assets cache 目录。
+ *
+ * 修改原因：正式版 Electron userData 已不在系统 `Application Support/ZCode` 等目录，而是
+ * `{dataBaseDir}/.zody/desktop/<应用名>`（见 packages/desktop/src/main/desktopRuntimeEnv.ts 的
+ * runtimeUserDataPath），cache 位于其下的 `remote-assets-cache`，各平台一致。这里按默认
+ * dataBaseDir（用户 home）与正式应用名 `Zody` 推导；正式版配置了自定义 dataBaseDir 时，
+ * 用 ZCODE_REMOTE_ASSET_CACHE_DIR 显式指定。
+ */
 export function resolveProductionRemoteAssetCacheDir(
-  env = process.env,
+  _env = process.env,
   platform = process.platform,
   homeDir = homedir(),
 ) {
   const pathApi = pathApiForPlatform(platform);
-  if (platform === "darwin") {
-    return pathApi.join(homeDir, "Library", "Application Support", "ZCode", "remote-assets-cache");
-  }
-
-  if (platform === "win32") {
-    const appDataDir = env.APPDATA?.trim() || pathApi.join(homeDir, "AppData", "Roaming");
-    return pathApi.join(appDataDir, "ZCode", "remote-assets-cache");
-  }
-
-  const configDir = env.XDG_CONFIG_HOME?.trim() || pathApi.join(homeDir, ".config");
-  return pathApi.join(configDir, "ZCode", "remote-assets-cache");
+  return pathApi.join(homeDir, ".zody", "desktop", "Zody", "remote-assets-cache");
 }
 
 export function buildDesktopRemoteProdEnv(

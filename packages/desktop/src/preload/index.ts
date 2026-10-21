@@ -68,7 +68,6 @@ import type {
   UpdateStatePayload,
   ZCodeStdioTapDevState,
   LoadCliMcpFromUserDirectoryRequest,
-  MigrateLegacyCommonMcpRequest,
   SaveCliMcpToUserDirectoryRequest,
   SaveFileRequest,
   SaveFileResult,
@@ -238,7 +237,7 @@ function notifyUpdateStateCallbacks(payload: UpdateStatePayload): void {
 }
 
 // 进程检索体验优化：renderer 在系统里通常只会显示成通用 helper 名称，
-// 这里在 preload 阶段补上 zcode-* title，便于按窗口角色筛选。
+// 这里在 preload 阶段补上 zody-* title，便于按窗口角色筛选。
 updateRendererProcessTitle();
 window.addEventListener("DOMContentLoaded", updateRendererProcessTitle, {
   once: true,
@@ -311,8 +310,6 @@ contextBridge.exposeInMainWorld("zcode", {
     ipcRenderer.invoke(PlatformChannels.LoadMcpFromUserDirectory, payload ?? {}),
   saveMcpToUserDirectory: (payload: SaveCliMcpToUserDirectoryRequest) =>
     ipcRenderer.invoke(PlatformChannels.SaveMcpToUserDirectory, payload),
-  migrateLegacyCommonMcp: (payload?: MigrateLegacyCommonMcpRequest) =>
-    ipcRenderer.invoke(PlatformChannels.MigrateLegacyCommonMcp, payload ?? {}),
   /** renderer 日志通过 IPC 传到 main 进程统一存储 */
   log: (level: "info" | "warn" | "error", args: unknown[]) =>
     ipcRenderer.send(PlatformChannels.Log, { level, args }),
@@ -741,7 +738,7 @@ contextBridge.exposeInMainWorld("zcode", {
   /** 通过 main process 触发原生任务通知 */
   showTaskNotification: (payload: TaskNotificationPayload) =>
     ipcRenderer.send(PlatformChannels.ShowTaskNotification, payload),
-  /** 导出日志：打包 ~/.zcoder/v2 及外部 agent 日志为 zip 并在 Finder 中显示 */
+  /** 导出日志：打包 ~/.zody/v2 及外部 agent 日志为 zip 并在 Finder 中显示 */
   exportLogs: (): Promise<{
     success: boolean;
     path?: string;

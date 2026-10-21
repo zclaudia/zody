@@ -195,7 +195,7 @@ export function usePluginUiToolCallModel(
     toolInput,
     toolResult,
     toolCancelled: isPluginUiToolCancelled(toolCall),
-    hostVersion: "zcode",
+    hostVersion: "zody",
     // 没有侧栏入口（如只读 / 非桌面壳）或页面不支持 fullscreen 时只声明 inline。
     availableDisplayModes: canOpenSidePane ? INLINE_AND_FULLSCREEN : INLINE_ONLY,
     onDisplayModeRequest: handleDisplayModeRequest,

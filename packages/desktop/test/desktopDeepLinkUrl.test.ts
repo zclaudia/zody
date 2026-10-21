@@ -40,28 +40,28 @@ describe("desktop deep link url helpers", () => {
     const { extractDeepLinkUrlFromArgs } = await import("../src/main/desktopDeepLinkUrl.js");
 
     expect(
-      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "zody://workspace/open?path=%2Ftmp"]),
+      extractDeepLinkUrlFromArgs(["/opt/Zody/zody", "zody://workspace/open?path=%2Ftmp"]),
     ).toBe("zody://workspace/open?path=%2Ftmp");
     expect(
       extractDeepLinkUrlFromArgs([
-        "/opt/ZCode/zcode",
+        "/opt/Zody/zody",
         "--open-url=zody://workspace/open?path=%2Ftmp",
       ]),
     ).toBe("zody://workspace/open?path=%2Ftmp");
     expect(
       extractDeepLinkUrlFromArgs([
-        "/opt/ZCode/zcode",
+        "/opt/Zody/zody",
         "zody%3A%2F%2Fworkspace%2Fopen%3Fpath%3D%252Ftmp",
       ]),
     ).toBe("zody://workspace/open?path=%2Ftmp");
     expect(
       extractDeepLinkUrlFromArgs([
-        "/opt/ZCode/zcode",
+        "/opt/Zody/zody",
         "zody%253A%252F%252Fworkspace%252Fopen%253Fpath%253D%25252Ftmp",
       ]),
     ).toBe("zody://workspace/open?path=%2Ftmp");
     expect(
-      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "zody://workspace/open?path=%2Ftmp&amp;x=1"]),
+      extractDeepLinkUrlFromArgs(["/opt/Zody/zody", "zody://workspace/open?path=%2Ftmp&amp;x=1"]),
     ).toBe("zody://workspace/open?path=%2Ftmp&x=1");
     expect(
       extractDeepLinkUrlFromArgs([
@@ -74,7 +74,7 @@ describe("desktop deep link url helpers", () => {
   it("returns null when argv does not contain a deep link", async () => {
     const { extractDeepLinkUrlFromArgs } = await import("../src/main/desktopDeepLinkUrl.js");
 
-    expect(extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "--no-sandbox"])).toBeNull();
+    expect(extractDeepLinkUrlFromArgs(["/opt/Zody/zody", "--no-sandbox"])).toBeNull();
   });
 
   it("extracts Windows open workspace argv without URL decoding", async () => {
@@ -82,14 +82,14 @@ describe("desktop deep link url helpers", () => {
 
     expect(
       extractOpenWorkspacePathFromArgs([
-        "C:\\Program Files\\ZCode\\ZCode.exe",
+        "C:\\Program Files\\Zody\\Zody.exe",
         "--open-workspace",
         "C:\\Users\\demo\\Project A&B#1",
       ]),
     ).toBe("C:\\Users\\demo\\Project A&B#1");
     expect(
       extractOpenWorkspacePathFromArgs([
-        "C:\\Program Files\\ZCode\\ZCode.exe",
+        "C:\\Program Files\\Zody\\Zody.exe",
         "--open-workspace=C:\\Users\\demo\\Project%20A",
       ]),
     ).toBe("C:\\Users\\demo\\Project%20A");
@@ -108,7 +108,7 @@ describe("desktop deep link url helpers", () => {
     } = await import("../src/main/desktopDeepLinkUrl.js");
 
     const additionalData = createDeepLinkSingleInstanceData([
-      "/opt/ZCode/zcode",
+      "/opt/Zody/zody",
       "zody%253A%252F%252Fworkspace%252Fopen%253Fpath%253D%25252Ftmp",
       "--open-workspace=C:\\Users\\demo\\Project A",
     ]);
@@ -127,36 +127,39 @@ describe("desktop deep link url helpers", () => {
   it("builds Windows Explorer registry operations for folder context menu", async () => {
     const { buildWindowsOpenFolderCommand, buildWindowsOpenFolderRegistryOperations } =
       await import("../src/main/desktopWindowsOpenFolderContextMenu.js");
+    const { resolveDesktopShellIntegrationIdentity } =
+      await import("../src/main/desktopShellIntegrationIdentity.js");
 
-    expect(buildWindowsOpenFolderCommand("C:\\Program Files\\ZCode\\ZCode.exe")).toBe(
-      '"C:\\Program Files\\ZCode\\ZCode.exe" --open-workspace "%1"',
+    expect(buildWindowsOpenFolderCommand("C:\\Program Files\\Zody\\Zody.exe")).toBe(
+      '"C:\\Program Files\\Zody\\Zody.exe" --open-workspace "%1"',
     );
     expect(
       buildWindowsOpenFolderCommand("C:\\Electron\\electron.exe", ["C:\\repo\\desktop\\main.js"]),
     ).toBe('"C:\\Electron\\electron.exe" "C:\\repo\\desktop\\main.js" --open-workspace "%1"');
 
     const operations = buildWindowsOpenFolderRegistryOperations({
-      executablePath: "C:\\Program Files\\ZCode\\ZCode.exe",
+      executablePath: "C:\\Program Files\\Zody\\Zody.exe",
       locale: "en-US",
+      identity: resolveDesktopShellIntegrationIdentity("Zody"),
     });
 
     expect(operations).toContainEqual({
       args: [
         "add",
-        "HKCU\\Software\\Classes\\Directory\\shell\\ZCode.OpenInZCode\\command",
+        "HKCU\\Software\\Classes\\Directory\\shell\\Zody.OpenInZody\\command",
         "/ve",
         "/d",
-        '"C:\\Program Files\\ZCode\\ZCode.exe" --open-workspace "%1"',
+        '"C:\\Program Files\\Zody\\Zody.exe" --open-workspace "%1"',
         "/f",
       ],
     });
     expect(operations).toContainEqual({
       args: [
         "add",
-        "HKCU\\Software\\Classes\\Drive\\shell\\ZCode.OpenInZCode\\command",
+        "HKCU\\Software\\Classes\\Drive\\shell\\Zody.OpenInZody\\command",
         "/ve",
         "/d",
-        '"C:\\Program Files\\ZCode\\ZCode.exe" --open-workspace "%1"',
+        '"C:\\Program Files\\Zody\\Zody.exe" --open-workspace "%1"',
         "/f",
       ],
     });
@@ -165,35 +168,62 @@ describe("desktop deep link url helpers", () => {
   it("builds localized Windows Explorer registry menu labels", async () => {
     const { buildWindowsOpenFolderRegistryOperations, getWindowsOpenFolderMenuName } =
       await import("../src/main/desktopWindowsOpenFolderContextMenu.js");
+    const { resolveDesktopShellIntegrationIdentity } =
+      await import("../src/main/desktopShellIntegrationIdentity.js");
+    const production = resolveDesktopShellIntegrationIdentity("Zody");
+    const preview = resolveDesktopShellIntegrationIdentity("Zody Preview");
 
-    expect(getWindowsOpenFolderMenuName("zh-CN")).toBe("在ZCode中打开");
-    expect(getWindowsOpenFolderMenuName("en-US")).toBe("Open in ZCode");
+    expect(getWindowsOpenFolderMenuName("zh-CN", production)).toBe("在 Zody 中打开");
+    expect(getWindowsOpenFolderMenuName("en-US", production)).toBe("Open in Zody");
+    expect(getWindowsOpenFolderMenuName("en-US", preview)).toBe("Open in Zody Preview");
+
+    const previewOperations = buildWindowsOpenFolderRegistryOperations({
+      executablePath: "C:\\Program Files\\Zody Preview\\Zody Preview.exe",
+      locale: "en-US",
+      identity: preview,
+    });
+    expect(previewOperations).toContainEqual({
+      args: [
+        "add",
+        "HKCU\\Software\\Classes\\Directory\\shell\\ZodyPreview.OpenInZodyPreview",
+        "/ve",
+        "/d",
+        "Open in Zody Preview",
+        "/f",
+      ],
+    });
+    expect(
+      previewOperations.some((operation) =>
+        operation.args.some((arg) => arg.includes("\\shell\\Zody.OpenInZody")),
+      ),
+    ).toBe(false);
 
     const operations = buildWindowsOpenFolderRegistryOperations({
-      executablePath: "C:\\Program Files\\ZCode\\ZCode.exe",
+      executablePath: "C:\\Program Files\\Zody\\Zody.exe",
       locale: "zh-CN",
+      identity: production,
     });
 
     expect(operations).toContainEqual({
       args: [
         "add",
-        "HKCU\\Software\\Classes\\Directory\\shell\\ZCode.OpenInZCode",
+        "HKCU\\Software\\Classes\\Directory\\shell\\Zody.OpenInZody",
         "/ve",
         "/d",
-        "在ZCode中打开",
+        "在 Zody 中打开",
         "/f",
       ],
     });
     expect(operations).toContainEqual({
       args: [
         "add",
-        "HKCU\\Software\\Classes\\Directory\\shell\\ZCode.OpenInZCode",
+        "HKCU\\Software\\Classes\\Directory\\shell\\Zody.OpenInZody",
         "/v",
         "MUIVerb",
         "/t",
         "REG_SZ",
         "/d",
-        "在ZCode中打开",
+        "在 Zody 中打开",
         "/f",
       ],
     });

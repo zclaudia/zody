@@ -1,9 +1,16 @@
 import { access, cp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, posix } from "node:path";
+import {
+  DEV_DESKTOP_APP_USER_MODEL_ID,
+  desktopProductIdentities,
+} from "./desktop-product-identity.mjs";
 
-export const DEV_ELECTRON_PROTOCOL_SCHEME = "zcode";
-export const DEV_ELECTRON_APP_NAME = "ZCode Dev";
-export const DEV_ELECTRON_APP_BUNDLE_ID = "dev.zcode.app.development";
+// 修复原因：上游 Dev 副本声明 zcode:// 与 ZCode Dev 身份，而 Zody Dev 运行时（app.name 为
+// "Zody Dev"）按 desktopShellIntegrationIdentity 注册 Preview 协议 zody-preview://。
+// 两侧必须声明同一 scheme，否则 macOS 把 Dev 深链交给别的应用或裸 Electron。
+export const DEV_ELECTRON_PROTOCOL_SCHEME = desktopProductIdentities.preview.protocolScheme;
+export const DEV_ELECTRON_APP_NAME = "Zody Dev";
+export const DEV_ELECTRON_APP_BUNDLE_ID = DEV_DESKTOP_APP_USER_MODEL_ID;
 // 副本布局版本，见 prepareDevElectronAppBundle 中的指纹说明。
 export const DEV_ELECTRON_BUNDLE_FORMAT = 2;
 
@@ -37,8 +44,8 @@ function appendProtocolDeclaration(plist) {
 }
 
 /**
- * 为 macOS 本地 Dev runtime 写入产品身份和 zcode URL scheme。
- * raw Electron 的 Info.plist 没有 CFBundleURLTypes，系统只能把 zcode 交给
+ * 为 macOS 本地 Dev runtime 写入产品身份和 Dev URL scheme。
+ * raw Electron 的 Info.plist 没有 CFBundleURLTypes，系统只能把该 scheme 交给
  * com.github.Electron；这里仅修改启动副本，避免污染 node_modules 中的 Electron。
  */
 export function patchDevElectronInfoPlist(plist) {
@@ -63,7 +70,7 @@ export async function prepareDevElectronAppBundle({
   const sourceExecutablePath = posix.join(electronAppPath, "Contents", "MacOS", "Electron");
   const existingExecutablePath = posix.join(appPath, "Contents", "MacOS", "Electron");
   // 源二进制的身份指纹，写在 .app 外面：放进 Contents 会污染 bundle 结构。
-  const sourceStampPath = posix.join(dirname(appPath), ".zcode-dev-electron-source.json");
+  const sourceStampPath = posix.join(dirname(appPath), ".zody-dev-electron-source.json");
   // 修复原因：这里原本把两个 Electron 可执行文件（各 ~100MB+）整份读进内存做 equals，
   // 每次 dev 启动都要付一次全量读盘。源二进制由 npm 包解压产出，记录它的 size+mtime
   // 即可判定是否需要重拷，语义等价而开销是常数级。

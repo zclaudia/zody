@@ -1,4 +1,4 @@
-import { open, readFile, rename, rm } from "node:fs/promises";
+import { open, readFile, rename, rm, stat } from "node:fs/promises";
 import { basename, dirname, resolve } from "node:path";
 import ignoreFactory from "ignore";
 import type { Ignore } from "ignore";
@@ -7,16 +7,27 @@ import type { ServiceLogger } from "../logger/serviceLogger.js";
 /**
  * workspace 文件搜索忽略的单一真相源。
  *
- * `.zcodeignore`（workspace root，gitignore 语法）是搜索索引的唯一规则文件：
+ * `.zodyignore`（workspace root，gitignore 语法）是搜索索引的唯一规则文件：
  * 自动创建暂时停用：文件不存在时仅在内存中使用 root `.gitignore` + 默认排除规则；
  * 之后 `.gitignore` 的变化不再影响搜索，用户通过设置页编辑或「从 .gitignore 重新同步」。
+ *
+ * 品牌兼容（specs/zody-brand-residual-cleanup.md）：`.zodyignore` 缺失时只读回退上游遗留的
+ * `.zcodeignore`；两者并存时 `.zodyignore` 胜出。设置页保存一律写 `.zodyignore`，
+ * 遗留文件永不改写。读取规则、设置页预览与缓存指纹都经 resolveEffectiveIgnoreFile 选同一个文件。
  *
  * 规则解析交给 `ignore` npm 包（gitignore spec 2.22 参考实现，ESLint 同款）：
  * 后声明覆盖、`!` 反选（含父目录排除后子文件无法恢复的 git 原生约束）、anchored/basename、
  * `**` 跨层、目录后缀 `/`、字符类与转义。禁止在本仓库手写 gitignore 解析。
  */
 
-export const WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAME = ".zcodeignore";
+export const WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAME = ".zodyignore";
+/** 上游遗留文件名：仅在 `.zodyignore` 缺失时只读回退，不再写入。 */
+export const LEGACY_WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAME = ".zcodeignore";
+/** 规则文件本身不进入搜索索引；按优先级排列（canonical 在前）。 */
+export const WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAMES: readonly string[] = [
+  WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAME,
+  LEGACY_WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAME,
+];
 const GITIGNORE_FILE_NAME = ".gitignore";
 
 type WorkspaceFileIgnoreLogger = Pick<ServiceLogger, "info" | "warn">;
@@ -36,7 +47,7 @@ export interface WorkspaceFileSearchIgnoreRules {
 
 export interface WorkspaceFileSearchIgnoreContent {
   content: string;
-  /** file：.zcodeignore 已存在；template：尚未创建，content 是保存后将落盘的初始内容预览。 */
+  /** file：规则文件已存在（`.zodyignore` 或遗留 `.zcodeignore`）；template：尚未创建，content 是保存后将落盘的初始内容预览。 */
   source: "file" | "template";
 }
 
@@ -77,8 +88,8 @@ const BUILTIN_IGNORE_LINES = [
 ];
 
 const TEMPLATE_HEADER = [
-  "# ZCode 工作区文件搜索忽略规则（.zcodeignore）",
-  "# 语法与 .gitignore 一致，只影响 ZCode 的 @ 文件候选 / Command Center / 文件树搜索，",
+  "# Zody 工作区文件搜索忽略规则（.zodyignore）",
+  "# 语法与 .gitignore 一致，只影响 Zody 的 @ 文件候选 / Command Center / 文件树搜索，",
   "# 不影响文件树浏览、上传或 Agent 文件访问。",
   "# 修改 .gitignore 不会自动同步到本文件；可在设置页「从 .gitignore 同步」。",
   "",
@@ -93,7 +104,14 @@ const TEMPLATE_HEADER = [
 export const WORKSPACE_FILE_SEARCH_IGNORE_SYNC_MARKER =
   "# ===== ↑ 以上同步自 .gitignore（「从 .gitignore 同步」只重写以上部分）=====";
 export const WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER =
+  "# ----- ↑ 以上为 Zody 默认排除规则（自定义规则请写在本行下方，不会被同步/恢复改动）-----";
+/** 上游写入的旧默认段标记：仍按分区识别，重写时统一替换为新标记。 */
+export const LEGACY_WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER =
   "# ----- ↑ 以上为 ZCode 默认排除规则（自定义规则请写在本行下方，不会被同步/恢复改动）-----";
+const WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKERS = new Set([
+  WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER,
+  LEGACY_WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER,
+]);
 
 const CUSTOM_SECTION_HINT = "# 自定义规则写在下方（本行提示可删除）";
 
@@ -123,7 +141,7 @@ function buildBuiltinDefaultsSection(gitignoreContent: string | null): string {
 }
 
 /**
- * 构建 `.zcodeignore` 初始内容：.gitignore 规则拷贝 + 双标记分区（默认排除段 / 自定义区）。
+ * 构建 `.zodyignore` 初始内容：.gitignore 规则拷贝 + 双标记分区（默认排除段 / 自定义区）。
  * 附加默认段是行为兼容要求：.gitignore 未声明 node_modules 等目录的仓库若仅严格拷贝，
  * 依赖目录会被整棵放开扫描（再次出现全仓扫描的性能问题）；默认段随文件
  * 交给用户编辑，删除即放开，维持"单一真相源、无代码级并集"的承诺。
@@ -160,8 +178,9 @@ function splitWorkspaceFileSearchIgnoreSections(
   const syncIndex = lines.findIndex(
     (line) => line.trim() === WORKSPACE_FILE_SEARCH_IGNORE_SYNC_MARKER,
   );
-  const defaultsIndex = lines.findIndex(
-    (line) => line.trim() === WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER,
+  // 遗留 `.zcodeignore` 内容带旧品牌 marker，必须同样识别，否则同步/恢复会退化为整体重建而丢掉自定义区。
+  const defaultsIndex = lines.findIndex((line) =>
+    WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKERS.has(line.trim()),
   );
   if (syncIndex === -1 || defaultsIndex === -1 || defaultsIndex <= syncIndex) {
     return null;
@@ -237,7 +256,8 @@ function buildIgnoreMatcher(content: string): Ignore {
 }
 
 function isNotFoundError(error: unknown): boolean {
-  return (error as { code?: unknown } | null)?.code === "ENOENT";
+  const code = (error as { code?: unknown } | null)?.code;
+  return code === "ENOENT" || code === "ENOTDIR";
 }
 
 async function readOptionalFile(path: string): Promise<string | null> {
@@ -249,6 +269,44 @@ async function readOptionalFile(path: string): Promise<string | null> {
     }
     throw error;
   }
+}
+
+interface EffectiveIgnoreFile {
+  fileName: string;
+  content: string;
+}
+
+/**
+ * 选出实际生效的规则文件：`.zodyignore` 优先；仅当它不存在（ENOENT/ENOTDIR）时只读回退
+ * `.zcodeignore`。其它读取错误（权限等）直接抛出，不得掩盖为回退遗留文件。
+ */
+async function resolveEffectiveIgnoreFile(rootPath: string): Promise<EffectiveIgnoreFile | null> {
+  for (const fileName of WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAMES) {
+    const content = await readOptionalFile(resolve(rootPath, fileName));
+    if (content !== null) {
+      return { fileName, content };
+    }
+  }
+  return null;
+}
+
+/**
+ * 缓存指纹：与规则读取同一优先级，以实际生效文件的名称 + mtime/size 计算；
+ * 新建 `.zodyignore` 覆盖遗留文件时文件名变化即令缓存失效。
+ */
+export async function statWorkspaceFileSearchIgnoreFingerprint(rootPath: string): Promise<string> {
+  for (const fileName of WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAMES) {
+    try {
+      const fileStat = await stat(resolve(rootPath, fileName));
+      return `${fileName}:${fileStat.mtimeMs}:${fileStat.size}`;
+    } catch (error) {
+      if (isNotFoundError(error)) {
+        continue;
+      }
+      return `${fileName}:unreadable`;
+    }
+  }
+  return "none";
 }
 
 /**
@@ -277,7 +335,7 @@ async function atomicWriteIgnoreFile(path: string, content: string): Promise<voi
 }
 
 /**
- * 扫描前加载 `.zcodeignore` 规则；自动创建暂时注释停用：
+ * 扫描前加载生效规则文件（`.zodyignore`，缺失时只读回退 `.zcodeignore`）；自动创建暂时注释停用：
  * 文件不存在 → 内存使用 .gitignore + 默认排除规则，不落盘；
  * 读取失败（权限等）→ 内存使用 .gitignore 内容 → 再失败用内置默认规则。
  * 任何降级只 warn 一次，绝不让 @ 面板因规则文件不可用而扫描失败。
@@ -286,8 +344,6 @@ export async function loadWorkspaceFileSearchIgnoreRules(
   rootPath: string,
   logger?: WorkspaceFileIgnoreLogger,
 ): Promise<WorkspaceFileSearchIgnoreRules> {
-  const ignorePath = resolve(rootPath, WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAME);
-
   const degradeToInMemory = async (
     reason: string,
     error: unknown,
@@ -318,14 +374,14 @@ export async function loadWorkspaceFileSearchIgnoreRules(
     };
   };
 
-  let existing: string | null;
+  let existing: EffectiveIgnoreFile | null;
   try {
-    existing = await readOptionalFile(ignorePath);
+    existing = await resolveEffectiveIgnoreFile(rootPath);
   } catch (error) {
     return degradeToInMemory(`读取 ${WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAME} 失败`, error);
   }
   if (existing !== null) {
-    return { matcher: buildIgnoreMatcher(existing), source: "file" };
+    return { matcher: buildIgnoreMatcher(existing.content), source: "file" };
   }
 
   const gitignoreContent = await readOptionalFile(
@@ -336,7 +392,7 @@ export async function loadWorkspaceFileSearchIgnoreRules(
   // 保留原创建和日志逻辑，后续恢复入口时可重新启用；当前只在内存中使用规则。
   /*
   try {
-    await atomicWriteIgnoreFile(ignorePath, initialContent);
+    await atomicWriteIgnoreFile(resolve(rootPath, WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAME), initialContent);
   } catch (error) {
     // 创建失败不影响扫描：初始内容确定性已知，内存中直接按初始内容执行，
     // 来源标记沿用初始内容来源（.gitignore 拷贝 / 内置模板）表达 fail-open 降级。
@@ -384,10 +440,9 @@ export function isWorkspaceFileSearchPathIgnored(
 export async function readWorkspaceFileSearchIgnore(
   rootPath: string,
 ): Promise<WorkspaceFileSearchIgnoreContent> {
-  const ignorePath = resolve(rootPath, WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAME);
-  const existing = await readOptionalFile(ignorePath);
+  const existing = await resolveEffectiveIgnoreFile(rootPath);
   if (existing !== null) {
-    return { content: existing, source: "file" };
+    return { content: existing.content, source: "file" };
   }
   const gitignoreContent = await readOptionalFile(
     resolve(rootPath, GITIGNORE_FILE_NAME),
@@ -409,12 +464,12 @@ export async function transformWorkspaceFileSearchIgnore(
   rootPath: string,
   transform: WorkspaceFileSearchIgnoreTransform,
 ): Promise<{ content: string }> {
-  const ignorePath = resolve(rootPath, WORKSPACE_FILE_SEARCH_IGNORE_FILE_NAME);
-  const existing = await readOptionalFile(ignorePath).catch(() => null);
+  const existing = await resolveEffectiveIgnoreFile(rootPath).catch(() => null);
   const gitignoreContent = await readOptionalFile(
     resolve(rootPath, GITIGNORE_FILE_NAME),
   ).catch(() => null);
-  const currentContent = existing ?? buildWorkspaceFileSearchIgnoreTemplate(gitignoreContent);
+  const currentContent =
+    existing?.content ?? buildWorkspaceFileSearchIgnoreTemplate(gitignoreContent);
   const content =
     transform === "sync-gitignore"
       ? syncWorkspaceFileSearchIgnoreFromGitignore(currentContent, gitignoreContent)
@@ -422,7 +477,11 @@ export async function transformWorkspaceFileSearchIgnore(
   return { content };
 }
 
-/** 设置页保存：原子写整个文件，下次扫描读取即为新内容。 */
+/**
+ * 设置页保存：原子写整个 `.zodyignore`，下次扫描读取即为新内容。
+ * 仅存在遗留 `.zcodeignore` 时，编辑框内容即来自遗留文件的完整内容（readWorkspaceFileSearchIgnore），
+ * 因此整文件写入 `.zodyignore` 已保留其规则；遗留文件保持原样，之后被 `.zodyignore` 遮蔽。
+ */
 export async function writeWorkspaceFileSearchIgnore(
   rootPath: string,
   content: string,

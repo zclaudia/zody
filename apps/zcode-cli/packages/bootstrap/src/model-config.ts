@@ -57,13 +57,13 @@ export function buildCliZCodeSourceHeaders(
   const zcodeEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(env);
   return {
     ...(zcodeEndpointOrigin ? { "HTTP-Referer": zcodeEndpointOrigin } : {}),
-    "User-Agent": `ZCode/${appVersion ?? "unknown"}`,
-    ...(appVersion ? { "X-ZCode-App-Version": appVersion } : {}),
-    "X-Title": `Z Code@${sourceTitle}`,
+    "User-Agent": `Zody/${appVersion ?? "unknown"}`,
+    ...(appVersion ? { "X-Zody-App-Version": appVersion } : {}),
+    "X-Title": `Zody@${sourceTitle}`,
     "X-Release-Channel": resolveRuntimeZCodeEnv(env),
     "X-Client-Language": locale ?? "unknown",
     "X-Client-Timezone": timezone ?? "unknown",
-    "X-ZCode-Agent": "glm",
+    "X-Zody-Agent": "glm",
     ...createRuntimePlatformHeaders(),
   };
 }

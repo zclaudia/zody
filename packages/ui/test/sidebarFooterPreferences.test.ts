@@ -70,10 +70,10 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("侧栏左下偏好面板", () => {
-  it("触发器展示 zcoder 品牌，不再出现 Connect / 头像入口", async () => {
+  it("触发器展示 Zody 品牌，不再出现 Connect / 头像入口", async () => {
     await renderFooter();
     const trigger = screen.getByTestId(TID_LOGIN_TRIGGER);
-    expect(trigger.textContent).toContain("zcoder");
+    expect(trigger.textContent).toContain("Zody");
     expect(trigger.textContent).not.toContain("sidebar.profile.notLoggedIn");
     expect(trigger.getAttribute("aria-label")).toBe("sidebar.preferences.title");
     expect(trigger.querySelector("img")).not.toBeNull();

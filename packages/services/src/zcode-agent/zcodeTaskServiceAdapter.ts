@@ -251,7 +251,7 @@ function resolveZCodeAgentCurrentLogFilePath(now = new Date()): string {
   const configuredLogDir = process.env.ZCODE_LOG_DIR?.trim();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const logDir = configuredLogDir || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "log");
-  return join(logDir, `zcode-${formatZCodeAgentLogDate(now)}.jsonl`);
+  return join(logDir, `zody-${formatZCodeAgentLogDate(now)}.jsonl`);
 }
 
 export function createZCodeTaskServiceAdapter(
@@ -4316,7 +4316,7 @@ function mapSessionEvent(
           params.taskId,
           traceId,
           eventInputId,
-          stringValue(errorPayload.message) ?? "ZCode compact failed",
+          stringValue(errorPayload.message) ?? "Zody compact failed",
         ),
       ];
     }
@@ -4328,7 +4328,7 @@ function mapSessionEvent(
         taskId: params.taskId,
         traceId,
         ...(eventInputId ? { inputId: eventInputId } : {}),
-        error: stringValue(errorPayload.message) ?? "ZCode session failed",
+        error: stringValue(errorPayload.message) ?? "Zody session failed",
         // type 是外层错误分类，code 才是 provider/subagent 要展示的真实错误码。
         code: stringValue(errorPayload.code) ?? stringValue(errorPayload.type),
         detail: stringValue(errorPayload.detail),

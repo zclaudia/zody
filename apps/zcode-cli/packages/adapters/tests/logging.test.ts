@@ -45,7 +45,7 @@ describe("Node logging adapter", () => {
 
       const files = await readdir(logDir);
       expect(files).toHaveLength(1);
-      expect(files[0]).toMatch(/^zcode-\d{4}-\d{2}-\d{2}\.jsonl$/);
+      expect(files[0]).toMatch(/^zody-\d{4}-\d{2}-\d{2}\.jsonl$/);
 
       const content = await readFile(join(logDir, files[0]!), "utf8");
       const entry = JSON.parse(content.trim()) as {
@@ -258,15 +258,16 @@ describe("Node logging adapter", () => {
     }
   });
 
-  it("cleans only zcode JSONL logs older than the retention window", async () => {
-    const logDir = await mkdtemp(join(tmpdir(), "zcode-log-retention-"));
+  it("cleans only zody (and legacy zcode) JSONL logs older than the retention window", async () => {
+    const logDir = await mkdtemp(join(tmpdir(), "zody-log-retention-"));
 
     try {
       await Promise.all([
-        writeFile(join(logDir, "zcode-2026-05-01.jsonl"), "old\n"),
-        writeFile(join(logDir, "zcode-2026-05-02.jsonl"), "cutoff\n"),
-        writeFile(join(logDir, "zcode-2026-05-08.jsonl"), "today\n"),
-        writeFile(join(logDir, "zcode-2026-04-30.txt"), "other\n"),
+        writeFile(join(logDir, "zody-2026-05-01.jsonl"), "old\n"),
+        writeFile(join(logDir, "zcode-2026-04-29.jsonl"), "legacy old\n"),
+        writeFile(join(logDir, "zody-2026-05-02.jsonl"), "cutoff\n"),
+        writeFile(join(logDir, "zody-2026-05-08.jsonl"), "today\n"),
+        writeFile(join(logDir, "zody-2026-04-30.txt"), "other\n"),
         writeFile(join(logDir, "other-2026-04-30.jsonl"), "other\n"),
       ]);
 
@@ -277,18 +278,19 @@ describe("Node logging adapter", () => {
 
       await expect(readdir(logDir).then((files) => files.sort())).resolves.toEqual([
         "other-2026-04-30.jsonl",
-        "zcode-2026-04-30.txt",
-        "zcode-2026-05-02.jsonl",
-        "zcode-2026-05-08.jsonl",
+        "zody-2026-04-30.txt",
+        "zody-2026-05-02.jsonl",
+        "zody-2026-05-08.jsonl",
       ]);
       expect(result).toMatchObject({
         cutoffDate: "2026-05-02",
-        deletedFiles: ["zcode-2026-05-01.jsonl"],
+        deletedFiles: expect.arrayContaining(["zody-2026-05-01.jsonl", "zcode-2026-04-29.jsonl"]),
         failedFiles: [],
         retentionDays: 7,
-        scannedFiles: 3,
+        scannedFiles: 4,
         status: "completed",
       });
+      expect(result.deletedFiles).toHaveLength(2);
     } finally {
       await rm(logDir, { recursive: true, force: true });
     }

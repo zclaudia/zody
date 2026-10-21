@@ -88,7 +88,7 @@ async function clearAllDataAndRelaunch(options: {
     cancelId: 0,
     title: "Clear All Data",
     message: "确定要清除所有数据吗？",
-    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
     detail: `将删除 ~/${ZCODE_DATA_ROOT_DIR_NAME}/v2（配置、凭据、日志）和浏览器缓存（localStorage）。操作不可恢复，清除后应用将自动重启。`,
   });
   if (response !== 1) {
@@ -225,7 +225,7 @@ function buildZCodeEndpointPromptHtml(currentValue: string): string {
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>ZCode Endpoint</title>
+    <title>Zody Endpoint</title>
     <style>
       :root { color-scheme: light dark; }
       body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
@@ -238,7 +238,7 @@ function buildZCodeEndpointPromptHtml(currentValue: string): string {
   </head>
   <body>
     <form id="form">
-      <label for="endpoint">ZCode endpoint origin</label>
+      <label for="endpoint">Zody endpoint origin</label>
       <!-- fork（F3.2）：占位与提示改用中性示例，不再引导用户填写官方地址。 -->
       <input id="endpoint" value="${value}" placeholder="https://example.com" spellcheck="false" />
       <div class="hint">Use an http or https origin for your own deployment, for example https://example.com.</div>
@@ -278,7 +278,7 @@ function showZCodeEndpointPromptWindow(options: {
       resizable: false,
       minimizable: false,
       maximizable: false,
-      title: "ZCode Endpoint",
+      title: "Zody Endpoint",
       webPreferences: {
         contextIsolation: true,
         nodeIntegration: false,
@@ -584,7 +584,7 @@ export async function executeDesktopCommand(options: {
       } catch (error) {
         await showMessageBoxWithOptionalParent(targetWindow, {
           type: "error",
-          title: "ZCode Endpoint",
+          title: "Zody Endpoint",
           message: "Endpoint 无效",
           detail: error instanceof Error ? error.message : String(error),
         });

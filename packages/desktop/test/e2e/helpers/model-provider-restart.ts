@@ -28,7 +28,7 @@ import { getV4DraftThoughtState } from "./v4-conversation.js";
 const paths = getE2EAppDataPaths();
 const SETTINGS_FILE = join(paths.appDataDir, "setting.json");
 const CREDENTIALS_FILE = paths.credentialsFile;
-const MODEL_SELECTION_RECENT_KEY_PREFIX = "zcode-model-selection-recent-v1";
+const MODEL_SELECTION_RECENT_KEY_PREFIX = "zody-model-selection-recent-v1";
 
 export { seedTurboAgentStartupModel } from "./model-provider-restart-runtime.js";
 
@@ -144,7 +144,7 @@ export async function seedPersistedModelSelection(params: {
           options: { reasoningLevel: selection.reasoningLevel },
         }),
       );
-      window.localStorage.setItem("zcode-last-agent-provider", appProvider);
+      window.localStorage.setItem("zody-last-agent-provider", appProvider);
     },
     paths.workspace,
     MODEL_SELECTION_RECENT_KEY_PREFIX,
@@ -212,7 +212,7 @@ export async function waitForLastSelectedAgentConfig(params: {
   } catch {
     const storedAgentPreferences = await browser.execute(() =>
       Object.fromEntries(
-        Object.entries(window.localStorage).filter(([key]) => key.startsWith("zcode-last-agent-")),
+        Object.entries(window.localStorage).filter(([key]) => key.startsWith("zody-last-agent-")),
       ),
     );
     throw new Error(
@@ -307,7 +307,7 @@ export async function waitForV4DraftModelConfig(params: { model: string; thought
 }
 
 export async function waitForPlanModelIoRequest(expectedText: string) {
-  const debugDir = join(paths.homeDir, ".zcoder", "cli", "debug");
+  const debugDir = join(paths.homeDir, ".zody", "cli", "debug");
   let matched: { model?: string; thinking?: { type?: string } } | null = null;
   await browser.waitUntil(
     async () => {

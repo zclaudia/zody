@@ -4,7 +4,7 @@
     return;
   }
   let viewportHeight = globalThis.innerHeight;
-  const storageKey = `zcode:visualization-widget-state-v2:${JSON.stringify([
+  const storageKey = `zody:visualization-widget-state-v2:${JSON.stringify([
     globalThis.location.pathname,
     globalThis.location.search,
   ])}`;

@@ -126,7 +126,7 @@ test("repairs caches with invalid size, hash, marker, or executable mode", async
     await chmod(assertPath(first.ZCODE_BFS_BINARY), 0o644);
     await writeFile(assertPath(first.ZCODE_RG_BINARY), "short");
     await writeFile(
-      join(assertPath(first.ZCODE_UGREP_BINARY), "..", ".zcode-runtime-tool.json"),
+      join(assertPath(first.ZCODE_UGREP_BINARY), "..", ".zody-runtime-tool.json"),
       "{}",
     );
 

@@ -4,7 +4,7 @@ import type { ModelSelectionView } from "@zcode/services";
 import { logger } from "@/logger.js";
 
 // 沿用旧 key，读取时兼容只保存 ModelSelection 的历史记录。
-const COMPOSER_RECENT_KEY_PREFIX = "zcode-model-selection-recent-v1";
+const COMPOSER_RECENT_KEY_PREFIX = "zody-model-selection-recent-v1";
 
 // fork（F4.2）：加速卡隐藏 Provider（account:zai|bigmodel-highspeed-card）已随加速卡全链路
 // 删除；shared 的 isHighspeedProviderId 一并移除。存量 localStorage 仍可能记有加速选型，

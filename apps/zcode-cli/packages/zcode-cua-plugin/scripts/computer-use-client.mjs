@@ -885,7 +885,7 @@ export async function setupComputerUseRuntime({ globals }) {
   const bridge = globals[BRIDGE_SYMBOL];
   if (!bridge || typeof bridge !== "object" || typeof bridge.call !== "function") {
     throw new Error(
-      "Computer Use runtime bridge is unavailable. Use Computer Use from a ZCode desktop or shared-host session.",
+      "Computer Use runtime bridge is unavailable. Use Computer Use from a Zody desktop or shared-host session.",
     );
   }
   bridge.assertAvailable?.();

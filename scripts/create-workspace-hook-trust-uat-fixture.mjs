@@ -164,7 +164,7 @@ if (parsed.values.json) {
       `config:    ${configPath}`,
       `evidence:  ${evidencePath}`,
       "",
-      "Open the workspace in ZCode Desktop, then follow:",
+      "Open the workspace in Zody Desktop, then follow:",
       "docs/testing/workspace-hook-trust-manual-acceptance.md",
       "",
     ].join("\n"),

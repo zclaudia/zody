@@ -227,7 +227,7 @@ describe("useDraftConfigControl slash command hydration", () => {
         });
       const originalRoot = readV4ComposerDraft(workspacePath, undefined, "__draft__");
       const recentBefore = window.localStorage.getItem(
-        `zcode-model-selection-recent-v1:${workspacePath}`,
+        `zody-model-selection-recent-v1:${workspacePath}`,
       );
       seedImportedSessionDraft({ workspacePath, sessionId: "imported", reused: false });
       let control: ReturnType<typeof useDraftConfigControl>;
@@ -248,7 +248,7 @@ describe("useDraftConfigControl slash command hydration", () => {
       expect(readV4ComposerDraft(workspacePath, undefined, "__draft__")).toEqual(originalRoot);
       await act(async () => root.render(createElement(Probe, { sessionId: null })));
       expect(control!.draftConfig).toEqual(imported);
-      expect(window.localStorage.getItem(`zcode-model-selection-recent-v1:${workspacePath}`)).toBe(
+      expect(window.localStorage.getItem(`zody-model-selection-recent-v1:${workspacePath}`)).toBe(
         recentBefore,
       );
       act(() => root.unmount());
@@ -796,7 +796,7 @@ describe("useDraftConfigControl slash command hydration", () => {
     const root = createRoot(installMinimalDom());
     const view = modelSelectionView(1, ["model"], "model");
     window.localStorage.setItem(
-      `zcode-model-selection-recent-v1:${workspacePath}`,
+      `zody-model-selection-recent-v1:${workspacePath}`,
       JSON.stringify({ modelSelection: view.preferredSelection, mode: "yolo" }),
     );
     let control: ReturnType<typeof useDraftConfigControl>;
@@ -821,7 +821,7 @@ describe("useDraftConfigControl slash command hydration", () => {
     await act(async () => root.render(createElement(Probe, { sessionId: "session" })));
     expect(control!.draftConfig.mode).toBe("edit");
     expect(
-      JSON.parse(window.localStorage.getItem(`zcode-model-selection-recent-v1:${workspacePath}`)!),
+      JSON.parse(window.localStorage.getItem(`zody-model-selection-recent-v1:${workspacePath}`)!),
     ).toMatchObject({ mode: "yolo" });
     act(() => root.unmount());
   });

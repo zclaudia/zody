@@ -29,11 +29,11 @@ class DownloadsFileWriterTest {
 
     @Test
     fun writesChunksIntoTheDownloadsCollection() {
-        val expected = "ZCode T6.3 download test\n".toByteArray() + ByteArray(4096) { 7 }
+        val expected = "Zody T6.3 download test\n".toByteArray() + ByteArray(4096) { 7 }
         val writer = DownloadsFileWriter(context)
 
         val session = writer.begin("../t63-download-test.txt", "text/plain")
-        session.append("ZCode T6.3 download test\n".toByteArray())
+        session.append("Zody T6.3 download test\n".toByteArray())
         session.append(ByteArray(4096) { 7 })
         val saved = session.finish()
         savedUris += saved.uri

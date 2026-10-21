@@ -40,9 +40,9 @@ describe.skipIf(isWindows)("cdn-preload.sh", () => {
     writeFileSync(
       cdnUrlsIn,
       [
-        "https://cdn-zcode.z.ai/zcode/electron/releases/1.3.0/ZCode-1.3.0-mac-arm64.dmg\t3145728",
-        "https://cdn-zcode.z.ai/zcode/electron/releases/update/mac/arm64/latest-mac.yml\t128",
-        "https://cdn-zcode.z.ai/zcode/electron/releases/1.3.0/ZCode-1.3.0-mac-arm64.zip",
+        "https://cdn.example.invalid/zody/releases/1.3.0/Zody-1.3.0-mac-arm64.dmg\t3145728",
+        "https://cdn.example.invalid/zody/releases/update/mac/arm64/latest-mac.yml\t128",
+        "https://cdn.example.invalid/zody/releases/1.3.0/Zody-1.3.0-mac-arm64.zip",
         "",
       ].join("\n"),
       "utf-8",
@@ -102,7 +102,7 @@ process.stdout.write("\\n");
       cwd: REPO_ROOT,
       env: {
         ...process.env,
-        CDN_DOMAIN: "",
+        CDN_DOMAIN: "cdn.example.invalid",
         PATH: `${binDir}:${process.env.PATH ?? ""}`,
         CDN_URLS_IN: cdnUrlsIn,
         POLL_INTERVAL: "0",
@@ -115,7 +115,7 @@ process.stdout.write("\\n");
     expect(output).toContain("no minimum file size threshold is applied");
     expect(output).toContain("Filtered URLs: 2, Skipped URLs: 1");
     expect(output).toContain(
-      "skip preload (missing/invalid recorded size): https://cdn-zcode.z.ai/zcode/electron/releases/1.3.0/ZCode-1.3.0-mac-arm64.zip",
+      "skip preload (missing/invalid recorded size): https://cdn.example.invalid/zody/releases/1.3.0/Zody-1.3.0-mac-arm64.zip",
     );
 
     const aliyunCalls = readFileSync(aliyunLogPath, "utf-8")
@@ -128,7 +128,7 @@ process.stdout.write("\\n");
     const describeCalls = aliyunCalls.filter((line) => line.includes("DescribeRefreshTaskById"));
     expect(pushCalls).toHaveLength(2);
     expect(pushCalls.some((line) => line.includes("latest-mac.yml"))).toBe(true);
-    expect(pushCalls.some((line) => line.includes("ZCode-1.3.0-mac-arm64.dmg"))).toBe(true);
+    expect(pushCalls.some((line) => line.includes("Zody-1.3.0-mac-arm64.dmg"))).toBe(true);
     expect(pushCalls.every((line) => !line.includes("--Area"))).toBe(true);
     expect(output).not.toContain("--Area");
     expect(describeCalls).toHaveLength(2);
@@ -144,8 +144,8 @@ process.stdout.write("\\n");
     writeFileSync(
       cdnUrlsIn,
       [
-        "https://cdn-zcode.z.ai/zcode/electron/releases/1.3.0/ZCode-1.3.0-linux-arm64.AppImage\t3145728",
-        "https://cdn.zcode-ai.com/zcode/electron/releases/1.3.0/ZCode-1.3.0-linux-arm64.AppImage\t3145728",
+        "https://cdn.example.invalid/zody/releases/1.3.0/Zody-1.3.0-linux-arm64.AppImage\t3145728",
+        "https://cdn-b.example.invalid/zody/releases/1.3.0/Zody-1.3.0-linux-arm64.AppImage\t3145728",
       ].join("\n"),
       "utf-8",
     );
@@ -166,10 +166,10 @@ for ((i = 1; i <= $#; i++)); do
 done
 
 if [[ "$2" == "PushObjectCache" ]]; then
-  if [[ "$profile" == "z-ai-account" ]]; then
-    printf '%s\\n' '{"PushTaskId":"task-z-ai"}'
-  elif [[ "$profile" == "zcode-ai-account" ]]; then
-    printf '%s\\n' '{"PushTaskId":"task-zcode-ai"}'
+  if [[ "$profile" == "account-a" ]]; then
+    printf '%s\\n' '{"PushTaskId":"task-a"}'
+  elif [[ "$profile" == "account-b" ]]; then
+    printf '%s\\n' '{"PushTaskId":"task-b"}'
   else
     echo "unexpected profile: $profile" >&2
     exit 1
@@ -207,8 +207,8 @@ else process.stdout.write("\\n");
         ...process.env,
         PATH: `${binDir}:${process.env.PATH ?? ""}`,
         CDN_URLS_IN: cdnUrlsIn,
-        CDN_DOMAIN: "cdn-zcode.z.ai,cdn.zcode-ai.com",
-        CDN_PRELOAD_PROFILE: "z-ai-account,zcode-ai-account",
+        CDN_DOMAIN: "cdn.example.invalid,cdn-b.example.invalid",
+        CDN_PRELOAD_PROFILE: "account-a,account-b",
         POLL_INTERVAL: "0",
       },
       timeout: 25_000,
@@ -229,25 +229,21 @@ else process.stdout.write("\\n");
     expect(describeCalls).toHaveLength(2);
     expect(
       pushCalls.some(
-        (line) => line.includes("cdn-zcode.z.ai") && line.includes("--profile z-ai-account"),
+        (line) => line.includes("cdn.example.invalid") && line.includes("--profile account-a"),
       ),
     ).toBe(true);
     expect(
       pushCalls.some(
-        (line) => line.includes("cdn.zcode-ai.com") && line.includes("--profile zcode-ai-account"),
+        (line) => line.includes("cdn-b.example.invalid") && line.includes("--profile account-b"),
       ),
     ).toBe(true);
     expect(pushCalls.every((line) => !line.includes("--region"))).toBe(true);
     expect(pushCalls.every((line) => !line.includes("--Area"))).toBe(true);
     expect(
-      describeCalls.some(
-        (line) => line.includes("task-z-ai") && line.includes("--profile z-ai-account"),
-      ),
+      describeCalls.some((line) => line.includes("task-a") && line.includes("--profile account-a")),
     ).toBe(true);
     expect(
-      describeCalls.some(
-        (line) => line.includes("task-zcode-ai") && line.includes("--profile zcode-ai-account"),
-      ),
+      describeCalls.some((line) => line.includes("task-b") && line.includes("--profile account-b")),
     ).toBe(true);
     expect(describeCalls.every((line) => !line.includes("--region"))).toBe(true);
   }, 30_000);
@@ -262,8 +258,8 @@ else process.stdout.write("\\n");
     writeFileSync(
       cdnUrlsIn,
       [
-        "https://cdn.codegeex.cn/zcode/electron/releases/1.3.0/ZCode-1.3.0-mac-arm64.dmg\t3145728",
-        "https://cdn.codegeex.cn/zcode/electron/releases/update/mac/arm64/latest-mac.yml\t128",
+        "https://cdn.example.invalid/zody/releases/1.3.0/Zody-1.3.0-mac-arm64.dmg\t3145728",
+        "https://cdn.example.invalid/zody/releases/update/mac/arm64/latest-mac.yml\t128",
       ].join("\n"),
       "utf-8",
     );
@@ -307,6 +303,7 @@ else process.stdout.write("\\n");
       cwd: REPO_ROOT,
       env: {
         ...process.env,
+        CDN_DOMAIN: "cdn.example.invalid",
         PATH: `${binDir}:${process.env.PATH ?? ""}`,
         CDN_URLS_IN: cdnUrlsIn,
         POLL_INTERVAL: "0",
@@ -327,7 +324,7 @@ else process.stdout.write("\\n");
 
     expect(aliyunCalls).toHaveLength(2);
     expect(aliyunCalls[0]).toContain("PushObjectCache");
-    expect(aliyunCalls[0]).toContain("ZCode-1.3.0-mac-arm64.dmg");
+    expect(aliyunCalls[0]).toContain("Zody-1.3.0-mac-arm64.dmg");
     expect(aliyunCalls[1]).toContain("DescribeRefreshTaskById");
   }, 30_000);
 
@@ -341,7 +338,7 @@ else process.stdout.write("\\n");
     mkdirSync(binDir, { recursive: true });
     writeFileSync(
       cdnUrlsIn,
-      "https://cdn.codegeex.cn/zcode/electron/releases/1.6.0/ZCode-1.6.0-mac-arm64.dmg\t3145728\n",
+      "https://cdn.example.invalid/zody/releases/1.6.0/Zody-1.6.0-mac-arm64.dmg\t3145728\n",
       "utf-8",
     );
 
@@ -392,6 +389,7 @@ else process.stdout.write("\\n");
       cwd: REPO_ROOT,
       env: {
         ...process.env,
+        CDN_DOMAIN: "cdn.example.invalid",
         PATH: `${binDir}:${process.env.PATH ?? ""}`,
         CDN_URLS_IN: cdnUrlsIn,
         POLL_INTERVAL: "0",
@@ -422,7 +420,7 @@ else process.stdout.write("\\n");
     mkdirSync(binDir, { recursive: true });
     writeFileSync(
       cdnUrlsIn,
-      "https://cdn.codegeex.cn/zcode/electron/releases/1.6.0/ZCode-1.6.0-mac-arm64.dmg\t3145728\n",
+      "https://cdn.example.invalid/zody/releases/1.6.0/Zody-1.6.0-mac-arm64.dmg\t3145728\n",
       "utf-8",
     );
 
@@ -455,6 +453,7 @@ process.stdout.write("\\n");
       cwd: REPO_ROOT,
       env: {
         ...process.env,
+        CDN_DOMAIN: "cdn.example.invalid",
         PATH: `${binDir}:${process.env.PATH ?? ""}`,
         CDN_URLS_IN: cdnUrlsIn,
         POLL_INTERVAL: "0",
@@ -487,7 +486,7 @@ process.stdout.write("\\n");
     mkdirSync(binDir, { recursive: true });
     writeFileSync(
       cdnUrlsIn,
-      "https://cdn.codegeex.cn/zcode/electron/releases/1.6.0/ZCode-1.6.0-mac-arm64.dmg\t3145728\n",
+      "https://cdn.example.invalid/zody/releases/1.6.0/Zody-1.6.0-mac-arm64.dmg\t3145728\n",
       "utf-8",
     );
 
@@ -518,6 +517,7 @@ process.stdout.write("\\n");
       cwd: REPO_ROOT,
       env: {
         ...process.env,
+        CDN_DOMAIN: "cdn.example.invalid",
         PATH: `${binDir}:${process.env.PATH ?? ""}`,
         CDN_URLS_IN: cdnUrlsIn,
         CDN_PRELOAD_MAX_ATTEMPTS: "2",

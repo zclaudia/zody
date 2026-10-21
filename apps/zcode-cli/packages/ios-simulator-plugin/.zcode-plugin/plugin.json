@@ -1,7 +1,7 @@
 {
   "name": "ios-simulator",
   "version": "0.1.0",
-  "description": "Provides iOS development workflows and simulator automation for ZCode.",
+  "description": "Provides iOS development workflows and simulator automation for Zody.",
   "author": { "name": "Z.ai" },
   "license": "MIT",
   "skills": "skills",

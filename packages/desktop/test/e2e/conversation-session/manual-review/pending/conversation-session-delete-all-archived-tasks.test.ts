@@ -96,7 +96,7 @@ async function clickArchiveActions() {
 }
 
 function readCounts() {
-  const database = new DatabaseSync(join(homedir(), ".zcoder", "v2", "tasks-index.sqlite"), {
+  const database = new DatabaseSync(join(homedir(), ".zody", "v2", "tasks-index.sqlite"), {
     readOnly: true,
   });
   try {
@@ -114,7 +114,7 @@ function readCounts() {
 }
 
 function readCliSessionCount() {
-  const database = new DatabaseSync(join(homedir(), ".zcoder", "cli", "db", "db.sqlite"), {
+  const database = new DatabaseSync(join(homedir(), ".zody", "cli", "db", "db.sqlite"), {
     readOnly: true,
   });
   try {

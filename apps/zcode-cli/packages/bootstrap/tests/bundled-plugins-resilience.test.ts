@@ -187,7 +187,7 @@ describe("bundled official plugin cache resilience", () => {
     const storageRoot = await createStorageRoot(cleanups);
     resolveOfficialPluginRoots({ storageRoot });
     const browserRoot = join(storageRoot, BROWSER_CACHE_SUFFIX);
-    const markerPath = join(browserRoot, ".zcode-plugin-seed.json");
+    const markerPath = join(browserRoot, ".zody-plugin-seed.json");
     const staleMarker = `${await readFile(markerPath, "utf8")}\n`;
     await writeFile(markerPath, staleMarker.replace('"hash": "', '"hash": "stale-'));
     const logger = createLogger();
@@ -438,7 +438,7 @@ describe("bundled official plugin cache resilience", () => {
     const storageRoot = await createStorageRoot(cleanups);
     resolveOfficialPluginRoots({ storageRoot });
     const browserRoot = join(storageRoot, BROWSER_CACHE_SUFFIX);
-    const markerPath = join(browserRoot, ".zcode-plugin-seed.json");
+    const markerPath = join(browserRoot, ".zody-plugin-seed.json");
     const staleMarker = `${await readFile(markerPath, "utf8")}\n`;
     await writeFile(markerPath, staleMarker.replace('"hash": "', '"hash": "stale-'));
     faults.moveTargetSuffix = BROWSER_CACHE_SUFFIX;
@@ -455,7 +455,7 @@ describe("bundled official plugin cache resilience", () => {
     const storageRoot = await createStorageRoot(cleanups);
     resolveOfficialPluginRoots({ storageRoot });
     const browserRoot = join(storageRoot, BROWSER_CACHE_SUFFIX);
-    const markerPath = join(browserRoot, ".zcode-plugin-seed.json");
+    const markerPath = join(browserRoot, ".zody-plugin-seed.json");
     const staleMarker = `${await readFile(markerPath, "utf8")}\n`;
     await writeFile(markerPath, staleMarker.replace('"hash": "', '"hash": "stale-'));
     faults.promoteCurrentTargetSuffix = BROWSER_CACHE_SUFFIX;

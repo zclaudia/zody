@@ -1,4 +1,4 @@
-# ZCode Agent Remote Deployment
+# Zody Agent Remote Deployment
 
 ## Scope
 
@@ -14,12 +14,12 @@ are checked before component uploads. Missing or corrupt assets fail without net
 The cache validates extracted content rather than trusting a ready marker. Existing version/SHA,
 pending refresh, cancellation, staging and install-root transaction semantics remain in force.
 
-Current remote deployment only prepares the default ZCode resource set:
+Current remote deployment only prepares the default Zody resource set:
 
 - `server-bundle`
 - `node-runtime`
 - `node-pty`
-- `glm` / ZCode Agent runtime
+- `glm` / Zody Agent runtime (internal component id `glm`)
 - `bfs`
 - `ripgrep`
 - `ugrep`
@@ -31,7 +31,7 @@ Retired third-party agent and proxy runtimes are not deployed.
 Remote server base path:
 
 ```text
-~/.zcode/server/
+~/.zody/server/
 ├── node
 ├── zcode-server.cjs
 ├── build/Release/pty.node
@@ -53,6 +53,10 @@ Remote server base path:
         ├── .version
         └── ugrep
 ```
+
+The root is `~/<ZCODE_DATA_ROOT_DIR_NAME>/server`, currently `~/.zody/server/` (`REMOTE_BASE` in
+`packages/server/src/remote/deployShared.ts`). File names inside it (`zcode-server.cjs`, `zcode.cjs`,
+`zcode-agent`) are internal artifact names and stay unchanged.
 
 Linux SSH、Docker 与 WSL 部署 `bfs 4.1.1-2`、`ugrep 7.8.4-1` 和 Microsoft
 `ripgrep 14.1.1-1` component。Darwin remote 继续只部署历史 `ripgrep 13.0.0-10`
@@ -189,7 +193,7 @@ remote .asset-components/server-bundle.json
 
 The renderer-facing host collection is mixed:
 
-- Remote proxy: file, git, system, terminal, file watcher, ZCode task/session/agent services,
+- Remote proxy: file, git, system, terminal, file watcher, Zody task/session/agent services,
   workspace-scoped Provider Settings, and workspace-scoped Model Selection.
 - Local implementation: Desktop app-global settings, OAuth UI integration, usage/coding-plan
   presentation, and other window-global state.
@@ -212,7 +216,7 @@ Desktop Entry
     | remote Provider Settings / Model Selection / task commands
     v
 Remote Environment
-├─ ZCode Built-in + Personal + Account Provider Config
+├─ Zody Built-in + Personal + Account Provider Config
 ├─ Credential Store
 ├─ Host Registry
 └─ Core Worker Registry -> ModelFactory -> model request
@@ -350,7 +354,7 @@ component-cache key semantics are unchanged.
 
 ## Resource Package Compatibility
 
-`SSHConnectOptions.resourcePackages.selectedPackageIds` is still accepted as historical input, but current connections ignore retired package choices and use the default ZCode resource set. Linux remote runtime includes `bfs`, `ripgrep`, and `ugrep`; Darwin remote only deploys its supported `ripgrep` component. Old configs cannot disable active runtime tools or re-enable third-party agent runtimes.
+`SSHConnectOptions.resourcePackages.selectedPackageIds` is still accepted as historical input, but current connections ignore retired package choices and use the default Zody resource set. Linux remote runtime includes `bfs`, `ripgrep`, and `ugrep`; Darwin remote only deploys its supported `ripgrep` component. Old configs cannot disable active runtime tools or re-enable third-party agent runtimes.
 
 ## Key Files
 

@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#161616" />
     <meta name="color-scheme" content="dark" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
-    <title>ZCode</title>
+    <title>Zody</title>
     <script>
       (() => {
         // 与 index.html 相同的首屏主题兜底：bundle 执行前先按本地偏好决定底色和 color-scheme，
@@ -33,7 +33,7 @@
         };
 
         try {
-          const saved = localStorage.getItem("zcode-theme") || "zai-dark";
+          const saved = localStorage.getItem("zody-theme") || "zai-dark";
           const resolved =
             saved === "system"
               ? window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -115,7 +115,7 @@
         aria-busy="true"
         aria-label="Loading..."
       >
-        ZCode
+        Zody
       </div>
     </div>
     <script type="module" src="/src/mobile-remote/main.tsx"></script>

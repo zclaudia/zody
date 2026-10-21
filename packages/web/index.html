@@ -17,13 +17,13 @@
       (() => {
         // Bugfix: Web 远控跨 workspace 跳转时，JS bundle 还没执行前就会先渲染启动壳。
         // 这里提前按本地主题偏好决定首屏底色，避免 dark 用户在这一帧看到白底闪烁。
-        const STORAGE_KEY = "zcode-theme";
+        const STORAGE_KEY = "zody-theme";
         const DEFAULT_THEME = "zai-dark";
         const BROWSER_THEME_COLORS = {
           dark: "#161616",
           light: "#f8f8f8",
         };
-        const BOOTSTRAP_SNAPSHOT_KEY = "zcode:web-remote-control:bootstrap-shell";
+        const BOOTSTRAP_SNAPSHOT_KEY = "zody:web-remote-control:bootstrap-shell";
 
         const normalizeResolvedTheme = (theme) => {
           if (theme === "dark") return "dark";

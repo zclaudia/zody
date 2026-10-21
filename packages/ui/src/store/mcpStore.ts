@@ -20,16 +20,11 @@ import { convertToZCodeAgentMcpServer } from "@zcode/shared";
 import { logger } from "@/logger.js";
 import {
   fetchNativeMcpServers,
-  migrateLegacyCommonMcpFromDesktop,
   persistCliMcpToUserDirectory,
   type McpDirectoryService,
   type McpPlatformService,
-  type MigrateLegacyResult,
 } from "@/store/mcpStoreDesktop.js";
-import {
-  importLegacyCommonServersToZCodeAgent,
-  migrateStoredCommonMcpToZCodeAgent,
-} from "@/store/mcpStoreMigration.js";
+import { migrateStoredCommonMcpToZCodeAgent } from "@/store/mcpStoreMigration.js";
 import {
   buildServerList,
   DEFAULT_MCP_CONFIG,
@@ -130,7 +125,6 @@ interface McpStoreState {
   mergePreloadedMcpServers: (preloaded: Record<string, McpServerConfig>) => void;
   deletePreloadedMcpServer: (source: McpSource, name: string) => void;
   setCurrentSessionId: (sessionId: string | null) => void;
-  migrateLegacyCommonMcp: () => Promise<MigrateLegacyResult>;
 }
 
 export const useMcpStore = create<McpStoreState>((set, get) => {
@@ -228,7 +222,7 @@ export const useMcpStore = create<McpStoreState>((set, get) => {
 
     loadConfig: () => {
       const config = loadPersistedConfig();
-      // MCP 启停状态已经迁移到 ~/.zcoder/cli/config.json，不能再读取旧 localStorage，
+      // MCP 启停状态已经迁移到 ~/.zody/cli/config.json，不能再读取旧 localStorage，
       // 否则旧的本地开关会覆盖新的 ZCode Agent 配置来源。
       const enabledStates: Record<string, boolean> = {};
       const deletedPreload = new Set<string>(safeReadJson<string[]>(MCP_DELETED_PRELOAD_KEY, []));
@@ -646,19 +640,7 @@ export const useMcpStore = create<McpStoreState>((set, get) => {
     },
 
     setCurrentSessionId: (sessionId) => set({ currentSessionId: sessionId }),
-
-    migrateLegacyCommonMcp: async () => {
-      const result = await migrateLegacyCommonMcpFromDesktop(mcpPlatformService);
-      const latestWorkspacePath = get().currentProjectPath || undefined;
-      const currentNativeServers = get().nativeServers.length > 0
-        ? get().nativeServers
-        : await fetchNativeMcpServers(mcpPlatformService, { workspacePath: latestWorkspacePath });
-      const migration = await importLegacyCommonServersToZCodeAgent(mcpPlatformService, result.servers ?? {}, currentNativeServers, result.sourcePath);
-      if (migration.changed) {
-        const servers = await fetchNativeMcpServers(mcpPlatformService, { workspacePath: latestWorkspacePath });
-        set(commitState({ nativeServers: servers }));
-      }
-      return migration;
-    },
+    // fork：上游从 %APPDATA%\ZCode 等目录导入 MCP 旧数据的 migrateLegacyCommonMcp 动作已删除，
+    // Zody 不读取上游安装目录（见 specs/zody-brand-residual-cleanup.md 缺陷 6）。
   };
 });
