@@ -4,9 +4,9 @@
 
 用户取得声明的入口：
 
-- Desktop：安装目录的 `resources/THIRD-PARTY-NOTICES.md`；macOS 为 `ZCode.app/Contents/Resources/THIRD-PARTY-NOTICES.md`。`Resources/licenses/electron/` 另外保存目标平台 Electron 原文、Chromium 汇总及校验清单。
+- Desktop：安装目录的 `resources/THIRD-PARTY-NOTICES.md`；macOS 为 `Zody.app/Contents/Resources/THIRD-PARTY-NOTICES.md`。`Resources/licenses/electron/` 另外保存目标平台 Electron 原文、Chromium 汇总及校验清单。
 - Web：部署根目录的 `THIRD-PARTY-NOTICES.md`；构建后的 HTML 带 `rel="license"` 链接。
-- 发行 CLI：`dist/THIRD-PARTY-NOTICES.md` 作为伴随文件随构建产出，`pnpm build:zcode` 的统一分发包复制到 `agent/THIRD-PARTY-NOTICES.md`。`zcode --licenses` 入口与 SEA 内嵌 Node 精确版本许可尚未接入：SEA 基底取构建机 Node 版本，而 `runtime/sources.json` 只登记 22.16.0 与 24.14.0，CI 浮动 Node 24 时会因缺少对应原文而无法构建。开发态 `tsx src/main.ts` 不经过发行入口。
+- 发行 CLI/Web：`pnpm build:zody` 的统一分发包在根目录附带 `THIRD-PARTY-NOTICES.md`，`licenses/node/` 附带包内 Node 的原文。CLI Agent 构建的 `dist/THIRD-PARTY-NOTICES.md` 与 SEA 内嵌材料由现有构建脚本管理；Zody 包内 Node 固定为 `mise.toml` 对应的 24.14.0，源码记录和许可材料必须匹配。开发态 `tsx src/main.ts` 不经过发行入口。
 - 搜索工具：准备后的每个工具目录包含 `THIRD-PARTY-NOTICES.txt` 和 `SOURCES.json`（内网镜像下载与仓库归档两条准备路径都写入，缓存命中也刷新）。SEA 同时嵌入这些材料。producer 打出的 tar/zip 仍只含二进制，保持与已固定 SHA-256 的归档逐字节一致。
 - 远端 Node 和独立 Server 的 node-runtime 组件：`LICENSE.node.txt` 与 `NODE-SOURCES.json`。缓存命中也刷新材料。Server、Agent、插件与搜索工具的独立组件分别附带适用声明，在计算组件哈希前完成复制。
 
@@ -26,11 +26,11 @@ node scripts/licenses.mjs check
 node scripts/licenses.mjs check --strict
 ```
 
-严格检查目前只作为显式命令运行，尚未接入 SEA 的 CI 发布和手动 SMB 上传入口：当前清单仍有已登记缺口，接入后这两条发布路径会立即失败。本地构建仍可用于核验修复，基础检查会明确提示未解决数量。
+Zody 的 tag 发布工作流和草稿制品准备入口要求严格检查通过。当前清单仍有已登记缺口，因此发布门禁会失败；本地核验构建可以保留 `verificationOnly=true` 标记，不能作为公开发布候选。基础检查会明确提示未解决数量。
 
 生成器以根锁文件的生产依赖图为覆盖集合，先比较实际安装图，再按精确版本读取内容；旧安装图必须先 frozen install，不能直接重生成。标识门禁和声明生成共用递归扫描，覆盖所有 workspace、嵌套版本和符号链接，并按真实目录防环。相同原文按 SHA-256 去重；同名不同版本分别记录。支持的平台可选包必须已安装。三个未安装 Canvas 目标（Android、Linux armv7、Linux riscv64）不属于当前桌面发行目标。
 
-审核并提交通知和 `inventory.json`。清单同时记录锁文件、manifest、补丁、复制文件和补充材料的哈希；版本变化或声明被截断会使显式检查失败；构建只读取已有声明，不因此中断。该检查确认材料新鲜度与许可标识，不自动证明所有发行义务已经履行。
+审核并提交通知和 `inventory.json`。清单同时记录锁文件、manifest、补丁、复制文件和补充材料的哈希；版本变化或声明被截断会使显式检查失败；构建读取已有声明，公开发布入口另执行严格门禁。该检查确认材料新鲜度与许可标识，不自动证明所有发行义务已经履行。
 
 工作区输入的新鲜度哈希将 CRLF 统一为 LF，兼容 Windows checkout；上游原文快照、归档和最终发行声明仍按原始字节校验。
 
@@ -40,7 +40,7 @@ node scripts/licenses.mjs check --strict
 
 `native-search/sources.json` 对应当前 18 个归档：桌面/SEA 的 bfs 4.1.1、ugrep 7.8.4、ripgrep 14.1.1，以及远端 macOS 的 ripgrep 13.0.0。链接依赖包括 Oniguruma、PCRE2、压缩库、Rust crate 和运行库材料。Cargo.lock 的收集范围保守包含可选、构建和测试依赖，不代表所有库都链接进每个平台。
 
-ugrep 的 BSD-3-Clause 版权、条件和免责声明完整保留。ripgrep 保留 MIT/Unlicense 两份文本，zstd 采用 BSD 选项；GCC 运行库保留 GPL 文本和 Runtime Library Exception 3.1，不把这一例外误写成要求应用整体采用 GPL。Sharp/libvips 由真实 Computer Use 包引入，声明保留 LGPL-3.0-or-later 材料，其内置库原文缺口继续登记在待核验清单中。
+ugrep 的 BSD-3-Clause 版权、条件和免责声明完整保留。ripgrep 保留 MIT/Unlicense 两份文本，zstd 采用 BSD 选项；GCC 运行库保留 GPL 文本和 Runtime Library Exception 3.1，不把这一例外误写成要求应用整体采用 GPL。当前分发生产依赖图已不包含被移除的系统 Computer Use 包及其 Sharp/libvips 依赖；保留的材料和待核验条目以当前生成清单为准。
 
 升级原生工具时，先核对构建配置和源码包，更新组件版本、上游 URL、源码校验值和实际许可文件；再更新 `sources.json` 的配置哈希。生产者打包会核对组件版本，打出的归档同时附许可材料。归档的最终 SHA-256 在包外维护，不能把含有自身哈希的文件放回同一归档。更新仓库归档和配置 pin 后，再更新材料中的二进制输入归档记录、重新生成根通知，并核对各平台准备产物。
 
@@ -49,9 +49,9 @@ ugrep 的 BSD-3-Clause 版权、条件和免责声明完整保留。ripgrep 保�
 ## 已明确的资料边界
 
 - ARMS 按当前生产依赖图进入声明，部分原始材料仍待补齐；不沿用其他分支已移除它的结论。`@dukelib/sheets-wasm@0.1.21` 已取得 `wasm-v0.1.21` 对应 commit 的原始 LICENSE。
-- 当前有 21 个包未取得对应版本的完整 LICENSE 文件，保留发布方许可标识、可取得的 README 许可段及标准条款，逐项记录在 `npm-overrides.json` 的 `evidenceKind` 字段。`reviewEvidence` 保存本次 npm 归档哈希及可取得的固定上游树证据。标准条款不能冒称上游原始版权声明；它们继续出现在清单的 `reviewRequired`，严格检查失败。其中 6 个是 sharp 预编译的 `@img/sharp-libvips-*`（只由真实 Computer Use 包引入）：发布方只声明 LGPL-3.0-or-later，并在 README 许可段列出 aom、cairo、glib 等约 28 个内置库，各内置库对应版本的原文尚未收集；标准条款取自 SPDX license-list-data v3.27.0（其 LGPL-3.0 文本已内含 GPL-3.0 全文）。
+- 当前有 15 个 npm 包未取得对应版本的完整原始版权/许可材料，保留发布方许可标识、可取得的 README 许可段及标准条款，逐项记录在 `npm-overrides.json`。`reviewEvidence` 保存归档哈希及可取得的固定上游树证据。标准条款不能冒称上游原始版权声明；这些包继续出现在 `reviewRequired`，使严格检查失败。
 - `embedded-components.json` 记录 Canvas 0.1.100 的 Skia 子模块和 quickjs-wasi 2.2.0 的 QuickJS-NG 子模块固定 revision 及完整原文。现已补充固定 Skia DEPS 中的字体、图片、压缩库材料，以及 QuickJS 的 WASI libc、LLVM runtime、Mbed TLS、Project Everest 和 Ada URL parser 材料；`buildEvidence` 保存构建脚本和 SDK submodule 来源，按原文字节校验。Mbed TLS 采用 Apache-2.0 选项，FreeType 采用 FTL 选项。各平台最终二进制、Rust/C++ 运行库及全部嵌套依赖的对应关系仍未完成核验，两项 reviewRequired 保留。
-- 原生来源清单中的 Rust 标准库 revision `6a6eaca656978778f7c1c750ee0c3db87f8bffb2` 尚无原文快照。本次从两个 Windows ripgrep 输入归档的 PE 文件重新提取出相同 revision，但公开 rust-lang/rust 无对应 commit；没有用其他 Rust 版本的材料替代。连同上述 npm 包、复制源码、内嵌组件与链接来源问题，`inventory.json` 的 `reviewRequired` 当前共 25 项。
+- 原生来源清单中的 Rust 标准库 revision `6a6eaca656978778f7c1c750ee0c3db87f8bffb2` 尚无原文快照。本次从两个 Windows ripgrep 输入归档的 PE 文件重新提取出相同 revision，但公开 rust-lang/rust 无对应 commit；没有用其他 Rust 版本的材料替代。连同上述 npm 包、复制源码、内嵌组件与链接来源问题，`inventory.json` 的 `reviewRequired` 当前共 19 项。
 - shadcn、AI Elements、Fig 注册表和 Material Icon Theme 的当前文件及核验许可证均已记录。当前 checkout 没有最初复制 revision，因此 `importRevision` 为 null；固定的许可参考 commit 不冒充最初复制版本。
 - 预编译原生工具的编译器/PCRE2 字符串与构建输入已记录。musl 的精确补丁版本未能从现有二进制恢复，保留上游 COPYRIGHT 参考并明确标记。源码配置和材料清单不等于每个平台最终安装包的完整链接审计。
 

@@ -47,9 +47,7 @@ const PHASED_SCRIPT = [
 ].join("\n");
 const BAD_SCRIPT = 'const x: number = "nope";\nreturn x;';
 const MODEL_CATALOG: ModelCatalogPort = {
-  listModels: () => [
-    { providerId: "acme", modelId: "gpt-5", reasoningLevels: [], current: true },
-  ],
+  listModels: () => [{ providerId: "acme", modelId: "gpt-5", reasoningLevels: [], current: true }],
 };
 
 const dirs: string[] = [];
@@ -59,7 +57,7 @@ function makeDir(prefix: string): string {
   return dir;
 }
 
-// 全局根默认取 os.homedir()：把 HOME 指到空临时目录，避免扫到开发机真实的 ~/.zcoder/workflows。
+// 全局根默认取 os.homedir()：把 HOME 指到空临时目录，避免扫到开发机真实的 ~/.zody/workflows。
 let originalHome: string | undefined;
 let originalUserProfile: string | undefined;
 beforeEach(() => {
@@ -402,7 +400,7 @@ describe("startSavedWorkflowRun — 成功路径", () => {
     const draft = join(cwd, WORKFLOW_DRAFTS_DIR, "reporter.dwf.ts");
     expect(submitCalls[0]!.scriptPath).toBe(draft);
     expect(readFileSync(draft, "utf8")).toBe(
-      readFileSync(join(cwd, ".zcode/workflows/reporter.dwf.ts"), "utf8"),
+      readFileSync(join(cwd, ".zody/workflows/reporter.dwf.ts"), "utf8"),
     );
   });
 
@@ -565,4 +563,3 @@ describe("startSavedWorkflowRun — 成功路径", () => {
     });
   });
 });
-

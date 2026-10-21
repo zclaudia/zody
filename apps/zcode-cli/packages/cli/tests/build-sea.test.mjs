@@ -835,6 +835,7 @@ test("allows skill-only official plugins when SEA runtime assets are required", 
   const stagingDirectory = join(directory, "staging");
 
   try {
+    await writeOfficialPluginFixtures(root);
     await writeTestFile(root, "packages/android-emulator-plugin/.zcode-plugin/plugin.json", "{}");
     await writeTestFile(root, "packages/android-emulator-plugin/dist/mcp/server.js", "");
     await writeTestFile(root, "packages/node-repl-host/.zcode-plugin/plugin.json", "{}");
@@ -882,7 +883,6 @@ test("allows skill-only official plugins when SEA runtime assets are required", 
       root,
       stagingDirectory,
     });
-    const documentPlugin = manifest.plugins.find((item) => item.name === "documents");
     const browserUsePlugin = manifest.plugins.find((item) => item.name === "browser-use");
     const restorePlugin = manifest.plugins.find((item) => item.name === "restore-legacy-sessions");
     const skillCreatorPlugin = manifest.plugins.find((item) => item.name === "skill-creator");
@@ -954,6 +954,9 @@ test("requires SEA runtime assets for runtime-backed official plugins", async ()
   const stagingDirectory = join(directory, "staging");
 
   try {
+    await writeOfficialPluginFixtures(root, [
+      "packages/android-emulator-plugin/dist/mcp/server.js",
+    ]);
     await writeTestFile(root, "packages/android-emulator-plugin/.zcode-plugin/plugin.json", "{}");
     // 宿主要先齐备，这条测试隔离的是 android-emulator 缺 runtime 这一种情况。
     await writeTestFile(root, "packages/node-repl-host/.zcode-plugin/plugin.json", "{}");
@@ -992,6 +995,9 @@ test("requires the Browser Use client alongside the SEA MCP runtime", async () =
   const stagingDirectory = join(directory, "staging");
 
   try {
+    await writeOfficialPluginFixtures(root, [
+      "packages/browser-use-plugin/scripts/browser-client.mjs",
+    ]);
     for (const pluginName of [
       "android-emulator-plugin",
       "browser-use-plugin",
@@ -1303,4 +1309,20 @@ async function writeDocumentPluginFixtures(root) {
     await writeTestFile(root, `packages/${name}-plugin/skills/${skill}/SKILL.md`, "");
   }
   // fork（F4.6）：image-search 官方 MCP 插件已删除，不再需要 fixture。
+}
+
+async function writeOfficialPluginFixtures(root, omittedPaths = []) {
+  const omitted = new Set(omittedPaths);
+  for (const plugin of officialSeaPlugins) {
+    const pluginRoot = plugin.rootPath;
+    await writeTestFile(root, join(pluginRoot, ".zcode-plugin/plugin.json"), "{}");
+    for (const path of [
+      ...(plugin.requiredSeedPaths ?? []),
+      ...(plugin.requiredRuntimePaths ?? []),
+    ]) {
+      const relativePath = join(pluginRoot, path);
+      if (omitted.has(relativePath)) continue;
+      await writeTestFile(root, relativePath, "{}");
+    }
+  }
 }

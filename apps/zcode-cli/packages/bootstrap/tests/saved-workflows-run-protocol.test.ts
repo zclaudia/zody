@@ -62,11 +62,11 @@ function contextWithRuns(runs: readonly FakeRun[]): ZCodeProtocolAgentServerCont
 }
 
 function projectDir() {
-  return join(cwd, ".zcode", "workflows");
+  return join(cwd, ".zody", "workflows");
 }
 
 function globalDir() {
-  return join(home, ".zcoder", "workflows");
+  return join(home, ".zody", "workflows");
 }
 
 async function seed(dir: string, name: string, script: string, description = "已有") {

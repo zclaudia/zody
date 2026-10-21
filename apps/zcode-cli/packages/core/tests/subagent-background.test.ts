@@ -264,7 +264,7 @@ describe("subagent background notifications", () => {
     expect(notificationTexts[2]).not.toContain("<task-id>agent_idle_3</task-id>");
     const firstNotificationMessage = notificationInputs[0];
     expect(firstNotificationMessage?.role).toBe("user");
-    expect(modelMessageContentToText(firstNotificationMessage?.content)).not.toContain(
+    expect(modelMessageContentToText(firstNotificationMessage?.content)).toContain(
       "<system-reminder>",
     );
     expect(hookEvents).toEqual([]);

@@ -1,12 +1,5 @@
 import { TurnMachineImpl, createPartId } from "../deps.js";
-import type {
-  MessageId,
-  Model,
-  ModelToolCall,
-  ToolCall,
-  ToolCallId,
-  TraceContext,
-} from "../deps.js";
+import type { ModelToolCall, ToolCall, ToolCallId } from "../deps.js";
 import {
   emitStreamingToolLedgerUpdate,
   requireRuntimeToolCallName,
@@ -33,6 +26,11 @@ import {
 } from "./turn-loop-state.js";
 import { createRuntimeAssistantEntry } from "../../agent/message-history.js";
 import { commitTurnRequestEntries } from "./turn-output-token-continuation.js";
+import type {
+  StreamingToolCoordinator,
+  StreamingToolCoordinatorOptions,
+  StreamingToolExecutionOptions,
+} from "./streaming-tool-coordinator.types.js";
 
 const STREAMING_TOOL_CANCEL_DRAIN_TIMEOUT_MS = 250;
 const STREAMING_TOOL_EXECUTION_MODE = "readOnly";
@@ -40,12 +38,8 @@ const STREAMING_TOOL_EXECUTION_MODE = "readOnly";
 export function createStreamingToolCoordinator(
   runtime: AgentRuntimeInternal,
   state: RegularTurnLoopState,
-  options: {
-    assistantMessageId: MessageId;
-    model: Model;
-    traceContext: TraceContext;
-  },
-) {
+  options: StreamingToolCoordinatorOptions,
+): StreamingToolCoordinator {
   const abortController = new AbortController();
   const handles = new Map<string, Promise<StreamedToolExecutionResult | undefined>>();
   const acceptedToolCalls = new Map<string, ModelToolCall>();
@@ -105,7 +99,7 @@ export function createStreamingToolCoordinator(
   };
 
   return {
-    accept(toolCall: ModelToolCall) {
+    accept(toolCall) {
       // 保留 runtime admission 后的空名，使正常 finish 走 registry miss，断流则保留 synthetic interrupted error。
       const normalizedToolCall = { ...toolCall };
       if (normalizedToolCall.providerExecuted) return;
@@ -134,7 +128,7 @@ export function createStreamingToolCoordinator(
       handles.set(normalizedToolCall.id, promise);
     },
 
-    async abandon(reason: "cancelled" | "model_failed") {
+    async abandon(reason) {
       abortController.abort();
       const status = reason === "cancelled" ? "tool_cancelled" : "tool_abandoned";
       await Promise.all(
@@ -159,7 +153,7 @@ export function createStreamingToolCoordinator(
       state.turnAbortSignal.removeEventListener("abort", abortOnTurnCancel);
     },
 
-    async drain(toolCalls: readonly ModelToolCall[]) {
+    async drain(toolCalls) {
       const results: StreamedToolExecutionResult[] = [];
       for (const toolCall of toolCalls) {
         const handle = handles.get(toolCall.id);
@@ -171,19 +165,15 @@ export function createStreamingToolCoordinator(
       return results;
     },
 
-    recordReasoningDelta(text: string) {
+    recordReasoningDelta(text) {
       discardedReasoningBytes += new TextEncoder().encode(text).byteLength;
     },
 
-    recordTextDelta(text: string) {
+    recordTextDelta(text) {
       discardedTextBytes += new TextEncoder().encode(text).byteLength;
     },
 
-    async recoverFromModelFailure(
-      error: unknown,
-      assistantCreatedAt: number,
-      recoveryOptions: { failedRequestId?: string } = {},
-    ) {
+    async recoverFromModelFailure(error, assistantCreatedAt, recoveryOptions = {}) {
       if (state.turnAbortSignal.aborted || !hasStreamRecoveryBudget(state)) return false;
       const recoveryEventOptions = {
         ...options,
@@ -222,7 +212,7 @@ export function createStreamingToolCoordinator(
       return true;
     },
 
-    async settleForModelFallback(assistantCreatedAt: number) {
+    async settleForModelFallback(assistantCreatedAt) {
       if (acceptedToolCalls.size === 0) {
         abortController.abort();
         state.turnAbortSignal.removeEventListener("abort", abortOnTurnCancel);
@@ -242,14 +232,7 @@ export function createStreamingToolCoordinator(
 async function executeDuringStream(
   runtime: AgentRuntimeInternal,
   state: RegularTurnLoopState,
-  options: {
-    abortSignal: AbortSignal;
-    assistantMessageId: MessageId;
-    declarationIndex: number;
-    model: Model;
-    toolCall: ModelToolCall;
-    traceContext: TraceContext;
-  },
+  options: StreamingToolExecutionOptions,
 ): Promise<StreamedToolExecutionResult | undefined> {
   throwIfTurnAborted(state.turnAbortSignal);
   const toolName = requireRuntimeToolCallName(options.toolCall, {

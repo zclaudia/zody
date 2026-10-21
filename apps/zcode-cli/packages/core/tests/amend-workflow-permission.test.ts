@@ -54,7 +54,7 @@ function fixture(name: string): string {
 
 const BROKEN_SCRIPT = 'const x: number = "s";';
 
-// 真目录而不是一个写死的 /tmp 路径：内联修订会往 `<cwd>/.zcode/workflow-drafts/` 写草稿
+// 真目录而不是一个写死的 /tmp 路径：内联修订会往 `<cwd>/.zody/workflow-drafts/` 写草稿
 // （docs/dynamic-workflow/launch.md「Script files」），用例之间不该互相看见对方的草稿。
 const AMEND_CWD = mkdtempSync(join(tmpdir(), "dwf-amend-cwd-"));
 afterAll(() => {
@@ -597,10 +597,7 @@ describe("AmendWorkflow — subagent_model", () => {
   }
 
   const CATALOG: ModelCatalogPort = {
-    listModels: () => [
-      entry("bigmodel", "GLM-4.6", { current: true }),
-      entry("openai", "gpt-5"),
-    ],
+    listModels: () => [entry("bigmodel", "GLM-4.6", { current: true }), entry("openai", "gpt-5")],
   };
 
   /** 目录里只剩一个模型：前驱选过的那一个已经不在了。 */

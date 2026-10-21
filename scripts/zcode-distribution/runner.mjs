@@ -1,22 +1,31 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { randomBytes } from "node:crypto";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, stat } from "node:fs/promises";
 import { createServer } from "node:net";
 import { networkInterfaces } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const { version } = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+const runtimeNode = join(root, "runtime", process.platform === "win32" ? "node.exe" : "node");
 const serverEntry = join(root, "server", "entry-http.js");
 const webRoot = join(root, "web");
 const agentEntry = join(root, "agent", "zcode.cjs");
+const cliBinary = join(root, "bin", process.platform === "win32" ? "zody-cli.exe" : "zody-cli");
+const runtimeToolsRoot = join(root, "runtime-tools");
+const runtimeToolEnvNames = Object.freeze({
+  bfs: "ZCODE_BFS_BINARY",
+  ripgrep: "ZCODE_RG_BINARY",
+  ugrep: "ZCODE_UGREP_BINARY",
+});
 
 function usage() {
   return `Usage:
-  zcode --web [--host <host>] [--port <port>] [--workspace <path>] [--open|--no-open] [--token <token>|--no-token]
-  zcode --version
+  zody --web [--host <host>] [--port <port>] [--workspace <path>] [--open|--no-open] [--token <token>|--no-token]
+  zody --version
 `;
 }
 
@@ -168,20 +177,26 @@ async function assertRuntimeFiles() {
 }
 
 async function serve(options) {
+  if (shouldProtectHost(options.host) && options.tokenEnabled === false) {
+    // 网络监听必须启用访问令牌，防止 --no-token 意外暴露 Agent 服务。
+    throw new Error("--no-token is only allowed when --host is a loopback address.");
+  }
   await assertRuntimeFiles();
+  const runtimeToolEnv = await runtimeToolsEnvironment();
   const port = options.port && options.port > 0 ? options.port : await pickPort(options.host);
   const protect = options.tokenEnabled ?? shouldProtectHost(options.host);
   const token = protect ? (options.token ?? createToken()) : "";
   const open = options.open ?? isLocalHost(options.host);
   const localUrl = formatUrl(options.host, port, token);
 
-  const child = spawn(process.execPath, [serverEntry], {
+  const child = spawn(runtimeNode, [serverEntry], {
     cwd: options.workspace,
     env: {
       ...process.env,
+      ...runtimeToolEnv,
       PORT: String(port),
       ZCODE_AGENT_SERVER_ARGS_JSON: JSON.stringify([agentEntry, "app-server", "--stdio"]),
-      ZCODE_AGENT_SERVER_COMMAND: process.execPath,
+      ZCODE_AGENT_SERVER_COMMAND: runtimeNode,
       ZCODE_SERVER_HOST: options.host,
       ZCODE_SERVER_WORKSPACE: options.workspace,
       ZCODE_WEB_STATIC_ROOT: webRoot,
@@ -209,7 +224,7 @@ async function serve(options) {
   });
 
   console.log("");
-  console.log("ZCode Web is running");
+  console.log("Zody Web is running");
   console.log(`Local:   ${localUrl}`);
   if (options.host === "0.0.0.0" || options.host === "::") {
     for (const url of networkUrls(port, token)) {
@@ -249,6 +264,50 @@ async function serve(options) {
   }
 }
 
+async function runtimeToolsEnvironment() {
+  const manifest = JSON.parse(await readFile(join(runtimeToolsRoot, "manifest.json"), "utf8"));
+  const expectedTarget = `${process.platform === "win32" ? "win" : process.platform}-${process.arch}`;
+  if (
+    manifest.version !== 1 ||
+    manifest.target !== expectedTarget ||
+    !Array.isArray(manifest.tools)
+  ) {
+    throw new Error(`Invalid native runtime manifest for ${expectedTarget}`);
+  }
+  const env = {};
+  for (const tool of manifest.tools) {
+    const envName = runtimeToolEnvNames[tool.id];
+    if (!envName || typeof tool.binaryName !== "string" || !/^[a-f0-9]{64}$/u.test(tool.sha256)) {
+      throw new Error(`Invalid native runtime entry: ${JSON.stringify(tool)}`);
+    }
+    const binaryPath = join(runtimeToolsRoot, tool.id, tool.binaryName);
+    const bytes = await readFile(binaryPath).catch((cause) => {
+      throw new Error(`Missing native runtime tool ${tool.id}: ${binaryPath}`, { cause });
+    });
+    const actual = createHash("sha256").update(bytes).digest("hex");
+    if (actual !== tool.sha256) throw new Error(`Native runtime checksum mismatch for ${tool.id}`);
+    if (!(await stat(binaryPath)).isFile())
+      throw new Error(`Invalid native runtime tool ${tool.id}`);
+    env[envName] = binaryPath;
+  }
+  return env;
+}
+
+function runCli(argv) {
+  const child = spawn(cliBinary, argv, {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: "inherit",
+  });
+  child.once("error", (error) => {
+    console.error(`Unable to start Zody CLI: ${error.message}`);
+    process.exitCode = 1;
+  });
+  child.once("exit", (code, signal) => {
+    process.exitCode = signal ? 1 : (code ?? 1);
+  });
+}
+
 try {
   const argv = process.argv.slice(2);
   if (argv.length === 1 && ["--version", "-v"].includes(argv[0])) {
@@ -260,11 +319,9 @@ try {
     else await serve(options);
   } else {
     if (argv.length === 1 && ["--help", "-h"].includes(argv[0])) {
-      console.log("Web mode: zcode --web [options] (zcode --web --help for details)\n");
+      console.log("Web mode: zody --web [options] (zody --web --help for details)\n");
     }
-    // CLI 自启动子进程依赖 argv[1]；统一指向真正的 Agent 入口，保留 TTY 与所有原始参数。
-    process.argv[1] = agentEntry;
-    await import(pathToFileURL(agentEntry).href);
+    runCli(argv);
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));

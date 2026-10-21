@@ -7,6 +7,7 @@ import {
   createSharedZCodeCredentialStore,
   loadSharedZCodeCredentialSync,
 } from "../src/auth/index.js";
+import { createStoredCredentialCipher } from "../../../../../packages/services/src/credential/providers/credentialKeyStore.js";
 
 const TEST_ENV = {
   ZCODE_CREDENTIAL_SECRET: "test-secret",
@@ -17,7 +18,7 @@ const TEST_ENV = {
 describe("shared ZCode credentials", () => {
   it("reads legacy plaintext credential values", async () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-auth-"));
-    const credentialsDir = join(dir, ".zcoder", "v2");
+    const credentialsDir = join(dir, ".zody", "v2");
     const credentialsPath = join(credentialsDir, "credentials.json");
 
     try {
@@ -41,6 +42,42 @@ describe("shared ZCode credentials", () => {
           env: TEST_ENV,
         }),
       ).toBe("legacy-token");
+    } finally {
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("shares the stored key and ciphertext format with the services credential adapter", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zody-cross-credential-"));
+    try {
+      const store = createSharedZCodeCredentialStore({ baseDir: dir, env: {} });
+      await store.save("mcp-oauth:shared", "service-readable");
+      const serviceCipher = await createStoredCredentialCipher(store.filePath, {});
+      const raw = JSON.parse(await readFile(store.filePath, "utf8")) as Record<string, string>;
+      expect(serviceCipher.decrypt(raw["mcp-oauth:shared"]!)).toBe("service-readable");
+      expect(loadSharedZCodeCredentialSync("mcp-oauth:shared", { baseDir: dir, env: {} })).toBe(
+        "service-readable",
+      );
+    } finally {
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("does not create a missing key during synchronous reads and rejects a corrupt key", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zody-sync-credential-"));
+    const credentialsDir = join(dir, ".zody", "v2");
+    const credentialsPath = join(credentialsDir, "credentials.json");
+    try {
+      await mkdir(credentialsDir, { recursive: true });
+      await writeFile(credentialsPath, JSON.stringify({ token: "enc:v1:broken" }));
+      expect(loadSharedZCodeCredentialSync("token", { baseDir: dir, env: {} })).toBeUndefined();
+      await expect(readFile(join(credentialsDir, "credentials.key"), "utf8")).rejects.toMatchObject(
+        {
+          code: "ENOENT",
+        },
+      );
+      await writeFile(join(credentialsDir, "credentials.key"), "broken");
+      expect(loadSharedZCodeCredentialSync("token", { baseDir: dir, env: {} })).toBeUndefined();
     } finally {
       await rm(dir, { force: true, recursive: true });
     }
@@ -197,7 +234,7 @@ async function runConcurrentCredentialWorkers(
   operation: "save" | "read-corrupt" = "save",
 ): Promise<void> {
   const workerUrl = new URL("./fixtures/shared-credentials-concurrent-process.ts", import.meta.url);
-  const children = Array.from({ length: processCount }, (_, processIndex) =>
+  const children = Array.from({ length: processCount }, () =>
     fork(workerUrl, {
       env: { ...process.env, NODE_NO_WARNINGS: "1" },
       execArgv: ["--import", "tsx"],

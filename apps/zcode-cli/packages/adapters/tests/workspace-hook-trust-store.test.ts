@@ -1,4 +1,14 @@
-import { chmod, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -47,9 +57,9 @@ describe("FileWorkspaceHookTrustStore", () => {
   it("只使用 user config storage.dir，不接受 project/env storage 覆盖", async () => {
     const home = await root();
     const custom = join(home, "trusted-user-storage");
-    await mkdir(join(home, ".zcoder", "cli"), { recursive: true });
+    await mkdir(join(home, ".zody", "cli"), { recursive: true });
     await writeFile(
-      join(home, ".zcoder", "cli", "config.json"),
+      join(home, ".zody", "cli", "config.json"),
       JSON.stringify({ storage: { dir: custom } }),
       "utf8",
     );

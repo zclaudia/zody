@@ -161,6 +161,12 @@ test("reads CLI build version from the repository root package", async () => {
   }
 });
 
+test("the default CLI version comes from the public Zody workspace version", async () => {
+  const root = resolve(import.meta.dirname, "../../../../../");
+  const manifest = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+  assert.equal(await readRootPackageVersion(), manifest.version);
+});
+
 test("rejects missing root package versions during CLI builds", async () => {
   const directory = await mkdtemp(join(tmpdir(), "zcode-root-version-"));
 
@@ -215,6 +221,19 @@ test("Desktop agent build keeps Node-only shared subpaths ahead of the generic a
   );
   assert.ok(
     Object.keys(aliases).indexOf("@zcode/shared/workspace-hook-discovery") <
+      Object.keys(aliases).indexOf("@zcode/shared"),
+  );
+});
+
+test("zody path resolver subpath resolves ahead of the generic shared alias", () => {
+  const rootDirectory = resolve("/repo/apps/zcode-cli");
+  const aliases = resolveBuildAliases({ rootDirectory });
+  assert.equal(
+    aliases["@zcode/shared/zody-paths"],
+    resolve(rootDirectory, "../../packages/shared/src/zody-paths.ts"),
+  );
+  assert.ok(
+    Object.keys(aliases).indexOf("@zcode/shared/zody-paths") <
       Object.keys(aliases).indexOf("@zcode/shared"),
   );
 });

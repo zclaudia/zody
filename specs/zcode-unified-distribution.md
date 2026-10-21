@@ -1,9 +1,11 @@
 # ZCode unified Node distribution
 
+2026-10-20 release decision update: [Zody 0.1.0](zody-0.1.0-release.md) supersedes the legacy public name, command, data-directory and packaging targets below. Zody will ship separate macOS arm64/x64, Windows x64 and Linux x64 packages with Node.js and required runtime assets included; users will not need a separate Node.js or pnpm installation. The current builder and historical validation below do not prove that the Zody distribution is implemented or verified. Distribution uses GitHub Releases drafts created by version-tag builds, followed by human acceptance and public Pre-release publication.
+
 ## Product rules
 
 - The Node distribution is named `zcode`, with executable `bin/zcode.mjs` and installed command `zcode`.
-- `zcode` starts the existing terminal UI. All arguments except a leading `--web` are forwarded unchanged to the existing CLI (including `tui`, prompt, login, resume and internal protocol commands).
+- `zcode` starts the existing terminal UI. All arguments except a leading `--web` are forwarded unchanged to the existing CLI (including `tui`, prompt, resume and internal protocol commands).
 - `zcode --web` starts the existing local HTTP/WebSocket server with bundled Web assets and Agent. Existing Web flags remain available: `--workspace`, `--host`, `--port`, `--open`, `--no-open`, `--token`, `--no-token`.
 - Only a leading `--web` selects Web mode; a prompt value containing `--web` must remain CLI input. CLI parsing, locale, permissions and sessions keep their existing owner.
 - `zcode --help` includes the Web invocation plus existing CLI help; `zcode --web --help` describes Web flags. `zcode --version` reports the distribution version.
@@ -42,7 +44,7 @@ sequenceDiagram
 - Node remains required, at the version pinned in `mise.toml`. The archive includes TUI assets for macOS, Linux and Windows (arm64/x64); native functionality must be verified per platform rather than inferred from asset presence.
 - Build download URL: `--base-url` overrides `ZCODE_DIST_BASE_URL`; environment overrides `.env.local`, which overrides `.env`. Missing URL fails before building. Installer `ZCODE_DIST_BASE_URL` overrides its embedded default.
 - Installer `ZCODE_DIST_HOME` overrides `~/.zcode/runtime`; `ZCODE_DIST_BIN_DIR` overrides `~/.local/bin`. These release-only variables do not change CLI/session data directories. Installation writes the `zcode` launcher and preserves existing user data.
-- `pnpm build:zcode` coexists with the existing `pnpm build:lite` (`scripts/build-zcode-lite.mjs`), which internal CI and release flows may still use; the two commands produce separate outputs (`dist/zcode` and `dist/zcode-lite`) and neither changes the other. Do not automatically delete old Lite installations. Retiring Lite requires confirming that no internal pipeline still depends on it.
+- Existing Lite installations are outside this distribution's data ownership; assembling or installing a new distribution does not automatically delete them. The current root build entry is `pnpm build:zcode`.
 
 ## Acceptance and validation
 

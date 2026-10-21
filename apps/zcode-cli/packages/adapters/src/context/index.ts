@@ -235,7 +235,7 @@ async function findDefaultUserInstructionFile(
     return undefined;
   }
 
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const filePath = join(resolveUserHomeDir(env), ZCODE_DATA_ROOT_DIR_NAME, "AGENTS.md");
   if (await isFile(filePath)) {
     return { filePath, fileName: "AGENTS.md" };

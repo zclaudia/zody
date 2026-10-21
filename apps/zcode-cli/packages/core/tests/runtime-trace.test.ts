@@ -1346,7 +1346,8 @@ describe("AgentRuntime trace propagation", () => {
       "system",
       "user",
     ]);
-    expect(requests[0]?.[0]?.cacheControl).toEqual({ type: "ephemeral" });
+    // The fixed CLI prefix has no explicit marker; the following context blocks do.
+    expect(requests[0]?.[0]?.cacheControl).toBeUndefined();
     expect(requests[0]?.[1]?.cacheControl).toEqual({ type: "ephemeral" });
     expect(requests[0]?.[2]?.cacheControl).toEqual({ type: "ephemeral" });
     expect(requests[0]?.[3]?.content).toContain("first question");

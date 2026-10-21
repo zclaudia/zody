@@ -129,9 +129,7 @@ describe("project MCP config", () => {
       });
 
       await app.submitPrompt("hello");
-      expect(connectedServerSets).toEqual([
-        ["plugin:ios-dev:ios-simulator", "node_repl"],
-      ]);
+      expect(connectedServerSets).toEqual([["plugin:ios-dev:ios-simulator", "node_repl"]]);
       expect(connectedConfigs[0]?.["plugin:ios-dev:ios-simulator"]).toMatchObject({
         args: [join(pluginRoot, "server.js")],
         command: "node",
@@ -254,9 +252,7 @@ describe("project MCP config", () => {
       expect(statuses.shared?.status).toBe("disconnected");
 
       await app.submitPrompt("hello");
-      expect(connectedServerSets).toEqual([
-        ["project-only", "shared", "node_repl"],
-      ]);
+      expect(connectedServerSets).toEqual([["project-only", "shared", "node_repl"]]);
       expect(connectedConfigs[0]?.["project-only"]).toMatchObject({
         command: "project-only-server",
         type: "stdio",
@@ -537,7 +533,7 @@ describe("project MCP config", () => {
 
   it("re-injects the product broker into shared node_repl after CLI env sanitization", () => {
     // 复现 Critical：CLI 入口 sanitize 会先从 process.env 删除 broker socket/token，若定向注入只读
-    // process.env，全局 ~/.zcoder/cli/config.json 的 zcode-cua 会 fail-open 绕过 broker，让
+    // process.env，全局 ~/.zody/cli/config.json 的 zcode-cua 会 fail-open 绕过 broker，让
     // Python/uvx 成为 TCC 主体。修复后 sanitize 前的凭据被捕获到进程内私有存储并仍能定向注入。
     const socketPath = "/tmp/zcode-cua-broker.sock";
     const token = "broker-token-abc";
@@ -586,7 +582,8 @@ describe("project MCP config", () => {
       else process.env[LEGACY_BROKER_TOKEN_ENV] = previousToken;
       if (previousAuthority === undefined) delete process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY];
       else process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = previousAuthority;
-      if (previousRefreshMarker === undefined) delete process.env["ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER"];
+      if (previousRefreshMarker === undefined)
+        delete process.env["ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER"];
       else process.env["ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER"] = previousRefreshMarker;
       if (previousUnavailable === undefined) delete process.env[ZCODE_CUA_BROKER_UNAVAILABLE_ENV];
       else process.env[ZCODE_CUA_BROKER_UNAVAILABLE_ENV] = previousUnavailable;

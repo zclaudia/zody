@@ -1,5 +1,4 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
-import { homedir, platform, userInfo } from "node:os";
 
 const ENCRYPTED_VALUE_PREFIX = "enc:v1:";
 const CREDENTIAL_CIPHER_ALGORITHM = "aes-256-gcm";
@@ -89,13 +88,5 @@ function resolveCredentialSecret(env: Record<string, string | undefined>): strin
   if (configuredSecret) {
     return configuredSecret;
   }
-
-  let username = "unknown";
-  try {
-    username = userInfo().username;
-  } catch {
-    // Some packaged or sandboxed runtimes cannot resolve OS user info.
-  }
-
-  return `zcode-credential-fallback:${platform()}:${homedir()}:${username}`;
+  throw new Error("Credential cipher requires an explicit secret.");
 }

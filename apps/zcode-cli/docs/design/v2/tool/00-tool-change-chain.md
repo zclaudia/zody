@@ -98,12 +98,22 @@ interrupted 冷恢复，不保证原始输出。Desktop continuous 与手机 rep
 完整顺序见 [streaming recovery](../model/streaming-tool-execution-and-recovery.md#tool-result-settlement)。
 回归覆盖图片 Stop、真实 SQLite 锁、批次中途保存失败、媒体与 usage 失败、冷恢复和 checkpoint 取消。
 
-
 ## 目的
 
 改动 tool 不是只改一个 handler 或 schema。tool 是 NL->Code 的核心边界，任何新增、删除、重命名、字段调整、执行语义调整、权限变化、输出变化、provider-native 化、后台化或 UI 展示变化，都必须沿同一条端到端链路核对。
 
 本 spec 是改 tool 前的入口清单。具体 tool 的能力和字段仍写在同目录下的独立 spec，例如 `01-read.md`、`04-bash.md`、`13-websearch.md`。如果两者冲突，先更新本 spec 或具体 tool spec，再改代码。
+
+## 项目工具资源路径兼容（2026-10-20）
+
+CLI 工具与工具运行时产生的项目资源按 `zody-path-compatibility.md` 共用路径规则：读取时每个项目层级先选
+`.zody`，仅当对应资源不存在时读 `.zcode`；目录型资源合并不同名称并由 `.zody` 遮住同名；新建或修改
+一律写 `.zody`。动态工作流入口文件属于项目运行产物，写入 `.zody/workflow-runs/`，不可写时保留原有
+临时目录回退与告警。此路径调整不改变工具 schema、权限、取消、执行、结果、trace 或模型可见内容。
+
+链路：共享公开路径 helper → adapter/bootstrap/runtime 解析资源 → 既有工具执行和权限边界 → `.zody` 写入；
+兼容路径的来源仍用于 hook digest/trust provenance，不复制旧 trust grant。回归证据覆盖共享 resolver、CLI
+skill/command roots、bootstrap workflows/hooks/subagents 和 runtime workflow entry-file 测试。
 
 ## 什么时候必须看本文
 

@@ -1,6 +1,6 @@
 {
-  "name": "zcode",
-  "version": "3.15.1",
+  "name": "zody",
+  "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
   "type": "module",
@@ -42,6 +42,7 @@
     "build:mobile-web": "pnpm --filter @zcode/web exec vite build --mode mobile --base=/assets/remote/",
     "check:mobile-web-isolation": "node scripts/check-mobile-web-bundle-isolation.mjs",
     "build:zcode": "node scripts/build-zcode.mjs",
+    "build:zody": "node scripts/build-zcode.mjs",
     "build:bootstrap": "pnpm -r --filter \"./packages/*\" --filter \"!@zcode/desktop\" build && pnpm --filter @zcode/desktop build:no-runtime-assets",
     "build:sea": "pnpm --dir apps/zcode-cli build:sea",
     "build:sea:all": "pnpm install && pnpm --dir apps/zcode-cli build:sea",

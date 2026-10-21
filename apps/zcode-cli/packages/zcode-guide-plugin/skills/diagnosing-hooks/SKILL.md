@@ -3,6 +3,8 @@ name: diagnosing-hooks
 description: Use to diagnose and fix ZCode hook configuration problems in the ZCode client. Applies when a hook does not trigger, an event name is wrong, a matcher does not match a tool name, a script is not executable, template variables are not expanded, a timeout unit is mistaken (seconds versus milliseconds), the command and process field styles are mixed, a hook's JSON output fails validation, a hook blocks the session unexpectedly, or configuration-file hooks are not enabled. Provides configuration sources, the hooks.json schema, how to inspect hooks in the client, and a step-by-step localization and repair workflow.
 ---
 
+> Path contract: write user-level Zody configuration under `~/.zody/` and new project configuration/resources under `.zody/`. Existing project `.zcode/` content is a read-only legacy fallback; do not direct users to create or edit it. Keep `.agents/` paths for shared agent conventions and `.zcode-plugin/plugin.json` for plugin manifests.
+
 # Diagnosing Hook Configuration
 
 Goal: reduce any hook problem to a single concrete fix.
@@ -11,7 +13,7 @@ Goal: reduce any hook problem to a single concrete fix.
 
 ## 1. Configuration sources and merging
 
-- **Configuration-file hooks**: the top-level `hooks` key in `~/.zcode/cli/config.json` (or the workspace `<repo>/.zcode/config.json` / `zcode.json`), shaped as `{ enabled?, timeoutMs?, maxOutputBytes?, events: { <Event>: [ { matcher?, hooks: [...] } ] } }`. **These are disabled by default — configuration-file hooks must set `hooks.enabled: true` to run.**
+- **Configuration-file hooks**: the top-level `hooks` key in `~/.zody/cli/config.json` or canonical workspace `<repo>/.zody/config.json`; an existing `<repo>/.zcode/config.json` is a read-only legacy fallback. The value is shaped as `{ enabled?, timeoutMs?, maxOutputBytes?, events: { <Event>: [ { matcher?, hooks: [...] } ] } }`. **These are disabled by default — configuration-file hooks must set `hooks.enabled: true` to run.**
 - **Plugin hooks**: each plugin's `hooks/hooks.json` (or its manifest `hooks` field). Plugin matchers are appended after configuration matchers. **When any plugin contributes a hook, the hook runner is enabled automatically.**
 - Non-plugin (user or workspace) configuration hooks have no trust gate; with `enabled: true` they run unconditionally.
 
@@ -38,7 +40,7 @@ Goal: reduce any hook problem to a single concrete fix.
 ## 3. How to inspect hooks
 
 - **In the client**: **Settings → Plugin Management** → open a plugin's detail view to see the hooks it registers and whether each is runnable.
-- **As an agent**: read the `hooks/hooks.json` (or the manifest `hooks` field) for a plugin, and the `hooks` block of `~/.zcode/cli/config.json` / the workspace config for configuration hooks.
+- **As an agent**: read the `hooks/hooks.json` (or the manifest `hooks` field) for a plugin, and the `hooks` block of `~/.zody/cli/config.json` / the workspace config for configuration hooks.
 - **Execution** (fired, timed out, blocked) is recorded in the ZCode log, with the hook's source, matcher, outcome, duration, and a preview of its error stream — enough to distinguish a timeout from a failure from a block.
 
 ## 4. Common pitfalls (symptom → cause → fix)

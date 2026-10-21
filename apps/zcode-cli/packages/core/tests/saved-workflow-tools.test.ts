@@ -71,7 +71,7 @@ afterEach(() => {
 
 /** 全局档落点（HOME 已被 beforeEach 指到 testHome）。 */
 function globalSavedPath(name: string): string {
-  return join(testHome, ".zcoder/workflows", `${name}.dwf.ts`);
+  return join(testHome, ".zody/workflows", `${name}.dwf.ts`);
 }
 
 // 记忆槽是单槽、按脚本原文取键，所以每个用例用自己的脚本；否则上一个用例存下的分析
@@ -171,7 +171,7 @@ const DENY: PermissionBrokerPort = {
 };
 
 function savedPath(cwd: string, name: string): string {
-  return join(cwd, ".zcode/workflows", `${name}.dwf.ts`);
+  return join(cwd, ".zody/workflows", `${name}.dwf.ts`);
 }
 
 describe("SaveWorkflow", () => {
@@ -1002,7 +1002,7 @@ describe("CreateWorkflow input schema", () => {
       saved: {
         name: "nightly",
         args: { a: 1 },
-        path: "/p/.zcode/workflows/nightly.dwf.ts",
+        path: "/p/.zody/workflows/nightly.dwf.ts",
         scope: "project",
       },
     });

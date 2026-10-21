@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// 协议 handler 只从 workspace 推导 storageRoot，user config 仍解析到 ~/.zcoder/cli/config.json
+// 协议 handler 只从 workspace 推导 storageRoot，user config 仍解析到 ~/.zody/cli/config.json
 // （getDefaultConfigPath 无 env 覆盖）。为隔离 restore/overview 的 user-config 往返，把 node:os
-// 的 homedir 重定向到一次性临时目录；tmpdir 等其余实现保留原值。这样 resolvePath("~/.zcoder/cli")
+// 的 homedir 重定向到一次性临时目录；tmpdir 等其余实现保留原值。这样 resolvePath("~/.zody/cli")
 // 落到隔离目录，绝不触碰真实 HOME。
 // 回归原因：vi.mock 会提升到普通 const 初始化之前；临时 HOME 也必须通过 vi.hoisted
 // 提前建立，否则 mock factory 读取 FAKE_HOME 时会命中 TDZ，导致整个 suite 无法收集。
@@ -180,9 +180,9 @@ describe("plugins protocol contracts", () => {
   });
 
   it("normalizes Windows plugin roots for Workspace ownership projection", () => {
-    expect(
-      normalizePluginRootForComparison("C:\\Repo\\Plugin", "win32"),
-    ).toBe(normalizePluginRootForComparison("c:/repo/plugin", "win32"));
+    expect(normalizePluginRootForComparison("C:\\Repo\\Plugin", "win32")).toBe(
+      normalizePluginRootForComparison("c:/repo/plugin", "win32"),
+    );
   });
 
   it("projects an inline plugin declared by the current Workspace into Workspace scope", async () => {
@@ -214,7 +214,7 @@ describe("plugins protocol contracts", () => {
   it("keeps the User projection independent from Workspace enable overrides", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-plugin-config-view-"));
     const pluginId = "skill-creator@zcode-plugins-official";
-    const userConfigPath = join(FAKE_HOME, ".zcoder", "cli", "config.json");
+    const userConfigPath = join(FAKE_HOME, ".zody", "cli", "config.json");
     try {
       await writeTestFile(
         userConfigPath,
@@ -229,30 +229,20 @@ describe("plugins protocol contracts", () => {
         }),
       );
 
-      const userResult = await listPlugins(
-        {} as ZCodeProtocolAgentServerContext,
-        {
-          workspace: { workspacePath: root, workspaceKey: root },
-          configScope: "user",
-        },
-      );
-      const workspaceResult = await listPlugins(
-        {} as ZCodeProtocolAgentServerContext,
-        {
-          workspace: { workspacePath: root, workspaceKey: root },
-          configScope: "workspace",
-        },
-      );
+      const userResult = await listPlugins({} as ZCodeProtocolAgentServerContext, {
+        workspace: { workspacePath: root, workspaceKey: root },
+        configScope: "user",
+      });
+      const workspaceResult = await listPlugins({} as ZCodeProtocolAgentServerContext, {
+        workspace: { workspacePath: root, workspaceKey: root },
+        configScope: "workspace",
+      });
 
-      expect(
-        userResult.plugins.find((plugin) => plugin.id === pluginId),
-      ).toMatchObject({
+      expect(userResult.plugins.find((plugin) => plugin.id === pluginId)).toMatchObject({
         enabled: true,
         enabledSource: "user",
       });
-      expect(
-        workspaceResult.plugins.find((plugin) => plugin.id === pluginId),
-      ).toMatchObject({
+      expect(workspaceResult.plugins.find((plugin) => plugin.id === pluginId)).toMatchObject({
         enabled: false,
         enabledSource: "workspace",
       });
@@ -266,7 +256,7 @@ describe("plugins protocol contracts", () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-plugin-option-source-view-"));
     const pluginRoot = join(root, "user-plugin");
     const pluginId = "option-source-view@inline";
-    const userConfigPath = join(FAKE_HOME, ".zcoder", "cli", "config.json");
+    const userConfigPath = join(FAKE_HOME, ".zody", "cli", "config.json");
     try {
       await writeTestFile(
         join(pluginRoot, ".claude-plugin", "plugin.json"),
@@ -313,17 +303,12 @@ describe("plugins protocol contracts", () => {
         }),
       );
 
-      const result = await listPlugins(
-        {} as ZCodeProtocolAgentServerContext,
-        {
-          workspace: { workspacePath: root, workspaceKey: root },
-          configScope: "workspace",
-        },
-      );
+      const result = await listPlugins({} as ZCodeProtocolAgentServerContext, {
+        workspace: { workspacePath: root, workspaceKey: root },
+        configScope: "workspace",
+      });
 
-      expect(
-        result.plugins.find((plugin) => plugin.id === pluginId),
-      ).toMatchObject({
+      expect(result.plugins.find((plugin) => plugin.id === pluginId)).toMatchObject({
         enabled: true,
         enabledSource: "workspace",
         marketplace: "personal-market",
@@ -553,11 +538,11 @@ describe("updatePlugin handler diagnostics", () => {
 // restoreBuiltinPlugin / overview 走真实 bootstrap 路径：storageRoot 由 ZCODE_STORAGE_DIR
 // 锚定（storage.dir 以 "cli" 结尾时 getCliStorageRoot 原样返回，pluginStorageRoot =
 // <storageDir>/plugins）；suppressedBuiltins 必须写到 handler 实际解析的 user config，即
-// ~/.zcoder/cli/config.json（文件头部已把 homedir 重定向到 FAKE_HOME，故落在隔离目录）。
+// ~/.zody/cli/config.json（文件头部已把 homedir 重定向到 FAKE_HOME，故落在隔离目录）。
 describe("restoreBuiltinPlugin handler", () => {
   const noopContext = {} as unknown as ZCodeProtocolAgentServerContext;
   const builtinId = "skill-creator@zcode-plugins-official";
-  const userConfigPath = join(FAKE_HOME, ".zcoder", "cli", "config.json");
+  const userConfigPath = join(FAKE_HOME, ".zody", "cli", "config.json");
   let previousStorageDir: string | undefined;
 
   beforeEach(() => {

@@ -12,9 +12,9 @@ import {
 
 describe("Node workflow store", () => {
   it("defaults to the CLI workflows directory", () => {
-    expect(getDefaultWorkflowRoot()).toContain(join(".zcoder", "cli", "workflows"));
+    expect(getDefaultWorkflowRoot()).toContain(join(".zody", "cli", "workflows"));
     expect(getDefaultWorkflowDefinitionsRoot()).toContain(
-      join(".zcoder", "cli", "workflows", "definitions"),
+      join(".zody", "cli", "workflows", "definitions"),
     );
   });
 

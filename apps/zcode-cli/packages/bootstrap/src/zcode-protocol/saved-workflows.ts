@@ -5,9 +5,9 @@
 // 解析器与序列化器只从 @zcode/core 取：这里不解析 frontmatter，也不拼 YAML。
 //
 // 全局作用域：五个方法的 params 收可选 `scope`（缺省
-// `project`）。`global` 时改按本机全局根（`~/.zcoder/workflows/`）操作，`workspace` 只是**载体**——
+// `project`）。`global` 时改按本机全局根（`~/.zody/workflows/`）操作，`workspace` 只是**载体**——
 // 处理器对全局档不读它的路径。`workflows/move` 把全局档搬回 `workspace` 项目（只此一向）。
-import { unlink, writeFile } from "node:fs/promises";
+import { access, unlink, writeFile } from "node:fs/promises";
 import { SavedWorkflowMetaSchema, isValidSavedWorkflowName } from "@zcode/contracts";
 import {
   listSavedWorkflows,
@@ -15,6 +15,7 @@ import {
   resolveSavedWorkflow,
   savedWorkflowPath,
   savedWorkflowRoot,
+  savedWorkflowRoots,
   serializeSavedWorkflow,
   type SavedWorkflowResolveFailure,
 } from "@zcode/core";
@@ -125,6 +126,44 @@ export async function deleteSavedWorkflowOp(
   }
   const root = savedWorkflowRoot(params.workspace.workspacePath, scopeOf(params));
   const path = savedWorkflowPath(root, params.name);
+  // 删除 canonical 副本若会让同名只读 legacy 资源重新生效，也必须拒绝。
+  const legacyRoot =
+    root.scope === "project"
+      ? savedWorkflowRoots(params.workspace.workspacePath).find(
+          (candidate) => candidate.scope === "project" && candidate.dir !== root.dir,
+        )
+      : undefined;
+  const legacyPath =
+    legacyRoot === undefined ? undefined : savedWorkflowPath(legacyRoot, params.name);
+  try {
+    await access(path);
+    if (legacyPath !== undefined) {
+      try {
+        await access(legacyPath);
+        return { ok: false, reason: "read_only_source" };
+      } catch (error) {
+        const code = (error as NodeJS.ErrnoException | undefined)?.code;
+        if (code !== "ENOENT" && code !== "ENOTDIR") throw error;
+      }
+    }
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException | undefined)?.code;
+    if (code === "ENOENT" || code === "ENOTDIR") {
+      if (legacyPath !== undefined) {
+        try {
+          await access(legacyPath);
+          return { ok: false, reason: "read_only_source" };
+        } catch (legacyError) {
+          const legacyCode = (legacyError as NodeJS.ErrnoException | undefined)?.code;
+          if (legacyCode !== "ENOENT" && legacyCode !== "ENOTDIR") {
+            return { ok: false, reason: "read_error", detail: describeError(legacyError) };
+          }
+        }
+      }
+      return { ok: false, reason: "not_found" };
+    }
+    return { ok: false, reason: "read_error", detail: describeError(error) };
+  }
   try {
     await unlink(path);
   } catch (error) {

@@ -7,7 +7,6 @@ import {
   loadFileConfig,
   removePluginFromFileConfig,
   removeSuppressedBuiltinInFileConfig,
-  updatePluginEnabledInFileConfig,
   updatePluginOptionsInFileConfig,
 } from "../src/config/file-config.adapter.js";
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
@@ -15,6 +14,32 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 describe("config adapters", () => {
+  it("writes project config updates to .zody and carries forward legacy values", async () => {
+    const project = await mkdtemp(join(tmpdir(), "zody-config-migration-"));
+    const legacyPath = join(project, ".zcode", "config.json");
+    const targetPath = join(project, ".zody", "config.json");
+    const legacy = {
+      model: "legacy-model",
+      mcp: { servers: { legacy: { type: "stdio", command: "node" } } },
+      hooks: { enabled: true, events: {} },
+      custom: { keep: true },
+    };
+    await mkdir(join(project, ".zcode"), { recursive: true });
+    await writeFile(legacyPath, JSON.stringify(legacy));
+
+    try {
+      await updateUiLocaleInFileConfig(targetPath, "zh-CN");
+
+      expect(JSON.parse(await readFile(targetPath, "utf8"))).toEqual({
+        ...legacy,
+        ui: { locale: "zh-CN" },
+      });
+      expect(await readFile(legacyPath, "utf8")).toBe(JSON.stringify(legacy));
+    } finally {
+      await rm(project, { recursive: true, force: true });
+    }
+  });
+
   it("migrates the legacy official CUA plugin id to the canonical id", async () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-config-cua-identity-"));
     const configPath = join(dir, "config.json");
@@ -110,9 +135,8 @@ describe("config adapters", () => {
         ).suppressed,
       ).toBe(false);
       expect(
-        (
-          await removePluginFromFileConfig(configPath, "computer-use@zcode-plugins-official")
-        ).removedEnabled,
+        (await removePluginFromFileConfig(configPath, "computer-use@zcode-plugins-official"))
+          .removedEnabled,
       ).toBe(true);
       // 当前 src 契约：removePluginFromFileConfig 写回时会持久化空的 plugins.options 容器，
       // 断言按现行为更新（用例本身是活的，仅期望值过时）。
@@ -337,8 +361,8 @@ describe("config adapters", () => {
     const result = createConfig({ env: {}, skipUserConfig: true });
 
     expect(result.config.model).toBeUndefined();
-    expect(DefaultRuntimeConfig.storage.sessionDbPath).toBe("~/.zcoder/cli/db/db.sqlite");
-    expect(result.config.storage.sessionDbPath).toBe("~/.zcoder/cli/db/db.sqlite");
+    expect(DefaultRuntimeConfig.storage.sessionDbPath).toBe("~/.zody/cli/db/db.sqlite");
+    expect(result.config.storage.sessionDbPath).toBe("~/.zody/cli/db/db.sqlite");
   });
 
   it("defaults model stream idle timeout to ten minutes", () => {

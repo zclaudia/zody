@@ -13,7 +13,7 @@ describe("protocol slash command surface", () => {
     const workspace = join(tempRoot, "workspace");
     const home = join(tempRoot, "home");
     const projectCommands = join(workspace, ".zcode", "commands");
-    const userCommands = join(home, ".zcoder", "commands");
+    const userCommands = join(home, ".zody", "commands");
 
     try {
       await mkdir(projectCommands, { recursive: true });
@@ -53,9 +53,7 @@ describe("protocol slash command surface", () => {
       expect(commands.find((command) => command.name === "review")?.description).toBe(
         "User review",
       );
-      expect(commands.find((command) => command.name === "ship")?.inputHint).toBe(
-        "/ship [target]",
-      );
+      expect(commands.find((command) => command.name === "ship")?.inputHint).toBe("/ship [target]");
       expect(commands.some((command) => command.name === "model")).toBe(false);
       expect(commands.filter((command) => command.name === "workflow")).toHaveLength(1);
       expect(commands.find((command) => command.name === "workflow")?.inputHint).toBe(
@@ -75,7 +73,7 @@ describe("protocol slash command surface", () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "zcode-custom-command-prompt-"));
     const workspace = join(tempRoot, "workspace");
     const home = join(tempRoot, "home");
-    const userCommands = join(home, ".zcoder", "commands");
+    const userCommands = join(home, ".zody", "commands");
 
     try {
       await mkdir(workspace, { recursive: true });
@@ -114,7 +112,7 @@ describe("protocol slash command surface", () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "zcode-builtin-workflow-"));
     const workspace = join(tempRoot, "workspace");
     const home = join(tempRoot, "home");
-    const userCommands = join(home, ".zcoder", "commands");
+    const userCommands = join(home, ".zody", "commands");
     try {
       await mkdir(workspace, { recursive: true });
       await mkdir(userCommands, { recursive: true });
@@ -164,6 +162,7 @@ describe("protocol slash command surface", () => {
       expect(prompt).toContain("built-in /init command");
       expect(prompt).toContain("AGENTS.md");
       expect(prompt).toContain(join(workspace, "AGENTS.md"));
+      expect(prompt).toContain(join(workspace, ".zody", "AGENTS.md"));
       expect(prompt).toContain(join(workspace, ".zcode", "AGENTS.md"));
       expect(prompt).toContain(join(workspace, ".agents", "AGENTS.md"));
       expect(prompt).toContain("they already have an instructions file");
@@ -172,9 +171,9 @@ describe("protocol slash command surface", () => {
       expect(resolveZCodeBuiltinPromptCommand("/review", { workingDirectory: workspace })).toBe(
         undefined,
       );
-      expect(resolveZCodeBuiltinPromptCommand("please /init", { workingDirectory: workspace })).toBe(
-        undefined,
-      );
+      expect(
+        resolveZCodeBuiltinPromptCommand("please /init", { workingDirectory: workspace }),
+      ).toBe(undefined);
     } finally {
       await rm(tempRoot, { force: true, recursive: true });
     }
@@ -262,7 +261,7 @@ describe("protocol slash command surface", () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "zcode-command-shell-missing-context-"));
     const workspace = join(tempRoot, "workspace");
     const home = join(tempRoot, "home");
-    const userCommands = join(home, ".zcoder", "commands");
+    const userCommands = join(home, ".zody", "commands");
     let executionCalled = false;
     const executionPort: ExecutionPort = {
       async run() {
@@ -277,13 +276,13 @@ describe("protocol slash command surface", () => {
         userCommands,
         "skill-context",
         "Needs skill context",
-        ['```!', 'echo "${CLAUDE_SKILL_DIR}"', "```"].join("\n"),
+        ["```!", 'echo "${CLAUDE_SKILL_DIR}"', "```"].join("\n"),
       );
       await writeCommand(
         userCommands,
         "session-context",
         "Needs session context",
-        ['```!', 'echo "${CLAUDE_SESSION_ID}"', "```"].join("\n"),
+        ["```!", 'echo "${CLAUDE_SESSION_ID}"', "```"].join("\n"),
       );
 
       const options = {

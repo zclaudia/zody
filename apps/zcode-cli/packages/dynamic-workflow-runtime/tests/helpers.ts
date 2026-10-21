@@ -56,7 +56,7 @@ interface RunScriptOptions extends AutoDriverConfig {
 const DEFAULT_CAPS: Caps = { maxConcurrency: 16 };
 
 /**
- * 每个测试文件一份独立的 run cwd。harness 把入口文件写到 `<cwd>/.zcode/workflow-runs/<runId>.mjs`
+ * 每个测试文件一份独立的 run cwd。harness 把入口文件写到 `<cwd>/.zody/workflow-runs/<runId>.mjs`
  * 且**保留**；测试几乎都用 runId "run"，若共用 process.cwd()，并行的测试文件会互相覆写同一个
  * 入口文件（一个子进程跑成另一个文件的脚本），也会把存档留在包目录里。vitest 按文件隔离模块，
  * 这个常量因此是每文件一份；文件内的用例串行，同名覆写无害。
@@ -64,7 +64,10 @@ const DEFAULT_CAPS: Caps = { maxConcurrency: 16 };
 export const TEST_CWD: string = mkdtempSync(join(tmpdir(), "dwf-test-cwd-"));
 
 /** 用真实管线跑一份脚本；AutoDriver 按 opts 里的 asks/worldReads 自动扮演模型。 */
-export async function runScript(scriptText: string, opts: RunScriptOptions = {}): Promise<RunScriptResult> {
+export async function runScript(
+  scriptText: string,
+  opts: RunScriptOptions = {},
+): Promise<RunScriptResult> {
   const journal = opts.journal ?? new InMemoryJournalStore();
   const driver = new AutoDriver(journal, {
     asks: opts.asks,

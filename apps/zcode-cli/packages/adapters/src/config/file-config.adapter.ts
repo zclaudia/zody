@@ -1,17 +1,12 @@
 // File Config Adapter - Load and patch JSON configuration files
 
-import {
-  existsSync,
-  readFileSync,
-  renameSync,
-  unlinkSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import type { RuntimeConfigPatch, UiLocale } from "@zcode/contracts";
 import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { LEGACY_ZCODE_DIRECTORY_NAME, ZODY_DIRECTORY_NAME } from "@zcode/shared/zody-paths";
 import { z } from "zod";
 import {
   CANONICAL_CUA_PLUGIN_ID,
@@ -60,7 +55,6 @@ export interface PluginRemovePatchResult {
 }
 
 const DEFAULT_CONFIG_FILE = "config.json";
-// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
 const DEFAULT_BASE_DIR = `~/${ZCODE_DATA_ROOT_DIR_NAME}/cli`;
 
 /**
@@ -164,10 +158,7 @@ function migratePluginConfigInFile(value: unknown): Record<string, unknown> | un
   return changed ? { ...value, plugins: nextPlugins } : undefined;
 }
 
-function persistPluginConfigMigration(
-  filePath: string,
-  value: Record<string, unknown>,
-): void {
+function persistPluginConfigMigration(filePath: string, value: Record<string, unknown>): void {
   const tempPath = `${filePath}.migrate.${process.pid}.${Date.now()}.tmp`;
   try {
     writeFileSync(tempPath, `${JSON.stringify(value, null, 2)}\n`, {
@@ -481,6 +472,16 @@ async function readJsonConfigFileOrEmpty(filePath: string): Promise<Record<strin
   } catch (error) {
     const cause = error instanceof Error ? error.cause : undefined;
     if (isNodeError(cause) && cause.code === "ENOENT") {
+      if (basename(dirname(filePath)) === ZODY_DIRECTORY_NAME) {
+        const projectDir = dirname(dirname(filePath));
+        const legacyPath = join(projectDir, LEGACY_ZCODE_DIRECTORY_NAME, basename(filePath));
+        try {
+          return await readJsonConfigFile(legacyPath);
+        } catch (legacyError) {
+          const legacyCause = legacyError instanceof Error ? legacyError.cause : undefined;
+          if (!isNodeError(legacyCause) || legacyCause.code !== "ENOENT") throw legacyError;
+        }
+      }
       return {};
     }
     throw error;

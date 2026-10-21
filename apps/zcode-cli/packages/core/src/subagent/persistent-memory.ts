@@ -1,6 +1,8 @@
 import { join, resolve } from "node:path";
 
 import type { FileSystemPort, Logger, TraceContext } from "@zcode/contracts";
+import { isFileSystemPortError } from "@zcode/contracts";
+import { resolveProjectResourceRoots } from "@zcode/shared/zody-paths";
 
 import { ensureMemoryDirectoryExists } from "../memory/directory.js";
 import type { AgentRuntimeConfig, MemoryRuntimeConfig } from "../runtime/types.js";
@@ -25,9 +27,11 @@ export function resolvePersistentAgentMemoryRoot(input: {
     return join(input.storageRoot, "agent-memory", agentKey);
   }
   const workspace = resolve(input.workspaceRoot);
-  return input.scope === "project"
-    ? join(workspace, ".zcode", "agent-memory", agentKey)
-    : join(workspace, ".zcode", "agent-memory-local", agentKey);
+  return resolveProjectResourceRoots(
+    workspace,
+    input.scope === "project" ? "agent-memory" : "agent-memory-local",
+    agentKey,
+  ).writePath;
 }
 
 function isPersistentAgentMemoryEnabled(
@@ -92,10 +96,27 @@ export async function loadPersistentAgentMemory(input: {
   );
 
   let indexContent = "";
+  const legacyRootDir =
+    input.profile.memory === "user"
+      ? undefined
+      : resolveProjectResourceRoots(
+          input.workspaceRoot,
+          input.profile.memory === "project" ? "agent-memory" : "agent-memory-local",
+          sanitizePersistentAgentMemoryKey(input.profile.name),
+        ).legacyPath;
   try {
     indexContent = (await input.fileSystemPort.readTextFile({ path: join(rootDir, "MEMORY.md") }))
       .content;
-  } catch {
+  } catch (error) {
+    if (legacyRootDir && isFileSystemPortError(error) && error.code === "not_found") {
+      try {
+        indexContent = (
+          await input.fileSystemPort.readTextFile({ path: join(legacyRootDir, "MEMORY.md") })
+        ).content;
+      } catch {
+        // 旧 index 不存在时使用 empty index 文案；新写入仍由 rootDir 指向 .zody。
+      }
+    }
     // 不存在或不可读的 MEMORY.md 都使用基线的 empty index 文案。
   }
 

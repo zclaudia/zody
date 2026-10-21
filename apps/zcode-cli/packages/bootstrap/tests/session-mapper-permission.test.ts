@@ -72,7 +72,7 @@ describe("legacy permission.requested 映射", () => {
       saved: {
         name: "nightly",
         args: { depth: 3, target: "packages/core" },
-        path: "/repo/.zcode/workflows/nightly.dwf.ts",
+        path: "/repo/.zody/workflows/nightly.dwf.ts",
         scope: "project",
       },
     };
@@ -102,7 +102,7 @@ describe("legacy permission.requested 映射", () => {
       name: "pr-review",
       description: "Review a pull request",
       script: "return 1;",
-      path: "/repo/.zcode/workflows/pr-review.dwf.ts",
+      path: "/repo/.zody/workflows/pr-review.dwf.ts",
       overwrite: true,
       scope: "project",
     };
@@ -142,8 +142,7 @@ describe("legacy permission.requested 映射", () => {
 
     expect(zcodeSessionEventSchema.safeParse(mapped).success).toBe(true);
     expect(mapped.payload).not.toHaveProperty("optionsPolicy");
-    const options = (mapped.payload as { options: { optionId: string; kind: string }[] })
-      .options;
+    const options = (mapped.payload as { options: { optionId: string; kind: string }[] }).options;
     expect(options.map((option) => option.optionId)).toEqual(["allow_once", "deny"]);
     expect(options.some((option) => option.kind === "allow_session")).toBe(false);
   });
@@ -178,7 +177,7 @@ describe("legacy permission.requested 映射", () => {
           name: "pr-review",
           description: "Review a pull request",
           script: "return 1;",
-          path: "/repo/.zcode/workflows/pr-review.dwf.ts",
+          path: "/repo/.zody/workflows/pr-review.dwf.ts",
           overwrite: true,
           scope: "project",
         },
@@ -216,7 +215,9 @@ describe("legacy permission.requested 映射", () => {
         ],
         lanes: [{ id: "actor#1", name: "a" }],
         // 第二层是子代理导向：每阶段一张参与者卡 + 交接边（docs/dynamic-workflow/presentation.md）。
-        participants: [{ id: "unphased:actor#1", phase: "unphased", lane: "actor#1", steps: ["ask#1"] }],
+        participants: [
+          { id: "unphased:actor#1", phase: "unphased", lane: "actor#1", steps: ["ask#1"] },
+        ],
         handoffs: [],
         sink: ["ask#1"],
       },
@@ -260,7 +261,7 @@ describe("legacy permission.requested 映射", () => {
       saved: {
         name: "release-check",
         args: { target: "packages/core", depth: 3, skipTests: false },
-        path: "/repo/.zcode/workflows/release-check.dwf.ts",
+        path: "/repo/.zody/workflows/release-check.dwf.ts",
         scope: "project",
       },
     };
@@ -268,7 +269,7 @@ describe("legacy permission.requested 映射", () => {
       name: "release-check",
       description: "对本仓库做一次发布前检查",
       script: "return 1;",
-      path: "/repo/.zcode/workflows/release-check.dwf.ts",
+      path: "/repo/.zody/workflows/release-check.dwf.ts",
       overwrite: true,
       scope: "project",
     };

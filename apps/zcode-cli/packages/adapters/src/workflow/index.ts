@@ -33,13 +33,8 @@ interface WorkflowIndexFile {
   runs: WorkflowRunListItem[];
 }
 
-// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
-const DEFAULT_WORKFLOW_ROOT = join(
-  homedir(),
-  ZCODE_DATA_ROOT_DIR_NAME,
-  "cli",
-  "workflows",
-);
+// fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
+const DEFAULT_WORKFLOW_ROOT = join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "workflows");
 const WORKFLOW_DEFINITION_FILE_EXTENSION = ".json";
 
 export class NodeWorkflowStore implements WorkflowStorePort {

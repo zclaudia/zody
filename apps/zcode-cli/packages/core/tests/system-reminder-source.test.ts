@@ -236,7 +236,7 @@ describe("system reminder source descriptors", () => {
     const reminder = wrapSystemReminderForSource(
       "plan_file_reference",
       [
-        "A plan file exists from plan mode at: /workspace/.zcode/plans/plan-session.md",
+        "A plan file exists from plan mode at: /workspace/.zody/plans/plan-session.md",
         "",
         "Plan contents:",
         "",

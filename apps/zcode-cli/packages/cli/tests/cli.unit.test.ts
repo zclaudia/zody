@@ -8,10 +8,7 @@ import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import {
-  ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
-  ZCODE_PLUGIN_HOST_COMMAND,
-} from "@zcode/contracts";
+import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE, ZCODE_PLUGIN_HOST_COMMAND } from "@zcode/contracts";
 import {
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
   ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
@@ -561,10 +558,7 @@ test("borrows one process provider registry for a headless prompt and disposes i
     userConfigPath: "/tmp/zcode-legacy-cli.json",
     startProcessProviderRegistryRuntime: async (_env, options) => {
       runtimeStarts += 1;
-      assert.equal(
-        options?.standalone?.legacyCliUserConfigFilePath,
-        "/tmp/zcode-legacy-cli.json",
-      );
+      assert.equal(options?.standalone?.legacyCliUserConfigFilePath, "/tmp/zcode-legacy-cli.json");
       assert.equal(typeof options?.standalone?.onBuiltinRefreshError, "function");
       return {
         dispose: () => {
@@ -2827,7 +2821,7 @@ test("command center toggles plugins and refreshes the picker", async () => {
           enabled = nextEnabled;
           return {
             enabled,
-            path: "/home/test/.zcoder/cli/config.json",
+            path: "/home/test/.zody/cli/config.json",
             plugin: {
               commandRootCount: 1,
               dataPath: "/tmp/zcode/plugins/data/ios-simulator@zcode-plugins-official",
@@ -3692,7 +3686,8 @@ test("prints help with help flag", async () => {
   const exitCode = await run(ctx);
 
   assert.equal(exitCode, 0);
-  assert.match(ctx.stdout.output(), /With no command, zcode opens the full-screen TUI\./);
+  assert.match(ctx.stdout.output(), /With no command, zody opens the full-screen TUI\./);
+  assert.match(ctx.stdout.output(), /zody \d/);
   assert.match(ctx.stdout.output(), /Commands:/);
   assert.match(ctx.stdout.output(), /--force-mcs/);
   assert.match(ctx.stdout.output(), /--surface <surface>/);
@@ -4229,7 +4224,7 @@ test("zcode plugins enable persists the selected plugin", async () => {
       assert.equal(options.workingDirectory, "/workspace/project");
       return {
         enabled: true,
-        path: "/home/test/.zcoder/cli/config.json",
+        path: "/home/test/.zody/cli/config.json",
         plugin: {
           commandRootCount: 1,
           dataPath: "/tmp/zcode/plugins/data/ios-dev@zcode-plugins-official",
@@ -4251,7 +4246,7 @@ test("zcode plugins enable persists the selected plugin", async () => {
   assert.equal(exitCode, 0);
   assert.match(
     ctx.stdout.output(),
-    /Enabled plugin ios-dev@zcode-plugins-official in \/home\/test\/.zcoder\/cli\/config\.json/,
+    /Enabled plugin ios-dev@zcode-plugins-official in \/home\/test\/.zody\/cli\/config\.json/,
   );
 });
 
@@ -5492,7 +5487,7 @@ test("prints JSON for doctor command", async () => {
     };
 
     assert.equal(exitCode, 0);
-    assert.equal(payload.cli.name, "zcode");
+    assert.equal(payload.cli.name, "zody");
     assert.equal(payload.cli.processName, CLI_PROCESS_NAME);
     assert.equal(payload.runtime.node, process.version);
     assert.equal(payload.runtime.processTitle, CLI_PROCESS_NAME);
@@ -5513,8 +5508,8 @@ test("prints human doctor details with verbose diagnostics", async () => {
     const output = ctx.stdout.output();
 
     assert.equal(exitCode, 0);
-    assert.match(output, /zcode doctor/);
-    assert.match(output, /process: zcode-cli/);
+    assert.match(output, /zody doctor/);
+    assert.match(output, /process: zody-cli/);
     assert.match(output, /execPath:/);
     assert.match(output, /cwd:/);
     assert.equal(output.includes("["), false);
@@ -5978,10 +5973,7 @@ test("reuses one process provider registry across TUI app replacements", async (
     userConfigPath: "/tmp/zcode-legacy-tui.json",
     startProcessProviderRegistryRuntime: async (_env, options) => {
       runtimeStarts += 1;
-      assert.equal(
-        options?.standalone?.legacyCliUserConfigFilePath,
-        "/tmp/zcode-legacy-tui.json",
-      );
+      assert.equal(options?.standalone?.legacyCliUserConfigFilePath, "/tmp/zcode-legacy-tui.json");
       assert.equal(typeof options?.standalone?.onBuiltinRefreshError, "function");
       return {
         dispose: () => {
@@ -6185,7 +6177,7 @@ test("headless prompt reports exact Workspace Hook pretrust diagnostics without 
           event: "SessionStart",
           matcher: null,
           displayCommand: "./start.sh",
-          sourcePath: ".zcoder/config.json",
+          sourcePath: ".zody/config.json",
           configuredEnabled: true,
           hookDeclarationDigest: "a".repeat(64),
           trustState: "pending_trust",

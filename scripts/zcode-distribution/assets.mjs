@@ -5,7 +5,6 @@ import {
   collectSeaTuiAssets,
   seaTuiAssetPrefix,
 } from "../../apps/zcode-cli/packages/cli/scripts/sea-tui-assets.mjs";
-import { supportedTargets } from "../../apps/zcode-cli/packages/cli/scripts/sea-targets.mjs";
 const root = resolve(import.meta.dirname, "../..");
 const readJson = async (file) => JSON.parse(await readFile(file, "utf8"));
 
@@ -29,29 +28,26 @@ const runtimePackageNames = [
   "node-forge",
 ];
 
-export async function stageTuiRuntime(packageRoot) {
+export async function stageTuiRuntime(packageRoot, target) {
   const stagingDirectory = resolve(packageRoot, "../tui-staging");
   const copied = new Map();
   try {
-    for (const target of supportedTargets) {
-      const { assets, manifest } = await collectSeaTuiAssets({
-        root: resolve(root, "apps/zcode-cli"),
-        stagingDirectory,
-        target,
-      });
-      for (const file of manifest.files) {
-        const previous = copied.get(file.path);
-        if (previous) {
-          if (previous !== file.sha256)
-            throw new Error(`Conflicting TUI asset: ${file.path} (${target})`);
-          continue;
-        }
-        const destination = resolve(packageRoot, "agent", file.path);
-        await mkdir(dirname(destination), { recursive: true });
-        await cp(assets[`${seaTuiAssetPrefix}${file.path}`], destination);
-        await chmod(destination, file.mode);
-        copied.set(file.path, file.sha256);
+    const { assets, manifest } = await collectSeaTuiAssets({
+      root: resolve(root, "apps/zcode-cli"),
+      stagingDirectory,
+      target,
+    });
+    for (const file of manifest.files) {
+      const previous = copied.get(file.path);
+      if (previous && previous !== file.sha256) {
+        throw new Error(`Conflicting TUI asset: ${file.path} (${target})`);
       }
+      if (previous) continue;
+      const destination = resolve(packageRoot, "agent", file.path);
+      await mkdir(dirname(destination), { recursive: true });
+      await cp(assets[`${seaTuiAssetPrefix}${file.path}`], destination);
+      await chmod(destination, file.mode);
+      copied.set(file.path, file.sha256);
     }
   } finally {
     await rm(stagingDirectory, { recursive: true, force: true });
@@ -173,11 +169,12 @@ export async function copyRuntimeNodeModules(packageRoot) {
   });
 }
 
-export async function patchNodePtyPrebuilds(packageRoot) {
+export async function patchNodePtyPrebuilds(packageRoot, target) {
   const requireFromServer = createRequire(resolve(root, "packages", "server", "package.json"));
   const nodePtyPrebuildRoot = resolve(packageRoot, "node_modules", "node-pty", "prebuilds");
 
-  for (const packageName of lydellNodePtyPackages) {
+  const selectedPackage = `@lydell/node-pty-${target}`;
+  for (const packageName of lydellNodePtyPackages.filter((name) => name === selectedPackage)) {
     let packageJsonPath;
     try {
       packageJsonPath = await resolvePackageJsonPath(requireFromServer, packageName);
@@ -197,13 +194,9 @@ export async function patchNodePtyPrebuilds(packageRoot) {
     });
   }
 
-  for (const helper of [
-    resolve(nodePtyPrebuildRoot, "darwin-arm64", "spawn-helper"),
-    resolve(nodePtyPrebuildRoot, "darwin-x64", "spawn-helper"),
-  ]) {
-    if (await pathExists(helper)) {
-      await chmod(helper, 0o755);
-    }
+  const helper = resolve(nodePtyPrebuildRoot, target, "spawn-helper");
+  if (target.startsWith("darwin-") && (await pathExists(helper))) {
+    await chmod(helper, 0o755);
   }
 }
 

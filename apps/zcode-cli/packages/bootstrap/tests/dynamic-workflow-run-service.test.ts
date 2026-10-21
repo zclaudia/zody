@@ -2306,8 +2306,8 @@ describe("dynamic workflow run service — 本 run 子代理的权限模式", ()
 // 唯一的不同是它**没有三态**：修订记的永远是新脚本的文件，绝不沿用前驱的——前驱的路径
 // 指向旧脚本，沿用它就是让模型下次去编辑一个已经不在跑的文件。
 describe("dynamic workflow run service — 本 run 的脚本文件", () => {
-  const DRAFT = "/repo/.zcode/workflow-drafts/audit.dwf.ts";
-  const REVISED = "/repo/.zcode/workflow-drafts/audit-2.dwf.ts";
+  const DRAFT = "/repo/.zody/workflow-drafts/audit.dwf.ts";
+  const REVISED = "/repo/.zody/workflow-drafts/audit-2.dwf.ts";
 
   const launchedOf = (harness: Harness, runId: string): RunEvent | undefined =>
     harness.journal

@@ -3,14 +3,13 @@ import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import type { CustomCommandRoot, CustomCommandSource } from "@zcode/contracts";
 import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { resolveProjectResourceRoots } from "@zcode/shared/zody-paths";
 
 const COMMANDS_DIR = "commands";
 const GIT_MARKER = ".git";
 const HOME_PREFIX = "~/";
 const PRIORITY_STEP = 10;
-// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用；项目级仍是 .zcode。
 const ZCODE_HOME_DIR = ZCODE_DATA_ROOT_DIR_NAME;
-const ZCODE_PROJECT_DIR = ".zcode";
 const AGENTS_DIR = ".agents";
 
 export interface CustomCommandRootResolutionOptions {
@@ -101,9 +100,12 @@ function commandRootsForBase(
 ): CustomCommandRoot[] {
   // 合并而不是 fallback：兼容 `.agents` 命令和原生命令需要同时可见。
   // 同一级别原生目录先扫描，命令同名时仍按“先到先赢”处理。
-  const zcodeDir = scope === "user" ? ZCODE_HOME_DIR : ZCODE_PROJECT_DIR;
+  const nativeRoots =
+    scope === "user"
+      ? [join(baseDirectory, ZCODE_HOME_DIR, COMMANDS_DIR)]
+      : resolveProjectResourceRoots(baseDirectory, COMMANDS_DIR).readPaths;
   return [
-    root(join(baseDirectory, zcodeDir, COMMANDS_DIR), scope, "zcode", nextPriority()),
+    ...nativeRoots.map((path) => root(path, scope, "zcode", nextPriority())),
     root(join(baseDirectory, AGENTS_DIR, COMMANDS_DIR), scope, "agents", nextPriority()),
   ];
 }

@@ -24,7 +24,7 @@ function makeCwd(): string {
   return dir;
 }
 
-/** 一个隔离的家目录，供全局档用例注入——绝不碰开发机真实的 `~/.zcoder/workflows`。 */
+/** 一个隔离的家目录，供全局档用例注入——绝不碰开发机真实的 `~/.zody/workflows`。 */
 function makeHome(): string {
   const dir = mkdtempSync(join(tmpdir(), "dwf-home-"));
   created.push(dir);
@@ -162,7 +162,7 @@ describe("saved workflow store", () => {
 
     expect(written.overwritten).toBe(false);
     expect(written.scope).toBe("project");
-    expect(written.path).toBe(join(cwd, ".zcode/workflows/pr-review.dwf.ts"));
+    expect(written.path).toBe(join(cwd, ".zody/workflows/pr-review.dwf.ts"));
 
     const resolved = resolveSavedWorkflow({ cwd, name: "pr-review" });
     expect(resolved.ok).toBe(true);
@@ -253,7 +253,7 @@ describe("saved workflow store", () => {
       description: "first",
       args: { a: { type: "number" } },
       scope: "project",
-      path: join(cwd, ".zcode/workflows/alpha.dwf.ts"),
+      path: join(cwd, ".zody/workflows/alpha.dwf.ts"),
     });
     // 枚举不是读取：正文绝不进列表。
     expect(JSON.stringify(entries)).not.toContain("agent(");
@@ -287,14 +287,15 @@ describe("saved workflow store", () => {
     expect(listSavedWorkflows({ cwd: makeCwd() })).toEqual({ entries: [], invalid: [] });
   });
 
-  // 根是一个**数组**，按优先级排列 `[project, global]`。这条用例钉住"按序 first-wins"的形状。
+  // canonical 项目根优先于只读 legacy 根，二者都优先于全局根。
   it("looks up roots in priority order, first match winning", () => {
     const cwd = makeCwd();
     const home = makeHome();
     const roots = savedWorkflowRoots(cwd, { homeDir: home });
-    expect(roots).toHaveLength(2);
-    expect(roots[0]).toEqual({ scope: "project", dir: join(cwd, ".zcode/workflows") });
-    expect(roots[1]).toEqual({ scope: "global", dir: join(home, ".zcoder/workflows") });
+    expect(roots).toHaveLength(3);
+    expect(roots[0]).toEqual({ scope: "project", dir: join(cwd, ".zody/workflows") });
+    expect(roots[1]).toEqual({ scope: "project", dir: join(cwd, ".zcode/workflows") });
+    expect(roots[2]).toEqual({ scope: "global", dir: join(home, ".zody/workflows") });
 
     saveSavedWorkflow({ cwd, name: "shadowed", meta: { description: "project" }, script: SCRIPT });
     const resolved = resolveSavedWorkflow({ cwd, name: "shadowed" });
@@ -302,6 +303,33 @@ describe("saved workflow store", () => {
     if (!resolved.ok) return;
     expect(resolved.scope).toBe(roots[0]!.scope);
     expect(resolved.path).toBe(join(roots[0]!.dir, "shadowed.dwf.ts"));
+  });
+
+  it("reads legacy project workflows while saving a canonical copy", () => {
+    const cwd = makeCwd();
+    const legacyPath = writeRawInRoot(
+      join(cwd, ".zcode/workflows"),
+      "legacy.dwf.ts",
+      serializeSavedWorkflow({ description: "legacy value" }, SCRIPT),
+    );
+    const legacyBytes = readFileSync(legacyPath, "utf8");
+    const before = resolveSavedWorkflow({ cwd, name: "legacy" });
+    expect(before).toMatchObject({ ok: true, path: legacyPath });
+
+    const written = saveSavedWorkflow({
+      cwd,
+      name: "legacy",
+      meta: { description: "updated" },
+      script: "return 'new';",
+    });
+    expect(written.path).toBe(join(cwd, ".zody/workflows/legacy.dwf.ts"));
+    expect(written.overwritten).toBe(true);
+    expect(readFileSync(legacyPath, "utf8")).toBe(legacyBytes);
+    expect(resolveSavedWorkflow({ cwd, name: "legacy" })).toMatchObject({
+      ok: true,
+      path: written.path,
+      meta: { description: "updated" },
+    });
   });
 });
 
@@ -319,7 +347,7 @@ describe("saved workflow global scope", () => {
     });
 
     expect(written.scope).toBe("global");
-    expect(written.path).toBe(join(home, ".zcoder/workflows/research.dwf.ts"));
+    expect(written.path).toBe(join(home, ".zody/workflows/research.dwf.ts"));
 
     const resolved = resolveSavedWorkflow({ cwd, name: "research", homeDir: home });
     expect(resolved.ok).toBe(true);
@@ -455,6 +483,19 @@ describe("findSavedWorkflowShadowing", () => {
     );
   });
 
+  it("treats a legacy project workflow as shadowing the global copy", () => {
+    const cwd = makeCwd();
+    const home = makeHome();
+    writeRawInRoot(
+      join(cwd, ".zcode/workflows"),
+      "dup.dwf.ts",
+      serializeSavedWorkflow({ description: "legacy project" }, SCRIPT),
+    );
+    expect(findSavedWorkflowShadowing({ cwd, name: "dup", scope: "global", homeDir: home })).toBe(
+      "hidden_by_project",
+    );
+  });
+
   it("returns undefined when the other scope has no same-named file", () => {
     const cwd = makeCwd();
     const home = makeHome();
@@ -485,7 +526,7 @@ describe("moveSavedWorkflow (global → project)", () => {
     expect(result).toEqual({
       ok: true,
       from: written.path,
-      to: join(cwd, ".zcode/workflows/landing.dwf.ts"),
+      to: join(cwd, ".zody/workflows/landing.dwf.ts"),
     });
     if (!result.ok) return;
     // 逐字节：move 不 parse、不 reserialize。
@@ -516,7 +557,7 @@ describe("moveSavedWorkflow (global → project)", () => {
     expect(result).toEqual({
       ok: false,
       reason: "target_exists",
-      path: join(cwd, ".zcode/workflows/dup.dwf.ts"),
+      path: join(cwd, ".zody/workflows/dup.dwf.ts"),
     });
     // 源与目标都还在（拒绝是原子的：什么都没搬）。
     expect(savedWorkflowExists({ cwd, name: "dup", scope: "project", homeDir: home })).toBe(true);

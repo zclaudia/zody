@@ -20,15 +20,13 @@ export const WorkflowInputSchema = z
     description: z
       .string()
       .optional()
-      .describe(
-        "Ignored — set the workflow description in the script's `meta` block.",
-      ),
+      .describe("Ignored — set the workflow description in the script's `meta` block."),
     name: z
       .string()
       .min(1)
       .optional()
       .describe(
-        "Name of a predefined workflow (built-in or from .zcode/workflows/). Resolves to a self-contained script.",
+        "Name of a predefined workflow (built-in or from .zody/workflows/, with read-only .zcode fallback). Resolves to a self-contained script.",
       ),
     resumeFromRunId: z
       .string()

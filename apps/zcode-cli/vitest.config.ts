@@ -2,6 +2,8 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    // 限制单包 worker；全量 CLI 门禁同时运行多个包，避免资源争用触发计算用例的超时。
+    maxWorkers: 2,
     // Bugfix: 外部 zcode-cli 历史里同时存在 test/ 和 tests/ 目录；合入 apps 后需要同时保留两种约定，避免新增包测试被根 include 规则过滤掉。
     include: [
       "test/**/*.test.ts",

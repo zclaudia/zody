@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { resolveProjectResourceRoots } from "@zcode/shared/zody-paths";
 import {
   BUILTIN_WORKFLOW_COMMAND_NAME,
   expandBuiltinWorkflowCommandPrompt,
@@ -82,14 +83,16 @@ function buildInitAgentsPrompt(params: {
   targetPath: string;
   workingDirectory: string;
 }): string {
+  const hiddenInstructionCandidates = [
+    ...resolveProjectResourceRoots(params.workingDirectory).readPaths.map((root) =>
+      join(root, "AGENTS.md"),
+    ),
+    join(params.workingDirectory, ".agents", "AGENTS.md"),
+  ];
   const additionalInstructions = params.args
-    ? [
-        "",
-        "Additional user instructions supplied with /init:",
-        "```text",
-        params.args,
-        "```",
-      ].join("\n")
+    ? ["", "Additional user instructions supplied with /init:", "```text", params.args, "```"].join(
+        "\n",
+      )
     : "";
 
   return [
@@ -100,14 +103,14 @@ function buildInitAgentsPrompt(params: {
     "Target:",
     `- Workspace directory: ${params.workingDirectory}`,
     `- Instruction file: ${params.targetPath}`,
-    `- Existing hidden instruction candidates: ${join(params.workingDirectory, ".zcode", "AGENTS.md")} and ${join(params.workingDirectory, ".agents", "AGENTS.md")}`,
+    `- Existing hidden instruction candidates: ${hiddenInstructionCandidates.join(", ")}`,
     "- File name must be exactly AGENTS.md.",
-    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
     `- This command targets the current workspace only. Do not write ~/${ZCODE_DATA_ROOT_DIR_NAME}/AGENTS.md.`,
     additionalInstructions,
     "",
     "Process:",
-    "1. First check whether .zcode/AGENTS.md or .agents/AGENTS.md exists in the workspace. If either exists, tell the user they already have an instructions file, mention the path found, and stop without creating a new AGENTS.md.",
+    "1. First check whether .zody/AGENTS.md, .zcode/AGENTS.md, or .agents/AGENTS.md exists in the workspace. If any exists, tell the user they already have an instructions file, mention the path found, and stop without creating a new AGENTS.md.",
     "2. Inspect the repository before writing. Prefer Read, Glob, Grep, and safe Bash commands such as ls, find, git status, and package-manager script inspection.",
     "3. If AGENTS.md already exists, read it first and update it with Edit instead of replacing it wholesale.",
     "4. If AGENTS.md does not exist, create it at the workspace root.",

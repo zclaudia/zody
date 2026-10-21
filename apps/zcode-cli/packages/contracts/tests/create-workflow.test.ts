@@ -98,9 +98,9 @@ describe("CreateWorkflowInputSchema — no predecessor field", () => {
 
   it("rejects resume_from in every spelling", () => {
     for (const key of ["resume_from", "resumeFrom", "run_id"]) {
-      expect(CreateWorkflowInputSchema.safeParse({ script: SCRIPT, [key]: "dwfrun-prev" }).success).toBe(
-        false,
-      );
+      expect(
+        CreateWorkflowInputSchema.safeParse({ script: SCRIPT, [key]: "dwfrun-prev" }).success,
+      ).toBe(false);
     }
   });
 
@@ -157,7 +157,7 @@ describe("CreateWorkflowInputSchema — the file sources", () => {
   it("accepts the normalized shape a `path` call resolves to", () => {
     const resolved = {
       script: SCRIPT,
-      path: "/repo/.zcode/workflow-drafts/x.dwf.ts",
+      path: "/repo/.zody/workflow-drafts/x.dwf.ts",
       args: { depth: 3 },
       script_line_offset: 5,
     };
@@ -175,9 +175,9 @@ describe("CreateWorkflowInputSchema — the file sources", () => {
       saved: {
         name: "nightly",
         args: { depth: 3 },
-        path: "/repo/.zcode/workflows/nightly.dwf.ts",
+        path: "/repo/.zody/workflows/nightly.dwf.ts",
         scope: "project" as const,
-        draft: "/repo/.zcode/workflow-drafts/nightly.dwf.ts",
+        draft: "/repo/.zody/workflow-drafts/nightly.dwf.ts",
       },
       script_line_offset: 3,
     };
@@ -747,11 +747,7 @@ describe("createWorkflowPhaseNames — the declared phase table for run-launched
         lanes: [],
         participants: [],
         handoffs: [],
-        phases: [
-          { id: "p1", name: "Research" },
-          { id: "unphased" },
-          { id: "p2", name: "Write" },
-        ],
+        phases: [{ id: "p1", name: "Research" }, { id: "unphased" }, { id: "p2", name: "Write" }],
       }),
     ).toEqual(["Research", "Write"]);
   });

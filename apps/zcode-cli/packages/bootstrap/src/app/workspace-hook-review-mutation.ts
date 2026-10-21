@@ -9,6 +9,8 @@ import {
   readWorkspaceHookProjectSources,
   type WorkspaceHookRuntimeRoot,
 } from "@zcode/shared/workspace-hook-discovery";
+import { resolveProjectResourcePaths } from "@zcode/shared/zody-paths";
+import { withFileLock } from "@zcode/shared/node";
 import {
   WorkspaceHookMutationError,
   writeWorkspaceHookConfiguredToggle,
@@ -28,43 +30,47 @@ export function createWorkspaceHookReviewMutationPort(
   options: WorkspaceHookReviewMutationPortOptions,
 ): WorkspaceHookReviewMutationPort {
   const workingDirectory = resolve(options.workingDirectory);
-  const editableConfigPath = resolve(workingDirectory, ".zcode", "config.json");
+  const editableConfigPath = resolveProjectResourcePaths(workingDirectory, "config.json").writePath;
   const lockKey = editableConfigPath;
 
   return {
     toggle(input, onWriteCommitted) {
-      return withWorkspaceMutationLock(lockKey, async () => {
-        const current = await rebuildSnapshot(options);
-        // 这三种失败必须区分：共用 workspace_hooks_snapshot_mismatch
-        // 会让用户无法区分「换了 workspace」「配置真的变了」「配置读不出来」。
-        if (current.workspaceIdentity !== input.snapshot.workspaceIdentity) {
-          throw new WorkspaceHookMutationError(
-            "workspace_hooks_snapshot_mismatch",
-            // 消息会经 controller 进入 telemetry.errorMessage，故此处即脱敏：
-            // identity 本身是绝对路径，禁止上报完整 workspace path。
-            `Workspace Hook identity changed after review (expected ${workspaceIdentitySummary(
-              input.snapshot.workspaceIdentity,
-            )}, got ${workspaceIdentitySummary(current.workspaceIdentity)})`,
-          );
-        }
-        if (current.bundleDigest !== input.snapshot.bundleDigest) {
-          throw new WorkspaceHookMutationError(
-            "workspace_hooks_bundle_changed",
-            `Workspace Hook bundle changed after review (expected ${digestSummary(
-              input.snapshot.bundleDigest,
-            )}, got ${digestSummary(current.bundleDigest)})`,
-          );
-        }
+      // 中文注释：模块内队列不能协调其他 CLI/Host 进程；共享文件锁确保重读、校验和写入
+      // 在同一 canonical config 路径下串行，避免两个进程基于旧快照互相覆盖。
+      return withFileLock(lockKey, () =>
+        withWorkspaceMutationLock(lockKey, async () => {
+          const current = await rebuildSnapshot(options);
+          // 这三种失败必须区分：共用 workspace_hooks_snapshot_mismatch
+          // 会让用户无法区分「换了 workspace」「配置真的变了」「配置读不出来」。
+          if (current.workspaceIdentity !== input.snapshot.workspaceIdentity) {
+            throw new WorkspaceHookMutationError(
+              "workspace_hooks_snapshot_mismatch",
+              // 消息会经 controller 进入 telemetry.errorMessage，故此处即脱敏：
+              // identity 本身是绝对路径，禁止上报完整 workspace path。
+              `Workspace Hook identity changed after review (expected ${workspaceIdentitySummary(
+                input.snapshot.workspaceIdentity,
+              )}, got ${workspaceIdentitySummary(current.workspaceIdentity)})`,
+            );
+          }
+          if (current.bundleDigest !== input.snapshot.bundleDigest) {
+            throw new WorkspaceHookMutationError(
+              "workspace_hooks_bundle_changed",
+              `Workspace Hook bundle changed after review (expected ${digestSummary(
+                input.snapshot.bundleDigest,
+              )}, got ${digestSummary(current.bundleDigest)})`,
+            );
+          }
 
-        await writeWorkspaceHookConfiguredToggle({
-          configPath: editableConfigPath,
-          snapshot: current,
-          reviewItemId: input.reviewItemId,
-          enabled: input.enabled,
-        });
-        await onWriteCommitted();
-        return rebuildSnapshot(options);
-      });
+          await writeWorkspaceHookConfiguredToggle({
+            configPath: editableConfigPath,
+            snapshot: current,
+            reviewItemId: input.reviewItemId,
+            enabled: input.enabled,
+          });
+          await onWriteCommitted();
+          return rebuildSnapshot(options);
+        }),
+      );
     },
   };
 }

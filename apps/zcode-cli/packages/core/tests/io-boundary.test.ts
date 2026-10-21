@@ -6,6 +6,8 @@ const repoRoot = join(import.meta.dirname, "..", "..", "..");
 const allowedNetworkBoundaryFiles = new Set([
   "packages/adapters/src/auth/localhost-callback.ts",
   "packages/adapters/src/http/index.ts",
+  // MCP transport 只调用由 proxy-fetch policy 创建的注入 fetch，并抑制 capture。
+  "packages/adapters/src/mcp/network.ts",
   // 仅使用 node:http 的状态码/类型，不执行网络请求。
   "packages/adapters/src/http/public-egress-policy.ts",
   // 通过调用方注入的 fetch 执行正式 Adapter 网络边界。

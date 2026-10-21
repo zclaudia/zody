@@ -120,7 +120,7 @@ describe("script workflow runtime", () => {
     }
   });
 
-  it("resolves named Workflow tool scripts from project .zcode/workflows", async () => {
+  it("resolves named Workflow tool scripts from project .zody/workflows", async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "zcode-workflow-name-"));
     const workflowDir = join(tempRoot, ".zcode", "workflows");
     const sourcePath = join(workflowDir, "review.workflow.js");

@@ -1,4 +1,5 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { spawn } from "node:child_process";
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -21,8 +22,8 @@ function makeWorkspace(): { workspace: string; configPath: string } {
   const workspace = mkdtempSync(join(tmpdir(), "workspace-hook-review-mutation-"));
   roots.push(workspace);
   mkdirSync(join(workspace, ".git"));
-  const configPath = join(workspace, ".zcode", "config.json");
-  mkdirSync(join(workspace, ".zcode"));
+  const configPath = join(workspace, ".zody", "config.json");
+  mkdirSync(join(workspace, ".zody"));
   writeFileSync(
     configPath,
     `${JSON.stringify(
@@ -165,5 +166,48 @@ describe("real workspace Hook review mutation port", () => {
     expect(
       JSON.parse(readFileSync(configPath, "utf8")).hooks.events.SessionStart[0].hooks[0].enabled,
     ).toBe(false);
+  });
+
+  it("跨进程共享 canonical config 文件锁可避免 JSON mutation lost update", async () => {
+    const { configPath } = makeWorkspace();
+    const lockModuleUrl = new URL(
+      "../../../../../packages/shared/dist/node/privateFilePersistence.js",
+      import.meta.url,
+    ).href;
+    const childSource = [
+      'import { readFile, writeFile } from "node:fs/promises";',
+      `import { withFileLock } from ${JSON.stringify(lockModuleUrl)};`,
+      "const path = process.argv[1];",
+      "await withFileLock(path, async () => {",
+      '  const config = JSON.parse(await readFile(path, "utf8"));',
+      "  await new Promise((resolve) => setTimeout(resolve, 80));",
+      "  config.mutationCount = (config.mutationCount ?? 0) + 1;",
+      '  await writeFile(path, JSON.stringify(config), "utf8");',
+      "});",
+    ].join("\n");
+    const runMutation = () =>
+      new Promise<void>((resolve, reject) => {
+        const child = spawn(
+          process.execPath,
+          ["--input-type=module", "-e", childSource, configPath],
+          {
+            cwd: process.cwd(),
+            stdio: ["ignore", "pipe", "pipe"],
+          },
+        );
+        let output = "";
+        child.stderr.setEncoding("utf8").on("data", (chunk: string) => {
+          output += chunk;
+        });
+        child.once("error", reject);
+        child.once("exit", (code) =>
+          code === 0
+            ? resolve()
+            : reject(new Error(`config mutation process exited ${code}: ${output}`)),
+        );
+      });
+
+    await Promise.all([runMutation(), runMutation()]);
+    expect(JSON.parse(readFileSync(configPath, "utf8")).mutationCount).toBe(2);
   });
 });

@@ -26,15 +26,15 @@ const scopeGuidance = JSON.parse(
 ) as Record<"user" | "project" | "local", string>;
 
 describe("persistent custom-agent memory", () => {
-  it("uses the exact agent key replacement and three ZCode scope roots", () => {
+  it("uses the exact agent key replacement and canonical Zody project roots", () => {
     expect(sanitizePersistentAgentMemoryKey("reviewer/a b")).toBe("reviewer-a-b");
     expect(sanitizePersistentAgentMemoryKey("review😀agent")).toBe("review--agent");
     expect(sanitizePersistentAgentMemoryKey("!!!")).toBe("---");
     expect(sanitizePersistentAgentMemoryKey("")).toBe("unknown");
 
     expect(root("user")).toBe("/storage/agent-memory/reviewer-a-b");
-    expect(root("project")).toBe("/workspace/app/.zcode/agent-memory/reviewer-a-b");
-    expect(root("local")).toBe("/workspace/app/.zcode/agent-memory-local/reviewer-a-b");
+    expect(root("project")).toBe("/workspace/app/.zody/agent-memory/reviewer-a-b");
+    expect(root("local")).toBe("/workspace/app/.zody/agent-memory-local/reviewer-a-b");
   });
 
   it.each(["user", "project", "local"] as const)(
@@ -111,7 +111,6 @@ describe("persistent custom-agent memory", () => {
         subagents: { profiles: [customProfile({ memory: "project", tools: [] })] },
       }).subagents?.profiles?.[0]?.tools,
     ).toEqual(["Write", "Edit"]);
-
   });
 
   it("reads MEMORY.md for every child launch and creates nothing when globally disabled", async () => {
@@ -167,6 +166,21 @@ describe("persistent custom-agent memory", () => {
 
     expect(loaded?.rootDir).toBe("/storage/agent-memory/reviewer-a-b");
     expect(loaded?.prompt).toContain("# Persistent Agent Memory");
+  });
+
+  it("reads a legacy index on demand while keeping the canonical write root", async () => {
+    const legacyPath = "/workspace/app/.zcode/agent-memory/reviewer-a-b/MEMORY.md";
+    const fileSystem = new MemoryFileSystem({ [legacyPath]: "legacy memory" });
+    const loaded = await loadPersistentAgentMemory({
+      fileSystemPort: fileSystem,
+      memory: { enabled: true, storageRoot: "/storage", use: true },
+      profile: customProfile({ memory: "project", tools: ["Write"] }),
+      workspaceRoot: "/workspace/app",
+    });
+
+    expect(loaded?.rootDir).toBe(root("project"));
+    expect(loaded?.prompt).toContain("## MEMORY.md\n\nlegacy memory");
+    expect(fileSystem.createdDirectories).toContain(root("project"));
   });
 });
 

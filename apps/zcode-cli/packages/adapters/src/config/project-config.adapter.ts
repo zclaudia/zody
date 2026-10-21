@@ -1,4 +1,4 @@
-import { basename, dirname, isAbsolute, resolve } from "node:path";
+import { isAbsolute, resolve } from "node:path";
 import type { McpServerConfig, RuntimeConfigPatch } from "@zcode/contracts";
 import {
   createWorkspaceHookSourceInput,
@@ -7,6 +7,7 @@ import {
   type WorkspaceHookSourceInput,
 } from "@zcode/shared/workspace-hook-discovery";
 import { loadFileConfig, type LoadedConfig } from "./file-config.adapter.js";
+import { projectResourceBaseDir } from "@zcode/shared/zody-paths";
 
 const CURRENT_DIRECTORY = ".";
 
@@ -115,8 +116,7 @@ export function summarizeProjectConfigs(files: ProjectConfigFile[]): ProjectConf
 }
 
 function getProjectConfigBaseDir(path: string): string {
-  const configDirectory = dirname(path);
-  return basename(configDirectory) === ".zcode" ? dirname(configDirectory) : configDirectory;
+  return projectResourceBaseDir(path);
 }
 
 function normalizeProjectConfig(config: RuntimeConfigPatch, baseDir: string): RuntimeConfigPatch {

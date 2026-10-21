@@ -26,18 +26,21 @@ test("没有私有默认配置也没有环境变量时能力全部关闭、下�
   });
 });
 
-test("私有默认配置启用 ARMS 与事件上报", async () => {
+test("私有默认配置包含 ARMS 或事件上报端点时构建失败", async () => {
   const defaultsPath = await writeDefaults("defaults.json", {
     ZCODE_ARMS_RUM_ENDPOINT: " https://rum.example.com/x ",
-    ZCODE_TELEMETRY_REPORT_ENDPOINT: "https://report.example.com/event",
   });
-  assert.deepEqual(await resolveBuildTimeConfig({}, { defaultsPath }), {
-    armsRumEndpoint: "https://rum.example.com/x",
-    telemetryReportEndpoint: "https://report.example.com/event",
-    autoUpdateEnabled: false,
-    downloadPageUrl: "",
-    feedbackIssueUrl: "",
-  });
+  await assert.rejects(
+    resolveBuildTimeConfig({}, { defaultsPath }),
+    /ZCODE_ARMS_RUM_ENDPOINT is disabled for Zody release builds/,
+  );
+  await assert.rejects(
+    resolveBuildTimeConfig(
+      { ZCODE_TELEMETRY_REPORT_ENDPOINT: "https://report.example.com/event" },
+      { defaultsPath: join(dir, "missing.json") },
+    ),
+    /ZCODE_TELEMETRY_REPORT_ENDPOINT is disabled for Zody release builds/,
+  );
 });
 
 // 构建护栏（specs/fork-official-backend-runtime-dependencies.md「自动更新」规则 4）：
@@ -59,28 +62,24 @@ test("环境变量 ZCODE_AUTO_UPDATE=1 时直接报错并指向阶段 2 细则",
   );
 });
 
-test("环境变量优先于私有默认配置，显式空字符串关闭单项能力", async () => {
+test("私有默认遥测 endpoint 即使被环境变量置空也会 fail-fast", async () => {
   const defaultsPath = await writeDefaults("override.json", {
     ZCODE_ARMS_RUM_ENDPOINT: "https://rum.example.com/x",
     ZCODE_TELEMETRY_REPORT_ENDPOINT: "https://report.example.com/event",
     // defaults 里的真值被环境变量 "0" 覆盖后不再触发护栏
     ZCODE_AUTO_UPDATE: "true",
   });
-  const config = await resolveBuildTimeConfig(
-    {
-      ZCODE_ARMS_RUM_ENDPOINT: "",
-      ZCODE_TELEMETRY_REPORT_ENDPOINT: "https://other.example.com/event",
-      ZCODE_AUTO_UPDATE: "0",
-    },
-    { defaultsPath },
+  await assert.rejects(
+    resolveBuildTimeConfig(
+      {
+        ZCODE_ARMS_RUM_ENDPOINT: "",
+        ZCODE_TELEMETRY_REPORT_ENDPOINT: "",
+        ZCODE_AUTO_UPDATE: "0",
+      },
+      { defaultsPath },
+    ),
+    /is disabled for Zody release builds/,
   );
-  assert.deepEqual(config, {
-    armsRumEndpoint: "",
-    telemetryReportEndpoint: "https://other.example.com/event",
-    autoUpdateEnabled: false,
-    downloadPageUrl: "",
-    feedbackIssueUrl: "",
-  });
 });
 
 test("ZCODE_DOWNLOAD_PAGE_URL 合法 https 地址按配置返回", async () => {

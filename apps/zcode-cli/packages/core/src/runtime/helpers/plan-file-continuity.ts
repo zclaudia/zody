@@ -8,6 +8,7 @@ import {
   type SessionId,
   type TraceContext,
 } from "@zcode/contracts";
+import { resolveProjectResourceRoots } from "@zcode/shared/zody-paths";
 import {
   systemReminderAttachmentEntry,
   type RuntimeMessageEntry,
@@ -20,9 +21,7 @@ export function resolveApprovedPlanFilePath(input: {
   workspaceRoot: string;
 }): string {
   return join(
-    input.workspaceRoot,
-    ".zcode",
-    "plans",
+    resolveProjectResourceRoots(input.workspaceRoot, "plans").writePath,
     `plan-${sanitizePlanFileSessionId(input.sessionId)}.md`,
   );
 }
@@ -63,8 +62,8 @@ export async function readApprovedPlanFileReferenceEntry(input: {
   traceContext?: TraceContext;
   workspaceRoot: string;
 }): Promise<RuntimeMessageEntry | undefined> {
-  const path = resolveApprovedPlanFilePath(input);
   let content: string;
+  let path = resolveApprovedPlanFilePath(input);
   try {
     const read = await input.fileSystemPort.readTextFile(
       {
@@ -77,9 +76,30 @@ export async function readApprovedPlanFileReferenceEntry(input: {
     content = read.content;
   } catch (error) {
     if (isFileSystemPortError(error) && error.code === "not_found") {
-      return undefined;
+      const legacyPath = join(
+        resolveProjectResourceRoots(input.workspaceRoot, "plans").legacyPath,
+        `plan-${sanitizePlanFileSessionId(input.sessionId)}.md`,
+      );
+      try {
+        const read = await input.fileSystemPort.readTextFile(
+          {
+            maxBytes: PLAN_FILE_REFERENCE_MAX_BYTES,
+            path: legacyPath,
+            trace: input.traceContext,
+          },
+          { signal: input.abortSignal },
+        );
+        path = legacyPath;
+        content = read.content;
+      } catch (legacyError) {
+        if (isFileSystemPortError(legacyError) && legacyError.code === "not_found") {
+          return undefined;
+        }
+        throw legacyError;
+      }
+    } else {
+      throw error;
     }
-    throw error;
   }
 
   if (!content.trim()) return undefined;
@@ -110,9 +130,13 @@ function sanitizePlanFileSessionId(sessionId: SessionId | string): string {
     .replace(/[^A-Za-z0-9._-]+/g, "-")
     .replace(/^-+|-+$/g, "");
   if (!sanitized) {
-    throw createCoreError(CoreErrorType.InvalidInput, "Session id cannot produce a plan file name", {
-      recoverable: false,
-    });
+    throw createCoreError(
+      CoreErrorType.InvalidInput,
+      "Session id cannot produce a plan file name",
+      {
+        recoverable: false,
+      },
+    );
   }
   return sanitized;
 }

@@ -110,7 +110,7 @@ export function createZodDedupePlugin({ expectedV4Version }) {
   };
 }
 
-export const readRootPackageVersion = async ({ root = projectRoot } = {}) => {
+export const readRootPackageVersion = async ({ root = resolve(projectRoot, "../..") } = {}) => {
   const packageJson = JSON.parse(await readFile(resolve(root, packageJsonFile), "utf8"));
 
   if (typeof packageJson.version !== "string" || packageJson.version.trim() === "") {
@@ -172,6 +172,7 @@ export const resolveBuildAliases = ({
     rootDirectory,
     "../../packages/shared/src/workspace-hook-discovery.ts",
   ),
+  "@zcode/shared/zody-paths": resolve(rootDirectory, "../../packages/shared/src/zody-paths.ts"),
   // review controller 直连 WorkspaceHookMutationError 需要本精确
   // alias（esbuild 前缀改写规则同上，漏声明会在 Desktop agent/SEA 打包失败）。
   "@zcode/shared/workspace-hook-mutation": resolve(
@@ -215,7 +216,7 @@ export const buildCli = async ({
   sourcemap = true,
   env = process.env,
   version = readRootPackageVersion({
-    root: rootDirectory,
+    root: resolve(rootDirectory, "../.."),
   }),
 } = {}) => {
   const cliVersion = await version;

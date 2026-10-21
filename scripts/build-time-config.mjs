@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 /**
- * 桌面构建期可选能力的唯一解析入口：ARMS RUM 上报、事件上报、自动更新、下载页地址、fork 反馈地址。
+ * 桌面构建期可选能力的唯一解析入口：ARMS RUM、事件遥测、自动更新、下载页地址、fork 反馈地址。
  * 优先级：构建进程环境变量 > config/private/build-defaults.json（仅内部仓库存在）> 关闭。
  * 规则见 docs/desktop/build-time-optional-capabilities.md、docs/fork/build.md 与
  * specs/fork-official-backend-runtime-dependencies.md（fork 自动更新护栏与下载页地址）。
@@ -13,6 +13,7 @@ export const PRIVATE_BUILD_DEFAULTS_PATH = resolve(
 );
 
 const ENABLED_VALUES = new Set(["1", "true", "yes"]);
+const TELEMETRY_ENDPOINT_KEYS = ["ZCODE_ARMS_RUM_ENDPOINT", "ZCODE_TELEMETRY_REPORT_ENDPOINT"];
 
 async function readPrivateDefaults(path) {
   try {
@@ -70,6 +71,15 @@ export async function resolveBuildTimeConfig(
   { defaultsPath = PRIVATE_BUILD_DEFAULTS_PATH } = {},
 ) {
   const defaults = await readPrivateDefaults(defaultsPath);
+  for (const key of TELEMETRY_ENDPOINT_KEYS) {
+    const environmentEndpoint = typeof env[key] === "string" && env[key].trim();
+    const defaultEndpoint = typeof defaults[key] === "string" && defaults[key].trim();
+    if (environmentEndpoint || defaultEndpoint) {
+      throw new Error(
+        `${key} is disabled for Zody release builds; remove the configured telemetry endpoint`,
+      );
+    }
+  }
   // 构建护栏（阶段 2 细则「自动更新」规则 4）：fork 采用手动更新，自有更新源（feed、签名、manifest 服务）落地前，
   // ZCODE_AUTO_UPDATE 为真一律让构建失败，避免构建意外启用指向官方 manifest 的更新器（安装包可能被官方包原地替换）。
   if (ENABLED_VALUES.has(pickValue(env, defaults, "ZCODE_AUTO_UPDATE").toLowerCase())) {
@@ -80,8 +90,8 @@ export async function resolveBuildTimeConfig(
     );
   }
   return {
-    armsRumEndpoint: pickValue(env, defaults, "ZCODE_ARMS_RUM_ENDPOINT"),
-    telemetryReportEndpoint: pickValue(env, defaults, "ZCODE_TELEMETRY_REPORT_ENDPOINT"),
+    armsRumEndpoint: "",
+    telemetryReportEndpoint: "",
     // 上方护栏保证此处恒为 false；运行时由 @zcode/shared 的 isDesktopAutoUpdateActive() 统一判定
     autoUpdateEnabled: false,
     downloadPageUrl: resolveExternalPageUrl(

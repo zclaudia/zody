@@ -26,6 +26,7 @@ function createHarness() {
       modelId: "model",
       options: { reasoningLevel: "high" },
     }),
+    getPlanEnabled: () => false,
     getTools: () => [],
     async persistMessage(input: MessageInfo) {
       saved.push(input);

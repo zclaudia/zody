@@ -8,6 +8,7 @@ import type {
 import { homedir } from "node:os";
 import { isAbsolute, join, relative } from "node:path";
 import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { resolveProjectResourceRoots } from "@zcode/shared/zody-paths";
 
 const STRUCTURED_OUTPUT_PROMPT =
   "Return only JSON that conforms to the provided JSON Schema. Do not wrap it in Markdown.";
@@ -171,8 +172,12 @@ export function inferScriptWorkflowScope(
   scriptPath: string,
   workingDirectory: string,
 ): "explicit" | "project" | "user" {
-  if (isWithin(scriptPath, join(workingDirectory, ".zcode", "workflows"))) return "project";
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  if (
+    resolveProjectResourceRoots(workingDirectory, "workflows").readPaths.some((root) =>
+      isWithin(scriptPath, root),
+    )
+  )
+    return "project";
   if (isWithin(scriptPath, join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "workflows"))) return "user";
   return "explicit";
 }

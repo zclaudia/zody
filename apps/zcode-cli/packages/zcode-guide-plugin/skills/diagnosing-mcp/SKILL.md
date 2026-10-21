@@ -3,23 +3,26 @@ name: diagnosing-mcp
 description: Use to diagnose and fix ZCode MCP (Model Context Protocol) server configuration problems in the ZCode client. Applies when an MCP server will not connect, its tools (mcp__server__tool) do not appear, it shows as disabled or failed, connections time out, a command cannot be found, template variables are not expanded, or a server defined in a configuration file has no effect. Provides configuration locations, how to inspect status in Settings, common pitfalls, and a step-by-step localization and repair workflow.
 ---
 
+> Path contract: write user-level Zody configuration under `~/.zody/` and new project configuration/resources under `.zody/`. Existing project `.zcode/` content is a read-only legacy fallback; do not direct users to create or edit it. Keep `.agents/` paths for shared agent conventions and `.zcode-plugin/plugin.json` for plugin manifests.
+
 # Diagnosing MCP Configuration
 
 Goal: reduce any MCP problem to a single concrete file-field edit. A person inspects status from the client; an agent reads and edits the configuration files directly.
 
-> Key points that are often misunderstood: the user configuration file is `~/.zcode/cli/config.json`; `.agents/mcp.json` is a **compatibility fallback** (read only when the same scope's `.zcode` has no MCP servers); and in the desktop client, MCP status and repair live under **Settings → MCP**.
+> Key points that are often misunderstood: the user configuration file is `~/.zody/cli/config.json`; project configuration is written to `<repo>/.zody/config.json`, with existing `<repo>/.zcode/config.json` read only as a legacy fallback; `.agents/mcp.json` remains a **compatibility input**; and in the desktop client, MCP status and repair live under **Settings → MCP**.
 
 ## 1. Configuration locations and precedence
 
-| Scope | File | Field |
-|---|---|---|
-| User | `~/.zcode/cli/config.json` | `mcp.servers` |
-| User (fallback) | `~/.agents/mcp.json` | `mcpServers` (used only if `~/.zcode/cli/config.json` has no MCP servers) |
-| Workspace | `<repo>/.zcode/config.json` or `<repo>/zcode.json` (every directory from the repository root down to the working directory is read) | `mcp.servers` |
-| Workspace (fallback) | `<repo>/.agents/mcp.json` | `mcpServers` (used only if the workspace `.zcode` has no MCP servers) |
-| Plugin | `<pluginRoot>/.mcp.json` or the manifest's `mcpServers` field | Keys are namespaced as `plugin:<plugin>:<server>` |
+| Scope                            | File                                                                                                        | Field                                                                    |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| User                             | `~/.zody/cli/config.json`                                                                                   | `mcp.servers`                                                            |
+| User (fallback)                  | `~/.agents/mcp.json`                                                                                        | `mcpServers` (used only if `~/.zody/cli/config.json` has no MCP servers) |
+| Workspace                        | `<repo>/.zody/config.json` (every directory from the repository root down to the working directory is read) | `mcp.servers`; new edits go here                                         |
+| Workspace (legacy read fallback) | Existing `<repo>/.zcode/config.json`                                                                        | `mcp.servers`; do not create or edit this legacy file                    |
+| Workspace (agent fallback)       | `<repo>/.agents/mcp.json`                                                                                   | `mcpServers`                                                             |
+| Plugin                           | `<pluginRoot>/.mcp.json` or the manifest's `mcpServers` field                                               | Keys are namespaced as `plugin:<plugin>:<server>`                        |
 
-Within each scope, `.zcode` takes priority and `.agents/mcp.json` is a same-scope fallback: if that scope's `.zcode` defines any MCP server, its `.agents/mcp.json` is ignored entirely. Note the different key shape — `.zcode` uses nested `mcp.servers`, while `.agents/mcp.json` uses a top-level `mcpServers`.
+Within the workspace scope, an existing `.zody/config.json` takes priority; `.zcode/config.json` is consulted only as a read-only legacy fallback when the canonical file is absent. `.agents/mcp.json` remains a same-scope compatibility input. Note the different key shape — Zody config uses nested `mcp.servers`, while `.agents/mcp.json` uses a top-level `mcpServers`.
 
 Override order across scopes for a same-named server: **CLI → environment → user → workspace → system**. In short, **user overrides workspace**. Plugin-provided servers form the base layer and are overridden by explicit configuration.
 
@@ -70,7 +73,7 @@ Canonical examples:
 
 ## 4. Common pitfalls (symptom → cause → fix)
 
-1. **Workspace server does not connect** — a server defined in `<repo>/.zcode/config.json` (or `<repo>/.agents/mcp.json`) is not connecting. Workspace servers now auto-connect like any other scope, so this is no longer a trust gate — the cause is a real config or startup problem. → Check its **Settings → MCP** status: `failed` → go to step 4; absent → the config was not loaded (pitfall 5/9) or it is in `.agents/mcp.json` but shadowed (pitfall 12).
+1. **Workspace server does not connect** — a server defined in `<repo>/.zody/config.json` (or an existing legacy `.zcode/config.json` / `<repo>/.agents/mcp.json`) is not connecting. Workspace servers now auto-connect like any other scope, so this is no longer a trust gate — the cause is a real config or startup problem. → Check its **Settings → MCP** status: `failed` → go to step 4; absent → the config was not loaded (pitfall 5/9) or it is in `.agents/mcp.json` but shadowed (pitfall 12).
 2. **`command not found`** — the server shows `failed` with an error such as `spawn npx ENOENT`. The `command` is not on `PATH`, or a relative path was not resolved. → Use an absolute path, add `cwd` when needed, and on Windows point at the `.cmd`/`.exe`.
 3. **`${...}` reaches the process literally** — configuration-file MCP servers do not expand templates. → Use concrete absolute paths (templates are a plugin-only feature).
 4. **Plugin is missing an environment value or secret** — the plugin reports a missing variable. → Set the plugin's configuration value (Plugin Management → the plugin's advanced settings) or export the required environment variable; sensitive values may only be placed in `env`/`headers`, not in `command`/`url`.
@@ -81,17 +84,17 @@ Canonical examples:
 9. **JSON syntax error in the configuration file** — MCP servers (and possibly the whole file) go missing. → Validate the JSON, then fix the syntax.
 10. **Server shows as disabled** — `enabled: false` (or legacy `enable: false`). → Set `"enabled": true` or remove the field.
 11. **A desktop-managed server list overrides the file** — edits to configuration files have no effect because the client is supplying the MCP list. → Manage MCP through **Settings → MCP** in that context.
-12. **`.agents/mcp.json` edits have no effect, or use the wrong key** — a server added to `.agents/mcp.json` never appears. Either the same scope's `.zcode` already defines MCP servers (so `.agents/mcp.json` is ignored entirely for that scope), or the servers were placed under `mcp.servers` instead of the top-level `mcpServers` that `.agents/mcp.json` expects. → Move the definition into the `.zcode` file for that scope, or ensure that scope's `.zcode` has no MCP servers and use the top-level `mcpServers` key in `.agents/mcp.json`.
-13. **Server name appears in logs but no MCP tools appear in the model request** — the desktop app read the server entry and passed its name to the runtime, but the server failed during startup, so `toolCount` and `registeredToolCount` are zero. A common cause is a legacy `environment` field in `~/.zcode/cli/config.json`: CLI direct config parsing can migrate it, but the desktop app-managed path currently expects `env` when converting to protocol `mcpServers`. → Rename `environment` to `env`, keep the values unchanged, restart ZCode, and reopen **Settings → MCP**.
-14. **Settings → MCP crashes after JSON editing with `command.trim is not a function`** — the saved server has a non-string `command`, usually OpenCode-style `command: ["npx", "-y", "server"]`. → Edit `~/.zcode/cli/config.json` manually: set `"command": "npx"` and move the rest into `"args": ["-y", "server"]`, then restart the app.
+12. **`.agents/mcp.json` edits have no effect, or use the wrong key** — a server added to `.agents/mcp.json` never appears. A same-scope Zody config may already define MCP servers, or the servers may be under `mcp.servers` instead of the top-level `mcpServers` that `.agents/mcp.json` expects. → Put the definition in the canonical user `~/.zody/cli/config.json` or project `<repo>/.zody/config.json`, or use the top-level `mcpServers` key in `.agents/mcp.json` when that shared format is intended.
+13. **Server name appears in logs but no MCP tools appear in the model request** — the desktop app read the server entry and passed its name to the runtime, but the server failed during startup, so `toolCount` and `registeredToolCount` are zero. A common cause is a legacy `environment` field in `~/.zody/cli/config.json`: CLI direct config parsing can migrate it, but the desktop app-managed path currently expects `env` when converting to protocol `mcpServers`. → Rename `environment` to `env`, keep the values unchanged, restart ZCode, and reopen **Settings → MCP**.
+14. **Settings → MCP crashes after JSON editing with `command.trim is not a function`** — the saved server has a non-string `command`, usually OpenCode-style `command: ["npx", "-y", "server"]`. → Edit `~/.zody/cli/config.json` manually: set `"command": "npx"` and move the rest into `"args": ["-y", "server"]`, then restart the app.
 
 ## 5. Localization workflow (in order; stop when the cause is found)
 
 1. Confirm MCP is enabled (it is by default).
 2. Open **Settings → MCP** and read the status: `disabled` → pitfall 10; `failed (<error>)` → read the inline error and go to step 4; **not listed at all** → step 3. (`untrusted` should no longer appear for a normally configured server.)
-3. Verify the configuration is loaded and valid: check the JSON validity of `~/.zcode/cli/config.json` and `<repo>/.zcode/config.json` (and `zcode.json`) — pitfall 9. A server that is in the file but not listed failed schema validation (pitfall 5 — look for unknown keys, wrong `type`, or a missing `command`/`url`); a server defined only in `.agents/mcp.json` but not appearing points to the fallback shadowing or wrong-key issue (pitfall 12).
+3. Verify the configuration is loaded and valid: check the JSON validity of `~/.zody/cli/config.json` and `<repo>/.zody/config.json` (plus any existing legacy `<repo>/.zcode/config.json`) — pitfall 9. A server that is in the file but not listed failed schema validation (pitfall 5 — look for unknown keys, wrong `type`, or a missing `command`/`url`); a server defined only in `.agents/mcp.json` but not appearing points to the fallback precedence or wrong-key issue (pitfall 12).
 4. Diagnose a `failed` server: `ENOENT` → pitfall 2; `timed out` → pitfall 7; `Connection closed` → pitfall 8; an http/sse network error → check proxy/CA, URL reachability, and `headers`.
 5. If **Settings → MCP** or service logs show `mcpServerCount` / server names but the model request has no `mcp__...` tools, check startup logs for `mcp.startup.completed` and `mcp.tools.registered`. If `toolCount=0` with failed statuses, inspect the config field names first (`env` vs `environment`, string `command` vs array `command`) before treating it as a model-selection issue.
 6. If edits have no effect → pitfall 6 (user overrides workspace) or pitfall 11 (desktop-managed list).
 7. If a `${...}` appears literally → pitfall 3 (configuration files do not expand templates) or pitfall 4 (an unset plugin variable).
-8. Apply the concrete fix — most commonly editing `~/.zcode/cli/config.json` at `mcp.servers.<name>` (`command` / `args` / `cwd` / `env` / `headers` / `timeoutMs` / `enabled`) — then restart the session (every scope auto-connects) and reopen **Settings → MCP** to confirm.
+8. Apply the concrete fix — most commonly editing `~/.zody/cli/config.json` at `mcp.servers.<name>` (`command` / `args` / `cwd` / `env` / `headers` / `timeoutMs` / `enabled`) — then restart the session (every scope auto-connects) and reopen **Settings → MCP** to confirm.

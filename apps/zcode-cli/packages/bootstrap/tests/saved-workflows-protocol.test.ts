@@ -35,7 +35,7 @@ const SCRIPT = [
 ].join("\n");
 
 let cwd = "";
-// 每个用例一份隔离的 HOME：全局档落在 `<HOME>/.zcoder/workflows/`，core 恒取 `os.homedir()`
+// 每个用例一份隔离的 HOME：全局档落在 `<HOME>/.zody/workflows/`，core 恒取 `os.homedir()`
 // （posix 上即 `$HOME`）。不隔离的话 list/get/move 的全局变体会读到真实家目录、结果非确定。
 let home = "";
 let prevHome: string | undefined;
@@ -53,11 +53,11 @@ function contextWith(sessionStore?: unknown): ZCodeProtocolAgentServerContext {
 }
 
 function projectDir() {
-  return join(cwd, ".zcode", "workflows");
+  return join(cwd, ".zody", "workflows");
 }
 
 function globalDir() {
-  return join(home, ".zcoder", "workflows");
+  return join(home, ".zody", "workflows");
 }
 
 async function seedWorkflow(name: string, meta: Parameters<typeof serializeSavedWorkflow>[0]) {
@@ -117,7 +117,8 @@ describe("workflows/* protocol methods", () => {
       whenToUse: "要发版时",
       args: { target: { type: "string", required: true } },
     });
-    await writeFile(join(cwd, ".zcode", "workflows", "broken.dwf.ts"), "const x = 1;\n", "utf8");
+    await writeFile(join(projectDir(), "broken.dwf.ts"), "const x = 1;\n", "utf8");
+    await mkdir(join(cwd, ".zcode", "workflows"), { recursive: true });
     await writeFile(
       join(cwd, ".zcode", "workflows", "legacy.workflow.js"),
       "export const meta = {};\n",
@@ -134,20 +135,17 @@ describe("workflows/* protocol methods", () => {
       description: "发布前检查",
       whenToUse: "要发版时",
       scope: "project",
-      path: join(cwd, ".zcode", "workflows", "release-check.dwf.ts"),
+      path: join(projectDir(), "release-check.dwf.ts"),
     });
     expect(JSON.stringify(result)).not.toContain("reviewer.ask");
     expect(result.invalid).toHaveLength(1);
-    expect(result.invalid[0]?.path).toBe(join(cwd, ".zcode", "workflows", "broken.dwf.ts"));
+    expect(result.invalid[0]?.path).toBe(join(projectDir(), "broken.dwf.ts"));
     expect(result.invalid[0]?.reason).toContain("missing_frontmatter");
   });
 
   it("get：命中回 meta + 脚本本体；invalid_name / not_found / parse_error 各自可分辨", async () => {
     await seedWorkflow("release-check", { description: "发布前检查" });
-    await writeFile(
-      join(cwd, ".zcode", "workflows", "broken.dwf.ts"),
-      "/* zcode-workflow\nx: [\n*/\n",
-    );
+    await writeFile(join(projectDir(), "broken.dwf.ts"), "/* zcode-workflow\nx: [\n*/\n");
 
     const hit = await getSavedWorkflowOp(contextWith(), {
       workspace: workspace(),
@@ -232,6 +230,7 @@ describe("workflows/* protocol methods", () => {
   it("delete：删后 list 不再列出；not_found；非法名字在触盘前拒绝；不删同名 .workflow.js", async () => {
     const path = await seedWorkflow("release-check", { description: "发布前检查" });
     const legacyPath = join(cwd, ".zcode", "workflows", "release-check.workflow.js");
+    await mkdir(join(cwd, ".zcode", "workflows"), { recursive: true });
     await writeFile(legacyPath, "export const meta = {};\n");
 
     const deleted = await deleteSavedWorkflowOp(contextWith(), {
@@ -257,6 +256,38 @@ describe("workflows/* protocol methods", () => {
         reason: "invalid_name",
       });
     }
+  });
+
+  it("delete：legacy-only 工作流只读，不能删除或报告成功", async () => {
+    const legacyPath = join(cwd, ".zcode", "workflows", "legacy-only.dwf.ts");
+    await mkdir(join(cwd, ".zcode", "workflows"), { recursive: true });
+    await writeFile(legacyPath, serializeSavedWorkflow({ description: "旧定义" }, SCRIPT), "utf8");
+
+    const deleted = await deleteSavedWorkflowOp(contextWith(), {
+      workspace: workspace(),
+      name: "legacy-only",
+    });
+    expect(() => zcodeWorkflowsDeleteResultSchema.parse(deleted)).not.toThrow();
+    expect(deleted).toEqual({ ok: false, reason: "read_only_source" });
+    await expect(readFile(legacyPath, "utf8")).resolves.toContain("旧定义");
+    expect(
+      (await listSavedWorkflowsOp(contextWith(), { workspace: workspace() })).workflows,
+    ).toHaveLength(1);
+  });
+
+  it("delete：不删除会重新显露同名 legacy 定义的 canonical 副本", async () => {
+    const canonicalPath = await seedWorkflow("shadowed", { description: "新定义" });
+    const legacyPath = join(cwd, ".zcode", "workflows", "shadowed.dwf.ts");
+    await mkdir(join(cwd, ".zcode", "workflows"), { recursive: true });
+    await writeFile(legacyPath, serializeSavedWorkflow({ description: "旧定义" }, SCRIPT), "utf8");
+
+    const deleted = await deleteSavedWorkflowOp(contextWith(), {
+      workspace: workspace(),
+      name: "shadowed",
+    });
+    expect(deleted).toEqual({ ok: false, reason: "read_only_source" });
+    await expect(readFile(canonicalPath, "utf8")).resolves.toContain("新定义");
+    await expect(readFile(legacyPath, "utf8")).resolves.toContain("旧定义");
   });
 
   it("runs：journal 缺席回空页；有 journal 时按 cwd + name 下推、多取一条判 truncated、行带归属字段", async () => {
@@ -402,10 +433,36 @@ describe("workflows/* protocol methods", () => {
       listNodes: (runId: string) =>
         runId === "run_2"
           ? [
-              { runId, siteId: "report#1", ordinal: 1, kind: "report", inputHash: "h", status: "completed", artifactId: "perf", result: {} },
-              { runId, siteId: "report#2", ordinal: 2, kind: "report", inputHash: "h", status: "completed", artifactId: "perf", result: {} },
+              {
+                runId,
+                siteId: "report#1",
+                ordinal: 1,
+                kind: "report",
+                inputHash: "h",
+                status: "completed",
+                artifactId: "perf",
+                result: {},
+              },
+              {
+                runId,
+                siteId: "report#2",
+                ordinal: 2,
+                kind: "report",
+                inputHash: "h",
+                status: "completed",
+                artifactId: "perf",
+                result: {},
+              },
               // 无标签的 report 不计入任何产物。
-              { runId, siteId: "report#3", ordinal: 3, kind: "report", inputHash: "h", status: "completed", result: {} },
+              {
+                runId,
+                siteId: "report#3",
+                ordinal: 3,
+                kind: "report",
+                inputHash: "h",
+                status: "completed",
+                result: {},
+              },
             ]
           : [],
     };
@@ -430,7 +487,7 @@ describe("workflows/* protocol methods", () => {
 });
 
 // 全局作用域（docs/dynamic-workflow/launch.md）：五个方法的定向 `scope` 变体 + workflows/move。
-// 全局档落在隔离的 `<HOME>/.zcoder/workflows/`（见顶部 beforeEach）；同名的项目档不受牵连。
+// 全局档落在隔离的 `<HOME>/.zody/workflows/`（见顶部 beforeEach）；同名的项目档不受牵连。
 describe("workflows/* 全局作用域与 workflows/move", () => {
   it("list：项目变体只列项目档 + dir=项目根（即使目录不存在）；全局变体只列全局档 + dir=全局根", async () => {
     // 项目根不存在也回 dir（GUI 靠它 watch）。

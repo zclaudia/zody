@@ -1899,7 +1899,13 @@ describe("transcript→event 合成", () => {
       status: "completed",
       summary: "nightly audit",
       artifacts: [
-        { id: "audit", kind: "file", title: "审计报告", version: 2, contentType: "application/pdf" },
+        {
+          id: "audit",
+          kind: "file",
+          title: "审计报告",
+          version: 2,
+          contentType: "application/pdf",
+        },
         { id: "perf", kind: "chart", version: 1 },
       ],
       artifactsTruncated: true,
@@ -1959,10 +1965,15 @@ describe("transcript→event 合成", () => {
 
     const header = projection.getSnapshot().rows.window.find((row) => row.kind === "turnHeader");
     expect(header).toMatchObject({
-      originMeta: { backgroundSource: "workflow", title: "nightly audit", workId: "dwfrun-art-bad" },
+      originMeta: {
+        backgroundSource: "workflow",
+        title: "nightly audit",
+        workId: "dwfrun-art-bad",
+      },
     });
     expect(
-      (header as { originMeta?: { workflowNotification?: unknown } }).originMeta?.workflowNotification,
+      (header as { originMeta?: { workflowNotification?: unknown } }).originMeta
+        ?.workflowNotification,
     ).toBeUndefined();
   });
 
@@ -3225,7 +3236,7 @@ describe("workflow-direct-launch 启动轮冷恢复", () => {
     toolCallId: "launch-abc",
     name: "deep-research",
     scope: "global" as const,
-    path: "/home/u/.zcoder/workflows/deep-research.ts",
+    path: "/home/u/.zody/workflows/deep-research.ts",
     args: { topic: "adaptive concurrency" },
     description: "Deep-dive a topic",
   };

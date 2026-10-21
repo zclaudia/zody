@@ -1916,7 +1916,7 @@ describe("AgentRuntime manual compact", () => {
     const requests: Array<{ messages: Array<{ content: unknown; role: string }> }> = [];
     const planMarker = "E2E_PLAN_FILE_COMPACT_CONTINUITY_MARKER";
     const fileSystemPort = new MemoryFileSystem({
-      "/workspace/project/.zcode/plans/plan-sess_runtime-compact-plan-file-reference.md": `1. Preserve ${planMarker}\n2. Continue after compact`,
+      "/workspace/project/.zody/plans/plan-sess_runtime-compact-plan-file-reference.md": `1. Preserve ${planMarker}\n2. Continue after compact`,
     });
     const modelImplementation = {
       async generateText(request: {
@@ -2616,7 +2616,10 @@ describe("AgentRuntime manual compact", () => {
     const runtime = createTestAgentRuntime(
       sessionId,
       // 本场景固定截断预算；目录补齐另由 agent-listing-persistence 覆盖。
-      { systemPrompt: "You are a compact prompt-too-long test agent.", subagents: { enabled: false } },
+      {
+        systemPrompt: "You are a compact prompt-too-long test agent.",
+        subagents: { enabled: false },
+      },
       {
         eventStore,
         modelFactory: createTestModelFactory(
@@ -3877,12 +3880,14 @@ describe("AgentRuntime manual compact", () => {
     expect(mainRequestMaxOutputTokens).toBe(64_000);
     expect(autoCompactLog).toMatchObject({
       maxOutputTokens: 64_000,
-      modelContextBudgetStrategy: "legacy",
-      outputReserveTokens: 64_000,
-      threshold: 51_000,
+      // Runtime compact policy uses the preflight-v1 reserve even when an old
+      // session still carries the legacy strategy value.
+      modelContextBudgetStrategy: "preflight-v1",
+      outputReserveTokens: 21_000,
+      threshold: 94_000,
     });
     expect(microcompactLog).toMatchObject({
-      thresholdTokens: 45_900,
+      thresholdTokens: 84_600,
     });
   });
 

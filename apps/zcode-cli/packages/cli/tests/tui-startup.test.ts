@@ -103,7 +103,7 @@ test("native first paint precedes initialization and theme detection; ready opti
   try {
     await terminal.action(() => terminal.renderOnce());
     assert.equal(calls, 1);
-    assert.match(frameAtStartup, /Starting ZCode/);
+    assert.match(frameAtStartup, /Starting Zody/);
     assert.match(terminal.captureCharFrame(), /\/test\/workspace/);
     assert.doesNotMatch(terminal.captureCharFrame(), /Type a prompt/);
     await terminal.action(() =>
@@ -118,7 +118,7 @@ test("native first paint precedes initialization and theme detection; ready opti
         ],
       }),
     );
-    assert.doesNotMatch(terminal.captureCharFrame(), /Starting ZCode/);
+    assert.doesNotMatch(terminal.captureCharFrame(), /Starting Zody/);
     assert.match(terminal.captureCharFrame(), /startup-model/);
     assert.match(terminal.captureCharFrame(), /personal \| high/);
     await terminal.action(() => terminal.mockInput.typeText("/startup"));

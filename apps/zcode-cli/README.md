@@ -1,61 +1,44 @@
-# zcode-cli
+# Zody Agent CLI
 
-TypeScript + Node.js 24.14.0 CLI starter. The default artifact is a normal Node CLI bundle, and SEA is kept as an optional packaging path.
+This directory contains the Agent, TUI, adapters, contracts, and runtime packages maintained as part of Zody. It is included in the repository, not a separate Git submodule. Internal `@zcode/*` package names, plugin identifiers, and protocol names remain compatibility interfaces.
 
-## Why This Shape
+For installation and supported platforms, see the [repository README](../../README.en.md). Public `zody` CLI/Web archives include Node.js and target-native resources; running the source bundle directly still requires the development toolchain.
 
-- Runtime code has zero production dependencies.
-- The CLI uses Node built-ins for argument parsing and terminal control.
-- `npm run build` produces `dist/zcode.cjs`, which works anywhere Node.js 24.14.0 is installed.
-- `npm run sea` attempts to turn that same bundle into a single executable.
-- If SEA breaks on a platform, the normal CLI artifact is still the fallback.
+## Development
 
-## Commands
+Use Node.js 24.14.0 and pnpm 10.33.2 as pinned in the repository root. Run these commands from that root:
 
 ```sh
-npm run bootstrap
-npm run dev -- --help
-npm run build
-npm run start -- doctor --json
-npm test
-npm run sea
-npm run sea -- --target linux-x64 --target win-x64
-npm run sea -- --all
+pnpm bootstrap
+pnpm --filter @zcode/cli dev --help
+pnpm --filter @zcode/cli... build
+node apps/zcode-cli/packages/cli/dist/zcode.cjs --help
+pnpm --dir apps/zcode-cli typecheck
+pnpm --dir apps/zcode-cli lint
+pnpm --dir apps/zcode-cli test
+pnpm build:zody --target darwin-arm64
 ```
 
-## Project Layout
-
-```txt
-src/
-  cli/       command parsing and process wiring
-  core/      reusable runtime logic
-  ui/        terminal UI layer
-scripts/    build and optional SEA packaging scripts
-tests/      subprocess-level CLI tests
-```
-
-## Bootstrap
-
-Run `npm run bootstrap` after cloning the repository. It checks the local Node.js version, installs dependencies, and runs the full project check.
+The source workspace contains `packages/cli`, `packages/tui`, `packages/bootstrap`, `packages/core`, `packages/adapters`, and the workflow and plugin packages. User configuration is stored under `~/.zody/`. Project resources read `.zody` first and fall back to `.zcode`, writing only to `.zody`; see the [path contract](docs/design/v2/zody-path-compatibility.md).
 
 ## Plugin Development
 
-zcode plugins are local bundles that can contribute skills, custom commands, and MCP servers. The plugin surface is compatible with the Claude Code plugin layout, so existing plugin content can be reused with minimal changes.
+zody plugins are local bundles that can contribute skills, custom commands, and MCP servers. The plugin surface is compatible with the Claude Code plugin layout, so existing plugin content can be reused with minimal changes.
 
-Plugin state lives under `~/.zcode/cli/plugins`:
+Plugin state lives under `~/.zody/cli/plugins`:
 
 - `cache/`: installed marketplace plugin code and static files.
 - `data/<plugin-id>/`: persistent plugin data. MCP servers should write runtime output here, not into the plugin source directory.
 - `marketplaces/zcode-plugins-official/`: bundled and CDN partitions plus the merged metadata for the single official marketplace.
 
-This repository also ships built-in official plugins as workspace packages. The bundled Browser Use, Document Skills, Skill Creator, and ZCode Guide content plugins are default-enabled and appear as `browser-use@zcode-plugins-official`, `document-skills@zcode-plugins-official`, `skill-creator@zcode-plugins-official`, and `zcode-guide@zcode-plugins-official`. Runtime-heavy official plugins, and local-data migration plugins such as `ios-simulator@zcode-plugins-official`, `android-emulator@zcode-plugins-official`, and `restore-legacy-sessions@zcode-plugins-official`, are discovered by zcode but stay disabled until the user enables them.
+This repository also ships built-in official plugins as workspace packages. The bundled Browser Use, Document Skills, Skill Creator, and ZCode Guide content plugins are default-enabled and appear as `browser-use@zcode-plugins-official`, `document-skills@zcode-plugins-official`, `skill-creator@zcode-plugins-official`, and `zcode-guide@zcode-plugins-official`. Runtime-heavy official plugins, and local-data migration plugins such as `ios-simulator@zcode-plugins-official`, `android-emulator@zcode-plugins-official`, and `restore-legacy-sessions@zcode-plugins-official`, are discovered by Zody but stay disabled until the user enables them.
 
 ```sh
-zcode plugins list
-zcode plugins enable ios-simulator
-zcode plugins disable browser-use
-zcode plugins enable restore-legacy-sessions
-zcode plugins disable ios-simulator
+zody plugins list
+zody plugins enable ios-simulator
+zody plugins disable browser-use
+zody plugins enable restore-legacy-sessions
+zody plugins disable ios-simulator
 ```
 
 For local plugin development, put the plugin in any directory, then add it to the user config. Local plugin dirs default to enabled for that config.
@@ -71,16 +54,16 @@ For local plugin development, put the plugin in any directory, then add it to th
 
 ### Manifest Compatibility
 
-zcode discovers the first manifest that exists:
+Zody discovers the first manifest that exists:
 
 1. `.zcode-plugin/plugin.json`
 2. `.claude-plugin/plugin.json`
 
-`.zcode-plugin/plugin.json` uses the same field names as Claude Code. Use it only when zcode needs different metadata or runtime wiring. If the Claude manifest already works, a plugin can ship only `.claude-plugin/plugin.json`.
+`.zcode-plugin/plugin.json` uses the same field names as Claude Code. Use it only when Zody needs different metadata or runtime wiring. If the Claude manifest already works, a plugin can ship only `.claude-plugin/plugin.json`.
 
-MCP config can live directly in `.zcode-plugin/plugin.json` through `mcpServers`. This is useful when the Claude-compatible `.mcp.json` points at a different runtime, such as Bun source files, while zcode should run a built Node.js server from `dist/`. A plugin may provide both `.mcp.json` and manifest `mcpServers`; when the same server name appears in both places, `mcpServers` from the selected manifest wins.
+MCP config can live directly in `.zcode-plugin/plugin.json` through `mcpServers`. This is useful when the Claude-compatible `.mcp.json` points at a different runtime, such as Bun source files, while Zody should run a built Node.js server from `dist/`. A plugin may provide both `.mcp.json` and manifest `mcpServers`; when the same server name appears in both places, `mcpServers` from the selected manifest wins.
 
-Supported fields in the current zcode plugin surface:
+Supported fields in the current Zody plugin surface:
 
 - `name`, `version`, `description`, `author`, `license`
 - `skills`: relative folder or folders containing `SKILL.md` files
@@ -116,7 +99,7 @@ Example `.zcode-plugin/plugin.json` with inline MCP config:
 }
 ```
 
-zcode also reads plugin `.mcp.json` using Claude Code's wrapper shape. Use this when the same MCP config should be shared by Claude Code and zcode:
+Zody also reads plugin `.mcp.json` using Claude Code's wrapper shape. Use this when the same MCP config should be shared by Claude Code and Zody:
 
 ```json
 {
@@ -161,7 +144,7 @@ Keep reusable content in Claude-compatible locations. Add a `.zcode-plugin/plugi
 
 ## MCP Configuration
 
-zcode reads MCP servers from the main JSON config. The default user config path is `~/.zcode/cli/config.json`; MCP entries live under `mcp.servers`. MCP is enabled by default, so `features.mcp` only needs to be set when you want an explicit on/off switch. The current CLI does not auto-discover standalone `mcp.json` or `.mcp.json` files outside enabled plugins.
+Zody reads MCP servers from the main JSON config. The default user config path is `~/.zody/cli/config.json`; MCP entries live under `mcp.servers`. MCP is enabled by default, so `features.mcp` only needs to be set when you want an explicit on/off switch. The current CLI does not auto-discover standalone `mcp.json` or `.mcp.json` files outside enabled plugins.
 
 ```json
 {
@@ -196,7 +179,7 @@ zcode reads MCP servers from the main JSON config. The default user config path 
 
 Supported server types:
 
-- `stdio`: requires `command`; accepts `args`, `cwd`, `env`, `enabled`, and `timeoutMs`. `cwd` is resolved from the active working directory, and the server process inherits zcode's environment plus any `env` overrides.
+- `stdio`: requires `command`; accepts `args`, `cwd`, `env`, `enabled`, and `timeoutMs`. `cwd` is resolved from the active working directory, and the server process inherits Zody's environment plus any `env` overrides.
 - `http`: requires `url`; accepts `headers`, `enabled`, and `timeoutMs`.
 - `sse`: requires `url`; accepts `headers`, `enabled`, and `timeoutMs`.
 
@@ -204,7 +187,7 @@ MCP tools are registered before the first model request and exposed as `mcp__<se
 
 ## Hooks Configuration
 
-zcode reads hooks from the same main JSON config file as MCP, usually `~/.zcode/cli/config.json`. Hooks are disabled by default; set `hooks.enabled` to `true` and add process hooks under `hooks.events`.
+Zody reads hooks from the same main JSON config file as MCP, usually `~/.zody/cli/config.json`. Hooks are disabled by default; set `hooks.enabled` to `true` and add process hooks under `hooks.events`.
 
 Supported hook events:
 
@@ -318,9 +301,6 @@ Common stdout examples:
 
 ## Packaging Strategy
 
-1. Start with the normal Node CLI bundle from `npm run build`.
-2. `npm run sea` builds the current host target by default.
-3. Use `npm run sea -- --target <platform-arch>` or `npm run sea -- --all` for cross-target SEA packaging.
-4. SEA target Node.js binaries are downloaded from the official Node.js release for the current `process.versions.node` and verified against `SHASUMS256.txt`.
-5. Keep native addons and runtime dynamic imports out of the core CLI until SEA compatibility is proven.
-6. Add richer TUI libraries later only behind a compatibility spike.
+`pnpm build:zody --target <target>` builds the CLI, server, Web, and SEA assets, then assembles a self-contained archive. Supported preview targets are `darwin-arm64`, `darwin-x64`, `win32-x64`, and `linux-x64`. The bundled Node version follows the pinned toolchain and is checked against the official SHA-256 manifest. Native addons, TUI assets, browser runtime files, plugins, and license materials are staged for the selected target.
+
+See [build and release instructions](../../docs/fork/build.md). Local verification archives are marked when license evidence is incomplete; the Release helpers still require the strict license gate before creating or updating a draft. The public entry point is `zody` (`zody.cmd` on Windows), with `zody --web` serving the Web interface.

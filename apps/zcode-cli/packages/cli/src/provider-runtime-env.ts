@@ -76,15 +76,10 @@ export async function prepareCliProviderRuntimeEnv(
       entrypoint: options.entrypoint ?? process.argv[1],
       sea: options.sea ?? getSeaProviderConfigAssets(),
     }));
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const personalFilePath =
     explicitPersonal ??
-    join(
-      dataBaseDir,
-      ZCODE_DATA_ROOT_DIR_NAME,
-      "v2",
-      PERSONAL_PROVIDER_CONFIG_FILE_NAME,
-    );
+    join(dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2", PERSONAL_PROVIDER_CONFIG_FILE_NAME);
   const appVersion = options.appVersion ?? ZCODE_VERSION;
   const platform = options.platform ?? resolveZCodeBuiltinClientPlatform();
   const zcodeEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(options.env);

@@ -57,13 +57,8 @@ function resolveCliTelemetryStateFile(options: EnsureCliDeviceMidOptions): strin
   const configuredBaseDir =
     options.baseDir ?? env[ZCODE_DATA_BASE_DIR_ENV_KEY]?.trim() ?? homedir();
   const baseDir = configuredBaseDir.length > 0 ? configuredBaseDir : homedir();
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
-  return join(
-    resolveUserPath(baseDir),
-    ZCODE_DATA_ROOT_DIR_NAME,
-    "v2",
-    "telemetry-state.json",
-  );
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
+  return join(resolveUserPath(baseDir), ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
 }
 
 async function ensurePersistedDeviceMid(input: {

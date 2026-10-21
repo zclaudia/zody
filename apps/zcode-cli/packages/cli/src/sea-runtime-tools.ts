@@ -1,9 +1,8 @@
 import { createHash, randomBytes } from "node:crypto";
 import { chmod, mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import { getRuntimeToolRuntime, type RuntimeToolId } from "@zcode/shared/runtime-tool-runtime";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { getUserZodyRoot } from "@zcode/shared/zody-paths";
 
 type CliEnv = Record<string, string | undefined>;
 
@@ -67,8 +66,8 @@ export async function ensureSeaRuntimeTools(
 
   const env = options.env ?? process.env;
   const configuredStorageRoot = options.storageRoot ?? env.ZCODE_STORAGE_DIR?.trim();
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
-  const storageRoot = configuredStorageRoot || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME);
+  // 插件宿主在此阶段尚未加载 Agent，路径工具须走独立入口，避免求值 shared 总入口。
+  const storageRoot = configuredStorageRoot || getUserZodyRoot();
   const runtimeEnv: CliEnv = {};
 
   for (const tool of manifest.tools) {

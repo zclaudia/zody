@@ -193,7 +193,9 @@ describe("bundled dynamic-workflows skill", () => {
     expect(skill).toContain("## 16. Tool reference");
     expect(skill).toContain("refuses\nto run until this skill has been loaded");
     expect(skill).toContain("**Three sources; pass exactly one.**");
-    expect(skill).toContain("Running a saved workflow\n  is the one call that does not need this skill loaded");
+    expect(skill).toContain(
+      "Running a saved workflow\n  is the one call that does not need this skill loaded",
+    );
     expect(skill).toContain("`max_concurrency`");
     expect(skill).toContain("`subagent_model`");
     expect(skill).toContain("do not imitate it");
@@ -230,7 +232,9 @@ describe("bundled dynamic-workflows skill", () => {
     // 描述矛盾；描述收短后技能是唯一出处，两处必须同一个说法。
     expect(skill).toContain("**How the cache works.**");
     expect(skill).toContain("Asks that only\nanswered keep settling from the cache");
-    expect(skill).not.toContain("every ask to any subagent runs live even if its text is unchanged");
+    expect(skill).not.toContain(
+      "every ask to any subagent runs live even if its text is unchanged",
+    );
     expect(skill).toContain("### 16.5 `SaveWorkflow`");
     expect(skill).toContain("Never unsolicited");
     expect(skill).toContain("`script_path`");
@@ -438,7 +442,9 @@ describe("bundled dynamic-workflows skill", () => {
     const movedExample = await readSkillFile("examples.md");
     expect(movedExample).toContain("## 5. Changed-file review with confirmation as reviews land");
     expect(movedExample).toContain("confirmer-${p}-${index}");
-    expect(movedExample).not.toContain('phase("Confirm each kept finding independently and report it")');
+    expect(movedExample).not.toContain(
+      'phase("Confirm each kept finding independently and report it")',
+    );
     // 过时的缓存关门说法（工具档位 2026-09-12 已退场）不得回来。
     for (const { name, text } of await readAllContent()) {
       expect(text, name).not.toMatch(/first subagent with tools/i);
@@ -455,13 +461,14 @@ describe("bundled dynamic-workflows skill", () => {
   });
 
   // 脚本文件（docs/dynamic-workflow/launch.md「Script files」）：每次提交的脚本都有一个磁盘文件，
-  // 内联脚本由工具写进 `.zcode/workflow-drafts/<slug>.dwf.ts`，诊断按文件行号给出，之后的每一次
+  // 内联脚本由工具写进 `.zody/workflow-drafts/<slug>.dwf.ts`，诊断按文件行号给出，之后的每一次
   // 修订都是「改那个文件 + 用 `path` 重新提交」。这三句是承重话，必须逐字在 skill 里：模型一旦回到
   // 整段重贴，就同时踩中两个实测代价——约两万 token 的脚本重新流式输出会被部分 provider 卡死，
   // 而 run 真正出错时脚本正文往往已被 compaction 丢出上下文，只有文件还在。
   it("teaches the script-file loop: edit the file, resubmit by path", async () => {
     const skill = await readSkillFile("SKILL.md");
-    expect(skill).toContain(".zcode/workflow-drafts/");
+    expect(skill).toContain(".zody/workflow-drafts/");
+    expect(skill).not.toContain("`.zcode/workflow-drafts/`");
     expect(skill).toContain("{path}:L{line}:C{column} {message}");
     expect(skill).toContain(
       "**Edit that file and resubmit with `path`. Do not paste the script inline again**",
@@ -480,6 +487,15 @@ describe("bundled dynamic-workflows skill", () => {
       expect(text, name).not.toMatch(/call\s+`CreateWorkflow` again/);
       expect(text, name).not.toMatch(/resubmit with `AmendWorkflow`\./);
     }
+  });
+
+  it("documents Zody as the only new workflow save location", async () => {
+    const skill = await readSkillFile("SKILL.md");
+    expect(skill).toContain("`.zody/workflows/<name>.dwf.ts`");
+    expect(skill).toContain("`~/.zody/workflows/<name>.dwf.ts`");
+    expect(skill).toContain(
+      "Existing project definitions under `.zcode/workflows/` may still be discovered",
+    );
   });
 
   // 2026-09-07 用户裁决（docs/dynamic-workflow/authoring.md「The skill」）：用户可见文本按

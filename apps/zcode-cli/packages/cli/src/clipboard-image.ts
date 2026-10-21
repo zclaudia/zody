@@ -31,7 +31,7 @@ type NodeClipboardImageReaderOptions = {
 };
 
 function resolveDefaultClipboardDirectory(processEnv: NodeJS.ProcessEnv = process.env): string {
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const storageRoot =
     processEnv.ZCODE_STORAGE_DIR?.trim() || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME);
   return join(storageRoot, "clipboard");

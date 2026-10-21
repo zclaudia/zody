@@ -18,6 +18,7 @@ import {
   type WorkflowTaskStatus,
 } from "@zcode/contracts";
 import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { resolveProjectResourceRoots } from "@zcode/shared/zody-paths";
 import { readWorkflowScriptDocument } from "./script-workflow-meta.js";
 import type { ScriptWorkflowRuntime } from "./script-workflow-runtime.js";
 import { isScriptWorkflowStore } from "./script-workflow-utils.js";
@@ -115,12 +116,16 @@ export function createScriptWorkflowToolPort(deps: ScriptWorkflowToolPortDeps): 
             taskId: runId,
           };
           launchSnapshots.set(runId, snapshot);
-          deps.logger?.error("Background workflow failed before status was persisted", toError(error), {
-            event: "workflow.tool.background_failed",
-            module: "bootstrap.workflow",
-            runId,
-            status: "failed",
-          });
+          deps.logger?.error(
+            "Background workflow failed before status was persisted",
+            toError(error),
+            {
+              event: "workflow.tool.background_failed",
+              module: "bootstrap.workflow",
+              runId,
+              status: "failed",
+            },
+          );
           return snapshot;
         },
       );
@@ -315,8 +320,9 @@ async function resolveNamedWorkflowPath(
 ): Promise<string> {
   const fileName = workflowFileName(name);
   const candidates = [
-    join(deps.workingDirectory, ".zcode", "workflows", fileName),
-    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    ...resolveProjectResourceRoots(deps.workingDirectory, "workflows").readPaths.map((root) =>
+      join(root, fileName),
+    ),
     join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "workflows", fileName),
   ];
   const builtIn = BUILTIN_WORKFLOW_ALLOWLIST.get(name);

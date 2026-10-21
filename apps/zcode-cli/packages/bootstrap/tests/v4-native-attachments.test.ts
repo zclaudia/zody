@@ -703,42 +703,41 @@ describe("gateway v4 chunked attachment transaction", () => {
   // 全量删除（specs/bot-channels-removal.md）；文本材料来源仅剩 clipboard-text。
   it("clipboard-text 文本按权威行授权预览，拒绝其他行及引用", async () => {
     const sourceKind = "clipboard-text" as const;
-      const bytes = Buffer.from("Sender: 群成员 | open_id: ou_member\n原文第二行");
-      const attachment = {
-        ref: "zcode-artifact://history",
-        fileName: "history.txt",
-        mime: "text/plain",
-        bytes: bytes.length,
-        sourceKind,
-      };
-      const read = vi.fn().mockResolvedValue({ bytes, mediaType: "text/plain" });
-      const gateway = makeGateway({ readSessionAttachment: read });
-      ingestAttachmentRow(gateway, [attachment]);
-      const request = {
-        sessionId: "s1",
-        ref: attachment.ref,
-        target: { rowId: 2, entityId: "message-preview" },
-        attachmentIndex: 0,
-        offset: 0,
-        limit: 1000,
-      };
-      await expect(gateway.attachmentRead(request)).resolves.toMatchObject({
-        dataBase64: bytes.toString("base64"),
-        nextOffset: null,
-      });
-      await expect(
-        gateway.attachmentRead({
-          ...request,
-          target: { ...request.target, entityId: "other-message" },
-        }),
-      ).rejects.toThrow("fault.attachment.previewRefNotAuthorized");
-      await expect(
-        gateway.attachmentRead({ ...request, ref: "/tmp/arbitrary.txt" }),
-      ).rejects.toThrow("fault.attachment.previewRefNotAuthorized");
-      expect(read).toHaveBeenCalledTimes(1);
-      gateway.dispose();
-    },
-  );
+    const bytes = Buffer.from("Sender: 群成员 | open_id: ou_member\n原文第二行");
+    const attachment = {
+      ref: "zcode-artifact://history",
+      fileName: "history.txt",
+      mime: "text/plain",
+      bytes: bytes.length,
+      sourceKind,
+    };
+    const read = vi.fn().mockResolvedValue({ bytes, mediaType: "text/plain" });
+    const gateway = makeGateway({ readSessionAttachment: read });
+    ingestAttachmentRow(gateway, [attachment]);
+    const request = {
+      sessionId: "s1",
+      ref: attachment.ref,
+      target: { rowId: 2, entityId: "message-preview" },
+      attachmentIndex: 0,
+      offset: 0,
+      limit: 1000,
+    };
+    await expect(gateway.attachmentRead(request)).resolves.toMatchObject({
+      dataBase64: bytes.toString("base64"),
+      nextOffset: null,
+    });
+    await expect(
+      gateway.attachmentRead({
+        ...request,
+        target: { ...request.target, entityId: "other-message" },
+      }),
+    ).rejects.toThrow("fault.attachment.previewRefNotAuthorized");
+    await expect(gateway.attachmentRead({ ...request, ref: "/tmp/arbitrary.txt" })).rejects.toThrow(
+      "fault.attachment.previewRefNotAuthorized",
+    );
+    expect(read).toHaveBeenCalledTimes(1);
+    gateway.dispose();
+  });
 
   it("legacy ref-only 读取在 durable previewRef 存在时不回退原始路径", async () => {
     const attachment = {
@@ -933,7 +932,7 @@ describe("gateway v4 chunked attachment transaction", () => {
     };
     const resolveSource = vi.fn().mockResolvedValue({
       kind: "local_path",
-      path: "/tmp/.zcoder/video-cache/demo.mov",
+      path: "/tmp/.zody/video-cache/demo.mov",
       mediaType: "video/quicktime",
     });
     const gateway = makeGateway({ resolveSessionAttachmentPreviewSource: resolveSource });
@@ -949,7 +948,7 @@ describe("gateway v4 chunked attachment transaction", () => {
       }),
     ).resolves.toEqual({
       kind: "local_path",
-      path: "/tmp/.zcoder/video-cache/demo.mov",
+      path: "/tmp/.zody/video-cache/demo.mov",
       mediaType: "video/quicktime",
     });
     expect(resolveSource).toHaveBeenCalledWith("s1", {

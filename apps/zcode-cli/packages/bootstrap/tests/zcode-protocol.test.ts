@@ -5086,7 +5086,7 @@ describe("ZCodeProtocolAgentServer", () => {
             filename: "pasted-text.txt",
             mimeType: "text/plain",
             sizeBytes: 8192,
-            localPath: "/tmp/.zcoder/tmp/paste-attachments/2026-06-30/pasted-text.txt",
+            localPath: "/tmp/.zody/tmp/paste-attachments/2026-06-30/pasted-text.txt",
             sourceKind: "clipboard-text",
           },
           {
@@ -5105,7 +5105,7 @@ describe("ZCodeProtocolAgentServer", () => {
       attachments: [
         { path: "/tmp/report.pdf", type: "pdf" },
         {
-          path: "/tmp/.zcoder/tmp/paste-attachments/2026-06-30/pasted-text.txt",
+          path: "/tmp/.zody/tmp/paste-attachments/2026-06-30/pasted-text.txt",
           sourceKind: "clipboard-text",
           type: "file",
         },

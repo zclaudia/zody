@@ -1,6 +1,6 @@
 import { parseRuntimeSubagentConfig } from "./subagent-runtime-config.js";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { migrateUserSubagentMarkdown, migrateSubagentStateFile } from "@zcode/shared/node";
 import {
   parseAgentProfileFromMarkdown,
@@ -8,6 +8,7 @@ import {
   type AgentProfileParseDiagnostic,
 } from "@zcode/core";
 import type { Logger, PluginMetadata } from "@zcode/contracts";
+import { resolveProjectResourceRoots } from "@zcode/shared/zody-paths";
 import {
   createPluginAgentStateId,
   parsePluginSubagentModelSelectionOverrides,
@@ -52,7 +53,10 @@ export async function loadZCodeAgentProfiles(
   await migrateSubagentStateFile(join(input.storageRoot, "v2", "agents-state.json"));
   const roots = [
     { path: join(input.storageRoot, "agents"), source: "user" as const },
-    { path: join(input.workingDirectory, ".zcode", "agents"), source: "project" as const },
+    ...resolveProjectResourceRoots(input.workingDirectory, "agents").readPaths.map((path) => ({
+      path,
+      source: "project" as const,
+    })),
   ];
   const diagnostics: AgentProfileParseDiagnostic[] = [];
   for (const failure of migration.failures) {
@@ -68,12 +72,14 @@ export async function loadZCodeAgentProfiles(
     });
   }
   const agentState = readAgentState(input.storageRoot);
+  const seenProjectAgentFiles = new Set<string>();
   const documents = roots.flatMap((root) =>
-    listMarkdownFiles(root.path).map((path) => ({
-      path,
-      source: root.source,
-      content: readFileSync(path, "utf8"),
-    })),
+    listMarkdownFiles(root.path).flatMap((path) => {
+      const fileName = basename(path).toLowerCase();
+      if (root.source === "project" && seenProjectAgentFiles.has(fileName)) return [];
+      if (root.source === "project") seenProjectAgentFiles.add(fileName);
+      return [{ path, source: root.source, content: readFileSync(path, "utf8") }];
+    }),
   );
   const parsed = parseRuntimeSubagentConfig({
     documents,

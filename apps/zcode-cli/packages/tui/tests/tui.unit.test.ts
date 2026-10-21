@@ -6,11 +6,7 @@ import { LoginRequiredPanel } from "../src/app-components.js";
 import { ContentPane, MessageRow } from "../src/app-transcript-components.js";
 import { EmptyTranscriptLogo, ZCODE_LOGO_LINES } from "../src/app-empty-transcript.js";
 import { SHIMMER_SWEEP_PERIOD_MS, shimmerTextSegments } from "../src/app-motion.js";
-import {
-  ShikiDiffView,
-  buildDiffRows,
-  buildSplitDiffRows,
-} from "../src/app-shiki-diff-view.js";
+import { ShikiDiffView, buildDiffRows, buildSplitDiffRows } from "../src/app-shiki-diff-view.js";
 import {
   highlightShikiCodeLines,
   inferShikiLanguage,
@@ -63,13 +59,21 @@ test("describes session events without coupling the shell to business logic", ()
   assert.equal(describeSessionEvent({ type: "turn_started" } as never), "turn started");
 });
 
-test("renders a ZCODE logo placeholder for an empty transcript", () => {
+test("renders a ZODY logo placeholder for an empty transcript", () => {
   const [child] = reactElementChildren(
     ContentPane({ copy: EN_COPY, focused: false, messages: [] }),
   );
   const lines = collectTextLines(EmptyTranscriptLogo());
 
   assert.equal(child?.type, EmptyTranscriptLogo);
+  assert.deepEqual(lines, [
+    "███████╗  ██████╗  ██████╗  ██╗   ██╗",
+    "╚══███╔╝ ██╔═══██╗ ██╔══██╗ ╚██╗ ██╔╝",
+    "  ███╔╝  ██║   ██║ ██║  ██║  ╚████╔╝ ",
+    " ███╔╝   ██║   ██║ ██║  ██║   ╚██╔╝  ",
+    "███████╗ ╚██████╔╝ ██████╔╝    ██║   ",
+    "╚══════╝  ╚═════╝  ╚═════╝     ╚═╝   ",
+  ]);
   assert.deepEqual(lines, [...ZCODE_LOGO_LINES]);
 });
 

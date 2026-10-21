@@ -9,6 +9,7 @@
 
 import { z } from "zod";
 import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { LEGACY_ZCODE_DIRECTORY_NAME, ZODY_DIRECTORY_NAME } from "@zcode/shared/zody-paths";
 
 /**
  * 保存文件的扩展名。`.dwf.ts` 而不是 `.ts`：编辑器按 TypeScript 高亮（frontmatter 是块注释，
@@ -17,20 +18,21 @@ import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
 export const SAVED_WORKFLOW_FILE_EXTENSION = ".dwf.ts";
 
 /** 项目作用域的存放目录（相对会话工作目录）。 */
-export const SAVED_WORKFLOW_PROJECT_DIR = ".zcode/workflows";
+export const SAVED_WORKFLOW_PROJECT_DIR = `${ZODY_DIRECTORY_NAME}/workflows`;
+/** 只读兼容目录；新定义与编辑始终写入 SAVED_WORKFLOW_PROJECT_DIR。 */
+export const SAVED_WORKFLOW_PROJECT_LEGACY_DIR = `${LEGACY_ZCODE_DIRECTORY_NAME}/workflows`;
 
 /**
  * 草稿目录（相对会话工作目录）。模型在两次提交之间就地编辑的脚本文件落在这里，是
- * `.zcode/workflows/`（用户保存的定义）的兄弟目录，机器自有、自带 `.gitignore: *`。
+ * `.zody/workflows/`（用户保存的定义）的兄弟目录，机器自有、自带 `.gitignore: *`。
  */
-export const WORKFLOW_DRAFTS_DIR = ".zcode/workflow-drafts";
+export const WORKFLOW_DRAFTS_DIR = `${ZODY_DIRECTORY_NAME}/workflow-drafts`;
 
 /**
- * 全局作用域的存放目录（相对 agent 进程的家目录）。落点 `~/.zcoder/workflows/<name>.dwf.ts`
+ * 全局作用域的存放目录（相对 agent 进程的家目录）。落点 `~/.zody/workflows/<name>.dwf.ts`
  * ——与 legacy Workflow 工具的用户根同一处，对所有项目可见。
  *
- * fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用；
- * 项目级 `SAVED_WORKFLOW_PROJECT_DIR` / `WORKFLOW_DRAFTS_DIR` 保持 `.zcode`。
+ * 项目写入路径固定为 `.zody`；旧项目定义通过 store 的只读兼容根读取。
  */
 export const SAVED_WORKFLOW_GLOBAL_DIR = `${ZCODE_DATA_ROOT_DIR_NAME}/workflows`;
 
@@ -45,8 +47,8 @@ export const SAVED_WORKFLOW_NAME_PATTERN = /^[A-Za-z0-9_.-]+$/u;
 export const SAVED_WORKFLOW_MAX_NAME_CHARS = 64;
 
 /**
- * 作用域。两档：`project` 落在项目的 `.zcode/workflows/`，只在那个项目里可见；`global`
- * 落在 `~/.zcoder/workflows/`（agent 进程的家目录），对所有项目可见。一个文件的作用域由它所在的目录推得，frontmatter 不存。
+ * 作用域。两档：`project` 落在项目的 `.zody/workflows/`，只在那个项目里可见；`global`
+ * 落在 `~/.zody/workflows/`（agent 进程的家目录），对所有项目可见。一个文件的作用域由它所在的目录推得，frontmatter 不存。
  */
 export const SAVED_WORKFLOW_SCOPES = ["project", "global"] as const;
 

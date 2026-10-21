@@ -23,6 +23,7 @@ import {
   SAVED_WORKFLOW_FILE_EXTENSION,
   SAVED_WORKFLOW_GLOBAL_DIR,
   SAVED_WORKFLOW_MAX_NAME_CHARS,
+  SAVED_WORKFLOW_PROJECT_LEGACY_DIR,
   SAVED_WORKFLOW_PROJECT_DIR,
   isValidSavedWorkflowName,
   type SavedWorkflowEntry,
@@ -48,10 +49,10 @@ export interface SavedWorkflowRootsOptions {
 }
 
 /**
- * 本次会话的查找根，**按优先级排列**：`[project, global]`。
+ * 本次会话的查找根，**按优先级排列**：`[project .zody, project .zcode, global .zody]`。
  *
- * 项目档落在会话工作目录的 `.zcode/workflows/`，全局档落在家目录的 `~/.zcoder/workflows/`。
- * 所有查找按顺序 first-wins：项目里的那份永远赢过全局那份（同名遮蔽）。
+ * 项目档依次读 `.zody/workflows/` 与只读 `.zcode/workflows/`，全局档只读 `~/.zody/workflows/`。
+ * 同作用域的新目录按名字遮蔽旧目录；项目里的定义再遮蔽全局定义。
  */
 export function savedWorkflowRoots(
   cwd: string,
@@ -59,6 +60,7 @@ export function savedWorkflowRoots(
 ): SavedWorkflowRoot[] {
   return [
     { scope: "project", dir: join(cwd, SAVED_WORKFLOW_PROJECT_DIR) },
+    { scope: "project", dir: join(cwd, SAVED_WORKFLOW_PROJECT_LEGACY_DIR) },
     { scope: "global", dir: join(options?.homeDir ?? homedir(), SAVED_WORKFLOW_GLOBAL_DIR) },
   ];
 }
@@ -125,7 +127,7 @@ export function savedWorkflowPath(root: SavedWorkflowRoot, name: string): string
  * 名字先过合法性检查再拼路径：这条顺序是路径穿越的防线本身，不是输入卫生的小节——
  * `../../.ssh/id_rsa` 拼进 join 之后就是一个能读的绝对路径了。
  *
- * 给了 `scope`：只查那一根（中枢与 `saved.scope` 的定向查找）；不给：两根按序 first-wins。
+ * 给了 `scope`：只查该作用域的根（项目含 canonical 与只读 legacy）；不给：各根按序 first-wins。
  */
 export function resolveSavedWorkflow(options: {
   cwd: string;
@@ -145,7 +147,7 @@ export function resolveSavedWorkflow(options: {
   const roots =
     scope === undefined
       ? savedWorkflowRoots(cwd, { homeDir })
-      : [savedWorkflowRoot(cwd, scope, { homeDir })];
+      : savedWorkflowRoots(cwd, { homeDir }).filter((root) => root.scope === scope);
 
   for (const root of roots) {
     const path = savedWorkflowPath(root, name);
@@ -183,7 +185,7 @@ export function resolveSavedWorkflow(options: {
  *
  * 坏文件进 `invalid` 而不是抛错：这些文件是用户手改的，一个错字不该让整份清单消失。
  *
- * 不给 `scope`：两根按序，同名定义 first-wins，被遮蔽的那份**不**出现在列表里——列表要说的
+ * 不给 `scope`：按 canonical project、legacy project、global 顺序，同名定义 first-wins，被遮蔽的那份**不**出现在列表里——列表要说的
  * 是"调用这个名字会跑到什么"，而不是"磁盘上有几份"。给了 `scope`：只扫那一根，**不**做遮蔽
  * （中枢的全局组要看到被项目档遮蔽的那一份）。
  */
@@ -199,7 +201,9 @@ export function listSavedWorkflows(options: {
   const roots =
     options.scope === undefined
       ? savedWorkflowRoots(options.cwd, { homeDir: options.homeDir })
-      : [savedWorkflowRoot(options.cwd, options.scope, { homeDir: options.homeDir })];
+      : savedWorkflowRoots(options.cwd, { homeDir: options.homeDir }).filter(
+          (root) => root.scope === options.scope,
+        );
 
   for (const root of roots) {
     let fileNames: string[];
@@ -224,6 +228,8 @@ export function listSavedWorkflows(options: {
       }
       // 已被更高优先级的作用域认领：这一份跑不到，也就不列。
       if (claimed.has(name)) continue;
+      // 即使 canonical 文件格式错误也要遮蔽旧同名资源，避免错误时悄悄运行旧脚本。
+      claimed.add(name);
 
       let source: string;
       try {
@@ -240,7 +246,6 @@ export function listSavedWorkflows(options: {
         continue;
       }
 
-      claimed.add(name);
       entries.push({
         name,
         description: parsed.meta.description,
@@ -274,7 +279,12 @@ export function saveSavedWorkflow(options: {
   });
   const path = savedWorkflowPath(root, options.name);
   mkdirSync(root.dir, { recursive: true });
-  const overwritten = fileExists(path);
+  // legacy 只读但仍是当前有效值；首次保存会在 canonical 路径创建覆盖，确认窗应视作覆盖。
+  const legacyPath =
+    root.scope === "project"
+      ? join(options.cwd, SAVED_WORKFLOW_PROJECT_LEGACY_DIR, savedWorkflowFileName(options.name))
+      : undefined;
+  const overwritten = fileExists(path) || (legacyPath !== undefined && fileExists(legacyPath));
   writeFileSync(path, serializeSavedWorkflow(options.meta, options.script), "utf8");
   return { path, scope: root.scope, overwritten };
 }
@@ -290,7 +300,13 @@ export function savedWorkflowExists(options: {
   const root = savedWorkflowRoot(options.cwd, options.scope ?? "project", {
     homeDir: options.homeDir,
   });
-  return fileExists(savedWorkflowPath(root, options.name));
+  if (fileExists(savedWorkflowPath(root, options.name))) return true;
+  return (
+    root.scope === "project" &&
+    fileExists(
+      join(options.cwd, SAVED_WORKFLOW_PROJECT_LEGACY_DIR, savedWorkflowFileName(options.name)),
+    )
+  );
 }
 
 /**
@@ -308,7 +324,13 @@ export function findSavedWorkflowShadowing(options: {
   if (!isValidSavedWorkflowName(options.name)) return undefined;
   const otherScope: SavedWorkflowScope = options.scope === "project" ? "global" : "project";
   const otherRoot = savedWorkflowRoot(options.cwd, otherScope, { homeDir: options.homeDir });
-  if (!fileExists(savedWorkflowPath(otherRoot, options.name))) return undefined;
+  const otherExists =
+    fileExists(savedWorkflowPath(otherRoot, options.name)) ||
+    (otherScope === "project" &&
+      fileExists(
+        join(options.cwd, SAVED_WORKFLOW_PROJECT_LEGACY_DIR, savedWorkflowFileName(options.name)),
+      ));
+  if (!otherExists) return undefined;
   return options.scope === "project" ? "hides_global" : "hidden_by_project";
 }
 
@@ -352,6 +374,14 @@ export function moveSavedWorkflow(options: {
 
   if (!fileExists(fromPath)) return { ok: false, reason: "not_found" };
   if (fileExists(toPath)) return { ok: false, reason: "target_exists", path: toPath };
+  const legacyTargetPath = join(
+    cwd,
+    SAVED_WORKFLOW_PROJECT_LEGACY_DIR,
+    savedWorkflowFileName(name),
+  );
+  if (fileExists(legacyTargetPath)) {
+    return { ok: false, reason: "target_exists", path: legacyTargetPath };
+  }
 
   try {
     mkdirSync(toRoot.dir, { recursive: true });

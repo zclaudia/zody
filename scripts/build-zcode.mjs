@@ -1,301 +1,298 @@
 #!/usr/bin/env node
-import { loadEndpointEnv } from "./load-endpoint-env.mjs";
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { chmod, cp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
-
+import { chmod, copyFile, cp, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+import { runCommand } from "./spawn-command.mjs";
+import { stageNodeNotices, readVerifiedNotices } from "./third-party-notices.mjs";
 import {
   copyRuntimeNodeModules,
   patchNodePtyPrebuilds,
   stageTuiRuntime,
 } from "./zcode-distribution/assets.mjs";
-import { installScriptSource } from "./zcode-distribution/installer.mjs";
+import {
+  archiveNameForTarget,
+  assertDistributionVersion,
+  nodeTargetForDistribution,
+  parseDistributionArgs,
+} from "./zcode-distribution/targets.mjs";
+import { collectSeaRuntimeToolAssets } from "../apps/zcode-cli/packages/cli/scripts/sea-runtime-tool-assets.mjs";
+import { resolveDownloadedNodeBinary } from "../apps/zcode-cli/packages/cli/scripts/sea-node-download.mjs";
+import { outputBinaryName } from "../apps/zcode-cli/packages/cli/scripts/sea-targets.mjs";
+import { seaBuildSteps } from "./zcode-distribution/sea-build-steps.mjs";
 
 const root = resolve(import.meta.dirname, "..");
-const defaultOutDir = resolve(root, "dist", "zcode");
-const defaultBaseUrl = (await loadEndpointEnv()).ZCODE_DIST_BASE_URL?.trim() || "";
-const packageDirName = "zcode";
+const defaultOutDir = resolve(root, "dist", "zody");
+const packageDirName = "zody";
+const bundledNodeVersion = "24.14.0";
+const cliRoot = resolve(root, "apps/zcode-cli/packages/cli");
 const usage = `Usage:
-  pnpm build:zcode
-  node scripts/build-zcode.mjs --skip-build
-  node scripts/build-zcode.mjs --version 3.3.3-dev.1
-  node scripts/build-zcode.mjs --out-dir dist/zcode
-  node scripts/build-zcode.mjs --base-url http://host/zcode/deps/zcode/
+  pnpm run build:zody --all
+  node scripts/build-zcode.mjs --target darwin-arm64
+  node scripts/build-zcode.mjs --skip-build --target linux-x64
 
 Options:
-  --skip-build        Reuse existing web/server/agent build outputs.
+  --all               Build all supported CLI/Web targets.
+  --target <target>   Build one target.
+  --skip-build        Reuse existing Web, server, Agent, and SEA outputs.
   --version <text>    Release version. Defaults to root package.json version.
-  --out-dir <path>    Output directory. Defaults to dist/zcode.
-  --base-url <url>    Default install.sh download base URL.
+  --out-dir <path>   Output directory. Defaults to dist/zody.
   --help, -h          Show this help.
 `;
 
-function readArgValue(argv, arg, index) {
-  if (arg.includes("=")) {
-    return {
-      nextIndex: index,
-      value: arg.slice(arg.indexOf("=") + 1),
-    };
-  }
-  const value = argv[index + 1];
-  if (!value || value.startsWith("--")) {
-    throw new Error(`Missing value for ${arg}`);
-  }
-  return {
-    nextIndex: index + 1,
-    value,
-  };
-}
-
-function parseArgs(argv) {
-  const options = {
-    baseUrl: defaultBaseUrl,
-    help: false,
-    outDir: defaultOutDir,
-    skipBuild: false,
-    version: undefined,
-  };
-
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
-    if (arg === "--") {
-      continue;
-    }
-    if (arg === "--help" || arg === "-h") {
-      options.help = true;
-      continue;
-    }
-    if (arg === "--skip-build") {
-      options.skipBuild = true;
-      continue;
-    }
-    if (arg === "--version" || arg.startsWith("--version=")) {
-      const { nextIndex, value } = readArgValue(argv, arg, index);
-      options.version = value;
-      index = nextIndex;
-      continue;
-    }
-    if (arg === "--out-dir" || arg.startsWith("--out-dir=")) {
-      const { nextIndex, value } = readArgValue(argv, arg, index);
-      options.outDir = resolve(root, value);
-      index = nextIndex;
-      continue;
-    }
-    if (arg === "--base-url" || arg.startsWith("--base-url=")) {
-      const { nextIndex, value } = readArgValue(argv, arg, index);
-      options.baseUrl = value.endsWith("/") ? value : `${value}/`;
-      index = nextIndex;
-      continue;
-    }
-    throw new Error(`Unknown option "${arg}". Run with --help for usage.`);
-  }
-
-  return options;
-}
-
-function commandText(command, args) {
-  return [command, ...args].join(" ");
-}
+const sha256File = async (file) =>
+  createHash("sha256")
+    .update(await readFile(file))
+    .digest("hex");
 
 function run(command, args, options = {}) {
-  console.log(`[zcode] ${commandText(command, args)}`);
-  const result = spawnSync(command, args, {
-    cwd: root,
-    stdio: "inherit",
-    ...options,
-  });
-  if (result.error) {
-    throw new Error(`${commandText(command, args)} failed: ${result.error.message}`, {
-      cause: result.error,
-    });
-  }
-  if (result.status !== 0) {
-    throw new Error(`${commandText(command, args)} failed`);
-  }
-}
-
-async function readJson(file) {
-  return JSON.parse(await readFile(file, "utf8"));
-}
-
-async function sha256File(file) {
-  const hash = createHash("sha256");
-  hash.update(await readFile(file));
-  return hash.digest("hex");
+  console.log(`[zody] ${[command, ...args].join(" ")}`);
+  runCommand(command, args, { cwd: root, ...options });
 }
 
 async function assertFile(file, label) {
-  const fileStat = await stat(file).catch(() => null);
-  if (!fileStat?.isFile()) {
-    throw new Error(`Missing ${label}: ${file}`);
-  }
+  const entry = await stat(file).catch(() => null);
+  if (!entry?.isFile()) throw new Error(`Missing ${label}: ${file}`);
 }
 
 async function assertDirectory(directory, label) {
-  const directoryStat = await stat(directory).catch(() => null);
-  if (!directoryStat?.isDirectory()) {
-    throw new Error(`Missing ${label}: ${directory}`);
-  }
+  const entry = await stat(directory).catch(() => null);
+  if (!entry?.isDirectory()) throw new Error(`Missing ${label}: ${directory}`);
 }
 
-async function buildOutputs(skipBuild) {
-  if (skipBuild) {
-    console.log("[zcode] skipping build; reusing existing outputs");
-    return;
+async function buildOutputs(skipBuild, targets) {
+  if (skipBuild) return;
+  for (const target of targets) {
+    const [targetPlatform, arch] = target.split("-");
+    const platform = targetPlatform === "win32" ? "win32" : targetPlatform;
+    run(process.execPath, [
+      resolve(root, "scripts/prepare-native-search-tools.mjs"),
+      "--platform",
+      platform,
+      "--arch",
+      arch,
+    ]);
   }
-
   run("pnpm", ["--filter", "@zcode/cli...", "build"]);
-  await rm(resolve(root, "packages", "server", "dist"), {
-    force: true,
-    recursive: true,
-  });
+  await rm(resolve(root, "packages/server/dist"), { force: true, recursive: true });
   run("pnpm", ["--filter", "@zcode/server", "build"]);
   run("pnpm", ["--filter", "@zcode/web", "build"]);
 }
 
-async function stageZCodePackage({ packageRoot, version }) {
-  const webDist = resolve(root, "packages", "web", "dist");
-  const serverDist = resolve(root, "packages", "server", "dist");
-  const agentBundle = resolve(root, "apps", "zcode-cli", "packages", "cli", "dist", "zcode.cjs");
-  const agentProvider = resolve(root, "apps/zcode-cli/packages/cli/dist/provider");
+function seaBinary(target) {
+  return resolve(cliRoot, "dist", outputBinaryName(nodeTargetForDistribution(target)));
+}
 
+async function buildSea(target, skipBuild) {
+  if (!skipBuild) {
+    for (const step of seaBuildSteps({
+      cliRoot,
+      target,
+      nodeExecutable: process.execPath,
+    })) {
+      run(step.command, step.args);
+    }
+  }
+  const binary = seaBinary(target);
+  await assertFile(binary, `SEA CLI for ${target}`);
+  return binary;
+}
+
+async function stageZodyPackage({
+  packageRoot,
+  target,
+  version,
+  nodeCache,
+  skipBuild,
+  verificationOnly,
+  reviewObligationCount,
+}) {
+  const webDist = resolve(root, "packages/web/dist");
+  const serverDist = resolve(root, "packages/server/dist");
+  const agentBundle = resolve(cliRoot, "dist/zcode.cjs");
+  const agentProvider = resolve(cliRoot, "dist/provider");
   await assertDirectory(webDist, "web dist");
   await assertDirectory(serverDist, "server dist");
-  await assertFile(resolve(serverDist, "entry-http.js"), "server HTTP entry");
-  await assertFile(agentBundle, "agent app-server bundle");
-  await assertFile(resolve(agentProvider, "zcode-builtin.json"), "Agent provider config");
+  await assertDirectory(agentProvider, "Agent provider config");
+  for (const [file, label] of [
+    [resolve(serverDist, "entry-http.js"), "server HTTP entry"],
+    [agentBundle, "Agent bundle"],
+    [resolve(agentProvider, "zcode-builtin.json"), "Agent provider config"],
+  ])
+    await assertFile(file, label);
 
-  await rm(packageRoot, {
-    force: true,
-    recursive: true,
-  });
-  await mkdir(packageRoot, {
-    recursive: true,
-  });
-
-  await cp(webDist, resolve(packageRoot, "web"), {
-    recursive: true,
-  });
-  await cp(serverDist, resolve(packageRoot, "server"), {
-    recursive: true,
-  });
-  await mkdir(resolve(packageRoot, "agent"), {
-    recursive: true,
-  });
-  await cp(agentBundle, resolve(packageRoot, "agent", "zcode.cjs"));
-  // TUI 入口通过真正的 CLI 路径定位伴随配置；只复制 JS 会在仓库外启动失败。
+  await rm(packageRoot, { force: true, recursive: true });
+  await mkdir(packageRoot, { recursive: true });
+  await cp(webDist, resolve(packageRoot, "web"), { recursive: true });
+  await cp(serverDist, resolve(packageRoot, "server"), { recursive: true });
+  await mkdir(resolve(packageRoot, "agent"), { recursive: true });
+  await cp(agentBundle, resolve(packageRoot, "agent/zcode.cjs"));
   await cp(agentProvider, resolve(packageRoot, "agent/provider"), { recursive: true });
   await cp(
-    resolve(root, "apps/zcode-cli/packages/cli/dist/THIRD-PARTY-NOTICES.md"),
-    resolve(packageRoot, "agent/THIRD-PARTY-NOTICES.md"),
+    resolve(cliRoot, "dist/THIRD-PARTY-NOTICES.md"),
+    resolve(packageRoot, "THIRD-PARTY-NOTICES.md"),
   );
-  await chmod(resolve(packageRoot, "agent", "zcode.cjs"), 0o755);
 
-  await stageTuiRuntime(packageRoot);
-  await copyRuntimeNodeModules(packageRoot);
-  await patchNodePtyPrebuilds(packageRoot);
-
-  await mkdir(resolve(packageRoot, "bin"), {
-    recursive: true,
+  const nodeTarget = nodeTargetForDistribution(target);
+  const runtimeNode = await resolveDownloadedNodeBinary({
+    nodeCache,
+    nodeVersion: bundledNodeVersion,
+    target: nodeTarget,
   });
-  const runner = resolve(packageRoot, "bin", "zcode.mjs");
-  await cp(resolve(root, "scripts/zcode-distribution/runner.mjs"), runner);
-  await chmod(runner, 0o755);
+  const nodeName = target.startsWith("win32-") ? "node.exe" : "node";
+  await mkdir(resolve(packageRoot, "runtime"), { recursive: true });
+  const packagedNode = resolve(packageRoot, "runtime", nodeName);
+  await copyFile(runtimeNode, packagedNode);
+  await chmod(packagedNode, 0o755);
+  await stageNodeNotices(resolve(packageRoot, "licenses"), bundledNodeVersion, root);
 
+  await stageTuiRuntime(packageRoot, nodeTarget);
+  await copyRuntimeNodeModules(packageRoot);
+  await patchNodePtyPrebuilds(packageRoot, nodeTarget);
+  await stageRuntimeTools(packageRoot, nodeTarget);
+
+  const cliTarget = await buildSea(target, skipBuild);
+  const cliFileName = target.startsWith("win32-") ? "zody-cli.exe" : "zody-cli";
+  await mkdir(resolve(packageRoot, "bin"), { recursive: true });
+  const cliDestination = resolve(packageRoot, "bin", cliFileName);
+  await copyFile(cliTarget, cliDestination);
+  await chmod(cliDestination, 0o755);
+  await cp(
+    resolve(root, "scripts/zcode-distribution/runner.mjs"),
+    resolve(packageRoot, "bin/zody.mjs"),
+  );
   await writeFile(
     resolve(packageRoot, "package.json"),
     JSON.stringify(
       {
-        name: "zcode-runtime",
+        name: "zody-runtime",
         private: true,
         type: "module",
         version,
+        target,
+        nodeVersion: bundledNodeVersion,
+        verificationOnly,
+        reviewObligationCount,
       },
       null,
       2,
     ),
   );
+  await writeLaunchers(packageRoot, target);
 }
 
-async function createTarball({ packageParent, releaseDir, tarballName }) {
-  await mkdir(releaseDir, {
-    recursive: true,
+async function stageRuntimeTools(packageRoot, target) {
+  const stagingDirectory = resolve(packageRoot, ".runtime-tool-staging");
+  const { assets, manifest } = await collectSeaRuntimeToolAssets({
+    root,
+    stagingDirectory,
+    target,
   });
-  const tarball = resolve(releaseDir, tarballName);
-  await rm(tarball, {
-    force: true,
-  });
-  run("tar", ["-czf", tarball, "-C", packageParent, packageDirName]);
-  return tarball;
+  const toolRoot = resolve(packageRoot, "runtime-tools");
+  await mkdir(toolRoot, { recursive: true });
+  await cp(
+    assets["zcode-runtime-tools/THIRD-PARTY-NOTICES.txt"],
+    resolve(toolRoot, "THIRD-PARTY-NOTICES.txt"),
+  );
+  await cp(assets["zcode-runtime-tools/SOURCES.json"], resolve(toolRoot, "SOURCES.json"));
+  for (const tool of manifest.tools) {
+    const assetKey = Object.keys(assets).find((key) =>
+      key.endsWith(`/${tool.sha256}/${tool.binaryName}`),
+    );
+    if (!assetKey) throw new Error(`Missing staged native runtime tool ${tool.id} for ${target}`);
+    const destination = resolve(toolRoot, tool.id, tool.binaryName);
+    await mkdir(dirname(destination), { recursive: true });
+    await copyFile(assets[assetKey], destination);
+    await chmod(destination, 0o755);
+  }
+  await writeFile(resolve(toolRoot, "manifest.json"), JSON.stringify(manifest, null, 2));
+  await rm(stagingDirectory, { force: true, recursive: true });
 }
 
-async function main() {
-  const options = parseArgs(process.argv.slice(2));
-  if (!options.help && !options.baseUrl)
-    throw new Error("Configure ZCODE_DIST_BASE_URL in .env or pass --base-url");
+async function writeLaunchers(packageRoot, target) {
+  const binDir = resolve(packageRoot, "bin");
+  if (target.startsWith("win32-")) {
+    await writeFile(
+      resolve(binDir, "zody.cmd"),
+      '@echo off\r\n"%~dp0..\\runtime\\node.exe" "%~dp0zody.mjs" %*\r\n',
+    );
+    return;
+  }
+  const launcher = resolve(binDir, "zody");
+  await writeFile(
+    launcher,
+    '#!/usr/bin/env sh\nset -eu\nHERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)\nexec "$HERE/../runtime/node" "$HERE/zody.mjs" "$@"\n',
+  );
+  await chmod(launcher, 0o755);
+}
+
+async function createArchive({ packageParent, releaseDir, target, version }) {
+  await mkdir(releaseDir, { recursive: true });
+  const name = archiveNameForTarget(target, version);
+  const archive = resolve(releaseDir, name);
+  await rm(archive, { force: true });
+  run("tar", ["-czf", archive, "-C", packageParent, packageDirName]);
+  const hash = await sha256File(archive);
+  await writeFile(`${archive}.sha256`, `${hash}  ${name}\n`);
+  return { archive, hash, name };
+}
+
+async function main(argv = process.argv.slice(2)) {
+  const options = parseDistributionArgs(argv);
   if (options.help) {
     console.log(usage);
     return;
   }
-
-  const rootPackageJson = await readJson(resolve(root, "package.json"));
-  const version = options.version ?? rootPackageJson.version;
-  if (!version || typeof version !== "string") {
-    throw new Error("Unable to resolve ZCode version.");
+  await readVerifiedNotices(root);
+  const inventory = JSON.parse(await readFile(resolve(root, "third-party/inventory.json"), "utf8"));
+  const reviewObligationCount = Array.isArray(inventory.reviewRequired)
+    ? inventory.reviewRequired.length
+    : 0;
+  const verificationOnly = reviewObligationCount > 0;
+  if (verificationOnly) {
+    console.warn(
+      `[zody] verification-only candidate: ${reviewObligationCount} third-party material obligations remain unresolved`,
+    );
   }
-
-  await buildOutputs(options.skipBuild);
-
-  const outDir = options.outDir;
-  const workDir = resolve(outDir, ".work");
-  const packageParent = workDir;
-  const packageRoot = resolve(packageParent, packageDirName);
+  if (process.versions.node !== bundledNodeVersion) {
+    throw new Error(
+      `Build with Node ${bundledNodeVersion}; current Node is ${process.versions.node}.`,
+    );
+  }
+  const rootPackage = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
+  const version = assertDistributionVersion(options.version ?? rootPackage.version);
+  const outDir = options.outDir ?? defaultOutDir;
   const releaseDir = resolve(outDir, "releases", version);
-  const tarballName = `${packageDirName}-${version}.tar.gz`;
-
-  await rm(workDir, {
-    force: true,
-    recursive: true,
-  });
-  await stageZCodePackage({
-    packageRoot,
-    version,
-  });
-  const tarball = await createTarball({
-    packageParent,
-    releaseDir,
-    tarballName,
-  });
-  const sha256 = await sha256File(tarball);
-  await writeFile(resolve(releaseDir, "sha256.txt"), `${sha256}  ${tarballName}\n`);
-
-  await writeFile(
-    resolve(outDir, "latest.json"),
-    JSON.stringify(
-      {
-        baseUrl: options.baseUrl,
-        createdAt: new Date().toISOString(),
-        name: "zcode",
-        sha256,
-        tarball: tarballName,
-        version,
-      },
-      null,
-      2,
-    ),
-  );
-  const installScript = resolve(outDir, "install.sh");
-  await writeFile(installScript, installScriptSource(options.baseUrl));
-  await chmod(installScript, 0o755);
-  await rm(workDir, {
-    force: true,
-    recursive: true,
-  });
-
-  console.log(`[zcode] release directory: ${outDir}`);
-  console.log(`[zcode] tarball: ${tarball}`);
-  console.log(`[zcode] sha256: ${sha256}`);
+  const workDir = resolve(outDir, ".work");
+  const nodeCache = resolve(outDir, ".node-cache");
+  await rm(releaseDir, { force: true, recursive: true });
+  await mkdir(releaseDir, { recursive: true });
+  await buildOutputs(options.skipBuild, options.targets);
+  const checksums = [];
+  for (const target of options.targets) {
+    const packageParent = resolve(workDir, target);
+    const packageRoot = resolve(packageParent, packageDirName);
+    await rm(packageParent, { force: true, recursive: true });
+    await stageZodyPackage({
+      packageRoot,
+      target,
+      version,
+      nodeCache,
+      skipBuild: options.skipBuild,
+      verificationOnly,
+      reviewObligationCount,
+    });
+    const result = await createArchive({ packageParent, releaseDir, target, version });
+    checksums.push(`${result.hash}  ${result.name}`);
+    console.log(`[zody] ${target}: ${result.archive}`);
+  }
+  await writeFile(resolve(releaseDir, "SHA256SUMS.txt"), `${checksums.join("\n")}\n`);
+  await rm(workDir, { force: true, recursive: true });
 }
 
-await main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+}

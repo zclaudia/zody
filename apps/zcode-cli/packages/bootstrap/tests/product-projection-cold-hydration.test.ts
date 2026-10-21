@@ -487,7 +487,9 @@ describe("ProductProjection cold hydration ask preview", () => {
       ],
       lanes: [{ id: "actor#1", name: "a" }],
       // 第二层是子代理导向：每阶段一张参与者卡 + 交接边（docs/dynamic-workflow/presentation.md）。
-      participants: [{ id: "unphased:actor#1", phase: "unphased", lane: "actor#1", steps: ["ask#1"] }],
+      participants: [
+        { id: "unphased:actor#1", phase: "unphased", lane: "actor#1", steps: ["ask#1"] },
+      ],
       handoffs: [],
       sink: ["ask#1"],
     },
@@ -562,7 +564,7 @@ describe("ProductProjection cold hydration 可复用工作流的确认窗", () =
     saved: {
       name: "release-check",
       args: { target: "packages/core", depth: 3, skipTests: false },
-      path: "/repo/.zcode/workflows/release-check.dwf.ts",
+      path: "/repo/.zody/workflows/release-check.dwf.ts",
       scope: "project",
     },
   };
@@ -571,7 +573,7 @@ describe("ProductProjection cold hydration 可复用工作流的确认窗", () =
     name: "release-check",
     description: "对本仓库做一次发布前检查",
     script,
-    path: "/repo/.zcode/workflows/release-check.dwf.ts",
+    path: "/repo/.zody/workflows/release-check.dwf.ts",
     overwrite: true,
     scope: "project",
   };

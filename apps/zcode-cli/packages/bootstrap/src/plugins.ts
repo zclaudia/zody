@@ -1,5 +1,5 @@
 import { rm } from "node:fs/promises";
-import { basename, dirname, isAbsolute, join, resolve, sep, win32 } from "node:path";
+import { basename, dirname, isAbsolute, resolve, win32 } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import {
   addSuppressedBuiltinInFileConfig,
@@ -13,6 +13,7 @@ import {
   updatePluginOptionsInFileConfig,
   type ConfigResult,
 } from "@zcode/adapters/config";
+import { resolveProjectResourcePaths } from "@zcode/shared/zody-paths";
 import {
   addMarketplace,
   comparePluginUpdate,
@@ -509,7 +510,7 @@ export async function removeZCodePluginMarketplace(
 export async function updateZCodePluginMarketplace(
   options: UpdateZCodeMarketplaceOptions,
 ): Promise<ZCodeMarketplaceUpdateData> {
-  const { configResult, pluginStorageRoot, workingDirectory } = resolvePluginContext(options);
+  const { configResult, pluginStorageRoot } = resolvePluginContext(options);
   ensureDefaultPluginMarketplaces(pluginStorageRoot);
   const declared = resolveDeclaredMarketplaceSources({
     configResult,
@@ -1292,29 +1293,10 @@ function resolvePluginConfigPath(
     return configResult.sources.user.path;
   }
 
-  // Workspace Plugin 配置固定落在当前 `<workspace>/.zcode/config.json`。嵌套 workspace
+  // Workspace Plugin 配置固定写入当前 `<workspace>/.zody/config.json`。嵌套 workspace
   // 可能同时发现仓库根与自身的配置，读取端 innermost 优先；写入端也必须锁定当前
   // workspace，不能用 project discovery 的第一个 outermost 文件。
-  const workspaceConfigPath = join(workingDirectory, ".zcode", "config.json");
-  const projectConfigPaths = [
-    ...(options.projectConfigPath ? [options.projectConfigPath] : []),
-    ...configResult.sources.project.paths,
-  ];
-  const existingWorkspaceConfig = projectConfigPaths.find(
-    (path) =>
-      normalizePluginConfigPathForComparison(path) ===
-      normalizePluginConfigPathForComparison(workspaceConfigPath),
-  );
-  if (existingWorkspaceConfig) return existingWorkspaceConfig;
-  return workspaceConfigPath;
-}
-
-function normalizePluginConfigPathForComparison(
-  path: string,
-  platform: NodeJS.Platform = process.platform,
-): string {
-  const resolvedPath = platform === "win32" ? win32.resolve(path) : resolve(path);
-  return platform === "win32" ? resolvedPath.replaceAll("\\", "/").toLowerCase() : resolvedPath;
+  return resolveProjectResourcePaths(workingDirectory, "config.json").writePath;
 }
 
 export function isWorkspacePluginConfigPath(
@@ -1324,10 +1306,10 @@ export function isWorkspacePluginConfigPath(
   if (platform === "win32") {
     return (
       win32.basename(path).toLowerCase() === "config.json" &&
-      win32.basename(win32.dirname(path)).toLowerCase() === ".zcode"
+      [".zody", ".zcode"].includes(win32.basename(win32.dirname(path)).toLowerCase())
     );
   }
-  return basename(path) === "config.json" && basename(dirname(path)) === ".zcode";
+  return basename(path) === "config.json" && [".zody", ".zcode"].includes(basename(dirname(path)));
 }
 
 export function resolveMarketplaceRefreshTargetIds(input: {

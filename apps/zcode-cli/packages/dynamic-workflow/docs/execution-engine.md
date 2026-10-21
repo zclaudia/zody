@@ -6,40 +6,40 @@ Status: implemented. This document covers everything between a submitted workflo
 
 The engine takes a script that has passed the analyzer, runs it inside a sandbox, turns each facade call into a durable step, drives the subagents that answer `ask` calls, and ends the run in one of three terminal states. Several neighbouring subjects are owned elsewhere and are cited here rather than repeated.
 
-| Subject | Owner |
-| --- | --- |
-| The facade the author writes against: `agent`, `ask`, `files.*`, `git.*`, `world.run`, `report`, `artifact.*`, `phase`, `log`, prompts, the snippet service, "Usage, not budget" | `docs/dynamic-workflow/authoring.md` |
-| Compile-time analysis: sites, the actor graph, control flow, diagnostics | `docs/analysis.md` |
-| Admission of model requests, the governor, the retry budget, the model-error policy table, the stall clock, the driver's transient redrive | `docs/dynamic-workflow/concurrency.md` |
+| Subject                                                                                                                                                                             | Owner                                                   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| The facade the author writes against: `agent`, `ask`, `files.*`, `git.*`, `world.run`, `report`, `artifact.*`, `phase`, `log`, prompts, the snippet service, "Usage, not budget"    | `docs/dynamic-workflow/authoring.md`                    |
+| Compile-time analysis: sites, the actor graph, control flow, diagnostics                                                                                                            | `docs/analysis.md`                                      |
+| Admission of model requests, the governor, the retry budget, the model-error policy table, the stall clock, the driver's transient redrive                                          | `docs/dynamic-workflow/concurrency.md`                  |
 | Every sentence the main agent or the user reads: `<task-notification>`, the provider-stop `<error>` block, stall and escalation texts, delivery guidance, how the GUI renders a run | `docs/dynamic-workflow/transcript-and-notifications.md` |
 
 The split with `concurrency.md` is exact: that document owns how a request is retried and how the governor decides a failure is not recoverable; this document owns what the run does once the driver has decided so (stop with `provider`, fail the node with `ContextLimit`, or redrive the turn).
 
 ## Terms
 
-| Term | Meaning |
-| --- | --- |
-| Run | One execution of one script under one `runId` (`dwfrun-<uuid>`). The run id is also the background task id and the cancel work id. |
-| Site | A facade call in the script, identified by a compile-time `siteId` such as `ask#3` or `agent#1`. |
-| Hole | A `hole<T>()` site: a typed gap the main agent fills with code while the run waits at it. Open until filled; a filled hole is part of the effective script (see "Holes"). |
-| Instance | One dynamic occurrence of a site, `siteId@ordinal`; the ordinal counts occurrences of that site within the run, starting at 0. |
-| Subagent | The runtime session behind an `agent(...)` value. Code identifiers keep the older word `actor`; prose uses subagent. |
-| Ask | One `x.ask(...)` instance: a message to a subagent and the result it settles with. |
-| World read | A journaled call into the workspace: `files.*`, `git.*`, or `world.run`. |
-| Node | The journal row for one instance of an ask, world read, `world.run`, `report`, or artifact publish. |
-| Journal | The durable record of a run: `dwf_run`, `dwf_actor`, `dwf_node`, `dwf_event`. |
-| Settlement | The moment a run reaches a terminal state; also the record of how it ended. |
-| Artifact (settlement) | The script's top-level return value, `RunSettlement.artifact`. Distinct from the user-facing artifacts of `artifact.*`, which `authoring.md` owns. |
+| Term                  | Meaning                                                                                                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Run                   | One execution of one script under one `runId` (`dwfrun-<uuid>`). The run id is also the background task id and the cancel work id.                                        |
+| Site                  | A facade call in the script, identified by a compile-time `siteId` such as `ask#3` or `agent#1`.                                                                          |
+| Hole                  | A `hole<T>()` site: a typed gap the main agent fills with code while the run waits at it. Open until filled; a filled hole is part of the effective script (see "Holes"). |
+| Instance              | One dynamic occurrence of a site, `siteId@ordinal`; the ordinal counts occurrences of that site within the run, starting at 0.                                            |
+| Subagent              | The runtime session behind an `agent(...)` value. Code identifiers keep the older word `actor`; prose uses subagent.                                                      |
+| Ask                   | One `x.ask(...)` instance: a message to a subagent and the result it settles with.                                                                                        |
+| World read            | A journaled call into the workspace: `files.*`, `git.*`, or `world.run`.                                                                                                  |
+| Node                  | The journal row for one instance of an ask, world read, `world.run`, `report`, or artifact publish.                                                                       |
+| Journal               | The durable record of a run: `dwf_run`, `dwf_actor`, `dwf_node`, `dwf_event`.                                                                                             |
+| Settlement            | The moment a run reaches a terminal state; also the record of how it ended.                                                                                               |
+| Artifact (settlement) | The script's top-level return value, `RunSettlement.artifact`. Distinct from the user-facing artifacts of `artifact.*`, which `authoring.md` owns.                        |
 
 ## The shape of a run: three boundaries
 
 The engine is split along three boundaries. Each is a small typed interface, and each has exactly one production implementation and one test double.
 
-| Boundary | Direction | Interface | Production side |
-| --- | --- | --- | --- |
-| A, the host API | script → engine | `WorkflowHostApi` | The sandbox child speaks NDJSON to the harness, which calls the engine. |
-| B, the driver port | engine → world | `WorkflowDriver` downward, `WorkflowReportSink` upward | The bootstrap driver, backed by `AgentRuntime` sessions, the file-system and execution ports, and the artifact store. |
-| C, run events | engine → observers | `RunEvent` | Every event is appended to `dwf_event`, then handed to `driver.emit`, which the run service turns into a `DynamicWorkflowRunProgress` session event. |
+| Boundary           | Direction          | Interface                                              | Production side                                                                                                                                      |
+| ------------------ | ------------------ | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A, the host API    | script → engine    | `WorkflowHostApi`                                      | The sandbox child speaks NDJSON to the harness, which calls the engine.                                                                              |
+| B, the driver port | engine → world     | `WorkflowDriver` downward, `WorkflowReportSink` upward | The bootstrap driver, backed by `AgentRuntime` sessions, the file-system and execution ports, and the artifact store.                                |
+| C, run events      | engine → observers | `RunEvent`                                             | Every event is appended to `dwf_event`, then handed to `driver.emit`, which the run service turns into a `DynamicWorkflowRunProgress` session event. |
 
 The engine core between A and B is pure: it owns state and decisions, performs no I/O of its own except through the journal port, and is deterministic given the same script, arguments, and driver answers. That property is what makes resume by replay possible.
 
@@ -61,30 +61,30 @@ export interface WorkflowHostApi {
 
 Lowering runs after the analyzer has accepted the script. It works in two passes over the same TypeScript source file: the first rewrites facade calls by `ts.Node` identity, using the site table the analyzer produced, so that every rewritten call carries the exact `siteId` the analyzer assigned; the second calls `ts.transpileModule` targeting ES2022. The output is `{ code, siteIds }`, where `code` is the body of an async function whose single parameter is the host binding `__host`.
 
-| Facade form | Lowered form |
-| --- | --- |
-| `agent(name?, persona?)` | `__host.createActor(siteId, name?, persona?)` |
-| `x.ask<T>(message)` | `__host.ask(siteId, x, message)`; an optional chain on `x` keeps its nullish guard |
-| `files.glob/read/grep(...)`, `git.changedFiles/diff/status/log(...)`, `world.run(...)` | `__host.worldRead(siteId, op, [args...])`, with `op` taken from the world-read registry |
-| `report(item, tag?)` | `__host.report(siteId, item, tag?)` |
-| `artifact.file(...)`, `artifact.markdown(...)` | `__host.publishArtifact(siteId, op, [args...])` |
-| `artifact.chart(...)` and the other declared kinds | `__host.declareArtifact(siteId, op, [args...])` |
-| `phase("name")` | `__host.enterPhase("name")`; no site; a missing name lowers to `void 0` |
-| `hole<T>(name, prompt?)`, open | `__host.hole(siteId, name, prompt?, (__src) => eval(__src))`: the last argument is an evaluator emitted **at the site**, so its `eval` is direct and runs in the hole's lexical scope (see "Holes") |
-| `hole<T>(name, prompt?, body)`, filled | `__host.hole(siteId, name, prompt?, (__src) => eval(__src), async () => { …lowered body… })`; the cell calls the body and sends nothing. Lowering also returns `holeBodies`, each filled hole's body arrow as printed, type-erased text `(async () => { … })`: the text a live fill evaluates |
-| `model("name")` | `"name"`: the argument itself. A `ModelRef` exists only in the type system, so at run time it is its name string and needs no host call; no site. A missing argument (which 9010 rejects first) lowers to `void 0` |
-| `channel<T>(name?)` | `__host.channel(name?)`; no site: the queue is built inside the cell |
-| `future(body)` | `__host.future(body)`; no site: the cell calls `body` at once and returns its promise |
-| `log(message)` | `__host.log(message)` |
-| a read of the facade `args` | `__host.args` |
+| Facade form                                                                            | Lowered form                                                                                                                                                                                                                                                                                  |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `agent(name?, persona?)`                                                               | `__host.createActor(siteId, name?, persona?)`                                                                                                                                                                                                                                                 |
+| `x.ask<T>(message)`                                                                    | `__host.ask(siteId, x, message)`; an optional chain on `x` keeps its nullish guard                                                                                                                                                                                                            |
+| `files.glob/read/grep(...)`, `git.changedFiles/diff/status/log(...)`, `world.run(...)` | `__host.worldRead(siteId, op, [args...])`, with `op` taken from the world-read registry                                                                                                                                                                                                       |
+| `report(item, tag?)`                                                                   | `__host.report(siteId, item, tag?)`                                                                                                                                                                                                                                                           |
+| `artifact.file(...)`, `artifact.markdown(...)`                                         | `__host.publishArtifact(siteId, op, [args...])`                                                                                                                                                                                                                                               |
+| `artifact.chart(...)` and the other declared kinds                                     | `__host.declareArtifact(siteId, op, [args...])`                                                                                                                                                                                                                                               |
+| `phase("name")`                                                                        | `__host.enterPhase("name")`; no site; a missing name lowers to `void 0`                                                                                                                                                                                                                       |
+| `hole<T>(name, prompt?)`, open                                                         | `__host.hole(siteId, name, prompt?, (__src) => eval(__src))`: the last argument is an evaluator emitted **at the site**, so its `eval` is direct and runs in the hole's lexical scope (see "Holes")                                                                                           |
+| `hole<T>(name, prompt?, body)`, filled                                                 | `__host.hole(siteId, name, prompt?, (__src) => eval(__src), async () => { …lowered body… })`; the cell calls the body and sends nothing. Lowering also returns `holeBodies`, each filled hole's body arrow as printed, type-erased text `(async () => { … })`: the text a live fill evaluates |
+| `model("name")`                                                                        | `"name"`: the argument itself. A `ModelRef` exists only in the type system, so at run time it is its name string and needs no host call; no site. A missing argument (which 9010 rejects first) lowers to `void 0`                                                                            |
+| `channel<T>(name?)`                                                                    | `__host.channel(name?)`; no site: the queue is built inside the cell                                                                                                                                                                                                                          |
+| `future(body)`                                                                         | `__host.future(body)`; no site: the cell calls `body` at once and returns its promise                                                                                                                                                                                                         |
+| `log(message)`                                                                         | `__host.log(message)`                                                                                                                                                                                                                                                                         |
+| a read of the facade `args`                                                            | `__host.args`                                                                                                                                                                                                                                                                                 |
 
 The world-read registry is a single table `(container, member) → op` in `src/facade/registry.ts`; the analyzer's site collection, its facade-misuse diagnostics, and lowering all read it, so adding a primitive is one row. The key carries the declaring container because `git.log` and the top-level `log()` share a member name. The `WorldReadOp` union is derived from the table.
 
-| Container | Member | `op` |
-| --- | --- | --- |
-| `files` | `glob`, `read`, `grep` | `glob`, `read`, `grep` |
-| `git` | `changedFiles`, `diff`, `status`, `log` | `git-changed-files`, `git-diff`, `git-status`, `git-log` |
-| `world` | `run` | `run` |
+| Container | Member                                  | `op`                                                     |
+| --------- | --------------------------------------- | -------------------------------------------------------- |
+| `files`   | `glob`, `read`, `grep`                  | `glob`, `read`, `grep`                                   |
+| `git`     | `changedFiles`, `diff`, `status`, `log` | `git-changed-files`, `git-diff`, `git-status`, `git-log` |
+| `world`   | `run`                                   | `run`                                                    |
 
 Site ids are stable across the analyzer, lowering, the journal, and the GUI, because all of them read the one site table.
 
@@ -92,7 +92,7 @@ Site ids are stable across the analyzer, lowering, the journal, and the GUI, bec
 
 ### Process and entry file
 
-The lowered code runs in a separate Node process. Before spawning, the harness writes an entry file at `<cwd>/.zcode/workflow-runs/<runId>.mjs` that embeds the lowered code and the JSON-encoded arguments; the directory gets a `.gitignore` containing `*`, written once with the exclusive flag. When that directory cannot be written, the file falls back to `<os.tmpdir()>/zcode-workflow-runs/` and the harness reports the fallback through `onWarning`. The entry file exists because the payload once travelled on the command line, and Windows rejects an argument vector longer than 32,767 characters.
+The lowered code runs in a separate Node process. Before spawning, the harness writes an entry file at `<cwd>/.zody/workflow-runs/<runId>.mjs` that embeds the lowered code and the JSON-encoded arguments; the directory gets a `.gitignore` containing `*`, written once with the exclusive flag. When that directory cannot be written, the file falls back to `<os.tmpdir()>/zcode-workflow-runs/` and the harness reports the fallback through `onWarning`. The entry file exists because the payload once travelled on the command line, and Windows rejects an argument vector longer than 32,767 characters.
 
 The child is started as `node --max-old-space-size=256 <entry>` in development, or as `[...argsPrefix, <entry>]` when the CLI is a single-executable build, where the prefix is the CLI binary itself with `__zcode-dwf-child`; the environment carries `ELECTRON_RUN_AS_NODE=1` so the same spawn works under the desktop shell. The entry file self-starts only when `realpath(argv[1])` is the file itself, so importing it by accident does nothing. If the spawn fails synchronously, the run settles at once as `stopped(interrupted)` with the failure `Interrupted: Could not start the workflow sandbox process: <cause>`.
 
@@ -110,26 +110,26 @@ Inside the child, the code runs in a `vm.createContext` whose global object expo
 
 The child and the harness exchange newline-delimited JSON over stdio.
 
-| Direction | Message | Meaning |
-| --- | --- | --- |
-| child → parent | `create-actor` | `agent(...)` was called. Handled synchronously: the harness maps the child's local handle `local#N` to an engine `ActorId` before any later message can refer to it. |
-| child → parent | `request` with `ask`, `world-read`, or `publish-artifact` | A promise-returning facade call. The harness answers with a `response`. |
-| child → parent | `request` with `hole` | The script reached an open hole (`siteId`, `name`, `prompt?`). The harness answers with a `response` whose value is `{code}` once the main agent has filled it; the branch is parked until then, siblings run on. |
-| child → parent | `event` with `log`, `report`, `declare-artifact`, or `phase-entered` | A fire-and-forget facade call; dispatched synchronously in order. |
-| child → parent | `complete` | The async function body returned (`ok: true`, with the value) or threw (`ok: false`, with name, message, stack). |
-| parent → child | `response` | Resolves or rejects one `request`. A rejection carries `code`, `message`, and where present `violations` and `finalText`, so the script's `catch` sees the same `WorkflowError` shape the engine raised. |
+| Direction      | Message                                                              | Meaning                                                                                                                                                                                                           |
+| -------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| child → parent | `create-actor`                                                       | `agent(...)` was called. Handled synchronously: the harness maps the child's local handle `local#N` to an engine `ActorId` before any later message can refer to it.                                              |
+| child → parent | `request` with `ask`, `world-read`, or `publish-artifact`            | A promise-returning facade call. The harness answers with a `response`.                                                                                                                                           |
+| child → parent | `request` with `hole`                                                | The script reached an open hole (`siteId`, `name`, `prompt?`). The harness answers with a `response` whose value is `{code}` once the main agent has filled it; the branch is parked until then, siblings run on. |
+| child → parent | `event` with `log`, `report`, `declare-artifact`, or `phase-entered` | A fire-and-forget facade call; dispatched synchronously in order.                                                                                                                                                 |
+| child → parent | `complete`                                                           | The async function body returned (`ok: true`, with the value) or threw (`ok: false`, with name, message, stack).                                                                                                  |
+| parent → child | `response`                                                           | Resolves or rejects one `request`. A rejection carries `code`, `message`, and where present `violations` and `finalText`, so the script's `catch` sees the same `WorkflowError` shape the engine raised.          |
 
 ### How the bridge settles the run
 
-| What happened at the process boundary | Run outcome |
-| --- | --- |
-| `complete` with `ok: true` | `engine.complete(value)` |
-| `complete` with `ok: false` | `engine.fail(DriverError <script's message>)`, unless the engine has already recorded a run-level failure, in which case that earlier failure wins |
-| the cell's stall detector fired | the same path: an error `complete` named `ChannelDeadlock` or `ScriptStalled`, so the run ends `failed` with a message that names the waiting channels ("The vm cell") |
-| The abort signal fired | `engine.stop("model")` if the signal's reason is `"model"`, otherwise `engine.stop("user")` |
-| A wall-clock timeout, when the caller set one | `stopped(interrupted)`; production sets no timeout |
-| A malformed NDJSON line | `stopped(interrupted)` |
-| The child exited before `complete` | `stopped(interrupted)`, with the last 64 KB of stderr as the cause |
+| What happened at the process boundary         | Run outcome                                                                                                                                                            |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `complete` with `ok: true`                    | `engine.complete(value)`                                                                                                                                               |
+| `complete` with `ok: false`                   | `engine.fail(DriverError <script's message>)`, unless the engine has already recorded a run-level failure, in which case that earlier failure wins                     |
+| the cell's stall detector fired               | the same path: an error `complete` named `ChannelDeadlock` or `ScriptStalled`, so the run ends `failed` with a message that names the waiting channels ("The vm cell") |
+| The abort signal fired                        | `engine.stop("model")` if the signal's reason is `"model"`, otherwise `engine.stop("user")`                                                                            |
+| A wall-clock timeout, when the caller set one | `stopped(interrupted)`; production sets no timeout                                                                                                                     |
+| A malformed NDJSON line                       | `stopped(interrupted)`                                                                                                                                                 |
+| The child exited before `complete`            | `stopped(interrupted)`, with the last 64 KB of stderr as the cause                                                                                                     |
 
 After settlement the harness closes the child's stdin and lets it exit; if it does not, it is killed.
 
@@ -173,33 +173,33 @@ The driver reports `askStats {tokens, toolCalls, turns}` after every model turn.
 
 Every event goes through one function, `record`: append to `dwf_event`, then hand the same object to `driver.emit`. The order and the object identity are load-bearing; the run service captures the sequence the journal assigned and attaches it to the progress payload.
 
-| Event | Payload | When |
-| --- | --- | --- |
-| `run-started` | `runId`, `caps` | Constructor, on a fresh run and on every resume |
-| `run-launched` | `inputId`, `toolCallId?`, `parentSessionId?`, `phaseNames?`, `subagentModel?`, `subagentPermissionMode?`, `modelBindings?` | Once, right after the first `run-started` of a run's life; never on resume (see "Token telemetry for subagents"). `phaseNames` is the script's declared phase table in order (≤ 32 × 128), holes included by name in their place, handed in by the submitter so the sidebar rail can draw the stations ahead of the run (`docs/dynamic-workflow/presentation.md`, "The sidebar run line"); `holes?` lists the indexes into it that are open holes, aligned like the alongside table, so the rail draws them dashed. `subagentModel` is the model the run's subagents work on, canonical `providerId/modelId[$reasoningLevel]`, also handed in by the submitter (see "Subagent sessions"). `modelBindings` maps each model name the script uses, as the script spells it, to its canonical string; it is resolved before the run starts (`docs/dynamic-workflow/launch.md`, "Models the script names"). `subagentPermissionMode` is the launching session's permission mode (`build`, `edit`, `yolo`, `guarded` or `auto`; plan is not carried); the submitter reads it from the session, the engine never reads it, and resume reads it back to run the subagents in that mode, YOLO when it is absent or unknown (`docs/dynamic-workflow/launch.md`, "Permissions inside a run") |
-| `actor-created` | `actor`, `name?`, `persona?`, `phaseName?` | `createActor` |
-| `node-queued` | `instance`, `kind`, `actor?`, `actorSeq?`, `phaseName?`, `instructionsHead?` | An instance goes live. `instructionsHead` is on ask nodes only: the first `INSTRUCTIONS_HEAD_MAX_CHARS` = 240 characters of the author's instructions, trimmed, stored without an ellipsis. It is recorded where the scheduler admits the ask, which is before the driver appends its epilogues, so the head is the author's own words and nothing else. It is what lets a reader of a run say *what* a subagent was asked to do rather than only that it is busy (`docs/dynamic-workflow/launch.md`, "`GetWorkflowRun`"); the world-read `node-queued` never carries it |
-| `node-dispatched` | `instance`, and on an ask also `kind`, `actor?`, `actorName?`, `actorPhaseName?`, `actorPersonaModel?`, `phaseName?`, `instructionsHead?` | The driver was told to start the ask or world read. An ask's dispatch **repeats its own birth facts**: `kind`, `actor`, `phaseName` and `instructionsHead` are what that instance's `node-queued` carried, and `actorName` / `actorPhaseName` / `actorPersonaModel` are the `name` / `phaseName` / `persona.model` its subagent's `actor-created` carried. They are the instance's own birth stamps, never the phase the run happens to be in when the dispatch is emitted — a queued ask can wait behind the concurrency bound while the script walks on into later phases. Repeating them makes the dispatch a second, self-contained birth, so a reader that lists an instance when it starts running rather than when it is queued can enter both it and its subagent from this one event (`docs/dynamic-workflow/presentation.md`). A world read's dispatch stays bare: it follows its own `node-queued` in the same synchronous slice and has no subagent |
-| `node-repairing` | `instance`, `attempt`, `violations` | A typed submit was rejected |
-| `node-nudged` | `instance` | A typed turn ended without a submit and the subagent was asked once more |
-| `node-waiting` | `instance`, `cause: slot \| backoff`, `reason?`, `attempt?`, `delayMs?`, `retryAfterMs?` | Governor observation |
-| `node-executing` | `instance` | Governor observation |
-| `concurrency-changed` | the governor's change record | Governor observation |
-| `run-caps-changed` | `runId`, `caps`, `previous` | `setMaxConcurrency(n)` changed the run's own bound (see "Retuning the cap of a live run") |
-| `node-settled` | `instance`, `outcome: ok \| failed \| cancelled`, `cached?`, `error?`, `phaseName?`, and on a cached ask also `kind`, `actor`, `actorSeq`, `instructionsHead?`, `sourceSessionId?` | The instance ended. A cached settle is the instance's **birth**: no `node-queued` precedes it, so on an ask it repeats the birth facts a `node-queued` would have carried — `kind`, `actor`, `actorSeq`, `instructionsHead` and the `phaseName` stamp — for the reason `node-dispatched` repeats them: a reader that never saw the instance queued must still know whose answer it is. Without them a reader has no subagent to attribute the settlement to, and a subagent whose every ask was a cache hit reads as never started. `sourceSessionId` is present when the answer came from a predecessor's transcript — an amend import hit, or the replay of a row that was one — and names the session holding that exchange (the candidate's `transcriptSourceSessionId`, see "Amend-resume"); it is absent when the answer was produced in this run, whose own session then holds it. A world node's cached settle stays bare: it has no subagent |
-| `node-progress` | `instance`, `turn`, `toolCalls`, `lastTool?: {name, target?}` | After each resolved turn of an ask, emitted immediately **before** that turn's `usage-updated` |
-| `usage-updated` | `spentTokens` | After each turn |
-| `log` | `message` | `log(...)` from the script, and the engine's own notices |
-| `import-cache-closed` | `instance`, `cause: mutating-tool \| world-run`, `actorName?` | The first workspace write of an amended run (see "Amend-resume"); at most once per run |
-| `phase-entered` | `name`, `ordinal` | `phase(...)` |
-| `report` | `instance`, `item`, `artifactId?` | `report(...)` |
-| `artifact-published`, `artifact-failed` | see `authoring.md` | `artifact.*` |
-| `hole-reached` | `instance`, `name`, `prompt?`, `phaseName?` | The script reached an open hole; no node row (see "Holes") |
-| `hole-filled` | `siteId`, `filledAt`, `filledBy?`, `phaseNames`, `holes?`, `scriptPath?` | `fillHole`: the effective script was written and the parked branch released. `scriptPath` is present when the fill minted the run's draft (a run that had none), so a cold read after a restart recovers the path: the last `hole-filled.scriptPath` wins over `run-launched.scriptPath`. `phaseNames` is the effective script's phase table, holes included by name in their place, and `holes` the indexes into it that are still open holes, aligned like the alongside table, so the sidebar rail redraws its stations without the display payload |
-| `escalation-raised` | `qid`, `actor`, `actorName?`, `question`, `context?`, `askedAt` | A subagent called `escalate` |
-| `escalation-resolved` | `qid`, `answer` | The main agent answered |
-| `run-stalled` | `sinceMs`, `reason?`, `cap?` | The driver's stall clock fired |
-| `run-settled` | `status`, `stopReason?`, `error?` | Terminal |
+| Event                                   | Payload                                                                                                                                                                            | When                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `run-started`                           | `runId`, `caps`                                                                                                                                                                    | Constructor, on a fresh run and on every resume                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `run-launched`                          | `inputId`, `toolCallId?`, `parentSessionId?`, `phaseNames?`, `subagentModel?`, `subagentPermissionMode?`, `modelBindings?`                                                         | Once, right after the first `run-started` of a run's life; never on resume (see "Token telemetry for subagents"). `phaseNames` is the script's declared phase table in order (≤ 32 × 128), holes included by name in their place, handed in by the submitter so the sidebar rail can draw the stations ahead of the run (`docs/dynamic-workflow/presentation.md`, "The sidebar run line"); `holes?` lists the indexes into it that are open holes, aligned like the alongside table, so the rail draws them dashed. `subagentModel` is the model the run's subagents work on, canonical `providerId/modelId[$reasoningLevel]`, also handed in by the submitter (see "Subagent sessions"). `modelBindings` maps each model name the script uses, as the script spells it, to its canonical string; it is resolved before the run starts (`docs/dynamic-workflow/launch.md`, "Models the script names"). `subagentPermissionMode` is the launching session's permission mode (`build`, `edit`, `yolo`, `guarded` or `auto`; plan is not carried); the submitter reads it from the session, the engine never reads it, and resume reads it back to run the subagents in that mode, YOLO when it is absent or unknown (`docs/dynamic-workflow/launch.md`, "Permissions inside a run") |
+| `actor-created`                         | `actor`, `name?`, `persona?`, `phaseName?`                                                                                                                                         | `createActor`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `node-queued`                           | `instance`, `kind`, `actor?`, `actorSeq?`, `phaseName?`, `instructionsHead?`                                                                                                       | An instance goes live. `instructionsHead` is on ask nodes only: the first `INSTRUCTIONS_HEAD_MAX_CHARS` = 240 characters of the author's instructions, trimmed, stored without an ellipsis. It is recorded where the scheduler admits the ask, which is before the driver appends its epilogues, so the head is the author's own words and nothing else. It is what lets a reader of a run say _what_ a subagent was asked to do rather than only that it is busy (`docs/dynamic-workflow/launch.md`, "`GetWorkflowRun`"); the world-read `node-queued` never carries it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `node-dispatched`                       | `instance`, and on an ask also `kind`, `actor?`, `actorName?`, `actorPhaseName?`, `actorPersonaModel?`, `phaseName?`, `instructionsHead?`                                          | The driver was told to start the ask or world read. An ask's dispatch **repeats its own birth facts**: `kind`, `actor`, `phaseName` and `instructionsHead` are what that instance's `node-queued` carried, and `actorName` / `actorPhaseName` / `actorPersonaModel` are the `name` / `phaseName` / `persona.model` its subagent's `actor-created` carried. They are the instance's own birth stamps, never the phase the run happens to be in when the dispatch is emitted — a queued ask can wait behind the concurrency bound while the script walks on into later phases. Repeating them makes the dispatch a second, self-contained birth, so a reader that lists an instance when it starts running rather than when it is queued can enter both it and its subagent from this one event (`docs/dynamic-workflow/presentation.md`). A world read's dispatch stays bare: it follows its own `node-queued` in the same synchronous slice and has no subagent                                                                                                                                                                                                                                                                                                                   |
+| `node-repairing`                        | `instance`, `attempt`, `violations`                                                                                                                                                | A typed submit was rejected                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `node-nudged`                           | `instance`                                                                                                                                                                         | A typed turn ended without a submit and the subagent was asked once more                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `node-waiting`                          | `instance`, `cause: slot \| backoff`, `reason?`, `attempt?`, `delayMs?`, `retryAfterMs?`                                                                                           | Governor observation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `node-executing`                        | `instance`                                                                                                                                                                         | Governor observation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `concurrency-changed`                   | the governor's change record                                                                                                                                                       | Governor observation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `run-caps-changed`                      | `runId`, `caps`, `previous`                                                                                                                                                        | `setMaxConcurrency(n)` changed the run's own bound (see "Retuning the cap of a live run")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `node-settled`                          | `instance`, `outcome: ok \| failed \| cancelled`, `cached?`, `error?`, `phaseName?`, and on a cached ask also `kind`, `actor`, `actorSeq`, `instructionsHead?`, `sourceSessionId?` | The instance ended. A cached settle is the instance's **birth**: no `node-queued` precedes it, so on an ask it repeats the birth facts a `node-queued` would have carried — `kind`, `actor`, `actorSeq`, `instructionsHead` and the `phaseName` stamp — for the reason `node-dispatched` repeats them: a reader that never saw the instance queued must still know whose answer it is. Without them a reader has no subagent to attribute the settlement to, and a subagent whose every ask was a cache hit reads as never started. `sourceSessionId` is present when the answer came from a predecessor's transcript — an amend import hit, or the replay of a row that was one — and names the session holding that exchange (the candidate's `transcriptSourceSessionId`, see "Amend-resume"); it is absent when the answer was produced in this run, whose own session then holds it. A world node's cached settle stays bare: it has no subagent                                                                                                                                                                                                                                                                                                                             |
+| `node-progress`                         | `instance`, `turn`, `toolCalls`, `lastTool?: {name, target?}`                                                                                                                      | After each resolved turn of an ask, emitted immediately **before** that turn's `usage-updated`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `usage-updated`                         | `spentTokens`                                                                                                                                                                      | After each turn                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `log`                                   | `message`                                                                                                                                                                          | `log(...)` from the script, and the engine's own notices                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `import-cache-closed`                   | `instance`, `cause: mutating-tool \| world-run`, `actorName?`                                                                                                                      | The first workspace write of an amended run (see "Amend-resume"); at most once per run                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `phase-entered`                         | `name`, `ordinal`                                                                                                                                                                  | `phase(...)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `report`                                | `instance`, `item`, `artifactId?`                                                                                                                                                  | `report(...)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `artifact-published`, `artifact-failed` | see `authoring.md`                                                                                                                                                                 | `artifact.*`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `hole-reached`                          | `instance`, `name`, `prompt?`, `phaseName?`                                                                                                                                        | The script reached an open hole; no node row (see "Holes")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `hole-filled`                           | `siteId`, `filledAt`, `filledBy?`, `phaseNames`, `holes?`, `scriptPath?`                                                                                                           | `fillHole`: the effective script was written and the parked branch released. `scriptPath` is present when the fill minted the run's draft (a run that had none), so a cold read after a restart recovers the path: the last `hole-filled.scriptPath` wins over `run-launched.scriptPath`. `phaseNames` is the effective script's phase table, holes included by name in their place, and `holes` the indexes into it that are still open holes, aligned like the alongside table, so the sidebar rail redraws its stations without the display payload                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `escalation-raised`                     | `qid`, `actor`, `actorName?`, `question`, `context?`, `askedAt`                                                                                                                    | A subagent called `escalate`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `escalation-resolved`                   | `qid`, `answer`                                                                                                                                                                    | The main agent answered                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `run-stalled`                           | `sinceMs`, `reason?`, `cap?`                                                                                                                                                       | The driver's stall clock fired                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `run-settled`                           | `status`, `stopReason?`, `error?`                                                                                                                                                  | Terminal                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 A `compaction` event type exists in the union and is never emitted.
 
@@ -213,15 +213,15 @@ The engine core does not interpret the event. `askProgress` is a passthrough to 
 
 ### States
 
-| State | Entered by | Left by |
-| --- | --- | --- |
-| queued | `ask` called; waits for the subagent's FIFO and a concurrency slot | admission |
-| dispatched | `startAsk` sent to the driver | a submit, a turn end, a failure, or a cancel |
-| repairing | a typed submit was rejected (up to `REPAIR_ATTEMPTS = 3` rejections) | the next submit or turn end |
-| nudged | a typed turn ended without a submit (`NUDGE_ATTEMPTS = 1`) | the next submit or turn end |
-| settled ok | accepted submit, or the final text of an untyped ask | terminal |
-| settled failed | `ValidationFailed`, `ResultNotSubmitted`, `ContextLimit`, `DriverError`, `Cancelled` | terminal; the script's `await` rejects with the `WorkflowError` |
-| settled cancelled | the run ended while the ask was in flight | terminal |
+| State             | Entered by                                                                           | Left by                                                         |
+| ----------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| queued            | `ask` called; waits for the subagent's FIFO and a concurrency slot                   | admission                                                       |
+| dispatched        | `startAsk` sent to the driver                                                        | a submit, a turn end, a failure, or a cancel                    |
+| repairing         | a typed submit was rejected (up to `REPAIR_ATTEMPTS = 3` rejections)                 | the next submit or turn end                                     |
+| nudged            | a typed turn ended without a submit (`NUDGE_ATTEMPTS = 1`)                           | the next submit or turn end                                     |
+| settled ok        | accepted submit, or the final text of an untyped ask                                 | terminal                                                        |
+| settled failed    | `ValidationFailed`, `ResultNotSubmitted`, `ContextLimit`, `DriverError`, `Cancelled` | terminal; the script's `await` rejects with the `WorkflowError` |
+| settled cancelled | the run ended while the ask was in flight                                            | terminal                                                        |
 
 ### Untyped asks
 
@@ -235,10 +235,10 @@ An ask with a non-string type argument is typed. The subagent must call the `sub
 
 Which `submit_result` a subagent gets is decided at compile time from the actor graph (`docs/analysis.md`, "The site graph"): the set of ask sites each `agent(...)` site can reach and their types.
 
-| Profile | When | Tool declaration |
-| --- | --- | --- |
-| `untyped` | every ask the subagent can receive is untyped | `submit_result` is not registered |
-| `mono` | every typed ask the subagent can receive has one and the same schema | `submit_result` is registered with that schema as its input schema, `strict: true` |
+| Profile   | When                                                                                                                                  | Tool declaration                                                                            |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `untyped` | every ask the subagent can receive is untyped                                                                                         | `submit_result` is not registered                                                           |
+| `mono`    | every typed ask the subagent can receive has one and the same schema                                                                  | `submit_result` is registered with that schema as its input schema, `strict: true`          |
 | `generic` | mixed schemas, or the analysis cannot bound the subagent's ask set (any ask site with an empty actor set turns every profile generic) | `submit_result` takes `{ result: unknown }` and the full schema travels in the ask epilogue |
 
 Profiles are keyed by the subagent's site, so every ordinal of one `agent(...)` site shares a profile. The driver applies a runtime guard, `ensureSubmitProfileFits`, on each typed `startAsk`: if a `mono` subagent receives a typed ask with a different schema, the driver re-registers the tool as `generic` for that session, invalidates the tool cache, and logs `dynamic_workflow.submit_profile.mismatch`; if an `untyped` subagent receives a typed ask, the ask fails with a `DriverError` saying the ask-to-actor analysis missed this ask. Both are wiring defects, not authoring errors, and both keep the run alive.
@@ -256,16 +256,31 @@ The `submit_result` contract declares `strict: true` when it carries a schema. T
 The schema of a typed ask is synthesized from the TypeScript type at compile time and validated at runtime by a purpose-built validator over the same subset. The compiler rejects, with diagnostic code 9002, types that have no faithful JSON form: `any`, `never`, `undefined` or `void` outside an optional position, `bigint`, `symbol`, functions, classes, thenables, and the built-ins `Date`, `Map`, `Set`, `Promise`, `Error`, typed arrays and their kin. `unknown` becomes `{}`. Literals become `const`; unions of literals become `enum`, other unions `anyOf`, with at most `MAX_UNION_MEMBERS = 100` members; intersections merge; object types get `additionalProperties: false` unless they declare an index signature; optional properties drop `undefined` from their type; tuples use `prefixItems` with `minItems` and `maxItems`; recursive types go through `$defs` and `$ref`. JSDoc tags on properties become constraints: `@minimum`, `@maximum`, `@exclusiveMinimum`, `@exclusiveMaximum`, `@minLength`, `@maxLength`, `@pattern`, `@format`, `@minItems`, `@maxItems`, `@default`. The same emitter decides whether a `report` item type is serializable. `buildAskSpecs` must cover every ask site; an ask arriving at runtime with no spec is a run-level `MissingAskSpec` failure, a compile-output mismatch.
 
 ```ts
-interface Violation { path: string; expected: string; got: string }
+interface Violation {
+  path: string;
+  expected: string;
+  got: string;
+}
 ```
 
 ## The driver (Boundary B)
 
 ```ts
 export interface WorkflowDriver {
-  createActorSession(actor: ActorRef, persona: PersonaSpec, seed?: ActorSessionSeed): Promise<SessionRef>;
-  startAsk(session: SessionRef, instance: InstanceRef, message: { instructions: string; typed: boolean; schema?: unknown }): void;
-  respondToSubmit(instance: InstanceRef, verdict: { kind: "accept" } | { kind: "reject"; violations: Violation[] } | { kind: "nudge" }): void;
+  createActorSession(
+    actor: ActorRef,
+    persona: PersonaSpec,
+    seed?: ActorSessionSeed,
+  ): Promise<SessionRef>;
+  startAsk(
+    session: SessionRef,
+    instance: InstanceRef,
+    message: { instructions: string; typed: boolean; schema?: unknown },
+  ): void;
+  respondToSubmit(
+    instance: InstanceRef,
+    verdict: { kind: "accept" } | { kind: "reject"; violations: Violation[] } | { kind: "nudge" },
+  ): void;
   cancelAsk(instance: InstanceRef): void;
   executeWorldRead(op: WorldReadOp, args: unknown[]): Promise<unknown>;
   executeArtifactPublish?(request: ArtifactPublishRequest): Promise<ArtifactVersionRecord>;
@@ -277,12 +292,27 @@ export interface WorkflowDriver {
 export interface WorkflowReportSink {
   askSubmitAttempted(instance: InstanceRef, result: unknown): void;
   askTurnEnded(instance: InstanceRef, finalText: string): void;
-  askProgress(instance: InstanceRef, progress: { turn: number; toolCalls: number; lastTool?: { name: string; target?: string } }): void;
-  askStats(instance: InstanceRef, stats: { tokens: number; toolCalls: number; turns: number }): void;
+  askProgress(
+    instance: InstanceRef,
+    progress: { turn: number; toolCalls: number; lastTool?: { name: string; target?: string } },
+  ): void;
+  askStats(
+    instance: InstanceRef,
+    stats: { tokens: number; toolCalls: number; turns: number },
+  ): void;
   askFailed(instance: InstanceRef, error: WorkflowError): void;
-  stopRun(error: WorkflowError): void;            // code ProviderStop
+  stopRun(error: WorkflowError): void; // code ProviderStop
   runStalled(info: { sinceMs: number; reason?: string; cap?: number }): void;
-  askWaiting(instance: InstanceRef, info: { cause: "slot" | "backoff"; reason?: string; attempt?: number; delayMs?: number; retryAfterMs?: number }): void;
+  askWaiting(
+    instance: InstanceRef,
+    info: {
+      cause: "slot" | "backoff";
+      reason?: string;
+      attempt?: number;
+      delayMs?: number;
+      retryAfterMs?: number;
+    },
+  ): void;
   askExecuting(instance: InstanceRef): void;
   concurrencyChanged(change: unknown): void;
 }
@@ -302,15 +332,15 @@ Four sources can say what model a subagent's session runs on, and they are read 
 
 A persona that names a model is the most specific statement there is: it is written for this one subagent, and the user approved its binding in the window. It therefore wins over the run's selection as well as over the pin, whole, reasoning level included, and the table below only applies to subagents whose persona names none. A name the run's `modelBindings` does not bind can come only from a cast around the compiler's rule; it is `WorkflowActorModelUnboundError` at session creation, which fails that subagent's first ask with `DriverError`, never a quiet fallback to another model.
 
-| The run's `subagentModel` | Resume pin | Effect |
-| --- | --- | --- |
-| set | any, including a malformed one | the subagent runs on the run's selection, whole, reasoning level included; the pin is not parsed; the resolved model is journaled on the new run's `dwf_actor.resolved_model` |
-| none | none | the subagent inherits the parent session's model |
-| none | equal to the parent session's model | no override recorded |
-| none | a different, provider-qualified model | the subagent runs on the pin; the resolved pin is journaled on `dwf_actor.resolved_model` |
-| none | an unqualified or unknown model | `WorkflowActorPinnedModelError` at session creation, which fails the first ask with `DriverError` |
+| The run's `subagentModel` | Resume pin                            | Effect                                                                                                                                                                        |
+| ------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| set                       | any, including a malformed one        | the subagent runs on the run's selection, whole, reasoning level included; the pin is not parsed; the resolved model is journaled on the new run's `dwf_actor.resolved_model` |
+| none                      | none                                  | the subagent inherits the parent session's model                                                                                                                              |
+| none                      | equal to the parent session's model   | no override recorded                                                                                                                                                          |
+| none                      | a different, provider-qualified model | the subagent runs on the pin; the resolved pin is journaled on `dwf_actor.resolved_model`                                                                                     |
+| none                      | an unqualified or unknown model       | `WorkflowActorPinnedModelError` at session creation, which fails the first ask with `DriverError`                                                                             |
 
-**Omission inherits, an explicit value replaces.** `resolveInput` already applies this to `subagentModel` and `max_concurrency` on resume and amend; the pin is the same rule applied to the implicit default. When a run has no `subagentModel`, its subagents' default is not "the parent model as it is now" but "the model this subagent actually ran on last time", and the pin guards that default against the parent session's model drifting between runs. When the run has a `subagentModel`, there is no default to inherit and the pin has nothing to say, which is why it ranks below the run's selection: the pin exists to prevent a *silent* model change of a frozen persona, and an `AmendWorkflow` carrying `subagent_model` is exactly the explicit, user-visible decision the confirmation dialog and the tool output announce as "Subagents run on {model}". Nothing about the switch is silent: the new run's own `dwf_actor` row records the new model while the predecessor's row keeps the old one, so the lineage preserves where the change happened. An amend that omits `subagent_model` copies the predecessor's, so in a consistent chain an inherited selection equals the pin; in a chain the old precedence already made inconsistent, honoring the selection is still what the user asked for. A pin is compared against the parent session's model by identity only (`providerId/modelId`), so a parent whose reasoning level changed still counts as the same model and keeps the stronger "no override" path, which inherits the level. The pin-miss policy below applies only to the no-selection path.
+**Omission inherits, an explicit value replaces.** `resolveInput` already applies this to `subagentModel` and `max_concurrency` on resume and amend; the pin is the same rule applied to the implicit default. When a run has no `subagentModel`, its subagents' default is not "the parent model as it is now" but "the model this subagent actually ran on last time", and the pin guards that default against the parent session's model drifting between runs. When the run has a `subagentModel`, there is no default to inherit and the pin has nothing to say, which is why it ranks below the run's selection: the pin exists to prevent a _silent_ model change of a frozen persona, and an `AmendWorkflow` carrying `subagent_model` is exactly the explicit, user-visible decision the confirmation dialog and the tool output announce as "Subagents run on {model}". Nothing about the switch is silent: the new run's own `dwf_actor` row records the new model while the predecessor's row keeps the old one, so the lineage preserves where the change happened. An amend that omits `subagent_model` copies the predecessor's, so in a consistent chain an inherited selection equals the pin; in a chain the old precedence already made inconsistent, honoring the selection is still what the user asked for. A pin is compared against the parent session's model by identity only (`providerId/modelId`), so a parent whose reasoning level changed still counts as the same model and keeps the stronger "no override" path, which inherits the level. The pin-miss policy below applies only to the no-selection path.
 
 The engine takes no part in any of this. It records the persona's `model` name and never interprets it, and it never reads `subagentModel` or `modelBindings`: the strings travel the host-metadata road, from the run service through the harness into the engine config, and are recorded once on the `run-launched` event beside the launch anchor and the phase names, in the run-creating life only. There is no column for it. The head of the event log is where the host reads it back, which is why a resume, a detail read and a cold replay all recover the same choice for free.
 
@@ -328,11 +358,11 @@ A subagent's skill port lists the skills the parent's does, including the plugin
 
 ### The four sequences
 
-| Sequence | Steps |
-| --- | --- |
-| accept | model calls `submit_result` → the handler blocks on the session's submit port → driver reports `askSubmitAttempted` → engine validates and calls `respondToSubmit(accept)` synchronously → the parked promise resolves `{accept: true}` → the tool result succeeds and stops the turn → when the turn resolves, the driver reports only `askStats` |
-| reject | same start → `respondToSubmit(reject, violations)` → the parked promise resolves `{accept: false, violations}` → the handler throws → an error tool result in the same turn → the model tries again; after the repair budget the engine calls `cancelAsk` instead |
-| nudge | the turn ends without an accepted submit → driver reports `askTurnEnded` → engine calls `respondToSubmit(nudge)` → the driver starts a fresh turn on the same session with the nudge prompt; the exchange is not over until a turn ends without a nudge |
+| Sequence | Steps                                                                                                                                                                                                                                                                                                                                                                              |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| accept   | model calls `submit_result` → the handler blocks on the session's submit port → driver reports `askSubmitAttempted` → engine validates and calls `respondToSubmit(accept)` synchronously → the parked promise resolves `{accept: true}` → the tool result succeeds and stops the turn → when the turn resolves, the driver reports only `askStats`                                 |
+| reject   | same start → `respondToSubmit(reject, violations)` → the parked promise resolves `{accept: false, violations}` → the handler throws → an error tool result in the same turn → the model tries again; after the repair budget the engine calls `cancelAsk` instead                                                                                                                  |
+| nudge    | the turn ends without an accepted submit → driver reports `askTurnEnded` → engine calls `respondToSubmit(nudge)` → the driver starts a fresh turn on the same session with the nudge prompt; the exchange is not over until a turn ends without a nudge                                                                                                                            |
 | escalate | model calls `escalate` → the handler blocks on the session's escalate port → the driver mints a `qid`, parks the promise, registers the question, and records `escalation-raised` → the main agent answers through `ResolveWorkflowQuestion` → the driver resolves the promise, records `escalation-resolved`, and the tool result is the answer text; the turn continues in place |
 
 A turn that rejects is triaged: if the ask was cancelled, nothing is reported; if the error is a model-side failure, the model-failure policy decides (see "Terminal states"); otherwise the ask fails with `DriverError: Subagent turn failed: <cause>`. Stats per turn are `tokens = usage.totalTokens`, `toolCalls` = count of tool-call starts, `turns = modelRequestCount ?? 1`.
@@ -345,25 +375,25 @@ The driver validates argument shape per op before doing anything (`files.glob(pa
 
 Git commands are fixed argument vectors, never shell strings. All path-producing commands use `-z`, so paths are byte-exact and file names with newlines survive; output paths are normalized to workspace-relative by asking `git rev-parse --show-prefix` and stripping the prefix (`ls-files` gets `--full-name` to align with the repository-relative baseline the other commands use). A ref argument must match `^[A-Za-z0-9][A-Za-z0-9._/@^~-]*$` and may not look like an absolute path.
 
-| Op | Command(s) | Result |
-| --- | --- | --- |
-| `git-changed-files` without base | `git diff --name-only -z HEAD -- .` plus `git ls-files --others --exclude-standard -z --full-name -- .`, union, sorted | `string[]` |
-| `git-changed-files` with base | `git diff --name-only -z <base> -- .` | `string[]` |
-| `git-diff` | `git diff --relative <base?> -- <path ?? .>` | patch text |
-| `git-status` | `git status --porcelain=v2 -z --branch -- .` | parsed status with branch and entries |
-| `git-log` | `git log -n<count> --pretty=format:%H%x00%s%x00%an%x00%aI` | `{hash, subject, author, date}[]` |
+| Op                               | Command(s)                                                                                                             | Result                                |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `git-changed-files` without base | `git diff --name-only -z HEAD -- .` plus `git ls-files --others --exclude-standard -z --full-name -- .`, union, sorted | `string[]`                            |
+| `git-changed-files` with base    | `git diff --name-only -z <base> -- .`                                                                                  | `string[]`                            |
+| `git-diff`                       | `git diff --relative <base?> -- <path ?? .>`                                                                           | patch text                            |
+| `git-status`                     | `git status --porcelain=v2 -z --branch -- .`                                                                           | parsed status with branch and entries |
+| `git-log`                        | `git log -n<count> --pretty=format:%H%x00%s%x00%an%x00%aI`                                                             | `{hash, subject, author, date}[]`     |
 
 Caps are enforced in the driver by asking for one more than the cap, so "exactly the cap" and "truncated" are distinguishable, and by rejecting over the cap rather than truncating; the message says what to narrow. A cap violation is `WorldReadCapExceeded`.
 
-| Cap | Value |
-| --- | --- |
-| `files.glob` files | 2,000 |
-| `files.grep` matches | 2,000 |
-| `files.grep` serialized bytes | 256 KB |
-| `git.diff` bytes | 512 KB |
-| `git.log` count | default 20, maximum 100 |
-| `world.run` stdout, stderr | 256 KB each |
-| `world.run` timeout | default 300 s, no maximum |
+| Cap                           | Value                     |
+| ----------------------------- | ------------------------- |
+| `files.glob` files            | 2,000                     |
+| `files.grep` matches          | 2,000                     |
+| `files.grep` serialized bytes | 256 KB                    |
+| `git.diff` bytes              | 512 KB                    |
+| `git.log` count               | default 20, maximum 100   |
+| `world.run` stdout, stderr    | 256 KB each               |
+| `world.run` timeout           | default 300 s, no maximum |
 
 Glob results are workspace-relative and sorted, so a journaled list does not depend on modification times.
 
@@ -385,24 +415,44 @@ Glob results are workspace-relative and sorted, so a journaled list does not dep
 export interface JournalStorePort {
   createRun(record: RunRecord): void;
   getRun(runId: string): RunRecord | undefined;
-  updateRunStatus(runId: string, status: RunStatus, settlement?: { stopReason?: RunStopReason; failure?: WorkflowErrorJson; result?: unknown }): void;
+  updateRunStatus(
+    runId: string,
+    status: RunStatus,
+    settlement?: { stopReason?: RunStopReason; failure?: WorkflowErrorJson; result?: unknown },
+  ): void;
   updateRunUsage(runId: string, spentTokens: number): void;
   updateRunCaps(runId: string, caps: Caps): void;
   putActor(record: ActorRecord): void;
   getActor(runId: string, siteId: string, ordinal: number): ActorRecord | undefined;
   listActors(runId: string, options: { name?: string; withPersona: boolean }): ActorRecord[];
   putNode(record: NodeRecord): void;
-  getNode(runId: string, siteId: string, ordinal: number, options?: { withResult: boolean }): NodeRecord | undefined;
-  listNodes(runId: string, options: { kinds: readonly NodeKind[] | "all"; withResult: boolean; limit?: number; maxResultBytes?: number }): NodeRecord[];
+  getNode(
+    runId: string,
+    siteId: string,
+    ordinal: number,
+    options?: { withResult: boolean },
+  ): NodeRecord | undefined;
+  listNodes(
+    runId: string,
+    options: {
+      kinds: readonly NodeKind[] | "all";
+      withResult: boolean;
+      limit?: number;
+      maxResultBytes?: number;
+    },
+  ): NodeRecord[];
   countNodes(runId: string, kind: NodeKind): number;
   sumResultBytes(runId: string, kind: NodeKind): number;
   appendEvent(runId: string, event: RunEvent): { sequence: number; event: RunEvent };
-  listEvents(runId: string, options: {
-    types: readonly RunEvent["type"][] | "all";
-    reportItems: "all" | { limit: number };
-    afterSequence?: number;
-    limit?: number;
-  }): StoredEvent[];
+  listEvents(
+    runId: string,
+    options: {
+      types: readonly RunEvent["type"][] | "all";
+      reportItems: "all" | { limit: number };
+      afterSequence?: number;
+      limit?: number;
+    },
+  ): StoredEvent[];
 }
 ```
 
@@ -421,16 +471,16 @@ A run's tables grow with everything it did: one node row per call, ask answers a
 - **Dashboards read fields, not items.** A dashboard reads only the fields its spec names, so `listArtifactItems` takes `fields` and returns, per item, a map from each path to its value instead of the item. SQLite extracts the values. A path follows `readWorkflowArtifactField` (in `packages/shared`, the one definition both sides use): split on `.`; on an array a segment is an index when `Number(segment)` is a non-negative integer in range; on an object it is a key; anything else is absent. SQLite's JSON paths must say in advance whether a step is an index (`[n]`) or a key (`."key"`), so each integer-looking segment expands into both spellings, and `coalesce` takes the one that matches — at each step the value is either an array or an object, so at most one candidate matches. `->` returns JSON text, so a JSON `null` comes back as a value and a missing path as SQL `NULL`, which leaves the key out of the map. A value whose JSON is larger than 4 KiB comes back as a clipped string (the first 1,000 characters and "…"), clipped in SQLite, so a large value never reaches JavaScript whole. The page's byte bound counts the extracted values. A request without `fields` gets whole items, which is what an older renderer asks for; an older CLI rejects `fields` as an unknown key, and the renderer then retries without it and remembers that for the session.
 - **Pages are bounded in bytes as well as rows.** The two paged host reads, the event log (`listEventPage`) and a dashboard's items (`listArtifactItems`), end a page when it holds `limit` rows or when one more row would take the stored payload bytes over `maxBytes`. The first row is always included, so a row larger than `maxBytes` makes a page of its own instead of stalling the pager. The store also decides `hasMore`: whether a row exists after the page. A row count alone cannot bound a page, because 500 events carrying large report items reach the protocol's 16 MiB message limit. The byte bound is a quarter of that (`WORKFLOW_RUN_EVENTS_PAGE_LIMITS.maxBytes`, `WORKFLOW_ARTIFACT_LIMITS.maxPageBytes`), and the gateway always sets it. One query decides the page: a window sums `octet_length(payload_json)`, which SQLite reads from the row header without touching the payload, and a lazy `case` loads only the payloads that go into the page. The row after the page, whose existence is `hasMore`, is never loaded. The in-memory journal has no `listEventPage`, so on it the event log pages by count alone.
 
-| Reader | Reads |
-| --- | --- |
-| resume | ask and world rows without results, artifact rows with results, `countNodes(report)` and `sumResultBytes(report)`; settle-order events (`node-settled`, `artifact-published`, `artifact-failed`); import-closure events (`node-queued`, `import-cache-closed`) |
-| subagent registration | nothing: the count of a subagent's journaled asks is built once from resume's ask rows, keyed by subagent; a fresh run's journal is empty, and a subagent is always registered before it asks anything |
-| report replay | `getNode` without the result; only the hash is compared |
-| amend preflight and import | ask rows without results for the boundary check; ask and world rows with results for the cache, grouped by subagent once; subagents by name without personas when resolving the transcript source |
-| terminal snapshot | the first 256 `report` rows, no more than 8 MiB of results, and `countNodes(report)`; artifact rows and `countTaggedReports` |
-| cold replay and `GetWorkflowRun` | events with `reportItems: {limit: 64}`; `GetWorkflowRun` also reads non-report rows without results and subagents without personas, once |
-| the event-log page | `listEventPage`: at most 500 events (fewer if the caller asks) and at most 4 MiB of stored payload |
-| a dashboard's items | `listArtifactItems` with the fields the spec names: tagged `report` events for one artifact id, at most 200 per page by default, 500 at most, and at most 4 MiB of stored payload; the renderer pages until `hasMore` is false |
+| Reader                           | Reads                                                                                                                                                                                                                                                          |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| resume                           | ask and world rows without results, artifact rows with results, `countNodes(report)` and `sumResultBytes(report)`; settle-order events (`node-settled`, `artifact-published`, `artifact-failed`); import-closure events (`node-queued`, `import-cache-closed`) |
+| subagent registration            | nothing: the count of a subagent's journaled asks is built once from resume's ask rows, keyed by subagent; a fresh run's journal is empty, and a subagent is always registered before it asks anything                                                         |
+| report replay                    | `getNode` without the result; only the hash is compared                                                                                                                                                                                                        |
+| amend preflight and import       | ask rows without results for the boundary check; ask and world rows with results for the cache, grouped by subagent once; subagents by name without personas when resolving the transcript source                                                              |
+| terminal snapshot                | the first 256 `report` rows, no more than 8 MiB of results, and `countNodes(report)`; artifact rows and `countTaggedReports`                                                                                                                                   |
+| cold replay and `GetWorkflowRun` | events with `reportItems: {limit: 64}`; `GetWorkflowRun` also reads non-report rows without results and subagents without personas, once                                                                                                                       |
+| the event-log page               | `listEventPage`: at most 500 events (fewer if the caller asks) and at most 4 MiB of stored payload                                                                                                                                                             |
+| a dashboard's items              | `listArtifactItems` with the fields the spec names: tagged `report` events for one artifact id, at most 200 per page by default, 500 at most, and at most 4 MiB of stored payload; the renderer pages until `hasMore` is false                                 |
 
 The tables have no index on `kind` or `type`: the filters walk the `run_id` index, and SQLite reads the early columns of a row without the payload overflow behind them.
 
@@ -438,12 +488,12 @@ The tables have no index on `kind` or `type`: the filters walk the `run_id` inde
 
 One migration, `0019_dwf_journal`, creates four tables.
 
-| Table | Key | Columns of note |
-| --- | --- | --- |
-| `dwf_run` | `id` | `parent_session_id`, `cwd`, `name`, `script_text`, `script_hash`, `args_json`, `tool_call_id`, `resumed_from`, `caps_max_concurrency`, `spent_tokens`, `status` (check: `pending`, `running`, `completed`, `failed`, `cancelled`), `result_json`, `failure_json`, `time_created`, `time_updated`; index on `(cwd, time_updated)` |
-| `dwf_actor` | autoincrement id; unique `(run_id, site_id, ordinal)` | `name`, `persona_json`, `resolved_model`, `session_id`; `run_id` cascades from `dwf_run` |
-| `dwf_node` | autoincrement id; unique `(run_id, site_id, ordinal)` | `kind` (check: `ask`, `world-read`, `world-run`, `report`, `artifact`), `actor_site_id`, `actor_ordinal`, `actor_seq`, `input_hash`, `input_json`, `status` (check: `running`, `completed`, `failed`), `result_json`, `error_json`, `stats_json`, `message_boundary`, `artifact_id`; indexes on `run_id` and `(run_id, artifact_id)` |
-| `dwf_event` | autoincrement id; unique `(run_id, sequence)` | `type`, `payload_json`, `time_created`; expression index on `(run_id, json_extract(payload_json, '$.artifactId'), sequence)` |
+| Table       | Key                                                   | Columns of note                                                                                                                                                                                                                                                                                                                      |
+| ----------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `dwf_run`   | `id`                                                  | `parent_session_id`, `cwd`, `name`, `script_text`, `script_hash`, `args_json`, `tool_call_id`, `resumed_from`, `caps_max_concurrency`, `spent_tokens`, `status` (check: `pending`, `running`, `completed`, `failed`, `cancelled`), `result_json`, `failure_json`, `time_created`, `time_updated`; index on `(cwd, time_updated)`     |
+| `dwf_actor` | autoincrement id; unique `(run_id, site_id, ordinal)` | `name`, `persona_json`, `resolved_model`, `session_id`; `run_id` cascades from `dwf_run`                                                                                                                                                                                                                                             |
+| `dwf_node`  | autoincrement id; unique `(run_id, site_id, ordinal)` | `kind` (check: `ask`, `world-read`, `world-run`, `report`, `artifact`), `actor_site_id`, `actor_ordinal`, `actor_seq`, `input_hash`, `input_json`, `status` (check: `running`, `completed`, `failed`), `result_json`, `error_json`, `stats_json`, `message_boundary`, `artifact_id`; indexes on `run_id` and `(run_id, artifact_id)` |
+| `dwf_event` | autoincrement id; unique `(run_id, sequence)`         | `type`, `payload_json`, `time_created`; expression index on `(run_id, json_extract(payload_json, '$.artifactId'), sequence)`                                                                                                                                                                                                         |
 
 Session ids are stored as plain text without a foreign key to the session tables: a subagent session may be deleted without invalidating the run's history.
 
@@ -451,11 +501,11 @@ Session ids are stored as plain text without a foreign key to the session tables
 
 The `status` column keeps its five original values; the three-state vocabulary is mapped in the codecs, so the terminal-state redesign needed no migration.
 
-| Logical | Physical `status` | `failure_json` |
-| --- | --- | --- |
-| `completed` | `completed` | absent; `result_json` holds the settlement artifact |
-| `errored` | `failed` | the `WorkflowErrorJson` |
-| `stopped {reason}` | `cancelled` | an envelope `{stopReason, error?}`; `error` is present for `provider` (`ProviderStop`) and `interrupted` (`Interrupted`) |
+| Logical            | Physical `status` | `failure_json`                                                                                                           |
+| ------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `completed`        | `completed`       | absent; `result_json` holds the settlement artifact                                                                      |
+| `errored`          | `failed`          | the `WorkflowErrorJson`                                                                                                  |
+| `stopped {reason}` | `cancelled`       | an envelope `{stopReason, error?}`; `error` is present for `provider` (`ProviderStop`) and `interrupted` (`Interrupted`) |
 
 Decoding is total: a `cancelled` row without an envelope reads as `stopped(user)`, and a `failed` row whose failure code is `Interrupted` reads as `stopped(interrupted)`. Status predicates in SQL go through `json_extract` on the envelope.
 
@@ -463,17 +513,17 @@ The event log is not mapped. `dwf_event` payloads are stored and read verbatim, 
 
 ### Write timing
 
-| Moment | Writes |
-| --- | --- |
-| `createRun` | one insert with metadata (`scriptText`, `scriptHash`, `args`, `name`, `toolCallId`, `resumedFrom`, `caps`); the metadata is written once and never rewritten, `caps` excepted (`updateRunCaps` is a second writer on that column) |
-| resume | `updateRunStatus(running)`, which clears `failure`, `stopReason`, and `result` |
-| subagent created | `putActor`, carrying an existing `sessionId` and `resolvedModel` forward on a re-put |
-| instance goes live | `putNode` with `status: "running"` |
-| instance settles | `putNode` with the result or the error; stats that arrive later are backfilled onto the row |
-| the cap is retuned | `updateRunCaps`, which writes `caps_max_concurrency` and nothing else (see "Retuning the cap of a live run") |
-| turn ends | `updateRunUsage`; the ask row's `messageBoundary` is written by the driver after the exchange (see "Amend-resume") |
-| every event | `appendEvent`, one statement, `sequence = coalesce(max + 1, 0)`, returning the sequence |
-| settlement | `updateRunStatus(<terminal>, settlement)`, then `run-settled`, then `driver.dispose?.()` |
+| Moment             | Writes                                                                                                                                                                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createRun`        | one insert with metadata (`scriptText`, `scriptHash`, `args`, `name`, `toolCallId`, `resumedFrom`, `caps`); the metadata is written once and never rewritten, `caps` excepted (`updateRunCaps` is a second writer on that column) |
+| resume             | `updateRunStatus(running)`, which clears `failure`, `stopReason`, and `result`                                                                                                                                                    |
+| subagent created   | `putActor`, carrying an existing `sessionId` and `resolvedModel` forward on a re-put                                                                                                                                              |
+| instance goes live | `putNode` with `status: "running"`                                                                                                                                                                                                |
+| instance settles   | `putNode` with the result or the error; stats that arrive later are backfilled onto the row                                                                                                                                       |
+| the cap is retuned | `updateRunCaps`, which writes `caps_max_concurrency` and nothing else (see "Retuning the cap of a live run")                                                                                                                      |
+| turn ends          | `updateRunUsage`; the ask row's `messageBoundary` is written by the driver after the exchange (see "Amend-resume")                                                                                                                |
+| every event        | `appendEvent`, one statement, `sequence = coalesce(max + 1, 0)`, returning the sequence                                                                                                                                           |
+| settlement         | `updateRunStatus(<terminal>, settlement)`, then `run-settled`, then `driver.dispose?.()`                                                                                                                                          |
 
 A terminal `updateRunStatus` coalesces: a settlement without a `failure` keeps an earlier one, and a `result` of `null` is stored as `null`, distinct from absent. `listEvents` pages with a cursor that is strictly greater than `afterSequence`; `limit` of `-1` means unbounded. Sequences continue across resumes, so an event log read by cursor never restarts.
 
@@ -499,14 +549,14 @@ The induction underneath it: entry k+1's call was issued before it settled, henc
 
 Resume is gated at the run service before an engine exists.
 
-| Refusal | Meaning |
-| --- | --- |
-| `not_found` | no run row |
-| `already_running` | the same run id is in flight in this process |
-| `not_resumable` | the run is `completed` or `errored`; only `stopped` resumes (`isResumableSettlement`) |
-| `script_missing` | the row predates `script_text` |
-| `script_mismatch` | the row's `script_hash` no longer matches its own `script_text` |
-| `compile_failed` | the row's `script_text` no longer type-checks against the current facade (the facade changed after the run); the message carries bounded diagnostics, and the way forward is `AmendWorkflow` |
+| Refusal           | Meaning                                                                                                                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `not_found`       | no run row                                                                                                                                                                                   |
+| `already_running` | the same run id is in flight in this process                                                                                                                                                 |
+| `not_resumable`   | the run is `completed` or `errored`; only `stopped` resumes (`isResumableSettlement`)                                                                                                        |
+| `script_missing`  | the row predates `script_text`                                                                                                                                                               |
+| `script_mismatch` | the row's `script_hash` no longer matches its own `script_text`                                                                                                                              |
+| `compile_failed`  | the row's `script_text` no longer type-checks against the current facade (the facade changed after the run); the message carries bounded diagnostics, and the way forward is `AmendWorkflow` |
 
 Caps and arguments come from the record, which is why a run retuned before it stopped resumes at the bound it was retuned to and not the one it was submitted with (see "Retuning the cap of a live run"), and `subagentModel` from the run's `run-launched` event, so a resume puts the subagents back on the model the run was launched with without the resumer having to name it; `resumedFrom` is not carried into the new engine because a resume is the same run, not a new lineage. Only a run's own parent session may resume it: on construction the run service reconciles orphans, marking every non-terminal run owned by that session as `stopped(interrupted)` with the failure "…was interrupted: the owning process exited before the run settled", without synthesizing events. Cold replay mints the trailing `run-settled` of every terminal row from the row itself (see "Physical and logical status"), and the run list marks a non-terminal run of another session as possibly interrupted rather than claiming it.
 
@@ -514,26 +564,26 @@ Caps and arguments come from the record, which is why a run retuned before it st
 
 ### Three ways to end
 
-| Status | Meaning | Resumable | `failure` |
-| --- | --- | --- | --- |
-| `completed` | the script returned; the return value is the settlement artifact | no | none |
-| `errored` | the script threw, or the engine hit a run-level failure | no; amend with `AmendWorkflow` | always |
-| `stopped {reason}` | something outside the script ended it | yes, `ResumeWorkflowRun`, except `superseded` | `provider` and `interrupted` carry one; `user`, `model` and `superseded` do not |
+| Status             | Meaning                                                          | Resumable                                     | `failure`                                                                       |
+| ------------------ | ---------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------- |
+| `completed`        | the script returned; the return value is the settlement artifact | no                                            | none                                                                            |
+| `errored`          | the script threw, or the engine hit a run-level failure          | no; amend with `AmendWorkflow`                | always                                                                          |
+| `stopped {reason}` | something outside the script ended it                            | yes, `ResumeWorkflowRun`, except `superseded` | `provider` and `interrupted` carry one; `user`, `model` and `superseded` do not |
 
 ```ts
 type RunStatus = "pending" | "running" | "completed" | "errored" | "stopped";
 type RunStopReason = "user" | "model" | "provider" | "interrupted" | "superseded";
 ```
 
-| Producer | Result |
-| --- | --- |
-| `complete(value)` | in-flight asks are aborted (`Cancelled: Run completed; in-flight subagent tasks were abandoned.`, `node-settled cancelled`), then `completed` |
-| `fail(error)` | `errored`; in-flight asks are rejected with the same error and no cancelled events are emitted |
-| `stop("user")` | the user cancelled from the app, the CLI, or the TUI |
-| `stop("model")` | the main agent called the stop tool |
-| `stop("superseded", undefined, supersededBy)` | `AmendWorkflow` stopped the run to replace it; the successor's id is recorded beside the reason (see "Amend-resume") |
-| `stop("provider", error)` | the driver's `stopRun` after a non-recoverable model-side error; `error.code === "ProviderStop"` |
-| `stop("interrupted", error?)` | the harness saw the sandbox die, the protocol break, or a timeout; the owning session App closed under the run (see "Engine ownership"); or reconciliation found an orphan |
+| Producer                                      | Result                                                                                                                                                                     |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `complete(value)`                             | in-flight asks are aborted (`Cancelled: Run completed; in-flight subagent tasks were abandoned.`, `node-settled cancelled`), then `completed`                              |
+| `fail(error)`                                 | `errored`; in-flight asks are rejected with the same error and no cancelled events are emitted                                                                             |
+| `stop("user")`                                | the user cancelled from the app, the CLI, or the TUI                                                                                                                       |
+| `stop("model")`                               | the main agent called the stop tool                                                                                                                                        |
+| `stop("superseded", undefined, supersededBy)` | `AmendWorkflow` stopped the run to replace it; the successor's id is recorded beside the reason (see "Amend-resume")                                                       |
+| `stop("provider", error)`                     | the driver's `stopRun` after a non-recoverable model-side error; `error.code === "ProviderStop"`                                                                           |
+| `stop("interrupted", error?)`                 | the harness saw the sandbox die, the protocol break, or a timeout; the owning session App closed under the run (see "Engine ownership"); or reconciliation found an orphan |
 
 Settlement is first-wins: once one producer has fired, the others are ignored. Every producer runs the same tail, `finishRun`: `updateRunStatus`, `run-settled`, `driver.dispose?.()`. The cancelled asks of a stopped run leave their rows in `running`, which is what makes them re-execute on resume.
 
@@ -543,20 +593,25 @@ Run-level failures the engine raises itself, all `errored`: `InputHashMismatch`,
 
 The driver classifies every rejected model turn with `resolveWorkflowModelFailurePolicy`, the same table the request runner uses (`docs/dynamic-workflow/concurrency.md`, "Retry budget and the model-error policy"). Three outcomes exist.
 
-| Verdict | Engine-side effect |
-| --- | --- |
-| stop, kind `auth`, `not_configured`, `model_unavailable`, `invalid_request`, `quota`, or `other` | `sink.stopRun(ProviderStop)`; the whole run becomes `stopped(provider)`. The error message is `Subagent <name> hit a permanent model-side error (<reason> [<code>]): <raw>` and carries `ProviderStopDetails`. |
-| `context_exceeded` | the ask fails with `ContextLimit`: "Subagent <name> exceeded the model's context window even after compaction. Give this ask a smaller input or split the work across subagents." The script may catch it; the run continues. |
-| anything else | the driver redrives the turn after a backoff (2 s doubling to 60 s, jittered by half, or the provider's `Retry-After`), reporting `askWaiting {cause: "backoff"}` meanwhile; the script never sees the failure |
+| Verdict                                                                                          | Engine-side effect                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| stop, kind `auth`, `not_configured`, `model_unavailable`, `invalid_request`, `quota`, or `other` | `sink.stopRun(ProviderStop)`; the whole run becomes `stopped(provider)`. The error message is `Subagent <name> hit a permanent model-side error (<reason> [<code>]): <raw>` and carries `ProviderStopDetails`.                |
+| `context_exceeded`                                                                               | the ask fails with `ContextLimit`: "Subagent <name> exceeded the model's context window even after compaction. Give this ask a smaller input or split the work across subagents." The script may catch it; the run continues. |
+| anything else                                                                                    | the driver redrives the turn after a backoff (2 s doubling to 60 s, jittered by half, or the provider's `Retry-After`), reporting `askWaiting {cause: "backoff"}` meanwhile; the script never sees the failure                |
 
 ```ts
 export interface ProviderStopDetails {
   kind: "auth" | "not_configured" | "model_unavailable" | "invalid_request" | "quota" | "other";
   reason: string;
-  providerId?: string; providerLabel?: string; modelId?: string; providerCode?: string;
-  subagent?: string; subagentName?: string; phase?: string;
-  rawMessage?: string;   // bounded to 2,000 characters
-  resetAt?: number;      // quota only, epoch ms, when Retry-After was parseable
+  providerId?: string;
+  providerLabel?: string;
+  modelId?: string;
+  providerCode?: string;
+  subagent?: string;
+  subagentName?: string;
+  phase?: string;
+  rawMessage?: string; // bounded to 2,000 characters
+  resetAt?: number; // quota only, epoch ms, when Retry-After was parseable
 }
 ```
 
@@ -586,11 +641,11 @@ An engine belongs to the session App that started or resumed it, and to nothing 
 
 Three rules follow, and each one has a test.
 
-| Rule | Mechanism | Test |
-| --- | --- | --- |
-| **A live engine keeps its App resident.** | Every launch (submit, amend, resume) registers its settlement promise as residency-blocking work on the parent runtime in the same synchronous slice that starts it, the way a background Bash does; the count drops in the settlement's `finally`. The resident pool reads one runtime fact, so a session with a live run is never deactivated, for idleness or for high water. | a session whose run is live reports blocking work until the run settles; `dynamic-workflow-run-service.test.ts` |
-| **Close stops what it owns.** | App close, after the runtime has begun shutdown and before any resource closes, calls the run service's `close()`: every live entry is aborted with initiator `interrupted` and every settlement is awaited. The harness maps that reason to `engine.stop("interrupted", failure)` with the `Interrupted` failure code and a message that names the owner's close, so the row is `stopped(interrupted)`, resumable, written by the engine itself through the normal `finishRun` tail (`updateRunStatus`, `run-settled`, driver dispose). The service refuses `submit`, `amend` and `resume` once closed. No journal event follows the close, and the model is not woken: the runtime is shutting down, so the terminal notification is dropped, and the next activation shows the run as stopped and resumable through cold replay and the run list. Because rule one blocks idle and LRU eviction, close under a live run now happens only when the user closes the session or the process exits. | fault-matrix cell B18: close under a live run yields one `stopped(interrupted)` written before `close()` resolves, no event after it, and a resume in a fresh service continues from the journal |
-| **A live entry outranks the journal.** | Status synthesis reads the journal's status only for runs the service does not hold live. A terminal row under a live entry can only be a foreign write (another process's orphan reconciliation, see "Alternatives not taken"): the snapshot, the list and the detail keep reporting `running`, the stop reason and failure stay absent, the tracker keeps polling, no notification is enqueued, and the engine's own settlement rewrites the row. The service logs the foreign row once per entry. When a run settles `completed`, the settlement clears the failure column, so a foreign failure never survives beside a result. | fault-matrix cell B19: a foreign `stopped(interrupted)` row written under a live engine produces no terminal snapshot; the real completion does, and the row ends `completed` without a failure |
+| Rule                                      | Mechanism                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Test                                                                                                                                                                                             |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **A live engine keeps its App resident.** | Every launch (submit, amend, resume) registers its settlement promise as residency-blocking work on the parent runtime in the same synchronous slice that starts it, the way a background Bash does; the count drops in the settlement's `finally`. The resident pool reads one runtime fact, so a session with a live run is never deactivated, for idleness or for high water.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | a session whose run is live reports blocking work until the run settles; `dynamic-workflow-run-service.test.ts`                                                                                  |
+| **Close stops what it owns.**             | App close, after the runtime has begun shutdown and before any resource closes, calls the run service's `close()`: every live entry is aborted with initiator `interrupted` and every settlement is awaited. The harness maps that reason to `engine.stop("interrupted", failure)` with the `Interrupted` failure code and a message that names the owner's close, so the row is `stopped(interrupted)`, resumable, written by the engine itself through the normal `finishRun` tail (`updateRunStatus`, `run-settled`, driver dispose). The service refuses `submit`, `amend` and `resume` once closed. No journal event follows the close, and the model is not woken: the runtime is shutting down, so the terminal notification is dropped, and the next activation shows the run as stopped and resumable through cold replay and the run list. Because rule one blocks idle and LRU eviction, close under a live run now happens only when the user closes the session or the process exits. | fault-matrix cell B18: close under a live run yields one `stopped(interrupted)` written before `close()` resolves, no event after it, and a resume in a fresh service continues from the journal |
+| **A live entry outranks the journal.**    | Status synthesis reads the journal's status only for runs the service does not hold live. A terminal row under a live entry can only be a foreign write (another process's orphan reconciliation, see "Alternatives not taken"): the snapshot, the list and the detail keep reporting `running`, the stop reason and failure stay absent, the tracker keeps polling, no notification is enqueued, and the engine's own settlement rewrites the row. The service logs the foreign row once per entry. When a run settles `completed`, the settlement clears the failure column, so a foreign failure never survives beside a result.                                                                                                                                                                                                                                                                                                                                                                | fault-matrix cell B19: a foreign `stopped(interrupted)` row written under a live engine produces no terminal snapshot; the real completion does, and the row ends `completed` without a failure  |
 
 Orphan reconciliation keeps its scope: at service construction, the parent session's non-terminal rows are the remains of a dead process, because construction happens only for a session that is not resident, and rule one keeps a session with a live run resident. Inside one process, reconciliation can therefore no longer meet a live engine. Across processes it still can, which is the unsupported two-instance case: rule three keeps the owner from believing that write, and nothing else is promised.
 
@@ -610,14 +665,14 @@ amend(request: { scriptText; cwd; predecessorRunId; name?; parentSessionId?; too
 
 An amendment starts with no arguments unless the request says `inheritArgs`, in which case the new run takes the predecessor's recorded `args_json`. Only the settings change from the GUI passes it (`docs/dynamic-workflow/launch.md`, "Changing a run's settings from the GUI"): it re-runs the predecessor's own script, which reads the arguments it was launched with. The tool does not pass it.
 
-| Step | What happens | Failure |
-| --- | --- | --- |
-| preflight | read the predecessor; check that every completed ask has a `messageBoundary` | `run_not_found`, `missing_boundaries`; nothing was stopped, no row exists |
-| mint | allocate the new run id | |
-| stop | if the predecessor is not terminal: `cancel(predecessor, { superseded: newRunId })`, then await the predecessor's settlement promise (the same promise `waitForTask` awaits; it never rejects and there is no timeout) | |
-| quiesce | ask the predecessor's driver which of its subagent sessions have finished being written, waiting no longer than a bounded interval | sessions that miss it contribute their completed prefix and no `inFlight` |
-| import | build the cache from the settled predecessor (see "What is imported"); a refusal here is a host fault (the preflight already passed), surfaced as an error | |
-| submit | create the new run with `resumedFrom`, the imported cache and the settled predecessor's `spentTokens` as `inheritedTokens`, otherwise exactly as a fresh `submit` does | |
+| Step      | What happens                                                                                                                                                                                                           | Failure                                                                   |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| preflight | read the predecessor; check that every completed ask has a `messageBoundary`                                                                                                                                           | `run_not_found`, `missing_boundaries`; nothing was stopped, no row exists |
+| mint      | allocate the new run id                                                                                                                                                                                                |                                                                           |
+| stop      | if the predecessor is not terminal: `cancel(predecessor, { superseded: newRunId })`, then await the predecessor's settlement promise (the same promise `waitForTask` awaits; it never rejects and there is no timeout) |                                                                           |
+| quiesce   | ask the predecessor's driver which of its subagent sessions have finished being written, waiting no longer than a bounded interval                                                                                     | sessions that miss it contribute their completed prefix and no `inFlight` |
+| import    | build the cache from the settled predecessor (see "What is imported"); a refusal here is a host fault (the preflight already passed), surfaced as an error                                                             |                                                                           |
+| submit    | create the new run with `resumedFrom`, the imported cache and the settled predecessor's `spentTokens` as `inheritedTokens`, otherwise exactly as a fresh `submit` does                                                 |                                                                           |
 
 The preflight runs before the stop on purpose: the two refusals are properties of the predecessor's journal that a stop does not change, so refusing first means a refused amend never leaves a stopped run behind. Any live run's completed asks are already journaled with their boundaries, so the preflight on a running run is as decisive as on a settled one.
 
@@ -631,14 +686,18 @@ The new run row records `resumedFrom`; the lineage can be several runs long.
 
 ```ts
 export interface ImportedRunCache {
-  actors: Map<string, {            // keyed by subagent name
-    persona: PersonaSpec;
-    entries: { inputHash: string; result: unknown; stats?: AskStats; messageBoundary: number }[];  // by actorSeq
-    inFlight?: { inputHash: string; messageBoundary: number };   // the running ask at actorSeq === entries.length
-    transcriptSourceSessionId: string;
-    resolvedModel?: string;
-  }>;
-  world: Map<string, { inputHash: string; kind: NodeKind; result: unknown }[]>;  // by inputHash, nth occurrence
+  actors: Map<
+    string,
+    {
+      // keyed by subagent name
+      persona: PersonaSpec;
+      entries: { inputHash: string; result: unknown; stats?: AskStats; messageBoundary: number }[]; // by actorSeq
+      inFlight?: { inputHash: string; messageBoundary: number }; // the running ask at actorSeq === entries.length
+      transcriptSourceSessionId: string;
+      resolvedModel?: string;
+    }
+  >;
+  world: Map<string, { inputHash: string; kind: NodeKind; result: unknown }[]>; // by inputHash, nth occurrence
 }
 ```
 
@@ -704,16 +763,16 @@ Because the cache is keyed by name, the engine rejects a run that uses one non-e
 
 A subagent that is blocked by something outside its reach asks the main agent instead of inventing an answer. The `escalate {question}` tool blocks the subagent's turn until an answer arrives, with no timeout: the alternative, a guessed value, is exactly what the tool exists to prevent, and the escape hatch is cancellation.
 
-| Element | Behaviour |
-| --- | --- |
-| Question id | `dwfq-<runId fragment>-<seq>`, where the fragment is 8, then 16, then all characters of the run id after `dwfrun-`, chosen to avoid collision within the service, and `seq` is per run |
-| Registry | per run service; `park`, `isTaken`, `withdraw`, `resolve`, `pendingFor`; retired ids are remembered up to 256 so a late answer is refused as `already_resolved` rather than unknown |
-| Budget | `MAX_ESCALATIONS_PER_ASK = 3`; the fourth call in one ask returns `{status: "refused", reason: "budget_exhausted"}`; a call outside an ask returns `reason: "no_active_ask"`. The budget resets at the next ask, not at a nudge |
-| Events | `escalation-raised {qid, actor, actorName?, question, context?, askedAt}` and `escalation-resolved {qid, answer}`, both driver-recorded through the shared journal and `emit` |
-| Answer path | `ResolveWorkflowQuestion {question_id, answer}`, a main-agent tool that needs no approval; refusals `already_resolved`, `run_not_in_flight`, `unknown_question` |
-| Failure of the journal write | on raise, the question is withdrawn and the tool call throws; on resolve, the answer is delivered and the write failure is only logged |
-| Snapshot | `pendingQuestions` on the run snapshot is projected from the in-memory registry, not replayed from events, since after a process death no promise is waiting; it is the fallback when a notification was dropped |
-| Withdrawal | a parked question is withdrawn when its ask is cancelled, when its turn rejects, and when the next ask starts on the same session |
+| Element                      | Behaviour                                                                                                                                                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Question id                  | `dwfq-<runId fragment>-<seq>`, where the fragment is 8, then 16, then all characters of the run id after `dwfrun-`, chosen to avoid collision within the service, and `seq` is per run                                          |
+| Registry                     | per run service; `park`, `isTaken`, `withdraw`, `resolve`, `pendingFor`; retired ids are remembered up to 256 so a late answer is refused as `already_resolved` rather than unknown                                             |
+| Budget                       | `MAX_ESCALATIONS_PER_ASK = 3`; the fourth call in one ask returns `{status: "refused", reason: "budget_exhausted"}`; a call outside an ask returns `reason: "no_active_ask"`. The budget resets at the next ask, not at a nudge |
+| Events                       | `escalation-raised {qid, actor, actorName?, question, context?, askedAt}` and `escalation-resolved {qid, answer}`, both driver-recorded through the shared journal and `emit`                                                   |
+| Answer path                  | `ResolveWorkflowQuestion {question_id, answer}`, a main-agent tool that needs no approval; refusals `already_resolved`, `run_not_in_flight`, `unknown_question`                                                                 |
+| Failure of the journal write | on raise, the question is withdrawn and the tool call throws; on resolve, the answer is delivered and the write failure is only logged                                                                                          |
+| Snapshot                     | `pendingQuestions` on the run snapshot is projected from the in-memory registry, not replayed from events, since after a process death no promise is waiting; it is the fallback when a notification was dropped                |
+| Withdrawal                   | a parked question is withdrawn when its ask is cancelled, when its turn rejects, and when the next ask starts on the same session                                                                                               |
 
 The engine core is unaware of escalation: it happens inside the driver's execution of one ask, writes no node row, and leaves the ask's `inputHash` untouched. After a resume, an ask that was waiting on a question re-executes and the subagent asks again under a new `qid`. The notification the main agent receives, and the GUI's question row, are described in `transcript-and-notifications.md`.
 
@@ -770,7 +829,11 @@ Every `WorkflowError` and `DriverError` message the engine or the driver produce
 ## Engine-side persona
 
 ```ts
-export interface PersonaSpec { name?: string; system?: string; model?: string }
+export interface PersonaSpec {
+  name?: string;
+  system?: string;
+  model?: string;
+}
 ```
 
 The author's `AgentPersona` is `{ system?: string; model?: ModelRef | string }` (`authoring.md`); a bare string is the system prompt, and `model` arrives as the name string (a `ModelRef` is lowered to its name). The engine normalizes the second and third arguments of `createActor` into one `PersonaSpec`, carrying the `name` argument into `persona.name` when the persona has none. The effective name is frozen at creation and is what `DuplicateActorName`, the import cache, escalation payloads, and the `ProviderStop` details use. The persona is journaled as JSON on `dwf_actor.persona_json` and compared by canonical JSON, `model` left out, when matching an imported subagent. There is no model tier and no tool profile on the persona: every subagent has the same tool surface, and the model is the one its persona names, else inherited unless pinned (see "Subagent sessions").
@@ -782,10 +845,10 @@ The engine produces structured payloads only. Every `RunEvent` becomes, in order
 ```ts
 export interface DynamicWorkflowRunProgressPayload {
   runId: string;
-  toolCallId?: string;    // the CreateWorkflow call, for the tool card
-  sequence: number;       // the journal sequence
-  eventType: string;      // the RunEvent type
-  payload: Record<string, unknown>;   // the event minus its type, size-bounded
+  toolCallId?: string; // the CreateWorkflow call, for the tool card
+  sequence: number; // the journal sequence
+  eventType: string; // the RunEvent type
+  payload: Record<string, unknown>; // the event minus its type, size-bounded
   truncated?: boolean;
 }
 ```
@@ -800,13 +863,13 @@ Business monitoring attributes model tokens to the message that caused them, as 
 
 **The launch anchor.** Every run remembers the message that launched it. The run service resolves the anchor at submit:
 
-| Entry | `inputId` |
-| --- | --- |
-| `CreateWorkflow` in chat | the parent runtime's active turn, when the trace's turn id equals the active turn's; otherwise absent |
+| Entry                      | `inputId`                                                                                                                                               |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CreateWorkflow` in chat   | the parent runtime's active turn, when the trace's turn id equals the active turn's; otherwise absent                                                   |
 | direct launch from the hub | a fresh UUID v7, which is also the `inputId` of the control-only launch turn, so the launch turn's run card and the subagent steps hang off one message |
-| `AmendWorkflow` | the predecessor's anchor; a predecessor without one falls back to the rows above |
-| none of the above | a fresh UUID v7 |
-| `resume` | never rewritten: the engine does not create the run again, and the anchor is read back from the journal |
+| `AmendWorkflow`            | the predecessor's anchor; a predecessor without one falls back to the rows above                                                                        |
+| none of the above          | a fresh UUID v7                                                                                                                                         |
+| `resume`                   | never rewritten: the engine does not create the run again, and the anchor is read back from the journal                                                 |
 
 The engine records the anchor once, as `run-launched {inputId, toolCallId?, parentSessionId?, phaseNames?, subagentModel?, subagentPermissionMode?}` right after the first `run-started` of the run's life, and never on a resume; `run-started` itself fires on every resume, which is why the anchor cannot ride on it. There is no SQL column for it, nor for the passengers that ride with it: the declared phase table, the run's subagent model and its subagent permission mode all live in this event alone. `actor-created` and `run-settled` progress payloads carry a derived `launchInputId`: from the submit on a fresh run, read from the first `run-launched` on a resumed one. A run journaled before the event existed has no anchor, so it reports nothing.
 
@@ -814,17 +877,17 @@ The engine records the anchor once, as `run-launched {inputId, toolCallId?, pare
 
 **Steps.** The rendering layer's telemetry supervisor registers each subagent by child session id under the anchor as `messageId`. While the run lives it reports one `tool_call` step with zero tokens per tool call the subagent makes and accumulates usage once per request id; the child session's own `turn.terminal` is ignored, since it ends one ask, not the subagent. When `run-settled` arrives it reports one summary step per registered subagent, then drains late terminal facts for tools already started and forgets the run. Usage arriving after the summary is not reported, and a reload does not rebuild history.
 
-| Field | Workflow subagent value |
-| --- | --- |
-| `agent_role` | `workflow subagent` |
-| `agent_id` | `siteId@ordinal`, the same string as the run pane's subagent label |
-| `workflow_run_id`, `child_session_id` | the run id; the child session id (`sess_dwf-…`) |
-| `workflow_tool_call_id` | the `CreateWorkflow` call that launched the run; `launch-…` for a direct launch; absent when unknown |
-| `tool_call_id` | tool step `tool_workflow_<agentId>_<childToolCallId>`; summary step `tool_workflow_<agentId>_<runId>` |
-| `tool_name` | the subagent's real tool for a tool step; `Agent` for the summary step |
-| `token_usage_scope`, token fields, `model_request_count` | summary step: `subagent_requests` and the totals over every completed request; tool step: empty and `0` |
-| `status`, `error_msg` | summary step: `success` for a completed run, `fail` for `errored` or `stopped`, with the engine's error text when there is one and `Workflow run stopped (<reason>)` otherwise |
-| `message_id`, `talk_id` | the anchor; the parent session id |
+| Field                                                    | Workflow subagent value                                                                                                                                                        |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `agent_role`                                             | `workflow subagent`                                                                                                                                                            |
+| `agent_id`                                               | `siteId@ordinal`, the same string as the run pane's subagent label                                                                                                             |
+| `workflow_run_id`, `child_session_id`                    | the run id; the child session id (`sess_dwf-…`)                                                                                                                                |
+| `workflow_tool_call_id`                                  | the `CreateWorkflow` call that launched the run; `launch-…` for a direct launch; absent when unknown                                                                           |
+| `tool_call_id`                                           | tool step `tool_workflow_<agentId>_<childToolCallId>`; summary step `tool_workflow_<agentId>_<runId>`                                                                          |
+| `tool_name`                                              | the subagent's real tool for a tool step; `Agent` for the summary step                                                                                                         |
+| `token_usage_scope`, token fields, `model_request_count` | summary step: `subagent_requests` and the totals over every completed request; tool step: empty and `0`                                                                        |
+| `status`, `error_msg`                                    | summary step: `success` for a completed run, `fail` for `errored` or `stopped`, with the engine's error text when there is one and `Workflow run stopped (<reason>)` otherwise |
+| `message_id`, `talk_id`                                  | the anchor; the parent session id                                                                                                                                              |
 
 **Composition.** `message_completion.agent_composition` has a workflow dimension: the three booleans fg, bg and wf give eight values, `main_only`, `main_plus_fg`, `main_plus_bg`, `main_plus_wf`, `main_plus_fg_bg`, `main_plus_fg_wf`, `main_plus_bg_wf`, `main_plus_fg_bg_wf`. `wf` is set the way `bg` is: when the runtime command queue wakes a batch that holds a command whose `originMeta.backgroundSource` is `workflow` (a run's completion or question notification), the turn's `TurnComplete` or `TurnError` payload carries `workflowResultConsumed: true`, and `turn.started.backgroundSource` gains the value `workflow`, so the wake turn's `message_source` reads `background_workflow`.
 
@@ -834,12 +897,12 @@ Boundaries: the legacy `Workflow` tool's children share the `workflow_child` que
 
 Four layers of tests pin this document.
 
-| Layer | Suite | What it holds |
-| --- | --- | --- |
-| Engine core | `packages/dynamic-workflow/tests/engine/*` with a fake driver | identity and ordinals, the hold rule, repair and nudge, lenient decode, world-read caching, `report` caps, import-cache take, carry and reconcile, phase stamping, usage after settlement, concurrency observations, `run-launched` once per run life, the in-memory journal against the contract suite |
-| Sandbox | `packages/dynamic-workflow-runtime/tests/*` with an auto-driver | end to end through a real child process, argument freezing, the bans, entry-file placement and fallback, spawn arguments and environment, failures and interruption mapping, resume, provider stop, usage |
+| Layer              | Suite                                                                                                                                                                                                                                                                                  | What it holds                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Engine core        | `packages/dynamic-workflow/tests/engine/*` with a fake driver                                                                                                                                                                                                                          | identity and ordinals, the hold rule, repair and nudge, lenient decode, world-read caching, `report` caps, import-cache take, carry and reconcile, phase stamping, usage after settlement, concurrency observations, `run-launched` once per run life, the in-memory journal against the contract suite                                                                                                                                                                                                                                                                                                                                                                                            |
+| Sandbox            | `packages/dynamic-workflow-runtime/tests/*` with an auto-driver                                                                                                                                                                                                                        | end to end through a real child process, argument freezing, the bans, entry-file placement and fallback, spawn arguments and environment, failures and interruption mapping, resume, provider stop, usage                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Driver and service | `packages/bootstrap/tests/workflow-driver*.test.ts`, `dynamic-workflow-run-service.test.ts`, `dynamic-workflow-import.test.ts`, `workflow-actor-transcript.test.ts`, `workflow-escalation.test.ts`, `workflow-actor-model.test.ts`, the git world-read tests against a real repository | the four sequences, the submit-profile guard, message boundaries, the two seeding skips against a real session store, the conditions under which an `inFlight` is and is not built (`dynamic-workflow-import.test.ts`), the bounded quiescence ledger (`workflow-driver-quiescence.test.ts`), amending a predecessor that is mid-ask and reading back the successor's seeded transcript, with and without the carry (`dynamic-workflow-run-service.test.ts`), escalation parking and withdrawal, the model pin table, argument validation, the cancel and resume gates, orphan reconciliation, residency registration of live runs, the close settlement, foreign terminal rows under a live entry |
-| Journal | `packages/adapters/tests/dwf-journal-store.test.ts` | the SQLite store against the contract suite, plus the status codec |
+| Journal            | `packages/adapters/tests/dwf-journal-store.test.ts`                                                                                                                                                                                                                                    | the SQLite store against the contract suite, plus the status codec                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 ### The fault matrix
 
@@ -847,14 +910,14 @@ The terminal-state and model-error policies are exercised end to end against a f
 
 Shapes are small scripts that differ only in parallelism, subagent count, and ask count: W1 through W16 are flat fan-outs; S-pipe chains asks; S-nest nests subagents; S-phase adds phases. A cell is one fault program on one shape, run with a compressed clock (backoff scaled by 0.01, a 400 ms stall clock) and asserted against six invariants shared by every cell.
 
-| Invariant | Assertion |
-| --- | --- |
-| terminal state as expected | the settlement and the journal row agree on `completed`, `stopped{reason}`, or `errored` |
-| no subagent lost | every ask row is `completed` on a completed run, and `completed` or `running`, never `failed`, on a stopped one |
-| the script never sees a model error | no `node-settled failed`, and no `DriverError` in the run's failure |
-| event grammar | every retryable failure has a `retry_scheduled` on the same request; a non-retryable failure appears only in a `stopped(provider)` cell |
-| zero requests after stop | any request that reaches the server after `run-settled` plus a 10 ms wire grace is matched by a `cancelled` echo from the runner |
-| in-flight bound | the server's peak in-flight count never exceeds the cell's ceiling (8) |
+| Invariant                           | Assertion                                                                                                                               |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| terminal state as expected          | the settlement and the journal row agree on `completed`, `stopped{reason}`, or `errored`                                                |
+| no subagent lost                    | every ask row is `completed` on a completed run, and `completed` or `running`, never `failed`, on a stopped one                         |
+| the script never sees a model error | no `node-settled failed`, and no `DriverError` in the run's failure                                                                     |
+| event grammar                       | every retryable failure has a `retry_scheduled` on the same request; a non-retryable failure appears only in a `stopped(provider)` cell |
+| zero requests after stop            | any request that reaches the server after `run-settled` plus a 10 ms wire grace is matched by a `cancelled` echo from the runner        |
+| in-flight bound                     | the server's peak in-flight count never exceeds the cell's ceiling (8)                                                                  |
 
 Two lifecycle cells exercise "Engine ownership" on the same bed: B18 closes the service under a live run, B19 writes a foreign terminal row under a live engine. The quick matrix runs in the default bootstrap suite; the full matrix runs when `ZCODE_FAULT_MATRIX=full` is set, with a 30 s ceiling per cell. Two production seams exist for this bed: the driver clock (`now`, `schedule`, `stallAfterMs`, `quiesceMs`) is injectable, and the adapter keeps `retryAfterMs` on its normalized error.
 
