@@ -2,6 +2,8 @@
 
 > 2026-10-20 决策更新：SSH/WSL 恢复纳入 Zody 0.1.0，采用随包运行时、本机上传，禁止 CDN 回退；执行规格见 [SSH/WSL 本地运行时恢复](ssh-wsl-local-runtime-restoration.md)。本文 D4a/F6.1/F6.5 的“继续隐藏/等待自建 CDN”记录为历史决策，由新规格替代；Computer Use 不在本次改动范围。
 
+2026-10-20 首发决策更新：产品名、安装身份、用户及项目目录、版本、签名状态、平台、gateway 运营方式和发布渠道已经逐项确认，见 [Zody 0.1.0 首发规格](zody-0.1.0-release.md)。本文保留此前调查与规划；冲突的首发假设以新规格为准，不把旧任务清单视为当前完成状态。
+
 状态：草案（2026-10-17，已按首轮评审修订，修订点见文末「修订记录」），待评审。本文是移除 z.ai 官方依赖的总纲，负责阶段划分、决策门与验收；两份已有 spec 是其中两个阶段的实施细则：
 
 - `specs/fork-official-backend-runtime-dependencies.md` → 阶段 2
@@ -257,12 +259,12 @@ flowchart TD
 
 ## 阶段 7：品牌与文案（3-5 人日 + 设计资源）
 
-目标：fork 作为独立产品的对外身份。**前置 D5（产品名、appId、域名、渠道）。**
+目标：fork 作为独立产品的对外身份。**D5 的首发产品决策已确认，按 [Zody 0.1.0 首发规格](zody-0.1.0-release.md) 实施。** 下列旧身份是需要替换的调查记录，不是新的目标值。
 
 - 应用身份：appId `dev.zcode.app`、productName、AUMID `cn.aminer.zcode`（`desktop-product-identity.mjs:8-24,87`）、Android `applicationId`（随阶段 5）、图标/DMG/安装器资源（`packages/desktop/build/`、`public/logo/`）。
 - 打包元数据：homepage/author/maintainer `zcode.z.ai`/`dev@zcode.z.ai`（`electron-builder.config.js:560-571,879`）。
 - 签名与公证：macOS/Windows 证书规划；Windows vsign 链路缺失的 `scripts/sign-windows.ps1`（`electron-builder.config.js:552`，仅 `ZCODE_ENABLE_WINDOWS_SIGN=1` 时调用）随证书方案补齐或移除。
-- 深链 scheme `zcode://` 是否改名需评估（影响分享回调、外部唤起兼容；两份 spec 均假设 fork 与官方不共存，若确认不共存可保留或改名均可，倾向保留以减少破坏）。
+- 深链 scheme 已确定改为 `zody://`；不继续采用此前保留 `zcode://` 的建议。实现时核对所有应用唤起消费者及安装器注册，并补充测试。
 - 文案与文档：i18n 下载链接（`zh-CN.ts:263,7033`、`en-US.ts:282,7389`）、`productDocs.ts:2`、README/UI_PLUGIN 的 `zai-org` 仓库引导、`config/default.json` 飞书/Discord 渠道（改 fork 渠道或删除，注意远端 configs 可改写——阶段 2 已处理拉取）、About 页、邀请文案；`docs/`、`apps/dev-docs` 的官方引用在本阶段按阶段 0 单列统计收紧。
 - 法律：Apache-2.0 保留原作者版权声明（LICENSE:190 不可删），NOTICE.md 更新 fork 声明。
 
@@ -276,13 +278,13 @@ flowchart TD
 | D1    | 强更 gate 保留（默认关）还是删除                            | 已决（2026-10-17） | 整体删除，fork 手动更新                                                      |
 | D1b   | 灰度开关的本地默认值，及是否建 fork 自有配置源              | 已决（2026-10-17） | 上下文提示开、动作追踪关、动态工作流 `onDemand`、闲时任务关；不建配置源      |
 | D2    | 官方账号体系：路线 A / B / C                                | 已决（2026-10-17） | 路线 B：移除官方账号，仅 BYOK                                                |
-| D3    | gateway 细节（namespace、扫码导入等）                       | 阶段 5 前          | 见原 spec 待决 1-5                                                           |
+| D3    | gateway 细节（namespace、扫码导入等）                       | 首发运营方式已决   | 用户自行提供和配置，无 Zody 托管服务；协议与配置细节见 gateway 规格 |
 | D4a/b | 远程运行时 CDN 自建 vs 隐藏；插件市场自托管 vs 仅 GitHub 源 | 阶段 6 前          | 先隐藏/仅 GitHub 源，后续自建。**调研结论（D4a，F6.1，2026-10-19）**：`LocalUploadAssetInstaller` 可作为打包版「从本机上传运行时」方案，代码层已具备——非 `remote-download` 模式即走本地上传（`deploy.ts:552-563`），默认安装模式本就是 `local-download-upload`（`remoteAssetInstallMode.ts:5`）；`remoteAssetDeployDecision.ts:139,179` 只用 `instanceof LocalUploadAssetInstaller` 做 node-pty 缺件告警，不依赖 mock-cdn 路径，可直接复用；本地 `releaseDir` 优先、缺失时回退 CDN 缓存（`remoteAssetInstaller.ts:257-343`）；上传/解包带 owner staging、取消保护与临时归档（`remoteAssetInstaller.ts:348-512`）。改动面：①打包时随包分发 `prepare-prebuilds.mjs` 的 `releases/<version>/<platform-arch>` 布局（`scripts/prepare-prebuilds.mjs:59,999-1069`，覆盖 linux/darwin 四平台与 server-bundle/node-runtime/node-pty/glm/bfs/ripgrep/ugrep）；②`desktopRuntimeEnv.resolveRemoteAssetDirs` 在打包态返回该本地目录（当前刻意只返回 CDN+cache，`desktopRuntimeEnv.ts:337-353`）；③`deploy.ts` 的 `mockCdnDir`/`releaseDir` 分支改为通用本地运行时目录并优先于 CDN；若只要本机上传，还需把 `remoteCdnBaseUrl(s)` 置空，避免本地缺件时回退到官方 CDN（`remoteAssetInstaller.ts:514-530` 的无基址短路已支持）。风险：安装包与更新包体积显著增大、四平台产物矩阵和签名/公证成本、版本升级必须整包刷新远端组件、用户上行带宽与上传耗时可能高于服务器直连 CDN。结论：可行，但不宜替代自建 CDN，适合作离线/内网备选；D4a 仍维持「先隐藏、后续自建」。 |
-| D5    | fork 产品名、appId、域名、渠道、签名证书                    | 阶段 7 前          | —                                                                            |
+| D5    | fork 产品名、appId、域名、渠道、签名证书                    | 已决（2026-10-20） | Zody、`io.github.zclaudia.zody`、`zody://`、GitHub `zclaudia/zody`；0.1.0 未签名公开预览，详见首发规格 |
 | D-XDM | 设备与来源标识停发范围                                      | 阶段 2             | 全部停发（D2 路线 B 不保留官方计费链）                                       |
 | D6    | 会话分享：移除，或自建分享服务                              | 阶段 4（F4.8）前   | 移除（发布、导入、分享落地页）；需要时另立 spec                              |
 | D7    | 反馈：保留哪些                                              | 阶段 2（F2.9）前   | 已决（2026-10-17）：去掉官方提交，保留「导出诊断日志」本地能力               |
-| D-CI  | CI 平台                                                     | 阶段 1（F1.4）前   | GitHub Actions                                                               |
+| D-CI  | CI 平台                                                     | 已决（2026-10-20） | GitHub Actions；GitHub Releases 分发，手动更新，详见首发规格 |
 
 ## 风险
 
@@ -295,8 +297,8 @@ flowchart TD
 | 阶段 4 大删除的回归                                    | 登录态、provider 解析、UI 残留引用                               | 先摘装配再逐层删；每步 `pnpm dep:refs`/`knip` 圈引用面；分 5 个独立 PR |
 | 旧版本升级的存量官方账号数据                           | 选中模型指向已删 provider，启动失败或误选付费 provider           | 阶段 4 第 1 步做数据迁移与回落，E2E 覆盖升级场景                       |
 | 无 CI                                                  | 残留检查只能靠本地 pre-push，可被绕过                            | 阶段 1.4 建立 fork 流水线并接入                                        |
-| 签名/公证基建缺失                                      | macOS/Windows 分发受阻                                           | D5 时一并规划证书（阶段 7）                                            |
-| `zcode://` scheme 冲突（若用户装官方版）               | 深链路由错乱                                                     | 两 spec 均不考虑共存；如需共存再评估改 scheme                          |
+| 签名/公证基建缺失                                      | macOS/Windows 分发受限，需要明确安装说明                         | macOS/Windows 0.1.0 为未签名预览；Android 专用 release keystore、用户离线备份及 CI Secrets 注入已确认 |
+| 上游 `zcode://` scheme 冲突                            | 深链路由错乱                                                     | 首发按已确认的 `zody://` 实施独立协议注册并验收 |
 
 ## 工作量与节奏
 

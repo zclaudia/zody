@@ -132,7 +132,7 @@ function resolveUserHomeDir(): string {
 }
 
 function getUserZcodeSkillRoot(): string {
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "skills");
 }
 
@@ -405,7 +405,7 @@ async function importArchive(
       maxExtractedBytes: maxArchiveBytes,
     });
     const extractedSkillDirectories = await collectExtractedSkillDirectories(tempRoot);
-    // 远端 SkillsService 会同时读取用户级 .zcode/skills 和 .agents/skills。
+    // 远端 SkillsService 会同时读取用户级 .zody/skills 和 .agents/skills。
     // 同名 skill 已在兼容目录存在时也必须跳过，避免同步后在 .zcode 下生成重复来源。
     const existingSkillPathByName = await collectUserSkillDirectoryPathByName();
     const results: SkillSyncImportResult["results"] = [];

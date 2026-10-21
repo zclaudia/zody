@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
 import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { resolveProjectResourcePaths } from "@zcode/shared/zody-paths";
 
 const HOME_PREFIX = "~/";
 
@@ -22,7 +23,11 @@ export async function resolveUserSubagentRoot(options?: SubagentStorageOptions):
 }
 
 export function resolveWorkspaceSubagentRoot(workspacePath: string): string {
-  return join(workspacePath, ".zcode", "agents");
+  return resolveProjectResourcePaths(workspacePath, "agents").writePath;
+}
+
+export function resolveWorkspaceLegacySubagentRoot(workspacePath: string): string {
+  return resolveProjectResourcePaths(workspacePath, "agents").legacyPath;
 }
 
 export async function resolveSubagentStateFile(options?: SubagentStorageOptions): Promise<string> {
@@ -35,8 +40,8 @@ export async function resolveZCodeStorageRoot(options?: SubagentStorageOptions):
   const storageDir =
     typeof storage.dir === "string" && storage.dir.trim().length > 0
       ? storage.dir.trim()
-      // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
-      : `~/${ZCODE_DATA_ROOT_DIR_NAME}`;
+      : // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
+        `~/${ZCODE_DATA_ROOT_DIR_NAME}`;
   return resolveConfigPath(storageDir, options);
 }
 

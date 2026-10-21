@@ -91,22 +91,22 @@ describe("帮助配置 client/configs", () => {
     );
   }
 
-  it("HC-01: 真实帮助菜单、语言与成功缓存", async () => {
-    expect(await available("en-US")).toBe(true);
+  it("HC-01: 真实帮助菜单仅提供 Zody GitHub 链接和手动更新", async () => {
     await $('button[aria-label="Help"]').click();
-    await $('//*[@role="menuitem" and contains(.,"User community")]').click();
-    await expectExternal(fixture.remote.community_urls!["en-US"]!);
-    expect(await available("zh-CN")).toBe(true);
-    await browser.execute(async () => {
-      await (window as unknown as { zcode: DesktopBridge }).zcode.setApplicationLocale("zh-CN");
-    });
-    await command("openCommunity");
-    await expectExternal(fixture.remote.community_urls!["zh-CN"]!);
-    expect(server.requests).toHaveLength(1);
-    const query = new URL(server.requests[0]!.url, server.origin).searchParams;
-    expect(query.get("app_version")).toBeTruthy();
-    expect(query.get("platform")).toBe(`${process.platform}-${process.arch}`);
-    expect(server.requests[0]!.headers.authorization).toBeUndefined();
+    await expect($('//*[@role="menuitem" and contains(.,"Product docs")]')).toBeDisplayed();
+    await expect($('//*[@role="menuitem" and contains(.,"Report an issue")]')).toBeDisplayed();
+    await expect($('//*[@role="menuitem" and contains(.,"User community")]')).not.toBeDisplayed();
+    await $('//*[@role="menuitem" and contains(.,"Product docs")]').click();
+    await expectExternal("https://github.com/zclaudia/zody/tree/main/docs");
+
+    await $('button[aria-label="Help"]').click();
+    await $('//*[@role="menuitem" and contains(.,"Report an issue")]').click();
+    await expectExternal("https://github.com/zclaudia/zody/issues");
+
+    await $('button[aria-label="Help"]').click();
+    await $('//*[@role="menuitem" and contains(.,"Download updates")]').click();
+    await expectExternal("https://github.com/zclaudia/zody/releases");
+    expect(server.requests).toHaveLength(0);
   });
 
   it("HC-02: 英文缺失只回退英文内置值", async () => {

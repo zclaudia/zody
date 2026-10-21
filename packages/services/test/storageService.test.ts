@@ -8,12 +8,12 @@ import type {
 } from "../src/storage/app/ports.js";
 import type { StorageRootSpec, StorageUsageSnapshot } from "@zcode/shared";
 
-const homeRoot: StorageRootSpec = { id: "home", path: "/h/.zcoder", hasCustomDataBaseDir: false };
+const homeRoot: StorageRootSpec = { id: "home", path: "/h/.zody", hasCustomDataBaseDir: false };
 
 function rootUsage(bytes: number) {
   return {
     id: "home" as const,
-    path: "/h/.zcoder",
+    path: "/h/.zody",
     volume: null,
     bytes,
     fileCount: 1,
@@ -148,12 +148,12 @@ describe("createStorageService", () => {
     await flush();
     const result = await service.clean({ rootId: "home", categoryId: "modelTrajectory" });
     expect(runs[0]!.request.signal.aborted).toBe(true);
-    expect(listCandidates).toHaveBeenCalledWith("/h/.zcoder", [
+    expect(listCandidates).toHaveBeenCalledWith("/h/.zody", [
       { prefix: "cli/debug", recursive: true },
       { prefix: "cli/rollout", recursive: true },
     ]);
     expect(deleteFiles).toHaveBeenCalledWith(
-      "/h/.zcoder",
+      "/h/.zody",
       expect.arrayContaining([
         expect.objectContaining({ relativePath: "cli/debug/model-io-a.jsonl" }),
         expect.objectContaining({ relativePath: "cli/rollout/model-io-b.jsonl" }),

@@ -1,2 +1,4 @@
-// 产品文档入口统一收口，避免不同菜单跳到不一致的文档站。
-export const ZCODE_PRODUCT_DOCS_URL = "https://zcode.z.ai/docs";
+// Zody public links are kept together so every help surface points to the same repository.
+export const ZODY_PRODUCT_DOCS_URL = "https://github.com/zclaudia/zody/tree/main/docs";
+export const ZODY_ISSUES_URL = "https://github.com/zclaudia/zody/issues";
+export const ZODY_RELEASES_URL = "https://github.com/zclaudia/zody/releases";

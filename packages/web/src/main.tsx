@@ -98,7 +98,7 @@ async function bootstrapWebApp() {
       onClose: () => {},
     });
     const platform = createWebPlatform();
-    document.title = "ZCode - Web + Server";
+    document.title = "Zody - Web + Server";
 
     webEntryRoot.render(
       <AppErrorBoundary>

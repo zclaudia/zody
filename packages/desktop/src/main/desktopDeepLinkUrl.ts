@@ -1,5 +1,5 @@
-const DEEP_LINK_SCHEME = "zcode";
-const DEEP_LINK_RE = /\bzcode:(?:\/\/|\/)?[^\s"'<>]+/i;
+const DEEP_LINK_SCHEMES = new Set(["zody:", "zody-preview:"]);
+const DEEP_LINK_RE = /\b(?:zody|zody-preview):(?:\/\/|\/)?[^\s"'<>]+/i;
 const WORKSPACE_OPEN_HOST = "workspace";
 // fork（F4.8）：SHARE_IMPORT_HOST（zcode://share/import）随会话分享功能删除。
 const DEEP_LINK_ADDITIONAL_DATA_KEY = "deepLinkUrl";
@@ -15,7 +15,7 @@ function normalizeDeepLinkPath(pathname: string): string {
 // fork（F4.7）：zcode://oauth/callback 与 zcode://payment/callback 判定随官方账号链删除。
 
 export function isWorkspaceOpenUrl(parsedUrl: URL): boolean {
-  if (parsedUrl.protocol !== `${DEEP_LINK_SCHEME}:`) {
+  if (!DEEP_LINK_SCHEMES.has(parsedUrl.protocol.toLowerCase())) {
     return false;
   }
 

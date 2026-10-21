@@ -54,8 +54,8 @@ describe("名字规则的前置回声", () => {
   });
 
   it("落点预览：项目档相对路径，全局档 ~ 开头（agent 机器的家目录）", () => {
-    expect(savedWorkflowPathPreview("project", "x")).toBe(".zcode/workflows/x.dwf.ts");
-    expect(savedWorkflowPathPreview("global", "x")).toBe("~/.zcoder/workflows/x.dwf.ts");
+    expect(savedWorkflowPathPreview("project", "x")).toBe(".zody/workflows/x.dwf.ts");
+    expect(savedWorkflowPathPreview("global", "x")).toBe("~/.zody/workflows/x.dwf.ts");
   });
 });
 
@@ -288,10 +288,10 @@ describe("词条", () => {
     expect(keysOf(enUS as Record<string, string>)).toEqual(zh);
     // 设计里定下的那两句逐字。
     expect((zhCN as Record<string, string>)["chat.toolCall.workflow.saveRun.lead"]).toBe(
-      "让 ZCode 帮我提炼保存",
+      "让 Zody 帮我提炼保存",
     );
     expect((zhCN as Record<string, string>)["chat.toolCall.workflow.saveRun.lead.hint"]).toBe(
-      "ZCode 会帮你提炼出可复用的工作流，再交你确认。",
+      "Zody 会帮你提炼出可复用的工作流，再交你确认。",
     );
   });
 });

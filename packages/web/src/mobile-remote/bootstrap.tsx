@@ -161,7 +161,7 @@ function seedStableWebRemoteControlClientId(clientInstanceId: string): void {
 }
 
 function renderWebRemoteControlLoading(state: UiWebRemoteControlTerminalTransportState): void {
-  document.title = "ZCode - Web Remote Control";
+  document.title = "Zody - Web Remote Control";
   webEntryRoot.render(<WebRemoteControlLoadingScreen state={state} />);
 }
 
@@ -951,7 +951,7 @@ async function startGatewaySession(
     disposeStartPageWorkspaceSubscription = undefined;
     disposeStartPageRecentSubscription?.();
     disposeStartPageRecentSubscription = undefined;
-    document.title = "ZCode - Web Remote Control";
+    document.title = "Zody - Web Remote Control";
     webEntryRoot.render(
       <AppErrorBoundary key={bridge.bridgeSessionId}>
         <ZCodeIntlProvider
@@ -1027,7 +1027,7 @@ async function startGatewaySession(
     currentWorkspaceKey = workspaceKey;
     currentTaskId = taskId;
     await updateMobileViewState(workspaceKey, taskId);
-    document.title = "ZCode - Web Remote Control";
+    document.title = "Zody - Web Remote Control";
     const initialResult = await listWorkspaces();
     if (terminated) return;
     ready = true;

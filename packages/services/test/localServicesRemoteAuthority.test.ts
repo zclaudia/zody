@@ -15,7 +15,7 @@ function makeTempHome(): string {
 }
 
 function writeLegacyZapiConfig(home: string): void {
-  const configDir = join(home, ".zcoder", "v2");
+  const configDir = join(home, ".zody", "v2");
   mkdirSync(configDir, { recursive: true });
   writeFileSync(
     join(configDir, "config.json"),
@@ -49,7 +49,7 @@ function writeLegacyZapiConfig(home: string): void {
 }
 
 function writeZCodeBuiltinProviderConfig(home: string): string {
-  const configDir = join(home, ".zcoder", "provider-test");
+  const configDir = join(home, ".zody", "provider-test");
   mkdirSync(configDir, { recursive: true });
   const filePath = join(configDir, "zcodeBuiltin.json");
   writeFileSync(
@@ -78,6 +78,7 @@ describe("createLocalServices remote authority", () => {
   afterEach(() => {
     process.env.HOME = originalHome;
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
     vi.resetModules();
     for (const home of tempHomes.splice(0)) {
       // 根因：Windows 删除目录必须先关闭其下所有句柄，而 service 释放（日志文件、
@@ -222,7 +223,7 @@ describe("createLocalServices remote authority", () => {
   it("只在本进程成功持久化 Provisioning Source 事实后通知 Host", async () => {
     const home = makeTempHome();
     process.env.HOME = home;
-    mkdirSync(join(home, ".zcoder", "v2"), { recursive: true });
+    mkdirSync(join(home, ".zody", "v2"), { recursive: true });
     const onProviderProvisioningSourceChanged = vi.fn();
     const [{ createLocalServices, disposeServiceResources }, serviceDescriptors] =
       await Promise.all([import("../src/node.js"), import("../src/index.js")]);
@@ -256,6 +257,9 @@ describe("createLocalServices remote authority", () => {
   });
 
   it("复用 Host 注入的网络 transport 并由 ServiceCollection 释放", async () => {
+    // 无 endpoint 时 scenes 已按规格关闭；transport 验证须显式配置测试服务。
+    vi.stubEnv("ZCODE_BASE_URL", "https://scenes.example.test");
+    vi.resetModules();
     const home = makeTempHome();
     process.env.HOME = home;
     const transport = {
@@ -324,8 +328,10 @@ describe("createLocalServices remote authority", () => {
     const home = makeTempHome();
     process.env.HOME = home;
 
-    const [{ createLocalServices, disposeServiceResources }, { IGitService, IMediaPreviewService }] =
-      await Promise.all([import("../src/node.js"), import("../src/index.js")]);
+    const [
+      { createLocalServices, disposeServiceResources },
+      { IGitService, IMediaPreviewService },
+    ] = await Promise.all([import("../src/node.js"), import("../src/index.js")]);
     const services = createLocalServices({
       zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
     });

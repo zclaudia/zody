@@ -249,7 +249,7 @@ function formatZCodeAgentLogDate(now: Date): string {
 
 function resolveZCodeAgentCurrentLogFilePath(now = new Date()): string {
   const configuredLogDir = process.env.ZCODE_LOG_DIR?.trim();
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const logDir = configuredLogDir || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "log");
   return join(logDir, `zcode-${formatZCodeAgentLogDate(now)}.jsonl`);
 }
@@ -2432,13 +2432,12 @@ export function createZCodeTaskServiceAdapter(
       const snapshot = restored.snapshot;
       emitWorkspaceConfig(params, snapshot.settings);
       const snapshotMeta = await syncTaskIndexSnapshot(snapshot);
-      const meta =
-        params.automationId
-          ? await syncTaskIndexMeta({
-              ...snapshotMeta,
-              ...(params.automationId ? { cronAutomationId: params.automationId } : {}),
-            })
-          : snapshotMeta;
+      const meta = params.automationId
+        ? await syncTaskIndexMeta({
+            ...snapshotMeta,
+            ...(params.automationId ? { cronAutomationId: params.automationId } : {}),
+          })
+        : snapshotMeta;
       notifySyncerSession({
         taskId: meta.taskId,
         workspacePath: meta.workspacePath,

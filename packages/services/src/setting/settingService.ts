@@ -49,7 +49,7 @@ function resolveUserHomeDir() {
 }
 
 function getSettingsDir() {
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "v2");
 }
 

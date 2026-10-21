@@ -99,7 +99,7 @@ describe("providerRuntimeResolver glm workdir discovery", () => {
     const sandboxRoot = mkdtempSync(join(tmpdir(), "zcode-glm-binary-"));
     createdDirs.push(sandboxRoot);
     // Keep the fallback test hermetic: a developer may already have a valid
-    // ~/.zcoder/server/agents runtime, which intentionally outranks repository
+    // ~/.zody/server/agents runtime, which intentionally outranks repository
     // bundled resources in production.
     process.env.HOME = sandboxRoot;
 
@@ -155,7 +155,7 @@ describe("providerRuntimeResolver workspace config dir identity", () => {
     const workspaceIdentity = "remote:ssh:localhost:2223:dev:/home/dev";
 
     expect(resolveProviderConfigDir("glm", workspacePath, workspaceIdentity)).toBe(
-      join(home, ".zcoder", "cli"),
+      join(home, ".zody", "cli"),
     );
   });
 
@@ -168,7 +168,7 @@ describe("providerRuntimeResolver workspace config dir identity", () => {
 
     const workspacePath = "/Users/demo/project";
 
-    expect(resolveProviderConfigDir("glm", workspacePath)).toBe(join(home, ".zcoder", "cli"));
+    expect(resolveProviderConfigDir("glm", workspacePath)).toBe(join(home, ".zody", "cli"));
   });
 });
 
@@ -199,7 +199,7 @@ describe("providerRuntimeResolver clean env", () => {
     createdDirs.push(dataBaseDir);
     setDataBaseDir(dataBaseDir);
 
-    const env = buildCleanEnv("glm", join(dataBaseDir, ".zcoder", "cli"));
+    const env = buildCleanEnv("glm", join(dataBaseDir, ".zody", "cli"));
 
     expect(env.HOME).toBe(dataBaseDir);
     if (process.platform === "win32") {

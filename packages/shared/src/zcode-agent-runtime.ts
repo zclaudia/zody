@@ -31,7 +31,7 @@ export const ZCODE_AGENT_RUNTIME: ZCodeAgentRuntimeDescriptor = {
   bundledResourceDir: "glm",
   version: "0.13.3",
   spawnArgs: ["app-server", "--stdio"],
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   nativeConfigDir: `${ZCODE_DATA_ROOT_DIR_NAME}/cli`,
   nativeConfigFileName: "config.json",
   missingBinaryMessage:

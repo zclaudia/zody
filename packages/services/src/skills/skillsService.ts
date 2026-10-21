@@ -29,6 +29,11 @@ import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZCODE_DATA_ROOT_DIR_NAME } from "@
 import type { ISkillsService } from "./skills.js";
 import { SKILL_FILE_NAME, walkSkillMarkdownPaths } from "./skillDiscoveryWalk.js";
 import { readInstalledPluginRoots } from "#src/plugins/installedPluginRoots.js";
+import {
+  resolveProjectResourceRoots,
+  ZODY_DIRECTORY_NAME,
+  LEGACY_ZCODE_DIRECTORY_NAME,
+} from "@zcode/shared/zody-paths";
 
 interface DiscoverResult {
   skills: SkillSummary[];
@@ -47,7 +52,7 @@ interface ParsedFrontmatter {
 }
 
 const SKILL_META_FILE_NAME = "_meta.json";
-// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+// fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
 const SKILL_SETTINGS_DIR = join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "v2");
 const SKILL_CLI_SETTINGS_DIR = join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli");
 const SKILL_CLI_CONFIG_FILE = join(SKILL_CLI_SETTINGS_DIR, "config.json");
@@ -72,7 +77,7 @@ interface SkillsServiceOptions {
 
 /** ZCode Agent 工作区级技能目录。 */
 function getWorkspaceZcodeSkillRoot(workspacePath: string): string {
-  return join(workspacePath, ".zcode", "skills");
+  return resolveProjectResourceRoots(workspacePath, "skills").writePath;
 }
 
 /** 兼容目录: workspace 级 `.agents/skills`, 仅在同层 `.zcode/skills` 没读到技能时 fallback。 */
@@ -134,7 +139,7 @@ async function isUserAgentsSkillCoveredByZcode(params: {
 
 /**
  * 从 workspacePath 向上走到 worktree 根（含 .git 标记），把每一层的
- * `.zcode/skills` 与 `.agents/skills` 都收集起来。
+ * `.zody/skills`、`.zcode/skills` 与 `.agents/skills` 都收集起来；同名由 .zody 优先。
  * 对齐 apps/zcode-cli/packages/adapters/src/skills/roots.ts:60-72。
  * 找不到 .git 时退回 workspacePath 自身。
  */
@@ -155,10 +160,11 @@ async function resolveAncestorWorkspaceRoots(workspacePath: string): Promise<str
   }
   const roots: string[] = [];
   for (const dir of baseDirectories) {
+    // 新目录先加入，按名称优先级 shadow 旧目录的同名 skill。
+    roots.push(...resolveProjectResourceRoots(dir, "skills").readPaths);
     // Agent runtime 会合并扫描两个 workspace skill 根。UI 之前把 `.agents`
     // 当成 `.zcode` 的 fallback，导致同层 `.zcode` 只要有一个技能，`/`、`$` 和设置页
     // 就会整根漏掉 `.agents` 技能，形成“模型可执行但 UI 无法引用”的发现语义分裂。
-    roots.push(getWorkspaceZcodeSkillRoot(dir));
     roots.push(getWorkspaceAgentsSkillRoot(dir));
   }
   return roots;
@@ -257,7 +263,7 @@ function collectMentionedSkillNames(prompt: string): Set<string> {
 function escapeXmlAttribute(value: string): string {
   return value
     .replaceAll("&", "&amp;")
-    .replaceAll("\"", "&quot;")
+    .replaceAll('"', "&quot;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 }
@@ -458,7 +464,7 @@ function hasYamlUnsafeLooseInlineField(frontmatterText: string): boolean {
     const rawValue = line.slice(colonIndex + 1).trim();
     if (
       rawValue.length === 0 ||
-      rawValue.startsWith("\"") ||
+      rawValue.startsWith('"') ||
       rawValue.startsWith("'") ||
       rawValue.startsWith("|") ||
       rawValue.startsWith(">")
@@ -846,9 +852,7 @@ async function discoverSkills(params: {
   includeUserSkills: boolean;
   provider: ZCodeProvider;
 }): Promise<DiscoverResult> {
-  const workspaceRoots = dedupeRoots(
-    await resolveAncestorWorkspaceRoots(params.workspacePath),
-  );
+  const workspaceRoots = dedupeRoots(await resolveAncestorWorkspaceRoots(params.workspacePath));
   const roots: SkillRootDescriptor[] = workspaceRoots.map((rootPath) => ({
     scope: "workspace" as const,
     rootPath,
@@ -870,6 +874,7 @@ async function discoverSkills(params: {
   const diagnostics: SkillDiagnostic[] = [];
   const skills: SkillSummary[] = [];
   const seenSkillPaths = new Set<string>();
+  const preferredProjectSkillNames = new Set<string>();
   const userZcodeSkillNameKeys = params.includeUserSkills
     ? await collectSkillNameKeysInRoot(getUserZcodeSkillRoot())
     : new Set<string>();
@@ -900,6 +905,21 @@ async function discoverSkills(params: {
       if (seenSkillPaths.has(canonicalSkillPath)) {
         continue;
       }
+      const skillNameKey = await readSkillNameKey(skillPath);
+      if (root.scope === "workspace") {
+        const parentDirectory = dirname(dirname(root.rootPath));
+        const containerName = basename(dirname(root.rootPath));
+        const projectNameKey = `${parentDirectory}\0${skillNameKey}`;
+        if (
+          containerName === LEGACY_ZCODE_DIRECTORY_NAME &&
+          preferredProjectSkillNames.has(projectNameKey)
+        ) {
+          continue;
+        }
+        if (containerName === ZODY_DIRECTORY_NAME) {
+          preferredProjectSkillNames.add(projectNameKey);
+        }
+      }
       seenSkillPaths.add(canonicalSkillPath);
       if (!(await exists(skillPath))) {
         continue;
@@ -911,10 +931,7 @@ async function discoverSkills(params: {
         diagnostics.push({
           code: "skill_read_failed",
           severity: "warning",
-          message:
-            error instanceof Error
-              ? error.message
-              : `Failed to read skill: ${skillPath}`,
+          message: error instanceof Error ? error.message : `Failed to read skill: ${skillPath}`,
           path: skillPath,
         });
         continue;
@@ -1002,10 +1019,7 @@ async function collectSkillMarkdownPaths(
       diagnostics.push({
         code: "skill_scan_failed",
         severity: "warning",
-        message:
-          error instanceof Error
-            ? error.message
-            : `Failed to scan skill directory: ${path}`,
+        message: error instanceof Error ? error.message : `Failed to scan skill directory: ${path}`,
         path,
       });
     },
@@ -1016,8 +1030,7 @@ async function collectSkillMarkdownPaths(
 }
 
 function resolveCapabilities(options?: SkillsServiceOptions): SkillsCapability {
-  const isDesktopRuntime =
-    options?.isDesktopRuntime ?? Boolean(process.env.ZCODE_PROCESS_LABEL);
+  const isDesktopRuntime = options?.isDesktopRuntime ?? Boolean(process.env.ZCODE_PROCESS_LABEL);
   if (isDesktopRuntime) {
     return { userScopeAvailable: true };
   }
@@ -1203,7 +1216,7 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
 
       // 用发现阶段命中的原始路径（sourcePath，未 realpath）定位技能目录项。
       // 软链导入的技能 skill.path 是 realpath 后的目标文件，dirname 会指向目标目录；
-      // sourcePath 才指向 `~/.zcoder/skills/<name>` 下的目录项本身。
+      // sourcePath 才指向 `~/.zody/skills/<name>` 下的目录项本身。
       const skillDir = dirname(skill.sourcePath ?? skill.path);
       const skillLeafName = basename(skillDir);
       // 只解析父目录，不解析叶子本身：
@@ -1228,10 +1241,7 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
         const canonicalRoot = await realpath(root).catch(() => root);
         const relativePath = relative(canonicalRoot, canonicalParent);
         // 父目录等于根（叶子直接位于根下）也是合法的常见场景，故允许 "".
-        if (
-          relativePath === "" ||
-          (!relativePath.startsWith("..") && !isAbsolute(relativePath))
-        ) {
+        if (relativePath === "" || (!relativePath.startsWith("..") && !isAbsolute(relativePath))) {
           contained = true;
           break;
         }

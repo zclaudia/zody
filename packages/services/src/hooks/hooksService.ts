@@ -20,6 +20,7 @@ import {
   type WorkspaceHooksConfig,
 } from "@zcode/shared/workspace-hook-discovery";
 import { parseWorkspaceHookTrustStoreContent } from "@zcode/shared/workspace-hook-trust-store-file";
+import { resolveProjectResourcePaths } from "@zcode/shared/zody-paths";
 import { createServiceLogger, type ServiceLogger } from "#src/logger/serviceLogger.js";
 import type { IHooksService } from "./hooks.js";
 import { atomicWriteWorkspaceHookConfig } from "./workspaceHookConfigMutation.js";
@@ -57,10 +58,8 @@ function resolveUserHomeDir(): string {
 function getRootDir(source: SettingsDirectorySource, workspacePath?: string): string {
   const baseDir = workspacePath ?? resolveUserHomeDir();
   if (source === "zcode") {
-    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用；workspace 段保持 .zcode。
-    return workspacePath
-      ? join(baseDir, ".zcode")
-      : join(baseDir, ZCODE_DATA_ROOT_DIR_NAME, "cli");
+    // Project writes use .zody; discovery separately keeps the legacy .zcode read path.
+    return workspacePath ? join(baseDir, ".zody") : join(baseDir, ZCODE_DATA_ROOT_DIR_NAME, "cli");
   }
   return join(baseDir, source === "agents" ? ".agents" : ".claude");
 }
@@ -275,8 +274,13 @@ async function writeZCodeHooksConfig(
   workspacePath: string | undefined,
   hooks: Hook[],
 ): Promise<void> {
-  const configPath = getConfigPath("zcode", workspacePath);
-  const existingConfig = (await readJsonFile<ZCodeConfigFile>(configPath)) ?? {};
+  const configPath = workspacePath
+    ? resolveProjectResourcePaths(workspacePath, ZCODE_CONFIG_FILE).writePath
+    : getConfigPath("zcode");
+  const effectivePath = workspacePath
+    ? resolveProjectResourcePaths(workspacePath, ZCODE_CONFIG_FILE).readPath
+    : configPath;
+  const existingConfig = (await readJsonFile<ZCodeConfigFile>(effectivePath)) ?? {};
   const enabled = resolveNextRootEnabled(existingConfig.hooks?.enabled, hooks);
   await atomicWriteWorkspaceHookConfig(configPath, {
     ...existingConfig,
@@ -293,7 +297,9 @@ async function saveHooksImpl(params: {
   workspacePath: string;
   hooks: Hook[];
 }): Promise<void> {
-  const currentProjectConfigPath = resolve(params.workspacePath, ".zcode", "config.json");
+  const currentProjectConfigPath = resolve(
+    resolveProjectResourcePaths(params.workspacePath, ZCODE_CONFIG_FILE).readPath,
+  );
   const userHooks = params.hooks.filter(
     (hook) =>
       hook.editable !== false &&

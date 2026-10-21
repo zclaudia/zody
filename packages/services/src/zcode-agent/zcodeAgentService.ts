@@ -402,10 +402,7 @@ type SessionResumeCompatField =
   | "toolDenylist"
   | "dynamicWorkflowEnabled"
   | "dynamicWorkflowMode";
-type SessionSendCompatField =
-  | "browserAmbientContext"
-  | "automationId"
-  | "toolDenylist";
+type SessionSendCompatField = "browserAmbientContext" | "automationId" | "toolDenylist";
 
 const SESSION_CREATE_OPTIONAL_COMPAT_FIELDS = new Set<SessionCreateCompatField>([
   "persistence",
@@ -501,7 +498,7 @@ function savedWorkflowScopeParam(params: ZCodeAgentSavedWorkflowTarget): {
 }
 
 function ensurePluginManagementWorkspacePath(): string {
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const workspacePath = join(
     getDataBaseDir(),
     ZCODE_DATA_ROOT_DIR_NAME,
@@ -515,7 +512,7 @@ function ensurePluginManagementWorkspacePath(): string {
 
 // NOTE: this counts ONLY the per-session MCP servers passed through the ZCode Protocol
 // session/create params (the app→protocol channel). It is deliberately independent of the
-// CLI/bootstrap MCP servers configured in ~/.zcoder/cli/config.json (mcp.servers), which the agent
+// CLI/bootstrap MCP servers configured in ~/.zody/cli/config.json (mcp.servers), which the agent
 // runtime connects separately and reports via the `mcp.server.connected`/toolCount events. So a
 // createSession log line with mcpServerCount:0 is EXPECTED when zcode-cua is a CLI-config MCP server
 // (e.g. the product Helper broker path injected through the gated bootstrap env): the model still receives those
@@ -2823,7 +2820,7 @@ export function createZCodeAgentService(
   // 就绪的 workspace 级方法，管理面进程正是为这种「不寄居真实项目」的控制面能力准备的，且不会因
   // 真实 workspace 生命周期被 watchdog 回收；getOrStartReadOnlyClient 反而会把这个合成 workspace
   // 塞进 activeClientsByWorkspaceKey 并跑一遍交互偏好同步，污染会话 client map。两条路径都在本机，
-  // homedir() 即用户家目录，全局根 `~/.zcoder/workflows/` 因此解析到真实目录。
+  // homedir() 即用户家目录，全局根 `~/.zody/workflows/` 因此解析到真实目录。
   // 远程 runtime（SSH/WSL identity 或带 remoteSessionId）的 home 不是本机，绝不选它当载体。
   function isLocalActiveWorkspaceClient(workspace: ZCodeAgentWorkspaceTarget): boolean {
     return (
@@ -3243,10 +3240,7 @@ export function createZCodeAgentService(
         // 可选字段降级重试，避免 thoughtLevel/persistence 版本差阻塞首发创建。
         const snapshot = await client.request(
           zcodeProtocolMethods.sessionCreate,
-          buildSessionCreateParams(
-            { ...params, ...dynamicWorkflowFlags },
-            new Set(compatFields),
-          ),
+          buildSessionCreateParams({ ...params, ...dynamicWorkflowFlags }, new Set(compatFields)),
           zcodeSessionStateSnapshotSchema,
           sessionTraceId ? { trace: { traceId: sessionTraceId } } : undefined,
         );
@@ -3351,10 +3345,7 @@ export function createZCodeAgentService(
         });
         const snapshot = await client.request(
           zcodeProtocolMethods.sessionResume,
-          buildSessionResumeParams(
-            { ...params, ...dynamicWorkflowFlags },
-            new Set(compatFields),
-          ),
+          buildSessionResumeParams({ ...params, ...dynamicWorkflowFlags }, new Set(compatFields)),
           zcodeSessionStateSnapshotSchema,
         );
         const sessionTraceId = rememberSessionTrace(params, snapshot) ?? cachedTraceId;

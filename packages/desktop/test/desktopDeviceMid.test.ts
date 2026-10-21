@@ -63,7 +63,10 @@ describe("ensureDesktopDeviceMidSync", () => {
     const dir = makeTempDir();
     writeFileSync(
       join(dir, "telemetry-state.json"),
-      JSON.stringify({ lastDailyActiveDate: "2026-06-23", dailyActiveInFlight: { date: "x", startedAt: 1 } }),
+      JSON.stringify({
+        lastDailyActiveDate: "2026-06-23",
+        dailyActiveInFlight: { date: "x", startedAt: 1 },
+      }),
       "utf-8",
     );
 
@@ -82,10 +85,10 @@ describe("ensureDesktopDeviceMidSync", () => {
       createId: () => "shared-device-uuid",
     });
 
-    // telemetryCore 用 homeDir 定位 state 文件：{homeDir}/.zcoder/v2/telemetry-state.json
+    // telemetryCore 用 homeDir 定位 state 文件：{homeDir}/.zody/v2/telemetry-state.json
     // 让该路径正好等于本测试的 configDir，验证两侧读同一字段。
     const home = makeTempDir();
-    const sharedDir = join(home, ".zcoder", "v2");
+    const sharedDir = join(home, ".zody", "v2");
     mkdirSync(sharedDir, { recursive: true });
     writeFileSync(
       join(sharedDir, "telemetry-state.json"),

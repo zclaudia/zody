@@ -3,7 +3,6 @@ import { PluginAddMenu } from "@/settings/PluginAddMenu.js";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Loader2,
-  Monitor,
   MoreHorizontal,
   Plus,
   RefreshCw,
@@ -22,7 +21,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.js";
 import { Switch } from "@/components/ui/switch.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
-import { TID_PLUGIN_STORE_BROWSE } from "@zcode/shared";
+import { TID_PLUGIN_STORE_BROWSE, ZCODE_CUA_OFFICIAL_PLUGIN_ID } from "@zcode/shared";
 import type { ZCodePluginInfo, ZCodePluginScope, ZCodePluginUserConfigOption } from "@zcode/shared";
 import type { CreateTaskRequest } from "@/app-shell/types.js";
 import {
@@ -82,11 +81,6 @@ import {
   selectPluginsForScope,
 } from "@/settings/pluginCapabilityProjection.js";
 import {
-  isComputerUseRemoteOrLinux,
-  matchesComputerUseSearch,
-  resolveComputerUseAvailability,
-} from "@/settings/computerUseAvailability.js";
-import {
   PluginScopeMenu,
   getPluginWorkspaceKey,
   isPluginScopeWorkspaceConnected,
@@ -137,9 +131,6 @@ function PluginList({
   target,
   configScope,
   searchQuery,
-  isDesktop,
-  isMacDesktop,
-  isWindowsDesktop,
   isWebRemoteControl,
   onAdd,
   onCreateTask,
@@ -151,9 +142,6 @@ function PluginList({
   target: WorkspaceTabState | null;
   configScope: ZCodePluginScope;
   searchQuery: string;
-  isDesktop: boolean;
-  isMacDesktop: boolean;
-  isWindowsDesktop: boolean;
   isWebRemoteControl: boolean;
   onAdd?: () => void;
   onCreateTask?: (request?: CreateTaskRequest) => void;
@@ -254,7 +242,7 @@ function PluginList({
       searchQuery,
       storeItemById,
       locale,
-    );
+    ).filter((plugin) => plugin.id !== ZCODE_CUA_OFFICIAL_PLUGIN_ID);
   }, [
     configScope,
     installedPlugins,
@@ -265,7 +253,12 @@ function PluginList({
     storeMatchesTarget,
   ]);
   const scopedPlugins = useMemo(
-    () => (storeMatchesTarget ? selectPluginsForScope(plugins, installedPlugins, configScope) : []),
+    () =>
+      storeMatchesTarget
+        ? selectPluginsForScope(plugins, installedPlugins, configScope).filter(
+            (plugin) => plugin.id !== ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+          )
+        : [],
     [configScope, installedPlugins, plugins, storeMatchesTarget],
   );
   const builtInPluginIds = useMemo(
@@ -283,28 +276,12 @@ function PluginList({
   const visibleBuiltInPlugins = visiblePluginGroups.builtIn;
   const visibleInstalledPlugins = visiblePluginGroups.installed;
   const installedPluginCount = scopedPluginGroups.installed.length;
-  const computerUseAvailability = resolveComputerUseAvailability({
-    isDesktop,
-    isMacDesktop,
-    isWindowsDesktop,
-    remoteSessionId: target?.remoteSessionId,
-    remoteTarget: target?.remoteTarget,
-    workspaceIdentity: target?.workspaceIdentity,
-  });
-  const showUnavailableComputerUse = Boolean(
-    configScope === "user" &&
-    target &&
-    !loading &&
-    isComputerUseRemoteOrLinux(computerUseAvailability) &&
-    matchesComputerUseSearch(searchQuery),
-  );
   const hasEmptySearchResult = Boolean(
     target &&
     !loading &&
     searchQuery.trim() &&
     visibleInstalledPlugins.length === 0 &&
-    visibleBuiltInPlugins.length === 0 &&
-    !showUnavailableComputerUse,
+    visibleBuiltInPlugins.length === 0,
   );
   const hideInstalledGroup = Boolean(searchQuery.trim() && visibleInstalledPlugins.length === 0);
   useEffect(() => {
@@ -641,32 +618,6 @@ function PluginList({
     </div>
   );
 
-  const renderUnavailableComputerUse = () => (
-    <div className="overflow-hidden rounded-xl bg-surface">
-      <div className="flex min-w-0 items-center gap-3 px-4 py-3 text-foreground-subtle">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background text-foreground-subtle">
-          <Monitor className="size-4" aria-hidden="true" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-ui-base font-medium text-foreground">
-            {intl.formatMessage({ id: "settings.computerUse.title" })}
-          </div>
-          <div className="mt-0.5 text-ui-sm text-foreground-subtle">
-            {intl.formatMessage({
-              id:
-                computerUseAvailability.kind === "local-linux"
-                  ? "settings.computerUse.unsupported.linuxDescription"
-                  : "settings.computerUse.unsupported.remoteDescription",
-            })}
-          </div>
-        </div>
-        <span className="shrink-0 rounded-md bg-background px-2 py-1 text-ui-xs font-medium text-foreground-subtle">
-          {intl.formatMessage({ id: "settings.computerUse.unsupported.badge" })}
-        </span>
-      </div>
-    </div>
-  );
-
   if (selectedPlugin && selectedStoreItem && targetServiceResolution.rpcReady) {
     const pluginBreadcrumbLabel = resolvePluginDisplayName(selectedStoreItem, locale);
     const pluginsBreadcrumbLabel = intl.formatMessage({ id: "settings.plugins.title" });
@@ -858,7 +809,7 @@ function PluginList({
           <PluginLoadingState label={intl.formatMessage({ id: "common.loading" })} />
         ) : visibleInstalledPlugins.length > 0 ? (
           renderPluginRows(visibleInstalledPlugins)
-        ) : installedPluginCount === 0 && !showUnavailableComputerUse ? (
+        ) : installedPluginCount === 0 ? (
           <PluginInstallEmptyState
             title={intl.formatMessage({
               id: "settings.plugin.plugins.emptyInstalledTitle",
@@ -888,14 +839,6 @@ function PluginList({
             </span>
           </h3>
           {renderPluginRows(visibleBuiltInPlugins)}
-        </div>
-      ) : null}
-      {showUnavailableComputerUse ? (
-        <div className="space-y-4">
-          <h3 className="flex h-7 items-center text-ui-base font-medium text-foreground">
-            {intl.formatMessage({ id: "settings.computerUse.unsupported.group" })}
-          </h3>
-          {renderUnavailableComputerUse()}
         </div>
       ) : null}
       <PluginUninstallConfirmDialog
@@ -951,9 +894,6 @@ function EmptyState({ message }: { message: string }) {
 }
 
 export function PluginsSection({
-  isDesktop = false,
-  isMacDesktop = false,
-  isWindowsDesktop = false,
   isWebRemoteControl = false,
   initialTab = "plugins",
   initialScopeKey,
@@ -1291,9 +1231,6 @@ export function PluginsSection({
             <PluginList
               target={target}
               configScope={selectedScope.kind === "user" ? "user" : "workspace"}
-              isDesktop={isDesktop}
-              isMacDesktop={isMacDesktop}
-              isWindowsDesktop={isWindowsDesktop}
               isWebRemoteControl={isWebRemoteControl}
               searchQuery={searchQueries.plugins}
               onAdd={selectedScope.kind === "user" ? openPluginStoreForSelectedScope : undefined}

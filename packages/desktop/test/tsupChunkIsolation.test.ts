@@ -126,52 +126,22 @@ describe("desktop tsup chunk isolation", () => {
     ).toThrow("OSS_PATH_PREFIX must contain one value or match CDN_DOMAIN count");
   });
 
-  it("正式安装包 Agent OTLP 配置应映射为 Main 使用的标准环境字段", () => {
+  it("任何正式或普通构建都默认不注入 Agent OTLP，并拒绝显式配置", () => {
     expect(
-      resolveBuildPackagedAgentTelemetryEnv({
-        ZCODE_ENV: "production",
-        ZCODE_PACKAGED_AGENT_OTEL_ENDPOINT: "https://arms.example.com/otlp",
-        ZCODE_PACKAGED_AGENT_OTEL_HEADERS: "x-arms-license-key=write-only",
-        ZCODE_PACKAGED_AGENT_OTEL_SERVICE_NAME: "zcode-cli-agent",
-      }),
-    ).toEqual({
-      OTEL_EXPORTER_OTLP_ENDPOINT: "https://arms.example.com/otlp",
-      OTEL_EXPORTER_OTLP_HEADERS: "x-arms-license-key=write-only",
-      OTEL_SERVICE_NAME: "zcode-cli-agent",
-      ZCODE_TELEMETRY_RUNTIME_DISTRIBUTION: "packaged",
-    });
-  });
-
-  it("正式安装包 Agent OTLP 配置不完整或生产环境使用 HTTP 时应阻止构建", () => {
-    expect(() =>
-      resolveBuildPackagedAgentTelemetryEnv({
-        ZCODE_ENV: "production",
-        ZCODE_PACKAGED_AGENT_OTEL_ENDPOINT: "https://arms.example.com/otlp",
-      }),
-    ).toThrow("must be configured together");
-    expect(() =>
-      resolveBuildPackagedAgentTelemetryEnv({
-        ZCODE_ENV: "production",
-        ZCODE_PACKAGED_AGENT_OTEL_ENDPOINT: "http://arms.example.com/otlp",
-        ZCODE_PACKAGED_AGENT_OTEL_HEADERS: "x-arms-license-key=write-only",
-      }),
-    ).toThrow("must use HTTPS in production");
-  });
-
-  it("release/current 与 Tag 构建缺少 Agent OTLP 配置时应失败，普通开发构建保持 Noop", () => {
-    expect(resolveBuildPackagedAgentTelemetryEnv({})).toEqual({});
-    expect(() =>
       resolveBuildPackagedAgentTelemetryEnv({
         CI: "true",
         CI_COMMIT_BRANCH: "release/current",
       }),
-    ).toThrow("required for release builds");
-    expect(() =>
-      resolveBuildPackagedAgentTelemetryEnv({
-        CI: "true",
-        CI_COMMIT_TAG: "v3.6.0",
-      }),
-    ).toThrow("required for release builds");
+    ).toEqual({});
+    for (const key of [
+      "ZCODE_PACKAGED_AGENT_OTEL_ENDPOINT",
+      "ZCODE_PACKAGED_AGENT_OTEL_HEADERS",
+      "ZCODE_PACKAGED_AGENT_OTEL_SERVICE_NAME",
+    ]) {
+      expect(() => resolveBuildPackagedAgentTelemetryEnv({ [key]: "configured" })).toThrow(
+        `${key} is disabled for Zody release builds`,
+      );
+    }
   });
 
   it("安装包身份与后端环境作为两个编译期常量注入每个 bundle", () => {
@@ -180,7 +150,7 @@ describe("desktop tsup chunk isolation", () => {
       const defines = getDefines(entry);
       expect(defines).toHaveProperty("__ZCODE_ENV__");
       expect(defines).toHaveProperty("__ZCODE_PRODUCT_FLAVOR__");
-      expect(["\"production\"", "\"preview\""]).toContain(defines.__ZCODE_PRODUCT_FLAVOR__);
+      expect(['"production"', '"preview"']).toContain(defines.__ZCODE_PRODUCT_FLAVOR__);
     }
   });
 

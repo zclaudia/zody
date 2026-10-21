@@ -134,7 +134,7 @@ function toLocalDateKey(timestamp: number, timeZone: string): string {
   return `${year}-${month}-${day}`;
 }
 
-// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+// fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
 function resolveTelemetryStateFile(homeDir?: string): string {
   if (homeDir) {
     return join(homeDir, ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");

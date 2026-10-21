@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "ignorePatterns": [
+    "apps/zcode-cli/packages/dynamic-workflow/tests/lowering/expected/*.js",
     "packages/desktop/src/renderer/src/plugin-sandbox/genUiTweakRuntime.js",
     "apps/zcode-cli/packages/visualize-plugin/skills/visualize/assets/**",
     "THIRD-PARTY-NOTICES.md",

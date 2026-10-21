@@ -166,8 +166,7 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
   },
 ];
 
-// 兼容既有只读消费者：默认配置代表不带桌面平台能力的 Web 视图；
-// macOS/Windows/Linux 必须继续通过 createSettingsPageConfig 动态加入 Computer Use。
+// 兼容既有只读消费者：默认配置代表不带桌面平台能力的 Web 视图。
 export const SETTINGS_SECTIONS = BASE_SETTINGS_SECTIONS.filter(
   (section) =>
     section.id !== "computerUse" &&
@@ -186,11 +185,12 @@ export function createSettingsPageConfig({
   isMacDesktop = false,
   isWindowsDesktop = false,
 }: SettingsPageConfigOptions = {}) {
-  const showComputerUse = isDesktop || isMacDesktop || isWindowsDesktop;
+  const showRemoteAccess = isDesktop || isMacDesktop || isWindowsDesktop;
   const settingsSections = BASE_SETTINGS_SECTIONS.filter((section) => {
-    if (section.id === "computerUse" && !showComputerUse) return false;
+    // 0.1.0 只有 Browser Use 可用；系统级 Computer Use 仍是占位能力，不向用户展示入口。
+    if (section.id === "computerUse") return false;
     // 远程访问由桌面 Main 的 gateway backend 提供，Web/手机页面没有这个能力。
-    if (section.id === "remoteAccess" && !showComputerUse) return false;
+    if (section.id === "remoteAccess" && !showRemoteAccess) return false;
     return isSettingsSectionEnabled(section.id);
   });
   const settingsSectionGroups = BASE_SETTINGS_SECTION_GROUPS.map((group) => ({

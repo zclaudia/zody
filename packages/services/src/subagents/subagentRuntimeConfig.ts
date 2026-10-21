@@ -6,6 +6,7 @@ import {
   type SubagentRuntimeConfig,
   type SubagentRuntimeState,
 } from "@zcode/shared";
+import { resolveProjectResourceRoots } from "@zcode/shared/zody-paths";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import {
   createSubagentConfigScope,
@@ -90,7 +91,7 @@ export function createSubagentRuntimeConfigCache(reader: ConfigReader) {
   let disposed = false;
   let user: { path: string; scope: Scope<Profiles> } | undefined;
   let state: { path: string; scope: Scope<SubagentRuntimeState> } | undefined;
-  const workspaces = new Map<string, Scope<Profiles>>();
+  const workspaces = new Map<string, Scope<Profiles>[]>();
   const snapshots = new Map<string, SubagentRuntimeConfig>();
   const key = (workspace: Workspace) =>
     workspace.workspaceIdentity?.trim() || workspace.workspacePath;
@@ -100,17 +101,17 @@ export function createSubagentRuntimeConfigCache(reader: ConfigReader) {
   function publish() {
     if (disposed || !user || !state) return;
     for (const [workspaceKey, project] of workspaces) {
-      const scopes = [user.scope, state.scope, project];
+      const scopes = [user.scope, state.scope, ...project];
       // 只保留已有完整快照；首次超时回退可用各范围的完整结果恢复，不必等共享刷新结束。
       if (snapshots.get(workspaceKey)?.kind === "ready" && scopes.some((scope) => scope.busy))
         continue;
       if (scopes.some((scope) => scope.failed))
         snapshots.set(workspaceKey, { kind: "built-in-fallback" });
-      else if (user.scope.value && state.scope.value && project.value)
+      else if (user.scope.value && state.scope.value && project.every((scope) => scope.value))
         snapshots.set(workspaceKey, {
           kind: "ready",
           ...resolveSubagentRuntimeProfiles(
-            [...profiles(user.scope.value), ...profiles(project.value)],
+            [...profiles(user.scope.value), ...preferredProjectProfiles(project)],
             state.scope.value,
           ),
         });
@@ -124,12 +125,23 @@ export function createSubagentRuntimeConfigCache(reader: ConfigReader) {
       onSettled: publish,
     });
   }
+  function preferredProjectProfiles(scopes: Scope<Profiles>[]) {
+    const result = new Map<string, ReturnType<typeof profiles>[number]>();
+    // Scopes are ordered .zody then legacy .zcode; retain the first same-named profile.
+    for (const scope of scopes) {
+      for (const profile of profiles(scope.value!)) {
+        const key = profile.name.trim().toLowerCase();
+        if (!result.has(key)) result.set(key, profile);
+      }
+    }
+    return [...result.values()];
+  }
   function required(workspace: Workspace) {
     assertActive();
     const project = workspaces.get(key(workspace));
     if (!user || !state || !project)
       throw new Error("Subagent runtime configuration is not prepared");
-    return [user.scope, state.scope, project];
+    return [user.scope, state.scope, ...project];
   }
   async function waitForInitialScopes(scopes: Scope<unknown>[]) {
     let waiting = true;
@@ -196,10 +208,13 @@ export function createSubagentRuntimeConfigCache(reader: ConfigReader) {
       }
       if (workspace) {
         const workspaceKey = key(workspace);
-        workspaces.get(workspaceKey)?.dispose();
-        const project = documentScope(join(workspace.workspacePath, ".zcode", "agents"), "project");
+        workspaces.get(workspaceKey)?.forEach((scope) => scope.dispose());
+        const project = resolveProjectResourceRoots(
+          workspace.workspacePath,
+          "agents",
+        ).readPaths.map((root) => documentScope(root, "project"));
         workspaces.set(workspaceKey, project);
-        initializing.push(project);
+        initializing.push(...project);
       }
       await waitForInitialScopes(initializing);
       publish();
@@ -222,7 +237,9 @@ export function createSubagentRuntimeConfigCache(reader: ConfigReader) {
       disposed = true;
       user?.scope.dispose();
       state?.scope.dispose();
-      for (const scope of workspaces.values()) scope.dispose();
+      for (const scopes of workspaces.values()) {
+        for (const scope of scopes) scope.dispose();
+      }
       workspaces.clear();
       snapshots.clear();
     },

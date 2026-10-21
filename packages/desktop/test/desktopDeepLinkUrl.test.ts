@@ -6,20 +6,32 @@ describe("desktop deep link url helpers", () => {
   it("accepts Linux one-slash workspace open urls", async () => {
     const { isWorkspaceOpenUrl } = await import("../src/main/desktopDeepLinkUrl.js");
 
-    expect(isWorkspaceOpenUrl(new URL("zcode:/workspace/open?path=%2Ftmp"))).toBe(true);
-    expect(isWorkspaceOpenUrl(new URL("zcode:workspace/open?path=%2Ftmp"))).toBe(true);
-    expect(isWorkspaceOpenUrl(new URL("zcode://workspace/other?path=%2Ftmp"))).toBe(false);
+    expect(isWorkspaceOpenUrl(new URL("zody:/workspace/open?path=%2Ftmp"))).toBe(true);
+    expect(isWorkspaceOpenUrl(new URL("zody:workspace/open?path=%2Ftmp"))).toBe(true);
+    expect(isWorkspaceOpenUrl(new URL("zody://workspace/other?path=%2Ftmp"))).toBe(false);
   });
 
   it("recognizes workspace open urls and extracts the encoded folder path", async () => {
     const { extractWorkspaceOpenPath, isWorkspaceOpenUrl } =
       await import("../src/main/desktopDeepLinkUrl.js");
 
-    const workspaceUrl = new URL("zcode://workspace/open?path=%2FUsers%2Fdemo%2FProject%20A%26B");
+    const workspaceUrl = new URL("zody://workspace/open?path=%2FUsers%2Fdemo%2FProject%20A%26B");
     expect(isWorkspaceOpenUrl(workspaceUrl)).toBe(true);
     expect(extractWorkspaceOpenPath(workspaceUrl)).toBe("/Users/demo/Project A&B");
-    expect(isWorkspaceOpenUrl(new URL("zcode://workspace/other?path=%2Ftmp"))).toBe(false);
-    expect(extractWorkspaceOpenPath(new URL("zcode://workspace/open"))).toBeNull();
+    expect(isWorkspaceOpenUrl(new URL("zody://workspace/other?path=%2Ftmp"))).toBe(false);
+    expect(extractWorkspaceOpenPath(new URL("zody://workspace/open"))).toBeNull();
+  });
+
+  it("accepts the production and Preview Zody protocols", async () => {
+    const { extractWorkspaceOpenPath, isWorkspaceOpenUrl } =
+      await import("../src/main/desktopDeepLinkUrl.js");
+    const zodyUrl = new URL("zody://workspace/open?path=%2Ftmp%2Fzody");
+    expect(isWorkspaceOpenUrl(zodyUrl)).toBe(true);
+    expect(extractWorkspaceOpenPath(zodyUrl)).toBe("/tmp/zody");
+    expect(isWorkspaceOpenUrl(new URL("zody-preview://workspace/open?path=%2Ftmp%2Fzody"))).toBe(
+      true,
+    );
+    expect(isWorkspaceOpenUrl(new URL("zcode://workspace/open?path=%2Fold"))).toBe(false);
   });
 
   // fork（F4.8）：share import code 解析用例随会话分享功能删除。
@@ -28,35 +40,35 @@ describe("desktop deep link url helpers", () => {
     const { extractDeepLinkUrlFromArgs } = await import("../src/main/desktopDeepLinkUrl.js");
 
     expect(
-      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "zcode://workspace/open?path=%2Ftmp"]),
-    ).toBe("zcode://workspace/open?path=%2Ftmp");
-    expect(
-      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "--open-url=zcode://workspace/open?path=%2Ftmp"]),
-    ).toBe("zcode://workspace/open?path=%2Ftmp");
+      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "zody://workspace/open?path=%2Ftmp"]),
+    ).toBe("zody://workspace/open?path=%2Ftmp");
     expect(
       extractDeepLinkUrlFromArgs([
         "/opt/ZCode/zcode",
-        "zcode%3A%2F%2Fworkspace%2Fopen%3Fpath%3D%252Ftmp",
+        "--open-url=zody://workspace/open?path=%2Ftmp",
       ]),
-    ).toBe("zcode://workspace/open?path=%2Ftmp");
+    ).toBe("zody://workspace/open?path=%2Ftmp");
     expect(
       extractDeepLinkUrlFromArgs([
         "/opt/ZCode/zcode",
-        "zcode%253A%252F%252Fworkspace%252Fopen%253Fpath%253D%25252Ftmp",
+        "zody%3A%2F%2Fworkspace%2Fopen%3Fpath%3D%252Ftmp",
       ]),
-    ).toBe("zcode://workspace/open?path=%2Ftmp");
+    ).toBe("zody://workspace/open?path=%2Ftmp");
     expect(
       extractDeepLinkUrlFromArgs([
         "/opt/ZCode/zcode",
-        "zcode://workspace/open?path=%2Ftmp&amp;x=1",
+        "zody%253A%252F%252Fworkspace%252Fopen%253Fpath%253D%25252Ftmp",
       ]),
-    ).toBe("zcode://workspace/open?path=%2Ftmp&x=1");
+    ).toBe("zody://workspace/open?path=%2Ftmp");
+    expect(
+      extractDeepLinkUrlFromArgs(["/opt/ZCode/zcode", "zody://workspace/open?path=%2Ftmp&amp;x=1"]),
+    ).toBe("zody://workspace/open?path=%2Ftmp&x=1");
     expect(
       extractDeepLinkUrlFromArgs([
         "/Applications/ZCode.app/Contents/MacOS/ZCode",
-        "zcode://workspace/open?path=%2FUsers%2Fdemo%2FProject%2520A",
+        "zody://workspace/open?path=%2FUsers%2Fdemo%2FProject%2520A",
       ]),
-    ).toBe("zcode://workspace/open?path=%2FUsers%2Fdemo%2FProject%2520A");
+    ).toBe("zody://workspace/open?path=%2FUsers%2Fdemo%2FProject%2520A");
   });
 
   it("returns null when argv does not contain a deep link", async () => {
@@ -97,12 +109,12 @@ describe("desktop deep link url helpers", () => {
 
     const additionalData = createDeepLinkSingleInstanceData([
       "/opt/ZCode/zcode",
-      "zcode%253A%252F%252Fworkspace%252Fopen%253Fpath%253D%25252Ftmp",
+      "zody%253A%252F%252Fworkspace%252Fopen%253Fpath%253D%25252Ftmp",
       "--open-workspace=C:\\Users\\demo\\Project A",
     ]);
 
     expect(extractDeepLinkUrlFromSingleInstanceData(additionalData)).toBe(
-      "zcode://workspace/open?path=%2Ftmp",
+      "zody://workspace/open?path=%2Ftmp",
     );
     expect(extractOpenWorkspacePathFromSingleInstanceData(additionalData)).toBe(
       "C:\\Users\\demo\\Project A",

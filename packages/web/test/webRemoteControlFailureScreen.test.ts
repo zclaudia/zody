@@ -89,9 +89,9 @@ describe("WebRemoteControlFailureScreen", () => {
       "en-US",
     );
 
-    expect(zh.title).toBe("请更新电脑端 ZCode");
+    expect(zh.title).toBe("请更新电脑端 Zody");
     expect(zh.nextSteps.join("")).toContain("电脑");
-    expect(en.title).toBe("Update Desktop ZCode");
+    expect(en.title).toBe("Update Desktop Zody");
     expect(en.nextSteps.join("")).toContain("desktop");
   });
 

@@ -32,7 +32,8 @@ afterEach(async () => {
 describe("workspace Hook atomic mutation", () => {
   it("只改变 snapshot 指向 declaration 的 enabled gate，并保留其他 config 与 passthrough 字段", async () => {
     const workspace = makeRoot();
-    const configPath = join(workspace, ".zcode", "config.json");
+    const sourcePath = join(workspace, ".zcode", "config.json");
+    const configPath = join(workspace, ".zody", "config.json");
     const original = {
       model: "model-test",
       customTopLevel: { keep: true },
@@ -61,9 +62,9 @@ describe("workspace Hook atomic mutation", () => {
         },
       },
     };
-    writeJson(configPath, original);
+    writeJson(sourcePath, original);
     const source = createWorkspaceHookSourceInput({
-      path: configPath,
+      path: sourcePath,
       workingDirectory: workspace,
       hooks: original.hooks,
       discoveryOrder: 0,
@@ -103,11 +104,12 @@ describe("workspace Hook atomic mutation", () => {
         },
       },
     });
+    expect(JSON.parse(readFileSync(sourcePath, "utf8"))).toEqual(original);
   });
 
   it("拒绝 snapshot 中非当前 .zcode/config.json 或非 editable declaration，且不写文件", async () => {
     const workspace = makeRoot();
-    const configPath = join(workspace, ".zcode", "config.json");
+    const configPath = join(workspace, ".zody", "config.json");
     const ancestorPath = join(workspace, "zcode.json");
     const config = {
       hooks: {
@@ -147,16 +149,17 @@ describe("workspace Hook atomic mutation", () => {
 
   it("磁盘 declaration 已变化时拒绝批准 A/修改 B", async () => {
     const workspace = makeRoot();
-    const configPath = join(workspace, ".zcode", "config.json");
+    const sourcePath = join(workspace, ".zcode", "config.json");
+    const configPath = join(workspace, ".zody", "config.json");
     const hooks = {
       enabled: true,
       events: {
         Stop: [{ hooks: [{ type: "command" as const, command: "echo before" }] }],
       },
     };
-    writeJson(configPath, { hooks });
+    writeJson(sourcePath, { hooks });
     const source = createWorkspaceHookSourceInput({
-      path: configPath,
+      path: sourcePath,
       workingDirectory: workspace,
       hooks,
       discoveryOrder: 0,
@@ -168,7 +171,7 @@ describe("workspace Hook atomic mutation", () => {
       sources: [source],
       runtimeRoot: { enabled: true, timeoutMs: 60_000, maxOutputBytes: 32_768 },
     });
-    writeJson(configPath, {
+    writeJson(sourcePath, {
       hooks: {
         ...hooks,
         events: {
@@ -185,12 +188,13 @@ describe("workspace Hook atomic mutation", () => {
         enabled: false,
       }),
     ).rejects.toMatchObject({ code: "workspace_hooks_snapshot_mismatch" });
-    expect(readFileSync(configPath, "utf8")).toContain("echo changed");
+    expect(readFileSync(sourcePath, "utf8")).toContain("echo changed");
   });
 
   it("已知边界：root default 变化不触发 declaration mismatch（admission 侧仍按当前 snapshot 评估）", async () => {
     const workspace = makeRoot();
-    const configPath = join(workspace, ".zcode", "config.json");
+    const sourcePath = join(workspace, ".zcode", "config.json");
+    const configPath = join(workspace, ".zody", "config.json");
     const hooks = {
       enabled: true,
       timeoutMs: 5000,
@@ -198,9 +202,9 @@ describe("workspace Hook atomic mutation", () => {
         Stop: [{ hooks: [{ type: "command" as const, command: "echo boundary" }] }],
       },
     };
-    writeJson(configPath, { hooks });
+    writeJson(sourcePath, { hooks });
     const source = createWorkspaceHookSourceInput({
-      path: configPath,
+      path: sourcePath,
       workingDirectory: workspace,
       hooks,
       discoveryOrder: 0,
@@ -214,7 +218,7 @@ describe("workspace Hook atomic mutation", () => {
     });
 
     // 磁盘上仅修改 root 级 hooks.timeoutMs，不触碰 declaration 本体。
-    writeJson(configPath, {
+    writeJson(sourcePath, {
       hooks: { ...hooks, timeoutMs: 99_999 },
     });
 

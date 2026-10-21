@@ -353,17 +353,17 @@ export const officeSuggestedPrompts: RecommendedPrompt[] = [
     category: "utility",
     iconUrl: zcodeGuideIcon,
     label: {
-      cn: "帮我检查当前的 ZCode 配置，看看有哪些可以调整",
-      en: "Review my ZCode configuration and suggest useful adjustments.",
+      cn: "帮我检查当前的 Zody 配置，看看有哪些可以调整",
+      en: "Review my Zody configuration and suggest useful adjustments.",
     },
     prompt: {
-      cn: "帮我检查当前的 ZCode 配置，看看有哪些可以调整",
-      en: "Review my ZCode configuration and suggest useful adjustments.",
+      cn: "帮我检查当前的 Zody 配置，看看有哪些可以调整",
+      en: "Review my Zody configuration and suggest useful adjustments.",
     },
     plugin: {
       stableId: "zcode-guide@zcode-plugins-official",
       label: {
-        cn: "ZCode 使用指南",
+        cn: "Zody 使用指南",
         en: "zcode-guide",
       },
     },

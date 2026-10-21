@@ -12,11 +12,9 @@ import {
   LightbulbIcon,
   InfoIcon,
   MessageSquareIcon,
-  UsersIcon,
   RefreshCwIcon,
   ShieldAlertIcon,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import {
   DropdownMenu,
@@ -51,17 +49,12 @@ export function WorkspaceHelpMenuButton({
   const { url: vulnerabilityReportUrl, loading: vulnerabilityReportLoading } =
     useVulnerabilityReportUrl(open);
   const updateMenu = useDesktopUpdateMenu(isDesktop);
-  const openFeedbackSubmit = useFeedbackStore((state) => state.openSubmit);
   const openFeatureRequest = useFeedbackStore((state) => state.openFeatureRequest);
   const helpMenuLabel = intl.formatMessage({ id: "workspaceHeader.help.menu" });
   const helpMenuActions = createHelpMenuActionHandlers({
     platform,
     intl,
-    openSubmit: openFeedbackSubmit,
   });
-  const handleOpenCommunity = () => {
-    void platform.openCommunity();
-  };
   const handleOpenResourceManager = () => {
     void platform.executeDesktopCommand(DesktopCommandIds.OpenResourceManager);
   };
@@ -98,10 +91,6 @@ export function WorkspaceHelpMenuButton({
         <DropdownMenuItem onSelect={helpMenuActions.openProductDocs}>
           <BookOpenIcon className="size-4" />
           {intl.formatMessage({ id: "workspaceHeader.help.docs" })}
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={handleOpenCommunity}>
-          <UsersIcon className="size-4" />
-          {intl.formatMessage({ id: "workspaceHeader.help.community" })}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={helpMenuActions.openIssueReport}>
           <MessageSquareIcon className="size-4" />
@@ -143,26 +132,9 @@ export function WorkspaceHelpMenuButton({
               {intl.formatMessage({ id: "titleBar.menu.help.resourceManager" })}
             </DropdownMenuItem>
             {updateMenu.visible ? (
-              <DropdownMenuItem
-                disabled={updateMenu.disabled}
-                onSelect={updateMenu.checkForUpdates}
-              >
+              <DropdownMenuItem disabled={updateMenu.disabled} onSelect={updateMenu.openReleases}>
                 <RefreshCwIcon className="size-4" />
-                {updateMenu.labelId === "desktopMenu.help.restartToUpdate" ? (
-                  <>
-                    <span className="whitespace-nowrap">
-                      {intl.formatMessage({ id: "desktopMenu.help.restartUpdateAction" })}
-                    </span>
-                    <Badge
-                      variant="secondary"
-                      className="h-4 px-1.5 py-0 bg-success/10 text-success"
-                    >
-                      {updateMenu.labelValues?.version}
-                    </Badge>
-                  </>
-                ) : (
-                  intl.formatMessage({ id: updateMenu.labelId }, updateMenu.labelValues)
-                )}
+                {intl.formatMessage({ id: updateMenu.labelId })}
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem onSelect={handleShowAbout}>

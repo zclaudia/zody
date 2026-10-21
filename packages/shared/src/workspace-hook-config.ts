@@ -2,6 +2,12 @@ import { existsSync, statSync } from "node:fs";
 import { access, readFile, stat } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { z } from "zod";
+import {
+  LEGACY_ZCODE_DIRECTORY_NAME,
+  ZODY_DIRECTORY_NAME,
+  projectResourceBaseDir,
+  resolveProjectResourcePaths,
+} from "./zody-paths.js";
 
 export const WORKSPACE_HOOK_DIGEST_SCHEMA_VERSION = 1 as const;
 export const DEFAULT_WORKSPACE_HOOK_TIMEOUT_MS = 60_000;
@@ -17,7 +23,11 @@ export const WORKSPACE_HOOK_EVENT_NAMES = [
 ] as const;
 
 export type WorkspaceHookEventName = (typeof WORKSPACE_HOOK_EVENT_NAMES)[number];
-export type WorkspaceHookConfigFileKind = "zcode.json" | ".zcode/config.json" | "explicit";
+export type WorkspaceHookConfigFileKind =
+  | "zcode.json"
+  | ".zody/config.json"
+  | ".zcode/config.json"
+  | "explicit";
 
 const positiveNumberSchema = z.number().finite().positive();
 
@@ -172,10 +182,10 @@ export function resolveWorkspaceHookConfiguredGates(input: {
  * （sync/async 共享同一份 flatMap，避免候选路径的生成规则出现分歧）。
  */
 function buildWorkspaceHookCandidatePaths(directories: readonly string[]): string[] {
-  return directories.flatMap((directory) => [
-    join(directory, "zcode.json"),
-    join(directory, ".zcode", "config.json"),
-  ]);
+  return directories.flatMap((directory) => {
+    const selectedPath = resolveProjectResourcePaths(directory, "config.json").readPath;
+    return [join(directory, "zcode.json"), selectedPath];
+  });
 }
 
 /**
@@ -230,19 +240,23 @@ export function createWorkspaceHookSourceInput(input: {
   const canonicalPath = resolve(input.path);
   const explicitProjectConfig = input.explicitProjectConfig === true;
   const configDirectory = dirname(canonicalPath);
+  const configDirectoryName = basename(configDirectory);
+  const configFileKind = explicitProjectConfig
+    ? "explicit"
+    : basename(canonicalPath) === "zcode.json"
+      ? "zcode.json"
+      : `${configDirectoryName}/config.json`;
   return {
     canonicalPath,
-    baseDir: basename(configDirectory) === ".zcode" ? dirname(configDirectory) : configDirectory,
+    baseDir: projectResourceBaseDir(canonicalPath),
     discoveryOrder: input.discoveryOrder,
-    configFileKind: explicitProjectConfig
-      ? "explicit"
-      : basename(canonicalPath) === "zcode.json"
-        ? "zcode.json"
-        : ".zcode/config.json",
+    configFileKind: configFileKind as WorkspaceHookConfigFileKind,
     explicitProjectConfig,
     editable:
       !explicitProjectConfig &&
-      canonicalPath === resolve(input.workingDirectory, ".zcode", "config.json"),
+      (canonicalPath === resolve(input.workingDirectory, ZODY_DIRECTORY_NAME, "config.json") ||
+        canonicalPath ===
+          resolve(input.workingDirectory, LEGACY_ZCODE_DIRECTORY_NAME, "config.json")),
     hooks: input.hooks,
   };
 }

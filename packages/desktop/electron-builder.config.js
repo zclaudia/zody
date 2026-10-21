@@ -560,15 +560,14 @@ function signWindowsBrowserImportHelper(context) {
 /** @type {import("electron-builder").Configuration} */
 export default {
   appId: desktopProductIdentity.appId,
-  // Linux deb 打包（fpm）会校验 package metadata 中的 homepage、author.email、maintainer。
-  // CI 环境下若这些字段缺失会在产物阶段直接失败。这里统一在构建配置补齐，避免依赖外部注入。
+  // Linux FPM 目标显式设置 maintainer，避免依赖上游 author.email 或在 fork 中虚构联系邮箱。
   extraMetadata: {
     version: buildMetadata.appVersion,
     zcodeProductFlavor: desktopProductIdentity.flavor,
-    homepage: "https://zcode.z.ai",
+    homepage: "https://github.com/zclaudia/zody",
     author: {
-      name: "ZCode",
-      email: "dev@zcode.z.ai",
+      name: "zclaudia",
+      url: "https://github.com/zclaudia",
     },
   },
   // macOS 签名阶段会对 Electron Framework 下每个语言包逐个 codesign。
@@ -818,9 +817,9 @@ export default {
   protocols: [
     {
       // 协议处理器的展示名之前使用小写 scheme，打包产物里的协议描述无法体现产品名。
-      // 展示名跟随安装包身份；scheme 仍保持 zcode，因此两个应用中最后注册者会成为默认 handler。
+      // 展示名与 scheme 跟随安装包身份，生产版使用 zody，Preview 使用 zody-preview。
       name: desktopProductIdentity.productName,
-      schemes: ["zcode"],
+      schemes: [desktopProductIdentity.protocolScheme],
     },
   ],
   mac: {
@@ -881,11 +880,11 @@ export default {
     artifactName: buildDesktopArtifactName("linux"),
     // desktop 包名是 scoped package（@zcode/desktop），electron-builder 默认会把
     // Linux executable/Icon 推成 @zcodedesktop。部分桌面环境无法按这个 icon name 命中
-    // hicolor 图标，最终回退成系统齿轮。这里固定成稳定的小写名称，让 Icon=zcode
-    // 与 /usr/share/icons/hicolor/*/apps/zcode.png 保持一致。
+    // hicolor 图标，最终回退成系统齿轮。这里使用 identity 中的小写 executableName，
+    // 让生产/Preview 的 Icon 与各自安装的 hicolor 图标保持一致。
     executableName: desktopProductIdentity.linuxExecutableName,
     category: "Development",
-    maintainer: "ZCode <dev@zcode.z.ai>",
+    maintainer: "zclaudia (https://github.com/zclaudia)",
   },
   deb: {
     // 生产版与 Preview 必须是两个 dpkg package；只改可执行名仍会让安装器把另一版本当成升级替换。

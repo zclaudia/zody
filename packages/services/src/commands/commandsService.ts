@@ -23,6 +23,7 @@ import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZCODE_DATA_ROOT_DIR_NAME } from "@
 import type { ICommandsService } from "./commands.js";
 import { CommandFileParser, type CommandFileFormat } from "./commandFileParser.js";
 import { readInstalledPluginRoots } from "#src/plugins/installedPluginRoots.js";
+import { resolveProjectResourceRoots, ZODY_DIRECTORY_NAME } from "@zcode/shared/zody-paths";
 
 function resolveUserHomeDir() {
   const envHome = process.env.HOME?.trim() || process.env.USERPROFILE?.trim();
@@ -52,9 +53,8 @@ const CODEX_PLUGIN_MANIFEST_PATH = join(".codex-plugin", "plugin.json");
 const ZCODE_COMMAND_DESCRIPTOR: CommandAgentSourceDescriptor = {
   agentSource: "zcodeAgent",
   directorySource: "zcode",
-  // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用；workspace 段保持 .zcode。
   userDirectorySegments: [ZCODE_DATA_ROOT_DIR_NAME, "commands"],
-  workspaceDirectorySegments: [".zcode", "commands"],
+  workspaceDirectorySegments: [ZODY_DIRECTORY_NAME, "commands"],
   fileExtension: ".md",
   format: "markdown",
   namespaceSeparator: "/",
@@ -933,12 +933,14 @@ async function discoverUserCommandsRecursive(
             scope: options.scope,
             ...(options.projectPath ? { projectPath: options.projectPath } : {}),
           });
+          const id = buildCommandId(descriptor.agentSource, options.scope, name, location);
+          if (commands.some((command) => command.id === id)) continue;
           commands.push({
             ...parsed,
             name,
             agentSource: descriptor.agentSource,
             location,
-            id: buildCommandId(descriptor.agentSource, options.scope, name, location),
+            id,
             source: "user",
             enabled: getCommandEnabled(fullPath, options.enabledOverrides),
             scope: options.scope,
@@ -989,14 +991,21 @@ async function discoverCommandsFromDirectorySources(params: {
   projectPath?: string;
 }): Promise<void> {
   for (const descriptor of params.descriptors) {
-    const discoveredCount = await discoverCommandsRoot({
-      descriptor,
-      commandsRoot: params.commandsRootForDescriptor(descriptor),
-      commands: params.commands,
-      enabledOverrides: params.enabledOverrides,
-      scope: params.scope,
-      ...(params.projectPath ? { projectPath: params.projectPath } : {}),
-    });
+    const roots =
+      descriptor.directorySource === "zcode" && params.scope === "project" && params.projectPath
+        ? resolveProjectResourceRoots(params.projectPath, "commands").readPaths
+        : [params.commandsRootForDescriptor(descriptor)];
+    let discoveredCount = 0;
+    for (const commandsRoot of roots) {
+      discoveredCount += await discoverCommandsRoot({
+        descriptor,
+        commandsRoot,
+        commands: params.commands,
+        enabledOverrides: params.enabledOverrides,
+        scope: params.scope,
+        ...(params.projectPath ? { projectPath: params.projectPath } : {}),
+      });
+    }
     // `.zcode` 是强优先级来源；只要读到有效命令，同 scope 的 `.agents` 就不再参与。
     if (descriptor.directorySource === "zcode" && discoveredCount > 0) {
       break;

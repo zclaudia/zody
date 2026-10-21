@@ -11,10 +11,8 @@ import type {
   ProviderConfigLayerSnapshot,
 } from "@zcode/provider";
 import { decodeProviderConfigFile, encodeProviderConfigFile } from "@zcode/provider-node";
-import {
-  createCredentialCipherProvider,
-  type CredentialCipherProvider,
-} from "../credential/providers/credentialCipherProvider.js";
+import type { CredentialCipherProvider } from "../credential/providers/credentialCipherProvider.js";
+import { createStoredCredentialCipher } from "../credential/providers/credentialKeyStore.js";
 import type { ISettingService } from "../setting/setting.js";
 
 const CREDENTIAL_FILE_NAME = "credentials.json";
@@ -122,7 +120,7 @@ async function readProvisioningCredentials(
   if (!isRecord(parsed)) {
     throw new Error("Credential Store 必须是 JSON 对象");
   }
-  const cipher = cipherProvider ?? createCredentialCipherProvider();
+  const cipher = cipherProvider ?? (await createStoredCredentialCipher(credentialFilePath));
   const allowedKeys = new Set<string>(PROVIDER_PROVISIONING_OAUTH_CREDENTIAL_KEYS);
   const entries: ProviderProvisioningCredentialEntry[] = [];
   // Credential Store 还可能包含不属于 Provisioning allowlist 的历史记录；

@@ -1,3 +1,4 @@
+import { once } from "node:events";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AddressInfo } from "node:net";
 import { WebSocket, type RawData } from "ws";
@@ -155,6 +156,7 @@ describe("server remote connection", () => {
       workspaces: [{ path: "/home/dev/project" }],
     });
     servers.push(server);
+    if (!server.listening) await once(server, "listening");
     const address = server.address() as AddressInfo;
 
     const requestedPaths: string[] = [];
@@ -220,6 +222,7 @@ describe("server remote connection", () => {
       authToken: "secret-token",
     });
     servers.push(server);
+    if (!server.listening) await once(server, "listening");
     const address = server.address() as AddressInfo;
     const requestedUrls: URL[] = [];
 
@@ -274,6 +277,7 @@ describe("server remote connection", () => {
         0,
       );
       servers.push(server);
+      if (!server.listening) await once(server, "listening");
       const address = server.address() as AddressInfo;
       const connection = await connectServerRemote(
         { kind: "server", url: `http://127.0.0.1:${address.port}` },
@@ -331,6 +335,7 @@ describe("server remote connection", () => {
     } as never);
     const server = createHttpServer(services, 0);
     servers.push(server);
+    if (!server.listening) await once(server, "listening");
     const address = server.address() as AddressInfo;
     const httpBase = `http://127.0.0.1:${address.port}`;
     const wsHost = `ws://127.0.0.1:${address.port}/ws/host`;

@@ -33,6 +33,7 @@ import {
   resolveUserHomeDir,
   resolveUserSubagentRoot,
   resolveWorkspaceSubagentRoot,
+  resolveWorkspaceLegacySubagentRoot,
   resolveZCodeStorageRoot,
   type SubagentStorageOptions,
 } from "./subagentStorage.js";
@@ -223,9 +224,14 @@ async function discoverFileAgents(params: {
       scope: "workspace",
       rootPath: resolveWorkspaceSubagentRoot(params.workspacePath),
     });
+    roots.push({
+      scope: "workspace",
+      rootPath: resolveWorkspaceLegacySubagentRoot(params.workspacePath),
+    });
   }
 
   const agents: AgentSummary[] = [];
+  const seenWorkspaceNames = new Set<string>();
   for (const root of roots) {
     for (const agentPath of await collectAgentMarkdownPaths(root.rootPath)) {
       try {
@@ -240,6 +246,9 @@ async function discoverFileAgents(params: {
           continue;
         }
         if (parsed.agent) {
+          const nameKey = parsed.agent.name.trim().toLowerCase();
+          if (root.scope === "workspace" && seenWorkspaceNames.has(nameKey)) continue;
+          if (root.scope === "workspace") seenWorkspaceNames.add(nameKey);
           agents.push({
             ...parsed.agent,
             projectPath: root.scope === "workspace" ? params.workspacePath : undefined,
@@ -408,7 +417,7 @@ async function discoverPluginAgents(params: {
 
 async function readPluginConfig(options?: SubagentStorageOptions): Promise<PluginConfigSummary> {
   try {
-    // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+    // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
     const configPath = join(
       resolveUserHomeDir(options),
       ZCODE_DATA_ROOT_DIR_NAME,

@@ -53,6 +53,17 @@ describe("设置页 UI polish E2E", () => {
     await waitForWorkspaceApp(DEFAULT_WORKSPACE, 30000);
   });
 
+  it("ZODY-02: 隐藏不可用的系统 Computer Use，同时保留 Browser Use 设置", async () => {
+    await clickTestIdByDom(TID_TASK_SETTINGS_BUTTON, { timeout: 15000 });
+    await $(sel(TID_SETTINGS_PAGE)).waitForDisplayed({ timeout: 15000 });
+
+    expect(await $(sel(testId(TID_SETTINGS_SECTION_NAV, "computerUse"))).isExisting()).toBe(false);
+    const browserUseNav = $(sel(testId(TID_SETTINGS_SECTION_NAV, "browser")));
+    await expect(browserUseNav).toBeDisplayed();
+    await browserUseNav.click();
+    await expect($(sel(TID_SETTINGS_PAGE))).toHaveText(expect.stringContaining("Browser Use"));
+  });
+
   it("UP-00: Windows 设置页使用问号帮助入口且移除 caption 下箭头", async function () {
     if (process.platform !== "win32") return;
     await clickTestIdByDom(TID_TASK_SETTINGS_BUTTON, { timeout: 15000 });
@@ -79,7 +90,7 @@ describe("设置页 UI polish E2E", () => {
     expect(
       await browser.execute(() => {
         const logo = document.querySelector<HTMLElement>(
-          '[data-testid="settings-page"] img[alt="ZCode"]',
+          '[data-testid="settings-page"] img[alt="Zody"]',
         );
         if (!logo) return null;
         const rect = logo.getBoundingClientRect();

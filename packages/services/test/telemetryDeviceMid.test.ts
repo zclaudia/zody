@@ -17,7 +17,7 @@ describe("ensureTelemetryDeviceMid", () => {
     setDataBaseDir(dataBaseDir);
     return {
       dataBaseDir,
-      stateFile: join(dataBaseDir, ".zcoder", "v2", "telemetry-state.json"),
+      stateFile: join(dataBaseDir, ".zody", "v2", "telemetry-state.json"),
     };
   }
 

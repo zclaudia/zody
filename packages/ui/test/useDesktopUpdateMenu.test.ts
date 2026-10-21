@@ -1,171 +1,45 @@
-import { act, createElement } from "react";
-import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DesktopCommandIds, type UpdateStatePayload } from "@zcode/shared";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { useDesktopUpdateMenu } from "@/hooks/useDesktopUpdateMenu.js";
-import { getUpdateMenuLabelId, getUpdateMenuLabelValues } from "@/lib/desktopUpdateMenu.js";
-
-// 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；更新入口显隐只读它。
-const autoUpdateState = vi.hoisted(() => ({ active: true }));
-
-vi.mock("@zcode/shared", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@zcode/shared")>()),
-  isDesktopAutoUpdateActive: () => autoUpdateState.active,
-}));
 
 const mocks = vi.hoisted(() => ({
   platform: {
     getUpdateState: vi.fn(),
     onUpdateStateChanged: vi.fn(),
     executeDesktopCommand: vi.fn(),
+    openExternal: vi.fn(),
   },
 }));
 vi.mock("@/hooks/usePlatform.js", () => ({ usePlatform: () => mocks.platform }));
-function createMinimalElement(ownerDocument: Document, tagName = "div") {
-  const element = {
-    addEventListener: () => {},
-    appendChild: (child: { parentNode?: unknown }) => {
-      child.parentNode = element;
-      return child;
-    },
-    childNodes: [] as unknown[],
-    getAttribute: () => null,
-    insertBefore: (child: { parentNode?: unknown }) => {
-      child.parentNode = element;
-      return child;
-    },
-    nodeName: tagName.toUpperCase(),
-    nodeType: 1,
-    ownerDocument,
-    parentNode: null as unknown,
-    removeAttribute: () => {},
-    removeChild: (child: { parentNode?: unknown }) => {
-      child.parentNode = null;
-      return child;
-    },
-    removeEventListener: () => {},
-    setAttribute: () => {},
-    style: {
-      removeProperty: () => {},
-      setProperty: () => {},
-    },
-    tagName: tagName.toUpperCase(),
-  };
-  return element as unknown as Element;
-}
 
-function installMinimalDom() {
-  const documentMock = {
-    addEventListener: () => {},
-    createElement: (tagName: string) =>
-      createMinimalElement(documentMock as unknown as Document, tagName),
-    createTextNode: (nodeValue: string) => ({
-      nodeType: 3,
-      nodeValue,
-      ownerDocument: documentMock,
-      parentNode: null,
-    }),
-    nodeType: 9,
-    removeEventListener: () => {},
-  } as unknown as Document;
-  const windowMock = {
-    addEventListener: () => {},
-    document: documentMock,
-    HTMLIFrameElement: function HTMLIFrameElement() {},
-    HTMLElement: function HTMLElement() {},
-    Node: function Node() {},
-    removeEventListener: () => {},
-  };
-  Object.defineProperty(globalThis, "document", { configurable: true, value: documentMock });
-  Object.defineProperty(globalThis, "window", { configurable: true, value: windowMock });
-  Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", {
-    configurable: true,
-    value: true,
-  });
-  return createMinimalElement(documentMock, "div");
-}
-
-let root: Root | undefined;
 let latest: ReturnType<typeof useDesktopUpdateMenu>;
 function Probe({ desktop }: { desktop: boolean }) {
   latest = useDesktopUpdateMenu(desktop);
   return null;
 }
-function mount(desktop = true) {
-  root = createRoot(installMinimalDom());
-  act(() => root!.render(createElement(Probe, { desktop })));
+function render(desktop = true) {
+  renderToStaticMarkup(createElement(Probe, { desktop }));
 }
-afterEach(() => {
-  act(() => root?.unmount());
-  root = undefined;
-  vi.clearAllMocks();
-});
-beforeEach(() => {
-  autoUpdateState.active = true;
-});
+afterEach(() => vi.clearAllMocks());
 
-describe("帮助菜单更新状态", () => {
-  it("实时检查状态不被较晚返回的 idle 快照覆盖，并在卸载时取消订阅", async () => {
-    let resolve!: (state: UpdateStatePayload) => void;
-    let listener!: (state: UpdateStatePayload) => void;
-    const dispose = vi.fn();
-    mocks.platform.getUpdateState.mockReturnValue(
-      new Promise<UpdateStatePayload>((done) => {
-        resolve = done;
-      }),
+describe("Zody 手动更新入口", () => {
+  it("始终打开 Zody Releases，不查询或触发应用内更新", () => {
+    render();
+    expect(latest.visible).toBe(true);
+    expect(latest.disabled).toBe(false);
+    expect(latest.labelId).toBe("titleBar.menu.help.manualUpdate");
+    latest.openReleases();
+    expect(mocks.platform.openExternal).toHaveBeenCalledExactlyOnceWith(
+      "https://github.com/zclaudia/zody/releases",
     );
-    mocks.platform.onUpdateStateChanged.mockImplementation((callback) => {
-      listener = callback;
-      return dispose;
-    });
-    mount();
-    act(() => listener({ kind: "checking", enabled: false }));
-    await act(async () => resolve({ kind: "idle", enabled: true }));
-    expect(latest.labelId).toBe("desktopMenu.help.checkingForUpdates");
-    expect(latest.disabled).toBe(true);
-    act(() => listener({ kind: "update-downloaded", enabled: true, version: "3.13.0" }));
-    expect(latest.labelId).toBe("desktopMenu.help.restartToUpdate");
-    expect(latest.labelValues).toEqual({ version: "3.13.0" });
-    latest.checkForUpdates();
-    expect(mocks.platform.executeDesktopCommand).toHaveBeenCalledWith(
-      DesktopCommandIds.CheckForUpdates,
-    );
-    act(() => root!.unmount());
-    root = undefined;
-    expect(dispose).toHaveBeenCalledOnce();
-  });
-
-  it("Web 不查询或订阅桌面更新状态", () => {
-    mount(false);
-    expect(latest.visible).toBe(false);
     expect(mocks.platform.getUpdateState).not.toHaveBeenCalled();
     expect(mocks.platform.onUpdateStateChanged).not.toHaveBeenCalled();
+    expect(mocks.platform.executeDesktopCommand).not.toHaveBeenCalled();
   });
 
-  it("自动更新未生效时隐藏入口且不查询或订阅更新状态", () => {
-    // fork spec（阶段 2 细则「自动更新」规则 3 + 验收 7）：判定关闭时入口直接消失，
-    // 不能只依赖 main 进程点击后的 fail-closed 兜底。
-    autoUpdateState.active = false;
-    mount(true);
+  it("Web 与手机远控不显示桌面更新入口", () => {
+    render(false);
     expect(latest.visible).toBe(false);
-    expect(mocks.platform.getUpdateState).not.toHaveBeenCalled();
-    expect(mocks.platform.onUpdateStateChanged).not.toHaveBeenCalled();
-  });
-
-  it("可用版本和下载进度沿用原有菜单文案参数", () => {
-    const available: UpdateStatePayload = {
-      kind: "update-available",
-      enabled: true,
-      version: "3.13.0",
-    };
-    const downloading: UpdateStatePayload = {
-      kind: "download-progress",
-      enabled: true,
-      progress: "42%",
-    };
-    expect(getUpdateMenuLabelId(available)).toBe("desktopMenu.help.updateAvailableVersion");
-    expect(getUpdateMenuLabelValues(available)).toEqual({ version: "3.13.0" });
-    expect(getUpdateMenuLabelId(downloading)).toBe("desktopMenu.help.downloadingUpdateProgress");
-    expect(getUpdateMenuLabelValues(downloading)).toEqual({ progress: "42%" });
   });
 });

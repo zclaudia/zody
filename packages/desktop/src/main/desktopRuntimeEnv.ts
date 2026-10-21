@@ -58,13 +58,7 @@ function isTruthyRuntimeEnvOverride(name: string): boolean {
 // 这里允许测试显式隔离运行时身份，正常桌面/远控路径保持原来的默认值。
 export const runtimeApplicationName =
   readRuntimeEnvOverride("ZCODE_DESKTOP_APPLICATION_NAME") ??
-  (isLocalDevelopmentRuntime
-    ? "ZCode Dev"
-    : isPreviewPackagedRuntime
-      ? "ZCode Preview"
-      : // fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
-        // 打包态应用名同步改为 zcoder，Electron userData 与单实例锁不再与正式版冲突。
-        "zcoder");
+  (isLocalDevelopmentRuntime ? "Zody Dev" : isPreviewPackagedRuntime ? "Zody Preview" : "Zody");
 // Electron 的 app.getPath("home") 不一定跟随测试进程里的 HOME 覆盖。
 // e2e 默认工作区依赖 home 路径，因此提供显式覆盖，避免测试写到开发者真实 ~/ZCodeProject。
 export const runtimeHomePath = readRuntimeEnvOverride("ZCODE_DESKTOP_HOME_DIR");
@@ -76,7 +70,7 @@ export const runtimeUserDataPath =
   readRuntimeEnvOverride("ZCODE_DESKTOP_USER_DATA_DIR") ??
   (shouldUseElectronDefaultUserDataPath
     ? undefined
-    : join(getElectronAppPath("appData"), runtimeApplicationName));
+    : join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME, "desktop", runtimeApplicationName));
 export const runtimeSessionDataPath =
   readRuntimeEnvOverride("ZCODE_DESKTOP_SESSION_DATA_DIR") ??
   (runtimeUserDataPath ? join(runtimeUserDataPath, "session") : undefined);
@@ -212,16 +206,18 @@ export function resolvePackagedAgentTelemetryEnv(
   if (!compiledEnv) {
     return {};
   }
-
-  // 修复原因：开发版通过启动进程继承 OTLP 配置，正式安装包从 Finder/开始菜单启动时没有
-  // 这组运行时环境，Agent 因而静默落入 Noop。构建默认值只允许连接字段进入 Main；
-  // UID、Device MID 和 runtime surface 仍由 Host 的可信运行时上下文生成。
-  return readZCodeAgentTelemetryEnv({
-    OTEL_EXPORTER_OTLP_ENDPOINT: compiledEnv.OTEL_EXPORTER_OTLP_ENDPOINT,
-    OTEL_EXPORTER_OTLP_HEADERS: compiledEnv.OTEL_EXPORTER_OTLP_HEADERS,
-    OTEL_SERVICE_NAME: compiledEnv.OTEL_SERVICE_NAME,
-    ZCODE_TELEMETRY_RUNTIME_DISTRIBUTION: compiledEnv.ZCODE_TELEMETRY_RUNTIME_DISTRIBUTION,
-  });
+  const configuredKey = Object.entries(compiledEnv).find(
+    ([key, value]) =>
+      typeof value === "string" &&
+      value.trim() &&
+      (key.startsWith("OTEL_") ||
+        key.startsWith("ZCODE_TELEMETRY_") ||
+        key === "ZCODE_MODEL_TELEMETRY_ENABLED"),
+  )?.[0];
+  if (configuredKey) {
+    throw new Error(`${configuredKey} is disabled for Zody release builds`);
+  }
+  return {};
 }
 
 function resolveDevelopmentMockCdnDir(): string {
@@ -480,9 +476,10 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
             )
           : undefined;
   const windowsAppInstallDir = resolveWindowsAppInstallDirForDataBaseDirGuard();
-  const agentTelemetryEnv = readZCodeAgentTelemetryEnv(rawInheritedEnv);
-  // Desktop 身份由 host 从凭据仓库和本机状态读取后可信注入；外部环境只能配置 OTLP 连接，
-  // 不能伪造 uid/device/runtime surface 或绕过本地 identity state 的隔离边界。
+  // 正式包不能把启动器或 shell 注入的上报 endpoint 转交给 Host/Agent；开发态继续支持本地诊断配置。
+  const agentTelemetryEnv = packagedDesktop ? {} : readZCodeAgentTelemetryEnv(rawInheritedEnv);
+  // Desktop 身份由 host 从凭据仓库和本机状态读取后可信注入；开发态外部环境可以配置 OTLP 连接，
+  // 不能伪造 uid/device/runtime surface 或绕过本地 identity state 的隔离边界。打包态上面会丢弃连接字段。
   for (const key of [
     "ZCODE_TELEMETRY_USER_ID",
     "ZCODE_TELEMETRY_USER_ID_HASH",

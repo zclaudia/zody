@@ -36,7 +36,7 @@ describe("hooksService", () => {
     const home = makeTempRoot();
     const workspacePath = join(makeTempRoot(), "workspace");
 
-    mkdirSync(join(home, ".zcoder", "cli"), { recursive: true });
+    mkdirSync(join(home, ".zody", "cli"), { recursive: true });
     mkdirSync(join(home, ".agents"), { recursive: true });
     mkdirSync(join(home, ".claude"), { recursive: true });
     mkdirSync(join(workspacePath, ".zcode"), { recursive: true });
@@ -44,7 +44,7 @@ describe("hooksService", () => {
     mkdirSync(join(workspacePath, ".claude"), { recursive: true });
 
     writeFileSync(
-      join(home, ".zcoder", "cli", "config.json"),
+      join(home, ".zody", "cli", "config.json"),
       JSON.stringify({
         hooks: {
           enabled: true,
@@ -137,9 +137,9 @@ describe("hooksService", () => {
         },
       },
     };
-    mkdirSync(join(home, ".zcoder", "cli"), { recursive: true });
+    mkdirSync(join(home, ".zody", "cli"), { recursive: true });
     mkdirSync(join(workspacePath, ".zcode"), { recursive: true });
-    writeFileSync(join(home, ".zcoder", "cli", "config.json"), JSON.stringify(hookConfig), "utf-8");
+    writeFileSync(join(home, ".zody", "cli", "config.json"), JSON.stringify(hookConfig), "utf-8");
     writeFileSync(
       join(workspacePath, ".zcode", "config.json"),
       JSON.stringify(hookConfig),
@@ -156,9 +156,9 @@ describe("hooksService", () => {
   it("saves zcode hooks to user and workspace config files", async () => {
     const home = makeTempRoot();
     const workspacePath = join(makeTempRoot(), "workspace");
-    mkdirSync(join(home, ".zcoder", "cli"), { recursive: true });
+    mkdirSync(join(home, ".zody", "cli"), { recursive: true });
     writeFileSync(
-      join(home, ".zcoder", "cli", "config.json"),
+      join(home, ".zody", "cli", "config.json"),
       JSON.stringify({ features: { mcp: true } }),
       "utf-8",
     );
@@ -178,7 +178,7 @@ describe("hooksService", () => {
           location: {
             source: "zcode",
             scope: "user",
-            directoryPath: join(home, ".zcoder", "cli"),
+            directoryPath: join(home, ".zody", "cli"),
           },
         },
         {
@@ -209,7 +209,7 @@ describe("hooksService", () => {
       ],
     });
 
-    const saved = JSON.parse(readFileSync(join(home, ".zcoder", "cli", "config.json"), "utf-8"));
+    const saved = JSON.parse(readFileSync(join(home, ".zody", "cli", "config.json"), "utf-8"));
     expect(saved.features).toEqual({ mcp: true });
     expect(saved.hooks.events.Stop).toEqual([
       {
@@ -221,7 +221,7 @@ describe("hooksService", () => {
     expect(saved.hooks.events.PreToolUse).toBeUndefined();
 
     const projectSaved = JSON.parse(
-      readFileSync(join(workspacePath, ".zcode", "config.json"), "utf-8"),
+      readFileSync(join(workspacePath, ".zody", "config.json"), "utf-8"),
     );
     expect(projectSaved.hooks.events.PreToolUse).toEqual([
       {
@@ -277,6 +277,7 @@ describe("hooksService", () => {
     writeFileSync(
       join(workspacePath, ".zcode", "config.json"),
       JSON.stringify({
+        custom: { preserve: "legacy" },
         hooks: {
           enabled: true,
           events: {
@@ -291,6 +292,7 @@ describe("hooksService", () => {
       }),
       "utf-8",
     );
+    const legacyBytes = readFileSync(join(workspacePath, ".zcode", "config.json"), "utf-8");
 
     const service = await createHooksServiceInEnv(home);
     const initial = await service.loadHooks({ workspacePath });
@@ -304,7 +306,9 @@ describe("hooksService", () => {
       ),
     });
 
-    const saved = JSON.parse(readFileSync(join(workspacePath, ".zcode", "config.json"), "utf-8"));
+    const saved = JSON.parse(readFileSync(join(workspacePath, ".zody", "config.json"), "utf-8"));
+    expect(saved.custom).toEqual({ preserve: "legacy" });
+    expect(readFileSync(join(workspacePath, ".zcode", "config.json"), "utf-8")).toBe(legacyBytes);
     expect(saved.hooks.events.PreToolUse[0].hooks[0]).toMatchObject({
       type: "process",
       command: "node",
@@ -325,7 +329,7 @@ describe("hooksService", () => {
     // schema"，已由 workspaceHookTrustCorrupt.test.ts 覆盖）；本用例验证的是 IO 不可读分支，
     // 因此用目录占位 trust store 路径——readFile 对目录稳定返回 EISDIR/EPERM（非 ENOENT），
     // 在 macOS/Linux/Windows 上都能触发"不可读"日志分支。
-    mkdirSync(join(home, ".zcoder", "security", "workspace-hook-trust-v1.json"), {
+    mkdirSync(join(home, ".zody", "security", "workspace-hook-trust-v1.json"), {
       recursive: true,
     });
     writeFileSync(

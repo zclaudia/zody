@@ -40,7 +40,7 @@ describe("web remote control Assistant code-comment capability", () => {
     );
     const ordinaryWebServerRoot = sliceBetween(
       source,
-      'document.title = "ZCode - Web + Server";',
+      'document.title = "Zody - Web + Server";',
       "} catch (error) {",
     );
 

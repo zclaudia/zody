@@ -6,6 +6,7 @@ import {
   workspaceHooksConfigSchema,
   type WorkspaceHookDefinition,
 } from "./workspace-hook-config.js";
+import { resolveProjectResourcePaths } from "./zody-paths.js";
 
 export interface AtomicWorkspaceHookConfigWriteOptions {
   beforeRename?: () => void | Promise<void>;
@@ -68,19 +69,25 @@ export async function writeWorkspaceHookConfiguredToggle(input: {
   const configPath = resolve(input.configPath);
   const entry = input.snapshot.hooks.find((item) => item.reviewItemId === input.reviewItemId);
   const source = entry ? input.snapshot.sourceFiles[entry.sourceFileIndex] : undefined;
+  const expectedWritePath = source
+    ? resolve(resolveProjectResourcePaths(source.baseDir, "config.json").writePath)
+    : undefined;
   if (
     !entry ||
     !entry.editable ||
     !source?.editable ||
-    source.configFileKind !== ".zcode/config.json" ||
-    resolve(source.canonicalPath) !== configPath
+    (source.configFileKind !== ".zody/config.json" &&
+      source.configFileKind !== ".zcode/config.json") ||
+    expectedWritePath !== configPath
   ) {
     throw mismatch("Workspace Hook toggle target is not the current editable project config");
   }
 
   let raw: unknown;
   try {
-    raw = JSON.parse(await readFile(configPath, "utf8"));
+    // legacy effective config is copied by writing its parsed object to .zody; the
+    // legacy source remains untouched and all unrelated fields survive the toggle.
+    raw = JSON.parse(await readFile(source.canonicalPath, "utf8"));
   } catch (error) {
     // 此处是 readFile/JSON.parse 失败，不能报成 config_write_failed：
     // 用户据此反复重试「写入」而真实原因是配置读不出来或不是合法 JSON。

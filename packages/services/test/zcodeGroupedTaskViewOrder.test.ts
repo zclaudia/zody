@@ -270,17 +270,18 @@ it.each([false, true])(
           }),
     ).rejects.toThrow("reject deleted task cleanup");
 
-  expect(
-    database
-      .prepare("SELECT deleted FROM tasks WHERE workspace_key = ? AND task_id = ?")
-      .get("/repo", task.taskId),
-  ).toEqual({ deleted: 0 });
-  expect(
-    database
-      .prepare("SELECT task_id FROM task_group_members WHERE workspace_key = ? AND task_id = ?")
-      .get("/repo", task.taskId),
-  ).toEqual({ task_id: task.taskId });
-});
+    expect(
+      database
+        .prepare("SELECT deleted FROM tasks WHERE workspace_key = ? AND task_id = ?")
+        .get("/repo", task.taskId),
+    ).toEqual({ deleted: 0 });
+    expect(
+      database
+        .prepare("SELECT task_id FROM task_group_members WHERE workspace_key = ? AND task_id = ?")
+        .get("/repo", task.taskId),
+    ).toEqual({ task_id: task.taskId });
+  },
+);
 
 it("cleans historical deleted task grouping references when the index reopens", async () => {
   const repo = createTrackedRepo();
@@ -329,14 +330,14 @@ describe("grouped task view order", () => {
   it("keeps conversation tasks ungrouped during the legacy workspace bootstrap", async () => {
     const repo = createTrackedRepo();
     await seedTask(repo, "conversation-task", 100, {
-      workspacePath: "/Users/demo/.zcoder/workspace/default",
+      workspacePath: "/Users/demo/.zody/workspace/default",
       workspacePurpose: "conversation",
     });
 
     const view = await repo.queryGroupedTaskView({
       workspaceScopes: [
         {
-          workspacePath: "/Users/demo/.zcoder/workspace/default",
+          workspacePath: "/Users/demo/.zody/workspace/default",
           workspacePurpose: "conversation",
         },
       ],
@@ -348,7 +349,7 @@ describe("grouped task view order", () => {
 
   it("stamps conversation purpose from the query scope onto task-list results", async () => {
     const repo = createTrackedRepo();
-    const workspacePath = "/Users/demo/.zcoder/workspace/default";
+    const workspacePath = "/Users/demo/.zody/workspace/default";
     await seedTask(repo, "conversation-list-task", 100, { workspacePath });
 
     const result = await repo.queryTaskList({

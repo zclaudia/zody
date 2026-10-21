@@ -16,7 +16,6 @@ const capturedHeaderHelp = vi.hoisted(() => {
 
   return {
     screenshot,
-    openCommunity: vi.fn(),
     openExternal: vi.fn(),
     exportLogs: vi.fn(async () => ({ success: true })),
     captureWindowScreenshot: vi.fn(async () => screenshot),
@@ -72,7 +71,6 @@ vi.mock("@/hooks/usePlatform.js", () => ({
   usePlatform: () => ({
     exportLogs: capturedHeaderHelp.exportLogs,
     captureWindowScreenshot: capturedHeaderHelp.captureWindowScreenshot,
-    openCommunity: capturedHeaderHelp.openCommunity,
     openExternal: capturedHeaderHelp.openExternal,
   }),
 }));
@@ -169,7 +167,7 @@ describe("WorkspaceHeaderActionSection", () => {
     expect(html).toContain("workspaceHeader.help.menu");
     expect(html).toContain("workspaceHeader.help.issueReport");
     expect(html).toContain("workspaceHeader.help.productRequest");
-    expect(html).toContain("workspaceHeader.help.community");
+    expect(html).not.toContain("workspaceHeader.help.community");
     expect(html).toContain("workspaceHeader.help.docs");
     expect(html).not.toContain("titleBar.menu.help.exportLogs");
     expect(html).toContain("terminal.toggle");
@@ -219,11 +217,10 @@ describe("WorkspaceHeaderActionSection", () => {
     expect(html).toContain("sidePane.expand");
   });
 
-  it("routes help menu items to feedback, community, and docs entries", async () => {
+  it("routes help menu items to GitHub issues and docs", async () => {
     capturedHeaderHelp.menuItems = [];
     capturedHeaderHelp.openSubmit.mockClear();
     capturedHeaderHelp.openFeatureRequest.mockClear();
-    capturedHeaderHelp.openCommunity.mockClear();
     capturedHeaderHelp.openExternal.mockClear();
     capturedHeaderHelp.exportLogs.mockClear();
     capturedHeaderHelp.captureWindowScreenshot.mockClear();
@@ -241,28 +238,26 @@ describe("WorkspaceHeaderActionSection", () => {
       }),
     );
 
-    expect(capturedHeaderHelp.menuItems).toHaveLength(4);
-    await capturedHeaderHelp.menuItems[2]?.onSelect?.();
-    capturedHeaderHelp.menuItems[1]?.onSelect?.();
+    expect(capturedHeaderHelp.menuItems).toHaveLength(3);
+    await capturedHeaderHelp.menuItems[1]?.onSelect?.();
     capturedHeaderHelp.menuItems[0]?.onSelect?.();
-    capturedHeaderHelp.menuItems[3]?.onSelect?.();
+    await capturedHeaderHelp.menuItems[2]?.onSelect?.();
 
     expect(capturedHeaderHelp.captureWindowScreenshot).not.toHaveBeenCalled();
-    expect(capturedHeaderHelp.openSubmit).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({
-        type: "bug",
-        includeLogs: true,
-        screenshots: [],
-      }),
-    );
+    expect(capturedHeaderHelp.openSubmit).not.toHaveBeenCalled();
     expect(capturedHeaderHelp.openFeatureRequest).toHaveBeenCalledTimes(1);
-    expect(capturedHeaderHelp.openCommunity).toHaveBeenCalledTimes(1);
-    expect(capturedHeaderHelp.openExternal).toHaveBeenCalledWith("https://zcode.z.ai/docs");
+    expect(capturedHeaderHelp.openExternal).toHaveBeenNthCalledWith(
+      1,
+      "https://github.com/zclaudia/zody/issues",
+    );
+    expect(capturedHeaderHelp.openExternal).toHaveBeenNthCalledWith(
+      2,
+      "https://github.com/zclaudia/zody/tree/main/docs",
+    );
     expect(capturedHeaderHelp.exportLogs).not.toHaveBeenCalled();
   });
 
-  it("opens issue report without screenshots when window screenshot fails", async () => {
+  it("opens issue report directly without taking a window screenshot", async () => {
     capturedHeaderHelp.menuItems = [];
     capturedHeaderHelp.openSubmit.mockClear();
     capturedHeaderHelp.captureWindowScreenshot.mockReset();
@@ -280,15 +275,12 @@ describe("WorkspaceHeaderActionSection", () => {
       }),
     );
 
-    await capturedHeaderHelp.menuItems[2]?.onSelect?.();
+    await capturedHeaderHelp.menuItems[1]?.onSelect?.();
 
-    expect(capturedHeaderHelp.openSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "bug",
-        includeLogs: true,
-        screenshots: [],
-      }),
+    expect(capturedHeaderHelp.openExternal).toHaveBeenCalledWith(
+      "https://github.com/zclaudia/zody/issues",
     );
+    expect(capturedHeaderHelp.captureWindowScreenshot).not.toHaveBeenCalled();
   });
 
   it("passes SSH remote context to the editor button group", async () => {

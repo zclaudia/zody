@@ -3,7 +3,7 @@ import { requestSecurityMessagesEnUS } from "@/request-security-edition/messages
 const enUS: Record<string, string> = {
   "occupationOnboarding.stepMode": "UI mode",
   "occupationOnboarding.modeTitle": "Choose your UI mode",
-  "occupationOnboarding.modeDescription": "How would you like ZCode to show its work?",
+  "occupationOnboarding.modeDescription": "How would you like Zody to show its work?",
   "occupationOnboarding.coding": "Coding mode",
   "occupationOnboarding.codingDescription":
     "I want to see code, command output, and change details throughout the development process.",
@@ -52,27 +52,27 @@ const enUS: Record<string, string> = {
   "occupationOnboarding.migration": "Migrate conversations",
   "occupationOnboarding.migrationDescription": "Migrate conversation history from Claude Code",
   "occupationOnboarding.memory": "Enable Workspace Memory",
-  "occupationOnboarding.memoryDescription": "Let ZCode remember your preferences and work context.",
+  "occupationOnboarding.memoryDescription": "Let Zody remember your preferences and work context.",
   "occupationOnboarding.suggestions": "Enable proactive task suggestions",
   "occupationOnboarding.suggestionsDescription":
     "Show suggestions in new conversations. Click to fill the composer.",
   "occupationOnboarding.close": "Exit onboarding",
-  "startup.global.silent": "Starting ZCode",
+  "startup.global.silent": "Starting Zody",
   "startup.global.upgrading": "Upgrading local data",
   "startup.global.initializing": "Initializing local data",
   "startup.global.waiting": "Waiting for database preparation",
   "startup.global.saving": "Saving updates",
   "startup.global.finishing": "Finishing startup",
   "startup.global.servicesFailed":
-    "Local data is ready, but app services failed to start. Copy the diagnostics, then exit and reopen ZCode.",
+    "Local data is ready, but app services failed to start. Copy the diagnostics, then exit and reopen Zody.",
   "startup.global.starting": "Preparing local data",
   "startup.global.preparing_host_storage": "Preparing task index",
   "startup.global.preparing_session_storage": "Preparing chat history",
-  "startup.global.starting_services": "Starting ZCode",
+  "startup.global.starting_services": "Starting Zody",
   "startup.global.ready": "Local data is ready",
   "startup.global.failed": "Startup preparation failed",
   "startup.global.help":
-    "ZCode will open when preparation finishes. Large histories may take longer. Please keep the app running.",
+    "Zody will open when preparation finishes. Large histories may take longer. Please keep the app running.",
   "startup.global.diagnostic": "Diagnostic ID",
   "startup.global.copy": "Copy diagnostics",
   "startup.global.exit": "Exit",
@@ -93,15 +93,15 @@ const enUS: Record<string, string> = {
   "startup.global.error.open_failed":
     "The database could not be opened. Check that the data directory exists and is accessible, then retry.",
   "startup.global.error.lock_timeout":
-    "Waiting for the database write lock timed out. Another ZCode or CLI process may be updating data. Retry after it finishes.",
+    "Waiting for the database write lock timed out. Another Zody or CLI process may be updating data. Retry after it finishes.",
   "startup.global.error.sql_failed":
     "Preparation did not finish. Copy the diagnostics and check the logs. Resolve the issue, then retry manually. The app will not retry automatically.",
   "startup.global.error.startup_status_timeout":
-    "No startup status was received. Exit and reopen ZCode. If it fails again, provide the diagnostics to support.",
+    "No startup status was received. Exit and reopen Zody. If it fails again, provide the diagnostics to support.",
   "startup.global.error.transport_closed":
-    "The preparation process exited or disconnected. Exit and reopen ZCode to check the migration records again.",
+    "The preparation process exited or disconnected. Exit and reopen Zody to check the migration records again.",
   "startup.global.error.unsupported_runtime":
-    "The configured Agent does not support storage preparation. Restore the bundled Agent, then reopen ZCode.",
+    "The configured Agent does not support storage preparation. Restore the bundled Agent, then reopen Zody.",
 
   "startup.database.checking": "Checking history",
   "startup.database.waiting_for_lock": "Waiting for another window to prepare data",
@@ -145,7 +145,7 @@ const enUS: Record<string, string> = {
   "chat.permission.feedback.ariaLabel": "Optional feedback for the model when denying",
   "chat.permission.feedback.placeholder": "Tell the model what to do instead...",
   "settings.computerUse.disabledToast":
-    "Computer Use is disabled. Existing conversations require a ZCode restart to take effect.",
+    "Computer Use is disabled. Existing conversations require a Zody restart to take effect.",
   "workspace.context.lastActivity": "Last active {time}",
   // Common
   "common.loading": "Loading...",
@@ -278,13 +278,13 @@ const enUS: Record<string, string> = {
     "Project “{projectName}” will be removed from the sidebar, but files on disk will remain untouched.",
 
   // Welcome / Login
-  "welcome.title": "Welcome to ZCode",
+  "welcome.title": "Welcome to Zody",
   "welcome.username": "Username",
   "welcome.password": "Password",
   "welcome.login": "Login",
   "welcome.loggingIn": "Logging in...",
   "welcome.loginFailed": "Login failed",
-  "login.title": "Welcome to zcoder",
+  "login.title": "Welcome to Zody",
   "login.description": "Connect a model provider to start your first session.",
   "login.hero.title": "Your models, your keys, one workspace.",
   "login.hero.anyProvider.title": "Bring any provider",
@@ -342,7 +342,7 @@ const enUS: Record<string, string> = {
   "app.currentTheme": "Current: {theme}",
   "app.login": "Connect",
   "app.logout": "Disconnect",
-  "logout.confirm.title": "Disconnect and restart ZCode?",
+  "logout.confirm.title": "Disconnect and restart Zody?",
   "logout.confirm.descriptionWithRunningSessions":
     "{count} session(s) are currently running. Disconnecting will interrupt them and restart the app.",
   "logout.confirm.descriptionDefault":
@@ -575,7 +575,7 @@ const enUS: Record<string, string> = {
   "modelTrajectory.refresh": "Refresh",
   "modelTrajectory.close": "Close",
   "modelTrajectory.loading": "Loading trajectory…",
-  "modelTrajectory.empty": "No model calls recorded (only ZCode Agent writes model-io)",
+  "modelTrajectory.empty": "No model calls recorded (only Zody Agent writes model-io)",
   "modelTrajectory.error": "Failed to load trajectory",
   "modelTrajectory.truncatedNotice": "Too many records, showing the most recent calls",
   "modelTrajectory.summaryCalls": "{count} calls",
@@ -1046,8 +1046,9 @@ const enUS: Record<string, string> = {
   "titleBar.menu.view.actualSize": "Actual size",
   "titleBar.menu.view.zoomIn": "Zoom in",
   "titleBar.menu.view.zoomOut": "Zoom out",
-  "titleBar.menu.help.about": "About ZCode",
+  "titleBar.menu.help.about": "About Zody",
   "titleBar.menu.help.checkForUpdates": "Check for updates",
+  "titleBar.menu.help.manualUpdate": "Download updates",
   "titleBar.menu.help.feedback": "Feedback",
   "sidebar.menu.community": "Community",
   "titleBar.menu.help.exportLogs": "Export logs",
@@ -1175,7 +1176,7 @@ const enUS: Record<string, string> = {
   "workspaceSidebar.notConnected": "Not connected",
   "workspaceSidebar.empty": "No workspaces yet. Open a workspace to get started.",
   "workspaceSidebar.unavailableLocalDirectory":
-    "The workspace directory does not exist or cannot be accessed. You can only view history for now. Restore the directory and restart ZCode to continue.",
+    "The workspace directory does not exist or cannot be accessed. You can only view history for now. Restore the directory and restart Zody to continue.",
   "workspaceSidebar.showSidebar": "Toggle sidebar",
   "workspaceSidebar.hideSidebar": "Toggle sidebar",
   "workspaceSidebar.toggleSidebar": "Toggle sidebar",
@@ -1312,7 +1313,7 @@ const enUS: Record<string, string> = {
   "webRemoteControl.taskStatus.running": "Running",
   "webRemoteControl.taskStatus.completed": "Done",
   "webRemoteControl.taskStatus.error": "Error",
-  "webRemoteControl.mobileHome.title": "ZCode remote control",
+  "webRemoteControl.mobileHome.title": "Zody remote control",
   "webRemoteControl.mobileHome.connected": "Connected to this desktop window",
   "webRemoteControl.mobileHome.notice":
     "This connection can view the projects, tasks, and sessions currently open on this device. If the QR code expires, return to desktop and connect again.",
@@ -1374,7 +1375,7 @@ const enUS: Record<string, string> = {
   "webRemoteControl.mobileBackend.lastSeen": "Last seen {time}",
   "webRemoteControl.mobileBackend.unsupported": "Remote control unsupported",
   "webRemoteControl.mobileBackend.unsupportedHint":
-    "This desktop is online but does not advertise ZCode remote control. Update it or choose another desktop.",
+    "This desktop is online but does not advertise Zody remote control. Update it or choose another desktop.",
   "webRemoteControl.mobileBackend.credentialInvalid":
     "The device credential is invalid. Go back to settings and enter it again.",
   "webRemoteControl.mobileBackend.gatewayUnreachable":
@@ -1382,12 +1383,12 @@ const enUS: Record<string, string> = {
   "webRemoteControl.mobileBackend.refresh": "Refresh desktop list",
   "webRemoteControl.mobileBackend.confirm": "Connect to this desktop",
   "webRemoteControl.mobileBackend.backToSettings": "Back to settings",
-  "webRemoteControl.mobileStart.title": "ZCode remote control",
+  "webRemoteControl.mobileStart.title": "Zody remote control",
   "webRemoteControl.mobileStart.connected": "Connected to the gateway",
   "webRemoteControl.mobileStart.settings": "Connection settings",
   "webRemoteControl.mobileStart.noWindowTitle": "No desktop window is open",
   "webRemoteControl.mobileStart.noWindowDescription":
-    "ZCode is still running, but its main window is closed. You can ask the desktop to open a window before entering a project.",
+    "Zody is still running, but its main window is closed. You can ask the desktop to open a window before entering a project.",
   "webRemoteControl.mobileStart.openWindow": "Open a window on desktop",
   "webRemoteControl.mobileStart.openingWindow": "Opening…",
   "webRemoteControl.mobileStart.noWorkspaceTitle": "No project is open on desktop",
@@ -1418,7 +1419,7 @@ const enUS: Record<string, string> = {
   "remote.kind.wsl": "WSL",
   "remote.kind.docker": "Docker",
   "remote.kind.ssh.wizardDescription": "Remote host",
-  "remote.kind.server.wizardDescription": "Running ZCode service",
+  "remote.kind.server.wizardDescription": "Running Zody service",
   "remote.kind.wsl.wizardDescription": "Windows Subsystem for Linux",
   "remote.kind.docker.wizardDescription": "Local container",
   "remote.connect": "Connect",
@@ -1446,7 +1447,7 @@ const enUS: Record<string, string> = {
   "remote.log.requestingSession": "Requesting the host process to create a remote session...",
   "remote.log.sessionReady":
     "Remote session created successfully. You can choose a directory next.",
-  "server.description": "Connect to an already running ZCode server.",
+  "server.description": "Connect to an already running Zody server.",
   "server.url": "Server URL",
   "server.urlPlaceholder": "e.g. https://studio.example.com:3030",
   "server.name": "Display name",
@@ -1633,7 +1634,7 @@ const enUS: Record<string, string> = {
   "chat.changeSummary.reverted": "Undone",
   "chat.changeSummary.rewindDialog.title": "Undo file changes",
   "chat.changeSummary.rewindDialog.description":
-    "ZCode checks current file content again before writing. If another process changed a file, no files will be written.",
+    "Zody checks current file content again before writing. If another process changed a file, no files will be written.",
   "chat.changeSummary.rewindDialog.loading": "Checking reversible files…",
   "chat.changeSummary.rewindDialog.safeTitle": "Safe to undo {count}",
   "chat.changeSummary.rewindDialog.unsafeTitle": "Unsafe to undo {count}",
@@ -1805,7 +1806,7 @@ const enUS: Record<string, string> = {
     "When launching the built-in terminal, inherit login shell environment, proxy, Kubernetes variables, and local terminal font when possible.",
   "settings.terminalFontFamily": "Terminal font",
   "settings.terminalFontFamilyDescription":
-    "Leave blank to auto-detect system terminal settings; set a value to override the ZCode terminal font.",
+    "Leave blank to auto-detect system terminal settings; set a value to override the Zody terminal font.",
   "settings.terminalFontFamilyPlaceholder": "Leave blank to inherit, e.g. MesloLGS NF, monospace",
   "settings.integratedTerminalShell": "Integrated terminal shell",
   "settings.integratedTerminalShellDescription":
@@ -1926,7 +1927,7 @@ const enUS: Record<string, string> = {
     "Group consecutive Write, Edit, and ApplyPatch calls into a Changes section.",
   "settings.zcodeInteractionBehavior": "Interaction behavior",
   "settings.zcodeInteractionBehaviorDescription":
-    "While ZCode is running, add follow-up actions to the queue or guide them to run after the next tool call.",
+    "While Zody is running, add follow-up actions to the queue or guide them to run after the next tool call.",
   "settings.zcodeInteractionBehavior.option.queue": "Queue",
   "settings.zcodeInteractionBehavior.option.guide": "Guide",
   "settings.askUserQuestionAutoResolution": "Automatically continue questions",
@@ -1963,14 +1964,14 @@ const enUS: Record<string, string> = {
   "settings.taskAutoArchiveDays.option.30": "Archive after 30 days",
   "settings.dataBaseDir": "Data storage path",
   "settings.dataBaseDirDescription":
-    "Root directory for app data (defaults to user home directory). Existing data will be copied to the new location. The .zcoder/v2 suffix cannot be changed.",
+    "Root directory for app data (defaults to user home directory). Existing data will be copied to the new location. The .Zody/v2 suffix cannot be changed.",
   "settings.dataBaseDirPlaceholder": "Default: user home directory",
   "settings.dataBaseDirBrowse": "Choose folder",
   "settings.dataBaseDirSave": "Save",
   "settings.dataBaseDirCopying": "Copying data, please do not close the app...",
   "settings.dataBaseDirCopyFailed": "Data copy failed. Path was not changed.",
   "settings.dataBaseDirForbiddenInstallDir":
-    "The data directory cannot be the ZCode installation folder on Windows. Choose a folder outside the app install location.",
+    "The data directory cannot be the Zody installation folder on Windows. Choose a folder outside the app install location.",
   "settings.dataBaseDirRestartRequired": "Data saved. Please restart the app to take effect.",
   "settings.locale.system": "System default",
   "settings.locale.zh-CN": "中文简体",
@@ -1986,7 +1987,7 @@ const enUS: Record<string, string> = {
   "settings.migration.title": "Migration",
   "settings.migration.sectionTitle": "Claude History Migration",
   "settings.migration.sectionDescription":
-    "Scan native Claude Code history on this machine, optionally filter by workspace and activity window, then import the selected sessions into their matching ZCode task lists.",
+    "Scan native Claude Code history on this machine, optionally filter by workspace and activity window, then import the selected sessions into their matching Zody task lists.",
   "settings.migration.badge.localOnly": "Local Claude records",
   "settings.migration.badge.manualOnly": "Manual only",
   "settings.migration.currentWorkspace": "Current workspace",
@@ -2040,14 +2041,14 @@ const enUS: Record<string, string> = {
   "settings.usageTitle": "Usage stats",
   "settings.usageDescription":
     "Review rough activity and model usage aggregated from local sessions.",
-  "resourceManager.storage.summaryTotal": "Total used by ZCode",
+  "resourceManager.storage.summaryTotal": "Total used by Zody",
   "resourceManager.storage.scanning": "Calculating…",
   "resourceManager.storage.lastScanned": "Last calculated {time}",
   "resourceManager.storage.idle": "Not calculated yet",
   "resourceManager.storage.failed": "Calculation failed",
   "resourceManager.storage.rescan": "Recalculate",
   "resourceManager.storage.disk": "Disk",
-  "resourceManager.storage.diskUsage": "ZCode uses {used}",
+  "resourceManager.storage.diskUsage": "Zody uses {used}",
   "resourceManager.storage.diskFree": "{free} free of {total}",
   "resourceManager.storage.diskUnknown": "Disk capacity unavailable",
   "resourceManager.storage.roots": "Data directories",
@@ -2115,7 +2116,7 @@ const enUS: Record<string, string> = {
   "settings.embeddedBrowserAllowInsecureCertificatesSavedHint":
     "Certificate setting saved. Restart the app to take effect.",
   "settings.browser.data.section": "Browser data",
-  "settings.browser.desktopOnly": "Browser data can only be managed in the ZCode desktop app.",
+  "settings.browser.desktopOnly": "Browser data can only be managed in the Zody desktop app.",
   "settings.remoteAccess.title": "Remote access",
   "settings.remoteAccess.toggle.label": "Enable remote access",
   "settings.remoteAccess.toggle.description":
@@ -2201,13 +2202,13 @@ const enUS: Record<string, string> = {
   "settings.browser.import.elevationCancelled":
     "Windows administrator access was canceled. No cookies were imported.",
   "settings.browser.import.helperVerificationFailed":
-    "ZCode could not verify its Windows secure import component. Reinstall or update ZCode before importing cookies.",
+    "Zody could not verify its Windows secure import component. Reinstall or update Zody before importing cookies.",
   "settings.browser.import.appBoundFailed":
     "Windows could not unlock Chrome's App-Bound cookies. No cookies were imported.",
   "settings.browser.import.adminConfirmTitle":
     "Allow administrator access to import Chrome cookies?",
   "settings.browser.import.adminConfirmDescription":
-    "Chrome protects cookies with App-Bound encryption on Windows. For this import only, ZCode will request administrator access, start a temporary system service, and delete it immediately afterward. Chrome passwords are never read or imported.",
+    "Chrome protects cookies with App-Bound encryption on Windows. For this import only, Zody will request administrator access, start a temporary system service, and delete it immediately afterward. Chrome passwords are never read or imported.",
   "settings.browser.import.adminConsent":
     "I confirm administrator access for this cookie import only",
   "settings.browser.import.adminConfirmAction": "Continue and request access",
@@ -2266,7 +2267,7 @@ const enUS: Record<string, string> = {
   "settings.previewBadge.dark": "Dark",
   "settings.modelProviderTitle": "Model settings",
   "settings.mcpTitle": "MCP Servers",
-  "settings.mcp.description": "Manage MCP server configurations used by ZCode Agent.",
+  "settings.mcp.description": "Manage MCP server configurations used by Zody Agent.",
   "settings.mcp.create.open": "Add MCP server",
   "settings.mcp.import.open": "Import MCP servers from external agents",
   "settings.mcp.import.action": "Import",
@@ -2343,7 +2344,7 @@ const enUS: Record<string, string> = {
     "This plugin MCP server is loaded but not currently connected.",
   "settings.mcp.host.active": "Host built-in",
   "settings.mcp.host.activeDescription":
-    "ZCode provides this MCP server for the {pluginName} plugin. Its runtime identity is managed by the host.",
+    "Zody provides this MCP server for the {pluginName} plugin. Its runtime identity is managed by the host.",
   "settings.mcp.plugin.disabled": "Plugin disabled",
   "settings.mcp.plugin.disabledDescription":
     "This MCP server is built into a plugin. Enable the plugin to load it.",
@@ -2355,7 +2356,7 @@ const enUS: Record<string, string> = {
     "Open authorization to finish connecting this plugin MCP server.",
   "settings.mcp.oauth.openAuthorization": "Open authorization",
   "settings.mcp.statusOnlyUnsupported":
-    "This ZCode Agent cannot refresh OAuth status. Upgrade or restart ZCode, then reopen MCP settings to run a full refresh.",
+    "This Zody Agent cannot refresh OAuth status. Upgrade or restart Zody, then reopen MCP settings to run a full refresh.",
   "settings.mcp.refreshFailed": "Failed to refresh MCP status: {error}",
   "settings.mcp.status.toolCount": "{count} tools",
   "settings.mcp.status.connectedReason": "Connected and available.",
@@ -2381,7 +2382,7 @@ const enUS: Record<string, string> = {
     "MCP authorization was not completed or timed out. Authorize again.",
   // fork（F4.6）：official_origin_untrusted 随官方 MCP 可信 origin 校验删除。
   "settings.mcp.failure.not_authenticated":
-    "You are not signed in. Sign in to ZCode to use this MCP server.",
+    "You are not signed in. Sign in to Zody to use this MCP server.",
   "settings.mcp.failure.coding_plan_required":
     "This account has no Coding Plan. Purchase or configure a Coding Plan to use this MCP server.",
   "settings.mcp.failure.server_not_found":
@@ -2451,7 +2452,7 @@ const enUS: Record<string, string> = {
   "settings.mcpServers.import.targetLabel": "Import target",
   "settings.mcpServers.import.target.global": "Import to Global",
   "settings.mcpServers.import.target.project": "Import to Project",
-  "settings.mcpServers.import.importing": "Importing MCP servers into ZCode",
+  "settings.mcpServers.import.importing": "Importing MCP servers into Zody",
   "settings.mcpServers.import.imported": "Imported",
   "settings.mcpServers.import.skipped": "Skipped",
   "settings.mcpServers.import.failed": "Failed",
@@ -2578,7 +2579,7 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.resetForm": "Reset form",
   "settings.modelProvider.fieldHelp": "About {field}",
   "settings.modelProvider.help.contextWindow":
-    "The context capacity the model can process at once, in tokens. ZCode uses this to manage context.\nDo not exceed the model's actual limit.",
+    "The context capacity the model can process at once, in tokens. Zody uses this to manage context.\nDo not exceed the model's actual limit.",
   "settings.modelProvider.help.maxOutputTokens":
     "The maximum number of tokens a single model request may generate.\nDo not exceed the model's actual limit.",
   "settings.modelProvider.help.inputModalities":
@@ -2594,7 +2595,7 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.help.advanced":
     "**MFJS tool schema**: Enables Moonshot Flavored JSON Schema compatibility, commonly used by Moonshot's Kimi model API. Enable only when the model API requires this format.",
   "settings.modelProvider.help.followRecommendedConfig":
-    "Matches recommended configuration using the model ID, Base URL, and API format. ZCode continually updates recommendations and automatically syncs them to you.\nWhen you manually change a setting, that setting becomes manually managed and stops following recommendation updates; other settings remain managed by smart configuration.",
+    "Matches recommended configuration using the model ID, Base URL, and API format. Zody continually updates recommendations and automatically syncs them to you.\nWhen you manually change a setting, that setting becomes manually managed and stops following recommendation updates; other settings remain managed by smart configuration.",
   "settings.modelProvider.modelDefaultsLoaded": "Smart configuration matched for this model",
   "settings.modelProvider.modelConfigIncomplete": "Model configuration is incomplete",
   "settings.modelProvider.models": "Model list",
@@ -2825,7 +2826,7 @@ const enUS: Record<string, string> = {
   "settings.skills.delete.title": "Delete skill",
   "settings.skills.delete.description":
     'Delete "{name}"? This removes the skill folder from disk and cannot be undone.',
-  "settings.skills.agent.glm": "ZCode Agent",
+  "settings.skills.agent.glm": "Zody Agent",
   "settings.skills.agent.unknown": "Unknown source",
   "settings.skills.create.open": "New skill",
   "settings.skills.create.taskCreateFailed":
@@ -2866,10 +2867,10 @@ const enUS: Record<string, string> = {
   "settings.skills.import.mode.copy": "Copy",
   "settings.skills.import.mode.symlink": "Symlink",
   "settings.skills.import.mode.copy.description":
-    "Copy the full skill directory into ZCode. Later changes in the external agent directory will not sync automatically.",
+    "Copy the full skill directory into Zody. Later changes in the external agent directory will not sync automatically.",
   "settings.skills.import.mode.symlink.description":
-    "Create a directory link to the external agent skill. ZCode follows later source changes, but the skill depends on that source path remaining available.",
-  "settings.skills.import.importing": "Importing skills into ZCode",
+    "Create a directory link to the external agent skill. Zody follows later source changes, but the skill depends on that source path remaining available.",
+  "settings.skills.import.importing": "Importing skills into Zody",
   "settings.skills.import.imported": "Imported",
   "settings.skills.import.skipped": "Skipped",
   "settings.skills.import.failed": "Failed",
@@ -2945,7 +2946,7 @@ const enUS: Record<string, string> = {
   "settings.skills.diagnostics.code.skill_not_found": "Skill not found",
   "settings.subagents.title": "Subagents",
   "settings.subagents.description":
-    "Manage user-level subagent Markdown files consumed by ZCode Agent.",
+    "Manage user-level subagent Markdown files consumed by Zody Agent.",
   "settings.subagents.workspaceScopeUnsupported":
     "Workspace-level creation or editing is unsupported",
   "settings.subagents.searchPlaceholder": "Search subagents...",
@@ -3091,7 +3092,7 @@ const enUS: Record<string, string> = {
   "settings.plugins.description":
     "Enable or disable installed plugins. Plugins bundle skills, commands, hooks, and MCP servers.",
   "settings.plugins.store.subtitle":
-    "Extend ZCode with skills, commands, and MCP servers from plugins",
+    "Extend Zody with skills, commands, and MCP servers from plugins",
   "settings.plugins.store.searchPlaceholder": "Search plugins",
   "settings.plugins.store.searchResults": "Search results ({count})",
   "settings.plugins.store.searchEmpty": "No plugins match your search",
@@ -3299,10 +3300,10 @@ const enUS: Record<string, string> = {
   "settings.plugins.import.mode.copy": "Copy",
   "settings.plugins.import.mode.symlink": "Symlink",
   "settings.plugins.import.mode.copy.description":
-    "Copy the full plugin directory into ZCode and register it in plugins.dirs. Later changes in the external agent directory will not sync automatically.",
+    "Copy the full plugin directory into Zody and register it in plugins.dirs. Later changes in the external agent directory will not sync automatically.",
   "settings.plugins.import.mode.symlink.description":
-    "Create a directory link to the external agent plugin and register it in plugins.dirs. ZCode follows later source changes, but the plugin depends on that source path remaining available.",
-  "settings.plugins.import.importing": "Importing plugins into ZCode",
+    "Create a directory link to the external agent plugin and register it in plugins.dirs. Zody follows later source changes, but the plugin depends on that source path remaining available.",
+  "settings.plugins.import.importing": "Importing plugins into Zody",
   "settings.plugins.import.imported": "Imported",
   "settings.plugins.import.skipped": "Skipped",
   "settings.plugins.import.failed": "Failed",
@@ -3311,9 +3312,9 @@ const enUS: Record<string, string> = {
   "settings.plugins.import.finish": "Done",
   "settings.commands.title": "Commands",
   "settings.commands.description":
-    "Manage ZCode Agent .md command files. Commands can be invoked with /command-name in chat.",
+    "Manage Zody Agent .md command files. Commands can be invoked with /command-name in chat.",
   "settings.commands.sourceFilterLabel": "Source filter",
-  "settings.commands.source.zcodeAgent": "ZCode Agent",
+  "settings.commands.source.zcodeAgent": "Zody Agent",
   "settings.commands.add": "New",
   "settings.commands.addNew": "New command",
   "settings.commands.addDescription":
@@ -3373,10 +3374,10 @@ const enUS: Record<string, string> = {
   "settings.commands.import.mode.copy": "Copy",
   "settings.commands.import.mode.symlink": "Symlink",
   "settings.commands.import.mode.copy.description":
-    "Copy the command file into ZCode. Later changes in the external agent file will not sync automatically.",
+    "Copy the command file into Zody. Later changes in the external agent file will not sync automatically.",
   "settings.commands.import.mode.symlink.description":
-    "Create a file link to the external agent command. ZCode follows later source changes, but the command depends on that source path remaining available.",
-  "settings.commands.import.importing": "Importing commands into ZCode",
+    "Create a file link to the external agent command. Zody follows later source changes, but the command depends on that source path remaining available.",
+  "settings.commands.import.importing": "Importing commands into Zody",
   "settings.commands.import.imported": "Imported",
   "settings.commands.import.skipped": "Skipped",
   "settings.commands.import.failed": "Failed",
@@ -3464,7 +3465,7 @@ const enUS: Record<string, string> = {
   "settings.hooks.customJson": "Custom fields JSON",
   "settings.hooks.customJsonObjectError": "Custom fields must be a JSON object.",
   "settings.hooks.customJsonParseError": "Custom fields JSON parsing failed.",
-  "settings.plugins.zcodeOnly": "ZCode Agent only",
+  "settings.plugins.zcodeOnly": "Zody Agent only",
   "settingsSync.dialog.title": "Import Settings",
   "settingsSync.dialog.description":
     "Only missing items will be imported. Existing settings will be skipped automatically.",
@@ -3473,8 +3474,8 @@ const enUS: Record<string, string> = {
   "settingsSync.action.rescanning": "Scanning...",
   "settingsSync.action.importSelected": "Import selected",
   "settingsSync.action.importing": "Importing...",
-  "settingsSync.action.finish": "Start using ZCode",
-  "settingsSync.agent.zcode": "ZCode Agent",
+  "settingsSync.action.finish": "Start using Zody",
+  "settingsSync.agent.zcode": "Zody Agent",
   "settingsSync.agent.claudeCode": "Claude Code",
   "settingsSync.agent.codexCli": "Codex CLI",
   "settingsSync.agent.openCode": "OpenCode",
@@ -3523,17 +3524,17 @@ const enUS: Record<string, string> = {
   "settingsSync.discovery.description":
     "Importable agent settings are no longer scanned automatically.",
   "settingsSync.discovery.helper":
-    "Only missing items will be imported and your current ZCode settings will not be overwritten.",
+    "Only missing items will be imported and your current Zody settings will not be overwritten.",
   "settingsSync.discovery.agentCount": "Agents found: {count}",
   "settingsSync.discovery.categoryCount": "Categories found: {count}",
   "settingsSync.discovery.error": "Scan failed: {error}",
   "settingsSync.discovery.continue": "Continue",
-  "onboarding.dialog.title": "Welcome to ZCode",
+  "onboarding.dialog.title": "Welcome to Zody",
   "onboarding.dialog.description": "Choose how to start your first session.",
   "onboarding.wizard.label": "Migration guide",
   "onboarding.welcome.eyebrow": "First run setup",
-  "onboarding.welcome.title": "Welcome to ZCode",
-  "onboarding.welcome.start": "Start ZCode",
+  "onboarding.welcome.title": "Welcome to Zody",
+  "onboarding.welcome.start": "Start Zody",
   "onboarding.welcome.migrate": "Migration Guide",
   "onboarding.welcome.helper":
     "Import existing tool settings now, or skip and continue later from Settings.",
@@ -3557,7 +3558,7 @@ const enUS: Record<string, string> = {
     "Import selected commands from external agents before the final migration.",
   "onboarding.stepDescription.agentSettings": "Choose which agents' providers to bring in.",
   "onboarding.stepDescription.migration":
-    "Start migration and wait while ZCode imports your selections.",
+    "Start migration and wait while Zody imports your selections.",
   "onboarding.sessions.empty":
     "No workspaces yet. Scan local history, then pick workspaces to migrate.",
   "onboarding.sessions.count": "{count} sessions",
@@ -3576,7 +3577,7 @@ const enUS: Record<string, string> = {
   "onboarding.agentsFile.error": "Could not check AGENTS.md migration status: {error}",
   "onboarding.agentsFile.confirmTitle": "Overwrite default AGENTS.md?",
   "onboarding.agentsFile.confirmDescription":
-    "ZCode will copy {source} to {target}.\nIf the target file already exists, the ZCode default AGENTS configuration will be overwritten.",
+    "Zody will copy {source} to {target}.\nIf the target file already exists, the Zody default AGENTS configuration will be overwritten.",
   "onboarding.agentsFile.confirmAction": "Overwrite and migrate",
   "onboarding.finish.summary.label.imported": "Imported",
   "onboarding.finish.summary.label.skipped": "Skipped",
@@ -3657,9 +3658,8 @@ const enUS: Record<string, string> = {
   "chat.emptyResult.title": "No visible output",
   "chat.emptyResult.description":
     "This task finished without any chat content. It may have been stopped before the model produced a response.",
-  "chat.placeholder.newTask":
-    "Ask ZCode anything, @ to add context, / for commands or capabilities",
-  "chat.placeholder.newTaskMobile": "Ask ZCode anything…",
+  "chat.placeholder.newTask": "Ask Zody anything, @ to add context, / for commands or capabilities",
+  "chat.placeholder.newTaskMobile": "Ask Zody anything…",
   "chat.placeholder.followUpAsk": "Ask for follow-up changes",
   "chat.placeholder.followUpQueue": "Keep typing to queue follow-up changes",
   "chat.placeholder.loading": "Initializing task...",
@@ -3930,7 +3930,7 @@ const enUS: Record<string, string> = {
   "chat.compact.duplicateBlocked": "A compaction is already running or queued.",
   "chat.modelSwitch.contextWindowGuard.title": "Compress context before switching models",
   "chat.modelSwitch.contextWindowGuard.description":
-    "This conversation has used {used} tokens, which exceeds {modelName}'s available context of {target} tokens after reserving maximum output.\nCompress the current conversation with the current model first. If the compressed context fits, ZCode will continue switching models.",
+    "This conversation has used {used} tokens, which exceeds {modelName}'s available context of {target} tokens after reserving maximum output.\nCompress the current conversation with the current model first. If the compressed context fits, Zody will continue switching models.",
   "chat.modelSwitch.contextWindowGuard.compress": "Compress",
   "chat.modelSwitch.contextWindowGuard.runningBlocked":
     "This conversation has used more context than the target model's available context after reserving maximum output. The conversation must be compressed before switching models, but the current task is still running and context compression cannot run now. Wait for the task to finish, then switch models again.",
@@ -3943,11 +3943,11 @@ const enUS: Record<string, string> = {
     "Computer Use is idle — it will start automatically on first use",
   "chat.toolbar.computerUse.tooltip.starting": "Enabling Computer Use plugin…",
   "chat.toolbar.computerUse.tooltip.ready":
-    "Computer Use ready — just describe what you want ZCode to do",
+    "Computer Use ready — just describe what you want Zody to do",
   "chat.toolbar.computerUse.tooltip.permissionRequired":
     "Missing macOS permissions — click to grant",
   "chat.toolbar.computerUse.tooltip.error":
-    "Computer Use enablement failed. Please restart ZCode app and retry, or ask ZCode to investigate the logs",
+    "Computer Use enablement failed. Please restart Zody app and retry, or ask Zody to investigate the logs",
   "chat.toolbar.computerUse.tooltip.sessionBusy":
     "A conversation is running. Computer Use can't be toggled right now — try again after it finishes.",
   "chat.toolbar.mode.description":
@@ -4293,7 +4293,7 @@ const enUS: Record<string, string> = {
     "Could not reach the local agent; global workflows are unavailable.",
   "workflows.hub.empty.title": "No saved workflows in your open projects yet",
   "workflows.hub.empty.hint":
-    "Design a workflow with ZCode in chat, then have it save the workflow to a project once it works. Projects that aren't open don't appear here.",
+    "Design a workflow with Zody in chat, then have it save the workflow to a project once it works. Projects that aren't open don't appear here.",
   "workflows.hub.noWorkspace": "Open a workspace to see its workflows.",
   "workflows.hub.loadError": "Could not read workflows: {error}",
   "workflows.hub.invalid": "{count} files could not be read",
@@ -4356,7 +4356,7 @@ const enUS: Record<string, string> = {
   "workflows.hub.detail.description": "Description",
   "workflows.hub.detail.whenToUse": "When to use",
   "workflows.hub.detail.whenToUse.help":
-    "A routing hint for ZCode: when this workflow is the right pick.",
+    "A routing hint for Zody: when this workflow is the right pick.",
   "workflows.hub.detail.args": "Arguments",
   "workflows.hub.detail.args.name": "Name",
   "workflows.hub.detail.args.type": "Type",
@@ -4377,7 +4377,7 @@ const enUS: Record<string, string> = {
   "workflows.hub.detail.meta.descriptionRequired": "Description is required",
   "workflows.hub.detail.script": "Script",
   "workflows.hub.detail.script.note":
-    "The script is read-only. To change it, revise it with ZCode in chat and save a new version.",
+    "The script is read-only. To change it, revise it with Zody in chat and save a new version.",
   "workflows.hub.detail.script.copy": "Copy script",
   "workflows.hub.detail.loadError": "Could not read this workflow: {reason}",
   "workflows.hub.detail.notFound": "This workflow is no longer in the project.",
@@ -4391,6 +4391,8 @@ const enUS: Record<string, string> = {
   "workflows.hub.reason.not_found": "File not found",
   "workflows.hub.reason.parse_error": "The metadata at the top of the file could not be parsed",
   "workflows.hub.reason.read_error": "File could not be read",
+  "workflows.hub.reason.read_only_source":
+    "This workflow comes from a read-only legacy .zcode/workflows source. Nothing was deleted. Check the file path and handle it manually, or save a copy under .zody/workflows/ to manage it in Zody.",
   "workflows.hub.time.duration.seconds": "{seconds}s",
   "workflows.hub.time.duration.minutes": "{minutes}m {seconds}s",
   // ── Observation tool cards  ──
@@ -4571,10 +4573,10 @@ const enUS: Record<string, string> = {
   "chat.toolCall.workflow.saveRun.announce.project": "Saved to the project",
   "chat.toolCall.workflow.saveRun.announce.global": "Saved as a global workflow",
   "chat.toolCall.workflow.saveRun.title": "Save workflow",
-  "chat.toolCall.workflow.saveRun.lead": "Let ZCode refine and save it",
+  "chat.toolCall.workflow.saveRun.lead": "Let Zody refine and save it",
   "chat.toolCall.workflow.saveRun.lead.hint":
-    "ZCode distills a reusable workflow for you, then asks you to confirm.",
-  "chat.toolCall.workflow.saveRun.lead.sending": "Handed to ZCode…",
+    "Zody distills a reusable workflow for you, then asks you to confirm.",
+  "chat.toolCall.workflow.saveRun.lead.sending": "Handed to Zody…",
   "chat.toolCall.workflow.saveRun.lead.unsupported": "This agent cannot save directly.",
   "chat.toolCall.workflow.saveRun.or": "or save it as is",
   "chat.toolCall.workflow.saveRun.name": "Name",
@@ -4934,7 +4936,7 @@ const enUS: Record<string, string> = {
   "chat.slash.subagents.title": "Agents",
   "chat.slash.subagents.empty": "No matching agents",
   "chat.slash.emptyUnavailable":
-    "No slash commands have been broadcast for the current ZCode Agent session",
+    "No slash commands have been broadcast for the current Zody Agent session",
   "chat.slash.emptyResults": "No matching slash commands",
   // Errors
   "chat.error.connectionLost": "Connection to agent lost",
@@ -5198,7 +5200,7 @@ const enUS: Record<string, string> = {
   "resourceManager.network.empty": "Waiting for new network requests…",
   "resourceManager.network.noMatches": "No matching requests",
   "resourceManager.storage": "Storage",
-  "resourceManager.appUsage": "ZCode",
+  "resourceManager.appUsage": "Zody",
   "resourceManager.systemUsage": "System",
   "resourceManager.category.base": "Base services",
   "resourceManager.category.builtinPlugin": "Built-in plugins",
@@ -5448,7 +5450,7 @@ const enUS: Record<string, string> = {
   "feedback.submit.template.section.errorSummaryLine": "Error Summary: {message}",
   "feedback.submit.template.section.errorDetail": "Error Details",
   "feedback.submit.template.section.errorTraceId": "TraceID: {traceId}",
-  "feedback.submit.template.section.copyErrorHeading": "ZCode Error Info",
+  "feedback.submit.template.section.copyErrorHeading": "Zody Error Info",
   "feedback.submit.template.section.notProvided": "Not provided",
   "feedback.submit.template.section.remoteLogEmpty": "No connection logs captured",
   "feedback.submit.template.section.taskFeedbackTitle": "Feedback about task: {title}",
@@ -5592,7 +5594,7 @@ const enUS: Record<string, string> = {
   "automations.statusFilter.completed": "Completed",
   "automations.statusFilter.failed": "Failed",
   "automations.statusFilter.empty": "No tasks match this filter",
-  "automations.keepAwakeBanner": "Keep your computer awake while ZCode is running a chat.",
+  "automations.keepAwakeBanner": "Keep your computer awake while Zody is running a chat.",
   "modelSelection.invalidated.fallback":
     "The previous model selection is no longer available. Switched to the current default; review it before continuing.",
   "modelSelection.invalidated.reselect":
@@ -5759,9 +5761,9 @@ const enUS: Record<string, string> = {
   "automations.runs.nextPage": "Next",
   // CUA (Computer Use)
   "chat.cuaReadiness.toolsNotLoaded":
-    "ZCode Computer Use is still preparing — its tools aren't loaded yet ({count} loaded). Grant the permissions below; tools appear once the helper is ready.",
+    "Zody Computer Use is still preparing — its tools aren't loaded yet ({count} loaded). Grant the permissions below; tools appear once the helper is ready.",
   "chat.cuaReadiness.toolsPreparing":
-    "ZCode Computer Use is still preparing — its tools aren't loaded yet. Grant the permissions below; tools appear once the helper is ready.",
+    "Zody Computer Use is still preparing — its tools aren't loaded yet. Grant the permissions below; tools appear once the helper is ready.",
   "chat.toolCall.cua.requestAccess": "Check Computer Use access",
   "chat.toolCall.cua.appName": "Computer Use",
   "chat.toolCall.cua.group.completedLabel": "Computer Use",
@@ -5889,9 +5891,9 @@ const enUS: Record<string, string> = {
   "cuaPermission.modal.restartButton": "Restart Helper",
   "cuaPermission.modal.restarting": "Restarting Helper…",
   "cuaPermission.modal.restartFailed": "Couldn't restart Helper: {error}",
-  "cuaPermission.modal.relaunchAppButton": "Restart ZCode",
+  "cuaPermission.modal.relaunchAppButton": "Restart Zody",
   "cuaPermission.modal.relaunchAppHint":
-    "Still not working after restarting Helper? Restart ZCode to fully reload the Helper process.",
+    "Still not working after restarting Helper? Restart Zody to fully reload the Helper process.",
   "cuaPermission.status.granted": "Granted",
   "cuaPermission.status.missing": "Missing",
   "cuaPermission.status.unknown": "Unknown",
@@ -5905,7 +5907,7 @@ const enUS: Record<string, string> = {
   "cuaPermission.tools.agentUpdateRequired":
     "The connected Agent is too old for a safe readiness check. Update or restart it, then check again.",
   "cuaPermission.tools.untrustedRuntime":
-    "Computer Use tools were found, but they did not come from the verified ZCode plugin. Review the plugin installation, then check again.",
+    "Computer Use tools were found, but they did not come from the verified Zody plugin. Review the plugin installation, then check again.",
   "cuaPermission.perm.accessibility": "Accessibility",
   "cuaPermission.perm.accessibility.purpose": "Read/drive UI elements + synthesize input",
   "cuaPermission.perm.screenRecording": "Screen Recording",
@@ -5916,7 +5918,7 @@ const enUS: Record<string, string> = {
     "Please upgrade macOS before using it. Permission setup cannot be completed on older versions.",
   "cuaPermission.ready": "Permissions ready",
   "cuaPermission.ready.sessionValidationHint":
-    "ZCode will verify the Computer Use tools against the exact session when your first session starts.",
+    "Zody will verify the Computer Use tools against the exact session when your first session starts.",
   "settings.computerUse.title": "Computer Use",
   "settings.computerUse.toggleLabel": "Enable Computer Use",
   "settings.computerUse.toggleDescription":

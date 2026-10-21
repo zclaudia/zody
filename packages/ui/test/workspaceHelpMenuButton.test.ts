@@ -29,8 +29,9 @@ const captured = vi.hoisted(() => ({
   updateMenu: {
     visible: true,
     disabled: false,
-    labelId: "titleBar.menu.help.checkForUpdates",
+    labelId: "titleBar.menu.help.manualUpdate",
     labelValues: undefined,
+    openReleases: () => captured.openExternal("https://github.com/zclaudia/zody/releases"),
   },
   executeDesktopCommand: vi.fn(async () => undefined),
 }));
@@ -86,7 +87,7 @@ vi.mock("@/hooks/useDesktopUpdateMenu.js", () => ({
   useDesktopUpdateMenu: (isDesktop: boolean) => ({
     ...captured.updateMenu,
     visible: isDesktop && captured.updateMenu.visible,
-    checkForUpdates: () => captured.executeDesktopCommand(DesktopCommandIds.CheckForUpdates),
+    openReleases: captured.updateMenu.openReleases,
   }),
 }));
 
@@ -133,6 +134,24 @@ describe("WorkspaceHelpMenuButton", () => {
       }
       expect(await render(desktop)).not.toContain("workspaceHeader.help.reportVulnerability");
     }
+  });
+
+  it("Zody 对外帮助只指向 GitHub，且不显示无配置的社群入口", async () => {
+    captured.openExternal.mockClear();
+    const html = await render(false);
+    expect(html).not.toContain("workspaceHeader.help.community");
+
+    const docs = captured.menuItems.find((item) => item.label === "workspaceHeader.help.docs");
+    await docs?.onSelect?.();
+    expect(captured.openExternal).toHaveBeenCalledWith(
+      "https://github.com/zclaudia/zody/tree/main/docs",
+    );
+
+    const issue = captured.menuItems.find(
+      (item) => item.label === "workspaceHeader.help.issueReport",
+    );
+    await issue?.onSelect?.();
+    expect(captured.openExternal).toHaveBeenCalledWith("https://github.com/zclaudia/zody/issues");
   });
 
   it("冷缓存加载项不可触发外链，有效配置到达时保留原位置与文案", async () => {
@@ -206,24 +225,25 @@ describe("WorkspaceHelpMenuButton", () => {
     }
   });
 
-  it("资源管理器之后显示检查更新，点击执行已有命令", async () => {
+  it("手动更新入口打开 Zody Releases", async () => {
+    captured.openExternal.mockClear();
     await render(true);
     const index = captured.menuItems.findIndex(
-      (entry) => entry.label === "titleBar.menu.help.checkForUpdates",
+      (entry) => entry.label === "titleBar.menu.help.manualUpdate",
     );
     expect(index).toBeGreaterThan(0);
     expect(captured.menuItems[index - 1]?.testId).toBe(TID_WORKSPACE_HELP_MENU_RESOURCE_MANAGER);
     await captured.menuItems[index]?.onSelect?.();
-    expect(captured.executeDesktopCommand).toHaveBeenCalledExactlyOnceWith(
-      DesktopCommandIds.CheckForUpdates,
+    expect(captured.openExternal).toHaveBeenCalledExactlyOnceWith(
+      "https://github.com/zclaudia/zody/releases",
     );
   });
 
   it("Web 与 Preview 不显示检查更新", async () => {
-    expect(await render(false)).not.toContain("titleBar.menu.help.checkForUpdates");
+    expect(await render(false)).not.toContain("titleBar.menu.help.manualUpdate");
     captured.updateMenu.visible = false;
     try {
-      expect(await render(true)).not.toContain("titleBar.menu.help.checkForUpdates");
+      expect(await render(true)).not.toContain("titleBar.menu.help.manualUpdate");
     } finally {
       captured.updateMenu.visible = true;
     }
@@ -255,14 +275,13 @@ describe("WorkspaceHelpMenuButton", () => {
       const html = await render(desktop);
       expect(captured.menuItems.map((item) => item.label)).toEqual([
         "workspaceHeader.help.docs",
-        "workspaceHeader.help.community",
         "workspaceHeader.help.issueReport",
         "workspaceHeader.help.productRequest",
         ...(desktop
           ? [
               "titleBar.menu.help.exportLogs",
               "titleBar.menu.help.resourceManager",
-              "titleBar.menu.help.checkForUpdates",
+              "titleBar.menu.help.manualUpdate",
               "titleBar.menu.help.about",
             ]
           : []),
@@ -277,11 +296,11 @@ describe("WorkspaceHelpMenuButton", () => {
       for (const id of [
         "workspaceHeader.help.issueReport",
         "workspaceHeader.help.productRequest",
-        "workspaceHeader.help.community",
         "workspaceHeader.help.docs",
       ]) {
         expect(html).toContain(id);
       }
+      expect(html).not.toContain("workspaceHeader.help.community");
     }
   });
 });

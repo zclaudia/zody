@@ -2981,7 +2981,7 @@ export type ZCodeSkillsReferenceCatalogResult = z.infer<
 
 // ── 已保存工作流的 GUI 中枢──
 // workspace 级、无会话的五个方法，照 skills/referenceCatalog 的先例：每次调用现扫
-// `<cwd>/.zcode/workflows/`（挂载时快照会漏掉手改的文件）。形状与 @zcode/contracts 的
+// `<cwd>/.zody/workflows/`（挂载时快照会漏掉手改的文件）。形状与 @zcode/contracts 的
 // saved-workflow.ts 逐字对齐——依赖方向是 contracts → shared，所以这里结构化地再声明一遍，
 // 而不是 import；两边的 strict 形状由 bootstrap 侧的协议测试互相钉住。
 export const zcodeSavedWorkflowArgTypeSchema = z.enum(["string", "number", "boolean", "json"]);
@@ -3012,7 +3012,7 @@ export const zcodeSavedWorkflowMetaSchema = z
   })
   .strict();
 export type ZCodeSavedWorkflowMeta = z.infer<typeof zcodeSavedWorkflowMetaSchema>;
-// 作用域两档：项目档落 `<cwd>/.zcode/workflows/`、全局档落 agent 机器的 `~/.zcoder/workflows/`。作用域由文件所在目录推得，frontmatter 不存 scope。
+// 作用域两档：项目档落 `<cwd>/.zody/workflows/`、全局档落 agent 机器的 `~/.zody/workflows/`。作用域由文件所在目录推得，frontmatter 不存 scope。
 export const zcodeSavedWorkflowScopeSchema = z.enum(["project", "global"]);
 export type ZCodeSavedWorkflowScope = z.infer<typeof zcodeSavedWorkflowScopeSchema>;
 export const zcodeSavedWorkflowEntrySchema = z
@@ -3049,7 +3049,7 @@ const zcodeSavedWorkflowFailureSchema = z
 export const zcodeWorkflowsListParamsSchema = z
   .object({
     workspace: zcodeWorkspaceRefSchema,
-    // 缺省即 `project`（本项目档）。给 `global` 时改扫本机 `~/.zcoder/workflows/`；此时 `workspace`
+    // 缺省即 `project`（本项目档）。给 `global` 时改扫本机 `~/.zody/workflows/`；此时 `workspace`
     // 仍必填，但只是**载体运行时**——协议处理器对全局档不读它的路径。
     scope: zcodeSavedWorkflowScopeSchema.optional(),
   })
@@ -3118,6 +3118,7 @@ export type ZCodeWorkflowsDeleteParams = z.infer<typeof zcodeWorkflowsDeletePara
 export const zcodeWorkflowsDeleteResultSchema = z.union([
   z.object({ ok: z.literal(true), path: nonEmptyString }).strict(),
   zcodeSavedWorkflowFailureSchema,
+  z.object({ ok: z.literal(false), reason: z.literal("read_only_source") }).strict(),
 ]);
 export type ZCodeWorkflowsDeleteResult = z.infer<typeof zcodeWorkflowsDeleteResultSchema>;
 

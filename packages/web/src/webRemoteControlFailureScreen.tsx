@@ -63,7 +63,7 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
       description: "电脑端已经断开连接，当前手机页面不能继续控制桌面工作区。",
       detailLabel: "连接详情",
       nextStepsTitle: "下一步",
-      nextSteps: ["确认电脑端 ZCode 仍在运行并联网。", "在电脑端重新开启 Web 远程控制后再连接。"],
+      nextSteps: ["确认电脑端 Zody 仍在运行并联网。", "在电脑端重新开启 Web 远程控制后再连接。"],
       action: "重新连接",
     },
     "incompatible-version": {
@@ -73,7 +73,7 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
       description: "手机 App 与电脑端的应用协议版本没有交集，需要升级其中一端。",
       detailLabel: "版本详情",
       nextStepsTitle: "下一步",
-      nextSteps: ["按提示升级手机 App 或电脑端 ZCode。", "升级完成后重新连接。"],
+      nextSteps: ["按提示升级手机 App 或电脑端 Zody。", "升级完成后重新连接。"],
       action: "重新连接",
     },
     "desktop-bootstrap-timeout": {
@@ -102,11 +102,11 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
     "backend-unsupported": {
       tone: "warning",
       badge: "电脑不支持",
-      title: "这台电脑不支持 ZCode 远控",
-      description: "选中的电脑在线，但没有提供 ZCode 远程控制能力。",
+      title: "这台电脑不支持 Zody 远控",
+      description: "选中的电脑在线，但没有提供 Zody 远程控制能力。",
       detailLabel: "电脑信息",
       nextStepsTitle: "下一步",
-      nextSteps: ["在电脑端确认使用支持远控的 ZCode 版本。", "返回选电脑页选择另一台电脑。"],
+      nextSteps: ["在电脑端确认使用支持远控的 Zody 版本。", "返回选电脑页选择另一台电脑。"],
       action: "重新选择",
     },
     "unsupported-action": {
@@ -193,7 +193,7 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
       detailLabel: "Connection detail",
       nextStepsTitle: "What happened",
       nextSteps: [
-        "Make sure ZCode is still running and online on desktop.",
+        "Make sure Zody is still running and online on desktop.",
         "Start Web remote control again from desktop.",
       ],
       action: "Try Again",
@@ -207,7 +207,7 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
       detailLabel: "Version detail",
       nextStepsTitle: "Next steps",
       nextSteps: [
-        "Upgrade the phone app or desktop ZCode as indicated.",
+        "Upgrade the phone app or desktop Zody as indicated.",
         "Reconnect after the upgrade.",
       ],
       action: "Try Again",
@@ -242,13 +242,13 @@ const WEB_REMOTE_CONTROL_SCREEN_COPY = {
     "backend-unsupported": {
       tone: "warning",
       badge: "Desktop unsupported",
-      title: "This Desktop Does Not Support ZCode Remote",
+      title: "This Desktop Does Not Support Zody Remote",
       description:
-        "The selected desktop is online but does not advertise the ZCode remote-control capability.",
+        "The selected desktop is online but does not advertise the Zody remote-control capability.",
       detailLabel: "Desktop detail",
       nextStepsTitle: "Next steps",
       nextSteps: [
-        "Confirm desktop runs a ZCode version that supports remote control.",
+        "Confirm desktop runs a Zody version that supports remote control.",
         "Go back and select another desktop.",
       ],
       action: "Choose Again",
@@ -308,7 +308,7 @@ export function resolveWebRemoteControlScreenCopy(
           badge: "需要更新 App",
           title: "请更新手机 App",
           description: "电脑端要求更高的应用协议版本，当前手机 App 版本过旧。",
-          nextSteps: ["从应用商店或分发渠道更新 ZCode 手机 App。", "升级完成后重新连接。"],
+          nextSteps: ["从应用商店或分发渠道更新 Zody 手机 App。", "升级完成后重新连接。"],
           action: "已更新，重新连接",
         }
       : {
@@ -318,7 +318,7 @@ export function resolveWebRemoteControlScreenCopy(
           description:
             "The desktop requires a newer application protocol than this phone app supports.",
           nextSteps: [
-            "Update the ZCode phone app from your app store or distribution channel.",
+            "Update the Zody phone app from your app store or distribution channel.",
             "Reconnect after the update.",
           ],
           action: "Updated, reconnect",
@@ -328,18 +328,18 @@ export function resolveWebRemoteControlScreenCopy(
     ? {
         ...base,
         badge: "需要更新电脑端",
-        title: "请更新电脑端 ZCode",
-        description: "手机 App 需要更高的应用协议版本，当前电脑端 ZCode 版本过旧。",
-        nextSteps: ["在电脑上更新 ZCode 桌面端。", "更新完成后重新连接。"],
+        title: "请更新电脑端 Zody",
+        description: "手机 App 需要更高的应用协议版本，当前电脑端 Zody 版本过旧。",
+        nextSteps: ["在电脑上更新 Zody 桌面端。", "更新完成后重新连接。"],
         action: "重试",
       }
     : {
         ...base,
         badge: "Desktop update required",
-        title: "Update Desktop ZCode",
+        title: "Update Desktop Zody",
         description:
           "This phone app requires a newer application protocol than the desktop supports.",
-        nextSteps: ["Update ZCode on the desktop.", "Reconnect after the update."],
+        nextSteps: ["Update Zody on the desktop.", "Reconnect after the update."],
         action: "Retry",
       };
 }

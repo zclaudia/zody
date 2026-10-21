@@ -79,16 +79,16 @@ export function resolveExternalWorkspaceOpenDialogCopy(
   if (locale === "zh-CN") {
     return {
       buttons: ["打开文件夹", "取消"],
-      title: "打开外部 ZCode 链接？",
-      message: "是否在 ZCode 中打开此文件夹？",
+      title: "打开外部 Zody 链接？",
+      message: "是否在 Zody 中打开此文件夹？",
       detail: (path) => `${path}\n\n只打开你信任来源的文件夹。项目设置可能影响 agent runtime。`,
     };
   }
 
   return {
     buttons: ["Open folder", "Cancel"],
-    title: "Open external ZCode link?",
-    message: "Open this folder in ZCode?",
+    title: "Open external Zody link?",
+    message: "Open this folder in Zody?",
     detail: (path) =>
       `${path}\n\nOnly open folders from sources you trust. Project settings may affect the agent runtime.`,
   };
@@ -213,8 +213,8 @@ export function handleDeepLink(
     const targetWindow = options.resolveApplicationWindow
       ? options.resolveApplicationWindow()
       : (BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0] ?? null);
-    // zcode://workspace/open 来自浏览器/IM 等外部应用，不能等同于用户在
-    // ZCode 内部选择目录；确认必须发生在 statSync 之前，避免项目配置被静默信任。
+    // zody://workspace/open 来自浏览器/IM 等外部应用，不能等同于用户在
+    // Zody 内部选择目录；确认必须发生在 statSync 之前，避免项目配置被静默信任。
     if (
       !confirmExternalWorkspaceOpen(workspacePath, logger, targetWindow, options.confirmationCopy)
     ) {
@@ -239,7 +239,7 @@ export function registerDeepLinkProtocol(
   },
   options: { iconPath?: string } = {},
 ) {
-  const scheme = "zcode";
+  const scheme = app.name === "Zody" ? "zody" : "zody-preview";
 
   // 外部 URL 必须位于 -- 后；否则 Windows 引号拆分可把 URL 内容变成 Electron 启动参数。
   // Inspector 早于应用 JS 和单实例锁启动，不能依赖后续 handleDeepLink 校验拦截。
@@ -278,6 +278,9 @@ export function registerDeepLinkProtocol(
       executablePath: process.execPath,
       homeDir: app.getPath("home"),
       productName: app.name,
+      protocolScheme: scheme,
+      desktopFileName: `${scheme}.desktop`,
+      iconName: scheme,
       iconSourcePath: options.iconPath,
       env: process.env,
       argv: process.argv,

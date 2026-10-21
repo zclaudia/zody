@@ -35,7 +35,7 @@ vi.mock("@zcode/shared", () => ({
     bundledResourceDir: "glm",
     version: "0.0.0-test",
     spawnArgs: ["app-server", "--stdio"],
-    nativeConfigDir: ".zcoder/cli",
+    nativeConfigDir: ".zody/cli",
     nativeConfigFileName: "config.json",
     missingBinaryMessage: "[ZCode Agent] missing test binary",
     resolveEntrySegments: (platform: string) => [
@@ -43,6 +43,7 @@ vi.mock("@zcode/shared", () => ({
     ],
   },
   ZCODE_ENV: "test",
+  ZCODE_DATA_ROOT_DIR_NAME: ".zody",
   get ZCODE_PRODUCT_FLAVOR() {
     return productFlavorMock.value;
   },
@@ -481,24 +482,39 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     expect(env.ZCODE_TOOL_ENV_PASSTHROUGH_JSON).toBeUndefined();
   });
 
-  it("正式安装包默认配置只接收 OTLP 连接字段，不接受构建期身份字段", async () => {
+  it("正式安装包 OTLP 常量必须为空，非空配置会阻止运行", async () => {
     const { resolvePackagedAgentTelemetryEnv } = await import("../src/main/desktopRuntimeEnv.js");
 
-    expect(
+    expect(resolvePackagedAgentTelemetryEnv({})).toEqual({});
+    expect(() =>
       resolvePackagedAgentTelemetryEnv({
         OTEL_EXPORTER_OTLP_ENDPOINT: "https://arms.example.com/otlp",
         OTEL_EXPORTER_OTLP_HEADERS: "x-arms-license-key=write-only",
         OTEL_SERVICE_NAME: "zcode-cli-agent",
         ZCODE_TELEMETRY_RUNTIME_DISTRIBUTION: "packaged",
-        ZCODE_TELEMETRY_USER_SUBJECT_ID: "spoofed-user",
-        ZCODE_TELEMETRY_DEVICE_MID: "spoofed-device",
       }),
-    ).toEqual({
-      OTEL_EXPORTER_OTLP_ENDPOINT: "https://arms.example.com/otlp",
-      OTEL_EXPORTER_OTLP_HEADERS: "x-arms-license-key=write-only",
-      OTEL_SERVICE_NAME: "zcode-cli-agent",
-      ZCODE_TELEMETRY_RUNTIME_DISTRIBUTION: "packaged",
+    ).toThrow("OTEL_EXPORTER_OTLP_ENDPOINT is disabled for Zody release builds");
+  });
+
+  it("打包态 Host 不继承进程环境中的 Agent OTLP endpoint 或 headers", async () => {
+    const { buildHostProcessEnv } = await import("../src/main/desktopRuntimeEnv.js");
+    appMock.isPackaged = true;
+    Object.defineProperty(process, "resourcesPath", {
+      value: "/mock/resources",
+      configurable: true,
     });
+    try {
+      const env = buildHostProcessEnv({
+        OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "https://arms.example.com/v1/traces",
+        OTEL_EXPORTER_OTLP_TRACES_HEADERS: "Authorization=secret",
+        ZCODE_TELEMETRY_RUNTIME_DISTRIBUTION: "packaged",
+      });
+      expect(env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT).toBeUndefined();
+      expect(env.OTEL_EXPORTER_OTLP_TRACES_HEADERS).toBeUndefined();
+      expect(env.ZCODE_TELEMETRY_RUNTIME_DISTRIBUTION).toBeUndefined();
+    } finally {
+      appMock.isPackaged = false;
+    }
   });
 
   it("Windows 打包态会从 resourcesPath 推导安装目录供数据目录保护使用", async () => {
@@ -951,13 +967,15 @@ describe("desktopRuntimeEnv runtime identity", () => {
     } = await import("../src/main/desktopRuntimeEnv.js");
 
     expect(isPreviewPackagedRuntime).toBe(true);
-    expect(runtimeApplicationName).toBe("ZCode Preview");
+    expect(runtimeApplicationName).toBe("Zody Preview");
     // Bugfix：这两条路径由实现用宿主 path.join 从 app.getPath("appData") 拼出，
     // Windows 上是 `\mock\appData\ZCode Preview`，写死 POSIX 字面量必然失败。
     // 用例要断言的是「Preview 单独占一个 Electron 数据目录」的目录结构，与分隔符无关，
     // 所以用同样的 join 表达；在 POSIX 上是恒等变换。
-    expect(runtimeUserDataPath).toBe(join("/mock/appData", "ZCode Preview"));
-    expect(runtimeSessionDataPath).toBe(join("/mock/appData", "ZCode Preview", "session"));
+    expect(runtimeUserDataPath).toBe(join("/mock/db", ".zody", "desktop", "Zody Preview"));
+    expect(runtimeSessionDataPath).toBe(
+      join("/mock/db", ".zody", "desktop", "Zody Preview", "session"),
+    );
   });
 
   it("e2e 可保留 Chromedriver 注入的 Electron userData 目录", async () => {

@@ -30,9 +30,9 @@ describe("WelcomeScreen i18n", () => {
     }
   });
 
-  it("标题使用 zcoder 品牌名，副标题不再提及账号", () => {
-    expect(enUS["login.title"]).toBe("Welcome to zcoder");
-    expect(zhCN["login.title"]).toBe("欢迎使用 zcoder");
+  it("标题使用 Zody 品牌名，副标题不再提及账号", () => {
+    expect(enUS["login.title"]).toBe("Welcome to Zody");
+    expect(zhCN["login.title"]).toBe("欢迎使用 Zody");
     expect(enUS["login.description"]).not.toMatch(/account/i);
     expect(zhCN["login.description"]).not.toContain("账号");
     expect(enUS["login.apiKey.skip"]).toBe("Skip for now");

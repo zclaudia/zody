@@ -1,4 +1,4 @@
-# ZCode 插件商店（Plugin Store）
+# Zody 插件商店（Plugin Store）
 
 插件设置页及其市场浏览/安装体验的领域词汇表。2026-07 商店化重设计引入了一批容易混淆的术语，本文件是唯一裁决来源。
 
@@ -7,7 +7,7 @@
 ### 市场与来源
 
 **Official Marketplace（官方市场）**:
-ZCode 官方运营的唯一分发渠道，市场 id 为 `zcode-plugins-official`，内容 = 内置插件 + CDN 插件。是"分发渠道"而非"作者归属"——其中可以收录社区作者的插件。
+Zody 沿用的内置插件分发命名空间，内部市场 id 保持 `zcode-plugins-official`。默认内容来自随包资源；远端目录只有显式配置来源后才可用，不默认连接上游官方 CDN，也不表示 Zody 提供托管插件服务。它表示分发渠道而非作者归属。
 _Avoid_: 把 claude-plugins-official 称作"官方市场"；"官方"泛指一切受信市场
 
 **Builtin Plugin（内置插件）**:
@@ -15,7 +15,7 @@ _Avoid_: 把 claude-plugins-official 称作"官方市场"；"官方"泛指一切
 _Avoid_: 预装插件、bundled plugin（口语可用，文档统一"内置"）
 
 **CDN Plugin（CDN 插件）**:
-官方市场中通过官方 CDN 以 sha256 校验的 zip 包分发、按需下载安装的插件。
+该命名空间中通过显式配置的远端来源，以 sha256 校验的 zip 包分发、按需下载安装的插件；无远端来源时仅有内置资源。
 _Avoid_: 网络插件、在线插件
 
 **Personal Source（个人来源）**:

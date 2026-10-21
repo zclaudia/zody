@@ -255,5 +255,5 @@ function createMockWindow(webContentsId: number) {
 }
 
 function buildWorkspaceOpenUrl(workspacePath: string): string {
-  return `zcode://workspace/open?path=${encodeURIComponent(workspacePath)}`;
+  return `zody://workspace/open?path=${encodeURIComponent(workspacePath)}`;
 }

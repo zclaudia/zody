@@ -2,6 +2,8 @@
 
 > 2026-10-20 决策更新：SSH/WSL 恢复纳入 Zody 0.1.0，采用随包运行时、本机上传，禁止 CDN 回退；执行规格见 [SSH/WSL 本地运行时恢复](ssh-wsl-local-runtime-restoration.md)。本文 D4a/F6.1/F6.5 的“继续隐藏/等待自建 CDN”记录为历史决策，由新规格替代；Computer Use 不在本次改动范围。
 
+2026-10-20 更新：D5、D-CI 和首发支持范围已确认，见 [Zody 0.1.0 首发规格与任务清单](zody-0.1.0-release.md)。其中 Z01–Z11 是首发实施入口；本文件保留旧 F 编号供追溯，不能把旧任务描述当成当前实现状态。macOS/Windows 签名、公证延后，用户级旧数据不迁移，项目级同时兼容 `.zody/` / `.zcode/`。
+
 状态：草案（2026-10-17）。对应方案见 [fork-official-deps-removal-plan.md](fork-official-deps-removal-plan.md)（下称「总纲」）与 [fork-official-backend-runtime-dependencies.md](fork-official-backend-runtime-dependencies.md)（下称「阶段 2 细则」）。本文只拆任务，规则以总纲和细则为准；两者冲突时先改方案。手机远控（总纲阶段 5）的任务见 [mobile-remote-control-via-gateway-tasks.md](mobile-remote-control-via-gateway-tasks.md)，本文只记录与它的交汇点。
 
 任务编号统一用 `F` 前缀（如 F2.1），避免与 gateway 任务的 `T` 编号混淆。
@@ -36,17 +38,17 @@
 7. **首启登录门**（`ui/src/root/useProviderAvailabilityLoginEntryGuard.ts:57`）在没有 `providerFamilyDomain` 时即使已有可用自定义 provider 也会强制进入登录页。→ F4.1a 改为 `!hasUsableProvider`。
 8. **总纲阶段 3a（机械收编）基本被其他任务吸收**：剩余硬编码要么随阶段 4 删除，要么由阶段 6（市场、CDN、图标、字体）或阶段 7（文案、文档链接）改写。因此本文不再单列 3a；3b（默认值调整）放到阶段 4 删除之后做，消费方最少。总纲已同步。
 
-## 待决事项（影响任务）
+## 决策事项（含已确认更新）
 
 | 门   | 问题                                | 影响任务                   | 推荐                                            |
 | ---- | ----------------------------------- | -------------------------- | ----------------------------------------------- |
-| D3   | gateway 细节                        | gateway 任务               | 见 gateway 方案待决 1-5                         |
+| D3   | gateway 细节                        | gateway 任务               | 首发运营方式已决：用户自行提供和配置，无 Zody 托管服务；协议细节见 gateway 规格 |
 | D4a  | SSH 远程运行时：自建 CDN 或暂时隐藏 | F6.1、F6.5                 | 已决（2026-10-20）：0.1.0 恢复 SSH/WSL；随包运行时、本机上传、禁止 CDN 回退；见 `ssh-wsl-local-runtime-restoration.md` |
 | D4b  | 插件市场：自托管或仅 GitHub 源      | F6.2                       | 仅 GitHub 源 + 本地 seed                        |
-| D5   | 产品名、appId、域名、渠道、证书     | F2.10（来源头取值）、F7.\* | —                                               |
+| D5   | 产品名、appId、域名、渠道、证书     | F2.10（来源头取值）、F7.\* | 已决：Zody、`io.github.zclaudia.zody`、`zody://`、GitHub `zclaudia/zody`；0.1.0 未签名公开预览，详见首发规格 |
 | D6   | 会话分享：移除或自建分享服务        | F4.8                       | 移除（发布、导入、分享落地页）；需要时另立 spec |
 | D7   | 反馈：保留哪些                      | F2.9                       | **已决（2026-10-17）**：去掉官方提交，保留「导出诊断日志」本地能力 |
-| D-CI | CI 平台                             | F1.4                       | GitHub Actions（三平台 runner 齐全）            |
+| D-CI | CI 平台                             | F1.4                       | 已决：GitHub Actions；首发桌面矩阵为 macOS arm64/x64、Windows x64、Linux x64 |
 
 ## 依赖总览
 
@@ -500,7 +502,7 @@ A、B、C 可以从第一天同时开工；F2.1 不依赖任何任务，应最�
 
 ## 阶段 7：品牌与文案
 
-全部前置 D5。任务粒度较粗，D5 决定后再细化。
+首发 D5 已确认，按 [Zody 首发规格](zody-0.1.0-release.md) 的 Z01–Z11 细化。F7.3 的 macOS/Windows 签名、公证延后，不作为 0.1.0 未签名预览的前置；Android 使用专用 release keystore，由用户离线备份、CI 通过 GitHub Secrets 读取，实际接入与验证待完成。
 
 | 任务                     | 内容                                                                                              | 依赖                        |
 | ------------------------ | ------------------------------------------------------------------------------------------------- | --------------------------- |

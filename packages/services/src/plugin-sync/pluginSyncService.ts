@@ -217,7 +217,7 @@ function resolveUserHomeDir(): string {
   return process.env.HOME?.trim() || process.env.USERPROFILE?.trim() || homedir();
 }
 
-// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
+// fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
 function getUserZcodeConfigPath(): string {
   return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json");
 }

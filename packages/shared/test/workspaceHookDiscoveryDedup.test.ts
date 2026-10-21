@@ -91,6 +91,46 @@ describe("workspace hook config discovery 去重（#10）", () => {
     expect(refs[1]?.path).toBe(extraPath);
   });
 
+  it("同一 workspace 的 .zody config 优先于 legacy .zcode config", async () => {
+    const workspace = makeRoot();
+    mkdirSync(join(workspace, ".git"));
+    const zodyPath = join(workspace, ".zody", "config.json");
+    const legacyPath = join(workspace, ".zcode", "config.json");
+    const hooks = (command: string) => ({
+      enabled: true,
+      events: { SessionStart: [{ hooks: [{ type: "command", command }] }] },
+    });
+    writeJson(zodyPath, { hooks: hooks("echo zody") });
+    writeJson(legacyPath, { hooks: hooks("echo legacy") });
+
+    const refs = discoverWorkspaceHookConfigPaths({ workingDirectory: workspace });
+    const { sources } = await readWorkspaceHookProjectSources({ workingDirectory: workspace });
+
+    expect(refs.map((ref) => ref.path)).toEqual([zodyPath]);
+    expect(sources[0]?.canonicalPath).toBe(zodyPath);
+    expect(sources[0]?.configFileKind).toBe(".zody/config.json");
+  });
+
+  it("invalid .zody config does not fall through to a valid legacy file", async () => {
+    const workspace = makeRoot();
+    mkdirSync(join(workspace, ".git"));
+    const zodyPath = join(workspace, ".zody", "config.json");
+    writeJson(zodyPath, { hooks: { enabled: true, events: { SessionStart: [{ hooks: [] }] } } });
+    writeJson(join(workspace, ".zcode", "config.json"), {
+      hooks: {
+        enabled: true,
+        events: { SessionStart: [{ hooks: [{ type: "command", command: "echo legacy" }] }] },
+      },
+    });
+
+    const { sources, errors } = await readWorkspaceHookProjectSources({
+      workingDirectory: workspace,
+    });
+
+    expect(sources).toHaveLength(0);
+    expect(errors.map((entry) => entry.path)).toEqual([zodyPath]);
+  });
+
   it("无 explicit path 时 discovery 结果不变（digest 稳定性）", async () => {
     // 此前引入去重逻辑后，必须确认对无 explicit path 的 workspace 是 no-op，
     // 否则 auto-discovery 产生的 discoveryOrder 变化会使所有既有 trust 记录失效。

@@ -222,7 +222,7 @@ describe("反馈归档隐私边界", () => {
         sources: [
           {
             directory: source,
-            archivePrefix: ".zcoder/cli",
+            archivePrefix: ".zody/cli",
             includeFileNames: ["config.json"],
             onlyCurrentDay: false,
             contentPolicy: "cli-config",
@@ -231,7 +231,7 @@ describe("反馈归档隐私边界", () => {
         outputRootDir: join(root, "archives"),
       });
       const entries = await readZipEntries(archive.path);
-      expect(entries.has(".zcoder/cli/config.json")).toBe(false);
+      expect(entries.has(".zody/cli/config.json")).toBe(false);
       expect(entries.get("about.txt")).toContain('"invalid-config":1');
     });
   });

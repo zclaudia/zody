@@ -156,6 +156,19 @@ describe("pluginStoreListing", () => {
     expect(byId.get("d@zcode-plugins-official")?.restorable).toBe(true);
   });
 
+  it("does not expose the unavailable built-in Computer Use plugin in the store catalog", () => {
+    const items = buildStoreItems({
+      marketplaces: [makeMarketplace({ id: "zcode-plugins-official" })],
+      marketplaceAvailabilityKnown: true,
+      availablePlugins: [makeSummary({ id: "computer-use@zcode-plugins-official" })],
+      installedPlugins: [],
+      plugins: [],
+      restorableBuiltins: [],
+    });
+
+    expect(items.some((item) => item.id === "computer-use@zcode-plugins-official")).toBe(false);
+  });
+
   it("merges a restorable built-in with its catalog entry instead of dropping detail metadata", () => {
     const [item] = buildStoreItems({
       marketplaces: [makeMarketplace({ id: "zcode-plugins-official" })],

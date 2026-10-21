@@ -95,11 +95,8 @@ describe("desktopHelpConfig 只读内置值", () => {
 
     const readHelpConfig = createDesktopHelpConfigReader();
     await expect(readHelpConfig()).resolves.toEqual({
-      community_urls: {
-        "zh-CN": localDefaultAppConfig.community_urls["zh-CN"],
-        "en-US": localDefaultAppConfig.community_urls["en-US"],
-      },
-      feedback_url: localDefaultAppConfig.feedback_url,
+      community_urls: { "zh-CN": undefined, "en-US": undefined },
+      feedback_url: undefined,
       feedback_use_external_form: localDefaultAppConfig.feedback_use_external_form,
     });
     expect(remoteHelpConfigStub).not.toHaveBeenCalled();
@@ -121,7 +118,7 @@ describe("desktopHelpConfig 只读内置值", () => {
   // 菜单（desktopApplicationMenu）与托盘（desktopTray）都经 executeDesktopCommand 分发
   // 反馈/社群命令（index.ts 中两处绑定同一 executeDesktopCommandForApp），
   // 这里直接驱动该入口验证两条链路都只使用内置链接。
-  it("桩返回不同链接时，社群与反馈命令仍使用内置值，且远端拉取未被调用", async () => {
+  it("默认配置没有社群或外部反馈链接，远端桩不会注入上游入口", async () => {
     const { createDesktopHelpConfigReader } = await import("../src/main/desktopHelpConfig.js");
     const { executeDesktopCommand } = await import("../src/main/desktopCommandHandlers.js");
     const { shell } = await import("electron");
@@ -136,14 +133,7 @@ describe("desktopHelpConfig 只读内置值", () => {
         readHelpConfig,
       });
     }
-    expect(shell.openExternal).toHaveBeenNthCalledWith(
-      1,
-      localDefaultAppConfig.community_urls["zh-CN"],
-    );
-    expect(shell.openExternal).toHaveBeenNthCalledWith(
-      2,
-      localDefaultAppConfig.community_urls["en-US"],
-    );
+    expect(shell.openExternal).not.toHaveBeenCalled();
 
     // 内置 feedback_use_external_form=false：反馈走应用内弹窗，不打开任何外链。
     const senderWindow = {
@@ -156,17 +146,13 @@ describe("desktopHelpConfig 只读内置值", () => {
       senderWindow,
       readHelpConfig,
     });
-    expect(senderWindow.webContents.send).toHaveBeenCalledWith(
-      PlatformChannels.OpenFeedbackDialog,
-    );
+    expect(senderWindow.webContents.send).toHaveBeenCalledWith(PlatformChannels.OpenFeedbackDialog);
 
-    expect(shell.openExternal).toHaveBeenCalledTimes(2);
+    expect(shell.openExternal).not.toHaveBeenCalled();
     expect(shell.openExternal).not.toHaveBeenCalledWith(
       "https://remote-stub.example.com/community-zh",
     );
-    expect(shell.openExternal).not.toHaveBeenCalledWith(
-      "https://remote-stub.example.com/feedback",
-    );
+    expect(shell.openExternal).not.toHaveBeenCalledWith("https://remote-stub.example.com/feedback");
     // 任务验收点：远端帮助配置桩（含不同链接）从未被调用。
     expect(remoteHelpConfigStub).not.toHaveBeenCalled();
   });
@@ -181,7 +167,7 @@ describe("desktopHelpConfig 只读内置值", () => {
       logger: { warn: vi.fn() },
     });
 
-    expect(communityUrl).toBe(localDefaultAppConfig.community_urls["zh-CN"]);
+    expect(communityUrl).toBeUndefined();
     expect(remoteHelpConfigStub).not.toHaveBeenCalled();
   });
 

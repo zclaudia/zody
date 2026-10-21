@@ -6,6 +6,7 @@ import {
   desktopProductIdentities,
   resolveDesktopArtifactSuffix,
   resolveDesktopProductFlavor,
+  resolveLinuxDesktopIdentityForProductName,
   resolveWindowsAppUserModelId,
   resolveWindowsAppUserModelIdForFlavor,
   resolveDesktopProductIdentity,
@@ -22,13 +23,28 @@ describe("desktop product identity", () => {
     expect(lock.packages[""].version).toBe(version);
   });
 
+  it("桌面包作者和 Linux maintainer 指向 Zody 发布者且不携带上游邮箱", () => {
+    const builderConfig = readFileSync(
+      resolve(import.meta.dirname, "../electron-builder.config.js"),
+      "utf8",
+    );
+    expect(builderConfig).toContain('name: "zclaudia"');
+    expect(builderConfig).toContain('url: "https://github.com/zclaudia"');
+    expect(builderConfig).toContain('maintainer: "zclaudia (https://github.com/zclaudia)"');
+    expect(builderConfig).not.toContain("dev@zcode.z.ai");
+    expect(builderConfig).not.toContain("ZCode <");
+  });
+
   it("ZCODE_ENV=test 使用可与生产版并排安装的 Preview 身份", () => {
     expect(resolveDesktopProductIdentity({ ZCODE_ENV: "test" })).toEqual({
       flavor: "preview",
-      appId: "dev.zcode.app.preview",
-      productName: "ZCode Preview",
-      linuxExecutableName: "zcode-preview",
-      linuxPackageName: "zcode-preview",
+      appId: "io.github.zclaudia.zody.preview",
+      productName: "Zody Preview",
+      linuxExecutableName: "zody-preview",
+      linuxPackageName: "zody-preview",
+      linuxDesktopFileName: "zody-preview.desktop",
+      linuxIconName: "zody-preview",
+      protocolScheme: "zody-preview",
       cuaHelperInstallVariant: "preview",
     });
   });
@@ -80,10 +96,13 @@ describe("desktop product identity", () => {
     );
     expect(desktopProductIdentities.production).toEqual({
       flavor: "production",
-      appId: "dev.zcode.app",
-      productName: "ZCode",
-      linuxExecutableName: "zcode",
-      linuxPackageName: "zcode",
+      appId: "io.github.zclaudia.zody",
+      productName: "Zody",
+      linuxExecutableName: "zody",
+      linuxPackageName: "zody",
+      linuxDesktopFileName: "zody.desktop",
+      linuxIconName: "zody",
+      protocolScheme: "zody",
       cuaHelperInstallVariant: null,
     });
   });
@@ -110,6 +129,17 @@ describe("desktop product identity", () => {
     expect(resolveWindowsAppUserModelIdForFlavor("production")).toBe(
       desktopProductIdentities.production.appId,
     );
+  });
+
+  it("Linux desktop 文件名和图标名与打包身份及协议 scheme 一致", () => {
+    for (const identity of [
+      desktopProductIdentities.production,
+      desktopProductIdentities.preview,
+    ]) {
+      expect(resolveLinuxDesktopIdentityForProductName(identity.productName)).toBe(identity);
+      expect(identity.linuxDesktopFileName).toBe(`${identity.protocolScheme}.desktop`);
+      expect(identity.linuxIconName).toBe(identity.linuxExecutableName);
+    }
   });
 
   it("开发态继续使用独立 AUMID，避免污染打包版 Shell 身份", () => {

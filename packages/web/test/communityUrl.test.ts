@@ -12,21 +12,18 @@ const LOCAL_CONFIG = {
 
 describe("resolveWebCommunityUrl", () => {
   it("按语言取注入本地配置的社群入口", async () => {
-    await expect(
-      resolveWebCommunityUrl("zh-CN", { localConfig: LOCAL_CONFIG }),
-    ).resolves.toBe("https://local.example.com/feishu");
-    await expect(
-      resolveWebCommunityUrl("en-US", { localConfig: LOCAL_CONFIG }),
-    ).resolves.toBe("https://local.example.com/discord");
+    await expect(resolveWebCommunityUrl("zh-CN", { localConfig: LOCAL_CONFIG })).resolves.toBe(
+      "https://local.example.com/feishu",
+    );
+    await expect(resolveWebCommunityUrl("en-US", { localConfig: LOCAL_CONFIG })).resolves.toBe(
+      "https://local.example.com/discord",
+    );
   });
 
   it("未注入配置时返回内置 config/default.json 的解析结果", async () => {
     await expect(resolveWebHelpConfig()).resolves.toEqual({
-      community_urls: {
-        "zh-CN": localDefaultAppConfig.community_urls["zh-CN"],
-        "en-US": localDefaultAppConfig.community_urls["en-US"],
-      },
-      feedback_url: localDefaultAppConfig.feedback_url,
+      community_urls: { "zh-CN": undefined, "en-US": undefined },
+      feedback_url: undefined,
       feedback_use_external_form: localDefaultAppConfig.feedback_use_external_form,
     });
   });
@@ -52,15 +49,9 @@ describe("resolveWebCommunityUrl", () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = remoteStub;
     try {
-      await expect(resolveWebCommunityUrl("zh-CN")).resolves.toBe(
-        localDefaultAppConfig.community_urls["zh-CN"],
-      );
-      await expect(resolveWebCommunityUrl("en-US")).resolves.toBe(
-        localDefaultAppConfig.community_urls["en-US"],
-      );
-      await expect(resolveWebHelpConfig().then((c) => c.feedback_url)).resolves.toBe(
-        localDefaultAppConfig.feedback_url,
-      );
+      await expect(resolveWebCommunityUrl("zh-CN")).resolves.toBeUndefined();
+      await expect(resolveWebCommunityUrl("en-US")).resolves.toBeUndefined();
+      await expect(resolveWebHelpConfig().then((c) => c.feedback_url)).resolves.toBe(undefined);
     } finally {
       globalThis.fetch = originalFetch;
     }

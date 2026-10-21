@@ -43,18 +43,18 @@ export function getDataBaseDir(): string {
   return defaultDataBaseDir;
 }
 
-// fork 数据隔离：家目录级数据根改为 .zcoder，避免与正式版 ZCode 共用。
-/** {dataBaseDir}/.zcoder */
+// fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
+/** {dataBaseDir}/.zody */
 export function getZCodeDataRootDir(): string {
   return join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME);
 }
 
-/** 非项目对话共享的真实工作目录；默认 ~/.zcoder/workspace/default。 */
+/** 非项目对话共享的真实工作目录；默认 ~/.zody/workspace/default。 */
 export function getConversationWorkspaceDir(): string {
   return join(getZCodeDataRootDir(), "workspace", "default");
 }
 
-/** {dataBaseDir}/.zcoder/v2 */
+/** {dataBaseDir}/.zody/v2 */
 export function getAppConfigDir(): string {
   return join(getZCodeDataRootDir(), "v2");
 }
@@ -187,7 +187,7 @@ export function getGitCheckpointIndexRootDir(): string {
   return join(getZCodeDataRootDir(), "git-checkpoint-index");
 }
 
-/** ~/.zcoder/v2/tasks-index.sqlite */
+/** ~/.zody/v2/tasks-index.sqlite */
 export function getTasksIndexDatabasePath(): string {
   return join(getAppConfigDir(), "tasks-index.sqlite");
 }
@@ -205,12 +205,12 @@ export function getWorkspaceHash(workspacePath: string, workspaceIdentity?: stri
     .slice(0, 12);
 }
 
-/** ~/.zcoder/v2/sessions/{workspaceHash} */
+/** ~/.zody/v2/sessions/{workspaceHash} */
 function getTaskSessionDir(workspacePath: string, workspaceIdentity?: string): string {
   return join(getAppConfigDir(), "sessions", getWorkspaceHash(workspacePath, workspaceIdentity));
 }
 
-/** ~/.zcoder/v2/sessions/{workspaceHash}/{taskId}.json */
+/** ~/.zody/v2/sessions/{workspaceHash}/{taskId}.json */
 export function getLegacyTaskSessionSnapshotPath(
   workspacePath: string,
   taskId: string,
@@ -219,7 +219,7 @@ export function getLegacyTaskSessionSnapshotPath(
   return join(getTaskSessionDir(workspacePath, workspaceIdentity), `${taskId}.json`);
 }
 
-/** ~/.zcoder/v2/sessions/{workspaceHash}/{taskId}.deleted.json */
+/** ~/.zody/v2/sessions/{workspaceHash}/{taskId}.deleted.json */
 export function getLegacyDeletedTaskSessionSnapshotPath(
   workspacePath: string,
   taskId: string,
@@ -229,7 +229,7 @@ export function getLegacyDeletedTaskSessionSnapshotPath(
 }
 
 /**
- * GLM（唯一 agent provider）的配置目录：~/.zcoder/cli。
+ * GLM（唯一 agent provider）的配置目录：~/.zody/cli。
  * Bugfix：GLM 配置改为直接读写新版 zcode-cli 的全局配置目录，不做 workspace 隔离，
  * 避免同机不同工作区配置漂移。
  */
@@ -240,7 +240,7 @@ export function getProviderWorkspaceConfigDir(): string {
 }
 
 /**
- * Copy the .zcoder/v2 data directory from one base dir to another.
+ * Copy the .zody/v2 data directory from one base dir to another.
  * Excludes setting.json and its transient atomic-write siblings — bootstrap
  * state must only live at the default homedir location.
  */

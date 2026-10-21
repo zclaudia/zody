@@ -127,8 +127,12 @@ describe("Host incremental subagent snapshots", () => {
     const f = await fixture();
     await f.cache.prepare(f.workspace);
     const watchedPaths = vi.mocked(watch).mock.calls.map(([path]) => path);
-    expect(watchedPaths.sort()).toEqual([f.userRoot, join(f.root, "state"), f.root].sort());
-    const parentWatcher = initialWatcherFor(f.root);
+    expect(watchedPaths.sort()).toEqual([f.userRoot, join(f.root, "state"), f.root, f.root].sort());
+    const parentWatchers = vi
+      .mocked(watch)
+      .mock.calls.flatMap(([path], index) =>
+        path === f.root ? [vi.mocked(watch).mock.results[index]!.value] : [],
+      );
     const project = join(f.workspace.workspacePath, ".zcode", "agents");
     await mkdir(project, { recursive: true });
     const path = join(project, "a.md"),
@@ -137,8 +141,11 @@ describe("Host incremental subagent snapshots", () => {
     await writeFile(temporary, markdown("temporary"));
     vi.mocked(fs.readFile).mockClear();
     vi.mocked(fs.readdir).mockClear();
-    parentWatcher.emit("all", "addDir", f.workspace.workspacePath);
-    await until(() => expect(vi.mocked(watch).mock.calls.at(-1)?.[0]).toBe(project));
+    for (const parentWatcher of parentWatchers)
+      parentWatcher.emit("all", "addDir", f.workspace.workspacePath);
+    await until(() =>
+      expect(vi.mocked(watch).mock.calls.some(([path]) => path === project)).toBe(true),
+    );
     await until(() =>
       expect(
         vi.mocked(fs.stat).mock.calls.filter(([p]) => p === path).length,
@@ -160,36 +167,39 @@ describe("Host incremental subagent snapshots", () => {
     expect(vi.mocked(fs.readFile).mock.calls.filter(([p]) => p === temporary)).toHaveLength(0);
     expect(vi.mocked(fs.readdir).mock.calls.filter(([p]) => p === project)).toHaveLength(1);
     const reads = vi.mocked(fs.readFile).mock.calls.length;
-    parentWatcher.emit("all", "change", path);
+    parentWatchers[0]?.emit("all", "change", path);
     await Promise.all([f.read(), f.read()]);
     expect(vi.mocked(fs.readFile).mock.calls.length).toBe(reads);
-    expect((parentWatcher as unknown as { close: unknown }).close).toHaveBeenCalledOnce();
+    for (const parentWatcher of parentWatchers)
+      expect((parentWatcher as unknown as { close: unknown }).close).toHaveBeenCalledOnce();
   });
 
-  it("rechecks directory changes during watcher readiness and ignores unrelated parent events", async () => {
-    readiness.automatic = false;
+  it("merges both project roots and lets .zody shadow a same-named legacy profile", async () => {
     const f = await fixture();
-    const preparing = f.cache.prepare(f.workspace);
-    await until(() => expect(watched.size).toBe(3));
-    const project = join(f.workspace.workspacePath, ".zcode", "agents");
-    await mkdir(project, { recursive: true });
-    await writeFile(join(project, "a.md"), markdown("aaa"));
-    for (const watcher of watched) watcher.emit("ready");
-    await until(() => expect(watched.size).toBe(4));
-    await rm(f.workspace.workspacePath, { recursive: true });
-    [...watched].at(-1)!.emit("ready");
-    await until(() => expect(watched.size).toBe(5));
-    [...watched].at(-1)!.emit("ready");
-    await preparing;
-    expect(await f.read()).toMatchObject({ profiles: [] });
-    vi.mocked(fs.readFile).mockClear();
-    vi.mocked(fs.readdir).mockClear();
-    const parent = [...watched].at(-1)!;
-    parent.emit("all", "addDir", join(f.root, "unrelated"));
-    await until(() => expect(vi.mocked(fs.stat).mock.calls.at(-1)?.[0]).toBe(f.root));
-    expect(watched.size).toBe(5);
-    expect(fs.readFile).not.toHaveBeenCalled();
-    expect(fs.readdir).not.toHaveBeenCalled();
+    const preferred = join(f.workspace.workspacePath, ".zody", "agents");
+    const legacy = join(f.workspace.workspacePath, ".zcode", "agents");
+    await mkdir(preferred, { recursive: true });
+    await mkdir(legacy, { recursive: true });
+    await writeFile(join(preferred, "shared.md"), markdown("shared", "preferred"));
+    await writeFile(join(legacy, "shared.md"), markdown("shared", "legacy"));
+    await writeFile(join(legacy, "legacy-only.md"), markdown("legacy-only"));
+
+    await f.cache.prepare(f.workspace);
+    expect(await f.read()).toMatchObject({
+      profiles: [{ name: "shared", systemPrompt: "preferred" }, { name: "legacy-only" }],
+    });
+
+    const updated = join(legacy, "legacy-only.md");
+    await writeFile(updated, markdown("legacy-only", "updated"));
+    f.emit(updated, "change", legacy);
+    await until(async () =>
+      expect(await f.read()).toMatchObject({
+        profiles: [
+          { name: "shared", systemPrompt: "preferred" },
+          { name: "legacy-only", systemPrompt: "updated" },
+        ],
+      }),
+    );
   });
 
   it.each(["rebuild", "dispose"])(
@@ -203,7 +213,7 @@ describe("Host incremental subagent snapshots", () => {
       await writeFile(path, markdown("aaa", "discard"));
       f.emit(f.workspace.workspacePath, "addDir");
       await until(() => expect(vi.mocked(fs.stat).mock.calls.some(([p]) => p === path)).toBe(true));
-      const obsolete = [...watched].at(-1)!;
+      const obsolete = initialWatcherFor(project);
       if (action === "dispose") {
         f.cache.dispose();
         await expect(f.read()).rejects.toThrow(/disposed/i);
@@ -646,7 +656,7 @@ describe("Host incremental subagent snapshots", () => {
     const f = await fixture();
     const preparing = f.cache.prepare(f.workspace);
     const rejected = expect(preparing).rejects.toThrow(/disposed/i);
-    await until(() => expect(watched.size).toBe(3));
+    await until(() => expect(watched.size).toBe(4));
     f.cache.dispose();
     await rejected;
   });

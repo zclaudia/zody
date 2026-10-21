@@ -9,34 +9,22 @@ function makeHome() {
   return mkdtempSync(join(tmpdir(), "zcode-mcp-sync-home-"));
 }
 
-async function writeZcodeUserMcp(
-  home: string,
-  servers: Record<string, Record<string, unknown>>,
-) {
-  const configPath = join(home, ".zcoder", "cli", "config.json");
-  await mkdir(join(home, ".zcoder", "cli"), { recursive: true });
-  await writeFile(
-    configPath,
-    `${JSON.stringify({ mcp: { servers } }, null, 2)}\n`,
-  );
+async function writeZcodeUserMcp(home: string, servers: Record<string, Record<string, unknown>>) {
+  const configPath = join(home, ".zody", "cli", "config.json");
+  await mkdir(join(home, ".zody", "cli"), { recursive: true });
+  await writeFile(configPath, `${JSON.stringify({ mcp: { servers } }, null, 2)}\n`);
   return configPath;
 }
 
-async function writeAgentsUserMcp(
-  home: string,
-  servers: Record<string, Record<string, unknown>>,
-) {
+async function writeAgentsUserMcp(home: string, servers: Record<string, Record<string, unknown>>) {
   const configPath = join(home, ".agents", "mcp.json");
   await mkdir(join(home, ".agents"), { recursive: true });
-  await writeFile(
-    configPath,
-    `${JSON.stringify({ mcpServers: servers }, null, 2)}\n`,
-  );
+  await writeFile(configPath, `${JSON.stringify({ mcpServers: servers }, null, 2)}\n`);
   return configPath;
 }
 
 async function readRemoteZcodeServers(home: string) {
-  const raw = await readFile(join(home, ".zcoder", "cli", "config.json"), "utf-8");
+  const raw = await readFile(join(home, ".zody", "cli", "config.json"), "utf-8");
   const parsed = JSON.parse(raw) as {
     mcp?: { servers?: Record<string, Record<string, unknown>> };
   };
@@ -74,7 +62,7 @@ describe("mcp sync service", () => {
         name: "context7",
         enabled: true,
         source: "zcode",
-        path: join(home, ".zcoder", "cli", "config.json"),
+        path: join(home, ".zody", "cli", "config.json"),
         config: {
           command: "npx",
           args: ["-y", "@upstash/context7-mcp"],
@@ -193,8 +181,8 @@ describe("mcp sync service", () => {
     process.env.HOME = home;
     // 迁移必须幂等：没有残留字段时不能重写文件，否则每次列举候选都会动用户的配置。
     // 故意用非规范化的紧凑 JSON 落盘，任何重写都会改变字节内容。
-    const configPath = join(home, ".zcoder", "cli", "config.json");
-    await mkdir(join(home, ".zcoder", "cli"), { recursive: true });
+    const configPath = join(home, ".zody", "cli", "config.json");
+    await mkdir(join(home, ".zody", "cli"), { recursive: true });
     const raw = JSON.stringify({
       mcp: {
         servers: {
@@ -223,21 +211,21 @@ describe("mcp sync service", () => {
 
     expect(result).toMatchObject({
       ok: true,
-      path: join(remoteHome, ".zcoder", "cli"),
+      path: join(remoteHome, ".zody", "cli"),
     });
   });
 
   it("reports remote MCP write preflight failure when cli path is not a directory", async () => {
     const remoteHome = makeHome();
     process.env.HOME = remoteHome;
-    await mkdir(join(remoteHome, ".zcoder"), { recursive: true });
-    await writeFile(join(remoteHome, ".zcoder", "cli"), "not a directory");
+    await mkdir(join(remoteHome, ".zody"), { recursive: true });
+    await writeFile(join(remoteHome, ".zody", "cli"), "not a directory");
     const service = createMcpSyncService();
 
     const result = await service.checkRemoteUserMcpWriteAccess();
 
     expect(result.ok).toBe(false);
-    expect(result.path).toBe(join(remoteHome, ".zcoder", "cli"));
+    expect(result.path).toBe(join(remoteHome, ".zody", "cli"));
     expect(result.error).toBeTruthy();
   });
 
@@ -328,7 +316,7 @@ describe("mcp sync service", () => {
             id: "docs-api",
             name: "docsApi",
             source: "zcode",
-            path: "/Users/local/.zcoder/cli/config.json",
+            path: "/Users/local/.zody/cli/config.json",
             enabled: true,
             config: {
               type: "http",
@@ -341,8 +329,7 @@ describe("mcp sync service", () => {
         overwrite: false,
       });
 
-      const configMode = (await stat(join(remoteHome, ".zcoder", "cli", "config.json")))
-        .mode;
+      const configMode = (await stat(join(remoteHome, ".zody", "cli", "config.json"))).mode;
       expect(configMode & 0o777).toBe(0o600);
     } finally {
       process.umask(previousUmask);
@@ -367,8 +354,8 @@ describe("mcp sync service", () => {
 
     const remoteHome = makeHome();
     process.env.HOME = remoteHome;
-    const invalidConfigPath = join(remoteHome, ".zcoder", "cli", "config.json");
-    await mkdir(join(remoteHome, ".zcoder", "cli"), { recursive: true });
+    const invalidConfigPath = join(remoteHome, ".zody", "cli", "config.json");
+    await mkdir(join(remoteHome, ".zody", "cli"), { recursive: true });
     await writeFile(invalidConfigPath, '{"mcp":');
     const remoteService = createMcpSyncService();
 
@@ -411,9 +398,7 @@ describe("mcp sync service", () => {
         },
       },
     ]);
-    expect(result.servers[0]?.file?.filePath).toBe(
-      join(home, ".zcoder", "cli", "config.json"),
-    );
+    expect(result.servers[0]?.file?.filePath).toBe(join(home, ".zody", "cli", "config.json"));
   });
 
   it("loads workspace MCP before user MCP using the same directory precedence", async () => {
@@ -449,6 +434,39 @@ describe("mcp sync service", () => {
       "workspace:workspaceOnly",
       "user:userOnly",
     ]);
+  });
+
+  it("reads legacy project MCP and writes changes into .zody while preserving legacy values", async () => {
+    const home = makeHome();
+    const workspace = join(home, "workspace");
+    process.env.HOME = home;
+    const legacyPath = join(workspace, ".zcode", "config.json");
+    const legacy = {
+      custom: { keep: true },
+      mcp: { servers: { existing: { type: "http", url: "https://legacy.example.test" } } },
+    };
+    await mkdir(join(workspace, ".zcode"), { recursive: true });
+    await writeFile(legacyPath, JSON.stringify(legacy));
+    const service = createMcpSyncService();
+
+    const loaded = await service.loadMcpFromUserDirectory({ workspacePath: workspace });
+    expect(loaded.servers.map((server) => server.name)).toContain("existing");
+    await service.saveMcpToUserDirectory({
+      action: "upsert",
+      source: "zcodeagentmcp",
+      name: "added",
+      projectPath: workspace,
+      config: { type: "http", url: "https://modern.example.test" },
+    });
+
+    const zodyPath = join(workspace, ".zody", "config.json");
+    const written = JSON.parse(await readFile(zodyPath, "utf8"));
+    expect(written.custom).toEqual({ keep: true });
+    expect(written.mcp.servers).toMatchObject({
+      existing: legacy.mcp.servers.existing,
+      added: { type: "http", url: "https://modern.example.test" },
+    });
+    expect(await readFile(legacyPath, "utf8")).toBe(JSON.stringify(legacy));
   });
 
   it("rewrites filesystem MCP home and workspace paths for the remote host", async () => {
@@ -530,7 +548,7 @@ describe("mcp sync service", () => {
       {
         name: "context7",
         status: "skipped",
-        path: join(remoteHome, ".zcoder", "cli", "config.json"),
+        path: join(remoteHome, ".zody", "cli", "config.json"),
       },
     ]);
     const remoteServers = await readRemoteZcodeServers(remoteHome);

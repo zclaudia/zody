@@ -3,14 +3,6 @@ import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-// 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；Windows 标题栏菜单入口只读它。
-const autoUpdateState = vi.hoisted(() => ({ active: false }));
-
-vi.mock("@zcode/shared", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@zcode/shared")>()),
-  isDesktopAutoUpdateActive: () => autoUpdateState.active,
-}));
-
 vi.mock("@/i18n/IntlProvider.js", () => ({
   useZCodeIntl: () => ({
     intl: {
@@ -115,9 +107,7 @@ vi.mock("@/hooks/usePlatform.js", () => ({
 }));
 
 describe("WindowsCaptionMenuButton", () => {
-  afterEach(() => {
-    autoUpdateState.active = false;
-  });
+  afterEach(() => vi.clearAllMocks());
 
   async function renderButton(
     triggerPresentation?: "header" | "header-borderless",
@@ -178,20 +168,19 @@ describe("WindowsCaptionMenuButton", () => {
     expect(html).not.toContain("titleBar.menu.help.toggleBulkSessionStressTest");
   });
 
-  it("自动更新未生效时隐藏更新入口，生效时出现", async () => {
-    const { shouldShowDesktopUpdateEntry } = await import("@/WindowsCaptionMenuButton.js");
-
-    // fork spec（阶段 2 细则「自动更新」规则 3 + 验收 7）：入口只随唯一判定显隐，
-    // 不再按产品身份单独判断；fork 构建判定恒为 false。
-    autoUpdateState.active = false;
-    expect(shouldShowDesktopUpdateEntry()).toBe(false);
-    let html = await renderButton("header");
-    expect(html).not.toContain("titleBar.menu.help.checkForUpdates");
-
-    autoUpdateState.active = true;
-    expect(shouldShowDesktopUpdateEntry()).toBe(true);
-    html = await renderButton("header");
-    expect(html).toContain("titleBar.menu.help.checkForUpdates");
+  it("手动更新入口打开 Releases，不检查应用内更新", async () => {
+    const html = await renderButton("header");
+    expect(html).toContain("titleBar.menu.help.manualUpdate");
+    const item = capturedWindowsCaptionMenu.menuItems.find(
+      (entry) => entry.label === "titleBar.menu.help.manualUpdate",
+    );
+    await item?.onSelect?.();
+    expect(capturedWindowsCaptionMenu.openExternal).toHaveBeenCalledWith(
+      "https://github.com/zclaudia/zody/releases",
+    );
+    expect(capturedWindowsCaptionMenu.executeDesktopCommand).not.toHaveBeenCalledWith(
+      expect.anything(),
+    );
   });
 
   it("includes help actions migrated from the shared question-mark menu", async () => {
@@ -222,15 +211,14 @@ describe("WindowsCaptionMenuButton", () => {
       ?.onSelect?.();
 
     expect(capturedWindowsCaptionMenu.captureWindowScreenshot).not.toHaveBeenCalled();
-    expect(capturedWindowsCaptionMenu.openSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "bug",
-        includeLogs: true,
-        screenshots: [],
-      }),
-    );
+    expect(capturedWindowsCaptionMenu.openSubmit).not.toHaveBeenCalled();
     expect(capturedWindowsCaptionMenu.openFeatureRequest).toHaveBeenCalledTimes(1);
-    expect(capturedWindowsCaptionMenu.openExternal).toHaveBeenCalledWith("https://zcode.z.ai/docs");
+    expect(capturedWindowsCaptionMenu.openExternal).toHaveBeenCalledWith(
+      "https://github.com/zclaudia/zody/tree/main/docs",
+    );
+    expect(capturedWindowsCaptionMenu.openExternal).toHaveBeenCalledWith(
+      "https://github.com/zclaudia/zody/issues",
+    );
     expect(capturedWindowsCaptionMenu.exportLogs).toHaveBeenCalledTimes(1);
   });
 

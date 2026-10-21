@@ -18,6 +18,7 @@ import {
   testId,
   type ZCodeSavedWorkflowEntry,
   type ZCodeSavedWorkflowRun,
+  type ZCodeWorkflowsDeleteResult,
   type ZCodeWorkflowsListResult,
 } from "@zcode/shared";
 import type { AutomationWorkspaceOption } from "@/settings/automationWorkspaceOptions.js";
@@ -47,10 +48,12 @@ function makeAgent() {
     runsResult,
     listSavedWorkflows: vi.fn(async () => listResult.current),
     listSavedWorkflowRuns: vi.fn(async () => ({ runs: runsResult.current })),
-    deleteSavedWorkflow: vi.fn(async () => ({
-      ok: true as const,
-      path: "/beta/.zcode/workflows/x.dwf.ts",
-    })),
+    deleteSavedWorkflow: vi.fn(
+      async (): Promise<ZCodeWorkflowsDeleteResult> => ({
+        ok: true as const,
+        path: "/beta/.zcode/workflows/x.dwf.ts",
+      }),
+    ),
     getSavedWorkflow: vi.fn(),
     updateSavedWorkflowMeta: vi.fn(),
   };
@@ -194,7 +197,10 @@ function entry(
 
 const BETA: AutomationWorkspaceOption = { workspacePath: "/beta", label: "Beta" };
 
-function mount(props: Partial<Parameters<typeof SavedWorkflowProjectGroup>[0]> = {}) {
+function mount(
+  props: Partial<Parameters<typeof SavedWorkflowProjectGroup>[0]> = {},
+  initialLocale: "en-US" | "zh-CN" = "zh-CN",
+) {
   const onNavigateToLaunchedRun = vi.fn();
   const onCreateViaChat = vi.fn();
   const onOpenWorkflowRun = vi.fn();
@@ -204,7 +210,7 @@ function mount(props: Partial<Parameters<typeof SavedWorkflowProjectGroup>[0]> =
   const result = render(
     createElement(
       ZCodeIntlProvider,
-      { initialLocale: "zh-CN" },
+      { initialLocale },
       createElement(SavedWorkflowProjectGroup, {
         project: BETA,
         isCurrent: false,
@@ -387,6 +393,30 @@ describe("SavedWorkflowProjectGroup", () => {
     expect(agentRepo.deleteSavedWorkflow).not.toHaveBeenCalled();
     await waitFor(() => expect(agentBeta.listSavedWorkflows).toHaveBeenCalledTimes(2));
     expect(toastMock).toHaveBeenCalledWith("已删除工作流「x」");
+  });
+
+  it.each([
+    [
+      "zh-CN",
+      "旧版 .zcode/workflows 工作流是只读来源，本次未删除。请确认文件路径后手动处理，或将定义另存到 .zody/workflows/ 后在 Zody 中管理。",
+    ],
+    [
+      "en-US",
+      "This workflow comes from a read-only legacy .zcode/workflows source. Nothing was deleted. Check the file path and handle it manually, or save a copy under .zody/workflows/ to manage it in Zody.",
+    ],
+  ] as const)("legacy workflow delete explains manual handling in %s", async (locale, message) => {
+    agentBeta.listResult.current = {
+      workflows: [entry("x", { path: "/beta/.zcode/workflows/x.dwf.ts" })],
+      invalid: [],
+    };
+    agentBeta.deleteSavedWorkflow.mockResolvedValueOnce({ ok: false, reason: "read_only_source" });
+    mount({}, locale);
+    await screen.findByTestId(testId(TID_WORKFLOW_CARD, "x"));
+
+    fireEvent.click(screen.getByTestId(testId(TID_WORKFLOW_ACTION_DELETE, "x")));
+    await waitFor(() => expect(agentBeta.deleteSavedWorkflow).toHaveBeenCalledTimes(1));
+    const prefix = locale === "zh-CN" ? "删除失败：" : "Delete failed: ";
+    await waitFor(() => expect(toastMock).toHaveBeenCalledWith(`${prefix}${message}`));
   });
 
   it("修订：带本项目 target 预填草稿", async () => {

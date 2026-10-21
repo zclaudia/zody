@@ -70,7 +70,7 @@ describe("desktopDeepLink workspace open routing", () => {
     const enCopy = resolveExternalWorkspaceOpenDialogCopy("en-US");
 
     expect(zhCopy.buttons).toEqual(["打开文件夹", "取消"]);
-    expect(zhCopy.title).toBe("打开外部 ZCode 链接？");
+    expect(zhCopy.title).toBe("打开外部 Zody 链接？");
     expect(zhCopy.detail("/tmp/project")).toContain("只打开你信任来源的文件夹");
     expect(enCopy.buttons).toEqual(["Open folder", "Cancel"]);
   });
@@ -172,7 +172,7 @@ describe("desktopDeepLink workspace open routing", () => {
       targetWindow,
       expect.objectContaining({
         buttons: ["打开文件夹", "取消"],
-        title: "打开外部 ZCode 链接？",
+        title: "打开外部 Zody 链接？",
       }),
     );
     expect(targetWindow.webContents.send).toHaveBeenCalledWith(
@@ -196,7 +196,7 @@ describe("desktopDeepLink workspace open routing", () => {
     expect(electronMocks.showMessageBoxSync).toHaveBeenCalledWith(
       expect.objectContaining({
         buttons: ["Open folder", "Cancel"],
-        title: "Open external ZCode link?",
+        title: "Open external Zody link?",
       }),
     );
     expect(logger.warn).toHaveBeenCalledWith(
@@ -337,16 +337,15 @@ describe("desktopDeepLink 已删除的回调深链", () => {
     const logger = { info: vi.fn(), warn: vi.fn() };
     electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
-    const { handleDeepLink, deliverPendingDeepLink } = await import(
-      "../src/main/desktopDeepLink.js"
-    );
+    const { handleDeepLink, deliverPendingDeepLink } =
+      await import("../src/main/desktopDeepLink.js");
 
-    expect(
-      handleDeepLink("zcode://oauth/callback?state=state-001&utm_source=google", logger),
-    ).toBe(false);
-    expect(
-      handleDeepLink("zcode://oauth/callback?authCode=auth-001&state=state-001", logger),
-    ).toBe(false);
+    expect(handleDeepLink("zcode://oauth/callback?state=state-001&utm_source=google", logger)).toBe(
+      false,
+    );
+    expect(handleDeepLink("zcode://oauth/callback?authCode=auth-001&state=state-001", logger)).toBe(
+      false,
+    );
     expect(targetWindow.webContents.send).not.toHaveBeenCalled();
     expect(logger.warn).not.toHaveBeenCalled();
 
@@ -359,9 +358,8 @@ describe("desktopDeepLink 已删除的回调深链", () => {
     const logger = { info: vi.fn(), warn: vi.fn() };
     electronMocks.getAllWindows.mockReturnValue([targetWindow]);
 
-    const { handleDeepLink, deliverPendingDeepLink } = await import(
-      "../src/main/desktopDeepLink.js"
-    );
+    const { handleDeepLink, deliverPendingDeepLink } =
+      await import("../src/main/desktopDeepLink.js");
 
     expect(
       handleDeepLink(
@@ -398,5 +396,5 @@ function createMockWindow(webContentsId: number) {
 }
 
 function buildWorkspaceOpenUrl(workspacePath: string): string {
-  return `zcode://workspace/open?path=${encodeURIComponent(workspacePath)}`;
+  return `zody://workspace/open?path=${encodeURIComponent(workspacePath)}`;
 }

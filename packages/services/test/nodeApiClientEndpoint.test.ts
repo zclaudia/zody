@@ -110,7 +110,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     const dataBaseDir = mkdtempSync(join(tmpdir(), "zcode-device-mid-"));
     tempDirs.push(dataBaseDir);
     setDataBaseDir(dataBaseDir);
-    const configDir = join(dataBaseDir, ".zcoder", "v2");
+    const configDir = join(dataBaseDir, ".zody", "v2");
     mkdirSync(configDir, { recursive: true });
     writeFileSync(
       join(configDir, "telemetry-state.json"),

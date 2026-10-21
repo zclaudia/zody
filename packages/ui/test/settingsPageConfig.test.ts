@@ -120,18 +120,19 @@ describe("settingsPageConfig", () => {
   });
 
   it.each([
-    ["macOS", { isMacDesktop: true }, true],
-    ["Windows", { isWindowsDesktop: true }, true],
-    ["Linux 桌面", { isDesktop: true }, true],
-    ["Web", {}, false],
-  ] as const)("%s 的电脑控制入口符合桌面平台边界", async (_name, options, expected) => {
+    ["macOS", { isMacDesktop: true }],
+    ["Windows", { isWindowsDesktop: true }],
+    ["Linux 桌面", { isDesktop: true }],
+    ["Web", {}],
+  ] as const)("%s 隐藏不可用的系统级 Computer Use", async (_name, options) => {
     const { createSettingsPageConfig } = await loadSettingsPageConfig("test");
     const { settingsSections } = createSettingsPageConfig(options);
 
-    expect(settingsSections.some((section) => section.id === "computerUse")).toBe(expected);
+    expect(settingsSections.some((section) => section.id === "computerUse")).toBe(false);
+    expect(settingsSections.some((section) => section.id === "browser")).toBe(true);
   });
 
-  it("桌面平台的电脑控制排在基础设置的浏览器之后", async () => {
+  it("远程访问仍位于浏览器之后，保持 Gateway 设置入口可用", async () => {
     const { createSettingsPageConfig } = await loadSettingsPageConfig("test");
     const { settingsSectionGroups } = createSettingsPageConfig({ isMacDesktop: true });
     const basics = settingsSectionGroups.find((group) => group.id === "basics");
@@ -141,7 +142,6 @@ describe("settingsPageConfig", () => {
       "appearance",
       "modelProvider",
       "browser",
-      "computerUse",
       "shortcuts",
       "remoteAccess",
     ]);
