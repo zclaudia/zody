@@ -508,7 +508,8 @@ const edgeDefinitions: readonly CapabilityEdgeDefinition[] = [
   ["attachment-ux", "sent-media-preview", "shared", "有序媒体展示"],
   ["sent-media-preview", "file-service", "delivery", "安全 local/remote preview"],
   ["provider-settings", "provider-registry", "state", "连接配置"],
-  ["model-catalog", "model-selector", "shared", "候选与展示元数据"],
+  // 修复依据：上游残留的 model-catalog 节点已不存在，悬空边导致群入度少计；候选与展示元数据来自 Provider Registry。
+  ["provider-registry", "model-selector", "shared", "候选与展示元数据"],
   ["plan-status-ui", "subscription-billing", "runtime", "购买与升级"],
   ["plan-status-ui", "plan-identity", "state", "套餐状态"],
   ["plan-usage-ui", "plan-quota-monitor", "state", "远端 quota / monitor"],

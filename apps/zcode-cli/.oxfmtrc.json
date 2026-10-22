@@ -4,6 +4,7 @@
     "tests/gb2312.js",
     "packages/dynamic-workflow/tests/lowering/expected/*.js",
     "packages/dynamic-workflow/tests/graphs/control-flow-for-await.ts",
-    "packages/dynamic-workflow/tests/graphs/async-promise-for-await-of.ts"
+    "packages/dynamic-workflow/tests/graphs/async-promise-for-await-of.ts",
+    "packages/bundled-skills/skills/dynamic-workflows/SKILL.md"
   ]
 }

@@ -60,7 +60,7 @@ describe("能力地图当前功能事实", () => {
   it("把 Document Skills 的格式范围与模型有效模态写清楚", () => {
     expect(node("document-skills").scope).toContain("PPTX/XLSX");
     expect(node("model-modalities").scope).toContain("video");
-    expect(node("model-modalities").scope).toContain("provider wire");
+    expect(node("model-modalities").scope).toContain("Adapter 编码能力");
     expect(node("model-selector").scope).toMatch(/模态|vision|reasoning/i);
   });
 });

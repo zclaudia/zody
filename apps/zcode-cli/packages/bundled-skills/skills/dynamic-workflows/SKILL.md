@@ -1119,16 +1119,12 @@ because it is the host's ambient API description — do not imitate it; your scr
 plain interfaces and never uses `declare`.
 
 <!-- facade-dts:start -->
-
 ```ts
 /** The pending result of one ask. Await it, or pass it to Promise.all with others. */
 declare interface Node<T> extends PromiseLike<T> {}
 
 /** A model declared with model(). */
-declare class ModelRef {
-  private constructor();
-  private readonly modelRef: never;
-}
+declare class ModelRef { private constructor(); private readonly modelRef: never }
 
 /**
  * Declare a model subagents may run on: "modelId" or "providerId/modelId", optional "$level".
@@ -1193,10 +1189,7 @@ declare function log(message: string): void;
 declare function report(item: unknown, artifactId?: string): void;
 
 /** A published artifact version: the id it was published under, and which version this call minted. */
-declare interface ArtifactRef {
-  id: string;
-  version: number;
-}
+declare interface ArtifactRef { id: string; version: number }
 /** Card metadata every artifact kind accepts. */
 declare interface ArtifactOptions {
   /** Shown as the card title; defaults to the id. In the user's language. */
@@ -1211,16 +1204,12 @@ declare interface ArtifactFileOptions extends ArtifactOptions {
   contentType?: string;
 }
 /** One value taken from a reported item: a dot path into the item ("timing.after"). */
-declare interface ArtifactField {
-  field: string;
-  label?: string;
-  unit?: string;
-}
+declare interface ArtifactField { field: string; label?: string; unit?: string }
 declare interface ChartSpec extends ArtifactOptions {
-  type?: "line" | "bar" | "scatter"; // default "line"
+  type?: "line" | "bar" | "scatter";        // default "line"
   x: ArtifactField;
-  y: ArtifactField | ArtifactField[]; // several = several series
-  scale?: "linear" | "log"; // y axis, default "linear"
+  y: ArtifactField | ArtifactField[];        // several = several series
+  scale?: "linear" | "log";                  // y axis, default "linear"
   /** A reference value drawn as a horizontal rule, taken from the first item that has the field. */
   baseline?: ArtifactField;
 }
@@ -1423,7 +1412,6 @@ declare function channel<T>(name?: string): Channel<T>;
  */
 declare function future<T>(body: () => Promise<T>): Promise<T>;
 ```
-
 <!-- facade-dts:end -->
 
 ### 16.3 Rules the compiler and the analyzer enforce
