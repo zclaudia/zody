@@ -1298,6 +1298,7 @@ const zhCN: Record<string, string> = {
   "webRemoteControl.mobileSetup.credential.label": "设备凭证",
   "webRemoteControl.mobileSetup.credential.placeholder": "粘贴 zgd_ 开头的设备凭证",
   "webRemoteControl.mobileSetup.credential.savedPlaceholder": "已保存凭证；留空保持不变",
+  "webRemoteControl.mobileSetup.credential.saved": "已保存",
   "webRemoteControl.mobileSetup.credential.description":
     "设备凭证由 gateway 管理员签发；同一部手机可访问凭证范围内的电脑。",
   "webRemoteControl.mobileSetup.credential.required": "请填写设备凭证。",

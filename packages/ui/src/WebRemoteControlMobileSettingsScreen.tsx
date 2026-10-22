@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { LoaderCircle, ShieldCheck } from "lucide-react";
+import { ArrowRight, LoaderCircle, ShieldCheck } from "lucide-react";
 import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE,
@@ -133,114 +133,122 @@ export function WebRemoteControlMobileSettingsScreen({
       className="flex min-h-screen flex-col bg-background text-foreground"
       data-mobile-remote-page="settings"
     >
-      <header className="shrink-0 border-b border-border bg-header px-4 py-4">
-        <div className="flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-surface text-foreground-subtle">
-            <ShieldCheck className="size-5" />
-          </span>
-          <div className="min-w-0">
-            <h1 className="truncate text-ui-lg font-medium">
-              {intl.formatMessage({ id: "webRemoteControl.mobileSetup.title" })}
-            </h1>
-            <p className="mt-1 text-ui-base text-foreground-subtle">
-              {intl.formatMessage({ id: "webRemoteControl.mobileSetup.description" })}
-            </p>
-          </div>
+      {/* 开屏首屏：hero 头部直接坐在页面背景上，表单收进卡片，
+          用背景→卡片的层次代替横条 header，避免和后续操作页的 header 带同质化。 */}
+      <header className="shrink-0 px-5 pt-7 pb-5">
+        <div className="flex size-12 items-center justify-center rounded-xl bg-accent">
+          <ShieldCheck className="size-6 text-icon-blue" />
         </div>
+        <h1 className="mt-4 text-ui-xl font-semibold tracking-tight">
+          {intl.formatMessage({ id: "webRemoteControl.mobileSetup.title" })}
+        </h1>
+        <p className="mt-1.5 text-ui-base text-foreground-subtle">
+          {intl.formatMessage({ id: "webRemoteControl.mobileSetup.description" })}
+        </p>
       </header>
 
       <form className="flex min-h-0 flex-1 flex-col" onSubmit={(event) => void handleSubmit(event)}>
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-5">
-          <div className="space-y-2">
-            <Label htmlFor="mobile-remote-gateway-url" className="text-ui-base text-foreground">
-              {intl.formatMessage({ id: "webRemoteControl.mobileSetup.gatewayUrl.label" })}
-            </Label>
-            <Input
-              id="mobile-remote-gateway-url"
-              value={gatewayUrl}
-              onChange={(event) => setGatewayUrl(event.target.value)}
-              placeholder={intl.formatMessage({
-                id: "webRemoteControl.mobileSetup.gatewayUrl.placeholder",
-              })}
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              inputMode="url"
-              className="h-11"
-              disabled={pending}
-            />
-            <p className="text-ui-base text-foreground-subtle">
-              {intl.formatMessage({
-                id: allowInsecureTransport
-                  ? "webRemoteControl.mobileSetup.gatewayUrl.description.development"
-                  : "webRemoteControl.mobileSetup.gatewayUrl.description",
-              })}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="mobile-remote-namespace" className="text-ui-base text-foreground">
-              {intl.formatMessage({ id: "webRemoteControl.mobileSetup.namespace.label" })}
-            </Label>
-            <Input
-              id="mobile-remote-namespace"
-              value={namespace}
-              onChange={(event) => setNamespace(event.target.value)}
-              placeholder={DEFAULT_REMOTE_ACCESS_NAMESPACE}
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              className="h-11"
-              disabled={pending}
-            />
-            <p className="text-ui-base text-foreground-subtle">
-              {intl.formatMessage({ id: "webRemoteControl.mobileSetup.namespace.description" })}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="mobile-remote-credential" className="text-ui-base text-foreground">
-              {intl.formatMessage({ id: "webRemoteControl.mobileSetup.credential.label" })}
-            </Label>
-            <Input
-              id="mobile-remote-credential"
-              type="password"
-              value={credential}
-              onChange={(event) => setCredential(event.target.value)}
-              placeholder={intl.formatMessage({
-                id: credentialConfigured
-                  ? "webRemoteControl.mobileSetup.credential.savedPlaceholder"
-                  : "webRemoteControl.mobileSetup.credential.placeholder",
-              })}
-              autoCapitalize="none"
-              autoCorrect="off"
-              autoComplete="off"
-              spellCheck={false}
-              className="h-11"
-              disabled={pending}
-            />
-            <p className="text-ui-base text-foreground-subtle">
-              {intl.formatMessage({ id: "webRemoteControl.mobileSetup.credential.description" })}
-            </p>
-          </div>
-
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
           {error ? (
             <p
               role="alert"
-              className="rounded-lg border border-destructive/40 bg-card px-3 py-2 text-ui-base text-destructive"
+              className="mb-3 rounded-lg border border-destructive/40 bg-card px-3 py-2.5 text-ui-base text-destructive"
             >
               {error}
             </p>
           ) : null}
-        </div>
 
-        <footer className="shrink-0 border-t border-border bg-background px-4 py-3">
-          <div className="flex gap-2">
+          <div className="rounded-xl border border-card-border bg-card">
+            <div className="divide-y divide-border">
+              <div className="px-4 py-4">
+                <Label htmlFor="mobile-remote-gateway-url">
+                  {intl.formatMessage({ id: "webRemoteControl.mobileSetup.gatewayUrl.label" })}
+                </Label>
+                <Input
+                  id="mobile-remote-gateway-url"
+                  value={gatewayUrl}
+                  onChange={(event) => setGatewayUrl(event.target.value)}
+                  placeholder={intl.formatMessage({
+                    id: "webRemoteControl.mobileSetup.gatewayUrl.placeholder",
+                  })}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  inputMode="url"
+                  className="mt-2 h-11 rounded-lg font-mono text-mobile-input-safe leading-6"
+                  disabled={pending}
+                />
+                <p className="mt-1.5 text-ui-sm text-foreground-subtle">
+                  {intl.formatMessage({
+                    id: allowInsecureTransport
+                      ? "webRemoteControl.mobileSetup.gatewayUrl.description.development"
+                      : "webRemoteControl.mobileSetup.gatewayUrl.description",
+                  })}
+                </p>
+              </div>
+
+              <div className="px-4 py-4">
+                <Label htmlFor="mobile-remote-namespace">
+                  {intl.formatMessage({ id: "webRemoteControl.mobileSetup.namespace.label" })}
+                </Label>
+                <Input
+                  id="mobile-remote-namespace"
+                  value={namespace}
+                  onChange={(event) => setNamespace(event.target.value)}
+                  placeholder={DEFAULT_REMOTE_ACCESS_NAMESPACE}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="mt-2 h-11 rounded-lg font-mono text-mobile-input-safe leading-6"
+                  disabled={pending}
+                />
+                <p className="mt-1.5 text-ui-sm text-foreground-subtle">
+                  {intl.formatMessage({ id: "webRemoteControl.mobileSetup.namespace.description" })}
+                </p>
+              </div>
+
+              <div className="px-4 py-4">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="mobile-remote-credential">
+                    {intl.formatMessage({ id: "webRemoteControl.mobileSetup.credential.label" })}
+                  </Label>
+                  {credentialConfigured ? (
+                    <span className="rounded-full border border-border bg-surface px-1.5 py-0.5 text-ui-xs leading-none text-foreground-subtle">
+                      {intl.formatMessage({ id: "webRemoteControl.mobileSetup.credential.saved" })}
+                    </span>
+                  ) : null}
+                </div>
+                <Input
+                  id="mobile-remote-credential"
+                  type="password"
+                  value={credential}
+                  onChange={(event) => setCredential(event.target.value)}
+                  placeholder={intl.formatMessage({
+                    id: credentialConfigured
+                      ? "webRemoteControl.mobileSetup.credential.savedPlaceholder"
+                      : "webRemoteControl.mobileSetup.credential.placeholder",
+                  })}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="mt-2 h-11 rounded-lg font-mono text-mobile-input-safe leading-6"
+                  disabled={pending}
+                />
+                <p className="mt-1.5 text-ui-sm text-foreground-subtle">
+                  {intl.formatMessage({ id: "webRemoteControl.mobileSetup.credential.description" })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 用户指定的继续形态：紧随输入卡片下方的居中圆形箭头主按钮；图标按钮用 aria-label 保住可访问名。 */}
+          <div className="mt-4 flex items-center justify-center gap-2 pb-6">
             {onBack ? (
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 min-w-0 flex-1"
+                className="h-11 min-w-0"
                 onClick={onBack}
                 disabled={pending}
               >
@@ -249,19 +257,24 @@ export function WebRemoteControlMobileSettingsScreen({
             ) : null}
             <Button
               type="submit"
-              className="h-11 min-w-0 flex-[2]"
-              disabled={pending}
-              data-mobile-remote-settings-submit="true"
-            >
-              {pending ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
-              {intl.formatMessage({
+              aria-label={intl.formatMessage({
                 id: pending
                   ? "webRemoteControl.mobileSetup.saving"
                   : "webRemoteControl.mobileSetup.save",
               })}
+              aria-busy={pending}
+              className="size-12 shrink-0 rounded-full p-0"
+              disabled={pending}
+              data-mobile-remote-settings-submit="true"
+            >
+              {pending ? (
+                <LoaderCircle className="size-5 animate-spin" />
+              ) : (
+                <ArrowRight className="size-5" />
+              )}
             </Button>
           </div>
-        </footer>
+        </div>
       </form>
     </section>
   );

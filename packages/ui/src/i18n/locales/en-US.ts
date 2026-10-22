@@ -1357,6 +1357,7 @@ const enUS: Record<string, string> = {
   "webRemoteControl.mobileSetup.credential.placeholder": "Paste the zgd_ device credential",
   "webRemoteControl.mobileSetup.credential.savedPlaceholder":
     "Credential saved; leave empty to keep it",
+  "webRemoteControl.mobileSetup.credential.saved": "Saved",
   "webRemoteControl.mobileSetup.credential.description":
     "The gateway admin issues device credentials; one phone can reach the desktops within its credential scope.",
   "webRemoteControl.mobileSetup.credential.required": "Enter the device credential.",

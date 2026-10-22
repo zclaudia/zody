@@ -56,7 +56,7 @@ describe("mobile remote settings page (375px)", () => {
     const onSubmit = vi.fn(async () => {});
     render(createElement(WebRemoteControlMobileSettingsScreen, { onSubmit }));
 
-    fireEvent.click(screen.getByText("webRemoteControl.mobileSetup.save"));
+    fireEvent.click(screen.getByRole("button", { name: "webRemoteControl.mobileSetup.save" }));
     expect((await screen.findByRole("alert")).textContent).toContain(
       "webRemoteControl.mobileSetup.gatewayUrl.required",
     );
@@ -78,7 +78,7 @@ describe("mobile remote settings page (375px)", () => {
     fireEvent.change(screen.getByLabelText("webRemoteControl.mobileSetup.credential.label"), {
       target: { value: "zgd_abc" },
     });
-    fireEvent.click(screen.getByText("webRemoteControl.mobileSetup.save"));
+    fireEvent.click(screen.getByRole("button", { name: "webRemoteControl.mobileSetup.save" }));
     expect((await screen.findByRole("alert")).textContent).toContain(
       "webRemoteControl.mobileSetup.gatewayUrl.invalid",
     );
@@ -89,7 +89,7 @@ describe("mobile remote settings page (375px)", () => {
     fireEvent.change(screen.getByLabelText("webRemoteControl.mobileSetup.credential.label"), {
       target: { value: "zgb_wrong" },
     });
-    fireEvent.click(screen.getByText("webRemoteControl.mobileSetup.save"));
+    fireEvent.click(screen.getByRole("button", { name: "webRemoteControl.mobileSetup.save" }));
     expect((await screen.findByRole("alert")).textContent).toContain(
       "webRemoteControl.mobileSetup.credential.invalid",
     );
@@ -109,7 +109,7 @@ describe("mobile remote settings page (375px)", () => {
     fireEvent.change(screen.getByLabelText("webRemoteControl.mobileSetup.credential.label"), {
       target: { value: " zgd_abc " },
     });
-    fireEvent.click(screen.getByText("webRemoteControl.mobileSetup.save"));
+    fireEvent.click(screen.getByRole("button", { name: "webRemoteControl.mobileSetup.save" }));
 
     await waitFor(() =>
       expect(onSubmit).toHaveBeenCalledWith({
@@ -119,7 +119,9 @@ describe("mobile remote settings page (375px)", () => {
       }),
     );
     const submit = document.querySelector<HTMLButtonElement>("button[type=submit]");
-    expect(submit?.className).toContain("h-11");
+    // 继续按钮按用户指定的形态改为圆形箭头：size-12（48px）不低于 44px 触摸目标下限。
+    expect(submit?.className).toContain("size-12");
+    expect(submit?.className).toContain("rounded-full");
     expect(window.innerWidth).toBe(375);
   });
 
@@ -135,7 +137,7 @@ describe("mobile remote settings page (375px)", () => {
     fireEvent.change(screen.getByLabelText("webRemoteControl.mobileSetup.credential.label"), {
       target: { value: "zgd_abc" },
     });
-    fireEvent.click(screen.getByText("webRemoteControl.mobileSetup.save"));
+    fireEvent.click(screen.getByRole("button", { name: "webRemoteControl.mobileSetup.save" }));
 
     expect((await screen.findByRole("alert")).textContent).toContain(
       "webRemoteControl.mobileSetup.storageUnavailable",
@@ -161,7 +163,7 @@ describe("mobile remote settings page (375px)", () => {
     fireEvent.change(screen.getByLabelText("webRemoteControl.mobileSetup.gatewayUrl.label"), {
       target: { value: "https://gateway.example.com" },
     });
-    fireEvent.click(screen.getByText("webRemoteControl.mobileSetup.save"));
+    fireEvent.click(screen.getByRole("button", { name: "webRemoteControl.mobileSetup.save" }));
     await waitFor(() =>
       expect(onSubmit).toHaveBeenCalledWith({
         gatewayUrl: "https://gateway.example.com",
