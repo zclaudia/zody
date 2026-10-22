@@ -38,6 +38,18 @@ cd packages/android
 构建机需要 Node、pnpm 和 Android SDK。APK 内置页面与桌面版本不再配套，升级任一端都要靠
 `hello`/`hello_ack` 的 `protocolVersion` 与 `appProtocol` 协商（见架构文档）。
 
+## 窗口与系统栏安全区
+
+- Activity 开启 `enableEdgeToEdge()`，窗口铺满整屏；系统栏 insets 的唯一所有者是壳：
+  `RemoteControlApp` 给 WebView 套 `safeDrawing`（排除 IME）的 `windowInsetsPadding`，
+  页面始终布局在状态栏与手势条之间的安全区内。
+- 页面不感知安全区，不消费 `env(safe-area-inset-*)`：Android WebView 对该 CSS 变量的支持
+  （尤其底部手势条）不可靠，安全区不能由页面自处理。`mobile.html` 的 `viewport-fit=cover`
+  只服务浏览器开发模式。
+- 排除 IME 是有意的：键盘弹出时保持 WebView 默认的软键盘行为，不引入第二条 resize 路径。
+- 状态栏/手势条区域透出 Compose `Surface` 背景（跟随系统深浅色），加载进度条仍叠加在
+  安全区顶部。
+
 ## 原生桥（ZcodeMobileBridge）
 
 `WebView.addJavascriptInterface(..., "ZcodeMobileBridge")` 注入，方法名是平铺的

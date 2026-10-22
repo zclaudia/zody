@@ -28,11 +28,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
@@ -343,7 +348,12 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AndroidView(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    // Bugfix: edge-to-edge 下 WebView 铺满整屏，页面头部压到状态栏、底部按钮压到手势条。
+                    // 壳统一消费系统栏 insets（排除 IME，键盘行为维持 WebView 默认）；Android WebView
+                    // 对 env(safe-area-inset-*) 的支持不可靠，安全区不能交给页面自处理。
+                    .windowInsetsPadding(WindowInsets.safeDrawing.exclude(WindowInsets.ime)),
                 factory = { viewContext ->
                     createRemoteControlWebView(
                         context = viewContext,
