@@ -77,7 +77,12 @@ export function createCredentialCipherProvider(
       const parts = payload.split(".");
       const [ivRaw, authTagRaw, cipherRaw] = parts;
 
-      if (!ivRaw || !authTagRaw || !cipherRaw || parts.length !== 3) {
+      // 空明文会被 encrypt 成结构完整的 `enc:v1:<iv>.<authTag>.`，第三段是合法空串。
+      // 原判定用 `!cipherRaw` 把「缺段」与「空明文」一起拒绝，导致自家 encrypt("") 解不开；
+      // 依据 specs/zody-credential-key.md「密文格式」：结构只按段数（恰好两个分隔符）判定，
+      // iv/authTag 仍必须非空，cipherText 段允许为空。`cipherRaw === undefined` 仅用于
+      // 让 noUncheckedIndexedAccess 在段数校验后完成类型收窄，空串仍放行。
+      if (parts.length !== 3 || !ivRaw || !authTagRaw || cipherRaw === undefined) {
         throw createCredentialDecryptError("密文格式非法");
       }
 
