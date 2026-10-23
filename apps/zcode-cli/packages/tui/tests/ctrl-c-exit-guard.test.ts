@@ -38,3 +38,13 @@ test("resets Ctrl-C confirmation when another key is handled", () => {
 
   assert.equal(resolveCtrlCExitIntent(guard, firstPressAtMs + 1), "show_prompt");
 });
+
+test("requires a fresh confirmation after an exit was already confirmed", () => {
+  const guard = createCtrlCExitGuard();
+  const firstPressAtMs = 1_000;
+
+  assert.equal(resolveCtrlCExitIntent(guard, firstPressAtMs), "show_prompt");
+  assert.equal(resolveCtrlCExitIntent(guard, firstPressAtMs + 100), "confirm_exit");
+  // 上一次确认已被消费；下一次 Ctrl+C 不能直接复用，必须重新走二次确认。
+  assert.equal(resolveCtrlCExitIntent(guard, firstPressAtMs + 200), "show_prompt");
+});

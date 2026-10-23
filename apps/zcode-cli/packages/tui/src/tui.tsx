@@ -52,6 +52,60 @@ export const runTui = async (options: TuiOptions): Promise<number> => {
   return runTuiWithRenderer(options, renderer);
 };
 
+type TuiScreen = { kind: "startup" } | { kind: "app"; options: TuiOptions };
+
+type TuiScreenStore = {
+  getSnapshot: () => TuiScreen;
+  setScreen: (screen: TuiScreen) => void;
+  subscribe: (listener: () => void) => () => void;
+};
+
+function createTuiScreenStore(initial: TuiScreen): TuiScreenStore {
+  let screen = initial;
+  const listeners = new Set<() => void>();
+  return {
+    getSnapshot: () => screen,
+    setScreen: (next) => {
+      if (screen === next) return;
+      screen = next;
+      for (const listener of listeners) listener();
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+}
+
+/**
+ * 启动页与主应用共处同一棵 React 树：换页由 store 触发 React 卸载旧屏幕，
+ * 而不是对同一个 root 二次 render（后者会新建 container 并残留启动页订阅）。
+ */
+function TuiLifecycleScreen({
+  copySelection,
+  hasCopyableSelection,
+  onExit,
+  options,
+  store,
+}: {
+  copySelection: ReturnType<typeof createSelectionCopyHandler>;
+  hasCopyableSelection: () => boolean;
+  onExit: (code: number) => void;
+  options: TuiOptions;
+  store: TuiScreenStore;
+}): React.ReactElement {
+  const screen = React.useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
+  if (screen.kind === "app") {
+    return React.createElement(TuiApp, {
+      onExit,
+      options: screen.options,
+      copySelection,
+      hasCopyableSelection,
+    });
+  }
+  return React.createElement(TuiStartupScreen, { options, onExit });
+}
+
 /** Renderer lifecycle shared by the interactive entrypoint and native terminal tests. */
 export async function runTuiWithRenderer(
   options: TuiOptions,
@@ -86,32 +140,33 @@ export async function runTuiWithRenderer(
     writeClipboardText: options.writeClipboardText,
   });
 
-  const renderApp = (readyOptions: TuiOptions) => {
-    if (destroyed) return;
+  const createAppOptions = (readyOptions: TuiOptions): TuiOptions => {
     const initialThemeMode = resolveTuiThemeMode(readyOptions.theme, terminalThemeMode);
     setActiveTuiThemeMode(initialThemeMode);
     renderer.setBackgroundColor(activeTuiTheme(initialThemeMode).background);
     appMounted = true;
-    root.render(
-      React.createElement(TuiApp, {
-        onExit,
-        options: {
-          ...readyOptions,
-          initialThemeMode,
-          setTerminalBackgroundColor: (color) => renderer.setBackgroundColor(color),
-          subscribeThemeMode: (listener) => {
-            themeModeListeners.add(listener);
-            if (terminalThemeMode) listener(terminalThemeMode);
-            return () => {
-              themeModeListeners.delete(listener);
-            };
-          },
-        },
-        copySelection,
-        hasCopyableSelection: () =>
-          hasCopyableSelectionText(renderer.getSelection()?.getSelectedText()),
-      }),
-    );
+    return {
+      ...readyOptions,
+      initialThemeMode,
+      setTerminalBackgroundColor: (color) => renderer.setBackgroundColor(color),
+      subscribeThemeMode: (listener) => {
+        themeModeListeners.add(listener);
+        if (terminalThemeMode) listener(terminalThemeMode);
+        return () => {
+          themeModeListeners.delete(listener);
+        };
+      },
+    };
+  };
+  const screenStore = createTuiScreenStore(
+    options.loadStartupOptions
+      ? { kind: "startup" }
+      : { kind: "app", options: createAppOptions(options) },
+  );
+  const renderApp = (readyOptions: TuiOptions) => {
+    if (destroyed) return;
+    // 同一棵树内的 store 切换让 React 卸载 TuiStartupScreen，释放其 useKeyboard 订阅。
+    screenStore.setScreen({ kind: "app", options: createAppOptions(readyOptions) });
   };
   const initialize = () => {
     // FRAME is emitted after native output. No runtime work can block the first paint.
@@ -135,12 +190,17 @@ export async function runTuiWithRenderer(
     });
   });
 
-  if (options.loadStartupOptions) {
-    renderer.once(CliRenderEvents.FRAME, initialize);
-    root.render(React.createElement(TuiStartupScreen, { options, onExit }));
-  } else {
-    renderApp(options);
-  }
+  if (options.loadStartupOptions) renderer.once(CliRenderEvents.FRAME, initialize);
+  root.render(
+    React.createElement(TuiLifecycleScreen, {
+      store: screenStore,
+      options,
+      onExit,
+      copySelection,
+      hasCopyableSelection: () =>
+        hasCopyableSelectionText(renderer.getSelection()?.getSelectedText()),
+    }),
+  );
   // Terminal replies may take up to 600 ms. Detect concurrently and update the theme
   // through the existing subscription, rather than holding the first screen hostage.
   void resolveInitialTerminalThemeMode(renderer).then((mode) => {

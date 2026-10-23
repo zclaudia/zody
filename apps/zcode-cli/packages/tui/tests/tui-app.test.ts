@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import React, { act } from "react";
+import { CliRenderEvents } from "@mbears/opentui-core";
+import { createTestRenderer } from "@mbears/opentui-core/testing";
 import { testRender } from "@mbears/opentui-react/test-utils";
+import type { UiThemeMode } from "@zcode/contracts";
 import { getZCodeCopy } from "@zcode/i18n";
 import { TuiApp } from "../src/app.js";
 import { LoginRequiredPanel } from "../src/app-components.js";
@@ -11,7 +14,8 @@ import { InputActiveStatus } from "../src/app-input-status.js";
 import { QueuedInputPanel } from "../src/app-queued-inputs.js";
 import { SelectionPanel } from "../src/app-selection-panel.js";
 import { ComposerInputArea } from "../src/app-view.js";
-import type { TuiOptions } from "../src/types.js";
+import { runTuiWithRenderer } from "../src/tui.js";
+import type { TuiOptions, TuiStartupOptions } from "../src/types.js";
 
 test("starts without a runtime readiness system message", async () => {
   let view: Awaited<ReturnType<typeof testRender>> | undefined;
@@ -526,6 +530,165 @@ test("mode composer popup can submit guarded mode command", async () => {
   }
 });
 
+const lifecycleBaseOptions: TuiOptions = {
+  noColor: true,
+  locale: "en-US",
+  stdin: process.stdin,
+  stdout: process.stdout,
+  stderr: process.stderr,
+  workspaceDirectory: "/test/workspace",
+  submitPrompt: async () => ({ response: "" }),
+};
+
+async function lifecycleFixture(options: Partial<TuiOptions>) {
+  const environment = globalThis as typeof globalThis & {
+    IS_REACT_ACT_ENVIRONMENT?: boolean;
+  };
+  const previous = environment.IS_REACT_ACT_ENVIRONMENT;
+  environment.IS_REACT_ACT_ENVIRONMENT = true;
+  let terminal: Awaited<ReturnType<typeof createTestRenderer>>;
+  try {
+    terminal = await createTestRenderer({
+      height: 32,
+      screenMode: "alternate-screen",
+      targetFps: 30,
+      useThread: false,
+      width: 110,
+      // 与 runTui 创建 renderer 的配置一致：Ctrl+C 由启动页/TuiApp 处理，
+      // renderer 内置逻辑不得在首击时直接销毁。
+      exitOnCtrlC: false,
+    });
+  } catch (error) {
+    // fixture 构造失败时不能让 act 标志泄漏到后续用例。
+    environment.IS_REACT_ACT_ENVIRONMENT = previous;
+    throw error;
+  }
+  // root.unmount 会执行启动页/TuiApp 的 useKeyboard 清理；
+  // 用挂载前的监听数作为基线，验证 React 树确实被卸载。
+  const baselineKeypressListeners = terminal.renderer.keyInput.listenerCount("keypress");
+  const theme = deferred<UiThemeMode>();
+  terminal.renderer.waitForThemeMode = () => theme.promise;
+  let outcome!: Promise<number | Error>;
+  await act(async () => {
+    outcome = runTuiWithRenderer(
+      { ...lifecycleBaseOptions, ...options },
+      terminal.renderer,
+    ).catch((error: Error) => error);
+  });
+  return {
+    ...terminal,
+    baselineKeypressListeners,
+    outcome,
+    theme,
+    async action(work: () => void | Promise<void>) {
+      await act(async () => {
+        await work();
+      });
+      if (!terminal.renderer.isDestroyed) {
+        await act(async () => {
+          await terminal.renderOnce();
+        });
+      }
+    },
+    async close() {
+      await act(async () => {
+        theme.resolve("dark");
+        if (!terminal.renderer.isDestroyed) terminal.renderer.destroy();
+      });
+      await outcome;
+      environment.IS_REACT_ACT_ENVIRONMENT = previous;
+    },
+  };
+}
+
+test("startup screen releases Ctrl+C before the ready app takes over", async () => {
+  const startup = deferred<TuiStartupOptions>();
+  const terminal = await lifecycleFixture({ loadStartupOptions: () => startup.promise });
+  try {
+    await terminal.action(() => terminal.renderOnce());
+    assert.match(terminal.captureCharFrame(), /Starting Zody/);
+
+    await terminal.action(() => startup.resolve({ loginRequired: false }));
+    assert.doesNotMatch(terminal.captureCharFrame(), /Starting Zody/);
+
+    // The app requires two consecutive Ctrl+C presses. A surviving startup-screen
+    // listener exits on the first press, so this assertion fails while the startup
+    // screen is not unmounted with the app.
+    await terminal.action(() => terminal.mockInput.pressCtrlC());
+    assert.equal(terminal.renderer.isDestroyed, false);
+    await terminal.action(() => terminal.mockInput.pressCtrlC());
+    assert.equal(await terminal.outcome, 0);
+  } finally {
+    await terminal.close();
+  }
+});
+
+test("Ctrl+C on the startup screen exits 130 and late startup options never mount the app", async () => {
+  const startup = deferred<TuiStartupOptions>();
+  let appQueries = 0;
+  const terminal = await lifecycleFixture({
+    listMcpServers: async () => {
+      appQueries += 1;
+      return {};
+    },
+    loadStartupOptions: () => startup.promise,
+  });
+  try {
+    await terminal.action(() => terminal.renderOnce());
+    await terminal.action(() => terminal.mockInput.pressCtrlC());
+    assert.equal(await terminal.outcome, 130);
+    assert.equal(terminal.renderer.isDestroyed, true);
+
+    await terminal.action(() => startup.resolve({ initialModel: "late/model" }));
+    assert.equal(appQueries, 0);
+    assert.equal(terminal.renderer.listenerCount(CliRenderEvents.FRAME), 0);
+    assert.equal(terminal.renderer.listenerCount(CliRenderEvents.THEME_MODE), 0);
+  } finally {
+    await terminal.close();
+  }
+});
+
+test("fatal startup failure restores the terminal and rethrows the original error", async () => {
+  const startup = deferred<TuiStartupOptions>();
+  const terminal = await lifecycleFixture({ loadStartupOptions: () => startup.promise });
+  const failure = new Error("Storage migration failed");
+  failure.name = "SqliteSessionMigrationError";
+  try {
+    await terminal.action(() => terminal.renderOnce());
+    await terminal.action(() => startup.reject(failure));
+    assert.equal(await terminal.outcome, failure);
+    assert.equal(terminal.renderer.isDestroyed, true);
+    assert.equal(terminal.renderer.listenerCount(CliRenderEvents.FRAME), 0);
+    assert.equal(terminal.renderer.listenerCount(CliRenderEvents.THEME_MODE), 0);
+  } finally {
+    await terminal.close();
+  }
+});
+
+test("destroying the ready app releases frame, theme and keyboard subscriptions", async () => {
+  const terminal = await lifecycleFixture({});
+  try {
+    await terminal.action(() => terminal.renderOnce());
+    // 挂载后 TuiApp 的 useKeyboard 订阅应比基线多一条，销毁后必须回落到基线，
+    // 以证明 DESTROY 时 React root 被卸载（而不只是 renderer 自身停止）。
+    assert.equal(
+      terminal.renderer.keyInput.listenerCount("keypress"),
+      terminal.baselineKeypressListeners + 1,
+    );
+    await terminal.action(() => terminal.renderer.destroy());
+    assert.equal(await terminal.outcome, 0);
+    assert.equal(terminal.renderer.isDestroyed, true);
+    assert.equal(terminal.renderer.listenerCount(CliRenderEvents.FRAME), 0);
+    assert.equal(terminal.renderer.listenerCount(CliRenderEvents.THEME_MODE), 0);
+    assert.equal(
+      terminal.renderer.keyInput.listenerCount("keypress"),
+      terminal.baselineKeypressListeners,
+    );
+  } finally {
+    await terminal.close();
+  }
+});
+
 function reactElementChildren(
   node: unknown,
 ): Array<{ props?: Record<string, unknown>; type?: unknown }> {
@@ -540,11 +703,14 @@ function reactElementChildren(
 
 function deferred<T>(): {
   promise: Promise<T>;
+  reject: (error: unknown) => void;
   resolve: (value: T) => void;
 } {
+  let reject!: (error: unknown) => void;
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((innerResolve) => {
+  const promise = new Promise<T>((innerResolve, innerReject) => {
+    reject = innerReject;
     resolve = innerResolve;
   });
-  return { promise, resolve };
+  return { promise, reject, resolve };
 }
