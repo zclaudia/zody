@@ -26,7 +26,11 @@ interface StreamingTextDecoder {
   end(): string;
 }
 
-export function detectTextEncoding(buffer: Buffer, path?: string): FileSystemTextEncoding {
+export function detectTextEncoding(
+  buffer: Buffer,
+  path?: string,
+  utf8Tail?: Buffer,
+): FileSystemTextEncoding {
   if (buffer.length >= 3 && bytesStartWith(buffer, UTF8_BOM)) {
     return "utf8";
   }
@@ -36,7 +40,16 @@ export function detectTextEncoding(buffer: Buffer, path?: string): FileSystemTex
   if (looksLikeBinary(buffer)) {
     throw createUnsupportedTextEncodingError(path);
   }
+  // 流式探测样本可能恰好切断末尾的 UTF-8 多字节字符；utf8Tail 是边界之后的真实字节，
+  // 只有拼接后能构成合法 UTF-8 才判为 utf8，否则继续走既有 GBK 往返判定。
   if (isValidUtf8(buffer)) {
+    return "utf8";
+  }
+  if (
+    utf8Tail !== undefined &&
+    utf8Tail.length > 0 &&
+    isValidUtf8(Buffer.concat([buffer, utf8Tail]))
+  ) {
     return "utf8";
   }
   for (const encoding of LEGACY_CHINESE_ENCODINGS) {
@@ -45,6 +58,28 @@ export function detectTextEncoding(buffer: Buffer, path?: string): FileSystemTex
     }
   }
   throw createUnsupportedTextEncodingError(path);
+}
+
+// 探测样本按 4096 字节截断时，末尾可能只剩一个 UTF-8 多字节字符的前几个字节。
+// 这里只计算补齐该字符还缺多少字节（0 表示样本在字符边界上结束，无需读取补尾）：
+// UTF-8 单字符最长 4 字节，因此最多需要 3 字节。BOM 开头的样本由 BOM 直接判定，不补尾。
+export function getUtf8SampleTailCompletionLength(buffer: Buffer): number {
+  if (buffer.length >= 3 && bytesStartWith(buffer, UTF8_BOM)) return 0;
+  if (buffer.length >= 2 && bytesStartWith(buffer, UTF16LE_BOM)) return 0;
+
+  const maxLookback = Math.min(4, buffer.length);
+  for (let lengthFromEnd = 1; lengthFromEnd <= maxLookback; lengthFromEnd += 1) {
+    const byte = buffer[buffer.length - lengthFromEnd]!;
+    if ((byte & 0xc0) === 0x80) continue;
+    if (byte < 0x80) return 0;
+    let expectedLength: number;
+    if ((byte & 0xe0) === 0xc0) expectedLength = 2;
+    else if ((byte & 0xf0) === 0xe0) expectedLength = 3;
+    else if ((byte & 0xf8) === 0xf0) expectedLength = 4;
+    else return 0;
+    return expectedLength > lengthFromEnd ? expectedLength - lengthFromEnd : 0;
+  }
+  return 0;
 }
 
 export function decodeTextBuffer(request: {

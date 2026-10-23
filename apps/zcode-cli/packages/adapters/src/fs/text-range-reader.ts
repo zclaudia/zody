@@ -1,6 +1,7 @@
 import { createReadStream } from "node:fs";
 import { open, readFile } from "node:fs/promises";
 import type { Stats } from "node:fs";
+import type { FileHandle } from "node:fs/promises";
 import {
   createFileSystemError,
   type FileSystemTextEncoding,
@@ -12,6 +13,7 @@ import {
   decodeTextBuffer,
   detectLineEndings,
   detectTextEncoding,
+  getUtf8SampleTailCompletionLength,
   normalizeLineEndings,
   shouldNormalizeLineEndings,
 } from "./text-metadata.js";
@@ -167,12 +169,60 @@ async function detectEncodingFromHead(
   throwIfAborted(signal);
   const handle = await open(path, "r");
   try {
-    const sample = Buffer.alloc(ENCODING_SAMPLE_BYTES);
-    const { bytesRead } = await handle.read(sample, 0, sample.byteLength, 0);
-    return detectTextEncoding(sample.subarray(0, bytesRead));
+    const head = await readEncodingSample(handle, ENCODING_SAMPLE_BYTES, signal);
+    throwIfAborted(signal);
+    const utf8Tail = await readUtf8TailCompletion(handle, head, signal);
+    throwIfAborted(signal);
+    return detectTextEncoding(head, undefined, utf8Tail);
   } finally {
     await handle.close();
   }
+}
+
+// FileHandle.read 允许短读：返回值小于请求长度不代表 EOF，只有 0 字节才是。
+// 单次读取可能只返回少量字节，必须循环补齐样本，否则短读样本会被误判为二进制或 GBK。
+async function readEncodingSample(
+  handle: FileHandle,
+  length: number,
+  signal?: AbortSignal,
+): Promise<Buffer> {
+  const sample = Buffer.alloc(length);
+  let filled = 0;
+  while (filled < length) {
+    throwIfAborted(signal);
+    const { bytesRead } = await handle.read(sample, filled, length - filled, filled);
+    if (bytesRead === 0) break;
+    filled += bytesRead;
+  }
+  return sample.subarray(0, filled);
+}
+
+// 4096 字节边界可能切断 UTF-8 多字节字符的尾部；此时按需读取边界之后的真实字节，
+// 只在补齐后能构成合法 UTF-8 时才用于判定（见 detectTextEncoding 的 utf8Tail 参数）。
+// 补齐字节只用于判定，不进入正文、bytesRead 或行计数。
+async function readUtf8TailCompletion(
+  handle: FileHandle,
+  head: Buffer,
+  signal?: AbortSignal,
+): Promise<Buffer | undefined> {
+  const missingBytes = getUtf8SampleTailCompletionLength(head);
+  if (missingBytes === 0) return undefined;
+
+  const tail = Buffer.alloc(missingBytes);
+  let filled = 0;
+  while (filled < missingBytes) {
+    throwIfAborted(signal);
+    const { bytesRead } = await handle.read(
+      tail,
+      filled,
+      missingBytes - filled,
+      head.byteLength + filled,
+    );
+    // 补齐前到达 EOF：按已读到的实际字节判定，不用零填充凑样本。
+    if (bytesRead === 0) return undefined;
+    filled += bytesRead;
+  }
+  return tail;
 }
 
 function normalizeOffsetLine(offsetLine: number | undefined): number {

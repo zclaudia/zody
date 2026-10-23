@@ -17,6 +17,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import iconv from "iconv-lite";
 import { describe, expect, it, vi } from "vitest";
 import { READ_MAX_FILE_SIZE_BYTES } from "@zcode/contracts";
 import { createNodeContextSourceAdapter } from "../src/context/index.js";
@@ -31,6 +32,19 @@ const execFile = promisify(execFileCallback);
 const TEST_DIR = dirname(fileURLToPath(import.meta.url));
 const GB2312_FIXTURE_PATH = join(TEST_DIR, "..", "..", "..", "tests", "gb2312.js");
 const GB2312_THIS_IS_BYTES = Buffer.from([0xd5, 0xe2, 0xca, 0xc7]);
+// 与 text-range-reader.ts 的 ENCODING_SAMPLE_BYTES / FAST_PATH_MAX_BYTES 对齐：
+// 只有超过 10MB 的文件才走流式读取与头部编码探测。
+const ENCODING_SAMPLE_BYTES = 4096;
+const STREAMING_READ_MIN_BYTES = 10 * 1024 * 1024 + 1;
+
+function padToStreamingFileSize(
+  head: Buffer,
+  encodeText: (text: string) => Buffer = (text) => Buffer.from(text, "utf8"),
+): Buffer {
+  const paddingBytes = Math.max(0, STREAMING_READ_MIN_BYTES - head.byteLength);
+  const lines = Math.ceil(paddingBytes / 1024) + 1;
+  return Buffer.concat([head, encodeText(`\n${`${"x".repeat(1023)}\n`.repeat(lines)}`)]);
+}
 
 class HangingRipgrepWorker extends EventEmitter {
   terminated = false;
@@ -375,6 +389,258 @@ describe("Node file and context adapters", () => {
 
       expect(await readFile(path)).toEqual(originalBytes);
     } finally {
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("detects UTF-8 when a three-byte character crosses the encoding sample boundary", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zcode-fs-utf8-sample-boundary-"));
+    const path = join(dir, "large.txt");
+    const fs = createNodeFileSystemAdapter();
+    // 4095 个 ASCII 字节后接 UTF-8 三字节字符：探测样本（4096 字节）止于该字符首字节。
+    const firstLine = `${"a".repeat(ENCODING_SAMPLE_BYTES - 1)}中文结尾`;
+
+    try {
+      await writeFile(path, padToStreamingFileSize(Buffer.from(firstLine, "utf8")));
+
+      const range = await fs.readTextFileRange({ path, offsetLine: 0, limitLines: 1 });
+
+      expect(range.encoding).toBe("utf8");
+      expect(range.content).toBe(firstLine);
+      expect(range.content).not.toContain("\uFFFD");
+    } finally {
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("detects UTF-8 when a four-byte character crosses the encoding sample boundary", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zcode-fs-utf8-sample-boundary-4b-"));
+    const path = join(dir, "large.txt");
+    const fs = createNodeFileSystemAdapter();
+    // 4094 个 ASCII 字节后接四字节 emoji：探测样本止于该字符的第 2 个字节。
+    const firstLine = `${"a".repeat(ENCODING_SAMPLE_BYTES - 2)}😀中文结尾`;
+
+    try {
+      await writeFile(path, padToStreamingFileSize(Buffer.from(firstLine, "utf8")));
+
+      const range = await fs.readTextFileRange({ path, offsetLine: 0, limitLines: 1 });
+
+      expect(range.encoding).toBe("utf8");
+      expect(range.content).toBe(firstLine);
+      expect(range.content).not.toContain("\uFFFD");
+    } finally {
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("fills the encoding sample across consecutive short reads", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zcode-fs-encoding-short-read-"));
+    const path = join(dir, "large.txt");
+    const fs = createNodeFileSystemAdapter();
+    let readSpy: ReturnType<typeof vi.spyOn> | undefined;
+
+    try {
+      await writeFile(path, Buffer.from(`\uFEFF${"alpha\r\n".repeat(800_000)}`, "utf16le"));
+
+      const probe = await open(path, "r");
+      const fileHandlePrototype = Object.getPrototypeOf(probe) as {
+        read: typeof probe.read;
+      };
+      const originalRead = fileHandlePrototype.read;
+      await probe.close();
+      // 模拟每次 read 只返回 1 字节：单次 read 只能看到 0xff，无法组成 UTF-16LE BOM。
+      readSpy = vi.spyOn(fileHandlePrototype, "read").mockImplementation(async function (
+        this: typeof probe,
+        buffer: Buffer,
+        offset: number,
+        length: number,
+        position: number | null,
+      ) {
+        return originalRead.call(this, buffer, offset, Math.min(1, length), position);
+      } as never);
+
+      const range = await fs.readTextFileRange({ path, offsetLine: 0, limitLines: 2 });
+
+      expect(range.encoding).toBe("utf16le");
+      expect(range.content).toBe("\uFEFFalpha\nalpha");
+      expect(range.lineEndings).toBe("CRLF");
+    } finally {
+      readSpy?.mockRestore();
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("stops filling the encoding sample at EOF", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zcode-fs-encoding-eof-"));
+    const path = join(dir, "large.txt");
+    const fs = createNodeFileSystemAdapter();
+    let readSpy: ReturnType<typeof vi.spyOn> | undefined;
+    let readCalls = 0;
+
+    try {
+      await writeFile(path, Buffer.from(`\uFEFF${"alpha\r\nbeta\r\n".repeat(500_000)}`, "utf16le"));
+
+      const probe = await open(path, "r");
+      const fileHandlePrototype = Object.getPrototypeOf(probe) as {
+        read: typeof probe.read;
+      };
+      const originalRead = fileHandlePrototype.read;
+      await probe.close();
+      // 两次 1 字节短读之后立刻 EOF：补齐循环必须以 bytesRead === 0 结束，不能空转。
+      readSpy = vi.spyOn(fileHandlePrototype, "read").mockImplementation(async function (
+        this: typeof probe,
+        buffer: Buffer,
+        offset: number,
+        length: number,
+        position: number | null,
+      ) {
+        readCalls += 1;
+        if (readCalls <= 2) {
+          return originalRead.call(this, buffer, offset, Math.min(1, length), position);
+        }
+        return { bytesRead: 0, buffer };
+      } as never);
+
+      const range = await fs.readTextFileRange({ path, offsetLine: 0, limitLines: 2 });
+
+      expect(range.encoding).toBe("utf16le");
+      expect(range.content).toBe("\uFEFFalpha\nbeta");
+      expect(readCalls).toBeLessThan(8);
+    } finally {
+      readSpy?.mockRestore();
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("keeps UTF-16LE detection when a surrogate pair crosses the encoding sample boundary", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zcode-fs-utf16-sample-boundary-"));
+    const path = join(dir, "large.txt");
+    const fs = createNodeFileSystemAdapter();
+    // BOM 2 字节 + 2046 个 ASCII 字符 = 4094 字节，代理对恰好横跨 4096 边界。
+    const firstLine = `\uFEFF${"a".repeat(ENCODING_SAMPLE_BYTES / 2 - 2)}😀中文结尾`;
+
+    try {
+      await writeFile(
+        path,
+        padToStreamingFileSize(
+          Buffer.from(firstLine, "utf16le"),
+          (text) => Buffer.from(text, "utf16le"),
+        ),
+      );
+
+      const range = await fs.readTextFileRange({ path, offsetLine: 0, limitLines: 1 });
+
+      expect(range.encoding).toBe("utf16le");
+      expect(range.content).toBe(firstLine);
+      expect(range.content).not.toContain("\uFFFD");
+    } finally {
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("keeps GB2312 detection when a double-byte character crosses the encoding sample boundary", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zcode-fs-gbk-sample-boundary-"));
+    const path = join(dir, "large.txt");
+    const fs = createNodeFileSystemAdapter();
+    // GBK 双字节字符的首字节落在样本末位；边界后的字节不能补成合法 UTF-8，仍应按 GBK 判定。
+    const firstLine = `${"a".repeat(ENCODING_SAMPLE_BYTES - 1)}中文结尾`;
+
+    try {
+      await writeFile(
+        path,
+        padToStreamingFileSize(
+          iconv.encode(firstLine, "gb2312"),
+          (text) => iconv.encode(text, "gb2312"),
+        ),
+      );
+
+      const range = await fs.readTextFileRange({ path, offsetLine: 0, limitLines: 1 });
+
+      expect(range.encoding).toBe("gb2312");
+      expect(range.content).toBe(firstLine);
+    } finally {
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("cancels encoding sampling when the signal aborts during the sample read", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zcode-fs-encoding-abort-"));
+    const path = join(dir, "large.txt");
+    const fs = createNodeFileSystemAdapter();
+    const controller = new AbortController();
+    let readSpy: ReturnType<typeof vi.spyOn> | undefined;
+
+    try {
+      await writeFile(path, padToStreamingFileSize(Buffer.from("hello\nworld\n")));
+
+      const probe = await open(path, "r");
+      const fileHandlePrototype = Object.getPrototypeOf(probe) as {
+        read: typeof probe.read;
+      };
+      const originalRead = fileHandlePrototype.read;
+      await probe.close();
+      readSpy = vi.spyOn(fileHandlePrototype, "read").mockImplementation(async function (
+        this: typeof probe,
+        buffer: Buffer,
+        offset: number,
+        length: number,
+        position: number | null,
+      ) {
+        const result = await originalRead.call(this, buffer, offset, length, position);
+        controller.abort();
+        return result;
+      } as never);
+
+      await expect(
+        fs.readTextFileRange({ path, offsetLine: 0, limitLines: 1 }, { signal: controller.signal }),
+      ).rejects.toMatchObject({
+        code: "cancelled",
+      });
+    } finally {
+      readSpy?.mockRestore();
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("closes the encoding probe handle when detection rejects binary content", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zcode-fs-encoding-close-"));
+    const path = join(dir, "large.bin");
+    const fs = createNodeFileSystemAdapter();
+    let readSpy: ReturnType<typeof vi.spyOn> | undefined;
+    let closeCalls = 0;
+
+    try {
+      await writeFile(path, Buffer.alloc(STREAMING_READ_MIN_BYTES, 0));
+
+      const probe = await open(path, "r");
+      const fileHandlePrototype = Object.getPrototypeOf(probe) as {
+        read: typeof probe.read;
+      };
+      const originalRead = fileHandlePrototype.read;
+      await probe.close();
+      readSpy = vi.spyOn(fileHandlePrototype, "read").mockImplementation(async function (
+        this: typeof probe,
+        buffer: Buffer,
+        offset: number,
+        length: number,
+        position: number | null,
+      ) {
+        // close 是 FileHandle 实例自身的方法，只能按实例拦截以确认探测句柄被关闭。
+        const handle = this as typeof probe & { close: () => Promise<void> };
+        const originalClose = handle.close.bind(handle);
+        handle.close = async () => {
+          closeCalls += 1;
+          return originalClose();
+        };
+        return originalRead.call(this, buffer, offset, length, position);
+      } as never);
+
+      await expect(fs.readTextFileRange({ path })).rejects.toMatchObject({
+        code: "unsupported",
+      });
+      expect(closeCalls).toBe(1);
+    } finally {
+      readSpy?.mockRestore();
       await rm(dir, { force: true, recursive: true });
     }
   });
