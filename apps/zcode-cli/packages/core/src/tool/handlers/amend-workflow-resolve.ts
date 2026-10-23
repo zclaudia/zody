@@ -10,8 +10,11 @@
 import {
   AmendWorkflowInputSchema,
   type AmendWorkflowInput,
+  type AmendWorkflowPredecessor,
+  type DynamicWorkflowRunSnapshot,
   type ModelCatalogPort,
 } from "@zcode/contracts";
+import { parseModelPickerValue } from "@zcode/shared/model-selection";
 import type {
   ToolHandlerFailure,
   ToolInputResolutionContext,
@@ -153,22 +156,97 @@ export async function resolveAmendWorkflowInput(
   void _forged;
   void _model;
   void _offset;
+  const predecessorFacts: AmendWorkflowPredecessor = {
+    ...predecessor,
+    ...(script.inherited ? { script_inherited: true as const } : {}),
+  };
   const resolved: AmendWorkflowInput = {
     ...rest,
     ...script.fields,
     ...resolveAmendMaxConcurrency(parsed.data.max_concurrency, snapshot.maxConcurrency),
     ...subagentModel.field,
-    predecessor: {
-      ...predecessor,
-      ...(script.inherited ? { script_inherited: true as const } : {}),
-    },
+    predecessor: predecessorFacts,
   };
   // 脚本点名的模型：同名沿用前驱 run-launched 上的绑定（用户在前驱确认窗里换过的模型因此留得住），
   // 新名字对着目录解析（docs/dynamic-workflow/launch.md「The `AmendWorkflow` tool」）。
+  const normalized = withScriptModelBindings(
+    resolved,
+    context.modelCatalogPort,
+    snapshot.modelBindings,
+  );
+  // 归一化的最后一步：此刻才知道这次修订会用到哪些 provider（`subagent_model` 与脚本绑定都已
+  // 落定）。换到会话与前驱都没用过的 provider 是另一张账单，免确认不覆盖它——事实写进
+  // predecessor，权限服务读同一条谓词（docs/dynamic-workflow/launch.md「Amending this session's runs」）。
+  const introducedProviders = introducedProviderIds(
+    normalized,
+    snapshot,
+    context.modelCatalogPort,
+  );
   return {
     result: true,
-    input: withScriptModelBindings(resolved, context.modelCatalogPort, snapshot.modelBindings),
+    input:
+      introducedProviders.length === 0
+        ? normalized
+        : {
+            ...normalized,
+            predecessor: {
+              ...predecessorFacts,
+              introduces_providers: introducedProviders,
+            },
+          },
   };
+}
+
+/**
+ * 这次修订会用到、而会话模型与前驱的 run 都没用过的 provider（按字母序、每项一次）。
+ *
+ * 三处事实：归一化后的 `subagent_model` / `model_bindings`（将要用的）、模型目录里 `current`
+ * 的那一条（会话模型）、前驱快照的 `subagentModel` / `modelBindings`（journal `run-launched`
+ * 记下的）。模型给的 `predecessor` 早已被丢弃，伪造不出这个结论。目录缺席时读不到会话模型，
+ * 只与前驱比较——与 spec 同一条口径。
+ */
+function introducedProviderIds(
+  input: Record<string, unknown>,
+  predecessor: DynamicWorkflowRunSnapshot,
+  catalog: ModelCatalogPort | undefined,
+): string[] {
+  const used = new Set<string>();
+  const sessionModel = catalog?.listModels().find((entry) => entry.current);
+  if (sessionModel !== undefined) used.add(sessionModel.providerId);
+  const inheritedModels = [
+    predecessor.subagentModel,
+    ...Object.values(predecessor.modelBindings ?? {}),
+  ];
+  for (const canonical of inheritedModels) {
+    const providerId = providerIdOf(canonical);
+    if (providerId !== undefined) used.add(providerId);
+  }
+
+  const next = new Set<string>();
+  const subagentModel = input.subagent_model;
+  const providerId = typeof subagentModel === "string" ? providerIdOf(subagentModel) : undefined;
+  if (providerId !== undefined) next.add(providerId);
+  const bindings = input.model_bindings;
+  if (typeof bindings === "object" && bindings !== null && !Array.isArray(bindings)) {
+    for (const canonical of Object.values(bindings as Record<string, unknown>)) {
+      const bound = typeof canonical === "string" ? providerIdOf(canonical) : undefined;
+      if (bound !== undefined) next.add(bound);
+    }
+  }
+  // 解不开的规范串不在这里喊：修订侧的每一位都由 `resolveInput` 解析过，解不开只可能是宿主接线
+  // 故障，handler 的 `scriptModelSelections` 会在执行前抛出；前驱侧的旧值读不出来则按「没用过」
+  // 处理，于是这次修订显得「新」、多弹一次窗——方向是安全的那一侧。
+  return [...next].filter((provider) => !used.has(provider)).sort();
+}
+
+/** 规范串 `providerId/modelId[$level]` 的 provider 段；解不开回 undefined。 */
+function providerIdOf(canonical: string | undefined): string | undefined {
+  if (canonical === undefined) return undefined;
+  try {
+    return parseModelPickerValue(canonical).providerId;
+  } catch {
+    return undefined;
+  }
 }
 
 /**

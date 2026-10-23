@@ -377,6 +377,207 @@ describe("AmendWorkflow — owner rule", () => {
   });
 });
 
+// docs/dynamic-workflow/launch.md「Amending this session's runs」：本会话 run 的免确认还要求
+// 这次修订不引入新 provider（`predecessor.introduces_providers` 缺席）。同 provider 换模型仍免窗；
+// 新 provider 是另一张账单，必须让用户看见——Ask 被拒绝时零执行。
+describe("AmendWorkflow — provider boundary", () => {
+  function catalogEntry(
+    providerId: string,
+    modelId: string,
+    current = false,
+  ): ModelCatalogEntry {
+    return { providerId, modelId, reasoningLevels: [], current };
+  }
+
+  // 会话当前模型在 bigmodel：它是「会话已用过」的那一个 provider。
+  const CATALOG: ModelCatalogPort = {
+    listModels: () => [
+      catalogEntry("bigmodel", "GLM-4.6", true),
+      catalogEntry("bigmodel", "GLM-5"),
+      catalogEntry("openai", "gpt-5"),
+    ],
+  };
+
+  const GPT_SCRIPT = [
+    `const reviewer = agent("reviewer", { model: "gpt-5" });`,
+    `const done = await reviewer.ask<boolean>("do");`,
+    `return done;`,
+  ].join("\n");
+
+  it("moves within the predecessor's provider without a window", async () => {
+    const name = "amend-provider-same";
+    const { port, amends } = stubRunPort({
+      snapshot: {
+        parentSessionId: sessionOf(name),
+        status: "completed",
+        runStatus: "completed",
+        subagentModel: "bigmodel/GLM-4.6",
+      },
+    });
+    const outcome = await run({
+      name,
+      port,
+      modelCatalogPort: CATALOG,
+      input: {
+        run_id: "dwfrun-prev",
+        script: cleanScript(name),
+        subagent_model: "bigmodel/GLM-5",
+      },
+    });
+    expect(outcome.permissionRequested).toHaveLength(0);
+    expect(outcome.brokerRequests).toHaveLength(0);
+    expect(amends).toHaveLength(1);
+    expect(amends[0]?.subagentModel).toEqual({ providerId: "bigmodel", modelId: "GLM-5" });
+  });
+
+  it("counts the session model's provider as already used", async () => {
+    // 前驱没设 subagent_model：子代理跑在会话模型上，于是会话模型的 provider 也是「批过的」。
+    const name = "amend-provider-session";
+    const { port, amends } = stubRunPort({
+      snapshot: { parentSessionId: sessionOf(name), status: "completed", runStatus: "completed" },
+    });
+    const outcome = await run({
+      name,
+      port,
+      modelCatalogPort: CATALOG,
+      input: {
+        run_id: "dwfrun-prev",
+        script: cleanScript(name),
+        subagent_model: "bigmodel/GLM-5",
+      },
+    });
+    expect(outcome.permissionRequested).toHaveLength(0);
+    expect(amends).toHaveLength(1);
+  });
+
+  it("counts a provider the predecessor's script already bound as used", async () => {
+    const name = "amend-provider-bound";
+    const { port, amends } = stubRunPort({
+      snapshot: {
+        parentSessionId: sessionOf(name),
+        status: "completed",
+        runStatus: "completed",
+        subagentModel: "bigmodel/GLM-4.6",
+        modelBindings: { "gpt-5": "openai/gpt-5" },
+      },
+    });
+    const outcome = await run({
+      name,
+      port,
+      modelCatalogPort: CATALOG,
+      input: { run_id: "dwfrun-prev", script: GPT_SCRIPT },
+    });
+    expect(outcome.permissionRequested).toHaveLength(0);
+    expect(amends).toHaveLength(1);
+  });
+
+  it("asks before moving the subagents to a provider neither the session nor the run used", async () => {
+    const name = "amend-provider-new";
+    const { port, amends } = stubRunPort({
+      snapshot: {
+        parentSessionId: sessionOf(name),
+        status: "completed",
+        runStatus: "completed",
+        subagentModel: "bigmodel/GLM-4.6",
+      },
+    });
+    const outcome = await run({
+      name,
+      port,
+      modelCatalogPort: CATALOG,
+      broker: {
+        async requestPermission() {
+          return { decision: "deny", reason: "another provider is another bill" };
+        },
+      },
+      input: {
+        run_id: "dwfrun-prev",
+        script: cleanScript(name),
+        subagent_model: "openai/gpt-5",
+      },
+    });
+
+    expect(outcome.permissionRequested).toHaveLength(1);
+    const payload = outcome.permissionRequested[0]!;
+    expect(payload.toolName).toBe("AmendWorkflow");
+    expect(payload.optionsPolicy).toBe("session-always-allow");
+    // 用户要能看见自己批的是哪个 provider：确认窗读的是归一化后的模型。
+    expect(payload.input).toMatchObject({
+      subagent_model: "openai/gpt-5",
+      predecessor: { owned_by_this_session: true },
+    });
+    // Deny：什么都没停、没建、没执行。
+    expect(outcome.result.success).toBe(false);
+    expect(outcome.result.error?.type).toBe("permission_denied");
+    expect(amends).toHaveLength(0);
+  });
+
+  it("asks for a provider introduced only by a script-named model", async () => {
+    const name = "amend-provider-script";
+    const { port, amends } = stubRunPort({
+      snapshot: {
+        parentSessionId: sessionOf(name),
+        status: "completed",
+        runStatus: "completed",
+        subagentModel: "bigmodel/GLM-4.6",
+      },
+    });
+    const outcome = await run({
+      name,
+      port,
+      modelCatalogPort: CATALOG,
+      input: { run_id: "dwfrun-prev", script: GPT_SCRIPT },
+    });
+    expect(outcome.permissionRequested).toHaveLength(1);
+    expect(outcome.permissionRequested[0]!.input).toMatchObject({
+      model_bindings: { "gpt-5": "openai/gpt-5" },
+    });
+    // 默认 broker 放行：窗出现过，之后才落到 amend。
+    expect(amends).toHaveLength(1);
+  });
+
+  it("asks when keeping the predecessor's script but moving the subagents to a new provider", async () => {
+    // 省略 `script`/`path` 只锁定脚本：脚本先经 getScript 读回，与新的 `subagent_model` 一起算
+    // introduced_providers，provider 换了照样要过窗。伪造 predecessor 无效已由上面 owner 规则的
+    // 用例覆盖，这里不再重复。
+    const name = "amend-provider-inherited-script";
+    const { port, amends, getScriptCalls } = stubRunPort({
+      snapshot: {
+        parentSessionId: sessionOf(name),
+        status: "completed",
+        runStatus: "completed",
+        subagentModel: "bigmodel/GLM-4.6",
+      },
+      storedScript: cleanScript("reviewer"),
+    });
+    const outcome = await run({
+      name,
+      port,
+      modelCatalogPort: CATALOG,
+      broker: {
+        async requestPermission() {
+          return { decision: "deny", reason: "another provider is another bill" };
+        },
+      },
+      input: { run_id: "dwfrun-prev", subagent_model: "openai/gpt-5" },
+    });
+    expect(getScriptCalls).toEqual(["dwfrun-prev"]);
+    expect(outcome.permissionRequested).toHaveLength(1);
+    expect(outcome.permissionRequested[0]!.input).toMatchObject({
+      subagent_model: "openai/gpt-5",
+      predecessor: {
+        owned_by_this_session: true,
+        script_inherited: true,
+        introduces_providers: ["openai"],
+      },
+    });
+    // Deny：脚本读回来了，但什么都没停、没建。
+    expect(outcome.result.success).toBe(false);
+    expect(outcome.result.error?.type).toBe("permission_denied");
+    expect(amends).toHaveLength(0);
+  });
+});
+
 describe("AmendWorkflow — refusals and failures", () => {
   it("an unknown run is refused at resolveInput: no window, no amend, the shared run_not_found key", async () => {
     const { port, amends } = stubRunPort();

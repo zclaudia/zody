@@ -146,6 +146,9 @@ export async function runConcurrencyRetune(
  * 本会话自己的、不是用户亲手停下的 run：owner 规则本来也不开窗，于是照常修订，脚本与编译推迟
  * 到此刻才发生（缺脚本、编不过都按修订自己的拒绝回报）。别人的 run，或用户停过的 run：拒掉。
  * 这条路一个窗都没弹过，不能把「什么都没批」撑成「另起一次 run」。
+ *
+ * 这里重读的 `predecessor` 不带 `introduces_providers`：能走到这条路的入参只改并发，`script` 与
+ * `subagent_model` 都缺席，provider 一个都没动，owner 规则的第三个条件因此自然成立。
  */
 export async function resolveRetuneFallbackAmend(
   parsed: AmendWorkflowInput,

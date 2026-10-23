@@ -15,7 +15,7 @@ journal, same notifications, same cancel and resume, same run pane.
 |---|---|---|---|
 | `CreateWorkflow` tool, inline `script` | the model | the confirmation window | the current session |
 | `CreateWorkflow` tool, `saved` source | the model | the confirmation window, with a saved-source badge | the current session |
-| `AmendWorkflow` tool | the model | none when the run being amended is this session's own; the confirmation window otherwise (see "Amending this session's runs") | the current session |
+| `AmendWorkflow` tool | the model | none when the run being amended is this session's own and the amendment brings in no new provider; the confirmation window otherwise (see "Amending this session's runs") | the current session |
 | 「运行」 (Run) on the hub page | the user | none: the click is the consent | a new, empty session in the workflow's project |
 | Configure on the run card or the run pane (a new run of the same script under new settings; one change starts none, see below) | the user | none: the click on Apply is the consent | the session that owns the run |
 | `/dwf resume`, the run pane's Resume, `ResumeWorkflowRun` | the user or the model | none | the session that owns the run |
@@ -308,6 +308,7 @@ interface AmendWorkflowInput {
     stop_reason?: "user" | "model" | "provider" | "interrupted" | "superseded";
     owned_by_this_session: boolean;
     script_inherited?: true;  // the call gave neither source; `script` now holds the predecessor's
+    introduces_providers?: string[];  // providers this revision newly uses; present only when non-empty
   };
   max_concurrency?: number | null;  // omit = keep the predecessor's limit; null = remove it; a number = set it
   subagent_model?: string | null;   // omit = keep the predecessor's model; null = back to the session model; a string = set it
@@ -624,7 +625,7 @@ model read first: the cache (unchanged asks of named subagents replay at zero co
 revision's first write to the workspace; after that only asks that read and ran nothing keep
 replaying), the fact that a named subagent whose unfinished ask the revision did not change
 picks that ask up where it left off, and the confirmation rule (this session's runs start
-without a window; another session's run asks). Its field list states one rule, omit a field
+without a window unless the amendment brings in a new provider; another session's run asks). Its field list states one rule, omit a field
 and the new run keeps the predecessor's value, in a fixed order: the script first (omit both
 `path` and `script` to keep the predecessor's and change only the settings), then
 `max_concurrency` (omit keeps, `null` removes, a number changes, and only when the user asks;
@@ -772,7 +773,7 @@ Inside the always-ask branch the order is fixed:
 | tool is in `disallowedTools` | deny |
 | a project deny rule matches | deny |
 | a session allow rule matches | allow, no event, no window (`rule.session.allow`) |
-| `AmendWorkflow` of a run this session started, not stopped by the user | allow, no event, no window (`rule.session.workflowOwner`) |
+| `AmendWorkflow` of a run this session started, not stopped by the user, bringing in no new provider | allow, no event, no window (`rule.session.workflowOwner`) |
 | otherwise | ask (`tool.alwaysAsk`) |
 
 Project allow rules and `allowedTools` are never consulted for an always-ask tool. A
@@ -952,8 +953,12 @@ persisted:
 - The permission service merges it into an in-memory session ruleset. The project
   permission store is never written.
 - The rule is per tool, not per script: every later `CreateWorkflow` in the session runs
-  without a window, with no permission event. An `AmendWorkflow` window (another session's
-  run) offers the same option and writes its own rule; the two grants are independent.
+  without a window, with no permission event. An `AmendWorkflow` window — another session's
+  run, or an amendment that brings in a new provider — offers the same option and writes its
+  own rule; the two grants are independent. A session allow rule is checked before the owner
+  rule (the order table under "Approval"), so a user who picks the option on an `AmendWorkflow`
+  window stops being asked for that tool's later calls in the session, including a new
+  provider: the grant is an explicit choice, not a bypass of the provider boundary.
 - One permission service instance is one app is one session. Restarting the desktop, cold
   resuming the session, or `/new` starts from an empty ruleset and asks again.
 - General-purpose and custom subagents share the parent's permission service and inherit
@@ -965,18 +970,38 @@ is rare and every save's target and overwrite decision deserve a look.
 
 ### Amending this session's runs
 
-An amendment of a run this session started begins without a window. The key is the run's
-recorded parent session, not the presence of a run id: `ListWorkflowRuns` can name any run
-in the project, including other sessions' runs, so a blanket pass for `AmendWorkflow` would
-let the model start arbitrary new code without a window.
+An amendment of a run this session started begins without a window, unless the amendment
+brings in a new provider (the table below). The key is the run's recorded parent session,
+not the presence of a run id: `ListWorkflowRuns` can name any run in the project, including
+other sessions' runs, so a blanket pass for `AmendWorkflow` would let the model start
+arbitrary new code without a window.
 
 The rule is read from the journal, through the `predecessor` block `resolveInput` filled in:
 
 | Predecessor | Result |
 |---|---|
-| `parent_session_id` is this session and `stop_reason` is not `user` | allow, `rule.session.workflowOwner`, in every mode |
+| `parent_session_id` is this session, `stop_reason` is not `user`, and the amendment brings in no new provider | allow, `rule.session.workflowOwner`, in every mode |
+| `parent_session_id` is this session but the amendment brings in a new provider | ask: another provider is another bill, and only the user can choose it |
 | `parent_session_id` is this session but the user stopped it | ask: the user ended that run on purpose, and a revision of it is a new decision |
 | another session's run | ask |
+
+"A new provider" is `predecessor.introduces_providers`, which `resolveInput` computes as its last
+step, after the script's model bindings are settled. It lists, once each and in alphabetical
+order, the providers of the models the revision will use (the resolved `subagent_model` and the
+values of `model_bindings`) that are neither the session model's provider nor a provider of the
+models the predecessor ran on (its `subagentModel` and `modelBindings` from `run-launched`). The
+key is present only when that list is not empty. A model the predecessor already used was
+approved in that run's own window, so keeping it, or moving to another model under the same
+provider, stays free. The fact is computed, never read from the call: the model-facing schema
+has no `predecessor`, so a call that carries one is refused before `resolveInput`, and a full
+`providerId/modelId` written by the model proves only that the name is unambiguous, not that the
+user chose it. Without a model catalog there is no session provider to read, so the comparison
+is with the predecessor alone; a model name the call passes cannot be resolved then anyway, and
+an inherited one is the predecessor's own.
+
+A session allow rule — the Always allow option on an `AmendWorkflow` window — is checked before
+this rule, so a user who picked it has already chosen for that session's later amendments, a
+new provider included ("Always allow in this session").
 
 A hub launch owns the session it created, so amending it from that session is free. A run
 that was itself an amendment is owned by the session that amended, so a chain of revisions
@@ -994,12 +1019,14 @@ The server-side gates (`run_not_found`, `missing_boundaries`) still run at submi
 only removes the window. A `max_concurrency` different from the predecessor's does not bring
 the window back either, in either direction: it changes how many of the approved script's
 subagents work at once, not what the script does or what any subagent may do, and a raise
-still answers to the governor's cap on each provider key. Nor does a different `subagent_model`.
-It moves the subagents onto another model this host already has configured and widens nothing
-about what the run may do, so an amend that changes only the model starts without a window
-like any other amend of this session's run. An amend that omits both `script` and `path` is judged the same
-way as one that passes it: free for this session's run, a window for another session's, where
-the lineage row says the script is unchanged.
+still answers to the governor's cap on each provider key. Nor does a different `subagent_model`
+under a provider the session or the run already used. It moves the subagents onto another model
+this host already has configured and widens nothing about what the run may do, so such an amend
+starts without a window like any other amend of this session's run. A model under a provider
+neither has used is the exception in the table above: the window comes back, because that
+choice moves the cost to another bill. An amend that omits both `script` and `path` is judged the same
+way as one that passes it: free for this session's run unless it moves the subagents to a new
+provider, a window for another session's, where the lineage row says the script is unchanged.
 
 ### Recorded exceptions
 

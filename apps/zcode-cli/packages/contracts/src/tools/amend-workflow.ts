@@ -115,13 +115,20 @@ export const AmendWorkflowPredecessorSchema = z
      * 被无条件覆盖，模型伪造无效。
      */
     script_inherited: z.literal(true).optional(),
+    /**
+     * 这次修订会用到、而会话模型与前驱都没用过的 provider，按字母序、每项一次。**只在列表非空时
+     * 在场**：它是 resolveInput 在归一化最后一步算出来的事实（不是模型可填的参数），权限服务据它
+     * 把「本会话的 run」那条免确认收回成确认窗——换一家 provider 就是换一张账单
+     * （docs/dynamic-workflow/launch.md「Amending this session's runs」）。
+     */
+    introduces_providers: z.array(z.string().min(1)).min(1).optional(),
   })
   .strict();
 
 export type AmendWorkflowPredecessor = z.infer<typeof AmendWorkflowPredecessorSchema>;
 
 /**
- * 「这个前驱归本会话、且不是用户亲手停下的」——免确认的 owner 规则
+ * 「这个前驱归本会话、不是用户亲手停下的、且这次修订不引入新 provider」——免确认的 owner 规则
  * （docs/dynamic-workflow/launch.md「Amending this session's runs」）。
  *
  * 住在契约里而不是权限服务里，是因为它现在有**两个**读者，而两个读者必须一字不差地同意：
@@ -129,11 +136,19 @@ export type AmendWorkflowPredecessor = z.infer<typeof AmendWorkflowPredecessorSc
  * 的修订本来要不要开窗（「When the port says `not_live`」）。两处各写一遍，总有一天会让一条
  * 「什么都没批」的调用悄悄起一次新 run。
  *
- * 收 `unknown`：权限服务拿到的是还没解析的工具入参，handler 拿到的是解析好的事实块。
+ * 第三个条件读的是 `resolveInput` 算好的 `introduces_providers`：把子代理挪到会话与前驱都没用过
+ * 的 provider 上是另一张账单，免确认不覆盖它。就地调并发那条路只改并发、不碰模型，事实块里没有
+ * 这个键，条件自然成立。
+ *
+ * 收 `unknown`：两个读者拿到的都是 `resolveInput` 归一化后的入参（call-runner 先解析、
+ * permission-flow 再判权），只是类型上仍按 `unknown` 收；就地调并发的落回路读的是它刚重读快照后
+ * 描述出的同一份 `predecessor` 事实块。
  */
 export function isAmendWorkflowOwnedPredecessor(predecessor: unknown): boolean {
   if (!predecessor || typeof predecessor !== "object") return false;
   const facts = predecessor as Record<string, unknown>;
+  const introduced = facts.introduces_providers;
+  if (Array.isArray(introduced) && introduced.length > 0) return false;
   return facts.owned_by_this_session === true && facts.stop_reason !== "user";
 }
 
