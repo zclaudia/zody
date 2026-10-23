@@ -403,6 +403,20 @@ fallback 必须报告 false。服务管理器注册失败时保留 descriptor �
 lifecycle（OS service 重新拉起）生效，R2 不在 apply-update 响应中做进程内自举 handoff。`stop` 请求
 导致的正常退出不得被 launchd 自动重启，但异常退出仍由服务管理器保留的 restart 语义处理。
 
+稳定入口的 release 归属校验必须按物理路径匹配，不能按逻辑路径字符串比较。`current.json` 与入口
+可能经由不同的符号链接别名被访问：HOME 或安装根等入口路径的祖先目录是符号链接时，CLI 写入的
+`releaseDir` 可能是别名路径，而 OS service 用 canonical root 拉起入口；路径还可能包含空格。该保证
+只覆盖入口路径祖先目录的别名，不要求解析 launcher 文件自身是指向别处的符号链接（此时仍按链接所在
+位置推导入口根并 fail-closed）。launcher 必须把入口根、`<入口根>/releases` 与 `releaseDir` 都
+解析为物理路径后，再判断 `releaseDir` 是否位于物理 `releases` 之内；`releases` 本身也可能是指向
+其他目录的符号链接，写入侧 `assertReleaseDir` 已对 `releasesDir` 做 realpath，调用方必须在同一
+语义下正常启动。POSIX 入口可用 `cd -P`/`pwd -P` 完成解析，Windows 入口必须解析链接目标后再比较
+（`GetFullPath` 只做规范化、不解析链接，不能单独作为边界判断依据）。两侧解析后指向同一物理 release
+时正常执行；`releaseDir` 不存在、无法解析（含相对路径）、物理上越出 `releases/`（含 `releases/`
+内指向外部的符号链接）时仍必须 fail-closed，输出 `Invalid current Zody Server release` 并以非零码
+退出。该规则与写入侧 `ReleaseManager.assertReleaseDir` 的 canonical 校验语义一致；launcher 只读
+`current.json`，不新增状态，不改变 current.json 格式、更新 owner 或 R3 边界。
+
 OS service identity 必须按 canonical server root 隔离，使用稳定 root hash 派生 launchd Label、systemd
 unit name、Windows task name 和 descriptor 文件名。兼容清理旧固定 service id 时，只有旧 descriptor
 中的 canonical `--server-root` 与当前 root 相同才允许卸载，禁止误删另一个 root 的服务。
@@ -533,6 +547,7 @@ Workspace / Repo / User files
 | R2-CLI-12 | HTTP/WS ingress 通过 server-info、Web replayable 和 Host continuous 合同测试 |
 | R2-CLI-13 | 不同 data root 互相隔离，单实例锁不误伤其他 root |
 | R2-CLI-14 | macOS/Linux/Windows service descriptor 和 Node runtime 可启动 |
+| R2-CLI-15 | stable launcher 按物理路径校验 `releaseDir`：经 symlink 别名或含空格的安装根调用时命中同一物理 release，`releases/` 自身为 symlink 时与写入侧一致可启动；相对路径、不存在、不可解析、越界或物理逃逸的 `releaseDir` 仍被拒绝 |
 
 ## 12. 发布与回滚
 

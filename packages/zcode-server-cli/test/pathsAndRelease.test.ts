@@ -40,6 +40,49 @@ describe("server runtime layout", () => {
     });
   });
 
+  // I11：写入侧按 canonical path 校验 release 归属，launcher 必须沿用同一物理路径语义。
+  it("accepts a release dir recorded through a symlink alias under the physical root", async () => {
+    const physicalParent = await mkdtemp(join(tmpdir(), "zcode-r2-release-alias-"));
+    const aliasParent = `${physicalParent}-alias`;
+    await symlink(physicalParent, aliasParent, process.platform === "win32" ? "junction" : "dir");
+    const layout = resolveServerLayout(join(physicalParent, "server"));
+    const releases = new ReleaseManager(layout);
+    await releases.ensure();
+    const physicalReleaseDir = join(layout.releasesDir, "1.0.0");
+    await mkdir(physicalReleaseDir);
+
+    await releases.writePending({
+      version: "1.0.0",
+      releaseDir: join(aliasParent, "server", "releases", "1.0.0"),
+    });
+    const applied = await releases.applyPending();
+
+    expect(await realpath(applied.releaseDir)).toBe(await realpath(physicalReleaseDir));
+    expect((await releases.readCurrent())?.version).toBe("1.0.0");
+  });
+
+  it("rejects a release dir that only physically escapes the releases directory", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zcode-r2-release-escape-"));
+    const layout = resolveServerLayout(join(root, "server"));
+    const releases = new ReleaseManager(layout);
+    await releases.ensure();
+    const outsideDir = join(root, "outside");
+    await mkdir(outsideDir);
+    await symlink(
+      outsideDir,
+      join(layout.releasesDir, "escape"),
+      process.platform === "win32" ? "junction" : "dir",
+    );
+
+    await expect(releases.writePending({
+      version: "9.9.9",
+      releaseDir: join(layout.releasesDir, "escape"),
+    })).rejects.toThrow(/must be inside the server releases directory/);
+
+    await expect(releases.readPending()).resolves.toBeNull();
+    await expect(readFile(layout.currentFile, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
   it("uses unique temporary files for concurrent JSON writes in one process", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-r2-atomic-write-"));
     const layout = resolveServerLayout(root);

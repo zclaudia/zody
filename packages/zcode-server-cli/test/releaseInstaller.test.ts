@@ -1,10 +1,43 @@
-import { mkdir, mkdtemp, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, realpath, stat, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { resolveServerLayout } from "../src/runtime/paths.js";
 import { ReleaseInstaller } from "../src/runtime/releaseInstaller.js";
+import { ReleaseManager } from "../src/runtime/releaseManager.js";
 import { writeStableLauncher } from "../src/runtime/stableLauncher.js";
+
+// 用可执行的假 runtime/node 证明 stable launcher 实际命中哪个物理 release，而不是只检查退出码。
+async function writePosixFakeRelease(releaseDir: string): Promise<string> {
+  const runtimeDir = join(releaseDir, "runtime");
+  await mkdir(runtimeDir, { recursive: true });
+  await writeFile(
+    join(runtimeDir, "node"),
+    [
+      "#!/bin/sh",
+      'physical=$(CDPATH= cd -P -- "$(dirname -- "$0")" && pwd -P)',
+      "printf 'physical=%s\\n' \"$physical\"",
+      "printf 'entry=%s\\n' \"$1\"",
+      "",
+    ].join("\n"),
+    { encoding: "utf8", mode: 0o755 },
+  );
+  await writeFile(join(runtimeDir, "server-cli.js"), "", "utf8");
+  return runtimeDir;
+}
+
+async function runPosixLauncher(launcherPath: string): Promise<{ stdout: string; stderr: string }> {
+  const { execFile } = await import("node:child_process");
+  return await new Promise((resolve, reject) => {
+    execFile(launcherPath, [], (error, stdout, stderr) => {
+      if (error) {
+        reject(new Error(`${error.message}: ${stderr}`));
+        return;
+      }
+      resolve({ stdout, stderr });
+    });
+  });
+}
 
 describe("release installer", () => {
   it("rejects a release version before constructing a path", async () => {
@@ -32,7 +65,8 @@ describe("release installer", () => {
     expect(JSON.parse(await readFile(layout.pendingFile, "utf8"))).toMatchObject({ version: "1.2.3" });
     const launcher = await readFile(join(layout.stableBinDir, "zcode"), "utf8");
     expect(launcher).toContain("current.json");
-    expect(launcher).toContain('"$ROOT/releases"/*)');
+    // I11: 边界比较对象是物理化后的 releases 根，不是逻辑 $ROOT/releases。
+    expect(launcher).toContain('"$RELEASES_PHYSICAL"/*)');
   });
 
   it("installs a Windows zip and writes a launcher that is safe for quoted paths", async () => {
@@ -61,6 +95,11 @@ describe("release installer", () => {
     const launcher = await readFile(join(layout.stableBinDir, "zcode.cmd"), "utf8");
     expect(launcher).toContain("ZCODE_SERVER_ROOT");
     expect(launcher).toContain("Invalid current Zody Server release");
+    // I11: Windows 入口必须解析链接目标并用哨兵 fail-closed，且不能沿用父进程的 RELEASE_DIR。
+    // 本机无 PowerShell，无法执行该入口，至少钉住生成文本中的关键分支防止被回退。
+    expect(launcher).toContain('set "RELEASE_DIR="');
+    expect(launcher).toContain("ResolveLinkTarget");
+    expect(launcher).toContain("ZCODE_INVALID_RELEASE");
   });
 
   // Bugfix: 该用例验证 POSIX shell 版 stable launcher 的 fail-closed 输出，靠 shebang
@@ -77,6 +116,153 @@ describe("release installer", () => {
         else resolve();
       });
     })).rejects.toThrow(/Invalid current Zody Server release/);
+  });
+
+  // I11 反例：入口与 current.json 可能经不同的符号链接别名被访问（symlink HOME/安装根），
+  // 也可能包含空格。launcher 必须把两侧都解析为物理路径后比较 release 归属。
+  describe("stable launcher physical path matching", () => {
+    it.skipIf(process.platform === "win32")("launches a release from a normal install root", async () => {
+      const root = await mkdtemp(join(tmpdir(), "zcode-launcher-plain-"));
+      const layout = resolveServerLayout(join(root, "server"));
+      await writeStableLauncher(layout, "linux");
+      const runtimeDir = await writePosixFakeRelease(join(layout.releasesDir, "1.0.0"));
+      await writeFile(
+        layout.currentFile,
+        JSON.stringify({ version: "1.0.0", releaseDir: join(layout.releasesDir, "1.0.0") }),
+        "utf8",
+      );
+
+      const { stdout } = await runPosixLauncher(join(layout.stableBinDir, "zcode"));
+      expect(stdout).toContain(`physical=${await realpath(runtimeDir)}`);
+    });
+
+    it.skipIf(process.platform === "win32")("launches through a symlinked install root and matches the same physical release", async () => {
+      const physicalParent = await mkdtemp(join(tmpdir(), "zcode-launcher-alias-root-"));
+      const aliasParent = `${physicalParent}-alias`;
+      await symlink(physicalParent, aliasParent, "dir");
+      const layout = resolveServerLayout(join(physicalParent, "server"));
+      await writeStableLauncher(layout, "linux");
+      const runtimeDir = await writePosixFakeRelease(join(layout.releasesDir, "1.0.0"));
+      // current.json 由 canonical root 写入；入口经符号链接别名被调用。
+      await writeFile(
+        layout.currentFile,
+        JSON.stringify({
+          version: "1.0.0",
+          releaseDir: await realpath(join(layout.releasesDir, "1.0.0")),
+        }),
+        "utf8",
+      );
+
+      const { stdout } = await runPosixLauncher(join(aliasParent, "server", "bin", "zcode"));
+      expect(stdout).toContain(`physical=${await realpath(runtimeDir)}`);
+    });
+
+    it.skipIf(process.platform === "win32")("launches when current.json records a symlink-aliased release dir", async () => {
+      const physicalParent = await mkdtemp(join(tmpdir(), "zcode-launcher-alias-release-"));
+      const aliasParent = `${physicalParent}-alias`;
+      await symlink(physicalParent, aliasParent, "dir");
+      const layout = resolveServerLayout(join(physicalParent, "server"));
+      await writeStableLauncher(layout, "linux");
+      const runtimeDir = await writePosixFakeRelease(join(layout.releasesDir, "1.0.0"));
+      // 未 canonicalize 的写入方可能把别名 releaseDir 写进 current.json。
+      await writeFile(
+        layout.currentFile,
+        JSON.stringify({
+          version: "1.0.0",
+          releaseDir: join(aliasParent, "server", "releases", "1.0.0"),
+        }),
+        "utf8",
+      );
+
+      const { stdout } = await runPosixLauncher(join(layout.stableBinDir, "zcode"));
+      expect(stdout).toContain(`physical=${await realpath(runtimeDir)}`);
+    });
+
+    it.skipIf(process.platform === "win32")("launches a release under a path with spaces through a symlink alias", async () => {
+      const physicalParent = await mkdtemp(join(tmpdir(), "zcode launcher space "));
+      const aliasParent = `${physicalParent}-alias`;
+      await symlink(physicalParent, aliasParent, "dir");
+      const layout = resolveServerLayout(join(physicalParent, "zody server root"));
+      await writeStableLauncher(layout, "linux");
+      const runtimeDir = await writePosixFakeRelease(join(layout.releasesDir, "1.0.0"));
+      await writeFile(
+        layout.currentFile,
+        JSON.stringify({
+          version: "1.0.0",
+          releaseDir: await realpath(join(layout.releasesDir, "1.0.0")),
+        }),
+        "utf8",
+      );
+
+      const { stdout } = await runPosixLauncher(join(aliasParent, "zody server root", "bin", "zcode"));
+      expect(stdout).toContain(`physical=${await realpath(runtimeDir)}`);
+    });
+
+    it.skipIf(process.platform === "win32")("launches a release when the releases directory itself is a symlink", async () => {
+      const root = await mkdtemp(join(tmpdir(), "zcode-launcher-releases-link-"));
+      const layout = resolveServerLayout(join(root, "server"));
+      await writeStableLauncher(layout, "linux");
+      const physicalReleases = join(root, "physical releases");
+      const runtimeDir = await writePosixFakeRelease(join(physicalReleases, "1.0.0"));
+      await mkdir(layout.serverRoot, { recursive: true });
+      await symlink(physicalReleases, layout.releasesDir, "dir");
+
+      // 写入侧 assertReleaseDir 会 realpath(releasesDir)，因此该 release 可被安装；
+      // launcher 必须物理化 <root>/releases 后给出一致结论，而不是在更新成功后拒绝启动。
+      const releases = new ReleaseManager(layout);
+      await releases.writePending({
+        version: "1.0.0",
+        releaseDir: join(layout.releasesDir, "1.0.0"),
+      });
+      await releases.applyPending();
+
+      const { stdout } = await runPosixLauncher(join(layout.stableBinDir, "zcode"));
+      expect(stdout).toContain(`physical=${await realpath(runtimeDir)}`);
+    });
+
+    it.skipIf(process.platform === "win32")("fails closed when releaseDir is relative, missing, or a dangling link", async () => {
+      const root = await mkdtemp(join(tmpdir(), "zcode-launcher-unresolvable-"));
+      const layout = resolveServerLayout(join(root, "server"));
+      await writeStableLauncher(layout, "linux");
+      await mkdir(layout.releasesDir, { recursive: true });
+      const dangling = join(layout.releasesDir, "dangling");
+      await symlink(join(root, "missing-release"), dangling, "dir");
+      const releaseDirs = [
+        "releases/relative",
+        join(layout.releasesDir, "missing"),
+        dangling,
+      ];
+      for (const releaseDir of releaseDirs) {
+        await writeFile(layout.currentFile, JSON.stringify({ version: "1.0.0", releaseDir }), "utf8");
+        await expect(runPosixLauncher(join(layout.stableBinDir, "zcode"))).rejects.toThrow(
+          /Invalid current Zody Server release/,
+        );
+      }
+    });
+
+    it.skipIf(process.platform === "win32")("rejects a release dir that only physically escapes the releases directory", async () => {
+      const root = await mkdtemp(join(tmpdir(), "zcode-launcher-escape-"));
+      const layout = resolveServerLayout(join(root, "server"));
+      await writeStableLauncher(layout, "linux");
+      const outsideDir = join(root, "outside");
+      await mkdir(join(outsideDir, "runtime"), { recursive: true });
+      await writeFile(join(outsideDir, "runtime", "node"), "#!/bin/sh\nexit 0\n", {
+        encoding: "utf8",
+        mode: 0o755,
+      });
+      await writeFile(join(outsideDir, "runtime", "server-cli.js"), "", "utf8");
+      await mkdir(layout.releasesDir, { recursive: true });
+      await symlink(outsideDir, join(layout.releasesDir, "escape"), "dir");
+      await writeFile(
+        layout.currentFile,
+        JSON.stringify({ version: "9.9.9", releaseDir: join(layout.releasesDir, "escape") }),
+        "utf8",
+      );
+
+      await expect(runPosixLauncher(join(layout.stableBinDir, "zcode"))).rejects.toThrow(
+        /Invalid current Zody Server release/,
+      );
+    });
   });
 
   it("reuses an identical immutable release without deleting or replacing its live directory", async () => {
