@@ -15,11 +15,13 @@
 // 所以需要一个 setTimeout（可注入，unref）。
 
 import type {
+  ModelErrorCode,
   ModelNetworkStatusEvent,
   ModelRequestAdmission,
   ModelRequestAdmissionTicket,
   ModelRequestTarget,
 } from "@zcode/contracts";
+import { resolveWorkflowModelFailurePolicy } from "@zcode/adapters/model";
 import {
   ConcurrencyController,
   type ConcurrencyChange,
@@ -268,12 +270,30 @@ export function createWorkflowConcurrencyGovernor(
             settle((at) => bucket.controller.failedTransient(at));
             return;
           }
-          case "model_request_failed":
+          case "model_request_failed": {
             // retryable:true 的 failed 紧随一条 retry_scheduled——那条才是信号。
             if (event.retryable) return;
-            // 不可重试的限流：
-            // 主对话 / 工具侧撞上 3008 这类被分类器判终止的 429，仍是一次字面意义上的并发信号——
-            // 只当「链结束」会让 cap 从未因它降过。配额码也走这一支：多减一次半，run 随即停下，无害。
+            // 不可重试的失败先过策略表（I05；docs/dynamic-workflow/concurrency.md「Reading a ticket」）。
+            // 治理器与 runner / driver 读同一张策略表：策略判 stop 的确定性失败（配额、鉴权、配置、
+            // 请求无效等）不是并发压力，只当尝试终结——不降 cap、不写冷却、不翻 epoch。配额响应的
+            // Retry-After 是额度重置时刻（数小时 / 一天），写进 cooldownUntil 会越过 stop 与 resume
+            // 继续冻结整个 key，而并发侧并没有学到任何东西。
+            const policy = resolveWorkflowModelFailurePolicy(
+              {
+                // 事件里的 errorCode 可缺失；空串在策略表里等价于「表外码」，一律落到 retry
+                // （与 inspectWorkflowModelFailure 未解析出 code 时的读法一致）。
+                code: (event.errorCode ?? "") as ModelErrorCode,
+                reason: event.reason,
+                retryable: event.retryable,
+              },
+              event.providerErrorCode,
+            );
+            if (policy.decision === "stop") {
+              settle((at) => bucket.controller.ended(at));
+              return;
+            }
+            // 分类器判终止、策略表仍判 retry 的 429（如 3008 并发上限）保留 throttle：workflow 会
+            // 继续重试它，它仍是一次字面意义上的并发信号。其余未限流失败只当尝试终结。
             if (event.reason === "rate_limited") {
               settle((at) =>
                 bucket.controller.throttled(at, epoch, "rate_limited", event.retryAfterMs),
@@ -282,6 +302,7 @@ export function createWorkflowConcurrencyGovernor(
             }
             settle((at) => bucket.controller.ended(at));
             return;
+          }
           default:
             return;
         }

@@ -339,8 +339,8 @@ describe("workflow concurrency governor — ticket 上的事件映射（决策 2
     expect(governor.snapshot(KEY_A)).toMatchObject({ cap: 6, inFlight: 0 });
   });
 
-  it("retryable:false 的 rate_limited failed（主对话 / 工具侧撞 3008）→ 一次 throttled（apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md）", () => {
-    const { governor, admitNow } = makeGovernor();
+  it("retryable:false 的 rate_limited failed（主对话 / 工具侧撞 3008，非配额码）→ 策略表仍判 retry，保留一次 throttled 与冷却", () => {
+    const { governor, admitNow, clock } = makeGovernor();
     const ticket = admitNow();
     outcome.started(ticket);
     void ticket.publish(
@@ -348,11 +348,18 @@ describe("workflow concurrency governor — ticket 上的事件映射（决策 2
         type: "model_request_failed",
         reason: "rate_limited",
         retryable: false,
+        errorCode: "model_rate_limited",
+        providerErrorCode: "3008",
         message: "[3008] user concurrency limit exceeded",
         retryAfterMs: 5_000,
       } as never),
     );
-    expect(governor.snapshot(KEY_A)).toMatchObject({ inFlight: 0, cap: 6 });
+    // 3008 不在配额码表里：策略表判 retry，workflow 会继续重试，它仍是一次并发信号。
+    expect(governor.snapshot(KEY_A)).toMatchObject({
+      inFlight: 0,
+      cap: 6,
+      cooldownUntil: clock.now() + 5_000,
+    });
   });
 
   it("retryable:false 的 failed 只减 inFlight，不动 cap 与 streak", () => {
@@ -402,6 +409,96 @@ describe("workflow concurrency governor — ticket 上的事件映射（决策 2
     outcome.completed(second);
     second.release();
     expect(governor.snapshot(KEY_A)?.inFlight).toBe(0);
+  });
+});
+
+/** 一次配额 Stop 的失败事件：业务码落在配额码表里，Retry-After 是额度重置时刻（很长）。 */
+function publishQuotaStop(
+  ticket: ModelRequestAdmissionTicket,
+  providerErrorCode = "1308",
+  retryAfterMs = 21_600_000,
+  model: ModelRef = MODEL_A,
+): void {
+  outcome.started(ticket, model);
+  void ticket.publish(
+    statusEvent(
+      {
+        type: "model_request_failed",
+        reason: "rate_limited",
+        retryable: false,
+        errorCode: "model_rate_limited",
+        providerErrorCode,
+        message: `[${providerErrorCode}] quota exhausted`,
+        retryAfterMs,
+      } as never,
+      model,
+    ),
+  );
+}
+
+describe("workflow concurrency governor — Stop 与可重试 throttle 分流（docs/dynamic-workflow/concurrency.md「Reading a ticket」）", () => {
+  it("配额 Stop 带长 Retry-After：不写冷却、不减 cap、不翻 epoch、不动 streak", () => {
+    const { governor, admitNow } = makeGovernor();
+    for (let i = 0; i < 3; i++) outcome.completed(admitNow());
+    const before = governor.snapshot(KEY_A)!;
+    expect(before.successStreak).toBe(3);
+    publishQuotaStop(admitNow());
+    // 配额耗尽不是并发压力：6 小时的 Retry-After（额度重置时刻）不进 cooldownUntil。
+    expect(governor.snapshot(KEY_A)?.cooldownUntil).toBeUndefined();
+    expect(governor.snapshot(KEY_A)).toMatchObject({
+      inFlight: 0,
+      cap: CEILING,
+      epoch: before.epoch,
+      successStreak: before.successStreak,
+    });
+  });
+
+  it("reset/resume：配额 Stop 之后同一个桶当时的第一个请求就能拿到名额", () => {
+    const { governor, admitNow, clock } = makeGovernor();
+    publishQuotaStop(admitNow());
+    // 用户充值 / 额度重置后 resume：桶必须已经开着，不残留上一次 Stop 的冷却。
+    clock.advance(1);
+    const resumed = governor.tryAdmit("runResumed", KEY_A);
+    expect(resumed).toBeDefined();
+    resumed!.release();
+  });
+
+  it("主代理（observer）撞配额 Stop 也不冻结桶：同一 key 上的 workflow 请求照常准入", async () => {
+    const { governor, observe } = makeGovernor();
+    publishQuotaStop(await observe(), "insufficient_quota");
+    expect(governor.snapshot(KEY_A)?.cooldownUntil).toBeUndefined();
+    expect(governor.snapshot(KEY_A)).toMatchObject({ inFlight: 0, cap: CEILING });
+    expect(governor.tryAdmit("runWorkflow", KEY_A)).toBeDefined();
+  });
+
+  it("1005 以 invalid_request 到达：策略表先按配额码判 stop，同样不留冷却", () => {
+    const { governor, admitNow } = makeGovernor();
+    const ticket = admitNow();
+    outcome.started(ticket);
+    void ticket.publish(
+      statusEvent({
+        type: "model_request_failed",
+        reason: "invalid_request",
+        retryable: false,
+        errorCode: "model_request_failed",
+        providerErrorCode: "1005",
+        message: "[1005] quota exhausted",
+        retryAfterMs: 86_400_000,
+      } as never),
+    );
+    expect(governor.snapshot(KEY_A)).toMatchObject({ inFlight: 0, cap: CEILING });
+    expect(governor.snapshot(KEY_A)?.cooldownUntil).toBeUndefined();
+  });
+
+  it("对照：可重试 429 仍减半并保留 Retry-After 冷却，不因 Stop 分流而绕过", async () => {
+    const { governor, observe, clock } = makeGovernor();
+    outcome.throttled429(await observe(), 20_000);
+    expect(governor.snapshot(KEY_A)).toMatchObject({
+      cap: 6,
+      inFlight: 0,
+      cooldownUntil: clock.now() + 20_000,
+    });
+    expect(governor.tryAdmit("runA", KEY_A)).toBeUndefined();
   });
 });
 
