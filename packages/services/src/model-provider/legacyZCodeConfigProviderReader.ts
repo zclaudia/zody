@@ -214,11 +214,14 @@ const zcodeOpenCodeModelConfigSchema: z.ZodType<ZCodeOpenCodeModelConfig> = z
       .object({
         context: z.number().positive().optional(),
         input: z.number().positive().optional(),
-        output: z.number().positive().optional(),
+        // 写回结构要求 limit.output 为正整数（legacyModelProviderSerialized.ts 的
+        // maxOutputTokens: int().positive()）。读取边界必须同约束，否则小数会被
+        // 原样导入运行态，在下次持久化时才失败。
+        output: z.number().int().positive().optional(),
       })
       .optional(),
     contextWindow: z.number().positive().optional(),
-    maxOutputTokens: z.number().positive().optional(),
+    maxOutputTokens: z.number().int().positive().optional(),
     modalities: z
       .object({
         input: z.array(zcodeModelProviderModalitySchema).optional(),
@@ -310,6 +313,12 @@ function readString(value: unknown): string | undefined {
 
 function readPositiveNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+function readPositiveInteger(value: unknown): number | undefined {
+  // 输出上限在写回结构中必须是正整数；options.max_tokens 是 passthrough 字段，
+  // schema 不校验其值，这里按同一约束过滤，非法值忽略后继续 fallback。
+  return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : undefined;
 }
 
 function readFiniteNumber(value: unknown): number | undefined {
@@ -448,9 +457,9 @@ function openCodeModelToModelProviderModel(
   const contextWindow =
     readPositiveNumber(model.limit?.context) ?? readPositiveNumber(model.contextWindow);
   const maxOutputTokens =
-    readPositiveNumber(model.limit?.output) ??
-    readPositiveNumber(model.options?.max_tokens) ??
-    readPositiveNumber(model.maxOutputTokens);
+    readPositiveInteger(model.limit?.output) ??
+    readPositiveInteger(model.options?.max_tokens) ??
+    readPositiveInteger(model.maxOutputTokens);
   // 早期 provider 配置可能只在 options.max_tokens 或顶层 maxOutputTokens 保存输出值。
   // 读取时按 limit > options > 顶层兼容，写回仍收敛到标准 limit 结构。
   const hasMaxOutputTokens =

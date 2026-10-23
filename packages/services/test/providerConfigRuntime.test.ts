@@ -244,6 +244,136 @@ describe("ProviderConfigRuntime", () => {
     }
   });
 
+  it("已导入 Personal 配置后重跑不再读取旧配置（幂等）", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-"));
+    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const configDir = join(root, ".zody", "v2");
+    const legacyFilePath = join(configDir, "config.json");
+    const personalFilePath = join(configDir, "provider_config.json");
+    const legacyText = JSON.stringify({
+      provider: {
+        "custom-provider": {
+          name: "Custom Provider",
+          options: { baseURL: "https://api.example.com", apiKey: "secret-key" },
+          models: { "custom-model": {} },
+        },
+      },
+    });
+    await mkdir(configDir, { recursive: true });
+    await writeFile(legacyFilePath, legacyText, "utf8");
+    await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
+
+    const firstReadLegacyProviders = vi.fn(async () => [legacyProvider()]);
+    const first = createProviderConfigRuntime({
+      zcodeBuiltinFilePath,
+      personalFilePath,
+      readLegacyProviders: firstReadLegacyProviders,
+      personalPollingIntervalMs: false,
+      watch: false,
+    });
+    let importedText = "";
+    try {
+      await first.start();
+      expect(firstReadLegacyProviders).toHaveBeenCalledTimes(1);
+      importedText = await readFile(personalFilePath, "utf8");
+    } finally {
+      first.dispose();
+    }
+
+    const secondReadLegacyProviders = vi.fn(async () => [legacyProvider()]);
+    const second = createProviderConfigRuntime({
+      zcodeBuiltinFilePath,
+      personalFilePath,
+      readLegacyProviders: secondReadLegacyProviders,
+      personalPollingIntervalMs: false,
+      watch: false,
+    });
+    try {
+      await second.start();
+      expect(secondReadLegacyProviders).not.toHaveBeenCalled();
+      const snapshot = await second.configService.read();
+      expect(snapshot.personalProviders.keys()).toEqual(["custom-provider"]);
+      expect(snapshot.personalProviders.get("custom-provider")?.toJSON()).toMatchObject({
+        access: { apiKey: "secret-key" },
+        personalModelIds: ["custom-model"],
+        modelOrder: ["custom-model"],
+      });
+      await expect(readFile(personalFilePath, "utf8")).resolves.toBe(importedText);
+      await expect(readFile(legacyFilePath, "utf8")).resolves.toBe(legacyText);
+    } finally {
+      second.dispose();
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("Personal 配置已存在时不用旧 config.json 覆盖", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-"));
+    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const configDir = join(root, ".zody", "v2");
+    const legacyFilePath = join(configDir, "config.json");
+    const personalFilePath = join(configDir, "provider_config.json");
+    await mkdir(configDir, { recursive: true });
+    await writeFile(
+      legacyFilePath,
+      JSON.stringify({
+        provider: {
+          "custom-provider": {
+            name: "Custom Provider",
+            options: { baseURL: "https://api.example.com", apiKey: "legacy-key" },
+            models: { "custom-model": {} },
+          },
+        },
+      }),
+      "utf8",
+    );
+    await writeFile(
+      personalFilePath,
+      JSON.stringify({
+        schemaVersion: 1,
+        config: {
+          providerConfigRules: {
+            providerRules: [
+              {
+                providerId: "existing-provider",
+                config: {
+                  group: "standard-personal",
+                  access: { type: "api-key", apiKey: "existing-key" },
+                  personalModelIds: ["existing-model"],
+                },
+              },
+            ],
+          },
+          modelConfigRules: { providerModelRules: [], manualProviderModelRules: [] },
+        },
+      }),
+      "utf8",
+    );
+    await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
+
+    const readLegacyProviders = vi.fn(async () => [legacyProvider()]);
+    const runtime = createProviderConfigRuntime({
+      zcodeBuiltinFilePath,
+      personalFilePath,
+      readLegacyProviders,
+      personalPollingIntervalMs: false,
+      watch: false,
+    });
+    try {
+      await runtime.start();
+      expect(readLegacyProviders).not.toHaveBeenCalled();
+      const snapshot = await runtime.configService.read();
+      expect(snapshot.personalProviders.keys()).toEqual(["existing-provider"]);
+      expect(snapshot.personalProviders.get("existing-provider")?.toJSON()).toMatchObject({
+        access: { apiKey: "existing-key" },
+        personalModelIds: ["existing-model"],
+      });
+      expect(snapshot.personalProviders.has("custom-provider")).toBe(false);
+    } finally {
+      runtime.dispose();
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("用注入的 ZCode Built-in Source 初始化，并在 Personal 文件缺失时单向导入旧配置", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-"));
     const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");

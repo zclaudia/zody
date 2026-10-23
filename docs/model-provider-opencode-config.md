@@ -121,6 +121,19 @@ provider.options
 `model.contextWindow` / `model.maxOutputTokens` 作为 fallback；一旦重新持久化，仍统一写回
 `model.limit.context` / `model.limit.output`，不继续扩散顶层字段。
 
+输出上限的 fallback 还包括 opencode 的 `model.options.max_tokens`，优先级固定为
+`limit.output` > `options.max_tokens` > 顶层 `maxOutputTokens`：只采用第一个有效来源，
+不合并、不累加，也不做取整或截断。
+
+输出上限在写回结构中是正整数。读取边界保持同一约束，`0`、负数、小数和字符串都不能
+成为有效值：
+
+- `limit.output` 或顶层 `maxOutputTokens` 不满足约束时，整份旧配置按 schema 校验失败
+  处理（`stage=schema`，错误只保留字段路径），由 Personal 导入边界报告恢复事件并保留
+  磁盘状态，不提交空迁移，也不带非法值继续导入。
+- `options.max_tokens` 是 opencode passthrough 字段，非法值会被忽略并继续 fallback；
+  最终没有有效来源时，模型不写入 `maxOutputTokens`。
+
 ## 迁移
 
 迁移只从 `~/.zcode/v2/model-providers.json` 读取。支持两类历史形态：
@@ -182,6 +195,8 @@ agent runtime，也不读取远端机器自己的 provider 配置。
   `apiFormat`、`defaultKind`、`providerMappings`、`createdAt`、`updatedAt` 和 `zcode`
   扩展对象。
 - legacy 字符串模型迁移时能从本地 catalog 补齐 `contextWindow` 等 metadata。
+- 输出上限按 `limit.output` > `options.max_tokens` > 顶层 `maxOutputTokens` 取值；
+  `0`、负数、小数、字符串不会成为有效值，schema 字段非法时整份旧配置导入失败。
 - 只有 `model-providers.v2.json` 时不迁移，结果等同没有旧 provider 配置。
 - `config.json.provider` 已存在时不会被旧配置覆盖，但会被清洗成新 schema。
 - 设置页保存 provider 后只修改 `config.json`。
