@@ -10,7 +10,11 @@ import {
   ProviderConfigResolver,
 } from "@zcode/provider";
 import { describe, expect, it } from "vitest";
-import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
+import {
+  NodeZCodeBuiltinProviderConfigSource,
+  decodeProviderConfigFile,
+  encodeProviderConfigFile,
+} from "../src/index.js";
 
 // 发布验证必须指向最终上传的那份文件，而不是默认悄悄检查仓库源文件。
 const zcodeBuiltinProviderConfigFilePath =
@@ -305,6 +309,407 @@ describe("ZCode Built-in Provider Config 完整性", () => {
     }
   });
 
+  it("MiMo API 与 Token Plan 是独立模板，端点与模型成员互不越界", async () => {
+    const source = new NodeZCodeBuiltinProviderConfigSource({
+      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      watch: false,
+    });
+
+    try {
+      const snapshot = await source.read();
+      const api = snapshot.providerTemplates?.get("xiaomi-mimo");
+      const tokenPlan = snapshot.providerTemplates?.get("xiaomi-mimo-token-plan");
+      expect(api?.templateNameMap).toEqual({
+        "zh-CN": "Xiaomi MiMo API",
+        "en-US": "Xiaomi MiMo API",
+      });
+      expect(tokenPlan?.templateNameMap).toEqual({
+        "zh-CN": "Xiaomi MiMo Token Plan",
+        "en-US": "Xiaomi MiMo Token Plan",
+      });
+      expect(api?.config.access).toMatchObject({
+        type: "api-key",
+        apiKeyManagementUrl: "https://platform.xiaomimimo.com/",
+      });
+      expect(tokenPlan?.config.access).toMatchObject({
+        type: "api-key",
+        apiKeyManagementUrl: "https://platform.xiaomimimo.com/",
+      });
+      expect(api?.config.api?.type).toBe("anthropic-messages");
+      expect(tokenPlan?.config.api?.type).toBe("anthropic-messages");
+      expect(api?.config.api?.baseUrl).toBe("https://api.xiaomimimo.com/anthropic");
+      expect(tokenPlan?.config.api?.baseUrl).toBe("https://token-plan-cn.xiaomimimo.com/anthropic");
+      expect(tokenPlan?.config.api?.baseUrl).not.toBe(api?.config.api?.baseUrl);
+      // 厂商已于 2026-10-21 下线 v2.5：两个模板都只声明 v2.6，旧 v2.5 Personal 由下方用例覆盖。
+      expect(api?.config.builtinModelIds).toEqual(["mimo-v2.6-pro", "mimo-v2.6-flash"]);
+      expect(tokenPlan?.config.builtinModelIds).toEqual(["mimo-v2.6-pro", "mimo-v2.6-flash"]);
+      expect(api?.config.builtinModelIds).not.toContain("mimo-v2.5");
+      expect(tokenPlan?.config.builtinModelIds).not.toContain("mimo-v2.5");
+    } finally {
+      source.dispose();
+    }
+  });
+
+  it("MiMo v2.6 与 v2.5 模型规则分别命中，能力不串用", async () => {
+    const source = new NodeZCodeBuiltinProviderConfigSource({
+      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      watch: false,
+    });
+
+    try {
+      const snapshot = await source.read();
+      const resolve = (templateId: string, modelId: string) => {
+        const template = snapshot.providerTemplates?.get(templateId);
+        expect(template, `${templateId} 模板必须存在`).toBeDefined();
+        return snapshot.models.resolve({
+          providerId: `template:${templateId}`,
+          templateId,
+          modelId,
+          apiType: "anthropic-messages",
+          baseUrl: template!.config.api!.baseUrl,
+        });
+      };
+      const assertV26 = (owner: string, modelId: string, model: ReturnType<typeof resolve>) => {
+        expect(model.enabled, `${owner}/${modelId} 必须默认启用`).toBe(true);
+        expect(model.validateComplete(["templates", owner, "models", modelId])).toEqual([]);
+        expect(model.properties?.toJSON(), `${owner}/${modelId}`).toMatchObject({
+          contextWindow: 1_000_000,
+          inputFormat: {
+            supportsText: true,
+            supportsImage: true,
+            supportsVideo: true,
+            supportsAudio: true,
+            supportsPdf: false,
+          },
+        });
+        expect(model.optionSpecs?.maxOutputTokens?.max, `${owner}/${modelId}`).toBe(131_072);
+        expect(model.optionSpecs?.reasoningLevel?.values, `${owner}/${modelId}`).toEqual([
+          "disabled",
+          "enabled",
+        ]);
+        // 复审要求：Map 必须真正 apply，否则 map 写错不会有任何用例失败。
+        expect(reasoningPatch(model.optionSpecs!.reasoningLevel!.map!, "enabled")).toEqual({
+          thinking: { type: "enabled" },
+        });
+        expect(reasoningPatch(model.optionSpecs!.reasoningLevel!.map!, "disabled")).toEqual({
+          thinking: { type: "disabled" },
+        });
+      };
+
+      for (const modelId of ["mimo-v2.6-pro", "mimo-v2.6-flash"]) {
+        const apiModel = resolve("xiaomi-mimo", modelId);
+        assertV26("xiaomi-mimo", modelId, apiModel);
+        const tokenPlanModel = resolve("xiaomi-mimo-token-plan", modelId);
+        assertV26("xiaomi-mimo-token-plan", modelId, tokenPlanModel);
+        // 端点差异只属于模板，不能派生第二份模型能力。
+        expect(tokenPlanModel.properties?.toJSON()).toEqual(apiModel.properties?.toJSON());
+        expect(tokenPlanModel.optionSpecs?.toJSON()).toEqual(apiModel.optionSpecs?.toJSON());
+      }
+
+      // 厂商另有独立的 mimo-v2.6-pro-ultraspeed，套餐权益与参数未核验；
+      // 规则必须精确匹配，不能按名称亲属关系继承 v2.6 的全模态与 1M 上下文。
+      for (const templateId of ["xiaomi-mimo", "xiaomi-mimo-token-plan"]) {
+        const ultraspeed = resolve(templateId, "mimo-v2.6-pro-ultraspeed");
+        expect(ultraspeed.properties?.contextWindow, templateId).toBe(200_000);
+        expect(ultraspeed.properties?.inputFormat.toJSON(), templateId).toMatchObject({
+          supportsImage: false,
+          supportsVideo: false,
+          supportsAudio: false,
+        });
+        expect(ultraspeed.optionSpecs?.maxOutputTokens?.max, templateId).toBe(32_000);
+      }
+
+      // v2.5 已退出模板成员，但规则保留给存量 Personal 配置解析；
+      // 它不能被 v2.6 全模态规则覆盖，v2.5-pro 仍是纯文本模型。
+      const v25Pro = resolve("xiaomi-mimo", "mimo-v2.5-pro");
+      expect(v25Pro.enabled).toBe(true);
+      expect(v25Pro.properties?.contextWindow).toBe(1_000_000);
+      expect(v25Pro.properties?.inputFormat.toJSON()).toMatchObject({
+        supportsImage: false,
+        supportsVideo: false,
+        supportsAudio: false,
+      });
+      expect(v25Pro.optionSpecs?.maxOutputTokens?.max).toBe(131_072);
+      expect(v25Pro.optionSpecs?.reasoningLevel?.values).toEqual(["disabled", "enabled"]);
+      const v25 = resolve("xiaomi-mimo", "mimo-v2.5");
+      expect(v25.enabled).toBe(true);
+      expect(v25.properties?.contextWindow).toBe(1_000_000);
+      expect(v25.properties?.inputFormat.toJSON()).toMatchObject({
+        supportsImage: true,
+        supportsVideo: true,
+        supportsAudio: true,
+      });
+      expect(v25.optionSpecs?.maxOutputTokens?.max).toBe(131_072);
+      expect(v25.optionSpecs?.reasoningLevel?.values).toEqual(["disabled", "enabled"]);
+    } finally {
+      source.dispose();
+    }
+  });
+
+  it("MiMo v2.6 规则命中带厂商/网关前缀的模型 ID 与 [1m] 标记，且不误伤 ultraspeed", async () => {
+    const source = new NodeZCodeBuiltinProviderConfigSource({
+      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      watch: false,
+    });
+
+    try {
+      const snapshot = await source.read();
+      // 聚合站点与网关会透传带前缀的模型 ID；厂商 Claude Code 接入页还支持 `[1m]` 后缀
+      // 显式选择 1M 上下文变体。v2.6 能力规则必须同时命中这些写法。
+      // 复审反例（2026-10-24）：规则收敛为裸 ID 后，vendor/、gateway/vendor/ 前缀会落回 200K/32K 兜底。
+      const resolve = (modelId: string) =>
+        snapshot.models.resolve({
+          providerId: "aggregate-gateway-instance",
+          modelId,
+          apiType: "anthropic-messages",
+        });
+
+      for (const [variantModelId, directModelId] of [
+        ["vendor/mimo-v2.6-pro", "mimo-v2.6-pro"],
+        ["vendor/mimo-v2.6-flash", "mimo-v2.6-flash"],
+        ["gateway/vendor/mimo-v2.6-pro", "mimo-v2.6-pro"],
+        ["gateway/vendor/mimo-v2.6-flash", "mimo-v2.6-flash"],
+        // `[1m]` 是厂商接入层的 1M 上下文标记，不是新型号；能力必须与裸 ID 完全一致。
+        ["mimo-v2.6-pro[1m]", "mimo-v2.6-pro"],
+        ["mimo-v2.6-flash[1m]", "mimo-v2.6-flash"],
+        ["vendor/mimo-v2.6-pro[1m]", "mimo-v2.6-pro"],
+        ["gateway/vendor/mimo-v2.6-flash[1m]", "mimo-v2.6-flash"],
+      ] as const) {
+        const variant = resolve(variantModelId);
+        const direct = resolve(directModelId);
+        expect(variant.properties?.toJSON(), variantModelId).toEqual(direct.properties?.toJSON());
+        expect(variant.optionSpecs?.toJSON(), variantModelId).toEqual(direct.optionSpecs?.toJSON());
+        expect(variant.properties?.contextWindow, variantModelId).toBe(1_000_000);
+        expect(variant.properties?.inputFormat.toJSON(), variantModelId).toMatchObject({
+          supportsImage: true,
+          supportsVideo: true,
+          supportsAudio: true,
+        });
+        expect(variant.optionSpecs?.maxOutputTokens?.max, variantModelId).toBe(131_072);
+        expect(reasoningPatch(variant.optionSpecs!.reasoningLevel!.map!, "enabled")).toEqual({
+          thinking: { type: "enabled" },
+        });
+      }
+
+      // 尾缀仍须精确：ultraspeed 是独立型号，不能按名称亲属关系继承 v2.6 的全模态与输出上限。
+      for (const modelId of [
+        "vendor/mimo-v2.6-pro-ultraspeed",
+        "gateway/vendor/mimo-v2.6-pro-ultraspeed",
+      ]) {
+        const ultraspeed = resolve(modelId);
+        expect(ultraspeed.properties?.contextWindow, modelId).toBe(200_000);
+        expect(ultraspeed.properties?.inputFormat.toJSON(), modelId).toMatchObject({
+          supportsImage: false,
+          supportsVideo: false,
+          supportsAudio: false,
+        });
+        expect(ultraspeed.optionSpecs?.maxOutputTokens?.max, modelId).toBe(32_000);
+      }
+
+      // 前缀必须有 `/` 边界：没有分隔符的近似名不能被当成透传 ID。
+      for (const modelId of ["notmimo-v2.6-pro", "notmimo-v2.6-flash"]) {
+        const lookalike = resolve(modelId);
+        expect(lookalike.properties?.contextWindow, modelId).toBe(200_000);
+        expect(lookalike.optionSpecs?.maxOutputTokens?.max, modelId).toBe(32_000);
+      }
+    } finally {
+      source.dispose();
+    }
+  });
+
+  it("MiMo 模板升级不静默改写旧 Personal 的名称、Key、URL 与禁用态", async () => {
+    const source = new NodeZCodeBuiltinProviderConfigSource({
+      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      watch: false,
+    });
+
+    try {
+      const snapshot = await source.read();
+      const personalProviders = new ProviderConfigMap([
+        {
+          providerId: "my-mimo-api",
+          templateId: "xiaomi-mimo",
+          providerName: "我的 MiMo API",
+          enabled: false,
+          config: new ProviderConfig({
+            group: "standard-personal",
+            access: new ApiKeyAccessConfig({
+              apiKey: "sk-personal-v25",
+              apiKeyManagementUrl: "https://platform.xiaomimimo.com/personal",
+            }),
+            api: new ProviderApiConfig({
+              type: "anthropic-messages",
+              baseUrl: "https://api.xiaomimimo.com/anthropic",
+            }),
+            personalModelIds: ["mimo-v2.5-pro"],
+            modelOrder: ["mimo-v2.6-flash", "mimo-v2.6-pro", "mimo-v2.5-pro"],
+          }),
+        },
+        {
+          providerId: "my-mimo-token-plan-sgp",
+          templateId: "xiaomi-mimo-token-plan",
+          providerName: "MiMo Token Plan (SGP)",
+          config: new ProviderConfig({
+            group: "standard-personal",
+            access: new ApiKeyAccessConfig({
+              apiKey: "tp-personal-sgp",
+              apiKeyManagementUrl: "https://platform.xiaomimimo.com/token-plan",
+            }),
+            api: new ProviderApiConfig({
+              type: "anthropic-messages",
+              baseUrl: "https://token-plan-sgp.xiaomimimo.com/anthropic",
+            }),
+            personalModelIds: ["mimo-v2.6-pro"],
+          }),
+        },
+      ]);
+      const resolution = new ProviderConfigResolver().resolve({
+        zcodeBuiltinProviders: snapshot.providers,
+        zcodeBuiltinProviderTemplates: snapshot.providerTemplates,
+        accountProviders: ProviderConfigMap.empty(),
+        personalProviders,
+        zcodeBuiltinModelRules: snapshot.models,
+        personalModels: ModelConfigRules.empty(),
+      });
+      expect(resolution.issues).toEqual([]);
+
+      const oldV25 = resolution.resolvedProviders.find(
+        (provider) => provider.providerId === "my-mimo-api",
+      );
+      expect(oldV25).toMatchObject({
+        providerName: "我的 MiMo API",
+        enabled: false,
+        config: {
+          access: {
+            type: "api-key",
+            apiKey: "sk-personal-v25",
+            apiKeyManagementUrl: "https://platform.xiaomimimo.com/personal",
+          },
+          api: {
+            type: "anthropic-messages",
+            baseUrl: "https://api.xiaomimimo.com/anthropic",
+          },
+          personalModelIds: ["mimo-v2.5-pro"],
+          modelOrder: ["mimo-v2.6-flash", "mimo-v2.6-pro", "mimo-v2.5-pro"],
+        },
+      });
+      // v2.5 已退出模板成员，但 Personal 已保存的 v2.5 模型、顺序和禁用态都不能被写回或删除。
+      expect(oldV25?.models.map((model) => model.modelId)).toEqual([
+        "mimo-v2.6-flash",
+        "mimo-v2.6-pro",
+        "mimo-v2.5-pro",
+      ]);
+      expect(oldV25?.models.find((model) => model.modelId === "mimo-v2.5-pro")).toMatchObject({
+        source: "personal",
+        enabled: true,
+        executable: false,
+      });
+      expect(resolution.registryProviders.map((provider) => provider.providerId)).not.toContain(
+        "my-mimo-api",
+      );
+
+      const tokenPlanSgp = resolution.resolvedProviders.find(
+        (provider) => provider.providerId === "my-mimo-token-plan-sgp",
+      );
+      expect(tokenPlanSgp).toMatchObject({
+        providerName: "MiMo Token Plan (SGP)",
+        enabled: true,
+        config: {
+          access: {
+            type: "api-key",
+            apiKey: "tp-personal-sgp",
+            apiKeyManagementUrl: "https://platform.xiaomimimo.com/token-plan",
+          },
+          api: {
+            type: "anthropic-messages",
+            baseUrl: "https://token-plan-sgp.xiaomimimo.com/anthropic",
+          },
+        },
+      });
+      const tokenPlanRegistry = resolution.registryProviders.find(
+        (provider) => provider.providerId === "my-mimo-token-plan-sgp",
+      );
+      // 海外覆盖 URL 与 Key 管理页必须原样进入 Registry，不能被归一化回模板默认值。
+      expect(tokenPlanRegistry?.config.api?.baseUrl).toBe(
+        "https://token-plan-sgp.xiaomimimo.com/anthropic",
+      );
+      expect(tokenPlanRegistry?.config.access).toMatchObject({
+        apiKeyManagementUrl: "https://platform.xiaomimimo.com/token-plan",
+      });
+      expect(tokenPlanRegistry?.models.map((model) => model.modelId)).toEqual([
+        "mimo-v2.6-pro",
+        "mimo-v2.6-flash",
+      ]);
+
+      // 厂商下线 v2.5 是外部事实：Personal 文件里的历史默认选择与已存字段原样往返，不由模板升级迁移。
+      const personalFile = decodeProviderConfigFile(
+        encodeProviderConfigFile({
+          providers: personalProviders,
+          models: ModelConfigRules.empty(),
+          defaultModelSelection: {
+            providerId: "my-mimo-api",
+            modelId: "mimo-v2.5-pro",
+          },
+        }),
+      );
+      expect(personalFile.defaultModelSelection).toEqual({
+        providerId: "my-mimo-api",
+        modelId: "mimo-v2.5-pro",
+      });
+      expect(personalFile.providers.get("my-mimo-api")?.toJSON()).toMatchObject({
+        access: {
+          apiKey: "sk-personal-v25",
+          apiKeyManagementUrl: "https://platform.xiaomimimo.com/personal",
+        },
+        personalModelIds: ["mimo-v2.5-pro"],
+        modelOrder: ["mimo-v2.6-flash", "mimo-v2.6-pro", "mimo-v2.5-pro"],
+      });
+    } finally {
+      source.dispose();
+    }
+  });
+
+  it("生产与测试 Built-in 配置的 MiMo 子集保持一致", async () => {
+    // 测试配置当前由人工镜像维护（仓库没有生成/校验脚本），构建测试只校验 schema 与 revision；
+    // 这里按 MiMo 子集做 parity，防止两份配置在后续改动中漂移而行为测试仍只读生产文件。
+    type BuiltinRaw = {
+      revision: number;
+      config: {
+        providerConfigRules: { templateRules: readonly { templateId: string }[] };
+        modelConfigRules: {
+          modelRules: readonly { modelMatch?: string }[];
+          modelApiRules: readonly { modelMatch?: string }[];
+          templateModelRules: readonly { templateId: string }[];
+        };
+      };
+    };
+    const isMimoTemplate = (templateId: string) =>
+      templateId === "xiaomi-mimo" || templateId === "xiaomi-mimo-token-plan";
+    const readRaw = async (fileName: string): Promise<BuiltinRaw> =>
+      JSON.parse(
+        await readFile(new URL(`../../../config/provider/${fileName}`, import.meta.url), "utf8"),
+      ) as BuiltinRaw;
+    const pickMiMoSubset = (raw: BuiltinRaw) => ({
+      templates: raw.config.providerConfigRules.templateRules.filter((template) =>
+        isMimoTemplate(template.templateId),
+      ),
+      modelRules: raw.config.modelConfigRules.modelRules.filter((rule) =>
+        rule.modelMatch?.includes("mimo"),
+      ),
+      modelApiRules: raw.config.modelConfigRules.modelApiRules.filter((rule) =>
+        rule.modelMatch?.includes("mimo"),
+      ),
+      templateModelRules: raw.config.modelConfigRules.templateModelRules.filter((rule) =>
+        isMimoTemplate(rule.templateId),
+      ),
+    });
+
+    const release = await readRaw("zcode-builtin.json");
+    const testConfig = await readRaw("zcode-builtin.test.json");
+    expect(testConfig.revision).toBe(release.revision);
+    expect(pickMiMoSubset(testConfig)).toEqual(pickMiMoSubset(release));
+  });
+
   it("聚合供应商按维护清单提供独立模板，不复用上游 Provider 配置", async () => {
     const source = new NodeZCodeBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
@@ -476,6 +881,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
         "qwen-alibaba-model-studio-cn",
         "qwen-alibaba-model-studio-intl",
         "xiaomi-mimo",
+        "xiaomi-mimo-token-plan",
         "openai",
         "anthropic",
         "xai",
@@ -898,6 +1304,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
         "template:qwen-alibaba-model-studio-cn",
         "template:qwen-alibaba-model-studio-intl",
         "template:xiaomi-mimo",
+        "template:xiaomi-mimo-token-plan",
         "template:openai",
         "template:anthropic",
         "template:xai",
