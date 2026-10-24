@@ -1,14 +1,17 @@
 import type { AgentRuntime, TurnAttachment, TurnResult } from "@zcode/core";
 import {
   SessionEventType,
+  createQueryId,
   traceContextToLogContext,
   type InputHistoryEntry,
   type InputHistoryKind,
   type InputHistoryStorePort,
   type Logger,
+  type QueryId,
   type SessionId,
   type ToolArtifactStorePort,
   type TraceContext,
+  type TurnInputIntentMetadata,
 } from "@zcode/contracts";
 import {
   externalizePromptAttachments,
@@ -16,7 +19,22 @@ import {
   normalizePromptInput,
   projectInputHistoryAttachments,
 } from "./prompt-input.js";
+import { composeInputIntentMetadata } from "./input-intent-metadata.js";
+import { freezeSubmissionModelSelection } from "./provider-registry-selection.js";
+import { queueItemIdForSubmission } from "./session-input-id.js";
 import type { PrepareUserExecutionBoundary, SubmitPromptOptions, ZCodeApp } from "./types.js";
+
+/**
+ * legacy 提交没有 V4 CommandInbox 的 per-bucket admission 序号；用单调时间序列生成唯一值。
+ * V4 admissionSeq 是小整数，本序列以毫秒为起点只增不减，既不会与 V4 项冲突，也不会让
+ * 多条 guide 得到相同值（UI 用 `-(admissionSeq + 1)` 生成 pending rowId）。
+ */
+let lastSynthesizedAdmissionSeq = 0;
+
+function nextSynthesizedAdmissionSeq(now: number): number {
+  lastSynthesizedAdmissionSeq = Math.max(now, lastSynthesizedAdmissionSeq + 1);
+  return lastSynthesizedAdmissionSeq;
+}
 
 type InputFacade = Pick<
   ZCodeApp,
@@ -56,6 +74,60 @@ interface CreateInputFacadeDeps {
 export function createInputFacade(deps: CreateInputFacadeDeps): InputFacade {
   const preparePromptBoundary = async (options?: SubmitPromptOptions): Promise<void> => {
     await deps.prepareUserExecutionBoundary(options);
+  };
+
+  /**
+   * I03（2026-10-24 语义反转获批）：普通 CLI 的提交边界把当时的完整 ModelSelection
+   * 冻结进 canonical intent，Queue/Guide/Turn 之后只读这份事实。
+   *
+   * 修复原因：旧实现只在 turn.ts 执行时 `intent.modelSelection ?? getSessionModelSelection()`，
+   * 用户「入队 → 切模型 → 队列消费」时已接纳的输入会静默改用消费时的 Session 值。
+   * 依据是 V4 接收边界先例（`resolveSubmittedExecutionState`）：固定完成后 Queue/Guide
+   * 不再读取可变 Session。
+   *
+   * 显式 intent（V4 payload / automation / edit-retry）属于各自 owner，绝不覆盖；
+   * 读不到完整 Selection 时在 admission 前失败，不能只写半份事实或省略字段回读 Session。
+   */
+  const freezeSubmissionIntent = (
+    intent: TurnInputIntentMetadata | undefined,
+    submission: {
+      text: string;
+      kind?: TurnInputIntentMetadata["kind"];
+      inputId?: string;
+      queryId?: QueryId;
+      requestedDelivery: TurnInputIntentMetadata["requestedDelivery"];
+      admittedDelivery?: TurnInputIntentMetadata["admittedDelivery"];
+    },
+  ): TurnInputIntentMetadata => {
+    if (intent?.modelSelection) return intent;
+    const modelSelection = freezeSubmissionModelSelection({
+      runtimeSelection: deps.runtime.getSessionModelSelection(),
+    });
+    if (!modelSelection) {
+      throw new Error("Cannot submit prompt without a provider-qualified session model selection");
+    }
+    if (intent) return { ...intent, modelSelection };
+    // 未携带 intent 的历史调用方（TUI / headless compact 等）也需要一条完整 canonical
+    // intent；身份/admission 缺省与 V4 `inputIntentMetadata` 共用同一组装函数。
+    const sourceCommandId = submission.inputId ?? submission.queryId ?? createQueryId();
+    const admittedAt = Date.now();
+    return composeInputIntentMetadata(
+      {
+        sourceCommandId,
+        kind: submission.kind ?? "sendText",
+      },
+      {
+        admissionSeq: nextSynthesizedAdmissionSeq(admittedAt),
+        admittedAt,
+        queueItemId: queueItemIdForSubmission(sourceCommandId),
+      },
+      {
+        text: submission.text,
+        modelSelection,
+        requestedDelivery: submission.requestedDelivery,
+        ...(submission.admittedDelivery ? { admittedDelivery: submission.admittedDelivery } : {}),
+      },
+    );
   };
 
   const recordAcceptedInputHistory = async (
@@ -116,9 +188,7 @@ export function createInputFacade(deps: CreateInputFacadeDeps): InputFacade {
       traceContext: options?.traceContext ?? deps.traceContext,
     });
     const runtimePromptText = resolvedCommandPrompt ?? promptInput.text;
-    const turnAttribution = options?.automationId
-      ? { automationId: options.automationId }
-      : {};
+    const turnAttribution = options?.automationId ? { automationId: options.automationId } : {};
     // fork（F4.3）：offPeakTaskId/offPeakRunType 归因分支随闲时任务全链路删除。
     return await deps.runtime.executeTurn(runtimePromptText, storedAttachments, {
       abortSignal: options?.abortSignal,
@@ -208,10 +278,27 @@ export function createInputFacade(deps: CreateInputFacadeDeps): InputFacade {
         // resume review 属于本次 prompt 生命周期，订阅覆盖 prepare boundary；Core admission
         // 在同一个 session runtime 内完成 start/queue，不在这里读取 activeTurn 做分叉。
         await preparePromptBoundary(options);
+        // prepare boundary 可能刚从持久化恢复 Session Selection（cold resume），因此必须在它
+        // 之后、进入 admission 之前冻结；提前读会把 Registry/config 默认值当成会话事实。
+        const intent = freezeSubmissionIntent(options?.intent, {
+          text: promptInput.text,
+          kind: options?.commandKind,
+          inputId: options?.inputId,
+          queryId: options?.queryId,
+          requestedDelivery:
+            options?.queueDelivery === "guide" || options?.delivery === "steer_active_turn"
+              ? "guide"
+              : options?.requireQueue === true
+                ? "queue"
+                : options?.delivery === "start_turn"
+                  ? "startNow"
+                  : "auto",
+        });
         const prepared = await prepareRuntimePrompt(promptInput, options);
         const result = await deps.runtime.admitPrompt(prepared.input, prepared.storedAttachments, {
           ...options,
           delivery,
+          intent,
           traceContext: options?.traceContext ?? deps.traceContext,
           ...(prepared.input !== promptInput.text ? { displayInput: promptInput.text } : {}),
         });
@@ -245,15 +332,23 @@ export function createInputFacade(deps: CreateInputFacadeDeps): InputFacade {
       }
     },
     enqueueDeferredInput: async (input, options) => {
+      // 队列项在消费时可能早已切模：提交边界先冻结完整选择，Queue/Guide 不再回读 Session。
+      const intent = freezeSubmissionIntent(options?.intent, {
+        text: input,
+        kind: options?.commandKind,
+        inputId: options?.inputId,
+        queryId: options?.queryId,
+        requestedDelivery: options?.delivery ?? "queue",
+      });
       const result = await deps.runtime.enqueueDeferredInput({
         input,
         inputPresentation: "user_steer",
         ...(options?.commandKind ? { commandKind: options.commandKind } : {}),
         ...(options?.delivery ? { delivery: options.delivery } : {}),
-        ...(options?.intent ? { intent: options.intent } : {}),
+        intent,
         ...(options?.attachments ? { attachments: options.attachments } : {}),
         ...(options?.toolDisallowlist ? { toolDisallowlist: options.toolDisallowlist } : {}),
-        ...(options?.intent?.queueItemId ? { pendingInputId: options.intent.queueItemId } : {}),
+        ...(intent.queueItemId ? { pendingInputId: intent.queueItemId } : {}),
         ...(options?.inputId ? { inputId: options.inputId } : {}),
         ...(options?.queryId ? { queryId: options.queryId } : {}),
         traceContext: options?.traceContext ?? deps.traceContext,
@@ -268,6 +363,14 @@ export function createInputFacade(deps: CreateInputFacadeDeps): InputFacade {
       return result;
     },
     steerTurn: async (input, options) => {
+      // guide 也会在当前轮消费 intent 的冻结选择；与 queue 同一提交边界处理。
+      const intent = freezeSubmissionIntent(options?.intent, {
+        text: input,
+        kind: options?.commandKind,
+        inputId: options?.inputId,
+        queryId: options?.queryId,
+        requestedDelivery: options?.delivery ?? "queue",
+      });
       const unsubscribe = options?.onEvent
         ? deps.runtime.subscribeEvents({ onSessionEvent: options.onEvent })
         : undefined;
@@ -279,9 +382,9 @@ export function createInputFacade(deps: CreateInputFacadeDeps): InputFacade {
           queryId: options?.queryId,
           expectedTurnId: options?.expectedTurnId,
           delivery: options?.delivery,
-          intent: options?.intent,
+          intent,
           attachments: options?.attachments,
-          pendingInputId: options?.intent?.queueItemId,
+          pendingInputId: intent.queueItemId,
           input,
           toolDisallowlist: options?.toolDisallowlist,
           traceContext: options?.traceContext ?? deps.traceContext,
@@ -369,7 +472,15 @@ export function createInputFacade(deps: CreateInputFacadeDeps): InputFacade {
         : undefined;
       try {
         await preparePromptBoundary(options);
-        return await runPromptTurn(promptInput, options);
+        // 直接开轮同样写入 canonical intent；必须在 prepare boundary 恢复持久化 Selection 之后
+        // 读取，执行只读这份冻结值。
+        const intent = freezeSubmissionIntent(options?.intent, {
+          text: promptInput.text,
+          inputId: options?.inputId,
+          queryId: options?.queryId,
+          requestedDelivery: "startNow",
+        });
+        return await runPromptTurn(promptInput, { ...options, intent });
       } finally {
         unsubscribe?.();
       }

@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import type { ModelSelection } from "@zcode/contracts";
 import type { CommandEnvelope } from "@zcode/shared/zcode-protocol-v4";
 import {
   isConversationInputAdmissionCommand,
   resolveInputCommandForAdmission,
 } from "../src/zcode-protocol/v4-bridge.js";
+import { resolveSubmittedExecutionState } from "../src/zcode-protocol-v4/commands/input-admission.js";
 import { inputIntentMetadata } from "../src/zcode-protocol-v4/commands/input-intent.js";
 
 function envelope(type: CommandEnvelope["type"], payload: unknown): CommandEnvelope {
@@ -137,6 +139,66 @@ describe("v4 input admission canonical intent", () => {
       kind: "sendText",
       text: "edited",
       provenance: { sourceCommandId: "cmd-original" },
+    });
+  });
+
+  // I03 语义反转（2026-10-24 获批）的先例守护：V4 接收边界本来就把选择固定进 canonical
+  // intent，普通 CLI 现在复用同一语义。显式 payload 选择优先且不回读 Session；缺省时才在当前
+  // 接收边界固定 Session 值。显式执行选择入口不属于普通 CLI 冻结的覆盖范围。
+  describe("submitted execution selection freeze", () => {
+    const SELECTION_A: ModelSelection = {
+      providerId: "provider-a",
+      modelId: "model-a",
+      options: { reasoningLevel: "high" },
+    };
+    const SELECTION_B: ModelSelection = {
+      providerId: "provider-b",
+      modelId: "model-b",
+      options: { reasoningLevel: "low" },
+    };
+
+    function recordWithSessionSelection(selection: ModelSelection) {
+      const getSessionModelSelection = vi.fn(() => selection);
+      return {
+        record: {
+          app: {
+            getModel: () => `${selection.providerId}/${selection.modelId}`,
+            getMode: () => "build",
+            runtime: {
+              getPlanEnabled: () => false,
+              getSessionModelSelection,
+            },
+          },
+        } as never,
+        getSessionModelSelection,
+      };
+    }
+
+    it("显式 payload.modelSelection 优先，不回读也不改写 Session", () => {
+      const { record, getSessionModelSelection } = recordWithSessionSelection(SELECTION_A);
+
+      expect(
+        resolveSubmittedExecutionState(record, {
+          modelSelection: SELECTION_B,
+          mode: "build",
+          planEnabled: false,
+        }),
+      ).toEqual({
+        modelSelection: SELECTION_B,
+        mode: "build",
+        planEnabled: false,
+      });
+      expect(getSessionModelSelection).not.toHaveBeenCalled();
+    });
+
+    it("无显式选择时在接收边界固定 Session 当前值", () => {
+      const { record } = recordWithSessionSelection(SELECTION_A);
+
+      expect(resolveSubmittedExecutionState(record, {})).toEqual({
+        modelSelection: SELECTION_A,
+        mode: "build",
+        planEnabled: false,
+      });
     });
   });
 });

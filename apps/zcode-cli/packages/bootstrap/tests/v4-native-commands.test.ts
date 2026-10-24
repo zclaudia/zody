@@ -266,6 +266,9 @@ describe("v4 原生 sendText", () => {
   it("app input facade 把 start/queue 决策交给 Core admission，不查询 activeTurn", async () => {
     const runtime = {
       getActiveTurnInfo: vi.fn().mockReturnValue(undefined),
+      // I03：普通 CLI 提交边界从 Session runtime 冻结完整 ModelSelection；本用例的 runtime
+      // 桩需要提供该只读入口，但断言仍只关心 facade 不查询 activeTurn。
+      getSessionModelSelection: vi.fn(() => ({ providerId: "provider-a", modelId: "model-a" })),
       admitPrompt: vi.fn().mockResolvedValue({
         completion: Promise.resolve({}),
         kind: "started",
@@ -312,6 +315,8 @@ describe("v4 原生 sendText", () => {
     });
     const runtime = {
       getActiveTurnInfo: vi.fn().mockReturnValue(undefined),
+      // I03：提交边界冻结需要 Session runtime 的只读选择入口。
+      getSessionModelSelection: vi.fn(() => ({ providerId: "provider-a", modelId: "model-a" })),
       subscribeEvents: vi.fn().mockImplementation((sink) => {
         temporarySink = sink;
         return () => {};

@@ -92,6 +92,32 @@ export function parseProviderQualifiedModelSelection(
 }
 
 /**
+ * I03（2026-10-24 语义反转获批）：提交边界固定完整 ModelSelection 的唯一构造。
+ *
+ * 修复原因：旧语义让「入队 → 切模型 → 队列消费」在用户无感知的情况下改用消费时的
+ * Session 值。V4 已在接收边界把当前 Session 值固定进 canonical intent
+ * （`resolveSubmittedExecutionState` 即先例），普通 CLI 现在复用同一语义。
+ *
+ * 显式选择属于调用方 owner，调用方须在调用前短路（不得为冻结而读取 Session）；本函数只负责
+ * 复制 Session runtime 当前持有的稀疏 Selection，或在旧发送端只有入口模型串时解析它。
+ * 这里不补 thought level——补值会把配置默认值伪装成显式 pin。两者都拿不到
+ * provider-qualified 值时返回 undefined，由调用方在 admission 前拒绝。
+ */
+export function freezeSubmissionModelSelection(input: {
+  runtimeSelection?: ModelSelection;
+  entryModel?: string;
+}): ModelSelection | undefined {
+  if (input.runtimeSelection) {
+    return {
+      providerId: input.runtimeSelection.providerId,
+      modelId: input.runtimeSelection.modelId,
+      ...(input.runtimeSelection.options ? { options: { ...input.runtimeSelection.options } } : {}),
+    };
+  }
+  return input.entryModel ? parseProviderQualifiedModelSelection(input.entryModel) : undefined;
+}
+
+/**
  * 解析由 Registry 已接管 Provider 的模型选择。
  *
  * 返回 undefined 表示进程 Registry 不拥有该 Provider。Registry 已拥有 Provider 时，

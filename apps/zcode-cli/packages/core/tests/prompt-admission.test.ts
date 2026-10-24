@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { createSessionId } from "@zcode/contracts";
+import {
+  createSessionId,
+  type ModelSelection,
+  type TurnInputIntentMetadata,
+} from "@zcode/contracts";
 import { AgentRuntime } from "../src/runtime.js";
 import { createTestSessionEventStore } from "./test-event-store.js";
 import { createTestModelFactory } from "./test-runtime-model.js";
@@ -236,6 +240,223 @@ describe("AgentRuntime prompt admission", () => {
     modelGates[0]!.resolve(undefined);
     modelGates[1]!.resolve(undefined);
     await Promise.all([first.completion, second.completion]);
+  });
+});
+
+// I03 语义反转（2026-10-24 获批）：普通 CLI 提交边界把当时的完整 ModelSelection 冻结进 canonical
+// intent，执行只读冻结值。本组用例锁住消费侧合同：入队后切模不改写已接纳项，取消/重试沿用冻结值。
+// 冻结值的生产由 bootstrap input facade 负责（见 bootstrap/tests/queue-input-fidelity.test.ts）。
+describe("frozen submission selection", () => {
+  const SELECTION_A: ModelSelection = { providerId: "provider-a", modelId: "model-a" };
+  const SELECTION_B: ModelSelection = { providerId: "provider-b", modelId: "model-b" };
+
+  // 完整 canonical intent：runtime 的类型要求全部字段，测试不能靠 vitest 转译绕过 tsc。
+  function frozenIntent(
+    id: string,
+    modelSelection: ModelSelection,
+    requestedDelivery: TurnInputIntentMetadata["requestedDelivery"],
+  ): TurnInputIntentMetadata {
+    return {
+      sourceCommandId: id,
+      queueItemId: `queue_${id}`,
+      clientId: "cli",
+      kind: "sendText",
+      text: id,
+      modelSelection,
+      admissionSeq: 1,
+      admittedAt: 1,
+      requestedDelivery,
+      admittedDelivery:
+        requestedDelivery === "guide"
+          ? "guide"
+          : requestedDelivery === "queue"
+            ? "queue"
+            : "startNow",
+    };
+  }
+
+  function createRecordingRuntime(sessionKey: string) {
+    const firstRequestGate = deferred<unknown>();
+    const requests: Array<{ providerId: string; reasoningLevel: unknown }> = [];
+    const runtime = new AgentRuntime(
+      createSessionId(sessionKey),
+      {
+        mode: "build",
+        modelSelection: { providerId: "provider-a", modelId: "model-a" },
+      },
+      {
+        eventStore: createTestSessionEventStore(),
+        modelFactory: createTestModelFactory({
+          async generateText(_request, observation) {
+            requests.push({
+              providerId: String(observation.model.providerId),
+              reasoningLevel: observation.model.options.reasoningLevel,
+            });
+            if (requests.length === 1) await firstRequestGate.promise;
+            return {
+              finishReason: "stop",
+              text: "done",
+              usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+            };
+          },
+        }),
+      },
+    );
+    return { firstRequestGate, requests, runtime };
+  }
+
+  it("queues A twice, switches to B, and executes each input with its own frozen selection", async () => {
+    const { firstRequestGate, requests, runtime } = createRecordingRuntime(
+      "prompt-admission-frozen-ab",
+    );
+
+    const running = await runtime.admitPrompt("running with A", undefined, {
+      ...admissionOptions("frozen-running"),
+      intent: frozenIntent("frozen-running", SELECTION_A, "startNow"),
+    });
+    const firstQueued = await runtime.admitPrompt("first queued with A", undefined, {
+      ...admissionOptions("frozen-queued-1"),
+      intent: frozenIntent("frozen-queued-1", SELECTION_A, "queue"),
+    });
+    const secondQueued = await runtime.admitPrompt("second queued with A", undefined, {
+      ...admissionOptions("frozen-queued-2"),
+      intent: frozenIntent("frozen-queued-2", SELECTION_A, "queue"),
+    });
+    expect(firstQueued.kind).toBe("queued");
+    expect(secondQueued.kind).toBe("queued");
+
+    // 切到 B：只改 Session，不改已接纳 intent。
+    runtime.setSessionModelSelection({ providerId: "provider-b", modelId: "model-b" });
+
+    const queued = (await runtime.getProjection()).pendingSteerInputs;
+    expect(queued.map((input) => input.intent?.modelSelection)).toEqual([
+      { providerId: "provider-a", modelId: "model-a" },
+      { providerId: "provider-a", modelId: "model-a" },
+    ]);
+
+    firstRequestGate.resolve(undefined);
+    if (running.kind === "started") await running.completion;
+    expect(requests[0]).toMatchObject({ providerId: "provider-a" });
+
+    // 旧输入按冻结的 A 执行：执行顺序不改变它读到的选择。
+    await runtime.executeTurn("first queued with A", undefined, { intent: queued[0]?.intent });
+    expect(requests.at(-1)).toMatchObject({ providerId: "provider-a" });
+
+    // 切 B 后提交的新输入冻结为 B；此时 runtime 已空闲，直接开轮执行。
+    const newTurn = await runtime.admitPrompt("submitted after switching to B", undefined, {
+      ...admissionOptions("frozen-queued-3"),
+      intent: frozenIntent("frozen-queued-3", SELECTION_B, "startNow"),
+    });
+    if (newTurn.kind !== "started") throw new Error("input after switch did not start");
+    await newTurn.completion;
+    expect(requests.at(-1)).toMatchObject({ providerId: "provider-b" });
+  });
+
+  it("drains real guides with their frozen selections after the Session switches to B", async () => {
+    const { firstRequestGate, requests, runtime } = createRecordingRuntime(
+      "prompt-admission-frozen-guide-drain",
+    );
+
+    const running = await runtime.admitPrompt("running with A", undefined, {
+      ...admissionOptions("frozen-guide-running"),
+      intent: frozenIntent("frozen-guide-running", SELECTION_A, "startNow"),
+    });
+    for (let attempt = 0; attempt < 100 && requests.length === 0; attempt += 1) {
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+    expect(requests).toHaveLength(1);
+
+    // 真实 steerTurn → activeTurn.pendingInputs；随后 turn loop 的 drain 是消费入口。
+    // 与卡片反例一致：A 运行时连续入队两条。
+    const firstGuide = await runtime.steerTurn({
+      input: "first guide with A",
+      delivery: "guide",
+      intent: frozenIntent("frozen-guide-1", SELECTION_A, "guide"),
+    });
+    const secondGuide = await runtime.steerTurn({
+      input: "second guide with A",
+      delivery: "guide",
+      intent: frozenIntent("frozen-guide-2", SELECTION_A, "guide"),
+    });
+    expect(firstGuide.kind).toBe("queued");
+    expect(secondGuide.kind).toBe("queued");
+    runtime.setSessionModelSelection(SELECTION_B);
+
+    firstRequestGate.resolve(undefined);
+    if (running.kind === "started") await running.completion;
+
+    // drain 后每条 guide 的下一次模型请求都必须使用 intent 冻结的 A，而不是当前 Session 的 B。
+    expect(requests.map((request) => request.providerId)).toEqual([
+      "provider-a",
+      "provider-a",
+      "provider-a",
+    ]);
+
+    // completion resolve 后 runtime command drain 仍可能在本轮 finally 收尾；等 busy 权威事实归零。
+    for (let attempt = 0; attempt < 100 && runtime.hasActiveOrQueuedTurnWork(); attempt += 1) {
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+    expect(runtime.hasActiveOrQueuedTurnWork()).toBe(false);
+
+    const afterSwitch = await runtime.admitPrompt("submitted after switching to B", undefined, {
+      ...admissionOptions("frozen-guide-after-switch"),
+      intent: frozenIntent("frozen-guide-after-switch", SELECTION_B, "startNow"),
+    });
+    expect(afterSwitch.kind).toBe("started");
+    if (afterSwitch.kind !== "started") throw new Error("input after switch did not start");
+    await afterSwitch.completion;
+    expect(requests.at(-1)).toMatchObject({ providerId: "provider-b" });
+  });
+
+  it("removes a cancelled queue item without executing it and keeps the frozen selection on retry", async () => {
+    const { firstRequestGate, requests, runtime } = createRecordingRuntime(
+      "prompt-admission-frozen-cancel-retry",
+    );
+
+    const cancelTraceContext = {
+      queryId: "cancel-queued",
+      sessionId: createSessionId("prompt-admission-frozen-cancel-retry"),
+      traceId: "trace-cancel-queued",
+    };
+    const selectionAWithHigh: ModelSelection = {
+      ...SELECTION_A,
+      options: { reasoningLevel: "high" },
+    };
+    const running = await runtime.admitPrompt("running", undefined, admissionOptions("cancel-run"));
+    const queued = await runtime.admitPrompt("cancelled then retried", undefined, {
+      inputId: "cancel-queued",
+      queryId: "cancel-queued",
+      traceContext: cancelTraceContext,
+      intent: frozenIntent("cancel-queued", selectionAWithHigh, "queue"),
+    } as never);
+    if (queued.kind !== "queued") throw new Error("queued input was not admitted");
+
+    const removed = await runtime.removePendingInputById({
+      pendingInputId: queued.pendingInputId,
+      reason: "user_removed",
+      traceContext: cancelTraceContext,
+    });
+    expect(removed).toBe(true);
+    expect(
+      (await runtime.getProjection()).pendingSteerInputs.some(
+        (input) => input.pendingInputId === queued.pendingInputId,
+      ),
+    ).toBe(false);
+
+    firstRequestGate.resolve(undefined);
+    if (running.kind === "started") await running.completion;
+    expect(requests).toHaveLength(1);
+
+    // 切换模型后重试（重放 canonical intent）：仍使用冻结的 A，而不是 Session 的 B。
+    runtime.setSessionModelSelection({
+      providerId: "provider-b",
+      modelId: "model-b",
+      options: { reasoningLevel: "low" },
+    });
+    const frozenRetryIntent = frozenIntent("cancel-queued", selectionAWithHigh, "queue");
+    await runtime.executeTurn("cancelled then retried", undefined, { intent: frozenRetryIntent });
+    expect(requests.at(-1)).toMatchObject({ providerId: "provider-a", reasoningLevel: "high" });
+    expect(requests).toHaveLength(2);
   });
 });
 

@@ -7,7 +7,7 @@ import type { SubmissionMode } from "@zcode/shared/zcode-protocol-v4";
 import { resolveExecutionState, type ModelSelection } from "@zcode/shared";
 import type { TurnAttachment } from "@zcode/core";
 import type { SteerTurnOptions } from "../../app/types.js";
-import { parseProviderQualifiedModelSelection } from "../../app/provider-registry-selection.js";
+import { freezeSubmissionModelSelection } from "../../app/provider-registry-selection.js";
 import type { V4CommandCoreHost, V4SessionRecordView } from "./types.js";
 
 export class V4InputAdmissionRejectedError extends Error {
@@ -122,29 +122,20 @@ export function resolveSubmittedExecutionState(
     planEnabled?: boolean;
   },
 ): { modelSelection: ModelSelection; mode: SubmissionMode; planEnabled: boolean } {
+  // I03：显式 payload 选择优先；缺省时才在接收边界固定 Session 值。构造与普通 CLI
+  // input facade 共用 freezeSubmissionModelSelection，避免两份冻结语义漂移。
+  // 显式选择分支必须短路，不能为冻结而读取可变 Session。
   let modelSelection = payload.modelSelection;
   if (!modelSelection) {
     const runtimeSelection = record.app.runtime?.getSessionModelSelection?.();
-    const entrySelection = runtimeSelection
-      ? undefined
-      : parseProviderQualifiedModelSelection(record.app.getModel());
-    if (!runtimeSelection && !entrySelection) {
-      throw new Error(`Session model must be provider-qualified: ${record.app.getModel()}`);
-    }
-    // 修复原因：getThoughtLevel() 是 Active Model 的 effective 展示事实。把它补回
-    // canonical intent 会把 Config 默认值伪装成显式 pin；旧发送端只能固定 Session
-    // 已经持有的稀疏 Selection，不能在 admission 时重新解释它。
-    modelSelection = runtimeSelection
-      ? {
-          providerId: runtimeSelection.providerId,
-          modelId: runtimeSelection.modelId,
-          ...(runtimeSelection.options ? { options: { ...runtimeSelection.options } } : {}),
-        }
-      : {
-          providerId: entrySelection!.providerId,
-          modelId: entrySelection!.modelId,
-          ...(entrySelection!.options ? { options: { ...entrySelection!.options } } : {}),
-        };
+    modelSelection = freezeSubmissionModelSelection({
+      runtimeSelection,
+      // 入口模型串只在 runtime 没有 Selection 时读取（与旧发送端兜底一致）。
+      entryModel: runtimeSelection ? undefined : record.app.getModel(),
+    });
+  }
+  if (!modelSelection) {
+    throw new Error(`Session model must be provider-qualified: ${record.app.getModel()}`);
   }
   const current = resolveExecutionState({
     mode: record.app.getMode?.(),
