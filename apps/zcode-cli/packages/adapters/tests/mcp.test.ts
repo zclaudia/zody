@@ -1121,6 +1121,48 @@ describe("createMcpAdapter", () => {
     await adapter.close();
   });
 
+  it("waits for the real initialize task past a caller's OAuth wait budget", async () => {
+    const { release } = stubInteractiveAuthorization(
+      "https://auth.example.test/authorize?state=app_wait_state",
+    );
+    const adapter = createMcpAdapter();
+    const sessionConnect = await adapter.connectServer(
+      "notion",
+      {
+        type: "http",
+        url: "https://mcp.example.test/mcp",
+        oauth: {
+          type: "authorization_code",
+          clientName: "Zody",
+        },
+      },
+      { oauthAuthorizationTimeoutMs: 20 },
+    );
+    // caller 预算到点只返回当时的 snapshot；后台 initialize 与授权事务仍存活。
+    expect(sessionConnect).toMatchObject({
+      authorization: {
+        authorizationUrl: "https://auth.example.test/authorize?state=app_wait_state",
+      },
+      status: "connecting",
+    });
+
+    const waiting = adapter.waitForAppConnection!("notion");
+    let settled = false;
+    void waiting.finally(() => {
+      settled = true;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    // 首开屏障等的是真实连接任务，不能被 15s caller 预算提前判成终态。
+    expect(settled).toBe(false);
+
+    release();
+    await expect(waiting).resolves.toEqual({
+      identity: expect.any(String),
+      generation: 1,
+    });
+    await adapter.close();
+  });
+
   it("only cancels the caller waiter when a reused OAuth connection is aborted", async () => {
     const { release: resolveConnect } = stubInteractiveAuthorization(
       "https://auth.example.test/authorize?state=shared_abort_state",

@@ -1892,6 +1892,25 @@ class NodeMcpAdapter implements McpPort {
     };
   }
 
+  async waitForAppConnection(
+    name: string,
+  ): Promise<{ identity: string; generation: number } | null> {
+    // 首开屏障必须等真实 initialize 结束，而不是 caller 的 connectServer 预算：
+    // session 传入的 oauthAuthorizationTimeoutMs（15s）只约束该 caller 的等待，
+    // 到点会以仍为 connecting 的状态 resolve，后台连接与授权继续存活。
+    // 这里直接复用 record.connecting（完整的 openServerConnection 任务），
+    // 由 config.timeoutMs 与 OAuth 事务 TTL 收敛，不新增轮询或第二份超时。
+    for (;;) {
+      const record = this.records.get(name);
+      if (!record) return null;
+      const connecting = record.connecting;
+      if (connecting) await connecting.catch(() => undefined);
+      // 等待期间连接被替换（显式重连/切换配置）时继续等当前记录，
+      // 不能让旧任务的结束被误当成新连接已可用。
+      if (this.records.get(name) === record) return this.appConnectionSnapshot(name);
+    }
+  }
+
   private nextConnectionGeneration(name: string): number {
     const generation = (this.connectionGenerations.get(name) ?? 0) + 1;
     this.connectionGenerations.set(name, generation);
