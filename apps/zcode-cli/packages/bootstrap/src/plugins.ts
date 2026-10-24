@@ -956,7 +956,8 @@ export async function validateZCodePlugin(
   options: ValidateZCodePluginOptions,
 ): Promise<PluginLoadOutcome["diagnostics"]> {
   const { pluginStorageRoot } = resolvePluginContext(options);
-  ensureDefaultPluginMarketplaces(pluginStorageRoot);
+  // I06：validate 是只读 dry-run。默认 marketplace 初始化与缺失 manifest 的物化
+  // 都由 ensureMarketplaceManifestAvailable 在真正需要时补齐；读命中时不再写 known 状态。
   if (options.source) {
     try {
       const source = await parseMarketplaceSourceInput(options.source);
@@ -1007,7 +1008,9 @@ export async function describeZCodePlugin(
   options: DescribeZCodePluginOptions,
 ): Promise<DescribeMarketplacePluginResult> {
   const { pluginStorageRoot } = resolvePluginContext(options);
-  ensureDefaultPluginMarketplaces(pluginStorageRoot);
+  // I06：describe 的 lazy 写只应发生在缺失 marketplace manifest 时。已提交 manifest
+  // 由 describeMarketplacePlugin 直接读取；这里不再顺带初始化默认 marketplace，
+  // 避免缓存命中的详情读取被写闸门排队。
   return describeMarketplacePlugin({
     marketplace: options.marketplace,
     name: options.pluginName,

@@ -27,7 +27,10 @@ import {
   OFFICIAL_PLUGIN_DEFINITIONS,
   type OfficialPluginDefinition,
 } from "./official-plugin-definitions.js";
-import { writeOfficialPluginRuntimeManifest } from "./official-plugin-runtime.js";
+import {
+  isOfficialPluginRuntimeManifestCurrent,
+  writeOfficialPluginRuntimeManifest,
+} from "./official-plugin-runtime.js";
 import {
   isOfficialPluginSeedLockTimeoutError,
   withOfficialPluginSeedLock,
@@ -130,6 +133,12 @@ function seedBundledOfficialPlugins(input: {
       continue;
     }
     try {
+      // I06：缓存命中读不获取跨进程 seed 锁。seed marker、运行期 manifest 与遗留
+      // backup 清理都已是提交态时，直接复用缓存；只有确实需要 seed/重写 manifest 的
+      // lazy 写才进入 seed 锁（读路径的写范围不因无关安装而扩大）。
+      if (canReuseCommittedSeed(targetRoot, plugin)) {
+        continue;
+      }
       withOfficialPluginSeedLock(
         targetRoot,
         () => {
@@ -467,6 +476,26 @@ function isSeedCurrent(targetRoot: string, plugin: OfficialPluginSeedPluginSourc
 }
 
 /**
+ * I06：判定读路径能否直接复用已提交的 seed，跳过 seed 锁。
+ *
+ * 三个条件都必须成立：seed marker 匹配、运行期 manifest 已是当前进程要写的字节、
+ * 没有待清理的遗留 backup（清理本身是写操作，仍交给持锁慢路径）。
+ */
+function canReuseCommittedSeed(
+  targetRoot: string,
+  plugin: OfficialPluginSeedPluginSource,
+): boolean {
+  return (
+    isSeedCurrent(targetRoot, plugin) &&
+    !existsSync(legacySeedBackupRoot(targetRoot)) &&
+    isOfficialPluginRuntimeManifestCurrent({
+      pluginName: plugin.definition.name,
+      rootPath: targetRoot,
+    })
+  );
+}
+
+/**
  * 旧版本缓存只要插件清单和运行所需文件完整，就可以继续服务当前会话。
  * marker hash 不匹配只表示需要升级，不能把一个可用的旧缓存当成启动失败。
  */
@@ -566,7 +595,7 @@ function cleanupLegacySeedBackup(
   targetRoot: string,
   retryBudget: OfficialPluginCacheRetryBudget,
 ): void {
-  const backupRoot = `${targetRoot}.backup`;
+  const backupRoot = legacySeedBackupRoot(targetRoot);
   if (!existsSync(backupRoot)) return;
 
   // 旧版固定 backup 没有事务归属，target 暂时缺失时可能属于另一个仍在
@@ -578,6 +607,11 @@ function createSeedBackupRoot(targetRoot: string): string {
   // 固定 backup 会被并发启动进程共同当作 rollback 点；每次替换使用唯一目录，
   // catch 分支只恢复自己移动出的 target，避免一个进程窃取另一个进程的事务状态。
   return `${targetRoot}.backup-${process.pid}-${Date.now()}`;
+}
+
+/** 旧版本固定名 backup；仅用于确认遗留目录是否需要清理，新事务不再写这个路径。 */
+function legacySeedBackupRoot(targetRoot: string): string {
+  return `${targetRoot}.backup`;
 }
 
 function isNotFoundFsError(error: unknown): error is NodeJS.ErrnoException {

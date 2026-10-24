@@ -106,6 +106,18 @@ PLM-LC-020 补齐该来源插件覆盖的冷启动执行闭环；SE-04 已证明
 交互和证据后，先执行 promotion dry-run，再 apply；未审核的 pending spec 不进入默认 WDIO、
 Docker preset 或 macOS/Windows 正式 CI。
 
+## 并发与锁语义（I06，2026-10-24）
+
+插件存储读写调度属于 bootstrap 协议/锁层合同；PLM-LC-021/022/023 是 bootstrap 定向用例，
+PLM-LC-024 是卡片步骤④的 Desktop pending E2E，均不进入主表晋升。
+
+| Case                                        | Setup                                                                                               | Action                                                                                                                           | Assertions                                                                                                                                                                               | Evidence                                                                                           | Initial status  |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------- |
+| `PLM-LC-021 plugin-read-bypass-long-write`  | 隔离 HOME，先 `plugins/list` 完成官方 seed；持有 per-storageRoot 写闸门模拟安装 A 挂在下载/暂存阶段 | 同时调用 `plugins/describe`、`plugins/list`、`plugins/overview`；释放闸门后真实添加一个本地目录市场                              | 三个读投影都在 300ms 内返回已提交状态；释放后添加市场成功；写请求仍按 root 串行（同文件既有 serializes marketplace mutations 用例覆盖）                                                  | `bootstrap/tests/plugins-protocol.test.ts` 定向用例                                                | `manual-review` |
+| `PLM-LC-022 plugin-lazy-init-concurrent`    | 隔离 HOME，官方 marketplace manifest 与 `known_marketplaces.json` 均缺失                            | 并发触发 `plugins/list` 与 `plugins/overview`                                                                                    | 只产生一份完整 manifest/known 状态，两个投影互相可见；无 `.stage-` 临时文件残留、无丢写                                                                                                  | `bootstrap/tests/plugins-protocol.test.ts`、`bootstrap/tests/plugin-storage-lock.test.ts` 定向用例 | `manual-review` |
+| `PLM-LC-023 plugin-missing-manifest-gate`   | 隔离 HOME，本地目录市场已登记但托管 manifest 缺失；另有一个已安装插件                               | 持写闸门时触发 `plugins/describe`/`plugins/validate`，释放后完成；并并发触发两次 describe；再触发已安装插件与未知市场的 describe | 闸门内两个写投影均 blocked、释放后各完成一次物化；组件可读且 `validate ok`；只产生一份 manifest；known 中默认记录与市场记录共存；无 `.stage-` 残留；已安装缓存命中与未登记未知市场不排队 | `bootstrap/tests/plugins-protocol.test.ts` 定向用例                                                | `manual-review` |
+| `PLM-LC-024 plugin-read-scheduling-desktop` | 真实 Desktop，本地目录市场声明 URL zip 插件；本地 HTTP 服务器挂起 zip 下载模拟长安装                | UI 触发安装 A 后，在下载挂起期间打开详情并调用 `plugins/list`/`plugins/overview`                                                 | 详情/list/overview 在阈值内返回已提交状态；安装 A 超时/失败后 UI 有终态；存储无半成品                                                                                                    | `packages/desktop/test/e2e/plugins/manual-review/pending/plugin-storage-read-scheduling.test.ts`   | `manual-review` |
+
 ## PLM-STRIP-CLIP（2026-09-15）
 
 接受：12 个已安装且可更新插件，在 390/1200px、中英文、明暗主题下检查角标完整可见；悬停与键盘聚焦首/末项，横向滚到末尾后点击角标，只触发对应更新，不打开详情。无页面横向溢出、无图标条纵向滚动。使用真实共享组件及测试动作回调，不覆盖安装后端。

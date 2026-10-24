@@ -1,4 +1,5 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -40,12 +41,14 @@ import { getCliStorageRoot, getPluginStorageRoot } from "../src/app/paths.js";
 import { installZCodeMarketplacePlugin } from "../src/plugins.js";
 import {
   addPluginMarketplace,
+  describePlugin,
   getPluginsOverview,
   installPlugin,
   listPlugins,
   normalizePluginRootForComparison,
   restoreBuiltinPlugin,
   updatePlugin,
+  validatePlugin,
 } from "../src/zcode-protocol/plugins.js";
 import { withPluginStorageLock } from "../src/lib/plugin-storage-lock.js";
 import type { ZCodeProtocolAgentServerContext } from "../src/zcode-protocol/server-types.js";
@@ -629,3 +632,402 @@ describe("restoreBuiltinPlugin handler", () => {
     }
   });
 });
+
+// I06：读投影绕过长写队列；缺 manifest 的并发初始化不丢写。
+describe("plugin storage read scheduling", () => {
+  const noopContext = {} as unknown as ZCodeProtocolAgentServerContext;
+  let previousStorageDir: string | undefined;
+
+  beforeEach(() => {
+    previousStorageDir = process.env.ZCODE_STORAGE_DIR;
+  });
+
+  afterEach(() => {
+    if (previousStorageDir === undefined) delete process.env.ZCODE_STORAGE_DIR;
+    else process.env.ZCODE_STORAGE_DIR = previousStorageDir;
+  });
+
+  it("returns detail/list/overview projections while an install holds the storage write gate", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zcode-protocol-read-gate-"));
+    const storageDir = join(root, "cli");
+    process.env.ZCODE_STORAGE_DIR = storageDir;
+    const pluginStorageRoot = getPluginStorageRoot(getCliStorageRoot(storageDir));
+    const workspace = { workspacePath: root, workspaceKey: root };
+
+    try {
+      // 先完成一次列表读取，让官方内置 cache/manifest 进入缓存命中路径。
+      await listPlugins(noopContext, { workspace });
+      expect(
+        existsSync(
+          join(pluginStorageRoot, "marketplaces", "zcode-plugins-official", "marketplace.json"),
+        ),
+      ).toBe(true);
+
+      // 用写闸门模拟安装 A 挂在下载/暂存阶段：它仍持有 per-storageRoot 写队列。
+      let releaseGate = (): void => {};
+      let markGateEntered = (): void => {};
+      const gateEntered = new Promise<void>((resolve) => {
+        markGateEntered = resolve;
+      });
+      const gate = withPluginStorageLock(pluginStorageRoot, async () => {
+        markGateEntered();
+        await new Promise<void>((resolve) => {
+          releaseGate = resolve;
+        });
+      });
+      await gateEntered;
+
+      const describePromise = describePlugin(noopContext, {
+        workspace,
+        marketplace: "zcode-plugins-official",
+        pluginName: "skill-creator",
+      });
+      const listPromise = listPlugins(noopContext, { workspace });
+      const overviewPromise = getPluginsOverview(noopContext, { workspace });
+
+      try {
+        const [detail, list, overview] = await Promise.all([
+          settleWithin(describePromise, 300),
+          settleWithin(listPromise, 300),
+          settleWithin(overviewPromise, 300),
+        ]);
+
+        // list/overview 不参与写队列，闸门被占用时仍返回已提交投影。
+        expect(list.status).toBe("settled");
+        expect(overview.status).toBe("settled");
+        // 缓存命中的 describe 只读，必须绕过长安装/下载占用的写队列。
+        expect(detail.status).toBe("settled");
+
+        if (list.status === "settled") {
+          expect(
+            list.value.plugins.some(
+              (plugin) => plugin.id === "skill-creator@zcode-plugins-official",
+            ),
+          ).toBe(true);
+        }
+        if (overview.status === "settled") {
+          expect(
+            overview.value.marketplaces.some(
+              (marketplace) => marketplace.id === "zcode-plugins-official",
+            ),
+          ).toBe(true);
+        }
+        if (detail.status === "settled") {
+          expect(detail.value.components.some((group) => group.items.length > 0)).toBe(true);
+        }
+      } finally {
+        releaseGate();
+        await gate;
+        // 红测失败时 describe 仍在队列里；释放后收敛，避免悬空 rejection。
+        await describePromise.catch(() => undefined);
+      }
+
+      // 闸门释放后写路径恢复正常：真实添加一个本地目录市场并立即可见。
+      const lateMarketplaceRoot = join(root, "late-marketplace-source");
+      await writeTestFile(
+        join(lateMarketplaceRoot, ".claude-plugin", "marketplace.json"),
+        JSON.stringify({ name: "late-market", plugins: [] }),
+      );
+      const mutation = await addPluginMarketplace(noopContext, {
+        workspace,
+        source: lateMarketplaceRoot,
+      });
+      expect(mutation.marketplace.id).toBe("late-market");
+    } finally {
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
+  it("initializes a missing official manifest under concurrent reads without losing marketplace state", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zcode-protocol-lazy-init-"));
+    const storageDir = join(root, "cli");
+    process.env.ZCODE_STORAGE_DIR = storageDir;
+    const pluginStorageRoot = getPluginStorageRoot(getCliStorageRoot(storageDir));
+    const workspace = { workspacePath: root, workspaceKey: root };
+
+    try {
+      // 冷启动：known_marketplaces.json 与官方 marketplace manifest 均缺失。
+      expect(existsSync(join(pluginStorageRoot, "known_marketplaces.json"))).toBe(false);
+      expect(
+        existsSync(
+          join(pluginStorageRoot, "marketplaces", "zcode-plugins-official", "marketplace.json"),
+        ),
+      ).toBe(false);
+
+      // 并发读各自触发 lazy 初始化：两个投影都必须看到完整的 catalog/known 状态。
+      const [list, overview] = await Promise.all([
+        listPlugins(noopContext, { workspace }),
+        getPluginsOverview(noopContext, { workspace }),
+      ]);
+
+      const known = JSON.parse(
+        await readFile(join(pluginStorageRoot, "known_marketplaces.json"), "utf8"),
+      ) as { marketplaces?: Array<{ id?: string }> };
+      expect(known.marketplaces?.map((record) => record.id)).toContain(
+        "zcode-plugins-official",
+      );
+
+      const manifest = JSON.parse(
+        await readFile(
+          join(pluginStorageRoot, "marketplaces", "zcode-plugins-official", "marketplace.json"),
+          "utf8",
+        ),
+      ) as { name?: string; plugins?: unknown[] };
+      expect(manifest.name).toBe("zcode-plugins-official");
+      expect(manifest.plugins?.length ?? 0).toBeGreaterThan(0);
+
+      expect(
+        list.plugins.some((plugin) => plugin.id === "skill-creator@zcode-plugins-official"),
+      ).toBe(true);
+      expect(
+        overview.marketplaces.some(
+          (marketplace) => marketplace.id === "zcode-plugins-official",
+        ),
+      ).toBe(true);
+      // 并发 lazy 初始化不得残留 staging 临时文件。
+      expect(await listStagedLeftovers(pluginStorageRoot)).toEqual([]);
+    } finally {
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
+  it("gates a missing-manifest describe/validate until the write gate is released", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zcode-protocol-manifest-gate-"));
+    const storageDir = join(root, "cli");
+    process.env.ZCODE_STORAGE_DIR = storageDir;
+    const pluginStorageRoot = getPluginStorageRoot(getCliStorageRoot(storageDir));
+    const workspace = { workspacePath: root, workspaceKey: root };
+
+    try {
+      const { marketplaceId, pluginName } = await seedMissingManifestMarketplace(
+        root,
+        pluginStorageRoot,
+      );
+
+      let releaseGate = (): void => {};
+      let markGateEntered = (): void => {};
+      const gateEntered = new Promise<void>((resolve) => {
+        markGateEntered = resolve;
+      });
+      const gate = withPluginStorageLock(pluginStorageRoot, async () => {
+        markGateEntered();
+        await new Promise<void>((resolve) => {
+          releaseGate = resolve;
+        });
+      });
+      await gateEntered;
+
+      const describePromise = describePlugin(noopContext, {
+        workspace,
+        marketplace: marketplaceId,
+        pluginName,
+      });
+      const validatePromise = validatePlugin(noopContext, {
+        workspace,
+        marketplace: marketplaceId,
+        pluginName,
+      });
+
+      try {
+        const [detailState, validationState] = await Promise.all([
+          settleWithin(describePromise, 200),
+          settleWithin(validatePromise, 200),
+        ]);
+        // needsWrite=true：缺 manifest 的物化写必须排在安装/下载等写之后。
+        expect(detailState.status).toBe("blocked");
+        expect(validationState.status).toBe("blocked");
+      } finally {
+        releaseGate();
+        await gate;
+      }
+
+      const [detail, validation] = await Promise.all([describePromise, validatePromise]);
+      expect(
+        detail.components.some((group) =>
+          group.items.some((item) => item.name === "demo-skill"),
+        ),
+      ).toBe(true);
+      expect(validation.ok).toBe(true);
+      expect(
+        existsSync(
+          join(pluginStorageRoot, "marketplaces", marketplaceId, "marketplace.json"),
+        ),
+      ).toBe(true);
+      expect(await listStagedLeftovers(pluginStorageRoot)).toEqual([]);
+    } finally {
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
+  it("reads an installed plugin or an unknown marketplace without joining the write gate", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zcode-protocol-installed-read-gate-"));
+    const storageDir = join(root, "cli");
+    process.env.ZCODE_STORAGE_DIR = storageDir;
+    const pluginStorageRoot = getPluginStorageRoot(getCliStorageRoot(storageDir));
+    const workspace = { workspacePath: root, workspaceKey: root };
+
+    try {
+      const { marketplaceId, pluginName } = await seedMissingManifestMarketplace(
+        root,
+        pluginStorageRoot,
+      );
+      // 完成安装：物化 manifest、写入 installed_plugins.json 与本地缓存。
+      await installZCodeMarketplacePlugin({
+        marketplace: marketplaceId,
+        pluginName,
+        pluginStorageRoot,
+        userConfigPath: join(root, "config.json"),
+        workingDirectory: root,
+      });
+      // 模拟 marketplace manifest 丢失：已安装插件的详情仍应从本地缓存直接返回。
+      await rm(join(pluginStorageRoot, "marketplaces", marketplaceId), {
+        force: true,
+        recursive: true,
+      });
+
+      let releaseGate = (): void => {};
+      let markGateEntered = (): void => {};
+      const gateEntered = new Promise<void>((resolve) => {
+        markGateEntered = resolve;
+      });
+      const gate = withPluginStorageLock(pluginStorageRoot, async () => {
+        markGateEntered();
+        await new Promise<void>((resolve) => {
+          releaseGate = resolve;
+        });
+      });
+      await gateEntered;
+
+      try {
+        // 缓存命中读的阈值留出 CI 余量；闸门若被误用会一直挂到释放，远大于该阈值。
+        const [installedState, unknownState] = await Promise.all([
+          settleWithin(
+            describePlugin(noopContext, {
+              workspace,
+              marketplace: marketplaceId,
+              pluginName,
+            }),
+            1000,
+          ),
+          settleWithin(
+            describePlugin(noopContext, {
+              workspace,
+              marketplace: "unknown-not-registered-market",
+              pluginName: "missing",
+            }),
+            1000,
+          ),
+        ]);
+        // 已安装缓存命中的详情读取不产生写；未登记且无 manifest 的市场也直接返回错误投影。
+        expect(installedState.status).toBe("settled");
+        expect(unknownState.status).toBe("settled");
+        if (installedState.status === "settled") {
+          expect(
+            installedState.value.components.some((group) =>
+              group.items.some((item) => item.name === "demo-skill"),
+            ),
+          ).toBe(true);
+        }
+      } finally {
+        releaseGate();
+        await gate;
+      }
+    } finally {
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
+  it("materializes a missing marketplace manifest once across concurrent describe calls", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zcode-protocol-manifest-single-write-"));
+    const storageDir = join(root, "cli");
+    process.env.ZCODE_STORAGE_DIR = storageDir;
+    const pluginStorageRoot = getPluginStorageRoot(getCliStorageRoot(storageDir));
+    const workspace = { workspacePath: root, workspaceKey: root };
+
+    try {
+      const { marketplaceId, pluginName } = await seedMissingManifestMarketplace(
+        root,
+        pluginStorageRoot,
+      );
+      const params = { workspace, marketplace: marketplaceId, pluginName };
+      const [first, second] = await Promise.all([
+        describePlugin(noopContext, params),
+        describePlugin(noopContext, params),
+      ]);
+      for (const detail of [first, second]) {
+        expect(
+          detail.components.some((group) =>
+            group.items.some((item) => item.name === "demo-skill"),
+          ),
+        ).toBe(true);
+      }
+
+      const known = JSON.parse(
+        await readFile(join(pluginStorageRoot, "known_marketplaces.json"), "utf8"),
+      ) as { marketplaces?: Array<{ id?: string }> };
+      // 物化写与同步 lazy 默认初始化互不覆盖。
+      expect(known.marketplaces?.map((record) => record.id)).toEqual(
+        expect.arrayContaining([marketplaceId, "claude-plugins-official"]),
+      );
+      expect(await listStagedLeftovers(pluginStorageRoot)).toEqual([]);
+    } finally {
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+});
+
+/** 登记一个本地目录市场但故意不落托管 manifest，用于覆盖 needsWrite=true 分支。 */
+async function seedMissingManifestMarketplace(
+  root: string,
+  pluginStorageRoot: string,
+): Promise<{ marketplaceId: string; pluginName: string }> {
+  const marketplaceId = "e2e-read-scheduling-market";
+  const pluginName = "demo";
+  const marketplaceRoot = join(root, "read-scheduling-source");
+  await writeTestFile(
+    join(marketplaceRoot, ".claude-plugin", "marketplace.json"),
+    JSON.stringify({
+      name: marketplaceId,
+      plugins: [{ name: pluginName, source: "./plugins/demo", version: "1.0.0" }],
+    }),
+  );
+  await writeTestFile(
+    join(marketplaceRoot, "plugins", pluginName, ".claude-plugin", "plugin.json"),
+    JSON.stringify({ name: pluginName, skills: "skills", version: "1.0.0" }),
+  );
+  await writeTestFile(
+    join(marketplaceRoot, "plugins", pluginName, "skills", "demo-skill", "SKILL.md"),
+    "---\ndescription: demo skill\n---\n\n# demo\n",
+  );
+  await writeKnownMarketplaces(pluginStorageRoot, [
+    {
+      id: marketplaceId,
+      source: { source: "directory", path: marketplaceRoot },
+      name: marketplaceId,
+      addedAt: "2026-01-01T00:00:00.000Z",
+      pluginCount: 1,
+    },
+  ]);
+  return { marketplaceId, pluginName };
+}
+
+/** 列出 storage 根与 marketplaces/ 下的 staging 临时文件，断言 lazy 写无残留。 */
+async function listStagedLeftovers(pluginStorageRoot: string): Promise<string[]> {
+  const entries = await readdir(pluginStorageRoot);
+  const marketplaceEntries = existsSync(join(pluginStorageRoot, "marketplaces"))
+    ? await readdir(join(pluginStorageRoot, "marketplaces"))
+    : [];
+  return [...entries, ...marketplaceEntries].filter((entry) => entry.includes(".stage-"));
+}
+
+async function settleWithin<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+): Promise<{ status: "settled"; value: T } | { status: "blocked" }> {
+  return Promise.race([
+    promise.then((value) => ({ status: "settled" as const, value })),
+    new Promise<{ status: "blocked" }>((resolve) => {
+      setTimeout(() => resolve({ status: "blocked" }), timeoutMs);
+    }),
+  ]);
+}

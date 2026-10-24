@@ -129,6 +129,55 @@ Claude catalog request
 写入 `marketplaces/{marketplace}/marketplace.json`，但读取外部源时不能只认根目录
 `marketplace.json`。
 
+### 存储读写调度与锁语义
+
+插件存储的读投影与写入分属两条调度路径：长耗时写（安装、更新、市场刷新、卸载）
+不能阻塞与之无关的读；缓存命中的读不获取写锁；只有确实缺失的 lazy 初始化写才进入
+对应的写闸门或 seed 锁。
+
+| 操作                                                               | 类别                                   | 是否等待 per-storageRoot 写闸门                                                                                     | 可能触发的 lazy 写                                                     |
+| ------------------------------------------------------------------ | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `plugins/list`（`listPlugins` / `resolveZCodePlugins`）            | 读投影                                 | 不获取                                                                                                              | 官方内置 cache/manifest seed、缺失的 `known_marketplaces.json` 记录    |
+| `plugins/overview`                                                 | 读投影                                 | 不获取                                                                                                              | 同 list，另含缺省 marketplace 初始化                                   |
+| `plugins/describe`                                                 | 读投影                                 | 已安装缓存命中、manifest 已提交、或未登记且无 manifest 的未知市场均不获取；仅为已登记市场缺失 manifest 的物化写获取 | 仅缺失的 marketplace manifest                                          |
+| `plugins/validate`                                                 | 只读 dry-run                           | manifest 已提交、或未登记且无 manifest 均不获取；仅为已登记市场缺失 manifest 的物化写获取                           | 同 describe；不写安装态、不启用插件、不启动 MCP、不执行 hooks/commands |
+| `plugins/setEnabled` / `plugins/configure` / `plugins/resetConfig` | 配置写（User/Workspace `config.json`） | 不共享插件存储写闸门                                                                                                | 无                                                                     |
+| `plugins/marketplace/add` / `update` / `remove`                    | 存储写                                 | 按 storageRoot 串行                                                                                                 | 缺省 marketplace 初始化                                                |
+| `plugins/install` / `uninstall` / `update` / `restoreBuiltin`      | 存储写                                 | 按 storageRoot 串行                                                                                                 | marketplace manifest 物化、官方内置 seed                               |
+
+锁语义：
+
+- 每个 `<cli storage>/plugins` 根一把进程内写闸门（promise chain，FIFO；单次失败不阻断
+  后续操作）。
+- 读路径先检查已提交状态（官方 cache 的 seed marker、`marketplaces/{id}/marketplace.json`、
+  `known_marketplaces.json`、已安装插件记录与本地缓存）；命中后直接返回已提交快照，
+  不等待写闸门，也不获取 `*.seed-lock`。
+- 异步读（`describe` / `validate`）只在目标市场已登记且缺少 manifest 时进入写闸门做物化
+  写；进入后仍先复查已提交状态，避免等待期间其他写者已提交后重复写。
+- 同步读（`list` / `overview` 的 seed 与 known 初始化）不等待写闸门，否则会被无关安装/下载
+  阻塞。它们与异步写者共享的 `known_marketplaces.json` read-modify-write 必须满足：读取与
+  提交在同一事件循环轮次内完成，提交使用 temp+rename 原子替换；异步写者禁止在读取 known
+  后 `await` 再提交（旧快照会覆盖同步 lazy 初始化刚写入的记录）。并发 lazy 初始化不得
+  覆盖彼此已提交的记录，不能靠超时掩盖。
+- 跨进程 seed 锁（`<cache>/<plugin>/<version>.seed-lock`）只保护内置 cache seed 的
+  跨进程互斥；`Atomics.wait` 同步等待只允许出现在 seed 内部，不得扩大其持锁范围。
+- 锁序固定为「进程内写闸门 → 跨进程 seed 锁」。已持有写闸门的调用必须复用无锁核心
+  （例如 `restoreBuiltinPluginCore`），禁止对同一 storageRoot 再次获取写闸门（会自锁）。
+- 配置写（`plugins/setEnabled` / `configure` / `resetConfig`）不进入插件存储写闸门，其并发
+  语义由配置文件层的原子 read-modify-write 负责；调用方不得假设配置写与安装/卸载写存在
+  全局先后。
+- `installed_plugins.json` 的 read-modify-write 只在写闸门内进行；`known_marketplaces.json`
+  的进程内互斥由「同一轮次同步 RMW + 原子替换」保证；marketplace manifest 由原子目录激活
+  提交。
+- 读只返回已提交快照；写进行中不得暴露半成品（沿用原子 temp+rename 与相同内容跳过写）。
+
+```text
+read（缓存命中：seed marker / manifest / known / installed） ─────> 已提交快照
+read（已登记市场缺 manifest） -> 写闸门 -> 原子 manifest 写 -> 新快照
+read（缺 cache seed，list/overview） -> 跨进程 seed 锁 -> 原子 cache 替换 -> 新快照
+write（install/update/...） -> 写闸门 -> ... -> 原子提交
+```
+
 ## Marketplace Source 兼容
 
 V1 必须识别 Claude Marketplace source schema，并按支持级别处理：
@@ -261,6 +310,12 @@ validate 的扫描深度按目标类型区分：
 
 - 单元测试覆盖 marketplace storage、installed state 迁移、manifest 兼容矩阵、
   MCP namespace、sensitive userConfig、dependency diagnostics。
+- 并发与锁语义覆盖：长安装占用写闸门时 `describe`/`list`/`overview` 仍及时返回；
+  缓存命中读不获取跨进程 seed 写锁；已安装缓存命中的详情不排队；已登记市场缺 manifest 的
+  describe/validate 会等待写闸门并在释放后完成一次物化；并发描述只产生一份 manifest，
+  同步 lazy known 初始化与异步写互不覆盖、无 staging 残留；缺 manifest 的并发初始化不丢写
+  且写请求仍串行（`bootstrap/tests/plugin-storage-lock.test.ts`、
+  `bootstrap/tests/plugins-protocol.test.ts`）。
 - 协议 schema 覆盖 success/failure parse。
 - UI 覆盖 marketplace / installed / diagnostics 基础管理。
 - 运行 `pnpm typecheck` 和 `pnpm lint`。

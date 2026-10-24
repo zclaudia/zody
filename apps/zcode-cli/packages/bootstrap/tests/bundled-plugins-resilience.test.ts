@@ -359,6 +359,9 @@ describe("bundled official plugin cache resilience", () => {
     const storageRoot = await createStorageRoot(cleanups);
     expect(resolveOfficialPluginRoots({ storageRoot })).toEqual([]);
     for (const cacheSuffix of [BROWSER_CACHE_SUFFIX, SKILL_CREATOR_CACHE_SUFFIX]) {
+      // I06 读快路径：缓存命中时不再进入 seed 锁。要让下面的断言覆盖真实的等锁预算，
+      // 必须先让 marker 失配，确保本次调用确实需要 seed 写。
+      await invalidateSeedMarker(join(storageRoot, cacheSuffix));
       const lockRoot = `${join(storageRoot, cacheSuffix)}.seed-lock`;
       await mkdir(lockRoot, { recursive: true });
       await writeFile(
@@ -384,6 +387,9 @@ describe("bundled official plugin cache resilience", () => {
     expect(resolveOfficialPluginRoots({ storageRoot })).toEqual([]);
     // 当前版本目录保持完整（不 rename 成旧版本），只把锁交给「另一个存活进程」。
     const currentRoot = join(storageRoot, BROWSER_CACHE_SUFFIX);
+    // I06 读快路径：marker 命中且 manifest 已提交时会跳过 seed 锁。这里先让 marker
+    // 失配，确保用例仍覆盖「需要 seed 写但锁被占用」的超时降级路径。
+    await invalidateSeedMarker(currentRoot);
     const lockRoot = `${currentRoot}.seed-lock`;
     await mkdir(lockRoot, { recursive: true });
     await writeFile(
@@ -575,6 +581,16 @@ async function expectNoSeedBackups(targetRoot: string): Promise<void> {
   const targetName = basename(targetRoot);
   const siblings = await readdir(dirname(targetRoot));
   expect(siblings.filter((entry) => entry.startsWith(`${targetName}.backup`))).toEqual([]);
+}
+
+/**
+ * I06 读快路径会让缓存命中的读跳过 seed 锁。需要覆盖 seed 锁等待/超时的用例
+ * 先让 marker hash 失配，确保本次调用确实走需要写锁的慢路径。
+ */
+async function invalidateSeedMarker(targetRoot: string): Promise<void> {
+  const markerPath = join(targetRoot, ".zody-plugin-seed.json");
+  const marker = await readFile(markerPath, "utf8");
+  await writeFile(markerPath, marker.replace('"hash": "', '"hash": "stale-'));
 }
 
 function createLogger(): Logger & { warn: ReturnType<typeof vi.fn> } {

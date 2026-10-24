@@ -1,4 +1,12 @@
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
@@ -359,6 +367,31 @@ export function ensureDefaultPluginMarketplaces(storageRoot: string): KnownMarke
 }
 
 /**
+ * I06：只读检查 `ensureDefaultPluginMarketplaces` 是否已无写可做。
+ *
+ * describe/validate 的闸门判据据此区分「必须 lazy 初始化」与「未知市场直接返回」；
+ * 判定条件与 `ensureBundledOfficialMarketplaceRecordSync` 的落盘分支保持一致。
+ */
+export function isDefaultPluginMarketplacesInitialized(storageRoot: string): boolean {
+  const known = loadKnownMarketplacesSync(storageRoot);
+  const existingIds = new Set(known.map((record) => record.id));
+  if (DEFAULT_PLUGIN_MARKETPLACES.some((marketplace) => !existingIds.has(marketplace.id))) {
+    return false;
+  }
+  const manifestPath = getMarketplaceManifestPath(storageRoot, ZCODE_OFFICIAL_PLUGIN_MARKETPLACE);
+  const official = known.find((record) => record.id === ZCODE_OFFICIAL_PLUGIN_MARKETPLACE);
+  if (!existsSync(manifestPath)) {
+    // manifest 缺失且没有官方记录时，ensureBundledOfficialMarketplaceRecordSync 不写盘。
+    return official === undefined;
+  }
+  return (
+    official !== undefined &&
+    official.source.source === "file" &&
+    resolve(official.source.path) === resolve(manifestPath)
+  );
+}
+
+/**
  * fork（F6.2，D4b 方案 ii）：把随包 seed 生成的官方目录登记为本地 `file` 市场。
  *
  * 官方市场不再有远端 CDN 源：seed 把内置目录写入
@@ -428,7 +461,9 @@ export async function ensureMarketplaceManifestAvailable(input: {
   storageRoot: string;
 }): Promise<KnownMarketplaceRecord | null> {
   throwIfPluginOperationAborted(input.signal);
-  ensureDefaultPluginMarketplaces(input.storageRoot);
+  // I06：已提交的 manifest 是读快路径的判据。命中时不得再触发默认 marketplace
+  // 初始化（会写 known_marketplaces.json），否则缓存命中的 describe/validate 会
+  // 被无关的 lazy 写拖回写闸门队列。
   if (loadMarketplaceManifestSync(input.storageRoot, input.marketplace)) {
     return (
       loadKnownMarketplacesSync(input.storageRoot).find(
@@ -436,6 +471,7 @@ export async function ensureMarketplaceManifestAvailable(input: {
       ) ?? null
     );
   }
+  ensureDefaultPluginMarketplaces(input.storageRoot);
   const record = loadKnownMarketplacesSync(input.storageRoot).find(
     (item) => item.id === input.marketplace,
   );
@@ -674,7 +710,7 @@ export async function removeMarketplace(input: {
   const known = loadKnownMarketplacesSync(input.storageRoot).filter(
     (record) => record.id !== input.marketplace,
   );
-  await writeKnownMarketplaces(input.storageRoot, known);
+  writeKnownMarketplacesSync(input.storageRoot, known);
 }
 
 export function loadMarketplaceManifestSync(
@@ -1949,7 +1985,7 @@ async function upsertKnownMarketplace(
   } else {
     known.push(record);
   }
-  await writeKnownMarketplaces(storageRoot, known);
+  writeKnownMarketplacesSync(storageRoot, known);
   let settled = false;
   return {
     finalize: () => {
@@ -1974,7 +2010,7 @@ async function upsertKnownMarketplace(
       } else {
         current.splice(currentIndex, 1);
       }
-      await writeKnownMarketplaces(storageRoot, current);
+      writeKnownMarketplacesSync(storageRoot, current);
       settled = true;
     },
   };
@@ -1989,37 +2025,42 @@ async function persistMarketplaceRefreshFailure(
   const index = known.findIndex((record) => record.id === marketplace);
   if (index < 0 || !known[index]) return;
   known[index] = { ...known[index], lastRefreshFailure: failure };
-  await writeKnownMarketplaces(storageRoot, known);
+  writeKnownMarketplacesSync(storageRoot, known);
 }
 
-async function writeKnownMarketplaces(
-  storageRoot: string,
-  marketplaces: KnownMarketplaceRecord[],
-): Promise<void> {
-  await writeJsonFile(join(storageRoot, KNOWN_MARKETPLACES_FILE), {
-    version: 1,
-    marketplaces,
-  });
-}
-
+/**
+ * I06：known 状态的 read-modify-write 必须在同一事件循环轮次内提交。
+ *
+ * list/overview 的同步 lazy 初始化不经过进程内写闸门，若写者在读取后 await 异步
+ * 写，挂起的异步写会用旧快照覆盖 lazy 初始化刚提交的记录。这里用同步 temp+rename
+ * 原子替换，保证进程内 RMW 不可交错，读取方也只会看到旧文件或新文件。
+ */
 function writeKnownMarketplacesSync(
   storageRoot: string,
   marketplaces: KnownMarketplaceRecord[],
 ): void {
   const path = join(storageRoot, KNOWN_MARKETPLACES_FILE);
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(
-    path,
-    `${JSON.stringify(
-      {
-        version: 1,
-        marketplaces,
-      },
-      null,
-      2,
-    )}\n`,
-    "utf8",
+  const directory = dirname(path);
+  mkdirSync(directory, { recursive: true });
+  const contents = `${JSON.stringify(
+    {
+      version: 1,
+      marketplaces,
+    },
+    null,
+    2,
+  )}\n`;
+  const temporaryPath = join(
+    directory,
+    `.${basename(path)}.stage-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
   );
+  writeFileSync(temporaryPath, contents, "utf8");
+  try {
+    renameSync(temporaryPath, path);
+  } catch (error) {
+    rmSync(temporaryPath, { force: true });
+    throw error;
+  }
 }
 
 function defaultMarketplaceSourceFromString(source: string): MarketplaceSource {

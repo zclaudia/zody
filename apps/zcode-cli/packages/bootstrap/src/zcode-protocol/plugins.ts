@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import {
   zcodePluginsConfigureParamsSchema,
   zcodePluginsResetConfigParamsSchema,
@@ -46,8 +47,17 @@ import {
   updateZCodePluginMarketplace,
   validateZCodePlugin,
 } from "../plugins.js";
-import { listInstalledPluginRecords } from "@zcode/adapters/plugins";
-import { withPluginStorageLock } from "../lib/plugin-storage-lock.js";
+import {
+  isDefaultPluginMarketplacesInitialized,
+  listInstalledPluginRecords,
+  loadKnownMarketplacesSync,
+  loadMarketplaceManifestSync,
+  resolveInstalledPluginRoot,
+} from "@zcode/adapters/plugins";
+import {
+  withPluginStorageLock,
+  withPluginStorageWriteGateWhenNeeded,
+} from "../lib/plugin-storage-lock.js";
 import { getCliStorageRoot, getPluginStorageRoot } from "../app/paths.js";
 import { resolveOfficialPluginHostMcpServerNames } from "../app/official-plugin-definitions.js";
 import { createConfig, resolvePath, type ConfigResult } from "@zcode/adapters/config";
@@ -464,20 +474,62 @@ export async function resetPluginConfig(
   return { pluginId: params.pluginId, diagnostics: [] };
 }
 
+/**
+ * I06：读投影只在确实需要 lazy 写时才进入写闸门。
+ *
+ * `ensureMarketplaceManifestAvailable` 只在 manifest 缺失且默认状态未初始化、或
+ * 该 marketplace 已登记（需要拉取）时写盘；未知且未登记的市场直接返回，不应排队。
+ */
+function needsMarketplaceManifestMaterialization(
+  pluginStorageRoot: string,
+  marketplace: string | undefined,
+): boolean {
+  if (marketplace === undefined) return false;
+  if (loadMarketplaceManifestSync(pluginStorageRoot, marketplace)) return false;
+  return (
+    !isDefaultPluginMarketplacesInitialized(pluginStorageRoot) ||
+    loadKnownMarketplacesSync(pluginStorageRoot).some((record) => record.id === marketplace)
+  );
+}
+
+/**
+ * I06：已安装插件且缓存完整时，`describeMarketplacePlugin` 在 manifest 缺失前就
+ * 直接读本地目录返回，不产生任何写。详情读必须绕过写闸门。
+ */
+function isCommittedInstalledPluginRead(
+  pluginStorageRoot: string,
+  marketplace: string,
+  pluginName: string,
+): boolean {
+  const record = listInstalledPluginRecords(pluginStorageRoot).find(
+    (item) => item.marketplace === marketplace && item.name === pluginName,
+  );
+  return record !== undefined && existsSync(resolveInstalledPluginRoot(pluginStorageRoot, record));
+}
+
 export async function validatePlugin(
   context: ZCodeProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZCodePluginsValidateResult> {
   const params = parseParams(zcodePluginsValidateParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
-  const diagnostics = await withPluginStorageLock(pluginStorageRoot, async () =>
-    validateZCodePlugin({
-      logger: context.logger,
-      marketplace: params.marketplace,
-      pluginName: params.pluginName,
-      source: params.source,
-      workingDirectory: params.workspace.workspacePath,
-    }),
+  const diagnostics = await withPluginStorageWriteGateWhenNeeded(
+    pluginStorageRoot,
+    () =>
+      // source 校验只读用户提供的来源，不写 marketplace storage。
+      params.source === undefined &&
+      needsMarketplaceManifestMaterialization(
+        pluginStorageRoot,
+        params.pluginName === undefined ? undefined : params.marketplace,
+      ),
+    async () =>
+      validateZCodePlugin({
+        logger: context.logger,
+        marketplace: params.marketplace,
+        pluginName: params.pluginName,
+        source: params.source,
+        workingDirectory: params.workspace.workspacePath,
+      }),
   );
   return {
     ok: diagnostics.every((diagnostic) => diagnostic.severity !== "error"),
@@ -496,13 +548,22 @@ export async function describePlugin(
 ): Promise<ZCodePluginsDescribeResult> {
   const params = parseParams(zcodePluginsDescribeParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
-  const result = await withPluginStorageLock(pluginStorageRoot, async () =>
-    describeZCodePlugin({
-      logger: context.logger,
-      marketplace: params.marketplace,
-      pluginName: params.pluginName,
-      workingDirectory: params.workspace.workspacePath,
-    }),
+  const result = await withPluginStorageWriteGateWhenNeeded(
+    pluginStorageRoot,
+    () =>
+      !isCommittedInstalledPluginRead(
+        pluginStorageRoot,
+        params.marketplace,
+        params.pluginName,
+      ) &&
+      needsMarketplaceManifestMaterialization(pluginStorageRoot, params.marketplace),
+    async () =>
+      describeZCodePlugin({
+        logger: context.logger,
+        marketplace: params.marketplace,
+        pluginName: params.pluginName,
+        workingDirectory: params.workspace.workspacePath,
+      }),
   );
   const components: ZCodePluginComponentGroup[] = result.components.map((group) => ({
     kind: group.kind,

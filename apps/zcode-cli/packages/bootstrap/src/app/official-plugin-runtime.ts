@@ -51,14 +51,49 @@ interface OfficialRuntimeManifestInput {
 export function writeOfficialPluginRuntimeManifest(input: OfficialRuntimeManifestInput): void {
   const manifestPath = join(input.rootPath, ".zcode-plugin", "plugin.json");
   const currentContents = readFileSync(manifestPath, "utf8");
+  const nextContents = renderOfficialPluginRuntimeManifest(input, currentContents);
+  if (nextContents === undefined) return;
+  // 启动时无条件 rename 同内容的 plugin.json 会放大 Windows 杀毒/索引器
+  // 的短暂文件占用。字节完全一致时不触碰文件；真正有更新时仍保持原子的失败语义。
+  if (nextContents === currentContents) return;
+  writeTextFileAtomicallyWithRetry(
+    manifestPath,
+    nextContents,
+    input.retryBudget ?? createOfficialPluginCacheRetryBudget(),
+  );
+}
+
+/**
+ * I06：读快路径只读检查运行期 manifest 是否已是当前进程要提交的内容。
+ * 命中时 seed 读路径不必进入跨进程 seed 锁；读取/解析失败按"需要慢路径"处理，
+ * 由慢路径在锁内重试并保留原有失败语义。
+ */
+export function isOfficialPluginRuntimeManifestCurrent(
+  input: OfficialRuntimeManifestInput,
+): boolean {
+  try {
+    const manifestPath = join(input.rootPath, ".zcode-plugin", "plugin.json");
+    const currentContents = readFileSync(manifestPath, "utf8");
+    const nextContents = renderOfficialPluginRuntimeManifest(input, currentContents);
+    return nextContents === undefined || nextContents === currentContents;
+  } catch {
+    return false;
+  }
+}
+
+/** 计算重写后的 manifest 内容；无需重写（无 mcpServers 或无可用的 host 入口）时返回 undefined。 */
+function renderOfficialPluginRuntimeManifest(
+  input: OfficialRuntimeManifestInput,
+  currentContents: string,
+): string | undefined {
   const manifest = JSON.parse(currentContents) as Record<string, unknown>;
   // skill-only / command-only 类型的 official plugin 不带 mcpServers，直接跳过 rewrite。
   // 之前这里无脑 asRecord(manifest.mcpServers) 会对 undefined 抛错，
   // 把 seed 流程整个阻断，连带 listZCodeSkills 拉不出 plugin skill。
-  if (manifest.mcpServers === undefined) return;
+  if (manifest.mcpServers === undefined) return undefined;
   const mcpServers = asRecord(manifest.mcpServers);
   const hostPrefixArgs = officialPluginHostPrefixArgs();
-  if (!hostPrefixArgs) return;
+  if (!hostPrefixArgs) return undefined;
 
   // 保留对其他历史 official plugin MCP 的通用重写；zcode-cua 当前是 skill/SDK-only，
   // 不会进入这个分支，也不会生成独立的 CUA MCP server。
@@ -81,15 +116,7 @@ export function writeOfficialPluginRuntimeManifest(input: OfficialRuntimeManifes
   }
   manifest.mcpServers = mcpServers;
 
-  const nextContents = `${JSON.stringify(manifest, null, 2)}\n`;
-  // 启动时无条件 rename 同内容的 plugin.json 会放大 Windows 杀毒/索引器
-  // 的短暂文件占用。字节完全一致时不触碰文件；真正有更新时仍保持原子的失败语义。
-  if (nextContents === currentContents) return;
-  writeTextFileAtomicallyWithRetry(
-    manifestPath,
-    nextContents,
-    input.retryBudget ?? createOfficialPluginCacheRetryBudget(),
-  );
+  return `${JSON.stringify(manifest, null, 2)}\n`;
 }
 
 export function officialPluginHostPrefixArgs(): string[] | undefined {
