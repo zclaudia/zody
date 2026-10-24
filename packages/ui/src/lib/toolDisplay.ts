@@ -268,8 +268,13 @@ const TOOL_DISPLAY_STRATEGIES: ToolDisplayStrategy[] = [
 export function buildToolDisplayModel(
   toolCall: ChatToolCall,
   workspacePath: string,
+  workspaceScope?: Pick<ImageCodeViewerSource, "workspaceIdentity" | "workspaceRemoteSessionId">,
 ): ToolDisplayModel {
-  const preview = getToolCallCodePreview(toolCall, workspacePath);
+  const preview = getToolCallCodePreview(toolCall, workspacePath, {
+    workspacePath,
+    workspaceIdentity: workspaceScope?.workspaceIdentity,
+    workspaceRemoteSessionId: workspaceScope?.workspaceRemoteSessionId,
+  });
   const contentPreview = getToolCallCodeContentPreview(toolCall, workspacePath);
   const errorText = getToolCallErrorText(toolCall);
   const identity = resolveToolCallIdentity(toolCall);

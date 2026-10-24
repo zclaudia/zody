@@ -269,6 +269,9 @@ export function ChangesGroupToolCallBlock(context: ToolCallBlockRenderContext) {
             key={child.toolCall.toolId}
             toolCallNode={child}
             workspacePath={context.workspacePath}
+            // 子卡的内嵌图片按 path + identity + remoteSessionId 绑定（I08）。
+            workspaceIdentity={context.workspaceIdentity}
+            workspaceRemoteSessionId={context.workspaceRemoteSessionId}
             theme={context.theme}
             codePreviewSettings={context.codePreviewSettings}
             showIcon={false}
@@ -292,6 +295,8 @@ export function ChangesGroupToolCallBlock(context: ToolCallBlockRenderContext) {
       context.theme,
       context.codePreviewSettings,
       context.workspacePath,
+      context.workspaceIdentity,
+      context.workspaceRemoteSessionId,
     ],
   );
   return (

@@ -84,6 +84,9 @@ export function ExecuteGroupToolCallBlock(context: ToolCallBlockRenderContext) {
             key={child.toolCall.toolId}
             toolCallNode={child}
             workspacePath={context.workspacePath}
+            // 子卡的内嵌图片按 path + identity + remoteSessionId 绑定（I08）。
+            workspaceIdentity={context.workspaceIdentity}
+            workspaceRemoteSessionId={context.workspaceRemoteSessionId}
             showIcon={false}
             onOpenCodeViewer={context.onOpenCodeViewer}
             onOpenFileLink={context.onOpenFileLink}
@@ -102,6 +105,8 @@ export function ExecuteGroupToolCallBlock(context: ToolCallBlockRenderContext) {
       context.onOpenCodeViewer,
       context.onOpenFileLink,
       context.workspacePath,
+      context.workspaceIdentity,
+      context.workspaceRemoteSessionId,
     ],
   );
 

@@ -28,6 +28,8 @@ const AGENT_TOOL_ICON = <BotIcon className="size-4 shrink-0 text-foreground-subt
 function AgentChildToolList({
   childToolCalls,
   workspacePath,
+  workspaceIdentity,
+  workspaceRemoteSessionId,
   theme,
   codePreviewSettings,
   onOpenCodeViewer,
@@ -45,7 +47,7 @@ function AgentChildToolList({
   onOpenBrowserUrl?: ToolCallBlockRenderContext["onOpenBrowserUrl"];
   onOpenAutomationsMain?: ToolCallBlockRenderContext["onOpenAutomationsMain"];
   onLoadFullToolCallFields?: ToolCallBlockRenderContext["onLoadFullToolCallFields"];
-}) {
+} & Pick<ToolCallBlockRenderContext, "workspaceIdentity" | "workspaceRemoteSessionId">) {
   if (childToolCalls.length === 0) {
     return null;
   }
@@ -58,6 +60,9 @@ function AgentChildToolList({
           toolCallNode={childToolCallNode}
           depth={1}
           workspacePath={workspacePath}
+          // 子卡的内嵌图片按 path + identity + remoteSessionId 绑定（I08）。
+          workspaceIdentity={workspaceIdentity}
+          workspaceRemoteSessionId={workspaceRemoteSessionId}
           theme={theme}
           codePreviewSettings={codePreviewSettings}
           showIcon={false}
@@ -334,6 +339,8 @@ export function AgentToolCallBlock(context: ToolCallBlockRenderContext) {
         <AgentChildToolList
           childToolCalls={childToolCalls}
           workspacePath={context.workspacePath}
+          workspaceIdentity={context.workspaceIdentity}
+          workspaceRemoteSessionId={context.workspaceRemoteSessionId}
           theme={context.theme}
           codePreviewSettings={context.codePreviewSettings}
           onOpenCodeViewer={context.onOpenCodeViewer}
@@ -356,6 +363,8 @@ export function AgentToolCallBlock(context: ToolCallBlockRenderContext) {
       context.onOpenFileLink,
       context.theme,
       context.workspacePath,
+      context.workspaceIdentity,
+      context.workspaceRemoteSessionId,
       intl,
       isAgentVisuallyRunning,
       prompt,

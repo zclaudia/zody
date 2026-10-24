@@ -117,6 +117,9 @@ function CuaGroupChildren({
               key={`tool:${event.row.toolCallId}`}
               toolCallNode={event.node}
               workspacePath={context.workspacePath}
+              // 子卡的内嵌图片按 path + identity + remoteSessionId 绑定（I08）。
+              workspaceIdentity={context.workspaceIdentity}
+              workspaceRemoteSessionId={context.workspaceRemoteSessionId}
               theme={context.theme}
               codePreviewSettings={context.codePreviewSettings}
               showIcon

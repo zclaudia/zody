@@ -5,6 +5,7 @@ import { MessageResponse, type MessageFileLinkTarget } from "@/components/ai-ele
 import { ToolInput, ToolOutput } from "@/components/ai-elements/tool.js";
 import { useServices } from "@/hooks/useServices.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { logger } from "@/logger.js";
 import type {
   CodeViewerSource,
   ImageCodeViewerSource,
@@ -132,29 +133,101 @@ function InlineCodeContent({
   );
 }
 
+type InlineImagePreviewState =
+  | { key: string; status: "loading" }
+  | { key: string; status: "failed" }
+  | { key: string; status: "loaded"; preview: FileMediaPreview };
+
+/**
+ * 来源身份按 AGENTS.md 的统一规则取 `workspaceIdentity?.trim() || workspacePath`：
+ * 同一路径在本地和远端工作区可能指向不同文件，只有路径的工作区也要靠 workspacePath 区分。
+ * remoteSessionId 再单独入 key，保证复用同一 identity 的不同远控会话之间也会重新绑定。
+ */
+function inlineImageSourceKey(preview: ImageCodeViewerSource): string {
+  const workspaceKey = preview.workspaceIdentity?.trim() || preview.workspacePath || "";
+  return [preview.path, workspaceKey, preview.workspaceRemoteSessionId?.trim() ?? ""].join(
+    "\u0000",
+  );
+}
+
 function InlineImageContent({ preview }: { preview: ImageCodeViewerSource }) {
   const { fileService } = useServices();
   const { intl } = useZCodeIntl();
-  const [imagePreview, setImagePreview] = useState<FileMediaPreview | null>(null);
+  const sourceKey = inlineImageSourceKey(preview);
+  const [state, setState] = useState<InlineImagePreviewState>({
+    key: sourceKey,
+    status: "loading",
+  });
+  // 用渲染期比较代替只在 effect 里清空：来源变化后的第一帧就必须撤掉旧图，
+  // 否则切 A→B 时会先闪一帧 A 的图片，等 effect 执行后才回到 loading。
+  const currentState: InlineImagePreviewState =
+    state.key === sourceKey ? state : { key: sourceKey, status: "loading" };
 
   useEffect(() => {
     let cancelled = false;
-    void fileService.readMediaPreview({ path: preview.path }).then((mediaPreview) => {
-      if (!cancelled) {
-        setImagePreview(mediaPreview);
-      }
-    });
+    setState({ key: sourceKey, status: "loading" });
+
+    void fileService
+      .readMediaPreview({ path: preview.path })
+      .then((mediaPreview) => {
+        if (cancelled) {
+          return;
+        }
+        // 空结果和空 payload 都是终态失败；继续显示 loading 会让卡片永久停在加载中。
+        // 失败原因统一用 warn 记录路径，和 reject / path 不匹配分支保持同一口径。
+        if (!mediaPreview || mediaPreview.dataBase64.length === 0) {
+          logger.warn("[ToolCallBody] 内嵌图片预览结果为空", {
+            path: preview.path,
+            hasPreview: Boolean(mediaPreview),
+          });
+          setState({ key: sourceKey, status: "failed" });
+          return;
+        }
+        // 回包必须对应本次请求的路径：契约要求 readMediaPreview 回显请求路径，
+        // 不一致时按失败收口，避免把别的文件内容当成当前图片展示。
+        if (mediaPreview.path !== preview.path) {
+          logger.warn("[ToolCallBody] 内嵌图片预览回包路径不匹配", {
+            path: preview.path,
+            resultPath: mediaPreview.path,
+          });
+          setState({ key: sourceKey, status: "failed" });
+          return;
+        }
+        setState({ key: sourceKey, status: "loaded", preview: mediaPreview });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+        // 原实现只有 then：reject 会变成 unhandled rejection 且界面永久 loading。
+        logger.warn("[ToolCallBody] 内嵌图片预览失败", {
+          path: preview.path,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        setState({ key: sourceKey, status: "failed" });
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [fileService, preview.path]);
+  }, [fileService, preview.path, sourceKey]);
 
-  if (!imagePreview) {
+  if (currentState.status === "failed") {
+    const unavailable = intl.formatMessage({ id: "codeViewer.imageUnavailable" });
+    return <p aria-label={unavailable}>{unavailable}</p>;
+  }
+
+  if (currentState.status === "loading") {
     return <p>{intl.formatMessage({ id: "chat.toolCall.loading" })}</p>;
   }
 
-  return <img src={imagePreview.dataBase64} alt={preview.title} />;
+  // 裸 base64 交给 <img> 无法被浏览器识别，必须补全 data URL 前缀。
+  return (
+    <img
+      src={`data:${currentState.preview.mediaType};base64,${currentState.preview.dataBase64}`}
+      alt={preview.title}
+    />
+  );
 }
 
 function InlinePlanResult({

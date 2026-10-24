@@ -75,6 +75,8 @@ function ToolCallBlockComponent({
   toolCallNode,
   depth = 0,
   workspacePath,
+  workspaceIdentity,
+  workspaceRemoteSessionId,
   theme,
   codePreviewSettings,
   showIcon = true,
@@ -108,6 +110,12 @@ function ToolCallBlockComponent({
   toolCallNode: TaskChatToolCallTreeNode;
   depth?: number;
   workspacePath: string;
+  /**
+   * workspace 身份：内嵌图片按 path + identity 绑定异步回包，
+   * 同一路径在本地/远端工作区或不同远控会话之间切换时必须重新拉取（I08）。
+   */
+  workspaceIdentity?: string;
+  workspaceRemoteSessionId?: string;
   /** 应用主题（store 耦合剥离）：由宿主（v4 SessionPane 等）传入，缺省按 "system" 兜底。 */
   theme?: ToolCallBlockRenderContext["theme"];
   /** 代码预览设置（store 耦合剥离）：由宿主传入并保持引用稳定。 */
@@ -202,8 +210,12 @@ function ToolCallBlockComponent({
   const identity = resolveToolCallIdentity(toolCall);
   const toolState = mapToolStatus(toolCall.status);
   const displayModel = useMemo(
-    () => buildToolDisplayModel(toolCall, workspacePath),
-    [toolCall, workspacePath],
+    () =>
+      buildToolDisplayModel(toolCall, workspacePath, {
+        workspaceIdentity,
+        workspaceRemoteSessionId,
+      }),
+    [toolCall, workspacePath, workspaceIdentity, workspaceRemoteSessionId],
   );
   const rawFileSummaries = useMemo(
     () =>
@@ -250,6 +262,8 @@ function ToolCallBlockComponent({
               toolCallNode={childToolCallNode}
               depth={depth + 1}
               workspacePath={workspacePath}
+              workspaceIdentity={workspaceIdentity}
+              workspaceRemoteSessionId={workspaceRemoteSessionId}
               theme={theme}
               codePreviewSettings={codePreviewSettings}
               showIcon={showIcon}
@@ -287,6 +301,8 @@ function ToolCallBlockComponent({
       codePreviewSettings,
       toolPreviewCodeViewer,
       workspacePath,
+      workspaceIdentity,
+      workspaceRemoteSessionId,
     ],
   );
 
@@ -295,6 +311,10 @@ function ToolCallBlockComponent({
       isOfficeMode,
       toolCallNode,
       workspacePath,
+      // 子卡由 renderer 从 context 自行渲染：身份必须进 context，
+      // 否则嵌套内嵌图片在 workspace/远控会话切换后沿用旧绑定（I08）。
+      workspaceIdentity,
+      workspaceRemoteSessionId,
       theme,
       codePreviewSettings,
       displayModel,
@@ -365,6 +385,8 @@ function ToolCallBlockComponent({
       workflowRun,
       workflowDraft,
       workspacePath,
+      workspaceIdentity,
+      workspaceRemoteSessionId,
     ],
   );
 

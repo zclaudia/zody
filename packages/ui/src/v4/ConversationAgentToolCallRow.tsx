@@ -82,6 +82,8 @@ export function ConversationAgentToolCallRow({
       <ToolCallBlock
         toolCallNode={toolCallNode}
         workspacePath={context.workspacePath}
+        workspaceIdentity={context.workspaceIdentity}
+        workspaceRemoteSessionId={context.workspaceRemoteSessionId}
         theme={context.theme}
         codePreviewSettings={context.codePreviewSettings}
         showTodoToolCalls={context.messageStreamShowTodos === true}

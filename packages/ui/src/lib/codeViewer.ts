@@ -460,6 +460,10 @@ export function createDiffSourceFilePreviewSource(
 export function getToolCallCodePreview(
   toolCall: ChatToolCall,
   workspacePath: string,
+  workspaceScope?: Pick<
+    CodeViewerWorkspaceScope,
+    "workspacePath" | "workspaceIdentity" | "workspaceRemoteSessionId"
+  >,
 ): CodeViewerSource | null {
   // 结构化 diff 是工具结果的显式变更事实，优先于 input/output 中的全文预览。
   const structuredDiff = extractStructuredDiff(toolCall.raw);
@@ -548,6 +552,15 @@ export function getToolCallCodePreview(
       title: viewerTitle,
       path: resolvedPath,
       mediaType: inferImageMediaType(resolvedPath) ?? "application/octet-stream",
+      // 内嵌图片要按 workspace 身份绑定异步回包；宿主传入 scope 时才补身份字段，
+      // 保证同一路径在本地/远端工作区、不同远控会话之间切换会重新拉取。
+      ...(workspaceScope?.workspacePath ? { workspacePath: workspaceScope.workspacePath } : {}),
+      ...(workspaceScope?.workspaceIdentity
+        ? { workspaceIdentity: workspaceScope.workspaceIdentity }
+        : {}),
+      ...(workspaceScope?.workspaceRemoteSessionId
+        ? { workspaceRemoteSessionId: workspaceScope.workspaceRemoteSessionId }
+        : {}),
     };
   }
 

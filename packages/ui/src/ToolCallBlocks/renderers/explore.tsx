@@ -427,6 +427,10 @@ export function ExploreToolCallBlock(context: ToolCallBlockRenderContext) {
               key={childToolCallNode.toolCall.toolId}
               toolCallNode={childToolCallNode}
               workspacePath={context.workspacePath}
+              // 子卡的内嵌图片按 path + identity + remoteSessionId 绑定（I08），
+              // 这里不转发会让身份切换后沿用旧图和旧 key。
+              workspaceIdentity={context.workspaceIdentity}
+              workspaceRemoteSessionId={context.workspaceRemoteSessionId}
               showIcon={false}
               onOpenCodeViewer={context.onOpenCodeViewer}
               onOpenFileLink={context.onOpenFileLink}
@@ -445,6 +449,8 @@ export function ExploreToolCallBlock(context: ToolCallBlockRenderContext) {
       context.onOpenCodeViewer,
       context.onOpenFileLink,
       context.workspacePath,
+      context.workspaceIdentity,
+      context.workspaceRemoteSessionId,
     ],
   );
 

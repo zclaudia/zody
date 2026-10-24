@@ -21,6 +21,16 @@
 - `packages/ui/src/ToolCallBlocks/ToolCallBody.tsx`
   - 负责通用参数、结果、文件和 Markdown 预览
 
+## 内嵌图片预览
+
+- `ToolCallBody` 的 image inline preview 由 `fileService.readMediaPreview({ path })` 解析后渲染；桌面 `desktop-continuous` 与手机 `web-remote-replayable` 共用同一套加载、失败和来源绑定规则。
+- 结果必须绑定发起请求时的来源身份：来源 key 至少包含 `path`、`workspaceIdentity`（按 `workspaceIdentity?.trim() || workspacePath` 回落）和 `workspaceRemoteSessionId`；`ToolCallBlock` 从会话行上下文注入这些字段，经 `buildToolDisplayModel` → `getToolCallCodePreview` 带到 image source。key 变化时立即清空上一张图片并回到 loading，只有与当前 key 匹配的回包可以更新界面；旧 key 的迟到回包必须丢弃，不能覆盖新来源。
+- 同一绑定规则必须覆盖展开的子工具卡：`ToolCallBlockRenderContext` 携带 `workspaceIdentity` / `workspaceRemoteSessionId`，由 context 自行渲染子卡的 renderer（Agent、Explore、Execute/Changes 分组等）原样转发给子 `ToolCallBlock`。只让顶层卡拿到身份会使子卡在身份或远控会话切换后沿用旧 key 和旧图。
+- `readMediaPreview` reject、返回 `null` / `undefined`、`dataBase64` 为空，或回包 `path` 与请求路径不一致时，都必须结束 loading 并进入明确失败态；失败态复用 `codeViewer.imageUnavailable` 文案，不得永久停留在“正在加载...”。reject 不得变成未处理的 Promise rejection。
+- 上述失败原因统一通过 UI logger 以 `warn` 记录请求路径（有错误时附错误信息），不进入 tool display、协议或持久化；失败态不得改变 tool call 状态、摘要、展开入口或其他 tool 的渲染。
+- 成功渲染的 `src` 必须是完整 data URL：`data:${mediaType};base64,${dataBase64}`，不能把裸 base64 直接交给 `<img>`。
+- 布局、尺寸和查看器行为继续复用现有内嵌图片样式；本节只约束异步结果、失败终态和来源绑定，不复制 PreviewPane / MarkdownImage 的布局规则。
+
 ## 会话流可见性
 
 - `EnterPlanMode` 是会话模式切换的内部边界，不向用户提供可操作详情；主会话流在 `inputStreaming` / `running` / 终态下都不渲染它的 tool row。

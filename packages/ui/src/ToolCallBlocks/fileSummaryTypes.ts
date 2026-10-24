@@ -206,6 +206,13 @@ export interface ToolCallBlockRenderContext {
   toolCallNode: TaskChatToolCallTreeNode;
   workspacePath: string;
   /**
+   * workspace 身份与远控会话：renderer 自行渲染的子工具卡必须原样转发，
+   * 内嵌图片才能按 path + identity + remoteSessionId 绑定异步回包（I08）。
+   * 缺省表示宿主未提供，子卡沿用 path + workspacePath 的旧绑定。
+   */
+  workspaceIdentity?: string;
+  workspaceRemoteSessionId?: string;
+  /**
    * 插件 UI：scope 是沙箱登记需要的 session 范围，onOpenSidePane 是"在侧栏打开"回调；
    * 由 PluginUiSessionProvider 在边界注入。缺省表示宿主不提供，带 ui:// 资源的工具回退普通 MCP 卡片。
    */
