@@ -7,6 +7,11 @@ import type {
   QueueItem,
   SubmissionMode,
 } from "@zcode/shared/zcode-protocol-v4";
+import {
+  composeInputIntentMetadata,
+  type InputIntentIdentity,
+  type InputIntentMetadataOptions,
+} from "../../app/input-intent-metadata.js";
 import { commandAdmissionOf } from "./executor.js";
 
 export interface CanonicalCommandIntent {
@@ -32,59 +37,21 @@ export interface CanonicalCommandIntent {
 
 export function inputIntentMetadata(
   envelope: CommandEnvelope,
-  options: {
-    text: string;
-    inputOrigin?: "desktop" | "mobile";
-    conversationQuotes?: import("@zcode/contracts").TurnInputIntentMetadata["conversationQuotes"];
-    // fork（bots 移除）：options.botGroupSource 随 bot channels 全量删除（specs/bot-channels-removal.md）。
-    requestedDelivery: TurnInputIntentMetadata["requestedDelivery"];
-    admittedDelivery?: TurnInputIntentMetadata["admittedDelivery"];
-    fallbackReasonCode?: string;
-    attachmentRefs?: readonly AttachmentRef[];
-    modelSelection?: ModelSelection;
-    mode?: SubmissionMode;
-    planEnabled?: boolean;
-    sharedContextRefs?: TurnInputIntentMetadata["sharedContextRefs"];
-    source?: TurnInputIntentMetadata["source"];
-  },
+  options: InputIntentMetadataOptions,
 ): TurnInputIntentMetadata {
-  const admission = commandAdmissionOf(envelope);
-  // fork（F4.2）：原 highspeedMeta→intent.highspeed 的透传随加速卡删除；存量持久化
-  // intent 中的 highspeed 字段由 schema 宽容解析后忽略（兼容读取）。
-  return {
-    ...(options.inputOrigin ? { inputOrigin: options.inputOrigin } : {}),
-    ...(options.conversationQuotes ? { conversationQuotes: options.conversationQuotes } : {}),
-    // fork（bots 移除）：options.botGroupSource 组装随 bot channels 全量删除。
+  const identity: InputIntentIdentity = {
     sourceCommandId: envelope.commandId,
-    queueItemId: admission.queueItemId,
-    clientId: envelope.clientId || "cli",
+    clientId: envelope.clientId,
     kind:
       envelope.type === "compact"
         ? "compact"
         : envelope.type === "sendGoalCommand"
           ? "sendGoalCommand"
           : "sendText",
-    // live intent 过去只带 kind/来源，projection 只能回退可见 command 文案；
-    // goal 的 displayText（如 `/GoAl replace X`）不是 runtime 已解析的 canonical objective。
-    text: options.text,
-    ...(options.modelSelection ? { modelSelection: options.modelSelection } : {}),
-    ...(options.mode ? { mode: options.mode } : {}),
-    ...(options.planEnabled !== undefined ? { planEnabled: options.planEnabled } : {}),
-    admissionSeq: admission.admissionSeq,
-    admittedAt: admission.admittedAt,
-    requestedDelivery: options.requestedDelivery,
-    admittedDelivery:
-      options.admittedDelivery ??
-      (options.requestedDelivery === "guide"
-        ? "guide"
-        : options.requestedDelivery === "queue"
-          ? "queue"
-          : "startNow"),
-    ...(options.fallbackReasonCode ? { fallbackReasonCode: options.fallbackReasonCode } : {}),
-    ...(options.attachmentRefs ? { attachmentRefs: [...options.attachmentRefs] } : {}),
-    ...(options.sharedContextRefs ? { sharedContextRefs: [...options.sharedContextRefs] } : {}),
-    ...(options.source ? { source: options.source } : {}),
   };
+  // fork（F4.2）：原 highspeedMeta→intent.highspeed 的透传随加速卡删除；存量持久化
+  // intent 中的 highspeed 字段由 schema 宽容解析后忽略（兼容读取）。
+  return composeInputIntentMetadata(identity, commandAdmissionOf(envelope), options);
 }
 
 /** edit/retry 以新 commandId 重建，但保留原 canonical kind/delivery/cause。 */

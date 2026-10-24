@@ -12,6 +12,10 @@ import {
   ROW_TARGETING_COMMANDS,
   parseCommandEnvelope,
 } from "@zcode/shared/zcode-protocol-v4";
+import { queueItemIdForSubmission } from "../app/session-input-id.js";
+
+// queue item id 由 app 层统一构造；保留旧导出名，V4 内部与旧桥继续使用。
+export { queueItemIdForSubmission as queueItemIdForCommand };
 
 /** guard 裁决结果：拒绝（撤 optimistic）或 noop（晚到者静默收口，§6.3）。 */
 export type GuardDecision =
@@ -71,10 +75,6 @@ export type CommandInboxOutcome =
 
 // createSession 与 null sessionId query 归全局桶。
 const GLOBAL_BUCKET = "@global";
-
-export function queueItemIdForCommand(commandId: string): string {
-  return `queue_${commandId}`;
-}
 
 type GateRelease = () => void;
 
@@ -179,7 +179,7 @@ export class CommandInbox {
           ack: decision.ack,
           admissionSeq: nextAdmissionSeq,
           admittedAt,
-          queueItemId: queueItemIdForCommand(envelope.commandId),
+          queueItemId: queueItemIdForSubmission(envelope.commandId),
           settle: (final) => {
             if (settled) return;
             settled = true;

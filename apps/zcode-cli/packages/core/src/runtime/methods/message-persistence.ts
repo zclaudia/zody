@@ -143,38 +143,51 @@ export async function persistUserPrompt(
   ];
 
   if (options?.sessionInputId && this.sessionStore.promoteSessionInput) {
-    await this.sessionStore.promoteSessionInput({
-      id: options.sessionInputId,
-      sessionID: this.sessionId,
-      message,
-      parts,
-    });
-    this.logger?.debug("Session input promoted", {
-      ...traceContextToLogContext(traceContext),
-      event: "session_input.promoted",
-      messageId: messageID,
-      module: "core.runtime",
-      sessionInputId: options.sessionInputId,
-      status: "completed",
-    });
-    const sourceCommandId =
-      options.intent?.sourceCommandId ?? options.sourceCommandId ?? options.sessionInputId;
-    // promotion 事务提交后再发事件：gateway 只能在此边界解除 live-input pin。
-    // 若在 queue remove/TurnStarted 就解除，LRU churn 会在 transcript 尚未落盘时把
-    // commands/query 退化成 unknown，重复执行同一输入。
-    await this.appendEvent(
-      this.createEvent(
-        SessionEventType.SessionInputPromoted,
-        {
-          pendingInputId: options.sessionInputId,
-          sourceCommandId,
-          messageId: messageID,
-        },
+    // I03 修复原因：普通 CLI 直接提交现在也会带稳定 queueItemId 作为 canonical intent id，
+    // 但只有 V4 admission / queue 事件预先入账的输入才有 session_input 行。必须按「行是否
+    // 存在」决定是否进入 promote 事务：
+    // - 存在：V4 startNow、queue/guide 提升都依赖 promote 原子置 promoted 并发出
+    //   SessionInputPromoted（live-input 解 pin、context attach 的唯一信号）。
+    // - 不存在：legacy 直接提交没有账本行，走 promote 会伪造 SessionInputPromoted，并跳过
+    //   常规 message/part 持久化日志。
+    // 不支持 getSessionInputById 的旧 store 保持原行为（视为账本行存在）。
+    const ledgerRecord = this.sessionStore.getSessionInputById
+      ? await this.sessionStore.getSessionInputById(options.sessionInputId)
+      : undefined;
+    if (!this.sessionStore.getSessionInputById || ledgerRecord) {
+      await this.sessionStore.promoteSessionInput({
+        id: options.sessionInputId,
+        sessionID: this.sessionId,
+        message,
+        parts,
+      });
+      this.logger?.debug("Session input promoted", {
+        ...traceContextToLogContext(traceContext),
+        event: "session_input.promoted",
+        messageId: messageID,
+        module: "core.runtime",
+        sessionInputId: options.sessionInputId,
+        status: "completed",
+      });
+      const sourceCommandId =
+        options.intent?.sourceCommandId ?? options.sourceCommandId ?? options.sessionInputId;
+      // promotion 事务提交后再发事件：gateway 只能在此边界解除 live-input pin。
+      // 若在 queue remove/TurnStarted 就解除，LRU churn 会在 transcript 尚未落盘时把
+      // commands/query 退化成 unknown，重复执行同一输入。
+      await this.appendEvent(
+        this.createEvent(
+          SessionEventType.SessionInputPromoted,
+          {
+            pendingInputId: options.sessionInputId,
+            sourceCommandId,
+            messageId: messageID,
+          },
+          traceContext,
+        ),
         traceContext,
-      ),
-      traceContext,
-    );
-    return;
+      );
+      return;
+    }
   }
 
   await this.persistMessage(message, traceContext);

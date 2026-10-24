@@ -3,7 +3,7 @@
 // 必须把 traceContext.turnId 与 v4 origin 词表落进 message.anchor（additive JSON）。
 import { describe, expect, it } from "vitest";
 import type { MessageInfo, TraceContext } from "@zcode/contracts";
-import { createMessageId, createTraceId, createTurnId } from "@zcode/contracts";
+import { createMessageId, createTraceId, createTurnId, SessionEventType } from "@zcode/contracts";
 import {
   persistAssistantMessage,
   persistSyntheticUserNoticeForSession,
@@ -12,6 +12,7 @@ import {
 
 function createHarness() {
   const saved: MessageInfo[] = [];
+  const appended: Array<{ type: string; payload: unknown }> = [];
   const fakeRuntime = {
     latestConversationMessageId: null as string | null,
     latestAssistantMessageId: null as string | null,
@@ -32,9 +33,15 @@ function createHarness() {
       saved.push(input);
     },
     async persistPart() {},
+    createEvent(type: string, payload: unknown, traceContext: TraceContext) {
+      return { type, payload, traceContext };
+    },
+    async appendEvent(event: { type: string; payload: unknown }) {
+      appended.push(event);
+    },
     logger: undefined,
   };
-  return { saved, fakeRuntime };
+  return { appended, saved, fakeRuntime };
 }
 
 function trace(turnId?: ReturnType<typeof createTurnId>): TraceContext {
@@ -150,5 +157,44 @@ describe("v4 transcript 锚点（additive JSON）", () => {
         uiVisibility: "hidden",
       },
     });
+  });
+
+  it("sessionInputId 只在账本行存在时走 promote；legacy 直接提交保留常规持久化", async () => {
+    const { appended, saved, fakeRuntime } = createHarness();
+    const promoted: string[] = [];
+    let ledgerRecord: { id: string } | null = null;
+    fakeRuntime.sessionStore = {
+      getSessionInputById: async () => ledgerRecord,
+      promoteSessionInput: async (input: { id: string }) => {
+        promoted.push(input.id);
+      },
+    };
+
+    await persistUserPrompt.call(
+      fakeRuntime as never,
+      createMessageId(),
+      "legacy direct",
+      undefined,
+      trace(),
+      { sessionInputId: "queue_legacy" },
+    );
+    // legacy 直接提交没有 V4 admission 账本行：不能伪造 promotion，也必须保留 message 日志路径。
+    expect(promoted).toEqual([]);
+    expect(saved).toHaveLength(1);
+    expect(appended).toHaveLength(0);
+
+    ledgerRecord = { id: "queue_v4" };
+    await persistUserPrompt.call(
+      fakeRuntime as never,
+      createMessageId(),
+      "v4 startNow",
+      undefined,
+      trace(),
+      { sessionInputId: "queue_v4" },
+    );
+    // 已入账的 V4 startNow 必须继续走 promote：原子落 message 并发出解 pin 信号。
+    expect(promoted).toEqual(["queue_v4"]);
+    expect(saved).toHaveLength(1);
+    expect(appended.map((event) => event.type)).toEqual([SessionEventType.SessionInputPromoted]);
   });
 });

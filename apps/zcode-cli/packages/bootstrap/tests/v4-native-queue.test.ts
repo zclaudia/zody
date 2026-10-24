@@ -5,6 +5,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SessionEventType, type SessionEvent } from "@zcode/contracts";
 import type { CommandEnvelope, QueueItem } from "@zcode/shared/zcode-protocol-v4";
+import { createInputFacade } from "../src/app/input-facade.js";
 import { V4CommandExecutor } from "../src/zcode-protocol-v4/commands/executor.js";
 import {
   V4QueueItemTextUnavailableError,
@@ -378,6 +379,56 @@ describe("v4 原生 sendQueuedNow", () => {
     expect(sendOptions?.intent?.highspeed).toBeUndefined();
     // 退回必须同时改写 Selection：只删卡标记会让本轮带着加速 provider 却没有任何凭据。
     expect(sendOptions?.intent?.modelSelection).toEqual(sessionSelection);
+  });
+
+  it("sendQueuedNow 用队列项冻结的 Selection 提升，新提交才读切模后的 Session", async () => {
+    const selectionAtSubmit = {
+      providerId: "provider-a",
+      modelId: "model-a",
+      options: { reasoningLevel: "high" as const },
+    };
+    const selectionNow = { providerId: "provider-b", modelId: "model-b" };
+    const admitPrompt = vi.fn().mockResolvedValue({
+      completion: Promise.resolve({}),
+      kind: "started",
+      turnId: "turn-1",
+    });
+    const runtime = {
+      getSessionModelSelection: vi.fn(() => selectionNow),
+      admitPrompt,
+    };
+    // 真实 input facade：Frozen 写入口 + 队列提升消费入口在同一条链上。
+    const facade = createInputFacade({
+      logger: { warn: vi.fn() } as never,
+      prepareUserExecutionBoundary: async () => {},
+      runtime: runtime as never,
+      sessionId: "s1" as never,
+      traceContext: { traceId: "trace-1" } as never,
+    });
+    const app = makeApp({ runtime, sendInput: facade.sendInput });
+    const record = makeRecord({ app });
+    const host = makeHost(record, {
+      getQueueItem: vi.fn().mockReturnValue(queueItem({ modelSelection: selectionAtSubmit })),
+    });
+
+    await new V4CommandExecutor(host).execute(envelope("sendQueuedNow", { queueItemId: "q-1" }));
+
+    expect(admitPrompt).toHaveBeenCalledWith(
+      "排队原文",
+      expect.anything(),
+      expect.objectContaining({
+        intent: expect.objectContaining({ modelSelection: selectionAtSubmit }),
+      }),
+    );
+
+    await facade.sendInput("new input after switch", { inputId: "cmd-new" });
+    expect(admitPrompt).toHaveBeenLastCalledWith(
+      "new input after switch",
+      undefined,
+      expect.objectContaining({
+        intent: expect.objectContaining({ modelSelection: selectionNow }),
+      }),
+    );
   });
 
   it("promotes quote-only input with its original sender metadata", async () => {
