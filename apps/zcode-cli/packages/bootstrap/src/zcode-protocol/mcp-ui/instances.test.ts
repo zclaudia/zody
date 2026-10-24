@@ -44,6 +44,37 @@ describe("MCP App credentials", () => {
         .lease,
     ).toEqual(b);
   });
+  it("rejects a stale source generation instead of replacing the current lease", () => {
+    const owner = new McpUiInstances();
+    const page = {
+      ...binding,
+      workspace: "stale-source",
+      serverName: "stale-server",
+      scopeId: "stale-scope",
+    };
+    const newest = owner.open(page, { identity: "source", generation: 2 });
+    // 等待期间换源的迟到 open 携带旧代际；实例 owner 不能降级替换当前凭证。
+    expect(() => owner.open(page, { identity: "source", generation: 1 })).toThrow();
+    const scope = { ...page, workspace: { workspacePath: page.workspace } };
+    expect(owner.validate(newest, scope, { identity: "source", generation: 2 }).lease).toEqual(
+      newest,
+    );
+    owner.close(newest);
+  });
+  it("returns one lease for repeated opens of the same logical page and source", () => {
+    const owner = new McpUiInstances();
+    const source = { identity: "source", generation: 1 };
+    const page = {
+      ...binding,
+      workspace: "same-page",
+      serverName: "same-server",
+      scopeId: "same-scope",
+    };
+    const first = owner.open(page, source);
+    const second = owner.open({ ...page }, source);
+    expect(second).toEqual(first);
+    owner.close(first);
+  });
   it("isolates workspace, server, owner and connection generation", () => {
     const owner = new McpUiInstances();
     const source = { identity: "source", generation: 1 };

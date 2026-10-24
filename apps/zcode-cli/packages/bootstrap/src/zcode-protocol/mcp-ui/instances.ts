@@ -41,6 +41,16 @@ export class McpUiInstances {
   open(binding: McpUiInstanceBinding, source: Source): McpAppInstance {
     const key = this.key(binding);
     const previous = this.records.get(this.logical.get(key) ?? "");
+    // 首开等待期间连接可能已换代：迟到的 open 携带旧代际时不能降级替换
+    // 当前有效实例，也不能关闭它；当前页面继续使用较新的凭证。
+    // 依据见 docs/plugin-ui-connection-readiness.md「旧快照保护」。
+    if (
+      previous &&
+      previous.source.identity === source.identity &&
+      source.generation < previous.source.generation
+    ) {
+      throw new Error("MCP App instance source generation is stale");
+    }
     if (
       previous &&
       previous.source.identity === source.identity &&

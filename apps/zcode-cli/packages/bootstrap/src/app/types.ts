@@ -428,6 +428,13 @@ export interface ZCodeApp {
   ): Promise<McpReadResourceResult>;
   onMcpAppConnectionInvalidated(serverName: string, listener: () => void): () => void;
   getMcpAppConnectionSnapshot(serverName: string): { identity: string; generation: number } | null;
+  /**
+   * 首开屏障：等待本会话已租用的 server 的既有连接任务，再返回连接快照。
+   * 未租用、等待期间释放或连接失败时返回 null；不新建连接、不轮询。
+   */
+  waitForMcpAppConnection(
+    serverName: string,
+  ): Promise<{ identity: string; generation: number } | null>;
   callMcpToolForUi(
     serverName: string,
     toolName: string,

@@ -310,7 +310,17 @@ export function createMcpConnectionPool(options: McpConnectionPoolOptions): McpC
           ...(sessionId ? { sessionId } : {}),
         });
       }
-      return await entry.connecting;
+      const status = await entry.connecting;
+      // 等待 initialize 期间 lease 可能已被释放或换源：连接结果不再属于该会话，
+      // 必须报错而不是返回。否则已释放的会话会把旧连接当作可用，
+      // 协议层可能据此为失效会话签发页面（见 docs/plugin-ui-connection-readiness.md）。
+      if (leaseClosed) {
+        throw new Error(`MCP connection lease was released while connecting: ${serverName}`);
+      }
+      if (leased.get(serverName) !== key) {
+        throw new Error(`MCP connection source changed while connecting: ${serverName}`);
+      }
+      return status;
     };
 
     const snapshot = async (): Promise<McpConnectionSnapshot> => {
@@ -349,6 +359,29 @@ export function createMcpConnectionPool(options: McpConnectionPoolOptions): McpC
       appConnectionSnapshot(serverName) {
         const key = leased.get(serverName);
         return key ? (entries.get(key)?.adapter.appConnectionSnapshot?.(serverName) ?? null) : null;
+      },
+      async waitForAppConnection(serverName) {
+        // 等待期间可能换源：每次 settle 后重新解析本租约指向的 entry，直到租约稳定。
+        // 旧 entry 的结果不得签发；新 entry 仍在 initialize 时继续等它的真实连接任务。
+        for (;;) {
+          if (leaseClosed) return null;
+          const key = leased.get(serverName);
+          const entry = key ? entries.get(key) : undefined;
+          // 未租用（未配置/已停用/已释放）属于立即终态：只读既有租约，不能新建连接。
+          if (!entry) return null;
+          const snapshot = entry.adapter.waitForAppConnection
+            ? // adapter 的连接任务才是真实 initialize；entry.connecting 可能已被
+              // caller 的 oauthAuthorizationTimeoutMs 预算提前 resolve 成 connecting。
+              await entry.adapter.waitForAppConnection(serverName).catch(() => null)
+            : // 兼容未实现等待入口的 port：至少等既有连接任务，失败或未连接按终态处理。
+              await entry.connecting.then(
+                () => entry.adapter.appConnectionSnapshot?.(serverName) ?? null,
+                () => null,
+              );
+          if (leaseClosed) return null;
+          if (leased.get(serverName) !== key) continue;
+          return snapshot ?? entry.adapter.appConnectionSnapshot?.(serverName) ?? null;
+        }
       },
       onAppConnectionInvalidated(serverName, listener) {
         const entry = requireEntry(serverName);

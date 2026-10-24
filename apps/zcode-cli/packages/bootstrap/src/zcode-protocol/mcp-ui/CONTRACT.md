@@ -4,6 +4,8 @@ Agent 侧 MCP Apps 身份、授权、调用和通知入口；通过 McpUiSession
 
 - server 必须存在于当前会话的可信 MCP 配置，不猜测名称。连接 port 提供规范化来源身份与现有连接 generation；资源读取前后、请求执行前和审批后均验证。
 - McpUiInstances 是运行凭证唯一 owner：Agent runtimeId、单调 generation、不可猜 token、稳定 appIdentity。绑定 workspace identity/session/plugin/server/resource/scope/owner 和 Host 提供的已知账号上下文。同逻辑页面同连接的并发 open 幂等。
+- 首开等待（详见 `docs/plugin-ui-connection-readiness.md`）：连接快照缺失时等待该 server 既有的真实连接任务（adapter 的 initialize/listTools/授权事务，不能被 caller 的 `oauthAuthorizationTimeoutMs` 预算截断；等待期间换源则跟随新 entry），不新建连接、不轮询、不重复 initialize；连接失败、非 connected 或等待中释放返回明确终态错误，不签发 lease。放行后重新解析 session 并重新读取连接快照，以新的 identity/generation 创建页面，旧快照不得签发。同一逻辑页面同一代际的并发 open 返回同一 lease，只注册一个连接失效 watcher。实例 owner 拒绝同一 identity 下 generation 低于当前记录的 open，且不替换当前实例。
+- services prepare 在 `resources/read` 之后、登记沙箱之前重验实例；重验失败关闭已签发实例且不登记沙箱。UI 不轮询，prepare 后的既有 `validateInstance` 保留为最终校验。
 - 页面只能选择工具名称与参数，不能选择连接、会话或实例。callTool 检查 app visibility，并复用已有 ToolExecutor 的校验、hooks、拒绝规则、会话授权与审批；app-only 工具可直接建立授权 entry，不要求暴露给模型。原始 MCP 结果直接返回，不产生自动对话或 transcript row。
 - 执行固定已验证的连接代际，不触发连接重建、OAuth 自动恢复或工具重放。取消到达底层 signal；取消不回滚外部已发生操作。
 - NDJSON 对完整凭证绑定的 MCP App 请求允许独立执行；长调用不得阻塞取消、关闭、审批及其他页面。普通会话请求保留串行队列，Agent 实例与调用登记负责并发终态。

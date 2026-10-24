@@ -218,9 +218,24 @@ export async function openMcpUiInstance(
   rawParams: unknown,
 ) {
   const params = parseParams(zcodeMcpUiOpenInstanceParamsSchema, rawParams);
-  const record = requireSession(context, params.sessionId, { operation: "mcp/uiOpenInstance" });
-  const source = record.app.getMcpAppConnectionSnapshot(params.serverName);
-  if (!source) throw new ProtocolRequestError(-32001, "MCP App connection is unavailable");
+  let record = requireSession(context, params.sessionId, { operation: "mcp/uiOpenInstance" });
+  let source = record.app.getMcpAppConnectionSnapshot(params.serverName);
+  if (!source) {
+    // 首开屏障：initialize 尚未完成时等待该 server 既有连接任务，不新建连接、不轮询
+    // （见 docs/plugin-ui-connection-readiness.md）。连接任务与代际仍由 adapter/pool 持有。
+    let waitFailed = false;
+    try {
+      await record.app.waitForMcpAppConnection(params.serverName);
+    } catch {
+      waitFailed = true;
+    }
+    // 放行后重新解析会话：等待期间会话可能已释放，不能沿用旧 record 签发页面。
+    record = requireSession(context, params.sessionId, { operation: "mcp/uiOpenInstance" });
+    if (waitFailed) throw new ProtocolRequestError(-32001, "MCP App connection is unavailable");
+    // 以等待结束后重新读到的 identity/generation 创建页面；进入等待前的旧快照不得签发。
+    source = record.app.getMcpAppConnectionSnapshot(params.serverName);
+    if (!source) throw new ProtocolRequestError(-32001, "MCP App connection is unavailable");
+  }
   const lease = mcpUiInstances.open(
     {
       workspace: params.workspace.workspaceIdentity?.trim() || params.workspace.workspacePath,

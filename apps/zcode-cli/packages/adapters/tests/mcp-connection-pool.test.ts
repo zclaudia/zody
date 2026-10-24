@@ -502,6 +502,290 @@ describe("MCP connection pool revalidation", () => {
   });
 });
 
+// 首开屏障：pool 的 acquire 必须加入既有 entry.connecting；连接失败是终态，
+// 等待中释放的 lease 不能拿到连接（见 docs/plugin-ui-connection-readiness.md）。
+describe("MCP connection pool initialize barrier", () => {
+  const config: McpServerConfig = { type: "stdio", command: "fixture" };
+  const connectedStatus: McpServerStatus = {
+    status: "connected",
+    toolCount: 1,
+    transport: "stdio",
+    updatedAt: new Date(0).toISOString(),
+  };
+
+  function createDeferredAdapter(connect: () => Promise<McpServerStatus>) {
+    const connectServer = vi.fn(connect);
+    const adapter = {
+      appConnectionSnapshot: () => null,
+      callTool: vi.fn(async () => ({ content: [{ text: "ok", type: "text" }] })),
+      close: vi.fn(async () => undefined),
+      connectConfiguredServers: vi.fn(async () => ({ statuses: {}, tools: [] })),
+      connectServer,
+      disconnectServer: vi.fn(async () => connectedStatus),
+      listTools: vi.fn(async () => []),
+      status: vi.fn(async () => ({
+        fixture: { ...connectedStatus, status: "connecting" as const },
+      })),
+    } as unknown as McpPort;
+    return { adapter, connectServer };
+  }
+
+  it("lets concurrent waiters share one in-flight initialize", async () => {
+    const gate = Promise.withResolvers<void>();
+    const { adapter, connectServer } = createDeferredAdapter(async () => {
+      await gate.promise;
+      return connectedStatus;
+    });
+    const pool = createMcpConnectionPool({
+      createAdapter: () => adapter,
+      idleGraceMs: 0,
+    });
+    const session = pool.acquireLease({ leaseId: "session", sessionId: "session" });
+
+    const first = session.connectServer("fixture", config);
+    const second = session.connectServer("fixture", config);
+    expect(connectServer).toHaveBeenCalledOnce();
+
+    gate.resolve();
+    await expect(first).resolves.toMatchObject({ status: "connected" });
+    await expect(second).resolves.toMatchObject({ status: "connected" });
+    await pool.close();
+  });
+
+  it("keeps an initialize failure terminal for every waiter", async () => {
+    const gate = Promise.withResolvers<void>();
+    const { adapter, connectServer } = createDeferredAdapter(async () => {
+      await gate.promise;
+      throw new Error("initialize failed");
+    });
+    const pool = createMcpConnectionPool({
+      createAdapter: () => adapter,
+      idleGraceMs: 0,
+    });
+    const session = pool.acquireLease({ leaseId: "session", sessionId: "session" });
+
+    const first = session.connectServer("fixture", config);
+    const second = session.connectServer("fixture", config);
+    await vi.waitFor(() => expect(connectServer).toHaveBeenCalledOnce());
+    gate.resolve();
+
+    await expect(first).rejects.toThrow("initialize failed");
+    await expect(second).rejects.toThrow("initialize failed");
+    expect(session.appConnectionSnapshot?.("fixture")).toBeNull();
+    await pool.close();
+  });
+
+  it("does not hand the connection to a lease released while initialize is pending", async () => {
+    const gate = Promise.withResolvers<void>();
+    const { adapter, connectServer } = createDeferredAdapter(async () => {
+      await gate.promise;
+      return connectedStatus;
+    });
+    const pool = createMcpConnectionPool({
+      createAdapter: () => adapter,
+      idleGraceMs: 0,
+    });
+    const session = pool.acquireLease({ leaseId: "released", sessionId: "released" });
+
+    const pending = session.connectServer("fixture", config);
+    const outcome = pending.then(
+      () => null,
+      (error: Error) => error,
+    );
+    await vi.waitFor(() => expect(connectServer).toHaveBeenCalledOnce());
+    await session.close();
+
+    gate.resolve();
+    // 等待中释放的 lease 不得拿到连接；否则释放后仍可能签发旧页面。
+    expect(await outcome).toBeInstanceOf(Error);
+    expect(session.appConnectionSnapshot?.("fixture")).toBeNull();
+    await pool.close();
+  });
+
+  it("rejects a pending acquire when the lease switches to another source", async () => {
+    const gate = Promise.withResolvers<void>();
+    const adapters: McpPort[] = [];
+    const pool = createMcpConnectionPool({
+      createAdapter: ({ config: adapterConfig }) => {
+        const adapter = {
+          appConnectionSnapshot: () => null,
+          callTool: vi.fn(),
+          close: vi.fn(async () => undefined),
+          connectConfiguredServers: vi.fn(async () => ({ statuses: {}, tools: [] })),
+          connectServer: vi.fn(async () => {
+            if (adapterConfig.command === "first") await gate.promise;
+            return connectedStatus;
+          }),
+          disconnectServer: vi.fn(async () => connectedStatus),
+          listTools: vi.fn(async () => []),
+          status: vi.fn(async () => ({ fixture: connectedStatus })),
+        } as unknown as McpPort;
+        adapters.push(adapter);
+        return adapter;
+      },
+      idleGraceMs: 0,
+    });
+    const session = pool.acquireLease({ leaseId: "switched-acquire", sessionId: "switched-acquire" });
+    const first = session.connectServer("fixture", { type: "stdio", command: "first" });
+    const outcome = first.then(
+      () => null,
+      (error: Error) => error,
+    );
+    await vi.waitFor(() => expect(adapters).toHaveLength(1));
+    await session.connectServer("fixture", { type: "stdio", command: "second" });
+
+    gate.resolve();
+    // 换源后的旧 acquire 不能把旧 entry 的连接交给已指向新来源的 lease。
+    const error = await outcome;
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toContain("source changed");
+    await pool.close();
+  });
+
+  // session 的 connectServer 带 15s caller 预算，到点会以 connecting resolve；
+  // 首开屏障必须等 adapter 的真实 initialize 任务，不能被该预算截断。
+  it("waits for the adapter's real initialize after connectServer returns early", async () => {
+    const gate = Promise.withResolvers<void>();
+    let snapshot: { identity: string; generation: number } | null = null;
+    const waitForAppConnection = vi.fn(async () => {
+      await gate.promise;
+      snapshot = { identity: "fixture-source", generation: 1 };
+      return snapshot;
+    });
+    const adapter = {
+      appConnectionSnapshot: () => snapshot,
+      callTool: vi.fn(),
+      close: vi.fn(async () => undefined),
+      connectConfiguredServers: vi.fn(async () => ({ statuses: {}, tools: [] })),
+      connectServer: vi.fn(async () => ({ ...connectedStatus, status: "connecting" as const })),
+      disconnectServer: vi.fn(async () => connectedStatus),
+      listTools: vi.fn(async () => []),
+      status: vi.fn(async () => ({ fixture: { ...connectedStatus, status: "connecting" as const } })),
+      waitForAppConnection,
+    } as unknown as McpPort;
+    const pool = createMcpConnectionPool({ createAdapter: () => adapter, idleGraceMs: 0 });
+    const session = pool.acquireLease({ leaseId: "early", sessionId: "early" });
+
+    await expect(session.connectServer("fixture", config)).resolves.toMatchObject({
+      status: "connecting",
+    });
+    const waiting = session.waitForAppConnection!("fixture");
+    let settled = false;
+    void waiting.finally(() => {
+      settled = true;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(settled).toBe(false);
+
+    gate.resolve();
+    await expect(waiting).resolves.toEqual({ identity: "fixture-source", generation: 1 });
+    expect(waitForAppConnection).toHaveBeenCalledOnce();
+    await pool.close();
+  });
+
+  it("follows a source switch that happens during the wait", async () => {
+    const firstWait = Promise.withResolvers<void>();
+    const sourceA = { identity: "source-a", generation: 1 };
+    const sourceB = { identity: "source-b", generation: 1 };
+    const hooks = {
+      first: vi.fn(async () => {
+        await firstWait.promise;
+        return sourceA;
+      }),
+      second: vi.fn(async () => sourceB),
+    };
+    const pool = createMcpConnectionPool({
+      createAdapter: ({ config: adapterConfig }) => {
+        const isFirst = adapterConfig.command === "first";
+        return {
+          appConnectionSnapshot: () => (isFirst ? sourceA : sourceB),
+          callTool: vi.fn(),
+          close: vi.fn(async () => undefined),
+          connectConfiguredServers: vi.fn(async () => ({ statuses: {}, tools: [] })),
+          connectServer: vi.fn(async () => connectedStatus),
+          disconnectServer: vi.fn(async () => connectedStatus),
+          listTools: vi.fn(async () => []),
+          status: vi.fn(async () => ({ fixture: connectedStatus })),
+          waitForAppConnection: isFirst ? hooks.first : hooks.second,
+        } as unknown as McpPort;
+      },
+      idleGraceMs: 0,
+    });
+    const session = pool.acquireLease({ leaseId: "switched", sessionId: "switched" });
+    await session.connectServer("fixture", { type: "stdio", command: "first" });
+
+    const waiting = session.waitForAppConnection!("fixture");
+    let settled = false;
+    void waiting.finally(() => {
+      settled = true;
+    });
+    await vi.waitFor(() => expect(hooks.first).toHaveBeenCalledOnce());
+    await session.connectServer("fixture", { type: "stdio", command: "second" });
+    firstWait.resolve();
+
+    // 换源后必须跟随新 entry 的真实连接任务，旧 entry 的 snapshot 不得签发。
+    await expect(waiting).resolves.toEqual(sourceB);
+    expect(settled).toBe(true);
+    expect(hooks.second).toHaveBeenCalledOnce();
+    await pool.close();
+  });
+
+  it("returns null when the connection fails during the wait", async () => {
+    const gate = Promise.withResolvers<void>();
+    const adapter = {
+      appConnectionSnapshot: () => null,
+      callTool: vi.fn(),
+      close: vi.fn(async () => undefined),
+      connectConfiguredServers: vi.fn(async () => ({ statuses: {}, tools: [] })),
+      connectServer: vi.fn(async () => ({ ...connectedStatus, status: "connecting" as const })),
+      disconnectServer: vi.fn(async () => connectedStatus),
+      listTools: vi.fn(async () => []),
+      status: vi.fn(async () => ({ fixture: { ...connectedStatus, status: "connecting" as const } })),
+      waitForAppConnection: vi.fn(async () => {
+        await gate.promise;
+        throw new Error("initialize failed");
+      }),
+    } as unknown as McpPort;
+    const pool = createMcpConnectionPool({ createAdapter: () => adapter, idleGraceMs: 0 });
+    const session = pool.acquireLease({ leaseId: "failed", sessionId: "failed" });
+    await session.connectServer("fixture", config);
+
+    const waiting = session.waitForAppConnection!("fixture");
+    gate.resolve();
+    await expect(waiting).resolves.toBeNull();
+    await pool.close();
+  });
+
+  it("returns null when the lease is released during the wait", async () => {
+    const gate = Promise.withResolvers<void>();
+    const snapshot = { identity: "fixture-source", generation: 1 };
+    const adapter = {
+      appConnectionSnapshot: () => snapshot,
+      callTool: vi.fn(),
+      close: vi.fn(async () => undefined),
+      connectConfiguredServers: vi.fn(async () => ({ statuses: {}, tools: [] })),
+      connectServer: vi.fn(async () => ({ ...connectedStatus, status: "connecting" as const })),
+      disconnectServer: vi.fn(async () => connectedStatus),
+      listTools: vi.fn(async () => []),
+      status: vi.fn(async () => ({ fixture: connectedStatus })),
+      waitForAppConnection: vi.fn(async () => {
+        await gate.promise;
+        return snapshot;
+      }),
+    } as unknown as McpPort;
+    const pool = createMcpConnectionPool({ createAdapter: () => adapter, idleGraceMs: 0 });
+    const session = pool.acquireLease({ leaseId: "released-wait", sessionId: "released-wait" });
+    await session.connectServer("fixture", config);
+
+    const waiting = session.waitForAppConnection!("fixture");
+    await session.close();
+    gate.resolve();
+    // 会话已释放，即使旧连接随后成功也不能把快照交给它。
+    await expect(waiting).resolves.toBeNull();
+    await pool.close();
+  });
+});
+
 interface ControllableAdapter extends McpPort {
   alive: boolean;
   setStatus: (status: McpServerStatus["status"]) => void;

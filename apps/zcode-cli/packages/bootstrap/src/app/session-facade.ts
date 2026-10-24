@@ -57,6 +57,7 @@ type SessionFacade = Pick<
   | "close"
   | "callMcpToolForUi"
   | "getMcpAppConnectionSnapshot"
+  | "waitForMcpAppConnection"
   | "onMcpAppConnectionInvalidated"
   | "replaceMcpAppProvidedTools"
   | "connectMcpServer"
@@ -461,6 +462,8 @@ export function createSessionFacade(deps: CreateSessionFacadeDeps): SessionFacad
     onMcpAppConnectionInvalidated: (name, listener) =>
       deps.mcpPort?.onAppConnectionInvalidated?.(name, listener) ?? (() => {}),
     getMcpAppConnectionSnapshot: (name) => deps.mcpPort?.appConnectionSnapshot?.(name) ?? null,
+    waitForMcpAppConnection: async (name) =>
+      (await deps.mcpPort?.waitForAppConnection?.(name)) ?? null,
     callMcpToolForUi: async (serverName, toolName, args, options) => {
       if (!deps.mcpPort) {
         throw new Error("MCP is disabled");

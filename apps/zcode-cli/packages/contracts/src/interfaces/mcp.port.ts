@@ -325,6 +325,14 @@ export interface McpPort {
   /** 可信配置派生的稳定来源与现有连接代际。断线时不签发新页面凭证。 */
   onAppConnectionInvalidated?(serverName: string, listener: () => void): () => void;
   appConnectionSnapshot?(serverName: string): { identity: string; generation: number } | null;
+  /**
+   * 等待本会话已租用的 server 的既有连接任务，再返回连接快照。
+   * 只读既有租约：未租用、已释放或连接失败时返回 null，不新建连接、不重新 initialize。
+   * 首开屏障使用（见 `docs/plugin-ui-connection-readiness.md`）。
+   */
+  waitForAppConnection?(
+    serverName: string,
+  ): Promise<{ identity: string; generation: number } | null>;
 
   connectConfiguredServers(
     servers: Record<string, McpServerConfig>,

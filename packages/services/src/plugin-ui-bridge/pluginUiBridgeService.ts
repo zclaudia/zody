@@ -138,6 +138,7 @@ export function createPluginUiBridgeService(
       await dependencies.closeInstance?.(bound);
       throw error;
     }
+    let phase = "resource";
     try {
       const picked = pickHtmlResource(result, params.resourceUri);
       const { html } = picked;
@@ -154,6 +155,12 @@ export function createPluginUiBridgeService(
         hasResourceMeta: meta !== null,
         durationMs: Date.now() - startedAt,
       });
+      // 首开等待放行后到登记沙箱之间连接仍可能换代/释放；所有异步读取（含列表级 _meta）
+      // 完成后、登记前重验实例，失败时撤销已签发 lease 且不登记沙箱。
+      // 依据见 docs/plugin-ui-connection-readiness.md。
+      phase = "revalidate";
+      await dependencies.validateInstance?.(bound);
+      phase = "register";
       const handle = await dependencies.registerSandbox({
         instance,
         workspacePath: params.workspacePath,
@@ -182,7 +189,7 @@ export function createPluginUiBridgeService(
       });
       return handle;
     } catch (error) {
-      log.warn("prepareSandbox register failed", {
+      log.warn(`prepareSandbox ${phase} failed`, {
         scopeId: params.scopeId,
         error: error instanceof Error ? error.message : String(error),
       });
