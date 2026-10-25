@@ -1,5 +1,7 @@
 # Task Notification Routing
 
+2026-10-23: [Mobile phase-one proposal](../../specs/mobile-remote-phase1.md) plans a Host services-owned derived notification feed/outbox and scoped click targets. It has not been implemented. The rules below describe the current renderer-driven presentation path; they do not claim persistent mobile delivery. The proposed event read receipts are distinct from existing task unread state.
+
 ## Boundary
 
 Task notification facts come from v4 projections, not from a renderer-owned
