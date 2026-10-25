@@ -23,6 +23,7 @@ type PendingAction =
   | "save-credential"
   | "clear-credential"
   | "toggle"
+  | "arbitrary-path-toggle"
   | "test"
   | "disconnect"
   | null;
@@ -81,6 +82,8 @@ export function RemoteAccessSection({ isDesktop }: { isDesktop: boolean }) {
   const [credentialConfigured, setCredentialConfigured] = useState(false);
   const [gatewayUrlError, setGatewayUrlError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+  // 第二批 E2：开关事实在 settings 里；读取缺省 true（与 schema catch(true) 一致）。
+  const allowArbitraryPathOpen = remoteAccessSettings?.allowMobileOpenArbitraryPath ?? true;
   // 只在真正写入过表单值后跳过回填，避免设置快照变化把用户正在编辑的草稿覆盖掉。
   const appliedSettingsSignatureRef = useRef<string | null>(null);
 
@@ -146,6 +149,7 @@ export function RemoteAccessSection({ isDesktop }: { isDesktop: boolean }) {
           enabled,
           gatewayUrl: normalizedGatewayUrl,
           namespace: namespaceDraft.trim() || DEFAULT_REMOTE_ACCESS_NAMESPACE,
+          allowMobileOpenArbitraryPath: allowArbitraryPathOpen,
         },
       });
       toast(intl.formatMessage({ id: "settings.remoteAccess.config.saveSuccess" }));
@@ -228,6 +232,33 @@ export function RemoteAccessSection({ isDesktop }: { isDesktop: boolean }) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error("[remote-access-settings] 切换远程访问失败", { error: message });
       toast(intl.formatMessage({ id: "settings.remoteAccess.toggle.failed" }, { error: message }));
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleToggleArbitraryPath = async (nextAllowed: boolean) => {
+    // patch 是全量对象：gatewayUrl/namespace 用已保存值（草稿仍留在表单里），
+    // 不经过草稿校验，避免开关动作把未保存的地址草稿一起提交。
+    setPendingAction("arbitrary-path-toggle");
+    try {
+      await update({
+        remoteAccess: {
+          enabled,
+          gatewayUrl: remoteAccessSettings?.gatewayUrl ?? "",
+          namespace: remoteAccessSettings?.namespace || DEFAULT_REMOTE_ACCESS_NAMESPACE,
+          allowMobileOpenArbitraryPath: nextAllowed,
+        },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error("[remote-access-settings] 切换任意目录开关失败", { error: message });
+      toast(
+        intl.formatMessage(
+          { id: "settings.remoteAccess.arbitraryPath.saveFailed" },
+          { error: message },
+        ),
+      );
     } finally {
       setPendingAction(null);
     }
@@ -316,6 +347,23 @@ export function RemoteAccessSection({ isDesktop }: { isDesktop: boolean }) {
         </div>
         <SettingsGroupCard>
           <div className="space-y-4 border-t border-border px-4 py-3 first:border-t-0">
+            <SettingsRow
+              label={intl.formatMessage({ id: "settings.remoteAccess.arbitraryPath.label" })}
+              description={intl.formatMessage({
+                id: "settings.remoteAccess.arbitraryPath.description",
+              })}
+              control={
+                <Switch
+                  aria-label={intl.formatMessage({
+                    id: "settings.remoteAccess.arbitraryPath.label",
+                  })}
+                  data-testid="remote-access-arbitrary-path-toggle"
+                  checked={allowArbitraryPathOpen}
+                  disabled={busy}
+                  onCheckedChange={(checked) => void handleToggleArbitraryPath(checked)}
+                />
+              }
+            />
             <FormField
               label={intl.formatMessage({ id: "settings.remoteAccess.gatewayUrl.label" })}
               description={intl.formatMessage({

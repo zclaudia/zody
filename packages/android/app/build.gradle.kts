@@ -1,6 +1,7 @@
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.Sync
 import groovy.json.JsonSlurper
+import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
     alias(libs.plugins.android.application)
@@ -47,6 +48,31 @@ val buildMobileWeb = tasks.register<Exec>("buildMobileWeb") {
     }
 }
 
+val verifyNotificationRenderServicePermission = tasks.register("verifyNotificationRenderServicePermission") {
+    group = "verification"
+    description = "Ensures the external notification render Service stays protected by Android's DUMP permission."
+    val manifestFile = layout.projectDirectory.file("src/main/AndroidManifest.xml")
+    inputs.file(manifestFile)
+    doLast {
+        val documentFactory = DocumentBuilderFactory.newInstance().apply { isNamespaceAware = true }
+        val document = documentFactory.newDocumentBuilder().parse(manifestFile.asFile)
+        val androidNamespace = "http://schemas.android.com/apk/res/android"
+        val serviceNodes = document.getElementsByTagName("service")
+        val renderService = (0 until serviceNodes.length)
+            .mapNotNull { serviceNodes.item(it) as? org.w3c.dom.Element }
+            .firstOrNull {
+                it.getAttributeNS(androidNamespace, "name") == ".notifications.MobileNotificationRenderService"
+            } ?: throw GradleException("MobileNotificationRenderService must remain declared in AndroidManifest.xml.")
+
+        check(renderService.getAttributeNS(androidNamespace, "exported") == "true") {
+            "MobileNotificationRenderService must remain exported for the root/shell ntfy-bridge caller."
+        }
+        check(renderService.getAttributeNS(androidNamespace, "permission") == "android.permission.DUMP") {
+            "MobileNotificationRenderService must require android.permission.DUMP; shell/root ntfy-bridge calls rely on this privileged boundary."
+        }
+    }
+}
+
 val syncMobileWebAssets = tasks.register<Sync>("syncMobileWebAssets") {
     group = "mobile web"
     description = "Syncs the built mobile web page into app/src/main/assets/remote."
@@ -70,6 +96,7 @@ val syncMobileWebAssets = tasks.register<Sync>("syncMobileWebAssets") {
 
 tasks.named("preBuild") {
     dependsOn(syncMobileWebAssets)
+    dependsOn(verifyNotificationRenderServicePermission)
 }
 
 android {
@@ -146,6 +173,7 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.androidx.webkit)
     testImplementation(libs.junit)
+    testImplementation(libs.json)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

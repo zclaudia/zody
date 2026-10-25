@@ -876,6 +876,7 @@ export function createRemoteWorkspaceSessionManager(options: {
     workspaceIdentity: string;
     workspaceKey: string;
     clientMode: "web-remote-replayable";
+    mobileNotificationPrincipal?: import("@zcode/shared").MobileNotificationPrincipal;
   }): {
     process: ElectronUtilityProcess;
     port: MessagePortMain;
@@ -925,6 +926,9 @@ export function createRemoteWorkspaceSessionManager(options: {
           workspacePath: params.workspacePath,
           workspaceIdentity: params.workspaceIdentity,
         },
+        ...(params.mobileNotificationPrincipal
+          ? { mobileNotificationPrincipal: params.mobileNotificationPrincipal }
+          : {}),
       },
       [port2],
     );

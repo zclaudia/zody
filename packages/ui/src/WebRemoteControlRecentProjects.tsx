@@ -1,4 +1,5 @@
-import { FolderOpen, LoaderCircle, MonitorUp, Plus, Settings } from "lucide-react";
+import { useState } from "react";
+import { FolderOpen, FolderPlus, LoaderCircle, MonitorUp, Plus, Settings } from "lucide-react";
 import type {
   WebRemoteControlDesktopWindowState,
   WebRemoteControlRecentProjectTarget,
@@ -6,6 +7,7 @@ import type {
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { MobileWorkspacePicker } from "@/MobileWorkspacePicker.js";
 import { WebRemoteControlThemeMenu } from "@/WebRemoteControlThemeMenu.js";
 
 /**
@@ -23,6 +25,8 @@ export interface WebRemoteControlRecentProjectsSectionProps {
   openingWindow?: boolean;
   onOpenRecentProject(projectId: string): void;
   onOpenDesktopWindow?(): void;
+  /** 第二批 E1：打开任意已存在本地目录的入口；能力不足（appProtocol < 4）时缺省隐藏。 */
+  onOpenOtherProject?(): void;
   className?: string;
 }
 
@@ -33,6 +37,7 @@ export function WebRemoteControlRecentProjectsSection({
   openingWindow = false,
   onOpenRecentProject,
   onOpenDesktopWindow,
+  onOpenOtherProject,
   className,
 }: WebRemoteControlRecentProjectsSectionProps) {
   const { intl } = useZCodeIntl();
@@ -82,9 +87,27 @@ export function WebRemoteControlRecentProjectsSection({
       ) : null}
 
       {recentProjects.length === 0 ? (
-        <p className="mt-2 px-1 py-2 text-ui-base text-foreground-subtle">
-          {intl.formatMessage({ id: "webRemoteControl.mobileHome.recentProjectsEmpty" })}
-        </p>
+        <>
+          <p className="mt-2 px-1 py-2 text-ui-base text-foreground-subtle">
+            {intl.formatMessage({ id: "webRemoteControl.mobileHome.recentProjectsEmpty" })}
+          </p>
+          {onOpenOtherProject ? (
+            <button
+              type="button"
+              data-mobile-remote-open-other-project="true"
+              className="flex min-h-14 w-full min-w-0 items-center gap-3 rounded-lg border border-card-border bg-card px-3 py-2 text-left transition-colors hover:bg-surface-hover disabled:cursor-wait disabled:opacity-70"
+              disabled={busy}
+              onClick={onOpenOtherProject}
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface text-foreground-subtle">
+                <FolderPlus className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1 truncate text-ui-base text-foreground">
+                {intl.formatMessage({ id: "webRemoteControl.mobileHome.openOtherProject" })}
+              </span>
+            </button>
+          ) : null}
+        </>
       ) : (
         <ul className="mt-2 space-y-1">
           {recentProjects.map((project) => {
@@ -122,6 +145,24 @@ export function WebRemoteControlRecentProjectsSection({
               </li>
             );
           })}
+          {onOpenOtherProject ? (
+            <li>
+              <button
+                type="button"
+                data-mobile-remote-open-other-project="true"
+                className="flex min-h-14 w-full min-w-0 items-center gap-3 rounded-lg border border-card-border bg-card px-3 py-2 text-left transition-colors hover:bg-surface-hover disabled:cursor-wait disabled:opacity-70"
+                disabled={busy}
+                onClick={onOpenOtherProject}
+              >
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface text-foreground-subtle">
+                  <FolderPlus className="size-4" />
+                </span>
+                <span className="min-w-0 flex-1 truncate text-ui-base text-foreground">
+                  {intl.formatMessage({ id: "webRemoteControl.mobileHome.openOtherProject" })}
+                </span>
+              </button>
+            </li>
+          ) : null}
         </ul>
       )}
     </section>
@@ -137,6 +178,17 @@ export interface WebRemoteControlMobileStartPageProps {
   onOpenRecentProject(projectId: string): void;
   onOpenDesktopWindow(): void;
   onOpenSettings(): void;
+  /**
+   * 第二批 E1：提供时显示「打开其他项目」入口并托管目录选择器 overlay；
+   * 宿主按协商版本决定是否提供（appProtocol < 4 的桌面不提供）。
+   */
+  openOtherProject?: {
+    listDirectory(
+      path?: string,
+    ): Promise<import("@zcode/shared").WebRemoteControlMobileDirectoryListResult>;
+    openWorkspacePath(workspacePath: string): Promise<string>;
+    onOpened(workspaceKey: string): void | Promise<void>;
+  };
 }
 
 /**
@@ -154,14 +206,17 @@ export function WebRemoteControlMobileStartPage({
   onOpenRecentProject,
   onOpenDesktopWindow,
   onOpenSettings,
+  openOtherProject,
 }: WebRemoteControlMobileStartPageProps) {
   const { intl } = useZCodeIntl();
+  const [otherProjectOpen, setOtherProjectOpen] = useState(false);
   const noWindow = desktopWindowState === "none";
 
   return (
     <section
-      className="flex min-h-screen flex-col bg-background text-foreground"
+      className="relative flex min-h-screen flex-col bg-background text-foreground"
       data-mobile-remote-page="start"
+      aria-hidden={otherProjectOpen ? true : undefined}
     >
       <header className="shrink-0 border-b border-border bg-header px-4 py-3">
         <div className="flex min-w-0 items-center justify-between gap-2">
@@ -218,8 +273,19 @@ export function WebRemoteControlMobileStartPage({
           openingWindow={openingWindow}
           onOpenRecentProject={onOpenRecentProject}
           onOpenDesktopWindow={onOpenDesktopWindow}
+          onOpenOtherProject={
+            openOtherProject ? () => setOtherProjectOpen(true) : undefined
+          }
         />
       </div>
+      {otherProjectOpen && openOtherProject ? (
+        <MobileWorkspacePicker
+          listDirectory={openOtherProject.listDirectory}
+          openWorkspacePath={openOtherProject.openWorkspacePath}
+          onClose={() => setOtherProjectOpen(false)}
+          onOpened={openOtherProject.onOpened}
+        />
+      ) : null}
     </section>
   );
 }

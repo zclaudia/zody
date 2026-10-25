@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "mobile-ssh-workspace",
+  "spec": "./test/e2e/mobile-remote/mobile-ssh-workspace.test.ts",
+  "fixtures": [
+    {
+      "id": "mobile-ssh-workspace-title",
+      "description": "远程 SSH workspace 搜索任务的辅助标题。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "标题只用于列表呈现，不属于远程 workspace 路由断言。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_MOBILE_P8_SSH_REMOTE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":\"p8-ssh-title\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"{\\\"title\\\":\\\"P8 SSH task\\\"}\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-ssh-title\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "mobile-ssh-workspace-first-turn",
+      "description": "在真实 SSH workspace 中创建一个可从手机搜索的任务。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "确定的完成消息建立可搜索历史；本 case 验证 Gateway/Host/SSH workspace 路由。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": [
+          "E2E_MOBILE_P8_SSH_REMOTE_A_FIRST_PROMPT"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": {
+          "content-type": "text/event-stream; charset=utf-8"
+        },
+        "body": "data: {\"id\":\"p8-ssh-first-turn\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"MOBILE_P8_SSH_REMOTE_REPLY\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-ssh-first-turn\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

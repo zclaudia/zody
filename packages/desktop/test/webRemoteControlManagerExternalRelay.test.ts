@@ -1,4 +1,6 @@
 import { EventEmitter } from "node:events";
+import { ChannelServer, MessagePortProtocol, ProxyChannel } from "@zcode/rpc";
+import { IWindowControllerService } from "@zcode/services";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   WebRemoteControlAppPayload,
@@ -184,6 +186,53 @@ const localWorkspace: WebRemoteControlWorkspaceTarget = {
   kind: "local",
 };
 
+interface TestMessagePort {
+  on: EventEmitter["on"];
+  off: EventEmitter["off"];
+  addEventListener(type: "message", listener: (event: { data: unknown }) => void): void;
+  removeEventListener(type: "message", listener: (event: { data: unknown }) => void): void;
+  postMessage(data: unknown): void;
+  emitMessage(data: unknown): void;
+  start(): void;
+  close(): void;
+}
+
+function createPortPair(): readonly [TestMessagePort, TestMessagePort] {
+  const createPort = () => {
+    const emitter = new EventEmitter();
+    let peer: TestMessagePort | undefined;
+    const port: TestMessagePort = {
+      on: emitter.on.bind(emitter),
+      off: emitter.off.bind(emitter),
+      addEventListener(_type: "message", listener: (event: { data: unknown }) => void) {
+        emitter.on("message", listener);
+      },
+      removeEventListener(_type: "message", listener: (event: { data: unknown }) => void) {
+        emitter.off("message", listener);
+      },
+      postMessage(data: unknown) {
+        queueMicrotask(() => peer?.emitMessage(data));
+      },
+      emitMessage(data: unknown) {
+        emitter.emit("message", { data });
+      },
+      start() {},
+      close() {},
+    };
+    return {
+      port,
+      connect(nextPeer: TestMessagePort) {
+        peer = nextPeer;
+      },
+    };
+  };
+  const left = createPort();
+  const right = createPort();
+  left.connect(right.port);
+  right.connect(left.port);
+  return [left.port, right.port] as const;
+}
+
 const remoteWorkspace: WebRemoteControlWorkspaceTarget = {
   workspacePath: "/workspace/remote",
   workspaceIdentity: "remote:ssh:host:/workspace/remote",
@@ -250,6 +299,251 @@ async function createPrimedRemoteTaskSyncHarness(
 }
 
 describe("createWebRemoteControlManager app runtime", () => {
+  it("routes each history search request to the window owner Host and releases its attachment", async () => {
+    const [mainPort, hostPort] = createPortPair();
+    const searchMobileHistory = vi.fn(async () => ({ status: "ok" as const, items: [] }));
+    const hostProtocol = new MessagePortProtocol(hostPort);
+    const hostServer = new ChannelServer(hostProtocol, "host", 1000, true);
+    hostServer.registerChannel(
+      IWindowControllerService.channelName,
+      ProxyChannel.fromService({ searchMobileHistory }),
+    );
+    const attachWorkspaceHost = vi.fn(async (windowId: number) => ({
+      entryId: `entry-${windowId}`,
+      attachmentId: `search-attachment-${windowId}`,
+      process: {} as never,
+      port: mainPort as never,
+    }));
+    const releaseWorkspaceHostAttachment = vi.fn();
+    const { deliverPayload, manager, remoteWorkspaceDirectory, sentPayloads } =
+      createManagerHarness({
+        attachWorkspaceHost,
+        releaseWorkspaceHostAttachment,
+        getGatewayConnectionStatus: () => ({ state: "online", backendId: "backend-1", epoch: 2 }),
+      });
+    await manager.start({ workspacePath: "/workspace/origin" }, 1);
+    setTimeout(() => hostServer.ready(), 0);
+    remoteWorkspaceDirectory.syncWorkspaces(2, [localWorkspace]);
+    deliverPayload({
+      zcode_type: "mobile-history-search-request",
+      requestId: "search-1",
+      context: {
+        backendId: "backend-1",
+        connectionGeneration: 3,
+        workspaceKey: localWorkspace.workspacePath,
+        requestId: "search-1",
+      },
+      queryGeneration: 8,
+      scopeSignature: JSON.stringify([localWorkspace.workspacePath]),
+      query: "needle",
+      includeArchived: true,
+      limit: 50,
+    });
+
+    await vi.waitFor(() =>
+      expect(sentPayloads).toContainEqual(
+        expect.objectContaining({
+          zcode_type: "mobile-history-search-outcome",
+          requestId: "search-1",
+          queryGeneration: 8,
+          scopeSignature: JSON.stringify([localWorkspace.workspacePath]),
+          status: "ok",
+          items: [],
+        }),
+      ),
+    );
+    expect(attachWorkspaceHost).toHaveBeenCalledWith(2, expect.objectContaining({ kind: "local" }));
+    expect(searchMobileHistory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceScope: { workspacePath: localWorkspace.workspacePath },
+        query: "needle",
+        includeArchived: true,
+        limit: 50,
+      }),
+    );
+    expect(releaseWorkspaceHostAttachment).toHaveBeenCalledWith("search-attachment-2");
+    hostServer.dispose();
+    hostProtocol.disconnect();
+  });
+
+  it("routes same-path identity searches to their Host and rejects forged backend or workspace keys", async () => {
+    const alpha: WebRemoteControlWorkspaceTarget = {
+      workspacePath: "/repo",
+      workspaceIdentity: "identity-alpha",
+      remoteSessionId: "session-alpha",
+      label: "alpha",
+      kind: "remote",
+      connectionState: "connected",
+    };
+    const beta: WebRemoteControlWorkspaceTarget = {
+      ...alpha,
+      workspaceIdentity: "identity-beta",
+      remoteSessionId: "session-beta",
+      label: "beta",
+    };
+    const [mainPortA, hostPortA] = createPortPair();
+    const [mainPortB, hostPortB] = createPortPair();
+    const searchAlpha = vi.fn(async () => ({
+      status: "ok" as const,
+      items: [
+        {
+          taskId: "same-task",
+          traceId: "trace-alpha",
+          title: "Alpha result",
+          workspacePath: "/repo",
+          workspaceIdentity: "identity-alpha",
+          createdAt: 1,
+          updatedAt: 2,
+          mode: "default" as const,
+          remoteSessionId: "session-alpha",
+          searchSnippets: ["alpha secret"],
+        },
+      ],
+    }));
+    const searchBeta = vi.fn(async () => ({
+      status: "ok" as const,
+      items: [
+        {
+          taskId: "same-task",
+          traceId: "trace-beta",
+          title: "Beta result",
+          workspacePath: "/repo",
+          workspaceIdentity: "identity-beta",
+          createdAt: 1,
+          updatedAt: 2,
+          mode: "default" as const,
+          remoteSessionId: "session-beta",
+          searchSnippets: ["beta secret"],
+        },
+      ],
+    }));
+    const protocolA = new MessagePortProtocol(hostPortA);
+    const protocolB = new MessagePortProtocol(hostPortB);
+    const serverA = new ChannelServer(protocolA, "host-alpha", 1000, true);
+    const serverB = new ChannelServer(protocolB, "host-beta", 1000, true);
+    serverA.registerChannel(
+      IWindowControllerService.channelName,
+      ProxyChannel.fromService({ searchMobileHistory: searchAlpha }),
+    );
+    serverB.registerChannel(
+      IWindowControllerService.channelName,
+      ProxyChannel.fromService({ searchMobileHistory: searchBeta }),
+    );
+    const attachWorkspaceHost = vi.fn(async (windowId: number) => ({
+      entryId: `entry-${windowId}`,
+      attachmentId: `identity-attachment-${windowId}`,
+      process: {} as never,
+      port: (windowId === 21 ? mainPortA : mainPortB) as never,
+    }));
+    const releaseWorkspaceHostAttachment = vi.fn();
+    const h = createManagerHarness({
+      attachWorkspaceHost,
+      releaseWorkspaceHostAttachment,
+      getGatewayConnectionStatus: () => ({ state: "online", backendId: "backend-1", epoch: 2 }),
+    });
+    await h.manager.start({ workspacePath: "/workspace/origin" }, 1);
+    setTimeout(() => {
+      serverA.ready();
+      serverB.ready();
+    }, 0);
+    h.remoteWorkspaceDirectory.syncWorkspaces(21, [alpha]);
+    h.remoteWorkspaceDirectory.syncWorkspaces(22, [beta]);
+
+    const sendSearch = (requestId: string, backendId: string, workspaceKey: string) => {
+      h.deliverPayload({
+        zcode_type: "mobile-history-search-request",
+        requestId,
+        context: { backendId, connectionGeneration: 3, workspaceKey, requestId },
+        queryGeneration: 1,
+        scopeSignature: JSON.stringify([workspaceKey]),
+        query: "identity-marker",
+        includeArchived: false,
+        limit: 50,
+      });
+    };
+    try {
+      sendSearch("search-alpha", "backend-1", "identity-alpha");
+      sendSearch("search-beta", "backend-1", "identity-beta");
+      await vi.waitFor(() =>
+        expect(
+          h.sentPayloads.filter(
+            (payload) =>
+              payload.zcode_type === "mobile-history-search-outcome" && payload.status === "ok",
+          ),
+        ).toHaveLength(2),
+      );
+      expect(attachWorkspaceHost).toHaveBeenNthCalledWith(
+        1,
+        21,
+        expect.objectContaining({
+          workspacePath: "/repo",
+          workspaceIdentity: "identity-alpha",
+          remoteSessionId: "session-alpha",
+        }),
+      );
+      expect(attachWorkspaceHost).toHaveBeenNthCalledWith(
+        2,
+        22,
+        expect.objectContaining({
+          workspacePath: "/repo",
+          workspaceIdentity: "identity-beta",
+          remoteSessionId: "session-beta",
+        }),
+      );
+      expect(searchAlpha).toHaveBeenCalledWith(
+        expect.objectContaining({
+          workspaceScope: expect.objectContaining({
+            workspacePath: "/repo",
+            workspaceIdentity: "identity-alpha",
+          }),
+        }),
+      );
+      expect(searchBeta).toHaveBeenCalledWith(
+        expect.objectContaining({
+          workspaceScope: expect.objectContaining({
+            workspacePath: "/repo",
+            workspaceIdentity: "identity-beta",
+          }),
+        }),
+      );
+      const alphaOutcome = h.sentPayloads.find((payload) => payload.requestId === "search-alpha");
+      const betaOutcome = h.sentPayloads.find((payload) => payload.requestId === "search-beta");
+      expect(alphaOutcome).toMatchObject({
+        items: [{ task: { title: "Alpha result", workspaceIdentity: "identity-alpha" } }],
+      });
+      expect(betaOutcome).toMatchObject({
+        items: [{ task: { title: "Beta result", workspaceIdentity: "identity-beta" } }],
+      });
+
+      const attachmentsBeforeForgedRequests = attachWorkspaceHost.mock.calls.length;
+      sendSearch("forged-backend", "backend-forged", "identity-alpha");
+      sendSearch("forged-workspace-key", "backend-1", "/repo");
+      await vi.waitFor(() =>
+        expect(
+          h.sentPayloads.filter(
+            (payload) =>
+              payload.requestId === "forged-backend" ||
+              payload.requestId === "forged-workspace-key",
+          ),
+        ).toHaveLength(2),
+      );
+      expect(h.sentPayloads).toContainEqual(
+        expect.objectContaining({ requestId: "forged-backend", status: "offline" }),
+      );
+      expect(h.sentPayloads).toContainEqual(
+        expect.objectContaining({ requestId: "forged-workspace-key", status: "closed" }),
+      );
+      expect(attachWorkspaceHost).toHaveBeenCalledTimes(attachmentsBeforeForgedRequests);
+      expect(releaseWorkspaceHostAttachment).toHaveBeenCalledTimes(2);
+    } finally {
+      await h.manager.suspend("test-cleanup");
+      serverA.dispose();
+      serverB.dispose();
+      protocolA.disconnect();
+      protocolB.disconnect();
+    }
+  });
+
   it("returns the desktop's own version before a workspace bridge is attached", async () => {
     const h = createManagerHarness();
     await h.manager.start({ workspacePath: localWorkspace.workspacePath });
@@ -1747,5 +2041,353 @@ describe("createWebRemoteControlManager app runtime", () => {
       "remote-session-1",
       "remote-closed",
     );
+  });
+
+  it("MS02: 两个窗口同步同一 workspaceKey 时搜索只 attach 被选 owner 一次", async () => {
+    const [mainPort, hostPort] = createPortPair();
+    const searchMobileHistory = vi.fn(async () => ({ status: "ok" as const, items: [] }));
+    const hostProtocol = new MessagePortProtocol(hostPort);
+    const hostServer = new ChannelServer(hostProtocol, "host", 1000, true);
+    hostServer.registerChannel(
+      IWindowControllerService.channelName,
+      ProxyChannel.fromService({ searchMobileHistory }),
+    );
+    const attachWorkspaceHost = vi.fn(async (windowId: number) => ({
+      entryId: `entry-${windowId}`,
+      attachmentId: `owner-attachment-${windowId}`,
+      process: {} as never,
+      port: mainPort as never,
+    }));
+    const releaseWorkspaceHostAttachment = vi.fn();
+    const { deliverPayload, manager, remoteWorkspaceDirectory, sentPayloads } =
+      createManagerHarness({
+        attachWorkspaceHost,
+        releaseWorkspaceHostAttachment,
+        getGatewayConnectionStatus: () => ({ state: "online", backendId: "backend-1", epoch: 2 }),
+      });
+    try {
+      await manager.start({ workspacePath: "/workspace/origin" }, 1);
+      setTimeout(() => hostServer.ready(), 0);
+      // 两个窗口都同步了同一个 workspaceKey；owner 选择规则（聚焦 → 最近同步）
+      // 必须收敛到唯一窗口，搜索不能对两个 Host 各 attach 一次。
+      remoteWorkspaceDirectory.syncWorkspaces(1, [localWorkspace]);
+      remoteWorkspaceDirectory.syncWorkspaces(2, [localWorkspace]);
+      deliverPayload({
+        zcode_type: "mobile-history-search-request",
+        requestId: "owner-search-1",
+        context: {
+          backendId: "backend-1",
+          connectionGeneration: 3,
+          workspaceKey: localWorkspace.workspacePath,
+          requestId: "owner-search-1",
+        },
+        queryGeneration: 1,
+        scopeSignature: JSON.stringify([localWorkspace.workspacePath]),
+        query: "needle",
+        includeArchived: false,
+        limit: 50,
+      });
+
+      await vi.waitFor(() =>
+        expect(sentPayloads).toContainEqual(
+          expect.objectContaining({
+            zcode_type: "mobile-history-search-outcome",
+            requestId: "owner-search-1",
+            status: "ok",
+          }),
+        ),
+      );
+      // 最近同步的窗口 2 是唯一 owner：attach 只发生一次且落在窗口 2。
+      expect(attachWorkspaceHost).toHaveBeenCalledTimes(1);
+      expect(attachWorkspaceHost).toHaveBeenCalledWith(2, expect.objectContaining({ kind: "local" }));
+      expect(releaseWorkspaceHostAttachment).toHaveBeenCalledTimes(1);
+      expect(releaseWorkspaceHostAttachment).toHaveBeenCalledWith("owner-attachment-2");
+    } finally {
+      await manager.suspend("test-cleanup");
+      hostServer.dispose();
+      hostProtocol.disconnect();
+    }
+  });
+
+  it("MS05: 回复时 gateway epoch 已变化则强制改判 offline", async () => {
+    const [mainPort, hostPort] = createPortPair();
+    let resolveHostSearch:
+      | ((value: { status: "ok"; items: [] }) => void)
+      | undefined;
+    const searchMobileHistory = vi.fn(
+      () =>
+        new Promise<{ status: "ok"; items: [] }>((resolve) => {
+          resolveHostSearch = resolve;
+        }),
+    );
+    const hostProtocol = new MessagePortProtocol(hostPort);
+    const hostServer = new ChannelServer(hostProtocol, "host", 1000, true);
+    hostServer.registerChannel(
+      IWindowControllerService.channelName,
+      ProxyChannel.fromService({ searchMobileHistory }),
+    );
+    // getGatewayConnectionStatus 使用可变闭包：请求开始时 epoch=2，回复前整体替换成
+    // epoch=3 的快照（不能原地改字段——两次读取会拿到同一对象，比较不出变化）。
+    let gatewayStatus: { state: "online"; backendId: string; epoch: number } = {
+      state: "online",
+      backendId: "backend-1",
+      epoch: 2,
+    };
+    const attachWorkspaceHost = vi.fn(async () => ({
+      entryId: "entry-1",
+      attachmentId: "epoch-attachment-1",
+      process: {} as never,
+      port: mainPort as never,
+    }));
+    const releaseWorkspaceHostAttachment = vi.fn();
+    const { deliverPayload, manager, remoteWorkspaceDirectory, sentPayloads } =
+      createManagerHarness({
+        attachWorkspaceHost,
+        releaseWorkspaceHostAttachment,
+        getGatewayConnectionStatus: () => gatewayStatus,
+      });
+    try {
+      await manager.start({ workspacePath: "/workspace/origin" }, 1);
+      setTimeout(() => hostServer.ready(), 0);
+      remoteWorkspaceDirectory.syncWorkspaces(1, [localWorkspace]);
+      deliverPayload({
+        zcode_type: "mobile-history-search-request",
+        requestId: "epoch-search-1",
+        context: {
+          backendId: "backend-1",
+          connectionGeneration: 3,
+          workspaceKey: localWorkspace.workspacePath,
+          requestId: "epoch-search-1",
+        },
+        queryGeneration: 1,
+        scopeSignature: JSON.stringify([localWorkspace.workspacePath]),
+        query: "needle",
+        includeArchived: false,
+        limit: 50,
+      });
+      await vi.waitFor(() => expect(searchMobileHistory).toHaveBeenCalledTimes(1));
+
+      // Host 查询在途时 gateway 重连（epoch 递增）：即使 Host 成功返回也不能投递，
+      // 必须按回复时状态改判 offline，避免把旧 backend 的结果发给新连接的手机。
+      gatewayStatus = { state: "online", backendId: "backend-1", epoch: 3 };
+      resolveHostSearch?.({ status: "ok", items: [] });
+      await vi.waitFor(() =>
+        expect(sentPayloads).toContainEqual(
+          expect.objectContaining({
+            zcode_type: "mobile-history-search-outcome",
+            requestId: "epoch-search-1",
+            status: "offline",
+          }),
+        ),
+      );
+      expect(releaseWorkspaceHostAttachment).toHaveBeenCalledWith("epoch-attachment-1");
+    } finally {
+      await manager.suspend("test-cleanup");
+      hostServer.dispose();
+      hostProtocol.disconnect();
+    }
+  });
+
+  it.each([
+    {
+      label: "workspace disconnected",
+      workspace: {
+        workspacePath: "/workspace/remote",
+        workspaceIdentity: "remote:ssh:host:/workspace/remote",
+        remoteSessionId: "remote-session-1",
+        label: "remote",
+        kind: "remote" as const,
+        connectionState: "disconnected" as const,
+      },
+      expected: { status: "offline" },
+    },
+    {
+      label: "remote identity missing",
+      workspace: {
+        workspacePath: "/workspace/no-identity",
+        label: "no-identity",
+        kind: "remote" as const,
+        connectionState: "connected" as const,
+      },
+      expected: { status: "unsupported", errorCode: "remote-identity-missing" },
+    },
+    {
+      label: "remote session missing",
+      workspace: {
+        workspacePath: "/workspace/no-session",
+        workspaceIdentity: "remote:ssh:host:/workspace/no-session",
+        label: "no-session",
+        kind: "remote" as const,
+        connectionState: "connected" as const,
+      },
+      expected: { status: "unsupported", errorCode: "remote-identity-missing" },
+    },
+  ])("MS05: $label 时不 attach Host，直接回复 $expected.status", async ({ workspace, expected }) => {
+    const attachWorkspaceHost = vi.fn();
+    const releaseWorkspaceHostAttachment = vi.fn();
+    const { deliverPayload, manager, remoteWorkspaceDirectory, sentPayloads } =
+      createManagerHarness({
+        attachWorkspaceHost,
+        releaseWorkspaceHostAttachment,
+        getGatewayConnectionStatus: () => ({ state: "online", backendId: "backend-1", epoch: 2 }),
+      });
+    try {
+      await manager.start({ workspacePath: "/workspace/origin" }, 1);
+      remoteWorkspaceDirectory.syncWorkspaces(1, [workspace]);
+      const workspaceKey = workspace.workspaceIdentity ?? workspace.workspacePath;
+      deliverPayload({
+        zcode_type: "mobile-history-search-request",
+        requestId: `guard-${expected.status}`,
+        context: {
+          backendId: "backend-1",
+          connectionGeneration: 3,
+          workspaceKey,
+          requestId: `guard-${expected.status}`,
+        },
+        queryGeneration: 1,
+        scopeSignature: JSON.stringify([workspaceKey]),
+        query: "needle",
+        includeArchived: false,
+        limit: 50,
+      });
+
+      await vi.waitFor(() =>
+        expect(sentPayloads).toContainEqual(
+          expect.objectContaining({
+            zcode_type: "mobile-history-search-outcome",
+            requestId: `guard-${expected.status}`,
+            ...expected,
+          }),
+        ),
+      );
+      expect(attachWorkspaceHost).not.toHaveBeenCalled();
+      expect(releaseWorkspaceHostAttachment).not.toHaveBeenCalled();
+    } finally {
+      await manager.suspend("test-cleanup");
+    }
+  });
+
+  it("MS05: 结果超过 768KB 时拒绝投递并回复 search-response-too-large", async () => {
+    const [mainPort, hostPort] = createPortPair();
+    const oversizedTitle = "x".repeat(800_000);
+    const searchMobileHistory = vi.fn(async () => ({
+      status: "ok" as const,
+      items: [
+        {
+          taskId: "task-huge",
+          traceId: "trace-huge",
+          title: oversizedTitle,
+          workspacePath: localWorkspace.workspacePath,
+          createdAt: 1,
+          updatedAt: 2,
+          mode: "default" as const,
+        },
+      ],
+    }));
+    const hostProtocol = new MessagePortProtocol(hostPort);
+    const hostServer = new ChannelServer(hostProtocol, "host", 1000, true);
+    hostServer.registerChannel(
+      IWindowControllerService.channelName,
+      ProxyChannel.fromService({ searchMobileHistory }),
+    );
+    const attachWorkspaceHost = vi.fn(async () => ({
+      entryId: "entry-1",
+      attachmentId: "oversize-attachment-1",
+      process: {} as never,
+      port: mainPort as never,
+    }));
+    const releaseWorkspaceHostAttachment = vi.fn();
+    const { deliverPayload, manager, remoteWorkspaceDirectory, sentPayloads } =
+      createManagerHarness({
+        attachWorkspaceHost,
+        releaseWorkspaceHostAttachment,
+        getGatewayConnectionStatus: () => ({ state: "online", backendId: "backend-1", epoch: 2 }),
+      });
+    try {
+      await manager.start({ workspacePath: "/workspace/origin" }, 1);
+      setTimeout(() => hostServer.ready(), 0);
+      remoteWorkspaceDirectory.syncWorkspaces(1, [localWorkspace]);
+      deliverPayload({
+        zcode_type: "mobile-history-search-request",
+        requestId: "oversize-search-1",
+        context: {
+          backendId: "backend-1",
+          connectionGeneration: 3,
+          workspaceKey: localWorkspace.workspacePath,
+          requestId: "oversize-search-1",
+        },
+        queryGeneration: 1,
+        scopeSignature: JSON.stringify([localWorkspace.workspacePath]),
+        query: "needle",
+        includeArchived: false,
+        limit: 50,
+      });
+
+      await vi.waitFor(() =>
+        expect(sentPayloads).toContainEqual(
+          expect.objectContaining({
+            zcode_type: "mobile-history-search-outcome",
+            requestId: "oversize-search-1",
+            status: "error",
+            errorCode: "search-response-too-large",
+          }),
+        ),
+      );
+      // 超限回复同样要释放临时 attachment。
+      expect(releaseWorkspaceHostAttachment).toHaveBeenCalledWith("oversize-attachment-1");
+      // 超限 payload 本体绝不能进入发送缓冲。
+      expect(JSON.stringify(sentPayloads)).not.toContain(oversizedTitle.slice(0, 100));
+    } finally {
+      await manager.suspend("test-cleanup");
+      hostServer.dispose();
+      hostProtocol.disconnect();
+    }
+  });
+
+  it("MS05: attach 失败回复 error/search-route-failed，不调用 release", async () => {
+    const attachWorkspaceHost = vi.fn(async () => {
+      throw new Error("host attach failed");
+    });
+    const releaseWorkspaceHostAttachment = vi.fn();
+    const { deliverPayload, manager, remoteWorkspaceDirectory, sentPayloads } =
+      createManagerHarness({
+        attachWorkspaceHost,
+        releaseWorkspaceHostAttachment,
+        getGatewayConnectionStatus: () => ({ state: "online", backendId: "backend-1", epoch: 2 }),
+      });
+    try {
+      await manager.start({ workspacePath: "/workspace/origin" }, 1);
+      remoteWorkspaceDirectory.syncWorkspaces(1, [localWorkspace]);
+      deliverPayload({
+        zcode_type: "mobile-history-search-request",
+        requestId: "attach-fail-search-1",
+        context: {
+          backendId: "backend-1",
+          connectionGeneration: 3,
+          workspaceKey: localWorkspace.workspacePath,
+          requestId: "attach-fail-search-1",
+        },
+        queryGeneration: 1,
+        scopeSignature: JSON.stringify([localWorkspace.workspacePath]),
+        query: "needle",
+        includeArchived: false,
+        limit: 50,
+      });
+
+      await vi.waitFor(() =>
+        expect(sentPayloads).toContainEqual(
+          expect.objectContaining({
+            zcode_type: "mobile-history-search-outcome",
+            requestId: "attach-fail-search-1",
+            status: "error",
+            errorCode: "search-route-failed",
+          }),
+        ),
+      );
+      // attach 抛错时没有拿到 attachment handle，不能凭空调用 release。
+      expect(releaseWorkspaceHostAttachment).not.toHaveBeenCalled();
+    } finally {
+      await manager.suspend("test-cleanup");
+    }
   });
 });

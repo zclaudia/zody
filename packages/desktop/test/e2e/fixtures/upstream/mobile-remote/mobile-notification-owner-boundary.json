@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "caseName": "mobile-notification-owner-boundary",
+  "spec": "./test/e2e/mobile-remote/mobile-notification-owner-boundary.test.ts",
+  "fixtures": [
+    {
+      "id": "mobile-notification-owner-boundary-title",
+      "description": "为本 case 的真实通知任务生成稳定标题。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "标题只用于建立通知目标任务，不参与 identity/owner 路由判定。"
+      },
+      "maxMatches": 4,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title", "E2E_MOBILE_P8_OWNER_BOUNDARY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-owner-boundary-title\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"{\\\"title\\\":\\\"P8 owner boundary notification task\\\"}\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-owner-boundary-title\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "mobile-notification-owner-boundary-owner",
+      "description": "current owner 阶段的真实 V4 completion 事件。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "稳定完成事件正文用于验证同 identity 多窗口下 current owner 路由。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MOBILE_P8_OWNER_BOUNDARY_OWNER_TRIGGER"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-owner-boundary-owner\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"P8_OWNER_CURRENT_OWNER_ROUTING_OK\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-owner-boundary-owner\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "mobile-notification-owner-boundary-taskdeleted",
+      "description": "task 删除阶段的真实 V4 completion 事件；点击发生在任务被删除之后。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "稳定正文用于验证任务删除后旧卡片点击不路由、不写 read receipt。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MOBILE_P8_OWNER_BOUNDARY_TASKDELETED_TRIGGER"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-owner-boundary-taskdeleted\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"P8_OWNER_TASK_DELETED_OK\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-owner-boundary-taskdeleted\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "mobile-notification-owner-boundary-workspaceclosed",
+      "description": "workspace 关闭阶段的真实 V4 completion 事件；点击发生在 workspace tab 移除之后。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "稳定正文用于验证 workspace 关闭后旧卡片点击被拒绝且不新建 Host。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MOBILE_P8_OWNER_BOUNDARY_WORKSPACECLOSED_TRIGGER"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-owner-boundary-workspaceclosed\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"P8_OWNER_WORKSPACE_CLOSED_OK\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-owner-boundary-workspaceclosed\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

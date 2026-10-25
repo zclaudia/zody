@@ -382,6 +382,8 @@ export interface ZCodeAgentSessionSubscribeParams extends ZCodeAgentSessionTarge
   deliveryKind: ZCodeDeliveryKind;
   afterSeq?: number;
   includeSnapshot?: boolean;
+  /** Passive observers may replay an existing runtime without spawning one. */
+  runtimePolicy?: ZCodeAgentRuntimePolicy;
   eventCoalescing?: {
     mode: "background-summary";
     intervalMs?: number;
@@ -579,7 +581,7 @@ export interface ZCodeAgentWorkspaceConfigSubscribeParams extends ZCodeAgentWork
 }
 
 export type ZCodeAgentServiceEvent =
-  | { type: "session.event"; event: ZCodeSessionEvent }
+  | { type: "session.event"; event: ZCodeSessionEvent; recovered?: boolean }
   | { type: "state.updated"; notification: ZCodeStateUpdatedNotification }
   | { type: "permission.request"; request: ZCodePermissionRequestParams }
   | { type: "userInput.request"; request: ZCodeUserInputRequestParams }

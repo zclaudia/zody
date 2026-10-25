@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "spec": "./test/e2e/mobile-remote/mobile-shell-routing.test.mjs",
+  "description": "Synthetic shell-level entry, reveal routing, composer preservation, and live search scope update fixture.",
+  "classification": "synthetic",
+  "syntheticReason": "Exercise the real mobile shell and overlay components without claiming Gateway, Host, or Android routing evidence.",
+  "workspace": {
+    "workspacePath": "/fixture/workspace"
+  },
+  "addedWorkspace": {
+    "workspacePath": "/fixture/workspace",
+    "workspaceIdentity": "remote:fixture:added",
+    "remoteSessionId": "session-added"
+  },
+  "directories": {
+    "/fixture/workspace": [
+      {
+        "name": "src",
+        "path": "/fixture/workspace/src",
+        "type": "directory",
+        "isSymbolicLink": false
+      },
+      {
+        "name": "note.txt",
+        "path": "/fixture/workspace/note.txt",
+        "type": "file",
+        "isSymbolicLink": false
+      }
+    ],
+    "/fixture/workspace/src": [
+      {
+        "name": "read me.txt",
+        "path": "/fixture/workspace/src/read me.txt",
+        "type": "file",
+        "isSymbolicLink": false
+      }
+    ]
+  },
+  "query": "E2E_MOBILE_SHELL_SCOPE",
+  "results": {
+    "/fixture/workspace": {
+      "taskId": "task-current",
+      "title": "Current workspace task",
+      "snippet": "E2E_MOBILE_SHELL_SCOPE current body"
+    },
+    "remote:fixture:added": {
+      "taskId": "task-added",
+      "title": "Newly opened workspace task",
+      "snippet": "E2E_MOBILE_SHELL_SCOPE added body"
+    }
+  }
+}

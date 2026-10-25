@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "caseName": "mobile-host-identity-isolation",
+  "spec": "./test/e2e/mobile-remote/mobile-host-identity-isolation.test.ts",
+  "fixtures": [
+    {
+      "id": "mobile-host-identity-isolation-title",
+      "description": "为双 Host 搜索隔离任务生成稳定标题。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "标题只用于建立可搜索任务，不属于 identity 路由断言。"
+      },
+      "maxMatches": 2,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title", "E2E_MOBILE_P8_HOST_IDENTITY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-host-identity-title\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"{\\\"title\\\":\\\"P8 identity isolation task\\\"}\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-host-identity-title\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "mobile-host-identity-isolation-turn-a",
+      "description": "在 Host A 建立 mobile search marker。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定 assistant reply 建立 A Host 的可搜索正文。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MOBILE_P8_HOST_IDENTITY_A_FIRST_PROMPT"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-host-identity-a\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"MOBILE_P8_HOST_IDENTITY_REPLY P8_HOST_IDENTITY_SEARCH_TOKEN alpha\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-host-identity-a\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "mobile-host-identity-isolation-turn-b",
+      "description": "在 Host B 建立 mobile search marker。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定 assistant reply 建立 B Host 的可搜索正文。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MOBILE_P8_HOST_IDENTITY_B_FIRST_PROMPT"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-host-identity-b\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"MOBILE_P8_HOST_IDENTITY_REPLY P8_HOST_IDENTITY_SEARCH_TOKEN beta\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-host-identity-b\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

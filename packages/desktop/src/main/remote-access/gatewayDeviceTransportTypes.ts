@@ -30,6 +30,7 @@ export type GatewayDevicePayloadSendResult =
  * transport 本身可以在下一次 start 时复用。
  */
 export interface GatewayDeviceTransportSession {
+  getNotificationIdentity?(): { deviceSubject: string; clientInstanceId: string } | undefined;
   start(): void;
   sendPayload(payload: WebRemoteControlAppPayload): boolean;
   sendPayloadResult(payload: WebRemoteControlAppPayload): GatewayDevicePayloadSendResult;

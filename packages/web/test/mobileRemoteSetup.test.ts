@@ -84,7 +84,7 @@ describe("mobile remote setup flow (375px)", () => {
     fireEvent.change(screen.getByLabelText("Device credential"), {
       target: { value: "zgd_test" },
     });
-    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
 
     await waitFor(() => expect(createBackendDiscovery).toHaveBeenCalledOnce());
     fireEvent.click(await screen.findByText("Studio Mac"));
@@ -138,7 +138,7 @@ describe("mobile remote setup flow (375px)", () => {
     expect(
       await screen.findByPlaceholderText("Credential saved; leave empty to keep it"),
     ).toBeTruthy();
-    fireEvent.click(screen.getByText("Continue"));
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => expect(createBackendDiscovery).toHaveBeenCalledTimes(2));
     expect((await store.load())?.credential).toBe("zgd_saved");
     expect(resolved).toBeInstanceOf(Promise);

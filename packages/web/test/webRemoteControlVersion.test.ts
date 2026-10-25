@@ -1,8 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import type { WebRemoteControlWindowBootstrapResult } from "@zcode/shared";
-import { createWebRemoteControlVersionGuard } from "../src/webRemoteControlVersion.js";
+import {
+  createWebRemoteControlVersionGuard,
+  retryObsoleteWebRemoteControlBootstrapCheck,
+} from "../src/webRemoteControlVersion.js";
 
-const bootstrap = (desktopAppVersion?: string): WebRemoteControlWindowBootstrapResult => ({
+const bootstrap = (
+  desktopAppVersion?: string,
+): WebRemoteControlWindowBootstrapResult => ({
   windowControlSessionId: "device-1",
   workspaces: [],
   tasks: [],
@@ -85,6 +90,42 @@ describe("desktop version observer (T4.2, URL-free)", () => {
     resolveOld(bootstrap("3.13.0"));
     expect(await old).toBeUndefined();
     expect(h.onVersionChanged).not.toHaveBeenCalled();
+  });
+
+  it("lets the initial bootstrap continuation consume a fresh result after ready negotiation", async () => {
+    let connectionGeneration = 0;
+    let resolveObsolete!: (
+      value: WebRemoteControlWindowBootstrapResult | undefined,
+    ) => void;
+    let checkCount = 0;
+    let mounted = false;
+    const bootstrapPromise = (async () => {
+      const result = await retryObsoleteWebRemoteControlBootstrapCheck({
+        check: () => {
+          checkCount += 1;
+          if (checkCount === 1) {
+            return new Promise<
+              WebRemoteControlWindowBootstrapResult | undefined
+            >((resolve) => {
+              resolveObsolete = resolve;
+            });
+          }
+          return Promise.resolve(bootstrap("3.12.1"));
+        },
+        getConnectionGeneration: () => connectionGeneration,
+        isChannelReady: () => true,
+        isDisposed: () => false,
+      });
+      if (result) mounted = true;
+    })();
+
+    // Gateway transport emits ready before the negotiation callback.
+    connectionGeneration += 1;
+    resolveObsolete(undefined);
+    await bootstrapPromise;
+
+    expect(checkCount).toBe(2);
+    expect(mounted).toBe(true);
   });
 
   it("suppresses obsolete errors but propagates current failures", async () => {

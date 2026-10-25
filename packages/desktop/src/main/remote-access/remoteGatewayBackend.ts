@@ -10,6 +10,7 @@ import type {
   RemoteGatewayBackendSdkLike,
   RemoteGatewayTestConnectionResult,
 } from "./remoteGatewayBackendTypes.js";
+import { requestGatewayNotification } from "./gatewayNotificationDelivery.js";
 import { createRemoteGatewayChannelHub } from "./remoteGatewayChannelHub.js";
 import {
   defaultCreateBackend,
@@ -288,6 +289,12 @@ export function createRemoteGatewayBackend(
         return;
       }
       await requestApply(config);
+    },
+
+    publishNotification(event) {
+      if (!activeSdk || status.state !== "online")
+        return Promise.resolve({ status: "retryable" as const, code: "offline" });
+      return requestGatewayNotification(activeSdk, event);
     },
 
     getStatus() {

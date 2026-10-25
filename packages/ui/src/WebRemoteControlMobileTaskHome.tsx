@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
+  Bell,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -17,6 +18,7 @@ import {
   RefreshCw,
   Settings,
   Settings2,
+  Search,
 } from "lucide-react";
 import {
   TID_TASK_ITEM,
@@ -93,6 +95,10 @@ export function WebRemoteControlMobileTaskHome({
   onNavigateHome,
   onNavigateToChat,
   onOpenTask,
+  onOpenSearch,
+  onOpenFiles,
+  onOpenNotifications,
+  onOpenOtherProject,
   preferences,
   onPreferencesChange,
   onSelectTask = noopSelectTask,
@@ -115,6 +121,11 @@ export function WebRemoteControlMobileTaskHome({
   onNavigateHome?: () => void;
   onNavigateToChat?: () => void;
   onOpenTask?: (task: WebRemoteControlTaskTarget) => void;
+  onOpenSearch?: () => void;
+  onOpenFiles?: (workspaceKey: string) => void;
+  onOpenNotifications?: () => void;
+  /** 第二批 E1：打开「其他项目」目录选择器（由 Shell 持有 overlay）；能力不足时调用方不传。 */
+  onOpenOtherProject?: () => void;
   preferences: WebRemoteControlMobileTaskHomePreferences;
   onPreferencesChange: (preferences: WebRemoteControlMobileTaskHomePreferences) => void;
   refreshKey?: number;
@@ -469,6 +480,29 @@ export function WebRemoteControlMobileTaskHome({
                 <Settings className="size-4" />
               </Button>
             ) : null}
+            {onOpenSearch ? (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="size-11"
+                aria-label={intl.formatMessage({ id: "mobileSearch.title" })}
+                onClick={onOpenSearch}
+              >
+                <Search className="size-4" />
+              </Button>
+            ) : null}
+            {onOpenNotifications ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="size-11"
+                aria-label={intl.formatMessage({ id: "mobileNotifications.title" })}
+                onClick={onOpenNotifications}
+              >
+                <Bell className="size-4" />
+              </Button>
+            ) : null}
             <WebRemoteControlThemeMenu />
           </div>
         </div>
@@ -487,6 +521,11 @@ export function WebRemoteControlMobileTaskHome({
           openingWindow={openingDesktopWindow}
           onOpenRecentProject={(projectId) => void handleOpenRecentProject(projectId)}
           onOpenDesktopWindow={() => void handleOpenDesktopWindow()}
+          onOpenOtherProject={
+            onOpenOtherProject && switcher.canOpenArbitraryWorkspace?.() === true
+              ? onOpenOtherProject
+              : undefined
+          }
         />
 
         {recentProjectsError ? (
@@ -890,6 +929,16 @@ export function WebRemoteControlMobileTaskHome({
                                     : "webRemoteControl.mobileHome.workspaceKind.local",
                             })}
                           </span>
+                          {onOpenFiles && !isDisconnectedRemoteWorkspace ? (
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label={intl.formatMessage({ id: "mobileFileBrowser.title" })}
+                              onClick={() => onOpenFiles(group.workspaceKey)}
+                            >
+                              <FolderOpen className="size-4" />
+                            </Button>
+                          ) : null}
                           {isDisconnectedRemoteWorkspace ? (
                             <span className="shrink-0 rounded-full border border-destructive/40 bg-card px-1.5 py-0.5 text-ui-xs leading-none text-destructive">
                               {intl.formatMessage({
@@ -936,6 +985,16 @@ export function WebRemoteControlMobileTaskHome({
                         )}
                       </span>
                     </button>
+                    {onOpenFiles && !isDisconnectedRemoteWorkspace ? (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={intl.formatMessage({ id: "mobileFileBrowser.title" })}
+                        onClick={() => onOpenFiles(group.workspaceKey)}
+                      >
+                        <FolderOpen className="size-4" />
+                      </Button>
+                    ) : null}
                     {isDisconnectedRemoteWorkspace ? (
                       <Button
                         type="button"

@@ -18,6 +18,7 @@ export {
   type WebRemoteControlRecentProjectsSectionProps,
   type WebRemoteControlMobileStartPageProps,
 } from "./WebRemoteControlRecentProjects.js";
+export { WebRemoteControlStandaloneStoreProvider } from "./WebRemoteControlStandaloneStoreProvider.js";
 export {
   WebRemoteControlFeatureProvider,
   useWebRemoteControlFeatureEnabled,

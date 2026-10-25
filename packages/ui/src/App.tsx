@@ -343,7 +343,9 @@ export function App({
   const [conversationFindMatchCount, setConversationFindMatchCount] = useState(0);
   const searchResultHighlightRequestIdRef = useRef(0);
   const [searchResultHighlightRequest, setSearchResultHighlightRequest] =
-    useState<ChatSearchResultHighlightRequest | null>(null);
+    useState<ChatSearchResultHighlightRequest | null>(
+      () => webRemoteControlWorkspaceSwitcher?.getSearchHighlight?.() ?? null,
+    );
   const [fileChangeFindState, setFileChangeFindState] = useState(createTaskFindNavigationState);
   const [fileChangeFindMatchCount, setFileChangeFindMatchCount] = useState(0);
   const [gitSelectedSourceId, setGitSelectedSourceId] = useState<GitChangeSourceId>("unstaged");
@@ -652,11 +654,15 @@ export function App({
     },
     [],
   );
-  const handleSearchResultHighlightDone = useCallback((requestId: number) => {
-    setSearchResultHighlightRequest((current) =>
-      current?.requestId === requestId ? null : current,
-    );
-  }, []);
+  const handleSearchResultHighlightDone = useCallback(
+    (requestId: number) => {
+      webRemoteControlWorkspaceSwitcher?.acknowledgeSearchHighlight?.(requestId);
+      setSearchResultHighlightRequest((current) =>
+        current?.requestId === requestId ? null : current,
+      );
+    },
+    [webRemoteControlWorkspaceSwitcher],
+  );
   const handleFileChangeFindChange = useCallback((query: string, activeIndex: number) => {
     setFileChangeFindState((state) => changeTaskFindSelection(state, query, activeIndex));
   }, []);

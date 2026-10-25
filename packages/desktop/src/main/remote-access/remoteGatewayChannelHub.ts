@@ -34,6 +34,7 @@ export interface RemoteGatewayChannelHub {
 export function createRemoteGatewayChannelHub(
   logger: RemoteGatewayBackendLogger,
 ): RemoteGatewayChannelHub {
+  const offerCredentials = new Map<string, string>();
   const activeChannels = new Map<string, RemoteGatewayChannel>();
   const closedListeners = new Set<(info: RemoteGatewayChannelClosedInfo) => void>();
   let channelHandler: RemoteGatewayChannelHandler | undefined;
@@ -71,7 +72,10 @@ export function createRemoteGatewayChannelHub(
 
     // 同步转交，绝不 await：transport 必须在第一个 await 之前注册 onMessage/onClose。
     try {
-      handler(channel, offer);
+      const sourceCredentialId =
+        offer.sourceCredentialId ?? offerCredentials.get(channel.channelId);
+      offerCredentials.delete(channel.channelId);
+      handler(channel, { ...offer, ...(sourceCredentialId ? { sourceCredentialId } : {}) });
     } catch (error) {
       logger.error("[remote-access] gateway channel handler failed", {
         channelId: channel.channelId,
@@ -88,6 +92,17 @@ export function createRemoteGatewayChannelHub(
     },
 
     handleControlMessage(message) {
+      if (
+        message.type === "channel_offer" &&
+        typeof message.channelId === "string" &&
+        typeof message.sourceCredentialId === "string"
+      ) {
+        // SDK 0.4 的 offer 结构面省略此扩展；onMessage 在数据 channel 建立前保留 Gateway 认证主体。
+        offerCredentials.set(message.channelId, message.sourceCredentialId);
+        if (offerCredentials.size > 64)
+          offerCredentials.delete(offerCredentials.keys().next().value!);
+        return;
+      }
       if (message.type !== "channel_closed") {
         return;
       }
@@ -96,6 +111,9 @@ export function createRemoteGatewayChannelHub(
         logger.warn("[remote-access] malformed channel_closed message");
         return;
       }
+      // channel_offer may arrive on the control socket before the SDK delivers the data socket;
+      // a close in that gap must retire the cached authenticated principal too.
+      offerCredentials.delete(channelId);
       const reason = typeof message.reason === "string" ? message.reason : "unknown";
       activeChannels.delete(channelId);
       const info: RemoteGatewayChannelClosedInfo = { channelId, reason };
@@ -140,10 +158,12 @@ export function createRemoteGatewayChannelHub(
         }
       }
       activeChannels.clear();
+      offerCredentials.clear();
     },
 
     clear() {
       activeChannels.clear();
+      offerCredentials.clear();
     },
   };
 }

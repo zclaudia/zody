@@ -1,5 +1,8 @@
 package io.github.zclaudia.zody.mobile.bridge
 
+import java.io.IOException
+import java.io.OutputStream
+
 /**
  * 手机文件保存/打开能力（T6.3）。
  *
@@ -44,4 +47,42 @@ interface MobileFileOpener {
      * @return false 表示 URI 不在允许范围或系统没有可处理的应用；保存本身仍然成功。
      */
     fun open(uri: String, mimeType: String): Boolean
+}
+
+/**
+ * Shared stream finalizer for Android save sessions. A close failure must reach the caller so the
+ * MediaStore row is not published as a successful, possibly truncated download.
+ */
+internal class MobileFileSaveOutputStream(private val output: OutputStream) {
+    private var closed = false
+
+    fun write(bytes: ByteArray) {
+        check(!closed) { "The save session is already closed." }
+        output.write(bytes)
+    }
+
+    fun finish() {
+        if (closed) return
+        closed = true
+        var failure: IOException? = null
+        try {
+            output.flush()
+        } catch (error: IOException) {
+            failure = error
+        }
+        try {
+            output.close()
+        } catch (error: IOException) {
+            if (failure == null) failure = error else failure.addSuppressed(error)
+        }
+        failure?.let { throw it }
+    }
+
+    fun abort() {
+        try {
+            finish()
+        } catch (_: Exception) {
+            // Cleanup still deletes the uncommitted file when flushing or closing fails.
+        }
+    }
 }

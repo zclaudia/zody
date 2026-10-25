@@ -98,11 +98,27 @@ export type {
 export type { ZCodeTaskListItem } from "./session/zcodeTaskListTypes.js";
 
 export { IWindowControllerService } from "./window-controller/windowController.js";
+export { IMobileNotificationReader } from "./mobile-notifications/contract.js";
+export type {
+  IMobileNotificationReader as IMobileNotificationReaderContract,
+  MobileNotificationPrincipal,
+  MobileNotification,
+  MobileNotificationCursor,
+  MobileNotificationDeliveryState,
+  MobileNotificationKind,
+  MobileNotificationOutboxClaim,
+  MobileNotificationPage,
+  MobileNotificationRecordInput,
+  MobileNotificationTarget,
+} from "./mobile-notifications/contract.js";
 export type {
   WindowHostControllerFrame,
   WindowHostControllerMutation,
   WindowHostControllerTaskListItem,
   WindowHostControllerTaskListResult,
+  MobileHistorySearchSourceQuery,
+  MobileHistorySearchSourceItem,
+  MobileHistorySearchSourceResult,
 } from "./window-controller/windowController.js";
 
 // ZCode agent service — IZCodeAgentService is both a type (interface) and value (descriptor)
@@ -300,7 +316,6 @@ export {
   type PluginUiWorkspaceTarget,
 } from "./plugin-ui-bridge/contract.js";
 export { IClientConfigService } from "./client-config/clientConfig.js";
-
 
 export { IGenUiService } from "./gen-ui/contract.js";
 export type { GenUiPrepareParams } from "./gen-ui/contract.js";

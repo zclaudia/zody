@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "spec": "./test/e2e/workspace-file-tree/mobile-file-browser.test.mjs",
+  "description": "Component and file-service contract fixture for mobile read-only directory navigation.",
+  "classification": "synthetic",
+  "syntheticReason": "Isolate mobile directory budget, reveal navigation, preview and readonly actions without requiring a Gateway or Android device.",
+  "workspacePath": "/fixture/workspace",
+  "directories": {
+    "/fixture/workspace": [
+      {
+        "name": ".env",
+        "path": "/fixture/workspace/.env",
+        "type": "file",
+        "isSymbolicLink": false
+      },
+      {
+        "name": "src",
+        "path": "/fixture/workspace/src",
+        "type": "directory",
+        "isSymbolicLink": false
+      },
+      {
+        "name": "linked-src",
+        "path": "/fixture/workspace/linked-src",
+        "type": "directory",
+        "isSymbolicLink": true
+      },
+      {
+        "name": "note.txt",
+        "path": "/fixture/workspace/note.txt",
+        "type": "file",
+        "isSymbolicLink": false
+      }
+    ],
+    "/fixture/workspace/src": [
+      {
+        "name": "read me.txt",
+        "path": "/fixture/workspace/src/read me.txt",
+        "type": "file",
+        "isSymbolicLink": false
+      }
+    ],
+    "/fixture/workspace/linked-src": [
+      {
+        "name": "linked.txt",
+        "path": "/fixture/workspace/linked-src/linked.txt",
+        "type": "file",
+        "isSymbolicLink": false
+      }
+    ]
+  },
+  "textFiles": {
+    "/fixture/workspace/note.txt": "Mobile file preview fixture.",
+    "/fixture/workspace/src/read me.txt": "A preview opened from a mobile directory.",
+    "/fixture/workspace/linked-src/linked.txt": "Symbolic link target fixture.",
+    "/fixture/workspace/.env": "FIXTURE_ONLY=1"
+  }
+}

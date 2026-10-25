@@ -34,6 +34,7 @@ export function createWebPlatform(options?: {
    * 手机页面会显式检查能力是否存在，release 构建缺桥时拒绝保存凭证。
    */
   secureStore?: PlatformSecureStore;
+  mobileNotifications?: IPlatformService["mobileNotifications"];
   /** 手机宿主的前后台事件（T6.2）；只有 Android 原生桥提供。 */
   onAppLifecycleChange?: IPlatformService["onAppLifecycleChange"];
   /** 手机宿主的返回键分发（T6.2）；只有 Android 原生桥提供。 */
@@ -52,6 +53,7 @@ export function createWebPlatform(options?: {
 
   return {
     ...(secureStore ? { secureStore } : {}),
+    ...(options?.mobileNotifications ? { mobileNotifications: options.mobileNotifications } : {}),
     ...(onAppLifecycleChange ? { onAppLifecycleChange } : {}),
     ...(onBackPressed ? { onBackPressed } : {}),
     ...(saveFile ? { saveFile } : {}),

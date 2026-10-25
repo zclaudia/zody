@@ -181,6 +181,122 @@ describe("recent projects / workspace open / desktop window open payloads", () =
       }),
     ).not.toBeNull();
   });
+
+  it("workspace-open-path-request 只接受 workspacePath（第二批 E1）；夹带字段整帧丢弃", () => {
+    const request = {
+      zcode_type: "workspace-open-path-request",
+      requestId: "open-path-1",
+      workspacePath: "/workspace/demo",
+    };
+    expect(parseWebRemoteControlAppPayload(request)).toEqual(request);
+    // strict：不允许借任意路径请求夹带 recentProjectId 等其他字段。
+    expect(
+      parseWebRemoteControlAppPayload({ ...request, recentProjectId: "opaque-1" }),
+    ).toBeNull();
+    expect(parseWebRemoteControlAppPayload({ ...request, workspacePath: "" })).toBeNull();
+  });
+
+  it("解析 workspace-open-path-response 的成功与失败形状；失败用稳定错误码", () => {
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "workspace-open-path-response",
+        requestId: "open-path-1",
+        success: true,
+        workspaceKey: "/workspace/demo",
+      }),
+    ).not.toBeNull();
+    for (const error of ["arbitrary-path-disabled", "path-invalid", "open-failed", "timeout"]) {
+      expect(
+        parseWebRemoteControlAppPayload({
+          zcode_type: "workspace-open-path-response",
+          requestId: "open-path-1",
+          success: false,
+          error,
+        }),
+      ).not.toBeNull();
+    }
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "workspace-open-path-response",
+        requestId: "open-path-1",
+        success: false,
+      }),
+    ).toBeNull();
+  });
+
+  it("mobile-directory-list-request 的 path 可省略，夹带字段整帧丢弃", () => {
+    const request = {
+      zcode_type: "mobile-directory-list-request",
+      requestId: "list-1",
+    };
+    expect(parseWebRemoteControlAppPayload(request)).toEqual(request);
+    expect(
+      parseWebRemoteControlAppPayload({ ...request, path: "/workspace" }),
+    ).toEqual({ ...request, path: "/workspace" });
+    expect(parseWebRemoteControlAppPayload({ ...request, extra: 1 })).toBeNull();
+    expect(
+      parseWebRemoteControlAppPayload({ ...request, path: "" }),
+    ).toBeNull();
+  });
+
+  it("mobile-directory-list-response 校验 entries 形状、上限与错误分支", () => {
+    const entry = { name: "demo", path: "/workspace/demo", isSymbolicLink: false };
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "mobile-directory-list-response",
+        requestId: "list-1",
+        success: true,
+        resolvedPath: "/workspace",
+        parentPath: "/",
+        entries: [entry, { name: "plain", path: "/workspace/plain" }],
+      }),
+    ).not.toBeNull();
+    // 根目录 parentPath 为 null 是合法形状。
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "mobile-directory-list-response",
+        requestId: "list-1",
+        success: true,
+        resolvedPath: "/",
+        parentPath: null,
+        entries: [],
+      }),
+    ).not.toBeNull();
+    for (const error of ["not-found", "not-directory", "unreadable", "too-large", "path-invalid"]) {
+      expect(
+        parseWebRemoteControlAppPayload({
+          zcode_type: "mobile-directory-list-response",
+          requestId: "list-1",
+          success: false,
+          error,
+        }),
+      ).not.toBeNull();
+    }
+    // entry 夹带文件字段被拒；entries 超过 1000 上限被拒。
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "mobile-directory-list-response",
+        requestId: "list-1",
+        success: true,
+        resolvedPath: "/workspace",
+        parentPath: "/",
+        entries: [{ ...entry, type: "file" }],
+      }),
+    ).toBeNull();
+    expect(
+      parseWebRemoteControlAppPayload({
+        zcode_type: "mobile-directory-list-response",
+        requestId: "list-1",
+        success: true,
+        resolvedPath: "/workspace",
+        parentPath: "/",
+        entries: Array.from({ length: 1001 }, (_, index) => ({
+          name: `dir-${index}`,
+          path: `/workspace/dir-${index}`,
+        })),
+      }),
+    ).toBeNull();
+  });
 });
 
 describe("bootstrap response version", () => {

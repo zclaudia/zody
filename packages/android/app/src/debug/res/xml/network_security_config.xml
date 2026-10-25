@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Debug 构建需要允许开发用 HTTP upstream；主配置只允许 release 使用 HTTPS。 -->
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

@@ -145,6 +145,28 @@ describe("mobile remote file bridge (T6.3)", () => {
     expect(bridge.open).not.toHaveBeenCalled();
   });
 
+  it("MF08: saveFileAppend 抛错时 abort 清理会话且不再调用 finish", async () => {
+    const { bridge } = createFakeBridge();
+    bridge.append.mockImplementation(() => {
+      throw new Error("native write failed");
+    });
+    // 模拟原生 abort 后 token 已失效：若页面仍误调 finish，会得到未知 token 错误并泄漏。
+    bridge.finish.mockImplementation(() => {
+      throw new Error("Unknown save session token.");
+    });
+
+    const result = await saveMobileRemoteFile(bridge, {
+      data: new Uint8Array(MOBILE_REMOTE_SAVE_CHUNK_BYTES + 1).buffer,
+      suggestedName: "a.bin",
+    });
+
+    expect(result).toEqual({ success: false, error: "native write failed" });
+    expect(bridge.abort).toHaveBeenCalledWith("save-token");
+    // 失败后不能继续 finish：保存失败的错误是原始 append 错误，不被二次错误覆盖。
+    expect(bridge.finish).not.toHaveBeenCalled();
+    expect(bridge.open).not.toHaveBeenCalled();
+  });
+
   it("does not fail a saved file when no viewer can open it", async () => {
     const { bridge } = createFakeBridge();
     bridge.open.mockImplementation(() => {

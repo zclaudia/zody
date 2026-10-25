@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import type { Dirent } from "node:fs";
-import { mkdir, open, readFile, readdir, realpath, stat } from "node:fs/promises";
+import { mkdir, open, opendir, readFile, readdir, realpath, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { extname, join, relative, sep } from "node:path";
 import type {
@@ -12,7 +12,11 @@ import type {
 } from "@zcode/shared";
 import { getMediaPreviewFormat } from "@zcode/shared";
 import { packWorkspaceFileEntries } from "@zcode/shared/workspaceFileEntriesCodec";
-import type { IFileService, WorkspaceFileSearchParams } from "./file.js";
+import {
+  WorkspaceFileDirectoryTooLargeError,
+  type IFileService,
+  type WorkspaceFileSearchParams,
+} from "./file.js";
 import { WORKSPACE_FILE_SEARCH_DISPLAY_CAP } from "@zcode/shared/workspaceFileSearch";
 import { buildHostFileSearchCandidates, searchHostFileCandidates } from "./workspaceFileSearch.js";
 import {
@@ -41,6 +45,8 @@ const MAX_BINARY_PREVIEW_BYTES = 25 * 1024 * 1024;
 const FILE_EXISTENCE_CACHE_TTL_MS = 60_000;
 const FILE_EXISTENCE_CACHE_MAX_ENTRIES = 100;
 const FILE_EXISTENCE_BATCH_LIMIT = 15;
+const MOBILE_DIRECTORY_MAX_ENTRIES = 5_000;
+const MOBILE_DIRECTORY_MAX_RESPONSE_BYTES = 1024 * 1024;
 const IMAGE_EXTENSION_TO_MEDIA_TYPE: Record<string, string> = {
   ".apng": "image/apng",
   ".avif": "image/avif",
@@ -360,25 +366,52 @@ export function createFileService(options: CreateFileServiceOptions = {}): IFile
   };
 
   return {
-    async readdir(params: { path: string; includeHidden?: boolean }): Promise<FileEntry[]> {
-      const entries = await readdir(params.path, { withFileTypes: true });
-      const visibleEntries = await Promise.all(
-        entries
-          .filter((e) => {
-            // 修复：workspace 文件树需要展示 .gitignore/.env/.github 等项目文件，
-            // 但目录选择器等旧调用仍应默认隐藏 dotfiles，避免突然增加噪音。
-            return params.includeHidden === true || !e.name.startsWith(".");
-          })
-          .map(async (e) => {
-            const entryPath = join(params.path, e.name);
-            return {
-              name: e.name,
-              path: entryPath,
-              type: await resolveReaddirEntryType(entryPath, e.isDirectory(), e.isSymbolicLink()),
-              isSymbolicLink: e.isSymbolicLink(),
-            };
-          }),
-      );
+    async readdir(params: {
+      path: string;
+      includeHidden?: boolean;
+      mobileBudget?: { maxEntries: number; maxResponseBytes: number };
+    }): Promise<FileEntry[]> {
+      const mobileBudget = params.mobileBudget;
+      const entries: FileEntry[] = [];
+      let serializedBytes = 2; // []
+      const appendEntry = async (entry: Dirent) => {
+        // workspace tree must show project dotfiles; old callers still hide them by default.
+        if (params.includeHidden !== true && entry.name.startsWith(".")) return;
+        const entryPath = join(params.path, entry.name);
+        const value: FileEntry = {
+          name: entry.name,
+          path: entryPath,
+          type: await resolveReaddirEntryType(
+            entryPath,
+            entry.isDirectory(),
+            entry.isSymbolicLink(),
+          ),
+          isSymbolicLink: entry.isSymbolicLink(),
+        };
+        if (mobileBudget) {
+          const entryBytes = Buffer.byteLength(JSON.stringify(value), "utf8");
+          const nextBytes = serializedBytes + entryBytes + (entries.length > 0 ? 1 : 0);
+          if (
+            entries.length >= Math.min(mobileBudget.maxEntries, MOBILE_DIRECTORY_MAX_ENTRIES) ||
+            nextBytes > Math.min(mobileBudget.maxResponseBytes, MOBILE_DIRECTORY_MAX_RESPONSE_BYTES)
+          ) {
+            throw new WorkspaceFileDirectoryTooLargeError();
+          }
+          serializedBytes = nextBytes;
+        }
+        entries.push(value);
+      };
+
+      if (mobileBudget) {
+        // Async iteration stops as soon as the hard cap is exceeded; it never materializes an
+        // unbounded directory before reporting the mobile budget error.
+        const directory = await opendir(params.path);
+        for await (const entry of directory) await appendEntry(entry);
+      } else {
+        const directoryEntries = await readdir(params.path, { withFileTypes: true });
+        await Promise.all(directoryEntries.map(appendEntry));
+      }
+      const visibleEntries = entries;
       return visibleEntries.sort((a, b) => {
         if (a.type !== b.type) return a.type === "directory" ? -1 : 1;
         return a.name.localeCompare(b.name);

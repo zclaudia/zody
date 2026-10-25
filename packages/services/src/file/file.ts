@@ -18,10 +18,31 @@ export interface WorkspaceFileSearchParams {
   refresh?: boolean;
 }
 
+export interface WorkspaceFileDirectoryReadBudget {
+  /** Hard ceiling: the mobile file browser currently requests at most 5000 entries. */
+  maxEntries: number;
+  /** Hard ceiling on the serialized entry payload, excluding transport framing. */
+  maxResponseBytes: number;
+}
+
+export class WorkspaceFileDirectoryTooLargeError extends Error {
+  readonly code = "DIRECTORY_TOO_LARGE";
+
+  constructor() {
+    super("DIRECTORY_TOO_LARGE: Directory exceeds the mobile file browser limit.");
+    this.name = "WorkspaceFileDirectoryTooLargeError";
+  }
+}
+
 export interface IFileService {
   /** Host 匹配并返回有界候选，避免 Renderer 下载完整文件索引。 */
   searchWorkspaceFiles(params: WorkspaceFileSearchParams): Promise<WorkspaceFileEntry[]>;
-  readdir(params: { path: string; includeHidden?: boolean }): Promise<FileEntry[]>;
+  readdir(params: {
+    path: string;
+    includeHidden?: boolean;
+    /** Omitted for existing desktop callers, which retain the full-directory behavior. */
+    mobileBudget?: WorkspaceFileDirectoryReadBudget;
+  }): Promise<FileEntry[]>;
   stat(params: { path: string }): Promise<FileStat>;
   checkFilesExist(params: { paths: string[] }): Promise<Array<{ path: string; exists: boolean }>>;
   resolvePath(params: { path: string }): Promise<string>;

@@ -39,6 +39,25 @@ class MobileBridgeEventDispatcherTest {
     }
 
     @Test
+    fun `dispatches notification click payload as JSON to the page host`() {
+        val evaluator = FakeEvaluator()
+        evaluator.dispatcher().dispatchNotificationClick("{\"backendId\":\"backend-a\",\"notificationId\":\"n-1\"}")
+        val script = evaluator.scripts.single()
+        assertTrue(script.contains("onNotificationClick"))
+        assertTrue(script.contains("JSON.parse("))
+        assertTrue(script.contains("backendId"))
+        assertNull(evaluator.callback)
+    }
+
+    @Test
+    fun `dispatches permission result after Android request completes`() {
+        val evaluator = FakeEvaluator()
+        evaluator.dispatcher().dispatchNotificationPermissionChanged(true)
+        assertTrue(evaluator.scripts.single().contains("onNotificationPermissionChanged(true)"))
+        assertNull(evaluator.callback)
+    }
+
+    @Test
     fun `reports whether the page consumed the back key`() {
         val evaluator = FakeEvaluator()
         val dispatcher = evaluator.dispatcher()

@@ -82,6 +82,19 @@ modules:
     layers: { domain: domain, app: app, adapters: adapters }
     layerOrder: [domain, app, adapters]
     owner: conversation
+  - id: mobile-notifications-service
+    roots: [packages/services/src/mobile-notifications]
+    managed: true
+    requires: [services, shared, rpc]
+    publicEntrypoints:
+      [
+        packages/services/src/mobile-notifications/index.ts,
+        packages/services/src/mobile-notifications/contract.ts,
+        packages/services/src/mobile-notifications/node.ts,
+      ]
+    layers: { domain: domain, app: app, adapters: adapters }
+    layerOrder: [domain, app, adapters]
+    owner: mobile-notifications
 
   - id: gen-ui
     roots: [packages/ui/src/gen-ui]

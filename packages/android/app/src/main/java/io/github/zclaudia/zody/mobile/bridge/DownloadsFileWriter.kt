@@ -11,7 +11,6 @@ import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.OutputStream
 
 /**
  * 把页面保存的文件写入系统「下载」目录（T6.3）。
@@ -58,16 +57,19 @@ class DownloadsFileWriter(private val context: Context) : MobileFileSaver {
                 if (cursor.moveToFirst()) cursor.getString(0) else null
             }
         }.getOrNull() ?: displayName
-        val stream = resolver.openOutputStream(uri)
-            ?: run {
-                resolver.delete(uri, null, null)
-                throw IOException("Unable to open the Downloads file for writing.")
-            }
+        val stream = try {
+            resolver.openOutputStream(uri)
+                ?: throw IOException("Unable to open the Downloads file for writing.")
+        } catch (error: Exception) {
+            // 下载项已先插入为pending；打开流失败也必须回收，避免留下不可见半成品。
+            runCatching { resolver.delete(uri, null, null) }
+            throw error
+        }
         return MediaStoreSession(
             resolver = resolver,
             uri = uri,
             displayName = actualName,
-            stream = stream,
+            stream = MobileFileSaveOutputStream(stream),
         )
     }
 
@@ -76,11 +78,17 @@ class DownloadsFileWriter(private val context: Context) : MobileFileSaver {
             ?: File(context.filesDir, "downloads")
         directory.mkdirs()
         val file = uniqueFile(directory, displayName)
+        val stream = try {
+            FileOutputStream(file)
+        } catch (error: Exception) {
+            runCatching { file.delete() }
+            throw error
+        }
         return LegacySession(
             context = context,
             file = file,
             displayName = file.name,
-            stream = FileOutputStream(file),
+            stream = MobileFileSaveOutputStream(stream),
         )
     }
 
@@ -106,21 +114,26 @@ class DownloadsFileWriter(private val context: Context) : MobileFileSaver {
         private val resolver: android.content.ContentResolver,
         private val uri: Uri,
         override val displayName: String,
-        private val stream: OutputStream,
+        private val stream: MobileFileSaveOutputStream,
     ) : MobileFileSaveSession {
-        private var closed = false
-
         override fun append(bytes: ByteArray) {
-            check(!closed) { "The save session is already closed." }
             stream.write(bytes)
         }
 
         override fun finish(): SavedMobileFile {
-            closeStream()
-            val values = ContentValues().apply {
-                put(MediaStore.Downloads.IS_PENDING, 0)
+            try {
+                stream.finish()
+                val values = ContentValues().apply {
+                    put(MediaStore.Downloads.IS_PENDING, 0)
+                }
+                // 不吞掉flush/close或提交失败；否则截断文件也会显示为保存成功。
+                if (resolver.update(uri, values, null, null) <= 0) {
+                    throw IOException("Unable to finish the Downloads file.")
+                }
+            } catch (error: Exception) {
+                abort()
+                throw error
             }
-            resolver.update(uri, values, null, null)
             return SavedMobileFile(
                 uri = uri.toString(),
                 displayPath = "${Environment.DIRECTORY_DOWNLOADS}/$displayName",
@@ -128,19 +141,8 @@ class DownloadsFileWriter(private val context: Context) : MobileFileSaver {
         }
 
         override fun abort() {
-            closeStream()
+            stream.abort()
             runCatching { resolver.delete(uri, null, null) }
-        }
-
-        private fun closeStream() {
-            if (closed) {
-                return
-            }
-            closed = true
-            runCatching {
-                stream.flush()
-                stream.close()
-            }
         }
     }
 
@@ -148,42 +150,33 @@ class DownloadsFileWriter(private val context: Context) : MobileFileSaver {
         private val context: Context,
         private val file: File,
         override val displayName: String,
-        private val stream: OutputStream,
+        private val stream: MobileFileSaveOutputStream,
     ) : MobileFileSaveSession {
-        private var closed = false
-
         override fun append(bytes: ByteArray) {
-            check(!closed) { "The save session is already closed." }
             stream.write(bytes)
         }
 
         override fun finish(): SavedMobileFile {
-            closeStream()
-            val uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                file,
-            )
-            return SavedMobileFile(
-                uri = uri.toString(),
-                displayPath = "${Environment.DIRECTORY_DOWNLOADS}/$displayName",
-            )
+            try {
+                stream.finish()
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    file,
+                )
+                return SavedMobileFile(
+                    uri = uri.toString(),
+                    displayPath = "${Environment.DIRECTORY_DOWNLOADS}/$displayName",
+                )
+            } catch (error: Exception) {
+                abort()
+                throw error
+            }
         }
 
         override fun abort() {
-            closeStream()
+            stream.abort()
             runCatching { file.delete() }
-        }
-
-        private fun closeStream() {
-            if (closed) {
-                return
-            }
-            closed = true
-            runCatching {
-                stream.flush()
-                stream.close()
-            }
         }
     }
 }

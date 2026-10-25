@@ -115,8 +115,8 @@ describe("web remote control channel frames", () => {
     expect(WEB_REMOTE_CONTROL_CHANNEL_KIND).toBe("zcode-remote");
     expect(WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION).toBe(1);
     expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION).toBe(1);
-    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION).toBe(2);
-    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE).toEqual({ min: 1, max: 2 });
+    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION).toBe(4);
+    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE).toEqual({ min: 1, max: 4 });
     expect(WEB_REMOTE_CONTROL_CHANNEL_HELLO_TIMEOUT_MS).toBe(10_000);
     expect(WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_INTERVAL_MS).toBe(15_000);
     expect(WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_TIMEOUT_MS).toBe(45_000);
@@ -381,9 +381,9 @@ describe("appProtocol negotiation", () => {
     });
     expect(
       negotiateWebRemoteControlAppProtocol(WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE, {
-        // 桌面 max 是 2；手机从 3 起才支持，交集为空 → 升级桌面。
-        min: 3,
-        max: 4,
+        // 桌面 max 是 4（第二批）；手机从 5 起才支持，交集为空 → 升级桌面。
+        min: 5,
+        max: 6,
       }),
     ).toEqual({ ok: false, upgrade: "desktop" });
     expect(

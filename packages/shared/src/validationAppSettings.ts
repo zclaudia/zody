@@ -346,6 +346,7 @@ function migrateLegacyWebRemoteControlToRemoteAccess(value: unknown): unknown {
       enabled: false,
       gatewayUrl: "",
       namespace: DEFAULT_REMOTE_ACCESS_NAMESPACE,
+      allowMobileOpenArbitraryPath: true,
     },
   };
 }
@@ -562,6 +563,7 @@ const appSettingsObjectSchema = z.object({
     enabled: false,
     gatewayUrl: "",
     namespace: DEFAULT_REMOTE_ACCESS_NAMESPACE,
+    allowMobileOpenArbitraryPath: true,
   }),
   zcodeEndpointOrigin: zcodeEndpointOriginSchema.optional(),
 });

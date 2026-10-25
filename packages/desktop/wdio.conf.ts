@@ -111,6 +111,7 @@ import {
   CONTEXT_WINDOW_COLD_RESUME_MODEL_ID,
   CONTEXT_WINDOW_COLD_RESUME_PROVIDER_ID,
   CONTEXT_WINDOW_COLD_RESUME_PROVIDER_NAME,
+  MOBILE_REMOTE_HISTORY_SEARCH_FIXTURE,
   seedProviderReadinessHistoryFixture,
 } from "./test/e2e/helpers/provider-readiness-history-fixture.js";
 import {
@@ -251,6 +252,7 @@ const SMALL_AGENT_WARMUP_SPECS = [
   MODEL_PROVIDER_REGRESSION_GAPS_SPEC,
 ] as const;
 const TASK_INDEX_ROW_AUTHORITY_SPEC = "conversation-session-task-index-row-authority.test.ts";
+const MOBILE_REMOTE_HISTORY_SEARCH_SPEC = "remote-access-settings.test.ts";
 const TASK_TITLE_MARQUEE_SPEC = "conversation-session-task-title-marquee.test.ts";
 const GROUPED_ARCHIVE_RESURRECTION_SPEC =
   "conversation-session-grouped-archive-resurrection.test.ts";
@@ -1671,7 +1673,8 @@ async function resetE2EHome(specs: string[] = []) {
   if (
     usesProviderReadinessColdStartFixture(specs) ||
     usesGroupedHeaderPinVisibilityFixture(specs) ||
-    usesGitReviewEntryFixture(specs)
+    usesGitReviewEntryFixture(specs) ||
+    usesMobileRemoteHistorySearchFixture(specs)
   ) {
     // TSL27 / SP13 必须在 Host 打开 tasks-index 前同时预置真实 task row 与可打开的
     // CLI session；测试内临时注入会绕过 Header 与 status panel 的真实 task/service 解析链路。
@@ -1679,6 +1682,9 @@ async function resetE2EHome(specs: string[] = []) {
       cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
       workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
+      ...(usesMobileRemoteHistorySearchFixture(specs)
+        ? { history: MOBILE_REMOTE_HISTORY_SEARCH_FIXTURE }
+        : {}),
     });
   }
   if (usesTaskIndexRowAuthorityFixture(specs)) {
@@ -1997,6 +2003,13 @@ function usesProviderReadinessColdStartFixture(specs: string[] = []) {
   return (
     workerSpecsContain(specs, PROVIDER_READINESS_AGENT_STARTUP_SPEC) ||
     workerSpecsContain(specs, WINDOWS_AGENT_METRIC_PROBE_ABSENCE_SPEC)
+  );
+}
+
+function usesMobileRemoteHistorySearchFixture(specs: string[] = []) {
+  return (
+    workerSpecsContain(specs, MOBILE_REMOTE_HISTORY_SEARCH_SPEC) &&
+    Boolean(process.env.ZCODE_GATEWAY_IT_URL?.trim())
   );
 }
 

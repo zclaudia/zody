@@ -43,6 +43,7 @@ function createHarness(
     remoteAccessSettings: {
       isEnabled: async () => true,
       setEnabled: async () => {},
+      isArbitraryPathOpenAllowed: async () => true,
     },
     featureGate: createWebRemoteControlFeatureGate(),
     remoteWorkspaceDirectory,

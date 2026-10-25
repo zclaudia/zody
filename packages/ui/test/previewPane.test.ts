@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   getPreviewPaneSafeErrorMessage,
+  isPreviewPaneEditorActionAllowed,
   getPreviewPaneDisplayOptions,
   isPreviewPaneFileTooLargeError,
   isPptxPreviewFileTooLarge,
@@ -20,6 +21,12 @@ import { createDiffSourceFilePreviewSource, getDiffSourceFileTarget } from "@/li
 import { getPreviewPaneErrorTextClass } from "@/previewPaneContent.js";
 
 describe("PreviewPane helpers", () => {
+  it("requires an explicit full action capability before opening an editor", () => {
+    expect(isPreviewPaneEditorActionAllowed("full", true, true)).toBe(true);
+    expect(isPreviewPaneEditorActionAllowed("read-only", true, true)).toBe(false);
+    expect(isPreviewPaneEditorActionAllowed("full", true, false)).toBe(false);
+  });
+
   it.each([
     [3, "codeViewer.mediaUnsupported"],
     [4, "codeViewer.mediaUnsupported"],
@@ -521,6 +528,62 @@ describe("PreviewPane helpers", () => {
 
     expect(source).toContain(".readBinaryPreview({ path: source.path })");
     expect(source).toMatch(/!imageSource\s*&&\s*!pdfSource\s*&&\s*!officePreviewKind/);
+  });
+
+  it("applies the mobile preview budget before image, media, PDF, and PPTX reads", () => {
+    const source = readFileSync("packages/ui/src/PreviewPane.tsx", "utf8");
+    const mobileBrowser = readFileSync("packages/ui/src/MobileWorkspaceFileBrowser.tsx", "utf8");
+
+    expect(mobileBrowser).toContain("maxPreviewFileBytes={MOBILE_FILE_SAVE_MAX_BYTES}");
+    expect(
+      source.match(/stat\(\{ path: (?:imageSource|mediaSource|path)\.path?\s*\}\)/g)?.length ?? 0,
+    ).toBeGreaterThanOrEqual(2);
+    expect(source).toMatch(
+      /maxPreviewFileBytes !== undefined &&\s+fileStat\.size > maxPreviewFileBytes/,
+    );
+    expect(source).toMatch(
+      /maxPreviewFileBytes !== undefined &&\s+stat\.size !== undefined &&\s+stat\.size > maxPreviewFileBytes/,
+    );
+  });
+
+  it("MF06: applies the mobile preview budget to office binary previews before readBinaryPreview", () => {
+    const source = readFileSync("packages/ui/src/PreviewPane.tsx", "utf8");
+    const officeEffectStart = source.indexOf(".readBinaryPreview({ path: source.path })");
+    expect(officeEffectStart).toBeGreaterThan(0);
+    const officeEffect = source.slice(Math.max(0, officeEffectStart - 1600), officeEffectStart + 200);
+
+    const statIndex = officeEffect.indexOf("await fileService.stat({ path: source.path })");
+    const gateIndex = officeEffect.indexOf("stat.size > maxPreviewFileBytes");
+    const readIndex = officeEffect.indexOf(".readBinaryPreview({ path: source.path })");
+    expect(statIndex).toBeGreaterThanOrEqual(0);
+    // 顺序必须是 stat → 预算 gate → readBinaryPreview，否则超限文件仍会被整档读回。
+    expect(gateIndex).toBeGreaterThan(statIndex);
+    expect(readIndex).toBeGreaterThan(gateIndex);
+    // stat 不返回 size 的旧远端不能被误拦截。
+    expect(officeEffect).toContain("stat.size !== undefined");
+  });
+
+  it("MF09: keeps desktop office previews uncapped and the default action capability full", () => {
+    const source = readFileSync("packages/ui/src/PreviewPane.tsx", "utf8");
+
+    // 桌面默认不传 maxPreviewFileBytes；office 预算必须以 undefined 判断为前提，不能引入无条件上限。
+    const officeEffectStart = source.indexOf(".readBinaryPreview({ path: source.path })");
+    const officeEffect = source.slice(Math.max(0, officeEffectStart - 1600), officeEffectStart + 200);
+    expect(officeEffect).toContain("maxPreviewFileBytes !== undefined");
+
+    // PreviewPane 默认 actionsCapability 仍为 full；手机只读由 MobileWorkspaceFileBrowser 显式传 read-only。
+    expect(source).toMatch(/actionsCapability = "full"/);
+    expect(isPreviewPaneEditorActionAllowed("full", true, true)).toBe(true);
+    const mobileBrowser = readFileSync("packages/ui/src/MobileWorkspaceFileBrowser.tsx", "utf8");
+    expect(mobileBrowser).toContain('actionsCapability="read-only"');
+  });
+
+  it("keeps external editor and code-comment actions behind the full capability", () => {
+    const source = readFileSync("packages/ui/src/PreviewPane.tsx", "utf8");
+    expect(source).toContain('actionsCapability === "full" && canOpenDiffFilePreview');
+    expect(source).toContain('source.path && actionsCapability === "full"');
+    expect(source).toContain('{actionsCapability === "full" ? (');
+    expect(isPreviewPaneEditorActionAllowed("read-only", true, true)).toBe(false);
   });
 
   it("renders missing-file preview errors as tertiary helper text", () => {

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "mobile-host-identity-isolation",
+  "spec": "./test/e2e/mobile-remote/mobile-host-identity-isolation.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/mobile-remote/mobile-host-identity-isolation.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "mobile-host-identity-isolation-title",
+      "description": "为双 Host 搜索隔离任务生成稳定标题。",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "标题只用于建立可搜索任务，不属于 identity 路由断言。"
+    },
+    {
+      "id": "mobile-host-identity-isolation-turn-a",
+      "description": "在 Host A 建立 mobile search marker。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定 assistant reply 建立 A Host 的可搜索正文。"
+    },
+    {
+      "id": "mobile-host-identity-isolation-turn-b",
+      "description": "在 Host B 建立 mobile search marker。",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定 assistant reply 建立 B Host 的可搜索正文。"
+    }
+  ]
+}

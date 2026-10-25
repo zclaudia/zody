@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "mobile-notification-ntfy",
+  "fixtures": [
+    {
+      "id": "mobile-notification-ntfy-completion",
+      "description": "P8 通过真实 V4 CLI runtime 输入产生新 turn.completed；由 Host notification event bridge 写 feed/outbox 并投递到隔离 Gateway/ntfy。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "本用例只需确定性成功终态来驱动真实 runtime event，避免外部模型变化影响 Android 推送与点击验收。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_MOBILE_PHASE1_P8_PUSH"],
+        "lastUserMessageExcludes": ["Generate a concise title"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "mobile-notification-ntfy-completion",
+          "inputTokens": 64,
+          "outputTokens": 10,
+          "text": "P8_RUNTIME_COMPLETION_OK"
+        }
+      }
+    }
+  ]
+}

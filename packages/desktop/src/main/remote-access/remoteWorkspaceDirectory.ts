@@ -29,8 +29,8 @@ export interface RemoteWorkspaceDirectorySnapshot {
 interface RemoteWorkspaceDirectoryDependencies {
   /**
    * 当前聚焦窗口的 `BrowserWindow.id`；没有窗口聚焦时返回 undefined。
-   * 同一个 workspaceKey 出现在多个窗口时，聚合与 `resolveWindow` 都优先取聚焦窗口，
-   * 其次取最近同步的窗口。
+   * 同一个 workspaceKey 出现在多个窗口时，先优先选择有效连接的远程投影；候选连接状态相同，
+   * 聚合与 `resolveWindow` 才按聚焦窗口优先，其次取最近同步的窗口。
    */
   getFocusedWindowId?: () => number | undefined;
 }
@@ -46,7 +46,7 @@ export interface RemoteWorkspaceDirectory {
   listWorkspaces(): WebRemoteControlWorkspaceTarget[];
   /** 跨窗口聚合的任务列表，按 `workspaceKey + taskId` 去重。 */
   listTasks(): WebRemoteControlTaskTarget[];
-  /** 按 `workspaceKey` 解析所属窗口：优先当前聚焦窗口，其次最近同步的窗口。 */
+  /** 按 `workspaceKey` 解析所属窗口：优先有效连接，再按聚焦窗口和最近同步顺序选择。 */
   resolveWindow(workspaceKey: string): number | undefined;
   /** 窗口关闭时删除该窗口的快照。 */
   removeWindow(windowId: number): void;
@@ -82,8 +82,8 @@ export function createRemoteWorkspaceDirectory(
   }
 
   /**
-   * 按「聚焦窗口 → 最近同步」排序的窗口快照。
-   * 同一 key 出现在多个窗口时，聚合与 `resolveWindow` 都取这个顺序里第一个命中的窗口。
+   * 按「聚焦窗口 → 最近同步」排序的窗口快照；有效连接优先级在聚合 workspace owner 时再比较。
+   * 同一 key 出现在多个窗口时，`listWorkspaces` 与 `resolveWindow` 使用相同的选择规则。
    */
   function listSnapshotsByPreference(): InternalWindowSnapshot[] {
     const focusedWindowId = dependencies.getFocusedWindowId?.();
@@ -99,6 +99,45 @@ export function createRemoteWorkspaceDirectory(
       }
       return right.syncSequence - left.syncSequence;
     });
+  }
+
+  function workspaceProjectionPriority(workspace: WebRemoteControlWorkspaceTarget): number {
+    if (workspace.kind !== "remote") {
+      return 0;
+    }
+    // Bugfix：聚焦窗口可能只有旧 identity 的恢复占位 tab；它不能盖过仍连接的 owner Host 投影。
+    // 显式断开/重连即使保留旧 session id 也不是健康 owner，不能据此伪装在线。
+    if (
+      workspace.connectionState === "disconnected" ||
+      workspace.connectionState === "reconnecting"
+    ) {
+      return 0;
+    }
+    if (!workspace.remoteSessionId) {
+      return 0;
+    }
+    return workspace.connectionState === "connected" ? 2 : 1;
+  }
+
+  function selectWorkspaceOwners(): Map<
+    string,
+    { windowId: number; workspace: WebRemoteControlWorkspaceTarget; priority: number }
+  > {
+    const owners = new Map<
+      string,
+      { windowId: number; workspace: WebRemoteControlWorkspaceTarget; priority: number }
+    >();
+    for (const snapshot of listSnapshotsByPreference()) {
+      for (const workspace of snapshot.workspaces) {
+        const workspaceKey = resolveWebRemoteControlWorkspaceKey(workspace);
+        const priority = workspaceProjectionPriority(workspace);
+        const current = owners.get(workspaceKey);
+        if (!current || priority > current.priority) {
+          owners.set(workspaceKey, { windowId: snapshot.windowId, workspace, priority });
+        }
+      }
+    }
+    return owners;
   }
 
   return {
@@ -120,48 +159,32 @@ export function createRemoteWorkspaceDirectory(
     },
 
     listWorkspaces() {
-      const seenWorkspaceKeys = new Set<string>();
-      const workspaces: WebRemoteControlWorkspaceTarget[] = [];
-      for (const snapshot of listSnapshotsByPreference()) {
-        for (const workspace of snapshot.workspaces) {
-          const workspaceKey = resolveWebRemoteControlWorkspaceKey(workspace);
-          if (seenWorkspaceKeys.has(workspaceKey)) {
-            continue;
-          }
-          seenWorkspaceKeys.add(workspaceKey);
-          workspaces.push(workspace);
-        }
-      }
-      return workspaces;
+      return [...selectWorkspaceOwners().values()].map(({ workspace }) => workspace);
     },
 
     listTasks() {
-      const seenTaskKeys = new Set<string>();
-      const tasks: WebRemoteControlTaskTarget[] = [];
+      const owners = selectWorkspaceOwners();
+      const selectedTasks = new Map<
+        string,
+        { task: WebRemoteControlTaskTarget; matchesWorkspaceOwner: boolean }
+      >();
       for (const snapshot of listSnapshotsByPreference()) {
         for (const task of snapshot.tasks) {
           // JSON tuple：workspaceKey 和 taskId 都是用户可见字符串，不能用控制字符拼接复合 key。
           const taskKey = JSON.stringify([resolveWebRemoteControlWorkspaceKey(task), task.taskId]);
-          if (seenTaskKeys.has(taskKey)) {
-            continue;
+          const owner = owners.get(resolveWebRemoteControlWorkspaceKey(task));
+          const matchesWorkspaceOwner = !owner || owner.windowId === snapshot.windowId;
+          const current = selectedTasks.get(taskKey);
+          if (!current || (matchesWorkspaceOwner && !current.matchesWorkspaceOwner)) {
+            selectedTasks.set(taskKey, { task, matchesWorkspaceOwner });
           }
-          seenTaskKeys.add(taskKey);
-          tasks.push(task);
         }
       }
-      return tasks;
+      return [...selectedTasks.values()].map(({ task }) => task);
     },
 
     resolveWindow(workspaceKey) {
-      for (const snapshot of listSnapshotsByPreference()) {
-        const hasWorkspace = snapshot.workspaces.some(
-          (workspace) => resolveWebRemoteControlWorkspaceKey(workspace) === workspaceKey,
-        );
-        if (hasWorkspace) {
-          return snapshot.windowId;
-        }
-      }
-      return undefined;
+      return selectWorkspaceOwners().get(workspaceKey)?.windowId;
     },
 
     removeWindow(windowId) {

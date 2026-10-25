@@ -5,6 +5,7 @@ import type {
   ControllerSubscribeParams,
   WindowHostControllerTaskRow,
   WindowHostTaskAddress,
+  SessionSummary,
 } from "@zcode/shared/zcode-protocol-v4";
 import { matchesTaskListMembershipKind } from "@zcode/shared/zcode-protocol-v4";
 import type {
@@ -14,6 +15,9 @@ import type {
   WindowHostControllerFrame,
   WindowHostControllerTaskListItem,
   WindowHostControllerTaskListResult,
+  MobileHistorySearchSourceQuery,
+  MobileHistorySearchSourceItem,
+  MobileHistorySearchSourceResult,
   ZCodeTaskListQuery,
   ZCodeTaskListWorkspaceScope,
 } from "@zcode/services";
@@ -24,6 +28,11 @@ import {
   type WindowHostControllerSessionOverlay,
   type WindowHostControllerSourceScope,
 } from "./windowHostControllerProjection.js";
+
+type WindowHostControllerSourceSubscription = {
+  dispose(): void;
+  onSessionsChange?(sessions: readonly SessionSummary[]): void;
+};
 import {
   createWindowHostSessionsIndexObserver,
   type WindowHostSessionsIndexObserver,
@@ -142,6 +151,11 @@ export function createWindowHostControllerRuntime(options: {
     operation: "refresh" | "search",
     error: unknown,
   ) => void;
+  onWorkspaceSourceAvailable?: (
+    scope: WindowHostControllerSourceScope,
+    agentService: IZCodeAgentService,
+    taskService: IZCodeTaskService,
+  ) => WindowHostControllerSourceSubscription | void;
 }) {
   const projection = createWindowHostControllerProjection({ createId: options.createId });
   const registeredScopes = new Map<string, WindowHostControllerSourceScope>();
@@ -159,6 +173,14 @@ export function createWindowHostControllerRuntime(options: {
     string,
     { agentService: IZCodeAgentService; observer: WindowHostSessionsIndexObserver }
   >();
+  const sourceAvailabilitySubscriptions = new Map<
+    string,
+    {
+      agentService: IZCodeAgentService;
+      taskService: IZCodeTaskService;
+      subscription?: WindowHostControllerSourceSubscription;
+    }
+  >();
   const pendingReplacementByNextSourceKey = new Map<string, WindowHostControllerSourceScope>();
 
   function forgetRegisteredSource(scope: WindowHostControllerSourceScope): void {
@@ -171,6 +193,8 @@ export function createWindowHostControllerRuntime(options: {
     sourceEventSubscriptions.delete(key);
     sourceSessionObservers.get(key)?.observer.dispose();
     sourceSessionObservers.delete(key);
+    sourceAvailabilitySubscriptions.get(key)?.subscription?.dispose();
+    sourceAvailabilitySubscriptions.delete(key);
     sourceLiveOverlays.delete(key);
     sourceRefreshGenerations.set(key, (sourceRefreshGenerations.get(key) ?? 0) + 1);
     sourceRefreshFlights.delete(key);
@@ -211,6 +235,9 @@ export function createWindowHostControllerRuntime(options: {
         const overlays = sessions.map(sessionOverlay);
         sourceLiveOverlays.set(key, overlays);
         projection.replaceSourceSessionOverlays(resolved.scope, overlays);
+        sourceAvailabilitySubscriptions
+          .get(key)
+          ?.subscription?.onSessionsChange?.(sessions);
       },
       onError: (error) => options.onSourceError?.(resolved.scope, "refresh", error),
     });
@@ -300,6 +327,28 @@ export function createWindowHostControllerRuntime(options: {
     }
     const previousAvailability = sourceAvailability.get(key);
     sourceAvailability.set(key, resolved.sourceAvailability);
+    if (resolved.sourceAvailability === "online" && resolved.taskService && resolved.agentService) {
+      const currentAvailabilitySubscription = sourceAvailabilitySubscriptions.get(key);
+      if (
+        currentAvailabilitySubscription?.agentService !== resolved.agentService ||
+        currentAvailabilitySubscription?.taskService !== resolved.taskService
+      ) {
+        currentAvailabilitySubscription?.subscription?.dispose();
+        const subscription = options.onWorkspaceSourceAvailable?.(
+          resolved.scope,
+          resolved.agentService,
+          resolved.taskService,
+        );
+        sourceAvailabilitySubscriptions.set(key, {
+          agentService: resolved.agentService,
+          taskService: resolved.taskService,
+          ...(subscription ? { subscription } : {}),
+        });
+      }
+    } else {
+      sourceAvailabilitySubscriptions.get(key)?.subscription?.dispose();
+      sourceAvailabilitySubscriptions.delete(key);
+    }
     if (
       resolved.taskService &&
       sourceSnapshotTaskServices.has(key) &&
@@ -335,6 +384,8 @@ export function createWindowHostControllerRuntime(options: {
       );
     }
     if (resolved.sourceAvailability === "offline" && previousAvailability === "online") {
+      sourceAvailabilitySubscriptions.get(key)?.subscription?.dispose();
+      sourceAvailabilitySubscriptions.delete(key);
       sourceSessionObservers.get(key)?.observer.dispose();
       sourceSessionObservers.delete(key);
       sourceSnapshotTaskServices.delete(key);
@@ -440,6 +491,9 @@ export function createWindowHostControllerRuntime(options: {
     if (!resolved.taskService || resolved.sourceAvailability !== "online") {
       throw new Error("重连 source 尚未 online，不能替换离线投影");
     }
+    // 重连后的 remoteSession 属于新路由代际；停止旧 scope 的业务事件监听后再安装新监听。
+    sourceAvailabilitySubscriptions.get(sourceKey(previousScope))?.subscription?.dispose();
+    sourceAvailabilitySubscriptions.delete(sourceKey(previousScope));
     registerResolvedSource(resolved);
     const previousKey = sourceKey(previousScope);
     const retainedPreviousScope =
@@ -583,11 +637,98 @@ export function createWindowHostControllerRuntime(options: {
     return { items: visible, total, hasMore: total > visible.length };
   }
 
+  async function searchMobileHistory(
+    query: MobileHistorySearchSourceQuery,
+  ): Promise<MobileHistorySearchSourceResult> {
+    const { workspaceScope, limit } = query;
+    const source = options.resolveSource(workspaceScope);
+    if (!source) return { status: "closed" };
+    registerResolvedSource(source);
+    if (source.sourceAvailability !== "online") return { status: "offline" };
+    if (!source.taskService) return { status: "unsupported" };
+
+    const kinds: ZCodeTaskListQuery["kind"][] = ["active", "pinned"];
+    if (query.includeArchived) kinds.push("archived");
+    try {
+      const results = await Promise.all(
+        kinds.map((kind) =>
+          source.taskService!.listTaskList({
+            kind,
+            workspaceScopes: [workspaceScope],
+            sortBy: "updated",
+            search: query.query,
+            // 手机查询必须在 SQLite source 下推明确上限，不能走既有 app search 的无限拉取。
+            limit,
+          }),
+        ),
+      );
+      const unique = new Map<string, MobileHistorySearchSourceItem>();
+      for (const result of results) {
+        for (const item of result.items) {
+          const normalized = normalizeTaskMeta(item, source.scope);
+          const projected = projection
+            .getTasks()
+            .find(
+              (row) =>
+                row.address.taskId === normalized.taskId &&
+                row.address.workspacePath === normalized.workspacePath &&
+                row.address.workspaceIdentity === normalized.workspaceIdentity &&
+                row.address.remoteSessionId ===
+                  (source.scope.kind === "remote" ? source.scope.remoteSessionId : undefined),
+            );
+          const task = projected?.meta ?? normalized;
+          unique.set(item.taskId, {
+            taskId: task.taskId,
+            traceId: task.traceId,
+            title: task.title,
+            ...(task.titleOverridden !== undefined
+              ? { titleOverridden: task.titleOverridden }
+              : {}),
+            workspacePath: task.workspacePath,
+            ...(task.workspaceIdentity ? { workspaceIdentity: task.workspaceIdentity } : {}),
+            ...(task.workspacePurpose ? { workspacePurpose: task.workspacePurpose } : {}),
+            createdAt: task.createdAt,
+            updatedAt: task.updatedAt,
+            mode: task.mode,
+            ...(task.provider ? { provider: task.provider } : {}),
+            ...(task.model ? { model: task.model } : {}),
+            ...(task.status ? { status: task.status } : {}),
+            ...(source.scope.kind === "remote"
+              ? { remoteSessionId: source.scope.remoteSessionId }
+              : {}),
+            ...(item.searchSnippets ? { searchSnippets: item.searchSnippets.slice(0, 4) } : {}),
+          });
+        }
+      }
+      const items = [...unique.values()].sort(
+        (left, right) =>
+          right.updatedAt - left.updatedAt ||
+          right.createdAt - left.createdAt ||
+          (left.workspaceIdentity?.trim() || left.workspacePath).localeCompare(
+            right.workspaceIdentity?.trim() || right.workspacePath,
+          ) ||
+          right.taskId.localeCompare(left.taskId),
+      );
+      const boundedItems = items.slice(0, limit);
+      if (new TextEncoder().encode(JSON.stringify(boundedItems)).byteLength > 768 * 1024) {
+        return { status: "error", errorCode: "search-response-too-large" };
+      }
+      return { status: "ok", items: boundedItems };
+    } catch (error) {
+      // 同一 scope 的多个 membership 查询必须整体成功，失败不能伪装成空结果。
+      // 手机端只能拿到 search-source-failed 错误码；这里同步上报原始错误，
+      // 否则 MS03 的“明确未查范围”在 Host 日志里丢失根因，无法与 offline 区分排障。
+      options.onSourceError?.(source.scope, "search", error);
+      return { status: "error", errorCode: "search-source-failed" };
+    }
+  }
+
   function createAttachmentService(): IWindowControllerService & { dispose(): void } {
     const frameEmitter = new Emitter<WindowHostControllerFrame>();
     const subscriptions = new Map<string, { dispose(): void }>();
     return {
       listTaskList,
+      searchMobileHistory,
       async deleteArchivedTasks({ address, taskIds }) {
         if (taskIds.length === 0) {
           return { deletedTaskIds: [], skippedTaskIds: [], failedTaskIds: [] };
@@ -676,6 +817,21 @@ export function createWindowHostControllerRuntime(options: {
     service,
     createAttachmentService,
     replaceDisconnectedSource,
+    async ensureSource(scope: WindowHostControllerSourceScope): Promise<boolean> {
+      // 已打开 source 的事件订阅不能等待手机列表/API 首次访问，否则桌面直连 runtime
+      // 会在 Controller 懒注册之前完成，导致 completion 没有机会进入通知 feed。
+      const resolved = resolveCurrentSource(scope);
+      if (!resolved || resolved.scope.kind !== scope.kind) return false;
+      if (
+        scope.kind === "remote" &&
+        (resolved.scope.kind !== "remote" || resolved.scope.remoteSessionId !== scope.remoteSessionId)
+      ) {
+        return false;
+      }
+      registerResolvedSource(resolved);
+      await refreshSource(resolved);
+      return true;
+    },
     async resolveTaskAddress(params: {
       taskId: string;
       workspacePath: string;
@@ -753,6 +909,8 @@ export function createWindowHostControllerRuntime(options: {
       sourceRefreshFlights.delete(key);
       sourceSessionObservers.get(key)?.observer.dispose();
       sourceSessionObservers.delete(key);
+      sourceAvailabilitySubscriptions.get(key)?.subscription?.dispose();
+      sourceAvailabilitySubscriptions.delete(key);
       sourceSnapshotTaskServices.delete(key);
       projection.disconnectSource(scope);
     },
@@ -790,6 +948,10 @@ export function createWindowHostControllerRuntime(options: {
       sourceTaskServices.clear();
       sourceSnapshotTaskServices.clear();
       sourceEventSubscriptions.clear();
+      for (const entry of sourceAvailabilitySubscriptions.values()) {
+        entry.subscription?.dispose();
+      }
+      sourceAvailabilitySubscriptions.clear();
       sourceRefreshFlights.clear();
       sourceRefreshGenerations.clear();
       for (const entry of sourceSessionObservers.values()) entry.observer.dispose();

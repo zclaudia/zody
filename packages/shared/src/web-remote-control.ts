@@ -21,6 +21,7 @@ export const WEB_REMOTE_CONTROL_OUTBOUND_PAYLOAD_BUFFER_TIMEOUT_MS = 5_000;
 export type WebRemoteControlThemeSeed = "light" | "dark" | "zai-light" | "zai-dark" | "system";
 
 export interface WebRemoteControlContext {
+  mobileNotificationPrincipal?: import("./mobile-remote-phase1.js").MobileNotificationPrincipal;
   workspacePath: string;
   workspaceIdentity?: string;
   remoteSessionId?: string;
@@ -290,6 +291,80 @@ export interface WebRemoteControlDesktopWindowOpenRequestPayload {
   requestId: string;
 }
 
+/**
+ * 手机打开任意本地目录（第二批 E1/E2）。与 `workspace-open-request`（只接受最近项目 id）并存；
+ * 桌面受理前必须校验 `AppSettings.remoteAccess.allowMobileOpenArbitraryPath` 开关与
+ * `isValidLocalWorkspaceDirectory` 同一套路径校验，目录必须已存在，不创建目录。
+ */
+export interface WebRemoteControlWorkspaceOpenPathRequestPayload {
+  zcode_type: "workspace-open-path-request";
+  requestId: string;
+  /** 已存在的本地绝对目录路径；相对路径、UNC 网络路径一律拒绝。 */
+  workspacePath: string;
+}
+
+export type WebRemoteControlWorkspaceOpenPathResponsePayload =
+  | {
+      zcode_type: "workspace-open-path-response";
+      requestId: string;
+      success: true;
+      /** 打开成功后该 workspace 在聚合列表里的 key。 */
+      workspaceKey: string;
+    }
+  | {
+      zcode_type: "workspace-open-path-response";
+      requestId: string;
+      success: false;
+      /** 稳定错误码：arbitrary-path-disabled / path-invalid / open-failed / timeout。 */
+      error: string;
+    };
+
+/** app 级目录列表条目（第二批 E3）：仅目录，name 用于展示、path 用于继续浏览或最终选择。 */
+export interface WebRemoteControlMobileDirectoryEntry {
+  name: string;
+  path: string;
+  isSymbolicLink?: boolean;
+}
+
+/**
+ * 手机侧目录列表结果的归一形态（成功/稳定错误码），供 bootstrap 封装与
+ * UI switcher API 共用；错误码语义见 `mobile-directory-list-response`。
+ */
+export type WebRemoteControlMobileDirectoryListResult =
+  | {
+      ok: true;
+      resolvedPath: string;
+      parentPath: string | null;
+      entries: WebRemoteControlMobileDirectoryEntry[];
+    }
+  | { ok: false; error: string };
+
+export interface WebRemoteControlMobileDirectoryListRequestPayload {
+  zcode_type: "mobile-directory-list-request";
+  requestId: string;
+  /** 省略时列出桌面 homedir；否则必须是绝对路径。 */
+  path?: string;
+}
+
+export type WebRemoteControlMobileDirectoryListResponsePayload =
+  | {
+      zcode_type: "mobile-directory-list-response";
+      requestId: string;
+      success: true;
+      /** 实际列出的目录（homedir 请求回填绝对路径）。 */
+      resolvedPath: string;
+      /** 根目录时为 null；手机据此决定是否展示「返回上级」。 */
+      parentPath: string | null;
+      entries: WebRemoteControlMobileDirectoryEntry[];
+    }
+  | {
+      zcode_type: "mobile-directory-list-response";
+      requestId: string;
+      success: false;
+      /** 稳定错误码：not-found / not-directory / unreadable / too-large / path-invalid。 */
+      error: string;
+    };
+
 export type WebRemoteControlDesktopWindowOpenResponsePayload =
   | {
       zcode_type: "desktop-window-open-response";
@@ -441,6 +516,8 @@ export interface WebRemoteControlMobileDiagnosticPayload {
 }
 
 export type WebRemoteControlAppPayload =
+  | import("./mobile-history-search.js").MobileHistorySearchRequest
+  | import("./mobile-history-search.js").MobileHistorySearchOutcome
   | { zcode_type: "telemetry-report"; event: MobileSessionCreateTelemetry }
   | WebRemoteControlBootstrapRequestPayload
   | WebRemoteControlBootstrapResponsePayload
@@ -450,6 +527,10 @@ export type WebRemoteControlAppPayload =
   | WebRemoteControlRecentProjectsUpdatedPayload
   | WebRemoteControlWorkspaceOpenRequestPayload
   | WebRemoteControlWorkspaceOpenResponsePayload
+  | WebRemoteControlWorkspaceOpenPathRequestPayload
+  | WebRemoteControlWorkspaceOpenPathResponsePayload
+  | WebRemoteControlMobileDirectoryListRequestPayload
+  | WebRemoteControlMobileDirectoryListResponsePayload
   | WebRemoteControlDesktopWindowOpenRequestPayload
   | WebRemoteControlDesktopWindowOpenResponsePayload
   | WebRemoteControlWorkspaceBridgeOpenPayload
@@ -526,9 +607,11 @@ export interface WebRemoteControlWorkspaceListResult {
   activeTaskId?: string;
 }
 
-export type WebRemoteControlMobileNavigationIntent = "chat";
+export type WebRemoteControlMobileNavigationIntent = "chat" | "files";
 
 export interface WebRemoteControlWorkspaceSwitchOptions {
+  searchHighlight?: { query: string; snippet?: string; snippetIndex?: number };
+
   taskId?: string;
   mobileNavigationIntent?: WebRemoteControlMobileNavigationIntent;
   /** 仅由手机任务首页使用；目标 bridge 建立后只清除这次快照对应的未读。 */
@@ -542,6 +625,8 @@ export interface WebRemoteControlMobileViewState {
 }
 
 export interface WebRemoteControlWindowBootstrapResult {
+  /** appProtocol 3: absent on older peers; individual adapters advertise readiness. */
+  mobileCapabilities?: import("./mobile-remote-phase1.js").MobileCapabilities;
   /** 旧 relay 会话标识；gateway 链路只保留固定占位值，手机不使用。 */
   windowControlSessionId: string;
   /** 当前连接的桌面实际版本；旧桌面缺失时手机保留原 URL。 */

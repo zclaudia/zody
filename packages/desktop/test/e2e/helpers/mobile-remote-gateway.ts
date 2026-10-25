@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { GatewayClient, type GatewayChannel } from "@zclaudia/gateway-client";
+import { WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION } from "@zcode/shared";
 
 /**
  * T4.1 桌面 E2E 的真实 gateway 环境读取。
@@ -95,6 +96,8 @@ async function waitForOnlineBackend(
 }
 
 export interface FakePhoneSession {
+  /** Gateway-assigned backend identity discovered with the device credential. */
+  backendId: string;
   /** 发送一帧应用层 payload（自动包成 data 帧）。 */
   sendPayload(payload: unknown): void;
   /** 等待满足条件的应用层 payload；超时抛出便于 E2E 定位。 */
@@ -113,7 +116,11 @@ export interface FakePhoneSession {
  */
 export async function connectFakePhone(
   config: GatewayE2EConfig,
-  options: { clientInstanceId: string; clientName?: string; appVersion?: string },
+  options: {
+    clientInstanceId: string;
+    clientName?: string;
+    appVersion?: string;
+  },
 ): Promise<FakePhoneSession> {
   const client = new GatewayClient({
     url: config.gatewayUrl,
@@ -170,7 +177,7 @@ export async function connectFakePhone(
     JSON.stringify({
       type: "hello",
       protocolVersion: 1,
-      appProtocol: { min: 1, max: 2 },
+      appProtocol: { min: 1, max: WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION },
       clientInstanceId: options.clientInstanceId,
       clientName: options.clientName ?? "ZCode E2E phone",
       appVersion: options.appVersion ?? "1.0.0",
@@ -178,6 +185,7 @@ export async function connectFakePhone(
   );
 
   return {
+    backendId: backend.backendId,
     sendPayload(payload: unknown) {
       channel.send(JSON.stringify({ type: "data", payload }));
     },

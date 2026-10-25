@@ -1,6 +1,10 @@
 import { BrowserWindow, MessageChannelMain } from "electron";
 import type { MessagePortMain, UtilityProcess as ElectronUtilityProcess } from "electron";
-import { HostMessageTypes, type RemoteUsageRemoteKind } from "@zcode/shared";
+import {
+  HostMessageTypes,
+  type MobileNotificationPrincipal,
+  type RemoteUsageRemoteKind,
+} from "@zcode/shared";
 
 type WebRemoteControlSharedHostKind = "local" | "remote";
 
@@ -10,6 +14,7 @@ interface WebRemoteControlSharedHostAttachContext {
   workspaceIdentity?: string;
   remoteSessionId?: string;
   initialTaskId?: string;
+  mobileNotificationPrincipal?: MobileNotificationPrincipal;
 }
 
 interface WebRemoteControlSharedHostAttachment {
@@ -73,7 +78,10 @@ export function createWebRemoteControlSharedHostAttachments(dependencies: {
     return dependencies.createMessageChannel?.() ?? new MessageChannelMain();
   }
 
-  function attachLocalHost(windowId: number): WebRemoteControlSharedHostAttachment {
+  function attachLocalHost(
+    windowId: number,
+    mobileNotificationPrincipal?: MobileNotificationPrincipal,
+  ): WebRemoteControlSharedHostAttachment {
     const hostProcessWindowId = BrowserWindow.fromId(windowId)?.webContents.id ?? windowId;
     const process = dependencies.windowHostProcessMap.get(hostProcessWindowId);
     if (!process) {
@@ -92,6 +100,7 @@ export function createWebRemoteControlSharedHostAttachments(dependencies: {
         attachmentId,
         clientMode: "web-remote-replayable",
         scope: { kind: "local" },
+        ...(mobileNotificationPrincipal ? { mobileNotificationPrincipal } : {}),
       },
       [port2],
     );
@@ -109,7 +118,7 @@ export function createWebRemoteControlSharedHostAttachments(dependencies: {
     context: WebRemoteControlSharedHostAttachContext,
   ): Promise<WebRemoteControlSharedHostAttachment> {
     if (context.kind === "local") {
-      return attachLocalHost(windowId);
+      return attachLocalHost(windowId, context.mobileNotificationPrincipal);
     }
     if (!context.remoteSessionId) {
       throw createSharedHostError(
@@ -132,6 +141,7 @@ export function createWebRemoteControlSharedHostAttachments(dependencies: {
       workspaceIdentity,
       workspaceKey,
       clientMode: "web-remote-replayable",
+      mobileNotificationPrincipal: context.mobileNotificationPrincipal,
     });
     const attachmentId = `shared-host-attachment-${++nextAttachmentId}`;
     attachments.set(attachmentId, {

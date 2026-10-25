@@ -157,6 +157,10 @@ export function spawnHostProcess(
   label: string,
   initMessage: HostInitMessage,
   dependencies: {
+    publishMobileNotification?: (
+      message: import("@zcode/shared").MobileNotificationPublish,
+    ) => Promise<import("@zcode/shared").MobileNotificationReceipt>;
+    getMobileNotificationContext?: () => { enabled: boolean; backendId?: string };
     hostProcessLocalEnv: Record<string, string>;
     logger: {
       info: (...args: unknown[]) => void;
@@ -282,6 +286,28 @@ export function spawnHostProcess(
       return;
     }
 
+    if (result.data.type === "mobile-notification-publish") {
+      const request = result.data;
+      void (
+        dependencies.publishMobileNotification?.(request) ??
+        Promise.resolve({ status: "terminal" as const, code: "unsupported" })
+      )
+        .then((receipt) => {
+          child.postMessage({
+            type: "mobile-notification-result",
+            requestId: request.requestId,
+            receipt,
+          });
+        })
+        .catch(() => {
+          child.postMessage({
+            type: "mobile-notification-result",
+            requestId: request.requestId,
+            receipt: { status: "retryable", code: "transport-error" },
+          });
+        });
+      return;
+    }
     if (result.data.type === HostResponseTypes.DatabaseStartupState) {
       databaseStartupRelay.receive(result.data.state);
       return;
@@ -559,6 +585,11 @@ export function spawnHostProcess(
     // 远端 workspace 链删除；手机 replayable attachment 走 AttachServicePort，不经此路径。
   });
 
+  const publishNotificationContext = () =>
+    child.postMessage({
+      type: "mobile-notification-context",
+      ...(dependencies.getMobileNotificationContext?.() ?? { enabled: false }),
+    });
   const shouldAttachRealtimeHost = options?.taskRealtime != null;
   const hostInitMessage: HostInitMessage = shouldAttachRealtimeHost
     ? {
@@ -571,9 +602,11 @@ export function spawnHostProcess(
 
   if (options?.attachInitialServicePort === false) {
     child.postMessage(hostInitMessage);
+    publishNotificationContext();
   } else {
     const { port1, port2 } = new MessageChannelMain();
     child.postMessage(hostInitMessage, [port2]);
+    publishNotificationContext();
 
     if (options?.onPortReady) {
       options.onPortReady(port1);

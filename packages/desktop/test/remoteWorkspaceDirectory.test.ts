@@ -18,7 +18,9 @@ function createWorkspace(
   };
 }
 
-function createTask(overrides: Partial<WebRemoteControlTaskTarget> = {}): WebRemoteControlTaskTarget {
+function createTask(
+  overrides: Partial<WebRemoteControlTaskTarget> = {},
+): WebRemoteControlTaskTarget {
   return {
     taskId: overrides.taskId ?? "task-1",
     title: overrides.title ?? "Task one",
@@ -130,6 +132,109 @@ describe("createRemoteWorkspaceDirectory", () => {
     expect(directory.resolveWindow("/workspace/shared")).toBe(3);
   });
 
+  it("聚焦窗口的远程恢复占位项不遮蔽连接中的 workspace owner 和任务副本", () => {
+    const focusedWindowId = { current: 2 as number | undefined };
+    const directory = createRemoteWorkspaceDirectory({
+      getFocusedWindowId: () => focusedWindowId.current,
+    });
+    const connected = createWorkspace({
+      workspacePath: "/workspace/shared",
+      workspaceIdentity: remoteIdentity,
+      remoteSessionId: "session-a",
+      connectionState: "connected",
+      kind: "remote",
+      label: "connected A",
+    });
+    const placeholder = createWorkspace({
+      workspacePath: "/workspace/shared",
+      workspaceIdentity: remoteIdentity,
+      connectionState: "disconnected",
+      kind: "remote",
+      label: "recovered placeholder B",
+    });
+    const taskA = createTask({
+      taskId: "same-task",
+      title: "connected owner task",
+      workspacePath: "/workspace/shared",
+      workspaceIdentity: remoteIdentity,
+      remoteSessionId: "session-a",
+      workspaceKind: "remote",
+    });
+    const taskBPlaceholder = { ...taskA, title: "placeholder task" };
+
+    directory.syncWorkspaces(1, [connected]);
+    directory.syncTasks(1, [taskA]);
+    directory.syncWorkspaces(2, [placeholder]);
+    directory.syncTasks(2, [taskBPlaceholder]);
+
+    expect(directory.listWorkspaces()).toEqual([connected]);
+    expect(directory.resolveWindow(remoteIdentity)).toBe(1);
+    expect(directory.listTasks()).toEqual([taskA]);
+
+    // 有 session 但已断开/重连的副本也不能抢占 connected owner。
+    directory.syncWorkspaces(2, [
+      { ...placeholder, remoteSessionId: "stale-session", connectionState: "disconnected" },
+    ]);
+    expect(directory.listWorkspaces()).toEqual([connected]);
+    expect(directory.resolveWindow(remoteIdentity)).toBe(1);
+  });
+
+  it("两个健康远程副本仍按聚焦窗口优先，全部离线时不伪装 connected", () => {
+    const focusedWindowId = { current: 2 as number | undefined };
+    const directory = createRemoteWorkspaceDirectory({
+      getFocusedWindowId: () => focusedWindowId.current,
+    });
+    const windowA = createWorkspace({
+      workspacePath: "/workspace/shared",
+      workspaceIdentity: remoteIdentity,
+      remoteSessionId: "session-a",
+      connectionState: "connected",
+      kind: "remote",
+      label: "window A",
+    });
+    const windowB = { ...windowA, remoteSessionId: "session-b", label: "window B" };
+    directory.syncWorkspaces(1, [windowA]);
+    directory.syncWorkspaces(2, [windowB]);
+
+    expect(directory.listWorkspaces()).toEqual([windowB]);
+    expect(directory.resolveWindow(remoteIdentity)).toBe(2);
+
+    const offlineA = { ...windowA, connectionState: "disconnected" as const };
+    const offlineB = { ...windowB, connectionState: "reconnecting" as const };
+    directory.syncWorkspaces(1, [offlineA]);
+    directory.syncWorkspaces(2, [offlineB]);
+    expect(directory.listWorkspaces()).toEqual([offlineB]);
+    expect(directory.listWorkspaces()[0]?.connectionState).toBe("reconnecting");
+    expect(directory.resolveWindow(remoteIdentity)).toBe(2);
+  });
+
+  it("同路径不同 workspaceIdentity 始终保留为独立 owner", () => {
+    const directory = createRemoteWorkspaceDirectory({ getFocusedWindowId: () => 2 });
+    const identityA = "remote:ssh:host-a:/workspace/shared";
+    const identityB = "remote:ssh:host-b:/workspace/shared";
+    const workspaceA = createWorkspace({
+      workspacePath: "/workspace/shared",
+      workspaceIdentity: identityA,
+      remoteSessionId: "session-a",
+      connectionState: "connected",
+      kind: "remote",
+    });
+    const workspaceB = createWorkspace({
+      workspacePath: "/workspace/shared",
+      workspaceIdentity: identityB,
+      remoteSessionId: "session-b",
+      connectionState: "connected",
+      kind: "remote",
+    });
+    directory.syncWorkspaces(1, [workspaceA]);
+    directory.syncWorkspaces(2, [workspaceB]);
+
+    expect(directory.listWorkspaces()).toEqual([workspaceB, workspaceA]);
+    expect(directory.resolveWindow(identityA)).toBe(1);
+    expect(directory.resolveWindow(identityB)).toBe(2);
+    expect(directory.resolveWindow("/workspace/shared")).toBeUndefined();
+  });
+
   it("按 workspaceKey 解析窗口时只用 workspace 快照，不看任务", () => {
     const directory = createRemoteWorkspaceDirectory();
     directory.syncWorkspaces(1, [createWorkspace({ workspacePath: "/workspace/demo" })]);
@@ -149,7 +254,9 @@ describe("createRemoteWorkspaceDirectory", () => {
 
     expect(directory.getWindowSnapshot(1)).toBeUndefined();
     expect(directory.resolveWindow("/workspace/one")).toBeUndefined();
-    expect(directory.listWorkspaces()).toEqual([createWorkspace({ workspacePath: "/workspace/two" })]);
+    expect(directory.listWorkspaces()).toEqual([
+      createWorkspace({ workspacePath: "/workspace/two" }),
+    ]);
     expect(directory.listTasks()).toEqual([]);
   });
 

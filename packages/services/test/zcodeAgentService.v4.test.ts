@@ -610,6 +610,15 @@ describe("zcodeAgentService v4 conversation channel", () => {
           runtimePolicy: "existing-only",
         }),
       ).rejects.toMatchObject({ code: "ZCODE_AGENT_RUNTIME_UNAVAILABLE" });
+      const replaySubscription = service.onDynamicSessionEvent({
+        workspacePath,
+        sessionId: "must-not-start",
+        deliveryKind: "web-remote-replayable",
+        includeSnapshot: true,
+        runtimePolicy: "existing-only",
+      })(() => {});
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      replaySubscription.dispose();
       expect(commandResolver).not.toHaveBeenCalled();
       expect(lifecycle).toEqual([]);
 

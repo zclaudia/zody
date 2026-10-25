@@ -67,6 +67,7 @@ export function createGatewayDeviceTransport(
     readonly channelId: string;
     channel: RemoteGatewayChannel;
     clientInstanceId?: string;
+    deviceSubject?: string;
     appProtocol?: number;
     ready: boolean;
     closing: boolean;
@@ -298,6 +299,8 @@ export function createGatewayDeviceTransport(
             ready: record.ready,
             closing: record.closing,
             appProtocol: record.appProtocol,
+            deviceSubject: record.deviceSubject,
+            clientInstanceId: record.clientInstanceId,
           }
         : undefined;
     },
@@ -361,6 +364,7 @@ export function createGatewayDeviceTransport(
       }
       const record: ChannelRecord = {
         channelId: channel.channelId,
+        deviceSubject: offer.sourceCredentialId,
         channel,
         ready: false,
         closing: false,

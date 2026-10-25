@@ -21,10 +21,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="${usesCleartextTraffic}"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.Zodymobile">
         <service
             android:name=".remote.RemoteControlKeepAliveService"
             android:exported="false"
+            android:foregroundServiceType="dataSync" />
+        <!-- Intent extras 可由外部伪造，因此仅允许持有 DUMP 的 shell/root ntfy-bridge 启动接收服务。 -->
+        <service
+            android:name=".notifications.MobileNotificationRenderService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.DUMP"
             android:foregroundServiceType="dataSync" />
 
         <!-- T6.3：拍照临时文件与 Android 9 及以下的下载文件通过 FileProvider 交给 WebView/外部应用读取。 -->
@@ -47,6 +55,12 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="zody" android:host="notification" android:path="/v1" />
             </intent-filter>
         </activity>
     </application>

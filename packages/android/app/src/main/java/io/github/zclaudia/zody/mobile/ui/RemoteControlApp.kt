@@ -64,6 +64,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.webkit.WebViewAssetLoader
 import io.github.zclaudia.zody.mobile.BuildConfig
+import io.github.zclaudia.zody.mobile.MainActivity
 import io.github.zclaudia.zody.mobile.R
 import io.github.zclaudia.zody.mobile.bridge.AndroidMobileFileOpener
 import io.github.zclaudia.zody.mobile.bridge.DownloadsFileWriter
@@ -72,6 +73,9 @@ import io.github.zclaudia.zody.mobile.bridge.FileChooserSpecs
 import io.github.zclaudia.zody.mobile.bridge.MobileBridgeEventDispatcher
 import io.github.zclaudia.zody.mobile.bridge.MobileBridgeLifecycleState
 import io.github.zclaudia.zody.mobile.bridge.MobileDownloadHandler
+import io.github.zclaudia.zody.mobile.bridge.MobileNotificationBridgeClient
+import io.github.zclaudia.zody.mobile.bridge.MobileNotificationClickDispatcher
+import io.github.zclaudia.zody.mobile.bridge.MobileNotificationPermissionDispatcher
 import io.github.zclaudia.zody.mobile.bridge.ZcodeMobileBridge
 import java.io.File
 
@@ -124,11 +128,18 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
     // T6.3：文件保存与打开共用 MediaStore/FileProvider 一条路径，DownloadListener 也复用它。
     val fileSaver = remember(context) { DownloadsFileWriter(context) }
     val fileOpener = remember(context) { AndroidMobileFileOpener(context) }
+    val notificationBridge = remember(context) { MobileNotificationBridgeClient(context) }
     val downloadHandler = remember(context) {
         MobileDownloadHandler(context, fileSaver, fileOpener)
     }
-    val bridge = remember(secureStore, fileSaver, fileOpener) {
-        ZcodeMobileBridge(secureStore, fileSaver, fileOpener)
+    val bridge = remember(secureStore, fileSaver, fileOpener, notificationBridge, activity) {
+        ZcodeMobileBridge(
+            secureStore,
+            fileSaver,
+            fileOpener,
+            notificationBridge,
+            requestNotificationPermission = { (activity as? MainActivity)?.requestNotificationPermissionIfNeeded() },
+        )
     }
 
     var pendingFileChooser by remember { mutableStateOf<PendingFileChooser?>(null) }
@@ -326,6 +337,30 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
         }
     }
 
+    DisposableEffect(bridgeDispatcher) {
+        val dispatcher = bridgeDispatcher
+        val subscription = if (dispatcher == null) null else MobileNotificationClickDispatcher.subscribe { backendId, notificationId ->
+            val payload = org.json.JSONObject().put("backendId", backendId).put("notificationId", notificationId).toString()
+            dispatcher.dispatchNotificationClick(payload)
+        }
+        val permissionSubscription = if (dispatcher == null) null else MobileNotificationPermissionDispatcher.subscribe { granted ->
+            dispatcher.dispatchNotificationPermissionChanged(granted)
+        }
+        val actionSubscription = if (dispatcher == null) null else io.github.zclaudia.zody.mobile.bridge.MobileNotificationActionDispatcher.subscribe { backendId, notificationId, optionId, optionKind ->
+            val payload = org.json.JSONObject().put("backendId", backendId)
+                .put("notificationId", notificationId)
+                .put("optionId", optionId)
+                .put("optionKind", optionKind)
+                .toString()
+            dispatcher.dispatchNotificationAction(payload)
+        }
+        onDispose {
+            subscription?.close()
+            permissionSubscription?.close()
+            actionSubscription?.close()
+        }
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             // 页面销毁时把未完成的文件选择按取消收尾，避免 WebView 的回调悬挂。
@@ -485,7 +520,10 @@ private fun createRemoteControlWebView(
             displayZoomControls = false
             allowFileAccess = false
             allowContentAccess = false
-            mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+            // Debug 内置页仍是 HTTPS appassets；开发用 HTTP Gateway 需要同时放开混合内容。
+            // release 保持 HTTPS-only，不能由页面参数改变此策略。
+            mixedContentMode = if (BuildConfig.DEBUG) WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                else WebSettings.MIXED_CONTENT_NEVER_ALLOW
             userAgentString = "$userAgentString ZodyAndroid/${BuildConfig.VERSION_NAME}"
         }
         // 只加载内置页面；离开 appassets 的主框架导航会被交给系统浏览器，桥不会暴露给远端页面。

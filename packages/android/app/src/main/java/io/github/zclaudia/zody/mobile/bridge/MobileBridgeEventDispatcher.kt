@@ -33,6 +33,47 @@ class MobileBridgeEventDispatcher(
         )
     }
 
+    fun dispatchNotificationClick(payloadJson: String) {
+        dispatchJsonPayload("onNotificationClick", payloadJson)
+    }
+
+    fun dispatchNotificationPermissionChanged(granted: Boolean) {
+        evaluateJavascript(
+            "window.$HOST_OBJECT_NAME&&typeof window.$HOST_OBJECT_NAME.onNotificationPermissionChanged==='function'&&" +
+                "window.$HOST_OBJECT_NAME.onNotificationPermissionChanged($granted);",
+            null,
+        )
+    }
+
+    /** 第二批 E4：通知按钮点击（backendId/notificationId/optionId）交给页面快速路径。 */
+    fun dispatchNotificationAction(payloadJson: String) {
+        dispatchJsonPayload("onNotificationAction", payloadJson)
+    }
+
+    private fun dispatchJsonPayload(handler: String, payloadJson: String) {
+        val encoded = buildString {
+            append('"')
+            payloadJson.forEach { char ->
+                when (char) {
+                    '"' -> append("\\\"")
+                    '\\' -> append("\\\\")
+                    '\b' -> append("\\b")
+                    '\u000C' -> append("\\f")
+                    '\n' -> append("\\n")
+                    '\r' -> append("\\r")
+                    '\t' -> append("\\t")
+                    else -> if (char.code < 0x20) append("\\u%04x".format(char.code)) else append(char)
+                }
+            }
+            append('"')
+        }
+        evaluateJavascript(
+            "window.$HOST_OBJECT_NAME&&typeof window.$HOST_OBJECT_NAME.$handler==='function'&&" +
+                "window.$HOST_OBJECT_NAME.$handler(JSON.parse($encoded));",
+            null,
+        )
+    }
+
     /**
      * 询问页面是否消费返回键。
      *

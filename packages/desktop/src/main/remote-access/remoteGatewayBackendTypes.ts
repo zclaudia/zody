@@ -28,6 +28,7 @@ export interface RemoteGatewayChannelOffer {
   channelId: string;
   kind?: string;
   sourcePeerSessionId?: string;
+  sourceCredentialId?: string;
 }
 
 /** SDK `GatewayChannel.onMessage` 的入站帧；binary 标志保持 gateway 的 text/binary 区分。 */
@@ -66,6 +67,7 @@ export interface RemoteGatewayChannelClosedInfo {
  * `onChannel` 的 handler 使用结构化 channel 类型，真实 SDK 的 `GatewayChannel` 满足它。
  */
 export interface RemoteGatewayBackendSdkLike {
+  send?(message: Record<string, unknown>): void;
   readonly connectionState: GatewayBackendState;
   readonly lastError: BackendErrorInfo | null;
   readonly id: string;
@@ -118,6 +120,9 @@ export type RemoteGatewayTestConnectionResult =
     };
 
 export interface RemoteGatewayBackend {
+  publishNotification(
+    event: import("@zclaudia/gateway-protocol/notifications").GatewayPushNotificationEvent,
+  ): Promise<import("./gatewayNotificationDelivery.js").GatewayNotificationReceipt>;
   /** 重新读取 settings + 凭证并串行应用；与当前生效值相同时不重连。 */
   reloadConfig(): Promise<void>;
   /** 直接应用一份配置（设置页在写入前后都可以调用；与当前生效值相同时不重连）。 */

@@ -1,5 +1,15 @@
 <resources>
     <string name="app_name">Zody</string>
+    <string name="mobile_notification_channel">Task updates</string>
+    <string name="mobile_notification_completed">A task has finished.</string>
+    <string name="mobile_notification_failed">A task needs attention.</string>
+    <string name="mobile_notification_permission">An action needs your approval.</string>
+    <string name="mobile_notification_question">A task is waiting for your answer.</string>
+    <string name="mobile_notification_test">This is a test notification.</string>
+    <!-- 第二批 E4：permission 通知按钮的本地固定文案（envelope 不携带 label，避免锁屏泄露命令内容）。 -->
+    <string name="mobile_notification_action_allow_once">Allow once</string>
+    <string name="mobile_notification_action_allow_always">Always allow</string>
+    <string name="mobile_notification_action_deny">Deny</string>
     <string name="remote_retry_button">Retry</string>
     <string name="remote_load_failed_title">Could not load remote control</string>
     <string name="remote_keep_alive_title">Zody remote control is active</string>

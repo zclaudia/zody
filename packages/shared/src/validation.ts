@@ -1,3 +1,8 @@
+import {
+  mobileNotificationPublishSchema,
+  mobileNotificationResultSchema,
+  mobileNotificationContextSchema,
+} from "./mobile-notification-delivery.js";
 import { databaseStartupControlSchema, databaseStartupStateSchema } from "./database-startup.js";
 import { mcpAppInstanceSchema } from "./mcp-apps/instance.js";
 import {
@@ -20,6 +25,14 @@ import { zcodeProviderSchema } from "./providers.js";
 import { REMOTE_ASSET_INSTALL_MODES } from "./remoteAssetInstallMode.js";
 import { isKnownRemoteResourcePackageId } from "./remoteResourcePackages.js";
 import type { WebRemoteControlAppPayload } from "./web-remote-control.js";
+import {
+  mobileHistorySearchRequestSchema,
+  mobileHistorySearchOutcomeSchema,
+} from "./mobile-history-search.js";
+import {
+  mobileCapabilitiesSchema,
+  mobileNotificationPrincipalSchema,
+} from "./mobile-remote-phase1.js";
 import { PROTOCOL_V4_LIMITS } from "./zcode-protocol-v4/core.js";
 import { sessionWorkflowActivitySchema } from "./zcode-protocol-v4/sessions-index-workflow-activity.js";
 import {
@@ -223,6 +236,7 @@ export const webRemoteControlRecentProjectsResultSchema = z
   .strict();
 
 export const webRemoteControlWindowBootstrapResultSchema = z.object({
+  mobileCapabilities: mobileCapabilitiesSchema.optional(),
   windowControlSessionId: nonEmptyStringSchema,
   desktopAppVersion: nonEmptyStringSchema.optional(),
   workspaces: webRemoteControlWorkspaceTargetsSchema,
@@ -251,6 +265,8 @@ export const webRemoteControlPlatformMethodSchema = z.enum([
 ]);
 
 const webRemoteControlAppPayloadSchemas = [
+  mobileHistorySearchRequestSchema,
+  mobileHistorySearchOutcomeSchema,
   z
     .object({ zcode_type: z.literal("telemetry-report"), event: sessionCreateTelemetrySchema })
     .strict(),
@@ -324,6 +340,65 @@ const webRemoteControlAppPayloadSchemas = [
   z
     .object({
       zcode_type: z.literal("desktop-window-open-response"),
+      requestId: nonEmptyStringSchema,
+      success: z.literal(false),
+      error: z.string(),
+    })
+    .strict(),
+  // strict：打开任意目录只接受 workspacePath 一个路径字段（第二批 E1/E2）；夹带其他字段的整帧被丢弃。
+  z
+    .object({
+      zcode_type: z.literal("workspace-open-path-request"),
+      requestId: nonEmptyStringSchema,
+      workspacePath: nonEmptyStringSchema,
+    })
+    .strict(),
+  z
+    .object({
+      zcode_type: z.literal("workspace-open-path-response"),
+      requestId: nonEmptyStringSchema,
+      success: z.literal(true),
+      workspaceKey: nonEmptyStringSchema,
+    })
+    .strict(),
+  z
+    .object({
+      zcode_type: z.literal("workspace-open-path-response"),
+      requestId: nonEmptyStringSchema,
+      success: z.literal(false),
+      error: z.string(),
+    })
+    .strict(),
+  z
+    .object({
+      zcode_type: z.literal("mobile-directory-list-request"),
+      requestId: nonEmptyStringSchema,
+      path: nonEmptyStringSchema.optional(),
+    })
+    .strict(),
+  z
+    .object({
+      zcode_type: z.literal("mobile-directory-list-response"),
+      requestId: nonEmptyStringSchema,
+      success: z.literal(true),
+      resolvedPath: nonEmptyStringSchema,
+      parentPath: nonEmptyStringSchema.nullable(),
+      entries: z
+        .array(
+          z
+            .object({
+              name: nonEmptyStringSchema,
+              path: nonEmptyStringSchema,
+              isSymbolicLink: z.boolean().optional(),
+            })
+            .strict(),
+        )
+        .max(1000),
+    })
+    .strict(),
+  z
+    .object({
+      zcode_type: z.literal("mobile-directory-list-response"),
       requestId: nonEmptyStringSchema,
       success: z.literal(false),
       error: z.string(),
@@ -668,6 +743,7 @@ export const hostDisposeRemoteWorkspaceSessionMessageSchema = z
 export const hostAttachServicePortMessageSchema = z
   .object({
     type: z.literal("attach-service-port"),
+    mobileNotificationPrincipal: mobileNotificationPrincipalSchema.optional(),
     // main 只能声明 attachment 来源；connectionId 仍由 host process 分配。
     // desktop reload/remote reattach 必须显式 continuous，手机 shared-host 必须 replayable。
     requestId: nonEmptyStringSchema,
@@ -872,6 +948,8 @@ export type HostResourceUsageSnapshotRequestMessage = z.infer<
 >;
 
 export const hostIncomingMessageSchema = z.discriminatedUnion("type", [
+  mobileNotificationResultSchema,
+  mobileNotificationContextSchema,
   z.object({ type: z.literal("network-capture"), control: networkCaptureControlSchema }).strict(),
   z
     .object({ type: z.literal("database-startup-control"), control: databaseStartupControlSchema })
@@ -1403,6 +1481,7 @@ export type HostResourceUsageSnapshotResultResponse = z.infer<
 >;
 
 export const hostResponseMessageSchema = z.discriminatedUnion("type", [
+  mobileNotificationPublishSchema,
   z.object({ type: z.literal("network-capture-batch"), batch: networkCaptureBatchSchema }).strict(),
   z
     .object({ type: z.literal("database-startup-state"), state: databaseStartupStateSchema })

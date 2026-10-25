@@ -2368,8 +2368,8 @@ describe("createZCodeAgentService", () => {
     const secondSubscription = service.onDynamicSessionEvent({
       workspacePath,
       sessionId: "sess-1",
-      deliveryKind: "desktop-continuous",
-      includeSnapshot: false,
+      deliveryKind: "web-remote-replayable",
+      includeSnapshot: true,
     })((event) => secondReceived.push(event));
 
     await vi.waitFor(
@@ -2378,6 +2378,9 @@ describe("createZCodeAgentService", () => {
       },
       { timeout: 5000, interval: 50 },
     );
+    expect(secondReceived.find((event) => event.type === "session.event")).toMatchObject({
+      recovered: true,
+    });
 
     // Bugfix: 第二个订阅者自己的 replay 缺口不能广播回第一个订阅者。
     expect(firstReceived.filter((event) => event.type === "session.event")).toHaveLength(1);

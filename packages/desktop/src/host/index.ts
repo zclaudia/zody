@@ -16,6 +16,7 @@
 import { createHostDatabaseStartup } from "./hostDatabaseStartup.js";
 import { createHostNetworkCapture } from "./hostNetworkCapture.js";
 import { randomUUID } from "node:crypto";
+import { dirname, join } from "node:path";
 import { createPluginSandboxRegistrationBridge } from "./pluginSandbox/index.js";
 // fork（bot channels 移除，specs/bot-channels-removal.md）：windowTopicResourceRelay
 // 随第三方 IM bot 的 topic/resource 反向 relay 删除；ChannelClient/反向 attach 结构由 server 侧保留。
@@ -50,6 +51,9 @@ import {
   type ZCodeAgentV4ClientMode,
   collectServiceMemoryDiagnostics,
 } from "@zcode/services";
+import { createMobileNotificationService } from "@zcode/services/mobile-notifications/node";
+import type { IMobileNotificationService } from "@zcode/services/mobile-notifications/node";
+import { getTasksIndexDatabasePath } from "@zcode/services/storage-startup";
 import {
   createLocalServices,
   disposeServiceResources,
@@ -64,6 +68,7 @@ import {
 // OffPeakModelUnavailableError / OffPeakPermanentDispatchError / OffPeakRequestAuthBuilder
 // 的 import 随闲时任务全链路删除。
 import { createHostResourceUsageResponder } from "./hostResourceUsage.js";
+import { registerMobileNotificationReaderChannel } from "./mobileNotificationReaderChannel.js";
 import {
   HostMessageTypes,
   HostResponseTypes,
@@ -83,6 +88,7 @@ import {
   type TraceId,
   type ZCodeTaskMode,
   type WindowHostAttachmentScope,
+  type MobileNotificationPrincipal,
   type ZCodeAutomation,
   type ZCodeAutomationRun,
   type ZCodeAutomationRunOutcome,
@@ -106,6 +112,8 @@ import type {
 import type { RemoteTarget } from "@zcode/shared";
 import { wrapElectronPort } from "./electronPort.js";
 import { createTaskRealtimeBridgeForHostInit } from "./taskRealtimeBridge.js";
+import { createMobileNotificationEventBridge } from "./mobileNotificationEventBridge.js";
+import { createMobileNotificationDeliveryBridge } from "./mobileNotificationDeliveryBridge.js";
 import { resolveRpcLogLevel } from "./rpcLogLevel.js";
 import { createHostWorkspaceTaskTracker } from "./hostWorkspaceTaskTracker.js";
 import {
@@ -1246,6 +1254,11 @@ console.error = (...args: unknown[]) => {
 let databaseStartup: ReturnType<typeof createHostDatabaseStartup> | undefined;
 const pendingStartupAttachments = new Map<string, () => void>();
 let activeServices: ServiceCollection | null = null;
+let activeMobileNotificationService: IMobileNotificationService | undefined;
+let mobileNotificationDeliveryBridge:
+  | ReturnType<typeof createMobileNotificationDeliveryBridge>
+  | undefined;
+let pendingMobileNotificationContext: unknown;
 let activeHostApiNetworkTransport: HostApiNetworkTransport | null = null;
 /** 本地 host services 的资源遥测订阅；远端连接的订阅由各自的 connection handle 持有。 */
 let activeLocalResourceTelemetry: IDisposable | null = null;
@@ -1516,6 +1529,38 @@ const windowRemoteConnectionRegistry = createWindowRemoteConnectionRegistry<
 
 const windowHostControllerRuntime = createWindowHostControllerRuntime({
   createId: randomUUID,
+  onWorkspaceSourceAvailable: (scope, agentService, taskService) => {
+    const notificationService = activeMobileNotificationService;
+    if (!notificationService) return;
+    const bridge = createMobileNotificationEventBridge({
+      scope,
+      agentService,
+      taskService,
+      notificationService,
+      getBackendId: () => mobileNotificationDeliveryBridge?.getBackendId(),
+      onTerminalCaptureResult: (sourceKind, result) =>
+        logger.info("mobile notification terminal capture result", {
+          scopeKind: scope.kind,
+          sourceKind,
+          result,
+        }),
+      logError: (error) => logger.warn("mobile notification event capture failed", error),
+    });
+    logger.info("mobile notification capture source attached", { scopeKind: scope.kind });
+    const unsubscribeContext = mobileNotificationDeliveryBridge?.onContextChange(() => {
+      // 后端身份在 source 初次扫描后才到达时，将现存 pending state 作为恢复快照补入 feed，不触发历史推送。
+      bridge.refresh(true);
+    });
+    return {
+      onSessionsChange(sessions) {
+        bridge.acceptSessions(sessions);
+      },
+      dispose() {
+        unsubscribeContext?.();
+        bridge.dispose();
+      },
+    };
+  },
   onSourceError: (scope, operation, error) => {
     logger.warn(
       `window Controller source ${operation} failed, scope=${scope.kind}, workspaceKey=${scope.workspaceIdentity?.trim() || scope.workspacePath}`,
@@ -1703,6 +1748,7 @@ function exposeServicesOnMessagePort(
   clientMode: ZCodeAgentV4ClientMode = "desktop-continuous",
   attachmentScope: WindowHostAttachmentScope = { kind: "local" },
   capabilities?: HostRemoteConnectionCapabilities,
+  mobileNotificationPrincipal?: MobileNotificationPrincipal,
 ): ExposedServicePortHandle {
   const wrappedPort = wrapElectronPort(port);
   const protocol = new MessagePortProtocol(wrappedPort);
@@ -1745,6 +1791,14 @@ function exposeServicesOnMessagePort(
   }
   // fork（F4.8）：会话分享服务的 attachment connection scope 覆盖随分享功能删除。
   services.exposeOnChannelServer(server, overrides);
+  // 修复依据：reader 只放进 attachment overrides 时会被忽略，因为
+  // ServiceCollection.exposeOnChannelServer 仅遍历已注册的共享服务，手机点击因此得到 Unknown channel。
+  // 它的主体属于当前 attachment，必须在此显式注册并绑定 Main 注入的身份，不能放进共享 ServiceCollection。
+  registerMobileNotificationReaderChannel(
+    server,
+    activeMobileNotificationService,
+    mobileNotificationPrincipal,
+  );
   let disposed = false;
   let flowUpdateChain = Promise.resolve();
   const forwardFlowState = (state: "saturated" | "drained" | "closed") => {
@@ -1810,8 +1864,16 @@ const windowHostAttachmentRegistry = createWindowHostAttachmentRegistry<
       capabilities: windowRemoteConnectionRegistry.resolveScopedCapabilities(scope),
     };
   },
-  expose: ({ port, services, clientMode, scope, capabilities }) =>
-    exposeServicesOnMessagePort(port, services, false, clientMode, scope, capabilities),
+  expose: ({ port, services, clientMode, scope, capabilities, mobileNotificationPrincipal }) =>
+    exposeServicesOnMessagePort(
+      port,
+      services,
+      false,
+      clientMode,
+      scope,
+      capabilities,
+      mobileNotificationPrincipal,
+    ),
 });
 
 function logWindowHostTopology(reason: string): void {
@@ -1849,6 +1911,10 @@ async function disposeHostResources(reason: string): Promise<HostShutdownResult>
     disposeLocalResourceTelemetry();
     disposeAttachedServicePorts();
     windowHostControllerRuntime.dispose();
+    mobileNotificationDeliveryBridge?.dispose();
+    mobileNotificationDeliveryBridge = undefined;
+    activeMobileNotificationService?.dispose();
+    activeMobileNotificationService = undefined;
     for (const key of Array.from(cronRunSubscriptions.keys())) {
       disposeCronRunSubscription(key);
     }
@@ -1916,6 +1982,10 @@ function disposeHostResourcesBestEffort(reason: string): void {
   disposeLocalResourceTelemetry();
   disposeAttachedServicePorts();
   windowHostControllerRuntime.dispose();
+  mobileNotificationDeliveryBridge?.dispose();
+  mobileNotificationDeliveryBridge = undefined;
+  activeMobileNotificationService?.dispose();
+  activeMobileNotificationService = undefined;
   for (const key of Array.from(cronRunSubscriptions.keys())) {
     disposeCronRunSubscription(key);
   }
@@ -1997,6 +2067,15 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
   }
 
   const msg = result.data;
+  if (msg.type === "mobile-notification-context" || msg.type === "mobile-notification-result") {
+    if (mobileNotificationDeliveryBridge) {
+      mobileNotificationDeliveryBridge.accept(msg);
+    } else if (msg.type === "mobile-notification-context") {
+      // Main may publish the authenticated backend before local Host initialization completes.
+      pendingMobileNotificationContext = msg;
+    }
+    return;
+  }
   if (msg.type === HostMessageTypes.NetworkCapture) {
     hostNetworkCapture.setCaptureId(msg.control.captureId);
     return;
@@ -2344,12 +2423,24 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
         current.generation,
       );
     }
-    void workspaceReady.catch((error) => {
-      logger.warn(
-        `failed to prepare bound remote workspace, remoteSessionId=${msg.remoteSessionId}`,
-        error,
-      );
-    });
+    void workspaceReady
+      .then(async () => {
+        const ensured = await windowHostControllerRuntime.ensureSource({
+          kind: "remote",
+          remoteSessionId: msg.remoteSessionId,
+          workspacePath: msg.workspacePath,
+          workspaceIdentity: msg.workspaceIdentity,
+        });
+        logger.info("mobile notification remote source lifecycle result", {
+          result: ensured ? "registered" : "unavailable",
+        });
+      })
+      .catch((error) => {
+        logger.warn(
+          `failed to prepare bound remote workspace, remoteSessionId=${msg.remoteSessionId}`,
+          error,
+        );
+      });
     if (previous?.workspacePath && previous.workspaceIdentity) {
       windowHostControllerRuntime.removeSource({
         kind: "remote",
@@ -2423,6 +2514,9 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
         clientMode: msg.clientMode,
         scope: msg.scope,
         port,
+        ...(msg.mobileNotificationPrincipal
+          ? { mobileNotificationPrincipal: msg.mobileNotificationPrincipal }
+          : {}),
       });
       logger.info(
         `attached scoped service port, attachmentId=${msg.attachmentId}, scope=${msg.scope.kind}, clientMode=${msg.clientMode}`,
@@ -2505,7 +2599,7 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
         const services = await initializeHostApiNetworkTransportOwner({
           transport: hostApiNetworkTransport,
           log: (message, details) => logger.warn(message, details),
-          establishOwner: () => {
+          establishOwner: async () => {
             const initializedServices = createLocalServices({
               parentPort,
               settingService,
@@ -2561,6 +2655,24 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
               cuaOperationStateReporter:
                 process.platform === "win32" ? cuaOperationStateReporter : undefined,
             });
+            // 手机通知 feed/outbox 只由 Local Host 私有持有，绝不注册可写 IMobileNotificationService RPC。
+            const mobileNotificationService = await createMobileNotificationService({
+              databasePath: join(
+                dirname(getTasksIndexDatabasePath()),
+                "mobile-notifications.sqlite",
+              ),
+            });
+            activeMobileNotificationService = mobileNotificationService;
+            mobileNotificationDeliveryBridge?.dispose();
+            mobileNotificationDeliveryBridge = createMobileNotificationDeliveryBridge({
+              service: mobileNotificationService,
+              send: (message) => parentPort?.postMessage(message),
+              onError: (error) => logger.warn("mobile notification delivery worker failed", error),
+            });
+            if (pendingMobileNotificationContext) {
+              mobileNotificationDeliveryBridge.accept(pendingMobileNotificationContext);
+              pendingMobileNotificationContext = undefined;
+            }
             activeServices = initializedServices;
             activeHostApiNetworkTransport = hostApiNetworkTransport;
             return initializedServices;
@@ -2599,6 +2711,34 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
             `local host init (${index + 1}/${agentWarmupTargets.length})`,
           );
         });
+        // 修复依据 specs/mobile-remote-phase1.md §4.1：local capture source 必须在本地
+        // workspace 服务就绪后主动注册，与 remote source 共用同一 ensureSource 生命周期；
+        // 否则无手机页面/无 Controller 查询时，桌面打开态本地 workspace 的终态与交互
+        // 事件不会进入通知 feed。ensureSource 幂等且 fail-closed（本地服务缺 taskService
+        // 时返回 false），断开/dispose 仍走 disconnectSource/removeSource 既有释放路径；
+        // backendId 上下文未到时由 event bridge 的 pending 恢复扫描兜底。
+        for (const target of agentWarmupTargets) {
+          void windowHostControllerRuntime
+            .ensureSource({
+              kind: "local",
+              workspacePath: target.workspacePath,
+              ...(target.workspaceIdentity
+                ? { workspaceIdentity: target.workspaceIdentity }
+                : {}),
+            })
+            .then((ensured) => {
+              logger.info("mobile notification local source lifecycle result", {
+                workspacePath: target.workspacePath,
+                result: ensured ? "registered" : "unavailable",
+              });
+            })
+            .catch((error) => {
+              logger.warn(
+                `failed to register local mobile notification source, workspacePath=${target.workspacePath}`,
+                error,
+              );
+            });
+        }
         logger.info("exposing services on ChannelServer...");
         if (!basePortClosed)
           windowHostAttachmentRegistry.attach({

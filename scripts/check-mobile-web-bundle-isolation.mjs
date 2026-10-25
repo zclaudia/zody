@@ -8,16 +8,12 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import process from "node:process";
+import { findGatewayClientMarkers } from "./mobile-web-bundle-inspection.mjs";
 
 const REPO_ROOT = resolve(import.meta.dirname, "..");
 const WEB_DIST = resolve(REPO_ROOT, "packages/web/dist");
 const MOBILE_DIST = resolve(REPO_ROOT, "packages/web/dist-mobile-remote");
 const MOBILE_ENTRY_HTML = "mobile.html";
-
-// gateway-client（0.3.0）里只可能来自该 SDK 的标记：包名 + SDK 的 API 名。
-// 不用 `peer_hello`：shared 的 web-remote-control-channel.ts 注释里也有这个词，而普通 Web
-// 客户端合法引用 shared 后，source map 的 sourcesContent 会把它带进 .map，造成假阳性。
-const GATEWAY_CLIENT_MARKERS = ["@zclaudia/gateway-client", "@zclaudia/", "discoverBackends"];
 
 const SCANNED_EXTENSIONS = [".js", ".mjs", ".css", ".html", ".map"];
 
@@ -42,10 +38,8 @@ async function scanBundle(dir) {
   const hits = [];
   for (const file of files) {
     const text = await readFile(file, "utf8");
-    for (const marker of GATEWAY_CLIENT_MARKERS) {
-      if (text.includes(marker)) {
-        hits.push({ file: relative(REPO_ROOT, file), marker });
-      }
+    for (const marker of findGatewayClientMarkers(text, file.endsWith(".map"))) {
+      hits.push({ file: relative(REPO_ROOT, file), marker });
     }
   }
   return { fileCount: files.length, hits };

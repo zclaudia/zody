@@ -181,10 +181,16 @@ export const remoteAccessSettingsSchema = z.object({
   gatewayUrl: remoteAccessGatewayUrlStoredSchema,
   /** gateway namespace；空值按默认值处理。 */
   namespace: remoteAccessNamespaceStoredSchema,
+  /**
+   * 「允许手机打开任意本地目录」（第二批 E2）。缺省 true：这是对既有信任边界
+   * （gateway 凭证持有者可操作所有已打开 workspace）的同级放宽，默认不改变老用户行为；
+   * 关闭时桌面立即拒绝 `workspace-open-path-request`，手机退回仅最近项目。
+   */
+  allowMobileOpenArbitraryPath: z.boolean().catch(true),
 });
 
 /**
- * 写入用的 schema：三个字段必须一次给全。
+ * 写入用的 schema：字段必须一次给全。
  * settings 更新是浅合并（`{...current, ...patch}`），允许局部对象会把没带的字段悄悄清空；
  * `.strict()` 同时保证凭证之类的字段不可能被写进 settings 文件。
  */
@@ -193,6 +199,7 @@ export const remoteAccessSettingsPatchSchema = z
     enabled: z.boolean(),
     gatewayUrl: remoteAccessGatewayUrlSettingSchema,
     namespace: remoteAccessNamespaceSettingSchema,
+    allowMobileOpenArbitraryPath: z.boolean(),
   })
   .strict();
 

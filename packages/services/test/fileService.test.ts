@@ -94,6 +94,38 @@ describe("fileService", () => {
   // ── readdir ──────────────────────────────────────────────────────
 
   describe("readdir", () => {
+    it("returns exactly 5000 mobile entries and rejects a 5001st entry", async () => {
+      const rootPath = makeTempDir("zcode-readdir-mobile-count-");
+      for (let index = 0; index < 5_000; index += 1) {
+        writeFileSync(join(rootPath, `entry-${String(index).padStart(4, "0")}`), "");
+      }
+      const service = createFileService();
+      const budget = { maxEntries: 5_000, maxResponseBytes: 1024 * 1024 };
+
+      await expect(service.readdir({ path: rootPath, mobileBudget: budget })).resolves.toHaveLength(
+        5_000,
+      );
+      writeFileSync(join(rootPath, "entry-5000"), "");
+      await expect(service.readdir({ path: rootPath, mobileBudget: budget })).rejects.toMatchObject(
+        { name: "WorkspaceFileDirectoryTooLargeError", code: "DIRECTORY_TOO_LARGE" },
+      );
+    });
+
+    it("rejects a mobile response as soon as serialized metadata exceeds its byte budget", async () => {
+      const rootPath = makeTempDir("zcode-readdir-mobile-bytes-");
+      writeFileSync(join(rootPath, "a-long-filename.txt"), "");
+      const service = createFileService();
+
+      await expect(
+        service.readdir({
+          path: rootPath,
+          mobileBudget: { maxEntries: 5_000, maxResponseBytes: 20 },
+        }),
+      ).rejects.toMatchObject({ code: "DIRECTORY_TOO_LARGE" });
+      // Omitted mobile budget preserves the legacy complete desktop behavior.
+      await expect(service.readdir({ path: rootPath })).resolves.toHaveLength(1);
+    });
+
     it("lists directory entries, filters hidden files, sorts directories first then alphabetically", async () => {
       const rootPath = makeTempDir("zcode-readdir-");
       mkdirSync(join(rootPath, "src"));
@@ -213,6 +245,41 @@ describe("fileService", () => {
             isSymbolicLink: true,
           }),
         ]),
+      );
+    });
+
+    it("MF07: classifies broken symlinks as files without failing the whole directory", async () => {
+      const rootPath = makeTempDir("zcode-readdir-broken-symlink-");
+      writeFileSync(join(rootPath, "readme.md"), "# Hello");
+      // 指向不存在目标的断链：跟随 stat 会抛 ENOENT，目录列表不能因此整体失败。
+      symlinkSync(
+        join(rootPath, "missing-target.txt"),
+        join(rootPath, "broken-link"),
+        process.platform === "win32" ? "junction" : "file",
+      );
+
+      const service = createFileService();
+      const entries = await service.readdir({ path: rootPath, includeHidden: true });
+
+      expect(entries).toContainEqual({
+        name: "broken-link",
+        path: join(rootPath, "broken-link"),
+        type: "file",
+        isSymbolicLink: true,
+      });
+      expect(entries).toContainEqual(
+        expect.objectContaining({ name: "readme.md", type: "file" }),
+      );
+
+      // mobile budget 路径（opendir 异步迭代）同样不能被断链拖垮。
+      await expect(
+        service.readdir({
+          path: rootPath,
+          includeHidden: true,
+          mobileBudget: { maxEntries: 5_000, maxResponseBytes: 1024 * 1024 },
+        }),
+      ).resolves.toContainEqual(
+        expect.objectContaining({ name: "broken-link", type: "file", isSymbolicLink: true }),
       );
     });
 

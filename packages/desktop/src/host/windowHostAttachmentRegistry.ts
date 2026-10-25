@@ -1,4 +1,4 @@
-import type { WindowHostAttachmentScope } from "@zcode/shared";
+import type { MobileNotificationPrincipal, WindowHostAttachmentScope } from "@zcode/shared";
 import type { ZCodeAgentV4ClientMode } from "@zcode/services";
 
 export interface WindowHostAttachmentPort {
@@ -23,6 +23,7 @@ export interface WindowHostExposeAttachmentParams<TServices, TPort, TCapabilitie
   services: TServices;
   generation: number;
   capabilities?: TCapabilities;
+  mobileNotificationPrincipal?: MobileNotificationPrincipal;
   port: TPort;
 }
 
@@ -60,6 +61,7 @@ export function createWindowHostAttachmentRegistry<
     clientMode: ZCodeAgentV4ClientMode;
     scope: WindowHostAttachmentScope;
     port: TPort;
+    mobileNotificationPrincipal?: MobileNotificationPrincipal;
   }): void {
     // scope 必须先由 Host registry 验证；验证失败时不能影响同 attachmentId 的现有端口。
     const resolved = options.resolveScope(params.scope);
@@ -68,6 +70,9 @@ export function createWindowHostAttachmentRegistry<
       services: resolved.services,
       generation: resolved.generation,
       ...(resolved.capabilities !== undefined ? { capabilities: resolved.capabilities } : {}),
+      ...(params.mobileNotificationPrincipal
+        ? { mobileNotificationPrincipal: params.mobileNotificationPrincipal }
+        : {}),
     };
     const handle = options.expose(exposedParams);
     const tracked: TrackedAttachment<TServices, TPort, TCapabilities> = {

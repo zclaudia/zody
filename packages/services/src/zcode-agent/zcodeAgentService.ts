@@ -4969,7 +4969,7 @@ export function createZCodeAgentService(
               })
             : null;
 
-        const deliverToListener = (event: ZCodeAgentServiceEvent): void => {
+        const deliverToListener = (event: ZCodeAgentServiceEvent, recovered = false): void => {
           if (cancelled) {
             return;
           }
@@ -4985,11 +4985,13 @@ export function createZCodeAgentService(
           }
           // 性能优化：后台 task 只需要低频摘要，不能让不可见任务的 token/progress
           // 同频唤醒 renderer；active 订阅没有 eventCoalescing，仍保持实时 continuous。
+          const delivery =
+            recovered && event.type === "session.event" ? { ...event, recovered: true } : event;
           if (eventCoalescer) {
-            eventCoalescer.accept(event);
+            eventCoalescer.accept(delivery);
             return;
           }
-          listener(event);
+          listener(delivery);
         };
 
         const releaseBufferedLiveEvents = (): void => {
@@ -5019,7 +5021,7 @@ export function createZCodeAgentService(
             return;
           }
           try {
-            const client = await getReadOnlyClient(params);
+            const client = await getReadOnlyClient(params, params.runtimePolicy);
             if (cancelled) {
               return;
             }
@@ -5043,7 +5045,7 @@ export function createZCodeAgentService(
             // replay 不能 fire 到共享 emitter：会把历史事件重新广播给其他 live 订阅者，
             // 造成 UI 时间线里已完成工具被插回到当前模型输出之后。
             for (const event of replayEvents) {
-              deliverToListener({ type: "session.event", event });
+              deliverToListener({ type: "session.event", event }, true);
             }
             if (result.snapshot) {
               deliverToListener({

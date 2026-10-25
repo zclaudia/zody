@@ -18,6 +18,8 @@ export interface GatewayDeviceActiveTarget {
   ready: boolean;
   closing: boolean;
   appProtocol?: number;
+  deviceSubject?: string;
+  clientInstanceId?: string;
 }
 
 export interface GatewayDeviceTransportSessionHost {
@@ -81,6 +83,12 @@ export function createGatewayDeviceTransportSession(
   options: GatewayDeviceTransportSessionOptions,
 ): GatewayDeviceTransportSession {
   return {
+    getNotificationIdentity() {
+      const target = host.getActiveTarget();
+      return target?.ready && !target.closing && target.deviceSubject && target.clientInstanceId
+        ? { deviceSubject: target.deviceSubject, clientInstanceId: target.clientInstanceId }
+        : undefined;
+    },
     start() {
       if (host.isDisposed()) return;
       host.setActiveSession(options);

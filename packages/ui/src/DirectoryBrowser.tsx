@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, type ReactNode } from "react";
 import type { IServiceAccessor } from "@zcode/services";
 import type { FileEntry } from "@zcode/shared";
 import { FolderIcon, FolderSymlinkIcon } from "lucide-react";
@@ -46,6 +46,9 @@ export function createDirectoryBrowserRequestGuard(): {
  * 服务端目录浏览对话框。
  * 通过 fileService.readdir 浏览远程/本地服务器的目录结构，
  * 适用于 web 端无法调用系统原生文件选择器的场景。
+ *
+ * 第二批 E1：`readdir`/`initialPath` 注入供手机远控「打开其他项目」复用同一交互
+ * （app 级目录列表 payload，无 workspace services 可用）；桌面路径不传时行为不变。
  */
 export function DirectoryBrowser({
   services,
@@ -53,12 +56,24 @@ export function DirectoryBrowser({
   onCancel,
   onPathChange,
   embedded = false,
+  readdir,
+  initialPath,
+  embeddedFooter,
 }: {
-  services: IServiceAccessor;
+  services?: IServiceAccessor;
   onSelect: (path: string) => void;
   onCancel: () => void;
   onPathChange?: (path: string) => void;
   embedded?: boolean;
+  /**
+   * 注入式目录读取（返回全部条目，含文件；调用方自行保持与桌面一致的语义）。
+   * 提供时不再使用 `services.fileService.readdir`。
+   */
+  readdir?: (path: string, includeHidden: boolean) => Promise<FileEntry[]>;
+  /** 提供时以该路径为起点，不查询 `services.systemService`（手机侧无 systemService）。 */
+  initialPath?: string;
+  /** embedded 模式的 footer 区（宿主放「确认选择」等触控操作）。 */
+  embeddedFooter?: ReactNode;
 }) {
   const [currentPath, setCurrentPath] = useState("");
   const [inputPath, setInputPath] = useState("");
@@ -71,8 +86,16 @@ export function DirectoryBrowser({
   const requestGuardRef = useRef(createDirectoryBrowserRequestGuard());
   const { intl } = useZCodeIntl();
 
-  // 初始化：获取 homedir 作为起始路径
+  // 初始化：注入式起点直接进入；桌面路径仍取 homedir。
   useEffect(() => {
+    if (initialPath) {
+      navigateTo(initialPath);
+      return;
+    }
+    if (!services) {
+      setLoading(false);
+      return;
+    }
     services.systemService
       .info()
       .then((info) => {
@@ -94,9 +117,11 @@ export function DirectoryBrowser({
     setLoading(true);
     setError("");
     try {
-      const result = await services.fileService.readdir(
-        createDirectoryBrowserReadParams(path, nextShowHiddenDirectories),
-      );
+      const result = readdir
+        ? await readdir(path, nextShowHiddenDirectories)
+        : await services!.fileService.readdir(
+            createDirectoryBrowserReadParams(path, nextShowHiddenDirectories),
+          );
       if (!requestGuardRef.current.isCurrent(requestId)) {
         return;
       }
@@ -105,8 +130,8 @@ export function DirectoryBrowser({
       setCurrentPath(path);
       setInputPath(path);
       onPathChange?.(path);
-      // 滚动到顶部
-      listRef.current?.scrollTo(0, 0);
+      // 滚动到顶部；jsdom 不实现 scrollTo，可选调用避免测试环境把导航误判为读取失败。
+      listRef.current?.scrollTo?.(0, 0);
     } catch (err) {
       if (!requestGuardRef.current.isCurrent(requestId)) {
         return;
@@ -261,7 +286,14 @@ export function DirectoryBrowser({
   );
 
   if (embedded) {
-    return browserContent;
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        {browserContent}
+        {embeddedFooter ? (
+          <div className="mt-3 flex shrink-0 justify-end gap-2">{embeddedFooter}</div>
+        ) : null}
+      </div>
+    );
   }
 
   return (

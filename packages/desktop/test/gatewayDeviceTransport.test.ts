@@ -190,6 +190,24 @@ afterEach(() => {
 });
 
 describe("GatewayDeviceTransport", () => {
+  it("binds notification identity to the authenticated offer and current hello only", () => {
+    const harness = createHarness();
+    const channel = new FakeChannel("notification-channel");
+    harness.transport.handleChannel(channel, {
+      channelId: channel.channelId,
+      kind: "zcode-remote",
+      sourceCredentialId: "device-a",
+    });
+    expect(harness.session.getNotificationIdentity?.()).toBeUndefined();
+    channel.deliver(hello("installation-a"));
+    expect(harness.session.getNotificationIdentity?.()).toEqual({
+      deviceSubject: "device-a",
+      clientInstanceId: "installation-a",
+    });
+    channel.close();
+    expect(harness.session.getNotificationIdentity?.()).toBeUndefined();
+  });
+
   it("registers onMessage synchronously and accepts a hello delivered immediately", () => {
     const harness = createHarness();
     const channel = new FakeChannel("channel-sync");
@@ -213,7 +231,7 @@ describe("GatewayDeviceTransport", () => {
     const { channel } = attachClient(harness, { appProtocol: { min: 1, max: 3 } });
 
     expect(channel.frames()).toContainEqual(
-      expect.objectContaining({ type: "hello_ack", appProtocol: 2 }),
+      expect.objectContaining({ type: "hello_ack", appProtocol: 3 }),
     );
   });
 

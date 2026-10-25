@@ -29,10 +29,7 @@ import { TID_PREVIEW_PANE } from "@zcode/shared";
 import { useWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import { usePptxFileWatch } from "@/hooks/usePptxFileWatch.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
-import {
-  usePdfViewerLabels,
-  usePptxViewerLabels,
-} from "@/hooks/usePreviewViewerLabels.js";
+import { usePdfViewerLabels, usePptxViewerLabels } from "@/hooks/usePreviewViewerLabels.js";
 import {
   FILE_VIEWER_MAX_TEXT_BYTES,
   createDiffSourceFilePreviewSource,
@@ -103,6 +100,14 @@ const PREVIEW_PANE_DEFERRED_PLACEHOLDER_LINE_WIDTHS = [
   44, 72, 58, 86, 64, 78, 52, 90, 68, 48, 82, 60,
 ] as const;
 const EMPTY_CODE_COMMENT_PREVIEWS: readonly CodeCommentPreview[] = [];
+
+export function isPreviewPaneEditorActionAllowed(
+  capability: "full" | "read-only",
+  hasPath: boolean,
+  hasEditor: boolean,
+): boolean {
+  return capability === "full" && hasPath && hasEditor;
+}
 
 function normalizeBreadcrumbPathSegments(path: string): string[] {
   return path.replace(/\\/g, "/").split("/").filter(Boolean);
@@ -487,6 +492,8 @@ export function PreviewPane({
   onOpenCodeViewer,
   renderHeavyContent = true,
   markdownSelectionTarget,
+  actionsCapability = "full",
+  maxPreviewFileBytes,
 }: {
   source: CodeViewerSource | null;
   onClose: () => void;
@@ -495,6 +502,10 @@ export function PreviewPane({
   onOpenCodeViewer?: (source: CodeViewerSource) => void;
   renderHeavyContent?: boolean;
   markdownSelectionTarget?: MarkdownSelectionTarget;
+  /** Explicitly hide host/editor and code-comment actions in read-only surfaces such as mobile. */
+  actionsCapability?: "full" | "read-only";
+  /** Additional per-surface cap checked before loading binary/media previews. */
+  maxPreviewFileBytes?: number;
 }) {
   const platform = usePlatform();
   const { intl } = useZCodeIntl();
@@ -608,11 +619,13 @@ export function PreviewPane({
         : null,
     [source, sourceWorkspacePath],
   );
-  const codeComments = useCodeCommentPreviewStore((state) =>
+  const storedCodeComments = useCodeCommentPreviewStore((state) =>
     // code-review 不读取 Composer 评论 store，但这里每次 selector 求值都不能返回新的 []，
     // 否则会破坏 useSyncExternalStore 的稳定 snapshot 契约并触发无限更新。
     codeCommentBucket ? state.getComments(codeCommentBucket) : EMPTY_CODE_COMMENT_PREVIEWS,
   );
+  const codeComments =
+    actionsCapability === "read-only" ? EMPTY_CODE_COMMENT_PREVIEWS : storedCodeComments;
   const addCodeCommentPreview = useCodeCommentPreviewStore((state) => state.addComment);
   const removeCodeCommentPreview = useCodeCommentPreviewStore((state) => state.removeComment);
   const breadcrumb = useMemo(
@@ -629,11 +642,18 @@ export function PreviewPane({
     [installedEditors, isRemoteSource, openInEditorRemoteTarget, preferredEditorId],
   );
   const selectedEditor = editorSelection.selectedEditor;
-  const canOpenInEditor = Boolean(source?.path && selectedEditor);
+  const canOpenInEditor = isPreviewPaneEditorActionAllowed(
+    actionsCapability,
+    Boolean(source?.path),
+    Boolean(selectedEditor),
+  );
   const canOpenDiffFilePreview = Boolean(diffFilePreviewSource && onOpenCodeViewer);
   const wrapLongLines = wrapLongLinesOverride ?? codePreviewSettings.wrapLongLines;
   const canCreateCodeComment = Boolean(
-    source?.type !== "code-review" && source?.path && sourceWorkspacePath,
+    actionsCapability === "full" &&
+    source?.type !== "code-review" &&
+    source?.path &&
+    sourceWorkspacePath,
   );
   const displayOptions = useMemo(
     () =>
@@ -953,9 +973,20 @@ export function PreviewPane({
     setError(null);
 
     void fileService
-      .readMediaPreview({ path: imageSource.path })
+      .stat({ path: imageSource.path })
+      .then((stat) => {
+        if (disposed) return null;
+        if (
+          maxPreviewFileBytes !== undefined &&
+          stat.size !== undefined &&
+          stat.size > maxPreviewFileBytes
+        ) {
+          throw new Error(intl.formatMessage({ id: "mobileFileBrowser.fileTooLarge" }));
+        }
+        return fileService.readMediaPreview({ path: imageSource.path });
+      })
       .then((result) => {
-        if (disposed) {
+        if (disposed || !result) {
           return;
         }
 
@@ -984,7 +1015,7 @@ export function PreviewPane({
     return () => {
       disposed = true;
     };
-  }, [fileService, imageSource, intl]);
+  }, [fileService, imageSource, intl, maxPreviewFileBytes]);
 
   useEffect(() => {
     let disposed = false;
@@ -1022,12 +1053,24 @@ export function PreviewPane({
       };
     }
 
-    void mediaPreviewService
-      .prepare({
-        path: mediaSource.path,
-        expectedKind: mediaSource.kind,
+    void fileService
+      .stat({ path: mediaSource.path })
+      .then((stat) => {
+        if (disposed) return null;
+        if (
+          maxPreviewFileBytes !== undefined &&
+          stat.size !== undefined &&
+          stat.size > maxPreviewFileBytes
+        ) {
+          throw new Error(intl.formatMessage({ id: "mobileFileBrowser.fileTooLarge" }));
+        }
+        return mediaPreviewService.prepare({
+          path: mediaSource.path,
+          expectedKind: mediaSource.kind,
+        });
       })
       .then((preview) => {
+        if (!preview) return;
         const previewId = "previewId" in preview ? preview.previewId : null;
         if (previewId) preparedPreviewId = previewId;
         if (disposed || generation !== mediaPreviewGenerationRef.current) {
@@ -1077,7 +1120,7 @@ export function PreviewPane({
         void mediaPreviewService.release({ previewId: preparedPreviewId }).catch(() => undefined);
       }
     };
-  }, [intl, mediaPreviewService, mediaSource]);
+  }, [fileService, intl, maxPreviewFileBytes, mediaPreviewService, mediaSource]);
 
   const handleMediaError = useCallback(
     (event: SyntheticEvent<HTMLMediaElement>) => {
@@ -1202,6 +1245,11 @@ export function PreviewPane({
         return;
       }
 
+      if (maxPreviewFileBytes !== undefined && fileStat.size > maxPreviewFileBytes) {
+        setError(intl.formatMessage({ id: "mobileFileBrowser.fileTooLarge" }));
+        return;
+      }
+
       if (fileStat.size <= PDF_FULL_READ_MAX_BYTES) {
         const data = await readWholeFile(fileStat.size);
         if (!disposed && data) {
@@ -1239,7 +1287,7 @@ export function PreviewPane({
     return () => {
       disposed = true;
     };
-  }, [fileService, pdfSource, intl]);
+  }, [fileService, pdfSource, intl, maxPreviewFileBytes]);
 
   useEffect(() => {
     let disposed = false;
@@ -1256,13 +1304,27 @@ export function PreviewPane({
     setOfficePreview(null);
     setError(null);
 
-    void fileService
-      .readBinaryPreview({ path: source.path })
-      .then((result) => {
-        if (!disposed) {
-          setOfficePreview(result);
-        }
-      })
+    void (async () => {
+      // MF06: 移动端 office（.docx/.xlsx 等）预览与图片/媒体/PDF/PPTX 一样，读取前先 stat 并应用
+      // maxPreviewFileBytes（手机传 16 MiB）预算，不能绕过预算直接走桌面 readBinaryPreview 上限。
+      // 旧远端 stat 不返回 size 时保持原行为，不做误拦截。
+      const stat = await fileService.stat({ path: source.path });
+      if (disposed) {
+        return;
+      }
+      if (
+        maxPreviewFileBytes !== undefined &&
+        stat.size !== undefined &&
+        stat.size > maxPreviewFileBytes
+      ) {
+        setError(intl.formatMessage({ id: "mobileFileBrowser.fileTooLarge" }));
+        return;
+      }
+      const result = await fileService.readBinaryPreview({ path: source.path });
+      if (!disposed) {
+        setOfficePreview(result);
+      }
+    })()
       .catch((previewError: unknown) => {
         if (disposed) {
           return;
@@ -1291,7 +1353,7 @@ export function PreviewPane({
     return () => {
       disposed = true;
     };
-  }, [fileService, intl, officePreviewKind, source]);
+  }, [fileService, intl, maxPreviewFileBytes, officePreviewKind, source]);
 
   useEffect(() => {
     const navigation = pptxReferenceNavigation;
@@ -1362,6 +1424,11 @@ export function PreviewPane({
         return;
       }
 
+      if (maxPreviewFileBytes !== undefined && fileStat.size > maxPreviewFileBytes) {
+        setError(intl.formatMessage({ id: "mobileFileBrowser.fileTooLarge" }));
+        return;
+      }
+
       if (isPptxPreviewFileTooLarge(fileStat.size)) {
         setError(intl.formatMessage({ id: "codeViewer.pptx.fileTooLarge" }));
         return;
@@ -1427,7 +1494,14 @@ export function PreviewPane({
     return () => {
       disposed = true;
     };
-  }, [fileService, intl, pptxFileWatchReady, pptxReloadGeneration, pptxSourcePath]);
+  }, [
+    fileService,
+    intl,
+    maxPreviewFileBytes,
+    pptxFileWatchReady,
+    pptxReloadGeneration,
+    pptxSourcePath,
+  ]);
 
   const handlePreviewContentScroll = useCallback(() => {
     rememberScrollMetrics();
@@ -1569,7 +1643,7 @@ export function PreviewPane({
         </div>
 
         <div className="flex shrink-0 pr-1.5 items-center gap-2">
-          {canOpenDiffFilePreview ? (
+          {actionsCapability === "full" && canOpenDiffFilePreview ? (
             <Button
               type="button"
               size="default"
@@ -1593,7 +1667,7 @@ export function PreviewPane({
             </Button>
           ) : null}
           {/* Bugfix: 图片和 patch 这类预览没有任何显示选项，继续渲染触发器会打开空菜单，所以只在存在菜单项时显示更多按钮。 */}
-          {hasMoreMenu || source.path ? (
+          {hasMoreMenu || (source.path && actionsCapability === "full") ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -1671,7 +1745,7 @@ export function PreviewPane({
                     </DropdownMenuCheckboxItem>
                   </>
                 ) : null}
-                {source.path ? (
+                {source.path && actionsCapability === "full" ? (
                   <>
                     {hasMoreMenu ? <DropdownMenuSeparator /> : null}
                     <DropdownMenuItem
@@ -1699,34 +1773,36 @@ export function PreviewPane({
             </DropdownMenu>
           ) : null}
           {/* 第一期 PPTX 明确为只读预览，不展示任何编辑入口。 */}
-          <Button
-            type="button"
-            size="icon-md"
-            variant="ghost"
-            className="shrink-0 text-foreground-subtle hover:text-foreground disabled:text-foreground-subtlest"
-            onClick={() => {
-              void handleOpenInEditor();
-            }}
-            disabled={!canOpenInEditor}
-            title={
-              selectedEditor
-                ? intl.formatMessage(
-                    { id: "appHeader.openInEditor" },
-                    { editor: selectedEditor.name },
-                  )
-                : intl.formatMessage({ id: "chat.changeSummary.openInEditor" })
-            }
-            aria-label={
-              selectedEditor
-                ? intl.formatMessage(
-                    { id: "appHeader.openInEditor" },
-                    { editor: selectedEditor.name },
-                  )
-                : intl.formatMessage({ id: "chat.changeSummary.openInEditor" })
-            }
-          >
-            <ExternalLinkIcon className="size-3.5" />
-          </Button>
+          {actionsCapability === "full" ? (
+            <Button
+              type="button"
+              size="icon-md"
+              variant="ghost"
+              className="shrink-0 text-foreground-subtle hover:text-foreground disabled:text-foreground-subtlest"
+              onClick={() => {
+                void handleOpenInEditor();
+              }}
+              disabled={!canOpenInEditor}
+              title={
+                selectedEditor
+                  ? intl.formatMessage(
+                      { id: "appHeader.openInEditor" },
+                      { editor: selectedEditor.name },
+                    )
+                  : intl.formatMessage({ id: "chat.changeSummary.openInEditor" })
+              }
+              aria-label={
+                selectedEditor
+                  ? intl.formatMessage(
+                      { id: "appHeader.openInEditor" },
+                      { editor: selectedEditor.name },
+                    )
+                  : intl.formatMessage({ id: "chat.changeSummary.openInEditor" })
+              }
+            >
+              <ExternalLinkIcon className="size-3.5" />
+            </Button>
+          ) : null}
         </div>
       </div>
       <div className="min-h-0 flex-1">

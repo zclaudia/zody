@@ -5,6 +5,9 @@ import {
 } from "../src/mobile-remote/mobileRemoteNativeHost.js";
 
 interface InstalledHost {
+  onNotificationClick(value: unknown): void;
+  onNotificationAction(value: unknown): void;
+  onNotificationPermissionChanged(value: unknown): void;
   onAppLifecycle(state: unknown): void;
   onBackPressed(): boolean;
 }
@@ -97,5 +100,57 @@ describe("mobile remote native host (T6.2)", () => {
 
     expect(second).toBe(first);
     expect(target[MOBILE_REMOTE_NATIVE_HOST_GLOBAL_KEY]).toBe(host);
+  });
+  it("forwards validated warm clicks and permission results without replaying disposed listeners", () => {
+    const target = createTarget();
+    const binding = installMobileRemoteNativeHost({ target })!;
+    const click = vi.fn();
+    const permission = vi.fn();
+    const disposeClick = binding.onNotificationClick(click);
+    const disposePermission = binding.onNotificationPermissionChanged(permission);
+    installedHost(target).onNotificationClick({
+      backendId: "backend",
+      notificationId: "notification",
+    });
+    installedHost(target).onNotificationClick({ backendId: "backend", notificationId: "" });
+    installedHost(target).onNotificationPermissionChanged(true);
+    installedHost(target).onNotificationPermissionChanged("true");
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(permission).toHaveBeenCalledExactlyOnceWith(true);
+    disposeClick();
+    disposePermission();
+    installedHost(target).onNotificationClick({ backendId: "b", notificationId: "n" });
+    installedHost(target).onNotificationPermissionChanged(false);
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(permission).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("mobile remote native host notification action (E4)", () => {
+  it("forwards validated action clicks and drops malformed payloads", () => {
+    const target = createTarget();
+    const binding = installMobileRemoteNativeHost({ target })!;
+
+    const handler = vi.fn();
+    binding.onNotificationAction(handler);
+
+    const host = installedHost(target);
+    host.onNotificationAction({
+      backendId: "b",
+      notificationId: "n",
+      optionId: "opt",
+      optionKind: "deny",
+    });
+    host.onNotificationAction({ backendId: "b", notificationId: "n", optionId: "opt" });
+    host.onNotificationAction({ backendId: "b", notificationId: "n", optionKind: "deny" });
+    host.onNotificationAction("bogus");
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler).toHaveBeenCalledWith({
+      backendId: "b",
+      notificationId: "n",
+      optionId: "opt",
+      optionKind: "deny",
+    });
   });
 });

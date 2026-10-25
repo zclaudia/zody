@@ -1,6 +1,47 @@
 import { requestSecurityMessagesEnUS } from "@/request-security-edition/messages.js";
 /** English translations */
 const enUS: Record<string, string> = {
+  "mobileSearch.narrowQuery": "Showing up to 200 results. Refine your search for more.",
+  "mobileSearch.title": "Search history",
+  "mobileSearch.back": "Back from search",
+  "mobileSearch.placeholder": "Search titles and messages",
+  "mobileSearch.search": "Search",
+  "mobileSearch.queryTooLong": "Use at most 256 characters.",
+  "mobileSearch.includeArchived": "Include archived tasks",
+  "mobileSearch.searching": "Searching…",
+  "mobileSearch.pendingScopes": "Waiting for {count} workspaces",
+  "mobileSearch.noResults": "No matching tasks",
+  "mobileSearch.showMore": "Show up to {count} results",
+  "mobileSearch.limitReached": "Showing up to 200 results. Refine your search for more.",
+  "mobileSearch.source.offline": "A workspace is offline; its results are unavailable.",
+  "mobileSearch.source.closed": "A workspace was closed.",
+  "mobileSearch.source.error": "A workspace could not be searched.",
+  "mobileSearch.source.unsupported": "A workspace needs an update to support search.",
+  "mobileFileBrowser.title": "Files",
+  "mobileWorkspacePicker.title": "Open another project",
+  "mobileWorkspacePicker.open": "Open this folder",
+  "mobileWorkspacePicker.error.not-found": "The folder does not exist or has been moved.",
+  "mobileWorkspacePicker.error.not-directory": "The path is not a folder.",
+  "mobileWorkspacePicker.error.unreadable": "No permission to read this folder.",
+  "mobileWorkspacePicker.error.too-large": "The folder has more than 1000 subfolders.",
+  "mobileWorkspacePicker.error.path-invalid": "Enter a valid absolute path.",
+  "mobileWorkspacePicker.error.arbitrary-path-disabled":
+    "\"Allow the phone to open any local folder\" is turned off on the desktop. Enable it in remote access settings.",
+  "mobileWorkspacePicker.error.open-failed": "Could not open the folder: {error}",
+  "mobileWorkspacePicker.error.timeout":
+    "The desktop did not finish opening within 10 seconds. Please retry.",
+  "mobileFileBrowser.saveOriginal": "Save original",
+  "mobileFileBrowser.directoryTooLarge": "Directory exceeds mobile browsing limits.",
+  "mobileFileBrowser.fileTooLarge": "File exceeds the 16 MiB mobile preview limit.",
+  "mobileFileBrowser.unsupportedExternalDirectory":
+    "Open an existing workspace to browse this directory.",
+  "mobileFileBrowser.link": "Symbolic link",
+  "mobileFileBrowser.directoryNotFound": "Directory not found or moved.",
+  "mobileFileBrowser.directoryUnreadable": "No permission to read this directory.",
+  "mobileFileBrowser.offline": "Remote workspace disconnected. It refreshes after reconnecting.",
+  "mobileFileBrowser.staleList": "Listing from before the error; it may be out of date.",
+  "mobileFileBrowser.cancelSave": "Cancel save",
+
   "occupationOnboarding.stepMode": "UI mode",
   "occupationOnboarding.modeTitle": "Choose your UI mode",
   "occupationOnboarding.modeDescription": "How would you like Zody to show its work?",
@@ -1340,6 +1381,7 @@ const enUS: Record<string, string> = {
   "webRemoteControl.mobileHome.recentProjectsHint": "Tap to open on desktop",
   "webRemoteControl.mobileHome.recentProjectsEmpty": "No recent projects on desktop.",
   "webRemoteControl.mobileHome.openRecentProject": "Open {name} on desktop",
+  "webRemoteControl.mobileHome.openOtherProject": "Open another project",
   "webRemoteControl.mobileSetup.title": "Connect to a desktop",
   "webRemoteControl.mobileSetup.description":
     "Enter the gateway address and device credential. The credential is stored only in this device's secure storage and never logged.",
@@ -2124,6 +2166,11 @@ const enUS: Record<string, string> = {
     "When enabled, the desktop connects to the gateway in the background so your phone can see and control this computer. When disabled, the phone sees it as offline.",
   "settings.remoteAccess.toggle.failed": "Could not change remote access: {error}",
   "settings.remoteAccess.config.section": "Gateway configuration",
+  "settings.remoteAccess.arbitraryPath.label": "Allow the phone to open any local folder",
+  "settings.remoteAccess.arbitraryPath.description":
+    "When enabled, the phone can browse and open any existing local folder on this computer via \"Open another project\". When disabled, the phone can only open recent projects.",
+  "settings.remoteAccess.arbitraryPath.saveFailed":
+    "Could not change \"Allow the phone to open any local folder\": {error}",
   "settings.remoteAccess.gatewayUrl.label": "Gateway URL",
   "settings.remoteAccess.gatewayUrl.description":
     "The gateway's http(s) address. It is stored only on this computer and has no default.",
@@ -2773,6 +2820,8 @@ const enUS: Record<string, string> = {
   "settings.modelProvider.reorderProvider": "Drag to reorder provider",
   "settings.modelProvider.reorderModel": "Drag to reorder model",
   "settings.modelProvider.empty": "No custom model providers yet",
+  "settings.modelProvider.emptyDescription":
+    "Connect your own API endpoint to use its models in chat.",
   "settings.modelProvider.deleteConfirm": 'Delete "{name}"?',
   "settings.modelProvider.deleteConfirmTitle": 'Delete provider "{name}"?',
   "settings.modelProvider.deleteConfirmDescription":
@@ -5943,6 +5992,37 @@ const enUS: Record<string, string> = {
   "scheduledPreview.toast.running": "Running “{title}”…",
   "scheduledPreview.toast.view": "View",
   "scheduledPreview.addSchedule": "Add schedule",
+  "mobileNotifications.title": "Notifications",
+  "mobileNotifications.markAllRead": "Mark all read",
+  "mobileNotifications.loading": "Loading…",
+  "mobileNotifications.loadMore": "Load more",
+  "mobileNotifications.empty": "No notifications",
+  "mobileNotifications.recovered": "Recovered",
+  "mobileNotifications.resolved": "Resolved",
+  "mobileNotifications.unread": "Unread",
+  "mobileNotifications.push.webOnly":
+    "Notifications are available only while this page is open; background delivery is unavailable here.",
+  "mobileNotifications.push.ready": "Background notifications are ready.",
+  "mobileNotifications.push.unavailable":
+    "Background notifications are unavailable on this device.",
+  "mobileNotifications.push.permission-denied": "Notification permission is blocked.",
+  "mobileNotifications.push.error": "Could not check background notification status.",
+  "mobileNotifications.push.disabled": "Background notifications are off.",
+  "mobileNotifications.push.requestPermission": "Allow notifications",
+  "mobileNotifications.push.requesting": "Requesting permission…",
+  "mobileNotifications.test.send": "Send test notification",
+  "mobileNotifications.test.sending": "Sending…",
+  "mobileNotifications.test.accepted":
+    "Submitted. Check your notification tray to confirm delivery.",
+  "mobileNotifications.test.failed":
+    "Could not send. Check your notification settings and connection.",
+  "mobileNotifications.operationFailed": "The operation failed. Please retry.",
+  "mobileNotifications.openFailed":
+    "Could not open this notification. Check the project connection; the task may be deleted or the notification expired.",
+  "mobileNotifications.kind.completed": "Completed",
+  "mobileNotifications.kind.failed": "Failed",
+  "mobileNotifications.kind.permission": "Needs approval",
+  "mobileNotifications.kind.question": "Needs an answer",
   ...requestSecurityMessagesEnUS,
 };
 

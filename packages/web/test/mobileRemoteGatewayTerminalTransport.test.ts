@@ -16,6 +16,7 @@ import {
   type GatewayTerminalTransportOptions,
   type GatewayTerminalTransportState,
 } from "../src/mobile-remote/gatewayTerminalTransport.js";
+import { createWebRemoteControlVersionGuard } from "../src/webRemoteControlVersion.js";
 import type {
   WebRemoteControlAppPayload,
   WebRemoteControlChannelFrame,
@@ -33,7 +34,11 @@ import type {
  * 这样测试覆盖的是 transport 真实使用的「从 socket close 事件取 reason」路径。
  */
 
-type FakeListener = (event: { code?: number; reason?: string; data?: unknown }) => void;
+type FakeListener = (event: {
+  code?: number;
+  reason?: string;
+  data?: unknown;
+}) => void;
 
 class FakeSocket implements WebSocketLike {
   binaryType = "arraybuffer";
@@ -50,7 +55,10 @@ class FakeSocket implements WebSocketLike {
     listener: (event: { code: number; reason: string }) => void,
   ): void;
   addEventListener(type: "error", listener: (event: unknown) => void): void;
-  addEventListener(type: "message", listener: (event: { data: unknown }) => void): void;
+  addEventListener(
+    type: "message",
+    listener: (event: { data: unknown }) => void,
+  ): void;
   addEventListener(type: string, listener: FakeListener): void {
     let bucket = this.listeners.get(type);
     if (!bucket) {
@@ -61,7 +69,11 @@ class FakeSocket implements WebSocketLike {
   }
 
   send(data: string | ArrayBufferLike | ArrayBufferView): void {
-    this.sent.push(typeof data === "string" ? data : new TextDecoder().decode(data as Uint8Array));
+    this.sent.push(
+      typeof data === "string"
+        ? data
+        : new TextDecoder().decode(data as Uint8Array),
+    );
   }
 
   close(code = 1000, reason = ""): void {
@@ -89,10 +101,15 @@ class FakeSocket implements WebSocketLike {
   }
 
   frames(): WebRemoteControlChannelFrame[] {
-    return this.sent.map((raw) => JSON.parse(raw) as WebRemoteControlChannelFrame);
+    return this.sent.map(
+      (raw) => JSON.parse(raw) as WebRemoteControlChannelFrame,
+    );
   }
 
-  private emit(type: string, event: { code?: number; reason?: string; data?: unknown }): void {
+  private emit(
+    type: string,
+    event: { code?: number; reason?: string; data?: unknown },
+  ): void {
     for (const listener of this.listeners.get(type) ?? []) {
       listener(event);
     }
@@ -160,13 +177,20 @@ class FakeGatewayClient implements GatewayTerminalClientLike {
   closeCalls = 0;
   discoverCalls = 0;
   connectImpl?: () => Promise<void>;
-  openChannelImpl?: (target: string, kind?: string) => Promise<GatewayTerminalChannelLike>;
+  openChannelImpl?: (
+    target: string,
+    kind?: string,
+  ) => Promise<GatewayTerminalChannelLike>;
   discoverImpl?: () => Promise<GatewayDiscoveryBackend[]>;
 
   private readonly createSocket: SocketFactory;
   private readonly wsBase: string;
-  private readonly stateHandlers = new Set<(state: GatewayClientState) => void>();
-  private readonly registryHandlers = new Set<(items: BackendPresenceV4[]) => void>();
+  private readonly stateHandlers = new Set<
+    (state: GatewayClientState) => void
+  >();
+  private readonly registryHandlers = new Set<
+    (items: BackendPresenceV4[]) => void
+  >();
   private readonly channels: FakeChannel[] = [];
   private channelSequence = 0;
   controlSocket?: FakeSocket;
@@ -204,7 +228,10 @@ class FakeGatewayClient implements GatewayTerminalClientLike {
     this.setState("closed");
   }
 
-  async openChannel(target: string, kind?: string): Promise<GatewayTerminalChannelLike> {
+  async openChannel(
+    target: string,
+    kind?: string,
+  ): Promise<GatewayTerminalChannelLike> {
     this.openChannelCalls.push({ target, kind });
     if (this.openChannelImpl) {
       return this.openChannelImpl(target, kind);
@@ -270,7 +297,9 @@ class FakeGatewayClient implements GatewayTerminalClientLike {
   }
 }
 
-function presence(overrides: Partial<BackendPresenceV4> = {}): BackendPresenceV4 {
+function presence(
+  overrides: Partial<BackendPresenceV4> = {},
+): BackendPresenceV4 {
   return {
     namespace: "zcode",
     backendId: "backend-1",
@@ -326,7 +355,9 @@ interface Harness {
 
 const activeTransports: GatewayTerminalTransport[] = [];
 
-function createHarness(overrides: Partial<GatewayTerminalTransportOptions> = {}): Harness {
+function createHarness(
+  overrides: Partial<GatewayTerminalTransportOptions> = {},
+): Harness {
   const states: GatewayTerminalTransportState[] = [];
   const failures: WebRemoteControlFailure[] = [];
   const payloads: WebRemoteControlAppPayload[] = [];
@@ -396,7 +427,11 @@ function createHarness(overrides: Partial<GatewayTerminalTransportOptions> = {})
 async function startReady(harness: Harness): Promise<FakeSocket> {
   harness.client.registry.splice(0, harness.client.registry.length, presence());
   harness.transport.start();
-  await waitUntil(() => harness.client.openChannelCalls.length === 1, 2_000, "first channel");
+  await waitUntil(
+    () => harness.client.openChannelCalls.length === 1,
+    2_000,
+    "first channel",
+  );
   const socket = harness.client.lastChannelSocket();
   await waitUntil(() => socket.sent.length >= 1, 2_000, "hello frame");
   harness.client.emitChannelMessage({
@@ -415,6 +450,56 @@ afterEach(() => {
 });
 
 describe("GatewayTerminalTransport", () => {
+  it("先发 ready/paired 回调，再发协商回调并使旧版本检查失效", async () => {
+    type Bootstrap = {
+      windowControlSessionId: string;
+      workspaces: never[];
+      tasks: never[];
+    };
+    const result: Bootstrap = {
+      windowControlSessionId: "device-1",
+      workspaces: [],
+      tasks: [],
+    };
+    const events: string[] = [];
+    let resolveOld!: (value: Bootstrap) => void;
+    const requests: Promise<Bootstrap>[] = [];
+    const guard = createWebRemoteControlVersionGuard({
+      requestBootstrap: () => {
+        const request =
+          requests.length === 0
+            ? new Promise<Bootstrap>((resolve) => {
+                resolveOld = resolve;
+              })
+            : Promise.resolve(result);
+        requests.push(request);
+        return request;
+      },
+      isPageReady: () => false,
+      onVersionChanged: () => {},
+    });
+    let oldCheck: Promise<Bootstrap | undefined> | undefined;
+    const harness = createHarness({
+      onStateChange: (state) => {
+        // Keep the common startReady harness observation while recording callback order.
+        harness.states.push(state);
+        events.push(`state:${state}`);
+        if (state === "ready") oldCheck = guard.check();
+      },
+      onVersionNegotiated: () => {
+        events.push("negotiated");
+        guard.invalidate();
+      },
+    });
+
+    await startReady(harness);
+
+    expect(events.slice(-2)).toEqual(["state:ready", "negotiated"]);
+    expect(requests).toHaveLength(1);
+    resolveOld(result);
+    expect(await oldCheck).toBeUndefined();
+  });
+
   it("在 connect 前注册状态/registry，并在控制连接重连后重新打开 channel", async () => {
     const harness = createHarness();
     const socket = await startReady(harness);
@@ -426,7 +511,7 @@ describe("GatewayTerminalTransport", () => {
     expect(socket.frames()[0]).toEqual({
       type: "hello",
       protocolVersion: 1,
-      appProtocol: { min: 1, max: 2 },
+      appProtocol: { min: 1, max: 3 },
       clientInstanceId: "client-instance-1",
       clientName: "test-phone",
       appVersion: "1.0.0",
@@ -434,9 +519,17 @@ describe("GatewayTerminalTransport", () => {
     expect(harness.sendReadyCount).toBe(1);
 
     harness.client.emitControlClose(1006, "");
-    await waitUntil(() => harness.states.includes("reconnecting"), 2_000, "reconnecting");
+    await waitUntil(
+      () => harness.states.includes("reconnecting"),
+      2_000,
+      "reconnecting",
+    );
     await harness.client.bringControlOnline();
-    await waitUntil(() => harness.client.openChannelCalls.length === 2, 2_000, "second channel");
+    await waitUntil(
+      () => harness.client.openChannelCalls.length === 2,
+      2_000,
+      "second channel",
+    );
 
     const secondSocket = harness.client.lastChannelSocket();
     expect(secondSocket).not.toBe(socket);
@@ -445,7 +538,11 @@ describe("GatewayTerminalTransport", () => {
       appProtocol: 2,
       desktopAppVersion: "1.5.0",
     });
-    await waitUntil(() => harness.sendReadyCount === 2, 2_000, "second send-ready");
+    await waitUntil(
+      () => harness.sendReadyCount === 2,
+      2_000,
+      "second send-ready",
+    );
     expect(harness.states.at(-1)).toBe("ready");
   });
 
@@ -458,19 +555,37 @@ describe("GatewayTerminalTransport", () => {
       // 模拟电脑下线：registry 里没有该 backend，重开 channel 需要等 registry 恢复。
       harness.client.emitRegistry([]);
       socket.emitClose(1000, reason);
-      await waitUntil(() => harness.states.includes("reconnecting"), 2_000, "reconnecting");
-      await waitUntil(() => harness.failures.length === 1, 2_000, "grace failure");
-      expect(harness.failures[0]).toMatchObject({ reason: "desktop-disconnected" });
+      await waitUntil(
+        () => harness.states.includes("reconnecting"),
+        2_000,
+        "reconnecting",
+      );
+      await waitUntil(
+        () => harness.failures.length === 1,
+        2_000,
+        "grace failure",
+      );
+      expect(harness.failures[0]).toMatchObject({
+        reason: "desktop-disconnected",
+      });
       expect(harness.failures[0]?.message).toContain(reason);
 
       harness.client.emitRegistry([presence()]);
-      await waitUntil(() => harness.client.openChannelCalls.length === 2, 2_000, "auto reopen");
+      await waitUntil(
+        () => harness.client.openChannelCalls.length === 2,
+        2_000,
+        "auto reopen",
+      );
       harness.client.emitChannelMessage({
         type: "hello_ack",
         appProtocol: 2,
         desktopAppVersion: "1.5.0",
       });
-      await waitUntil(() => harness.states.at(-1) === "ready", 2_000, "auto ready");
+      await waitUntil(
+        () => harness.states.at(-1) === "ready",
+        2_000,
+        "auto ready",
+      );
     },
   );
 
@@ -479,14 +594,26 @@ describe("GatewayTerminalTransport", () => {
     const socket = await startReady(harness);
 
     socket.emitClose(1006, "");
-    await waitUntil(() => harness.failures.length === 1, 2_000, "grace failure");
-    expect(harness.failures[0]).toMatchObject({ reason: "desktop-disconnected" });
-    expect(harness.failures.some((failure) => failure.reason === "backend-unsupported")).toBe(
-      false,
+    await waitUntil(
+      () => harness.failures.length === 1,
+      2_000,
+      "grace failure",
     );
+    expect(harness.failures[0]).toMatchObject({
+      reason: "desktop-disconnected",
+    });
+    expect(
+      harness.failures.some(
+        (failure) => failure.reason === "backend-unsupported",
+      ),
+    ).toBe(false);
 
     harness.client.emitRegistry([presence()]);
-    await waitUntil(() => harness.client.openChannelCalls.length === 2, 2_000, "reopen");
+    await waitUntil(
+      () => harness.client.openChannelCalls.length === 2,
+      2_000,
+      "reopen",
+    );
   });
 
   it("registry 显示电脑在线但没有能力位时进入 backend-unsupported，不发起 channel、不自动重试", async () => {
@@ -498,8 +625,14 @@ describe("GatewayTerminalTransport", () => {
     );
 
     harness.transport.start();
-    await waitUntil(() => harness.failures.length === 1, 2_000, "backend-unsupported");
-    expect(harness.failures[0]).toMatchObject({ reason: "backend-unsupported" });
+    await waitUntil(
+      () => harness.failures.length === 1,
+      2_000,
+      "backend-unsupported",
+    );
+    expect(harness.failures[0]).toMatchObject({
+      reason: "backend-unsupported",
+    });
     expect(harness.client.openChannelCalls).toHaveLength(0);
     expect(harness.states.at(-1)).toBe("error");
 
@@ -514,21 +647,38 @@ describe("GatewayTerminalTransport", () => {
     await startReady(harness);
 
     harness.client.lastChannelSocket().emitClose(1000, "rejected");
-    await waitUntil(() => harness.client.openChannelCalls.length === 2, 2_000, "retry 2");
+    await waitUntil(
+      () => harness.client.openChannelCalls.length === 2,
+      2_000,
+      "retry 2",
+    );
     harness.client.lastChannelSocket().emitClose(1000, "rejected");
-    await waitUntil(() => harness.client.openChannelCalls.length === 3, 2_000, "retry 3");
+    await waitUntil(
+      () => harness.client.openChannelCalls.length === 3,
+      2_000,
+      "retry 3",
+    );
     harness.client.lastChannelSocket().emitClose(1000, "rejected");
 
-    await waitUntil(() => harness.failures.length === 1, 2_000, "retry exhausted");
-    expect(harness.failures[0]).toMatchObject({ reason: "desktop-disconnected" });
+    await waitUntil(
+      () => harness.failures.length === 1,
+      2_000,
+      "retry exhausted",
+    );
+    expect(harness.failures[0]).toMatchObject({
+      reason: "desktop-disconnected",
+    });
     expect(harness.states.at(-1)).toBe("error");
     const attemptsAfterExhaustion = harness.client.openChannelCalls.length;
     await new Promise((resolve) => setTimeout(resolve, 40));
-    expect(harness.client.openChannelCalls.length).toBe(attemptsAfterExhaustion);
+    expect(harness.client.openChannelCalls.length).toBe(
+      attemptsAfterExhaustion,
+    );
 
     const recovery = harness.transport.recoverConnection(2_000);
     await waitUntil(
-      () => harness.client.openChannelCalls.length === attemptsAfterExhaustion + 1,
+      () =>
+        harness.client.openChannelCalls.length === attemptsAfterExhaustion + 1,
       2_000,
       "manual retry",
     );
@@ -543,9 +693,17 @@ describe("GatewayTerminalTransport", () => {
 
   it("数据 socket 在 hello_ack 前被 terminate 时也按拨号失败重试", async () => {
     const harness = createHarness();
-    harness.client.registry.splice(0, harness.client.registry.length, presence());
+    harness.client.registry.splice(
+      0,
+      harness.client.registry.length,
+      presence(),
+    );
     harness.transport.start();
-    await waitUntil(() => harness.client.openChannelCalls.length === 1, 2_000, "first channel");
+    await waitUntil(
+      () => harness.client.openChannelCalls.length === 1,
+      2_000,
+      "first channel",
+    );
 
     harness.client.lastChannelSocket().emitClose(1006, "");
     await waitUntil(
@@ -562,8 +720,14 @@ describe("GatewayTerminalTransport", () => {
     };
 
     harness.transport.start();
-    await waitUntil(() => harness.failures.length === 1, 2_000, "credential failure");
-    expect(harness.failures[0]).toMatchObject({ reason: "gateway-credential-invalid" });
+    await waitUntil(
+      () => harness.failures.length === 1,
+      2_000,
+      "credential failure",
+    );
+    expect(harness.failures[0]).toMatchObject({
+      reason: "gateway-credential-invalid",
+    });
     expect(harness.client.connectCalls).toBe(1);
     expect(harness.states.at(-1)).toBe("error");
   });
@@ -581,10 +745,16 @@ describe("GatewayTerminalTransport", () => {
         .map((entry) => (entry as { outcome: string }).outcome);
 
     harness.client.emitControlClose(1008, "");
-    await waitUntil(() => reverifyOutcomes().length === 1, 2_000, "first reverify");
+    await waitUntil(
+      () => reverifyOutcomes().length === 1,
+      2_000,
+      "first reverify",
+    );
     expect(harness.client.discoverCalls).toBe(1);
     expect(
-      harness.failures.some((failure) => failure.reason === "gateway-credential-invalid"),
+      harness.failures.some(
+        (failure) => failure.reason === "gateway-credential-invalid",
+      ),
     ).toBe(false);
 
     // 同一关闭窗口内的第二次复核被 in-flight/间隔闸门挡住。
@@ -597,10 +767,16 @@ describe("GatewayTerminalTransport", () => {
     harness.now.ms += 31_000;
     await harness.client.bringControlOnline();
     harness.client.emitControlClose(1008, "");
-    await waitUntil(() => reverifyOutcomes().length === 2, 2_000, "second reverify");
+    await waitUntil(
+      () => reverifyOutcomes().length === 2,
+      2_000,
+      "second reverify",
+    );
     expect(harness.client.discoverCalls).toBe(2);
     expect(
-      harness.failures.some((failure) => failure.reason === "gateway-credential-invalid"),
+      harness.failures.some(
+        (failure) => failure.reason === "gateway-credential-invalid",
+      ),
     ).toBe(false);
 
     harness.client.discoverImpl = async () => {
@@ -609,10 +785,16 @@ describe("GatewayTerminalTransport", () => {
     harness.now.ms += 31_000;
     await harness.client.bringControlOnline();
     harness.client.emitControlClose(1008, "");
-    await waitUntil(() => reverifyOutcomes().length === 3, 2_000, "network reverify");
+    await waitUntil(
+      () => reverifyOutcomes().length === 3,
+      2_000,
+      "network reverify",
+    );
     expect(reverifyOutcomes().at(-1)).toBe("unreachable");
     expect(
-      harness.failures.some((failure) => failure.reason === "gateway-credential-invalid"),
+      harness.failures.some(
+        (failure) => failure.reason === "gateway-credential-invalid",
+      ),
     ).toBe(false);
   });
 
@@ -621,7 +803,11 @@ describe("GatewayTerminalTransport", () => {
     await startReady(harness);
 
     harness.client.emitControlClose(1008, "");
-    await waitUntil(() => harness.client.discoverCalls === 1, 2_000, "authorized reverify");
+    await waitUntil(
+      () => harness.client.discoverCalls === 1,
+      2_000,
+      "authorized reverify",
+    );
     expect(harness.failures).toHaveLength(0);
 
     harness.client.discoverImpl = async () => {
@@ -631,7 +817,10 @@ describe("GatewayTerminalTransport", () => {
     await harness.client.bringControlOnline();
     harness.client.emitControlClose(1008, "");
     await waitUntil(
-      () => harness.failures.some((failure) => failure.reason === "gateway-credential-invalid"),
+      () =>
+        harness.failures.some(
+          (failure) => failure.reason === "gateway-credential-invalid",
+        ),
       2_000,
       "credential invalid",
     );
@@ -643,7 +832,11 @@ describe("GatewayTerminalTransport", () => {
     const socket = await startReady(harness);
 
     harness.client.emitChannelMessage({ type: "close", reason: "superseded" });
-    await waitUntil(() => harness.failures.length === 1, 2_000, "session conflict");
+    await waitUntil(
+      () => harness.failures.length === 1,
+      2_000,
+      "session conflict",
+    );
     expect(harness.failures[0]).toMatchObject({ reason: "session-conflict" });
     expect(socket.frames()).toContainEqual({ type: "close_ack" });
     expect(harness.states.at(-1)).toBe("error");
@@ -654,7 +847,11 @@ describe("GatewayTerminalTransport", () => {
     expect(harness.client.openChannelCalls).toHaveLength(1);
 
     const recovery = harness.transport.recoverConnection(2_000);
-    await waitUntil(() => harness.client.openChannelCalls.length === 2, 2_000, "manual reconnect");
+    await waitUntil(
+      () => harness.client.openChannelCalls.length === 2,
+      2_000,
+      "manual reconnect",
+    );
     harness.client.emitChannelMessage({
       type: "hello_ack",
       appProtocol: 2,
@@ -673,7 +870,11 @@ describe("GatewayTerminalTransport", () => {
       reason: "incompatible-version",
       upgrade: "desktop",
     });
-    await waitUntil(() => harness.failures.length === 1, 2_000, "incompatible failure");
+    await waitUntil(
+      () => harness.failures.length === 1,
+      2_000,
+      "incompatible failure",
+    );
     expect(harness.failures[0]).toMatchObject({
       reason: "incompatible-version",
       upgrade: "desktop",
@@ -682,16 +883,28 @@ describe("GatewayTerminalTransport", () => {
 
   it("hello_ack 协商出支持范围外的版本时回 close{incompatible-version} 并进入终态", async () => {
     const harness = createHarness();
-    harness.client.registry.splice(0, harness.client.registry.length, presence());
+    harness.client.registry.splice(
+      0,
+      harness.client.registry.length,
+      presence(),
+    );
     harness.transport.start();
-    await waitUntil(() => harness.client.openChannelCalls.length === 1, 2_000, "first channel");
+    await waitUntil(
+      () => harness.client.openChannelCalls.length === 1,
+      2_000,
+      "first channel",
+    );
 
     harness.client.emitChannelMessage({
       type: "hello_ack",
       appProtocol: 99,
       desktopAppVersion: "9.0.0",
     });
-    await waitUntil(() => harness.failures.length === 1, 2_000, "incompatible failure");
+    await waitUntil(
+      () => harness.failures.length === 1,
+      2_000,
+      "incompatible failure",
+    );
     expect(harness.failures[0]).toMatchObject({
       reason: "incompatible-version",
       upgrade: "mobile",
@@ -705,9 +918,17 @@ describe("GatewayTerminalTransport", () => {
 
   it("按协商版本丢弃越界 payload 并回 protocol_error，不改变连接状态", async () => {
     const harness = createHarness();
-    harness.client.registry.splice(0, harness.client.registry.length, presence());
+    harness.client.registry.splice(
+      0,
+      harness.client.registry.length,
+      presence(),
+    );
     harness.transport.start();
-    await waitUntil(() => harness.client.openChannelCalls.length === 1, 2_000, "first channel");
+    await waitUntil(
+      () => harness.client.openChannelCalls.length === 1,
+      2_000,
+      "first channel",
+    );
     harness.client.emitChannelMessage({
       type: "hello_ack",
       appProtocol: 1,
@@ -723,7 +944,10 @@ describe("GatewayTerminalTransport", () => {
       },
     });
     await waitUntil(
-      () => harness.client.lastChannelFrames().some((frame) => frame.type === "protocol_error"),
+      () =>
+        harness.client
+          .lastChannelFrames()
+          .some((frame) => frame.type === "protocol_error"),
       2_000,
       "protocol error",
     );
@@ -738,7 +962,11 @@ describe("GatewayTerminalTransport", () => {
         error: "still delivered",
       },
     });
-    await waitUntil(() => harness.payloads.length === 1, 2_000, "v1 payload delivered");
+    await waitUntil(
+      () => harness.payloads.length === 1,
+      2_000,
+      "v1 payload delivered",
+    );
     expect(harness.states.at(-1)).toBe("ready");
   });
 
@@ -756,8 +984,14 @@ describe("GatewayTerminalTransport", () => {
       2_000,
       "ping frame",
     );
-    await waitUntil(() => harness.failures.length === 1, 2_000, "heartbeat failure");
-    expect(harness.failures[0]).toMatchObject({ reason: "desktop-disconnected" });
+    await waitUntil(
+      () => harness.failures.length === 1,
+      2_000,
+      "heartbeat failure",
+    );
+    expect(harness.failures[0]).toMatchObject({
+      reason: "desktop-disconnected",
+    });
   });
 
   it("sendPayloadResult：未 ready、背压、超限和正常发送", async () => {
@@ -768,18 +1002,26 @@ describe("GatewayTerminalTransport", () => {
       error: "hello",
     };
 
-    expect(harness.transport.sendPayloadResult(payload)).toEqual({ kind: "unavailable" });
+    expect(harness.transport.sendPayloadResult(payload)).toEqual({
+      kind: "unavailable",
+    });
     expect(harness.transport.sendPayload(payload)).toBe(false);
 
     const socket = await startReady(harness);
-    socket.bufferedAmount = GATEWAY_TERMINAL_SEND_BUFFERED_AMOUNT_LIMIT_BYTES + 1;
-    expect(harness.transport.sendPayloadResult(payload)).toEqual({ kind: "unavailable" });
+    socket.bufferedAmount =
+      GATEWAY_TERMINAL_SEND_BUFFERED_AMOUNT_LIMIT_BYTES + 1;
+    expect(harness.transport.sendPayloadResult(payload)).toEqual({
+      kind: "unavailable",
+    });
     const framesBefore = socket.frames().length;
     expect(socket.frames().length).toBe(framesBefore);
 
     socket.bufferedAmount = 0;
     const result = harness.transport.sendPayloadResult(payload);
-    expect(result).toEqual({ kind: "sent", bytes: harness.transport.measurePayloadBytes(payload) });
+    expect(result).toEqual({
+      kind: "sent",
+      bytes: harness.transport.measurePayloadBytes(payload),
+    });
     expect(harness.transport.sendPayload(payload)).toBe(true);
 
     const oversize: WebRemoteControlAppPayload = {
@@ -787,12 +1029,18 @@ describe("GatewayTerminalTransport", () => {
       reason: "unexpected-error",
       error: "x".repeat(2 * 1024 * 1024),
     };
-    expect(harness.transport.sendPayloadResult(oversize)).toMatchObject({ kind: "oversize" });
+    expect(harness.transport.sendPayloadResult(oversize)).toMatchObject({
+      kind: "oversize",
+    });
   });
 
   it("控制连接持续失败超过 30 秒进入 gateway-unreachable，之后仍自动重试", async () => {
     const harness = createHarness({ gatewayUnreachableTimeoutMs: 15 });
-    harness.client.registry.splice(0, harness.client.registry.length, presence());
+    harness.client.registry.splice(
+      0,
+      harness.client.registry.length,
+      presence(),
+    );
     let attempts = 0;
     harness.client.connectImpl = async () => {
       attempts += 1;
@@ -800,13 +1048,23 @@ describe("GatewayTerminalTransport", () => {
     };
 
     harness.transport.start();
-    await waitUntil(() => harness.failures.length === 1, 2_000, "gateway unreachable");
-    expect(harness.failures[0]).toMatchObject({ reason: "gateway-unreachable" });
+    await waitUntil(
+      () => harness.failures.length === 1,
+      2_000,
+      "gateway unreachable",
+    );
+    expect(harness.failures[0]).toMatchObject({
+      reason: "gateway-unreachable",
+    });
     expect(attempts).toBeGreaterThanOrEqual(1);
     await waitUntil(() => attempts >= 2, 2_000, "connect retry");
 
     harness.client.connectImpl = undefined;
-    await waitUntil(() => harness.client.openChannelCalls.length === 1, 2_000, "recovered channel");
+    await waitUntil(
+      () => harness.client.openChannelCalls.length === 1,
+      2_000,
+      "recovered channel",
+    );
     expect(harness.states.at(-1)).not.toBe("error");
   });
 
@@ -814,10 +1072,19 @@ describe("GatewayTerminalTransport", () => {
     const harness = createHarness({ desktopOfflineGraceMs: 15 });
     await startReady(harness);
 
-    harness.client.emitChannelMessage({ type: "close", reason: "desktop-stopping" });
+    harness.client.emitChannelMessage({
+      type: "close",
+      reason: "desktop-stopping",
+    });
     expect(harness.failures).toHaveLength(0);
-    await waitUntil(() => harness.failures.length === 1, 2_000, "desktop disconnected");
-    expect(harness.failures[0]).toMatchObject({ reason: "desktop-disconnected" });
+    await waitUntil(
+      () => harness.failures.length === 1,
+      2_000,
+      "desktop disconnected",
+    );
+    expect(harness.failures[0]).toMatchObject({
+      reason: "desktop-disconnected",
+    });
     expect(harness.states.at(-1)).not.toBe("error");
   });
 });

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { Emitter } from "@zcode/rpc";
+import { ChannelClient, ChannelServer, createQueuePair, Emitter, Event, ProxyChannel } from "@zcode/rpc";
+import { IWindowControllerService } from "@zcode/services";
 import type { ZCodeTaskMeta } from "@zcode/shared";
 import type {
   IZCodeAgentService,
@@ -58,6 +59,366 @@ function taskService(params: {
 const remoteIdentity = "remote:ssh:dev:22:user:/work/demo";
 
 describe("WindowHostControllerService", () => {
+  it("通过各自 Host RPC attachment 隔离同路径不同 identity 的手机搜索", async () => {
+    const workspacePath = "/repo";
+    const scopeA = {
+      kind: "remote" as const,
+      workspacePath,
+      workspaceIdentity: "identity-alpha",
+      remoteSessionId: "session-alpha",
+    };
+    const scopeB = {
+      kind: "remote" as const,
+      workspacePath,
+      workspaceIdentity: "identity-beta",
+      remoteSessionId: "session-beta",
+    };
+    const tasksA = taskService({ search: [meta({ taskId: "same-task", workspacePath })] });
+    const tasksB = taskService({ search: [meta({ taskId: "same-task", workspacePath })] });
+    const createHost = (ownScope: typeof scopeA, tasks: IZCodeTaskService) => {
+      const runtime = createWindowHostControllerRuntime({
+        createId: () => "id",
+        resolveSource: (requested) =>
+          requested.workspacePath === ownScope.workspacePath &&
+          requested.workspaceIdentity === ownScope.workspaceIdentity
+            ? {
+                scope: ownScope,
+                taskService: tasks,
+                sourceAvailability: "online" as const,
+              }
+            : undefined,
+      });
+      const [serverProtocol, clientProtocol] = createQueuePair();
+      const server = new ChannelServer(serverProtocol, "mobile-controller");
+      const client = new ChannelClient(clientProtocol);
+      server.registerChannel(
+        IWindowControllerService.channelName,
+        ProxyChannel.fromService(runtime.service),
+      );
+      const controller = ProxyChannel.toService<IWindowControllerService>(
+        client.getChannel(IWindowControllerService.channelName),
+      );
+      return { runtime, server, client, controller };
+    };
+    const hostA = createHost(scopeA, tasksA);
+    const hostB = createHost(scopeB, tasksB);
+    const search = (workspaceScope: typeof scopeA) => ({
+      workspaceScope,
+      query: "identity-marker",
+      includeArchived: false,
+      limit: 50 as const,
+    });
+    try {
+      await expect(hostA.controller.searchMobileHistory(search(scopeA))).resolves.toMatchObject({
+        status: "ok",
+        items: [
+          {
+            workspacePath,
+            workspaceIdentity: scopeA.workspaceIdentity,
+            remoteSessionId: scopeA.remoteSessionId,
+          },
+        ],
+      });
+      await expect(hostB.controller.searchMobileHistory(search(scopeB))).resolves.toMatchObject({
+        status: "ok",
+        items: [
+          {
+            workspacePath,
+            workspaceIdentity: scopeB.workspaceIdentity,
+            remoteSessionId: scopeB.remoteSessionId,
+          },
+        ],
+      });
+      // 恶意/陈旧客户端将 Host A 的 path 与 Host B identity 拼接，A 的 scope resolver 必须拒绝。
+      await expect(
+        hostA.controller.searchMobileHistory(
+          search({ ...scopeA, workspaceIdentity: scopeB.workspaceIdentity }),
+        ),
+      ).resolves.toEqual({ status: "closed" });
+      expect(tasksA.listTaskList).toHaveBeenCalledTimes(2);
+      expect(tasksB.listTaskList).toHaveBeenCalledTimes(2);
+      for (const call of vi.mocked(tasksA.listTaskList).mock.calls) {
+        expect(call[0].workspaceScopes).toEqual([scopeA]);
+      }
+      for (const call of vi.mocked(tasksB.listTaskList).mock.calls) {
+        expect(call[0].workspaceScopes).toEqual([scopeB]);
+      }
+    } finally {
+      for (const host of [hostA, hostB]) {
+        host.client.dispose();
+        host.server.dispose();
+        host.runtime.dispose();
+      }
+    }
+  });
+
+  it("scope source 生命周期通知只注册一次并在断开和dispose时释放", async () => {
+    const local = taskService({});
+    const agent = {} as IZCodeAgentService;
+    const listener = { dispose: vi.fn() };
+    const onWorkspaceSourceAvailable = vi.fn(() => listener);
+    const runtime = createWindowHostControllerRuntime({
+      createId: () => "id",
+      onWorkspaceSourceAvailable,
+      resolveSource: (scope) => ({
+        scope: { kind: "local" as const, ...scope },
+        taskService: local,
+        agentService: agent,
+        sourceAvailability: "online" as const,
+      }),
+    });
+    const workspaceScope = { workspacePath: "/work/demo" };
+    await runtime.service.searchMobileHistory({
+      workspaceScope,
+      query: "needle",
+      includeArchived: false,
+      limit: 50,
+    });
+    await runtime.service.searchMobileHistory({
+      workspaceScope,
+      query: "another",
+      includeArchived: false,
+      limit: 50,
+    });
+    expect(onWorkspaceSourceAvailable).toHaveBeenCalledTimes(1);
+    expect(onWorkspaceSourceAvailable).toHaveBeenCalledWith(
+      expect.objectContaining({ workspacePath: "/work/demo" }),
+      agent,
+      local,
+    );
+    runtime.disconnectSource({ kind: "local", workspacePath: "/work/demo" });
+    expect(listener.dispose).toHaveBeenCalledTimes(1);
+    runtime.dispose();
+    expect(listener.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("remote workspace 就绪时可主动进入现有 source 生命周期而无需先查询手机列表", async () => {
+    const tasks = taskService({});
+    const agent = {
+      onDynamicSessionsIndexFrame: vi.fn(() => Event.None),
+      onAgentRuntimeRestarted: vi.fn(() => ({ dispose: vi.fn() })),
+      subscribeSessionsIndexV4: vi.fn(async () => ({ ack: { subscriptionId: "sessions-sub" } })),
+      unsubscribeSessionsIndexV4: vi.fn(async () => undefined),
+      resyncSessionsIndexV4: vi.fn(),
+    } as unknown as IZCodeAgentService;
+    const captureSubscription = { dispose: vi.fn() };
+    const onWorkspaceSourceAvailable = vi.fn(() => captureSubscription);
+    const scope = {
+      kind: "remote" as const,
+      remoteSessionId: "remote-ready-1",
+      workspacePath: "/work/remote",
+      workspaceIdentity: "remote:ssh:host:/work/remote",
+    };
+    const runtime = createWindowHostControllerRuntime({
+      createId: () => "id",
+      onWorkspaceSourceAvailable,
+      resolveSource: () => ({
+        scope,
+        taskService: tasks,
+        agentService: agent,
+        sourceAvailability: "online",
+      }),
+    });
+
+    try {
+      await expect(runtime.ensureSource(scope)).resolves.toBe(true);
+      await expect(runtime.ensureSource(scope)).resolves.toBe(true);
+      expect(onWorkspaceSourceAvailable).toHaveBeenCalledTimes(1);
+      expect(onWorkspaceSourceAvailable).toHaveBeenCalledWith(scope, agent, tasks);
+      expect(agent.subscribeSessionsIndexV4).toHaveBeenCalledTimes(1);
+      runtime.disconnectSource(scope);
+      expect(captureSubscription.dispose).toHaveBeenCalledTimes(1);
+    } finally {
+      runtime.dispose();
+    }
+  });
+
+  it("分别捕获多个已打开 workspace source，offline scope 不创建订阅并在释放时清理", async () => {
+    const localTasks = taskService({});
+    const remoteTasks = taskService({});
+    const localAgent = {} as IZCodeAgentService;
+    const remoteAgent = {} as IZCodeAgentService;
+    const localSubscription = { dispose: vi.fn() };
+    const remoteSubscription = { dispose: vi.fn() };
+    const callback = vi.fn((scope) =>
+      scope.kind === "local" ? localSubscription : remoteSubscription,
+    );
+    const runtime = createWindowHostControllerRuntime({
+      createId: () => "id",
+      onWorkspaceSourceAvailable: callback,
+      resolveSource: (scope) =>
+        scope.workspacePath === "/work/remote"
+          ? {
+              scope: { kind: "remote" as const, remoteSessionId: "remote-1", ...scope },
+              taskService: remoteTasks,
+              agentService: remoteAgent,
+              sourceAvailability: "online" as const,
+            }
+          : {
+              scope: { kind: "local" as const, ...scope },
+              taskService: localTasks,
+              agentService: localAgent,
+              sourceAvailability:
+                scope.workspacePath === "/work/offline"
+                  ? ("offline" as const)
+                  : ("online" as const),
+            },
+    });
+
+    for (const workspaceScope of [
+      { workspacePath: "/work/local" },
+      { workspacePath: "/work/remote", workspaceIdentity: remoteIdentity },
+      { workspacePath: "/work/offline" },
+    ]) {
+      await runtime.service.searchMobileHistory({
+        workspaceScope,
+        query: "needle",
+        includeArchived: false,
+        limit: 50,
+      });
+    }
+
+    expect(callback).toHaveBeenCalledTimes(2);
+    expect(callback).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: "local", workspacePath: "/work/local" }),
+      localAgent,
+      localTasks,
+    );
+    expect(callback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: "remote",
+        remoteSessionId: "remote-1",
+        workspacePath: "/work/remote",
+      }),
+      remoteAgent,
+      remoteTasks,
+    );
+    runtime.disconnectSource({
+      kind: "remote",
+      remoteSessionId: "remote-1",
+      workspacePath: "/work/remote",
+      workspaceIdentity: remoteIdentity,
+    });
+    expect(remoteSubscription.dispose).toHaveBeenCalledTimes(1);
+    runtime.dispose();
+    expect(localSubscription.dispose).toHaveBeenCalledTimes(1);
+    expect(remoteSubscription.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("source services 被替换时先释放旧通知捕获订阅", async () => {
+    let currentTasks = taskService({});
+    let currentAgent = {} as IZCodeAgentService;
+    const oldSubscription = { dispose: vi.fn() };
+    const newSubscription = { dispose: vi.fn() };
+    const callback = vi
+      .fn()
+      .mockReturnValueOnce(oldSubscription)
+      .mockReturnValueOnce(newSubscription);
+    const runtime = createWindowHostControllerRuntime({
+      createId: () => "id",
+      onWorkspaceSourceAvailable: callback,
+      resolveSource: (scope) => ({
+        scope: { kind: "local" as const, ...scope },
+        taskService: currentTasks,
+        agentService: currentAgent,
+        sourceAvailability: "online" as const,
+      }),
+    });
+    const query = {
+      workspaceScope: { workspacePath: "/work/replaced" },
+      query: "needle",
+      includeArchived: false,
+      limit: 50 as const,
+    };
+    await runtime.service.searchMobileHistory(query);
+    currentTasks = taskService({});
+    currentAgent = {} as IZCodeAgentService;
+    await runtime.service.searchMobileHistory(query);
+    expect(callback).toHaveBeenCalledTimes(2);
+    expect(oldSubscription.dispose).toHaveBeenCalledTimes(1);
+    runtime.dispose();
+    expect(newSubscription.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("手机搜索为每个 membership 显式限量并返回合并排序结果", async () => {
+    const first = meta({ taskId: "newer", createdAt: 4 });
+    const older = meta({ taskId: "older", createdAt: 2 });
+    const local = taskService({ search: [first, older] });
+    const runtime = createWindowHostControllerRuntime({
+      createId: () => "id",
+      resolveSource: (scope) => ({
+        scope: { kind: "local" as const, ...scope },
+        taskService: local,
+        sourceAvailability: "online" as const,
+      }),
+    });
+
+    const result = await runtime.service.searchMobileHistory({
+      workspaceScope: { workspacePath: "/work/demo" },
+      query: "needle",
+      includeArchived: true,
+      limit: 50,
+    });
+
+    expect(result).toMatchObject({
+      status: "ok",
+      items: [{ taskId: "newer" }, { taskId: "older" }],
+    });
+    expect(local.listTaskList).toHaveBeenCalledTimes(3);
+    expect(local.listTaskList).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ kind: "active", search: "needle", limit: 50 }),
+    );
+    expect(local.listTaskList).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ kind: "pinned", search: "needle", limit: 50 }),
+    );
+    expect(local.listTaskList).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({ kind: "archived", search: "needle", limit: 50 }),
+    );
+    runtime.dispose();
+  });
+
+  it("手机搜索将 offline source 与 source 查询异常分别暴露", async () => {
+    const offlineRuntime = createWindowHostControllerRuntime({
+      createId: () => "id",
+      resolveSource: (scope) => ({
+        scope: { kind: "local" as const, ...scope },
+        sourceAvailability: "offline" as const,
+      }),
+    });
+    await expect(
+      offlineRuntime.service.searchMobileHistory({
+        workspaceScope: { workspacePath: "/work/demo" },
+        query: "needle",
+        includeArchived: false,
+        limit: 50,
+      }),
+    ).resolves.toEqual({ status: "offline" });
+    offlineRuntime.dispose();
+
+    const failing = taskService({});
+    vi.mocked(failing.listTaskList).mockRejectedValue(new Error("index unavailable"));
+    const errorRuntime = createWindowHostControllerRuntime({
+      createId: () => "id",
+      resolveSource: (scope) => ({
+        scope: { kind: "local" as const, ...scope },
+        taskService: failing,
+        sourceAvailability: "online" as const,
+      }),
+    });
+    await expect(
+      errorRuntime.service.searchMobileHistory({
+        workspaceScope: { workspacePath: "/work/demo" },
+        query: "needle",
+        includeArchived: false,
+        limit: 50,
+      }),
+    ).resolves.toEqual({ status: "error", errorCode: "search-source-failed" });
+    errorRuntime.dispose();
+  });
+
   it("从 source Agent 的 existing-only sessions-index 读取 live activity", async () => {
     const frames = new Emitter<SessionsIndexTopicWireCandidate>();
     const runtimeLifecycle = new Emitter<{
@@ -138,8 +499,13 @@ describe("WindowHostControllerService", () => {
       unsubscribeSessionsIndexV4: vi.fn(async () => undefined),
     } as unknown as IZCodeAgentService;
     const local = taskService({ active: [meta({ taskId: "live" })] });
+    const onCaptureSessionsChange = vi.fn();
     const runtime = createWindowHostControllerRuntime({
       createId: () => "id",
+      onWorkspaceSourceAvailable: () => ({
+        dispose: vi.fn(),
+        onSessionsChange: onCaptureSessionsChange,
+      }),
       resolveSource: (scope) => ({
         scope: { kind: "local" as const, ...scope },
         taskService: local,
@@ -189,6 +555,9 @@ describe("WindowHostControllerService", () => {
         },
       }),
     ]);
+    expect(onCaptureSessionsChange).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ sessionId: "live", title: "正在运行" })]),
+    );
     frames.fire({
       wireVersion: 3,
       kind: "complete",

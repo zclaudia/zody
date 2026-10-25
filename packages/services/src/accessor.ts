@@ -40,6 +40,7 @@ import type { IFeedbackService } from "./feedback/feedback.js";
 import type { IPromptAttachmentTransferService } from "./prompt-attachment-transfer/promptAttachmentTransfer.js";
 import type { IWindowControllerService } from "./window-controller/windowController.js";
 import type { IOnboardingRecordService } from "./onboarding/onboardingRecord.js";
+import type { IMobileNotificationReader } from "./mobile-notifications/contract.js";
 
 /** UI 层消费的统一服务接口 */
 export interface IServiceAccessor {
@@ -96,5 +97,7 @@ export interface IServiceAccessor {
   readonly outputStyleService: IOutputStyleService;
   readonly settingsSyncService: ISettingsSyncService;
   readonly feedbackService: IFeedbackService;
+  /** Mobile notification feed; available only on an authenticated mobile attachment. */
+  readonly mobileNotificationReaderService?: IMobileNotificationReader;
   readonly promptAttachmentTransferService: IPromptAttachmentTransferService;
 }

@@ -1,6 +1,9 @@
 // fork（F4.4）：cloudContent / marketingTouch / rewardsBridge / rewardsEmbedded（营销触达、
 // 云内容与 Rewards 注入桥）已整体删除。
 export * from "./networkCapture.js";
+export * from "./mobile-remote-phase1.js";
+export * from "./mobile-notification-delivery.js";
+export * from "./mobile-history-search.js";
 export { ZCODE_DATA_ROOT_DIR_NAME } from "./dataDir.js";
 export {
   DESKTOP_ZOOM_MAX_LEVEL,
@@ -352,3 +355,10 @@ export {
   isRequestSecurityFailure,
 } from "./request-security-edition/policy.js";
 export * from "./request-security-edition/verification-policy.js";
+
+export type {
+  MobileNotificationActionClick,
+  MobileNotificationClick,
+  MobileNotificationPushStatus,
+  MobileNotificationPlatform,
+} from "./platform.js";

@@ -35,7 +35,7 @@ export const WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION = 1;
 /** 应用层 payload 协议区间；`max` 是本仓库当前实现的版本。 */
 export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION = 1;
 /** v2：最近项目 / 打开项目 / 打开窗口 payload，以及 bootstrap-response 的新字段。 */
-export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION = 2;
+export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION = 4;
 
 /** gateway 不在数据 socket 上发 ping，心跳由应用层每 15 秒发一次；45 秒没有入站帧即判定 channel 已死。 */
 export const WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_INTERVAL_MS = 15_000;
@@ -419,9 +419,12 @@ export interface WebRemoteControlAppProtocolFeature {
  */
 export const WEB_REMOTE_CONTROL_APP_PROTOCOL_FEATURES: readonly WebRemoteControlAppProtocolFeature[] =
   [
+    { zcodeType: "mobile-history-search-request", introducedIn: 3 },
+    { zcodeType: "mobile-history-search-outcome", introducedIn: 3 },
     { zcodeType: "telemetry-report", introducedIn: 1 },
     { zcodeType: "bootstrap-request", introducedIn: 1 },
     { zcodeType: "bootstrap-response", introducedIn: 1 },
+    { zcodeType: "bootstrap-response", field: "result.mobileCapabilities", introducedIn: 3 },
     { zcodeType: "workspace-list-request", introducedIn: 1 },
     { zcodeType: "workspace-list-response", introducedIn: 1 },
     { zcodeType: "workspace-list-updated", introducedIn: 1 },
@@ -429,6 +432,11 @@ export const WEB_REMOTE_CONTROL_APP_PROTOCOL_FEATURES: readonly WebRemoteControl
     { zcodeType: "recent-projects-updated", introducedIn: 2 },
     { zcodeType: "workspace-open-request", introducedIn: 2 },
     { zcodeType: "workspace-open-response", introducedIn: 2 },
+    // 第二批（appProtocol 4）：打开任意本地目录与目录列表。
+    { zcodeType: "workspace-open-path-request", introducedIn: 4 },
+    { zcodeType: "workspace-open-path-response", introducedIn: 4 },
+    { zcodeType: "mobile-directory-list-request", introducedIn: 4 },
+    { zcodeType: "mobile-directory-list-response", introducedIn: 4 },
     { zcodeType: "desktop-window-open-request", introducedIn: 2 },
     { zcodeType: "desktop-window-open-response", introducedIn: 2 },
     // bootstrap-response 的新字段挂在 result 下；字段路径用点号表示嵌套。

@@ -670,7 +670,52 @@ export interface PlatformSecureStore {
  */
 export type PlatformAppLifecycleState = "foreground" | "background";
 
+export interface MobileNotificationClick {
+  backendId: string;
+  notificationId: string;
+}
+/**
+ * 第二批 E4：permission 通知按钮点击。id 与 optionId 均为 opaque；optionKind 是
+ * 渲染按钮时的脱敏分类（三类固定值），用于把按钮意图映射到提交语义。
+ */
+export interface MobileNotificationActionClick {
+  backendId: string;
+  notificationId: string;
+  optionId: string;
+  optionKind: "allowOnce" | "allowAlways" | "deny";
+}
+export interface MobileNotificationPushStatus {
+  status: "ready" | "unavailable" | "permission-denied" | "error" | "disabled";
+}
+export interface MobileNotificationPlatform {
+  onStatusChanged?(listener: () => void): () => void;
+  syncSubscription(config: {
+    enabled: boolean;
+    backendId: string;
+    ntfyUrl: string;
+    topic: string;
+    authToken: string;
+  }): Promise<MobileNotificationPushStatus>;
+  setActiveTarget?(targetKey: string | null): Promise<void>;
+  getStatus(): Promise<MobileNotificationPushStatus>;
+  getPendingClick(): Promise<MobileNotificationClick | null>;
+  acknowledgeClick(notificationId: string): Promise<void>;
+  /** 第二批 E4：通知按钮 pending 槽（冷启动恢复）与提交成功后的卡片取消；旧壳缺省不支持。 */
+  getPendingAction?(): Promise<MobileNotificationActionClick | null>;
+  acknowledgeAction?(notificationId: string): Promise<void>;
+  cancel?(notificationId: string): Promise<void>;
+  requestPermission(): Promise<void>;
+  show(payload: {
+    version: 1;
+    backendId: string;
+    notificationId: string;
+    kind: string;
+    expiresAt: number;
+  }): Promise<void>;
+}
 export interface IPlatformService {
+  mobileNotifications?: MobileNotificationPlatform;
+
   /** 当前平台的文件选择框是否能返回 agent 可访问的本地绝对路径 */
   canSelectFilePath?: boolean;
 

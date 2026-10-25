@@ -19,12 +19,16 @@ interface WebRemoteControlVersionGuardOptions {
  * 资源，所以这里只记录首次读到的版本作为基线，之后版本变化时回调一次。`check()` 始终返回
  * bootstrap 结果，调用方不再被「版本不匹配」阻塞，业务是否可继续由 appProtocol 协商决定。
  */
-export function createWebRemoteControlVersionGuard(options: WebRemoteControlVersionGuardOptions) {
+export function createWebRemoteControlVersionGuard(
+  options: WebRemoteControlVersionGuardOptions,
+) {
   let generation = 0;
   let disposed = false;
   let baselineVersion: string | undefined;
   let lastNotifiedVersion: string | undefined;
-  let inFlight: Promise<WebRemoteControlWindowBootstrapResult | undefined> | undefined;
+  let inFlight:
+    | Promise<WebRemoteControlWindowBootstrapResult | undefined>
+    | undefined;
 
   const invalidate = () => {
     generation += 1;
@@ -84,4 +88,29 @@ export function createWebRemoteControlVersionGuard(options: WebRemoteControlVers
       return request;
     },
   };
+}
+
+/**
+ * Keep the original bootstrap caller alive when its check is invalidated by a
+ * channel negotiation. The caller needs the fresh result to continue mounting
+ * the initial/recovered session, not merely a detached capability refresh.
+ */
+export async function retryObsoleteWebRemoteControlBootstrapCheck<T>(options: {
+  check(): Promise<T | undefined>;
+  getConnectionGeneration(): number;
+  isChannelReady(): boolean;
+  isDisposed(): boolean;
+}): Promise<T | undefined> {
+  let requestGeneration = options.getConnectionGeneration();
+  let result = await options.check();
+  while (
+    result === undefined &&
+    requestGeneration !== options.getConnectionGeneration() &&
+    options.isChannelReady() &&
+    !options.isDisposed()
+  ) {
+    requestGeneration = options.getConnectionGeneration();
+    result = await options.check();
+  }
+  return result;
 }

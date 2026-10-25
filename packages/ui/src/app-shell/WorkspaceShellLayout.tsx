@@ -1855,6 +1855,8 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
         headerTestId={TID_APP_HEADER}
       >
         <WebRemoteControlMobileShell
+          workspaceRemoteSessionId={workspaceRemoteSessionId}
+          fileTreeOpenRequest={fileTreeOpenRequest}
           activeTaskId={activeTaskId}
           activeWorkspaceIdentity={workspaceIdentity}
           activeWorkspacePath={workspaceAbsPath}

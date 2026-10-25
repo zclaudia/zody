@@ -18,6 +18,7 @@ import type {
   ZCodeTaskListItem,
   ZCodeTaskListQuery,
   ZCodeTaskListResult,
+  ZCodeTaskListWorkspaceScope,
 } from "../session/zcodeTaskListTypes.js";
 
 export type WindowHostControllerMutation =
@@ -41,6 +42,37 @@ export interface WindowHostControllerTaskListResult extends Omit<ZCodeTaskListRe
   items: WindowHostControllerTaskListItem[];
 }
 
+export interface MobileHistorySearchSourceQuery {
+  workspaceScope: ZCodeTaskListWorkspaceScope;
+  query: string;
+  includeArchived: boolean;
+  limit: 50 | 100 | 200;
+}
+
+export type MobileHistorySearchSourceItem = Pick<
+  ZCodeTaskMeta,
+  | "taskId"
+  | "traceId"
+  | "title"
+  | "titleOverridden"
+  | "workspacePath"
+  | "workspaceIdentity"
+  | "workspacePurpose"
+  | "createdAt"
+  | "updatedAt"
+  | "mode"
+  | "provider"
+  | "model"
+  | "status"
+> & {
+  remoteSessionId?: string;
+  searchSnippets?: string[];
+};
+
+export type MobileHistorySearchSourceResult =
+  | { status: "ok"; items: MobileHistorySearchSourceItem[] }
+  | { status: "offline" | "closed" | "unsupported" | "error"; errorCode?: string };
+
 export type WindowHostControllerFrame =
   | WindowHostControllerTaskFrame
   | WindowHostControllerWorkspaceFrame;
@@ -56,6 +88,9 @@ export interface IWindowControllerService {
     taskIds: string[];
   }): Promise<ZCodeArchivedTaskDeletionResult>;
   listTaskList(params: ZCodeTaskListQuery): Promise<WindowHostControllerTaskListResult>;
+  searchMobileHistory(
+    params: MobileHistorySearchSourceQuery,
+  ): Promise<MobileHistorySearchSourceResult>;
   mutateTask(params: {
     address: WindowHostTaskAddress;
     mutation: WindowHostControllerMutation;

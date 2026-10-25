@@ -1,7 +1,13 @@
 import type { RendererTelemetryEventPayload } from "@zcode/shared";
 /* eslint-disable max-lines -- Web 远程控制 manager 承担 gateway app payload 路由与 workspace bridge 编排。 */
 import type { MessagePortMain, UtilityProcess as ElectronUtilityProcess } from "electron";
-import { MessagePortProtocol, type MessagePortLike, type MessagePortPayload } from "@zcode/rpc";
+import {
+  ChannelClient,
+  MessagePortProtocol,
+  ProxyChannel,
+  type MessagePortLike,
+  type MessagePortPayload,
+} from "@zcode/rpc";
 import {
   createAcknowledgedWebRemoteControlRelayProtocol,
   type AcknowledgedWebRemoteControlRelayProtocolAdapter,
@@ -31,10 +37,14 @@ import {
   type WebRemoteControlRpcTransportPayload,
   type WebRemoteControlStatus,
   type WebRemoteControlTaskTarget,
+  type MobileHistorySearchRequest,
+  type MobileHistorySearchOutcome,
   type WebRemoteControlWindowBootstrapResult,
   type WebRemoteControlWorkspaceBridgeOpenPayload,
   type WebRemoteControlWorkspaceListResult,
   type WebRemoteControlWorkspaceOpenRequestPayload,
+  type WebRemoteControlWorkspaceOpenPathRequestPayload,
+  type WebRemoteControlMobileDirectoryListRequestPayload,
   type WebRemoteControlWorkspaceTarget,
   type RemoteAccessGatewayConnectionStatus,
   type RemoteAccessStatus,
@@ -42,6 +52,10 @@ import {
   type TelemetryEventPayload,
   measureWebRemoteControlRpcRelayEnvelopeBytes,
 } from "@zcode/shared";
+import {
+  IWindowControllerService,
+  type IWindowControllerService as IWindowControllerServiceType,
+} from "@zcode/services";
 import type {
   GatewayDeviceTransportSession,
   GatewayDeviceTransportSessionOptions,
@@ -50,6 +64,8 @@ import type {
 import type { WebRemoteControlFeatureGate } from "./webRemoteControlFeatureGate.js";
 import type { RemoteWorkspaceDirectory } from "./remote-access/remoteWorkspaceDirectory.js";
 import { createWebRemoteControlRecentProjectsRegistry } from "./remote-access/recentProjects.js";
+import { listMobileDirectoryEntries } from "./remote-access/mobileDirectoryListing.js";
+import { isValidLocalWorkspaceDirectory } from "./desktopDeepLink.js";
 
 interface WebRemoteControlHostAttachmentHandle {
   entryId: string;
@@ -119,6 +135,8 @@ interface PendingWorkspaceOpen {
   runtime: AppControlRuntime;
   requestId: string;
   workspacePath: string;
+  /** 打开成功的响应类型：最近项目与任意路径共用 pending 判定，但回复各自的 payload。 */
+  responseType: "workspace-open-response" | "workspace-open-path-response";
   timer: ReturnType<typeof setTimeout>;
 }
 
@@ -131,6 +149,11 @@ interface WebRemoteControlManagerDependencies {
   remoteAccessSettings: {
     isEnabled(): Promise<boolean>;
     setEnabled(enabled: boolean): Promise<void>;
+    /**
+     * 「允许手机打开任意本地目录」（第二批 E2）。缺省 true；关闭时
+     * `workspace-open-path-request` 立即拒绝，最近项目打开不受影响。
+     */
+    isArbitraryPathOpenAllowed(): Promise<boolean>;
   };
   featureGate: WebRemoteControlFeatureGate;
   /**
@@ -186,6 +209,11 @@ interface WebRemoteControlManagerDependencies {
    * 不经过 deep link 的外部确认框）。返回 false 表示路径无效或窗口不可用。
    */
   openWorkspacePath?: (workspacePath: string) => boolean;
+  /**
+   * 第二批 E3：目录选择器的 bounded 列表。缺省实现走 `mobileDirectoryListing`；
+   * 注入点仅供单测替换，不做缓存或第二条事实源。
+   */
+  listMobileDirectory?: (path?: string) => ReturnType<typeof listMobileDirectoryEntries>;
 }
 
 const MOBILE_DISCONNECT_STATUS_GRACE_MS = 3_000;
@@ -768,13 +796,13 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     }
 
     if (outcome.error) {
-      dependencies.logger.info("[web-remote-control] recent project open failed", {
+      dependencies.logger.info("[web-remote-control] workspace open failed", {
         requestId: pending.requestId,
         label: getPathLabel(pending.workspacePath),
         error: outcome.error,
       });
       sendAppPayload(runtime, {
-        zcode_type: "workspace-open-response",
+        zcode_type: pending.responseType,
         requestId: pending.requestId,
         success: false,
         error: outcome.error,
@@ -788,12 +816,12 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     const workspaceKey = target
       ? resolveWebRemoteControlWorkspaceKey(target)
       : pending.workspacePath;
-    dependencies.logger.info("[web-remote-control] recent project open succeeded", {
+    dependencies.logger.info("[web-remote-control] workspace open succeeded", {
       requestId: pending.requestId,
       label: getPathLabel(pending.workspacePath),
     });
     sendAppPayload(runtime, {
-      zcode_type: "workspace-open-response",
+      zcode_type: pending.responseType,
       requestId: pending.requestId,
       success: true,
       workspaceKey,
@@ -822,6 +850,11 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
   function buildBootstrapResult(runtime: AppControlRuntime): WebRemoteControlWindowBootstrapResult {
     const recentProjects = buildRecentProjectsResult(runtime);
     return {
+      mobileCapabilities: {
+        historySearch: 1,
+        fileBrowser: 1,
+        ...(runtime.transport.getNotificationIdentity?.() ? { notificationFeed: 1 as const } : {}),
+      },
       // 旧 relay 会话标识，gateway 链路保留固定占位值，手机侧不使用。
       windowControlSessionId: "gateway",
       desktopAppVersion: dependencies.appVersion,
@@ -1005,7 +1038,14 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
 
     let acquired: WebRemoteControlHostAttachmentHandle | undefined;
     try {
+      const gatewayStatus = dependencies.getGatewayConnectionStatus?.();
+      const identity = runtime.transport.getNotificationIdentity?.();
       acquired = await dependencies.attachWorkspaceHost(targetWindowId, {
+        ...(identity && gatewayStatus?.state === "online" && gatewayStatus.backendId
+          ? {
+              mobileNotificationPrincipal: { ...identity, backendId: gatewayStatus.backendId },
+            }
+          : {}),
         workspacePath: target.workspacePath,
         workspaceIdentity: target.workspaceIdentity,
         remoteSessionId: target.remoteSessionId,
@@ -1193,6 +1233,67 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     }
   }
 
+  /**
+   * 最近项目与任意路径打开共用的受理主体：窗口 gate → 内部 OpenWorkspacePath 投递 →
+   * pendingWorkspaceOpens 成功判定。调用方只负责把各自的请求字段解析成已校验的
+   * workspacePath；两条入口不构成第二套打开路径（第二批 E1）。
+   */
+  async function openWorkspaceAndTrackPending(
+    runtime: AppControlRuntime,
+    requestId: string,
+    workspacePath: string,
+    responseType: PendingWorkspaceOpen["responseType"],
+  ): Promise<void> {
+    if (!(dependencies.hasOpenWindow?.() ?? true)) {
+      if (
+        dependencies.canCreateWindow &&
+        !dependencies.canCreateWindow(REMOTE_CONTROL_WINDOW_REASON)
+      ) {
+        throw new Error("Desktop window creation is blocked by the current app state.");
+      }
+      await dependencies.ensurePrimaryWindow?.(REMOTE_CONTROL_WINDOW_REASON);
+      if (!isCurrentRuntime(runtime)) {
+        return;
+      }
+    }
+
+    // 内部路径：复用 renderer 的 OpenWorkspacePath 投递，不触发 deep link 的外部确认弹窗。
+    const accepted = dependencies.openWorkspacePath?.(workspacePath) ?? false;
+    if (!accepted) {
+      throw new Error("Desktop could not open the workspace.");
+    }
+
+    const existing = pendingWorkspaceOpens.get(requestId);
+    if (existing) {
+      clearTimeout(existing.timer);
+      pendingWorkspaceOpens.delete(requestId);
+    }
+    const pending: PendingWorkspaceOpen = {
+      runtime,
+      requestId,
+      workspacePath,
+      responseType,
+      timer: setTimeout(() => {
+        // 最近项目的超时文案是既有协议行为，保持不变；任意路径版本回稳定错误码 timeout。
+        completePendingWorkspaceOpen(pending, {
+          error:
+            responseType === "workspace-open-response"
+              ? "Desktop did not open the workspace within 10 seconds."
+              : "timeout",
+        });
+      }, WEB_REMOTE_CONTROL_WORKSPACE_OPEN_TIMEOUT_MS),
+    };
+    pendingWorkspaceOpens.set(requestId, pending);
+    dependencies.logger.info("[web-remote-control] workspace open accepted", {
+      requestId,
+      label: getPathLabel(workspacePath),
+    });
+    // 并发场景下该 workspace 可能已经在聚合列表里，不必等下一次快照同步。
+    if (isWorkspaceOpen(runtime, workspacePath)) {
+      completePendingWorkspaceOpen(pending, {});
+    }
+  }
+
   async function respondToWorkspaceOpenRequest(
     runtime: AppControlRuntime,
     request: WebRemoteControlWorkspaceOpenRequestPayload,
@@ -1210,49 +1311,12 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         throw new Error("recentProjectId is not part of the current recent project list.");
       }
 
-      if (!(dependencies.hasOpenWindow?.() ?? true)) {
-        if (
-          dependencies.canCreateWindow &&
-          !dependencies.canCreateWindow(REMOTE_CONTROL_WINDOW_REASON)
-        ) {
-          throw new Error("Desktop window creation is blocked by the current app state.");
-        }
-        await dependencies.ensurePrimaryWindow?.(REMOTE_CONTROL_WINDOW_REASON);
-        if (!isCurrentRuntime(runtime)) {
-          return;
-        }
-      }
-
-      // 内部路径：复用 renderer 的 OpenWorkspacePath 投递，不触发 deep link 的外部确认弹窗。
-      const accepted = dependencies.openWorkspacePath?.(workspacePath) ?? false;
-      if (!accepted) {
-        throw new Error("Desktop could not open the recent project.");
-      }
-
-      const existing = pendingWorkspaceOpens.get(request.requestId);
-      if (existing) {
-        clearTimeout(existing.timer);
-        pendingWorkspaceOpens.delete(request.requestId);
-      }
-      const pending: PendingWorkspaceOpen = {
+      await openWorkspaceAndTrackPending(
         runtime,
-        requestId: request.requestId,
+        request.requestId,
         workspacePath,
-        timer: setTimeout(() => {
-          completePendingWorkspaceOpen(pending, {
-            error: "Desktop did not open the workspace within 10 seconds.",
-          });
-        }, WEB_REMOTE_CONTROL_WORKSPACE_OPEN_TIMEOUT_MS),
-      };
-      pendingWorkspaceOpens.set(request.requestId, pending);
-      dependencies.logger.info("[web-remote-control] recent project open accepted", {
-        requestId: request.requestId,
-        label: getPathLabel(workspacePath),
-      });
-      // 并发场景下该 workspace 可能已经在聚合列表里，不必等下一次快照同步。
-      if (isWorkspaceOpen(runtime, workspacePath)) {
-        completePendingWorkspaceOpen(pending, {});
-      }
+        "workspace-open-response",
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       dependencies.logger.info("[web-remote-control] recent project open failed", {
@@ -1268,6 +1332,93 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         });
       }
     }
+  }
+
+  /**
+   * 第二批 E1/E2：手机提交已存在的本地目录路径请求打开。
+   * 开关关闭是立即拒绝（terminal，手机不得自动重试）；路径校验复用 deep link 的
+   * `isValidLocalWorkspaceDirectory`（绝对路径、非 UNC、目录已存在），不创建目录。
+   */
+  async function respondToWorkspaceOpenPathRequest(
+    runtime: AppControlRuntime,
+    request: WebRemoteControlWorkspaceOpenPathRequestPayload,
+  ): Promise<void> {
+    const fail = (error: string) => {
+      if (isCurrentRuntime(runtime)) {
+        sendAppPayload(runtime, {
+          zcode_type: "workspace-open-path-response",
+          requestId: request.requestId,
+          success: false,
+          error,
+        });
+      }
+    };
+    try {
+      if (!(await dependencies.remoteAccessSettings.isArbitraryPathOpenAllowed())) {
+        dependencies.logger.info(
+          "[web-remote-control] arbitrary path open rejected by settings",
+          { requestId: request.requestId },
+        );
+        fail("arbitrary-path-disabled");
+        return;
+      }
+      if (!isValidLocalWorkspaceDirectory(request.workspacePath)) {
+        dependencies.logger.info(
+          "[web-remote-control] arbitrary path open rejected: invalid path",
+          { requestId: request.requestId },
+        );
+        fail("path-invalid");
+        return;
+      }
+      if (!isCurrentRuntime(runtime)) {
+        return;
+      }
+      await openWorkspaceAndTrackPending(
+        runtime,
+        request.requestId,
+        request.workspacePath,
+        "workspace-open-path-response",
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      dependencies.logger.info("[web-remote-control] arbitrary path open failed", {
+        requestId: request.requestId,
+        error: message,
+      });
+      // 受理主体抛出的失败（gate 阻断、投递失败）统一映射为稳定错误码，不透传内部 message。
+      fail("open-failed");
+    }
+  }
+
+  /** 第二批 E3：目录选择器的 bounded 列表。每次现读，无缓存；不依赖 workspace bridge。 */
+  async function respondToMobileDirectoryList(
+    runtime: AppControlRuntime,
+    request: WebRemoteControlMobileDirectoryListRequestPayload,
+  ): Promise<void> {
+    const result = await (dependencies.listMobileDirectory ?? listMobileDirectoryEntries)(
+      request.path,
+    );
+    if (!isCurrentRuntime(runtime)) {
+      return;
+    }
+    sendAppPayload(
+      runtime,
+      result.ok
+        ? {
+            zcode_type: "mobile-directory-list-response",
+            requestId: request.requestId,
+            success: true,
+            resolvedPath: result.resolvedPath,
+            parentPath: result.parentPath,
+            entries: result.entries,
+          }
+        : {
+            zcode_type: "mobile-directory-list-response",
+            requestId: request.requestId,
+            success: false,
+            error: result.error,
+          },
+    );
   }
 
   async function respondToDesktopWindowOpenRequest(
@@ -1390,6 +1541,9 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
           result: buildWorkspaceListResult(runtime),
         });
         break;
+      case "mobile-history-search-request":
+        void respondToMobileHistorySearch(runtime, payload);
+        break;
       case "platform-request":
         void respondToPlatformRequest(runtime, payload);
         break;
@@ -1401,6 +1555,12 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         break;
       case "workspace-open-request":
         void respondToWorkspaceOpenRequest(runtime, payload);
+        break;
+      case "workspace-open-path-request":
+        void respondToWorkspaceOpenPathRequest(runtime, payload);
+        break;
+      case "mobile-directory-list-request":
+        void respondToMobileDirectoryList(runtime, payload);
         break;
       case "desktop-window-open-request":
         void respondToDesktopWindowOpenRequest(runtime, payload);
@@ -1421,6 +1581,147 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         break;
       default:
         break;
+    }
+  }
+
+  async function respondToMobileHistorySearch(
+    runtime: AppControlRuntime,
+    request: MobileHistorySearchRequest,
+  ): Promise<void> {
+    const outcomeBase = {
+      zcode_type: "mobile-history-search-outcome" as const,
+      requestId: request.requestId,
+      context: request.context,
+      queryGeneration: request.queryGeneration,
+      scopeSignature: request.scopeSignature,
+    };
+    const backend = dependencies.getGatewayConnectionStatus?.();
+    const reply = (outcome: MobileHistorySearchOutcome) => {
+      if (!isCurrentRuntime(runtime)) return;
+      const currentBackend = dependencies.getGatewayConnectionStatus?.();
+      if (
+        backend?.state === "online" &&
+        (currentBackend?.state !== "online" ||
+          currentBackend.backendId !== backend.backendId ||
+          currentBackend.epoch !== backend.epoch)
+      ) {
+        sendAppPayload(runtime, { ...outcomeBase, status: "offline" });
+        return;
+      }
+      sendAppPayload(runtime, outcome);
+    };
+    if (
+      backend?.state !== "online" ||
+      (backend.backendId !== undefined && backend.backendId !== request.context.backendId)
+    ) {
+      reply({ ...outcomeBase, status: "offline" });
+      return;
+    }
+
+    const workspace = dependencies.remoteWorkspaceDirectory
+      .listWorkspaces()
+      .find(
+        (candidate) =>
+          resolveWebRemoteControlWorkspaceKey(candidate) === request.context.workspaceKey,
+      );
+    if (!workspace) {
+      reply({ ...outcomeBase, status: "closed" });
+      return;
+    }
+    if (
+      workspace.connectionState === "disconnected" ||
+      workspace.connectionState === "reconnecting"
+    ) {
+      reply({ ...outcomeBase, status: "offline" });
+      return;
+    }
+    const windowId = dependencies.remoteWorkspaceDirectory.resolveWindow(
+      request.context.workspaceKey,
+    );
+    if (windowId === undefined) {
+      reply({ ...outcomeBase, status: "closed" });
+      return;
+    }
+    if (
+      workspace.kind === "remote" &&
+      (!workspace.workspaceIdentity || !workspace.remoteSessionId)
+    ) {
+      reply({ ...outcomeBase, status: "unsupported", errorCode: "remote-identity-missing" });
+      return;
+    }
+
+    let attachment: WebRemoteControlHostAttachmentHandle | undefined;
+    let protocol: MessagePortProtocol | undefined;
+    let client: ChannelClient | undefined;
+    try {
+      // Main 按 directory 的 owner 路由到该 Window 已有 Host；此处只建立临时 RPC attachment，
+      // 不启动 Agent/Host 或 remote session，查询完立即释放。
+      attachment = await dependencies.attachWorkspaceHost(windowId, {
+        kind: workspace.kind,
+        workspacePath: workspace.workspacePath,
+        workspaceIdentity: workspace.workspaceIdentity,
+        remoteSessionId: workspace.remoteSessionId,
+      });
+      protocol = new MessagePortProtocol(wrapElectronPort(attachment.port));
+      client = new ChannelClient(protocol);
+      const controller = ProxyChannel.toService<IWindowControllerServiceType>(
+        client.getChannel(IWindowControllerService.channelName),
+      );
+      const result = await controller.searchMobileHistory({
+        workspaceScope: {
+          workspacePath: workspace.workspacePath,
+          ...(workspace.workspaceIdentity
+            ? { workspaceIdentity: workspace.workspaceIdentity }
+            : {}),
+          ...(workspace.workspacePurpose ? { workspacePurpose: workspace.workspacePurpose } : {}),
+        },
+        query: request.query,
+        includeArchived: request.includeArchived,
+        limit: request.limit,
+      });
+      if (result.status !== "ok") {
+        reply({
+          ...outcomeBase,
+          status: result.status,
+          ...(result.errorCode ? { errorCode: result.errorCode } : {}),
+        });
+        return;
+      }
+      const items = result.items.map((item) => ({
+        task: {
+          taskId: item.taskId,
+          traceId: item.traceId,
+          title: item.title,
+          ...(item.titleOverridden !== undefined ? { titleOverridden: item.titleOverridden } : {}),
+          workspacePath: item.workspacePath,
+          ...(item.workspaceIdentity ? { workspaceIdentity: item.workspaceIdentity } : {}),
+          ...(item.workspacePurpose ? { workspacePurpose: item.workspacePurpose } : {}),
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+          mode: item.mode,
+          ...(item.provider ? { provider: item.provider } : {}),
+          ...(item.model ? { model: item.model } : {}),
+          ...(item.status ? { status: item.status } : {}),
+        },
+        workspaceKey: request.context.workspaceKey,
+        ...(item.remoteSessionId ? { remoteSessionId: item.remoteSessionId } : {}),
+        snippets: item.searchSnippets ?? [],
+      }));
+      if (new TextEncoder().encode(JSON.stringify(items)).byteLength > 768 * 1024) {
+        reply({ ...outcomeBase, status: "error", errorCode: "search-response-too-large" });
+        return;
+      }
+      reply({ ...outcomeBase, status: "ok", items });
+    } catch (error) {
+      dependencies.logger.warn("[web-remote-control] mobile history search failed", {
+        workspaceKey: request.context.workspaceKey,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      reply({ ...outcomeBase, status: "error", errorCode: "search-route-failed" });
+    } finally {
+      client?.dispose();
+      protocol?.disconnect();
+      if (attachment) dependencies.releaseWorkspaceHostAttachment(attachment.attachmentId);
     }
   }
 

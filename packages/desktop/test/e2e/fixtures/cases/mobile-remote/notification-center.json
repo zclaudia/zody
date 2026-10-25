@@ -1,0 +1,30 @@
+{
+  "workspace": {
+    "backendId": "fixture-backend",
+    "workspaceKey": "identity:fixture:one",
+    "workspacePath": "/fixture/workspace",
+    "workspaceIdentity": "identity:fixture:one",
+    "taskId": "task-fixture",
+    "sessionId": "session-fixture"
+  },
+  "notifications": [
+    {
+      "notificationId": "notification-recovered",
+      "title": "Recovered build",
+      "occurredAt": 20,
+      "kind": "completed",
+      "sourceKind": "turn.completed",
+      "recovered": true,
+      "resolved": false
+    },
+    {
+      "notificationId": "notification-resolved",
+      "title": "Resolved question",
+      "occurredAt": 10,
+      "kind": "question",
+      "sourceKind": "interaction.pending",
+      "recovered": false,
+      "resolved": true
+    }
+  ]
+}

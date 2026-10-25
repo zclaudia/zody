@@ -1,6 +1,7 @@
 import type {
   IPlatformService,
   UserInfo,
+  WebRemoteControlMobileDirectoryListResult,
   WebRemoteControlMobileNavigationIntent,
   WebRemoteControlRecentProjectsResult,
   WebRemoteControlTaskTarget,
@@ -23,6 +24,23 @@ export type WebRemoteControlTerminalTransportState =
   | "error";
 
 export interface WebRemoteControlWorkspaceSwitcherApi {
+  getNotificationReader?():
+    | import("@zcode/services/mobile-notifications").IMobileNotificationReaderContract
+    | undefined;
+  openNotification?(notificationId: string): Promise<void>;
+  testNotification?(): Promise<void>;
+  getMobileCapabilities?(): import("@zcode/shared").MobileCapabilities | undefined;
+  getMobileConnection?(): { backendId: string; connectionGeneration: number };
+  searchMobileHistory?(
+    request: import("@zcode/shared").MobileHistorySearchRequest,
+  ): Promise<import("@zcode/shared").MobileHistorySearchOutcome>;
+  getSearchHighlight?():
+    | import("@/v4/legacyChatViewTypes.js").ChatSearchResultHighlightRequest
+    | undefined;
+  acknowledgeSearchHighlight?(requestId: number): void;
+
+  /** ACK after the target mobile shell mounts; bootstrap owns pending navigation. */
+  onNavigationMounted?(target: { workspaceKey: string; taskId?: string }): void;
   listWorkspaces(): Promise<WebRemoteControlWorkspaceListResult>;
   onWorkspaceListUpdated?(
     listener: (result: WebRemoteControlWorkspaceListResult) => void,
@@ -48,6 +66,12 @@ export interface WebRemoteControlWorkspaceSwitcherApi {
   openRecentProject?(recentProjectId: string): Promise<string>;
   /** 请求桌面重新打开主窗口。 */
   openDesktopWindow?(): Promise<void>;
+  /** 第二批 E1：桌面 appProtocol ≥ 4 时手机可打开任意已存在本地目录；否则入口隐藏。 */
+  canOpenArbitraryWorkspace?(): boolean;
+  /** 第二批 E3：目录选择器读取桌面目录（app 级 payload，空态无 bridge 也可用）。 */
+  listMobileDirectory?(path?: string): Promise<WebRemoteControlMobileDirectoryListResult>;
+  /** 请求桌面打开任意已存在本地目录；成功返回 workspaceKey。 */
+  openWorkspacePath?(workspacePath: string): Promise<string>;
   /** 从首页回到 phone 设置页。 */
   onOpenSettings?(): void;
 }

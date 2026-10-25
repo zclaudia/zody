@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "caseName": "mobile-multihost-notification-click",
+  "spec": "./test/e2e/mobile-remote/mobile-multihost-notification-click.test.ts",
+  "fixtures": [
+    {
+      "id": "mobile-multihost-notification-click-title",
+      "description": "为两条真实通知任务生成稳定标题。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "标题只用于建立通知目标任务，不参与 identity 路由判定。"
+      },
+      "maxMatches": 4,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "bodyIncludes": ["Generate a concise title", "E2E_MOBILE_P8_MULTIHOST_NOTIFICATION"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-multihost-notification-title\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"{\\\"title\\\":\\\"P8 multi-Host notification task\\\"}\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-multihost-notification-title\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "mobile-multihost-notification-click-a",
+      "description": "Host A 的真实 V4 completion 事件触发通知 A。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "稳定完成事件正文用于验证通知 identity/task 路由。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MOBILE_P8_MULTIHOST_NOTIFICATION_A_TRIGGER"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-multihost-notification-a\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"P8_MULTIHOST_A_RUNTIME_COMPLETION_OK\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-multihost-notification-a\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "mobile-multihost-notification-click-b",
+      "description": "Host B 的真实 V4 completion 事件触发通知 B。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "稳定完成事件正文用于验证通知 identity/task 路由。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MOBILE_P8_MULTIHOST_NOTIFICATION_B_TRIGGER"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-multihost-notification-b\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"P8_MULTIHOST_B_RUNTIME_COMPLETION_OK\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-multihost-notification-b\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "mobile-multihost-notification-click-revoked",
+      "description": "Host A 的 C completion 事件产生撤权前系统卡片。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "稳定正文用于验证撤销设备凭证后的旧卡片不写 read receipt。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MOBILE_P8_MULTIHOST_NOTIFICATION_REVOKED_TRIGGER"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-multihost-notification-revoked\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"P8_MULTIHOST_REVOKED_RUNTIME_COMPLETION_OK\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-multihost-notification-revoked\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    },
+    {
+      "id": "mobile-multihost-notification-click-recovered",
+      "description": "Host B 的 D completion 事件验证新凭证恢复后的通知点击。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "稳定正文用于验证重配设备凭证后仍可路由并写 read receipt。"
+      },
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/chat/completions",
+        "lastUserMessageIncludes": ["E2E_MOBILE_P8_MULTIHOST_NOTIFICATION_RECOVERED_TRIGGER"],
+        "bodyExcludes": ["Generate a concise title"]
+      },
+      "response": {
+        "statusCode": 200,
+        "headers": { "content-type": "text/event-stream; charset=utf-8" },
+        "body": "data: {\"id\":\"p8-multihost-notification-recovered\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"P8_MULTIHOST_RECOVERED_RUNTIME_COMPLETION_OK\"},\"finish_reason\":null}]}\n\ndata: {\"id\":\"p8-multihost-notification-recovered\",\"object\":\"chat.completion.chunk\",\"created\":0,\"model\":\"e2e-ssh-remote-lifecycle-model\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+      }
+    }
+  ]
+}

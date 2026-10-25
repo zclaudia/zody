@@ -43,6 +43,11 @@ describe("createWebRemoteControlSharedHostAttachments", () => {
     const attachment = await manager.attachWorkspaceHost(7, {
       kind: "local",
       workspacePath: "/repo/demo",
+      mobileNotificationPrincipal: {
+        backendId: "backend-1",
+        deviceSubject: "subject-1",
+        clientInstanceId: "phone-1",
+      },
     });
 
     expect(attachment.entryId).toBe("desktop-host:7");
@@ -56,6 +61,11 @@ describe("createWebRemoteControlSharedHostAttachments", () => {
         attachmentId: attachment.attachmentId,
         clientMode: "web-remote-replayable",
         scope: { kind: "local" },
+        mobileNotificationPrincipal: {
+          backendId: "backend-1",
+          deviceSubject: "subject-1",
+          clientInstanceId: "phone-1",
+        },
       },
       [ports.port2],
     );
@@ -127,6 +137,11 @@ describe("createWebRemoteControlSharedHostAttachments", () => {
       workspaceIdentity: "remote:ssh:host:22:user:/workspace",
       remoteSessionId: "remote-session-1",
       initialTaskId: "task-1",
+      mobileNotificationPrincipal: {
+        backendId: "backend-1",
+        deviceSubject: "subject-1",
+        clientInstanceId: "phone-1",
+      },
     });
 
     expect(attachRemoteWorkspaceSessionHost).toHaveBeenCalledTimes(1);
@@ -137,6 +152,11 @@ describe("createWebRemoteControlSharedHostAttachments", () => {
       workspaceIdentity: "remote:ssh:host:22:user:/workspace",
       workspaceKey: "remote:ssh:host:22:user:/workspace",
       clientMode: "web-remote-replayable",
+      mobileNotificationPrincipal: {
+        backendId: "backend-1",
+        deviceSubject: "subject-1",
+        clientInstanceId: "phone-1",
+      },
     });
     expect(attachment).toMatchObject({
       entryId: "remote-session-host:remote-session-1",

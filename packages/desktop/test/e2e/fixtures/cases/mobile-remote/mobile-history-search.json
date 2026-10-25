@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "spec": "./test/e2e/mobile-remote/mobile-history-search.test.mjs",
+  "description": "Mobile search UI fixture for cross-workspace results, partial outcomes, stale responses, and scoped navigation.",
+  "classification": "synthetic",
+  "syntheticReason": "Exercise the mobile search page and request/result binding deterministically without Gateway credentials or a live Agent runtime.",
+  "query": "E2E_MOBILE_PHASE1_SEARCH",
+  "workspaces": [
+    { "workspacePath": "/fixture/local", "workspacePurpose": "project" },
+    {
+      "workspacePath": "/fixture/remote",
+      "workspaceIdentity": "remote:fixture:workspace",
+      "remoteSessionId": "session-fixture",
+      "workspacePurpose": "project"
+    }
+  ],
+  "results": {
+    "/fixture/local": {
+      "taskId": "task-local",
+      "title": "E2E_MOBILE_PHASE1_SEARCH local task",
+      "snippet": "local body E2E_MOBILE_PHASE1_SEARCH"
+    },
+    "remote:fixture:workspace": {
+      "taskId": "task-remote",
+      "title": "E2E_MOBILE_PHASE1_SEARCH remote task",
+      "snippet": "remote body E2E_MOBILE_PHASE1_SEARCH"
+    }
+  }
+}

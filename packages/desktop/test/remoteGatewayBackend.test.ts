@@ -491,6 +491,88 @@ describe("createRemoteGatewayBackend", () => {
     expect(loggedText(harness.logger)).toContain("epoch_changed");
   });
 
+  it("把 control offer 的 sourceCredentialId 交给 handler，channel close 和 clear 后不复用", async () => {
+    const harness = createHarness();
+    await harness.backend.reloadConfig();
+    const fake = harness.backends[0]!;
+    const delegate = vi.fn();
+    harness.backend.setChannelHandler(delegate);
+
+    fake.emitMessage({
+      type: "channel_offer",
+      channelId: "credentialed-channel",
+      sourceCredentialId: "device-credential-id",
+    });
+    fake.offer("zcode-remote", new FakeChannel("credentialed-channel"));
+    expect(delegate.mock.calls[0]?.[1]).toMatchObject({
+      channelId: "credentialed-channel",
+      sourceCredentialId: "device-credential-id",
+    });
+
+    fake.emitMessage({
+      type: "channel_offer",
+      channelId: "closed-before-data",
+      sourceCredentialId: "must-not-leak-after-close",
+    });
+    fake.emitMessage({
+      type: "channel_closed",
+      channelId: "closed-before-data",
+      reason: "cancelled",
+    });
+    fake.offer("zcode-remote", new FakeChannel("closed-before-data"));
+    expect(delegate.mock.calls[1]?.[1]).not.toHaveProperty("sourceCredentialId");
+
+    fake.emitMessage({
+      type: "channel_offer",
+      channelId: "cleared-before-data",
+      sourceCredentialId: "must-not-leak-after-clear",
+    });
+    await harness.backend.applyConfig({ ...COMPLETE_CONFIG, enabled: false });
+    fake.offer("zcode-remote", new FakeChannel("cleared-before-data"));
+    expect(delegate.mock.calls[2]?.[1]).not.toHaveProperty("sourceCredentialId");
+  });
+
+  it("将 control offer 的认证主体注入 channel handler，且 close/clear 后不复用", async () => {
+    const harness = createHarness();
+    await harness.backend.reloadConfig();
+    const fake = harness.backends[0]!;
+    const delegate = vi.fn();
+    harness.backend.setChannelHandler(delegate);
+
+    fake.emitMessage({
+      type: "channel_offer",
+      channelId: "credentialed-channel",
+      sourceCredentialId: "device-credential-id",
+    });
+    fake.offer("zcode-remote", new FakeChannel("credentialed-channel"));
+    expect(delegate.mock.calls[0]?.[1]).toMatchObject({
+      channelId: "credentialed-channel",
+      sourceCredentialId: "device-credential-id",
+    });
+
+    fake.emitMessage({
+      type: "channel_offer",
+      channelId: "closed-before-data",
+      sourceCredentialId: "must-not-leak-after-close",
+    });
+    fake.emitMessage({
+      type: "channel_closed",
+      channelId: "closed-before-data",
+      reason: "cancelled",
+    });
+    fake.offer("zcode-remote", new FakeChannel("closed-before-data"));
+    expect(delegate.mock.calls[1]?.[1]).not.toHaveProperty("sourceCredentialId");
+
+    fake.emitMessage({
+      type: "channel_offer",
+      channelId: "cleared-before-data",
+      sourceCredentialId: "must-not-leak-after-clear",
+    });
+    await harness.backend.applyConfig({ ...COMPLETE_CONFIG, enabled: false });
+    fake.offer("zcode-remote", new FakeChannel("cleared-before-data"));
+    expect(delegate.mock.calls[2]?.[1]).not.toHaveProperty("sourceCredentialId");
+  });
+
   it("「测试连接」：表单值与生效值相同时复用连接，不重连", async () => {
     const harness = createHarness();
     await harness.backend.reloadConfig();

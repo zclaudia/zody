@@ -1,4 +1,12 @@
-import type { PlatformAppLifecycleState } from "@zcode/shared";
+import {
+  parseMobileNotificationAction,
+  parseMobileNotificationClick,
+} from "./mobileRemoteNotifications.js";
+import type {
+  MobileNotificationActionClick,
+  MobileNotificationClick,
+  PlatformAppLifecycleState,
+} from "@zcode/shared";
 import { resolveMobileRemoteNativeBridge } from "./mobileRemoteSecureStore.js";
 
 /**
@@ -18,6 +26,10 @@ type LifecycleHandler = (state: PlatformAppLifecycleState) => void;
 type BackHandler = () => boolean;
 
 export interface MobileRemoteNativeHostBinding {
+  onNotificationPermissionChanged(handler: (granted: boolean) => void): () => void;
+  onNotificationClick(handler: (click: MobileNotificationClick) => void): () => void;
+  /** 第二批 E4：通知按钮点击（backendId/notificationId/optionId）→ 快速路径。 */
+  onNotificationAction(handler: (action: MobileNotificationActionClick) => void): () => void;
   onAppLifecycleChange(handler: LifecycleHandler): () => void;
   onBackPressed(handler: BackHandler): () => void;
 }
@@ -49,9 +61,44 @@ export function installMobileRemoteNativeHost(
     return undefined;
   }
 
+  const permissionHandlers = new Set<(granted: boolean) => void>();
+  const notificationHandlers = new Set<(click: MobileNotificationClick) => void>();
+  const actionHandlers = new Set<(action: MobileNotificationActionClick) => void>();
   const lifecycleHandlers = new Set<LifecycleHandler>();
   const backHandlers = new Set<BackHandler>();
   const host = {
+    onNotificationPermissionChanged(granted: unknown) {
+      if (typeof granted !== "boolean") return;
+      for (const handler of permissionHandlers) {
+        try {
+          handler(granted);
+        } catch {
+          /* Isolate page subscribers. */
+        }
+      }
+    },
+    onNotificationClick(value: unknown) {
+      const click = parseMobileNotificationClick(value);
+      if (click)
+        for (const handler of notificationHandlers) {
+          try {
+            handler(click);
+          } catch {
+            /* Native pending click is retained for retry. */
+          }
+        }
+    },
+    onNotificationAction(value: unknown) {
+      const action = parseMobileNotificationAction(value);
+      if (action)
+        for (const handler of actionHandlers) {
+          try {
+            handler(action);
+          } catch {
+            /* Native pending action is retained for retry. */
+          }
+        }
+    },
     onAppLifecycle(state: unknown): void {
       if (state !== "foreground" && state !== "background") {
         return;
@@ -82,6 +129,18 @@ export function installMobileRemoteNativeHost(
 
   (target as Record<string, unknown>)[MOBILE_REMOTE_NATIVE_HOST_GLOBAL_KEY] = host;
   const binding: MobileRemoteNativeHostBinding = {
+    onNotificationPermissionChanged(handler) {
+      permissionHandlers.add(handler);
+      return () => permissionHandlers.delete(handler);
+    },
+    onNotificationClick(handler) {
+      notificationHandlers.add(handler);
+      return () => notificationHandlers.delete(handler);
+    },
+    onNotificationAction(handler) {
+      actionHandlers.add(handler);
+      return () => actionHandlers.delete(handler);
+    },
     onAppLifecycleChange(handler) {
       lifecycleHandlers.add(handler);
       return () => {

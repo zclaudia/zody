@@ -728,6 +728,27 @@ const remoteGatewayBackend = createRemoteGatewayBackend({
   // T3.3：transport 经 socketFactory 扣住数据 socket，读 bufferedAmount 做背压。
   socketFactory: gatewayDeviceTransport.socketFactory,
 });
+// Stable authenticated identity is retained across temporary disconnects so Host outboxes keep recording.
+let mobileNotificationBackendId: string | undefined;
+function getMobileNotificationContext() {
+  return {
+    enabled: Boolean(mobileNotificationBackendId),
+    ...(mobileNotificationBackendId ? { backendId: mobileNotificationBackendId } : {}),
+  };
+}
+remoteGatewayBackend.onStatusChanged((status) => {
+  if (status.state === "online") mobileNotificationBackendId = status.backendId;
+  else if (
+    status.state === "disabled" ||
+    (status.state === "error" &&
+      (status.reason === "credential-invalid" ||
+        status.reason === "replaced" ||
+        status.reason === "unconfigured"))
+  )
+    mobileNotificationBackendId = undefined;
+  for (const host of windowHostProcessMap.values())
+    host.postMessage({ type: "mobile-notification-context", ...getMobileNotificationContext() });
+});
 // T3.3：在 backend connect() 之前挂好 channel handler；handler 内部同步注册 onMessage/onClose。
 remoteGatewayBackend.setChannelHandler((channel, offer) =>
   gatewayDeviceTransport.handleChannel(channel, offer),
@@ -880,6 +901,9 @@ const webRemoteControlManager = createWebRemoteControlManager({
   // 体系删除，只在设置迁移时读取原始 JSON。
   remoteAccessSettings: {
     isEnabled: async () => (await mainSettingService.get()).remoteAccess?.enabled === true,
+    // 第二批 E2：缺省视为 true（与读取 schema 的 catch(true) 一致），关闭时手机任意路径打开被立即拒绝。
+    isArbitraryPathOpenAllowed: async () =>
+      (await mainSettingService.get()).remoteAccess?.allowMobileOpenArbitraryPath !== false,
     setEnabled: async (enabled) => {
       const settings = await mainSettingService.get();
       await mainSettingService.update({
@@ -889,6 +913,8 @@ const webRemoteControlManager = createWebRemoteControlManager({
           enabled,
           gatewayUrl: settings.remoteAccess?.gatewayUrl ?? "",
           namespace: settings.remoteAccess?.namespace ?? DEFAULT_REMOTE_ACCESS_NAMESPACE,
+          allowMobileOpenArbitraryPath:
+            settings.remoteAccess?.allowMobileOpenArbitraryPath ?? true,
         },
       });
       // Main 是开关写入方：通知所有窗口刷新设置快照（与 setAutoDownloadAndInstallUpdates 同一路径）。
@@ -1828,6 +1854,14 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
         },
         {
           hostProcessLocalEnv,
+          getMobileNotificationContext,
+          publishMobileNotification: async (request) => {
+            const status = remoteGatewayBackend.getStatus();
+            if (status.state !== "online") return { status: "retryable", code: "offline" };
+            if (status.backendId !== request.backendId)
+              return { status: "terminal", code: "backend-mismatch" };
+            return remoteGatewayBackend.publishNotification(request.event);
+          },
           logger,
           broadcastHub,
           taskRealtimeBus,
