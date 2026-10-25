@@ -1,5 +1,9 @@
 # 手机远控：App 级远程访问，改走 zclaudia-gateway
 
+2026-10-24 后续规划：[手机第二批打开任意本地目录、通知权限批准](mobile-remote-phase2.md)。本文「手机不能传入任意路径」的安全边界与「打开项目」payload 语义由该 spec 修订（受桌面开关控制）；新规划的外部依赖、状态所有者和验收以该 spec 为准。
+
+2026-10-23 后续规划：[手机第一批通知、历史搜索与文件浏览](mobile-remote-phase1.md)。本文下述“推送通知/手机后台本地通知不在范围”仍是本次 Gateway 迁移的范围，不代表后续能力已实施；新规划的外部依赖、状态所有者和验收以该 spec 为准。
+
 2026-10-20 首发决策更新：Android 远控随 Zody 0.1.0 公开预览；gateway 由用户自行提供和配置，Zody 不提供托管服务。应用名、applicationId、版本、分发与支持边界以 [Zody 0.1.0 首发规格](zody-0.1.0-release.md) 为准。以下旧调查不作为当前实现完成情况。
 
 状态：草案（2026-10-17），待评审后实现。
@@ -70,7 +74,7 @@ ZCode 不是这样。会话运行在 window-scoped Host 的 workspace scope 里�
   - 打开它的最近项目；
   - 重新打开主窗口。
 
-  手机不能传入任意路径：「打开项目」只接受桌面下发的最近项目 id。Channel 的 `kind` 和首帧内容都是客户端自报的，必须严格校验。
+  手机不能自行构造路径打开项目：「打开最近项目」只接受桌面下发的最近项目 id。2026-10-24 起按 [第二批 spec](mobile-remote-phase2.md) E1/E2 增加受控例外：桌面设置「允许手机打开任意本地目录」开关（`AppSettings.remoteAccess.allowMobileOpenArbitraryPath`，缺省 true）开启时，手机可通过 `workspace-open-path-request` 提交一个**已存在**的本地目录路径；关闭时立即拒绝且手机退回仅最近项目。目录必须通过桌面 `isValidLocalWorkspaceDirectory` 同一套校验，不创建目录、不弹外部确认框。Channel 的 `kind` 和首帧内容都是客户端自报的，必须严格校验。
 
 - 远控相关代码中不再出现任何官方域名或默认地址。gateway 地址只来自用户配置，没有回落值。
 
@@ -109,7 +113,7 @@ onSendReady()                       // 新 channel 可用：上层 flush 缓冲�
 
 | 状态                                                                                        | 唯一所有者                                                                                                                                                                                                                    |
 | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 远程访问开关、gateway 地址、namespace                                                       | 桌面设置（`AppSettings.remoteAccess`），替代 `webRemoteControlLastEnabledContext` 和 `webRemoteControlExternalRelayDevice`                                                                                                    |
+| 远程访问开关、gateway 地址、namespace                                                       | 桌面设置（`AppSettings.remoteAccess`），替代 `webRemoteControlLastEnabledContext` 和 `webRemoteControlExternalRelayDevice`；2026-10-24 起该域新增 `allowMobileOpenArbitraryPath`（缺省 true），仍是桌面设置唯一所有者，Main 只读                                                                                                    |
 | backend 凭证                                                                                | 桌面凭据存储，复用原先存 `pass_hash` 的 credential 服务。不写入 settings，也不写入日志                                                                                                                                        |
 | gateway backend 连接、epoch                                                                 | 桌面 Main 新增的 `RemoteGatewayBackend`，每个 Electron 进程一个，订阅开关和配置                                                                                                                                               |
 | 当前 channel（最多一条）及对应手机的 `clientInstanceId`                                     | App 级 runtime 的 `GatewayDeviceTransport`                                                                                                                                                                                    |
@@ -146,6 +150,8 @@ onSendReady()                       // 新 channel 可用：上层 flush 缓冲�
 | `recent-projects-updated`                                      | 桌面→手机 | 最近项目或窗口状态变化时主动推送，按签名去重                                                                                                                                                                                                                                                                          |
 | `workspace-open-request` / `workspace-open-response`           | 双向      | 手机传 `recentProjectId`。桌面校验它属于当前下发的列表，然后在主窗口新开标签页：复用 `OpenWorkspacePath` 的内部路径，不弹 deep link 的原生确认框（`confirmExternalWorkspaceOpen` 只用于外部链接）；如果没有窗口，先执行 `ensurePrimaryWindow("remote-control")`。成功的标志是该 workspace 出现在聚合列表里，10 秒超时 |
 | `desktop-window-open-request` / `desktop-window-open-response` | 双向      | 调用 `ensurePrimaryWindow("remote-control")`，沿用它已有的强制升级等 `canCreateWindow` gate                                                                                                                                                                                                                           |
+| `workspace-open-path-request` / `workspace-open-path-response`（appProtocol 4） | 双向 | 手机传 `workspacePath`（已存在的本地绝对目录）。桌面先校验 `allowMobileOpenArbitraryPath` 开关与 `isValidLocalWorkspaceDirectory`，通过后与最近项目打开共用同一打开链路和 pendingWorkspaceOpens 成功判定。规则见 [第二批 spec](mobile-remote-phase2.md) |
+| `mobile-directory-list-request` / `mobile-directory-list-response`（appProtocol 4） | 双向 | app 级目录列表（不依赖 workspace bridge）：`path` 省略 = homedir；仅目录条目、上限 1000；供手机「打开其他项目」选择器使用。规则见 [第二批 spec](mobile-remote-phase2.md) |
 
 ## Channel 帧协议（新增，`packages/shared`）
 

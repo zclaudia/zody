@@ -1,5 +1,7 @@
 # 手机端远程控制任务首页改造方案
 
+2026-10-23 当前范围说明：连接方式和可见工作区以 [App 级 Gateway 远控规格](../../specs/mobile-remote-control-via-gateway.md) 为准，已覆盖该电脑所有窗口的已打开 workspace。下文历史“扫码/单窗口”描述不再限定当前范围。新增通知、历史搜索和文件入口见 [第一批规划](../../specs/mobile-remote-phase1.md)，尚未实施。
+
 > **状态：已实施。** 当前代码入口是 `packages/ui/src/WebRemoteControlMobileShell.tsx`、
 > `WebRemoteControlMobileTaskHome.tsx` 与 `hooks/useWebRemoteControlTaskOpen.ts`；下文“推荐/实施顺序”
 > 保留设计轨迹，不表示待实现状态。
