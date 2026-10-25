@@ -1,0 +1,126 @@
+{
+  "caseId": "P-MN-01",
+  "status": "pass",
+  "executedAt": "2026-10-24T13:31:24.254Z",
+  "layer": "E2E-P",
+  "gatewayIsolated": true,
+  "ntfyIsolated": true,
+  "assertions": [
+    {
+      "name": "backend online",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "name": "读取隔离 ntfy 成功（基线消息数）",
+      "passed": true,
+      "detail": {
+        "baselineCount": 0
+      }
+    },
+    {
+      "name": "record 返回 permission 通知（含 actions）",
+      "passed": true,
+      "detail": {
+        "kind": "permission",
+        "actionCount": 3
+      }
+    },
+    {
+      "name": "ntfy 收到 permission 推送（含 notificationId）",
+      "passed": true,
+      "detail": {
+        "ntfyTitle": "Zody"
+      }
+    },
+    {
+      "name": "ntfy 原始消息全文不含 label/命令/路径 canary",
+      "passed": true,
+      "detail": {
+        "checkedCanaries": 4,
+        "leakedCanaryCount": 0
+      }
+    },
+    {
+      "name": "ntfy title 为固定泛化文案 Zody",
+      "passed": true,
+      "detail": {
+        "title": "Zody"
+      }
+    },
+    {
+      "name": "payload kind=permission 且 actions 恰为 optionId/optionKind 三元组",
+      "passed": true,
+      "detail": {
+        "kind": "permission",
+        "actions": [
+          {
+            "optionId": "p2-opt-allow-once",
+            "optionKind": "allowOnce"
+          },
+          {
+            "optionId": "p2-opt-allow-always",
+            "optionKind": "allowAlways"
+          },
+          {
+            "optionId": "p2-opt-deny",
+            "optionKind": "deny"
+          }
+        ]
+      }
+    },
+    {
+      "name": "payload 携带 version/backendId/notificationId/expiresAt，无 title/命令/路径字段",
+      "passed": true,
+      "detail": {
+        "version": 1,
+        "hasTitleField": false,
+        "hasWorkspacePathField": false
+      }
+    },
+    {
+      "name": "ntfy 收到 completed 推送",
+      "passed": true,
+      "detail": {
+        "ntfyTitle": "Zody"
+      }
+    },
+    {
+      "name": "completed 原始消息不含 title canary",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "name": "completed payload 无 actions 字段且 kind=completed",
+      "passed": true,
+      "detail": {
+        "kind": "completed",
+        "hasActions": false
+      }
+    },
+    {
+      "name": "bridge 出站事件名固定为 zody.task.permission / zody.task.completed",
+      "passed": true,
+      "detail": {
+        "sentCount": 2
+      }
+    }
+  ],
+  "backendIdLast8": "772444fb",
+  "permissionNotificationId": "71903f0a-365f-4c9e-8fb3-ca3ea0d4be12",
+  "permissionActionsInPayload": [
+    {
+      "optionId": "p2-opt-allow-once",
+      "optionKind": "allowOnce"
+    },
+    {
+      "optionId": "p2-opt-allow-always",
+      "optionKind": "allowAlways"
+    },
+    {
+      "optionId": "p2-opt-deny",
+      "optionKind": "deny"
+    }
+  ],
+  "completedNotificationId": "606e5a69-af66-44f3-bfb7-413ca4b96fb2"
+}

@@ -1,0 +1,39 @@
+{
+  "caseId": "A-MO-01",
+  "layer": "E2E-A 设备层",
+  "date": "2026-10-24",
+  "status": "fail",
+  "environment": {
+    "device": "emulator-5554 (hermes_api34, Android 14)",
+    "fakeDesktop": "FAKE_DESKTOP_BOOTSTRAP_EMPTY=true（真实 manager，bootstrap workspaces=[]，appProtocol 协商=4）"
+  },
+  "expected": "连上 fake-desktop（bootstrap 响应含 workspaces）→ 任务首页出现「打开其他项目」（data-mobile-remote-open-other-project）→ 打开选择器 → 目录列表渲染 → 确认后 fake-desktop 收到 workspace-open-path-request 且 workspacePath 与所选目录一致",
+  "actual": "任务首页（StartPage）在真机 WebView 上 React 渲染崩溃，整页空白，「打开其他项目」入口永远无法出现；后续选择器与 workspace-open-path-request 断言不可达",
+  "minimalRepro": [
+    "1. 真机/模拟器安装 Debug APK，配置任意可达 gateway 并连接 backend（手机 bootstrap 正常完成，fake-desktop 事件见 inbound bootstrap-request）",
+    "2. 桌面侧 bootstrap 返回 workspaces=[]（真实用户场景：桌面没有打开的窗口；fake-desktop 用 FAKE_DESKTOP_BOOTSTRAP_EMPTY=true 复现）",
+    "3. 页面 bootstrapPairedSession 走 bootstrap.tsx:1956-1961 分支 renderMobileRemoteStartPage()",
+    "4. StartPage header 无条件渲染 <WebRemoteControlThemeMenu />（WebRemoteControlRecentProjects.tsx:232），其内部调用 useZCodeStore（WebRemoteControlThemeMenu.tsx:22）",
+    "5. 该渲染树只有 ZCodeIntlProvider（bootstrap.tsx:1831-1833），没有 StoreProvider；useZCodeStore 无 store 上下文即抛错（store/StoreProvider.tsx:44-48）",
+    "6. React 卸载整树：#root innerHTML 长度=0，body 空白；页面 JS 存活但 UI 不可用"
+  ],
+  "captured": {
+    "pageErrors": ["Error: useZCodeStore 必须在 StoreProvider 内使用"],
+    "domState": { "readyState": "complete", "rootHtmlLength": 0, "bodyText": "", "openOtherProjectPresent": false },
+    "deviceScreen": "a-mo-01-blank-startpage.png / a-mo-01-blank-startpage.xml（uiautomator dump 无任何页面内容）",
+    "crashJson": "a-mo-01-startpage-crash.json"
+  },
+  "reachability": {
+    "nonEmptyBootstrap": "bootstrap workspaces 非空时手机自动 openWorkspaceBridge → fake-desktop 按计划抛 DESKTOP_HOST_MISSING → 全屏『Desktop offline』失败页（仅 Try Again），StartPage 同样不可达；两条路径都无法出现「打开其他项目」",
+    "protocolLayer": "open-path 全链路协议语义已由 E2E-P 的 P-MO-02/03 在真 manager 上验证通过（见 P-MO-02.json/P-MO-03.json），本用例 fail 仅限设备级 UI 入口"
+  },
+  "codeBasis": [
+    "packages/web/src/mobile-remote/bootstrap.tsx:1831-1833（StartPage 渲染仅包 ZCodeIntlProvider，无 StoreProvider）",
+    "packages/ui/src/WebRemoteControlRecentProjects.tsx:232（<WebRemoteControlThemeMenu /> 无条件渲染）",
+    "packages/ui/src/WebRemoteControlThemeMenu.tsx:22（useZCodeStore）",
+    "packages/ui/src/store/StoreProvider.tsx:44-48（无 provider 抛错）",
+    "对照：聊天路径 Root 内部自带 StoreProvider（packages/ui/src/Root.tsx:242），故 chat 页不受影响"
+  ],
+  "history": "该缺陷在 HEAD（11629f99）已存在（StartPage+ThemeMenu 组合先于第二批改动），属低频路径（真实桌面总有窗口时 bootstrap workspaces 非空，不走 StartPage）；第二批 E2E-A 空列表场景首次在真机上触发",
+  "notRun": ["选择器渲染 fake 目录", "确认后 fake-desktop 收到 workspace-open-path-request 且路径一致（因入口不可达，未执行）"]
+}

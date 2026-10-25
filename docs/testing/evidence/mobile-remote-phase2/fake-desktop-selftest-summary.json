@@ -1,0 +1,19 @@
+{
+  "note": "fake-desktop 自测事件摘要（inbound payload 类型与关键 payload；无凭证）",
+  "inboundTypes": [
+    "bootstrap-request",
+    "workspace-list-request",
+    "mobile-directory-list-request",
+    "mobile-directory-list-request",
+    "workspace-open-path-request",
+    "workspace-bridge-open"
+  ],
+  "openPathPayload": "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/p2-fake-open-7JUud7",
+  "bridgeOpenPayload": {
+    "zcode_type": "workspace-bridge-open",
+    "requestId": "fb-6",
+    "bridgeSessionId": "bridge-c40772e3",
+    "workspaceKey": "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/p2-fake-open-7JUud7"
+  },
+  "readyBackendIdLast8": "4f1a4923"
+}

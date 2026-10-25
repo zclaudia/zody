@@ -1,0 +1,107 @@
+{
+  "cases": [
+    {
+      "caseId": "U-MO-01",
+      "status": "pass",
+      "checks": [
+        {
+          "where": "shell-home/recent-empty",
+          "canOpen": false,
+          "openOtherProvided": true,
+          "entryCount": 0
+        },
+        {
+          "where": "start-page/recent-empty/no-openOther",
+          "canOpen": false,
+          "openOtherProvided": false,
+          "entryCount": 0
+        },
+        {
+          "where": "start-page/recent-empty/with-openOther",
+          "canOpen": true,
+          "openOtherProvided": true,
+          "entryCount": 1
+        },
+        {
+          "where": "shell-home/recent-list",
+          "canOpen": false,
+          "openOtherProvided": true,
+          "entryCount": 0
+        },
+        {
+          "where": "shell-home/recent-list",
+          "canOpen": true,
+          "openOtherProvided": true,
+          "entryCount": 1
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "caseId": "U-MO-02",
+      "status": "pass",
+      "checks": {
+        "dirCalls": [
+          null,
+          "/fixture/home"
+        ],
+        "loadingObserved": true,
+        "tooLargeErrorShown": true,
+        "openButtonEnabled": true,
+        "tooLargeErrorText": "无法读取目录：Error: 子目录数量超过 1000 的浏览上限。",
+        "dirCallsFinal": [
+          null,
+          "/fixture/home",
+          "/fixture/home/projects",
+          "/fixture/home",
+          "/fixture/home/projects/alpha",
+          "/fixture/too-large"
+        ],
+        "pageErrors": []
+      }
+    },
+    {
+      "caseId": "U-MO-03",
+      "status": "pass",
+      "checks": {
+        "openCalls": [
+          "/fixture/home/projects/alpha"
+        ],
+        "switches": [
+          {
+            "workspaceKey": "ws-key/fixture/home/projects/alpha"
+          }
+        ],
+        "chatPageVisible": true,
+        "pickerClosed": true,
+        "pageErrors": []
+      }
+    },
+    {
+      "caseId": "U-MO-04",
+      "status": "pass",
+      "checks": {
+        "errorText": "桌面已关闭「允许手机打开任意本地目录」，请在电脑的远程访问设置中开启。",
+        "openCalls": [
+          "/fixture/home",
+          "/fixture/home",
+          "/fixture/home"
+        ],
+        "openCallsAfterManualRetry": [
+          "/fixture/home",
+          "/fixture/home"
+        ],
+        "switches": [
+          {
+            "workspaceKey": "ws-key/fixture/home"
+          }
+        ],
+        "staleErrorAfterReopen": false,
+        "pageErrors": []
+      }
+    }
+  ],
+  "startedAt": "2026-10-24T13:16:33.464Z",
+  "viewport": "375x812",
+  "finishedAt": "2026-10-24T13:16:37.054Z"
+}

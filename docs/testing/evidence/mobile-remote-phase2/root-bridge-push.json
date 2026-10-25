@@ -1,0 +1,32 @@
+{
+  "caseId": "ntfy→root bridge 真实推送链路",
+  "layer": "E2E-A 附加（plan §E2E-A 末行：仅当模拟器 root/su 可用且 ntfy-bridge 可部署时执行）",
+  "date": "2026-10-24",
+  "status": "pass",
+  "environment": {
+    "device": "emulator-5554（adb root 可用：adbd 以 uid=0 运行）",
+    "daemon": "ntfy-bridge dist/ntfy-bridge-magisk.zip 内预编译 bin/ntfy-bridged（ELF aarch64 静态链接，file 验证）→ push /data/local/tmp/ + chmod 755 + root 后台运行，版本 0.4.0",
+    "gateway": "本轮隔离 gateway（49496），App 经 gateway 代理流订阅：GET /api/notifications/subscription/:backendId 返回 {topic: push-<backendId>, authMode: bearer, transportBasePath: ''}（zclaudia-gateway src/server.ts:523-527），daemon SSE 实际连 http://10.0.2.2:49496/push-<backendId>/json"
+  },
+  "chain": [
+    "1. App 页面 bootstrap → syncGatewayNotificationSubscription → MobileNotificationBridgeClient.sync → daemon(127.0.0.1:9595) 注册订阅",
+    "2. daemon /status: subscriptions{...push-5704a0a3…: connected:true}；App 侧 notificationGetStatus={status:ready,connected:true}",
+    "3a. 完整链路（含 gateway 发布跳）：POST /api/notifications/test/<backendId>（Bearer 设备凭证）→ gateway 发布 ntfy topic p2183eca0f67d6-<backendId> → gateway 代理流 → daemon → am start-foreground-service → RenderService 渲染（logcat 22:22:56 rendered）",
+    "3b. permission envelope（kind=permission + 3 actions，与 mobileNotificationDeliveryBridge.ts:83-104 同构 body）直接 POST 隔离 ntfy 同 topic → daemon → RenderService 渲染（logcat 22:23:23 rendered）"
+  ],
+  "assertions": [
+    {
+      "name": "真实推送到达且渲染 test 通知",
+      "result": "pass",
+      "detail": "uiautomator dump 含『这是一条测试通知。』×1（未经任何 adb 注入，纯 ntfy→root daemon 链路）",
+      "evidence": ["a-push-real-test.png"]
+    },
+    {
+      "name": "真实推送的 permission 通知渲染三按钮",
+      "result": "pass",
+      "detail": "展开分组后 dump：允许一次×1、总是允许×1、拒绝×1；截图可见最新（now）卡带三按钮",
+      "evidence": ["a-push-real-permission.png", "a-push-real-permission.xml"]
+    }
+  ],
+  "scope": "gateway→ntfy 发布语义（envelope 脱敏、无 label/命令）已由 P-MN-01 在同一隔离 ntfy 上以真实 delivery bridge 验证；本链路补足 ntfy→root daemon→系统通知段，permission envelope 的 actions 数据与 delivery bridge 产出同构"
+}

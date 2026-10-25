@@ -1,0 +1,121 @@
+{
+  "status": "passed",
+  "environment": {
+    "android": "Android 14 / API 34 sdk_gphone64_arm64 emulator",
+    "bridge": "ntfy-bridge 0.4.0 independent root daemon; shell delivery",
+    "apkSha256": "c772feb78b96da781c8c706a9ac37263c86dd1b100e4386bc146865795fc4e28",
+    "renderServicePermission": "android.permission.DUMP",
+    "forceStopUsed": false,
+    "appBatteryExemptionAdded": false
+  },
+  "armed": {
+    "at": "2026-10-23T09:24:05.724034+00:00",
+    "deep": "IDLE",
+    "appProcessAbsent": true,
+    "bridgePid": 7034,
+    "forceStopUsed": false,
+    "keepAliveStopped": true,
+    "batteryUnplugged": true,
+    "apkSha256": "c772feb78b96da781c8c706a9ac37263c86dd1b100e4386bc146865795fc4e28",
+    "renderServicePermission": "android.permission.DUMP"
+  },
+  "deepAtReceipt": "IDLE",
+  "hostDelivery": {
+    "state": "runtime-completed-and-ntfy-accepted",
+    "backendId": "6e3ec4f2-74a9-46eb-920d-bdaf6537c6ec",
+    "workspacePath": "/Users/zhvala/SourceCode/zody/.tmp/mobile-remote-p8-doze/desktop-home-retry/ZodyProject",
+    "taskId": "sess_190a100c-94e3-446e-9daa-2fe42092d3a1",
+    "sessionId": "sess_190a100c-94e3-446e-9daa-2fe42092d3a1",
+    "notificationId": "aebaaae7-24c8-4760-b64f-0f2bbcb18460",
+    "sourceEventId": "27ebd3d1-e232-4b82-aaaf-6d39105c497c",
+    "sourceKind": "turn.completed",
+    "kind": "completed",
+    "deliveryState": "accepted",
+    "outboxState": "accepted",
+    "attempts": 1,
+    "occurredAt": 1792747446766,
+    "sqliteRow": {
+      "notification_id": "aebaaae7-24c8-4760-b64f-0f2bbcb18460",
+      "backend_id": "6e3ec4f2-74a9-46eb-920d-bdaf6537c6ec",
+      "task_id": "sess_190a100c-94e3-446e-9daa-2fe42092d3a1",
+      "session_id": "sess_190a100c-94e3-446e-9daa-2fe42092d3a1",
+      "source_event_id": "27ebd3d1-e232-4b82-aaaf-6d39105c497c",
+      "source_kind": "turn.completed",
+      "kind": "completed",
+      "delivery_state": "accepted",
+      "occurred_at": 1792747446766,
+      "outbox_state": "accepted",
+      "attempts": 1
+    }
+  },
+  "click": {
+    "at": "2026-10-23T09:26:55.455Z",
+    "taskId": "sess_190a100c-94e3-446e-9daa-2fe42092d3a1",
+    "notificationId": "aebaaae7-24c8-4760-b64f-0f2bbcb18460",
+    "pendingClickConsumed": true
+  },
+  "hostReadReceipt": {
+    "state": "click-route-read-receipt-recorded",
+    "backendId": "6e3ec4f2-74a9-46eb-920d-bdaf6537c6ec",
+    "taskId": "sess_190a100c-94e3-446e-9daa-2fe42092d3a1",
+    "notificationId": "aebaaae7-24c8-4760-b64f-0f2bbcb18460",
+    "readReceiptCount": 1
+  },
+  "systemPermissionRevoked": {
+    "phase": "denied",
+    "at": "2026-10-23T09:28:02.062Z",
+    "nativeStatus": {
+      "status": "permission-denied",
+      "message": "notification_permission_denied"
+    },
+    "gatewayAccepted": true,
+    "renderServiceCalled": true,
+    "systemTaskCards": 0,
+    "apkSha256": "c772feb78b96da781c8c706a9ac37263c86dd1b100e4386bc146865795fc4e28",
+    "kind": "test",
+    "directReceiverInjection": false
+  },
+  "systemPermissionRestored": {
+    "phase": "restored",
+    "at": "2026-10-23T09:29:24.762Z",
+    "nativeStatus": {
+      "status": "ready",
+      "connected": true,
+      "message": "connected"
+    },
+    "gatewayAccepted": true,
+    "renderServiceCalled": true,
+    "systemTaskCards": 1,
+    "apkSha256": "c772feb78b96da781c8c706a9ac37263c86dd1b100e4386bc146865795fc4e28",
+    "kind": "test",
+    "directReceiverInjection": false
+  },
+  "desktopE2E": {
+    "exitCode": 0,
+    "passed": 1,
+    "artifact": "packages/desktop/.e2e-artifacts/desktop-e2e-20261023-092056-904/summary.md"
+  },
+  "earlierAttempt": {
+    "deepIdleReceipt": true,
+    "clickVerified": false,
+    "reason": "Android system_server watchdog reset during wake; excluded from click pass",
+    "evidence": ".tmp/mobile-remote-p8-doze/first-attempt/emulator-watchdog.txt"
+  },
+  "notCovered": [
+    "OEM physical devices",
+    "ordinary unprivileged daemon networking during Doze",
+    "Shizuku deployment",
+    "force-stop guarantee",
+    "signed release installation"
+  ],
+  "credentialsIncluded": false,
+  "cleanup": {
+    "originalPreferenceFilesByteVerified": 4,
+    "notificationPermissionRestored": true,
+    "doze": "ACTIVE",
+    "batteryReset": true,
+    "ownedDaemonRemoved": true,
+    "probeUninstalled": true,
+    "temporaryCredentialsRemoved": true
+  }
+}

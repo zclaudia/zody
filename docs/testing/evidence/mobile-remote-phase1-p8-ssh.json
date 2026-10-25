@@ -1,0 +1,27 @@
+{
+  "capturedAt": "2026-10-23T08:54:21.377Z",
+  "durationMs": 106525,
+  "featureArea": "remote",
+  "file": "packages/desktop/test/e2e/mobile-remote/manual-review/pending/mobile-ssh-workspace.test.ts",
+  "fullTitle": "P8-R01/02 通过 Gateway 搜索和浏览 SSH workspace，断开后更新附件并重读",
+  "passed": true,
+  "passedOnRetry": false,
+  "retryIndex": 0,
+  "retryLimit": -1,
+  "title": "P8-R01/02 通过 Gateway 搜索和浏览 SSH workspace，断开后更新附件并重读",
+  "environment": "macOS, isolated Electron profile, Docker SSH/Linux, isolated Gateway, Chromium mobile.html",
+  "runnerExitCode": 0,
+  "assertions": [
+    "remote identity task search and open",
+    "SSH file sentinel returned; same-path local sentinel absent",
+    "disconnected Files hidden; no operable task rows; offline search scope with no remote hits",
+    "desktop existing workspace reconnect preserves identity/path and changes remoteSessionId",
+    "search and remote file read succeed after reconnect"
+  ],
+  "cleanup": {
+    "ownedContainersRemoved": true,
+    "privateCredentialDirectoryRemoved": true
+  },
+  "notCovered": ["WSL", "Android SSH UI", "production deployment", "delayed stale response races"],
+  "credentialsIncluded": false
+}

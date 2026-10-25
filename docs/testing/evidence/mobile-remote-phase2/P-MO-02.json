@@ -1,0 +1,57 @@
+{
+  "caseId": "P-MO-02",
+  "status": "pass",
+  "executedAt": "2026-10-24T13:25:16.426Z",
+  "layer": "E2E-P",
+  "gatewayIsolated": true,
+  "assertions": [
+    {
+      "name": "无 path：success=true 且 resolvedPath=homedir",
+      "passed": true,
+      "detail": {
+        "success": true,
+        "resolvedPath": "/Users/zhvala",
+        "entryCount": 91
+      }
+    },
+    {
+      "name": "无 path：parentPath=dirname(homedir)",
+      "passed": true,
+      "detail": {
+        "parentPath": "/Users"
+      }
+    },
+    {
+      "name": "无 path：每条 entry 与本地 fs 一致（path 拼接 + 确为目录）",
+      "passed": true,
+      "detail": {
+        "verifiedEntries": 91,
+        "homedirDirents": 113
+      }
+    },
+    {
+      "name": "带路径：仅目录条目（文件被过滤、symlink 跟随目标为目录则收录）、码点排序、parentPath 正确",
+      "passed": true,
+      "detail": {
+        "success": true,
+        "names": [
+          "alpha",
+          "beta",
+          "link-to-alpha",
+          "zeta"
+        ],
+        "parentPath": "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T",
+        "symlinkFlagged": true
+      }
+    },
+    {
+      "name": "相对路径回 success=false + error=path-invalid",
+      "passed": true,
+      "detail": {
+        "success": false,
+        "error": "path-invalid"
+      }
+    }
+  ],
+  "backendIdLast8": "2f21b0fd"
+}

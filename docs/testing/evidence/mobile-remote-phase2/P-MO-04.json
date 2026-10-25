@@ -1,0 +1,50 @@
+{
+  "caseId": "P-MO-04",
+  "status": "pass",
+  "executedAt": "2026-10-24T13:25:19.153Z",
+  "layer": "E2E-P",
+  "gatewayIsolated": true,
+  "assertions": [
+    {
+      "name": "手机侧帧已发出（发送层不做 strict 校验）",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "name": "2.5 秒内无 workspace-open-path-response（整帧丢弃）",
+      "passed": true,
+      "detail": {
+        "responsesForRequestId": 0
+      }
+    },
+    {
+      "name": "openWorkspacePath 未被调用",
+      "passed": true,
+      "detail": {
+        "openWorkspacePathCalls": 0
+      }
+    },
+    {
+      "name": "desktop strict 解析丢弃日志（zcodeType=workspace-open-path-request）",
+      "passed": true,
+      "detail": {
+        "found": true
+      }
+    },
+    {
+      "name": "连接不断：后续合法请求正常往返",
+      "passed": true,
+      "detail": {
+        "success": true
+      }
+    },
+    {
+      "name": "手机 transport 仍 ready",
+      "passed": true,
+      "detail": {
+        "phoneState": "ready"
+      }
+    }
+  ],
+  "backendIdLast8": "de1c0b53"
+}

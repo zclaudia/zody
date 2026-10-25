@@ -1,0 +1,99 @@
+{
+  "caseId": "P-MO-01",
+  "status": "pass",
+  "executedAt": "2026-10-24T13:25:16.282Z",
+  "layer": "E2E-P",
+  "gatewayIsolated": true,
+  "assertions": [
+    {
+      "name": "phone negotiated appProtocol === 4",
+      "passed": true,
+      "detail": {
+        "negotiated": 4,
+        "maxVersionConstant": 4
+      }
+    },
+    {
+      "name": "phone hello_ack desktopAppVersion 匹配",
+      "passed": true,
+      "detail": {
+        "desktopAppVersion": "phase2-e2e-desktop"
+      }
+    },
+    {
+      "name": "desktop channel attached log appProtocol=4",
+      "passed": true,
+      "detail": {
+        "found": true
+      }
+    },
+    {
+      "name": "desktop session paired",
+      "passed": true,
+      "detail": {
+        "pairedEvents": 1
+      }
+    },
+    {
+      "name": "bootstrap payload 双向往返（协商=4 数据面可用）",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "name": "旧版本客户端 hello_ack appProtocol===3",
+      "passed": true,
+      "detail": {
+        "appProtocol": 3
+      }
+    },
+    {
+      "name": "越协商版本类型收到 protocol_error{unsupported-version, offendingType=mobile-directory-list-request}",
+      "passed": true,
+      "detail": {
+        "code": "unsupported-version",
+        "offendingType": "mobile-directory-list-request"
+      }
+    },
+    {
+      "name": "越版本帧未进入应用层（无 mobile-directory-list-response）",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "name": "desktop 版本闸门日志（dropped, appProtocol=3）",
+      "passed": true,
+      "detail": {
+        "found": true
+      }
+    },
+    {
+      "name": "闸门后连接不变：bootstrap-response 正常返回",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "name": "desktop session 状态未离开 paired",
+      "passed": true,
+      "detail": {
+        "stateEvents": [
+          "waiting_terminal",
+          "paired"
+        ]
+      }
+    },
+    {
+      "name": "desktop backend 仍 online",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "name": "纯函数：v5-only 类型在协商=4 被拒并生成 protocol_error",
+      "passed": true,
+      "detail": {
+        "kind": "unsupported-version",
+        "code": "unsupported-version"
+      }
+    }
+  ],
+  "backendIdLast8": "3f983821"
+}

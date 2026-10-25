@@ -1,0 +1,51 @@
+{
+  "caseId": "MF08",
+  "status": "passed",
+  "verifiedAt": "2026-10-23",
+  "environment": {
+    "android": "Android 14 / API 34 emulator",
+    "device": "emulator-5554",
+    "apkSha256": "6ed904aeedc3b2051b838bb638f12d3df00060d43d9ba0f788c888b74835dd0b",
+    "workspace": "case-owned local ZodyProject served by an isolated Gateway/Electron Host",
+    "credentialsIncluded": false
+  },
+  "cases": [
+    {
+      "name": "MF08-中文 文件名.bin",
+      "sizeBytes": 1048749,
+      "sha256": "fb3111f10b8bd9187acb8b23fd5f85c654d5a774f07079d177b5813aed3b9767",
+      "result": "saved",
+      "mediaStoreCommitted": true,
+      "ownedDownloadsRowRemoved": true,
+      "postCleanupRowAbsent": true,
+      "screenshot": ".tmp/mobile-remote-p8-push/artifacts/mf08/MF08-中文 文件名.bin.png"
+    },
+    {
+      "name": "MF08-limit-16MiB.bin",
+      "sizeBytes": 16777216,
+      "sha256": "3083cb6db4b9c8a7f5af84e81a900bef0f8b9547d9896d069e994afb49d572cf",
+      "result": "saved_at_limit",
+      "mediaStoreCommitted": true,
+      "ownedDownloadsRowRemoved": true,
+      "postCleanupRowAbsent": true,
+      "screenshot": ".tmp/mobile-remote-p8-push/artifacts/mf08/MF08-limit-16MiB.bin.png"
+    },
+    {
+      "name": "MF08-over-limit-16MiB-plus-1.bin",
+      "sizeBytes": 16777217,
+      "fixtureSha256": "e46f7cdce1d3b5701fce97e865f3b5026c90ea9d4430a906721b6618c555df96",
+      "result": "rejected",
+      "rejectionMessage": "File exceeds the 16 MiB mobile save limit.",
+      "saveButtonReenabled": true,
+      "downloadsArtifact": false,
+      "runnerExitCode": 0,
+      "screenshot": ".tmp/mobile-remote-p8-push/artifacts/mf08/MF08-over-limit-16MiB-plus-1.bin.png",
+      "runnerOutput": ".tmp/mobile-remote-p8-android/download-overlimit-result.json"
+    }
+  ],
+  "notes": [
+    "Positive cases read committed MediaStore bytes and matched fixture size and SHA-256; only each run's own Downloads row was removed.",
+    "The final over-limit rerun used real Files UI and asserted the exact error toast, Save button recovery, and absence of a matching Downloads row.",
+    "The earlier fixed-delay over-limit observation and pre-save screenshot are superseded by the final successful rerun."
+  ]
+}

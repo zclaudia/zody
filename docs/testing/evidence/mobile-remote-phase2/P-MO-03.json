@@ -1,0 +1,40 @@
+{
+  "caseId": "P-MO-03",
+  "status": "pass",
+  "executedAt": "2026-10-24T13:25:16.566Z",
+  "layer": "E2E-P",
+  "gatewayIsolated": true,
+  "assertions": [
+    {
+      "name": "成功路径：success=true + workspaceKey=目录路径",
+      "passed": true,
+      "detail": {
+        "success": true,
+        "workspaceKey": "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/p2-open-1lOUV7"
+      }
+    },
+    {
+      "name": "开关关闭：success=false + error=arbitrary-path-disabled",
+      "passed": true,
+      "detail": {
+        "success": false,
+        "error": "arbitrary-path-disabled"
+      }
+    },
+    {
+      "name": "ensurePrimaryWindow 全程未被调用",
+      "passed": true,
+      "detail": {
+        "ensurePrimaryWindowCalls": 0
+      }
+    },
+    {
+      "name": "openWorkspacePath 只被成功路径调用一次",
+      "passed": true,
+      "detail": {
+        "openWorkspacePathCalls": 1
+      }
+    }
+  ],
+  "backendIdLast8": "92c1763c"
+}

@@ -1,0 +1,48 @@
+{
+  "caseId": "A-MN-03",
+  "layer": "E2E-A 设备层",
+  "date": "2026-10-24",
+  "status": "pass",
+  "environment": {
+    "device": "emulator-5554 (hermes_api34, Android 14)",
+    "precondition": "fake-desktop 进程已全部终止（tsx 父子进程 ps grep=0）；隔离 gateway 仍在（health 200），手机与 gateway 的 ws 可连但 backend 无 bootstrap 响应"
+  },
+  "assertions": [
+    {
+      "name": "停掉 fake-desktop 后点「允许一次」→ App 显示错误反馈",
+      "result": "pass",
+      "detail": "tap 通知按钮后 #mobile-notification-error-title=『暂时无法打开通知』（playwright DOM 断言）；设备截图同画面",
+      "evidence": ["a-mn-03-notice.png"]
+    },
+    {
+      "name": "进程存活",
+      "result": "pass",
+      "detail": "pidof 点击前=17996、显示反馈时=17996、dismiss 后=17996，全程无崩溃/无重启",
+      "evidence": ["a-mn-03-notice.png", "a-mn-03-after-dismiss.png"]
+    },
+    {
+      "name": "pending 槽保留可重试",
+      "result": "pass",
+      "detail": "dismiss 前 prefs 槽={notificationId: amn03-fail-1792851439, optionId: opt-allow-once-3, optionKind: allowOnce}（保留）；错误反馈含『重试』按钮（重入队 pending 的入口）",
+      "evidence": ["a-mn-03-notice.png"]
+    },
+    {
+      "name": "dismiss 后槽清除",
+      "result": "pass",
+      "detail": "点『关闭』→ notice 消失（DOM 断言 noticeGone=true）→ prefs 中 pending_notification_action_v1 出现次数=0",
+      "evidence": ["a-mn-03-after-dismiss.png"]
+    }
+  ],
+  "sequence": [
+    "1. kill fake-desktop 全部进程（ps 确认 0）",
+    "2. 注入 kind=permission + 3 actions envelope（notificationId=amn03-fail-…）",
+    "3. 展开通知栏 → 展开 Zody 分组 → 展开最新卡 → tap 允许一次 (252,1053)",
+    "4. topResumedActivity=MainActivity，pid 不变，槽写入",
+    "5. 页面弹『暂时无法打开通知』，槽保留",
+    "6. 点『关闭』→ 槽清除=0"
+  ],
+  "codeBasis": [
+    "packages/web/src/mobile-remote/bootstrap.tsx:1395-1416（onError→notice，dismiss→acknowledgeAction 清槽）",
+    "packages/web/src/mobile-remote/mobileNotificationNotice.tsx:33-56（dispose→options.dismiss）"
+  ]
+}

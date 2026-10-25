@@ -1,0 +1,53 @@
+{
+  "acceptedAt": "2026-10-23T08:05:17.538Z",
+  "status": "passed",
+  "environment": {
+    "android": "Android 14 / API 34 sdk_gphone64_arm64 emulator",
+    "apkSha256": "6ed904aeedc3b2051b838bb638f12d3df00060d43d9ba0f788c888b74835dd0b",
+    "ntfyBridge": "0.4.0",
+    "backgroundSequence": [
+      "stop KeepAliveService",
+      "HOME",
+      "wait until app leaves foreground",
+      "am kill application process",
+      "receive generic Android System UI notification",
+      "tap System UI notification card"
+    ],
+    "forceStopUsed": false
+  },
+  "hostNotification": {
+    "notification_id": "90a827b9-bbb9-402b-aa8b-f2c95d9585ab",
+    "backend_id": "3fb15eb4-df52-473a-82c0-ba410426e717",
+    "task_id": "sess_ea3c1979-1080-4d93-8256-2d08128669da",
+    "session_id": "sess_ea3c1979-1080-4d93-8256-2d08128669da",
+    "source_event_id": "d6897950-f33c-4be0-956b-b1681fb99712",
+    "source_kind": "turn.completed",
+    "kind": "completed",
+    "delivery_state": "accepted",
+    "occurred_at": 1792742683081,
+    "outbox_state": "accepted",
+    "attempts": 1
+  },
+  "androidClick": {
+    "tap": "Android System UI notification card",
+    "visibleTaskMarker": "P8_RUNTIME_COMPLETION_OK",
+    "resolvedSessionId": "sess_ea3c1979-1080-4d93-8256-2d08128669da",
+    "nativePendingClickConsumed": true,
+    "hostReadReceiptCount": 1
+  },
+  "gatewayVerification": {
+    "node": "22.20.0",
+    "command": "pnpm test",
+    "testFilesPassed": 23,
+    "testsPassed": 199,
+    "testsSkipped": 3,
+    "exitCode": 0
+  },
+  "redactedSourceArtifacts": [
+    ".tmp/mobile-remote-p8-android/delivery-result.json",
+    ".tmp/mobile-remote-p8-android/click-result.json",
+    ".tmp/mobile-remote-p8-android/background-notification.png",
+    ".tmp/mobile-remote-p8-android/click-task.png"
+  ],
+  "credentialsIncluded": false
+}

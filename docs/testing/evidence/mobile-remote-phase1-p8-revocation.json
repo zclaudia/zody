@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-23",
+  "transport": "real Gateway HTTP/WebSocket + self-hosted ntfy 2.14.0 JSON stream",
+  "test": "../zclaudia-gateway/src/__tests__/notification-revocation.real-ntfy.test.ts",
+  "scopeNarrowing": {
+    "existingPeerCloseCode": 1008,
+    "oldStreamsAandB": "EOF",
+    "removedBackendConfigStreamAndPublishStatus": 404,
+    "retainedBackendReconnectAndNewDelivery": "passed"
+  },
+  "deviceRevocation": {
+    "existingPeerCloseCode": 1008,
+    "oldStream": "EOF",
+    "newConfigStreamAndPublishStatus": 401,
+    "newPeerError": "UNAUTHORIZED",
+    "newPeerCloseCode": 1005
+  },
+  "notifications": "formal diagnostic API; kind=test; no task content",
+  "validation": {
+    "target": {
+      "filesPassed": 1,
+      "testsPassed": 1
+    },
+    "gatewayFull": {
+      "filesPassed": 24,
+      "testsPassed": 201,
+      "testsSkipped": 3
+    },
+    "changedTestEslint": "passed"
+  },
+  "executionCorrections": [
+    "Used existing per-worker DB isolation after shared temporary DB caused one admin counter race.",
+    "Shortened test topic to fit ntfy limit.",
+    "Asserted existing distinct new-handshake rejection contract rather than old-peer revocation close code."
+  ],
+  "limits": [
+    "No Android revoked-credential UI/click acceptance in this test",
+    "No real OEM/Shizuku/release-signed device acceptance"
+  ],
+  "cleanup": {
+    "status": "completed",
+    "ownNtfyContainer": "removed",
+    "temporaryCredentialDatabases": "removed",
+    "productionServices": "untouched"
+  }
+}

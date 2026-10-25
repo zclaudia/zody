@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-23",
+  "status": "passed within stated scope",
+  "runId": "desktop-e2e-20261023-100101-344",
+  "runner": "scripts/run-mobile-host-identity-isolation-e2e.mjs",
+  "case": "packages/desktop/test/e2e/mobile-remote/manual-review/pending/mobile-host-identity-isolation.test.ts",
+  "results": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "exitCode": 0,
+    "caseDurationMs": 43819,
+    "runDurationMs": 72410
+  },
+  "environment": {
+    "desktop": "current Main source rebuilt; two real Electron windows and Local Hosts",
+    "ssh": "two isolated Docker endpoints, same remote path, distinct workspace identities",
+    "gateway": "isolated test Gateway",
+    "phone": "authenticated Gateway protocol probe, not mobile.html UI",
+    "provider": "case-local replay"
+  },
+  "assertions": [
+    "Distinct window IDs and ready Local Host PIDs",
+    "Each identity returns its own task marker and current remoteSessionId",
+    "Focused disconnected restoration placeholder does not shadow connected owner",
+    "Search does not add another Local Host PID",
+    "Forged backend and raw-path workspace key fail closed"
+  ],
+  "regression": {
+    "preFixRun": "desktop-e2e-20261023-095440-008",
+    "cause": "Focused window restored a disconnected placeholder for another Host workspace, masking its connected directory entry",
+    "fix": "Consistent per-identity owner choice for workspace listing, routing and duplicate task projection"
+  },
+  "componentValidation": {
+    "finalSelectedFiles": 14,
+    "finalSelectedTests": 130,
+    "typecheck": "passed",
+    "e2eTypecheck": "passed",
+    "lintErrors": 0,
+    "lintWarnings": 310,
+    "architectureViolations": 0
+  },
+  "limits": [
+    "No real mobile.html UI in this multi-Host run",
+    "No multi-Host Android notification click acceptance",
+    "Pending candidate; fixture checker does not support mobile-remote domain; not promoted"
+  ],
+  "cleanup": {
+    "caseContainersAndVolume": "removed",
+    "privateElectronHomeAndCredentials": "removed",
+    "productionGateway": "untouched"
+  }
+}

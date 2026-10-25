@@ -1,0 +1,108 @@
+{
+  "date": "2026-10-24",
+  "device": {
+    "kind": "emulator",
+    "model": "sdk_gphone64_arm64",
+    "api": 34
+  },
+  "apk": {
+    "sha256": "e708716d946bb06a6624e2e1ecc385fd2345e10ec3b21dd09f99b3cf57db58ad"
+  },
+  "case": "mobile-notification-owner-boundary.test.ts",
+  "scenario": "same identity two windows: owner connected vs stale recovery placeholder; then deleted-task and closed-workspace old-card clicks",
+  "placeholderEvidence": {
+    "state": "stale-placeholder-present",
+    "windowAOwnerSession": "6188571c-3853-4a11-b834-e1ec38671280",
+    "windowBStalePlaceholderSession": null
+  },
+  "backendId": "a76a3769-a58e-461a-b076-cbf6e38b7289",
+  "hostPids": {
+    "initial": [
+      22914,
+      23210
+    ],
+    "final": [
+      22914,
+      23210
+    ],
+    "state": "host-process-set-unchanged"
+  },
+  "notifications": {
+    "owner": {
+      "notificationId": "2b5cf957-a4c7-4a9d-ac14-de6c9aa9c6c0",
+      "workspaceIdentity": "remote:ssh:127.0.0.1:32862:root:/workspace/p8-owner-boundary",
+      "remoteSessionId": "6188571c-3853-4a11-b834-e1ec38671280",
+      "taskId": "sess_d86fe8d5-e96a-4e53-aa28-a95eff6b77c6",
+      "sessionId": "sess_d86fe8d5-e96a-4e53-aa28-a95eff6b77c6",
+      "sourceEventId": "dfb28ff1-5d95-420c-9191-cdf4a4b0422b",
+      "deliveryState": "accepted",
+      "outboxState": "accepted",
+      "expectedResponse": "P8_OWNER_CURRENT_OWNER_ROUTING_OK"
+    },
+    "taskdeleted": {
+      "notificationId": "9b02e6a3-d721-4eaf-91f4-a2de114543a7",
+      "workspaceIdentity": "remote:ssh:127.0.0.1:32862:root:/workspace/p8-owner-boundary",
+      "remoteSessionId": "6188571c-3853-4a11-b834-e1ec38671280",
+      "taskId": "sess_ffcccfe9-0fba-41ea-a77c-8ce6908cab93",
+      "sessionId": "sess_ffcccfe9-0fba-41ea-a77c-8ce6908cab93",
+      "sourceEventId": "90e391fa-fd44-410d-b523-0588244a778e",
+      "deliveryState": "accepted",
+      "outboxState": "accepted",
+      "expectedResponse": "P8_OWNER_TASK_DELETED_OK"
+    },
+    "workspaceclosed": {
+      "notificationId": "53a577c4-cfa6-4fb6-b905-645e153438a8",
+      "workspaceIdentity": "remote:ssh:127.0.0.1:32862:root:/workspace/p8-owner-boundary",
+      "remoteSessionId": "6188571c-3853-4a11-b834-e1ec38671280",
+      "taskId": "sess_45d6d3cd-b65b-4388-bf7e-b8baf308d917",
+      "sessionId": "sess_45d6d3cd-b65b-4388-bf7e-b8baf308d917",
+      "sourceEventId": "69e429d6-8c81-44be-8a2b-38f03ff18e61",
+      "deliveryState": "accepted",
+      "outboxState": "accepted",
+      "expectedResponse": "P8_OWNER_WORKSPACE_CLOSED_OK"
+    }
+  },
+  "clicks": [
+    {
+      "label": "owner",
+      "notificationId": "2b5cf957-a4c7-4a9d-ac14-de6c9aa9c6c0",
+      "readReceiptCount": 1,
+      "confirmedRoute": {
+        "label": "owner",
+        "notificationId": "2b5cf957-a4c7-4a9d-ac14-de6c9aa9c6c0",
+        "workspaceIdentity": "remote:ssh:127.0.0.1:32862:root:/workspace/p8-owner-boundary",
+        "remoteSessionId": "6188571c-3853-4a11-b834-e1ec38671280",
+        "taskId": "sess_d86fe8d5-e96a-4e53-aa28-a95eff6b77c6",
+        "sessionId": "sess_d86fe8d5-e96a-4e53-aa28-a95eff6b77c6",
+        "opened": true
+      }
+    },
+    {
+      "label": "taskdeleted",
+      "notificationId": "9b02e6a3-d721-4eaf-91f4-a2de114543a7",
+      "readReceiptCount": 0,
+      "confirmedRoute": {
+        "label": "taskdeleted",
+        "notificationId": "9b02e6a3-d721-4eaf-91f4-a2de114543a7",
+        "rejected": true
+      }
+    },
+    {
+      "label": "workspaceclosed",
+      "notificationId": "53a577c4-cfa6-4fb6-b905-645e153438a8",
+      "readReceiptCount": 0,
+      "confirmedRoute": {
+        "label": "workspaceclosed",
+        "notificationId": "53a577c4-cfa6-4fb6-b905-645e153438a8",
+        "rejected": true
+      }
+    }
+  ],
+  "finalReceipts": {
+    "owner": 1,
+    "taskdeleted": 0,
+    "workspaceclosed": 0
+  },
+  "workspaceClosedFinding": "Closed-workspace old-card click retained the native pending click and wrote no receipt, but the 'Could not open notification' notice did not surface; the page settled on the workspace chat empty state. Core invariants held; the missing unavailable feedback is recorded as a follow-up finding.",
+  "ownerClickEvidence": "OS card tap fired zody:// ACTION_VIEW (logcat), task body marker visible in WebView DOM, native pending cleared, receipt=1; screenshot artifacts/click-owner-task.png"
+}

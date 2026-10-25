@@ -1,0 +1,54 @@
+{
+  "note": "隔离 ntfy 容器实际收到的消息（按 kind 各存一条；topic=NTFY_TOPIC-backendId；无凭证原文）",
+  "capturedAt": "2026-10-24T13:38:00.800Z",
+  "messages": {
+    "permission": {
+      "ntfyEnvelope": {
+        "id": "nX8N5CTLep7e",
+        "time": 1792848684,
+        "event": "message",
+        "topic": "p2b2ea5f465632-28abf7b9-da7b-498e-b0ba-b49a772444fb",
+        "title": "Zody"
+      },
+      "payload": {
+        "version": 1,
+        "targetKey": "7832bdd80a37ca0b33a7be25dca9811d7ae4423563b93ddc82ea43fee4ef4cbc",
+        "backendId": "28abf7b9-da7b-498e-b0ba-b49a772444fb",
+        "notificationId": "71903f0a-365f-4c9e-8fb3-ca3ea0d4be12",
+        "kind": "permission",
+        "expiresAt": 1792852284229,
+        "actions": [
+          {
+            "optionId": "p2-opt-allow-once",
+            "optionKind": "allowOnce"
+          },
+          {
+            "optionId": "p2-opt-allow-always",
+            "optionKind": "allowAlways"
+          },
+          {
+            "optionId": "p2-opt-deny",
+            "optionKind": "deny"
+          }
+        ]
+      }
+    },
+    "completed": {
+      "ntfyEnvelope": {
+        "id": "WVBlDqhFroDl",
+        "time": 1792848684,
+        "event": "message",
+        "topic": "p2b2ea5f465632-28abf7b9-da7b-498e-b0ba-b49a772444fb",
+        "title": "Zody"
+      },
+      "payload": {
+        "version": 1,
+        "targetKey": "5b20ad05d57cff68a29614a812f414b904617e2247584f29d16dbeea73379d31",
+        "backendId": "28abf7b9-da7b-498e-b0ba-b49a772444fb",
+        "notificationId": "606e5a69-af66-44f3-bfb7-413ca4b96fb2",
+        "kind": "completed",
+        "expiresAt": 1792935084239
+      }
+    }
+  }
+}

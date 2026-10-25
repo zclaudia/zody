@@ -1,0 +1,50 @@
+{
+  "caseId": "A-MN-02",
+  "layer": "E2E-A 设备层",
+  "date": "2026-10-24",
+  "status": "pass",
+  "environment": {
+    "device": "emulator-5554 (hermes_api34, Android 14)",
+    "fakeDesktop": "fake-desktop.mjs 运行中（真实 createWebRemoteControlManager，attachWorkspaceHost 按计划抛 DESKTOP_HOST_MISSING，不 hosting bridge）",
+    "clickTarget": "通知栏分组内最新 permission 卡的「允许一次」按钮（uiautomator 定位 bounds 后 input tap）"
+  },
+  "assertions": [
+    {
+      "name": "点「允许一次」→ App 拉起",
+      "result": "pass",
+      "detail": "tap 后 dumpsys: topResumedActivity=io.github.zclaudia.zody.mobile/.MainActivity；logcat ActivityTaskManager 新增 dat=zody:// 深链 1 条（36→37）",
+      "evidence": ["a-mn-02-app-notice.png"]
+    },
+    {
+      "name": "pending_notification_action_v1 槽写入四字段",
+      "result": "pass",
+      "detail": "adb(root) 读 /data/data/<pkg>/shared_prefs/mobile_notification_bridge.xml：{\"backendId\":\"5704a0a3-…\",\"notificationId\":\"amn02-action-1792851208\",\"optionId\":\"opt-allow-once-2\",\"optionKind\":\"allowOnce\"}，四字段完整；点击前该槽不存在（已验证）",
+      "evidence": ["a-mn-02-app-notice.png"]
+    },
+    {
+      "name": "fake-desktop 侧看到手机活动",
+      "result": "pass",
+      "detail": "fake-desktop 事件 JSONL：App 回前台后 'gateway channel attached'、status active/mobileConnected=true、inbound bootstrap-request ×2、mobile-diagnostic state ready",
+      "evidence": [".tmp/mobile-remote-phase2-e2e/phase2a-desktop-events.jsonl（摘要见本文件 observations）"]
+    },
+    {
+      "name": "槽走向：消费清除（成功路径）或保留（失败路径）",
+      "result": "pass（失败路径：保留）",
+      "detail": "页面处理 pending → openNotificationAction 抛 notification-unavailable（bootstrap.tsx:1253-1255 reader 仅在 workspace bridge 成功后非空，fake-desktop 不 hosting bridge）→ showMobileNotificationNotice『暂时无法打开通知』弹出 → 槽保留（prefs grep=1）。计划 48 行明示两路径皆可接受",
+      "evidence": ["a-mn-02-app-notice.png", "a-mn-02-notice.png"]
+    }
+  ],
+  "observations": {
+    "noticeDialog": "标题 #mobile-notification-error-title=暂时无法打开通知，正文含 关闭/重试（playwright DOM 断言 + 设备截图）",
+    "processAlive": "pidof=17996（点击前后一致）"
+  },
+  "codeBasis": [
+    "packages/android/.../MainActivity.kt:87-106（notification-action 深链写槽+四字段）",
+    "packages/android/.../bridge/MobileNotificationBridge.kt:96-104（KEY_PENDING_ACTION=pending_notification_action_v1）",
+    "packages/web/src/mobile-remote/bootstrap.tsx:1250-1257（openNotificationAction reader 门）、1381-1417（nativeActionQueue onError→notice/dismiss→acknowledgeAction）",
+    "packages/web/src/mobile-remote/mobileNotificationNotice.tsx（独立 <dialog>，标题/关闭/重试）"
+  ],
+  "deviations": [
+    "acknowledge 成功路径（respondPermission 提交后 acknowledgeAction 清槽）在本层不可达：需要真实桌面 hosting workspace bridge + mobile-notification-reader feed + 真实 CLI runtime resolveInteraction，均为 E2E-A 声明不覆盖的项（plan §目标与分层）。fake-desktop 按 plan 前置刻意让 attachWorkspaceHost 抛错。"
+  ]
+}

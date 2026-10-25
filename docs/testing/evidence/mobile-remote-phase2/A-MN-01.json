@@ -1,0 +1,39 @@
+{
+  "caseId": "A-MN-01",
+  "layer": "E2E-A 设备层",
+  "date": "2026-10-24",
+  "status": "pass",
+  "environment": {
+    "device": "emulator-5554 (AVD hermes_api34, Android 14, adb root 可用, per-app locale zh-CN)",
+    "apk": "packages/android assembleDebug (app-debug.apk, 构建 exit 0)",
+    "injectionPath": "adb shell am start-foreground-service -n io.github.zclaudia.zody.mobile/.notifications.MobileNotificationRenderService --es body <envelope JSON>",
+    "note": "RenderService exported=true 且要求调用方持 android.permission.DUMP（AndroidManifest.xml:32-36），adb shell 满足"
+  },
+  "assertions": [
+    {
+      "name": "合法 permission envelope 渲染三按钮",
+      "result": "pass",
+      "detail": "envelope: version=1, kind=permission, actions=[allowOnce/allowAlways/deny 各 1，optionId 为本轮一次性 id]；logcat MobileNotifications 'rendered notification'；uiautomator dump 含 允许一次×2、总是允许×2、拒绝×2、正文『有一项操作等待你批准。』×1",
+      "evidence": ["a-mn-01-shade-valid.png", "a-mn-01-shade-valid.xml"]
+    },
+    {
+      "name": "正文为泛化文案（不含命令/路径/label）",
+      "result": "pass",
+      "detail": "正文 = strings.xml mobile_notification_permission（zh: 有一项操作等待你批准。/ en: An action needs your approval.）；dump 中 envelope 的 optionId、notificationId、畸形 label『植入文本』出现次数均为 0",
+      "evidence": ["a-mn-01-shade-valid.xml", "a-mn-01-shade-malformed.xml"]
+    },
+    {
+      "name": "畸形 actions envelope：通知仍出现但无按钮（不整卡拒绝）",
+      "result": "pass",
+      "detail": "actions=[{optionId 空串}, {label 文本}, \"garbage\", {optionKind=explode}] 全部被过滤；logcat 'rendered notification'（未拒收）；dump 中三按钮文本 0 次、泛化正文仍渲染",
+      "evidence": ["a-mn-01-shade-malformed.png", "a-mn-01-shade-malformed.xml"]
+    }
+  ],
+  "codeBasis": [
+    "packages/android/app/src/main/java/io/github/zclaudia/zody/mobile/notifications/MobileNotificationRenderService.kt:104-128（仅 permission 卡加按钮）、189-203（parseNotificationActions 畸形过滤）",
+    "packages/android/app/src/main/res/values-zh-rCN/strings.xml:7,11-13（按钮固定文案）"
+  ],
+  "deviations": [
+    "计划文案「允许一次/总是允许/拒绝」要求 zh-CN：模拟器系统 locale 原为 en-US，已用 cmd locale set-app-locales <pkg> --locales zh-CN 设 per-app locale 后复测，按钮渲染为中文（en-US 下渲染同源 strings 的 Allow once/Always allow/Deny，已在首轮 dump 中观察）。"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "device": "Android 14/API34 emulator",
+  "productApkSha256": "c772feb78b96da781c8c706a9ac37263c86dd1b100e4386bc146865795fc4e28",
+  "probeApkSha256": "73abc56ad38e1d7e8897c4866f82054b9269d8859d0c042cc1881ba0b02868a2",
+  "probePackage": "io.github.zclaudia.zody.p8probe",
+  "probeUid": 10195,
+  "probeTargetSdk": 35,
+  "probeDeclaredPermissions": 0,
+  "targetPackageVisibleViaQueries": true,
+  "serviceInfoPermission": "android.permission.DUMP",
+  "result": "DENIED_ANDROID_PERMISSION_DUMP",
+  "exceptionMessageContainsRequiredPermission": true,
+  "shellBridgePositiveEvidence": "mobile-remote-phase1-p8-doze-permission.json",
+  "earlierProbeExcluded": "v2 omitted package visibility and failed to check null ComponentName; START_ACCEPTED log did not prove service was started; corrected v3 rerun used strict preflight and result checks",
+  "credentialsIncluded": false,
+  "cleanup": {
+    "originalPreferenceFilesByteVerified": 4,
+    "notificationPermissionRestored": true,
+    "doze": "ACTIVE",
+    "batteryReset": true,
+    "ownedDaemonRemoved": true,
+    "probeUninstalled": true,
+    "temporaryCredentialsRemoved": true
+  }
+}
