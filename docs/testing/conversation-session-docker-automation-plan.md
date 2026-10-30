@@ -29,6 +29,7 @@ CDD01 已迁入 formal 路径，但单 spec Docker `replay-isolated` 运行
 
 | Spec | 迁移状态 |
 | --- | --- |
+| `./test/e2e/conversation-session/conversation-session-task-created-project-row.test.ts` | verified |
 <!-- conversation-session-verified-table-end -->
 
 运行入口：

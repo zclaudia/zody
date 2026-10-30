@@ -13,7 +13,7 @@ node scripts/audit-conversation-session-case-coverage.mjs --check --review-queue
 | 指标 | 当前值 |
 | --- | ---: |
 | Product case 总数 | 221 |
-| 已覆盖 | 125 |
+| 已覆盖 | 111 |
 | 待产品决策 / 自动化 | 36 |
 | 协议题总数 | 36 |
 | 协议题 unanswered | 36 |

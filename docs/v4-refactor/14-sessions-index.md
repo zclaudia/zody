@@ -157,9 +157,30 @@ read 中在 ACK promise resolve 后、await continuation/subscription ownership 
 后续 runtime generation 换代复用同一组 listener，只重订阅；
 runtime unavailable 后撤销订阅与重试并回到 dormant。
 
+runtime lifecycle 的唯一发布者是 ProcessManager。`available`（以及换代的 restart 通知）必须晚于
+真实 spawn、私有 `startup/runtimeIdentity` 握手成功（或旧 Agent 明确返回 method-not-found），
+并且启动 single-flight 已释放，保证 listener 同步调用 `getExistingClient` 就能取得同一 client。
+不能在 spawn 时先通知、再让 existing-only 读取因启动中而失败：这会使 task-index observer 永久
+停在 dormant，新 session 虽可聊天却没有左侧持久行。启动失败、退出或被 dispose 的旧代不能发布
+迟到的 available；同一 runtime identity 只发布一次。没有私有握手的运行入口仍须等待真实 spawn。
+desktop-continuous 与 web-remote-replayable 都观察这个边界；后者继续复用 shared Host，不另起 Agent。
+
+startup 身份握手失败的熔断由 ProcessManager 单一所有者负责（同一份 per-workspace 计数，不引入第二个
+writer）：非 method-not-found 的握手失败（冲突/超时/校验失败）按 workspaceKey 计连续失败次数，成功
+启动（握手成功或旧 Agent method-not-found 兼容）即清零。达到阈值（默认 3 次）后进入熔断窗口（默认
+60s）：窗口内新的 `getClient` 启动请求直接拒绝，不再 spawn 新进程，防止持续冲突的 Agent 形成
+spawn→清理→再 spawn 循环；窗口过期后放行一次探测（half-open），失败则重新计数进入下一轮窗口。
+已存活的 client 读取与 in-flight 启动等待不受熔断影响；熔断只拦截"再启动一个新 runtime"。
+
+回归验收：延迟 startup ACK 时不通知 available/restart、不开放只读 client；放行 ACK 后只通知一次，
+listener 当场能读取该 client。新 session 首发生成 tasks-index 行，离开当前 pane 后左侧仍有唯一行，
+点击可重开并读到首轮回复；renderer reload 后仍保留。连续 N 次握手冲突后第 N+1 次 getClient 在冷却
+窗口内被拒绝且没有新 spawn；窗口过期后放行一次探测，成功后计数清零。
+
 ```text
 restored inactive workspace -> tasks-index row + dormant observer -X-> Agent spawn
-explicit runtime operation  -> runtime available -> install listener -> fresh subscribe -> live detail
+explicit runtime operation  -> spawn + startup ACK -> release single-flight -> runtime available
+runtime available           -> install listener -> fresh subscribe -> task row + live detail
 runtime unavailable         -> clear live ownership/retry -> dormant -X-> implicit restart
 ```
 

@@ -6,15 +6,16 @@ import {
   DEFAULT_WORKSPACE,
   clearAppData,
   waitForDefaultWorkspaceReady,
-} from "../../../helpers/desktop-app.js";
+} from "../helpers/desktop-app.js";
 import {
   getV4PaneSnapshot,
   prepareV4ConversationE2E,
+  selectV4TaskById,
   sendV4Prompt,
   startNewV4Draft,
   waitForV4Pane,
   waitForV4TimelineContaining,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 
 const CASE_TIMEOUT_MS = 150_000;
 const PROMPT_MARKER = "E2E_TASK_CREATED_PROJECT_ROW";
@@ -26,7 +27,7 @@ describe("TSL26：task_created 换代 Project task-row 快照", () => {
     await clearAppData();
   });
 
-  it("草稿首发后 optimistic 行收敛为唯一持久行且刷新不消失", async function () {
+  it("草稿首发后唯一持久行可在离开后重开，刷新仍保留", async function () {
     this.timeout(CASE_TIMEOUT_MS);
 
     await prepareV4ConversationE2E();
@@ -53,6 +54,16 @@ describe("TSL26：task_created 换代 Project task-row 快照", () => {
     // 切回新草稿后旧 task 不再是 active，仍可见才证明 task_created 已把持久行读进查询结果。
     await startNewV4Draft();
     await waitForSingleProjectRow(taskId, "退出 active task 后持久 Project 行消失或重复");
+
+    // 启动握手期间的过早 available 曾使 task-index 订阅失活，聊天仍可继续但离开后无入口。
+    // 必须从真实左侧行重开并读到原回复，不能只用当前 pane 的 sessionId 证明创建成功。
+    await selectV4TaskById(taskId);
+    await waitForV4Pane(
+      (snapshot) => snapshot.sessionId === taskId,
+      "离开后无法从 Project 行重开原 session",
+    );
+    await waitForV4TimelineContaining(REPLY_MARKER);
+    await startNewV4Draft();
 
     await browser.refresh();
     await waitForDefaultWorkspaceReady(45_000);

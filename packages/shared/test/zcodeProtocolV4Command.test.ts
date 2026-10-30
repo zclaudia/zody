@@ -15,6 +15,28 @@ import {
 } from "../src/zcode-protocol-v4/index.js";
 
 describe("zcode-protocol-v4 command", () => {
+  it("validates createSession first input origin and strips business-level launch identity", () => {
+    const payload = commandPayloadSchemas.createSession.parse({
+      workspaceId: "/workspace",
+      cuaLaunchIdentity: {
+        hostInstanceId: "host-real",
+        runtimeInstanceId: "agent-real",
+      },
+      firstInput: { text: "open the app", inputOrigin: "desktop" },
+    });
+    expect(payload).toMatchObject({
+      firstInput: { text: "open the app", inputOrigin: "desktop" },
+    });
+    // 启动身份只走私有 startup 帧；业务 payload 的自报同名字段必须被丢弃。
+    expect(payload).not.toHaveProperty("cuaLaunchIdentity");
+    expect(
+      commandPayloadSchemas.createSession.safeParse({
+        workspaceId: "/workspace",
+        firstInput: { text: "x", inputOrigin: "unknown" },
+      }).success,
+    ).toBe(false);
+  });
+
   it("parses a valid sendText envelope with typed payload", () => {
     const result = parseCommandEnvelope({
       commandId: "018f0000-0000-7000-8000-000000000001",

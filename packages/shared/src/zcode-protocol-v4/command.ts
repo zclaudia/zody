@@ -60,6 +60,8 @@ export const commandPayloadSchemas = {
         modelSelection: modelSelectionSchema.optional(),
         mode: submissionModeSchema.optional(),
         planEnabled: z.boolean().optional(),
+        // 由 Host facade 按可信连接覆盖；客户端自报值不能作为 CUA live 资格。
+        inputOrigin: z.enum(["desktop", "mobile"]).optional(),
       })
       .optional(),
     config: createSessionRequestedConfigSchema.optional(),

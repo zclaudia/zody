@@ -600,6 +600,12 @@ describe("resolveDefaultZCodeAgentCommand", () => {
       }),
     });
     const restarts: Array<{ workspaceKey: string; generation: number }> = [];
+    const availableGenerations: number[] = [];
+    manager.onRuntimeLifecycle((event) => {
+      if (event.state === "available" && manager.getExistingClient({ workspacePath })) {
+        availableGenerations.push(event.runtimeIdentity.generation);
+      }
+    });
     manager.onRuntimeRestarted((event) => {
       restarts.push({
         workspaceKey: event.workspaceKey,
@@ -610,11 +616,13 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     await manager.getClient({ workspacePath });
     await new Promise((resolve) => setImmediate(resolve));
     expect(restarts).toEqual([]);
+    expect(availableGenerations).toEqual([1]);
 
     await manager.disposeWorkspace({ workspacePath });
     await manager.getClient({ workspacePath });
     await new Promise((resolve) => setImmediate(resolve));
     expect(restarts).toEqual([{ workspaceKey: workspacePath, generation: 2 }]);
+    expect(availableGenerations).toEqual([1, 2]);
 
     manager.disposeAll();
   });
@@ -904,6 +912,361 @@ setInterval(() => {}, 1000);
       expect(reporter.onError).not.toHaveBeenCalled();
     } finally {
       manager.disposeAll();
+    }
+  });
+
+  it("真实 ProcessManager 只向实际 spawn 的 Agent 发送一次同一 runtimeIdentity", async () => {
+    const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-startup-identity-"));
+    createdDirs.push(workspacePath);
+    const markerPath = join(workspacePath, "startup-identity.jsonl");
+    const reporter = {
+      onSpawn: vi.fn(),
+      onExit: vi.fn(),
+    } satisfies RuntimeProcessLifecycleReporter;
+    const manager = new ZCodeAgentProcessManager({
+      cuaHostInstanceId: "host-real",
+      commandResolver: () => ({
+        command: process.execPath,
+        cwd: workspacePath,
+        args: [
+          "-e",
+          `
+          const fs = require("node:fs");
+          const readline = require("node:readline");
+          const send = (value) => process.stdout.write(JSON.stringify(value) + "\\n");
+          readline.createInterface({ input: process.stdin }).on("line", (line) => {
+            const request = JSON.parse(line);
+            if (request.method === "startup/runtimeIdentity") {
+              fs.appendFileSync(${JSON.stringify(markerPath)}, JSON.stringify(request.params) + "\\n");
+              send({ id: request.id, result: { initialized: true, reused: false } });
+              return;
+            }
+            send({ id: request.id, result: {} });
+          });
+          `,
+        ],
+      }),
+      processLifecycleReporter: reporter,
+    });
+
+    try {
+      const firstClient = await manager.getClient({ workspacePath });
+      const secondClient = await manager.getClient({ workspacePath });
+      expect(secondClient).toBe(firstClient);
+      await firstClient.request("workspace/readState", {});
+      await vi.waitFor(() => expect(reporter.onSpawn).toHaveBeenCalledTimes(1));
+      await vi.waitFor(() => expect(existsSync(markerPath)).toBe(true));
+
+      const startupFrames = readFileSync(markerPath, "utf8")
+        .trim()
+        .split("\n")
+        .map((line) => JSON.parse(line));
+      const managedIdentity = await manager.getRuntimeIdentity({ workspacePath });
+      const spawnIdentity = reporter.onSpawn.mock.calls[0]![0];
+      expect(startupFrames).toHaveLength(1);
+      expect(startupFrames[0]).toEqual({
+        identity: {
+          hostInstanceId: "host-real",
+          runtimeInstanceId: spawnIdentity.runtimeInstanceId,
+        },
+      });
+      expect(managedIdentity).toMatchObject({
+        generation: spawnIdentity.runtimeGeneration,
+        identity: expect.stringContaining(`:${spawnIdentity.pid}`),
+        processId: spawnIdentity.pid,
+        workspaceKey: workspacePath,
+      });
+      expect(manager.listManagedProcesses()).toHaveLength(1);
+    } finally {
+      await manager.disposeAllAndWait();
+    }
+  });
+
+  it.each([1, 2])(
+    "第 %i 代 startup ACK 延迟时不发布 available，放行后 listener 可立即读取同一 client",
+    async (generation) => {
+      const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-startup-gate-"));
+      createdDirs.push(workspacePath);
+      const requestMarkerPath = join(workspacePath, "startup-request.json");
+      const ackGatePath = join(workspacePath, "startup-ack-gate");
+      const manager = new ZCodeAgentProcessManager({
+        cuaHostInstanceId: "host-real",
+        commandResolver: () => ({
+          command: process.execPath,
+          cwd: workspacePath,
+          args: [
+            "-e",
+            `
+          const fs = require("node:fs");
+          const readline = require("node:readline");
+          const send = (value) => process.stdout.write(JSON.stringify(value) + "\\n");
+          readline.createInterface({ input: process.stdin }).on("line", (line) => {
+            const request = JSON.parse(line);
+            if (request.method === "startup/runtimeIdentity") {
+              fs.writeFileSync(${JSON.stringify(requestMarkerPath)}, JSON.stringify(request.params));
+              const timer = setInterval(() => {
+                if (!fs.existsSync(${JSON.stringify(ackGatePath)})) return;
+                clearInterval(timer);
+                send({ id: request.id, result: { initialized: true, reused: false } });
+              }, 5);
+              return;
+            }
+            send({ id: request.id, result: {} });
+          });
+          `,
+          ],
+        }),
+      });
+
+      if (generation === 2) {
+        writeFileSync(ackGatePath, "ack");
+        await manager.getClient({ workspacePath });
+        await manager.disposeWorkspace({ workspacePath });
+        rmSync(ackGatePath);
+        rmSync(requestMarkerPath);
+      }
+      const availableClients: Array<ReturnType<typeof manager.getExistingClient>> = [];
+      const restartedClients: Array<ReturnType<typeof manager.getExistingClient>> = [];
+      const restarted = vi.fn();
+      manager.onRuntimeLifecycle((event) => {
+        if (event.state === "available") {
+          availableClients.push(manager.getExistingClient({ workspacePath }));
+        }
+      });
+      manager.onRuntimeRestarted((event) => {
+        restarted(event);
+        restartedClients.push(manager.getExistingClient({ workspacePath }));
+      });
+
+      try {
+        let firstSettled = false;
+        const firstPromise = manager.getClient({ workspacePath }).finally(() => {
+          firstSettled = true;
+        });
+        void firstPromise.catch(() => undefined);
+        await vi.waitFor(() => expect(existsSync(requestMarkerPath)).toBe(true));
+
+        let secondSettled = false;
+        const secondPromise = manager.getClient({ workspacePath }).finally(() => {
+          secondSettled = true;
+        });
+        void secondPromise.catch(() => undefined);
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        expect(firstSettled).toBe(false);
+        expect(secondSettled).toBe(false);
+        expect(manager.getExistingClient({ workspacePath })).toBeUndefined();
+        expect(manager.listManagedProcesses()).toHaveLength(1);
+        expect(availableClients).toEqual([]);
+        expect(restarted).not.toHaveBeenCalled();
+
+        writeFileSync(ackGatePath, "ack");
+        const [firstClient, secondClient] = await Promise.all([firstPromise, secondPromise]);
+        expect(secondClient).toBe(firstClient);
+        expect(availableClients).toEqual([firstClient]);
+        expect(manager.getExistingClient({ workspacePath })).toBe(firstClient);
+        expect(restarted).toHaveBeenCalledTimes(generation - 1);
+        expect(restartedClients).toEqual(generation === 2 ? [firstClient] : []);
+        await expect(firstClient.request("workspace/readState", {})).resolves.toEqual({});
+        expect(
+          readFileSync(requestMarkerPath, "utf8").trim().split("\n").filter(Boolean),
+        ).toHaveLength(1);
+      } finally {
+        await manager.disposeAllAndWait();
+      }
+    },
+  );
+
+  it("旧 Agent 明确不认识 startup 帧时保留普通聊天 client", async () => {
+    const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-startup-unknown-method-"));
+    createdDirs.push(workspacePath);
+    const manager = new ZCodeAgentProcessManager({
+      cuaHostInstanceId: "host-real",
+      commandResolver: () => ({
+        command: process.execPath,
+        cwd: workspacePath,
+        args: [
+          "-e",
+          `
+          const readline = require("node:readline");
+          const send = (value) => process.stdout.write(JSON.stringify(value) + "\\n");
+          readline.createInterface({ input: process.stdin }).on("line", (line) => {
+            const request = JSON.parse(line);
+            if (request.method === "startup/runtimeIdentity") {
+              send({ id: request.id, error: { code: -32601, message: "Method not found" } });
+              return;
+            }
+            send({ id: request.id, result: { legacy: true } });
+          });
+          `,
+        ],
+      }),
+    });
+
+    try {
+      const client = await manager.getClient({ workspacePath });
+      await expect(client.request("workspace/readState", {})).resolves.toEqual({ legacy: true });
+      expect(manager.listManagedProcesses()).toHaveLength(1);
+    } finally {
+      await manager.disposeAllAndWait();
+    }
+  });
+
+  it("startup 身份冲突时关闭该 Agent，不允许复用旧 candidate 进程", async () => {
+    const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-startup-conflict-"));
+    createdDirs.push(workspacePath);
+    const reporter = {
+      onSpawn: vi.fn(),
+      onExit: vi.fn(),
+    } satisfies RuntimeProcessLifecycleReporter;
+    const manager = new ZCodeAgentProcessManager({
+      cuaHostInstanceId: "host-real",
+      commandResolver: () => ({
+        command: process.execPath,
+        cwd: workspacePath,
+        args: [
+          "-e",
+          `
+          const readline = require("node:readline");
+          const send = (value) => process.stdout.write(JSON.stringify(value) + "\\n");
+          readline.createInterface({ input: process.stdin }).on("line", (line) => {
+            const request = JSON.parse(line);
+            if (request.method === "startup/runtimeIdentity") {
+              send({ id: request.id, error: { code: -32600, message: "fault.startup.runtimeIdentityConflict" } });
+            }
+          });
+          `,
+        ],
+      }),
+      processLifecycleReporter: reporter,
+    });
+    const lifecycle = vi.fn();
+    manager.onRuntimeLifecycle(lifecycle);
+
+    try {
+      await expect(manager.getClient({ workspacePath })).rejects.toThrow(
+        "startup CUA identity initialization failed",
+      );
+      expect(manager.listManagedProcesses()).toEqual([]);
+      expect(lifecycle).not.toHaveBeenCalled();
+      await vi.waitFor(() => expect(reporter.onExit).toHaveBeenCalledTimes(1));
+      expect(reporter.onExit.mock.calls[0]![0]).toMatchObject({
+        runtimeInstanceId: reporter.onSpawn.mock.calls[0]![0].runtimeInstanceId,
+        terminationKind: "expected",
+        terminationReason: "startup-identity",
+      });
+    } finally {
+      await manager.disposeAllAndWait();
+    }
+  });
+
+  it("startup 身份连续冲突达到阈值后熔断，冷却窗口内不再 spawn，过期后放行探测并清零", async () => {
+    const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-startup-breaker-"));
+    createdDirs.push(workspacePath);
+    // marker 存在时握手成功，不存在时返回冲突；测试用它在冷却过期后切换探测结果。
+    const allowMarkerPath = join(workspacePath, "allow-identity");
+    const reporter = {
+      onSpawn: vi.fn(),
+      onExit: vi.fn(),
+    } satisfies RuntimeProcessLifecycleReporter;
+    const manager = new ZCodeAgentProcessManager({
+      cuaHostInstanceId: "host-real",
+      startupIdentityFailureThreshold: 2,
+      startupIdentityRetryCooldownMs: 5_000,
+      commandResolver: () => ({
+        command: process.execPath,
+        cwd: workspacePath,
+        args: [
+          "-e",
+          `
+          const fs = require("node:fs");
+          const readline = require("node:readline");
+          const send = (value) => process.stdout.write(JSON.stringify(value) + "\\n");
+          readline.createInterface({ input: process.stdin }).on("line", (line) => {
+            const request = JSON.parse(line);
+            if (request.method === "startup/runtimeIdentity") {
+              if (fs.existsSync(${JSON.stringify(allowMarkerPath)})) {
+                send({ id: request.id, result: { initialized: true, reused: false } });
+              } else {
+                send({ id: request.id, error: { code: -32600, message: "fault.startup.runtimeIdentityConflict" } });
+              }
+              return;
+            }
+            send({ id: request.id, result: {} });
+          });
+          `,
+        ],
+      }),
+      processLifecycleReporter: reporter,
+    });
+
+    // 冷却过期与清零用短冷却的第二实例验证，避免真实等待 5s 冷却窗。
+    const probeReporter = {
+      onSpawn: vi.fn(),
+      onExit: vi.fn(),
+    } satisfies RuntimeProcessLifecycleReporter;
+    const probeManager = new ZCodeAgentProcessManager({
+      cuaHostInstanceId: "host-real",
+      startupIdentityFailureThreshold: 1,
+      startupIdentityRetryCooldownMs: 50,
+      commandResolver: () => ({
+        command: process.execPath,
+        cwd: workspacePath,
+        args: [
+          "-e",
+          `
+          const fs = require("node:fs");
+          const readline = require("node:readline");
+          const send = (value) => process.stdout.write(JSON.stringify(value) + "\\n");
+          readline.createInterface({ input: process.stdin }).on("line", (line) => {
+            const request = JSON.parse(line);
+            if (request.method === "startup/runtimeIdentity") {
+              if (fs.existsSync(${JSON.stringify(allowMarkerPath)})) {
+                send({ id: request.id, result: { initialized: true, reused: false } });
+              } else {
+                send({ id: request.id, error: { code: -32600, message: "fault.startup.runtimeIdentityConflict" } });
+              }
+              return;
+            }
+            send({ id: request.id, result: {} });
+          });
+          `,
+        ],
+      }),
+      processLifecycleReporter: probeReporter,
+    });
+
+    try {
+      // 连续两次冲突：各 spawn 一次并清理。
+      await expect(manager.getClient({ workspacePath })).rejects.toThrow(
+        "startup CUA identity initialization failed",
+      );
+      await expect(manager.getClient({ workspacePath })).rejects.toThrow(
+        "startup CUA identity initialization failed",
+      );
+      await vi.waitFor(() => expect(reporter.onSpawn).toHaveBeenCalledTimes(2));
+
+      // 阈值已到：冷却窗口内直接拒绝，且没有第三次 spawn。
+      await expect(manager.getClient({ workspacePath })).rejects.toThrow(
+        "circuit is open",
+      );
+      expect(reporter.onSpawn).toHaveBeenCalledTimes(2);
+
+      // 第二实例单次失败即跳闸；冷却过期 + 握手可成功后放行探测，成功清零并返回可用 client。
+      await expect(probeManager.getClient({ workspacePath })).rejects.toThrow(
+        "startup CUA identity initialization failed",
+      );
+      await expect(probeManager.getClient({ workspacePath })).rejects.toThrow(
+        "circuit is open",
+      );
+      expect(probeReporter.onSpawn).toHaveBeenCalledTimes(1);
+      writeFileSync(allowMarkerPath, "");
+      await new Promise((resolve) => setTimeout(resolve, 120));
+      const client = await probeManager.getClient({ workspacePath });
+      await expect(client.request("workspace/readState", {})).resolves.toEqual({});
+      expect(probeReporter.onSpawn).toHaveBeenCalledTimes(2);
+    } finally {
+      await manager.disposeAllAndWait();
+      await probeManager.disposeAllAndWait();
     }
   });
 

@@ -12,11 +12,11 @@ node scripts/audit-conversation-session-case-coverage.mjs --check --workflow-boa
 
 | 指标 | 当前值 |
 | --- | ---: |
-| Workflow case | 89 |
+| Workflow case | 98 |
 | Draft-ready case | 0 |
 | Worksheet-ready case | 0 |
 | Source-backfill-needed case | 0 |
-| Roadmap ready-to-write | 35 |
+| Roadmap ready-to-write | 44 |
 | Roadmap implemented | 18 |
 
 ## Next Action Counts
@@ -27,7 +27,7 @@ node scripts/audit-conversation-session-case-coverage.mjs --check --workflow-boa
 | 填写 N02.1 | 1 |
 | 填写 N03.1 | 1 |
 | 填写 N04.1 | 1 |
-| 补齐 | 53 |
+| 补齐 | 62 |
 | 填写 N06.1 | 1 |
 | 填写 N07.1 | 1 |
 | 填写 N08.1 | 1 |
@@ -132,6 +132,14 @@ node scripts/audit-conversation-session-case-coverage.mjs --check --workflow-boa
 | H12 | 未分组 | missing | not-in-decision-protocol | partial | implemented | 补齐 |
 | H15 | 未分组 | missing | not-in-decision-protocol | partial | implemented | 补齐 |
 | H16 | 未分组 | missing | not-in-decision-protocol | partial | implemented | 补齐 |
+| I25 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
+| I28 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
+| I35 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
+| I36 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
+| I37 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
+| I38 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
+| I39 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
+| I42 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
 | I43 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
 | I44 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
 | I45 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
@@ -154,3 +162,4 @@ node scripts/audit-conversation-session-case-coverage.mjs --check --workflow-boa
 | I63 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
 | I64 | 未分组 | missing | not-in-decision-protocol | partial | implemented | 补齐 |
 | I65 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |
+| I69 | 未分组 | missing | not-in-decision-protocol | planned | ready-to-write | 补齐 |

@@ -32,6 +32,8 @@ import { TaskIndexRepo } from "../src/session/taskIndexRepo.js";
 const V4_FAKE_AGENT = `
 const fs = require("node:fs");
 const logPath = process.argv[2];
+// argv[3] 可选：延迟 startup/runtimeIdentity ACK 毫秒数，用于复现启动握手窗口。
+const startupAckDelayMs = Number(process.argv[3] || 0);
 let buf = "";
 function send(obj) { process.stdout.write(JSON.stringify(obj) + "\\n"); }
 process.stdin.on("data", (chunk) => {
@@ -44,6 +46,14 @@ process.stdin.on("data", (chunk) => {
     let msg;
     try { msg = JSON.parse(line); } catch { continue; }
     if (logPath && msg.method) fs.appendFileSync(logPath, line + "\\n");
+    if (msg.method === "startup/runtimeIdentity" && msg.id !== undefined) {
+      if (startupAckDelayMs > 0) {
+        setTimeout(() => send({ id: msg.id, result: { initialized: true, reused: false } }), startupAckDelayMs);
+      } else {
+        send({ id: msg.id, result: { initialized: true, reused: false } });
+      }
+      continue;
+    }
     if (msg.method === "session/debug" && msg.id !== undefined) {
       send({ id: msg.id, result: { sessionId: msg.params.sessionId, rounds: [], networkEntries: [], cache: null } });
       continue;
@@ -352,6 +362,8 @@ describe("zcodeAgentService v4 conversation channel", () => {
     options: {
       providerReady?: boolean;
       authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
+      cuaHostInstanceId?: string;
+      delayStartupIdentityAckMs?: number;
     } = {},
   ) {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-v4-"));
@@ -362,10 +374,17 @@ describe("zcodeAgentService v4 conversation channel", () => {
     writeFileSync(scriptPath, V4_FAKE_AGENT);
     const commandResolver = vi.fn(() => ({
       command: process.execPath,
-      args: [scriptPath, logPath],
+      args: [
+        scriptPath,
+        logPath,
+        ...(options.delayStartupIdentityAckMs
+          ? [String(options.delayStartupIdentityAckMs)]
+          : []),
+      ],
     }));
     const service = createZCodeAgentService({
       commandResolver,
+      cuaHostInstanceId: options.cuaHostInstanceId,
       authorizeLocalMediaPreviewPath: options.authorizeLocalMediaPreviewPath,
       modelSelectionReadinessSource: {
         async getView() {
@@ -817,6 +836,131 @@ describe("zcodeAgentService v4 conversation channel", () => {
       expect(
         readRequests(logPath).find((entry) => entry.method === "v4/command")?.params,
       ).toMatchObject({ payload: { text: "hello", inputOrigin: "mobile" } });
+    } finally {
+      await scope.dispose();
+      await service.disposeAllAndWait();
+    }
+  });
+
+  it("pins startup identity once and removes untrusted input origin", async () => {
+    const { service, workspacePath, logPath } = setupService({ cuaHostInstanceId: "host-real" });
+    try {
+      await service.sendConversationCommandV4({
+        workspacePath,
+        envelope: {
+          commandId: "untrusted-origin",
+          clientId: "untrusted-client",
+          sessionId: "untrusted-session",
+          type: "sendText",
+          issuedAt: 1,
+          payload: { text: "hello", inputOrigin: "desktop" },
+        },
+      });
+      const requests = readRequests(logPath);
+      const identityRequests = requests.filter(
+        (entry) => entry.method === "startup/runtimeIdentity",
+      );
+      expect(identityRequests).toHaveLength(1);
+      expect(identityRequests[0]?.params).toEqual({
+        identity: {
+          hostInstanceId: "host-real",
+          runtimeInstanceId: expect.stringMatching(/^agent-/),
+        },
+      });
+      const command = requests.find((entry) => entry.method === "v4/command");
+      // 无可信连接：客户端自报 desktop 必须被删除，普通聊天仍转发。
+      expect(command?.params).toMatchObject({ payload: { text: "hello" } });
+      expect(command?.params.payload).not.toHaveProperty("inputOrigin");
+    } finally {
+      await service.disposeAllAndWait();
+    }
+  });
+
+  it("web-remote-replayable 共享 Host：握手窗口内不发布 available 也不另起 Agent，ACK 后只发布一次", async () => {
+    const { service, workspacePath, logPath, commandResolver } = setupService({
+      cuaHostInstanceId: "host-real",
+      delayStartupIdentityAckMs: 1_500,
+    });
+    const scope = createZCodeAgentConnectionScope(service, {
+      connectionId: "replay-lifecycle",
+      clientMode: "web-remote-replayable",
+    });
+    const lifecycle: Array<{ state: string; workspaceKey: string }> = [];
+    service.onAgentRuntimeLifecycle((event) => {
+      lifecycle.push({ state: event.state, workspaceKey: event.workspaceKey });
+    });
+    try {
+      await scope.service.helloConversationV4();
+      await scope.service.initializeConversationV4({
+        kind: "clientHello",
+        protocolVersion: 3,
+        clientId: "replay-lifecycle",
+        appVersion: "test",
+      });
+      // replayable 会话订阅与 sessions-index 订阅并发进入：前者驱动首个 spawn，
+      // 后者复用 shared Host 的同一 runtime，两者都在握手收口后才能拿到 client。
+      const conversationPromise = scope.service.subscribeConversationV4({
+        workspacePath,
+        sessionId: "replay-lifecycle-session",
+      });
+      const indexPromise = service.subscribeSessionsIndexV4({ workspacePath });
+
+      // 握手请求已到达 Agent、ACK 仍在延迟窗口内：spawn 已发生但不得提前发布
+      // available（旧时序会让 existing-only 观察者永久 dormant，session 无左栏持久行）。
+      await vi.waitFor(() =>
+        expect(
+          readRequests(logPath).some((entry) => entry.method === "startup/runtimeIdentity"),
+        ).toBe(true),
+      );
+      expect(commandResolver).toHaveBeenCalledTimes(1);
+      expect(lifecycle).toEqual([]);
+
+      const conversation = await conversationPromise;
+      const index = await indexPromise;
+      expect(conversation.ack.subscriptionId).toBe("sub-1");
+      expect(index.ack).toMatchObject({ subscriptionId: "sub-1" });
+      // replayable 不为手机另起 Agent：全程只有一个 runtime 进程。
+      expect(commandResolver).toHaveBeenCalledTimes(1);
+      expect(lifecycle.filter((event) => event.state === "available")).toHaveLength(1);
+      expect(lifecycle.filter((event) => event.state === "unavailable")).toHaveLength(0);
+    } finally {
+      scope.dispose();
+      await service.disposeAllAndWait();
+    }
+  });
+
+  it("overrides forged desktop input origin on trusted replayable createSession first input", async () => {
+    const { service, workspacePath, logPath } = setupService({ cuaHostInstanceId: "host-real" });
+    const scope = createZCodeAgentConnectionScope(service, {
+      connectionId: "mobile-create",
+      clientMode: "web-remote-replayable",
+    });
+    try {
+      await scope.service.helloConversationV4();
+      await scope.service.initializeConversationV4({
+        kind: "clientHello",
+        protocolVersion: 3,
+        clientId: "mobile-client",
+        appVersion: "4.0.0",
+      });
+      await scope.service.sendConversationCommandV4({
+        workspacePath,
+        envelope: {
+          commandId: "mobile-create-command",
+          clientId: "mobile-client",
+          sessionId: null,
+          type: "createSession",
+          issuedAt: 1,
+          payload: {
+            workspaceId: workspacePath,
+            firstInput: { text: "hello", inputOrigin: "desktop" },
+          },
+        },
+      });
+      const command = readRequests(logPath).find((entry) => entry.method === "v4/command");
+      expect(command?.params).toMatchObject({
+        payload: { firstInput: { text: "hello", inputOrigin: "mobile" } },
+      });
     } finally {
       await scope.dispose();
       await service.disposeAllAndWait();
@@ -1294,7 +1438,6 @@ describe("zcodeAgentService v4 conversation channel", () => {
 
       const commandRequest = readRequests(logPath).find((entry) => entry.method === "v4/command");
       expect(commandRequest?.params.payload).toEqual({
-        inputOrigin: "desktop",
         text: "执行定时任务",
         automationId: "automation-cron",
         toolDisallowlist: ["ExistingDeniedTool", "CronCreate", "CronUpdate", "CronDelete"],

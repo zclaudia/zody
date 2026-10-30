@@ -987,6 +987,39 @@ function toProtocolAutomation(automation: ZCodeAutomation) {
   };
 }
 
+/**
+ * 客户端自报 `inputOrigin` 不是 live 凭证。可信连接存在时用连接模式覆盖；不存在时删除该字段。
+ * 启动身份不在这里注入，也不属于任何业务命令 payload。
+ */
+function applyTrustedCuaInputOrigin(
+  envelope: CommandEnvelope,
+  origin: "desktop" | "mobile" | undefined,
+): CommandEnvelope {
+  if (envelope.type === "sendText") {
+    const { inputOrigin: _clientOrigin, ...payload } = commandPayloadSchemas.sendText.parse(
+      envelope.payload,
+    );
+    return {
+      ...envelope,
+      payload: origin ? { ...payload, inputOrigin: origin } : payload,
+    };
+  }
+  if (envelope.type === "createSession") {
+    // zod schema 已丢弃业务层 `cuaLaunchIdentity` 等非协议自证字段。
+    const payload = commandPayloadSchemas.createSession.parse(envelope.payload);
+    if (!payload.firstInput) return { ...envelope, payload };
+    const { inputOrigin: _clientOrigin, ...firstInput } = payload.firstInput;
+    return {
+      ...envelope,
+      payload: {
+        ...payload,
+        firstInput: origin ? { ...firstInput, inputOrigin: origin } : firstInput,
+      },
+    };
+  }
+  return envelope;
+}
+
 // fork（F4.3）：toProtocolOffPeakTaskSnapshot / OFF_PEAK_INTERNAL_ERROR_* /
 // respondOffPeakInternalError / resolveOffPeak{AllowedModels,CreateModel,ToolSelection}
 // （offPeak/create、offPeak/list 协议 handler 的支撑函数）随闲时任务全链路删除。
@@ -5263,10 +5296,15 @@ export function createZCodeAgentService(
       }
       // RPC facade 会清掉调用方可伪造的顶层 clientMode，再用 trusted carrier 注入 host
       // 真值；host 内部 adapter 直调仍兼容显式 clientMode。
+      const trustedConnection = readTrustedZCodeAgentV4Connection(params);
+      // 聊天/遥测仍兼容旧 clientMode fallback；CUA live 来源只认可信 carrier。
       const commandClientMode =
-        readTrustedZCodeAgentV4Connection(params)?.clientMode ??
-        params.clientMode ??
-        "desktop-continuous";
+        trustedConnection?.clientMode ?? params.clientMode ?? "desktop-continuous";
+      const trustedInputOrigin: "desktop" | "mobile" | undefined = trustedConnection
+        ? trustedConnection.clientMode === "web-remote-replayable"
+          ? "mobile"
+          : "desktop"
+        : undefined;
       if (params.envelope.type === "createSession") {
         // V4 草稿预热直接走 command 转发；新会话创建前只需等待 Account Config，
         // ZCode Built-in / Personal 已由 Worker 进程 Registry 自己装配。
@@ -5276,7 +5314,10 @@ export function createZCodeAgentService(
           workspace: params,
         });
       }
-      let envelope = await buildConversationCommandEnvelope(params);
+      let envelope = applyTrustedCuaInputOrigin(
+        await buildConversationCommandEnvelope(params),
+        trustedInputOrigin,
+      );
       // TTFT 首版只允许可信桌面本地 continuous，手机/远端透传不能开启本地观测。
       if (
         commandClientMode !== "desktop-continuous" ||
@@ -5288,12 +5329,10 @@ export function createZCodeAgentService(
       }
       if (envelope.type === "sendText" && envelope.sessionId) {
         const sessionId = envelope.sessionId;
+        const sendPayload = commandPayloadSchemas.sendText.parse(envelope.payload);
         const payload = {
-          ...commandPayloadSchemas.sendText.parse(envelope.payload),
-          inputOrigin:
-            commandClientMode === "web-remote-replayable"
-              ? ("mobile" as const)
-              : ("desktop" as const),
+          ...sendPayload,
+          ...(trustedInputOrigin ? { inputOrigin: trustedInputOrigin } : {}),
         };
         envelope = { ...envelope, payload };
         const browserAmbientContext = await collectBrowserAmbientContext(

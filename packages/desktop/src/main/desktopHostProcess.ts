@@ -591,14 +591,16 @@ export function spawnHostProcess(
       ...(dependencies.getMobileNotificationContext?.() ?? { enabled: false }),
     });
   const shouldAttachRealtimeHost = options?.taskRealtime != null;
-  const hostInitMessage: HostInitMessage = shouldAttachRealtimeHost
-    ? {
-        ...initMessage,
-        databaseStartupId: databaseStartupRelay.startupId,
-        hostId,
-        deliveryKind: options?.taskRealtime?.deliveryKind,
-      }
-    : { ...initMessage, databaseStartupId: databaseStartupRelay.startupId };
+  // Host 实例身份属于整个 UtilityProcess 生命周期，不是 taskRealtime 的附属能力。
+  // Local services / Agent 启动身份必须始终拿到同一个真实 hostId。
+  const hostInitMessage: HostInitMessage = {
+    ...initMessage,
+    databaseStartupId: databaseStartupRelay.startupId,
+    hostId,
+    ...(shouldAttachRealtimeHost && options?.taskRealtime?.deliveryKind
+      ? { deliveryKind: options.taskRealtime.deliveryKind }
+      : {}),
+  };
 
   if (options?.attachInitialServicePort === false) {
     child.postMessage(hostInitMessage);

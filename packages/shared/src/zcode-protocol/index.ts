@@ -3890,6 +3890,8 @@ export type ZCodeAutomationDeleteProtocolResult = z.infer<typeof zcodeAutomation
 
 export const zcodeProtocolMethods = {
   runtimeCapabilities: "runtime/capabilities",
+  /** 私有 stdio 启动初始化：只允许 Host 的 ProcessManager 在 spawn 后写入一次。 */
+  runtimeIdentityInitialize: "startup/runtimeIdentity",
   computerUseOperationEvent: "computer-use/operation-event",
   sessionCreate: "session/create",
   sessionResume: "session/resume",
@@ -4135,6 +4137,32 @@ export const zcodeStoragePreparationFrameSchema = z.discriminatedUnion("method",
 export const zcodeStoragePathReadySchema = z
   .object({ method: z.literal("startup/storagePathReady"), reuse: z.boolean().optional() })
   .strict();
+
+/**
+ * Host→Agent 私有启动身份。非秘密，但不属于业务命令/模型参数面；只经 stdio startup 握手
+ * 一次性固定，缺席时 CLI 不构造 CUA candidate。
+ */
+export const zcodeCuaLaunchIdentitySchema = z
+  .object({
+    hostInstanceId: nonEmptyString.max(256),
+    runtimeInstanceId: nonEmptyString.max(256),
+  })
+  .strict();
+export type ZCodeCuaLaunchIdentity = z.infer<typeof zcodeCuaLaunchIdentitySchema>;
+
+export const zcodeRuntimeIdentityInitializeParamsSchema = z
+  .object({ identity: zcodeCuaLaunchIdentitySchema })
+  .strict();
+export type ZCodeRuntimeIdentityInitializeParams = z.infer<
+  typeof zcodeRuntimeIdentityInitializeParamsSchema
+>;
+
+export const zcodeRuntimeIdentityInitializeResultSchema = z
+  .object({ initialized: z.literal(true), reused: z.boolean() })
+  .strict();
+export type ZCodeRuntimeIdentityInitializeResult = z.infer<
+  typeof zcodeRuntimeIdentityInitializeResultSchema
+>;
 
 // 桌面本地 TTFT 的严格事实合同；检查点不能替代实际内容帧。
 export { localTtftFactsSchema } from "../localTtft.js";

@@ -24,6 +24,8 @@ import {
   resolveWorkspaceKey,
   resolveZCodeRuntimeEnv,
   sanitizeZCodeRuntimeEnv,
+  zcodeProtocolMethods,
+  zcodeRuntimeIdentityInitializeResultSchema,
 } from "@zcode/shared";
 import {
   findZCodeAgentRuntimeBinary,
@@ -105,6 +107,18 @@ export interface ZCodeAgentProcessManagerOptions {
     workspaceKey: string;
     signal?: AbortSignal;
   }) => Promise<void> | void;
+  /**
+   * 真实 Host 实例身份。仅由 Host 装配层注入；配置后本 manager 会在 spawn 出实际 client
+   * 后通过私有 stdio startup 帧写入 Host/runtime 身份。缺省不发送，CLI 保持无 CUA candidate。
+   */
+  cuaHostInstanceId?: string;
+  /**
+   * startup 身份握手连续失败熔断阈值（非 method-not-found 的失败按 workspaceKey 计数）。
+   * 达到阈值后进入冷却窗口，窗口内拒绝再启动新 runtime。0 或缺省 = 3。
+   */
+  startupIdentityFailureThreshold?: number;
+  /** startup 身份熔断冷却窗口毫秒数；窗口过期后放行一次探测。缺省 60s。 */
+  startupIdentityRetryCooldownMs?: number;
 }
 
 interface ManagedZCodeAgentProcess {
@@ -134,8 +148,22 @@ type AgentProcessCleanupReason =
   | "manager-dispose-retry"
   | "protocol-close"
   | "request-timeout"
+  | "startup-identity"
+  | "startup-identity-retry"
   | "workspace-dispose"
   | "workspace-dispose-retry";
+
+const JSON_RPC_METHOD_NOT_FOUND = -32601;
+
+/** 只有明确的 JSON-RPC method-not-found 能证明旧 Agent 不认识 startup 帧。 */
+function isJsonRpcMethodNotFound(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === JSON_RPC_METHOD_NOT_FOUND
+  );
+}
 
 interface AgentProcessTerminationIntent {
   kind: "expected" | "watchdog_recycle";
@@ -576,16 +604,27 @@ export class ZCodeAgentProcessManager {
   private readonly resolveSpawnEnv: ZCodeAgentProcessManagerOptions["resolveSpawnEnv"];
   private readonly waitForSpawnAdmission: ZCodeAgentProcessManagerOptions["waitForSpawnAdmission"];
   private readonly spawnFallbackCwd: string | undefined;
+  private readonly cuaHostInstanceId: string | undefined;
+  private readonly startupIdentityFailureThreshold: number;
+  private readonly startupIdentityRetryCooldownMs: number;
   private readonly lane: string | undefined;
   private readonly idleTimeoutMs: number | undefined;
   private readonly runtimeRestartedEmitter = new Emitter<ZCodeAgentRuntimeRestartedEvent>();
   private readonly runtimeLifecycleEmitter = new Emitter<ZCodeAgentRuntimeLifecycleEvent>();
+  /**
+   * startup 身份握手连续失败计数与最近失败时间，按 workspaceKey 隔离。
+   * 熔断状态唯一所有者是本 manager；成功启动即清零，冷却窗口过期后放行一次探测。
+   */
+  private readonly startupIdentityFailuresByWorkspaceKey = new Map<
+    string,
+    { count: number; lastFailedAt: number }
+  >();
   private disposeAllInFlight: Promise<void> | undefined;
   private disposed = false;
 
   /** 进程换代通知（generation>1 时触发）；v4 订阅方据此重订，见 ZCodeAgentRuntimeRestartedEvent。 */
   readonly onRuntimeRestarted = this.runtimeRestartedEmitter.event;
-  /** 进程真实 spawn 后 available，当前 protocol client 关闭后 unavailable。 */
+  /** 真实 spawn、启动握手与 single-flight 收口后 available；client 关闭后 unavailable。 */
   readonly onRuntimeLifecycle = this.runtimeLifecycleEmitter.event;
 
   constructor(options?: ZCodeAgentProcessManagerOptions) {
@@ -596,6 +635,15 @@ export class ZCodeAgentProcessManager {
     this.resolveSpawnEnv = options?.resolveSpawnEnv;
     this.waitForSpawnAdmission = options?.waitForSpawnAdmission;
     this.spawnFallbackCwd = options?.spawnFallbackCwd;
+    this.cuaHostInstanceId = options?.cuaHostInstanceId?.trim() || undefined;
+    this.startupIdentityFailureThreshold =
+      options?.startupIdentityFailureThreshold && options.startupIdentityFailureThreshold > 0
+        ? options.startupIdentityFailureThreshold
+        : 3;
+    this.startupIdentityRetryCooldownMs =
+      options?.startupIdentityRetryCooldownMs && options.startupIdentityRetryCooldownMs > 0
+        ? options.startupIdentityRetryCooldownMs
+        : 60_000;
     this.lane = options?.lane?.trim() || undefined;
     this.idleTimeoutMs =
       options?.idleTimeoutMs && options.idleTimeoutMs > 0 ? options.idleTimeoutMs : undefined;
@@ -688,6 +736,76 @@ export class ZCodeAgentProcessManager {
       reason,
       requestedAt: Date.now(),
     };
+  }
+
+  /**
+   * 熔断闸门：连续握手失败达到阈值且仍在冷却窗口内时拒绝再启动。
+   * 窗口过期后放行一次探测（half-open），由后续成功清零或失败重新计数。
+   */
+  private assertStartupIdentityCircuitClosed(workspaceKey: string): void {
+    const failure = this.startupIdentityFailuresByWorkspaceKey.get(workspaceKey);
+    if (!failure) return;
+    if (
+      failure.count < this.startupIdentityFailureThreshold ||
+      Date.now() - failure.lastFailedAt >= this.startupIdentityRetryCooldownMs
+    ) {
+      return;
+    }
+    const cooldownRemainMs =
+      this.startupIdentityRetryCooldownMs - (Date.now() - failure.lastFailedAt);
+    throw new Error(
+      `ZCode agent startup identity circuit is open for workspace ${workspaceKey}: ` +
+        `${failure.count} consecutive failures, retry in ${Math.ceil(cooldownRemainMs / 1000)}s.`,
+    );
+  }
+
+  private noteStartupIdentityFailure(workspaceKey: string): void {
+    const previous = this.startupIdentityFailuresByWorkspaceKey.get(workspaceKey);
+    this.startupIdentityFailuresByWorkspaceKey.set(workspaceKey, {
+      count: (previous?.count ?? 0) + 1,
+      lastFailedAt: Date.now(),
+    });
+  }
+
+  private clearStartupIdentityFailures(workspaceKey: string): void {
+    this.startupIdentityFailuresByWorkspaceKey.delete(workspaceKey);
+  }
+
+  private reportRuntimeAvailable(managed: ManagedZCodeAgentProcess): void {
+    const { workspaceKey, generation, identity } = managed.runtimeIdentity;
+    // Bug 根因：spawn 早于 startup ACK，且 getExistingClient 在 single-flight 中拒绝读取。
+    // 提前通知会让 task-index 的 existing-only 订阅永久退回 dormant。两处边界共用此闸门，
+    // 必须同时满足真实 spawn、握手收口、当前代仍存活；沿既有 identity 保证只通知一次。
+    if (
+      this.disposed ||
+      !managed.spawned ||
+      managed.exited ||
+      managed.client.isDisposed ||
+      this.getExistingClient(managed.workspace) !== managed.client ||
+      this.availableRuntimeIdentityByWorkspaceKey.get(workspaceKey) === identity
+    ) {
+      return;
+    }
+    // restart 先清旧订阅路由，再让 available listener 建立新代订阅。
+    if (generation > 1) {
+      this.runtimeRestartedEmitter.fire({ workspaceKey, runtimeIdentity: managed.runtimeIdentity });
+    }
+    // restart listener 可能同步关闭 workspace，不能随后发布已失效 runtime 的 available。
+    if (
+      this.disposed ||
+      managed.exited ||
+      managed.client.isDisposed ||
+      this.getExistingClient(managed.workspace) !== managed.client
+    ) {
+      return;
+    }
+    this.availableRuntimeIdentityByWorkspaceKey.set(workspaceKey, identity);
+    this.runtimeLifecycleEmitter.fire({
+      ...managed.workspace,
+      workspaceKey,
+      runtimeIdentity: managed.runtimeIdentity,
+      state: "available",
+    });
   }
 
   private reportRuntimeUnavailable(managed: ManagedZCodeAgentProcess): void {
@@ -846,11 +964,6 @@ export class ZCodeAgentProcessManager {
       throw new Error("ZCode agent process manager is disposed.");
     }
     const workspaceKey = resolveWorkspaceKey(params);
-    const existing = this.processesByWorkspaceKey.get(workspaceKey);
-    if (existing && !existing.child.killed) {
-      return existing.client;
-    }
-
     const starting = this.startingByWorkspaceKey.get(workspaceKey);
     if (starting) {
       const waitStartedAt = Date.now();
@@ -864,6 +977,18 @@ export class ZCodeAgentProcessManager {
       });
       return client;
     }
+
+    // startClient 会先把 managed 写入 processesByWorkspaceKey，再等待私有 startup 身份握手。
+    // 因此 starting 必须优先于 existing，否则并发 getClient 会拿到尚未 pin 身份的 client。
+    const existing = this.processesByWorkspaceKey.get(workspaceKey);
+    if (existing && !existing.child.killed) {
+      return existing.client;
+    }
+
+    // startup 身份熔断只拦截"再启动一个新 runtime"：持续冲突的 Agent 若不设闸会形成
+    // spawn→握手失败→清理→再 spawn 循环，每次都白白拉起进程。存活 client 读取与
+    // in-flight 启动等待在上面的分支已返回，不受影响。
+    this.assertStartupIdentityCircuitClosed(workspaceKey);
 
     // agent 启动前置后，host warmup 和 UI 首次 readWorkspacePresentation/sendPrompt
     // 可能同时进入 getClient。这里按 workspaceKey 收敛启动中的 promise，避免同一工作区重复 spawn。
@@ -882,8 +1007,9 @@ export class ZCodeAgentProcessManager {
       admissionAbortController.signal,
     );
     this.startingByWorkspaceKey.set(workspaceKey, startPromise);
+    let client: ZCodeProtocolClient;
     try {
-      return await startPromise;
+      client = await startPromise;
     } finally {
       controllers.delete(admissionAbortController);
       if (controllers.size === 0) {
@@ -893,6 +1019,11 @@ export class ZCodeAgentProcessManager {
         this.startingByWorkspaceKey.delete(workspaceKey);
       }
     }
+    const managed = this.processesByWorkspaceKey.get(workspaceKey);
+    if (managed?.client === client) {
+      this.reportRuntimeAvailable(managed);
+    }
+    return client;
   }
 
   /**
@@ -902,7 +1033,10 @@ export class ZCodeAgentProcessManager {
     workspacePath: string;
     workspaceIdentity?: string;
   }): ZCodeProtocolClient | undefined {
-    const managed = this.processesByWorkspaceKey.get(resolveWorkspaceKey(params));
+    const workspaceKey = resolveWorkspaceKey(params);
+    // 启动握手完成前不能向被动业务观察者暴露 client；listManagedProcesses 仍可用于诊断。
+    if (this.startingByWorkspaceKey.has(workspaceKey)) return undefined;
+    const managed = this.processesByWorkspaceKey.get(workspaceKey);
     return managed && !managed.child.killed ? managed.client : undefined;
   }
 
@@ -1153,21 +1287,9 @@ export class ZCodeAgentProcessManager {
       managed.spawned = true;
       // Node spawn() 会先返回 ChildProcess，再异步报告 cwd/command ENOENT。
       // 旧代码在确认 spawn 成功前就发布 runtimeRestarted，订阅方随即重连并再次触发
-      // 启动，最终形成失败启动 -> 假重启 -> 重连的自激风暴。只有 spawn 事件才表示
-      // 新 CLI 运行时真实存在，可以安全通知 v4 订阅方重订。
-      if (runtimeGeneration > 1 && this.processesByWorkspaceKey.get(workspaceKey) === managed) {
-        this.runtimeRestartedEmitter.fire({ workspaceKey, runtimeIdentity });
-      }
-      if (this.processesByWorkspaceKey.get(workspaceKey) === managed) {
-        this.availableRuntimeIdentityByWorkspaceKey.set(workspaceKey, runtimeIdentity.identity);
-        this.runtimeLifecycleEmitter.fire({
-          workspacePath: params.workspacePath,
-          ...(params.workspaceIdentity ? { workspaceIdentity: params.workspaceIdentity } : {}),
-          workspaceKey,
-          runtimeIdentity,
-          state: "available",
-        });
-      }
+      // 启动，最终形成失败启动 -> 假重启 -> 重连的自激风暴。没有 startup 握手时，
+      // spawn 也可能晚于 getClient 收口，因此两处都通过同一闸门检查可读性。
+      this.reportRuntimeAvailable(managed);
       if (typeof child.pid === "number") {
         this.reportProcessLifecycle((reporter) =>
           reporter.onSpawn({
@@ -1347,6 +1469,52 @@ export class ZCodeAgentProcessManager {
         ).catch(() => undefined);
       }
     });
+    // 启动身份与进程同寿命：由真正 spawn 这个 client 的 manager 发送一次，bootstrap 固定后
+    // 不接受业务命令替换。旧 Agent 明确返回 -32601 才兼容普通聊天继续；冲突/超时/校验失败
+    // 说明身份不可信，必须关闭当前进程，避免保留对端已固定的旧 candidate。
+    if (this.cuaHostInstanceId) {
+      try {
+        await client.request(
+          zcodeProtocolMethods.runtimeIdentityInitialize,
+          {
+            identity: {
+              hostInstanceId: this.cuaHostInstanceId,
+              runtimeInstanceId,
+            },
+          },
+          zcodeRuntimeIdentityInitializeResultSchema,
+          { timeoutMs: 15_000 },
+        );
+      } catch (error) {
+        if (!isJsonRpcMethodNotFound(error)) {
+          if (this.processesByWorkspaceKey.get(workspaceKey) === managed) {
+            this.processesByWorkspaceKey.delete(workspaceKey);
+          }
+          this.reportRuntimeUnavailable(managed);
+          await this.cleanupManagedProcessWithRetry(
+            managed,
+            "startup-identity",
+            "startup-identity-retry",
+            "startup identity initialization",
+          );
+          // 非 method-not-found 的握手失败计入熔断：调用方若自动重试 getClient，
+          // 持续冲突的 Agent 会反复 spawn→清理；达到阈值后由冷却窗口挡住新启动。
+          // 计数与窗口起点放在清理收口之后，避免慢速回收占掉冷却窗口。
+          this.noteStartupIdentityFailure(workspaceKey);
+          throw new Error("ZCode agent startup CUA identity initialization failed.", {
+            cause: error,
+          });
+        }
+        warnLog("ZCode agent startup CUA identity was not accepted", {
+          workspaceKey,
+          pid: child.pid,
+          hostInstanceId: this.cuaHostInstanceId,
+          errorMessage: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+    // 启动成功（握手成功、旧 Agent 兼容或未配置握手）即清零熔断计数。
+    this.clearStartupIdentityFailures(workspaceKey);
     return client;
   }
 

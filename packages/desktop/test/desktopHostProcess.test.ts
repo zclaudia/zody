@@ -98,6 +98,12 @@ describe("desktopHostProcess fork Host env（fork 灰度本地值 F2.6a / D1b）
       env: Record<string, string | undefined>;
     };
     expect(forkOptions.env[ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]).toBe("1");
+    const init = child.postMessage.mock.calls[0]?.[0] as {
+      hostId?: string;
+      deliveryKind?: string;
+    };
+    expect(init.hostId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    expect(init.deliveryKind).toBeUndefined();
     child.emit("exit", 0);
   });
 });
