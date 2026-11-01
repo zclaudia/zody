@@ -30,7 +30,8 @@ describe("PreviewPaneMediaContent", () => {
 
     expect(html).toContain("<video");
     expect(html).toContain("controls");
-    expect(html).toContain("playsinline");
+    // React 19 起 playsInline 属性序列化为 playsInline=""（驼峰保留），不再输出全小写形式。
+    expect(html).toContain("playsInline");
     expect(html).toContain('preload="metadata"');
     expect(html).not.toContain("autoplay");
   });

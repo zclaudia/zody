@@ -56,7 +56,9 @@ describe("ExecuteToolCallBlock", () => {
       ),
     );
 
-    expect(html).toContain("输出结果");
+    // 「输出结果」标签已随 execute 渲染演进移除；结构化输出的验收锚点改为
+    // bash-result-output 输出区本身（内容存在、raw JSON 键不出现）。
+    expect(html).toContain('data-testid="bash-result-output"');
     expect(html).toContain("packages installed successfully");
     expect(html).not.toContain("&quot;stdout&quot;");
     expect(html).not.toContain("&quot;exitCode&quot;");
