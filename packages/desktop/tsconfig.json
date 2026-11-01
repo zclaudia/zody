@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "./tsconfig.browser-core.json" },
     { "path": "./tsconfig.main.json" },
     { "path": "./tsconfig.host.json" },
     { "path": "./tsconfig.scheduler.json" },

@@ -386,7 +386,11 @@ export type BrowserErrorCode =
   | "timeout"
   | "renderer_unreachable"
   | "cancelled"
-  | "execution_error";
+  | "execution_error"
+  // Chrome extension backend：授权、拒绝、目标不可用沿用稳定结构化错误码。
+  | "authorization_required"
+  | "permission_denied"
+  | "target_unavailable";
 
 export interface BrowserPageState {
   url: string;
@@ -541,6 +545,8 @@ export type BrowserChildSessionTabOwner = "child" | "parent";
 export interface BrowserControlPort {
   /** 只返回完成握手且当前 context 可达的 backend，不允许伪造 stub。 */
   list(input: BrowserControlListInput): Promise<BrowserBackendDescriptor[]>;
+  /** 用户显式配置的默认 backend（具体 browserId）；缺省返回 undefined，保持 IAB 默认。 */
+  getDefaultBrowserId?(input: BrowserControlListInput): Promise<string | undefined>;
   execute(input: BrowserControlExecuteInput): Promise<BrowserCommandResult>;
   /** turn 结束时取消该 turn 尚未完成的 IAB 请求，不跨 session 清 tab。 */
   turnEnded?(input: BrowserControlListInput): Promise<void>;

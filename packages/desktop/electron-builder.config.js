@@ -695,17 +695,39 @@ export default {
       );
     }
   },
-  ...(shouldPackageWindowsBrowserImportHelper
+  ...(shouldPackageWindowsBrowserImportHelper || narrowValidated
     ? {
         afterSign: async (context) => {
-          runTimedSync("afterSign:assertSignedWindowsBrowserImportHelper", () =>
-            assertSignedWindowsBrowserImportHelper(context),
-          );
+          if (shouldPackageWindowsBrowserImportHelper) {
+            runTimedSync("afterSign:assertSignedWindowsBrowserImportHelper", () =>
+              assertSignedWindowsBrowserImportHelper(context),
+            );
+          }
+          if (narrowValidated) {
+            await runTimedAsync("afterSign:assertPackagedCuaNarrowResource", () =>
+              assertPackagedNarrowResource({
+                resourcesDir: resolvePackagedResourcesDir(context),
+                manifestPath: narrowValidated.manifestPath,
+                env: process.env,
+              }),
+            );
+          }
         },
       }
     : {}),
   extraResources: [
     { from: "resources/remote-runtime", to: "remote-runtime" },
+    ...(existsSync(resolve(workspaceRoot, "packages/browser-extension/dist"))
+      ? [
+          {
+            // Chrome 扩展只能由用户在 chrome://extensions 手动加载；打包态把构建产物放在
+            // resources/browser-extension，设置页展示该真实目录，不宣称品牌版 Chrome 可一键安装。
+            from: resolve(workspaceRoot, "packages/browser-extension/dist"),
+            to: "browser-extension",
+            filter: ["**/*"],
+          },
+        ]
+      : []),
     { from: resolve(workspaceRoot, noticesFileName), to: noticesFileName },
     ...(targetPlatform.os === "darwin"
       ? [

@@ -1,4 +1,6 @@
 import type { BrowserKeyModifier, BrowserMouseButton } from "@zcode/shared";
+import { dispatchClickAtOnPage, dispatchKeyOnPage } from "../../browser-core/playwright/input.js";
+import { createPlaywrightPageFromControlledView } from "./browserPlaywrightPageAdapter.js";
 import { RESOLVE_SCRIPT } from "./browserCommandScripts.js";
 import type { BrowserPoint, ControlledView } from "./browserCommandTypes.js";
 
@@ -126,31 +128,13 @@ export async function dispatchClickAt(
   doubleClick: boolean,
   modifiers = 0,
 ): Promise<void> {
-  const clickCount = doubleClick ? 2 : 1;
-  // modifiers=0 时不带该字段，保持与既有单测（不含 modifiers 的断言）一致。
-  const mod = modifiers > 0 ? { modifiers } : {};
-  await view.cdp.send("Input.dispatchMouseEvent", {
-    type: "mouseMoved",
-    x: center.cx,
-    y: center.cy,
-    ...mod,
-  });
-  await view.cdp.send("Input.dispatchMouseEvent", {
-    type: "mousePressed",
-    x: center.cx,
-    y: center.cy,
+  await dispatchClickAtOnPage(
+    createPlaywrightPageFromControlledView(view),
+    { x: center.cx, y: center.cy },
     button,
-    clickCount,
-    ...mod,
-  });
-  await view.cdp.send("Input.dispatchMouseEvent", {
-    type: "mouseReleased",
-    x: center.cx,
-    y: center.cy,
-    button,
-    clickCount,
-    ...mod,
-  });
+    doubleClick,
+    modifiers,
+  );
 }
 
 /**
@@ -317,16 +301,10 @@ export async function dispatchKey(
   modifiers = 0,
   sessionId?: string,
 ): Promise<void> {
-  const def = KEY_MAP[keyName];
-  const base = def
-    ? { key: def.key, code: def.code, windowsVirtualKeyCode: def.windowsVirtualKeyCode }
-    : { key: keyName };
-  // modifiers=0 时不带该字段，保持与既有单测（不含 modifiers 的断言）一致。
-  const mod = modifiers > 0 ? { modifiers } : {};
-  const sendKey = (type: "keyDown" | "keyUp") =>
-    sessionId == null
-      ? view.cdp.send("Input.dispatchKeyEvent", { type, ...base, ...mod })
-      : view.cdp.send("Input.dispatchKeyEvent", { type, ...base, ...mod }, sessionId);
-  await sendKey("keyDown");
-  await sendKey("keyUp");
+  await dispatchKeyOnPage(
+    createPlaywrightPageFromControlledView(view),
+    keyName,
+    modifiers,
+    sessionId,
+  );
 }

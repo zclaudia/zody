@@ -128,6 +128,8 @@ export interface ZCodeProtocolAgentServerContext {
   /** 进程退出期间，迟到的异步物化不能重新登记 session。 */
   assertServing?: () => void;
   deps: ZCodeProtocolAgentResolvedDependencies;
+  /** 私有 stdio startup 帧固定的 Host/runtime 身份；缺席即 CUA 无 candidate。 */
+  cuaLaunchIdentity?: import("@zcode/shared").ZCodeCuaLaunchIdentity;
   logger?: Logger;
   appRuntimePreferences: {
     askUserQuestionAutoResolutionEnabled: boolean;

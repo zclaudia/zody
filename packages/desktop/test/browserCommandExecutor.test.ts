@@ -1281,7 +1281,6 @@ describe("executeBrowserCommandOnView", () => {
         x: 108,
         y: 71,
       },
-      undefined,
     );
     expect(cdpSend).toHaveBeenCalledWith("Input.dispatchMouseEvent", {
       type: "mousePressed",
@@ -1328,7 +1327,6 @@ describe("executeBrowserCommandOnView", () => {
       });
       expect(cdpSend).toHaveBeenCalledWith(
         "Runtime.terminateExecution",
-        undefined,
         undefined,
       );
     } finally {

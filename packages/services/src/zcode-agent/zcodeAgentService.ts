@@ -2305,6 +2305,37 @@ export function createZCodeAgentService(
           return;
         }
 
+        // browser-use：默认 backend 是用户设置事实，选择规则仍在 CLI；Host 不修改 descriptor
+        // metadata，也不用 IAB fallback 掩盖配置目标离线。
+        if (request.method === zcodeProtocolMethods.interactionBrowserDefault) {
+          const parsed = zcodeBrowserListParamsSchema.safeParse(request.params);
+          if (!parsed.success) {
+            void client.respondError(request.id, {
+              code: -32602,
+              message: "Invalid interaction/browserDefault params",
+              data: parsed.error.flatten(),
+            });
+            return;
+          }
+          const executor = options?.browserControlExecutor;
+          if (!executor?.getDefaultBrowserId) {
+            void client.respond(request.id, {});
+            return;
+          }
+          void executor
+            .getDefaultBrowserId(parsed.data)
+            .then((defaultBrowserId) =>
+              client.respond(request.id, defaultBrowserId ? { defaultBrowserId } : {}),
+            )
+            .catch((error: unknown) => {
+              void client.respondError(request.id, {
+                code: -32603,
+                message: error instanceof Error ? error.message : String(error),
+              });
+            });
+          return;
+        }
+
         // browser-use：agent 的 agent.browsers.* 经 interaction/browserExecute 到达这里。
         // 纯 RPC 中继——转发给 main（WebContentsView+CDP）执行后 respondResult，不 emitSessionEvent、
         // 不进 pending map（区别于 permission 的 UI 阻塞语义）。executor 缺省则 backend_unavailable。

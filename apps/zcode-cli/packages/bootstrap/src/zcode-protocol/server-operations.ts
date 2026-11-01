@@ -1417,6 +1417,8 @@ export interface ActivatedSessionForResume {
   knownSession?: SessionInfo;
   /** 仅供启动本次 V4 hydration，不写入 record 或跨请求缓存。 */
   persistedMessages?: MessageWithParts[];
+  /** resume 修补了中断 compact timeline：调用方必须用刷新后的 messages 重新水化。 */
+  persistedMessagesReloadRequired?: boolean;
 }
 
 /**
@@ -1516,7 +1518,10 @@ export async function activateSessionForResume(
     record.restoredModelSelection = result.modelSelection;
     return result;
   });
-  if (options.reusePersistedMessages && resumeResult.persistedMessagesReloadRequired) {
+  const messagesReloadRequired = Boolean(
+    options.reusePersistedMessages && resumeResult.persistedMessagesReloadRequired,
+  );
+  if (messagesReloadRequired) {
     persistedMessages = await readPersistedSessionMessages(context, params.sessionId);
   }
   context.logger?.info("ZCode Protocol session resume completed", {
@@ -1532,6 +1537,7 @@ export async function activateSessionForResume(
     knownSession: session,
     record,
     ...(options.reusePersistedMessages ? { persistedMessages } : {}),
+    ...(messagesReloadRequired ? { persistedMessagesReloadRequired: true } : {}),
   };
 }
 

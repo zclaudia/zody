@@ -1,8 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
@@ -40,7 +38,10 @@ describe("node_repl MCP server", () => {
     "com.zcode/request-context": {
       runtime_scope: runtimeScope,
       session_id: sessionId,
+      workspace_path: "/workspace",
       turn_id: turnId,
+      client_mode: "desktop-continuous",
+      delivery_kind: "desktop-continuous",
     },
   });
 
@@ -54,7 +55,7 @@ describe("node_repl MCP server", () => {
 
   afterEach(async () => {
     await client.close();
-    runtime.dispose();
+    await runtime.dispose();
   });
 
   it("exports the main entrypoint required by the packaged plugin host", () => {
@@ -396,9 +397,7 @@ describe("node_repl MCP server", () => {
   it("keeps a different model image so a genuine two-raster result still reaches the gate", () => {
     // 字节不同就不是冗余：那是真的两张 raster，判定权仍属完整性门，宿主不得代它放行。
     const result = toMcpRunResult({
-      structuredResults: [
-        { content: [{ type: "image", data: "AQID", mimeType: "image/png" }] },
-      ],
+      structuredResults: [{ content: [{ type: "image", data: "AQID", mimeType: "image/png" }] }],
       images: [{ base64: "ZZZZ", mimeType: "image/png" }],
     } as never);
 
@@ -455,7 +454,10 @@ describe("node_repl MCP server", () => {
 
     expect(result.content).toEqual([
       ...structured.content,
-      { type: "text", text: "console output\n{\"content\":[{\"type\":\"image\",\"data\":\"AQID\",\"mimeType\":\"image/png\"},{\"type\":\"text\",\"text\":\"{\\\"image_ref\\\":\\\"frame-2\\\"}\"}]}" },
+      {
+        type: "text",
+        text: 'console output\n{"content":[{"type":"image","data":"AQID","mimeType":"image/png"},{"type":"text","text":"{\\"image_ref\\":\\"frame-2\\"}"}]}',
+      },
     ]);
     expect(result).toMatchObject({
       structuredContent: structured.structuredContent,
@@ -467,15 +469,15 @@ describe("node_repl MCP server", () => {
     const result = toMcpRunResult({
       logs: "state_id=s-2\nelements (1):",
       result: undefined,
-      structuredResults: [{
-        content: [],
-        _meta: { "zcode.cua/target-app-display-v1": { pid: 7 } },
-      }],
+      structuredResults: [
+        {
+          content: [],
+          _meta: { "zcode.cua/target-app-display-v1": { pid: 7 } },
+        },
+      ],
     });
 
-    expect(result.content).toEqual([
-      { type: "text", text: "state_id=s-2\nelements (1):" },
-    ]);
+    expect(result.content).toEqual([{ type: "text", text: "state_id=s-2\nelements (1):" }]);
     expect(result._meta).toMatchObject({
       "zcode.cua/target-app-display-v1": { pid: 7 },
     });
@@ -571,5 +573,4 @@ describe("node_repl MCP server", () => {
     }
     expect(result.content[1]).toEqual({ type: "image", data: "BBBB", mimeType: "image/png" });
   });
-
 });

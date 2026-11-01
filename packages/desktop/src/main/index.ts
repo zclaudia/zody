@@ -13,6 +13,12 @@ import {
 import armsRum from "@arms/rum-electron";
 import { createArmsUserIdentitySync } from "./armsUserIdentity.js";
 import { ensureDesktopDeviceMidSync } from "./desktopDeviceMid.js";
+import {
+  createExtensionBridgeController,
+  type ExtensionBridgeController,
+  type ExtensionTransportHostRequest,
+} from "./extensionBridge/index.js";
+import { registerDesktopBrowserExtensionIpc } from "./desktopBrowserExtensionIpc.js";
 import { buildBrowserViewCloseTabNotification } from "./browserView/browserCloseTabNotification.js";
 import { BrowserGuestManager } from "./browserView/browserGuestManager.js";
 import { createElectronBrowserWebmRecorder } from "./browserView/electronBrowserWebmRecorder.js";
@@ -556,6 +562,8 @@ async function runBrowserCommandOnView(params: {
     endDialogAutomation();
   }
 }
+/** Chrome 扩展桥：Main 只持有连接、窗口绑定与持久 generation。 */
+let extensionBridgeController: ExtensionBridgeController | null = null;
 let currentDesktopZoomLevel = 0;
 let currentDesktopWindowSize: DesktopWindowSize | undefined;
 const preloadPath = join(import.meta.dirname, "../preload/index.cjs");
@@ -1069,6 +1077,21 @@ function syncImmediateAppSettings(patch: Partial<AppSettings>) {
     reconcileKeepAwakeBlocker();
   }
 
+  if (typeof patch.browserExtensionBridgePort === "number") {
+    // 设置页的正常路径走 SetBrowserExtensionBridgePort（先重启成功再持久化）；这里兜底
+    // 覆盖直接 useSettings.update 的写入，保证 Main 不会继续监听旧端口。
+    void extensionBridgeController
+      ?.setPort(patch.browserExtensionBridgePort)
+      .then((result) => {
+        if (!result.ok) {
+          logger.warn("[extension-bridge] settings port update failed", {
+            port: patch.browserExtensionBridgePort,
+            error: result.error,
+          });
+        }
+      });
+  }
+
   if (typeof patch.receivePreviewUpdates === "boolean") {
     // receivePreviewUpdates 由 renderer host 写入 setting.json。
     // main 进程的自动更新器不会订阅 host 设置变化，必须借 syncAppSettings 这条即时通道刷新 manifest channel。
@@ -1155,6 +1178,10 @@ async function prepareAppQuit(reason: string, kind: AppShutdownKind = "normal"):
   stopDesktopZCodeDataSizeTelemetry();
   stopDesktopNetworkTelemetry();
   stopRemoteUsageArmsPeriodicSampling();
+  // 扩展 socket 随 Host 退出一起收口；失败只记录，不扩大退出预算。
+  void extensionBridgeController?.stop().catch((error: unknown) => {
+    logger.warn("[extension-bridge] stop failed during app quit", error);
+  });
   disposeRendererActionTraceIpc?.();
   disposeRendererActionTraceIpc = undefined;
   notifyStabilityAppExit(
@@ -1897,6 +1924,28 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
           // browser-use：main 用 WebContentsView+CDP 执行命令。
           handleBrowserExecuteRequest: ({ win: browserWin, ...request }) =>
             runBrowserCommandOnView({ win: browserWin, ...request }),
+          // Chrome 扩展：Host 只发传输请求；Main 校验窗口绑定并转发到 loopback bridge。
+          handleExtensionTransportRequest: ({ win: hostWin, request }) =>
+            extensionBridgeController
+              ? extensionBridgeController.handleHostRequest(
+                  hostWin.webContents.id,
+                  request as ExtensionTransportHostRequest,
+                )
+              : Promise.resolve({
+                  ok: false,
+                  error: {
+                    code: "backend_unavailable",
+                    message: "extension bridge is not initialized",
+                  },
+                }),
+          onExtensionHostReady: (hostWin, child) => {
+            extensionBridgeController?.registerHost(hostWin.webContents.id, {
+              postMessage: (message) => child.postMessage(message),
+            });
+          },
+          onExtensionHostExited: (hostWin) => {
+            extensionBridgeController?.unregisterHost(hostWin.webContents.id);
+          },
         },
         {
           taskRealtime: {
@@ -2460,6 +2509,45 @@ app.whenReady().then(async () => {
     stateFile: join(app.getPath("userData"), "zody-data-size-telemetry.json"),
   });
   registerDesktopNetworkTelemetry(logger);
+
+  // Chrome 扩展桥在首窗创建前启动：Host 注册后才能接收绑定窗口的连接事件。
+  // 端口占用等失败只让 backend unavailable，不阻断 App 启动。
+  const configuredExtensionBridgePort = (await mainSettingService.get())
+    .browserExtensionBridgePort;
+  extensionBridgeController = createExtensionBridgeController({
+    userDataPath: app.getPath("userData"),
+    ...(configuredExtensionBridgePort === undefined
+      ? {}
+      : { port: configuredExtensionBridgePort }),
+    logger: {
+      debug: (...args: unknown[]) => logger.debug(...args),
+      info: (...args: unknown[]) => logger.info(...args),
+      warn: (...args: unknown[]) => logger.warn(...args),
+      error: (...args: unknown[]) => logger.error(...args),
+    },
+  });
+  const extensionBridgeStart = await extensionBridgeController.start();
+  if (!extensionBridgeStart.ok) {
+    logger.warn("[extension-bridge] Chrome extension backend is unavailable", {
+      error: extensionBridgeStart.error,
+    });
+  }
+  registerDesktopBrowserExtensionIpc({
+    getController: () => extensionBridgeController,
+    setBridgePort: async (port) => {
+      const result = await extensionBridgeController?.setPort(port);
+      if (!result?.ok) return { ok: false, error: result?.error ?? "extension bridge unavailable" };
+      // 新端口真正监听后再持久化；失败时设置文件保持旧值，扩展仍可连旧端口。
+      await mainSettingService.update({ browserExtensionBridgePort: port });
+      for (const win of getApplicationWindowsExcludingCuaIndicator()) {
+        if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
+          win.webContents.send(PlatformChannels.SettingsChanged);
+        }
+      }
+      return { ok: true };
+    },
+    logger,
+  });
 
   // fork（D1）已整体删除强制升级 gate：app ready 后不再有任何同步等待网络的步骤，直接创建主窗口。
   // 原因：官方后端可通过 client/configs 的 minimalVersion 让打包版客户端拒绝启动，fork 的可用性

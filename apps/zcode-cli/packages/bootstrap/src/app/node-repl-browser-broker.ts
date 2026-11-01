@@ -186,6 +186,19 @@ async function executeRequest(
     });
     return { id: request.id, ok: true, browsers };
   }
+  if (request.op === "default") {
+    const defaultBrowserId = await port.getDefaultBrowserId?.({
+      sessionId: request.sessionId,
+      turnId: request.turnId,
+      traceContext,
+      signal,
+    });
+    return {
+      id: request.id,
+      ok: true,
+      ...(defaultBrowserId ? { defaultBrowserId } : {}),
+    };
+  }
   const result = await port.execute({
     browserId: request.browserId,
     browserGeneration: request.browserGeneration,

@@ -54,6 +54,15 @@ vi.mock("@/hooks/useServices.js", () => ({
     skillsService: {},
   }),
 }));
+vi.mock("@/hooks/useSettingService.js", () => ({
+  useSettings: () => ({
+    settings: {},
+    loading: false,
+    error: null,
+    update: vi.fn(async () => {}),
+    refresh: vi.fn(async () => {}),
+  }),
+}));
 vi.mock("@/hooks/useZCodeSessionService.js", () => ({
   useZCodeSessionService: () => ({}),
 }));

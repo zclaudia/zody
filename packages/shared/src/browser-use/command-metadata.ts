@@ -151,6 +151,10 @@ export const browserErrorCodeSchema = z.enum([
   "renderer_unreachable",
   "cancelled",
   "execution_error",
+  // Chrome 扩展 backend：授权需要用户操作、被拒绝、目标不可 attach/已失效。
+  "authorization_required",
+  "permission_denied",
+  "target_unavailable",
 ]);
 export type BrowserErrorCode = z.infer<typeof browserErrorCodeSchema>;
 

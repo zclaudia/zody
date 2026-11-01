@@ -1,5 +1,100 @@
 # Tool Change Chain Spec
 
+## Chrome 扩展 P2：已有 tab 授权与 locator（2026-10-31）
+
+工具 schema 不新增方法：复用 `browser.user.openTabs()`、`browser.user.claimTab(tab)`、
+`Tab.playwright.*`、`tab.getDialog()` / `tab.handleDialog()`。链路为 node_repl JS → browser-client
+facade → `BrowserCommand`（`listUserTabs` / `claimTab` / `playwright` / `getDialog` /
+`handleDialog`）→ Host `ExtensionBrowserBackend` → `browser-core/playwright` 共用执行器 →
+扩展 `chrome.debugger`。
+
+- extension backend 必须显式 `browserId`；`openTabs` 只返回标题和去掉 userinfo/query/hash
+  的 URL。首次 `claimTab` 立即返回 `authorization_required`，提示用户点击扩展图标授权；
+  同一 session 在用户确认后再调用一次才 attach。用户 Deny 或关闭 Popup 后，同一 session
+  的下一次 claim 直接返回 `permission_denied`，不重新发送授权请求；拒绝事实只消费一次。
+  `permission_denied`/`target_unavailable` 不自动重试，不轮询。
+- 用户 tab 使用 locator（click/fill/press/selectOption/check）、domSnapshot、evaluate
+  和非坐标键盘输入；禁止坐标 CUA、viewport 仿真、fullPage/clip/ref screenshot。
+- 取消/超时/连接失效沿用 Host `claim` TTL 与 lease 规则；`authorization_required` 的
+  `sideEffect:"none"`，不得包装成 `execution_error`。扩展授权只想让用户看到一次提示，
+  不再伪造 IAB side pane 或第二条工具路径。
+- 模型可见行为由 `control-browser` skill 与 `tab-claiming-extension.md` 约束；IAB 的
+  `tab-claiming-iab.md` 保持原语义。
+
+## Computer Use 生产 owner 接线续作（2026-10-30）
+
+本续作以根 spec“生产 owner 接线续作”为行为合同：现有 CommandInbox live ticket → 当前 AgentRuntime 唯一 authority → 真实 foreground/turn 的内存 scope → 同一次 launcher 的 producer binding。bootstrap 仅提供显式可信 composition 入口，无默认 IO、环境激活或公开协议/模型参数授权。scope 结束关闭 consumer；stop、控制丢失先由原 owner 撤销，异步回执不得复活旧 turn。原生 authority 帧适配器只转发同一 scope，不实例化开发 authority，也不把传输注入当 OS peer 认证。
+
+工具 schema、默认 executor、产品 frame owner、V4/媒体展示及手机屏障均不开放新能力。实际 Helper 的屏幕录制权限已由用户批准并实测独立截图；生产 runtime 组合与原生截图分别记账，可信产品启动装配缺失时继续 fail-closed。实施与证据见根 `docs/plans/computer-use-macos-phase1-product-wiring.md`。
+
+## Computer Use 第十一轮单次截图（2026-10-29）
+
+显式开发 bundle 复用 CuaSubmissionAuthority 的 live admission、turn binding、resolve/revoke/producerLost；签名原生 supervisor 封装固定 authority 资源与 Node，通过私有 FD 接线真实 Helper。Helper 的机器仲裁 owner 持有实际 OS 排他锁，TS 不复制提交或 lease 授权。开始与交付重核完整 ref，撤销/断连封闭接收，迟到像素丢弃。只提供明确测试窗口的一次开发 PNG，不接模型 cell、不改工具 schema、产品 frame owner、默认 executor 或手机屏障。证书/TCC 变更单独获批；未获批则保持真实链路 blocked。范围见根 spec 第十一轮与 round11 计划。
+
+## Computer Use 第十轮身份与撤销接线（2026-10-29）
+
+新增显式control-only单ref绑定，借用既有CuaSubmissionProducerPort与onRevocation；launcher首次失效通知早于cleanup/exit，唯一authority先撤销，迟到ready/ACK不能复活。原生peer诊断从内核audit token取得身份，诊断报告不进入模型参数或产品许可。无Helper/机器lease时stop保持pending与native unknown；不改变js工具schema、默认executor、结果媒体或Desktop continuous/手机replayable投递。具体范围与证据见根spec和第十轮计划。
+
+## Computer Use 第五轮 D06 补证边界（2026-10-27）
+
+在显式开发诊断中补充无输入 native addon/FFI 探针、真实 Browser 客户端资源加载、
+临时资源完整性与直接 cell abort；必须区分无隔离对照、OS 拒绝、API 缺失和环境 blocked。
+真实客户端连接合成 broker 不等于真实 Browser E2E，直接 child 退出不等于后代回收或原生 Fenced。
+诊断资源的清单、allowlist 与临时进程由诊断入口唯一拥有，不增加生产状态 owner。
+保持模型 schema、默认 Worker、授权路径和 placeholder；不因验证需要开放整个 workspace/HOME。
+具体合同与场景见根 spec 第五轮及 docs/plans/computer-use-macos-phase1-round5.md。
+
+## Computer Use 第四轮隔离验证边界（2026-10-27）
+
+显式开发验证入口复用候选 subprocess executor 和真实 cell bundle，以临时 canary 检查
+资源读写、控制句柄、子进程和网络/调试边界；OS 策略加载失败不得回退到无隔离执行。
+不修改模型工具 schema、默认 Worker、Browser/CUA broker 或 runtime 授权，不传真实控制密钥。
+合法 Browser 调用若使用 fixture，只证明桥接协议兼容，不能宣称真实浏览器/签名包验收。
+原生诊断 Helper 与 cell 验证工具均不取得执行能力；完整 D06 和正式 Helper 仍是启用门槛。
+场景、所有者和证据见根 spec 第四轮与 docs/plans/computer-use-macos-phase1-round4.md。
+
+## Computer Use 第三轮可信启动边界（2026-10-26）
+
+本轮接线：真实 Host/ProcessManager → 私有 stdio startup identity → 每个 bootstrap app；
+可信 Host live 输入 → CommandInbox 新 admission → live registrar → runtime 唯一 lineage owner。
+另一条显式诊断链为官方 plugin-host launcher → 私有控制 FD → producer 撤销投影；
+runtime 到可执行 producer 的自动控制关联仍受 Helper/D06 门槛约束，未启用。
+模型工具 schema、媒体、V4 展示不新增授权字段。
+历史 inputOrigin 不得注册；缺真实 Host 或 D06 隔离证据不得启用可执行模式。控制密钥不走
+env/argv/MCP metadata；无 Helper 时 stop/native fence 不得成功。诊断控制进程不执行模型 cell。
+验收须包含真实子进程、错误/退出清理、旧代际与 replay 反例及普通聊天/Browser Use 回归；
+具体实施、依赖和真实结果见根 docs/plans/computer-use-macos-phase1-round3.md。
+
+## Computer Use 第二轮 runtime 与控制接线（2026-10-26）
+
+在默认禁用候选基础上接入 AgentRuntime admission/steer/stop/shutdown 的 candidate/revoked
+生命周期。唯一状态 owner 仍为 CuaSubmissionAuthority；可选可信依赖缺失则无候选。
+持久化 intent.inputOrigin 只表达来源，建立候选另需实例内不可序列化的 live 提交凭证；
+历史恢复与自动续跑不能重新铸造凭证。队列复用现有 owner，不建立第二条输入队列。
+stop/shutdown 先撤销再中断；没有 Helper 时 nativeFence/mobileDelivery 保持 unknown。
+控制 endpoint 通过显式可信流与公钥绑定调用，不读取 MCP metadata 或环境来建立信任。
+本轮不改变模型工具 schema、结果媒体投影、默认 executor 或 placeholder；Host/launcher
+尚未贯通的部分继续禁用，不能将 runtime 撤销当作原生停止或手机 Fenced 投递成功。
+验收包含实际 runtime 调用点、排队/恢复/续跑/stop 回归与真实子进程控制 IPC。
+
+## Computer Use 候选执行边界（2026-10-25）
+
+本轮按根目录 `specs/computer-use-macos-phase1.md` 开发默认禁用的候选切片：
+node_repl host 增加显式选择的单次子进程 executor，调用上下文由 main 保存，
+CUA bridge 使用每调用 capability；完成、取消和 dispose 后撤销，不接受 cell 自报身份。
+main 负责自有 producer 的清理，借用者只结束自身调用，不销毁共享 producer。
+候选进程入口的请求/结果需有界并运行时校验，诊断输出与 MCP/结果通道分离；
+取消须等待实际 cell 退出。进程分离本身不构成 OS sandbox 或 Helper 凭据隔离证明。
+
+链路为既有 js schema/权限 → node_repl main → executor → 原有结果预算/媒体投影。
+默认 Worker、provider 工具声明、V4/UI 与 Desktop continuous / 手机 replayable 交付保持现状；
+Browser Use 的显式连接注入需兼容原入口。runtime lineage authority 先独立验证，
+尚未接入可信 live admission、控制 sideband 和手机输入 Fenced 屏障，不能签发原生能力。
+真实子进程、取消退出、凭据撤销、上下文伪造、owned/borrowed 清理、构建后 MCP 与
+Browser bridge 回归由 node-repl-host 测试覆盖；签名 Helper、实机输入及安装包另行验收。
+本轮不移除 `zcodeCuaPlaceholder`，最终证据登记在根目录
+`docs/plans/computer-use-macos-phase1-agent-work.md`。
+
 ## 工具内部模型请求的会话归因（2026-09-30）
 
 WebSearch、WebFetch processing、ReadSessionContext 的内部模型请求继承发起工具的宿主
@@ -497,6 +592,13 @@ Browser use 虽由 `js` REPL 驱动，但其 capability manifest、模型文档�
   `getForUrl(url)`，无目标才用 `getDefault()`；跨 turn 先复用 browser binding，再按 controlled tabs →
   user tabs → new tab 恢复。一次直接 URL 尝试失败后禁止循环猜 URL、路径或资源 ID，应改用最新 DOM、
   站内搜索或目的型 connector/API/CLI 查到可验证目标。
+- Chrome extension backend 加入后选择规则保持 IAB 默认：只要存在 IAB descriptor，
+  `getDefault()` 和 `getForUrl()` 都返回 IAB；extension tab 的 URL 命中不得把任务迁出 IAB。
+  只有调用方显式提供默认 extension `browserId` 时，`getForUrl()` 才返回该 backend。
+  `browsers.get("extension")` 在当前可见多个 extension backend 时必须失败并要求使用显式
+  `browserId`，不能按列表顺序任选一个。descriptor metadata 不得新增 `preferred`、
+  `preferredInstance`、`profileIsLastUsed` 或 `profileOrdering`。扩展结果继续使用
+  `meta.backendType="extension"`，不新增平行结果结构。
 - 变更必须覆盖 IAB turn/session lifecycle、locator error、JS model serialization、snapshot-first / read-only
   evaluate 模型指导和按 manifest 条件选择文档的测试；新增 provider-only ambient context 时只扩展
   `session/send` 的 strict schema 与 runtime request assembly，不新增 session event，不把 ambient state

@@ -14,6 +14,11 @@ import { z } from "zod";
 import { networkCaptureControlSchema, networkCaptureBatchSchema } from "./networkCapture.js";
 import { browserCommandSchema } from "./browser-use/commands.js";
 import { browserCommandResultSchema } from "./browser-use/result.js";
+import {
+  extensionBridgeClientMessageSchema,
+  extensionBridgeRequestMessageSchema,
+  extensionBridgeServerMessageSchema,
+} from "./browser-use/extension-transport.js";
 import { modelSelectionSchema } from "./model-selection.js";
 import { zcodeProcessDiagnosticSchema } from "./process-diagnostic.js";
 import { PROCESS_RESOURCE_CLI_LANES } from "./processResourceTelemetry.js";
@@ -872,6 +877,48 @@ export const hostBrowserExecuteResultMessageSchema = z.object({
   result: browserCommandResultSchema,
 });
 
+// main → host：扩展传输请求结果 / 连接代次 / 扩展主动事件。
+export const hostExtensionTransportResultMessageSchema = z
+  .object({
+    type: z.literal("extension-transport-result"),
+    requestId: nonEmptyStringSchema,
+    ok: z.boolean(),
+    message: extensionBridgeClientMessageSchema.optional(),
+    error: z
+      .object({ code: nonEmptyStringSchema, message: nonEmptyStringSchema })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
+export const hostExtensionConnectionChangedMessageSchema = z
+  .object({
+    type: z.literal("extension-connection-changed"),
+    profileInstanceId: nonEmptyStringSchema,
+    connected: z.boolean(),
+    browserId: nonEmptyStringSchema,
+    generation: z.number().int().nonnegative().optional(),
+    connectionId: nonEmptyStringSchema.optional(),
+    windowId: nonEmptyStringSchema.optional(),
+  })
+  .strict();
+
+export const hostExtensionEventMessageSchema = z
+  .object({
+    type: z.literal("extension-event"),
+    profileInstanceId: nonEmptyStringSchema,
+    message: extensionBridgeClientMessageSchema,
+  })
+  .strict();
+
+/** main → host：当前窗口的默认 backend；缺失表示 IAB 默认。 */
+export const hostExtensionDefaultBrowserChangedMessageSchema = z
+  .object({
+    type: z.literal("extension-default-browser-changed"),
+    defaultBrowserId: nonEmptyStringSchema.optional(),
+  })
+  .strict();
+
 export const hostLocalMediaPreviewPathAuthorizeResultMessageSchema = z
   .object({
     type: z.literal("local-media-preview-path-authorize-result"),
@@ -977,6 +1024,10 @@ export const hostIncomingMessageSchema = z.discriminatedUnion("type", [
   hostFeedbackLogArchiveResultMessageSchema,
   hostCronRunMessageSchema,
   hostBrowserExecuteResultMessageSchema,
+  hostExtensionTransportResultMessageSchema,
+  hostExtensionConnectionChangedMessageSchema,
+  hostExtensionEventMessageSchema,
+  hostExtensionDefaultBrowserChangedMessageSchema,
   hostLocalMediaPreviewPathAuthorizeResultMessageSchema,
   hostPluginSandboxRegisterResultMessageSchema,
   hostCuaPipFocusChangedMessageSchema,
@@ -1341,6 +1392,36 @@ export const hostCronSchedulerWakeRequestResponseSchema = z.object({
 
 // fork（F4.3）：hostOffPeakSchedulerWakeRequestResponseSchema（"off-peak-scheduler-wake-request"）随闲时任务全链路删除。
 
+// host → main：Chrome 扩展传输请求。op=list 返回绑定到该窗口的连接；op=request/send
+// 转发严格扩展消息，Main 只做鉴权、窗口绑定和 requestId 关联。
+export const hostExtensionTransportRequestResponseSchema = z.discriminatedUnion("op", [
+  z
+    .object({
+      type: z.literal("extension-transport-request"),
+      requestId: nonEmptyStringSchema,
+      op: z.literal("list"),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal("extension-transport-request"),
+      requestId: nonEmptyStringSchema,
+      op: z.literal("request"),
+      profileInstanceId: nonEmptyStringSchema,
+      message: extensionBridgeRequestMessageSchema,
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal("extension-transport-request"),
+      requestId: nonEmptyStringSchema,
+      op: z.literal("send"),
+      profileInstanceId: nonEmptyStringSchema,
+      message: extensionBridgeServerMessageSchema,
+    })
+    .strict(),
+]);
+
 // host → main：执行一条 browser-use 命令（main 用 WebContentsView+CDP 执行）。
 export const hostBrowserExecuteRequestResponseSchema = z.object({
   type: z.literal("browser-execute-request"),
@@ -1521,6 +1602,7 @@ export const hostResponseMessageSchema = z.discriminatedUnion("type", [
   hostSessionMessageDeliverResultResponseSchema,
   hostFeedbackLogArchiveRequestResponseSchema,
   hostBrowserExecuteRequestResponseSchema,
+  hostExtensionTransportRequestResponseSchema,
   hostLocalMediaPreviewPathAuthorizeRequestResponseSchema,
   hostPluginSandboxRegisterRequestResponseSchema,
   hostNetworkTelemetryBatchResponseSchema,

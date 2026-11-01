@@ -80,6 +80,25 @@ nodeRepl.write(await browser.documentation());
 
 Do not slice, truncate, or summarize it. Only if the tool output itself reports truncation may you read it in smaller chunks. It documents every default method, the Playwright DOM snapshot→locator workflow, the ref/cua/dom_cua compatibility paths, and safety rules. Screenshot instructions are intentionally lookup-only and must not be loaded unless the visual branch below applies.
 
+## Chrome extension backend
+
+When the user explicitly asks to control their real Chrome, select the extension backend explicitly. `browserId` is the backend identity, not the string `"extension"`:
+
+```js
+const browsers = await agent.browsers.list();
+const extensionBackend = browsers.find((candidate) => candidate.type === "extension");
+const browser = await agent.browsers.get(extensionBackend.id);
+```
+
+Use `agent.browsers.get("extension")` only when exactly one extension backend is visible; with several paired profiles it must fail rather than pick one. Never silently fall back to IAB after the user selected Chrome, and never interpret an extension tab's URL as permission to move an IAB task.
+
+The user can save a concrete extension `browserId` as the default backend for the current Zody window in Settings → Browser. In that case `agent.browsers.getDefault()` and `getForUrl()` follow it even when IAB is online. The choice is window-scoped: other windows, new app launches, and mobile replay do not inherit it. If the configured profile is offline or disconnected, selection fails closed with `backend_unavailable`; do not retry with IAB on your own. Without a configured default, IAB remains the default and a matching extension tab URL must not move the task.
+
+- `browser.user.openTabs()` returns only a title and a URL without userinfo, query, or hash. Restricted pages (`chrome://`, Chrome Web Store, extension pages), DevTools-occupied tabs, and tabs already controlled by another session are not claimable.
+- `claimTab` is two-phase. The first call throws `authorization_required` immediately. Tell the user to open the Zody Browser Bridge extension and click **Allow** for that tab; do not poll. After the user confirms, call `claimTab` **once more**. After a Deny or closed Popup, the next same-session `claimTab` returns `permission_denied` instead of re-prompting. `permission_denied` and `target_unavailable` must not be retried automatically.
+- A claimed user tab uses locators, `domSnapshot`, `evaluate`, and non-coordinate keyboard input. Do not use `cua.*`, `dom_cua.*`, viewport resizing, or coordinate screenshots on it; those are unsupported for this backend.
+- JS dialogs: if a user-tab command is still blocked when its budget expires, the host dismisses the dialog with `accept: false` and revokes the tab if needed. Use `getDialog`/`handleDialog` when the task genuinely needs to accept or reject a dialog; never assume a submit dialog was accepted.
+
 ## Core workflow
 
 1. Start every browser `js` call with the bootstrap, then assign the selected backend to a local `browser` binding. If the user explicitly asks for Zody's in-app browser, use `const browser = await agent.browsers.get("iab")`. If they explicitly ask for Chrome, use `await agent.browsers.get("extension")` only when the runtime advertises it. For an unspecified target URL use `await agent.browsers.getForUrl(url)`; with no URL/backend preference use `await agent.browsers.getDefault()`.
@@ -91,8 +110,9 @@ Do not slice, truncate, or summarize it. Only if the tool output itself reports 
    cell does not count as model inspection. `tabs.get(id)` activates that tab in its owning session; it is shown only
    when that session is currently in the foreground. Never choose `[0]`, `at(-1)`, or an id remembered without validation.
    If no controlled tab matches, inspect `browser.user.openTabs()` and claim the matching returned object. Create a new
-   tab only after both lists fail to identify the page. This is the pre-action target-selection protocol; it is distinct
-   from the combined post-action observation in step 7.
+   tab only after both lists fail to identify the page. On the extension backend the first `claimTab` returns
+   `authorization_required`; ask the user to approve it and retry exactly once. This is the pre-action target-selection
+   protocol; it is distinct from the combined post-action observation in step 7.
 4. If the task names a new URL, prefer the reuse-aware entry: `await agent.browsers.open(url)` reuses an existing
    same-site controlled tab (same hostname), activates it so the user sees it, and navigates in place, instead of
    stacking a new tab on every navigation. Only when the task genuinely needs a parallel independent tab, create one
@@ -148,7 +168,8 @@ string id, recover the same verified tab before every status/cancel batch, and p
 - `tab.cua.*` — coordinate path (visual): `click({x,y})`, `double_click`, `move` (hover), anchored
   `scroll({x,y,scrollX,scrollY})`, full-path `drag({path})`, `keypress({keys})`, and `type`. Pair with
   `nodeRepl.emitImage(await tab.screenshot())` to aim. Use for canvas / custom-drawn / non-DOM widgets the snapshot misses.
-- `tab.dom_cua.*` — node path (`node_id` comes from `get_visible_dom()`): `click({node_id})`, `double_click({node_id})`, `scroll({node_id?,x,y})`, `keypress({keys})`, and `type({text})` after focusing the target.
+  This path is IAB-only and is unsupported on the Chrome extension backend, including claimed user tabs.
+- `tab.dom_cua.*` — node path (`node_id` comes from `get_visible_dom()`): `click({node_id})`, `double_click({node_id})`, `scroll({node_id?,x,y})`, `keypress({keys})`, and `type({text})` after focusing the target. This path is IAB-only and is unsupported on the Chrome extension backend.
 - `tab.playwright.waitForTimeout(timeoutMs)` — fixed wait for the rare case where no concrete
   page state can be observed yet. `timeoutMs` must be a non-negative integer. Do not call
   `tab.waitForTimeout(...)`; that root-level API does not exist. Prefer a targeted wait or fresh `domSnapshot()`

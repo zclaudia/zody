@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { BrowserControlPort, TraceContext } from "@zcode/contracts";
 import {
+  zcodeBrowserDefaultResultSchema,
   zcodeBrowserExecuteResultSchema,
   zcodeBrowserListResultSchema,
   zcodeProtocolMethods,
@@ -100,6 +101,16 @@ export function createProtocolBrowserControlBroker(
         buildRequestOptions(traceContext, signal),
       );
       return result.browsers;
+    },
+
+    async getDefaultBrowserId({ sessionId, turnId, traceContext, signal }) {
+      const result = await context.requestClient(
+        zcodeProtocolMethods.interactionBrowserDefault,
+        buildBrowserRequestContext(context, state, { sessionId, turnId, traceContext }),
+        zcodeBrowserDefaultResultSchema,
+        buildRequestOptions(traceContext, signal),
+      );
+      return result.defaultBrowserId;
     },
 
     async execute({

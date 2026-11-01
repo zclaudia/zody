@@ -49,16 +49,20 @@ export function setupBrowserRuntime(opts: {
   transport: BrowserClientTransport;
   documentationRoot?: string;
   assertAvailable?: BrowserAvailabilityGuard;
-}): void {
+  /** 用户显式设置的默认 backend browserId；缺省保持 IAB 默认。 */
+  defaultBrowserId?: string;
+}): BrowsersFacade {
   opts.assertAvailable?.();
   const agent = (opts.globals.agent ??= {}) as {
     browsers?: BrowsersFacade;
     documentation?: { get(name: string): Promise<string> };
   };
-  agent.browsers = new BrowsersFacade(opts.transport, {
+  const facade = new BrowsersFacade(opts.transport, {
     documentationRoot: opts.documentationRoot,
     assertAvailable: opts.assertAvailable,
-  }).asRuntimeObject();
+    ...(opts.defaultBrowserId ? { defaultBrowserId: opts.defaultBrowserId } : {}),
+  });
+  agent.browsers = facade.asRuntimeObject();
   const previousDocumentation = agent.documentation;
   const previousGet = previousDocumentation?.get;
   agent.documentation = Object.freeze({
@@ -69,4 +73,5 @@ export function setupBrowserRuntime(opts: {
       return loadBrowserDocumentation(opts.documentationRoot, name);
     },
   });
+  return facade;
 }

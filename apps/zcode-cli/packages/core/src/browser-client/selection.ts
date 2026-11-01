@@ -3,6 +3,14 @@ import type { BrowserInfo } from "./facade.js";
 
 export type BrowserTabsByBrowserId = ReadonlyMap<string, readonly string[]>;
 
+/**
+ * 用户显式设置的默认 backend。它必须是具体 `browserId`，不能是 backend type；
+ * 未设置时 IAB 始终是默认。
+ */
+export interface BrowserSelectionOptions {
+  defaultBrowserId?: string;
+}
+
 function isPreferredExtension(info: BrowserInfo): boolean {
   return (
     info.type === "extension" &&
@@ -20,7 +28,14 @@ function backendFallbackRank(info: BrowserInfo): number {
   return 3;
 }
 
-export function selectDefaultBrowser(infos: readonly BrowserInfo[]): BrowserInfo | undefined {
+export function selectDefaultBrowser(
+  infos: readonly BrowserInfo[],
+  options: BrowserSelectionOptions = {},
+): BrowserInfo | undefined {
+  if (options.defaultBrowserId) {
+    // 用户显式设置的默认 backend 消失时 fail closed，不能静默迁回 IAB。
+    return infos.find((info) => info.id === options.defaultBrowserId);
+  }
   return [...infos].sort(
     (left, right) => backendFallbackRank(left) - backendFallbackRank(right),
   )[0];
@@ -32,18 +47,6 @@ function parseUrl(value: string): URL {
   } catch {
     throw new Error(`Invalid browser target URL: ${value}`);
   }
-}
-
-function isLocalTarget(url: URL): boolean {
-  if (url.protocol === "file:") return true;
-  const host = url.hostname.toLowerCase();
-  return (
-    host === "localhost" ||
-    host.endsWith(".localhost") ||
-    host === "127.0.0.1" ||
-    host === "::1" ||
-    host === "[::1]"
-  );
 }
 
 function withoutHash(url: URL): string {
@@ -106,19 +109,29 @@ export function selectBrowserForUrl(
   infos: readonly BrowserInfo[],
   targetValue: string,
   tabsByBrowserId: BrowserTabsByBrowserId,
+  options: BrowserSelectionOptions = {},
 ): BrowserInfo {
   if (infos.length === 0) {
     throw new Error("No browser backend is available");
+  }
+  if (options.defaultBrowserId) {
+    const explicit = infos.find((info) => info.id === options.defaultBrowserId);
+    if (explicit) return explicit;
+    // 已配置的默认 backend 不在线时不能改投 IAB；交给调用方报 backend_unavailable。
+    throw new Error(
+      `Configured default browser backend '${options.defaultBrowserId}' is unavailable`,
+    );
   }
   if (infos.length === 1) {
     return infos[0];
   }
 
+  // extension tab 的 URL 命中不能把任务迁出 IAB。只有用户显式设置的默认
+  // extension browserId 才在上面提前返回。
+  const iab = infos.find((info) => info.type === "iab");
+  if (iab) return iab;
+
   const target = parseUrl(targetValue);
-  if (isLocalTarget(target)) {
-    const iab = infos.find((info) => info.type === "iab");
-    if (iab) return iab;
-  }
 
   const matches = infos.flatMap((info) => {
     let best: number | undefined;

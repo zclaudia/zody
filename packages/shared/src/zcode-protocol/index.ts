@@ -2606,6 +2606,17 @@ export type ZCodeBrowserListParams = z.infer<typeof zcodeBrowserListParamsSchema
 export const zcodeBrowserListResultSchema = browserBackendListResultSchema;
 export type ZCodeBrowserListResult = z.infer<typeof zcodeBrowserListResultSchema>;
 
+/**
+ * 用户显式配置的默认 backend（具体 browserId）。选择仍由 CLI 的 defaultBrowserId 规则执行；
+ * Host 只提供设置事实，不能通过 descriptor metadata 伪造 preferred。
+ */
+export const zcodeBrowserDefaultResultSchema = z
+  .object({
+    defaultBrowserId: nonEmptyString.optional(),
+  })
+  .strict();
+export type ZCodeBrowserDefaultResult = z.infer<typeof zcodeBrowserDefaultResultSchema>;
+
 /** Agent 把一条 browser-use 命令发送给 app 执行。 */
 export const zcodeBrowserExecuteParamsSchema = z
   .object({
@@ -4018,6 +4029,7 @@ export const zcodeProtocolMethods = {
   // fork（F4.6）：interaction/requestOfficialMcpAuthHeaders 随官方 MCP 鉴权链删除。
   // browser-use 反向请求由 agent 发起，host 转给 main 中的 CDP executor。
   interactionBrowserList: "interaction/browserList",
+  interactionBrowserDefault: "interaction/browserDefault",
   interactionBrowserExecute: "interaction/browserExecute",
 } as const;
 
@@ -4107,6 +4119,10 @@ export const zcodeProtocolSessionMethodContracts = {
   [zcodeProtocolMethods.interactionBrowserList]: {
     params: zcodeBrowserListParamsSchema,
     result: zcodeBrowserListResultSchema,
+  },
+  [zcodeProtocolMethods.interactionBrowserDefault]: {
+    params: zcodeBrowserListParamsSchema,
+    result: zcodeBrowserDefaultResultSchema,
   },
   [zcodeProtocolMethods.interactionBrowserExecute]: {
     params: zcodeBrowserExecuteParamsSchema,

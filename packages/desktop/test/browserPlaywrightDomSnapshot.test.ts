@@ -130,7 +130,6 @@ describe("Playwright DOM snapshot", () => {
     expect(send).toHaveBeenCalledWith(
       "Page.createIsolatedWorld",
       expect.objectContaining({ frameId: "child-frame" }),
-      undefined,
     );
   });
 
@@ -205,7 +204,7 @@ describe("Playwright DOM snapshot", () => {
     await expect(captureBrowserDomSnapshot(viewWithCdp(send))).resolves.toBe(
       ['- iframe "Remote":', '  - button "Recovered"'].join("\n"),
     );
-    expect(send).toHaveBeenCalledWith("Target.getTargets", undefined, undefined);
+    expect(send).toHaveBeenCalledWith("Target.getTargets", undefined);
     expect(send).toHaveBeenCalledWith("Target.detachFromTarget", { sessionId: "oopif-session" });
   });
 });

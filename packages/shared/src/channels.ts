@@ -422,6 +422,20 @@ export const PlatformChannels = {
   ImportChromeBrowserData: "zcode:import-chrome-browser-data",
   /** Renderer → Main：清理内置浏览器缓存或全部站点数据。 */
   ClearEmbeddedBrowserData: "zcode:clear-embedded-browser-data",
+  /** Renderer → Main：读取当前窗口可见的 Chrome 扩展 bridge/配对/Profile 状态。 */
+  GetBrowserExtensionStatus: "zcode:get-browser-extension-status",
+  /** Renderer → Main：在发起窗口生成一次性 Chrome 扩展配对码。 */
+  BeginBrowserExtensionPairing: "zcode:begin-browser-extension-pairing",
+  /** Renderer → Main：取消尚未完成的配对会话。 */
+  CancelBrowserExtensionPairing: "zcode:cancel-browser-extension-pairing",
+  /** Renderer → Main：只更新当前窗口的默认 backend。 */
+  SetBrowserExtensionDefaultBackend: "zcode:set-browser-extension-default-backend",
+  /** Renderer → Main：撤销 Chrome 扩展 Profile 配对。 */
+  RevokeBrowserExtensionProfile: "zcode:revoke-browser-extension-profile",
+  /** Renderer → Main：把可见 Profile 显式转移到当前窗口。 */
+  TransferBrowserExtensionProfile: "zcode:transfer-browser-extension-profile",
+  /** Renderer → Main：先重启 bridge，成功后再持久化端口。 */
+  SetBrowserExtensionBridgePort: "zcode:set-browser-extension-bridge-port",
   /** Renderer → Main：读取内置浏览器站点权限记录（设置页「网站权限」） */
   GetEmbeddedBrowserSitePermissions: "zcode:get-embedded-browser-site-permissions",
   /** Renderer → Main：修改/删除单条站点权限（state="ask" 表示删除） */
@@ -617,6 +631,14 @@ export const HostMessageTypes = {
   CronRun: "cron-run",
   /** main → host：browser-use 命令执行结果（CDP 执行完回传，按 requestId 关联） */
   BrowserExecuteResult: "browser-execute-result",
+  /** main → host：Chrome 扩展传输请求结果 */
+  ExtensionTransportResult: "extension-transport-result",
+  /** main → host：绑定到该窗口的扩展连接代次变化 */
+  ExtensionConnectionChanged: "extension-connection-changed",
+  /** main → host：已认证扩展发来的 CDP/target 事件 */
+  ExtensionEvent: "extension-event",
+  /** main → host：当前窗口的默认 browser backend 变化。 */
+  ExtensionDefaultBrowserChanged: "extension-default-browser-changed",
   /** main → host：本地视频 canonical path 授权结果 */
   LocalMediaPreviewPathAuthorizeResult: "local-media-preview-path-authorize-result",
   /** main → host：插件 UI 沙箱登记结果（PluginSandboxRegisterResultPayload） */
@@ -709,6 +731,8 @@ export const HostResponseTypes = {
   CronSchedulerWakeRequest: "cron-scheduler-wake-request",
   /** host → main：执行一条 browser-use 命令（main 用 WebContentsView+CDP 执行，按 requestId 关联） */
   BrowserExecuteRequest: "browser-execute-request",
+  /** host → main：转发 Chrome 扩展传输请求（list/request/send） */
+  ExtensionTransportRequest: "extension-transport-request",
   /** host → main：请求授权 Agent 已精确校验的本地视频路径 */
   LocalMediaPreviewPathAuthorizeRequest: "local-media-preview-path-authorize-request",
   /** host → main：登记已校验的插件 UI HTML 与 CSP，换取 sandbox 句柄（PluginSandboxRegisterRequestPayload） */

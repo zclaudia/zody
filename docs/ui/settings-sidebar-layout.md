@@ -20,7 +20,7 @@
 
 分组标题属于导航结构，不是可点击入口。宽侧栏显示本地化标题；低于 `lg` 收敛为 64px 图标栏时隐藏可视标题，并用弱分隔线保留组边界。每组使用独立的无障碍 group 名称，组内入口继续保留 tooltip、`aria-current` 和原有 test id。引导入口不归入设置分组，继续放在分组列表之后。
 
-分组只影响 desktop / web 共用设置页的导航视觉和语义结构，不改变设置分区 id、最近访问分区、显式跳转意图、内容路由或持久化。手机 `/remote` 当前没有设置页入口，因此不新增移动端专属交互；窄窗口仅验证响应式图标栏表现。
+分组不改变设置分区 id、最近访问分区、显式跳转意图、内容路由或持久化。桌面与普通窄窗口继续使用上述侧栏；手机 `/remote` 已连接首页和聊天页可以进入完整设置页，并改用“设置首页 → 分区页 → 分区内部详情”的手机导航，不使用 68px 图标侧栏。手机入口、history、返回和连接设置边界见 [手机远控设置规格](../web-remote-control/mobile-settings-ia-navigation.md)。
 
 当前入口职责如下：
 
@@ -35,7 +35,7 @@
 - 命令：管理不同 Agent CLI 的 `.md` 命令文件。
 - 钩子：管理任务生命周期钩子。
 - 索引：管理 workspace 索引相关能力。
-- 浏览器：管理 Browser Use 官方插件开关、Chrome 数据一次性导入和内置浏览器数据清理。
+- 浏览器：管理 Browser Use 官方插件开关、Chrome 扩展安装/配对/端口/Profile/默认 backend、Chrome 数据一次性导入和内置浏览器数据清理。手机 Web 只显示 Chrome 扩展需在桌面端管理的只读提示。
 - 用量：查看应用与编程套餐用量。
 
 历史窗口里残留的已隐藏分区跳转意图会回落到可见的默认分区，避免打开空白设置页。
@@ -65,6 +65,6 @@ CLI pending interaction
 | 设置页 | 请求完成或自动结束 | 只更新后台 task 投影；设置页不切换 |
 | workspace | 权限或问答仍 pending | 按既有 bottom dock 交互展示并允许响应 |
 
-该边界只约束 renderer 表面和焦点所有权，不修改 `pendingInteractions`、请求倒计时、权限响应、任务通知、desktop `desktop-continuous` 或手机 `web-remote-replayable` 的协议与恢复语义。手机 `/remote` 没有桌面设置覆盖层时继续使用现有移动端交互，不从本 case 推导新的远控行为。
+该边界只约束 renderer 表面和焦点所有权，不修改 `pendingInteractions`、请求倒计时、权限响应、任务通知、desktop `desktop-continuous` 或手机 `web-remote-replayable` 的协议与恢复语义。手机 `/remote` 打开应用设置时沿用同一覆盖层和隔离规则；底层 MobileShell 继续挂载并保持后台投影，设置导航与返回不得触发会话重建。
 
 这次调整只修改 UI 结构与视觉层级，不改动底层设置状态、持久化方式，以及 desktop / web 共用的设置逻辑。

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Zody Browser Bridge</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: #16181d;
+        color: #f3f5f8;
+      }
+      .wrap {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      h1 {
+        font-size: 15px;
+        margin: 0;
+        font-weight: 600;
+      }
+      .status {
+        font-size: 12px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background: #262a33;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .status[data-state="connected"] {
+        background: #123a2a;
+        color: #7ce0a9;
+      }
+      .status[data-state="pairing"] {
+        background: #3a3212;
+        color: #ffd66b;
+      }
+      .status[data-state="error"] {
+        background: #3d1a1f;
+        color: #ff9aa5;
+      }
+      #pairing-box {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid #3a3f4b;
+        border-radius: 8px;
+      }
+      #pairing-box[hidden] {
+        display: none;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        word-break: break-all;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12px;
+      }
+      input {
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #3a3f4b;
+        background: #1d2026;
+        color: inherit;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      button {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 0;
+        background: #3a6df0;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      #reconnect {
+        background: #2c313b;
+      }
+      #claims-box {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid #6b5514;
+        border-radius: 8px;
+        background: #241f10;
+      }
+      #claims-box[hidden] {
+        display: none;
+      }
+      .claim {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px;
+        border-radius: 6px;
+        background: #1d2026;
+      }
+      .claim-title {
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .claim-url {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        color: #a8b0bd;
+        word-break: break-all;
+      }
+      .claim-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .claim-actions .deny {
+        background: #3d1a1f;
+        color: #ff9aa5;
+      }
+      .meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 11px;
+        color: #a8b0bd;
+      }
+      #message {
+        margin: 0;
+        font-size: 11px;
+        color: #a8b0bd;
+        min-height: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Zody Browser Bridge</h1>
+      <div id="status" class="status" data-state="idle">idle</div>
+      <section id="pairing-box" hidden>
+        <div>Compare this pairing session with Zody, then enter the pairing code:</div>
+        <code id="pairing-session"></code>
+        <label>
+          Pairing code
+          <input id="pairing-code" autocomplete="one-time-code" spellcheck="false" />
+        </label>
+        <button id="pair" type="button">Pair</button>
+      </section>
+      <section id="claims-box" hidden>
+        <div>Zody is asking to control a tab you already have open:</div>
+        <div id="claims-list"></div>
+      </section>
+      <label>
+        Bridge port
+        <input id="bridge-port" inputmode="numeric" autocomplete="off" spellcheck="false" />
+      </label>
+      <div class="meta">
+        <div>Extension ID: <code id="extension-id">unknown</code></div>
+        <div>Profile: <code id="profile-id">unknown</code></div>
+      </div>
+      <button id="reconnect" type="button">Save port &amp; reconnect</button>
+      <p id="message"></p>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

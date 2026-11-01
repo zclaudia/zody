@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "out/browser-core",
+    "rootDir": "src",
+    "lib": ["es2025"],
+    "types": ["node"]
+  },
+  "include": ["src/browser-core"],
+  "references": [{ "path": "../shared" }]
+}

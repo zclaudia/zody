@@ -291,6 +291,8 @@ export interface AppSettings {
    * 只影响内置浏览器出口，不影响 ZCode 自身对后端与模型 API 的请求。默认关闭，重启后生效。
    */
   embeddedBrowserAllowInsecureCertificates?: boolean;
+  /** Chrome 扩展 loopback bridge 端口；缺省 39731。Main 与扩展需配置一致。 */
+  browserExtensionBridgePort?: number;
   /** 人类用户主动打开 Browser tab 时的一次性显示偏好；Agent Browser Use 不读写。 */
   embeddedBrowserViewportPreference?: EmbeddedBrowserViewportPreference;
   /**

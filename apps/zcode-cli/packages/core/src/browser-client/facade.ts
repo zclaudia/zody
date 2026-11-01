@@ -139,6 +139,8 @@ export class BrowserCapabilityCollection {
  */
 export interface BrowserClientTransport {
   list(): Promise<BrowserInfo[]>;
+  /** 用户显式配置的默认 backend browserId；缺省/undefined 时保持 IAB 默认。 */
+  getDefaultBrowserId?(): Promise<string | undefined>;
   execute: BrowserTransportExecuteFn;
 }
 
@@ -991,6 +993,7 @@ export class BrowsersFacade {
   private readonly transport: BrowserClientTransport;
   private readonly readDocumentation: (name?: string, descriptor?: BrowserInfo) => string;
   private readonly manifest: BrowserApiManifest;
+  private defaultBrowserId?: string;
   private readonly browsers = new Map<string, { raw: Browser; runtime: Browser }>();
   private readonly runtimeObject: BrowsersFacade;
 
@@ -999,9 +1002,12 @@ export class BrowsersFacade {
     options: {
       documentationRoot?: string;
       assertAvailable?: BrowserAvailabilityGuard;
+      /** 用户显式设置的默认 backend browserId；未设置时 IAB 优先。 */
+      defaultBrowserId?: string;
     } = {},
   ) {
     const assertAvailable = options.assertAvailable ?? (() => undefined);
+    this.defaultBrowserId = options.defaultBrowserId;
     this.assertAvailable = assertAvailable;
     // Browser 对象是持久引用，内核 reset 后旧绑定必须失效。guard 必须包住持久对象的每次
     // transport/doc 调用，不能只在初始化时判断。
@@ -1036,6 +1042,14 @@ export class BrowsersFacade {
     return this.runtimeObject;
   }
 
+  /**
+   * 设置页可在会话运行期间修改默认 backend；下一次选择读取新值，不重建持久 tab 绑定。
+   * undefined 表示恢复“未配置”的 IAB 默认。
+   */
+  setDefaultBrowserId(defaultBrowserId: string | undefined): void {
+    this.defaultBrowserId = defaultBrowserId?.trim() || undefined;
+  }
+
   private async listAvailable(): Promise<BrowserInfo[]> {
     return await this.transport.list();
   }
@@ -1048,9 +1062,24 @@ export class BrowsersFacade {
 
   async get(idOrType: string): Promise<Browser> {
     const infos = await this.listAvailable();
-    const info =
-      infos.find((candidate) => candidate.id === idOrType) ??
-      infos.find((candidate) => candidate.type === idOrType);
+    const byId = infos.find((candidate) => candidate.id === idOrType);
+    const byType = infos.filter((candidate) => candidate.type === idOrType);
+    // 多个 extension Profile 时 type 不是唯一身份；必须让调用方显式传 browserId。
+    if (!byId && byType.length > 1) {
+      throw new BrowserCommandError(
+        { method: "list" },
+        {
+          ok: false,
+          elapsedMs: 0,
+          error: {
+            code: "backend_unavailable",
+            message: `Browser backend type '${idOrType}' is ambiguous; use an explicit browserId`,
+          },
+        },
+        "backend_unavailable",
+      );
+    }
+    const info = byId ?? byType[0];
     if (!info) {
       const available = infos.map((candidate) => `${candidate.type}:${candidate.id}`).join(", ");
       throw new BrowserCommandError(
@@ -1070,7 +1099,9 @@ export class BrowsersFacade {
   }
 
   async getDefault(): Promise<Browser> {
-    const info = selectDefaultBrowser(await this.listAvailable());
+    const info = selectDefaultBrowser(await this.listAvailable(), {
+      ...(this.defaultBrowserId ? { defaultBrowserId: this.defaultBrowserId } : {}),
+    });
     if (!info) {
       return this.get("__no_browser_backend__");
     }
@@ -1082,9 +1113,32 @@ export class BrowsersFacade {
     if (infos.length === 0) {
       return this.get("__no_browser_backend__");
     }
+    // 默认 backend 校验必须先于单 backend 快捷返回；只剩 IAB 时也不能静默回退。
+    if (this.defaultBrowserId) {
+      const explicit = infos.find((info) => info.id === this.defaultBrowserId);
+      if (!explicit) {
+        throw new BrowserCommandError(
+          { method: "list" },
+          {
+            ok: false,
+            elapsedMs: 0,
+            error: {
+              code: "backend_unavailable",
+              message: `Configured default browser backend '${this.defaultBrowserId}' is unavailable`,
+            },
+          },
+          "backend_unavailable",
+        );
+      }
+      return this.browserFor(explicit);
+    }
     if (infos.length === 1) {
       return this.browserFor(infos[0]);
     }
+    // IAB 存在且用户没有显式默认 extension 时，URL 命中不得迁出 IAB；无需枚举
+    // extension tabs，也就不会为 selection 触发外部 Chrome 命令。
+    const iab = infos.find((info) => info.type === "iab");
+    if (iab) return this.browserFor(iab);
 
     const tabsByBrowserId = new Map<string, readonly string[]>();
     await Promise.all(
@@ -1100,7 +1154,11 @@ export class BrowsersFacade {
         }
       }),
     );
-    return this.browserFor(selectBrowserForUrl(infos, url, tabsByBrowserId));
+    return this.browserFor(
+      selectBrowserForUrl(infos, url, tabsByBrowserId, {
+        ...(this.defaultBrowserId ? { defaultBrowserId: this.defaultBrowserId } : {}),
+      }),
+    );
   }
 
   async open(url?: string, options: { reuseTab?: boolean } = {}): Promise<Tab> {

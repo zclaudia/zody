@@ -102,6 +102,24 @@ describe("node_repl browser broker", () => {
     );
   });
 
+  it("forwards the configured default browserId without changing list semantics", async () => {
+    const browserControlPort = createBrowserControlPort();
+    broker = createNodeReplBrowserBroker({ browserControlPort, logger });
+    await broker.ready;
+
+    const response = await exchange(broker.socketPath, {
+      id: randomUUID(),
+      op: "default",
+      runtimeScope: "main",
+      sessionId: "session-1",
+      token: broker.token,
+    });
+    expect(response).toMatchObject({ ok: true, defaultBrowserId: "extension:profile-1" });
+    expect(browserControlPort.getDefaultBrowserId).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionId: "session-1" }),
+    );
+  });
+
   it("rejects an invalid token before reaching BrowserControlPort", async () => {
     const browserControlPort = createBrowserControlPort();
     broker = createNodeReplBrowserBroker({ browserControlPort, logger });
@@ -313,6 +331,7 @@ function createBrowserControlPort(): BrowserControlPort {
         type: "iab" as const,
       },
     ]),
+    getDefaultBrowserId: vi.fn(async () => "extension:profile-1"),
     execute: vi.fn(async () => ({ elapsedMs: 1, ok: true, value: "ready" })),
   };
 }

@@ -1,4 +1,4 @@
-export const IAB_INPUT_TARGET_TOKEN_PROPERTY = "__zodyIabInputTargetToken";
+export const BROWSER_INPUT_TARGET_TOKEN_PROPERTY = "__zodyIabInputTargetToken";
 
 /** 页面虚拟粘贴；此函数源码在目标 page execution context 内执行。 */
 export const VIRTUAL_PASTE_PAGE_FUNCTION = `async (options) => {
@@ -70,7 +70,7 @@ export const VIRTUAL_PASTE_PAGE_FUNCTION = `async (options) => {
   const target = deepestActiveElement(document) ?? document.body;
   if (options.inputTargetToken != null) {
     const element = asElement(target);
-    if ((element ?? null)?.${IAB_INPUT_TARGET_TOKEN_PROPERTY} !== options.inputTargetToken)
+    if ((element ?? null)?.${BROWSER_INPUT_TARGET_TOKEN_PROPERTY} !== options.inputTargetToken)
       throw new Error("Active element is no longer the expected input target");
   }
   if (options.clipboardItems.length === 0)

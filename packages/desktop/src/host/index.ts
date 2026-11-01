@@ -33,6 +33,12 @@ import { registerHostServiceResourceTelemetry } from "./hostServiceResourceTelem
 import { resolveResourceTelemetryEnvironmentKey } from "./hostResourceTelemetryEnvironment.js";
 import { reportHostSessionCreate } from "./hostSessionCreateTelemetry.js";
 import { createBrowserControlMainBridge } from "./browserControlMainBridge.js";
+import { createBrowserControlRouter } from "./browserControlRouter.js";
+import { createIabBrowserControlBackend } from "./iabBrowserControlBackend.js";
+import { createExtensionTransportClient } from "./extensionTransportClient.js";
+import { resolveExtensionDefaultBrowserId } from "./extensionDefaultBrowser.js";
+import { ExtensionCdpTransport } from "../browser-core/extensionCdpTransport.js";
+import { ExtensionBrowserBackend } from "./extensionBrowserBackend.js";
 import { materializeBrowserRecordingArtifact } from "./browserRecordingArtifactMaterializer.js";
 import {
   ServiceCollection,
@@ -357,6 +363,45 @@ const logger = {
   warn: (...args: unknown[]) => writeHostLog("warn", ...args),
   error: (...args: unknown[]) => writeHostLog("error", ...args),
 };
+
+// Chrome 扩展 backend：Host 持有 logical tab/session owner；Main 只做窗口绑定与传输关联。
+const extensionTransportClient = createExtensionTransportClient({
+  postToMain: (message) => {
+    if (!parentPort) throw new Error("parentPort unavailable");
+    parentPort.postMessage(message);
+  },
+});
+/**
+ * Main 按窗口 push 的默认 backend。Host 只是该窗口设置事实的投影，不自行持久化；
+ * 新 Host 启动时由 Main 重新推送（app restart 后 Main 内存为空 → 回落 IAB）。
+ */
+let extensionDefaultBrowserId: string | undefined;
+const extensionCdpTransport = new ExtensionCdpTransport({
+  request: (message) => {
+    const profileInstanceId = message.targetRef.browserId.replace(/^extension:/, "");
+    return extensionTransportClient.request(profileInstanceId, message);
+  },
+  cancel: (requestId, profileInstanceId) => {
+    // 尽力取消：扩展只对 evaluate/callFunctionOn 发送 terminateExecution；失败不覆盖 Host timeout。
+    void extensionTransportClient
+      .send(profileInstanceId, { type: "request.cancel", targetRequestId: requestId })
+      .catch(() => undefined);
+  },
+});
+const extensionBrowserBackend = new ExtensionBrowserBackend({
+  transport: extensionTransportClient,
+  cdp: extensionCdpTransport,
+  logger: {
+    debug: () => undefined,
+    info: logger.info,
+    warn: logger.warn,
+    error: logger.error,
+  },
+});
+const browserControlRouter = createBrowserControlRouter({
+  iab: createIabBrowserControlBackend(browserControlMainBridge),
+  extension: extensionBrowserBackend,
+});
 
 const cronAutomationRepo = new AutomationRepo();
 const cronRunSubscriptions = new Map<string, { dispose(): void }>();
@@ -1905,6 +1950,8 @@ async function disposeHostResources(reason: string): Promise<HostShutdownResult>
     logger.info(`disposing host resources, reason=${reason}`);
 
     pluginSandboxRegistrationBridge.dispose();
+    extensionBrowserBackend.dispose();
+    extensionTransportClient.dispose();
     stopHostNetworkTelemetry();
     hostNetworkCapture.setCaptureId(null);
     hostSelfResourceTelemetry.stop();
@@ -1977,6 +2024,8 @@ function disposeHostResourcesBestEffort(reason: string): void {
 
   logger.info(`disposing host resources, reason=${reason}`);
   pluginSandboxRegistrationBridge.dispose();
+  extensionBrowserBackend.dispose();
+  extensionTransportClient.dispose();
   stopHostNetworkTelemetry();
   hostNetworkCapture.setCaptureId(null);
   disposeLocalResourceTelemetry();
@@ -2187,6 +2236,26 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
       requestId: msg.requestId,
       result: msg.result,
     });
+    return;
+  }
+
+  if (msg.type === HostMessageTypes.ExtensionTransportResult) {
+    extensionTransportClient.handleResult(msg);
+    return;
+  }
+
+  if (msg.type === HostMessageTypes.ExtensionConnectionChanged) {
+    extensionTransportClient.handleConnectionChanged(msg);
+    return;
+  }
+
+  if (msg.type === HostMessageTypes.ExtensionEvent) {
+    extensionTransportClient.handleEvent(msg);
+    return;
+  }
+
+  if (msg.type === HostMessageTypes.ExtensionDefaultBrowserChanged) {
+    extensionDefaultBrowserId = msg.defaultBrowserId;
     return;
   }
 
@@ -2650,7 +2719,18 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
               },
               // browser-use：agent 的 interaction/browserExecute 经 zcodeAgentService 转到这个 executor，
               // 再经 parentPort 到 main 的 WebContentsView+CDP 执行。
-              browserControlExecutor: browserControlMainBridge,
+              browserControlExecutor: {
+                list: (input) => browserControlRouter.list(input),
+                execute: (input) => browserControlRouter.execute(input, input.command),
+                // 默认 backend 由 Main 按窗口拥有并 push；Host 只提供该窗口的事实，选择仍由
+                // CLI 的 defaultBrowserId 规则执行。手机 replay 不暴露 extension 默认，
+                // 避免未验证恢复链路的客户端继承外部 Chrome backend。
+                getDefaultBrowserId: async (input) =>
+                  resolveExtensionDefaultBrowserId(
+                    extensionDefaultBrowserId,
+                    input.clientMode,
+                  ),
+              },
               // CUA 顶部提示属于物理 Windows 桌面投影；非 Windows 和远端 authority 都不得上报。
               cuaOperationStateReporter:
                 process.platform === "win32" ? cuaOperationStateReporter : undefined,

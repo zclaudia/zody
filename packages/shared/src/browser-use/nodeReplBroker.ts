@@ -24,6 +24,7 @@ const requestBase = z.object({
 
 export const nodeReplBrowserBrokerRequestSchema = z.discriminatedUnion("op", [
   requestBase.extend({ op: z.literal("list") }).strict(),
+  requestBase.extend({ op: z.literal("default") }).strict(),
   requestBase
     .extend({
       op: z.literal("execute"),
@@ -41,6 +42,7 @@ export const nodeReplBrowserBrokerResponseSchema = z.discriminatedUnion("ok", [
       id: z.string().uuid(),
       ok: z.literal(true),
       browsers: z.array(browserBackendDescriptorSchema).optional(),
+      defaultBrowserId: z.string().trim().min(1).optional(),
       result: browserCommandResultSchema.optional(),
     })
     .strict(),

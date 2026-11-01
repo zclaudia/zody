@@ -3,7 +3,12 @@ import type { BrowserCommandResult, BrowserPlaywrightAction } from "@zcode/share
 import { buildViewportScreenshotParams } from "./browserCommandPageHandlers.js";
 import type { ControlledView } from "./browserCommandTypes.js";
 import { captureScreenshotWithCssPixelCorrection } from "./browserScreenshotCapture.js";
+import {
+  buildPlaywrightEvaluateExpression,
+  evaluatePlaywrightExpression,
+} from "../../browser-core/playwright/evaluate.js";
 import { captureBrowserDomSnapshot } from "./browserPlaywrightDomSnapshot.js";
+import { createPlaywrightPageFromControlledView } from "./browserPlaywrightPageAdapter.js";
 import { executeIabPlaywrightLocator } from "./browserPlaywrightLocatorExecutor.js";
 import { normalizePlaywrightTimeout } from "./browserPlaywrightTimeout.js";
 
@@ -185,42 +190,6 @@ async function waitForDocumentState(
   );
 }
 
-async function evaluateWithCdp(
-  view: ControlledView,
-  expression: string,
-  timeoutMs: number,
-  signal?: AbortSignal,
-): Promise<unknown> {
-  const terminate = () => {
-    void view.cdp.send("Runtime.terminateExecution").catch(() => undefined);
-  };
-  if (signal?.aborted) throw new DOMException("aborted", "AbortError");
-  signal?.addEventListener("abort", terminate, { once: true });
-  try {
-    const raw = (await view.cdp.send("Runtime.evaluate", {
-      expression,
-      awaitPromise: true,
-      returnByValue: true,
-      timeout: timeoutMs,
-    })) as {
-      result?: { value?: unknown };
-      exceptionDetails?: { text?: string; exception?: { description?: string } };
-    };
-    if (raw.exceptionDetails) {
-      throw new Error(
-        `playwright.evaluate failed: ${
-          raw.exceptionDetails.exception?.description ??
-          raw.exceptionDetails.text ??
-          "Playwright evaluate failed"
-        }`,
-      );
-    }
-    return raw.result?.value;
-  } finally {
-    signal?.removeEventListener("abort", terminate);
-  }
-}
-
 export async function handlePlaywrightAction(
   view: ControlledView,
   action: BrowserPlaywrightAction,
@@ -258,14 +227,9 @@ export async function handlePlaywrightAction(
     }
   }
   if (action.name === "evaluate") {
-    const arg = JSON.stringify(action.arg);
-    const expression =
-      action.expressionKind === "function"
-        ? `(${action.expression})(${arg})`
-        : `(() => { const arg = ${arg}; return (${action.expression}); })()`;
-    const value = await evaluateWithCdp(
-      view,
-      expression,
+    const value = await evaluatePlaywrightExpression(
+      createPlaywrightPageFromControlledView(view),
+      buildPlaywrightEvaluateExpression(action),
       normalizePlaywrightTimeout(action.timeoutMs),
       signal,
     );

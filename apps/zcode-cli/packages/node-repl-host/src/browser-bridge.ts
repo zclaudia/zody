@@ -21,6 +21,19 @@ export interface ActiveNodeReplCall {
   signal: AbortSignal;
 }
 
+export interface NodeReplBrowserBrokerConnection {
+  socketPath: string;
+  token: string;
+}
+
+export function captureNodeReplBrowserBrokerFromEnvironment(
+  env: NodeJS.ProcessEnv = process.env,
+): NodeReplBrowserBrokerConnection | undefined {
+  const socketPath = env[NODE_REPL_BROWSER_BROKER_SOCKET_ENV]?.trim();
+  const token = env[NODE_REPL_BROWSER_BROKER_TOKEN_ENV]?.trim();
+  return socketPath && token ? { socketPath, token } : undefined;
+}
+
 interface BrokerContext {
   runtimeScope: "main" | "subagent";
   sessionId: string;
@@ -29,6 +42,7 @@ interface BrokerContext {
 }
 
 export function createBrowserBridgeGlobals(input: {
+  broker?: NodeReplBrowserBrokerConnection;
   documentationRoot: string;
   generation: number;
   getActiveCall: () => ActiveNodeReplCall | undefined;
@@ -47,9 +61,20 @@ export function createBrowserBridgeGlobals(input: {
       const response = await sendBrokerRequest(
         { op: "list", ...requestContext(active.requestMeta) },
         active.signal,
+        input.broker,
       );
       assertActive();
       return response.browsers ?? [];
+    },
+    getDefaultBrowserId: async () => {
+      const active = assertActive();
+      const response = await sendBrokerRequest(
+        { op: "default", ...requestContext(active.requestMeta) },
+        active.signal,
+        input.broker,
+      );
+      assertActive();
+      return response.defaultBrowserId;
     },
     execute: async (browserId, browserGeneration, command) => {
       const active = assertActive();
@@ -62,6 +87,7 @@ export function createBrowserBridgeGlobals(input: {
           ...requestContext(active.requestMeta),
         },
         active.signal,
+        input.broker,
       );
       assertActive();
       if (!response.result) throw new Error("Browser broker returned no command result");
@@ -109,6 +135,7 @@ async function sendBrokerRequest(
   request: BrokerContext &
     (
       | { op: "list" }
+      | { op: "default" }
       | {
           op: "execute";
           browserId: string;
@@ -117,9 +144,10 @@ async function sendBrokerRequest(
         }
     ),
   signal: AbortSignal,
+  broker: NodeReplBrowserBrokerConnection | undefined,
 ): Promise<SuccessfulBrokerResponse> {
-  const socketPath = process.env[NODE_REPL_BROWSER_BROKER_SOCKET_ENV]?.trim();
-  const token = process.env[NODE_REPL_BROWSER_BROKER_TOKEN_ENV]?.trim();
+  const socketPath = broker?.socketPath ?? process.env[NODE_REPL_BROWSER_BROKER_SOCKET_ENV]?.trim();
+  const token = broker?.token ?? process.env[NODE_REPL_BROWSER_BROKER_TOKEN_ENV]?.trim();
   if (!socketPath || !token) {
     throw new Error("Browser control is unavailable for this node_repl session");
   }

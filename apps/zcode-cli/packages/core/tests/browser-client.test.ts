@@ -311,6 +311,109 @@ describe("browser-client facade", () => {
     await expect(empty.getDefault()).rejects.toMatchObject({ code: "backend_unavailable" });
   });
 
+  it("requires an explicit browserId when multiple extension Profiles are available", async () => {
+    const first: BrowserInfo = {
+      id: "extension:profile-a",
+      generation: 1,
+      type: "extension",
+      name: "Chrome A",
+      capabilities: {},
+    };
+    const second: BrowserInfo = {
+      id: "extension:profile-b",
+      generation: 1,
+      type: "extension",
+      name: "Chrome B",
+      capabilities: {},
+    };
+    const browsers = new BrowsersFacade({
+      list: async () => [first, second],
+      execute: async () => ({ ok: true, elapsedMs: 0 }),
+    });
+    await expect(browsers.get("extension")).rejects.toMatchObject({
+      code: "backend_unavailable",
+      message: expect.stringContaining("ambiguous"),
+    });
+    await expect(browsers.get(first.id)).resolves.toMatchObject({ browserId: first.id });
+    await expect(browsers.get(second.id)).resolves.toMatchObject({ browserId: second.id });
+  });
+
+  it("keeps getForUrl on IAB unless an extension browserId is the explicit default", async () => {
+    const extension: BrowserInfo = {
+      id: "extension:profile-a",
+      generation: 3,
+      type: "extension",
+      name: "Chrome",
+      capabilities: {},
+    };
+    const execute = vi.fn(async (_browserId: string, _generation: number) => {
+      return {
+        ok: true,
+        tabs: [
+          {
+            tabId: "extab:1",
+            url: "https://example.com/app",
+            title: "",
+            viewport: { width: 1280, height: 720 },
+          },
+        ],
+        elapsedMs: 1,
+      } satisfies BrowserCommandResult;
+    });
+    const transport = { list: async () => [extension, IAB_INFO], execute };
+    const browsers = new BrowsersFacade(transport);
+    await expect(browsers.getForUrl("https://example.com/app")).resolves.toMatchObject({
+      browserId: IAB_INFO.id,
+    });
+    // IAB 短路后不再为 selection 枚举 extension tabs。
+    expect(execute).not.toHaveBeenCalled();
+
+    const explicit = new BrowsersFacade(transport, { defaultBrowserId: extension.id });
+    await expect(explicit.getForUrl("https://unmatched.test/")).resolves.toMatchObject({
+      browserId: extension.id,
+    });
+    await expect(explicit.getDefault()).resolves.toMatchObject({ browserId: extension.id });
+
+    // 已配置的默认 backend 消失时 fail closed，不静默迁回 IAB。
+    const missing = new BrowsersFacade(transport, { defaultBrowserId: "extension:gone" });
+    await expect(missing.getDefault()).rejects.toMatchObject({ code: "backend_unavailable" });
+    await expect(missing.getForUrl("https://example.com/")).rejects.toMatchObject({
+      code: "backend_unavailable",
+    });
+
+    // 只剩 IAB 时也要先校验显式默认，不能被单 backend 快捷路径吞掉。
+    const single = new BrowsersFacade(
+      { list: async () => [IAB_INFO], execute },
+      { defaultBrowserId: "extension:gone" },
+    );
+    await expect(single.getForUrl("https://example.com/")).rejects.toMatchObject({
+      code: "backend_unavailable",
+    });
+    await expect(single.getDefault()).rejects.toMatchObject({ code: "backend_unavailable" });
+  });
+
+  it("setDefaultBrowserId updates the live facade and restores IAB default when cleared", async () => {
+    const extension: BrowserInfo = {
+      id: "ext-live",
+      generation: 1,
+      type: "extension",
+      name: "Chrome",
+      capabilities: {},
+    };
+    const { execute } = fakeExecute();
+    const browsers = new BrowsersFacade({ list: async () => [extension, IAB_INFO], execute });
+    await expect(browsers.getDefault()).resolves.toMatchObject({ browserId: IAB_INFO.id });
+
+    browsers.setDefaultBrowserId(extension.id);
+    await expect(browsers.getDefault()).resolves.toMatchObject({ browserId: extension.id });
+
+    browsers.setDefaultBrowserId(undefined);
+    await expect(browsers.getDefault()).resolves.toMatchObject({ browserId: IAB_INFO.id });
+
+    browsers.setDefaultBrowserId("extension:gone");
+    await expect(browsers.getDefault()).rejects.toMatchObject({ code: "backend_unavailable" });
+  });
+
   it("open(url) navigates with direct-return SDK semantics", async () => {
     const { execute, calls } = fakeExecute();
     const tab = await createFacade(execute).open("https://example.com");

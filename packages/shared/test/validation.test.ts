@@ -625,6 +625,27 @@ describe("hostResponseMessageSchema", () => {
     expect(patch.embeddedBrowserAllowInsecureCertificates).toBe(true);
   });
 
+  it("accepts a valid extension bridge port and ignores the legacy global default field", () => {
+    const parsed = appSettingsSchema.parse({});
+    const configured = appSettingsSchema.parse({
+      browserExtensionBridgePort: 39731,
+    });
+    const patch = appSettingsPatchSchema.parse({
+      browserExtensionBridgePort: 41000,
+    });
+    // 旧全局默认 backend 字段不再属于 AppSettings，读取时安全丢弃，不能迁移成窗口默认。
+    const legacy = appSettingsSchema.parse({
+      browserDefaultBackendId: "extension:legacy-profile",
+    }) as Record<string, unknown>;
+
+    expect(parsed.browserExtensionBridgePort).toBeUndefined();
+    expect(configured.browserExtensionBridgePort).toBe(39731);
+    expect(patch.browserExtensionBridgePort).toBe(41000);
+    expect(legacy.browserDefaultBackendId).toBeUndefined();
+    expect(() => appSettingsSchema.parse({ browserExtensionBridgePort: 0 })).toThrow();
+    expect(() => appSettingsSchema.parse({ browserExtensionBridgePort: 65_536 })).toThrow();
+  });
+
   it("defaults the composer Computer Use entry to hidden and accepts patches", () => {
     const parsed = appSettingsSchema.parse({});
     const shown = appSettingsSchema.parse({ computerUseComposerEntryHidden: false });

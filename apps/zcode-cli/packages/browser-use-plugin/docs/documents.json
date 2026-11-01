@@ -30,6 +30,16 @@
       }
     },
     {
+      "path": "tab-claiming-extension.md",
+      "title": "Claiming an Existing Chrome Tab",
+      "name": "tab-claiming-extension",
+      "mode": "included",
+      "when": {
+        "browserTypes": ["extension"],
+        "requiredApiMembers": ["BrowserUser.openTabs", "BrowserUser.claimTab"]
+      }
+    },
+    {
       "path": "tab-claiming-iab.md",
       "title": "User Tab Claiming",
       "name": "tab-claiming-iab",

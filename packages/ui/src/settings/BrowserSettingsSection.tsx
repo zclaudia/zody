@@ -26,6 +26,7 @@ import { SettingsGroupCard, SettingsRow } from "@/settings/SettingsPageParts.js"
 import { usePluginManagementStore } from "@/store/pluginManagementStore.js";
 import { useSkillStore } from "@/store/skillStore.js";
 import { formatImportSummary } from "./browserImportSummary.js";
+import { BrowserExtensionSettingsSection } from "./BrowserExtensionSettingsSection.js";
 
 const OFFICIAL_BROWSER_USE_PLUGIN_ID = "browser-use@zcode-plugins-official";
 
@@ -327,6 +328,8 @@ export function BrowserSettingsSection({
           </SettingsGroupCard>
         </section>
       ) : null}
+
+      <BrowserExtensionSettingsSection isDesktop={isDesktop} />
 
       <section className="space-y-3">
         <div className="text-ui-base font-medium text-foreground-subtle">

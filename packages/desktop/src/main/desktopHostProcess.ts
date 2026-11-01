@@ -220,6 +220,25 @@ export function spawnHostProcess(
       sessionContext?: "live" | "cached";
       command: unknown;
     }) => Promise<{ ok: boolean; [k: string]: unknown }>;
+    /** browser-use：Host 请求转发 Chrome 扩展传输消息；Main 只做窗口绑定与 requestId 关联。 */
+    handleExtensionTransportRequest?: (params: {
+      win: BrowserWindow;
+      request: {
+        type: typeof HostResponseTypes.ExtensionTransportRequest;
+        requestId: string;
+        op: "list" | "request" | "send";
+        profileInstanceId?: string;
+        message?: unknown;
+      };
+    }) => Promise<{
+      ok: boolean;
+      connections?: unknown[];
+      message?: unknown;
+      error?: { code: string; message: string };
+    }>;
+    /** window Host 建立/退出时登记扩展传输投递句柄。 */
+    onExtensionHostReady?: (win: BrowserWindow, child: HostProcessHandle) => void;
+    onExtensionHostExited?: (win: BrowserWindow, child: HostProcessHandle) => void;
     /** Host 已完成附件授权后，由 Main 将本地视频 realpath 加入精确协议授权集合。 */
     authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
     /** Host 校验完插件 UI HTML 后交给 Main 沙箱注册表登记，返回句柄。 */
@@ -453,6 +472,34 @@ export function spawnHostProcess(
             requestId: request.requestId,
             ok: false,
             error: error instanceof Error ? error.message : String(error),
+          });
+        });
+      return;
+    }
+
+    if (result.data.type === HostResponseTypes.ExtensionTransportRequest) {
+      const request = result.data;
+      const handler = dependencies.handleExtensionTransportRequest;
+      void (
+        handler
+          ? handler({ win, request })
+          : Promise.resolve({
+              ok: false,
+              error: { code: "backend_unavailable", message: "extension bridge not ready" },
+            })
+      )
+        .catch((error: unknown) => ({
+          ok: false,
+          error: {
+            code: "internal_error",
+            message: error instanceof Error ? error.message : String(error),
+          },
+        }))
+        .then((payload) => {
+          child.postMessage({
+            type: HostMessageTypes.ExtensionTransportResult,
+            requestId: request.requestId,
+            ...payload,
           });
         });
       return;

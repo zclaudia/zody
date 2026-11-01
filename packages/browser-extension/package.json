@@ -1,0 +1,19 @@
+{
+  "name": "@zcode/browser-extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Zody Chrome Extension browser bridge (MV3)",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run test",
+    "smoke:p0": "node --import tsx scripts/p0-smoke.mjs",
+    "smoke:p1": "node --import tsx scripts/p1-smoke.mjs",
+    "smoke:p2": "node --import tsx scripts/p2-smoke.mjs",
+    "smoke:p3": "node --import tsx scripts/p3-smoke.mjs"
+  },
+  "devDependencies": {
+    "@zcode/shared": "workspace:*"
+  }
+}

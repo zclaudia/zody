@@ -1,6 +1,10 @@
 import { querySessionDebug } from "./session-debug.js";
 import { createNodeNetworkCapture } from "@zcode/shared/node";
-import { networkCaptureControlSchema, zcodeProtocolNotifications } from "@zcode/shared";
+import {
+  networkCaptureControlSchema,
+  zcodeProtocolNotifications,
+  zcodeRuntimeIdentityInitializeParamsSchema,
+} from "@zcode/shared";
 import {
   zcodePluginsCancelOperationParamsSchema,
   zcodeProtocolMethods,
@@ -125,6 +129,7 @@ import {
   SessionResidentPool,
 } from "./session-resident-pool.js";
 import { createProtocolBrowserControlBroker } from "./browser-control-broker.js";
+import { pinCuaLaunchIdentity } from "./runtime-identity.js";
 import {
   createProtocolLogger,
   isErrorResponse,
@@ -485,8 +490,17 @@ export class ZCodeProtocolAgentServer {
       // subscribe hydration、workspace 配置与 resume 都可能跨 await。若只看
       // session 当前状态，sampler 会在 handler 持有旧 record 时把它关闭。进程级 lease
       // 覆盖整个 request；能识别的 sessionIds 额外用于冷恢复闸门与 LRU touch。
+      // I19：conversation subscribe 的历史投影不依赖 runtime 物化，不能整包等旧
+      // app.close 收尾；真正需要串行化的 activation 会在 activateSessionForResume
+      // 内部等待同一闸门。索引/配置订阅本身没有 sessionId，不受该选项影响。
+      const topic = (request.params as { topic?: unknown } | null | undefined)?.topic;
+      const conversationSubscribe =
+        request.method === V4_METHODS.conversationSubscribe &&
+        typeof topic === "string" &&
+        parseConversationTopic(topic) !== null;
       releaseResidencyOperation = await this.context.sessionResidentPool?.acquireOperation(
         collectResidencySessionIds(request.params),
+        { waitForDeactivation: !conversationSubscribe },
       );
       const result = await this.dispatchRequest(request);
       return this.ok(request.id, result);
@@ -760,6 +774,19 @@ export class ZCodeProtocolAgentServer {
         return listChildProcesses(this.context.deps.mcpTelemetry?.listProcesses() ?? []);
       case zcodeProtocolMethods.runtimeCapabilities:
         return { independentPlanState: true };
+      case zcodeProtocolMethods.runtimeIdentityInitialize: {
+        const params = parseParams(zcodeRuntimeIdentityInitializeParamsSchema, request.params);
+        try {
+          const pinned = pinCuaLaunchIdentity(this.context.cuaLaunchIdentity, params.identity);
+          this.context.cuaLaunchIdentity = pinned.identity;
+          return { initialized: true as const, reused: pinned.reused };
+        } catch (error) {
+          throw new ProtocolRequestError(
+            -32600,
+            error instanceof Error ? error.message : String(error),
+          );
+        }
+      }
       case zcodeProtocolMethods.pluginsMarketplaceAdd:
         return await this.withPluginOperationSignal(request, (signal) =>
           addPluginMarketplace(this.context, request.params, signal),

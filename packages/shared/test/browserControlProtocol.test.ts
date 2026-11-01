@@ -7,6 +7,7 @@ import {
   browserSnapshotSchema,
 } from "../src/browser-use/index.js";
 import {
+  zcodeBrowserDefaultResultSchema,
   zcodeBrowserExecuteParamsSchema,
   zcodeBrowserExecuteResultSchema,
   zcodeBrowserListParamsSchema,
@@ -467,6 +468,23 @@ describe("interaction/browserList protocol", () => {
     expect(
       zcodeBrowserListResultSchema.parse({ browsers: [IAB_DESCRIPTOR] }).browsers[0]?.type,
     ).toBe("iab");
+  });
+
+  it("browserDefault 只是用户设置事实，缺省结果合法且拒绝多余字段", () => {
+    expect(zcodeProtocolMethods.interactionBrowserDefault).toBe(
+      "interaction/browserDefault",
+    );
+    const entry =
+      zcodeProtocolSessionMethodContracts[zcodeProtocolMethods.interactionBrowserDefault];
+    expect(entry?.params).toBe(zcodeBrowserListParamsSchema);
+    expect(entry?.result).toBe(zcodeBrowserDefaultResultSchema);
+    expect(zcodeBrowserDefaultResultSchema.parse({})).toEqual({});
+    expect(
+      zcodeBrowserDefaultResultSchema.parse({ defaultBrowserId: "extension:profile-1" }),
+    ).toEqual({ defaultBrowserId: "extension:profile-1" });
+    expect(() =>
+      zcodeBrowserDefaultResultSchema.parse({ defaultBrowserId: "extension:profile-1", extra: 1 }),
+    ).toThrow();
   });
 });
 

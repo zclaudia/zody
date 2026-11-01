@@ -426,6 +426,54 @@ export interface EmbeddedBrowserDataClearResult {
   error?: string;
 }
 
+/** Chrome 扩展设置页可见的 Profile 状态；不包含共享密钥或配对证明。 */
+export interface BrowserExtensionProfileStatus {
+  profileInstanceId: string;
+  browserId: string;
+  extensionId: string;
+  pairedAt: string;
+  connected: boolean;
+  generation?: number;
+  /** 仅返回当前窗口或孤儿 Profile，因此这里只可能是当前窗口或空。 */
+  boundWindowId?: string;
+  /** current-window：绑定本窗口；unbound：原绑定窗口已无 Host，可由本窗口接管。 */
+  binding: "current-window" | "unbound";
+}
+
+export interface BrowserExtensionPairingStatus {
+  pairingSessionId: string;
+  expiresAt: number;
+  /** hello 之后才有；配对码不进入 status。 */
+  extensionId?: string;
+  profileInstanceId?: string;
+}
+
+export interface BrowserExtensionBridgeStatus {
+  available: boolean;
+  /** 实际监听端口；bridge 不可用时为 null。 */
+  port: number | null;
+  configuredPort: number;
+  error?: string;
+  profiles: BrowserExtensionProfileStatus[];
+  pairing?: BrowserExtensionPairingStatus;
+  /** 当前窗口的唯一默认 backend；缺省表示沿用 IAB。 */
+  defaultBrowserId?: string;
+  /** 打包态为 resources/browser-extension；开发态为仓库构建产物。 */
+  installDirectory?: string;
+  installDirectoryAvailable?: boolean;
+}
+
+export interface BrowserExtensionPairingTicket {
+  pairingSessionId: string;
+  pairingCode: string;
+  expiresAt: number;
+}
+
+export interface BrowserExtensionActionResult {
+  ok: boolean;
+  error?: string;
+}
+
 export interface WindowControlsOverlayMetrics {
   leftPaddingPx?: number;
   rightPaddingPx?: number;
@@ -1171,6 +1219,29 @@ export interface IPlatformService {
 
   /** 清理内置浏览器持久化分区；cache 模式保留认证数据，all 模式清理全部站点数据。 */
   clearEmbeddedBrowserData?(mode: "cache" | "all"): Promise<EmbeddedBrowserDataClearResult>;
+
+  /** 读取当前窗口可见的 Chrome 扩展 bridge/配对/Profile 状态。 */
+  getBrowserExtensionStatus?(): Promise<BrowserExtensionBridgeStatus>;
+
+  /** 只在发起窗口生成一次性配对码；状态中的 extension/profile 信息由扩展 hello 提供。 */
+  beginBrowserExtensionPairing?(): Promise<BrowserExtensionPairingTicket | null>;
+
+  cancelBrowserExtensionPairing?(pairingSessionId: string): Promise<void>;
+
+  /** 只更新当前窗口的默认 backend；null 表示恢复 IAB 默认。 */
+  setBrowserExtensionDefaultBackend?(
+    browserId: string | null,
+  ): Promise<BrowserExtensionActionResult>;
+
+  revokeBrowserExtensionProfile?(profileInstanceId: string): Promise<BrowserExtensionActionResult>;
+
+  /** 把当前窗口可见的 Profile 显式转移到本窗口；旧 generation/lease 立即失效。 */
+  transferBrowserExtensionProfile?(
+    profileInstanceId: string,
+  ): Promise<BrowserExtensionActionResult>;
+
+  /** Main 先在新端口重启 bridge，成功后才持久化。 */
+  setBrowserExtensionBridgePort?(port: number): Promise<BrowserExtensionActionResult>;
 
   /** 注册新版本已下载完毕的回调，参数为新版本号，返回 disposer */
   onUpdateReady(callback: (version: string) => void): () => void;

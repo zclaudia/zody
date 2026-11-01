@@ -33,6 +33,8 @@ const shouldPrepareMacosWindowBounds = target.os === "darwin";
 // 未配置时解包仓库内置的同名归档，两种情况都不需要额外开关。
 const localRuntimeScripts = [
   "prepare:agent-bundle",
+  // Chrome 扩展设置页会引导用户加载构建产物；打包版本把同一 dist 放到 resources。
+  "build:browser-extension",
   ...(shouldPrepareWindowsCuaHelper ? ["prepare:windows-cua-helper"] : []),
   ...(nativeSearchReleasePlan.enabled ? ["prepare:native-search"] : []),
   ...(shouldPrepareWindowsBrowserImportHelper ? ["prepare:browser-import-helper"] : []),

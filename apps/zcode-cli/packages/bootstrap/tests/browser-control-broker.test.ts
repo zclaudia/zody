@@ -230,6 +230,22 @@ describe("createProtocolBrowserControlBroker", () => {
 
   // 根因（2026-09-30）：dwf actor 的 sessionId 不是客户端会话，requireSession 直接抛
   // `Session is not active: sess_dwf-…`，actor 的每个 agent.browsers.* 都失败。
+  it("getDefaultBrowserId 读取用户设置并保持 undefined 语义", async () => {
+    const requestClient = vi.fn(async () => ({ defaultBrowserId: "extension:profile-1" }));
+    const context = createContext(requestClient);
+    const broker = createProtocolBrowserControlBroker(context);
+
+    await expect(broker.getDefaultBrowserId?.({ sessionId: "sess-1" })).resolves.toBe(
+      "extension:profile-1",
+    );
+    const [method, params] = requestClient.mock.calls[0];
+    expect(method).toBe(zcodeProtocolMethods.interactionBrowserDefault);
+    expect(params).toMatchObject({ sessionId: "sess-1", workspaceKey: "/repo" });
+
+    requestClient.mockResolvedValueOnce({});
+    await expect(broker.getDefaultBrowserId?.({ sessionId: "sess-1" })).resolves.toBeUndefined();
+  });
+
   describe("forChildSession（dwf actor）", () => {
     const CHILD = "sess_dwf-dwfrun-1-actor_1_1";
 
