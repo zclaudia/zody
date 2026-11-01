@@ -186,11 +186,14 @@ export function createSettingsPageConfig({
   isWindowsDesktop = false,
 }: SettingsPageConfigOptions = {}) {
   const showRemoteAccess = isDesktop || isMacDesktop || isWindowsDesktop;
+  // 电脑控制与远程访问同为桌面能力入口：导航层只按平台显示，分区内容形态
+  // （占位构建说明卡 / narrow 构建开关）由 ComputerUseSection 按构建能力信号决定，
+  // 见 specs/computer-use-settings-unification.md。
+  const showComputerUse = isDesktop || isMacDesktop || isWindowsDesktop;
   const settingsSections = BASE_SETTINGS_SECTIONS.filter((section) => {
-    // 0.1.0 只有 Browser Use 可用；系统级 Computer Use 仍是占位能力，不向用户展示入口。
-    if (section.id === "computerUse") return false;
     // 远程访问由桌面 Main 的 gateway backend 提供，Web/手机页面没有这个能力。
     if (section.id === "remoteAccess" && !showRemoteAccess) return false;
+    if (section.id === "computerUse" && !showComputerUse) return false;
     return isSettingsSectionEnabled(section.id);
   });
   const settingsSectionGroups = BASE_SETTINGS_SECTION_GROUPS.map((group) => ({

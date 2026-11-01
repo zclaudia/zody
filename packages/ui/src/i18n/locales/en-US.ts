@@ -5987,6 +5987,13 @@ const enUS: Record<string, string> = {
     "Computer Use is not yet supported on Linux desktops. Switch to a local macOS or Windows workspace.",
   "settings.computerUse.unsupported.badge": "Unavailable here",
   "settings.computerUse.unsupported.group": "Unavailable built-in capabilities",
+  "settings.computerUse.buildUnavailable.title": "Computer Use is not included in this build",
+  "settings.computerUse.buildUnavailable.description":
+    "This Zody build does not bundle the Computer Use runtime, so the toggle and permission settings do not apply here. Stay tuned for upcoming releases.",
+  "settings.computerUse.narrowCapabilityDescription":
+    "Computer Use bundled in this build supports single-window screenshots only (experimental). When startup conditions are not met, sessions fall back to normal mode without Computer Use; the toggle only controls the skill and the composer entry.",
+  "settings.computerUse.narrowPermissionNote":
+    "Single-window screenshots require Screen Recording permission; macOS will request it automatically on first use. Permission status display and pre-grant guidance will arrive in a later release.",
   "scheduledPreview.keepAwakeEnabled": "Keep awake enabled",
   "scheduledPreview.keepAwakeDisabled": "Keep awake disabled",
   "scheduledPreview.toast.running": "Running “{title}”…",

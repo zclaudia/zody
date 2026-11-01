@@ -21,6 +21,7 @@ import { app, BrowserWindow, dialog, shell } from "electron";
 import { showAboutDialog } from "./about.js";
 import { checkForUpdateMenuClick } from "./autoUpdater.js";
 import { resolveCuaOsSupport } from "./cuaOsSupport.js";
+import { resolveCuaBuildCapability } from "./cuaBuildCapability.js";
 import { syncWindowControlsOverlayForZoomLevel } from "./desktopWindowButtonPosition.js";
 import {
   DEFAULT_DESKTOP_WINDOW_HEIGHT,
@@ -608,5 +609,10 @@ export async function executeDesktopCommand(options: {
       return;
     case DesktopCommandIds.GetCuaOsSupport:
       return resolveCuaOsSupport();
+    case DesktopCommandIds.GetCuaCapability:
+      return resolveCuaBuildCapability({
+        isPackaged: app.isPackaged,
+        resourcesPath: process.resourcesPath,
+      });
   }
 }

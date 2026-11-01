@@ -120,19 +120,29 @@ describe("settingsPageConfig", () => {
   });
 
   it.each([
-    ["macOS", { isMacDesktop: true }],
-    ["Windows", { isWindowsDesktop: true }],
-    ["Linux 桌面", { isDesktop: true }],
-    ["Web", {}],
-  ] as const)("%s 隐藏不可用的系统级 Computer Use", async (_name, options) => {
-    const { createSettingsPageConfig } = await loadSettingsPageConfig("test");
-    const { settingsSections } = createSettingsPageConfig(options);
+    ["macOS", { isMacDesktop: true }, true],
+    ["Windows", { isWindowsDesktop: true }, true],
+    ["Linux 桌面", { isDesktop: true }, true],
+    ["Web", {}, false],
+  ] as const)(
+    "%s 的电脑控制入口符合桌面平台边界",
+    async (_name, options, expected) => {
+      const { createSettingsPageConfig, resolveSettingsSectionForPlatform } =
+        await loadSettingsPageConfig("test");
+      const { settingsSections } = createSettingsPageConfig(options);
 
-    expect(settingsSections.some((section) => section.id === "computerUse")).toBe(false);
-    expect(settingsSections.some((section) => section.id === "browser")).toBe(true);
-  });
+      // 分区显隐按平台呈现（specs/computer-use-settings-unification.md）：
+      // 桌面显示入口，分区内容形态（占位说明卡/narrow 开关）由能力信号另行决定。
+      expect(settingsSections.some((section) => section.id === "computerUse")).toBe(expected);
+      expect(settingsSections.some((section) => section.id === "browser")).toBe(true);
+      // 桌面端 composer 入口点击落点必须能回到 computerUse 分区（死胡同修复的验收面）。
+      expect(resolveSettingsSectionForPlatform("computerUse", settingsSections, "general")).toBe(
+        expected ? "computerUse" : "general",
+      );
+    },
+  );
 
-  it("远程访问仍位于浏览器之后，保持 Gateway 设置入口可用", async () => {
+  it("电脑控制紧跟浏览器，位于快捷键之前", async () => {
     const { createSettingsPageConfig } = await loadSettingsPageConfig("test");
     const { settingsSectionGroups } = createSettingsPageConfig({ isMacDesktop: true });
     const basics = settingsSectionGroups.find((group) => group.id === "basics");
@@ -142,6 +152,7 @@ describe("settingsPageConfig", () => {
       "appearance",
       "modelProvider",
       "browser",
+      "computerUse",
       "shortcuts",
       "remoteAccess",
     ]);

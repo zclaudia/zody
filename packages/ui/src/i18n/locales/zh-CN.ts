@@ -5768,6 +5768,13 @@ const zhCN: Record<string, string> = {
     "Computer Use 暂不支持 Linux 桌面环境。请切换到本机 macOS 或 Windows 工作区。",
   "settings.computerUse.unsupported.badge": "当前环境不可用",
   "settings.computerUse.unsupported.group": "不可用的内置能力",
+  "settings.computerUse.buildUnavailable.title": "此构建不含电脑控制",
+  "settings.computerUse.buildUnavailable.description":
+    "当前 Zody 构建未内置 Computer Use 运行时，开关与权限设置在此不适用。请关注后续版本。",
+  "settings.computerUse.narrowCapabilityDescription":
+    "当前构建内置的电脑控制仅支持单窗口截图（实验性）。启动条件不满足时会话会自动回退为普通模式，电脑控制不可用；开关只控制技能与输入框入口的显隐。",
+  "settings.computerUse.narrowPermissionNote":
+    "单窗口截图需要屏幕录制权限，macOS 会在首次截图时自动请求；权限状态展示与预授权引导将在后续版本接入。",
   "scheduledPreview.keepAwakeEnabled": "已开启保持唤醒",
   "scheduledPreview.keepAwakeDisabled": "已关闭保持唤醒",
   "scheduledPreview.toast.running": "正在运行“{title}”…",

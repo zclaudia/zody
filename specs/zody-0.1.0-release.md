@@ -25,7 +25,7 @@
 | Android 签名密钥              | 使用专用 release keystore，由用户持有离线备份，GitHub Actions 通过 GitHub Secrets 读取；不将密钥或口令写入源码                                            |
 | gateway                       | 用户自行提供和配置；Zody 不提供托管服务，随发行提供连接与部署说明                                                                                         |
 | SSH / WSL 远程工作区          | 纳入 `0.1.0`：恢复 SSH / Windows WSL 新建与重连；运行时随包分发、本机校验后上传，禁止 CDN 回退；见 `ssh-wsl-local-runtime-restoration.md`                 |
-| 系统级 Computer Use           | 当前为不可用占位实现；首发不宣称支持并隐藏不可用入口，保留内嵌浏览器 Browser Use                                                                          |
+| 系统级 Computer Use           | 当前为不可用占位实现；首发不宣称支持并隐藏不可用入口，保留内嵌浏览器 Browser Use（「隐藏不可用入口」已由 [computer-use-settings-unification.md](computer-use-settings-unification.md) 取代为按构建真实能力如实呈现；「不宣称支持、保留 Browser Use」继续有效） |
 | 遥测与诊断                    | 遥测、ARMS、OTEL 上报关闭，不内置上报端点；含上报端点的构建配置必须 fail-fast，打包 Host 不继承外部 OTEL/遥测连接配置；诊断日志保存在本地，由用户手动导出 |
 | CI                            | GitHub Actions；按支持的平台构建，执行检查并保存候选包和校验摘要                                                                                          |
 | 发布触发与公开                | 推送版本 tag 触发检查和构建，生成草稿 Release；人工验收后再公开发布，`0.1.0` 标记 Pre-release                                                             |

@@ -1574,7 +1574,6 @@ export function SettingsPage({
                             workspaceIdentity={activeWorkspaceIdentity}
                             remoteSessionId={activeWorkspaceTab?.remoteSessionId}
                             remoteTarget={activeWorkspaceTab?.remoteTarget}
-                            localWorkspacePath={activeWorkspaceTab?.localWorkspacePath}
                           />
                         ) : null}
                       </div>

@@ -24,6 +24,8 @@ export type CuaComposerEntryUiState =
   | "error";
 
 export interface CuaComposerEntryInputs {
+  /** 本构建内置真实 CUA runtime（GetCuaCapability === narrow）；占位构建为 false。 */
+  buildCapabilityAvailable: boolean;
   /** macOS 本地桌面且具备 CUA onboarding 能力（UA + preload capability 双判）。 */
   macLocalDesktop: boolean;
   /** Windows 本地桌面。 */
@@ -72,10 +74,14 @@ const TOOLTIP_MESSAGE_ID: Record<CuaComposerEntryUiState, string> = {
 const BUSY_TOOLTIP_MESSAGE_ID = "chat.toolbar.computerUse.tooltip.sessionBusy";
 
 /**
- * 四层可见性门。任一不过 → 不渲染 DOM，而不是渲染成 disabled 按钮：
+ * 五层可见性门。任一不过 → 不渲染 DOM，而不是渲染成 disabled 按钮：
  * 不可用场景下留一个灰按钮会误导用户以为「装了就能用」。
  */
 function isEntryVisible(inputs: CuaComposerEntryInputs): boolean {
+  // 构建门：本构建未内置 CUA runtime（占位包）时整体不渲染——即使插件被 CLI 手工启用，
+  // 按钮点击也只会进入一个没有可用能力的会话。能力边界统一在设置页说明卡呈现，
+  // 见 specs/computer-use-settings-unification.md。
+  if (!inputs.buildCapabilityAvailable) return false;
   // 平台门：remote workspace / linux 本地 / 普通 Web / 手机远控都不满足。
   if (!inputs.macLocalDesktop && !inputs.windowsLocalDesktop) return false;
   // 设置门：用户显式隐藏后不再渲染，且不因重启或版本更新自愈。

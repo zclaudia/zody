@@ -668,6 +668,7 @@ export const DesktopCommandIds = {
   ResetZCodeEndpoint: "resetZCodeEndpoint",
   ClearAllData: "clearAllData",
   GetCuaOsSupport: "getCuaOsSupport",
+  GetCuaCapability: "getCuaCapability",
 } as const;
 
 export type DesktopCommandId = (typeof DesktopCommandIds)[keyof typeof DesktopCommandIds];
@@ -684,6 +685,18 @@ export type CuaOsSupport =
   | { kind: "supported" }
   | { kind: "macos-below-minimum"; minimumMacOs: string; currentMacOs: string }
   | { kind: "not-applicable" };
+
+/**
+ * 构建内置的 Computer Use 能力事实（主进程经 GetCuaCapability 下发给 renderer）。
+ * - narrow：打包产物携带 cua-narrow 资源（`Resources/cua-narrow/manifest.json` 存在，
+ *   仅 darwin 构建可能满足）。capabilities 列出该链已实测的工具面；当前仅单窗口截图。
+ *   只代表「打包了窄资源」，不代表当前会话一定可用——运行时 eligibility
+ *   （OS/arch、workspace allowlist、provider/network digest）仍由构建期 profile 决定。
+ * - placeholder：其余情况（含 dev 模式）。CUA 运行时面为 fail-closed 占位实现。
+ */
+export type CuaBuildCapability =
+  | { kind: "placeholder" }
+  | { kind: "narrow"; capabilities: string[] };
 
 /**
  * 平台操作接口 —— 替代直接访问 window.zcode

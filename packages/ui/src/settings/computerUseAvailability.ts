@@ -1,4 +1,4 @@
-import type { RemoteTarget } from "@zcode/shared";
+import type { CuaBuildCapability, RemoteTarget } from "@zcode/shared";
 import { isRemoteWorkspaceIdentity } from "@zcode/shared";
 
 export type ComputerUseAvailabilityKind =
@@ -68,4 +68,15 @@ export function matchesComputerUseSearch(query: string): boolean {
 
 export function isComputerUseRemoteOrLinux(availability: ComputerUseAvailability): boolean {
   return !availability.supported && availability.kind !== "web";
+}
+
+// GetCuaCapability 经通用 desktop command 通道返回 unknown，这里做一次运行时形状校验；
+// 不合法或缺失一律按 placeholder 处理（fail-closed），见 specs/computer-use-settings-unification.md。
+export function isCuaBuildCapability(value: unknown): value is CuaBuildCapability {
+  if (!value || typeof value !== "object") return false;
+  const kind = (value as { kind?: unknown }).kind;
+  if (kind === "placeholder") return true;
+  if (kind !== "narrow") return false;
+  const capabilities = (value as { capabilities?: unknown }).capabilities;
+  return Array.isArray(capabilities) && capabilities.every((item) => typeof item === "string");
 }

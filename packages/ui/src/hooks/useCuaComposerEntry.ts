@@ -9,6 +9,7 @@ import { isRemoteWorkspaceIdentity, ZCODE_CUA_OFFICIAL_PLUGIN_ID } from "@zcode/
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useServices } from "@/hooks/useServices.js";
 import { useSettings } from "@/hooks/useSettingService.js";
+import { useCuaBuildCapability } from "@/hooks/useCuaBuildCapability.js";
 import { useCuaPermissionStatus } from "@/hooks/useCuaPermissionStatus.js";
 import {
   resolveCuaComposerEntryView,
@@ -81,9 +82,13 @@ export function useCuaComposerEntry({
   const pluginEnabled = cuaPlugin?.enabled === true;
 
   const pluginManagementService = services.pluginManagementService;
-  const platformSupported = (macLocalDesktop || windowsLocalDesktop) && isLocalWorkspace;
+  const capability = useCuaBuildCapability();
+  const buildCapabilityAvailable = capability?.kind === "narrow";
+  const platformSupported =
+    (macLocalDesktop || windowsLocalDesktop) && isLocalWorkspace && buildCapabilityAvailable;
   // 插件列表是按钮状态的必要输入。store 是全局单例且 initialize 内部按 workspaceKey 做了
   // in-flight 去重 + 缓存复用，因此与设置页共用同一条初始化路径不会放大 plugins/list 请求。
+  // 占位构建按钮永不渲染，也不初始化插件列表（capabilities 信号到达前短暂等待即可）。
   const initializedKeyRef = useRef<string | null>(null);
   useEffect(() => {
     if (!platformSupported || hiddenBySettings || !workspacePath || !pluginManagementService) {
@@ -135,6 +140,7 @@ export function useCuaComposerEntry({
   const view = useMemo(
     () =>
       resolveCuaComposerEntryView({
+        buildCapabilityAvailable,
         macLocalDesktop: macLocalDesktop && isLocalWorkspace,
         windowsLocalDesktop: windowsLocalDesktop && isLocalWorkspace,
         hiddenBySettings,
@@ -147,6 +153,7 @@ export function useCuaComposerEntry({
         sessionBusy,
       }),
     [
+      buildCapabilityAvailable,
       cuaPlugin,
       hiddenBySettings,
       lastFailedPluginId,

@@ -217,6 +217,7 @@ export type {
   DesktopCloseToTrayCapability,
   DesktopCommandId,
   CuaOsSupport,
+  CuaBuildCapability,
   DesktopWindowChromeState,
   DesktopTitleBarTheme,
   DockerContainerInfo,
