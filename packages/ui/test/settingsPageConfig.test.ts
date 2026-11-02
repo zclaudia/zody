@@ -146,25 +146,29 @@ describe("settingsPageConfig", () => {
   });
 
   it.each([
-    ["macOS", { isMacDesktop: true }],
-    ["Windows", { isWindowsDesktop: true }],
-    ["Linux 桌面", { isDesktop: true }],
-    ["Web", {}],
-  ] as const)("%s 不展示系统级电脑控制入口", async (_name, options) => {
-    const { createSettingsPageConfig, resolveSettingsSectionForPlatform } =
-      await loadSettingsPageConfig("test");
-    const { settingsSections } = createSettingsPageConfig(options);
+    ["macOS", { isMacDesktop: true }, true],
+    ["Windows", { isWindowsDesktop: true }, true],
+    ["Linux 桌面", { isDesktop: true }, true],
+    ["Web", {}, false],
+  ] as const)(
+    "%s 的电脑控制入口符合桌面平台边界",
+    async (_name, options, expected) => {
+      const { createSettingsPageConfig, resolveSettingsSectionForPlatform } =
+        await loadSettingsPageConfig("test");
+      const { settingsSections } = createSettingsPageConfig(options);
 
-    // 本地基线：0.1.0 只有 Browser Use 可用；系统级 Computer Use 仍是占位能力，
-    // 因此各平台都不展示入口，深链落点回退到 general。
-    expect(settingsSections.some((section) => section.id === "computerUse")).toBe(false);
-    expect(settingsSections.some((section) => section.id === "browser")).toBe(true);
-    expect(resolveSettingsSectionForPlatform("computerUse", settingsSections, "general")).toBe(
-      "general",
-    );
-  });
+      // 分区显隐按平台呈现（specs/computer-use-settings-unification.md）：
+      // 桌面显示入口，分区内容形态（占位说明卡/narrow 开关）由能力信号另行决定。
+      expect(settingsSections.some((section) => section.id === "computerUse")).toBe(expected);
+      expect(settingsSections.some((section) => section.id === "browser")).toBe(true);
+      // 桌面端 composer 入口点击落点必须能回到 computerUse 分区（死胡同修复的验收面）。
+      expect(resolveSettingsSectionForPlatform("computerUse", settingsSections, "general")).toBe(
+        expected ? "computerUse" : "general",
+      );
+    },
+  );
 
-  it("电脑控制入口隐藏后基础分区顺序保持不变", async () => {
+  it("电脑控制紧跟浏览器，位于快捷键之前", async () => {
     const { createSettingsPageConfig } = await loadSettingsPageConfig("test");
     const { settingsSectionGroups } = createSettingsPageConfig({ isMacDesktop: true });
     const basics = settingsSectionGroups.find((group) => group.id === "basics");
@@ -174,6 +178,7 @@ describe("settingsPageConfig", () => {
       "appearance",
       "modelProvider",
       "browser",
+      "computerUse",
       "shortcuts",
       "remoteAccess",
     ]);
