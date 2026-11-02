@@ -11,6 +11,7 @@
 独占写文件：
 
 - `packages/shared/src/mobile-ui-bridge.ts`、公开入口和 focused 测试。
+- `packages/ui/src/mobileShell.ts` 与 `packages/ui/package.json` 的 `./mobile-shell` 公开子入口：白名单导出配对/设置/选电脑组件，避免根入口传递引入 Remote/PDF 工作台。
 - `packages/web/mobile-shell.html`、`packages/web/src/mobile-shell/**`。
 - `packages/web/src/mobile-remote/mobileRemoteSetup.tsx`、`mobileRemoteSettingsDraft.ts`、`mobileRemoteConfigStore.ts`、`gatewayBootstrapConfig.ts`、`mobileRemoteBackendDiscovery.ts` 的 Shell 归属调整。
 - `packages/web/vite.config.ts`、根 `package.json` 的 Shell 构建脚本。
