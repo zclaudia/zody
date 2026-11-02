@@ -1,22 +1,30 @@
-import type {
-  MobileNotificationActionClick,
-  MobileNotificationClick,
-  MobileNotificationPlatform,
-  MobileNotificationPushStatus,
+import {
+  MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY,
+  type MobileNotificationActionClick,
+  type MobileNotificationClick,
+  type MobileNotificationPlatform,
+  type MobileNotificationPushStatus,
 } from "@zcode/shared";
 
+/**
+ * Android `ZodyRemoteBridge` 的通知方法面。
+ *
+ * 除只读会话上下文外，所有会改变原生状态的通知调用都把当前 sessionId 作为第一个参数；
+ * 原生按 MobileShellController 的当前代次校验，旧 session 的 pending 点击/按钮动作、
+ * ack 和订阅变更一律拒绝。页面只透传，不缓存第二份 pending 状态。
+ */
 type NativeNotifications = {
-  notificationSyncSubscription(config: string): string;
-  notificationGetPendingClick(): string | null;
-  notificationAcknowledgeClick(id: string): void;
-  notificationSetActiveTarget?(targetKey: string | null): void;
-  notificationGetStatus(): string;
-  notificationRequestPermission(): void;
-  notificationShow?(payload: string): void;
+  notificationSyncSubscription(sessionId: string, config: string): string;
+  notificationGetPendingClick(sessionId: string): string | null;
+  notificationAcknowledgeClick(sessionId: string, id: string): void;
+  notificationSetActiveTarget?(sessionId: string, targetKey: string | null): void;
+  notificationGetStatus(sessionId: string): string;
+  notificationRequestPermission(sessionId: string): void;
+  notificationShow?(sessionId: string, payload: string): void;
   /** 第二批 E4：旧壳没有这三个方法；能力探测后按可选接入。 */
-  notificationGetPendingAction?(): string | null;
-  notificationAcknowledgeAction?(id: string): void;
-  notificationCancel?(id: string): void;
+  notificationGetPendingAction?(sessionId: string): string | null;
+  notificationAcknowledgeAction?(sessionId: string, id: string): void;
+  notificationCancel?(sessionId: string, id: string): void;
 };
 function parseStatus(raw: string): MobileNotificationPushStatus {
   try {
@@ -54,11 +62,21 @@ export function parseMobileNotificationAction(
   }
   return { ...click, optionId: input.optionId, optionKind };
 }
+export interface CreateMobileNotificationPlatformOptions {
+  /** 当前 Remote 文档的 sessionId；原生据此拒绝 stale 调用。 */
+  sessionId: string;
+  /** 宿主 → 页面的权限变化订阅（已由 native host 按 sessionId 过滤）。 */
+  subscribePermission?: (listener: (granted: boolean) => void) => () => void;
+}
+
 export function createMobileNotificationPlatform(
   target: unknown = globalThis,
-  subscribePermission?: (listener: (granted: boolean) => void) => () => void,
+  options: CreateMobileNotificationPlatformOptions,
 ): MobileNotificationPlatform | undefined {
-  const native = (target as { ZcodeMobileBridge?: NativeNotifications })?.ZcodeMobileBridge;
+  const native = (target as Record<string, unknown>)[
+    MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY
+  ] as NativeNotifications | undefined;
+  const { sessionId, subscribePermission } = options;
   if (
     !native ||
     typeof native.notificationSyncSubscription !== "function" ||
@@ -70,22 +88,22 @@ export function createMobileNotificationPlatform(
       ? { onStatusChanged: (listener: () => void) => subscribePermission(() => listener()) }
       : {}),
     syncSubscription: async (config) =>
-      parseStatus(await native.notificationSyncSubscription(JSON.stringify(config))),
+      parseStatus(await native.notificationSyncSubscription(sessionId, JSON.stringify(config))),
     setActiveTarget: async (key) => {
-      await native.notificationSetActiveTarget?.(key);
+      await native.notificationSetActiveTarget?.(sessionId, key);
     },
-    getStatus: async () => parseStatus(await native.notificationGetStatus()),
+    getStatus: async () => parseStatus(await native.notificationGetStatus(sessionId)),
     getPendingClick: async () => {
       try {
         return parseMobileNotificationClick(
-          JSON.parse((await native.notificationGetPendingClick()) ?? "null"),
+          JSON.parse((await native.notificationGetPendingClick(sessionId)) ?? "null"),
         );
       } catch {
         return null;
       }
     },
     acknowledgeClick: async (id) => {
-      await native.notificationAcknowledgeClick(id);
+      await native.notificationAcknowledgeClick(sessionId, id);
     },
     // 第二批 E4：只有新壳提供；方法缺失时不暴露能力（快速路径在缺省时提示升级）。
     ...(typeof native.notificationGetPendingAction === "function" &&
@@ -94,29 +112,31 @@ export function createMobileNotificationPlatform(
           getPendingAction: async (): Promise<MobileNotificationActionClick | null> => {
             try {
               return parseMobileNotificationAction(
-                JSON.parse((await native.notificationGetPendingAction?.()) ?? "null"),
+                JSON.parse(
+                  (await native.notificationGetPendingAction?.(sessionId)) ?? "null",
+                ),
               );
             } catch {
               return null;
             }
           },
           acknowledgeAction: async (id) => {
-            await native.notificationAcknowledgeAction?.(id);
+            await native.notificationAcknowledgeAction?.(sessionId, id);
           },
         }
       : {}),
     ...(typeof native.notificationCancel === "function"
       ? {
           cancel: async (id) => {
-            await native.notificationCancel?.(id);
+            await native.notificationCancel?.(sessionId, id);
           },
         }
       : {}),
     requestPermission: async () => {
-      await native.notificationRequestPermission();
+      await native.notificationRequestPermission(sessionId);
     },
     show: async (payload) => {
-      await native.notificationShow?.(JSON.stringify(payload));
+      await native.notificationShow?.(sessionId, JSON.stringify(payload));
     },
   };
 }

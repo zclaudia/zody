@@ -1,26 +1,29 @@
 import {
+  resolveMobileRemoteBridge,
+  type MobileNotificationActionClick,
+  type MobileNotificationClick,
+  type PlatformAppLifecycleState,
+} from "@zcode/shared";
+import {
   parseMobileNotificationAction,
   parseMobileNotificationClick,
 } from "./mobileRemoteNotifications.js";
-import type {
-  MobileNotificationActionClick,
-  MobileNotificationClick,
-  PlatformAppLifecycleState,
-} from "@zcode/shared";
-import { resolveMobileRemoteNativeBridge } from "./mobileRemoteSecureStore.js";
 
 /**
- * Android 原生桥的事件方向（T6.2）。
+ * Android 原生桥的事件方向（T6.2 / M2-T2）。
  *
- * Kotlin 的 `ZcodeMobileBridge`（`@JavascriptInterface`）只能由页面调用；宿主 → 页面的
- * 前后台与返回键事件通过 `evaluateJavascript` 调用这里安装的 `ZcodeMobileBridgeHost`。
- * 只有检测到原生桥时才安装，普通浏览器（`pnpm dev:mobile-remote`）不会得到这些能力。
+ * Kotlin 的 `ZodyRemoteBridge`（`@JavascriptInterface`）只能由页面调用；宿主 → 页面的
+ * 前后台、返回键和通知事件通过 `evaluateJavascript` 调用这里安装的
+ * `ZodyRemoteBridgeHost`。每个事件都把创建它的 `sessionId` 作为第一个参数：
+ * - 页面只在 sessionId 等于 `getSessionContext()` 的当前 session 时处理；
+ * - 旧 session 的迟到事件直接丢弃，不能把旧 backend/任务写进新文档；
+ * - 返回键的同步 handler 必须返回 false，让宿主继续回退/退出。
  *
- * 页面其余部分只通过 `IPlatformService.onAppLifecycleChange` / `onBackPressed` 消费，
- * 不直接访问 `window.ZcodeMobileBridgeHost`。
+ * 页面其余部分只通过 `IPlatformService.onAppLifecycleChange` / `onBackPressed` /
+ * `MobileNotificationPlatform` 消费，不直接访问宿主对象。
  */
 
-export const MOBILE_REMOTE_NATIVE_HOST_GLOBAL_KEY = "ZcodeMobileBridgeHost";
+export const MOBILE_REMOTE_NATIVE_HOST_GLOBAL_KEY = "ZodyRemoteBridgeHost";
 
 type LifecycleHandler = (state: PlatformAppLifecycleState) => void;
 type BackHandler = () => boolean;
@@ -35,40 +38,50 @@ export interface MobileRemoteNativeHostBinding {
 }
 
 export interface InstallMobileRemoteNativeHostOptions {
+  /** 当前 Remote 文档的 sessionId；事件 sessionId 不符时丢弃。 */
+  sessionId: string;
   /** 注入点；默认 `globalThis`。 */
   target?: unknown;
-  /** 注入点；默认从 target 上发现 `ZcodeMobileBridge`。 */
-  bridge?: ReturnType<typeof resolveMobileRemoteNativeBridge>;
+  /** 注入点；默认从 target 上发现 `ZodyRemoteBridge`。 */
+  bridge?: ReturnType<typeof resolveMobileRemoteBridge>;
 }
 
-// 同一页面可能多次启动 bootstrap（重开设置不会，但测试会）；宿主对象只安装一次，避免旧订阅失联。
-const installedHosts = new WeakMap<object, MobileRemoteNativeHostBinding>();
+interface InstalledHost {
+  sessionId: string;
+  binding: MobileRemoteNativeHostBinding;
+}
+
+// 同一页面只对应一个 Remote session；缓存只避免测试重复安装时丢失已有订阅。
+const installedHosts = new WeakMap<object, InstalledHost>();
 
 export function installMobileRemoteNativeHost(
-  options: InstallMobileRemoteNativeHostOptions = {},
+  options: InstallMobileRemoteNativeHostOptions,
 ): MobileRemoteNativeHostBinding | undefined {
   const target = options.target ?? globalThis;
   if (!target || typeof target !== "object") {
     return undefined;
   }
   const existing = installedHosts.get(target);
-  if (existing) {
-    return existing;
+  if (existing?.sessionId === options.sessionId) {
+    return existing.binding;
   }
-  const bridge = options.bridge ?? resolveMobileRemoteNativeBridge(target);
+  const bridge = options.bridge ?? resolveMobileRemoteBridge(target);
   if (!bridge) {
-    // 没有原生桥：不安装宿主对象，IPlatformService 也不提供这两个能力。
+    // 没有原生桥：不安装宿主对象，IPlatformService 也不提供这些能力。
     return undefined;
   }
 
+  const sessionId = options.sessionId;
   const permissionHandlers = new Set<(granted: boolean) => void>();
   const notificationHandlers = new Set<(click: MobileNotificationClick) => void>();
   const actionHandlers = new Set<(action: MobileNotificationActionClick) => void>();
   const lifecycleHandlers = new Set<LifecycleHandler>();
   const backHandlers = new Set<BackHandler>();
+  const isCurrentSession = (value: unknown): value is string => value === sessionId;
+
   const host = {
-    onNotificationPermissionChanged(granted: unknown) {
-      if (typeof granted !== "boolean") return;
+    onNotificationPermissionChanged(eventSessionId: unknown, granted: unknown) {
+      if (!isCurrentSession(eventSessionId) || typeof granted !== "boolean") return;
       for (const handler of permissionHandlers) {
         try {
           handler(granted);
@@ -77,7 +90,8 @@ export function installMobileRemoteNativeHost(
         }
       }
     },
-    onNotificationClick(value: unknown) {
+    onNotificationClick(eventSessionId: unknown, value: unknown) {
+      if (!isCurrentSession(eventSessionId)) return;
       const click = parseMobileNotificationClick(value);
       if (click)
         for (const handler of notificationHandlers) {
@@ -88,7 +102,8 @@ export function installMobileRemoteNativeHost(
           }
         }
     },
-    onNotificationAction(value: unknown) {
+    onNotificationAction(eventSessionId: unknown, value: unknown) {
+      if (!isCurrentSession(eventSessionId)) return;
       const action = parseMobileNotificationAction(value);
       if (action)
         for (const handler of actionHandlers) {
@@ -99,7 +114,10 @@ export function installMobileRemoteNativeHost(
           }
         }
     },
-    onAppLifecycle(state: unknown): void {
+    onAppLifecycle(eventSessionId: unknown, state: unknown): void {
+      if (!isCurrentSession(eventSessionId)) {
+        return;
+      }
       if (state !== "foreground" && state !== "background") {
         return;
       }
@@ -112,7 +130,10 @@ export function installMobileRemoteNativeHost(
         }
       }
     },
-    onBackPressed(): boolean {
+    onBackPressed(eventSessionId: unknown): boolean {
+      if (!isCurrentSession(eventSessionId)) {
+        return false;
+      }
       // 逆序询问：后注册的 UI（聊天页/浮层）优先于启动流程。
       for (const handler of Array.from(backHandlers).reverse()) {
         try {
@@ -154,6 +175,6 @@ export function installMobileRemoteNativeHost(
       };
     },
   };
-  installedHosts.set(target, binding);
+  installedHosts.set(target, { sessionId, binding });
   return binding;
 }

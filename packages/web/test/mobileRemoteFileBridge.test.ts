@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MOBILE_REMOTE_NATIVE_BRIDGE_GLOBAL_KEY } from "../src/mobile-remote/mobileRemoteSecureStore.js";
+import { MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY } from "@zcode/shared";
 import {
   MOBILE_REMOTE_MAX_ATTACHMENT_BYTES,
   MOBILE_REMOTE_SAVE_CHUNK_BYTES,
@@ -18,32 +18,32 @@ function createFakeBridge() {
     abort: ReturnType<typeof vi.fn>;
     open: ReturnType<typeof vi.fn>;
   } = {
-    begin: vi.fn(() => "save-token"),
-    append: vi.fn((_token: string, chunk: string) => {
+    begin: vi.fn((_sessionId: string, _fileName: string, _mimeType: string) => "save-token"),
+    append: vi.fn((_sessionId: string, _token: string, chunk: string) => {
       chunks.push(chunk);
     }),
-    finish: vi.fn(() =>
+    finish: vi.fn((_sessionId: string, _token: string) =>
       JSON.stringify({
         uri: "content://media/external/downloads/42",
         displayPath: "Download/report.pdf",
       }),
     ),
-    abort: vi.fn(),
-    open: vi.fn(() => true),
-    saveFileBegin(fileName, mimeType) {
-      return bridge.begin(fileName, mimeType) as string;
+    abort: vi.fn((_sessionId: string, _token: string) => {}),
+    open: vi.fn((_sessionId: string, _uri: string, _mimeType: string) => true),
+    saveFileBegin(sessionId, fileName, mimeType) {
+      return bridge.begin(sessionId, fileName, mimeType) as string;
     },
-    saveFileAppend(token, chunk) {
-      bridge.append(token, chunk);
+    saveFileAppend(sessionId, token, chunk) {
+      bridge.append(sessionId, token, chunk);
     },
-    saveFileFinish(token) {
-      return bridge.finish(token) as string;
+    saveFileFinish(sessionId, token) {
+      return bridge.finish(sessionId, token) as string;
     },
-    saveFileAbort(token) {
-      bridge.abort(token);
+    saveFileAbort(sessionId, token) {
+      bridge.abort(sessionId, token);
     },
-    openFile(uri, mimeType) {
-      return bridge.open(uri, mimeType) as boolean;
+    openFile(sessionId, uri, mimeType) {
+      return bridge.open(sessionId, uri, mimeType) as boolean;
     },
   };
   return { bridge, chunks };
@@ -63,7 +63,7 @@ describe("mobile remote file bridge (T6.3)", () => {
     expect(resolveMobileRemoteFileBridge({})).toBeUndefined();
     expect(
       resolveMobileRemoteFileBridge({
-        [MOBILE_REMOTE_NATIVE_BRIDGE_GLOBAL_KEY]: {
+        [MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY]: {
           saveFileBegin: () => "token",
           saveFileAppend: () => {},
           saveFileFinish: () => "{}",
@@ -73,7 +73,7 @@ describe("mobile remote file bridge (T6.3)", () => {
     ).toBeUndefined();
 
     const resolved = resolveMobileRemoteFileBridge({
-      [MOBILE_REMOTE_NATIVE_BRIDGE_GLOBAL_KEY]: {
+      [MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY]: {
         saveFileBegin: () => "token",
         saveFileAppend: () => {},
         saveFileFinish: () => "{}",
@@ -81,7 +81,7 @@ describe("mobile remote file bridge (T6.3)", () => {
         openFile: () => true,
       },
     });
-    expect(resolved?.saveFileBegin("a.txt", "text/plain")).toBe("token");
+    expect(resolved?.saveFileBegin("session-1", "a.txt", "text/plain")).toBe("token");
   });
 
   it("chunks data payloads into base64 bridge calls and opens the saved file", async () => {
@@ -91,17 +91,18 @@ describe("mobile remote file bridge (T6.3)", () => {
       bytes[index] = index % 251;
     }
 
-    const result = await saveMobileRemoteFile(bridge, {
+    const result = await saveMobileRemoteFile(bridge, "session-1", {
       data: bytes.buffer,
       suggestedName: "report.pdf",
     });
 
     expect(result).toEqual({ success: true, path: "Download/report.pdf" });
-    expect(bridge.begin).toHaveBeenCalledWith("report.pdf", "application/pdf");
+    expect(bridge.begin).toHaveBeenCalledWith("session-1", "report.pdf", "application/pdf");
     expect(chunks).toHaveLength(2);
     expect(decodeChunks(chunks)).toEqual(bytes);
-    expect(bridge.finish).toHaveBeenCalledWith("save-token");
+    expect(bridge.finish).toHaveBeenCalledWith("session-1", "save-token");
     expect(bridge.open).toHaveBeenCalledWith(
+      "session-1",
       "content://media/external/downloads/42",
       "application/pdf",
     );
@@ -118,14 +119,14 @@ describe("mobile remote file bridge (T6.3)", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await saveMobileRemoteFile(bridge, {
+    const result = await saveMobileRemoteFile(bridge, "session-1", {
       sourceUrl: "https://gateway.test/files/photo",
       suggestedName: "photo.png",
     });
 
     expect(result.success).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith("https://gateway.test/files/photo");
-    expect(bridge.begin).toHaveBeenCalledWith("photo.png", "image/png");
+    expect(bridge.begin).toHaveBeenCalledWith("session-1", "photo.png", "image/png");
     expect(decodeChunks(chunks)).toEqual(new Uint8Array([1, 2, 3, 4]));
   });
 
@@ -135,13 +136,13 @@ describe("mobile remote file bridge (T6.3)", () => {
       throw new Error("disk full");
     });
 
-    const result = await saveMobileRemoteFile(bridge, {
+    const result = await saveMobileRemoteFile(bridge, "session-1", {
       data: new Uint8Array([1]).buffer,
       suggestedName: "a.bin",
     });
 
     expect(result).toEqual({ success: false, error: "disk full" });
-    expect(bridge.abort).toHaveBeenCalledWith("save-token");
+    expect(bridge.abort).toHaveBeenCalledWith("session-1", "save-token");
     expect(bridge.open).not.toHaveBeenCalled();
   });
 
@@ -155,13 +156,13 @@ describe("mobile remote file bridge (T6.3)", () => {
       throw new Error("Unknown save session token.");
     });
 
-    const result = await saveMobileRemoteFile(bridge, {
+    const result = await saveMobileRemoteFile(bridge, "session-1", {
       data: new Uint8Array(MOBILE_REMOTE_SAVE_CHUNK_BYTES + 1).buffer,
       suggestedName: "a.bin",
     });
 
     expect(result).toEqual({ success: false, error: "native write failed" });
-    expect(bridge.abort).toHaveBeenCalledWith("save-token");
+    expect(bridge.abort).toHaveBeenCalledWith("session-1", "save-token");
     // 失败后不能继续 finish：保存失败的错误是原始 append 错误，不被二次错误覆盖。
     expect(bridge.finish).not.toHaveBeenCalled();
     expect(bridge.open).not.toHaveBeenCalled();
@@ -173,7 +174,7 @@ describe("mobile remote file bridge (T6.3)", () => {
       throw new Error("no viewer");
     });
 
-    const result = await saveMobileRemoteFile(bridge, {
+    const result = await saveMobileRemoteFile(bridge, "session-1", {
       data: new Uint8Array([1]).buffer,
       suggestedName: "a.bin",
     });
@@ -188,7 +189,7 @@ describe("mobile remote file bridge (T6.3)", () => {
       vi.fn(async () => new Response("missing", { status: 404 })),
     );
 
-    const result = await saveMobileRemoteFile(bridge, {
+    const result = await saveMobileRemoteFile(bridge, "session-1", {
       sourceUrl: "https://gateway.test/missing",
       suggestedName: "missing.png",
     });
@@ -199,13 +200,99 @@ describe("mobile remote file bridge (T6.3)", () => {
   });
 
   it("exposes the 16 MiB attachment limit with or without a native bridge", () => {
-    const withoutBridge = createMobileRemoteFileCapabilities(undefined);
+    const withoutBridge = createMobileRemoteFileCapabilities(undefined, {
+      sessionId: "session-1",
+    });
     expect(withoutBridge.maxAttachmentBytes).toBe(MOBILE_REMOTE_MAX_ATTACHMENT_BYTES);
     expect(withoutBridge.saveFile).toBeUndefined();
 
     const { bridge } = createFakeBridge();
-    const withBridge = createMobileRemoteFileCapabilities(bridge);
+    const withBridge = createMobileRemoteFileCapabilities(bridge, {
+      sessionId: "session-1",
+    });
     expect(withBridge.saveFile).toBeTypeOf("function");
     expect(withBridge.maxAttachmentBytes).toBe(16 * 1024 * 1024);
+  });
+
+  it("每次原生文件调用都携带当前 sessionId", async () => {
+    const native = {
+      saveFileBegin: vi.fn(() => "token"),
+      saveFileAppend: vi.fn(),
+      saveFileFinish: vi.fn(() =>
+        JSON.stringify({ uri: "content://file/1", displayPath: "Download/a.txt" }),
+      ),
+      saveFileAbort: vi.fn(),
+      openFile: vi.fn(() => true),
+    };
+    const { bridge } = createFakeBridge();
+    const capabilities = createMobileRemoteFileCapabilities(
+      {
+        saveFileBegin(sessionId, fileName, mimeType) {
+          return native.saveFileBegin(sessionId, fileName, mimeType);
+        },
+        saveFileAppend(sessionId, token, chunk) {
+          native.saveFileAppend(sessionId, token, chunk);
+        },
+        saveFileFinish(sessionId, token) {
+          return native.saveFileFinish(sessionId, token);
+        },
+        saveFileAbort(sessionId, token) {
+          native.saveFileAbort(sessionId, token);
+        },
+        openFile(sessionId, uri, mimeType) {
+          return native.openFile(sessionId, uri, mimeType);
+        },
+      },
+      { sessionId: "session-1" },
+    );
+
+    await capabilities.saveFile!({
+      data: new Uint8Array([1, 2, 3]).buffer,
+      suggestedName: "a.txt",
+    });
+
+    expect(native.saveFileBegin).toHaveBeenCalledWith(
+      "session-1",
+      "a.txt",
+      "text/plain",
+    );
+    expect(native.saveFileAppend).toHaveBeenCalledWith(
+      "session-1",
+      "token",
+      expect.any(String),
+    );
+    expect(native.saveFileFinish).toHaveBeenCalledWith("session-1", "token");
+    expect(native.openFile).toHaveBeenCalledWith(
+      "session-1",
+      "content://file/1",
+      "text/plain",
+    );
+    // bridge 只是测试辅助对象，避免未使用变量告警。
+    expect(bridge).toBeDefined();
+  });
+
+  it("原生 stale-session 直接返回失败，不重试、不写新配置", async () => {
+    const native = {
+      saveFileBegin: vi.fn(() => {
+        throw new Error("stale-session");
+      }),
+    };
+    const capabilities = createMobileRemoteFileCapabilities(
+      {
+        saveFileBegin: native.saveFileBegin,
+        saveFileAppend: vi.fn(),
+        saveFileFinish: vi.fn(),
+        saveFileAbort: vi.fn(),
+      },
+      { sessionId: "stale-session" },
+    );
+
+    await expect(
+      capabilities.saveFile!({
+        data: new Uint8Array([1]).buffer,
+        suggestedName: "a.txt",
+      }),
+    ).resolves.toEqual({ success: false, error: "stale-session" });
+    expect(native.saveFileBegin).toHaveBeenCalledOnce();
   });
 });

@@ -9,14 +9,16 @@ import { MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE } from "./mobileRemoteSe
  * 手机端 gateway 配置的唯一持久化入口（T4.2）。
  *
  * 方案「状态归属」：gateway 地址、namespace、设备凭证（`zgd_`）和所选电脑都属于手机本地配置，
- * 由 `IPlatformService.secureStore` 保存。`clientInstanceId` 按 `backendId` 分别生成并持久化，
- * 是桌面判定「同一部手机重连」的依据；换一台电脑必须换成不同的 id。
+ * 由 Shell 的 `MobileShellConfigClient`（生产 = 原生 `ZodyShellBridge`）保存；本 store 只保留
+ * 给 Shell 的开发降级路径（M2-T1）。
  *
- * 这里不缓存任何内存副本：设置页保存后由 bootstrap 重新读取，避免出现第二条状态源。
+ * M2-T2 起 Remote 不再使用本 store：它只从 `ZodyRemoteBridge.getSessionContext()` 读取会话。
+ * `clientInstanceId` 由 Android 原生配置 store 按 backendId 生成并持久化，页面不生成、不读写。
+ *
+ * 这里不缓存任何内存副本：设置页保存后由调用方重新读取，避免出现第二条状态源。
  */
 
 export const MOBILE_REMOTE_CONFIG_STORAGE_KEY = "config";
-export const MOBILE_REMOTE_CLIENT_INSTANCE_ID_STORAGE_PREFIX = "client-instance-id:";
 
 /** 设备凭证前缀；gateway 管理员签发给手机的设备凭证。 */
 export const MOBILE_REMOTE_DEVICE_CREDENTIAL_PREFIX = "zgd_";
@@ -145,27 +147,5 @@ export class MobileRemoteConfigStore {
       return;
     }
     await this.secureStore.remove(MOBILE_REMOTE_CONFIG_STORAGE_KEY);
-  }
-
-  /**
-   * 读取所选电脑的 `clientInstanceId`，不存在时生成并持久化。
-   * 同一部手机换电脑必须得到不同的 id（桌面据此区分重连与新设备）。
-   */
-  async getClientInstanceId(backendId: string): Promise<string> {
-    if (!this.secureStore) {
-      throw new Error(MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE);
-    }
-    const trimmedBackendId = backendId.trim();
-    if (!trimmedBackendId) {
-      throw new Error("backendId is required to resolve a client instance id.");
-    }
-    const storageKey = `${MOBILE_REMOTE_CLIENT_INSTANCE_ID_STORAGE_PREFIX}${trimmedBackendId}`;
-    const existing = (await this.secureStore.get(storageKey))?.trim();
-    if (existing) {
-      return existing;
-    }
-    const nextId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-    await this.secureStore.set(storageKey, nextId);
-    return nextId;
   }
 }

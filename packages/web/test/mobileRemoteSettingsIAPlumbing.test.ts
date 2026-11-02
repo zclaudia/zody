@@ -3,13 +3,14 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 /**
- * 已连接手机连接设置统一进入 SettingsPage 的“连接”分区（spec §1、§4）。
+ * Remote 只读会话边界（M2-T2）。
  *
- * bootstrap 没有可注入的 session 级测试缝；这里锁定源码不变量：
- * - 连接能力经 Root props 注入，UI 不 import web store；
- * - 保存仍走 saveMobileRemoteSettingsDraft 唯一 helper；
- * - 有效变化仍只经 reopenSetup("auto") 重建一次；
- * - 旧的“连接设置”浮层入口和 switcher 回调不再存在。
+ * bootstrap 没有可注入的完整 session 级测试缝；这里锁定源码不变量，配套的
+ * `mobileRemoteSessionContext.test.ts` / `mobileRemoteReleaseCheck.test.ts` 验证实际行为：
+ * - Remote 只从 `ZodyRemoteBridge.getSessionContext()` 读取；
+ * - 不存在 SecureStore / URL / localStorage 配置读写或 clientInstanceId 生成路径；
+ * - 修改连接、切换电脑和失败出口统一走 `returnShell`；
+ * - release manifest 校验发生在创建业务 transport 之前。
  */
 
 const source = readFileSync(
@@ -17,26 +18,52 @@ const source = readFileSync(
   "utf8",
 );
 
-describe("mobile remote connection settings IA plumbing", () => {
-  it("把连接配置、唯一保存 helper 和重连动作注入 Root", () => {
-    expect(source).toContain("webRemoteControlMobileConnectionSettings={mobileConnectionSettings}");
-    expect(source).toContain("saveMobileRemoteSettingsDraft({");
-    expect(source).toContain("store: context.configStore");
-    expect(source).toContain("reconnect: reopenAfterConnectionChange");
-    expect(source).toContain('const reopenAfterConnectionChange = (): void => reopenSetup("auto")');
+describe("Remote 只读 session context（M2-T2）", () => {
+  it("从 getSessionContext 读取会话并交给现有 gateway transport", () => {
+    expect(source).toContain("readMobileRemoteSessionContext({");
+    expect(source).toContain("setStreamClientId(session.context.clientInstanceId)");
+    expect(source).toContain("clientInstanceId: gatewayConfig.clientInstanceId");
+    expect(source).toContain("appVersion: gatewayConfig.appVersion");
   });
 
-  it("不再注册独立的连接设置浮层或菜单回调", () => {
-    expect(source).not.toContain("MobileRemoteConnectionSettingsSurface");
-    expect(source).not.toContain("registerOpenConnectionSettings");
-    expect(source).not.toContain("openConnectionSettingsOverlay");
-    expect(source).not.toContain("onOpenConnectionSettings");
+  it("没有配置写入、SecureStore 或 clientInstanceId 生成路径", () => {
+    expect(source).not.toContain("MobileRemoteConfigStore");
+    expect(source).not.toContain("createMobileRemoteSecureStore");
+    expect(source).not.toContain("getClientInstanceId");
+    expect(source).not.toContain("saveMobileRemoteSettingsDraft");
+    expect(source).not.toContain("resolveMobileRemoteConnection");
+    expect(source).not.toContain("secureStore");
+    expect(source).not.toContain("localStorage");
+    expect(source).not.toContain("URLSearchParams(params)");
+    expect(source).not.toContain("seedStableWebRemoteControlClientId");
+    expect(source).not.toContain("reopenSetup");
   });
 
-  it("首次配置、失败页与 Root 外 StartPage 继续走独立 setup 流程", () => {
-    // 独立入口只剩失败页与 StartPage 的 reopenSetup("settings")。
-    expect(source).toContain('onOpenSettings: () => reopenSetup("settings")');
-    expect(source).toContain('onOpenSettings={() => reopenSetup("settings")}');
-    expect(source).toContain("resolveMobileRemoteConnection");
+  it("连接修改、切换电脑和失败出口统一 returnShell", () => {
+    expect(source).toContain("session.bridge.returnShell(reason, session.context.sessionId)");
+    expect(source).toContain('context.requestReturnShell("connection-settings")');
+    expect(source).toContain('context.requestReturnShell("settings")');
+    expect(source).toContain('context.requestReturnShell("backend")');
+    expect(source).toContain('context.requestReturnShell("notification-backend-mismatch")');
+    expect(source).toContain("reconnect: () => context.requestReturnShell");
+  });
+
+  it("启动业务 Channel 前校验 release manifest 的 bridgeVersion", () => {
+    const releaseCheck = source.indexOf("checkMobileRemoteRelease");
+    const transportCreate = source.indexOf("new GatewayTerminalTransport");
+    const transportStart = source.indexOf("transport.start()");
+    expect(releaseCheck).toBeGreaterThan(0);
+    expect(releaseCheck).toBeLessThan(transportCreate);
+    expect(releaseCheck).toBeLessThan(transportStart);
+    expect(source).toContain('release.kind === "upgrade-required"');
+    expect(source).toContain('upgrade: "mobile"');
+  });
+
+  it("文件、通知与 lifecycle 适配器均携带 sessionId", () => {
+    expect(source).toContain("createMobileRemoteFileCapabilities(");
+    expect(source).toContain("{ sessionId: session.context.sessionId }");
+    expect(source).toContain("createMobileNotificationPlatform(globalThis, {");
+    expect(source).toContain("installMobileRemoteNativeHost({");
+    expect(source).toContain("sessionId: session.context.sessionId");
   });
 });

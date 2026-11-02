@@ -98,10 +98,6 @@ describe("mobile remote setup flow (375px)", () => {
       backendId: "backend-1",
     });
     expect((await store.load())?.backendId).toBe("backend-1");
-
-    const firstClientId = await store.getClientInstanceId("backend-1");
-    expect(await store.getClientInstanceId("backend-1")).toBe(firstClientId);
-    expect(await store.getClientInstanceId("backend-2")).not.toBe(firstClientId);
   });
 
   it("returns to settings from the backend picker and keeps the saved scope", async () => {

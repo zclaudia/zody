@@ -14,8 +14,10 @@ import { describe, expect, it } from "vitest";
 const WEB_ROOT = resolve(import.meta.dirname, "..");
 const MOBILE_HTML = resolve(WEB_ROOT, "mobile.html");
 const WEB_HTML = resolve(WEB_ROOT, "index.html");
+const REMOTE_DIST = resolve(WEB_ROOT, "dist-mobile-remote");
 const MOBILE_ENTRY = "src/mobile-remote/main.tsx";
 const WEB_ENTRY = "src/main.tsx";
+const THEME_BOOTSTRAP_SCRIPT = "/assets/remote/mobile-theme-bootstrap.js";
 
 /** 解析相对导入（仓库源码里 `.js` 后缀指向 `.ts`/`.tsx` 源文件）。 */
 function resolveLocalModule(fromFile: string, specifier: string): string | undefined {
@@ -77,6 +79,29 @@ describe("手机独立入口 mobile.html", () => {
     expect(html).toContain("viewport-fit=cover");
   });
 
+  it("首屏主题脚本外置为同源静态文件，CSP script-src 'self' 不依赖 unsafe-inline", () => {
+    const html = readFileSync(MOBILE_HTML, "utf8");
+    const document = new DOMParser().parseFromString(html, "text/html");
+
+    // 所有 script 都必须有 src；不能遗留内联脚本或内联事件处理器。
+    expect(document.querySelectorAll("script:not([src])")).toHaveLength(0);
+    expect(html).not.toContain("<script>");
+    expect(html).not.toMatch(/\son[a-z]+\s*=/iu);
+
+    const themeScript = document.querySelector<HTMLScriptElement>(
+      `script[src="${THEME_BOOTSTRAP_SCRIPT}"]`,
+    );
+    expect(themeScript).not.toBeNull();
+    expect(themeScript?.hasAttribute("type")).toBe(false);
+
+    // classic script 位于 head，module bundle 位于 body 末尾：主题先于 bundle 初始化。
+    const themeIndex = html.indexOf(`src="${THEME_BOOTSTRAP_SCRIPT}"`);
+    const moduleIndex = html.indexOf(`src="/${MOBILE_ENTRY}"`);
+    expect(themeIndex).toBeGreaterThan(0);
+    expect(moduleIndex).toBeGreaterThan(themeIndex);
+    expect(html.indexOf("</head>")).toBeGreaterThan(themeIndex);
+  });
+
   it("不复用桌面 Web 客户端入口，也不与其共用 HTML 入口文件", () => {
     const mobileHtml = readFileSync(MOBILE_HTML, "utf8");
     const webHtml = readFileSync(WEB_HTML, "utf8");
@@ -99,3 +124,38 @@ describe("手机独立入口 mobile.html", () => {
     expect(relativePaths.filter((path) => path.startsWith("src/share/"))).toEqual([]);
   });
 });
+
+describe.runIf(existsSync(resolve(REMOTE_DIST, "index.html")))(
+  "已构建 Remote 产物：无内联脚本且保留 M1 release meta",
+  () => {
+    it("首屏主题从同源静态模块加载，入口 module 在其后", () => {
+      const html = readFileSync(resolve(REMOTE_DIST, "index.html"), "utf8");
+      const document = new DOMParser().parseFromString(html, "text/html");
+
+      expect(document.querySelectorAll("script:not([src])")).toHaveLength(0);
+      expect(
+        document.querySelector(`script[src="${THEME_BOOTSTRAP_SCRIPT}"]`),
+      ).not.toBeNull();
+      expect(existsSync(resolve(REMOTE_DIST, "mobile-theme-bootstrap.js"))).toBe(true);
+
+      const themeIndex = html.indexOf(`src="${THEME_BOOTSTRAP_SCRIPT}"`);
+      const moduleIndex = html.search(/<script type="module"[^>]*src="[^"]+"/u);
+      expect(moduleIndex).toBeGreaterThan(themeIndex);
+    });
+
+    it("M1 release meta 已注入且与 release.json 一致", () => {
+      const html = readFileSync(resolve(REMOTE_DIST, "index.html"), "utf8");
+      const release = JSON.parse(
+        readFileSync(resolve(REMOTE_DIST, "release.json"), "utf8"),
+      ) as { releaseId?: unknown };
+      const document = new DOMParser().parseFromString(html, "text/html");
+      const meta = document.querySelector<HTMLMetaElement>(
+        'meta[name="zody-mobile-ui-release"]',
+      );
+
+      expect(typeof release.releaseId).toBe("string");
+      expect(meta?.content).toBe(release.releaseId);
+      expect(meta?.content).toMatch(/^[0-9a-f]{24}$/u);
+    });
+  },
+);

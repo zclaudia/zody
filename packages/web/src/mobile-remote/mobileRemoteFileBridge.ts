@@ -1,11 +1,17 @@
-import type { IPlatformService, SaveFileRequest, SaveFileResult } from "@zcode/shared";
-import { MOBILE_REMOTE_NATIVE_BRIDGE_GLOBAL_KEY } from "./mobileRemoteSecureStore.js";
+import {
+  MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY,
+  type IPlatformService,
+  type SaveFileRequest,
+  type SaveFileResult,
+} from "@zcode/shared";
 
 /**
  * 手机页面的文件保存能力（T6.3）。
  *
- * Android 壳的 `ZcodeMobileBridge` 只有平铺的 `@JavascriptInterface` 方法：
- * `saveFileBegin/Append/Finish/Abort` 与 `openFile`。页面在这里把 `IPlatformService.saveFile`
+ * Android 壳的 `ZodyRemoteBridge` 只有平铺的 `@JavascriptInterface` 方法：
+ * `saveFileBegin/Append/Finish/Abort` 与 `openFile`，且每个方法都携带当前 sessionId。
+ * 原生按 MobileShellController 的当前 session 校验，旧 session 一律拒绝；页面只负责透传，
+ * 失败后不写回任何配置。页面在这里把 `IPlatformService.saveFile`
  * 适配成「按 base64 分块传给原生」：
  *
  * 1. 先把 `data` 或 `sourceUrl` 读成字节；
@@ -24,11 +30,11 @@ export const MOBILE_REMOTE_MAX_ATTACHMENT_BYTES = 16 * 1024 * 1024;
 export const MOBILE_REMOTE_SAVE_CHUNK_BYTES = 256 * 1024;
 
 export interface MobileRemoteFileNativeBridge {
-  saveFileBegin(fileName: string, mimeType: string): string;
-  saveFileAppend(token: string, chunkBase64: string): void;
-  saveFileFinish(token: string): string;
-  saveFileAbort(token: string): void;
-  openFile?(uri: string, mimeType: string): boolean;
+  saveFileBegin(sessionId: string, fileName: string, mimeType: string): string;
+  saveFileAppend(sessionId: string, token: string, chunkBase64: string): void;
+  saveFileFinish(sessionId: string, token: string): string;
+  saveFileAbort(sessionId: string, token: string): void;
+  openFile?(sessionId: string, uri: string, mimeType: string): boolean;
 }
 
 interface SavedNativeFile {
@@ -43,7 +49,7 @@ export function resolveMobileRemoteFileBridge(
   if (!target || typeof target !== "object") {
     return undefined;
   }
-  const candidate = (target as Record<string, unknown>)[MOBILE_REMOTE_NATIVE_BRIDGE_GLOBAL_KEY];
+  const candidate = (target as Record<string, unknown>)[MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY];
   if (!candidate || typeof candidate !== "object") {
     return undefined;
   }
@@ -138,23 +144,24 @@ function parseSavedFile(value: string): SavedNativeFile {
 /** 把一次 saveFile 请求分块写入原生下载目录，并在成功后尝试用系统应用打开。 */
 export async function saveMobileRemoteFile(
   bridge: MobileRemoteFileNativeBridge,
+  sessionId: string,
   payload: SaveFileRequest,
 ): Promise<SaveFileResult> {
   let token: string | undefined;
   try {
     const { bytes, mimeType } = await readSavePayload(payload);
-    token = bridge.saveFileBegin(payload.suggestedName, mimeType);
+    token = bridge.saveFileBegin(sessionId, payload.suggestedName, mimeType);
     for (let offset = 0; offset < bytes.length; offset += MOBILE_REMOTE_SAVE_CHUNK_BYTES) {
       const chunk = bytes.subarray(
         offset,
         Math.min(offset + MOBILE_REMOTE_SAVE_CHUNK_BYTES, bytes.length),
       );
-      bridge.saveFileAppend(token, encodeBase64(chunk));
+      bridge.saveFileAppend(sessionId, token, encodeBase64(chunk));
     }
-    const saved = parseSavedFile(bridge.saveFileFinish(token));
+    const saved = parseSavedFile(bridge.saveFileFinish(sessionId, token));
     token = undefined;
     try {
-      bridge.openFile?.(saved.uri, mimeType);
+      bridge.openFile?.(sessionId, saved.uri, mimeType);
     } catch {
       // Bugfix: 保存已经成功，系统没有可打开该类型的应用时不能把保存结果改成失败。
     }
@@ -162,7 +169,7 @@ export async function saveMobileRemoteFile(
   } catch (error) {
     if (token) {
       try {
-        bridge.saveFileAbort(token);
+        bridge.saveFileAbort(sessionId, token);
       } catch {
         // 原生会话可能已经结束；保留原始错误。
       }
@@ -174,13 +181,24 @@ export async function saveMobileRemoteFile(
   }
 }
 
+export interface CreateMobileRemoteFileCapabilitiesOptions {
+  /** MobileShellController 为当前 Remote 文档创建的 sessionId。 */
+  sessionId: string;
+  maxAttachmentBytes?: number;
+}
+
 export function createMobileRemoteFileCapabilities(
   bridge: MobileRemoteFileNativeBridge | undefined,
-  options: { maxAttachmentBytes?: number } = {},
+  options: CreateMobileRemoteFileCapabilitiesOptions,
 ): Pick<IPlatformService, "saveFile" | "maxAttachmentBytes"> {
   return {
     // 即使开发模式没有原生桥，手机页面仍受远端 16 MiB 上限约束，composer 需要提前提示。
     maxAttachmentBytes: options.maxAttachmentBytes ?? MOBILE_REMOTE_MAX_ATTACHMENT_BYTES,
-    ...(bridge ? { saveFile: (payload) => saveMobileRemoteFile(bridge, payload) } : {}),
+    ...(bridge
+      ? {
+          saveFile: (payload) =>
+            saveMobileRemoteFile(bridge, options.sessionId, payload),
+        }
+      : {}),
   };
 }
