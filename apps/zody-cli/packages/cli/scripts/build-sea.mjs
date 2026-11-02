@@ -57,7 +57,7 @@ const repositoryRoot = resolve(root, "../..");
 const cliRoot = resolve(import.meta.dirname, "..");
 const dist = resolve(cliRoot, "dist");
 const cliBundle = resolve(dist, "zody.cjs");
-const seaBlobForTarget = (target) => resolve(dist, `zcode-${target}.sea.blob`);
+const seaBlobForTarget = (target) => resolve(dist, `zody-${target}.sea.blob`);
 const seaConfigForTarget = (target) => resolve(dist, `sea-config-${target}.json`);
 const seaAssetStagingForTarget = (target) => resolve(dist, "sea-assets", target);
 const nodeCache = resolve(dist, "sea-node-cache");
@@ -187,7 +187,7 @@ const prepareSeaBlob = async (target) => {
         },
         disableExperimentalSEAWarning: true,
         main: "dist/zody.cjs",
-        output: `dist/zcode-${target}.sea.blob`,
+        output: `dist/zody-${target}.sea.blob`,
         useCodeCache: false,
         useSnapshot: false,
       },

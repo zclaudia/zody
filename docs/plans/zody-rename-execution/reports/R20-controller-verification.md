@@ -16,3 +16,13 @@ Base checkpoint: `6c7bd1c0`; subsequent R20.3 working tree. Node 24.14.0, pnpm 1
 "apps/zody-cli/packages/cli/dist/zody.cjs": "bef85204946b7cbf80a90c34b6ebcd181a31141044f3f56dc819f7880ab2727e",
 "packages/server/dist/remote/zody-server.cjs": "755b32a3b3d63ef90724b57611a1354ded148f3c6e2b88e2b3d36ad922cffa6c"
 }
+
+## Review-2 corrective candidate (2026-11-03)
+
+Controller reviewed the cold-cache plugin seed test and actual monorepo-vs-staged candidates, both guide path fallback cases, four source-tree test imports and both SEA blob producer/consumer strings. A source-regex mirror test was removed; SEA runtime generation remains unverified.
+
+Pinned Node 24.14.0: root `pnpm typecheck` exit 0, `pnpm lint` exit 0 (303 warnings), root `pnpm exec vitest run packages/ui/test/skillsSection.test.ts` 12/12, and `node --test apps/zody-cli/packages/cli/tests/build-sea.test.mjs` 43/43. Logs: `output/zody-rename-validation/controller-review2-{types,lint,ui,sea}.log`. CLI targeted re-run is recorded separately once complete.
+
+R20.4 preparation found further stale module mock paths and export keys around ProcessManager. These remain assigned to the semantic class-and-consumer migration; this corrective checkpoint is not R20/P2 completion.
+
+Controller CLI re-run: cwd `apps/zody-cli`, `pnpm exec vitest run packages/bootstrap/tests/bundled-plugins-resilience.test.ts packages/bootstrap/tests/dynamic-workflow-skill.test.ts packages/bootstrap/tests/zody-guide-path-contract.test.ts packages/node-repl-host/test/computer-use-onboarding.test.ts packages/node-repl-host/test/mcp-server.test.ts` exited 0, 5 files / 71 tests passed. Log: `output/zody-rename-validation/controller-review2-cli.log`.

@@ -12,7 +12,7 @@ const GUIDE_SKILLS = [
   "zcode-configuration-guide",
 ] as const;
 
-const SKILLS_ROOT = fileURLToPath(new URL("../../zcode-guide-plugin/skills/", import.meta.url));
+const SKILLS_ROOT = fileURLToPath(new URL("../../zody-guide-plugin/skills/", import.meta.url));
 
 describe("bundled Zody guide path contract", () => {
   it("directs user writes to ~/.zody and project writes to .zody only", async () => {

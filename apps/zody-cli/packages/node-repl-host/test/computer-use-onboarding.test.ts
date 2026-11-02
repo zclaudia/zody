@@ -17,7 +17,9 @@ const WRITTEN: string[] = [];
 async function makeGlobals(bridgeOverrides: Record<string, unknown> = {}) {
   const { join, dirname } = await import("node:path");
   const { fileURLToPath } = await import("node:url");
-  const clientUrl = fileURLToPath(new URL("../../zcode-cua-plugin/scripts/computer-use-client.mjs", import.meta.url));
+  const clientUrl = fileURLToPath(
+    new URL("../../zody-cua-plugin/scripts/computer-use-client.mjs", import.meta.url),
+  );
   const documentationRoot = join(dirname(clientUrl), "..", "docs");
   const bridge = {
     call: vi.fn(async () => ({ content: [{ type: "text", text: "ok" }] })),
@@ -27,7 +29,11 @@ async function makeGlobals(bridgeOverrides: Record<string, unknown> = {}) {
   };
   const globals = {
     [Symbol.for("zcode.node-repl.computer-use-bridge")]: bridge,
-    nodeRepl: { write: (text: string) => { WRITTEN.push(text); } },
+    nodeRepl: {
+      write: (text: string) => {
+        WRITTEN.push(text);
+      },
+    },
   };
   const mod = await import(clientUrl);
   await mod.setupComputerUseRuntime({ globals });

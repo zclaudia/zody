@@ -48,7 +48,7 @@ const PACK_ROOT = join(PACKAGES_ROOT, "bundled-skills");
 const SKILL_NAME = DYNAMIC_WORKFLOW_SKILL_NAME;
 const SKILL_DIR = join(PACK_ROOT, "skills", SKILL_NAME);
 /** zcode-guide 仍是一个普通插件技能根：用来证明灰度门不会连坐技能包之外的技能。 */
-const GUIDE_PLUGIN_SKILLS_ROOT = join(PACKAGES_ROOT, "zcode-guide-plugin", "skills");
+const GUIDE_PLUGIN_SKILLS_ROOT = join(PACKAGES_ROOT, "zody-guide-plugin", "skills");
 
 /** 技能正文三件套：SKILL.md 常驻，另两份由模型按需 Read。 */
 const SKILL_FILES = ["SKILL.md", "patterns.md", "examples.md"] as const;

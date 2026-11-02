@@ -335,7 +335,7 @@ describe("node_repl MCP server", () => {
     }
     expect(
       existsSync(
-        resolve(import.meta.dirname, "../../zcode-cua-plugin/scripts/computer-use-client.mjs"),
+        resolve(import.meta.dirname, "../../zody-cua-plugin/scripts/computer-use-client.mjs"),
       ),
     ).toBe(true);
   });

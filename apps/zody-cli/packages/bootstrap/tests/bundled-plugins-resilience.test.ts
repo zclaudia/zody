@@ -159,6 +159,29 @@ describe("bundled official plugin cache resilience", () => {
     );
   });
 
+  it("seeds guide and computer-use from actual monorepo sources", async () => {
+    const storageRoot = await createStorageRoot(cleanups);
+    resolveOfficialPluginRoots({ storageRoot });
+    for (const name of ["zcode-guide", "computer-use"]) {
+      const definition = OFFICIAL_PLUGIN_DEFINITIONS.find((item) => item.name === name)!;
+      const stem = name === "zcode-guide" ? "guide" : "cua";
+      expect(definition.rootCandidates).toContain(`packages/zody-${stem}-plugin`);
+      expect(definition.rootCandidates).toContain(`packages/zcode-${stem}-plugin`);
+      expect(
+        existsSync(
+          join(
+            storageRoot,
+            OFFICIAL_CACHE_ROOT,
+            name,
+            definition.version,
+            ".zcode-plugin",
+            "plugin.json",
+          ),
+        ),
+      ).toBe(true);
+    }
+  });
+
   it("keeps degraded cache diagnostics through the ordinary plugin resolver", async () => {
     const storageRoot = await createStorageRoot(cleanups);
     const logger = createLogger();

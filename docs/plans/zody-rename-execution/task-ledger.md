@@ -112,3 +112,11 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 - Parent independently reran typecheck/lint and 31 related node tests; after final helper extraction reran 13 guard tests. Results passed; lint has 303 warnings. See R20-controller-verification.md.
 - R20 source writes are stopped for candidate review. Root private bin links will be refreshed by R21; no nested workspace ownership edits before user response. R20.4 is not yet implemented.
 - DeepSeek R02 runtime review limited PASS is saved; its two evidence wording/cleanup gaps were corrected by controller. R48 still lacks the true Host/mixed-mode matrix and an independently runnable old server-cli.
+
+## 2026-11-03 implementation resumed after plan refinement
+
+- Previous goal turn updated the dispatch plan (progress), but did not advance product implementation. The controller revalidated current HEAD `c62caae2a32fb369a1d5b3b8679d7310b320a5a5`, the exact Broker handle and workspace grant before resuming.
+- R20.2/3 DeepSeek review-2 is CHANGES_REQUIRED, saved in reports/R20-deepseek-implementation-review-2.md. Missing monorepo plugin source candidates and source-tree test paths are real remaining defects; staged external identities must stay unchanged.
+- Terra R10 is the sole product writer for those fixes, the builtin guide path fallback and SEA intermediate name closure. Terra R01 may only prepare semantic rename tooling under its output root and own report until the controller hands over the source lock.
+- The root/CLI workspace ownership question remains pending; no nested workspace/lock removal or dependency ownership change is authorized by elapsed time.
+- The plan's expanded subtask table was incorporated without replacing the accepted R01 protocol/test contracts. R20.4 authorization is a constrained candidate path set, not permission to rewrite external, serialized or historical identities.

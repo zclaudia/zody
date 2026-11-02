@@ -313,7 +313,10 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
     },
     name: "zcode-guide",
     requiredSeedPaths: OFFICIAL_ZCODE_GUIDE_REQUIRED_SEED_PATHS,
+    // 修复原因：源码目录已改名，发布包仍以旧 staged 目录提供同一插件身份。
     rootCandidates: [
+      "packages/zody-guide-plugin",
+      "../../../zody-guide-plugin",
       "packages/zcode-guide-plugin",
       "../zcode-guide-plugin",
       "../../zcode-guide-plugin",
@@ -344,7 +347,10 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
         "zh-CN": "自动化桌面应用：智能体驱动鼠标、键盘与界面元素，代你完成实际任务。",
       },
     },
+    // 修复原因：源码目录与发布包 staged 目录名称不同，两者都必须可被 seed。
     rootCandidates: [
+      "packages/zody-cua-plugin",
+      "../../../zody-cua-plugin",
       "packages/zcode-cua-plugin",
       "../zcode-cua-plugin",
       "../../zcode-cua-plugin",

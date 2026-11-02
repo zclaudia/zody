@@ -1,3 +1,4 @@
+import { resolveSkillDisplayDescription } from "../src/lib/builtinSkillI18n";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -767,4 +768,20 @@ describe("SkillsSection", () => {
     expect(useSkillStore.getState().workspacePath).toBe("/Users/alice/local-project");
     expect(useSkillStore.getState().skills).toEqual([localSkill]);
   });
+});
+
+it("localizes guide skills from source and staged plugin paths without pluginName", () => {
+  for (const dir of ["zody-guide-plugin", "zcode-guide-plugin"]) {
+    expect(
+      resolveSkillDisplayDescription(
+        {
+          name: "brainstorming",
+          description: "raw",
+          path: `/packages/${dir}/skills/zcode-configuration-guide/SKILL.md`,
+          scope: "plugin",
+        },
+        "zh-CN",
+      ),
+    ).not.toBe("raw");
+  }
 });
