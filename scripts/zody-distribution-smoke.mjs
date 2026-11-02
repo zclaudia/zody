@@ -14,8 +14,9 @@ const exec = promisify(execFile);
 const archive = process.argv[2];
 assert.ok(archive, "Usage: node scripts/zody-distribution-smoke.mjs <archive.tar.gz>");
 const directory = await realpath(await mkdtemp(join(tmpdir(), "zcode-release-smoke-")));
-const root = join(directory, "zcode");
-const runner = join(root, "bin/zcode.mjs");
+// 修复原因：发行归档由 build-zody 生成 zody 根目录和 bin/zody.mjs；旧路径无法启动当前产物。
+const root = join(directory, "zody");
+const runner = join(root, "bin/zody.mjs");
 const workspace = join(directory, "workspace");
 const env = {
   ...process.env,

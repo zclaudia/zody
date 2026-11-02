@@ -42,7 +42,7 @@ jobs:
       - run: pnpm --dir apps/zcode-cli test
       - run: pnpm --dir apps/zcode-cli typecheck
       - run: pnpm --dir apps/zcode-cli lint
-      - run: node --test scripts/zody-distribution-runner.test.mjs scripts/zody-distribution.test.mjs
+      - run: node --test scripts/zody-distribution-runner.test.mjs scripts/zody-distribution.test.mjs scripts/zody-distribution-smoke.test.mjs
 
   desktop:
     needs: validate
