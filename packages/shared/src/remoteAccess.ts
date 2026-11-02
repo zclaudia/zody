@@ -8,6 +8,15 @@ import type { WebRemoteControlStatus } from "./web-remote-control.js";
  * 的凭据服务里，不进 settings 文件、不进日志，renderer 只能读到「是否已配置」。
  */
 
+/**
+ * backend 在 `peer_hello.backend.capabilities` 里额外声明的「桌面提供手机主 UI」能力位
+ * （spec: specs/mobile-remote-ui-desktop-delivery.md 第 5 节）。
+ *
+ * 它与远控能力位 `zcode-remote-control` 并列声明，不替代后者；新 APK 只选择同时具备两者的电脑，
+ * 缺少本能力位时停留 Shell 并提示升级桌面。
+ */
+export const WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY = "zcode-remote-ui-v1";
+
 /** namespace 默认值；设备凭证的 discovery 接口不返回 namespace，手机设置页可编辑。 */
 export const DEFAULT_REMOTE_ACCESS_NAMESPACE = "zody";
 
