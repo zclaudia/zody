@@ -50,6 +50,6 @@ R54 同步 bootstrap seed/official runtime、打包及安装升级的调用者�
 
 ## R55 精确插件 env 与模板
 
-权威上下文提供 root、data、id、name。构造子进程 env 时先继承宿主环境、合并 manifest 自定义 env（其他键保留既有行为），最后覆盖身份键：`ZODY_PLUGIN_ROOT/DATA/ID/NAME` 与 `ZCODE_PLUGIN_ROOT/DATA/ID/NAME` 分别取同一 root/data/id/name；`CLAUDE_PLUGIN_ROOT/DATA` 同取 root/data。上下文不存在时不凭外部值伪造身份；各消费者需保持缺失上下文的原错误语义。保留其他既有 Claude 环境及模板，不新增 `CLAUDE_PLUGIN_ID/NAME` 契约。`ZCODE_CUA_PLUGIN_ROOT` 是内置特殊引用，按 R30/R55 清单切为 `ZODY_CUA_PLUGIN_ROOT`，不得当成通用插件兼容键。
+权威上下文提供 root、data、id、name。构造子进程 env 时先继承宿主环境、合并 manifest 自定义 env（其他键保留既有行为），最后覆盖身份键：`ZODY_PLUGIN_ROOT/DATA/ID/NAME` 与 `ZCODE_PLUGIN_ROOT/DATA/ID/NAME` 分别取同一 root/data/id/name；`CLAUDE_PLUGIN_ROOT/DATA` 同取 root/data。上下文不存在时不凭外部值伪造身份；各消费者需保持缺失上下文的原错误语义。保留其他既有 Claude 环境及模板，不新增 `CLAUDE_PLUGIN_ID/NAME` 契约。`ZCODE_CUA_PLUGIN_ROOT` 是内置专用变量，由 R30 硬切为 `ZODY_CUA_PLUGIN_ROOT`，不属于 R55 的通用插件双注入。当前注入源为 `apps/zcode-cli/packages/bootstrap/src/app/built-in-node-repl.ts` 的 CUA package root；真实消费者为 `apps/zcode-cli/packages/node-repl-host/src/node-repl-session-executor.ts`；`apps/zcode-cli/packages/zcode-cua-plugin/skills/computer-use/SKILL.md` 也引用该变量。R30 须同时切换这些生产、消费和 skill 引用，保持其现有 fallback 次序及 CUA 定向语义。
 
 模板仅新增 `${ZODY_PLUGIN_ROOT}`、`${ZODY_PLUGIN_DATA}`，与既有 `${ZCODE_PLUGIN_ROOT}`、`${ZCODE_PLUGIN_DATA}`、`${CLAUDE_PLUGIN_ROOT}`、`${CLAUDE_PLUGIN_DATA}` 从同一上下文展开；不承诺 ID/NAME 模板。hook、MCP、shell expansion、official runtime 和 built-in node-repl 均覆盖各自支持的键；不改变其他 session/project/skill token 的既有规则。1.0 移除本节旧 ZCODE 插件 env/token，保留 CLAUDE 兼容；普通旧 `ZCODE_*` 不因此获得别名期。

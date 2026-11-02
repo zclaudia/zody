@@ -1,10 +1,10 @@
 # Zody 全面改名：子代理实施任务计划
 
-状态：待执行。编制日期：2026-11-02。本次只拆分实施任务，不代表已开始改名、远端部署、签名或发布。
+状态：实施中。编制日期：2026-11-02。各任务真实状态以 [任务账本](zody-rename-execution/task-ledger.md) 为准；实施中不代表远端部署、签名或发布已完成。
 
 产品规则以 [改名设计与调查](zody-full-divergence-rename-survey.md) 为输入；本文负责执行顺序、文件所有权、任务交付与验收。遇到设计缺口先回到 spec，不允许子代理自行改变硬切、不迁移、插件 1.0 退役或 CUA 信任根等已定规则。
 
-编制参考基线：`6ae791ee341222e10fe89711ae60cbb418866450`。工作区另有未提交的设计修订及用户 `.gitignore` 改动。实施必须先保全并纳入所需设计输入，不得直接以此 SHA 建 worktree 后遗漏修订，也不得带入或覆盖无关改动。所有路径以下述仓库根为相对起点；派发时必须给出实际工作区绝对路径。
+编制参考基线：`033f91783901e6adaf968d3d4b8ca34c41d89442`。工作区另有未提交的设计修订及其他本地改动。实施必须先保全并纳入所需设计输入，不得直接以此 SHA 建 worktree 后遗漏修订，也不得带入或覆盖无关改动。所有路径以下述仓库根为相对起点；派发时必须给出实际工作区绝对路径。本文描述任务定义；实际执行状态以专用工作区的任务账本为准，已有执行记录时先对账，不重复派发。
 
 ## 1. 执行约定
 
@@ -27,7 +27,7 @@
 | ------------------------------------------------ | ----------------------------------------------------------------------- |
 | 任务账本、派发 `writeSet`、总验收结论            | 主控；子代理只写自己的报告                                              |
 | 全仓目录移动、包名和 import 重写                 | R20 独占；所有其他产品源码写者停止                                      |
-| `pnpm-lock.yaml`                                 | R21；其他任务只提出 manifest 需求，不自行 install 改锁                  |
+| 根与 CLI 独立工作区的 `pnpm-lock.yaml`           | R21；其他任务只提出 manifest 需求，不自行 install 改锁                  |
 | feature graph                                    | R21 更新路径；需要语义变更时由主控串行交接，不并行重写                  |
 | 根 package.json、workspace/CI/toolchain 配置     | R10 → R20 → R30 串行接力；各自只改所属阶段                              |
 | shared wire/schema/exports                       | R40 先固定接口，R41/R42/R44 只消费；后续 R45/R47/R50 分批取得对应文件锁 |
@@ -42,16 +42,17 @@ R00 将广义文件范围展开为具体清单，包含生产文件、测试、�
 
 以下是**计划新增**的执行资料，由相应任务创建；现在不存在不代表已完成：
 
-| 路径                                               | 写者                          | 内容                                                                               |
-| -------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------- |
-| `docs/plans/zody-rename-execution/manifest.json`   | R00，后续由主控维护           | 每个标识的旧/新值、分类、owner、方向、阶段、路径、保留原因/期限、验收 ID           |
-| `docs/plans/zody-rename-execution/task-ledger.md`  | 主控                          | ID、基线、agent ID、writeSet、依赖、状态、diff/提交与证据                          |
-| `docs/plans/zody-rename-execution/test-map.md`     | R01，门禁任务报告后由主控更新 | case ID→真实测试文件、cwd、命令、平台/资源与状态                                   |
-| `docs/plans/zody-rename-execution/contract-map.md` | R01，主控协调接口任务更新     | wire 名称/schema、发起/接收端、版本门禁、错误与旧/新键策略                         |
-| `docs/plans/zody-rename-execution/reports/<ID>.md` | 对应任务                      | 基线、实际操作、测试、限制、交付；并行任务不得共写一个报告                         |
-| 隔离的证据/产物目录                                | 对应验收者                    | 日志、录屏、fixture、制品和摘要；Git 文档只引用可验证位置，不保存凭据/真实用户数据 |
+| 路径                                                     | 写者                          | 内容                                                                               |
+| -------------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------- |
+| `docs/plans/zody-rename-execution/manifest.json`         | R00，后续由主控维护           | 每个标识的旧/新值、分类、owner、方向、阶段、路径、保留原因/期限、验收 ID           |
+| `docs/plans/zody-rename-execution/file-assignments.json` | R00，后续由主控维护           | 每个任务展开后的 readSet/writeSet/excludeSet、允许新增文件、文件锁与串行交接顺序   |
+| `docs/plans/zody-rename-execution/task-ledger.md`        | 主控                          | ID、基线、agent ID、writeSet、依赖、状态、diff/提交与证据                          |
+| `docs/plans/zody-rename-execution/test-map.md`           | R01，门禁任务报告后由主控更新 | case ID→真实测试文件、cwd、命令、平台/资源与状态                                   |
+| `docs/plans/zody-rename-execution/contract-map.md`       | R01，主控协调接口任务更新     | wire 名称/schema、发起/接收端、版本门禁、错误与旧/新键策略                         |
+| `docs/plans/zody-rename-execution/reports/<ID>.md`       | 对应任务                      | 基线、实际操作、测试、限制、交付；并行任务不得共写一个报告                         |
+| 隔离的证据/产物目录                                      | 对应验收者                    | 日志、录屏、fixture、制品和摘要；Git 文档只引用可验证位置，不保存凭据/真实用户数据 |
 
-状态按 `planned → ready → running → review → integrated → verified` 推进；`blocked` 必须说明具体输入/资源缺口，`failed` 必须保留失败证据。真实发布状态单独维护。当前下列 26 项全部为 `planned`。
+状态按 `planned → ready → running → review → integrated → verified` 推进；`blocked` 必须说明具体输入/资源缺口，`failed` 必须保留失败证据。真实发布状态单独维护。下列 26 项是任务定义，首次创建账本时初始状态为 `planned`；本文不替代已有执行记录。
 
 ## 2. 依赖与派发波次
 
@@ -110,7 +111,7 @@ flowchart TD
 ### R00 — 基线、改名清单与文件分配
 
 - **依赖/模式**：无；只读源码，写规划资料。入口为设计全文、根 package.json、各目标 AGENTS.md、架构策略及已有三个领域复核。
-- **写范围**：新增 `manifest.json`、初版 `task-ledger.md`、`reports/R00.md`；不改产品源码、现有 spec、lock 或 `.gitignore`。
+- **写范围**：新增 `manifest.json`、`file-assignments.json`、`reports/R00.md`；不改产品源码、现有 spec、lock 或 `.gitignore`。R00 在报告中提供初版任务状态建议，`task-ledger.md` 始终由主控创建和维护。
 - **操作**：固定包含最新设计修订的实施基线；展开包/目录/脚本/资产/env/wire/插件/持久化各类别，特别列出 builtin、两套 bootstrap/shared protocol 副本、CUA 18 处引用；给每项分配唯一任务。记录已完成 endpoint 改名，防止重复实施。
 - **交付**：每个任务的精确 `readSet/writeSet/excludeSet`；每个重命名的旧/新路径；全部保留项和来源证据；重叠文件的串行顺序。数量重新统计，不复制旧调查数作为验收值。
 - **验收**：所有生产残留均有任务或明确例外，待定项有 owner；并行 writeSet 交集为空；不以泛化 `zcode*` 豁免代替逐项分类。缺口仅阻止关联任务。
@@ -148,9 +149,9 @@ flowchart TD
 ### R21 — P2 lock、生成物与 feature graph 收口
 
 - **依赖/锁**：R20 写入停止；唯一 lock/graph 写者。
-- **写范围**：`pnpm-lock.yaml`、`third-party/inventory.json` 的必要生成变化、feature graph 路径和同源生成物，以及报告；不改包 manifest/生产实现。
+- **写范围**：根 `pnpm-lock.yaml`、当前 `apps/zcode-cli/pnpm-lock.yaml`（P2 后按新路径）、`third-party/inventory.json` 的必要生成变化、feature graph 路径和同源生成物，以及报告；不改包 manifest/生产实现。根与 CLI 的 `skills-lock.json` 纳入残留审计，只有实际引用需要变化时才由主控授予写权限，不因包名改动重生成外部技能来源/hash。
 - **操作**：按当前 mise/packageManager 固定 Node/pnpm；基于旧 lock 增量更新，审查第三方版本/integrity/peer 差异。按真实现有工具生成 inventory；graph 保持节点 ID 和产品语义，仅映射已移动 codeSeeds/docs。若图为手工维护则按现有校验方式更新，不臆造“再生成”命令。
-- **验收**：主控先把 R20+R21 的完整结果制成临时集成提交，记录 commit/tree SHA；从该提交建立干净验证工作树运行 `pnpm install --frozen-lockfile`，不得检出未包含改动的旧 HEAD 代验。不存在无关依赖升级；图路径与 exports 校验通过。R22 通过后以相同内容原子合入，修复改变内容时重新建立并验证集成版本。包 manifest 需要修正时交回 R20，禁止这里临时扩权。
+- **验收**：主控先把 R20+R21 的完整结果制成临时集成提交，记录 commit/tree SHA；从该提交建立干净验证工作树，在根和移动后的 CLI 独立工作区分别运行 `pnpm install --frozen-lockfile`，不得检出未包含改动的旧 HEAD 代验。不存在无关依赖升级；图路径与 exports 校验通过。R22 通过后以相同内容原子合入，修复改变内容时重新建立并验证集成版本。包 manifest 需要修正时交回 R20，禁止这里临时扩权。
 
 ### R22 — P2 集成与构建门禁
 
@@ -314,7 +315,7 @@ flowchart TD
 
 ### 7.1 命令约定
 
-公共 `G`：在任务实际工作区根运行 `pnpm typecheck`、`pnpm lint`、`pnpm architecture:check --changed`。在 worktree 已提交而 diff 为空时，按 architecture-governance 的真实参数检查基线到当前变更，不能用空检查宣称通过。
+公共 `G`：在任务实际工作区根运行 `pnpm typecheck`、`pnpm lint`、`pnpm architecture:check --changed`。当前架构检查的 `--changed` 只读取相对 HEAD 的工作区 diff 与未跟踪文件，没有任意基线 SHA 参数。必须在提交前检查改动；对已提交候选运行全量 `pnpm architecture:check`，不能用空检查宣称通过。全量既有失败与本次引入失败分别列出，并保留比较依据，不修改 baseline 来掩盖失败。
 
 根项目 Vitest 的目标测试命令为 `pnpm exec vitest run <已核实的测试文件>`。CLI 子包用 `pnpm --dir <P2 后实际包目录> exec vitest run <包内测试文件>` 并核对本包配置；不要直接调用 watch 型 `test`。E2E 不用 Vitest 冒充，R01 必须从当前 desktop package.json/skill 绑定专用 runner、env、fixture 和 spec。
 
@@ -359,6 +360,64 @@ excludeSet：<共享文件、其他任务所有文件、保留标识、真实用
 ```
 
 例如 R51 必须收到 R50 已冻结接口的真实文件内容/基线、其 sandbox/UI `writeSet` 和单次副作用 fixture 后才能开始，不能只派一句“完成插件兼容”。R20 必须先确认没有其他写任务或 install/build 进程占用同工作区。
+
+### 7.3 从任务卡到实际派发
+
+主控逐项检查以下条件，全部满足才把任务设为 `ready`：
+
+1. **输入可定位**：实际工作区、源码 SHA、未提交输入摘要和依赖交付已登记。任务卡使用旧路径时已应用 R00 路径映射；不能从原工作区读取实现、却在新 worktree 上报告验收。
+2. **范围可检查**：`file-assignments.json` 已展开生产、测试、文档和允许新增文件。目录描述只是调查范围；写任务不得只收到“相关调用者”或通配整个仓库的授权。移动文件同时登记旧、新路径。
+3. **接口已决定**：需要消费的契约已固化；每个阻塞问题有 owner。前置为 `integrated` 仅表示进入候选基线，不表示相应平台已经 `verified`。
+4. **验证可执行**：目标测试是真实文件或明确分配给本任务的新文件；命令、cwd、工具链、fixture、平台与权限已写入派发包。环境缺口只阻止关联步骤，不能用静态检查代替运行证据。
+5. **资源无冲突**：源码写锁之外，分别核对 lock/install、codegen、共享 build 输出、端口、用户数据目录、冻结资源与签名资源。测试共享资源时由主控串行安排，即使源码 writeSet 无交集也不能盲目并行。
+
+首次启动只派发 R00；R00 完成后主控审查清单并派发 R01。R01 固化接口后才按 W1 同时启动 R02/R10。已有账本时从第一个未完成且满足条件的任务继续，不重建已存在的清单或覆盖证据。
+
+冻结基线前保存完整 `git status --short`，逐路径选择本任务需要的设计输入；不使用 `git add -A` 混入其他计划、spec 或用户改动。子步骤检查点记录规则/清单摘要、HEAD/tree 或可恢复补丁、实际变更文件、执行命令及暂时失败；续做先校验这些记录，再执行剩余步骤。
+
+### 7.4 大任务的可续做子步骤
+
+以下子步骤可作为单次 sub-agent assignment；它们继承父任务全部排除项和文件锁，按表内顺序串行。主控可让同一个 Terra 连续执行，也可在完成检查点后换代理；换代理必须传递最新候选 SHA/diff、剩余文件和未通过检查。**子步骤完成不是独立合入或发布许可**，父任务仍由原门禁整体验收。
+
+| 子步骤 | 可单独派发的动作                                            | 交付检查点 / 下一步前置                                         |
+| ------ | ----------------------------------------------------------- | --------------------------------------------------------------- |
+| R00.1  | 扫描包、路径、env、wire、插件、存储与冻结输入               | 带基线的原始清单；每项有位置与分类，尚不替换                    |
+| R00.2  | 分类保留项、分配任务、展开文件集合并查重                    | manifest、file-assignments、冲突交接表；主控核定 ready 集合     |
+| R01.1  | 固定协议门禁、插件兼容和信任规则                            | spec 与 contract-map；未决项明确阻止哪些后续任务                |
+| R01.2  | 将 accepted cases 绑定 runner、fixture、平台和唯一测试写者  | test-map 与用例目录交接；不把测试 seed 写成通过                 |
+| R02.1  | 保全旧产物、源码、pins 与签名元数据                         | 摘要及来源清单；备份位置独立于活动输入                          |
+| R02.2  | 隔离 restore，并验证真实旧组合                              | restore/运行证据；分别说明 R20 重建门槛与 R48 混布资源是否满足  |
+| R20.1  | 基于 manifest 生成受约束的移动/替换预览                     | codemod 规则与 dry-run 清单；主控核对保留项、嵌套移动和路径碰撞 |
+| R20.2  | 移动目录、修改内部包名与 imports/exports                    | 完整旧→新路径对照；父子目录只移动一次，相关调用者同步           |
+| R20.3  | 收口构建 alias、资产定位、CI/架构 roots 与 CUA 构建输入引用 | 目标路径/构建工具测试证据；冻结产物、wire/env 外部值未被改写    |
+| R20.4  | 审计残留并交接 lock/graph 需求                              | 每条残留归属或保留理由；写入停止后把锁交给 R21                  |
+| R42.1  | 两套 HTTP 服务端接入既定门禁                                | 两个入口的拒绝/同代测试；保持既有鉴权与 capability 消费规则     |
+| R42.2  | Desktop Host、Web/手机客户端及 attachment 接入              | 双向拒绝和清理测试；continuous/replayable 各自保留恢复语义      |
+| R54.1  | manifest 发现与各 reader 优先级统一                         | 仅旧、新旧并存、非法新文件测试；保留其他格式原有相对顺序        |
+| R54.2  | 同步、seed、打包、安装升级接入                              | 各真实入口的集成证据；结束后将 official runtime 锁交给 R55      |
+| R60.1  | 固定最终源码与 sealed inputs，重建并运行原生测试            | 输入/二进制摘要与测试证据；此后输入变化使下游证据失效           |
+| R60.2  | 原身份重签、stage/manifest、pins 与新归档                   | 签名验证和关联摘要；不覆盖 R02 的旧备份                         |
+| R60.3  | 隔离恢复、真实 Desktop bundle/afterPack 与截图              | 恢复/包内资源/系统交互证据；交给 R61 做跨平台最终验收           |
+
+R20.1—R20.4 仍是全仓唯一写者，不按包拆成并行代理。R42.1/2 若共享测试 helper 也不得同时写。R60.1—R60.3 全程保留冻结资源锁，缺少原签名身份或交互环境时报告缺口，不改信任根来继续。
+
+### 7.5 实施与独立验收的闭环
+
+每项实施交付后，由另一代理验收明确的候选 SHA/diff；验收者默认源码只读。其派发包为：
+
+```text
+验收任务：<Rxx>；不承担实现，不修改被测源码或放宽断言。
+工作区与候选：<绝对路径、base SHA、candidate SHA / tree、必要 diff>。
+输入：任务卡、manifest 对应项、contract-map、test-map、实施报告。
+检查：实际 diff 是否越界；生产者/消费者是否闭合；保留项是否误改；
+      测试是否覆盖关键反例；报告是否与实际命令和产物一致。
+复验：<主控指定的目标命令、隔离输出与可用资源>。
+返回：PASS / CHANGES_REQUIRED / BLOCKED；逐项给出路径/证据、
+      影响、最小修正建议、实际执行命令与退出码、未验证项。
+PASS 只覆盖本任务列明的验收范围，不代表父阶段或发布通过。
+```
+
+主控检查 diff 和验收证据后更新账本。`CHANGES_REQUIRED` 返回原实施者，保留原报告并记录新候选；验收结论不能沿用到修改后的未知内容。`BLOCKED` 记录具体平台、旧制品或接口缺口，继续不依赖该缺口的任务。子代理中断时先确认已写文件、运行中的命令和资源锁，再决定续做；不在执行状态未知时重复派发相同写任务。
 
 ## 8. Impact Brief 与 case 交接
 

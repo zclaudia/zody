@@ -58,19 +58,16 @@ ZCode 保留现有 `process` hook，并新增兼容 `command` hook：
 
 ## 插件变量
 
-插件 hook 子进程注入以下环境变量：
+插件 hook 子进程从权威插件上下文注入以下环境变量：
 
-- `ZCODE_PLUGIN_ROOT`：当前插件安装根目录。
-- `ZCODE_PLUGIN_DATA`：当前插件持久化数据目录。
-- `ZCODE_PLUGIN_ID`：`<name>@<marketplace>`。
-- `ZCODE_PLUGIN_NAME`：插件 manifest name。
+| 新键               | 1.0 前兼容键        | 含义                   |
+| ------------------ | ------------------- | ---------------------- |
+| `ZODY_PLUGIN_ROOT` | `ZCODE_PLUGIN_ROOT` | 当前插件安装根目录     |
+| `ZODY_PLUGIN_DATA` | `ZCODE_PLUGIN_DATA` | 当前插件持久化数据目录 |
+| `ZODY_PLUGIN_ID`   | `ZCODE_PLUGIN_ID`   | `<name>@<marketplace>` |
+| `ZODY_PLUGIN_NAME` | `ZCODE_PLUGIN_NAME` | 插件 manifest name     |
 
-为兼容现有插件，同时注入并替换：
-
-- `CLAUDE_PLUGIN_ROOT`
-- `CLAUDE_PLUGIN_DATA`
-
-命令字符串中的 `${ZCODE_PLUGIN_ROOT}`、`${ZCODE_PLUGIN_DATA}`、`${CLAUDE_PLUGIN_ROOT}`、`${CLAUDE_PLUGIN_DATA}` 在执行前替换为对应路径。替换值来自插件发现阶段解析出的 root / data path，不从用户环境读取。
+`CLAUDE_PLUGIN_ROOT` 与 `CLAUDE_PLUGIN_DATA` 保持兼容，分别与 ROOT、DATA 同源，不随 1.0 移除。`${ZODY_PLUGIN_ROOT}`、`${ZODY_PLUGIN_DATA}`、对应的 `ZCODE` 和 `CLAUDE` 模板在执行前以相同上下文展开；不承诺 ID/NAME 模板。身份键在外部和 manifest 环境合并后由上下文覆盖，不能分别伪造。1.0 移除旧 ZCODE 插件键与模板；详见 [契约映射](plans/zody-rename-execution/contract-map.md)。
 
 ## Hook stdin 兼容字段
 
