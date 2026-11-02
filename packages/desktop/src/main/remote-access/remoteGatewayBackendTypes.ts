@@ -2,6 +2,7 @@ import type {
   BackendErrorInfo,
   GatewayBackendOptions,
   GatewayBackendState,
+  HttpHandler,
 } from "@zclaudia/gateway-backend";
 import type {
   RemoteAccessGatewayConnectionErrorReason,
@@ -56,6 +57,14 @@ export type RemoteGatewayChannelHandler = (
   offer: RemoteGatewayChannelOffer,
 ) => void;
 
+/**
+ * Gateway `/api/proxy/<backendId>` 的 HTTP handler 形状。
+ *
+ * 直接复用 SDK 的 `HttpHandler`：M1-T2 的 `MobileUiAssetProvider` 和 SDK 的
+ * `serveHttp` 都按这个契约工作，本模块只负责把它绑定到 SDK 代次。
+ */
+export type RemoteGatewayHttpHandler = HttpHandler;
+
 export interface RemoteGatewayChannelClosedInfo {
   channelId: string;
   /** gateway 下发的原始 reason：closed / rejected / timeout / epoch_changed / backend_offline。 */
@@ -75,6 +84,8 @@ export interface RemoteGatewayBackendSdkLike {
   onState(handler: (state: GatewayBackendState) => void): () => void;
   onMessage(handler: (message: Record<string, unknown>) => void): () => void;
   onChannel(kind: string, handler: RemoteGatewayChannelHandler): void;
+  /** 注册 gateway HTTP 代理 handler；SDK 内部按独立 kind 接收 `/api/proxy` 请求。 */
+  serveHttp(handler: RemoteGatewayHttpHandler): void;
   connect(): Promise<{ backendId: string; epoch: number }>;
   close(): void;
 }
@@ -103,6 +114,11 @@ export interface RemoteGatewayBackendDependencies {
    * socket，才能读到 `bufferedAmount` 做背压（SDK 的 GatewayChannel 不暴露它）。
    */
   socketFactory?: GatewayBackendOptions["socketFactory"];
+  /**
+   * M1-T2 的 MobileUiAssetProvider。存在时每次新 SDK 在 connect() 前注册 serveHttp，
+   * 并在能力位中追加 `zcode-remote-ui-v1`；未提供时保持原有远控行为，不注册通用代理。
+   */
+  mobileUiHandler?: RemoteGatewayHttpHandler;
 }
 
 export interface RemoteGatewayTestConnectionInput {
