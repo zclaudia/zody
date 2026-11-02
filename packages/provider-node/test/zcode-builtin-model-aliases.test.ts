@@ -7,7 +7,7 @@ describe("发布模型规则的前后缀与覆盖顺序", () => {
   it("OpenRouter Messages 的 GPT 选择实际生成对应 effort，保留完整请求型号", async () => {
     const source = new NodeZCodeBuiltinProviderConfigSource({
       bundledFilePath: fileURLToPath(
-        new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../config/provider/zody-builtin.json", import.meta.url),
       ),
       watch: false,
     });
@@ -47,7 +47,7 @@ describe("发布模型规则的前后缀与覆盖顺序", () => {
     async (apiType) => {
       const source = new NodeZCodeBuiltinProviderConfigSource({
         bundledFilePath: fileURLToPath(
-          new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+          new URL("../../../config/provider/zody-builtin.json", import.meta.url),
         ),
         watch: false,
       });
@@ -119,7 +119,7 @@ describe("发布模型规则的前后缀与覆盖顺序", () => {
   it("聚合模板的每家维护厂商有默认启用代表，所有成员能形成完整配置和请求 Map", async () => {
     const source = new NodeZCodeBuiltinProviderConfigSource({
       bundledFilePath: fileURLToPath(
-        new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../config/provider/zody-builtin.json", import.meta.url),
       ),
       watch: false,
     });

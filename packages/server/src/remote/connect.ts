@@ -394,5 +394,5 @@ function buildRemoteServerCommand(
       );
     }
   }
-  return `${envParts.join(" ")} ~/${ZCODE_DATA_ROOT_DIR_NAME}/server/node ~/${ZCODE_DATA_ROOT_DIR_NAME}/server/zcode-server.cjs`;
+  return `${envParts.join(" ")} ~/${ZCODE_DATA_ROOT_DIR_NAME}/server/node ~/${ZCODE_DATA_ROOT_DIR_NAME}/server/zody-server.cjs`;
 }

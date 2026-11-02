@@ -2,7 +2,7 @@ import type { ZCodeSessionStateSnapshot } from "@zody/shared";
 import type {
   ZCodeSessionWorkspaceTarget,
   ZCodeTaskTarget,
-} from "#src/zcode-session/zcodeSession.js";
+} from "#src/zody-session/zcodeSession.js";
 
 function getWorkspaceKey(target: ZCodeSessionWorkspaceTarget): string {
   return target.workspaceIdentity?.trim() || target.workspacePath;

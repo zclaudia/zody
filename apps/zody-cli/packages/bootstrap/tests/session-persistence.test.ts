@@ -2827,11 +2827,11 @@ interface AiSdkWarningGlobal {
 }
 
 async function createProtocolProviderEnv(root: string): Promise<Record<string, string>> {
-  const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+  const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
   const personalFilePath = join(root, "provider-personal.json");
   const emptyBuiltinRelease = JSON.stringify({
     // 此处测试启动/存储顺序，不测试旧版 Release 迁移；使用当前正式结构
-    // （schemaVersion 1 + providerConfigRules，见 provider-node/zcode-builtin-release.ts）。
+    // （schemaVersion 1 + providerConfigRules，见 provider-node/zody-builtin-release.ts）。
     schemaVersion: 1,
     revision: 1,
     config: {

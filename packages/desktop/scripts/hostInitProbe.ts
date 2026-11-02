@@ -236,7 +236,7 @@ const USAGE = `Usage: node --import tsx packages/desktop/scripts/hostInitProbe.t
   --launcher <absolute native launcher> \\
   --launcher-cwd <absolute launcher cwd> \\
   --workspace <absolute workspace> \\
-  --builtin-config <absolute zcode-builtin.json> \\
+  --builtin-config <absolute zody-builtin.json> \\
   [--workspace-identity <identity>] [--fallback-cwd <absolute path>] \\
   [--device-mid <id>] [--timeout-ms <ms>]`;
 

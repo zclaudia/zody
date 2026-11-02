@@ -17,7 +17,7 @@ let rules: ModelConfigRules;
 beforeAll(async () => {
   const release = JSON.parse(
     await readFile(
-      new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
+      new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
       "utf8",
     ),
   );

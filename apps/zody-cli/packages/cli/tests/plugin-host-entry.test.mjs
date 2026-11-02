@@ -21,7 +21,7 @@ const processTimeoutMs = 10_000;
 for (const minify of [false, true]) {
   test(`plugin host avoids Agent initialization in ${minify ? "desktop" : "Node"} bundles`, async () => {
     const directory = await mkdtemp(join(tmpdir(), "zcode-plugin-entry-"));
-    const outfile = join(directory, "zcode.cjs");
+    const outfile = join(directory, "zody.cjs");
     const serverPath = join(directory, "server.mjs");
     const blockedModules = new Set([
       resolve(cliRoot, "src/run.ts"),

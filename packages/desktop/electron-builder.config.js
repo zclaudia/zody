@@ -815,7 +815,7 @@ export default {
       // Provider Registry 的 ZCode Built-in Config 是静态 Provider/Model 事实的唯一内置来源。
       // 显式随包发布，避免正式 Host 回退到旧 Catalog/Preset hardcode。
       from: builtinProviderConfig.sourcePath,
-      to: "config/provider/zcode-builtin.json",
+      to: "config/provider/zody-builtin.json",
     },
     {
       // 应用图标：打包后放入 resources 目录，主进程通过 process.resourcesPath 加载
@@ -864,8 +864,8 @@ export default {
       : []),
     {
       // agent 运行时资产，打包到 resources/glm。
-      // 桌面端内置的是 agent 的 JS bundle（glm/zcode.cjs，由 prepare:agent-bundle 生成），
-      // Host 进程用 app 自带的 Electron Node runtime（ELECTRON_RUN_AS_NODE）执行 `zcode.cjs app-server --stdio`，
+      // 桌面端内置的是 agent 的 JS bundle（glm/zody.cjs，由 prepare:agent-bundle 生成），
+      // Host 进程用 app 自带的 Electron Node runtime（ELECTRON_RUN_AS_NODE）执行 `zody.cjs app-server --stdio`，
       // 不再随包内置独立 Node 二进制。远端 SSH/WSL 仍走原生二进制（无 Electron）。
       from: `bundled-agents/${targetPlatform.key}/glm`,
       to: "glm",

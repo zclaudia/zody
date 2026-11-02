@@ -13,10 +13,10 @@ export function resolveZCodeBuiltinProviderConfigFilePath(options?: {
   if (options?.isPackaged ?? app.isPackaged) {
     return join(
       options?.resourcesPath ?? process.resourcesPath,
-      "config/provider/zcode-builtin.json",
+      "config/provider/zody-builtin.json",
     );
   }
   // 开发态没有 resources 复制步骤，必须与构建注入的产品环境读取同一份源文件。
-  const filename = ZCODE_ENV === "production" ? "zcode-builtin.json" : "zcode-builtin.test.json";
+  const filename = ZCODE_ENV === "production" ? "zody-builtin.json" : "zody-builtin.test.json";
   return join(options?.appPath ?? app.getAppPath(), "../../config/provider", filename);
 }

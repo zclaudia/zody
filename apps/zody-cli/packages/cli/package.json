@@ -4,13 +4,13 @@
   "private": true,
   "description": "Main CLI application for zcode",
   "bin": {
-    "zcode": "./dist/zcode.cjs"
+    "zody": "./dist/zody.cjs"
   },
   "files": [
     "dist"
   ],
   "type": "module",
-  "main": "./dist/zcode.cjs",
+  "main": "./dist/zody.cjs",
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:desktop-agent": "node scripts/build.mjs --desktop-agent",

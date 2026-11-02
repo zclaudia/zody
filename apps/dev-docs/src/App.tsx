@@ -1031,7 +1031,7 @@ function ProtocolPanel({
     <section className="rounded-lg border border-card-border bg-card p-3">
       <div className="mb-3 flex items-center gap-2 text-ui-sm font-medium text-brand">
         <Network className="size-4" />
-        @zcode/protocol
+        packages/shared/src/zody-protocol
       </div>
       <div className="space-y-2">
         {protocolSurfaces.map((surface) => (

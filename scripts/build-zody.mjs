@@ -109,7 +109,7 @@ async function stageZodyPackage({
 }) {
   const webDist = resolve(root, "packages/web/dist");
   const serverDist = resolve(root, "packages/server/dist");
-  const agentBundle = resolve(cliRoot, "dist/zcode.cjs");
+  const agentBundle = resolve(cliRoot, "dist/zody.cjs");
   const agentProvider = resolve(cliRoot, "dist/provider");
   await assertDirectory(webDist, "web dist");
   await assertDirectory(serverDist, "server dist");
@@ -117,7 +117,7 @@ async function stageZodyPackage({
   for (const [file, label] of [
     [resolve(serverDist, "entry-http.js"), "server HTTP entry"],
     [agentBundle, "Agent bundle"],
-    [resolve(agentProvider, "zcode-builtin.json"), "Agent provider config"],
+    [resolve(agentProvider, "zody-builtin.json"), "Agent provider config"],
   ])
     await assertFile(file, label);
 
@@ -126,7 +126,7 @@ async function stageZodyPackage({
   await cp(webDist, resolve(packageRoot, "web"), { recursive: true });
   await cp(serverDist, resolve(packageRoot, "server"), { recursive: true });
   await mkdir(resolve(packageRoot, "agent"), { recursive: true });
-  await cp(agentBundle, resolve(packageRoot, "agent/zcode.cjs"));
+  await cp(agentBundle, resolve(packageRoot, "agent/zody.cjs"));
   await cp(agentProvider, resolve(packageRoot, "agent/provider"), { recursive: true });
   await cp(
     resolve(cliRoot, "dist/THIRD-PARTY-NOTICES.md"),

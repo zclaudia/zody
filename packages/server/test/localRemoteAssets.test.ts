@@ -27,7 +27,7 @@ describe("local-only remote runtime", () => {
       );
       expect(prepared.manifest.platformArch).toBe(platformArch);
       expect(
-        await readFile(join(prepared.releaseDir, "server/zcode-server.cjs"), "utf8"),
+        await readFile(join(prepared.releaseDir, "server/zody-server.cjs"), "utf8"),
       ).toContain("server-bundle");
       expect(fetch).not.toHaveBeenCalled();
     },
@@ -61,13 +61,13 @@ describe("local-only remote runtime", () => {
       fixture.platformArch,
       fixture.cacheDir,
     );
-    await writeFile(join(first.releaseDir, "server/zcode-server.cjs"), "corrupt cache");
+    await writeFile(join(first.releaseDir, "server/zody-server.cjs"), "corrupt cache");
     const repaired = await prepareLocalRemoteAssets(
       fixture.source,
       fixture.platformArch,
       fixture.cacheDir,
     );
-    expect(await readFile(join(repaired.releaseDir, "server/zcode-server.cjs"), "utf8")).toContain(
+    expect(await readFile(join(repaired.releaseDir, "server/zody-server.cjs"), "utf8")).toContain(
       "server-bundle",
     );
   });

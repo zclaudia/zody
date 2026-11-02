@@ -3,16 +3,16 @@ import {
   type ProviderConfigLayerSnapshot,
   type ProviderConfigLayerUpdate,
 } from "@zody/provider";
-import { NodeZCodeBuiltinProviderConfigSource } from "./zcode-builtin-provider-config-source.js";
+import { NodeZCodeBuiltinProviderConfigSource } from "./zody-builtin-provider-config-source.js";
 import {
   EndpointScopedZCodeBuiltinSource,
   type EndpointScopedZCodeBuiltinSourceOptions,
-} from "./endpoint-scoped-zcode-builtin-source.js";
+} from "./endpoint-scoped-zody-builtin-source.js";
 import {
   ZCodeBuiltinRemoteSynchronizer,
   type ZCodeBuiltinRemoteSynchronizerOptions,
   type ZCodeBuiltinRefreshResult,
-} from "./zcode-builtin-remote-synchronizer.js";
+} from "./zody-builtin-remote-synchronizer.js";
 import {
   NodePersonalProviderConfigRepository,
   type PersonalProviderConfigRecoveryEvent,

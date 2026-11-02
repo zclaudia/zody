@@ -291,7 +291,7 @@ async function runProtocolAgent(
 }
 
 async function createProtocolProviderEnv(root: string): Promise<Record<string, string>> {
-  const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+  const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
   const personalFilePath = join(root, "provider-personal.json");
   const emptyBuiltinRelease = JSON.stringify({
     // 旧 fixture 使用已退出的 v2 展开结构，导致生命周期尚未启动就被 schema 拒绝。

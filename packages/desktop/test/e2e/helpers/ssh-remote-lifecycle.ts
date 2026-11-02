@@ -379,7 +379,7 @@ export async function listRemoteZCodeServerPids(
   return result.stdout
     .split("\n")
     .flatMap((line) => {
-      const match = line.match(/^\s*(\d+)\s+.*(?:^|\s)zcode-server\.cjs(?:\s|$)/u);
+      const match = line.match(/^\s*(\d+)\s+.*(?:^|\s)zody-server\.cjs(?:\s|$)/u);
       return match ? [Number.parseInt(match[1]!, 10)] : [];
     })
     .filter((pid) => Number.isSafeInteger(pid) && pid > 0);

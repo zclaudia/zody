@@ -2,7 +2,7 @@
   "name": "@zody/server-cli",
   "private": true,
   "bin": {
-    "zcode": "./dist/server-cli.js"
+    "zody": "./dist/server-cli.js"
   },
   "type": "module",
   "exports": {

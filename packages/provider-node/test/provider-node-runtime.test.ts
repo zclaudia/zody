@@ -53,7 +53,7 @@ vi.mock("node:fs", async (importOriginal) => {
 
 const temporaryDirectories: string[] = [];
 const zcodeBuiltinProviderConfigFilePath = fileURLToPath(
-  new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+  new URL("../../../config/provider/zody-builtin.json", import.meta.url),
 );
 
 afterEach(async () => {
@@ -247,11 +247,11 @@ describe("@zody/provider-node", () => {
     });
 
     expect(repeatedPath).toBe(firstPath);
-    expect(firstPath).toBe(join(root, "runtime", "provider", "bundled", "zcode-builtin.json"));
+    expect(firstPath).toBe(join(root, "runtime", "provider", "bundled", "zody-builtin.json"));
     expect(secondPath).toBe(firstPath);
     expect(JSON.parse(await readFile(secondPath, "utf8"))).toEqual(JSON.parse(secondContent));
     expect(await readdir(join(root, "runtime", "provider", "bundled"))).toEqual([
-      "zcode-builtin.json",
+      "zody-builtin.json",
     ]);
   });
 

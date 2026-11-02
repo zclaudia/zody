@@ -278,7 +278,7 @@ describe("hostResponseMessageSchema", () => {
       type: "init-local",
       workspacePath: "/repo/active",
       agentWarmupTargets: [{ workspacePath: "/repo/active" }],
-      zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zcode-builtin.json",
+      zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
       runtimeProcessEnvPatch: {
         PATH: "/Users/demo/.local/bin:/usr/bin:/bin",
         FNM_DIR: "/Users/demo/.fnm",
@@ -289,7 +289,7 @@ describe("hostResponseMessageSchema", () => {
     if (parsed.success && parsed.data.type === "init-local") {
       expect(parsed.data.runtimeProcessEnvPatch?.PATH).toContain("/Users/demo/.local/bin");
       expect(parsed.data.zcodeBuiltinProviderConfigFilePath).toBe(
-        "/repo/config/provider/zcode-builtin.json",
+        "/repo/config/provider/zody-builtin.json",
       );
     }
   });
@@ -306,7 +306,7 @@ describe("hostResponseMessageSchema", () => {
     expect(
       hostIncomingMessageSchema.safeParse({
         type: "init-local",
-        zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zcode-builtin.json",
+        zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
         runtimeProcessEnvPatch: { PATH: ["/usr/bin"] },
       }).success,
     ).toBe(false);
@@ -315,7 +315,7 @@ describe("hostResponseMessageSchema", () => {
   it("rejects more than one local host agent warmup target", () => {
     const parsed = hostIncomingMessageSchema.safeParse({
       type: "init-local",
-      zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zcode-builtin.json",
+      zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
       agentWarmupTargets: ["a", "b"].map((name) => ({
         workspacePath: `/repo/${name}`,
       })),

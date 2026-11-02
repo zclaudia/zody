@@ -28,7 +28,7 @@ describe("component cache", () => {
     await expect(cache.findArchive({ target: "linux-x64", componentId: "server-runtime", sha256: "a".repeat(64) })).resolves.toBe(cached);
     expect(cached).toContain("server-runtime");
     const release = join(root, "release");
-    await cache.assemble({ target: "linux-x64", archiveSha256: "0".repeat(64), baseReleaseDir: base, releaseDir: release, runtimeManifest: { product: "zcode-server", target: "linux-x64", appVersion: "2.0.0", nodeVersion: "22.16.0", entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zcode.cjs" }, native: ["node-pty"] }, changed: [{ componentId: "server-runtime", sha256: "a".repeat(64), archivePath: cached }] });
+    await cache.assemble({ target: "linux-x64", archiveSha256: "0".repeat(64), baseReleaseDir: base, releaseDir: release, runtimeManifest: { product: "zcode-server", target: "linux-x64", appVersion: "2.0.0", nodeVersion: "22.16.0", entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zody.cjs" }, native: ["node-pty"] }, changed: [{ componentId: "server-runtime", sha256: "a".repeat(64), archivePath: cached }] });
     await expect(readFile(join(release, "runtime", "server-core.js"), "utf8")).resolves.toBe("new");
   });
 
@@ -58,7 +58,7 @@ describe("component cache", () => {
         target: "linux-x64",
         appVersion: "2.0.0",
         nodeVersion: "22.16.0",
-        entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zcode.cjs" },
+        entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zody.cjs" },
         native: ["node-pty"],
         components: [{ id: "server-runtime", sha256: contentSha, paths: ["runtime/server-core.js"], sizeBytes: 3 }],
       },
@@ -77,7 +77,7 @@ describe("component cache", () => {
         target: "linux-x64",
         appVersion: "2.0.0",
         nodeVersion: "22.16.0",
-        entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zcode.cjs" },
+        entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zody.cjs" },
         native: ["node-pty"],
         components: [{ id: "server-runtime", sha256: "c".repeat(64), paths: ["runtime/server-core.js"], sizeBytes: 3 }],
       },
@@ -120,7 +120,7 @@ describe("component cache", () => {
         target: "linux-x64" as const,
         appVersion: "2.0.0",
         nodeVersion: "22.16.0",
-        entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zcode.cjs" },
+        entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zody.cjs" },
         native: ["node-pty"],
         components: [{ id: "server-runtime", sha256: contentSha, paths: ["runtime/server-core.js"], sizeBytes: 3 }],
       },
@@ -185,7 +185,7 @@ describe("component cache", () => {
       archiveSha256: "0".repeat(64),
       baseReleaseDir: base,
       releaseDir: join(root, "release"),
-      runtimeManifest: { product: "zcode-server", target: "linux-x64", appVersion: "2.0.0", nodeVersion: "22.16.0", entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zcode.cjs" }, native: ["node-pty"] },
+      runtimeManifest: { product: "zcode-server", target: "linux-x64", appVersion: "2.0.0", nodeVersion: "22.16.0", entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zody.cjs" }, native: ["node-pty"] },
       changed: [{ componentId: "server-runtime", sha256: "d".repeat(64), archivePath: cached }],
     })).rejects.toThrow(/symbolic|hard link/i);
   });
@@ -210,7 +210,7 @@ describe("component cache", () => {
         target: "linux-x64",
         appVersion: "2.0.0",
         nodeVersion: "22.16.0",
-        entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zcode.cjs" },
+        entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zody.cjs" },
         native: ["node-pty"],
         components: [],
       },

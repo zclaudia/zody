@@ -35,7 +35,7 @@ describe("process provider registry runtime", () => {
     const root = await temporaryDirectory();
     const builtin = JSON.parse(
       await readFile(
-        new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
         "utf8",
       ),
     );
@@ -106,7 +106,7 @@ describe("process provider registry runtime", () => {
     const root = await temporaryDirectory();
     const builtin = JSON.parse(
       await readFile(
-        new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
         "utf8",
       ),
     );
@@ -144,7 +144,7 @@ describe("process provider registry runtime", () => {
     const root = await temporaryDirectory();
     const builtin = JSON.parse(
       await readFile(
-        new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
         "utf8",
       ),
     );
@@ -178,7 +178,7 @@ describe("process provider registry runtime", () => {
     // current 即更新有效选择」的机制改用本地 fixture 验证（与本文件 zcodeBuiltinRelease
     // 工厂风格一致），不向任何 config JSON 回填账号数据。
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     const personal = "account:bigmodel-individual-coding-plan";
     const team = "account:bigmodel-team-coding-plan";
     const codingPlanProvider = {
@@ -338,7 +338,7 @@ describe("process provider registry runtime", () => {
 
   it("Personal 文件损坏时保留原文件并以内存空配置启动", async () => {
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     const personalFilePath = join(root, "personal.json");
     await writeFile(
       zcodeBuiltinFilePath,
@@ -364,7 +364,7 @@ describe("process provider registry runtime", () => {
 
   it("从进程环境启动一份 Registry，并由调用方持有生命周期", async () => {
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     const personalFilePath = join(root, "personal.json");
     await writeFile(
       zcodeBuiltinFilePath,
@@ -495,7 +495,7 @@ describe("process provider registry runtime", () => {
 
   it("只有显式开启 Standalone 导入时才迁移旧 CLI 用户 Provider", async () => {
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     const personalFilePath = join(root, "personal.json");
     const legacyFilePath = join(root, "legacy-cli.json");
     await writeFile(

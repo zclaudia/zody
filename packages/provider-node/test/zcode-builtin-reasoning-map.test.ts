@@ -12,7 +12,7 @@ import baseline from "./fixtures/reasoning-map-before-todo95.json";
 
 const source = new NodeZCodeBuiltinProviderConfigSource({
   bundledFilePath: fileURLToPath(
-    new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+    new URL("../../../config/provider/zody-builtin.json", import.meta.url),
   ),
   watch: false,
 });
@@ -27,7 +27,7 @@ let rules: Record<string, Rule[]>;
 beforeAll(async () => {
   snapshot = await source.read();
   rules = JSON.parse(
-    await readFile(new URL("../../../config/provider/zcode-builtin.json", import.meta.url), "utf8"),
+    await readFile(new URL("../../../config/provider/zody-builtin.json", import.meta.url), "utf8"),
   ).config.modelConfigRules;
 });
 afterAll(() => source.dispose());

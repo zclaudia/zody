@@ -11,7 +11,7 @@ export function resolveRequiredLocalReleasePaths(
   for (const componentId of ids) {
     switch (componentId) {
       case "server-bundle":
-        requiredPaths.add("server/zcode-server.cjs");
+        requiredPaths.add("server/zody-server.cjs");
         break;
       case "node-runtime":
         requiredPaths.add(`node/${platformArch}/node`);
@@ -23,7 +23,7 @@ export function resolveRequiredLocalReleasePaths(
         }
         break;
       case "glm":
-        requiredPaths.add(`glm/${platformArch}/zcode.cjs`);
+        requiredPaths.add(`glm/${platformArch}/zody.cjs`);
         for (const relativePath of REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS) {
           requiredPaths.add(`glm/${platformArch}/packages/${relativePath}`);
         }

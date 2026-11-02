@@ -92,7 +92,7 @@ describe("ProviderTemplatePicker", () => {
     // 也不能在 jsdom 环境对相对 URL 做 resolve（Vite 会改写成 http://localhost/@fs/...）。
     const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
     const builtin = JSON.parse(
-      await readFile(resolve(repoRoot, "config/provider/zcode-builtin.json"), "utf8"),
+      await readFile(resolve(repoRoot, "config/provider/zody-builtin.json"), "utf8"),
     );
     const templates = builtin.config.providerConfigRules.templateRules.filter(
       (template: { templateId: string }) =>

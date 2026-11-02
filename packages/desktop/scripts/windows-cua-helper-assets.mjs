@@ -751,7 +751,7 @@ export async function resolveWindowsCuaHelperSourceRoot({
     );
   }
 
-  const packagePathSegments = ["node_modules", "@zcode", "zcode-cua"];
+  const packagePathSegments = ["node_modules", "@zody", "zody-cua"];
   const packageCandidates = [
     resolve(servicesPackageRoot, ...packagePathSegments),
     resolve(workspaceRoot, ...packagePathSegments),
@@ -963,7 +963,7 @@ export async function prepareWindowsCuaHelperAssets({
     // package.json 都会禁用探测，fork 将以 SyntaxError exit 1 变成 broker_unavailable。
     // 在运行时根落一份显式 module 声明，让 entry 的模块类型不依赖探测、不受外部目录影响。
     const moduleTypePackageJson = {
-      name: "@zcode/zcode-cua-helper-runtime",
+      name: "@zody/zody-cua-helper-runtime",
       version: producerContract.packageVersion,
       type: "module",
       private: true,

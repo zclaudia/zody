@@ -505,7 +505,7 @@ async function readControlStatus(
 async function delegateLegacyCli(argv: readonly string[], io: CliIO): Promise<number> {
   const candidate =
     process.env.ZCODE_LEGACY_CLI_ENTRY?.trim() ||
-    join(dirname(fileURLToPath(import.meta.url)), "zcode.cjs");
+    join(dirname(fileURLToPath(import.meta.url)), "zody.cjs");
   try {
     await access(candidate);
   } catch {

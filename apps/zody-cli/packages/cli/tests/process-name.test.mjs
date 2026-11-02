@@ -5,7 +5,7 @@ import test from "node:test";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
-const cli = resolve(import.meta.dirname, "../dist/zcode.cjs");
+const cli = resolve(import.meta.dirname, "../dist/zody.cjs");
 
 test("sets the visible process name before running commands", async () => {
   const { stdout } = await execFileAsync(process.execPath, [cli, "doctor", "--json"]);

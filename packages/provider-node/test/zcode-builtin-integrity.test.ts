@@ -19,7 +19,7 @@ import {
 // 发布验证必须指向最终上传的那份文件，而不是默认悄悄检查仓库源文件。
 const zcodeBuiltinProviderConfigFilePath =
   process.env.ZCODE_BUILTIN_RELEASE_TEST_FILE?.trim() ||
-  fileURLToPath(new URL("../../../config/provider/zcode-builtin.json", import.meta.url));
+  fileURLToPath(new URL("../../../config/provider/zody-builtin.json", import.meta.url));
 
 function reasoningPatch(map: string, reasoningLevel: string) {
   return compileModelOptionMaps({ reasoningLevel: { map }, maxOutputTokens: { map: "{}" } }).apply(
@@ -704,8 +704,8 @@ describe("ZCode Built-in Provider Config 完整性", () => {
       ),
     });
 
-    const release = await readRaw("zcode-builtin.json");
-    const testConfig = await readRaw("zcode-builtin.test.json");
+    const release = await readRaw("zody-builtin.json");
+    const testConfig = await readRaw("zody-builtin.test.json");
     expect(testConfig.revision).toBe(release.revision);
     expect(pickMiMoSubset(testConfig)).toEqual(pickMiMoSubset(release));
   });

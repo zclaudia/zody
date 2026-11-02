@@ -26,13 +26,13 @@ test("preserves explicitly injected provider runtime paths", async () => {
   const prepared = await prepareCliProviderRuntimeEnv({
     argv: ["--prompt", "hello"],
     env: {
-      [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/injected/zcode-builtin.json",
+      [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/injected/zody-builtin.json",
       [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: "/injected/personal.json",
     },
   });
 
   assert.deepEqual(prepared, {
-    [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/injected/zcode-builtin.json",
+    [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/injected/zody-builtin.json",
     [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: "/injected/personal.json",
   });
 });
@@ -40,7 +40,7 @@ test("preserves explicitly injected provider runtime paths", async () => {
 test("resolves the development ZCode Built-in Config and shared Personal Config", async () => {
   const root = await temporaryDirectory();
   const entrypoint = join(root, "apps/zody-cli/packages/cli/src/main.ts");
-  const zcodeBuiltinFilePath = join(root, "config/provider/zcode-builtin.json");
+  const zcodeBuiltinFilePath = join(root, "config/provider/zody-builtin.json");
   await mkdir(dirname(entrypoint), { recursive: true });
   await mkdir(dirname(zcodeBuiltinFilePath), { recursive: true });
   // 随包配置按入口真实路径（解析软链接后）定位，入口文件必须真实存在。
@@ -127,7 +127,7 @@ test("materializes the SEA config in the fixed environment resource path, separa
     "runtime",
     "provider",
     "bundled",
-    "zcode-builtin.json",
+    "zody-builtin.json",
   );
   assert.notEqual(resource, zcodeBuiltinFilePath);
   assert.deepEqual(JSON.parse(await readFile(resource, "utf8")), JSON.parse(zcodeBuiltinContent));
@@ -170,7 +170,7 @@ function assertActiveConfigPath(filePath: string | undefined, dataBaseDir: strin
   // fork（F3.1）：这些用例没有配置 ZCODE_BASE_URL，Endpoint 为「未配置」，
   // 使用固定本地目录而不是伪造/回落官方 Endpoint。
   assert.equal(basename(dirname(filePath)), "endpoint-unconfigured");
-  assert.equal(basename(filePath), "zcode-builtin.json");
+  assert.equal(basename(filePath), "zody-builtin.json");
 }
 
 const EMPTY_RELEASE =

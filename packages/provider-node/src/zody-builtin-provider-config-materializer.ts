@@ -4,7 +4,7 @@ import { atomicWritePrivateTextFile, withFileLock } from "@zody/shared/node";
 import {
   decodeZCodeBuiltinRelease,
   serializeZCodeBuiltinRelease,
-} from "./zcode-builtin-release.js";
+} from "./zody-builtin-release.js";
 
 export interface MaterializeZCodeBuiltinProviderConfigOptions {
   readonly environmentConfigRoot: string;
@@ -26,7 +26,7 @@ export async function materializeZCodeBuiltinProviderConfig(
     "runtime",
     "provider",
     "bundled",
-    "zcode-builtin.json",
+    "zody-builtin.json",
   );
   await withFileLock(filePath, async () => {
     if ((await readOptionalFile(filePath)) !== content) {

@@ -237,7 +237,7 @@ R2 默认只监听回环地址和动态端口，并把实际端口写入 `status
 ## 6. 新代码目录与依赖边界
 
 ```text
-packages/zcode-server-cli/
+packages/zody-server-cli/
 ├── src/
 │   ├── main.ts
 │   ├── supervisor/
@@ -289,7 +289,7 @@ zcode-server-<os>-<arch>/
 │   ├── package.json         # {"type":"module"}，让 .js 入口按 ESM 解析
 │   ├── server-cli.js        # ESM bundle（tsup 产物，含 __dirname banner）
 │   ├── server-core.js       # ESM bundle，server-cli 以同目录相对路径 fork
-│   ├── zcode.cjs            # 既有 CLI/Agent bundle（自包含 CJS）
+│   ├── zody.cjs            # 既有 CLI/Agent bundle（自包含 CJS）
 │   ├── node_modules/        # bundle 外置依赖闭包（含 node-pty 平台 prebuilds）
 │   ├── tools/               # bfs/rg/ugrep（Windows 为 rg/ugrep）
 │   └── packages/            # Agent 实际启用的官方插件
@@ -298,14 +298,14 @@ zcode-server-<os>-<arch>/
 
 入口用 ESM `.js` 而不是最初设想的 `.cjs`：`@zcode/services` 依赖链已按 ESM 组织，
 CJS 化 bundle 风险更高；`server-cli.js` 通过 `new URL("./server-core.js", import.meta.url)`
-fork Core，通过同目录 `zcode.cjs` 委派既有 CLI，因此三个入口必须位于同一 `runtime/` 目录。
+fork Core，通过同目录 `zody.cjs` 委派既有 CLI，因此三个入口必须位于同一 `runtime/` 目录。
 
 ### 7.1 发行包 staging
 
-staging 由 `packages/zcode-server-cli/src/packaging/stage.ts` 实现，
+staging 由 `packages/zody-server-cli/src/packaging/stage.ts` 实现，
 `pnpm --filter @zcode/server-cli stage --target <os>-<arch>` 触发，只做本地组装，不上传、不发布：
 
-- 入口 bundle 来自本包 `tsup` 产物；`zcode.cjs` 来自 `apps/zcode-cli/packages/cli/dist/zcode.cjs`
+- 入口 bundle 来自本包 `tsup` 产物；`zody.cjs` 来自 `apps/zody-cli/packages/cli/dist/zody.cjs`
   （由 `scripts/build-desktop-agent-cli.mjs` 构建，与远端资产链同源）；
 - `runtime/node_modules` 内容以**产物扫描**为事实源：扫描 bundle 顶层裸模块引用，
   与 workspace `node_modules` 求交集后递归收集生产依赖闭包，从 workspace 复制为扁平布局；
@@ -331,7 +331,7 @@ staging 由 `packages/zcode-server-cli/src/packaging/stage.ts` 实现，
   ios-simulator、restore-legacy-sessions）。
 
 Agent 接线约定：发行包内 Core 不在 monorepo、也没有 Electron runtime。Supervisor 每次启动 Core
-时必须根据该 Core 所属 release 的 `runtime/` 重新计算接线（`runtime/node zcode.cjs app-server
+时必须根据该 Core 所属 release 的 `runtime/` 重新计算接线（`runtime/node zody.cjs app-server
 --stdio`），不得由旧 `server-cli.js` 把自动推导结果永久写入全局 `process.env`。显式配置的
 `ZCODE_AGENT_SERVER_COMMAND` 仍永远优先；开发态没有 release runtime 时不注入。
 

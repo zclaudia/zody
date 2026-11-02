@@ -8,7 +8,7 @@ import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 const root = resolve(import.meta.dirname, "..");
 const cliPackage = resolve(root, "packages/cli");
-const cli = resolve(cliPackage, "dist/zcode.cjs");
+const cli = resolve(cliPackage, "dist/zody.cjs");
 const packageJson = JSON.parse(await readFile(resolve(cliPackage, "package.json"), "utf8"));
 
 const runCli = async (args) =>

@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 /**
- * 判定当前安装的 `@zcode/zcode-cua` 是闭源真实 producer 还是开源占位包。
+ * 判定当前安装的 `@zody/zody-cua` 是闭源真实 producer 还是开源占位包。
  *
  * 闭源构建依赖私有仓的真实 producer；开源导出把它换成 `packages/zody-cua` 占位包，
  * 占位包在 package.json 声明 `zcodeCuaPlaceholder: true`，所有能力 fail-closed。
@@ -15,7 +15,7 @@ import { dirname, resolve } from "node:path";
 export function readComputerUseProducer({ desktopPackageRoot }) {
   // 从桌面包向上查找最近的安装：闭源 hoisted 布局在仓库根，开源占位包链接在桌面包下。
   for (let dir = resolve(desktopPackageRoot); ; dir = dirname(dir)) {
-    const manifestPath = resolve(dir, "node_modules", "@zcode", "zcode-cua", "package.json");
+    const manifestPath = resolve(dir, "node_modules", "@zody", "zody-cua", "package.json");
     if (existsSync(manifestPath)) {
       const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
       return {

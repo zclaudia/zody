@@ -176,7 +176,7 @@ describe("stageRelease", () => {
       files: { "prebuilds/linux-x64/pty.node": "linux-binary" },
     });
 
-    const agentBundlePath = join(root, "zcode.cjs");
+    const agentBundlePath = join(root, "zody.cjs");
     await writeFile(agentBundlePath, "// fake agent bundle\n", "utf8");
     const nodeBinaryPath = join(root, "node-binary");
     await writeFile(nodeBinaryPath, "#!/bin/sh\nexit 0\n", "utf8");
@@ -227,7 +227,7 @@ describe("stageRelease", () => {
     for (const relativePath of [
       "runtime/server-cli.js",
       "runtime/server-core.js",
-      "runtime/zcode.cjs",
+      "runtime/zody.cjs",
       "runtime/node",
       "runtime/node_modules/fake-dep/package.json",
       "runtime/node_modules/fake-transitive/package.json",
@@ -273,7 +273,7 @@ describe("stageRelease", () => {
     expect(manifest.entrypoints).toEqual({
       cli: "runtime/server-cli.js",
       core: "runtime/server-core.js",
-      agent: "runtime/zcode.cjs",
+      agent: "runtime/zody.cjs",
     });
 
     expect(staged.packagedDependencies).toEqual(["fake-dep", "fake-transitive", "node-pty"]);

@@ -27,7 +27,7 @@ describe("official plugin runtime manifest", () => {
       },
       name: "browser-use",
     });
-    process.argv[1] = join(root, "zcode.cjs");
+    process.argv[1] = join(root, "zody.cjs");
 
     writeOfficialPluginRuntimeManifest({
       pluginName: "browser-use",
@@ -54,7 +54,7 @@ describe("official plugin runtime manifest", () => {
       mcpServers: "invalid",
       name: "browser-use",
     });
-    process.argv[1] = join(root, "zcode.cjs");
+    process.argv[1] = join(root, "zody.cjs");
 
     expect(() =>
       writeOfficialPluginRuntimeManifest({

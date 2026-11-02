@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import { expect, it, vi } from "vitest";
-import { downloadZCodeBuiltinRelease } from "../src/zcode-builtin-download.js";
+import { downloadZCodeBuiltinRelease } from "../src/zody-builtin-download.js";
 
 it("真实 HTTP 响应头已返回但正文不结束时，20 秒总预算关闭连接且下一次可重试", async () => {
   let closed = false;

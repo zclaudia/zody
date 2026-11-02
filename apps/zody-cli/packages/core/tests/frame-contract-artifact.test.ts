@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 // SG-02（!2071 review）：模块边界重构的承重不变量是"发布/运行时解析路径与
-// 源码一致"——宿主直接消费 `@zcode/zcode-cua/frame-contract`，没有任何
+// 源码一致"——宿主直接消费 `@zody/zody-cua/frame-contract`，没有任何
 // workspace 链接可依赖。这里做产物级验证：
 //  1. 真实 node 子进程从 dist 产物加载子路径并核对导出面；
 //  2. staging 形态（只有 producer dist/ + package.json，无 node_modules）同样可加载。
@@ -14,7 +14,7 @@ import { describe, expect, it } from "vitest";
 function findProducerPackageRoot(): string {
   let dir = import.meta.dirname;
   while (true) {
-    const candidate = join(dir, "node_modules", "@zcode", "zcode-cua", "package.json");
+    const candidate = join(dir, "node_modules", "@zody", "zody-cua", "package.json");
     if (existsSync(candidate)) return dirname(candidate);
     const parent = dirname(dir);
     if (parent === dir) throw new Error("workspace root not found from " + import.meta.dirname);

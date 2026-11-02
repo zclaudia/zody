@@ -33,11 +33,11 @@ Remote server base path:
 ```text
 ~/.zody/server/
 ├── node
-├── zcode-server.cjs
+├── zody-server.cjs
 ├── build/Release/pty.node
 ├── agents/glm/
 │   ├── .version
-│   ├── zcode.cjs
+│   ├── zody.cjs
 │   └── zcode-agent
 ├── .asset-components/
 │   ├── server-bundle.json
@@ -55,7 +55,7 @@ Remote server base path:
 ```
 
 The root is `~/<ZCODE_DATA_ROOT_DIR_NAME>/server`, currently `~/.zody/server/` (`REMOTE_BASE` in
-`packages/server/src/remote/deployShared.ts`). File names inside it (`zcode-server.cjs`, `zcode.cjs`,
+`packages/server/src/remote/deployShared.ts`). File names inside it (`zody-server.cjs`, `zody.cjs`,
 `zcode-agent`) are internal artifact names and stay unchanged.
 
 Linux SSH、Docker 与 WSL 部署 `bfs 4.1.1-2`、`ugrep 7.8.4-1` 和 Microsoft

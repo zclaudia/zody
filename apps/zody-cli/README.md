@@ -12,7 +12,7 @@ Use Node.js 24.14.0 and pnpm 10.33.2 as pinned in the repository root. Run these
 pnpm bootstrap
 pnpm --filter @zody/cli dev --help
 pnpm --filter @zody/cli... build
-node apps/zody-cli/packages/cli/dist/zcode.cjs --help
+node apps/zody-cli/packages/cli/dist/zody.cjs --help
 pnpm --dir apps/zody-cli typecheck
 pnpm --dir apps/zody-cli lint
 pnpm --dir apps/zody-cli test

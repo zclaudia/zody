@@ -85,7 +85,7 @@ describe("Todo104 CLI 同文件默认选择", () => {
     await writeFile(legacyPath, oldInput);
     const env = {
       ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: fileURLToPath(
-        new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
       ),
       ZCODE_PERSONAL_PROVIDER_CONFIG_FILE: personalPath,
     };

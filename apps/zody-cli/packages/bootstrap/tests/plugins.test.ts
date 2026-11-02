@@ -1534,7 +1534,7 @@ describe("ZCode plugins", () => {
     const originalEntrypoint = process.argv[1];
 
     try {
-      await writeTestFile(join(entryRoot, "zcode.cjs"), "");
+      await writeTestFile(join(entryRoot, "zody.cjs"), "");
       await writeTestFile(
         join(pluginRoot, ".zcode-plugin", "plugin.json"),
         JSON.stringify({
@@ -1571,7 +1571,7 @@ describe("ZCode plugins", () => {
       );
       expect((await stat(join(targetRoot, "hooks", "run-hook.cmd"))).mode & 0o111).toBe(0);
 
-      process.argv[1] = join(entryRoot, "zcode.cjs");
+      process.argv[1] = join(entryRoot, "zody.cjs");
       resolveOfficialPluginRoots({ storageRoot: pluginStorageRoot });
 
       expect((await stat(join(targetRoot, "hooks", "run-hook.cmd"))).mode & 0o111).not.toBe(0);

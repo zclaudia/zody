@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { ZCodeStorageStartupGate } from "#src/zcode-agent/zcodeStorageStartupGate.js";
+import { ZCodeStorageStartupGate } from "#src/zody-agent/zcodeStorageStartupGate.js";
 
 const state = (phase: string, sequence: number, attemptId = "attempt-1") => ({
   schemaVersion: 1,

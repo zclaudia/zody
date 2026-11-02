@@ -89,7 +89,7 @@ describe("Todo 72 已发布 config.json 首次升级", () => {
     });
     const source = new NodeZCodeBuiltinProviderConfigSource({
       bundledFilePath: fileURLToPath(
-        new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../config/provider/zody-builtin.json", import.meta.url),
       ),
       watch: false,
     });

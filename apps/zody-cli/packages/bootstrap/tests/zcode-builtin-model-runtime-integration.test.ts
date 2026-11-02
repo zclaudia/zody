@@ -18,7 +18,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ApiProviderModelRuntime } from "../src/app/provider-registry-model-runtime.js";
 
 const zcodeBuiltinProviderConfigFilePath = fileURLToPath(
-  new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
+  new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
 );
 const source = new NodeZCodeBuiltinProviderConfigSource({
   bundledFilePath: zcodeBuiltinProviderConfigFilePath,
@@ -33,7 +33,7 @@ beforeAll(async () => {
 afterAll(() => source.dispose());
 
 describe("真实 ZCode Built-in Config 到 Active Model", () => {
-  // F4.1a 已从 config/provider/zcode-builtin.json 删除全部 account:* 官方账号 provider，
+  // F4.1a 已从 config/provider/zody-builtin.json 删除全部 account:* 官方账号 provider，
   // 以下两个依赖真实 builtin 账号 provider 的用例按语义删除：
   // -「Account 约束 Built-in 成员后仍由 Personal Overlay 最后覆盖」引用 account:zai-start-plan
   //   （start-plan 属 F4.5 删除范围）；

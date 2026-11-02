@@ -107,13 +107,13 @@ search runtime）。历史 `resourcePackages.selectedPackageIds` 只兼容读取
 签名和 Windows 资源锁检查都不得把本机残留的退役第三方 runtime 重新带入产物。
 
 - `@zcode/desktop` 的 `prepare:glm` 仅保留为手动下载旧原生 Agent 的兼容兜底；默认本机打包通过
-  `prepare:agent-bundle` 准备 `zcode.cjs`。`prepare:native-search` 按目标平台下载 `bfs`、`ugrep`、`ripgrep`
+  `prepare:agent-bundle` 准备 `zody.cjs`。`prepare:native-search` 按目标平台下载 `bfs`、`ugrep`、`ripgrep`
   预编译归档，旧 `prepare:rg` 不再作为独立维护入口暴露。
 - `pnpm dev:desktop` 的本地 runtime 自检只补齐当前平台的 native-search 工具集和必需平台 helper：
   macOS/Linux 的工具集为 `bfs`、`ugrep`、`ripgrep`，Windows x64/arm64 为 `ugrep`、`ripgrep`；自检不再
   检查或下载 `glm/zcode-agent`。开发态 Agent 由 `dev-desktop-env.mjs` 在 `pre-dev` 后调用
-  `build-desktop-agent-cli.mjs` 构建，运行时优先使用 workspace 内的 `dist/zcode.cjs`。
-- 桌面安装包携带 `resources/glm/zcode.cjs`、`resources/tools/ugrep` 与 `resources/tools/ripgrep`；
+  `build-desktop-agent-cli.mjs` 构建，运行时优先使用 workspace 内的 `dist/zody.cjs`。
+- 桌面安装包携带 `resources/glm/zody.cjs`、`resources/tools/ugrep` 与 `resources/tools/ripgrep`；
   macOS/Linux 另携带 `resources/tools/bfs`。
 
 Agent runtime 版本事实源是 `packages/shared/src/zcode-agent-runtime.ts`。本地开发、desktop build、remote
@@ -128,6 +128,6 @@ manifest 和下载逻辑应共同读取它，不再从旧 provider runtime 清�
 - `packages/services/src/zcode-agent/zcodeAgentConnectionScope.ts`
 - `packages/ui/src/v4/V4ConversationContext.tsx`
 - `packages/ui/src/v4/SessionPane.tsx`
-- `apps/zcode-cli/packages/bootstrap/src/zcode-protocol-entrypoint.ts`
-- `apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server.ts`
-- `apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts`
+- `apps/zody-cli/packages/bootstrap/src/zcode-protocol-entrypoint.ts`
+- `apps/zody-cli/packages/bootstrap/src/zcode-protocol/server.ts`
+- `apps/zody-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts`

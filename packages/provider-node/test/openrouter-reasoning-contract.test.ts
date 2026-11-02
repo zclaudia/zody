@@ -5,7 +5,7 @@ import { compileModelOptionMaps } from "@zody/model-option-map";
 import { ModelConfig, ModelOptionSpecsConfig } from "@zody/provider";
 import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
 
-const path = fileURLToPath(new URL("../../../config/provider/zcode-builtin.json", import.meta.url));
+const path = fileURLToPath(new URL("../../../config/provider/zody-builtin.json", import.meta.url));
 const source = new NodeZCodeBuiltinProviderConfigSource({ bundledFilePath: path, watch: false });
 let snapshot: Awaited<ReturnType<typeof source.read>>;
 let modelIds: string[];
@@ -34,7 +34,7 @@ function body(config: ModelConfig, reasoningLevel: string, maxOutputTokens = 500
 }
 
 describe("OpenRouter Messages 推理请求契约", () => {
-  it.each(["zcode-builtin.json", "zcode-builtin.test.json"])(
+  it.each(["zody-builtin.json", "zody-builtin.test.json"])(
     "%s 模板仅简化名称，不改变请求协议",
     async (filename) => {
       const release = JSON.parse(

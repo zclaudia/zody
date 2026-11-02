@@ -40,7 +40,7 @@ import { createLocalRuntimeFixture } from "./helpers/localRuntimeFixture.js";
 const retiredProtocolPrefix = `${"a"}${"cp"}`;
 const retiredProxyRuntimeId = `${retiredProtocolPrefix}-proxy-runtime`;
 // 远端 ZCode Agent bundle 文件名（与 REMOTE_AGENT_BUNDLE_NAME 保持一致）。
-const REMOTE_AGENT_BUNDLE_FILE_NAME = "zcode.cjs";
+const REMOTE_AGENT_BUNDLE_FILE_NAME = "zody.cjs";
 const REMOTE_AGENT_WRAPPER_FILE_NAME = "zcode-agent";
 const BROWSER_USE_REQUIRED_RELATIVE_PATHS = [
   // node_repl 宿主已抽成 @zcode/node-repl-host，browser-use 不再产出 dist/mcp/server.js。
@@ -214,7 +214,7 @@ class FakeRemoteBackend implements IRemoteBackend {
       );
     }
 
-    const versionCommand = `"${"$HOME"}"'/.zody/server/node' "${"$HOME"}"'/.zody/server/zcode-server.cjs' --version`;
+    const versionCommand = `"${"$HOME"}"'/.zody/server/node' "${"$HOME"}"'/.zody/server/zody-server.cjs' --version`;
     if (command === versionCommand) {
       const versionSource =
         this.serverVersions.length > 1
@@ -240,7 +240,7 @@ class FakeRemoteBackend implements IRemoteBackend {
     return (
       this.remoteFiles.has(remotePath) ||
       remotePath === "~/.zody/server/node" ||
-      remotePath === "~/.zody/server/zcode-server.cjs"
+      remotePath === "~/.zody/server/zody-server.cjs"
     );
   }
 
@@ -309,8 +309,8 @@ class FailFirstGlmUploadRemoteBackend extends FakeRemoteBackend {
   override async upload(localPath: string, remotePath: string): Promise<void> {
     if (
       this.shouldFailGlmUpload &&
-      (remotePath === "~/.zody/server/agents/glm/zcode.cjs.new" ||
-        remotePath.startsWith("~/.zody/server/agents/glm/zcode.cjs.new-"))
+      (remotePath === "~/.zody/server/agents/glm/zody.cjs.new" ||
+        remotePath.startsWith("~/.zody/server/agents/glm/zody.cjs.new-"))
     ) {
       this.shouldFailGlmUpload = false;
       throw new Error("mock glm upload failed");
@@ -409,7 +409,7 @@ async function stageRemoteRuntimeRelease(
   await mkdir(serverDir, { recursive: true });
   await mkdir(nodePtyDir, { recursive: true });
   await writeFile(join(nodeDir, "node"), "node runtime", "utf8");
-  await writeFile(join(serverDir, "zcode-server.cjs"), "// remote server bundle\n", "utf8");
+  await writeFile(join(serverDir, "zody-server.cjs"), "// remote server bundle\n", "utf8");
   await writeFile(join(nodePtyDir, "pty.node"), "node-pty prebuild", "utf8");
   if (options.platform === "darwin") {
     await writeFile(join(nodePtyDir, "spawn-helper"), "node-pty spawn helper", "utf8");
@@ -462,7 +462,7 @@ async function stageRemoteRuntimeRelease(
     const binaryDir = join(releaseDir, runtime.bundledResourceDir, platformKey);
     await mkdir(binaryDir, { recursive: true });
     await writeFile(join(binaryDir, binaryName), `${provider} binary`, "utf8");
-    // ZCode Agent（glm）远端不再发原生二进制，而是发编译产物 zcode.cjs，
+    // ZCode Agent（glm）远端不再发原生二进制，而是发编译产物 zody.cjs，
     // 由远端已部署的 node 通过 wrapper 执行，故 source release 需提供该 bundle。
     if (provider === "glm") {
       await writeFile(join(binaryDir, REMOTE_AGENT_BUNDLE_FILE_NAME), `${provider} bundle`, "utf8");
@@ -518,7 +518,7 @@ function createFullyDeployedRemoteFiles(platformKey: RemotePlatformKey): Record<
         ] = "claude native binary";
       }
     } else if (provider === "glm") {
-      // ZCode Agent 远端部署后：wrapper（zcode-agent）+ 编译产物 bundle（zcode.cjs）。
+      // ZCode Agent 远端部署后：wrapper（zcode-agent）+ 编译产物 bundle（zody.cjs）。
       const entrySegments = runtime.resolveEntrySegments(platform);
       const wrapperName = entrySegments[entrySegments.length - 1];
       if (wrapperName) {
@@ -622,7 +622,7 @@ async function writeTestOfficialPluginPackages(repoDir: string): Promise<void> {
       const manifestPath = join(
         repoDir,
         "apps",
-        "zcode-cli",
+        "zody-cli",
         "packages",
         pluginName,
         ".zcode-plugin",
@@ -885,10 +885,10 @@ async function computeDevelopmentAgentAssetsSha256ForTest(
   cliBundlePath: string,
 ): Promise<string> {
   const hash = createHash("sha256");
-  hash.update("bundle:zcode.cjs\n");
+  hash.update("bundle:zody.cjs\n");
   hash.update(await readFile(cliBundlePath));
   for (const packageName of OFFICIAL_PLUGIN_PACKAGE_NAMES) {
-    const packageRoot = join(repoDir, "apps", "zcode-cli", "packages", packageName);
+    const packageRoot = join(repoDir, "apps", "zody-cli", "packages", packageName);
     hash.update(`plugin:${packageName}\n`);
     for (const topLevelPath of OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS) {
       const sourcePath = join(packageRoot, topLevelPath);
@@ -1058,11 +1058,11 @@ const originalRemoteDevAgentBundleEnv = process.env.ZCODE_REMOTE_DEV_AGENT_BUNDL
 const originalZCodeRuntimeEnv = process.env[ZCODE_RUNTIME_ENV_KEY];
 const DEV_CLI_BUNDLE_TEST_SUFFIX = join(
   "apps",
-  "zcode-cli",
+  "zody-cli",
   "packages",
   "cli",
   "dist",
-  "zcode.cjs",
+  "zody.cjs",
 );
 
 afterEach(async () => {
@@ -1118,10 +1118,10 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       },
     );
     expect(networkFetch).not.toHaveBeenCalled();
-    expect(backend.uploads.some(({ remotePath }) => remotePath.includes("zcode-server.cjs"))).toBe(
+    expect(backend.uploads.some(({ remotePath }) => remotePath.includes("zody-server.cjs"))).toBe(
       true,
     );
-    expect(backend.uploads.some(({ remotePath }) => remotePath.includes("zcode.cjs"))).toBe(true);
+    expect(backend.uploads.some(({ remotePath }) => remotePath.includes("zody.cjs"))).toBe(true);
     expect(backend.commands.join("\n")).not.toMatch(/curl|wget/);
   });
 
@@ -1319,7 +1319,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     );
 
     expect(deployed).toBe(false);
-    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
       true,
     );
     expect(
@@ -1378,7 +1378,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     );
 
     expect(deployed).toBe(true);
-    expect(hasUploadForStagingTarget(backend, "~/.zody/server/zcode-server.cjs.new")).toBe(true);
+    expect(hasUploadForStagingTarget(backend, "~/.zody/server/zody-server.cjs.new")).toBe(true);
     expect(backend.commands.join("\n")).toContain("skill-sync");
     expect(backend.commands.join("\n")).toContain("mcp-sync");
     expect(backend.commands.join("\n")).toContain("plugin-sync");
@@ -1408,7 +1408,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     );
 
     expect(deployed).toBe(false);
-    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
       true,
     );
     expect(
@@ -1493,7 +1493,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     expect(
       backend.uploads.some((upload) => upload.remotePath === "~/.zody/server/agents/codex.tar.gz"),
     ).toBe(false);
-    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
       true,
     );
     expect(hasUploadForStagingTarget(backend, "~/.zody/server/tools/ripgrep/rg.new")).toBe(true);
@@ -1688,7 +1688,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         (upload) => upload.remotePath === `~/.zody/server/agents/${retiredProtocolPrefix}.tar.gz`,
       ),
     ).toBe(false);
-    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
       true,
     );
   });
@@ -1725,7 +1725,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       { log: () => undefined, logWarn: () => undefined },
     );
 
-    expect(installedFiles).toEqual(["glm:~/.zody/server/agents/glm/zcode.cjs"]);
+    expect(installedFiles).toEqual(["glm:~/.zody/server/agents/glm/zody.cjs"]);
     expect(installedDirectories).toEqual([
       {
         componentId: "glm",
@@ -1822,7 +1822,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
   it("WSL 已有坏 wrapper 时即使版本匹配也应重写", async () => {
     const remoteFiles = createFullyDeployedRemoteFiles("linux-arm64");
     remoteFiles[`~/.zody/server/agents/glm/${REMOTE_AGENT_WRAPPER_FILE_NAME}`] =
-      '#!/bin/sh\nset -eu\nruntime_root="/home/dev/.zody/server"\nexec "/node" "/home/dev/.zody/server/agents/glm/zcode.cjs" ""\n';
+      '#!/bin/sh\nset -eu\nruntime_root="/home/dev/.zody/server"\nexec "/node" "/home/dev/.zody/server/agents/glm/zody.cjs" ""\n';
     const backend = new FakeWslRemoteBackend(remoteFiles);
     const installedFiles: string[] = [];
     const installedDirectories: string[] = [];
@@ -1846,7 +1846,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       { log: () => undefined, logWarn: () => undefined },
     );
 
-    expect(installedFiles).toEqual(["glm:~/.zody/server/agents/glm/zcode.cjs"]);
+    expect(installedFiles).toEqual(["glm:~/.zody/server/agents/glm/zody.cjs"]);
     expect(backend.uploads.map((upload) => upload.remotePath)).toContain(
       `~/.zody/server/agents/glm/${REMOTE_AGENT_WRAPPER_FILE_NAME}.new`,
     );
@@ -1904,7 +1904,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         componentId: "glm",
         forceRefresh: false,
         kind: "file",
-        remotePath: "~/.zody/server/agents/glm/zcode.cjs",
+        remotePath: "~/.zody/server/agents/glm/zody.cjs",
       },
       {
         componentId: "glm",
@@ -2025,7 +2025,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         componentId: "glm",
         forceRefresh: false,
         kind: "file",
-        remotePath: "~/.zody/server/agents/glm/zcode.cjs",
+        remotePath: "~/.zody/server/agents/glm/zody.cjs",
       },
       {
         componentId: "glm",
@@ -2075,7 +2075,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     );
     expect(installRequests).toEqual([
       "glm:directory:~/.zody/server/agents/glm/packages",
-      "glm:file:~/.zody/server/agents/glm/zcode.cjs",
+      "glm:file:~/.zody/server/agents/glm/zody.cjs",
     ]);
   });
 
@@ -2145,11 +2145,11 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const cliBundlePath = join(
       repoDir,
       "apps",
-      "zcode-cli",
+      "zody-cli",
       "packages",
       "cli",
       "dist",
-      "zcode.cjs",
+      "zody.cjs",
     );
     await mkdir(dirname(cliBundlePath), { recursive: true });
     await writeFile(cliBundlePath, "console.log('dev zcode agent');\n", "utf8");
@@ -2158,7 +2158,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       join(
         repoDir,
         "apps",
-        "zcode-cli",
+        "zody-cli",
         "packages",
         "browser-use-plugin",
         "scripts",
@@ -2195,18 +2195,18 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     expect(backend.uploads).toEqual([]);
   });
 
-  it("开发态 SSH 部署应上传本地 zcode.cjs 并生成远端 wrapper", async () => {
+  it("开发态 SSH 部署应上传本地 zody.cjs 并生成远端 wrapper", async () => {
     const rootDir = await mkdtemp(join(tmpdir(), "zcode-remote-dev-agent-"));
     tempDirs.push(rootDir);
     const repoDir = join(rootDir, "z-code");
     const cliBundlePath = join(
       repoDir,
       "apps",
-      "zcode-cli",
+      "zody-cli",
       "packages",
       "cli",
       "dist",
-      "zcode.cjs",
+      "zody.cjs",
     );
     await mkdir(dirname(cliBundlePath), { recursive: true });
     await writeFile(cliBundlePath, "console.log('dev zcode agent');\n", "utf8");
@@ -2244,13 +2244,13 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     expect(installedFiles).toEqual([]);
     const devBundleUpload = backend.uploads.find(
       (upload) =>
-        upload.remotePath === "~/.zody/server/agents/glm/zcode.cjs.new" ||
-        upload.remotePath.startsWith("~/.zody/server/agents/glm/zcode.cjs.new-"),
+        upload.remotePath === "~/.zody/server/agents/glm/zody.cjs.new" ||
+        upload.remotePath.startsWith("~/.zody/server/agents/glm/zody.cjs.new-"),
     );
     expect(devBundleUpload?.localPath.endsWith(DEV_CLI_BUNDLE_TEST_SUFFIX)).toBe(true);
     expect(
       backend.commands.some(
-        (command) => command.includes("zcode-agent.new") && command.includes("zcode.cjs"),
+        (command) => command.includes("zcode-agent.new") && command.includes("zody.cjs"),
       ),
     ).toBe(true);
     expect(backend.commands.some((command) => command.includes(".dev-version"))).toBe(true);
@@ -2291,11 +2291,11 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       const cliBundlePath = join(
         repoDir,
         "apps",
-        "zcode-cli",
+        "zody-cli",
         "packages",
         "cli",
         "dist",
-        "zcode.cjs",
+        "zody.cjs",
       );
       await mkdir(dirname(cliBundlePath), { recursive: true });
       await writeFile(cliBundlePath, "console.log('same dev zcode agent');\n", "utf8");
@@ -2310,7 +2310,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           "~/.zody/server/agents/glm/.version": `${ZCODE_AGENT_RUNTIME.version}\n`,
           "~/.zody/server/agents/glm/.dev-version": `${devVersion}\n`,
           "~/.zody/server/agents/glm/zcode-agent": "dev wrapper",
-          "~/.zody/server/agents/glm/zcode.cjs": bundleMatches
+          "~/.zody/server/agents/glm/zody.cjs": bundleMatches
             ? "console.log('same dev zcode agent');\n"
             : "old published bundle without PAT support",
           ...Object.fromEntries(
@@ -2348,7 +2348,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       );
 
       expect(installedFiles).toEqual([]);
-      expect(backend.uploads.some((upload) => upload.remotePath.endsWith("zcode.cjs.new"))).toBe(
+      expect(backend.uploads.some((upload) => upload.remotePath.endsWith("zody.cjs.new"))).toBe(
         !bundleMatches,
       );
       expect(backend.commands.some((command) => command.includes("command chmod -R u+rwX"))).toBe(
@@ -2463,7 +2463,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       {
         commandPlans: [
           {
-            matcher: /command mv -f .*zcode-server\.cjs/,
+            matcher: /command mv -f .*zody-server\.cjs/,
             exitCode: 23,
             stderrText: "mock mv failed",
           },
@@ -2557,7 +2557,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       );
 
       expect(deployed).toBe(false);
-      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
         true,
       );
       expect(
@@ -2621,7 +2621,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           String(input).endsWith(`/${glmComponent.artifactPath}`),
         ),
       ).toBe(true);
-      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
         true,
       );
     } finally {
@@ -2723,7 +2723,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     );
     await stageRemoteRuntimeRelease(cdnSourceDir);
     await writeFile(
-      join(cdnSourceDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zcode.cjs"),
+      join(cdnSourceDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zody.cjs"),
       "new CDN GLM bytes under the same semantic version",
       "utf8",
     );
@@ -2732,7 +2732,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const cdnGlm = cdnManifest.components.find((component) => component.id === "glm");
     expect(cdnGlm?.version).toBe(mockGlm?.version);
     expect(cdnGlm?.sha256).not.toBe(mockGlm?.sha256);
-    await rm(join(mockCdnDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zcode.cjs"));
+    await rm(join(mockCdnDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zody.cjs"));
     const remoteFiles = createFullyDeployedRemoteFiles("linux-arm64");
     addMatchingGlmArtifactIdentity(remoteFiles, mockManifest, "linux-arm64");
     const backend = new FakeRemoteBackend(remoteFiles);
@@ -2749,7 +2749,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         },
       );
 
-      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
         true,
       );
       expect(backend.commands.join("\n")).toContain(cdnGlm?.sha256);
@@ -2790,7 +2790,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     );
     await mkdir(staleComponentDir, { recursive: true });
     await writeFile(join(staleComponentDir, ".ready"), "ready\n", "utf8");
-    await writeFile(join(staleComponentDir, "zcode.cjs"), "stale glm bundle");
+    await writeFile(join(staleComponentDir, "zody.cjs"), "stale glm bundle");
     for (const relativePath of OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS) {
       const stalePluginPath = join(staleComponentDir, "packages", ...relativePath.split("/"));
       await mkdir(dirname(stalePluginPath), { recursive: true });
@@ -2842,7 +2842,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           "utf8",
         ),
       ).resolves.toContain("glm official plugin");
-      await expect(readFile(join(staleComponentDir, "zcode.cjs"), "utf8")).resolves.toBe(
+      await expect(readFile(join(staleComponentDir, "zody.cjs"), "utf8")).resolves.toBe(
         "stale glm bundle",
       );
     } finally {
@@ -2882,7 +2882,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     );
     await mkdir(staleComponentDir, { recursive: true });
     await writeFile(join(staleComponentDir, ".ready"), "ready\n", "utf8");
-    await writeFile(join(staleComponentDir, "zcode.cjs"), "stale glm bundle");
+    await writeFile(join(staleComponentDir, "zody.cjs"), "stale glm bundle");
     const requiredReleasePath =
       "glm/linux-arm64/packages/skill-creator-plugin/.zcode-plugin/plugin.json";
     const cdnServer = await createStaticFileServer(cdnRoot);
@@ -3510,7 +3510,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         },
       );
 
-      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
         true,
       );
       expect(
@@ -3672,8 +3672,8 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(backend.uploads).toHaveLength(3);
       expect(backend.uploads.map((upload) => upload.remotePath)).toEqual(
         expect.arrayContaining([
-          expect.stringMatching(/^~\/.zody\/server\/zcode-server\.cjs\.new-[\w-]+$/u),
-          expect.stringMatching(/^~\/.zody\/server\/agents\/glm\/zcode\.cjs\.new-[\w-]+$/u),
+          expect.stringMatching(/^~\/.zody\/server\/zody-server\.cjs\.new-[\w-]+$/u),
+          expect.stringMatching(/^~\/.zody\/server\/agents\/glm\/zody\.cjs\.new-[\w-]+$/u),
           expect.stringMatching(/^~\/.zody\/server\/agents\/glm\/packages\.tar\.gz-[\w-]+$/u),
         ]),
       );
@@ -3776,7 +3776,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         cdnServer.getRequestCount(toComponentArtifactRequestPath(serverBundle.artifactPath)),
       ).toBe(2);
       expect(cdnServer.getRequestCount(toComponentArtifactRequestPath(glm.artifactPath))).toBe(2);
-      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
         true,
       );
       expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/packages.tar.gz")).toBe(
@@ -3817,7 +3817,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       serverVersion: () => remoteServerVersion,
       commandPlans: [
         {
-          matcher: /command mv -f .*zcode-server\.cjs\.new.*zcode-server\.cjs/u,
+          matcher: /command mv -f .*zody-server\.cjs\.new.*zody-server\.cjs/u,
           exitCode: 0,
           onExec: () => {
             remoteServerVersion = ZCODE_VERSION;
@@ -3862,7 +3862,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         command.includes("pendingRefreshAppVersion"),
       );
       const serverReplaceCommandIndex = firstAttemptCommands.findIndex(
-        (command) => command.includes("command mv -f ") && command.includes("zcode-server.cjs.new"),
+        (command) => command.includes("command mv -f ") && command.includes("zody-server.cjs.new"),
       );
       expect(refreshPendingCommandIndex).toBeGreaterThanOrEqual(0);
       expect(serverReplaceCommandIndex).toBeGreaterThan(refreshPendingCommandIndex);
@@ -3886,7 +3886,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
 
       expect(deployed).toBe(false);
       expect(cdnServer.getRequestCount(toComponentArtifactRequestPath(glm.artifactPath))).toBe(2);
-      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
         true,
       );
       expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/packages.tar.gz")).toBe(
@@ -4022,7 +4022,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           stdoutText: "download=curl\ntar=tar\nsha256=sha256sum\n",
         },
         {
-          matcher: /command mv -f .*zcode-server\.cjs\.new.*zcode-server\.cjs/u,
+          matcher: /command mv -f .*zody-server\.cjs\.new.*zody-server\.cjs/u,
           exitCode: 0,
           onExec: () => {
             remoteServerVersion = ZCODE_VERSION;
@@ -4264,7 +4264,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         },
       );
 
-      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
         true,
       );
       const warnLines = warnSpy.mock.calls.map((args) => args.map((arg) => String(arg)).join(" "));
@@ -4306,7 +4306,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       },
     );
 
-    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
       false,
     );
     expect(backend.commands.some((command) => command.includes(".asset-components/glm.json"))).toBe(
@@ -4522,7 +4522,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(backend.uploads).toEqual([]);
 
       await writeFile(
-        join(mockCdnDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zcode.cjs"),
+        join(mockCdnDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zody.cjs"),
         "glm bundle republished with the same semantic version",
         "utf8",
       );
@@ -4542,7 +4542,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         },
       );
 
-      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zcode.cjs.new")).toBe(
+      expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
         true,
       );
       expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(2);
@@ -4570,7 +4570,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     await mkdir(legacyServerCacheDir, { recursive: true });
     await writeFile(join(legacyServerCacheDir, ".ready"), "ready\n", "utf8");
     await writeFile(
-      join(legacyServerCacheDir, "zcode-server.cjs"),
+      join(legacyServerCacheDir, "zody-server.cjs"),
       "// stale semantic-version server cache\n",
       "utf8",
     );
@@ -4585,10 +4585,10 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         { platform: "linux", arch: "arm64" },
         { remoteCdnBaseUrl: cdnServer.baseUrl, remoteCacheDir },
       );
-      expect(hasUploadForStagingTarget(backend, "~/.zody/server/zcode-server.cjs.new")).toBe(true);
+      expect(hasUploadForStagingTarget(backend, "~/.zody/server/zody-server.cjs.new")).toBe(true);
       const initialServerUpload = findUploadForStagingTarget(
         backend,
-        "~/.zody/server/zcode-server.cjs.new",
+        "~/.zody/server/zody-server.cjs.new",
       );
       await expect(readFile(initialServerUpload?.localPath ?? "", "utf8")).resolves.not.toContain(
         "stale semantic-version server cache",
@@ -4601,7 +4601,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       );
 
       await writeFile(
-        join(mockCdnDir, "releases", ZCODE_VERSION, "server", "zcode-server.cjs"),
+        join(mockCdnDir, "releases", ZCODE_VERSION, "server", "zody-server.cjs"),
         "// server bundle republished under the same App version\n",
         "utf8",
       );
@@ -4618,7 +4618,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
 
       const serverUpload = findUploadForStagingTarget(
         backend,
-        "~/.zody/server/zcode-server.cjs.new",
+        "~/.zody/server/zody-server.cjs.new",
       );
       expect(serverUpload).toBeDefined();
       await expect(readFile(serverUpload?.localPath ?? "", "utf8")).resolves.toContain(
@@ -4727,7 +4727,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     };
 
     await writeFile(
-      join(mockCdnDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zcode.cjs"),
+      join(mockCdnDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zody.cjs"),
       "new GLM bytes under the same semantic version",
       "utf8",
     );
@@ -4813,7 +4813,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       platformArch: "linux-arm64",
       componentIds: ["glm"],
       requiredReleasePaths: [
-        "glm/linux-arm64/zcode.cjs",
+        "glm/linux-arm64/zody.cjs",
         ...OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS.map(
           (relativePath) => `glm/linux-arm64/packages/${relativePath}`,
         ),
@@ -4848,7 +4848,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(forceReleaseDir).toContain(glm.sha256);
       expect(cdnServer.getRequestCount(artifactRequestPath)).toBe(1);
       await expect(
-        readFile(join(forceReleaseDir, "glm", "linux-arm64", "zcode.cjs"), "utf8"),
+        readFile(join(forceReleaseDir, "glm", "linux-arm64", "zody.cjs"), "utf8"),
       ).resolves.toBe("glm bundle");
       await expect(
         readFile(

@@ -126,7 +126,7 @@ import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import {
   AUTOMATION_MUTATION_TOOL_NAMES,
   // fork（F4.3）：OFF_PEAK_MUTATION_TOOL_NAMES 随闲时任务全链路删除。
-} from "#src/zcode-agent/automationToolPolicy.js";
+} from "#src/zody-agent/automationToolPolicy.js";
 import type { ISettingService } from "#src/setting/setting.js";
 import type {
   SessionMessageDeliveryResult,

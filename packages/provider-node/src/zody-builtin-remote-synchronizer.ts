@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { atomicWritePrivateTextFile, withFileLock } from "@zody/shared/node";
-import type { NodeZCodeBuiltinProviderConfigSource } from "./zcode-builtin-provider-config-source.js";
-import type { ZCodeBuiltinRelease } from "./zcode-builtin-release.js";
+import type { NodeZCodeBuiltinProviderConfigSource } from "./zody-builtin-provider-config-source.js";
+import type { ZCodeBuiltinRelease } from "./zody-builtin-release.js";
 
 const HOUR_MS = 60 * 60 * 1_000;
 

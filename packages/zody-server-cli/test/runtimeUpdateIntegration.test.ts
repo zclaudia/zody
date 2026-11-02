@@ -71,7 +71,7 @@ describe.skipIf(process.platform === "win32")("runtime update integration", () =
     await new ReleaseManager(layout).ensure();
     const coreEntry = fileURLToPath(new URL("../src/server-core/entry.ts", import.meta.url));
     const zcodeBuiltinProviderConfigFilePath = fileURLToPath(
-      new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+      new URL("../../../config/provider/zody-builtin.json", import.meta.url),
     );
     const harness = [
       "import { fork } from 'node:child_process';",
@@ -137,7 +137,7 @@ describe.skipIf(process.platform === "win32")("runtime update integration", () =
       await mkdir(runtimeRoot, { recursive: true });
       await symlink(process.execPath, join(runtimeRoot, "node"));
       await symlink(fixture, join(runtimeRoot, "server-core.js"));
-      await writeFile(join(runtimeRoot, "zcode.cjs"), "", "utf8");
+      await writeFile(join(runtimeRoot, "zody.cjs"), "", "utf8");
     }
     await releases.writePending({ version: "old", releaseDir: join(layout.releasesDir, "old") });
     await releases.applyPending();
@@ -213,7 +213,7 @@ describe.skipIf(process.platform === "win32")("runtime update integration", () =
     for (const [index, version] of ["old", "new"].entries()) {
       const runtimeRoot = join(layout.releasesDir, version, "runtime");
       expect(records[index]).toMatchObject({
-        agentArgs: [join(runtimeRoot, "zcode.cjs"), "app-server", "--stdio"],
+        agentArgs: [join(runtimeRoot, "zody.cjs"), "app-server", "--stdio"],
         agentCommand: join(runtimeRoot, "node"),
         dataBaseDir: canonicalLayout.dataBaseDir,
         runtimeRoot,

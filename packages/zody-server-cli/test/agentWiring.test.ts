@@ -17,9 +17,9 @@ afterEach(async () => {
 });
 
 describe("resolveBundledAgentWiring", () => {
-  it("returns wiring for a bundled zcode.cjs next to the entry", async () => {
+  it("returns wiring for a bundled zody.cjs next to the entry", async () => {
     const entryDir = await makeTempDir();
-    const bundlePath = join(entryDir, "zcode.cjs");
+    const bundlePath = join(entryDir, "zody.cjs");
     await writeFile(bundlePath, "// bundle\n", "utf8");
 
     const wiring = await resolveBundledAgentWiring(entryDir, {});
@@ -34,7 +34,7 @@ describe("resolveBundledAgentWiring", () => {
 
   it("keeps an explicit ZCODE_AGENT_SERVER_COMMAND untouched", async () => {
     const entryDir = await makeTempDir();
-    await writeFile(join(entryDir, "zcode.cjs"), "// bundle\n", "utf8");
+    await writeFile(join(entryDir, "zody.cjs"), "// bundle\n", "utf8");
 
     const wiring = await resolveBundledAgentWiring(entryDir, {
       ZCODE_AGENT_SERVER_COMMAND: "/custom/agent",
@@ -42,7 +42,7 @@ describe("resolveBundledAgentWiring", () => {
     expect(wiring).toBeNull();
   });
 
-  it("returns null when no bundled zcode.cjs exists (dev workspace)", async () => {
+  it("returns null when no bundled zody.cjs exists (dev workspace)", async () => {
     const entryDir = await makeTempDir();
     expect(await resolveBundledAgentWiring(entryDir, {})).toBeNull();
   });
@@ -53,11 +53,11 @@ describe("resolveBundledAgentWiring", () => {
 
     expect(createReleaseAgentWiring(oldRuntime, join(oldRuntime, "node"), {})).toEqual({
       ZCODE_AGENT_SERVER_COMMAND: join(oldRuntime, "node"),
-      ZCODE_AGENT_SERVER_ARGS_JSON: JSON.stringify([join(oldRuntime, "zcode.cjs"), "app-server", "--stdio"]),
+      ZCODE_AGENT_SERVER_ARGS_JSON: JSON.stringify([join(oldRuntime, "zody.cjs"), "app-server", "--stdio"]),
     });
     expect(createReleaseAgentWiring(newRuntime, join(newRuntime, "node"), {})).toEqual({
       ZCODE_AGENT_SERVER_COMMAND: join(newRuntime, "node"),
-      ZCODE_AGENT_SERVER_ARGS_JSON: JSON.stringify([join(newRuntime, "zcode.cjs"), "app-server", "--stdio"]),
+      ZCODE_AGENT_SERVER_ARGS_JSON: JSON.stringify([join(newRuntime, "zody.cjs"), "app-server", "--stdio"]),
     });
   });
 

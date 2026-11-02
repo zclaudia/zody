@@ -2,7 +2,7 @@
 
 状态：已实施（上游 v3.16.2 · I17），2026-10-24。
 上游来源：`zai-org/ZCode@3c5b227649371507ddc4eb46ac5133afe6db1cab` 的
-`config/provider/zcode-builtin.json`（`xiaomi-mimo` / `xiaomi-mimo-token-plan`，revision 33）。
+`config/provider/zody-builtin.json`（`xiaomi-mimo` / `xiaomi-mimo-token-plan`，revision 33）。
 决策口径：[实施计划 I17 行](plans/upstream-v3.16.2-implementation-plan.md:62)：模板增量新增 v2.6
 与 API / Token Plan 端点；实施时核验厂商状态，若 v2.5 已停服先回报再定；Personal 配置一律不静默改写。
 **该例外分支已于实施时触发**：厂商确认 v2.5 下线，owner 裁决移除模板中的 v2.5 成员（见 §1）。
@@ -41,7 +41,7 @@ overlay、Registry 装配、双环境打包与 revision 规则沿用现有实现
 | Token Plan Anthropic 端点 | 中国 `https://token-plan-cn.xiaomimimo.com/anthropic`；新加坡 `https://token-plan-sgp.xiaomimimo.com/anthropic`；欧洲 `https://token-plan-ams.xiaomimimo.com/anthropic` | `docs/zh-CN/tokenplan/Token Plan/quick-access`                                                      |
 | Key 身份                  | 按量 Key `sk-…`；Token Plan Key `tp-…` / `ttp-…`；两者相互独立、不可混用                                                                                                | `docs/zh-CN/tokenplan/Token Plan/quick-access`                                                      |
 | v2.6 `[1m]` 标记          | Claude Code 接入页支持 `mimo-v2.6-pro[1m]` / `mimo-v2.6-flash[1m]`，用于显式选择 1M 上下文变体；裸 ID 的 1M 仍为上游 Built-in 声明值，未独立核验                        | Token Plan Claude Code 接入页 `docs/zh-CN/tokenplan/integration/claudecode`（复审 2026-10-24 核对） |
-| v2.6 推理参数             | 官方页面未给出可引用的上下文/输出/模态/思考参数表；本文采用上游 Built-in 声明值（见 §3），真实请求未验证                                                                | 上游 `zcode-builtin.json`；标注为待核验                                                             |
+| v2.6 推理参数             | 官方页面未给出可引用的上下文/输出/模态/思考参数表；本文采用上游 Built-in 声明值（见 §3），真实请求未验证                                                                | 上游 `zody-builtin.json`；标注为待核验                                                             |
 
 `mimo-v2.6-pro-ultraspeed` 不进入模板成员，也不命中 v2.6 规则：上游模板未纳入，套餐权益与推理参数
 未核验；v2.6 规则使用精确模型名（见 §3），该型号由通用兜底解析（200K 上下文、32K 输出、无多模态），
@@ -100,7 +100,7 @@ overlay、Registry 装配、双环境打包与 revision 规则沿用现有实现
   它们只服务存量 Personal 模型，不再出现在模板成员中。
 - Upstream v3.16.2 的 v2.5 匹配使用更松的正则（`.*mimo-v2\.5.*`），当前仓库使用精确分隔符
   写法；本轮只补 v2.6 差异，不改写既有 v2.5 规则形态，也不以正则等价性代替行为断言。
-- revision 递增（32 → 33），并按双环境规则同步 `config/provider/zcode-builtin.test.json`。
+- revision 递增（32 → 33），并按双环境规则同步 `config/provider/zody-builtin.test.json`。
 
 ## 4. Personal 与历史配置
 
@@ -123,7 +123,7 @@ v2.5 不得反向删除用户 Personal 中已保存的模型或覆盖用户禁�
 ## 5. 状态所有者与组合顺序
 
 ```text
-config/provider/zcode-builtin.json（唯一编辑源，revision 32 → 33）
+config/provider/zody-builtin.json（唯一编辑源，revision 32 → 33）
   ├─ providerConfigRules.templateRules
   │    ├─ xiaomi-mimo             → 按量 API 端点，成员仅 v2.6
   │    └─ xiaomi-mimo-token-plan  → Token Plan CN 端点，成员仅 v2.6
@@ -186,7 +186,7 @@ MiMo 回归用例暂记于此。
   - `pnpm --dir packages/provider test` → 22 files / 279 tests passed（本项未改动该包）。
 - 复审修复（2026-10-24 续作，最小适配）：
   - 两条 v2.6 规则（`modelRules`、`modelApiRules`）的 `modelMatch` 改为
-    `(?:.*/)?mimo-v2\.6-(?:pro|flash)(?:\[1m\])?`，`config/provider/zcode-builtin.test.json` 与
+    `(?:.*/)?mimo-v2\.6-(?:pro|flash)(?:\[1m\])?`，`config/provider/zody-builtin.test.json` 与
     `test/fixtures/reasoning-map-before-todo95.json` 同步；未改既有断言以凑绿，只补新反例。
   - 行为核对：裸名、`vendor/`、`gateway/vendor/` 前缀与 `[1m]` 变体命中且能力与裸 ID 一致；
     `mimo-v2.6-pro-ultraspeed` 及带前缀 `-ultraspeed` 不命中；无 `/` 边界的近似名
@@ -199,7 +199,7 @@ MiMo 回归用例暂记于此。
   `pnpm lint` exit 0（0 errors / 311 warnings）。
 - 配置双环境：当前根 `package.json` 没有 `provider:config:sync-test` /
   `provider:config:check-test` 脚本（旧文档仍提及，实际不可执行），因此本轮手工镜像
-  `config/provider/zcode-builtin.test.json` 并保持 revision 一致；若后续恢复生成脚本，以脚本为准。
+  `config/provider/zody-builtin.test.json` 并保持 revision 一致；若后续恢复生成脚本，以脚本为准。
 - 未执行：真实 Desktop 设置页 E2E（MIMO-UI-007 当前只有组件级证据；需在
   `docs/model-provider-regression-case-catalog.md` 未提交工作线协调后，按 `e2e-case-lifecycle`
   转为正式 case 并补 Desktop E2E）。真实厂商请求（按量 Key、`tp-` Key、v2.6 两个模型、

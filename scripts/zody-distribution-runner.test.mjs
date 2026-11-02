@@ -50,7 +50,7 @@ async function fixture(t) {
   await cp(runnerSource, join(root, "bin/zcode.mjs"));
   await writeFile(join(root, "package.json"), JSON.stringify({ type: "module", version: "1.2.3" }));
   await writeFile(
-    join(root, "agent/zcode.cjs"),
+    join(root, "agent/zody.cjs"),
     `
 process.stdout.write(JSON.stringify({ argv: process.argv.slice(2), entry: process.argv[1], cwd: process.cwd(), execPath: process.execPath }));
 process.exitCode = Number(process.env.FIXTURE_EXIT_CODE || 0);
@@ -60,7 +60,7 @@ process.exitCode = Number(process.env.FIXTURE_EXIT_CODE || 0);
     const cliStub = join(root, "bin/zody-cli");
     await writeFile(
       cliStub,
-      `#!${bundledNode}\nprocess.stdout.write(JSON.stringify({ argv: process.argv.slice(2), entry: ${JSON.stringify(join(root, "agent/zcode.cjs"))}, cwd: process.cwd() }));\nprocess.exitCode = Number(process.env.FIXTURE_EXIT_CODE || 0);\n`,
+      `#!${bundledNode}\nprocess.stdout.write(JSON.stringify({ argv: process.argv.slice(2), entry: ${JSON.stringify(join(root, "agent/zody.cjs"))}, cwd: process.cwd() }));\nprocess.exitCode = Number(process.env.FIXTURE_EXIT_CODE || 0);\n`,
     );
     await chmod(cliStub, 0o755);
   }
@@ -88,7 +88,7 @@ test("default launch and CLI arguments invoke the bundled CLI without starting W
     const result = await exec(process.execPath, [runner, ...args], { cwd: directory });
     assert.deepEqual(JSON.parse(result.stdout), {
       argv: args,
-      entry: join(root, "agent/zcode.cjs"),
+      entry: join(root, "agent/zody.cjs"),
       cwd: directory,
     });
   }
@@ -186,7 +186,7 @@ test("Web mode passes its runtime configuration and terminates its child on shut
     workspace: directory,
     staticRoot: join(root, "web"),
     command: join(root, "runtime", process.platform === "win32" ? "node.exe" : "node"),
-    args: [join(root, "agent/zcode.cjs"), "app-server", "--stdio"],
+    args: [join(root, "agent/zody.cjs"), "app-server", "--stdio"],
     token: "",
     ripgrep: join(root, "runtime-tools/ripgrep/rg"),
   });

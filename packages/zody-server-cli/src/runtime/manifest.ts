@@ -76,11 +76,11 @@ export function createRuntimeManifest(
     appVersion,
     nodeVersion: SERVER_RUNTIME_NODE_VERSION,
     // 入口是 ESM `.js`（tsup 产物）：server-cli 通过 `new URL("./server-core.js")` fork Core、
-    // 通过同目录 zcode.cjs 委派既有 CLI，三者必须同目录且文件名与产物一致。
+    // 通过同目录 zody.cjs 委派既有 CLI，三者必须同目录且文件名与产物一致。
     entrypoints: {
       cli: "runtime/server-cli.js",
       core: "runtime/server-core.js",
-      agent: "runtime/zcode.cjs",
+      agent: "runtime/zody.cjs",
     },
     native: ["node-pty"],
     ...extras,

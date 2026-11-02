@@ -49,7 +49,7 @@ class StaticAccountSource implements ProviderSource<AccountProviderConfigSnapsho
 describe("ProviderRuntime", () => {
   it("Host View 原子返回 Configured Default 解析后的 preferredSelection", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-preferred-"));
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     const personalFilePath = join(root, "personal.json");
     await writeFile(
       zcodeBuiltinFilePath,
@@ -158,7 +158,7 @@ describe("ProviderRuntime", () => {
 
   it("复用组合根先创建的 Config Runtime", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-injected-config-"));
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyZCodeBuiltinRelease()), "utf8");
     const configRuntime = createProviderConfigRuntime({
       zcodeBuiltinFilePath,
@@ -198,7 +198,7 @@ describe("ProviderRuntime", () => {
 
   it("释放组合根拥有的 Account Source", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-account-dispose-"));
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyZCodeBuiltinRelease()), "utf8");
     const configRuntime = createProviderConfigRuntime({
       zcodeBuiltinFilePath,
@@ -218,7 +218,7 @@ describe("ProviderRuntime", () => {
 
   it("首次 Facade 调用会等待 Runtime 就绪，无需 Entry 先显式 start", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-ready-"));
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyZCodeBuiltinRelease()), "utf8");
     const runtime = createProviderRuntime({
       zcodeBuiltinFilePath,
@@ -238,7 +238,7 @@ describe("ProviderRuntime", () => {
 
   it("组装 Config、Account Access、Registry 与 Facade", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-"));
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     await writeFile(
       zcodeBuiltinFilePath,
       JSON.stringify({
@@ -399,7 +399,7 @@ describe("ProviderRuntime", () => {
 
   it("设置页连通性测试使用最新 Settings Provider 判断账号访问方式", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-connectivity-"));
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     await writeFile(
       zcodeBuiltinFilePath,
       JSON.stringify({
@@ -519,7 +519,7 @@ describe("ProviderRuntime", () => {
     "原子新增 Personal Model 完整贯穿模式 %s",
     async (recommended) => {
       const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-direct-save-"));
-      const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+      const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
       // 手动规则只包含开放编辑的叶子；MFJS 等隐藏能力和 maxOutput Map 必须来自 Built-in。
       await writeFile(
         zcodeBuiltinFilePath,
@@ -636,7 +636,7 @@ describe("ProviderRuntime", () => {
 
   it("设置服务创建 Personal Provider 后返回 Registry 已观察到的视图", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-create-"));
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyZCodeBuiltinRelease()), "utf8");
     const runtime = createProviderRuntime({
       zcodeBuiltinFilePath,
@@ -658,7 +658,7 @@ describe("ProviderRuntime", () => {
 
   it("保存 ZCode Built-in Provider 时只写明确提交的 Personal Overlay", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-official-save-"));
-    const zcodeBuiltinFilePath = join(root, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
     await writeFile(
       zcodeBuiltinFilePath,
       JSON.stringify({

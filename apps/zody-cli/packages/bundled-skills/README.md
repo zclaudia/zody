@@ -22,7 +22,7 @@ or the composer's `$` skill picker. The runtime discovers its `skills/` director
   `zcode-bundled-skills/` asset prefix. On start the CLI extracts them once into
   `~/.zody/cli/bundled-skills/<content-hash>/` and reads from there.
 - **Remote hosts**: `scripts/prepare-prebuilds.mjs` stages the directory next to the remote
-  `zcode.cjs`, like the official plugin packages.
+  `zody.cjs`, like the official plugin packages.
 
 The resolver is `apps/zody-cli/packages/bootstrap/src/app/bundled-skills.ts`. Every file
 under `skills/dynamic-workflows/` is a required asset: a stage or seed that loses one refuses

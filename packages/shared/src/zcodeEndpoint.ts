@@ -21,7 +21,7 @@ export const TEST_ZCODE_ENDPOINT_ORIGIN = "https://example.invalid";
 // DEFAULT_ZAI_OAUTH_ORIGIN、DEFAULT_ZAI_BUSINESS_BASE_URL、ZAI_OAUTH_CLIENT_ID 及对应
 // resolve/build 函数、RuntimeProductEndpointConfig）随官方账号体系删除。
 // BYOK 的公开 API 地址（https://api.z.ai/api/anthropic、https://open.bigmodel.cn/api/anthropic
-// 及标准 API 模板地址）在 config/provider/zcode-builtin.json 与 provider 配置中保留，不经过本文件。
+// 及标准 API 模板地址）在 config/provider/zody-builtin.json 与 provider 配置中保留，不经过本文件。
 
 export interface RuntimeZCodeEndpointEnv {
   [key: string]: string | undefined;

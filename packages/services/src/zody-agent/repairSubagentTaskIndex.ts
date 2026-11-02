@@ -1,6 +1,6 @@
 import { resolveWorkspaceKey, ZCODE_AGENT_PROVIDER } from "@zody/shared";
 import type { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
-import type { IZCodeAgentService, ZCodeAgentWorkspaceTarget } from "#src/zcode-agent/zcodeAgent.js";
+import type { IZCodeAgentService, ZCodeAgentWorkspaceTarget } from "#src/zody-agent/zcodeAgent.js";
 
 const IDENTITY_QUERY_BATCH_SIZE = 64;
 

@@ -1,4 +1,4 @@
-import { ZCodeStorageStartupGate } from "#src/zcode-agent/zcodeStorageStartupGate.js";
+import { ZCodeStorageStartupGate } from "#src/zody-agent/zcodeStorageStartupGate.js";
 import { Emitter } from "@zody/rpc";
 import type { IDisposable } from "@zody/rpc";
 import type {

@@ -27,6 +27,8 @@
 
 - **packages/server HTTP**：旧 `entry-http.js` 在容器 loopback 启动，`GET /api/server-info` 返回 HTTP 200，版本 `0.1.0`、protocolVersion `1`；进程随后结束。这验证信息端点，不等于完整业务和远程链路。
 - **Agent stdio**：旧 `zcode.cjs app-server --stdio` 返回 `startup/runtimeIdentity` 的 `{initialized:true,reused:false}` 和 `runtime/capabilities` 的有效结果；进程随后结束。这是 harness 对真实 Agent 的协议请求，不是实际旧 Host 与 Agent 的集成验收。
-- **独立 server-cli HTTP**：Linux 发行包入口 `bin/zcode serve --server-root ... --json` 启动退出 **1**，HTTP 未启动。独立重试同样退出 1；完整栈见 `legacy-runtime-linux-server-cli-smoke.log`，首因是打包后的 `runtime/server-cli.js` 在载入 `yazl` 时抛出 `Dynamic require of "fs" is not supported`。这是此旧版 Linux 发行包的实际阻塞，构建通过不能替代运行成功；没有修改旧产品源码或绕过错误。
+- **独立 server-cli HTTP**：Linux 发行包入口 `bin/zcode serve --server-root ... --json` 启动退出 **1**，HTTP 未启动。当前保存一份可复核的 Linux 失败日志；完整栈见 `legacy-runtime-linux-server-cli-smoke.log`，首因是打包后的 `runtime/server-cli.js` 在载入 `yazl` 时抛出 `Dynamic require of "fs" is not supported`。这是此旧版 Linux 发行包的实际阻塞，构建通过不能替代运行成功；没有修改旧产品源码或绕过错误。
 
 Linux 制品独立保存于 `legacy-runtime-linux-artifacts/`，容器内外 SHA256 一致：Agent `e127ae619d1a9b97b60b76d7cd4231d292f2777d631a6660d757ae3a43e32b30`，Server HTTP 入口 `21b0293d92679de7dc595b582a83c65b160b8021b9249e51b913877550688229`，server-cli Linux arm64 归档 `481126676de7de1feee727b28ef05aaced1a0afee208370e276a6c0fb9a65aaa`。HTTP dist 外部依赖未作为独立发行闭包保存；其运行验证使用容器内锁定安装。不得将 Linux 结果当成 macOS Desktop/Host 运行证明。容器清理前的进程清单只剩测试容器 init/sleep 与检查命令；清理记录在 `legacy-runtime-linux-cleanup.log`。现阶段 R48 仍受独立 server-cli 启动失败及真实旧 Host/Agent、continuous、replayable 和新旧混布未验证所阻塞；R60 未验证。
+
+主控于 2026-11-03 补充容器清理复核：`docker ps -a --filter name=zody-r02-legacy-smoke-20261102 --format '{{.ID}} {{.Names}} {{.Status}}'` 退出 0、输出为空，命名测试容器已不在容器列表。证据为 `output/zody-rename-r02/controller-container-cleanup-check.log` 和同名 JSON。该命令仅检查本任务容器，没有清理其他容器。macOS 的独立发行失败复现另见 `R02-server-cli-baseline-defect.md`，不以重复次数替代实际日志。

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NodeProviderConfigRuntime } from "../src/provider-config-runtime.js";
-import { decodeZCodeBuiltinRelease } from "../src/zcode-builtin-release.js";
+import { decodeZCodeBuiltinRelease } from "../src/zody-builtin-release.js";
 
 const release = {
   schemaVersion: 1,

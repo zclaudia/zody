@@ -30,15 +30,15 @@
 
 ## agent 准备链路
 
-当前 desktop 与 remote 默认都使用编译后的 `zcode.cjs`，不再按平台下载内嵌 Node 的原生
+当前 desktop 与 remote 默认都使用编译后的 `zody.cjs`，不再按平台下载内嵌 Node 的原生
 `zcode-agent`：
 
-1. `scripts/build-desktop-agent-cli.mjs` 构建 `apps/zcode-cli/packages/cli/dist/zcode.cjs`，并构建、校验
+1. `scripts/build-desktop-agent-cli.mjs` 构建 `apps/zody-cli/packages/cli/dist/zody.cjs`，并构建、校验
    CUA 等 Dev 必需的官方插件 runtime。`pnpm dev:desktop` 在 `pre-dev` 后执行该脚本，开发态 resolver
    优先直接使用 workspace 内的 bundle。
-2. 桌面打包的 `prepare:agent-bundle` 将 `zcode.cjs` 和官方插件 seed 资源写入
+2. 桌面打包的 `prepare:agent-bundle` 将 `zody.cjs` 和官方插件 seed 资源写入
    `packages/desktop/bundled-agents/<platform>/glm/`，再由 electron-builder 复制到安装包。
-3. remote 资产的 `prepare-prebuilds.mjs` 复用同一份 `zcode.cjs`，写入各平台
+3. remote 资产的 `prepare-prebuilds.mjs` 复用同一份 `zody.cjs`，写入各平台
    `packages/desktop/mock-cdn/releases/<version>/glm/<platform>/` 后产出 component artifact；远端使用已部署的
    Node 执行该 bundle。
 

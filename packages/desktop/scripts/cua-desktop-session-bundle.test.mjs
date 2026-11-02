@@ -38,17 +38,23 @@ test("entry pins stay bound to their own name and hash", () => {
 
   const wrongName = pinEntries();
   wrongName[0].name = "fixture-entry.mjs";
-  assert.throws(() => validateEntryPins(wrongName), (error) => {
-    assert.equal(error.code, "entry-pin-name-mismatch");
-    return true;
-  });
+  assert.throws(
+    () => validateEntryPins(wrongName),
+    (error) => {
+      assert.equal(error.code, "entry-pin-name-mismatch");
+      return true;
+    },
+  );
 
   const sameHash = pinEntries();
   sameHash[1].sha256 = sameHash[0].sha256;
-  assert.throws(() => validateEntryPins(sameHash), (error) => {
-    assert.equal(error.code, "entry-pin-hash-collision");
-    return true;
-  });
+  assert.throws(
+    () => validateEntryPins(sameHash),
+    (error) => {
+      assert.equal(error.code, "entry-pin-hash-collision");
+      return true;
+    },
+  );
 });
 
 test("unsupported native shim must match its fixed hash", async () => {
@@ -65,10 +71,13 @@ test("unsupported native shim must match its fixed hash", async () => {
         },
       }),
     );
-    await assert.rejects(() => loadUnsupportedNativeModules(pins), (error) => {
-      assert.equal(error.code, "unsupported-shim-mismatch");
-      return true;
-    });
+    await assert.rejects(
+      () => loadUnsupportedNativeModules(pins),
+      (error) => {
+        assert.equal(error.code, "unsupported-shim-mismatch");
+        return true;
+      },
+    );
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -78,10 +87,7 @@ test("workspace dist inputs map to current source behind workspace exports", asy
   const mapped = await workspaceSourceCounterpart(
     "apps/zody-cli/packages/bootstrap/dist/app/create-app.js",
   );
-  assert.equal(
-    mapped,
-    join(REPO_ROOT, "apps/zody-cli/packages/bootstrap/src/app/create-app.ts"),
-  );
+  assert.equal(mapped, join(REPO_ROOT, "apps/zody-cli/packages/bootstrap/src/app/create-app.ts"));
   assert.deepEqual(
     staleWorkspaceDistInputs({
       inputs: {
@@ -96,10 +102,7 @@ test("workspace dist inputs map to current source behind workspace exports", asy
       "apps/zody-cli/packages/contracts/dist/no-source-counterpart.js",
     ],
   );
-  assert.equal(
-    await workspaceSourceCounterpart("node_modules/example/dist/index.js"),
-    undefined,
-  );
+  assert.equal(await workspaceSourceCounterpart("node_modules/example/dist/index.js"), undefined);
   assert.equal(
     await workspaceSourceCounterpart(
       "apps/zody-cli/packages/adapters/node_modules/agent-base/dist/index.js",
@@ -145,7 +148,10 @@ test("workspace source resolver restores caller pluginData", async () => {
 
   const mapped = await resolver(resolveArgs("@zody/bootstrap/app/create-app"));
   assert.equal(resolutions[0].options.pluginData.cuaWorkspaceSourceResolving, true);
-  assert.equal(mapped.path, join(REPO_ROOT, "apps/zody-cli/packages/bootstrap/src/app/create-app.ts"));
+  assert.equal(
+    mapped.path,
+    join(REPO_ROOT, "apps/zody-cli/packages/bootstrap/src/app/create-app.ts"),
+  );
   assert.equal(mapped.pluginData, callerPluginData);
 
   const normal = await resolver(resolveArgs("@zody/contracts/no-source-counterpart"));
@@ -201,7 +207,10 @@ test("sealed entry audit rejects both workspace scopes", async () => {
     const metafilePath = join(dir, "metafile.json");
     await writeFile(metafilePath, JSON.stringify({ inputs: {}, outputs: {} }));
     for (const scope of ["zcode", "zody"]) {
-      for (const source of [`import value from "@${scope}/shared";`, `await import("@${scope}/shared");`]) {
+      for (const source of [
+        `import value from "@${scope}/shared";`,
+        `await import("@${scope}/shared");`,
+      ]) {
         await writeFile(output, source);
         await assert.rejects(
           () => auditEntry({ name: "host-entry.mjs", output, metafilePath }),
@@ -209,6 +218,41 @@ test("sealed entry audit rejects both workspace scopes", async () => {
         );
       }
     }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("sealed entry rejects actual workspace side-effect imports and require calls only", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "cua-session-syntax-"));
+  try {
+    const output = join(dir, "entry.mjs");
+    const metafilePath = join(dir, "metafile.json");
+    await writeFile(metafilePath, JSON.stringify({ inputs: {}, outputs: {} }));
+    for (const scope of ["zcode", "zody"]) {
+      for (const source of [
+        `import "@${scope}/shared";`,
+        `await import(\`@${scope}/shared\`, { with: { type: "json" } });`,
+        `await import("@${scope}/shared", { with: { type: "json" } });`,
+        `require(\`@${scope}/shared\`);`,
+        `require("@${scope}/shared");`,
+        `__require("@${scope}/shared");`,
+      ]) {
+        await writeFile(output, source);
+        await assert.rejects(
+          () => auditEntry({ name: "host-entry.mjs", output, metafilePath }),
+          (error) => error.code === "entry-external-package",
+        );
+      }
+    }
+    await writeFile(
+      output,
+      `// import "@zody/shared";
+const text = 'require("@zcode/shared")';
+import "node:fs";
+`,
+    );
+    await auditEntry({ name: "host-entry.mjs", output, metafilePath });
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -297,10 +341,7 @@ test("fixture helper keeps hashing through the fixed toolchain module", async ()
 
 test("app bundle declares the fixed icon and the source icns stays present", async () => {
   const plist = appInfoPlist();
-  assert.match(
-    plist,
-    new RegExp(`<key>CFBundleIconFile</key><string>${APP_ICON_FILE}</string>`),
-  );
+  assert.match(plist, new RegExp(`<key>CFBundleIconFile</key><string>${APP_ICON_FILE}</string>`));
   // 图标源是 git 追踪的主应用图标；builder preflight 缺失即失败，这里守住同一合同。
   const info = await stat(APP_ICON_SOURCE);
   assert.equal(info.isFile(), true);

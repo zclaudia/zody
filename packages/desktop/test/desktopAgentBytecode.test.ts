@@ -19,7 +19,7 @@ afterEach(async () => {
 async function fixture(source: string) {
   const dir = await mkdtemp(join(tmpdir(), "zcode bytecode 中文 "));
   directories.push(dir);
-  const entryPath = join(dir, "zcode.cjs");
+  const entryPath = join(dir, "zody.cjs");
   await writeFile(entryPath, source);
   return { dir, entryPath };
 }
@@ -42,7 +42,7 @@ process.stdout.write(JSON.stringify({value, args:process.argv.slice(2),
   expect(JSON.parse(result.stdout)).toEqual({
     value: 42,
     args: ["app-server", "--stdio"],
-    filename: "zcode.cjs",
+    filename: "zody.cjs",
     directory: await realpath(dir),
     dynamic: 7,
     hasDynamicSource: true,

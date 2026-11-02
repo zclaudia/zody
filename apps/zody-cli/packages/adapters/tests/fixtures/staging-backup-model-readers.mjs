@@ -1,7 +1,7 @@
 // 冻结旧版实际 Reader（esbuild 移除类型/打包实际调用依赖），来源 790884b1ce4b990583ab40625b5f283e2169eb36。
 // model-mapper 只提取实际使用的 modelRefFromInternal，hydration 提取三条模型读取函数。
 // 禁止用新版 Reader 冒充回滚验证；更新 fixture 需明确变更旧基线。
-// frozen:apps/zody-cli/packages/bootstrap/src/tool-call-product-visibility.ts
+// frozen:apps/zcode-cli/packages/bootstrap/src/tool-call-product-visibility.ts
 var EMPTY_TOOL_NAME_PLACEHOLDER = "empty_tool_name";
 function shouldHideInvalidToolCallFromProduct(toolName, metadata) {
   if (typeof toolName !== "string") return false;
@@ -15,7 +15,7 @@ function shouldHideInvalidToolCallFromProduct(toolName, metadata) {
   );
 }
 
-// frozen:apps/zody-cli/packages/bootstrap/src/zody-protocol/model-mapper.ts
+// frozen:apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-mapper.ts
 function modelRefFromInternal(input) {
   return {
     modelId: String(input.modelId ?? input.modelID),
@@ -24,7 +24,7 @@ function modelRefFromInternal(input) {
   };
 }
 
-// apps/zody-cli/packages/bootstrap/src/zody-protocol/message-mapper.ts
+// apps/zcode-cli/packages/bootstrap/src/zcode-protocol/message-mapper.ts
 function mapMessageWithParts(message) {
   return {
     info:

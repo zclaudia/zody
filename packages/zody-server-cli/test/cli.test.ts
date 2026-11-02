@@ -25,7 +25,7 @@ async function createTestReleaseArchive(root: string, version: string): Promise<
   await writeFile(join(archiveRoot, "runtime", "node"), "node", "utf8");
   await writeFile(join(archiveRoot, "runtime", "server-cli.js"), "", "utf8");
   await writeFile(join(archiveRoot, "runtime", "server-core.js"), "", "utf8");
-  await writeFile(join(archiveRoot, "runtime", "zcode.cjs"), "", "utf8");
+  await writeFile(join(archiveRoot, "runtime", "zody.cjs"), "", "utf8");
   await writeFile(join(archiveRoot, "runtime", "package.json"), JSON.stringify({ type: "module" }), "utf8");
   await writeFile(
     join(archiveRoot, "manifest.json"),
@@ -34,7 +34,7 @@ async function createTestReleaseArchive(root: string, version: string): Promise<
       target: currentServerTarget(),
       appVersion: version,
       nodeVersion: "22.16.0",
-      entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zcode.cjs" },
+      entrypoints: { cli: "runtime/server-cli.js", core: "runtime/server-core.js", agent: "runtime/zody.cjs" },
       native: [],
     }),
     "utf8",

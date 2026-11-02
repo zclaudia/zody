@@ -8,8 +8,8 @@
 
 | 产品环境   | 仓库源文件                              |
 | ---------- | --------------------------------------- |
-| production | config/provider/zcode-builtin.json      |
-| test       | config/provider/zcode-builtin.test.json |
+| production | config/provider/zody-builtin.json      |
+| test       | config/provider/zody-builtin.test.json |
 
 两份都是完整 Release。生产文件是唯一编辑源，测试文件由
 `pnpm provider:config:sync-test` 生成并提交，revision 跟随生产文件。
@@ -62,8 +62,8 @@ Desktop / CLI / SEA 资源     HTTP / Remote / Server CLI 嵌入常量
           原有 Built-in Source / Registry
 ```
 
-Desktop 资源仍为 `resources/config/provider/zcode-builtin.json`；CLI 为
-`dist/provider/zcode-builtin.json`；SEA key 仍为 `zcode-provider/zcode-builtin.json`。
+Desktop 资源仍为 `resources/config/provider/zody-builtin.json`；CLI 为
+`dist/provider/zody-builtin.json`；SEA key 仍为 `zody-provider/zody-builtin.json`。
 Server 保持原有 JSON 编译常量。开发态 Desktop 根据同一个编译环境定位仓库源文件。
 显式配置路径注入优先级不变。
 

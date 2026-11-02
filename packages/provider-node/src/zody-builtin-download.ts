@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { decodeZCodeBuiltinRelease, type ZCodeBuiltinRelease } from "./zcode-builtin-release.js";
+import { decodeZCodeBuiltinRelease, type ZCodeBuiltinRelease } from "./zody-builtin-release.js";
 
 const clientConfigSchema = z
   .object({

@@ -299,7 +299,7 @@ describe("prepare-prebuilds release asset reuse", () => {
     const platformKey = "linux-x64";
 
     mkdirSync(join(previousReleaseDir, "glm", platformKey), { recursive: true });
-    writeFileSync(join(previousReleaseDir, "glm", platformKey, "zcode.cjs"), "old-glm", "utf8");
+    writeFileSync(join(previousReleaseDir, "glm", platformKey, "zody.cjs"), "old-glm", "utf8");
     writeManifest(previousReleaseDir, platformKey, [
       { id: "glm", version: currentGlmManifestVersion, mount: `glm/${platformKey}` },
     ]);
@@ -316,14 +316,14 @@ describe("prepare-prebuilds release asset reuse", () => {
               id: "glm",
               version: currentGlmManifestVersion,
               mount: `glm/${platformKey}`,
-              requiredPaths: ["zcode.cjs"],
+              requiredPaths: ["zody.cjs"],
             },
           ],
         ],
       ]),
     });
 
-    expect(existsSync(join(currentReleaseDir, "glm", platformKey, "zcode.cjs"))).toBe(false);
+    expect(existsSync(join(currentReleaseDir, "glm", platformKey, "zody.cjs"))).toBe(false);
   });
 
   it("新 app version 应从最近历史 release 复用版本一致且允许复用的资源", async () => {
@@ -341,7 +341,7 @@ describe("prepare-prebuilds release asset reuse", () => {
       "old-rg",
       "utf8",
     );
-    writeFileSync(join(previousReleaseDir, "server", "zcode-server.cjs"), "old-server", "utf8");
+    writeFileSync(join(previousReleaseDir, "server", "zody-server.cjs"), "old-server", "utf8");
     writeDefaultManifest(previousReleaseDir, platformKey);
 
     restoreReusableReleaseAssets({
@@ -379,7 +379,7 @@ describe("prepare-prebuilds release asset reuse", () => {
       readFileSync(join(currentReleaseDir, "tools", platformKey, "ripgrep", "rg"), "utf8"),
     ).toBe("old-rg");
     expect(() =>
-      readFileSync(join(currentReleaseDir, "server", "zcode-server.cjs"), "utf8"),
+      readFileSync(join(currentReleaseDir, "server", "zody-server.cjs"), "utf8"),
     ).toThrow();
   });
 

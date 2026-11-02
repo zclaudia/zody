@@ -220,10 +220,10 @@ async function buildCandidate(options) {
     );
 
     const providerConfig = await requireFile(
-      join(REPO_ROOT, "config/provider/zcode-builtin.json"),
+      join(REPO_ROOT, "config/provider/zody-builtin.json"),
       "builtin provider config",
     );
-    const providerDestination = join(resourcesDir, "config/provider/zcode-builtin.json");
+    const providerDestination = join(resourcesDir, "config/provider/zody-builtin.json");
     await copyFile(providerConfig.path, providerDestination);
     const defaultConfig = await requireFile(join(REPO_ROOT, "config/default.json"), "default config");
     await copyFile(defaultConfig.path, join(resourcesDir, "config/default.json"));

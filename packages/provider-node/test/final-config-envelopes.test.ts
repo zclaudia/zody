@@ -8,7 +8,7 @@ import {
 import {
   decodeZCodeBuiltinRelease,
   encodeZCodeBuiltinRelease,
-} from "../src/zcode-builtin-release.js";
+} from "../src/zody-builtin-release.js";
 
 describe("Todo104 最终文件外壳", () => {
   it("个人配置必需三个空数组，默认选择位于 config，往返不丢失", () => {
@@ -71,7 +71,7 @@ describe("Todo104 最终文件外壳", () => {
   it("实际 Builtin 用最终包装并完整往返，发布 revision 不倒退", async () => {
     const raw = JSON.parse(
       await readFile(
-        new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../config/provider/zody-builtin.json", import.meta.url),
         "utf8",
       ),
     );

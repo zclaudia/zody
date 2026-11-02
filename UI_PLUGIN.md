@@ -218,10 +218,10 @@ pnpm build
 
 # 主仓库：使用从源码构建的 CLI（已安装 `zody` 时可直接用 `zody plugins …`），将插件装进同一个开发配置。
 cd "$ZCODE_REPO"
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins marketplace add "$PLUGINS_REPO/dist/local-marketplace" --scope user
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins install excalidraw@zcode-plugins-local --scope user
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins enable excalidraw@zcode-plugins-local --scope user
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins list --json
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins marketplace add "$PLUGINS_REPO/dist/local-marketplace" --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins install excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins enable excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins list --json
 pnpm dev:desktop
 ```
 
@@ -235,8 +235,8 @@ pnpm dev:desktop
 cd "$PLUGINS_REPO"
 pnpm build
 cd "$ZCODE_REPO"
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins marketplace update zcode-plugins-local
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins install excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins marketplace update zcode-plugins-local
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins install excalidraw@zcode-plugins-local --scope user
 ```
 
 随后重启对应桌面实例，打开新会话验证。源码监听不会把插件仓库的修改自动复制到已安装插件；刷新来源只刷新目录，重新安装才更新代码副本。开发时同版本重装会重新复制；正式分发内容变化仍需升级插件清单、marketplace 和源码包版本。

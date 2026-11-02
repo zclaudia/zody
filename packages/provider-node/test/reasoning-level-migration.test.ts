@@ -20,7 +20,7 @@ import { legacyReasoningLevelRenames } from "../src/legacy-reasoning-level-renam
 
 const source = new NodeZCodeBuiltinProviderConfigSource({
   bundledFilePath: fileURLToPath(
-    new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+    new URL("../../../config/provider/zody-builtin.json", import.meta.url),
   ),
   watch: false,
 });

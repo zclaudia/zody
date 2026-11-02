@@ -6,7 +6,7 @@ describe("MCS published capability boundaries", () => {
   it("supports known Claude models across sites, without granting Sonnet or a different API", async () => {
     const release = JSON.parse(
       await readFile(
-        new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../config/provider/zody-builtin.json", import.meta.url),
         "utf8",
       ),
     );

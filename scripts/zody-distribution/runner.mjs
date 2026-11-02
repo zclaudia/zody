@@ -13,7 +13,7 @@ const { version } = JSON.parse(await readFile(join(root, "package.json"), "utf8"
 const runtimeNode = join(root, "runtime", process.platform === "win32" ? "node.exe" : "node");
 const serverEntry = join(root, "server", "entry-http.js");
 const webRoot = join(root, "web");
-const agentEntry = join(root, "agent", "zcode.cjs");
+const agentEntry = join(root, "agent", "zody.cjs");
 const cliBinary = join(root, "bin", process.platform === "win32" ? "zody-cli.exe" : "zody-cli");
 const runtimeToolsRoot = join(root, "runtime-tools");
 const runtimeToolEnvNames = Object.freeze({

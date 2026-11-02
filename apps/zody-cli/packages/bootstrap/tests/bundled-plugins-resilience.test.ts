@@ -236,7 +236,7 @@ describe("bundled official plugin cache resilience", () => {
       join(incompletePluginRoot, ".zcode-plugin", "plugin.json"),
       JSON.stringify({ name: "browser-use", version: "0.5.1" }),
     );
-    process.argv[1] = join(entrypointRoot, "zcode.cjs");
+    process.argv[1] = join(entrypointRoot, "zody.cjs");
     const logger = createLogger();
 
     let roots: string[] = [];
@@ -279,7 +279,7 @@ describe("bundled official plugin cache resilience", () => {
       join(incompletePluginRoot, ".zcode-plugin", "plugin.json"),
       JSON.stringify({ name: "browser-use", version: "0.5.1" }),
     );
-    process.argv[1] = join(entrypointRoot, "zcode.cjs");
+    process.argv[1] = join(entrypointRoot, "zody.cjs");
     const logger = createLogger();
 
     let outcome!: ReturnType<typeof resolveZCodePlugins>;
@@ -503,7 +503,7 @@ describe("bundled official plugin cache resilience", () => {
     const storageRoot = await createStorageRoot(cleanups);
     resolveOfficialPluginRoots({ storageRoot });
     const logger = createLogger();
-    process.argv[1] = join(storageRoot, "different-zcode.cjs");
+    process.argv[1] = join(storageRoot, "different-zody.cjs");
     faults.runtimeManifestTargetSuffix = ANDROID_MANIFEST_SUFFIX;
 
     expect(() => resolveOfficialPluginRoots({ logger, storageRoot })).not.toThrow();
@@ -523,7 +523,7 @@ describe("bundled official plugin cache resilience", () => {
     const storageRoot = await createStorageRoot(cleanups);
     resolveOfficialPluginRoots({ storageRoot });
     const logger = createLogger();
-    process.argv[1] = join(storageRoot, "different-zcode.cjs");
+    process.argv[1] = join(storageRoot, "different-zody.cjs");
     faults.runtimeManifestNotFoundTargetSuffix = ANDROID_MANIFEST_SUFFIX;
 
     expect(() => resolveOfficialPluginRoots({ logger, storageRoot })).not.toThrow();

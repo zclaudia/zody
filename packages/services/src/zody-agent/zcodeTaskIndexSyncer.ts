@@ -1,5 +1,5 @@
 /* eslint-disable max-lines -- task index 的 v4 帧摄入、snapshot upsert 和 workspace 广播必须共享同一份闭包状态。 */
-import { repairSubagentTaskIndex } from "#src/zcode-agent/repairSubagentTaskIndex.js";
+import { repairSubagentTaskIndex } from "#src/zody-agent/repairSubagentTaskIndex.js";
 import {
   deriveZCodeTaskStatusFromSessionSnapshot,
   generateTraceId,

@@ -67,16 +67,16 @@ describe("embedded search bash prelude", () => {
       backend: {
         kind: "internal-cli",
         command: "/Applications/ZCode Helper",
-        args: ["/tmp/zcode.cjs", "__internal-search"],
+        args: ["/tmp/zody.cjs", "__internal-search"],
         env: { ELECTRON_RUN_AS_NODE: "1" },
       },
     });
 
     expect(command).toContain(
-      'ELECTRON_RUN_AS_NODE=1 command \'/Applications/ZCode Helper\' /tmp/zcode.cjs __internal-search find "$@"',
+      'ELECTRON_RUN_AS_NODE=1 command \'/Applications/ZCode Helper\' /tmp/zody.cjs __internal-search find "$@"',
     );
     expect(command).toContain(
-      'ELECTRON_RUN_AS_NODE=1 command \'/Applications/ZCode Helper\' /tmp/zcode.cjs __internal-search grep "$@"',
+      'ELECTRON_RUN_AS_NODE=1 command \'/Applications/ZCode Helper\' /tmp/zody.cjs __internal-search grep "$@"',
     );
   });
 

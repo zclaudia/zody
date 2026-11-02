@@ -7,6 +7,6 @@
   "type": "module",
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "test:integration": "node test/dev-workflow.integration.mjs ../cli/dist/zcode.cjs"
+    "test:integration": "node test/dev-workflow.integration.mjs ../cli/dist/zody.cjs"
   }
 }

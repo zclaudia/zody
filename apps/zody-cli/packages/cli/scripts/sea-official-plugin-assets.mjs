@@ -163,7 +163,7 @@ export const officialSeaPlugins = [
     packageName: "@zody/zody-guide-plugin",
     requiresRuntime: false,
     requiredSeedPaths: ["skills/zcode-configuration-guide/SKILL.md"],
-    rootPath: join("packages", "zcode-guide-plugin"),
+    rootPath: join("packages", "zody-guide-plugin"),
     version: "0.3.0",
   },
   // superpowers 已从内置插件下线，改走 UI 推荐区按需安装；这里不再打入 SEA 资源清单。

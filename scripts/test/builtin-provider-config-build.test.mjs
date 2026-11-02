@@ -20,8 +20,8 @@ import {
 } from "../../apps/zody-cli/packages/cli/scripts/sea-provider-config-assets.mjs";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
-const productionFile = "config/provider/zcode-builtin.json";
-const testFile = "config/provider/zcode-builtin.test.json";
+const productionFile = "config/provider/zody-builtin.json";
+const testFile = "config/provider/zody-builtin.test.json";
 const baseline = JSON.parse(await readFile(resolve(repositoryRoot, productionFile), "utf8"));
 
 test("both environments load the decoder through a portable file URL", async () => {
@@ -79,7 +79,7 @@ for (const [environment, file, revision] of [
     assert.equal(result.environment, environment);
     assert.equal(result.sourcePath, resolve(root, file));
     assert.equal(
-      JSON.parse(await readFile(resolve(directory, "zcode-builtin.json"), "utf8")).revision,
+      JSON.parse(await readFile(resolve(directory, "zody-builtin.json"), "utf8")).revision,
       revision,
     );
     const assets = await collectSeaProviderConfigAssets({ root, env: { ZCODE_ENV: environment } });
@@ -101,13 +101,13 @@ for (const [environment, file, revision] of [
       sourcemap: false,
       env: { ZCODE_ENV: environment },
     });
-    assert.match(await readFile(resolve(cliDirectory, "dist/zcode.cjs"), "utf8"), /fixture CLI/);
+    assert.match(await readFile(resolve(cliDirectory, "dist/zody.cjs"), "utf8"), /fixture CLI/);
     assert.equal(
       await readFile(resolve(cliDirectory, "dist/THIRD-PARTY-NOTICES.md"), "utf8"),
       "fixture notices\n",
     );
     assert.equal(
-      JSON.parse(await readFile(resolve(cliDirectory, "dist/provider/zcode-builtin.json"), "utf8"))
+      JSON.parse(await readFile(resolve(cliDirectory, "dist/provider/zody-builtin.json"), "utf8"))
         .revision,
       revision,
     );
@@ -144,7 +144,7 @@ test("reused JS still gets fresh config after switching environment or updating 
   const root = await fixture(t);
   const directory = resolve(root, "dist/provider");
   await mkdir(resolve(root, "dist"));
-  const js = resolve(root, "dist/zcode.cjs");
+  const js = resolve(root, "dist/zody.cjs");
   await writeFile(js, "existing CLI JS");
   for (const [environment, revision] of [
     ["production", 101],
@@ -155,7 +155,7 @@ test("reused JS still gets fresh config after switching environment or updating 
       await writeFile(resolve(root, testFile), JSON.stringify({ ...baseline, revision }));
     await stageBuiltinProviderConfig({ root, directory, env: { ZCODE_ENV: environment } });
     assert.equal(
-      JSON.parse(await readFile(resolve(directory, "zcode-builtin.json"), "utf8")).revision,
+      JSON.parse(await readFile(resolve(directory, "zody-builtin.json"), "utf8")).revision,
       revision,
     );
     assert.equal(await readFile(js, "utf8"), "existing CLI JS");
@@ -169,7 +169,7 @@ for (const invalid of [null, "{broken", "{}", JSON.stringify({ ...baseline, conf
     else await writeFile(resolve(root, testFile), invalid);
     await assert.rejects(
       loadBuiltinProviderConfig({ root, env: { ZCODE_ENV: "test" } }),
-      /zcode-builtin.test.json/,
+      /zody-builtin.test.json/,
     );
     await assert.rejects(collectSeaProviderConfigAssets({ root, env: { ZCODE_ENV: "test" } }));
     assert.equal(
@@ -203,7 +203,7 @@ test("Turbo and bootstrap include the out-of-workspace configuration inputs", as
       testFile,
       "scripts/builtin-provider-config.mjs",
       "packages/provider/src/**",
-      "packages/provider-node/src/zcode-builtin-release.ts",
+      "packages/provider-node/src/zody-builtin-release.ts",
     ]) {
       assert.ok(task.inputs.includes(`$TURBO_ROOT$/../../${input}`), `${taskName}: ${input}`);
     }
@@ -226,7 +226,7 @@ test("real tsup config bundling retains helper location and embeds selected rele
   for (const environment of ["test", "production"]) {
     process.env.ZCODE_ENV = environment;
     const expected = await loadBuiltinProviderConfig();
-    for (const packageName of ["server", "zcode-server-cli", "desktop"]) {
+    for (const packageName of ["server", "zody-server-cli", "desktop"]) {
       const filepath = resolve(repositoryRoot, "packages", packageName, "tsup.config.ts");
       const { mod } = await bundleRequire({ filepath, cwd: dirname(filepath), format: "esm" });
       if (packageName === "desktop") {
@@ -249,7 +249,7 @@ test("real tsup config bundling retains helper location and embeds selected rele
       `${pathToFileURL(resolve(repositoryRoot, "packages/desktop/electron-builder.config.js")).href}?env=${environment}`
     );
     const resource = builder.extraResources.find(
-      (entry) => entry.to === "config/provider/zcode-builtin.json",
+      (entry) => entry.to === "config/provider/zody-builtin.json",
     );
     assert.equal(resource.from, expected.sourcePath);
   }

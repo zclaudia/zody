@@ -9,7 +9,7 @@ import {
   encodeZCodeBuiltinRelease,
   serializeZCodeBuiltinRelease,
   type ZCodeBuiltinRelease,
-} from "./zcode-builtin-release.js";
+} from "./zody-builtin-release.js";
 
 export interface NodeZCodeBuiltinProviderConfigSourceOptions {
   readonly bundledFilePath: string;

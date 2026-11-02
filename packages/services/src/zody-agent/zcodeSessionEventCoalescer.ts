@@ -1,5 +1,5 @@
 import type { ZCodeSessionEvent } from "@zody/shared";
-import type { ZCodeAgentServiceEvent } from "#src/zcode-agent/zcodeAgent.js";
+import type { ZCodeAgentServiceEvent } from "#src/zody-agent/zcodeAgent.js";
 
 const DEFAULT_BACKGROUND_SESSION_EVENT_COALESCE_MS = 1_500;
 const DEFAULT_BACKGROUND_SESSION_EVENT_MAX_ITEMS = 96;

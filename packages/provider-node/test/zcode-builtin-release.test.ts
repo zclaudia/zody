@@ -146,7 +146,7 @@ describe("ZCode Built-in Release", () => {
       join("/environment", "runtime", "provider", "darwin-aarch64", "3.0.0"),
     );
     expect(basename(dirname(first.activeFilePath))).toMatch(/^endpoint-[a-f0-9]{32}$/u);
-    expect(basename(first.activeFilePath)).toBe("zcode-builtin.json");
+    expect(basename(first.activeFilePath)).toBe("zody-builtin.json");
     expect(first.controlFilePath).toBe(
       join(dirname(first.activeFilePath), "zcode-builtin-refresh.json"),
     );
@@ -621,7 +621,7 @@ describe("ZCode Built-in Release", () => {
 });
 
 async function temporaryRoot(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "zcode-builtin-release-"));
+  const root = await mkdtemp(join(tmpdir(), "zody-builtin-release-"));
   roots.push(root);
   return root;
 }

@@ -20,7 +20,7 @@ describe("resolveZCodeBuiltinProviderConfigFilePath", () => {
           env: {},
         }),
       ),
-    ).toBe("/Applications/ZCode.app/Contents/Resources/config/provider/zcode-builtin.json");
+    ).toBe("/Applications/ZCode.app/Contents/Resources/config/provider/zody-builtin.json");
 
     expect(
       toPosixPath(
@@ -30,17 +30,17 @@ describe("resolveZCodeBuiltinProviderConfigFilePath", () => {
           env: {},
         }),
       ),
-    ).toBe("/repo/config/provider/zcode-builtin.test.json");
+    ).toBe("/repo/config/provider/zody-builtin.test.json");
   });
 
   it("显式 ZCode Built-in Config Source 优先于安装布局", () => {
     expect(
       resolveZCodeBuiltinProviderConfigFilePath({
-        env: { ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: "/fixtures/zcode-builtin.json" },
+        env: { ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: "/fixtures/zody-builtin.json" },
         isPackaged: true,
         resourcesPath: "/Applications/ZCode.app/Contents/Resources",
       }),
-    ).toBe("/fixtures/zcode-builtin.json");
+    ).toBe("/fixtures/zody-builtin.json");
   });
 });
 
@@ -63,7 +63,7 @@ describe("开发态按编译环境选取配置", () => {
         }),
       ),
     ).toBe(
-      `/repo/config/provider/${environment === "production" ? "zcode-builtin.json" : "zcode-builtin.test.json"}`,
+      `/repo/config/provider/${environment === "production" ? "zody-builtin.json" : "zody-builtin.test.json"}`,
     );
   });
 });

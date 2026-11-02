@@ -146,7 +146,7 @@ export const resolveBuildAliases = ({
   ),
   // esbuild alias 按前缀改写导入路径。所有 shared subpath 必须在通用入口前精确声明，
   // 否则会被错误解析为 `src/index.ts/<subpath>` 并让 Desktop agent/SEA 打包失败。
-  "@zody/shared/zcode-protocol-v4": resolve(
+  "@zody/shared/zody-protocol-v4": resolve(
     rootDirectory,
     "../../packages/shared/src/zody-protocol-v4/index.ts",
   ),
@@ -220,7 +220,7 @@ export const buildCli = async ({
   }),
 } = {}) => {
   const cliVersion = await version;
-  const outfile = resolve(cliDirectory, "dist/zcode.cjs");
+  const outfile = resolve(cliDirectory, "dist/zody.cjs");
   const sourcemapFile = `${outfile}.map`;
 
   await stageBuiltinProviderConfig({
@@ -247,7 +247,7 @@ export const buildCli = async ({
     // SEA 资源由 build-sea 的 native asset 收集阶段单独处理。
     external: resolveBuildExternal(),
     format: "cjs",
-    // 桌面 app 集成只内置 zcode.cjs，旧 desktop-agent 构建复用 CLI 调试产物，
+    // 桌面 app 集成只内置 zody.cjs，旧 desktop-agent 构建复用 CLI 调试产物，
     // 未压缩且会留下指向未随包复制的 sourcemap。桌面 agent 模式压缩 JS，同时保留
     // 函数/类名，避免依赖 name 的诊断与注册逻辑被 esbuild 标识符压缩影响。
     keepNames: minify,
@@ -260,7 +260,7 @@ export const buildCli = async ({
     platform: "node",
     sourcemap,
     // target 取所有承载运行时里最低的 Node 版本：桌面用 Electron 内置 Node 24，
-    // 远端 SSH 复用已部署的独立 Node v22.16 跑同一份 zcode.cjs。降到 node22 保证这份产物
+    // 远端 SSH 复用已部署的独立 Node v22.16 跑同一份 zody.cjs。降到 node22 保证这份产物
     // 在两端都不会用到目标运行时不支持的语法/特性。
     target: "node22",
     alias: resolveBuildAliases({ cliDirectory, rootDirectory }),
@@ -271,7 +271,7 @@ export const buildCli = async ({
   }
 
   await chmod(outfile, executableFileMode);
-  // zcode.cjs 内联了第三方代码；dist 旁的伴随声明供发行 CLI 与统一分发包（build-zcode）复制。
+  // zody.cjs 内联了第三方代码；dist 旁的伴随声明供发行 CLI 与统一分发包（build-zcode）复制。
   await stageThirdPartyNotices(resolve(cliDirectory, "dist"), resolve(rootDirectory, "../.."));
 };
 

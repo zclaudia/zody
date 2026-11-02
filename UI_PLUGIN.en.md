@@ -218,10 +218,10 @@ pnpm build
 
 # Use the CLI built from source (or `zody plugins …` when the `zody` CLI is installed) to install into the same development profile.
 cd "$ZCODE_REPO"
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins marketplace add "$PLUGINS_REPO/dist/local-marketplace" --scope user
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins install excalidraw@zcode-plugins-local --scope user
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins enable excalidraw@zcode-plugins-local --scope user
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins list --json
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins marketplace add "$PLUGINS_REPO/dist/local-marketplace" --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins install excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins enable excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins list --json
 pnpm dev:desktop
 ```
 
@@ -235,8 +235,8 @@ If you are using an existing desktop client, build the plugin repository and ins
 cd "$PLUGINS_REPO"
 pnpm build
 cd "$ZCODE_REPO"
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins marketplace update zcode-plugins-local
-node apps/zody-cli/packages/cli/dist/zcode.cjs plugins install excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins marketplace update zcode-plugins-local
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins install excalidraw@zcode-plugins-local --scope user
 ```
 
 Restart the corresponding desktop instance and verify in a new session. Source watching does not automatically copy plugin repository changes into installed plugins. Refreshing a source updates the catalogue; reinstalling updates the installed code. During development, reinstalling the same version copies the files again. Changes to distributed content still require version bumps in the plugin manifest, marketplace entry, and source package.

@@ -108,7 +108,7 @@ function stageDevAgentBundle() {
 }
 
 async function runBootstrapWithRemoteBuild() {
-  if (existsSync(resolve(repoRoot, "apps/zody-cli/packages/cli/dist/zcode.cjs"))) {
+  if (existsSync(resolve(repoRoot, "apps/zody-cli/packages/cli/dist/zody.cjs"))) {
     await stageBuiltinProviderConfig({
       root: repoRoot,
       env: pnpmRunEnv,

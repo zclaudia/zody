@@ -8,7 +8,7 @@ export const WINDOWS_CUA_DEV_ROOT_ENV = "ZCODE_CUA_DEV_ROOT";
  * 换成 isolated linker 时该路径会变成 symlink，解析会以 development-root-not-found
  * fail closed，而不是悄悄换用别的运行时。
  */
-export const WINDOWS_CUA_PRODUCER_SEGMENTS = ["node_modules", "@zcode", "zcode-cua"];
+export const WINDOWS_CUA_PRODUCER_SEGMENTS = ["node_modules", "@zody", "zody-cua"];
 
 /**
  * 标准 dev 启动在 Windows 上要绑定的 CUA runtime 根。

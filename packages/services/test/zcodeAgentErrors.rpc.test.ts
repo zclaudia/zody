@@ -1,10 +1,10 @@
 import { ChannelClient, ChannelServer, createQueuePair, ProxyChannel } from "@zody/rpc";
 import { describe, expect, it } from "vitest";
-import { IZCodeAgentService } from "#src/zcode-agent/zcodeAgent.js";
+import { IZCodeAgentService } from "#src/zody-agent/zcodeAgent.js";
 import {
   ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
   ZCodeAgentMcpStatusModeUnsupportedError,
-} from "#src/zcode-agent/zcodeAgentErrors.js";
+} from "#src/zody-agent/zcodeAgentErrors.js";
 
 describe("ZCode Agent RPC errors", () => {
   it("preserves the MCP status-only unsupported code across ChannelClient RPC", async () => {

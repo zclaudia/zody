@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- zcodeSessionService 聚合 desktop-continuous session 操作、draft lifecycle 和 task index 同步边界，拆分需要单独设计。 */
-import type { IZCodeAgentService } from "#src/zcode-agent/zcodeAgent.js";
-import type { ZCodeTaskIndexSyncer } from "#src/zcode-agent/zcodeTaskIndexSyncer.js";
+import type { IZCodeAgentService } from "#src/zody-agent/zcodeAgent.js";
+import type { ZCodeTaskIndexSyncer } from "#src/zody-agent/zcodeTaskIndexSyncer.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import {
   createSessionTraceId,
@@ -21,12 +21,12 @@ import type {
   ZCodeSessionSetThoughtLevelParams,
   ZCodeTaskTarget,
   ZCodeSessionWorkspaceTarget,
-} from "#src/zcode-session/zcodeSession.js";
-import { formatModelPickerValue } from "#src/zcode-agent/zcodeConfigOptions.js";
-import { createZCodeSessionApiRetryRuntimeTracker } from "#src/zcode-session/zcodeSessionApiRetry.js";
+} from "#src/zody-session/zcodeSession.js";
+import { formatModelPickerValue } from "#src/zody-agent/zcodeConfigOptions.js";
+import { createZCodeSessionApiRetryRuntimeTracker } from "#src/zody-session/zcodeSessionApiRetry.js";
 import { appendWorkspaceToFilesystemMcpServers } from "#src/session/mcpWorkspaceScope.js";
-import { repairEmptyImportedClaudeSessionSnapshot } from "#src/zcode-session/importedClaudeSessionRepair.js";
-import { createZCodeDeferredDraftRegistry } from "#src/zcode-session/zcodeSessionDraftRegistry.js";
+import { repairEmptyImportedClaudeSessionSnapshot } from "#src/zody-session/importedClaudeSessionRepair.js";
+import { createZCodeDeferredDraftRegistry } from "#src/zody-session/zcodeSessionDraftRegistry.js";
 import type { CuaProductMcpServerResolver } from "#src/cua-permission-broker/index.js";
 
 const logger = createServiceLogger("zcode-session-service");

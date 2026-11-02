@@ -487,7 +487,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
       "packages",
       "cli",
       "dist",
-      "zcode.cjs",
+      "zody.cjs",
     );
     mkdirSync(desktopDir, { recursive: true });
     mkdirSync(dirname(distEntrypoint), { recursive: true });
@@ -527,7 +527,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
       });
       const root = mkdtempSync(join(tmpdir(), "zcode-bytecode-resolver-"));
       createdDirs.push(root);
-      const source = join(root, "apps/zody-cli/packages/cli/dist/zcode.cjs");
+      const source = join(root, "apps/zody-cli/packages/cli/dist/zody.cjs");
       const bytecode = join(dirname(source), "zcode.bytecode.cjs");
       mkdirSync(dirname(source), { recursive: true });
       writeFileSync(source, "");
@@ -553,7 +553,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     Object.defineProperty(process.versions, "electron", { configurable: true, value: "41.0.3" });
     const root = mkdtempSync(join(tmpdir(), "zcode-bytecode-missing-"));
     createdDirs.push(root);
-    const source = join(root, "apps/zody-cli/packages/cli/dist/zcode.cjs");
+    const source = join(root, "apps/zody-cli/packages/cli/dist/zody.cjs");
     mkdirSync(dirname(source), { recursive: true });
     writeFileSync(source, "");
     process.chdir(root);
@@ -579,7 +579,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
       "packages",
       "cli",
       "dist",
-      "zcode.cjs",
+      "zody.cjs",
     );
     mkdirSync(desktopDir, { recursive: true });
     mkdirSync(dirname(distEntrypoint), { recursive: true });
@@ -626,7 +626,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     delete process.env.ZCODE_AGENT_SERVER_ARGS_JSON;
     delete process.env.ZCODE_AGENT_SERVER_CWD;
 
-    // Bugfix: SSH 远端把 zcode-server.cjs 部署到 ~/.zcoder/server/，cwd 不在仓库内、
+    // Bugfix: SSH 远端把 zody-server.cjs 部署到 ~/.zcoder/server/，cwd 不在仓库内、
     // ZCODE_AGENT_SERVER_COMMAND 也没设；旧 resolver 只识别 env 和 monorepo 源码树，
     // 即使 zcode-agent 已部署到 ~/.zcoder/server/agents/glm/，resolver 也找不到。
     // 这里用 GLM_BINARY_PATH（=runtime.binaryEnvVar）模拟该部署场景，
@@ -798,7 +798,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-provider-env-"));
     createdDirs.push(workspacePath);
     const markerPath = join(workspacePath, "provider-env.json");
-    const zcodeBuiltinFilePath = join(workspacePath, "zcode-builtin.json");
+    const zcodeBuiltinFilePath = join(workspacePath, "zody-builtin.json");
     const personalFilePath = join(workspacePath, "personal.json");
     const manager = new ZCodeAgentProcessManager({
       commandResolver: () => ({

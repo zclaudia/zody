@@ -19,7 +19,7 @@ import {
 } from "@zody/shared";
 import type { CliEnv } from "./env.js";
 
-export const SEA_ZCODE_BUILTIN_PROVIDER_CONFIG_ASSET_KEY = "zcode-provider/zcode-builtin.json";
+export const SEA_ZCODE_BUILTIN_PROVIDER_CONFIG_ASSET_KEY = "zody-provider/zody-builtin.json";
 
 export function createCliProviderRefreshReporter(
   stderr: Pick<NodeJS.WriteStream, "write"> = process.stderr,
@@ -147,8 +147,8 @@ async function resolveBundledZCodeBuiltinProviderConfig(input: {
   // 全局 bin 可以是软链接，随包配置必须相对真实入口定位。
   const entryDirectory = dirname(realpathSync(resolve(entrypoint)));
   const candidates = [
-    join(entryDirectory, "provider", "zcode-builtin.json"),
-    resolve(entryDirectory, "../../../../../config/provider/zcode-builtin.json"),
+    join(entryDirectory, "provider", "zody-builtin.json"),
+    resolve(entryDirectory, "../../../../../config/provider/zody-builtin.json"),
   ];
   const candidate = candidates.find((filePath) => existsSync(filePath));
   if (candidate) return candidate;

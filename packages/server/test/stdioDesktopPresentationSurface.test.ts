@@ -77,11 +77,11 @@ describe("stdio Desktop presentation surface", () => {
     process.env[ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV] = "1";
     process.env.ZCODE_AGENT_SERVER_COMMAND = process.execPath;
     process.env.ZCODE_AGENT_SERVER_ARGS_JSON = JSON.stringify([
-      "zcode.cjs",
+      "zody.cjs",
       "app-server",
       "--stdio",
     ]);
-    const zcodeBuiltinProviderConfigFilePath = join(home, "zcode-builtin.json");
+    const zcodeBuiltinProviderConfigFilePath = join(home, "zody-builtin.json");
     const personalConfigFilePath = join(home, ".zody", "v2", "provider_config.json");
     await mkdir(join(home, ".zody", "v2"), { recursive: true });
     await writeFile(
@@ -225,7 +225,7 @@ describe("stdio Desktop presentation surface", () => {
         }),
       );
       expect(resolvedCommand).toEqual({
-        args: ["zcode.cjs", "app-server", "--stdio", "--surface", "desktop"],
+        args: ["zody.cjs", "app-server", "--stdio", "--surface", "desktop"],
         command: process.execPath,
         cwd: "/workspace/project",
       });

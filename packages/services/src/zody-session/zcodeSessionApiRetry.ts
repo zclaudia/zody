@@ -7,7 +7,7 @@ import {
   zcodeApiRetryFromModelNetworkStatusPayload,
   zcodeApiRetryFromStreamRecoveryPayload,
 } from "@zody/shared";
-import type { ZCodeSessionServiceEvent, ZCodeTaskTarget } from "#src/zcode-session/zcodeSession.js";
+import type { ZCodeSessionServiceEvent, ZCodeTaskTarget } from "#src/zody-session/zcodeSession.js";
 
 export function createZCodeSessionApiRetryRuntimeTracker(): {
   trackApiRetryFromSessionEvent: (

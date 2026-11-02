@@ -36,7 +36,7 @@ export function resolveZCodeBuiltinCachePaths(
     endpointKey,
   );
   return {
-    activeFilePath: join(directory, "zcode-builtin.json"),
+    activeFilePath: join(directory, "zody-builtin.json"),
     controlFilePath: join(directory, "zcode-builtin-refresh.json"),
   };
 }

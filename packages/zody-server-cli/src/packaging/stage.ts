@@ -133,7 +133,7 @@ export interface StageOptions {
   appVersion: string;
   /** tsup 产物目录（server-cli.js / server-core.js） */
   distDir: string;
-  /** 既有 CLI/Agent bundle（zcode.cjs，自包含 CJS） */
+  /** 既有 CLI/Agent bundle（zody.cjs，自包含 CJS） */
   agentBundlePath: string;
   /** 已准备好的目标平台 Node 二进制 */
   nodeBinaryPath: string;
@@ -361,7 +361,7 @@ export async function stageRelease(options: StageOptions): Promise<StagedRelease
     `${JSON.stringify({ name: releaseName, private: true, type: "module" }, null, 2)}\n`,
     "utf8",
   );
-  await cp(options.agentBundlePath, join(runtimeDir, "zcode.cjs"), { dereference: true });
+  await cp(options.agentBundlePath, join(runtimeDir, "zody.cjs"), { dereference: true });
   // Agent bundle 是第三个实际运行入口；只扫描 Server bundle 会漏掉外置的 TUI/Playwright。
   bundleSources.push(await readFile(options.agentBundlePath, "utf8"));
 
@@ -415,7 +415,7 @@ export async function stageRelease(options: StageOptions): Promise<StagedRelease
       id: "server-runtime",
       paths: ["runtime/server-cli.js", "runtime/server-core.js", "runtime/package.json", "runtime/node_modules", "runtime/THIRD-PARTY-NOTICES.md"],
     },
-    { id: "agent-runtime", paths: ["runtime/zcode.cjs", "runtime/licenses/agent"] },
+    { id: "agent-runtime", paths: ["runtime/zody.cjs", "runtime/licenses/agent"] },
     ...(plugins.length > 0 ? [{ id: "official-plugins", paths: ["runtime/packages", "runtime/licenses/official-plugins"] }] : []),
     ...(tools.length > 0 ? [{ id: "native-search-tools", paths: ["runtime/tools"] }] : []),
   ];

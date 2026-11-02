@@ -22,7 +22,7 @@ import {
   getProviderFormApiKeyManagementUrl,
   type ProviderSettingsFormProvider,
 } from "@/lib/providerSettingsFormTypes.js";
-import release from "../../../../../../config/provider/zcode-builtin.json";
+import release from "../../../../../../config/provider/zody-builtin.json";
 import { ProviderModelEditorFixture } from "./provider-model-editor.fixture.js";
 import { OffPeakEligibilityFixture } from "./offpeak-eligibility.fixture.js";
 import { OffPeakTeamEntryFixture } from "./offpeak-team-entry.fixture.js";

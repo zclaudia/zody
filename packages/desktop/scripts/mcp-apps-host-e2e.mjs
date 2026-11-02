@@ -52,7 +52,7 @@ if (
           "--dir",
           join(root, "apps/zody-cli"),
           "--filter",
-          `@zcode/${name}`,
+          `@zody/${name}`,
           name === "cli" ? "build:desktop-agent" : "build",
         ],
         { stdio: "inherit" },
@@ -213,7 +213,7 @@ for (const mode of modes) {
             output,
             join(output, `${mode}-profile`),
             process.execPath,
-            join(root, "apps/zody-cli/packages/cli/dist/zcode.cjs"),
+            join(root, "apps/zody-cli/packages/cli/dist/zody.cjs"),
             showcaseServer ?? "",
           ]
         : mode === "managed-empty"

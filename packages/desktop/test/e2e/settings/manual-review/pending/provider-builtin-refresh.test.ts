@@ -72,7 +72,7 @@ describe("Todo127 Built-in 设置刷新整链", () => {
       );
       await mkdir(artifacts, { recursive: true });
       const release = JSON.parse(
-        await readFile(join(process.cwd(), "../../config/provider/zcode-builtin.json"), "utf8"),
+        await readFile(join(process.cwd(), "../../config/provider/zody-builtin.json"), "utf8"),
       );
       const clientConfig = JSON.parse(
         await readFile(

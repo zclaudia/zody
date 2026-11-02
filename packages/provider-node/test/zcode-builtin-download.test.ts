@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { downloadZCodeBuiltinRelease } from "../src/zcode-builtin-download.js";
+import { downloadZCodeBuiltinRelease } from "../src/zody-builtin-download.js";
 
 const release = {
   schemaVersion: 1,

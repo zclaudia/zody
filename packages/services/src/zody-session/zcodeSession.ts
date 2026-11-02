@@ -19,7 +19,7 @@ import type {
   ZCodeWorkspacePresentation,
 } from "@zody/shared";
 import { createServiceDescriptor } from "#src/descriptors.js";
-import type { ProviderRuntimeHeadersUiResponse } from "#src/zcode-agent/zcodeAgent.js";
+import type { ProviderRuntimeHeadersUiResponse } from "#src/zody-agent/zcodeAgent.js";
 
 export interface ZCodeSessionWorkspaceTarget {
   workspacePath: string;

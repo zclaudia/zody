@@ -18,8 +18,8 @@ Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan usi
 | R01  | integrated | /root/terra_r01                   | DeepSeek review-2 PASS at 40cae940; nonblocking cleanup and plan handoff in progress                             |
 | R02  | running    | /root/terra_r02_source_provenance | DeepSeek review-1 CHANGES_REQUIRED: preserve matching v4 source before R20; old runtime evidence remains due R48 |
 | R10  | verified   | /root/terra_r10                   | DeepSeek review-2 PASS at 0e403023; P1 scope only, not release validation                                        |
-| R20  | ready      | /root/terra_r10                   | R02 source gate + R10 PASS; controller authorized package/path subset, remaining substeps still gated            |
-| R21  | planned    | unassigned                        | not run                                                                                                          |
+| R20  | running    | /root/terra_r10                   | R20.2 checkpoint: paths/scopes moved, independent review active, #src alias repairs and R20.3/4 remain           |
+| R21  | running    | /root/terra_r21_links             | Root frozen install + 92 local links pass; CLI legacy workspace/lock inconsistency unresolved; writes released   |
 | R22  | planned    | unassigned                        | not run                                                                                                          |
 | R30  | planned    | unassigned                        | not run                                                                                                          |
 | R40  | planned    | unassigned                        | not run                                                                                                          |
@@ -96,3 +96,19 @@ Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan usi
 R02 DeepSeek review-2 accepts source preservation for R20; R48/R60 remain incomplete. R10 review-2 PASS is saved. The controller reviewed exact package/path previews and authorizes only R20.2 through r20-authorized-scope.json; R21-owned graph/inventory/lock content is explicitly excluded, and 3 fixture package names are included. Moves may carry protected files byte-for-byte. DeepSeek preflight review continues on the original immutable preview and can trigger corrections; independent implementation acceptance remains mandatory.
 
 The original preview missed complete internal basename/TS symbol ownership. R20.4 now explicitly owns pure internal declarations/references; its AST candidate is not execution permission until references are resolved. R30/R40–R55 retain serialized values/bridge/env/plugin ownership. Builtin assets/private bin/output mapping is a separate R20.3 closure before phase acceptance. No P2 completion is claimed.
+
+## P2 intermediate checkpoint (not an accepted phase)
+
+- R20.2: all 5364 move targets exist; source writes stopped. CUA bundle 11, distribution 18 and gen-ui 3 tests pass; lint exit 0 (303 warnings). DeepSeek implementation review is running.
+- Preflight review corrections expanded three CUA path/guard consumers, protected notices with inventory, and protected six historical documents. Native inspection identified exactly four active entry sources plus one current BUILD guide; only those five native files differ, not frozen snapshots/pins. Controller independently checked the native diff and eight protected files outside active R21 ownership.
+- R21 initially missed relative link targets; controller identified dangling zody-cua links. Terra repaired both locks using importer/target resolution, reran root frozen install, verified 92 actual local symlink targets/package names and 19 CLI lock targets statically. Both locks retain original third-party package/snapshot bytes.
+- Typecheck after relink still fails: 35 diagnostics, 31 old #src aliases. These are actual pending source repairs, not all environment failures. Full architecture still has two recorded baseline failures.
+- CLI standalone workspace has an older 15-importer lock versus 31 current projects and missing outer-workspace packages. A user clarification is pending on one root install owner versus maintaining two workspaces. Do not remove the nested workspace/lock or change dependency ownership without that answer; other source work continues.
+- Old runtime: isolated mac builds and Linux container server-info/Agent harness smoke ran; real standalone server-cli fails in both Linux/macOS with bundled CommonJS yazl inside ESM. R02-server-cli-baseline-defect.md records root cause and future candidate repair; this is not a version-gate rejection and cannot satisfy mixed-deployment tests. Containers/processes created by this task were cleaned up.
+
+## R20.3 candidate ready for second review
+
+- Terra repaired all 35 relink-era typecheck diagnostics, completed 9 provider asset/source moves and coordinated CLI/server/SEA binary names, repaired the four DeepSeek implementation findings, and restored the provenance fixture's original bytes.
+- Parent independently reran typecheck/lint and 31 related node tests; after final helper extraction reran 13 guard tests. Results passed; lint has 303 warnings. See R20-controller-verification.md.
+- R20 source writes are stopped for candidate review. Root private bin links will be refreshed by R21; no nested workspace ownership edits before user response. R20.4 is not yet implemented.
+- DeepSeek R02 runtime review limited PASS is saved; its two evidence wording/cleanup gaps were corrected by controller. R48 still lacks the true Host/mixed-mode matrix and an independently runnable old server-cli.

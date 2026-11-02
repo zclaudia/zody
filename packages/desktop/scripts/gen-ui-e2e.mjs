@@ -18,7 +18,7 @@ const alias = {
   "@": join(root, "packages/ui/src"),
   ...Object.fromEntries(
     Object.entries(shared.exports).map(([key, path]) => [
-      `@zcode/shared${key === "." ? "" : key.slice(1)}`,
+      `@zody/shared${key === "." ? "" : key.slice(1)}`,
       resolve(root, "packages/shared", path),
     ]),
   ),

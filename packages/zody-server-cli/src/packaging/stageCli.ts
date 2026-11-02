@@ -106,7 +106,7 @@ async function ensureNodeBinary(repoRoot: string, target: ServerTarget): Promise
 }
 
 async function ensureAgentBundle(repoRoot: string, skipBuild: boolean): Promise<string> {
-  const bundlePath = join(repoRoot, "apps/zody-cli/packages/cli/dist/zcode.cjs");
+  const bundlePath = join(repoRoot, "apps/zody-cli/packages/cli/dist/zody.cjs");
   if (await pathExists(bundlePath)) return bundlePath;
   if (skipBuild) {
     throw new Error(`Agent bundle missing: ${bundlePath} (remove --skip-agent-build to build it)`);

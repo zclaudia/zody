@@ -48,7 +48,7 @@ describe("新目录通过真实 SDK 发出的请求", () => {
       it(`${modelId} / ${apiType} / ${level}`, async () => {
         const release = JSON.parse(
           await readFile(
-            new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
+            new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
             "utf8",
           ),
         );

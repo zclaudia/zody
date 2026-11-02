@@ -6,7 +6,7 @@ import { zcodeMcpUiSamplingResultSchema } from "@zody/shared";
 import { MCP_APPS_SAMPLING_TRANSPORT_TIMEOUT_MS } from "@zody/shared/mcp-apps";
 // fork（bot channels 移除，specs/bot-channels-removal.md）：channelReply 与 topicResource
 // host 侧消费随第三方 IM bot 接入整体删除（协议方法由 B2 同波删除）。
-import { requestPluginReferenceCatalog } from "#src/zcode-agent/pluginReferenceCatalogRequest.js";
+import { requestPluginReferenceCatalog } from "#src/zody-agent/pluginReferenceCatalogRequest.js";
 import {
   localTtftFactsSchema,
   sessionDebugSnapshotSchema,
@@ -145,7 +145,7 @@ import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import {
   mergeAutomationMutationToolDenylist,
   // fork（F4.3）：mergeOffPeakMutationToolDenylist 随闲时任务全链路删除。
-} from "#src/zcode-agent/automationToolPolicy.js";
+} from "#src/zody-agent/automationToolPolicy.js";
 import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE } from "./zcodeAgent.js";
 import type {
   ZCodeProtocolRequestId,
@@ -328,11 +328,11 @@ import {
   readTrustedZCodeAgentV4UnsubscribeRoute,
   type ZCodeAgentV4ConnectionContext,
 } from "./zcodeAgentConnectionScope.js";
-import { createBackgroundSessionEventCoalescer } from "#src/zcode-agent/zcodeSessionEventCoalescer.js";
+import { createBackgroundSessionEventCoalescer } from "#src/zody-agent/zcodeSessionEventCoalescer.js";
 import { AutomationService } from "#src/session/automationService.js";
 import { AutomationRepo } from "#src/session/automationRepo.js";
 import { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
-import { ZCodeAgentMcpStatusModeUnsupportedError } from "#src/zcode-agent/zcodeAgentErrors.js";
+import { ZCodeAgentMcpStatusModeUnsupportedError } from "#src/zody-agent/zcodeAgentErrors.js";
 import { ZCodeAgentProcessManager } from "./zcodeAgentProcessManager.js";
 import type { ZCodeAgentProcessManagerOptions } from "./zcodeAgentProcessManager.js";
 // fork（F4.3）：IOffPeakTaskService import 随闲时任务全链路删除。

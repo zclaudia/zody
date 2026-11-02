@@ -93,7 +93,7 @@ test("includes the production ZCode Built-in Provider Config as a SEA asset", as
     JSON.parse(await readFile(zcodeBuiltinFilePath, "utf8")),
     JSON.parse(
       await readFile(
-        new URL("../../../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
         "utf8",
       ),
     ),
@@ -485,21 +485,21 @@ test("includes TUI workspace runtime package assets", async () => {
 
     // SEA 从缓存目录导入 TUI 时无法回退到 workspace 链接，运行时 workspace
     // 依赖必须和第三方依赖一样完整进入 node_modules 形状的资产闭包。
-    assert.equal(paths.has("node_modules/@zcode/tui/package.json"), true);
-    assert.equal(paths.has("node_modules/@zcode/tui/dist/index.js"), true);
-    assert.equal(paths.has("node_modules/@zcode/i18n/package.json"), true);
-    assert.equal(paths.has("node_modules/@zcode/i18n/dist/index.js"), true);
-    assert.equal(paths.has("node_modules/@zcode/contracts/package.json"), true);
-    assert.equal(paths.has("node_modules/@zcode/contracts/dist/index.js"), true);
-    assert.equal(paths.has("node_modules/@zcode/shared/package.json"), true);
-    assert.equal(paths.has("node_modules/@zcode/shared/dist/index.js"), true);
+    assert.equal(paths.has("node_modules/@zody/tui/package.json"), true);
+    assert.equal(paths.has("node_modules/@zody/tui/dist/index.js"), true);
+    assert.equal(paths.has("node_modules/@zody/i18n/package.json"), true);
+    assert.equal(paths.has("node_modules/@zody/i18n/dist/index.js"), true);
+    assert.equal(paths.has("node_modules/@zody/contracts/package.json"), true);
+    assert.equal(paths.has("node_modules/@zody/contracts/dist/index.js"), true);
+    assert.equal(paths.has("node_modules/@zody/shared/package.json"), true);
+    assert.equal(paths.has("node_modules/@zody/shared/dist/index.js"), true);
     assert.equal(
-      paths.has("node_modules/@zcode/shared/dist/workspace-hook-trust-store-file.js"),
+      paths.has("node_modules/@zody/shared/dist/workspace-hook-trust-store-file.js"),
       true,
     );
-    assert.equal(paths.has("node_modules/@zcode/i18n/src/index.ts"), false);
-    assert.equal(paths.has("node_modules/@zcode/contracts/src/index.ts"), false);
-    assert.equal(paths.has("node_modules/@zcode/shared/src/index.ts"), false);
+    assert.equal(paths.has("node_modules/@zody/i18n/src/index.ts"), false);
+    assert.equal(paths.has("node_modules/@zody/contracts/src/index.ts"), false);
+    assert.equal(paths.has("node_modules/@zody/shared/src/index.ts"), false);
     const zodPackages = manifest.files.filter((file) => file.path.endsWith("/zod/package.json"));
     const zodVersions = await Promise.all(
       zodPackages.map(async (file) => {
@@ -556,7 +556,7 @@ test("loads TUI from an extracted SEA runtime dependency closure", async () => {
 
     // Windows 锁定进程已加载的 opentui.dll；子进程退出释放 DLL 后，父进程才能清理目录。
     const entryUrl = pathToFileURL(
-      join(runtimeDirectory, "node_modules/@zcode/tui/dist/index.js"),
+      join(runtimeDirectory, "node_modules/@zody/tui/dist/index.js"),
     ).href;
     await promisify(execFile)(
       process.execPath,
@@ -851,10 +851,10 @@ test("allows skill-only official plugins when SEA runtime assets are required", 
     // collector 按 officialSeaPlugins 登记 + 伪造目录采集，真实 skill-creator 是否带 hook 无关紧要。
     await writeTestFile(root, "packages/skill-creator-plugin/hooks/hooks.json", "{}");
     await writeTestFile(root, "packages/skill-creator-plugin/hooks/run-hook.cmd", "");
-    await writeTestFile(root, "packages/zcode-guide-plugin/.zcode-plugin/plugin.json", "{}");
+    await writeTestFile(root, "packages/zody-guide-plugin/.zcode-plugin/plugin.json", "{}");
     await writeTestFile(
       root,
-      "packages/zcode-guide-plugin/skills/zcode-configuration-guide/SKILL.md",
+      "packages/zody-guide-plugin/skills/zcode-configuration-guide/SKILL.md",
       "",
     );
 
@@ -942,7 +942,7 @@ test("requires SEA runtime assets for runtime-backed official plugins", async ()
     await writeTestFile(root, "packages/ios-simulator-plugin/.zcode-plugin/plugin.json", "{}");
     await writeTestFile(root, "packages/ios-simulator-plugin/dist/mcp/server.js", "");
     await writeTestFile(root, "packages/skill-creator-plugin/.zcode-plugin/plugin.json", "{}");
-    await writeTestFile(root, "packages/zcode-guide-plugin/.zcode-plugin/plugin.json", "{}");
+    await writeTestFile(root, "packages/zody-guide-plugin/.zcode-plugin/plugin.json", "{}");
 
     await assert.rejects(
       collectSeaOfficialPluginAssets({
@@ -975,7 +975,7 @@ test("requires the Browser Use client alongside the SEA MCP runtime", async () =
       "documents-plugin",
       "ios-simulator-plugin",
       "skill-creator-plugin",
-      "zcode-guide-plugin",
+      "zody-guide-plugin",
     ]) {
       await writeTestFile(root, `packages/${pluginName}/.zcode-plugin/plugin.json`, "{}");
     }

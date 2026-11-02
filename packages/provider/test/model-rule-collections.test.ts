@@ -188,7 +188,7 @@ describe("Todo104 规则集合读写与应用", () => {
   it("真实 Builtin 越层规则按精确 Endpoint 接回，Start 搜索保留", async () => {
     const release = JSON.parse(
       await readFile(
-        new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../config/provider/zody-builtin.json", import.meta.url),
         "utf8",
       ),
     );
