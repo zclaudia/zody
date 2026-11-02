@@ -19851,10 +19851,12 @@
       "docs/architecture/federated-node-hub-state-and-migration-plan.md"
     ],
     "generatedCompanionFiles": [
-      "packages/desktop/src/shared/armsRumShared.d.ts.map"
+      "packages/desktop/src/shared/armsRumShared.d.ts.map",
+      "packages/desktop/src/shared/armsRumShared.js.map"
     ],
     "generatedCompanionRules": [
-      "armsRumShared declaration/map must come from successful isolated TypeScript emit of actual source with recorded inherited options. Preserve valid adjacent source map sources=[armsRumShared.ts]; do not copy temporary output-relative paths. No handwritten declaration/mapping edits."
+      "armsRumShared declaration/map must come from successful isolated TypeScript emit of actual source with recorded inherited options. Preserve valid adjacent source map sources=[armsRumShared.ts]; do not copy temporary output-relative paths. No handwritten declaration/mapping edits.",
+      "armsRumShared tracked JS and JS map may be regenerated together from actual source after mapZCodeEnvToArmsRumEnv binding rename; source/map relative paths must remain valid after placement. Record compiler settings and full diff; preserve runtime logic and external/telemetry values."
     ]
   }
 }

@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { delimiter } from "node:path";
-import { buildZCodeToolEnvPassthroughEnv, sanitizeZodyRuntimeEnvInPlace } from "@zody/shared";
+import { buildZodyToolEnvPassthroughEnv, sanitizeZodyRuntimeEnvInPlace } from "@zody/shared";
 import { appendPathEntries, buildRuntimeToolEnvPatch } from "./runtimeToolResolver.js";
 import {
   buildShellBootstrapPath,
@@ -121,7 +121,7 @@ export function buildLoginShellEnvPatch(
 
   return {
     ...patch,
-    ...buildZCodeToolEnvPassthroughEnv(snapshot),
+    ...buildZodyToolEnvPassthroughEnv(snapshot),
   };
 }
 
@@ -164,7 +164,7 @@ export function buildRuntimeProcessEnvPatch(
   const normalizedBaseEnv = normalizeRuntimeProcessEnv(baseEnv, platform);
   const loginShellPath = loginShellSnapshot?.PATH?.trim() || null;
   const loginShellEnvPatch = loginShellSnapshot ? buildLoginShellEnvPatch(loginShellSnapshot) : {};
-  const toolEnvPassthroughPatch = buildZCodeToolEnvPassthroughEnv({
+  const toolEnvPassthroughPatch = buildZodyToolEnvPassthroughEnv({
     ...normalizedBaseEnv,
     ...loginShellEnvPatch,
   });

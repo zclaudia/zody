@@ -11,9 +11,9 @@ import {
   type ToolArtifactStorePort,
 } from "@zody/contracts";
 import {
-  resetCapturedZCodeCuaBrokerCredentialsForTest,
+  resetCapturedZodyCuaBrokerCredentialsForTest,
   ZCODE_CUA_OFFICIAL_MCP_NAMESPACE_NAME as ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
-  sanitizeZCodeRuntimeEnv,
+  sanitizeZodyRuntimeEnv,
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
   ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   ZCODE_PLUGIN_ID_ENV_KEY,
@@ -81,7 +81,7 @@ function cuaActionReceipt(overrides: Record<string, unknown> = {}): string {
 // computeOfficialCuaServerNames 只信任本进程私有捕获的 authority；测试必须走与生产同一条
 // capture 路径（sanitize 时捕获完整凭据组）来播种，绝不能直接改写内部状态。
 function seedCapturedBrokerCredentials(): void {
-  sanitizeZCodeRuntimeEnv({
+  sanitizeZodyRuntimeEnv({
     ZCODE_CUA_PERMISSION_BROKER_SOCKET: "/tmp/zcode-cua-test.sock",
     ZCODE_CUA_PERMISSION_BROKER_TOKEN: "test-broker-token",
     [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: TEST_PLUGIN_AUTHORITY,
@@ -90,7 +90,7 @@ function seedCapturedBrokerCredentials(): void {
 
 describe("MCP tool bridge", () => {
   afterEach(() => {
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
   });
 
   it("marks only authority-verified official CUA entries with the project capability group", () => {

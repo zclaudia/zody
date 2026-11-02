@@ -8,7 +8,7 @@ import {
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
   ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   ZCODE_PLUGIN_ID_ENV_KEY,
-  resetCapturedZCodeCuaBrokerCredentialsForTest,
+  resetCapturedZodyCuaBrokerCredentialsForTest,
   sanitizeZodyRuntimeEnvInPlace,
 } from "@zody/shared";
 import type { RunContext } from "@zody/shared-types";
@@ -68,7 +68,7 @@ export async function main() {
     process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET = "/tmp/captured-control-broker.sock";
     process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "captured-control-authority";
     process.env[ZCODE_CUA_NODE_REPL_HOST_ENV_KEY] = "1";
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
 
     const ctx = createContext([ZCODE_NODE_REPL_CONTROL_FLAG]);
@@ -81,7 +81,7 @@ export async function main() {
       brokerSocket: null,
     });
   } finally {
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     for (const key of ENV_KEYS) {
       const value = originalEnv[key];
       if (value === undefined) delete process.env[key];

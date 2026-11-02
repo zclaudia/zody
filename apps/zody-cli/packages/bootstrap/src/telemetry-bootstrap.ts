@@ -1,4 +1,4 @@
-import { getCapturedZCodeAgentTelemetryEnv } from "@zody/shared";
+import { getCapturedZodyAgentTelemetryEnv } from "@zody/shared";
 import {
   prepareModelTelemetryEnv,
   shutdownPreparedModelTelemetry,
@@ -14,7 +14,7 @@ export async function prepareZCodeTelemetryEnv(
   options: PrepareModelTelemetryOptions = {},
 ): Promise<NodeJS.ProcessEnv> {
   const prepared = await prepareModelTelemetryEnv({
-    ...getCapturedZCodeAgentTelemetryEnv(),
+    ...getCapturedZodyAgentTelemetryEnv(),
     ...env,
   }, {
     ...options,

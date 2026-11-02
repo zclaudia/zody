@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "scope": "Supplemental actual symbol migrations; not a completion inventory for every remaining symbol.",
+  "batches": [
+    {
+      "id": "R20.4-symbols-01",
+      "base": "854ddf60ac1be92428e3c32192ee325aab6acd25",
+      "candidate": "6720cfe22b8e16e6abcc4abbeee0d084f17594cb",
+      "status": "scoped-review-PASS",
+      "records": [
+        {
+          "old": "ZCodeRuntimeEnv",
+          "new": "ZodyRuntimeEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-type",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentCommand",
+          "new": "ZodyAgentCommand",
+          "declarationBefore": "packages/services/src/zody-agent/zcodeAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-type",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentCommandResolver",
+          "new": "ZodyAgentCommandResolver",
+          "declarationBefore": "packages/services/src/zody-agent/zcodeAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-type",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentCommandResolverContext",
+          "new": "ZodyAgentCommandResolverContext",
+          "declarationBefore": "packages/services/src/zody-agent/zcodeAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-type",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentNativeRuntimeConfig",
+          "new": "ZodyAgentNativeRuntimeConfig",
+          "declarationBefore": "packages/services/src/zody-agent/zcodeAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-type",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentNativeRuntimeStartupContext",
+          "new": "ZodyAgentNativeRuntimeStartupContext",
+          "declarationBefore": "packages/services/src/zody-agent/zcodeAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-type",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentProcessManagerOptions",
+          "new": "ZodyAgentProcessManagerOptions",
+          "declarationBefore": "packages/services/src/zody-agent/zcodeAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-type",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentProcessManager",
+          "new": "ZodyAgentProcessManager",
+          "declarationBefore": "packages/services/src/zody-agent/zcodeAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-class-and-module-export",
+          "owner": "R20.4"
+        },
+        {
+          "old": "normalizeZCodeRuntimeEnv",
+          "new": "normalizeZodyRuntimeEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-function",
+          "owner": "R20.4"
+        },
+        {
+          "old": "readZCodeToolEnvPassthroughEnv",
+          "new": "readZodyToolEnvPassthroughEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-function",
+          "owner": "R20.4"
+        },
+        {
+          "old": "sanitizeZCodeRuntimeEnvInPlace",
+          "new": "sanitizeZodyRuntimeEnvInPlace",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-function",
+          "owner": "R20.4"
+        },
+        {
+          "old": "shouldSanitizeZCodeRuntimeEnvKey",
+          "new": "shouldSanitizeZodyRuntimeEnvKey",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-function",
+          "owner": "R20.4"
+        },
+        {
+          "old": "shouldCaptureZCodeToolEnvPassthroughKey",
+          "new": "shouldCaptureZodyToolEnvPassthroughKey",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-function",
+          "owner": "R20.4"
+        }
+      ],
+      "verification": "reports/R20-symbols-controller-verification.md",
+      "review": "reports/R20-symbols-deepseek-review-1.md"
+    },
+    {
+      "id": "R20.4-symbols-02",
+      "base": "6720cfe22b8e16e6abcc4abbeee0d084f17594cb",
+      "candidate": null,
+      "status": "controller-verified-pending-review",
+      "records": [
+        {
+          "old": "isZCodeCuaInternalFeatureEnabled",
+          "new": "isZodyCuaInternalFeatureEnabled",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "resolveZCodeRuntimeEnv",
+          "new": "resolveZodyRuntimeEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "capturedZCodeAgentTelemetryEnv",
+          "new": "capturedZodyAgentTelemetryEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "captureZCodeCuaBrokerCredentials",
+          "new": "captureZodyCuaBrokerCredentials",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "captureZCodeAgentTelemetryEnv",
+          "new": "captureZodyAgentTelemetryEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "readZCodeAgentTelemetryEnv",
+          "new": "readZodyAgentTelemetryEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "getCapturedZCodeAgentTelemetryEnv",
+          "new": "getCapturedZodyAgentTelemetryEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "getCapturedZCodeCuaBrokerCredentials",
+          "new": "getCapturedZodyCuaBrokerCredentials",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "resetCapturedZCodeCuaBrokerCredentialsForTest",
+          "new": "resetCapturedZodyCuaBrokerCredentialsForTest",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "resetCapturedZCodeAgentTelemetryEnvForTest",
+          "new": "resetCapturedZodyAgentTelemetryEnvForTest",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "sanitizeZCodeRuntimeEnv",
+          "new": "sanitizeZodyRuntimeEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "buildZCodeToolEnvPassthroughEnv",
+          "new": "buildZodyToolEnvPassthroughEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "isZCodeAgentTelemetryEnvKey",
+          "new": "isZodyAgentTelemetryEnvKey",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "stringifyZCodeToolEnvPassthroughEnv",
+          "new": "stringifyZodyToolEnvPassthroughEnv",
+          "declarationBefore": "packages/shared/src/runtimeEnv.ts",
+          "declarationAfter": "packages/shared/src/runtimeEnv.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeEnv",
+          "new": "ZodyEnv",
+          "declarationBefore": "packages/shared/src/env.ts",
+          "declarationAfter": "packages/shared/src/env.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeProductFlavor",
+          "new": "ZodyProductFlavor",
+          "declarationBefore": "packages/shared/src/env.ts",
+          "declarationAfter": "packages/shared/src/env.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "normalizeZCodeEnv",
+          "new": "normalizeZodyEnv",
+          "declarationBefore": "packages/shared/src/env.ts",
+          "declarationAfter": "packages/shared/src/env.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "normalizeZCodeProductFlavor",
+          "new": "normalizeZodyProductFlavor",
+          "declarationBefore": "packages/shared/src/env.ts",
+          "declarationAfter": "packages/shared/src/env.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "mapZCodeEnvToArmsRumEnv",
+          "new": "mapZodyEnvToArmsRumEnv",
+          "declarationBefore": "packages/shared/src/env.ts",
+          "declarationAfter": "packages/shared/src/env.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "zcodeAgentCommandResolver",
+          "new": "zodyAgentCommandResolver",
+          "declarationBefore": "packages/services/src/node.ts",
+          "declarationAfter": "packages/services/src/node.ts",
+          "category": "internal-DI-option-and-consumers",
+          "owner": "R20.4",
+          "preservedWireField": null
+        },
+        {
+          "old": "zcodeAgentNativeRuntime",
+          "new": "zodyAgentNativeRuntime",
+          "declarationBefore": "packages/services/src/node.ts",
+          "declarationAfter": "packages/services/src/node.ts",
+          "category": "internal-DI-option-and-consumers",
+          "owner": "R20.4",
+          "preservedWireField": null
+        },
+        {
+          "old": "zcodeAgentNativeRuntimeResolver",
+          "new": "zodyAgentNativeRuntimeResolver",
+          "declarationBefore": "packages/services/src/node.ts",
+          "declarationAfter": "packages/services/src/node.ts",
+          "category": "internal-DI-option-and-consumers",
+          "owner": "R20.4",
+          "preservedWireField": null
+        },
+        {
+          "old": "zcodeAgentSpawnFallbackCwd",
+          "new": "zodyAgentSpawnFallbackCwd",
+          "declarationBefore": "packages/services/src/node.ts",
+          "declarationAfter": "packages/services/src/node.ts",
+          "category": "internal-DI-option-and-consumers",
+          "owner": "R20.4",
+          "preservedWireField": "agentSpawnFallbackCwd"
+        }
+      ],
+      "verification": "reports/R20-symbols-next-controller-verification.md",
+      "review": null
+    }
+  ]
+}

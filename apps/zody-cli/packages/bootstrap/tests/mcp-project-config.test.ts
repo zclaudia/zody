@@ -6,7 +6,7 @@ import { createSqliteSessionStore } from "@zody/adapters/storage";
 import type { McpPort, McpServerConfig } from "@zody/contracts";
 import { createRegistryBackedTestApp as createZCodeApp } from "./helpers/registry-backed-test-app.js";
 import {
-  resetCapturedZCodeCuaBrokerCredentialsForTest,
+  resetCapturedZodyCuaBrokerCredentialsForTest,
   sanitizeZodyRuntimeEnvInPlace,
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
   ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
@@ -542,7 +542,7 @@ describe("project MCP config", () => {
     const previousAuthority = process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY];
     const previousRefreshMarker = process.env["ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER"];
     const previousUnavailable = process.env[ZCODE_CUA_BROKER_UNAVAILABLE_ENV];
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     try {
       process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = socketPath;
       process.env[LEGACY_BROKER_TOKEN_ENV] = token;
@@ -575,7 +575,7 @@ describe("project MCP config", () => {
         `${socketPath}.permission-refresh.json`,
       );
     } finally {
-      resetCapturedZCodeCuaBrokerCredentialsForTest();
+      resetCapturedZodyCuaBrokerCredentialsForTest();
       if (previousSocket === undefined) delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
       else process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = previousSocket;
       if (previousToken === undefined) delete process.env[LEGACY_BROKER_TOKEN_ENV];
@@ -591,7 +591,7 @@ describe("project MCP config", () => {
   });
 
   it("does not capture or re-inject a partial broker credential set without plugin authority", () => {
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     try {
       const partialEnv: Record<string, string | undefined> = {
         [ZCODE_CUA_BROKER_SOCKET_ENV]: "/tmp/partial.sock",
@@ -615,7 +615,7 @@ describe("project MCP config", () => {
       expect(env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]).toBeUndefined();
       if (process.platform === "darwin") expect(cua).toBeUndefined();
     } finally {
-      resetCapturedZCodeCuaBrokerCredentialsForTest();
+      resetCapturedZodyCuaBrokerCredentialsForTest();
     }
   });
 
@@ -623,7 +623,7 @@ describe("project MCP config", () => {
     const previousSocket = process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
     const previousToken = process.env[LEGACY_BROKER_TOKEN_ENV];
     const previousUnavailable = process.env[ZCODE_CUA_BROKER_UNAVAILABLE_ENV];
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     try {
       delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
       delete process.env[LEGACY_BROKER_TOKEN_ENV];
@@ -639,7 +639,7 @@ describe("project MCP config", () => {
       const result = omitMcpServers(servers, new Set(), new Set(["zcode-cua"]));
       expect(result["zcode-cua"]).toBeUndefined();
     } finally {
-      resetCapturedZCodeCuaBrokerCredentialsForTest();
+      resetCapturedZodyCuaBrokerCredentialsForTest();
       if (previousSocket === undefined) delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
       else process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = previousSocket;
       if (previousToken === undefined) delete process.env[LEGACY_BROKER_TOKEN_ENV];
@@ -654,7 +654,7 @@ describe("project MCP config", () => {
     const previousToken = process.env[LEGACY_BROKER_TOKEN_ENV];
     const previousAuthority = process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY];
     const previousUnavailable = process.env[ZCODE_CUA_BROKER_UNAVAILABLE_ENV];
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     try {
       // 捕获可信凭据（模拟 CLI 入口 sanitize 从 ZCode 下发的 spawn env 捕获）。
       const spawnEnv: Record<string, string | undefined> = {
@@ -682,7 +682,7 @@ describe("project MCP config", () => {
       expect(env[LEGACY_BROKER_TOKEN_ENV]).toBeUndefined();
       expect(env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]).toBe("dev.zcode.cua-helper/captured");
     } finally {
-      resetCapturedZCodeCuaBrokerCredentialsForTest();
+      resetCapturedZodyCuaBrokerCredentialsForTest();
       if (previousSocket === undefined) delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
       else process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = previousSocket;
       if (previousToken === undefined) delete process.env[LEGACY_BROKER_TOKEN_ENV];
@@ -723,20 +723,20 @@ describe("project MCP config", () => {
 
     it("omits a global zcode-cua regardless of broker state", () => {
       const saved = snapshot();
-      resetCapturedZCodeCuaBrokerCredentialsForTest();
+      resetCapturedZodyCuaBrokerCredentialsForTest();
       try {
         clearAll();
         const result = omitMcpServers(cuaServer(), new Set());
         expect(result["zcode-cua"]).toBeUndefined();
       } finally {
-        resetCapturedZCodeCuaBrokerCredentialsForTest();
+        resetCapturedZodyCuaBrokerCredentialsForTest();
         restore(saved);
       }
     });
 
     it("does not keep a retired zcode-cua even when it has broker credentials", () => {
       const saved = snapshot();
-      resetCapturedZCodeCuaBrokerCredentialsForTest();
+      resetCapturedZodyCuaBrokerCredentialsForTest();
       try {
         clearAll();
         const servers: Record<string, McpServerConfig> = {
@@ -751,14 +751,14 @@ describe("project MCP config", () => {
         };
         expect(omitMcpServers(servers, new Set())["zcode-cua"]).toBeUndefined();
       } finally {
-        resetCapturedZCodeCuaBrokerCredentialsForTest();
+        resetCapturedZodyCuaBrokerCredentialsForTest();
         restore(saved);
       }
     });
 
     it("does not restore the retired server under the local-dev opt-in", () => {
       const saved = snapshot();
-      resetCapturedZCodeCuaBrokerCredentialsForTest();
+      resetCapturedZodyCuaBrokerCredentialsForTest();
       try {
         clearAll();
         process.env.ZCODE_CUA_HELPER_ALLOW_UNAUTHENTICATED_LOCAL = "1";
@@ -769,7 +769,7 @@ describe("project MCP config", () => {
         const kept = omitMcpServers({ "zcode-cua": raw! }, new Set())["zcode-cua"];
         expect(kept).toBeUndefined();
       } finally {
-        resetCapturedZCodeCuaBrokerCredentialsForTest();
+        resetCapturedZodyCuaBrokerCredentialsForTest();
         restore(saved);
       }
     });

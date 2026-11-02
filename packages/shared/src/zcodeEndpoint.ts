@@ -1,4 +1,4 @@
-import type { ZCodeEnv } from "./env.js";
+import type { ZodyEnv } from "./env.js";
 
 /**
  * fork（F3.1）：默认端点为「未配置」。
@@ -54,7 +54,7 @@ export function normalizeZCodeEndpointOrigin(value: string): string {
 }
 
 export function resolveZCodeEndpointOrigin(options?: {
-  env?: ZCodeEnv;
+  env?: ZodyEnv;
   envBaseOrigin?: string | null;
   overrideOrigin?: string | null;
 }): string {
@@ -75,7 +75,7 @@ export function resolveZCodeEndpointOrigin(options?: {
   return envBaseOrigin ? normalizeZCodeEndpointOrigin(envBaseOrigin) : TEST_ZCODE_ENDPOINT_ORIGIN;
 }
 
-export function resolveRuntimeZCodeEnv(env: RuntimeZCodeEndpointEnv = {}): ZCodeEnv {
+export function resolveRuntimeZCodeEnv(env: RuntimeZCodeEndpointEnv = {}): ZodyEnv {
   // 独立 CLI / 服务测试未注入 ZCODE_ENV 时默认生产环境；桌面测试包会显式下发 ZCODE_ENV=test。
   // fork（F3.1）：「生产环境」只决定读取 ZCODE_PRODUCTION_BASE_URL，不再意味着官方地址；
   // 端点未配置时 resolveRuntimeZCodeEndpointOrigin 返回空字符串。

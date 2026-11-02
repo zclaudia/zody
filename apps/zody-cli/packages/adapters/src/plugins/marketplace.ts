@@ -14,7 +14,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import type { PluginDiagnostic, PluginManifest, PluginStoreListing } from "@zody/contracts";
 import { isOfficialMarketplaceId, ZCODE_OFFICIAL_PLUGIN_MARKETPLACE } from "@zody/contracts";
-import { DEFAULT_PLUGIN_MARKETPLACES, sanitizeZCodeRuntimeEnv } from "@zody/shared";
+import { DEFAULT_PLUGIN_MARKETPLACES, sanitizeZodyRuntimeEnv } from "@zody/shared";
 import { loadPluginMcpServerDefinitions, resolvePluginMcpServers } from "./mcp.js";
 import {
   appendPluginSourceCleanupError,
@@ -194,7 +194,7 @@ export interface PluginManifestDisplayMetadata {
 export function buildMarketplaceGitEnv(
   sourceEnv: NodeJS.ProcessEnv = process.env,
 ): Record<string, string> {
-  const env = sanitizeZCodeRuntimeEnv(sourceEnv);
+  const env = sanitizeZodyRuntimeEnv(sourceEnv);
   // marketplace 安装会启动 Git 子进程，不能只依赖父进程继承的 shell 代理。
   // 这里统一从 ZCode 显式网络环境恢复 HTTP(S)/NO_PROXY/CA，避免安装按钮卡到协议超时。
   return applyNetworkEgressEnv(env, { sourceEnv });

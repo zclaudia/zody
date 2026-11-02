@@ -1,5 +1,5 @@
 import type { RunContext, GlobalOptions } from "@zody/shared-types";
-import { resolveZCodeRuntimeEnv, type DynamicWorkflowMode } from "@zody/shared";
+import { resolveZodyRuntimeEnv, type DynamicWorkflowMode } from "@zody/shared";
 import { createNodeClipboardImageReader } from "./clipboard-image.js";
 import { createNodeClipboardTextWriter } from "./clipboard-text.js";
 import { listSlashCommandSuggestions } from "./command-center.js";
@@ -30,7 +30,7 @@ export const runTuiCommand = async (
     const runTui = deps.runTui ?? (await loadTuiRuntime()).runTui;
     const workspaceDirectory = (deps.cwd ?? process.cwd)();
     const env = deps.env ?? process.env;
-    const developerMode = resolveZCodeRuntimeEnv(env) === "development";
+    const developerMode = resolveZodyRuntimeEnv(env) === "development";
     const startupLocale = resolveTuiStartupLocale({
       deps,
       options,

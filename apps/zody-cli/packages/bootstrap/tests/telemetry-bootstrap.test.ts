@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  resetCapturedZCodeAgentTelemetryEnvForTest,
+  resetCapturedZodyAgentTelemetryEnvForTest,
   sanitizeZodyRuntimeEnvInPlace,
 } from "@zody/shared";
 import { afterEach, describe, expect, it } from "vitest";
@@ -10,7 +10,7 @@ import { prepareZCodeTelemetryEnv } from "../src/telemetry-bootstrap.js";
 
 describe("prepareZCodeTelemetryEnv", () => {
   afterEach(() => {
-    resetCapturedZCodeAgentTelemetryEnvForTest();
+    resetCapturedZodyAgentTelemetryEnvForTest();
   });
 
   it("从进程捕获区异步准备 identity，但不把 OTLP 凭据写回业务 env", async () => {

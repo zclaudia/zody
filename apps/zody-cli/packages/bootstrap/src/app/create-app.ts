@@ -41,7 +41,7 @@ import {
 } from "@zody/contracts";
 import {
   isRemoteWorkspaceIdentity,
-  resolveZCodeRuntimeEnv,
+  resolveZodyRuntimeEnv,
   ZCODE_DATA_ROOT_DIR_NAME,
 } from "@zody/shared";
 import {
@@ -230,7 +230,7 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
     const cliStorageRoot = getCliStorageRoot(storageRoot);
     const modelIoDir = getModelIoDir(
       cliStorageRoot,
-      resolveZCodeRuntimeEnv(options.env ?? process.env) === "development",
+      resolveZodyRuntimeEnv(options.env ?? process.env) === "development",
     );
     // 初始化与父轮必须使用同一 Host 来源，避免 CLI storage.dir 的另一份定义在首轮消失。
     const hostSubagentSnapshot = await options.readSubagentRuntimeConfig?.({

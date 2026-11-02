@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { ZCODE_PLUGIN_HOST_COMMAND } from "@zody/contracts/plugins";
 import {
-  getCapturedZCodeCuaBrokerCredentials,
+  getCapturedZodyCuaBrokerCredentials,
   ZCODE_CUA_BROKER_SOCKET_ENV_KEY,
   ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
 } from "@zody/shared/runtime-env";
@@ -57,7 +57,7 @@ export async function runPluginHostCommand(ctx: RunContext, argv: string[]): Pro
     // control-only 路径不消费 broker 凭据，也不恢复任何 CUA env；普通插件宿主仍走完整权威校验。
     const capturedBrokerCredentials = controlOnly
       ? { socket: undefined, pluginAuthority: undefined }
-      : getCapturedZCodeCuaBrokerCredentials();
+      : getCapturedZodyCuaBrokerCredentials();
     if (!controlOnly) {
       assertCapturedBrokerLaunchIsAuthorized(capturedBrokerCredentials);
     }
@@ -97,7 +97,7 @@ export async function runPluginHostCommand(ctx: RunContext, argv: string[]): Pro
   }
 }
 
-type CapturedBrokerCredentials = ReturnType<typeof getCapturedZCodeCuaBrokerCredentials>;
+type CapturedBrokerCredentials = ReturnType<typeof getCapturedZodyCuaBrokerCredentials>;
 
 function assertCapturedBrokerLaunchIsAuthorized(credentials: CapturedBrokerCredentials): void {
   const hasCapturedCredentials = Boolean(credentials.socket || credentials.pluginAuthority);

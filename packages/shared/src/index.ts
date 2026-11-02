@@ -45,7 +45,7 @@ export type { WorkspacePurpose } from "./workspacePurpose.js";
 export { DEFAULT_LOCALE } from "./protocol.js";
 export { ZCODE_VERSION, ZCODE_COMMIT, ZCODE_BUILD_TIME } from "./version.js";
 export type { HelloMessage, HelloAckMessage } from "./handshake.js";
-export type { ArmsRumEnv, ZCodeEnv, ZCodeProductFlavor } from "./env.js";
+export type { ArmsRumEnv, ZodyEnv, ZodyProductFlavor } from "./env.js";
 export type { RemoteAssetInstallMode } from "./remoteAssetInstallMode.js";
 export type {
   RemoteResourcePackageId,
@@ -87,9 +87,9 @@ export {
   ZCODE_DOWNLOAD_PAGE_URL,
   ZCODE_FEEDBACK_ISSUE_URL,
   isDesktopAutoUpdateActive,
-  mapZCodeEnvToArmsRumEnv,
-  normalizeZCodeEnv,
-  normalizeZCodeProductFlavor,
+  mapZodyEnvToArmsRumEnv,
+  normalizeZodyEnv,
+  normalizeZodyProductFlavor,
 } from "./env.js";
 export * from "./errors.js";
 export * from "./rendererActionTrace.js";

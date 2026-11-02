@@ -9,7 +9,7 @@ import {
 export interface CreateStdioServicesOptions {
   env?: Record<string, string | undefined>;
   zcodeBuiltinProviderConfigFilePath: string;
-  zcodeAgentCommandResolver?: ZodyAgentCommandResolver;
+  zodyAgentCommandResolver?: ZodyAgentCommandResolver;
 }
 
 export interface RemoteAgentNetworkOptions {
@@ -39,7 +39,7 @@ export function createStdioServices(options: CreateStdioServicesOptions) {
     zcodeBuiltinProviderConfigFilePath: options.zcodeBuiltinProviderConfigFilePath,
     // fork（bot channels 移除）：topicResourceRelayChannel（第三方 IM bot 资源回传链）不再注入。
     serviceAuthorityMode: authorityModeParseResult.mode,
-    zcodeAgentCommandResolver: options.zcodeAgentCommandResolver,
+    zodyAgentCommandResolver: options.zodyAgentCommandResolver,
     remoteAgentNetwork,
   });
 

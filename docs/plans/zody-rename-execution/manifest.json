@@ -5761,7 +5761,9 @@
     "rawSha256": "5c2f6e03126fa9946dab845178173caeebb4f84577edf535f3e0847a093c9c5f",
     "groupedEvidence": "output/zody-rename-r00/grouped.json",
     "groupedSha256": "60a8012806055436a06498aa94981feaf149fbccffb525717e124f48c02c9df8",
-    "excludes": ["docs/plans/zody-rename-execution/"]
+    "excludes": [
+      "docs/plans/zody-rename-execution/"
+    ]
   },
   "fileAssignments": "file-assignments.json",
   "completedEndpoints": {
@@ -7220,5 +7222,6 @@
         "policy": "随父目录迁移并审计；外部来源不机械改名，无事实依据不变更"
       }
     ]
-  }
+  },
+  "symbolMigrationLedger": "docs/plans/zody-rename-execution/r20-symbol-migrations.json"
 }

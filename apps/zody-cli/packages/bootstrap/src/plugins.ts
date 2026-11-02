@@ -50,7 +50,7 @@ import type {
   PluginStoreListing,
 } from "@zody/contracts";
 import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE, isOfficialMarketplaceId } from "@zody/contracts";
-import { ZCODE_CUA_OFFICIAL_PLUGIN_ID, isZCodeCuaInternalFeatureEnabled } from "@zody/shared";
+import { ZCODE_CUA_OFFICIAL_PLUGIN_ID, isZodyCuaInternalFeatureEnabled } from "@zody/shared";
 import { resolveOfficialPluginRoots } from "./app/bundled-plugins.js";
 import {
   DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS,
@@ -344,7 +344,7 @@ export function getZCodePluginsOverview(
     (def) =>
       suppressed.has(`${def.name}@${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE}`) &&
       // computer-use 的恢复入口需要 internal 特性开启（与 restoreBuiltinPluginCore 同口径）。
-      (def.name !== "computer-use" || isZCodeCuaInternalFeatureEnabled(options.env ?? process.env)),
+      (def.name !== "computer-use" || isZodyCuaInternalFeatureEnabled(options.env ?? process.env)),
   ).map((def) => {
     const listing = def.listing
       ? parseEntryStoreListing({ name: def.name, ...def.listing })
@@ -893,7 +893,7 @@ async function restoreBuiltinPluginCore(options: RestoreBuiltinPluginOptions): P
   const zcodeCuaPluginId = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
   if (
     options.pluginId === zcodeCuaPluginId &&
-    !isZCodeCuaInternalFeatureEnabled(options.env ?? process.env)
+    !isZodyCuaInternalFeatureEnabled(options.env ?? process.env)
   ) {
     // overview 虽然隐藏了恢复入口，但协议调用仍可绕过 UI 写用户配置。
     // 功能开关关闭时在写盘前失败，确保用户配置与插件缓存都保持零痕迹。

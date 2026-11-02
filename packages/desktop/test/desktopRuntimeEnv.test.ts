@@ -59,7 +59,7 @@ vi.mock("@zody/shared", () => ({
   TEST_ZCODE_ENDPOINT_ORIGIN: "https://example.invalid",
   resolveRuntimeZCodeEndpointOrigin: (env: Record<string, string | undefined>) =>
     env.ZCODE_BASE_URL ?? env.ZCODE_TEST_BASE_URL ?? "",
-  sanitizeZCodeRuntimeEnv: (env: Record<string, string | undefined>) => {
+  sanitizeZodyRuntimeEnv: (env: Record<string, string | undefined>) => {
     const sanitizedKeys = new Set([
       "NODE_ENV",
       "ELECTRON_RUN_AS_NODE",
@@ -93,7 +93,7 @@ vi.mock("@zody/shared", () => ({
     }
     return sanitized;
   },
-  readZCodeAgentTelemetryEnv: (env: Record<string, string | undefined>) =>
+  readZodyAgentTelemetryEnv: (env: Record<string, string | undefined>) =>
     Object.fromEntries(
       Object.entries(env).filter(([key, value]) => {
         const upperKey = key.toUpperCase();
@@ -105,7 +105,7 @@ vi.mock("@zody/shared", () => ({
         );
       }),
     ),
-  buildZCodeToolEnvPassthroughEnv: (env: Record<string, string | undefined>) => {
+  buildZodyToolEnvPassthroughEnv: (env: Record<string, string | undefined>) => {
     const captured: Record<string, string> = {};
     for (const [key, value] of Object.entries(env)) {
       const upperKey = key.toUpperCase();

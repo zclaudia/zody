@@ -213,9 +213,9 @@ if (!resolvedParentPort) {
 const parentPort: HostParentPortLike = resolvedParentPort as HostParentPortLike;
 const hostStorageResources = injectedNodeHost?.storageResources;
 const injectedAgentWiring = injectedNodeHost?.agentRuntime
-  ? { zcodeAgentNativeRuntime: injectedNodeHost.agentRuntime }
+  ? { zodyAgentNativeRuntime: injectedNodeHost.agentRuntime }
   : nodeHostBridge
-    ? { zcodeAgentCommandResolver: (): null => null }
+    ? { zodyAgentCommandResolver: (): null => null }
     : undefined;
 const hostNetworkCapture = createHostNetworkCapture(parentPort);
 
@@ -1226,7 +1226,7 @@ function createReportingRemoteZCodeTaskService<T extends object>(
 
 function resolveLocalNarrowAgentWiring(
   preparedWorkspacePaths: readonly string[],
-): { zcodeAgentNativeRuntimeResolver: ZCodeAgentNativeRuntimeResolver } | undefined {
+): { zodyAgentNativeRuntimeResolver: ZCodeAgentNativeRuntimeResolver } | undefined {
   if (injectedAgentWiring) return undefined;
   // The compile-time profile is the only opt-in. A normal build never installs a
   // selective resolver and therefore keeps the existing Agent command path untouched.
@@ -1255,7 +1255,7 @@ function resolveLocalNarrowAgentWiring(
       nativeApproval: "per-capture-native-confirmation",
     });
   };
-  const zcodeAgentNativeRuntimeResolver: ZCodeAgentNativeRuntimeResolver = async (
+  const zodyAgentNativeRuntimeResolver: ZCodeAgentNativeRuntimeResolver = async (
     context,
     runtimeContext,
   ) => {
@@ -1323,7 +1323,7 @@ function resolveLocalNarrowAgentWiring(
       return null;
     }
   };
-  return { zcodeAgentNativeRuntimeResolver };
+  return { zodyAgentNativeRuntimeResolver };
 }
 
 function warmUpZCodeAgent(
@@ -2842,7 +2842,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
                 runtimeSurface: "desktop_local_host",
               },
               serviceAuthorityMode: "desktop-local",
-              zcodeAgentSpawnFallbackCwd: msg.agentSpawnFallbackCwd,
+              zodyAgentSpawnFallbackCwd: msg.agentSpawnFallbackCwd,
               zcodeBuiltinProviderConfigFilePath: msg.zcodeBuiltinProviderConfigFilePath,
               processLifecycleReporter: runtimeProcessLifecycleReporter,
               taskRuntimeReporter: runtimeTaskReporter,

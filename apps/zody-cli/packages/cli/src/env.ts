@@ -6,9 +6,9 @@ import { config as loadDotenv } from "dotenv";
 import { getUserZodyRoot } from "@zody/shared/zody-paths";
 import {
   ZCODE_RUNTIME_ENV_KEY,
-  buildZCodeToolEnvPassthroughEnv,
+  buildZodyToolEnvPassthroughEnv,
   normalizeZodyRuntimeEnv,
-  sanitizeZCodeRuntimeEnv,
+  sanitizeZodyRuntimeEnv,
   sanitizeZodyRuntimeEnvInPlace,
   type ZodyRuntimeEnv,
 } from "@zody/shared/runtime-env";
@@ -32,8 +32,8 @@ export function prepareCliRuntimeEnv(
   argv: readonly string[] = process.argv,
 ): CliEnv {
   const prepared = {
-    ...sanitizeZCodeRuntimeEnv(env),
-    ...buildZCodeToolEnvPassthroughEnv(env),
+    ...sanitizeZodyRuntimeEnv(env),
+    ...buildZodyToolEnvPassthroughEnv(env),
   };
   applyCliRuntimeEnvDefaults(prepared, argv);
   return prepared;
@@ -43,7 +43,7 @@ export function applyCliRuntimeEnvSanitization(
   env: CliEnv,
   argv: readonly string[] = process.argv,
 ): void {
-  const toolEnvPassthrough = buildZCodeToolEnvPassthroughEnv(env);
+  const toolEnvPassthrough = buildZodyToolEnvPassthroughEnv(env);
   sanitizeZodyRuntimeEnvInPlace(env);
   Object.assign(env, toolEnvPassthrough);
   applyCliRuntimeEnvDefaults(env, argv);

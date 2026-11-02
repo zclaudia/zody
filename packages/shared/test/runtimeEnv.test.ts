@@ -4,26 +4,26 @@ import {
   ZCODE_REMOTE_HTTP_PROXY_ENV_KEY,
   ZCODE_REMOTE_NO_PROXY_ENV_KEY,
   ZCODE_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
-  buildZCodeToolEnvPassthroughEnv,
-  getCapturedZCodeCuaBrokerCredentials,
+  buildZodyToolEnvPassthroughEnv,
+  getCapturedZodyCuaBrokerCredentials,
   isCuaDevModeRequested,
-  isZCodeCuaInternalFeatureEnabled,
-  readZCodeAgentTelemetryEnv,
+  isZodyCuaInternalFeatureEnabled,
+  readZodyAgentTelemetryEnv,
   readZodyToolEnvPassthroughEnv,
-  resetCapturedZCodeCuaBrokerCredentialsForTest,
-  sanitizeZCodeRuntimeEnv,
-  getCapturedZCodeAgentTelemetryEnv,
-  resetCapturedZCodeAgentTelemetryEnvForTest,
+  resetCapturedZodyCuaBrokerCredentialsForTest,
+  sanitizeZodyRuntimeEnv,
+  getCapturedZodyAgentTelemetryEnv,
+  resetCapturedZodyAgentTelemetryEnvForTest,
 } from "../src/runtimeEnv.js";
 
 describe("runtimeEnv", () => {
   it("enables internal CUA by default while honoring explicit false values", () => {
-    expect(isZCodeCuaInternalFeatureEnabled({})).toBe(true);
-    expect(isZCodeCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: "0" })).toBe(false);
-    expect(isZCodeCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: "false" })).toBe(false);
-    expect(isZCodeCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: "1" })).toBe(true);
-    expect(isZCodeCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: " TRUE " })).toBe(true);
-    expect(isZCodeCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: "on" })).toBe(true);
+    expect(isZodyCuaInternalFeatureEnabled({})).toBe(true);
+    expect(isZodyCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: "0" })).toBe(false);
+    expect(isZodyCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: "false" })).toBe(false);
+    expect(isZodyCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: "1" })).toBe(true);
+    expect(isZodyCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: " TRUE " })).toBe(true);
+    expect(isZodyCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: "on" })).toBe(true);
   });
 
   it("ZCODE_CUA_DEV_MODE is the one-knob dev bundle and implies the internal feature flag", () => {
@@ -37,9 +37,9 @@ describe("runtimeEnv", () => {
 
     // DEV_MODE implies the internal feature flag without needing ZCODE_CUA_PRODUCT_HELPER,
     // collapsing the historical multi-var dev incantation to one knob.
-    expect(isZCodeCuaInternalFeatureEnabled({ ZCODE_CUA_DEV_MODE: "1" })).toBe(true);
-    expect(isZCodeCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: "1" })).toBe(true);
-    expect(isZCodeCuaInternalFeatureEnabled({})).toBe(true);
+    expect(isZodyCuaInternalFeatureEnabled({ ZCODE_CUA_DEV_MODE: "1" })).toBe(true);
+    expect(isZodyCuaInternalFeatureEnabled({ ZCODE_CUA_PRODUCT_HELPER: "1" })).toBe(true);
+    expect(isZodyCuaInternalFeatureEnabled({})).toBe(true);
   });
 
   it("sanitizes runtime env while sealing user network env for tools", () => {
@@ -51,8 +51,8 @@ describe("runtimeEnv", () => {
       npm_config_proxy: "http://npm-proxy.example:8080",
     };
 
-    const sanitized = sanitizeZCodeRuntimeEnv(sourceEnv);
-    const passthroughEnv = buildZCodeToolEnvPassthroughEnv(sourceEnv);
+    const sanitized = sanitizeZodyRuntimeEnv(sourceEnv);
+    const passthroughEnv = buildZodyToolEnvPassthroughEnv(sourceEnv);
     const captured = readZodyToolEnvPassthroughEnv(passthroughEnv);
 
     expect(sanitized).toEqual({ PATH: "/usr/bin:/bin" });
@@ -92,10 +92,10 @@ describe("runtimeEnv", () => {
       ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER:
         "/tmp/zcode-cua-me/broker-abc.sock.permission-refresh.json",
     };
-    const sanitized = sanitizeZCodeRuntimeEnv(sourceEnv);
+    const sanitized = sanitizeZodyRuntimeEnv(sourceEnv);
     expect(sanitized).toEqual({ PATH: "/usr/bin:/bin" });
 
-    const captured = readZodyToolEnvPassthroughEnv(buildZCodeToolEnvPassthroughEnv(sourceEnv));
+    const captured = readZodyToolEnvPassthroughEnv(buildZodyToolEnvPassthroughEnv(sourceEnv));
     expect(captured).not.toHaveProperty("ZCODE_CUA_PERMISSION_BROKER_SOCKET");
     expect(captured).not.toHaveProperty("ZCODE_CUA_PERMISSION_BROKER_SOCKET");
     expect(captured).not.toHaveProperty("ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER");
@@ -109,45 +109,45 @@ describe("runtimeEnv", () => {
       [ZCODE_REMOTE_NO_PROXY_ENV_KEY]: "localhost,127.0.0.1",
     };
 
-    expect(sanitizeZCodeRuntimeEnv(sourceEnv)).toEqual({ PATH: "/usr/bin:/bin" });
-    expect(readZodyToolEnvPassthroughEnv(buildZCodeToolEnvPassthroughEnv(sourceEnv))).toEqual({});
+    expect(sanitizeZodyRuntimeEnv(sourceEnv)).toEqual({ PATH: "/usr/bin:/bin" });
+    expect(readZodyToolEnvPassthroughEnv(buildZodyToolEnvPassthroughEnv(sourceEnv))).toEqual({});
   });
 
   it("captures broker credentials as one atomic pair and clears stale state on partial rotation", () => {
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     try {
-      sanitizeZCodeRuntimeEnv({
+      sanitizeZodyRuntimeEnv({
         ZCODE_CUA_PERMISSION_BROKER_SOCKET: "/tmp/broker-a.sock",
         ZCODE_CUA_PLUGIN_AUTHORITY: "authority-a",
       });
-      expect(getCapturedZCodeCuaBrokerCredentials()).toEqual({
+      expect(getCapturedZodyCuaBrokerCredentials()).toEqual({
         socket: "/tmp/broker-a.sock",
         pluginAuthority: "authority-a",
       });
 
-      sanitizeZCodeRuntimeEnv({
+      sanitizeZodyRuntimeEnv({
         ZCODE_CUA_PERMISSION_BROKER_SOCKET: "/tmp/broker-b.sock",
       });
-      expect(getCapturedZCodeCuaBrokerCredentials()).toEqual({
+      expect(getCapturedZodyCuaBrokerCredentials()).toEqual({
         socket: undefined,
         pluginAuthority: undefined,
       });
 
-      sanitizeZCodeRuntimeEnv({
+      sanitizeZodyRuntimeEnv({
         ZCODE_CUA_PERMISSION_BROKER_SOCKET: "/tmp/broker-b.sock",
         ZCODE_CUA_PLUGIN_AUTHORITY: "authority-b",
       });
-      expect(getCapturedZCodeCuaBrokerCredentials()).toEqual({
+      expect(getCapturedZodyCuaBrokerCredentials()).toEqual({
         socket: "/tmp/broker-b.sock",
         pluginAuthority: "authority-b",
       });
     } finally {
-      resetCapturedZCodeCuaBrokerCredentialsForTest();
+      resetCapturedZodyCuaBrokerCredentialsForTest();
     }
   });
 
   it("captures Agent OTLP config privately and never passes auth or identity through to tools", () => {
-    resetCapturedZCodeAgentTelemetryEnvForTest();
+    resetCapturedZodyAgentTelemetryEnvForTest();
     const sourceEnv = {
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "https://arms.example.com/v1/traces",
       OTEL_EXPORTER_OTLP_TRACES_HEADERS: "Authorization=secret",
@@ -156,15 +156,15 @@ describe("runtimeEnv", () => {
       PATH: "/usr/bin:/bin",
       ZCODE_TELEMETRY_USER_SUBJECT_ID: "opaque-user",
     };
-    expect(sanitizeZCodeRuntimeEnv(sourceEnv)).toEqual({ PATH: "/usr/bin:/bin" });
-    expect(getCapturedZCodeAgentTelemetryEnv()).toMatchObject({
+    expect(sanitizeZodyRuntimeEnv(sourceEnv)).toEqual({ PATH: "/usr/bin:/bin" });
+    expect(getCapturedZodyAgentTelemetryEnv()).toMatchObject({
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "https://arms.example.com/v1/traces",
       OTEL_EXPORTER_OTLP_TRACES_HEADERS: "Authorization=secret",
       OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: "https://arms.example.com/v1/metrics",
       OTEL_EXPORTER_OTLP_METRICS_HEADERS: "Authorization=metric-secret",
       ZCODE_TELEMETRY_USER_SUBJECT_ID: "opaque-user",
     });
-    const toolEnv = readZodyToolEnvPassthroughEnv(buildZCodeToolEnvPassthroughEnv(sourceEnv));
+    const toolEnv = readZodyToolEnvPassthroughEnv(buildZodyToolEnvPassthroughEnv(sourceEnv));
     expect(toolEnv).not.toHaveProperty("OTEL_EXPORTER_OTLP_TRACES_HEADERS");
     expect(toolEnv).not.toHaveProperty("OTEL_EXPORTER_OTLP_METRICS_HEADERS");
     expect(toolEnv).not.toHaveProperty("ZCODE_TELEMETRY_USER_SUBJECT_ID");
@@ -172,7 +172,7 @@ describe("runtimeEnv", () => {
 
   it("extracts only the allowlisted Agent telemetry env", () => {
     expect(
-      readZCodeAgentTelemetryEnv({
+      readZodyAgentTelemetryEnv({
         OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: " https://arms.example.com/v1/traces ",
         OTEL_UNKNOWN_SECRET: "must-not-pass",
         PATH: "/bin",

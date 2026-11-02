@@ -1,6 +1,6 @@
 # R20.4 符号报告
 
-状态：首个候选已完成，尚未提交；R20.4 全量改名尚未完成。当前候选基线 `854ddf60ac1be92428e3c32192ee325aab6acd25`；具体授权以 `r20-authorized-scope.json` 的 substep4 与 manualReviewPaths 为准。
+状态：首个候选已固化为 `6720cfe2`，并获 DeepSeek 限定 PASS；R20.4 全量改名尚未完成。当前候选基线 `854ddf60ac1be92428e3c32192ee325aab6acd25`；具体授权以 `r20-authorized-scope.json` 的 substep4 与 manualReviewPaths 为准。
 
 ## 历史准备记录
 
@@ -20,4 +20,6 @@
 
 验证 cwd 均为实施工作区根：`pnpm typecheck`、`pnpm --dir apps/zody-cli/packages/cli exec tsc --noEmit`、`pnpm lint`、`pnpm architecture:check --changed` 均退出 0，lint 303 warnings；完整输出分别在 `typecheck.log`、`cli-typecheck.log`、`lint.log`、`architecture-check.log`。`pnpm exec vitest run packages/shared/test/runtimeEnv.test.ts packages/desktop/test/armsRumShared.test.ts packages/desktop/test/desktopRuntimeEnv.test.ts` 三个文件共 47 通过（`runtime-tests.log`）。根 typecheck 覆盖根脚本列出的 TypeScript 项目；CLI 命令只检查 `apps/zody-cli/packages/cli` 包，不能称为整个 CLI workspace 的类型检查。首轮目标测试 9 文件 164 通过、2 个 ProcessManager 旧目录夹具失败；修正两个分段路径后单文件 66 通过（`initial-target-tests.log`、`process-manager-retest.log`，两份为工具输出摘要并注明，不冒充完整日志）。源码旁 `genUiOutputEnv.test.ts` 不被默认 Vitest 项目收集，以 `pnpm exec vitest run --config output/zody-rename-r20-symbols/vitest-source.config.mjs` 显式运行时原断言 `.zcode` 与实际 `.zody` 不一致；更新该路径断言后 1 项通过（失败及复跑完整日志 `source-test-explicit.log`、`source-test-retest.log`）。
 
-额外 Desktop main tsc 退出 1，完整诊断保存在 `desktop-main-tsc.log`；独立 854 基线复核归一化后 85 条诊断相同（`output/zody-rename-main-baseline/`），只证明所比较快照无新增该配置诊断，不代替项目主线通过。R20.4 尚未完成；本组未提交，不宣称全量符号/路径改名完成。
+额外 Desktop main tsc 退出 1，完整诊断保存在 `desktop-main-tsc.log`；独立 854 基线复核归一化后 85 条诊断相同（`output/zody-rename-main-baseline/`），只证明所比较快照无新增该配置诊断，不代替项目主线通过。R20.4 尚未完成；本组已由主控固化为 `6720cfe2`，不宣称全量符号/路径改名完成。
+
+DeepSeek 对固定首组 `6720cfe2` 给出限定 PASS，见 R20-symbols-deepseek-review-1.md；不代表全量 R20.4 或 P2 通过。

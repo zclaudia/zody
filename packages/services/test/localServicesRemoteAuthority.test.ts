@@ -184,7 +184,7 @@ describe("createLocalServices remote authority", () => {
     const services = createLocalServices({
       zcodeBuiltinProviderConfigFilePath,
       serviceAuthorityMode: "desktop-attached-remote",
-      zcodeAgentCommandResolver: commandResolver,
+      zodyAgentCommandResolver: commandResolver,
     });
 
     try {

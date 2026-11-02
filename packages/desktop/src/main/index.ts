@@ -266,7 +266,7 @@ import {
   createEmbeddedBrowserPermissionUiBridge,
   setActiveEmbeddedBrowserPermissionUiBridge,
 } from "./embeddedBrowserPermissionUiBridge.js";
-import { mapZCodeEnvToArmsRumEnv } from "@zody/shared";
+import { mapZodyEnvToArmsRumEnv } from "@zody/shared";
 import {
   findWindowsProcessesReferencingResourceMarkers,
   probeWindowsPackagedResourceWritable,
@@ -2450,7 +2450,7 @@ app.whenReady().then(async () => {
       deviceMid,
       platform: process.platform,
       appVersion: ZCODE_VERSION,
-      armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+      armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
     },
     finalArmsCustomEventE2EEnabled: shouldEnableE2ETestBridge(process.env),
     webRemoteControlManager,
@@ -2493,24 +2493,24 @@ app.whenReady().then(async () => {
     deviceMid,
     platform: process.platform,
     appVersion: ZCODE_VERSION,
-    armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+    armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   configureDesktopResourceTelemetry({
     deviceMid,
     platform: process.platform,
     appVersion: ZCODE_VERSION,
-    armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+    armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   configureDesktopMcpTelemetry({
     deviceMid,
     appVersion: ZCODE_VERSION,
-    armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+    armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   configureDesktopNetworkTelemetry({
     deviceMid,
     platform: process.platform,
     appVersion: ZCODE_VERSION,
-    armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+    armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   registerDesktopStabilityMonitors(logger, crashCapturePaths);
   registerDesktopResourceTelemetry(logger);
@@ -2520,7 +2520,7 @@ app.whenReady().then(async () => {
   registerDesktopZCodeDataSizeTelemetry({
     context: {
       appVersion: ZCODE_VERSION,
-      armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+      armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
       dataRootKind:
         resolve(getDataBaseDir()) === resolve(defaultDataBaseDir) ? "default" : "custom",
       deviceMid,

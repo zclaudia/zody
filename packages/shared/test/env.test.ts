@@ -62,8 +62,8 @@ describe("shared runtime env", () => {
     const env = await importFreshEnvModule();
 
     expect(env.ZCODE_ENV).toBe("test");
-    expect(env.normalizeZCodeEnv("development")).toBe("test");
-    expect(env.mapZCodeEnvToArmsRumEnv("production")).toBe("local");
+    expect(env.normalizeZodyEnv("development")).toBe("test");
+    expect(env.mapZodyEnvToArmsRumEnv("production")).toBe("local");
   });
 
   it("未注入身份 define 时 flavor 跟随 ZCODE_ENV", async () => {
@@ -73,8 +73,8 @@ describe("shared runtime env", () => {
     const env = await importFreshEnvModule();
 
     expect(env.ZCODE_PRODUCT_FLAVOR).toBe("production");
-    expect(env.normalizeZCodeProductFlavor(undefined, "test")).toBe("preview");
-    expect(env.normalizeZCodeProductFlavor("bogus", "production")).toBe("production");
+    expect(env.normalizeZodyProductFlavor(undefined, "test")).toBe("preview");
+    expect(env.normalizeZodyProductFlavor("bogus", "production")).toBe("production");
   });
 
   it("显式注入 preview 身份时生产后端构建仍是 Preview", async () => {
@@ -92,7 +92,7 @@ describe("shared runtime env", () => {
 
     const env = await importFreshEnvModule();
 
-    expect(env.mapZCodeEnvToArmsRumEnv("production")).toBe("prod");
+    expect(env.mapZodyEnvToArmsRumEnv("production")).toBe("prod");
   });
 
   it("mapZCodeEnvToArmsRumEnv 在本地开发态忽略 production 产品环境并映射为 local", async () => {
@@ -100,6 +100,6 @@ describe("shared runtime env", () => {
 
     const env = await importFreshEnvModule();
 
-    expect(env.mapZCodeEnvToArmsRumEnv("development")).toBe("local");
+    expect(env.mapZodyEnvToArmsRumEnv("development")).toBe("local");
   });
 });

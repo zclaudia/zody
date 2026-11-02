@@ -190,7 +190,7 @@ describe("stdio Desktop presentation surface", () => {
         [SERVICE_AUTHORITY_MODE_ENV]: "desktop-attached-remote",
       },
       zcodeBuiltinProviderConfigFilePath,
-      zcodeAgentCommandResolver: commandResolver,
+      zodyAgentCommandResolver: commandResolver,
     });
 
     try {

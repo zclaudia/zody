@@ -459,11 +459,11 @@ import {
   type BrowserCommand,
   isZCodeCuaMcpCommand,
   isZCodeCuaMcpPackageArg,
-  isZCodeCuaInternalFeatureEnabled,
+  isZodyCuaInternalFeatureEnabled,
   ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   type ZCodeAutomation,
   type ZCodeAutomationRun,
-  getCapturedZCodeAgentTelemetryEnv,
+  getCapturedZodyAgentTelemetryEnv,
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
   ZCODE_VERSION,
   ZCODE_ENV,
@@ -567,7 +567,7 @@ export function shouldEnableDefaultCuaProductHelper(
   // CUA 已随正式版默认开启（isZCodeCuaInternalFeatureEnabled 默认 ON，仅显式 0/false/off 关闭；2026-08 注释更正——旧注释称默认关闭已过期）。显式开启后 macOS 使用既有产品 Helper，Windows 使用安装包内 runtime；
   // 两端都保持按需启动。关闭时不创建 host、不探测资源、不产生子进程或权限提示。
   const env = options.env ?? process.env;
-  if (!isZCodeCuaInternalFeatureEnabled(env)) return false;
+  if (!isZodyCuaInternalFeatureEnabled(env)) return false;
   const platform = options.platform ?? process.platform;
   return platform === "darwin" || platform === "win32";
 }
@@ -1019,15 +1019,15 @@ export function createLocalServices(options: {
   // fork（F4.3）：onOffPeakSchedulerWakeRequested（闲时 scheduler 唤醒回调）随闲时任务全链路删除。
   // 注入点：默认 resolver 已能覆盖 dev/桌面/SSH 远端三类形态；
   // 测试或特殊宿主想强制走自定义 binary/参数时从这里注入。
-  zcodeAgentCommandResolver?: ZodyAgentCommandResolver;
+  zodyAgentCommandResolver?: ZodyAgentCommandResolver;
   /** Trusted sealed wrapper injection; takes precedence over PATH/env command discovery. */
-  zcodeAgentNativeRuntime?: ZodyAgentNativeRuntimeConfig;
+  zodyAgentNativeRuntime?: ZodyAgentNativeRuntimeConfig;
   /** Build-time opt-in narrow selector; null falls back to the original resolver. */
-  zcodeAgentNativeRuntimeResolver?: ZCodeAgentNativeRuntimeResolver;
+  zodyAgentNativeRuntimeResolver?: ZCodeAgentNativeRuntimeResolver;
   /** Desktop Main 提前异步采集的本机 runtime 环境；Local Host 注入后不再同步启动 login shell。 */
   runtimeProcessEnvPatch?: Record<string, string>;
   /** 本地桌面上次 workspace 缺失时，仅用于 Agent 子进程 spawn.cwd 兜底。 */
-  zcodeAgentSpawnFallbackCwd?: string;
+  zodyAgentSpawnFallbackCwd?: string;
   /** desktop-attached remote server 从 Desktop Host 收到的一次性 Agent 网络配置。 */
   remoteAgentNetwork?: {
     httpProxy?: string;
@@ -1315,7 +1315,7 @@ export function createLocalServices(options: {
     // ZCODE_CUA_PRODUCT_HELPER=1）即视为启用，不依赖 config.json 显式 enable——main 的 bootstrap
     // 用 isZCodeCuaInternalFeatureEnabled 门控 bundled plugin，与 feat 的 workspace enablement 不同。
     // 生产路径（dev mode off）回落到官方插件 workspace enablement 判定（与 feat 一致）。
-    isZCodeCuaInternalFeatureEnabled(process.env) ||
+    isZodyCuaInternalFeatureEnabled(process.env) ||
     isOfficialCuaPluginEnabledForWorkspace({
       env: process.env,
       workingDirectory: context?.workspacePath,
@@ -1705,10 +1705,10 @@ export function createLocalServices(options: {
     });
   // Narrow runtime startup gate: inject the existing Host service readers, never a
   // second provider/config store. The resolver invokes this callback only on a new spawn.
-  const zcodeAgentNativeRuntimeResolver =
-    options?.zcodeAgentNativeRuntimeResolver && !isDesktopAttachedRemote
+  const zodyAgentNativeRuntimeResolver =
+    options?.zodyAgentNativeRuntimeResolver && !isDesktopAttachedRemote
       ? (context: ZodyAgentCommandResolverContext) =>
-          options.zcodeAgentNativeRuntimeResolver!(context, {
+          options.zodyAgentNativeRuntimeResolver!(context, {
             readStartupContext: async () => {
               const [providerSettingsView, modelSelectionView, settings] = await Promise.all([
                 providerRuntime.providerSettings.getView(),
@@ -1737,9 +1737,9 @@ export function createLocalServices(options: {
     resolveDynamicWorkflowClientConfig: resolveLocalDynamicWorkflowOfferConfig,
     ...(resolveDynamicWorkflowUserMode ? { resolveDynamicWorkflowUserMode } : {}),
     forwardDynamicWorkflowUserMode: options?.forwardDynamicWorkflowUserMode,
-    commandResolver: options?.zcodeAgentCommandResolver,
-    nativeRuntime: options?.zcodeAgentNativeRuntime,
-    nativeRuntimeResolver: zcodeAgentNativeRuntimeResolver,
+    commandResolver: options?.zodyAgentCommandResolver,
+    nativeRuntime: options?.zodyAgentNativeRuntime,
+    nativeRuntimeResolver: zodyAgentNativeRuntimeResolver,
     cuaHostInstanceId: options?.hostInstanceId,
     presentationSurface: resolveZCodeAgentPresentationSurface({
       runtimeSurface: options?.agentTelemetry?.runtimeSurface,
@@ -1751,7 +1751,7 @@ export function createLocalServices(options: {
     // ZCodeAgentProcessManager，导致 host 永远不向 main 上报 Agent spawn/exit，进程监控器
     // 因而看不到实际运行的 Agent，也无法验证只读到可写升级是否复用同一进程。
     processLifecycleReporter: options?.processLifecycleReporter,
-    spawnFallbackCwd: options?.zcodeAgentSpawnFallbackCwd,
+    spawnFallbackCwd: options?.zodyAgentSpawnFallbackCwd,
     // browser-use：host→main 执行桥透传给 agent service 的 onRequest browserExecute 路由。
     browserControlExecutor: options?.browserControlExecutor,
     // fork（bots 移除）：channelReplyExecutor / topicResourceExecutor / topicResourceValidator
@@ -1809,7 +1809,7 @@ export function createLocalServices(options: {
           }
         }
       }
-      const telemetryEnv = getCapturedZCodeAgentTelemetryEnv();
+      const telemetryEnv = getCapturedZodyAgentTelemetryEnv();
       const telemetryConfigured = Boolean(
         telemetryEnv.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || telemetryEnv.OTEL_EXPORTER_OTLP_ENDPOINT,
       );

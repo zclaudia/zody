@@ -1,11 +1,11 @@
-import { ZCODE_VERSION, type ZCodeEnv } from "@zody/shared";
+import { ZCODE_VERSION, type ZodyEnv } from "@zody/shared";
 
 declare const __ZCODE_REMOTE_CDN_RELEASE_ROOTS__: readonly string[] | undefined;
 
 const TEST_REMOTE_CDN_RELEASE_ROOT = "http://intranet.example.invalid:12345/ssh-remote-assets";
 
 export interface ResolveRemoteCdnOptions {
-  env?: ZCodeEnv;
+  env?: ZodyEnv;
   locale?: string;
   timeZone?: string;
   overrideBaseUrl?: string;

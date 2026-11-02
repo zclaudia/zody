@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- 网络指标采集/聚合/ARMS 上报 */
 import armsRum from "@arms/rum-electron";
-import { mapZCodeEnvToArmsRumEnv } from "@zody/shared";
+import { mapZodyEnvToArmsRumEnv } from "@zody/shared";
 import type { NetworkObservation } from "@zody/rpc";
 import {
   flushInterfaceNetworkStats,
@@ -23,7 +23,7 @@ interface NetworkGlobalContext {
   deviceMid: string;
   platform: NodeJS.Platform;
   appVersion: string;
-  armsEnv: ReturnType<typeof mapZCodeEnvToArmsRumEnv>;
+  armsEnv: ReturnType<typeof mapZodyEnvToArmsRumEnv>;
 }
 
 let globalContext: NetworkGlobalContext | null = null;

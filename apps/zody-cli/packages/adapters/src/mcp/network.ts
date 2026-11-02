@@ -1,6 +1,6 @@
 import { accessSync, constants } from "node:fs";
 import { delimiter, posix, win32 } from "node:path";
-import { sanitizeZCodeRuntimeEnv } from "@zody/shared";
+import { sanitizeZodyRuntimeEnv } from "@zody/shared";
 import { withoutNetworkCapture } from "@zody/shared/node";
 import { createNetworkProxyFetch } from "../network/proxy-fetch.js";
 import { applyNetworkEgressEnv, type NetworkEgressEnvPolicy } from "../network/subprocess-env.js";
@@ -13,7 +13,7 @@ export function buildMcpStdioEnv(options: {
 }): Record<string, string> {
   const sourceEnv = options.env ?? process.env;
   return prependRunningNodeDirectory(
-    applyNetworkEgressEnv(sanitizeZCodeRuntimeEnv(filterStringEnv(sourceEnv)), {
+    applyNetworkEgressEnv(sanitizeZodyRuntimeEnv(filterStringEnv(sourceEnv)), {
       network: options.network,
       sourceEnv,
     }),

@@ -11294,6 +11294,7 @@
       "packages/desktop/src/shared/armsRumShared.d.ts",
       "packages/desktop/src/shared/armsRumShared.d.ts.map",
       "packages/desktop/src/shared/armsRumShared.js",
+      "packages/desktop/src/shared/armsRumShared.js.map",
       "packages/desktop/src/shared/armsRumShared.ts",
       "packages/desktop/test/app-asar-repack.test.ts",
       "packages/desktop/test/appARMSBootstrap.test.ts",

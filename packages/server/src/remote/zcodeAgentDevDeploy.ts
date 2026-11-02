@@ -2,7 +2,7 @@
 import {
   ZCODE_AGENT_PROVIDER,
   ZCODE_DATA_ROOT_DIR_NAME,
-  resolveZCodeRuntimeEnv,
+  resolveZodyRuntimeEnv,
 } from "@zody/shared";
 import { createHash, randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -71,7 +71,7 @@ function findUpward(relativePath: string): { rootDir: string; path: string } | n
 }
 
 function shouldUseDevelopmentAgentBundle(): boolean {
-  if (resolveZCodeRuntimeEnv(process.env) !== "development") {
+  if (resolveZodyRuntimeEnv(process.env) !== "development") {
     return false;
   }
 

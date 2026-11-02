@@ -16,11 +16,11 @@ import {
   ZCODE_RUNTIME_ENV_KEY,
   ZCODE_VERSION,
   ZCODE_DATA_ROOT_DIR_NAME,
-  buildZCodeToolEnvPassthroughEnv,
+  buildZodyToolEnvPassthroughEnv,
   resolveRuntimeZCodeEndpointOrigin,
   normalizeDynamicWorkflowMode,
-  readZCodeAgentTelemetryEnv,
-  sanitizeZCodeRuntimeEnv,
+  readZodyAgentTelemetryEnv,
+  sanitizeZodyRuntimeEnv,
   type ZodyRuntimeEnv,
 } from "@zody/shared";
 import { resolvePlatformKeyForPackagedApp } from "../../scripts/target-platform.mjs";
@@ -508,7 +508,7 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
           : undefined;
   const windowsAppInstallDir = resolveWindowsAppInstallDirForDataBaseDirGuard();
   // 正式包不能把启动器或 shell 注入的上报 endpoint 转交给 Host/Agent；开发态继续支持本地诊断配置。
-  const agentTelemetryEnv = packagedDesktop ? {} : readZCodeAgentTelemetryEnv(rawInheritedEnv);
+  const agentTelemetryEnv = packagedDesktop ? {} : readZodyAgentTelemetryEnv(rawInheritedEnv);
   // Desktop 身份由 host 从凭据仓库和本机状态读取后可信注入；开发态外部环境可以配置 OTLP 连接，
   // 不能伪造 uid/device/runtime surface 或绕过本地 identity state 的隔离边界。打包态上面会丢弃连接字段。
   for (const key of [
@@ -522,8 +522,8 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
     delete agentTelemetryEnv[key];
   }
   const inheritedEnv = applySelectedZCodeEnvLinks({
-    ...sanitizeZCodeRuntimeEnv(rawInheritedEnv),
-    ...buildZCodeToolEnvPassthroughEnv(rawInheritedEnv),
+    ...sanitizeZodyRuntimeEnv(rawInheritedEnv),
+    ...buildZodyToolEnvPassthroughEnv(rawInheritedEnv),
   });
   // A release app must never inherit the local unsigned-Helper escape hatch.
   // Otherwise a developer shell/launchctl variable can make the signed app

@@ -38,7 +38,7 @@ export function isCuaDevModeRequested(env: EnvRecord = process.env): boolean {
   return explicit === "1" || explicit === "true" || explicit === "on";
 }
 
-export function isZCodeCuaInternalFeatureEnabled(env: EnvRecord = process.env): boolean {
+export function isZodyCuaInternalFeatureEnabled(env: EnvRecord = process.env): boolean {
   // CUA 现已默认打包进正式版（plugin staged + Helper enabled），不再需要显式 env flag。
   // DEV_MODE 仍然 implied（开发一键），PRODUCT_HELPER=0/off/false 可显式关闭。
   if (isCuaDevModeRequested(env)) return true;
@@ -124,7 +124,7 @@ export function normalizeZodyRuntimeEnv(value: string | undefined): ZodyRuntimeE
   return undefined;
 }
 
-export function resolveZCodeRuntimeEnv(
+export function resolveZodyRuntimeEnv(
   env: Record<string, string | undefined>,
   fallback: ZodyRuntimeEnv = "production",
 ): ZodyRuntimeEnv {
@@ -142,7 +142,7 @@ interface CapturedCuaBrokerCredentials {
 }
 
 let capturedCuaBrokerCredentials: Readonly<CapturedCuaBrokerCredentials> | undefined;
-const capturedZCodeAgentTelemetryEnv: Record<string, string> = {};
+const capturedZodyAgentTelemetryEnv: Record<string, string> = {};
 
 // CUA broker socket 会被上面的 sanitize 从子进程 env 中剔除（confused-deputy 防护 —— 不能让
 // 其它 MCP server / Bash / tool 子进程直接驱动已授权 Helper）。但 CLI 入口在 bootstrap
@@ -151,7 +151,7 @@ const capturedZCodeAgentTelemetryEnv: Record<string, string> = {};
 // （fail-open，违反 "Python/uvx must never become the implicit permission owner"）。因此在剔除前把
 // 凭据捕获进本进程私有存储，只经 getCapturedZCodeCuaBrokerCredentials() 暴露给 bootstrap 的定向
 // 注入路径，绝不写回任何子进程 env。
-function captureZCodeCuaBrokerCredentials(env: Record<string, string | undefined>): void {
+function captureZodyCuaBrokerCredentials(env: Record<string, string | undefined>): void {
   const socket = env[ZCODE_CUA_BROKER_SOCKET_ENV_KEY]?.trim();
   const pluginAuthority = env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]?.trim();
   const refreshMarker = env["ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER"]?.trim();
@@ -171,31 +171,31 @@ function captureZCodeCuaBrokerCredentials(env: Record<string, string | undefined
   }
 }
 
-function captureZCodeAgentTelemetryEnv(env: Record<string, string | undefined>): void {
-  Object.assign(capturedZCodeAgentTelemetryEnv, readZCodeAgentTelemetryEnv(env));
+function captureZodyAgentTelemetryEnv(env: Record<string, string | undefined>): void {
+  Object.assign(capturedZodyAgentTelemetryEnv, readZodyAgentTelemetryEnv(env));
 }
 
 /**
  * 只提取供 Agent telemetry bootstrap 使用的配置。宿主可在经过通用 env 清洗后，
  * 将这组值定向传给 host/Agent；不得把它并入 Bash/MCP 的 tool env。
  */
-export function readZCodeAgentTelemetryEnv(
+export function readZodyAgentTelemetryEnv(
   env: Record<string, string | undefined>,
 ): Record<string, string> {
   const telemetryEnv: Record<string, string> = {};
   for (const key of SANITIZED_RUNTIME_ENV_KEYS) {
-    if (!isZCodeAgentTelemetryEnvKey(key)) continue;
+    if (!isZodyAgentTelemetryEnvKey(key)) continue;
     const value = env[key]?.trim();
     if (value) telemetryEnv[key] = value;
   }
   return telemetryEnv;
 }
 
-export function getCapturedZCodeAgentTelemetryEnv(): Record<string, string> {
-  return { ...capturedZCodeAgentTelemetryEnv };
+export function getCapturedZodyAgentTelemetryEnv(): Record<string, string> {
+  return { ...capturedZodyAgentTelemetryEnv };
 }
 
-export function getCapturedZCodeCuaBrokerCredentials(): {
+export function getCapturedZodyCuaBrokerCredentials(): {
   socket: string | undefined;
   pluginAuthority: string | undefined;
   refreshMarker?: string;
@@ -206,21 +206,21 @@ export function getCapturedZCodeCuaBrokerCredentials(): {
 }
 
 // 仅供测试重置进程内捕获状态。
-export function resetCapturedZCodeCuaBrokerCredentialsForTest(): void {
+export function resetCapturedZodyCuaBrokerCredentialsForTest(): void {
   capturedCuaBrokerCredentials = undefined;
 }
 
-export function resetCapturedZCodeAgentTelemetryEnvForTest(): void {
-  for (const key of Object.keys(capturedZCodeAgentTelemetryEnv)) {
-    delete capturedZCodeAgentTelemetryEnv[key];
+export function resetCapturedZodyAgentTelemetryEnvForTest(): void {
+  for (const key of Object.keys(capturedZodyAgentTelemetryEnv)) {
+    delete capturedZodyAgentTelemetryEnv[key];
   }
 }
 
-export function sanitizeZCodeRuntimeEnv<T extends Record<string, string | undefined>>(
+export function sanitizeZodyRuntimeEnv<T extends Record<string, string | undefined>>(
   env: T,
 ): Record<string, string> {
-  captureZCodeCuaBrokerCredentials(env);
-  captureZCodeAgentTelemetryEnv(env);
+  captureZodyCuaBrokerCredentials(env);
+  captureZodyAgentTelemetryEnv(env);
   const sanitized: Record<string, string> = {};
   for (const [key, value] of Object.entries(env)) {
     if (value === undefined || shouldSanitizeZodyRuntimeEnvKey(key)) {
@@ -231,7 +231,7 @@ export function sanitizeZCodeRuntimeEnv<T extends Record<string, string | undefi
   return sanitized;
 }
 
-export function buildZCodeToolEnvPassthroughEnv(env: EnvRecord): Record<string, string> {
+export function buildZodyToolEnvPassthroughEnv(env: EnvRecord): Record<string, string> {
   const captured = readZodyToolEnvPassthroughEnv(env);
 
   for (const [key, value] of Object.entries(env)) {
@@ -241,7 +241,7 @@ export function buildZCodeToolEnvPassthroughEnv(env: EnvRecord): Record<string, 
     captured[key] = value;
   }
 
-  return stringifyZCodeToolEnvPassthroughEnv(captured);
+  return stringifyZodyToolEnvPassthroughEnv(captured);
 }
 
 export function readZodyToolEnvPassthroughEnv(env: EnvRecord): Record<string, string> {
@@ -273,8 +273,8 @@ export function readZodyToolEnvPassthroughEnv(env: EnvRecord): Record<string, st
 }
 
 export function sanitizeZodyRuntimeEnvInPlace(env: Record<string, string | undefined>): void {
-  captureZCodeCuaBrokerCredentials(env);
-  captureZCodeAgentTelemetryEnv(env);
+  captureZodyCuaBrokerCredentials(env);
+  captureZodyAgentTelemetryEnv(env);
   for (const key of Object.keys(env)) {
     if (shouldSanitizeZodyRuntimeEnvKey(key)) {
       delete env[key];
@@ -282,7 +282,7 @@ export function sanitizeZodyRuntimeEnvInPlace(env: Record<string, string | undef
   }
 }
 
-function isZCodeAgentTelemetryEnvKey(key: string): boolean {
+function isZodyAgentTelemetryEnvKey(key: string): boolean {
   return (
     key.startsWith("OTEL_") ||
     key.startsWith("ZCODE_TELEMETRY_") ||
@@ -300,7 +300,7 @@ export function shouldSanitizeZodyRuntimeEnvKey(key: string): boolean {
 
 export function shouldCaptureZodyToolEnvPassthroughKey(key: string): boolean {
   const upperKey = key.toUpperCase();
-  if (isZCodeAgentTelemetryEnvKey(upperKey)) {
+  if (isZodyAgentTelemetryEnvKey(upperKey)) {
     return false;
   }
   if (NON_TOOL_PASSTHROUGH_RUNTIME_ENV_KEYS.some((candidate) => candidate === upperKey)) {
@@ -309,7 +309,7 @@ export function shouldCaptureZodyToolEnvPassthroughKey(key: string): boolean {
   return shouldSanitizeZodyRuntimeEnvKey(key);
 }
 
-function stringifyZCodeToolEnvPassthroughEnv(
+function stringifyZodyToolEnvPassthroughEnv(
   captured: Record<string, string>,
 ): Record<string, string> {
   const entries = Object.entries(captured).sort(([left], [right]) => left.localeCompare(right));

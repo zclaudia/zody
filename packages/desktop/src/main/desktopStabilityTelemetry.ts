@@ -3,7 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import armsRum from "@arms/rum-electron";
 import { BrowserWindow, type WebContents } from "electron";
 import {
-  mapZCodeEnvToArmsRumEnv,
+  mapZodyEnvToArmsRumEnv,
   type HostAgentProcessErrorResponse,
   type HostAgentProcessExceptionResponse,
   type HostAgentProcessExitedResponse,
@@ -93,7 +93,7 @@ interface StabilityGlobalContext {
   deviceMid: string;
   platform: NodeJS.Platform;
   appVersion: string;
-  armsEnv: ReturnType<typeof mapZCodeEnvToArmsRumEnv>;
+  armsEnv: ReturnType<typeof mapZodyEnvToArmsRumEnv>;
 }
 
 interface UnresponsiveWatchState {

@@ -1,4 +1,4 @@
-import { mapZCodeEnvToArmsRumEnv, ZCODE_ARMS_RUM_ENDPOINT, ZCODE_VERSION, } from "@zody/shared";
+import { mapZodyEnvToArmsRumEnv, ZCODE_ARMS_RUM_ENDPOINT, ZCODE_VERSION, } from "@zody/shared";
 /** 主进程 init 的 browserCollectors，经 autoInject 注入到 renderer 的 RumSDK.init(collectors) */
 export const ARMS_BROWSER_COLLECTORS = {
     perf: true,
@@ -32,7 +32,7 @@ export function buildArmsBrowserInitConfig(runtimeEnv) {
         enable: ZCODE_ARMS_RUM_ENDPOINT !== "",
         version: ZCODE_VERSION,
         endpoint: ZCODE_ARMS_RUM_ENDPOINT,
-        env: mapZCodeEnvToArmsRumEnv(runtimeEnv),
+        env: mapZodyEnvToArmsRumEnv(runtimeEnv),
         sessionConfig: {
             sampleRate: 1,
         },

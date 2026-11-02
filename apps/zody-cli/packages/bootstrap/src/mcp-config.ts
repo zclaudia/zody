@@ -5,7 +5,7 @@ import type {
   McpStdioServerConfig,
 } from "@zody/contracts";
 import {
-  getCapturedZCodeCuaBrokerCredentials,
+  getCapturedZodyCuaBrokerCredentials,
   isZCodeCuaMcpCommand,
   isZCodeCuaMcpPackageArg,
   ZCODE_CUA_BROKER_SOCKET_ENV_KEY,
@@ -24,7 +24,7 @@ export const ZCODE_CUA_BROKER_UNAVAILABLE_ENV = "ZCODE_CUA_PERMISSION_BROKER_UNA
 function resolveZCodeCuaBrokerSocket(): string | undefined {
   // captured 优先；运行时残留的 stale socket 不能覆盖可信快照。
   return (
-    getCapturedZCodeCuaBrokerCredentials().socket ||
+    getCapturedZodyCuaBrokerCredentials().socket ||
     process.env[ZCODE_CUA_BROKER_SOCKET_ENV_KEY]?.trim()
   );
 }
@@ -155,7 +155,7 @@ function injectCuaCredentialsIntoNodeRepl(
   token: string | undefined,
 ): McpServerConfig {
   if (config.type !== "stdio") return config;
-  const captured = getCapturedZCodeCuaBrokerCredentials();
+  const captured = getCapturedZodyCuaBrokerCredentials();
   const pluginAuthority = captured.pluginAuthority;
   // CLI runtime env 会在 bootstrap 前被清理。marker 必须和 socket/token 一样取自私有凭据快照，
   // 否则 SDK 迁移后 broker 虽然存活，权限刷新仍会静默停止。

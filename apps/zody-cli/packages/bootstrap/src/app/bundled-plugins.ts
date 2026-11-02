@@ -14,7 +14,7 @@ import {
   writeBundledOfficialMarketplacePartitionSync,
 } from "@zody/adapters";
 import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE, type Logger } from "@zody/contracts";
-import { isZCodeCuaInternalFeatureEnabled, ZCODE_CUA_OFFICIAL_PLUGIN_ID } from "@zody/shared";
+import { isZodyCuaInternalFeatureEnabled, ZCODE_CUA_OFFICIAL_PLUGIN_ID } from "@zody/shared";
 import {
   createOfficialPluginCacheRetryBudget,
   getOfficialPluginCacheRetryAttempts,
@@ -246,7 +246,7 @@ export function resolveOfficialPluginRoots(input: {
   const suppressedBuiltins = new Set(input.suppressedBuiltins ?? []);
   // zcode-cua 内置 plugin 默认不启用，由 feature flag 控制加载。在 seed/discovery 层门控
   // （而非只隐藏某个 UI 面），这样开关关闭时用户无法经 plugin 列表/marketplace/MCP 设置/CLI 命令看到它。
-  if (!isZCodeCuaInternalFeatureEnabled(input.env ?? process.env)) {
+  if (!isZodyCuaInternalFeatureEnabled(input.env ?? process.env)) {
     suppressedBuiltins.add(ZCODE_CUA_OFFICIAL_PLUGIN_ID);
   }
   const failedSeeds = seedBundledOfficialPlugins({

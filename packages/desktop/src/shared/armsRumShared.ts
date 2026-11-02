@@ -1,5 +1,5 @@
 import {
-  mapZCodeEnvToArmsRumEnv,
+  mapZodyEnvToArmsRumEnv,
   type ZodyRuntimeEnv,
   ZCODE_ARMS_RUM_ENDPOINT,
   ZCODE_VERSION,
@@ -39,7 +39,7 @@ export function buildArmsBrowserInitConfig(runtimeEnv: ZodyRuntimeEnv) {
     enable: ZCODE_ARMS_RUM_ENDPOINT !== "",
     version: ZCODE_VERSION,
     endpoint: ZCODE_ARMS_RUM_ENDPOINT,
-    env: mapZCodeEnvToArmsRumEnv(runtimeEnv),
+    env: mapZodyEnvToArmsRumEnv(runtimeEnv),
     sessionConfig: {
       sampleRate: 1,
     },

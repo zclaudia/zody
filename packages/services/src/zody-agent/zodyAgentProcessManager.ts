@@ -22,8 +22,8 @@ import {
   ZCODE_AGENT_PROVIDER,
   ZCODE_RUNTIME_ENV_KEY,
   resolveWorkspaceKey,
-  resolveZCodeRuntimeEnv,
-  sanitizeZCodeRuntimeEnv,
+  resolveZodyRuntimeEnv,
+  sanitizeZodyRuntimeEnv,
   zcodeProtocolMethods,
   zcodeRuntimeIdentityInitializeResultSchema,
 } from "@zody/shared";
@@ -1384,7 +1384,7 @@ export class ZodyAgentProcessManager {
     }
     // app 以本地开发方式启动时，让 agent 子进程也带上 ZCODE_RUNTIME_ENV=development；
     // 不再传 NODE_ENV，避免用户 shell/runtime 变量影响 ZCode 运行模式或泄漏到 Bash 工具。
-    const runtimeEnv = resolveZCodeRuntimeEnv(process.env);
+    const runtimeEnv = resolveZodyRuntimeEnv(process.env);
     log("ZCode agent spawn preflight", {
       workspaceKey,
       spawnPreflight,
@@ -1396,7 +1396,7 @@ export class ZodyAgentProcessManager {
       // 关闭时才能按进程树整体回收；Windows 保持非 detached，交给 taskkill /T 处理。
       detached: shouldSpawnInDetachedProcessGroup(),
       env: {
-        ...sanitizeZCodeRuntimeEnv(process.env),
+        ...sanitizeZodyRuntimeEnv(process.env),
         [ZCODE_RUNTIME_ENV_KEY]: runtimeEnv,
         ...spawnEnv,
         ...effectiveCommand.env,

@@ -17,7 +17,7 @@ import {
   ZCODE_RUNTIME_ENV_KEY,
   ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY,
   readZodyToolEnvPassthroughEnv,
-  resetCapturedZCodeCuaBrokerCredentialsForTest,
+  resetCapturedZodyCuaBrokerCredentialsForTest,
   sanitizeZodyRuntimeEnvInPlace,
   type ModelSelection,
   type ZCodeModelOption,
@@ -3870,7 +3870,7 @@ export async function main() {
     process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "scoped-secret-token";
     process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
     assert.equal(process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY], undefined);
 
@@ -3888,7 +3888,7 @@ export async function main() {
     );
     await assert.rejects(readFile(outputPath, "utf8"), { code: "ENOENT" });
   } finally {
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     for (const key of keys) {
       const value = originalEnv[key];
       if (value === undefined) delete process.env[key];
@@ -3931,7 +3931,7 @@ export async function main() {
     process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "scoped-secret-token";
     process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
 
     const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath]);
@@ -3950,7 +3950,7 @@ export async function main() {
     assert.equal(process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET, undefined);
     assert.equal(process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN, undefined);
   } finally {
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     for (const key of keys) {
       const value = originalEnv[key];
       if (value === undefined) delete process.env[key];
@@ -3995,7 +3995,7 @@ export async function main() {
     process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     delete process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN;
     process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
 
     const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath]);
@@ -4005,7 +4005,7 @@ export async function main() {
       token: null,
     });
   } finally {
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     for (const key of keys) {
       const value = originalEnv[key];
       if (value === undefined) delete process.env[key];
@@ -4044,7 +4044,7 @@ export async function main() {
     process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "must-not-leak";
     process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "captured-authority";
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
     assert.equal(process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY], undefined);
 
@@ -4061,7 +4061,7 @@ export async function main() {
     );
     await assert.rejects(readFile(outputPath, "utf8"), { code: "ENOENT" });
   } finally {
-    resetCapturedZCodeCuaBrokerCredentialsForTest();
+    resetCapturedZodyCuaBrokerCredentialsForTest();
     for (const key of keys) {
       const value = originalEnv[key];
       if (value === undefined) delete process.env[key];

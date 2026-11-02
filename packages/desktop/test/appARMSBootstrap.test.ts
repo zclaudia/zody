@@ -35,7 +35,7 @@ vi.mock("@zody/shared", async (importOriginal) => {
     ZCODE_ARMS_RUM_ENDPOINT: "https://example.test/endpoint",
     ZCODE_ENV: "test",
     ZCODE_VERSION: "0.0.0-test",
-    mapZCodeEnvToArmsRumEnv: vi.fn(() => "local"),
+    mapZodyEnvToArmsRumEnv: vi.fn(() => "local"),
   };
 });
 
@@ -234,7 +234,7 @@ describe("appARMSBootstrap beforeReport", () => {
       tracing: { sample: number };
     };
 
-    expect(shared.mapZCodeEnvToArmsRumEnv).toHaveBeenCalledWith("development");
+    expect(shared.mapZodyEnvToArmsRumEnv).toHaveBeenCalledWith("development");
     expect(config).toMatchObject({
       env: "local",
       app: { env: "local" },
