@@ -13,6 +13,8 @@
 - `packages/shared/src/mobile-ui-release.ts`、必要的 shared 公开入口与对应测试。
 - `packages/shared/src/remoteAccess.ts` 中新增 UI capability 常量及对应测试；不改现有设置 schema。
 - `scripts/build-mobile-web-release.mjs` 及 focused 测试。
+- `scripts/check-mobile-web-bundle-isolation.mjs` 的入口文件名兼容。
+- `packages/android/app/build.gradle.kts` 中 `index.html` 的同步与存在性检查；不改变 Android 页面加载方式。
 - `packages/web/vite.config.ts`、`packages/web/mobile.html` 中 release 注入所需最小改动。
 - 根 `package.json` 的 `build:mobile-web` 脚本。
 - 不提交 `packages/web/dist-mobile-remote` 生成物。
@@ -23,7 +25,8 @@
 2. 实现路径与字节内容摘要；排除 sourcemap、临时文件和机器相关元数据，统一 `/` 路径分隔符。
 3. 构建后将 `mobile.html` 规范化为 `index.html`，写入 `release.json`，并向 HTML 注入同一 `releaseId` meta。
 4. 保持 Remote base 为 `/assets/remote/`；普通 Web 构建入口和行为不变。
-5. 验证同一输入重复构建摘要一致，任一字节变化会改变摘要；HTML、manifest、资源缺失时 fail closed。
+5. isolation 检查和 Android Gradle 同步统一读取规范化后的 `index.html`，不保留 `mobile.html` 副本，不改变 APK 当前加载内置页面的运行方式。
+6. 验证同一输入重复构建摘要一致，任一字节变化会改变摘要；HTML、manifest、资源缺失时 fail closed。
 
 测试：
 
