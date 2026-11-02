@@ -15,8 +15,20 @@ describe("createDesktopProductionBuildPlan", () => {
       baseEnv: { PATH: "/usr/bin" },
     });
 
-    expect(plan).toHaveLength(1);
+    expect(plan).toHaveLength(2);
+    // 移动 Remote UI 必须先于桌面 bundle 完成，避免与并行 tsup/Vite 争抢写入。
     expect(plan[0]).toMatchObject({
+      label: "mobile remote web assets",
+      command: "pnpm",
+      args: ["run", "build:mobile-web"],
+      cwd: "/repo/packages/desktop",
+      env: {
+        PATH: "/usr/bin",
+        NODE_ENV: "production",
+      },
+      validateMobileWebRelease: true,
+    });
+    expect(plan[1]).toMatchObject({
       label: "desktop production bundles",
       parallel: [
         {

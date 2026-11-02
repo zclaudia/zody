@@ -4,6 +4,10 @@ import { spawn } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveSpawnRuntimeOptions } from "../../../scripts/spawn-command.mjs";
+import {
+  resolveMobileWebSourceDir,
+  verifyMobileWebReleaseDirectory,
+} from "./mobile-web-assets.mjs";
 
 export function resolveDesktopBuildCwd() {
   // tsup / vite 配置里的入口路径都是相对 desktop 包根目录声明的。
@@ -45,6 +49,16 @@ export function createDesktopProductionBuildPlan({ cwd, baseEnv = process.env })
   };
 
   return [
+    {
+      // 桌面发行制品要同时提供移动 Remote UI。构建必须早于并行 tsup/Vite：
+      // 三者都写各自产物目录，串行执行可避免生产构建中途读到上一代移动制品。
+      label: "mobile remote web assets",
+      command: "pnpm",
+      args: ["run", "build:mobile-web"],
+      cwd,
+      env,
+      validateMobileWebRelease: true,
+    },
     {
       label: "desktop production bundles",
       parallel: [
@@ -98,6 +112,13 @@ export async function runDesktopProductionBuild({ cwd = resolveDesktopBuildCwd()
     }
 
     await runCommandAsync(step);
+    if (step.validateMobileWebRelease) {
+      // M1-T1 的构建入口负责生成并复核 index.html/release.json；桌面层只调用其唯一校验规则，
+      // 在进入 bundle 前 fail closed，避免打包出无法启动移动 UI 的桌面端。
+      await verifyMobileWebReleaseDirectory({
+        rootDir: resolveMobileWebSourceDir({ desktopPackageRoot: cwd }),
+      });
+    }
   }
 }
 
