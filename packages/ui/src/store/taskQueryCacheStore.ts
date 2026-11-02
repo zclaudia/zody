@@ -3,7 +3,7 @@ import { create } from "zustand";
 import type { ZCodeTaskListItem } from "@zody/services";
 import type { ZCodeTaskMeta } from "@zody/shared";
 import { matchesTaskListMembershipKind } from "@zody/shared/zody-protocol-v4";
-import { mergeTaskMetaCandidates } from "@/lib/zcodeTaskMetaMerge.js";
+import { mergeTaskMetaCandidates } from "@/lib/zodyTaskMetaMerge.js";
 import { compareZCodeTaskListItems } from "@/lib/taskListOrdering.js";
 import { getTaskListRowActivity, mergeTaskListMembershipFields } from "@/v4/taskListRowActivity.js";
 import {

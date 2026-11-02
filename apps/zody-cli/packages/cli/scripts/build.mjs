@@ -193,9 +193,9 @@ export const resolveBuildAliases = ({
     rootDirectory,
     "../../packages/shared/src/workspace-hook-trust-store-file.ts",
   ),
-  "@zody/shared/zcodeEndpoint": resolve(
+  "@zody/shared/zodyEndpoint": resolve(
     rootDirectory,
-    "../../packages/shared/src/zcodeEndpoint.ts",
+    "../../packages/shared/src/zodyEndpoint.ts",
   ),
   // 插件 UI（MCP Apps）协议子路径：adapters/core/contracts 的 dist 引用它，同样要先于通用入口声明。
   "@zody/shared/mcp-apps": resolve(rootDirectory, "../../packages/shared/src/mcp-apps/index.ts"),

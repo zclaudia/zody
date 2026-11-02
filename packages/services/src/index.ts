@@ -67,7 +67,7 @@ export type {
 } from "./broadcast/broadcast.js";
 
 // ZCode task wrapper service — task 列表/置顶/归档等 app 侧包装状态入口。
-export { IZCodeTaskService } from "./session/zcodeTaskService.js";
+export { IZCodeTaskService } from "./session/zodyTaskService.js";
 export type {
   ZCodeArchivedTaskDeletionResult,
   ZCodeModelTrajectory,
@@ -94,7 +94,7 @@ export type {
   ZCodeGroupedTaskViewTopLevelNodeRef,
   ZCodeTaskGroup,
   ZCodeTaskGroupColor,
-} from "./session/zcodeTaskService.js";
+} from "./session/zodyTaskService.js";
 export type { ZCodeTaskListItem } from "./session/zodyTaskListTypes.js";
 
 export { IWindowControllerService } from "./window-controller/windowController.js";
@@ -126,7 +126,7 @@ export {
   IZCodeAgentService,
   type ZCodeAgentLocalRuntimeChildProcesses,
   ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE,
-} from "./zody-agent/zcodeAgent.js";
+} from "./zody-agent/zodyAgent.js";
 export {
   isZCodeAgentMcpStatusModeUnsupportedError,
   ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
@@ -135,12 +135,12 @@ export {
 export {
   createZCodeAgentConnectionScope,
   readTrustedZCodeAgentV4Connection,
-} from "./zody-agent/zcodeAgentConnectionScope.js";
+} from "./zody-agent/zodyAgentConnectionScope.js";
 export type {
   ZCodeAgentConnectionScope,
   ZCodeAgentV4ClientMode,
   ZCodeAgentV4ConnectionContext,
-} from "./zody-agent/zcodeAgentConnectionScope.js";
+} from "./zody-agent/zodyAgentConnectionScope.js";
 export type {
   ZCodeAgentAttachmentBeginParams,
   ZCodeAgentAttachmentChunkParams,
@@ -164,10 +164,10 @@ export type {
   ZCodeAgentSetModelParams,
   ZCodeAgentSetThoughtLevelParams,
   ZCodeAgentWorkspaceTarget,
-} from "./zody-agent/zcodeAgent.js";
+} from "./zody-agent/zodyAgent.js";
 
 // ZCode session service — app-facing session facade without ZCode Agent naming.
-export { IZCodeSessionService } from "./zody-session/zcodeSession.js";
+export { IZCodeSessionService } from "./zody-session/zodySession.js";
 export type {
   ZCodeSessionCreateParams,
   ZCodeSessionEventsParams,
@@ -183,7 +183,7 @@ export type {
   ZCodeSessionSubscribeParams,
   ZCodeTaskTarget,
   ZCodeSessionWorkspaceTarget,
-} from "./zody-session/zcodeSession.js";
+} from "./zody-session/zodySession.js";
 
 // fork（bots 移除）：IBotsService 及 Bot* 类型导出随 bot channels 功能整体删除
 // （specs/bot-channels-removal.md）。

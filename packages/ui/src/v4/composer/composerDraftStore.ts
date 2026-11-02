@@ -11,7 +11,7 @@
 import { logger } from "@/logger.js";
 import { modelSelectionSchema, type ModelSelection } from "@zody/shared";
 import { submissionModeSchema, type SubmissionMode } from "@zody/shared/zody-protocol-v4";
-import type { ComposerMentionPrefill } from "@/store/zcodeSessionStoreTypes.js";
+import type { ComposerMentionPrefill } from "@/store/zodySessionStoreTypes.js";
 
 export interface V4ComposerDraft {
   text: string;

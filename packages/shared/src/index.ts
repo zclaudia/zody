@@ -98,28 +98,28 @@ export * from "./api.js";
 export * from "./zody-protocol/index.js";
 export * from "./account-provider-state.js";
 // re-home：旧协议承重面的幸存文件（消费者继续走 barrel，零感知）
-export * from "./zcode-protocol-legacy-types.js";
-export * from "./zcode-task-types-core.js";
+export * from "./zody-protocol-legacy-types.js";
+export * from "./zody-task-types-core.js";
 export * from "./task-realtime-core.js";
 export * from "./remote-workspace-identity.js";
 export * from "./zody-api-retry-status.js";
 export * from "./zody-network-debug-status.js";
-export * from "./zcode-session-visible-content.js";
+export * from "./zody-session-visible-content.js";
 // fork（F4.6）：official-mcp-auth / official-mcp-tool-error 随官方 MCP 全链路删除。
 export * from "./conversation-message-projection-policy.js";
 // fork（F4.8）：conversation-share（发布/预览/导入协议）随会话分享功能删除。
 export * from "./conversation-preview-artifacts.js";
-export * from "./zcode-session-task-status.js";
+export * from "./zody-session-task-status.js";
 export * from "./zody-session-content-profile.js";
 export * from "./zody-tool-projection-memory.js";
-export * from "./zcode-slash-command-help.js";
-export * from "./zcodeEndpoint.js";
-export * from "./zcode-source-headers.js";
+export * from "./zody-slash-command-help.js";
+export * from "./zodyEndpoint.js";
+export * from "./zody-source-headers.js";
 export * from "./zody-agent-policy.js";
 export * from "./zody-media-policy.js";
 export * from "./media-preview.js";
 export * from "./plugin-display-name.js";
-export * from "./zcode-agent-runtime.js";
+export * from "./zody-agent-runtime.js";
 export * from "./runtimeEnv.js";
 export * from "./dynamic-workflow-feature.js";
 export * from "./markdown-artifact-images.js";
@@ -264,15 +264,15 @@ export type {
   OpenCuaPermissionOnboardingOptions,
   PrepareCuaHelperPermissionDragResult,
 } from "./cuaAccessibilitySettings.js";
-export type { ZCodeTaskCreateResult } from "./zcode-task-types.js";
-export * from "./zcode-task-types.js";
+export type { ZCodeTaskCreateResult } from "./zody-task-types.js";
+export * from "./zody-task-types.js";
 export * from "./automation-types.js";
 // fork（F4.3）：off-peak-types（闲时任务领域类型）随闲时任务全链路删除。
 export * from "./background-task-control-merge.js";
 export * from "./background-task-controls.js";
 export * from "./background-task-notifications.js";
 export * from "./background-bash-jobs.js";
-export * from "./zcode-agent-model-state.js";
+export * from "./zody-agent-model-state.js";
 export * from "./task-realtime.js";
 export { formatTimestamp, formatLogPrefix } from "./log-format.js";
 export * from "./model-provider-types.js";
@@ -305,7 +305,7 @@ export * from "./git.js";
 // fork（bots移除）：bots 合约与频道@提及两个模块的整文件及其公开导出
 // 随第三方 IM bot channels 全量删除（specs/bot-channels-removal.md）。
 export * from "./assistant-message-parts.js";
-export * from "./zcodePersistedMessageMerge.js";
+export * from "./zodyPersistedMessageMerge.js";
 export * from "./assistant-presentation.js";
 export * from "./tool-call-summary.js";
 export * from "./tool-identity.js";

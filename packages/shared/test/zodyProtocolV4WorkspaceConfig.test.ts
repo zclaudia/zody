@@ -2,9 +2,9 @@
 // 覆盖：帧信封 round-trip（snapshot / deltas）、topic key 对偶、载荷与 host 侧
 // ZCodeConfigOption / ZCodeSlashCommand 的结构对齐（syncer 零映射直通的前提）。
 import { describe, expect, it } from "vitest";
-import { zcodeSessionSettingsToZCodeConfigOptions } from "../src/zcode-agent-model-state.js";
+import { zcodeSessionSettingsToZCodeConfigOptions } from "../src/zody-agent-model-state.js";
 import type { ZCodeSessionSettingsState } from "../src/zody-protocol/index.js";
-import type { ZCodeConfigOption, ZCodeSlashCommand } from "../src/zcode-task-types-core.js";
+import type { ZCodeConfigOption, ZCodeSlashCommand } from "../src/zody-task-types-core.js";
 import {
   parseWorkspaceConfigTopic,
   workspaceConfigSnapshotSchema,

@@ -17,7 +17,7 @@ import { useSessionsMentionProvider } from "@/mentions/providers/sessionsMention
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
 import { TabStoreProvider, useTabStoreApi } from "@/store/TabStoreProvider.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import {
   buildWorkspaceSessionsIndexSourceKey,

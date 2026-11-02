@@ -217,7 +217,7 @@ vi.mock("@/store/taskQueryCacheStore.js", () => ({
   invalidateTaskQueryCacheByScopes: () => {},
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
+vi.mock("@/store/zodySessionStore.js", () => ({
   useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       startDraft: () => {},

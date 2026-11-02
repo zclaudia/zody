@@ -7,7 +7,7 @@ import {
   resolveRecoveredTaskModelValue,
   resolveGlmRecoveredTaskModelValue,
 } from "@/lib/taskModelRecovery.js";
-import { encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
+import { encodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
 
 describe("task model recovery", () => {
   it("会把 task.meta.model 里的 provider/model 还原成工具栏 custom 模型值", () => {

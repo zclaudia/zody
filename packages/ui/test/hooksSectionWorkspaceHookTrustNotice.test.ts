@@ -61,7 +61,7 @@ vi.mock("@/hooks/useConfirmDialog.js", () => ({
   useConfirmDialog: () => vi.fn(async () => false),
 }));
 
-vi.mock("@/hooks/useZCodeSessionService.js", () => ({
+vi.mock("@/hooks/useZodySessionService.js", () => ({
   useZCodeSessionService: () => undefined,
 }));
 
@@ -111,7 +111,7 @@ vi.mock("@/components/ui/button.js", () => ({
   Button: ({ children }: { children?: unknown }) => createElement("button", null, children),
 }));
 vi.mock("@/components/ui/toast.js", () => ({ toast: vi.fn() }));
-vi.mock("@/lib/zcodeDraftSkillInvalidation.js", () => ({
+vi.mock("@/lib/zodyDraftSkillInvalidation.js", () => ({
   invalidateDeferredDraftSessionForRuntimeChange: vi.fn(async () => undefined),
 }));
 vi.mock("@/settings/PluginInstallEmptyState.js", () => ({

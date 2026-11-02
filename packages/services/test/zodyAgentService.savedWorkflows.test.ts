@@ -27,7 +27,7 @@ async function createServiceWithRequest(request: ReturnType<typeof vi.fn>) {
       disposeAll() {}
     },
   }));
-  const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
+  const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
   return { service: createZCodeAgentService(), getClient };
 }
 

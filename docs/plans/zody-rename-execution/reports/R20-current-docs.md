@@ -2,7 +2,7 @@
 
 源码依据固定 `1b042046c373fa91c5ed80b1501bcf0677f2eb39`，通过 `git show` / `git ls-tree` 核对；本批只改以下现行引用与本报告，没有修改源码、锁、生成物，也未运行构建、测试或安装。
 
-- `docs/runtime-tools/agent-electron-node-runtime.md:14,20,28,33-34,47`：`@zcode/tui` → 当前 `@zody/tui`；process manager 文件名 → `zodyAgentProcessManager.ts`，保留实际存在的 `resolveElectronRuntimeZCodeAgentCommand`；当前远端 bundle 示例 `~/.zcode/server` / `$HOME/.zcode/server` → `.zody`，与 `packages/server/src/remote/zcodeAgentBundleWrapper.ts` 和 `packages/shared/src/dataDir.ts` 一致。
+- `docs/runtime-tools/agent-electron-node-runtime.md:14,20,28,33-34,47`：`@zcode/tui` → 当前 `@zody/tui`；process manager 文件名 → `zodyAgentProcessManager.ts`，在 1b 基线上保留当时实际函数名；随后随 d49 符号批同步为 `resolveElectronRuntimeZodyAgentCommand`；当前远端 bundle 示例 `~/.zcode/server` / `$HOME/.zcode/server` → `.zody`，与 `packages/server/src/remote/zcodeAgentBundleWrapper.ts` 和 `packages/shared/src/dataDir.ts` 一致。
 - `docs/windows-agent-process-cleanup-state-machine.md:13`：当前等待链类名 `ZCodeAgentProcessManager` → 已导出的 `ZodyAgentProcessManager`。`:159` 的旧测试文件名与 360/360 属 2026-08-24 验证历史，保留原样；当前测试文件为 `packages/services/test/zodyAgentProcessManager.test.ts`，不把现行文件名嫁接到历史记录。协议类 `ZCodeProtocolClient` / `ZCodeStdioTransport` 为当前真实类名，保留。
 - `docs/workspace-project-removal-runtime-release.md:37`：内部示意调用 `zcodeAgentProcessManager.disposeWorkspace` → 实际 `processManager.disposeWorkspace`；`zcodeAgentService.ts` 中使用此实例名。其他 service 名及事件顺序未改。
 - `docs/zcode-agent-app-integration.md:5,17-18,45,109,124-128,132-133`：CLI workspace 和 bin 改为 `apps/zody-cli`、`zody`；类名改为 `ZodyAgentProcessManager`；protocol 目录、五个 services 入口及两个 bootstrap 目录按固定树现存路径映射；desktop workspace 名改为 `@zody/desktop`。`zcode-protocol-entrypoint.ts` 和 `packages/shared/src/zcode-agent-runtime.ts` 是当前真实 basename，保留。

@@ -3,7 +3,7 @@ import type { ZCodeTaskMeta } from "@zody/shared";
 import {
   DEFAULT_TASK_RUNTIME_STATE,
   getDefaultWorkspaceState,
-} from "@/store/zcodeSessionStore.js";
+} from "@/store/zodySessionStore.js";
 import { markRemoteWorkspaceRunningTasksFailed } from "@/lib/remoteWorkspaceSessionRuntime.js";
 
 function createTask(taskId: string, status: ZCodeTaskMeta["status"]): ZCodeTaskMeta {

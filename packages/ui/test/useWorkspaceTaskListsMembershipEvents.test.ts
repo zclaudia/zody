@@ -17,7 +17,7 @@ import { clearTaskListWorkspaceEventCoordinatorForTest } from "@/lib/taskListWor
 import { clearTaskListMembershipCache } from "@/lib/taskListMembershipSets.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import { getTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 import { resetTaskStatusUnreadSyncForTest } from "@/lib/taskStatusUnreadSync.js";

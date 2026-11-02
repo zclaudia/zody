@@ -1,9 +1,9 @@
 import type { InputId, ZCodeProvider, ZCodeTaskMeta } from "@zody/shared";
-import { getTaskMeta, resolveWorkspaceStateKey, useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { getTaskMeta, resolveWorkspaceStateKey, useZCodeSessionStore } from "@/store/zodySessionStore.js";
 import {
   mergeTaskMetaCandidates,
   mergeTaskWithOptimisticMeta,
-} from "@/lib/zcodeTaskMetaMerge.js";
+} from "@/lib/zodyTaskMetaMerge.js";
 import {
   applyTaskQueryCacheMutation,
   removeTaskFromTaskQueryCaches,

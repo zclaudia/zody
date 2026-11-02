@@ -5,7 +5,7 @@ import { useBackgroundBashOutput } from "@/hooks/useBackgroundBashOutput.js";
 import type { BackgroundBashOutputResult } from "@zody/shared";
 
 const mocks = vi.hoisted(() => ({ query: vi.fn(), stop: vi.fn() }));
-vi.mock("@/hooks/useZCodeAgentService.js", () => ({ useZCodeAgentService: () => service }));
+vi.mock("@/hooks/useZodyAgentService.js", () => ({ useZCodeAgentService: () => service }));
 vi.mock("@/v4/agentV4ConnectionHandshake.js", () => ({
   ensureAgentV4ConnectionHandshake: async () => ({}),
 }));

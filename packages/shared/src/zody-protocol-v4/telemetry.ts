@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zcodeSyntheticUserMessageSourceSchema } from "../zcode-protocol-legacy-types.js";
+import { zcodeSyntheticUserMessageSourceSchema } from "../zody-protocol-legacy-types.js";
 import { timestampSchema } from "./core.js";
 
 const factBaseFields = {
@@ -302,7 +302,7 @@ type TurnStartedConversationTelemetryFact = Extract<
   ConversationTelemetryFactBase,
   { kind: "turn.started" }
 > &
-  import("../zcode-task-types-core.js").ZCodeBackgroundTurnAttribution;
+  import("../zody-task-types-core.js").ZCodeBackgroundTurnAttribution;
 
 export type ConversationTelemetryFact =
   | Exclude<ConversationTelemetryFactBase, { kind: "turn.started" }>

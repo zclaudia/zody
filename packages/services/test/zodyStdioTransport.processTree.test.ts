@@ -15,7 +15,7 @@ vi.mock("#src/process/processTreeTerminator.js", async (importOriginal) => ({
   terminateProcessTreeAndWait: terminateProcessTreeAndWaitMock,
 }));
 
-import { ZCodeStdioTransport } from "../src/zody-agent/zcodeStdioTransport.js";
+import { ZCodeStdioTransport } from "../src/zody-agent/zodyStdioTransport.js";
 
 const activeChildren = new Set<ReturnType<typeof spawn>>();
 

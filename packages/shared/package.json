@@ -16,7 +16,7 @@
     "./config-schema": "./src/config-schema.ts",
     "./node": "./src/node.ts",
     "./cua-helper-transport-auth": "./src/cua-helper-transport-auth.ts",
-    "./zcodeEndpoint": "./src/zcodeEndpoint.ts",
+    "./zodyEndpoint": "./src/zodyEndpoint.ts",
     "./workspaceFileSearch": "./src/workspaceFileSearch.ts",
     "./workspaceFileEntriesCodec": "./src/workspaceFileEntriesCodec.ts",
     "./zody-protocol-v4": "./src/zody-protocol-v4/index.ts",

@@ -129,7 +129,7 @@ vi.mock("@zody/telemetry", async (importOriginal) => ({
   shutdownPreparedModelTelemetry: telemetryMocks.shutdownPreparedModelTelemetry,
 }));
 
-import { runZCodeProtocolAgent } from "../src/zcode-protocol-entrypoint.js";
+import { runZCodeProtocolAgent } from "../src/zody-protocol-entrypoint.js";
 
 describe("ZCode Protocol telemetry lifecycle", () => {
   afterEach(() => {

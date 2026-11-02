@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveZCodeAgentPresentationSurface } from "../src/zody-agent/zcodeAgentPresentationSurface.js";
+import { resolveZCodeAgentPresentationSurface } from "../src/zody-agent/zodyAgentPresentationSurface.js";
 
 describe("resolveZCodeAgentPresentationSurface", () => {
   it("从本地 Desktop Host 的 telemetry runtime surface 推导 Desktop 呈现面", () => {

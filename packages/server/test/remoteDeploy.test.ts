@@ -15,7 +15,7 @@ import {
   ZCODE_VERSION,
 } from "@zody/shared";
 import type { IRemoteBackend, StdioStream } from "@zody/server/remote/backend.js";
-import { deployZCodeAgentRuntime } from "@zody/server/remote/zcodeAgentDeploy.js";
+import { deployZCodeAgentRuntime } from "@zody/server/remote/zodyAgentDeploy.js";
 import { deployServer } from "@zody/server/remote/deploy.js";
 import {
   createRemoteComponentVersionResolver,
@@ -28,12 +28,12 @@ import {
   type RemoteAssetInstaller,
 } from "@zody/server/remote/remoteAssetInstaller.js";
 import { createTarGzArchive } from "@zody/server/remote/localTarGz.js";
-import { buildRemoteAgentBundleWrapper } from "@zody/server/remote/zcodeAgentBundleWrapper.js";
+import { buildRemoteAgentBundleWrapper } from "@zody/server/remote/zodyAgentBundleWrapper.js";
 import {
   REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS,
   REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES,
   REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS,
-} from "@zody/server/remote/zcodeAgentOfficialPluginAssets.js";
+} from "@zody/server/remote/zodyAgentOfficialPluginAssets.js";
 
 import { createLocalRuntimeFixture } from "./helpers/localRuntimeFixture.js";
 

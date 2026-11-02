@@ -8,7 +8,7 @@ import type { IZCodeSessionService } from "@zody/services";
 import { type ZCodeProvider, type ZCodeWorkspacePrepareResult } from "@zody/shared";
 import { getChatErrorMessage } from "@/lib/chatPrepareError.js";
 import { logger } from "@/logger.js";
-import { zcodeWorkspacePresentationToConfigOptions } from "@/lib/zcodeSessionProjection.js";
+import { zcodeWorkspacePresentationToConfigOptions } from "@/lib/zodySessionProjection.js";
 
 export async function prepareWorkspaceWithZCodeSessionService(params: {
   workspacePath: string;

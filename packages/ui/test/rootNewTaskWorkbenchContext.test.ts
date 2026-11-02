@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useRootWorkspaceActions } from "@/root/useRootWorkspaceActions.js";
 import type { CreateTaskRequest } from "@/app-shell/types.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
 import {
   INITIAL_PANE_LAYOUT,
   V4_PRIMARY_PANE_ID,

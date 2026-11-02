@@ -4,7 +4,7 @@ import {
   getZCodeAgentAvailableModes,
   normalizeAvailableZCodeMode,
   settingsToConfigOptions,
-} from "../src/zody-agent/zcodeConfigOptions.js";
+} from "../src/zody-agent/zodyConfigOptions.js";
 
 function settingsWithMode(
   mode: ZCodeSessionSettingsState["mode"]["current"],

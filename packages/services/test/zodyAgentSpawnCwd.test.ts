@@ -2,7 +2,7 @@ import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it, vi } from "vitest";
-import { resolveZCodeAgentSpawnCwd } from "../src/zody-agent/zcodeAgentSpawnCwd.js";
+import { resolveZCodeAgentSpawnCwd } from "../src/zody-agent/zodyAgentSpawnCwd.js";
 it("shares fallback behavior for missing paths, files and ENOTDIR", async () => {
   const dir = await mkdtemp(join(tmpdir(), "zcode-spawn-cwd-"));
   try {

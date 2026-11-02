@@ -19,8 +19,8 @@ import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js"
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { reportPromptTemplateClick } from "@/lib/promptTemplateTelemetry.js";
-import { invalidateDeferredDraftSessionForSkillChange } from "@/lib/zcodeDraftSkillInvalidation.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { invalidateDeferredDraftSessionForSkillChange } from "@/lib/zodyDraftSkillInvalidation.js";
+import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
 import {
   ConversationDraftSuggestedPrompts,
   type DraftSuggestedPromptItem,

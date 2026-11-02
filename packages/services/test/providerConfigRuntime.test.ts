@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { ModelConfigRules, ProviderConfigMap, ProviderTemplateMap } from "@zody/provider";
 import type { ModelProviderConfig } from "../src/model-provider/legacyModelProviderSerialized.js";
-import { readLegacyZCodeConfigProviders } from "../src/model-provider/legacyZCodeConfigProviderReader.js";
+import { readLegacyZCodeConfigProviders } from "../src/model-provider/legacyZodyConfigProviderReader.js";
 import { createProviderConfigRuntime } from "../src/model-provider/providerConfigRuntime.js";
 import { setDataBaseDir } from "../src/paths.js";
 

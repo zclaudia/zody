@@ -158,7 +158,7 @@ vi.mock("@/hooks/useSettingService.js", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useZCodeConfig.js", () => ({
+vi.mock("@/hooks/useZodyConfig.js", () => ({
   useToolbarConfigOptions: () => ({
     configOptions: mocks.configOptions,
     loading: false,

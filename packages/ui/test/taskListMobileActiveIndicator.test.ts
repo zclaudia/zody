@@ -9,9 +9,9 @@ const { workspaceStateByPath } = vi.hoisted(() => ({
   workspaceStateByPath: new Map<string, unknown>(),
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", async () => {
-  const actual = await vi.importActual<typeof import("@/store/zcodeSessionStore.js")>(
-    "@/store/zcodeSessionStore.js",
+vi.mock("@/store/zodySessionStore.js", async () => {
+  const actual = await vi.importActual<typeof import("@/store/zodySessionStore.js")>(
+    "@/store/zodySessionStore.js",
   );
   return {
     ...actual,

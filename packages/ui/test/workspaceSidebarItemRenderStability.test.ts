@@ -108,7 +108,7 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => ({
   useWorkspaceServices: () => stableServices,
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
+vi.mock("@/store/zodySessionStore.js", () => ({
   selectWorkspaceZCodeState: () => ({
     activeTaskId: null,
     selectedProvider: "codex",

@@ -10,7 +10,7 @@ import {
   zcodeInteractionRequestOriginSchema,
   zcodePermissionResponseSchema,
   zcodeSessionContextCacheUsageSchema,
-} from "../zcode-protocol-legacy-types.js";
+} from "../zody-protocol-legacy-types.js";
 import { timestampSchema } from "./core.js";
 import { conversationRowSchema } from "./rows.js";
 import { toolCallDisplaySchema } from "./toolDisplay.js";

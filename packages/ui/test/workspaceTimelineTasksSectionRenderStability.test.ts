@@ -103,7 +103,7 @@ vi.mock("@/TaskRenameDialog.js", () => ({
   TaskRenameDialog: () => null,
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
+vi.mock("@/store/zodySessionStore.js", () => ({
   useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector(zcodeSessionStoreState),
 }));

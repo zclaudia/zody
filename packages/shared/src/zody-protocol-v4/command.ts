@@ -265,7 +265,7 @@ export type CommandType = keyof typeof commandPayloadSchemas;
 export type CommandPayloadMap = {
   [T in CommandType]: T extends "sendText"
     ? z.infer<(typeof commandPayloadSchemas)[T]> &
-        import("../zcode-task-types-core.js").ZCodeBackgroundTurnAttribution
+        import("../zody-task-types-core.js").ZCodeBackgroundTurnAttribution
     : z.infer<(typeof commandPayloadSchemas)[T]>;
 };
 

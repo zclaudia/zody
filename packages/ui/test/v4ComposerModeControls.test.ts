@@ -42,7 +42,7 @@ vi.mock("@/components/ui/dropdown-menu.js", () => {
 
 vi.mock("@/lib/pickerFocus.js", () => ({ isCoarseTouchDevice: () => false }));
 
-vi.mock("@/hooks/useZCodeConfig.js", () => ({
+vi.mock("@/hooks/useZodyConfig.js", () => ({
   useToolbarConfigOptions: () => ({ configOptions: [] }),
 }));
 

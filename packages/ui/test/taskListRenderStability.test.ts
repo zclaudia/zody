@@ -45,7 +45,7 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
   useZCodeIntl: () => ({ intl: stableIntl }),
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
+vi.mock("@/store/zodySessionStore.js", () => ({
   useZCodeSessionStore: (selector: (state: { startDraft: () => void }) => unknown) =>
     selector({ startDraft: stableStartDraft }),
 }));

@@ -1,24 +1,24 @@
 # Zody rename execution ledger
 
-Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. R10 implementation candidate exists; independent review requested corrections. Full rename remains incomplete.
+Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest committed candidate: `d49aecefa7d1c3571bfae69fe4817950654b9298`, scoped DeepSeek PASS. The remaining98 basename batch is applied and undergoing verification. Full rename remains incomplete; R22 and later stage gates have not passed.
 
 - Source base: `033f91783901e6adaf968d3d4b8ca34c41d89442`.
 - Frozen plan commit: `06ad2270f121c46a0f5c069ae3da18641c6a9858`.
 - Branch: `codex/zody-full-rename`.
 - Implementation cwd: `/Users/zhvala/SourceCode/zody/.worktrees/zody-full-rename`.
 - Main worktree unrelated changes are preserved; only the two rename plans were copied into this worktree.
-- Terra R00: `/root/terra_r00` (native model `gpt-6.1-terra`). Owns manifest and R00 report/inventory files only.
-- DeepSeek review: `broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19cc4-82c8-7cc2-a81c-fee2d8b18b67`, route `deepseek-flash`, provider `magpie`, model `group/deepseek`, access `read-only`. Initial review scope: plan/baseline checklist; formal R00 review awaits stable output.
+- Implementation agents use native `gpt-6.1-terra`; original R00 ownership is historical. Controller now maintains manifest, scopes and this ledger.
+- Current DeepSeek reviewer B: `broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19ccf-8092-7d11-9010-8010e395f2a5`, route `deepseek-flash`, provider `magpie`, model `group/deepseek`, access `read-only`. Completed d49 review; next review waits for a frozen remaining98 candidate. Earlier reviewer handles below are historical.
 - Broker grant: exact implementation cwd, connection scope, no UI grant.
-- Controller owns this ledger and all dispatch locks. Active writes are disjoint: Terra R10 corrective files, Terra R02 isolated evidence/report, Terra R01 planning documents.
+- Controller owns this ledger and all dispatch locks. Terra R10 alone owns current product/build writes for remaining98 basenames. Terra R01 prepares B/C erased-type bindings in isolated d49 output; Terra R21 prepares manual-path corrections in isolated output. Neither preparatory agent may write current product/build files.
 
 | Task | Status     | Implementation                    | Review / gate                                                                                                    |
 | ---- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | R00  | integrated | /root/terra_r00                   | DeepSeek review-2 PASS for initial dispatch; later scopes gated on contracts                                     |
-| R01  | integrated | /root/terra_r01                   | DeepSeek review-2 PASS at 40cae940; nonblocking cleanup and plan handoff in progress                             |
-| R02  | running    | /root/terra_r02_source_provenance | DeepSeek review-1 CHANGES_REQUIRED: preserve matching v4 source before R20; old runtime evidence remains due R48 |
+| R01  | integrated | /root/terra_r01                   | Accepted contracts at 40cae940; later source/doc refinements preserve those contracts |
+| R02  | review     | controller / prior Terra evidence | Source preservation and isolated restore gate passed; old runtime smoke recorded. Standalone old server-cli defect and full mixed-mode runtime evidence remain unresolved for R48 |
 | R10  | verified   | /root/terra_r10                   | DeepSeek review-2 PASS at 0e403023; P1 scope only, not release validation                                        |
-| R20  | running    | /root/terra_r10                   | R20.2 checkpoint: paths/scopes moved, independent review active, #src alias repairs and R20.3/4 remain           |
+| R20  | running    | /root/terra_r10 + /root/terra_r01 | R20.2/3 and symbol batches through d49 scoped PASS. Remaining98 basename verification active; remaining types/bindings/manual151 and residual closure incomplete |
 | R21  | running    | /root/terra_r21_links             | Root frozen install + 92 local links pass; CLI legacy workspace/lock inconsistency unresolved; writes released   |
 | R22  | planned    | unassigned                        | not run                                                                                                          |
 | R30  | planned    | unassigned                        | not run                                                                                                          |
@@ -41,7 +41,7 @@ Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan usi
 | R60  | planned    | unassigned                        | not run                                                                                                          |
 | R61  | planned    | unassigned                        | not run                                                                                                          |
 
-## Verification
+## Historical baseline verification
 
 - Main-worktree freshness: passed, main ahead 37 / behind 0 against origin/main; recorded before worktree creation.
 - Implementation baseline has only the frozen plan changes. Product checks and environment preparation tracked below when actually executed.
@@ -170,3 +170,26 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 - Entire Main diagnostic text still matches the independently built old baseline (85 errors), allowing only exact path/quoted-literal union order and tool banner/exit trailer normalization. No Main success claim.
 - Five of six current-doc files were corrected; historical Windows evidence remains unchanged. The current/future/historical data-path distinction and nonexistent Lite build entry were corrected; two resolver references were reconciled after symbol freeze.
 - Freeze this combined candidate for DeepSeek basename fix re-review and batch-03 source/doc review. Remaining 98 basename preview is still owned by Terra R10 and is not included until refreshed on this candidate and assigned the product write lock.
+
+- Combined batch-03/audit/current-doc candidate frozen as `d49aecefa7d1c3571bfae69fe4817950654b9298`. DeepSeek B is independently reviewing fixed 1b→d49 and closing its prior basename finding; no review result yet.
+- Terra R10 is refreshing the remaining98 basename preview against d49; product lock not yet handed over pending the exact refreshed list. Terra R01 prepares one coherent shared/bootstrap erased-type group from fixed d49 in isolated output only. No current product/build writer active during this refresh.
+
+- DeepSeek returned scoped PASS for d49 batch-03 and separately closed the prior basename audit finding. Raw read-only review saved as R20-symbols-batch-03-deepseek-review.md. Ledger fields now reference real candidate SHAs; no claim of R20.4/P2/full release completion.
+- Controller additionally verified the CLI child process itself uses Node v24.14.0 via absolute toolchain PATH and reran CLI tsc --noEmit successfully; this avoids relative PATH ambiguity after pnpm --dir changes cwd.
+
+## Remaining98 basename implementation handoff
+
+- Controller independently checked all 342 candidate source hashes against current d49, confirmed no manual151 overlap and exact basename grants for four move-only paths outside the source/consumer arrays. Patch SHA `b25066c2fe4662ecf301bb18604a7e47a303f44837b535872488f6148fd80786` matched the candidate manifest; git apply --check succeeded. Evidence: output/zody-rename-validation/controller-remaining-basename-preflight.json and remaining-plan/final-d49/candidate-files.json.
+- Terra R10 now holds the sole product/build-output write lock for remaining98 moves +244 consumers, including exact audit regex consumers, the basename-derived E2E case/fixture-resolution regression and current source references in the two explicitly granted documents. Full native E2E and Desktop clean-build limits remain distinct.
+- Terra R01 is preparing all B/C erased type/interface candidates in an isolated d49 snapshot. The initial13 NDJSON declarations are only sub-group04-A; preparation must account for the rest rather than treating this small group as completion. No shared source/build access granted to this preparatory task.
+
+- This continuation classifies the previous goal turn as implementation progress: two frozen product candidates and scoped DeepSeek acceptance. Freshness rerun returned exit0, ahead53/behind0 versus origin/main. Current source/build lock was verified against the live Terra R10 handle before any further dispatch.
+
+## Remaining98 basename verification and R21 graph checkpoint
+
+- Previous goal turn was implementation progress. Live Terra handles and actual d49 worktree were revalidated. All198 registered source/test basename candidates are now applied; the remaining98 batch has 342 current files with exact independent expected-byte agreement.
+- Controller independently reran root119 files:1815 pass/1 fail/1 skipped; CLI126 and Node2 pass; dev-docs4 pass after graph repair; typecheck/lint/changed architecture pass (303 lint warnings). Root's providerRevision scanner failure was independently reproduced in an untouched d49 scanned source tree with the same four matches; it remains a recorded failure.
+- Controller checked59 modules/235 actual generated output pairs (new present/old absent). Entire Main diagnostic text still matches the known85-error baseline after exact path and union-order normalization; Main/clean Desktop/CUA/real E2E gates remain incomplete.
+- R21 intermediate graph writer applied only23 exact basename path substitutions across13 paths, preserving372 nodes/726 edges. Graph tests now4/4; existing invalid seeds and later symbol mappings remain final R21 work.
+- WDIO config loading triggered an unplanned Electron installer invocation. No install process remained at inspection;342 candidate files and649 manifests/locks match expected. No node_modules pre/post inventory exists, so full dependency changes are unknown. Incident is recorded; no claim of clean install or native E2E success.
+- Product/build/graph writers stopped. Prepare frozen candidate and fixed-SHA DeepSeek review before handing the source lock to the complete B/C type batch or minimal manual-path correction. Isolated manual-path candidate now has2 meaningful async behavior tests, both red on old snapshot/green on candidate; current product not yet patched.

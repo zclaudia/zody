@@ -7,7 +7,7 @@ import type {
   ZCodeModelTrajectoryMessage,
   ZCodeModelTrajectoryRecord,
   ZCodeModelTrajectoryUsage,
-} from "#src/session/zcodeTaskService.js";
+} from "#src/session/zodyTaskService.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import {
   readTrajectoryFileTail,

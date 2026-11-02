@@ -1,6 +1,6 @@
-import type { ZCodeMessageWithParts } from "./zcode-protocol-legacy-types.js";
-import { textFromZCodeMessageParts } from "./zcode-protocol-legacy-types.js";
-import type { ZCodeStreamEvent } from "./zcode-task-types-core.js";
+import type { ZCodeMessageWithParts } from "./zody-protocol-legacy-types.js";
+import { textFromZCodeMessageParts } from "./zody-protocol-legacy-types.js";
+import type { ZCodeStreamEvent } from "./zody-task-types-core.js";
 
 export interface ZodyBackgroundTaskNotificationInfo {
   error?: string;

@@ -4,14 +4,14 @@ import {
   isZCodeDataSizeScanResult,
   type ZCodeDataSizeScanRequest,
   type ZCodeDataSizeScanResult,
-} from "./zcodeDataSizeScanner.js";
+} from "./zodyDataSizeScanner.js";
 
 export function scanZCodeDataDirectoryInWorker(
   request: ZCodeDataSizeScanRequest,
   signal: AbortSignal,
 ): Promise<ZCodeDataSizeScanResult> {
   return new Promise((resolve, reject) => {
-    const worker = new Worker(new URL("./zcodeDataSizeWorker.js", import.meta.url), {
+    const worker = new Worker(new URL("./zodyDataSizeWorker.js", import.meta.url), {
       workerData: request,
     });
     let settled = false;

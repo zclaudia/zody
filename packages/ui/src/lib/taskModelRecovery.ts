@@ -3,7 +3,7 @@ import { getZCodeAgentModeSelectOptions } from "@zody/shared";
 import {
   decodeCustomModelValue,
   encodeCustomModelValue,
-} from "@/lib/zcodeCustomModelValue.js";
+} from "@/lib/zodyCustomModelValue.js";
 
 function parseProviderQualifiedModel(
   model: string,

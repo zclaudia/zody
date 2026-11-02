@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IZCodeSessionService } from "@zody/services";
-import { invalidateDeferredDraftSessionForSkillChange } from "../src/lib/zcodeDraftSkillInvalidation.js";
-import { useZCodeSessionStore } from "../src/store/zcodeSessionStore.js";
+import { invalidateDeferredDraftSessionForSkillChange } from "../src/lib/zodyDraftSkillInvalidation.js";
+import { useZCodeSessionStore } from "../src/store/zodySessionStore.js";
 
 function createSessionService(
   closeSession: IZCodeSessionService["closeSession"] = vi.fn(async () => {}),

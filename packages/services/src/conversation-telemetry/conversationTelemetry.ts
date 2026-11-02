@@ -1,6 +1,6 @@
 import type { Event } from "@zody/rpc";
 import type { ConversationTelemetryFact } from "@zody/shared/zody-protocol-v4";
-import type { IZCodeAgentService } from "#src/zody-agent/zcodeAgent.js";
+import type { IZCodeAgentService } from "#src/zody-agent/zodyAgent.js";
 
 export interface ConversationTelemetryWorkspaceTarget {
   workspacePath: string;

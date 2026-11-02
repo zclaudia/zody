@@ -317,8 +317,8 @@
     {
       "id": "R20.4-symbols-03",
       "base": "1b042046c373fa91c5ed80b1501bcf0677f2eb39",
-      "candidate": null,
-      "status": "controller-verified-pending-review",
+      "candidate": "d49aecefa7d1c3571bfae69fe4817950654b9298",
+      "status": "scoped-review-PASS",
       "records": [
         {
           "old": "ZCodeAgentNativeRuntimeResolverContext",
@@ -522,7 +522,7 @@
         }
       ],
       "controllerReport": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-03-controller-verification.md",
-      "review": null
+      "review": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-03-deepseek-review.md"
     }
   ]
 }

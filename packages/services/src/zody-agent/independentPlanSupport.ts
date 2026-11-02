@@ -1,5 +1,5 @@
 import { zcodeProtocolMethods, zcodeRuntimeCapabilitiesSchema } from "@zody/shared";
-import type { ZCodeProtocolClient } from "./zcodeProtocolClient.js";
+import type { ZCodeProtocolClient } from "./zodyProtocolClient.js";
 
 const checks = new WeakMap<object, Promise<void>>();
 

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useZCodeSessionStore } from "../src/store/zcodeSessionStore.js";
-import { LAST_SELECTED_AGENT_PROVIDER_STORAGE_KEY } from "../src/lib/zcodeProviderPreference.js";
+import { useZCodeSessionStore } from "../src/store/zodySessionStore.js";
+import { LAST_SELECTED_AGENT_PROVIDER_STORAGE_KEY } from "../src/lib/zodyProviderPreference.js";
 
 function createStorageMock(initial: Record<string, string> = {}) {
   const data = new Map(Object.entries(initial));

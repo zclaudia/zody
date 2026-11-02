@@ -4,13 +4,13 @@ import { useActiveTaskSnapshotMeta } from "@/hooks/useActiveTaskSnapshotMeta.js"
 import { useTaskNativeSessionLogFile } from "@/hooks/useTaskNativeSessionLogFile.js";
 import { useTaskSessionFilePath } from "@/hooks/useTaskSessionFilePath.js";
 import { buildTaskEntityKey } from "@/lib/taskQueryCache.js";
-import { mergeTaskMetaCandidates } from "@/lib/zcodeTaskMetaMerge.js";
+import { mergeTaskMetaCandidates } from "@/lib/zodyTaskMetaMerge.js";
 import { resolveWorkspaceHeaderProvider } from "@/lib/workspaceHeaderProvider.js";
 import {
   getTaskMeta,
   selectWorkspaceZCodeState,
   useZCodeSessionStore,
-} from "@/store/zcodeSessionStore.js";
+} from "@/store/zodySessionStore.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
 
 interface UseWorkspaceActiveTaskStateParams {

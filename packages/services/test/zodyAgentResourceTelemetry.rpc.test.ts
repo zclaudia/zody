@@ -1,7 +1,7 @@
 import { ChannelClient, ChannelServer, createQueuePair, Emitter, ProxyChannel } from "@zody/rpc";
 import type { AgentLaneResourceSample } from "@zody/shared";
 import { describe, expect, it } from "vitest";
-import { IZCodeAgentService } from "#src/zody-agent/zcodeAgent.js";
+import { IZCodeAgentService } from "#src/zody-agent/zodyAgent.js";
 
 describe("ZCode Agent resource telemetry RPC", () => {
   it("uses an explicit dynamic event across remote RPC without conversation state", async () => {

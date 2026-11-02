@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ZCodeTaskMeta } from "@zody/shared";
-import { useZCodeSessionService } from "@/hooks/useZCodeSessionService.js";
-import { zcodeSessionSnapshotToTaskMeta } from "@/lib/zcodeSessionProjection.js";
+import { useZCodeSessionService } from "@/hooks/useZodySessionService.js";
+import { zcodeSessionSnapshotToTaskMeta } from "@/lib/zodySessionProjection.js";
 
 export function resolveImmediateActiveTaskSnapshotMeta(
   previousSnapshotMeta: ZCodeTaskMeta | null,

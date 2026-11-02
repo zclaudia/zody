@@ -10,7 +10,7 @@ import type {
   LoadCliMcpFromUserDirectoryResult,
   SaveCliMcpToUserDirectoryRequest,
 } from "./mcp.js";
-import type { ZCodeProvider } from "./zcode-task-types-core.js";
+import type { ZCodeProvider } from "./zody-task-types-core.js";
 import type { SessionWorkflowActivity } from "./zody-protocol-v4/sessions-index-workflow-activity.js";
 import type { WebRemoteControlRpcTransportPayload } from "./web-remote-control-rpc-transport.js";
 import type { WorkspacePurpose } from "./workspacePurpose.js";

@@ -159,7 +159,7 @@ nodes:
       - symbol: "buildProtocolPermissionOptions"
         file: "apps/zody-cli/packages/bootstrap/src/permission-options.ts"
       - symbol: "getZCodeAgentAvailableModes"
-        file: "packages/shared/src/zcode-agent-model-state.ts"
+        file: "packages/shared/src/zody-agent-model-state.ts"
       - symbol: "buildAutomationModeOption"
         file: "packages/ui/src/settings/automationAgentConfigOptions.ts"
       - symbol: "filterModeOptions"
@@ -370,9 +370,9 @@ nodes:
       - symbol: "NODE_REPL_SERVER_VERSION"
         file: "apps/zody-cli/packages/node-repl-host/src/tool-contract.ts"
       - symbol: "REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS"
-        file: "packages/server/src/remote/zcodeAgentOfficialPluginAssets.ts"
+        file: "packages/server/src/remote/zodyAgentOfficialPluginAssets.ts"
       - symbol: "REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS"
-        file: "packages/server/src/remote/zcodeAgentOfficialPluginAssets.ts"
+        file: "packages/server/src/remote/zodyAgentOfficialPluginAssets.ts"
       - file: "packages/desktop/scripts/prepare-agent-node-bundle.mjs"
       - file: "scripts/prepare-prebuilds.mjs"
 
@@ -435,7 +435,7 @@ nodes:
       - symbol: "compactActiveConversation"
         file: "apps/zody-cli/packages/core/src/runtime/methods/compact-active.ts"
       - symbol: "zcodeSessionSettingsToZCodeConfigOptions"
-        file: "packages/shared/src/zcode-agent-model-state.ts"
+        file: "packages/shared/src/zody-agent-model-state.ts"
     invariants:
       - "Each complete Model Option Spec owns a restricted CEL map from its effective value to an RFC 7396 raw request-body patch. Config validation and runtime execution share @zcode/model-option-map; the adapter applies reasoningLevel then maxOutputTokens after AI SDK serialization and schema compatibility but before body-dependent signing, so reasoningMapping, AI SDK reasoning namespaces, and duplicate max-output authorities are not model facts."
 
@@ -595,7 +595,7 @@ nodes:
       - symbol: "createZCodeProcessResourceSampler"
         file: "apps/zody-cli/packages/bootstrap/src/process-resource-sampler.ts"
       - symbol: "createZCodeAgentService"
-        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zodyAgentService.ts"
       - symbol: "ingestCliResourceSample"
         file: "packages/desktop/src/main/processResourceCliSource.ts"
       - symbol: "registerHostServiceResourceTelemetry"
@@ -644,13 +644,13 @@ nodes:
       - "docs/monitoring/performance-monitoring.md"
     codeSeeds:
       - symbol: "createZCodeDataSizeTelemetryScheduler"
-        file: "packages/desktop/src/main/desktopZCodeDataSizeTelemetry.ts"
+        file: "packages/desktop/src/main/desktopZodyDataSizeTelemetry.ts"
       - symbol: "scanZCodeDataDirectory"
-        file: "packages/desktop/src/main/zcodeDataSizeScanner.ts"
+        file: "packages/desktop/src/main/zodyDataSizeScanner.ts"
       - symbol: "scanZCodeDataDirectoryInWorker"
-        file: "packages/desktop/src/main/zcodeDataSizeWorkerClient.ts"
+        file: "packages/desktop/src/main/zodyDataSizeWorkerClient.ts"
       - symbol: "writeZCodeDataSizeTelemetryState"
-        file: "packages/desktop/src/main/zcodeDataSizeTelemetryState.ts"
+        file: "packages/desktop/src/main/zodyDataSizeTelemetryState.ts"
       - symbol: "getZCodeDataRootDir"
         file: "packages/services/src/paths.ts"
     invariants:
@@ -689,7 +689,7 @@ nodes:
       - symbol: "attributeHostProcessTree"
         file: "packages/services/src/process/processResourceSampler.ts"
       - symbol: "collectLocalRuntimeChildProcesses"
-        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zodyAgentService.ts"
       - symbol: "listChildProcesses"
         file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/process-child-processes.ts"
       - symbol: "registerResourceManagerStorageIpc"
@@ -976,7 +976,7 @@ nodes:
       - symbol: "ProductProjection"
         file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/product-projection.ts"
       - symbol: "zcodeApiRetryFromStreamRecoveryPayload"
-        file: "packages/shared/src/zcode-api-retry-status.ts"
+        file: "packages/shared/src/zody-api-retry-status.ts"
 
   - id: "capability.model-stream-recovery"
     kind: "capability"
@@ -2329,7 +2329,7 @@ nodes:
     label: "ZCode task list service"
     codeSeeds:
       - symbol: "IZCodeTaskService"
-        file: "packages/services/src/session/zcodeTaskService.ts"
+        file: "packages/services/src/session/zodyTaskService.ts"
 
   - id: "service.workspace-file-binary-preview"
     kind: "service"
@@ -2343,7 +2343,7 @@ nodes:
     label: "Sessions-index to task-index synchronizer"
     codeSeeds:
       - symbol: "createZCodeTaskIndexSyncer"
-        file: "packages/services/src/zody-agent/zcodeTaskIndexSyncer.ts"
+        file: "packages/services/src/zody-agent/zodyTaskIndexSyncer.ts"
 
   - id: "surface.conversation-model-control"
     kind: "ui-surface"
@@ -3171,9 +3171,9 @@ nodes:
       - symbol: "V4InteractionRegistry"
         file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/interaction-registry.ts"
       - symbol: "syncAppRuntimePreferences"
-        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zodyAgentService.ts"
       - symbol: "createZCodeAgentService"
-        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zodyAgentService.ts"
 
   - id: "service.conversation-rows-range"
     kind: "service"
@@ -3328,7 +3328,7 @@ nodes:
       - symbol: "createUsageStatsService"
         file: "packages/services/src/usage-stats/usageStatsService.ts"
       - symbol: "getAppUsageStats"
-        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zodyAgentService.ts"
 
   - id: "service.plan-entitlements"
     kind: "service"
@@ -3531,7 +3531,7 @@ nodes:
     label: "App-to-CLI ModelIO retention preference sync"
     codeSeeds:
       - symbol: "syncAppRuntimePreferences"
-        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zodyAgentService.ts"
       - symbol: "updateModelIoPreferences"
         file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/model-io-preferences.ts"
 
@@ -4204,7 +4204,7 @@ nodes:
       - symbol: "getSkillReferenceCatalog"
         file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/skill-reference-catalog.ts"
       - symbol: "getSkillReferenceCatalog"
-        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zodyAgentService.ts"
 
   - id: "service.plugin-reference-catalog"
     kind: "service"
@@ -4213,7 +4213,7 @@ nodes:
       - symbol: "getPluginReferenceCatalog"
         file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/plugins.ts"
       - symbol: "getPluginReferenceCatalog"
-        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zodyAgentService.ts"
 
   - id: "service.suggested-plugin-reference-resolution"
     kind: "service"
@@ -4231,7 +4231,7 @@ nodes:
       - symbol: "withPluginOperationSignal"
         file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/server.ts"
       - symbol: "resolveSuggestedPluginReference"
-        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zodyAgentService.ts"
 
   - id: "service.plugin-reference-reminder"
     kind: "service"
@@ -4300,8 +4300,8 @@ nodes:
       - file: "packages/shared/test/appSettings.test.ts"
       - file: "packages/ui/test/settingsDataBaseDirControl.test.ts"
       - file: "packages/ui/test/useSettingServiceAutoResolution.test.ts"
-      - file: "packages/services/test/zcodeAgentService.test.ts"
-      - file: "apps/zody-cli/packages/bootstrap/tests/zcode-protocol.test.ts"
+      - file: "packages/services/test/zodyAgentService.test.ts"
+      - file: "apps/zody-cli/packages/bootstrap/tests/zody-protocol.test.ts"
       - file: "apps/zody-cli/packages/adapters/tests/runner.test.ts"
 
   - id: "evidence.model-request-session-type-tests"
@@ -5001,7 +5001,7 @@ nodes:
     label: "Host-trusted ZCode Agent attachment connection scope"
     codeSeeds:
       - symbol: "createZCodeAgentConnectionScope"
-        file: "packages/services/src/zody-agent/zcodeAgentConnectionScope.ts"
+        file: "packages/services/src/zody-agent/zodyAgentConnectionScope.ts"
 
   - id: "capability.plugin-creator-entry"
     kind: "capability"

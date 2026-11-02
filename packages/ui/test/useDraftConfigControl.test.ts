@@ -5,7 +5,7 @@ import type { ZCodeConfigOption } from "@zody/shared";
 import type { SessionConfigState } from "@zody/shared/zody-protocol-v4";
 import type { IModelSelectionService, ModelSelectionView } from "@zody/services";
 import { resolveEffectiveModelSelection, type ProviderRegistryView } from "@zody/provider";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
 import { useDraftConfigControl as useActualDraftConfigControl } from "@/v4/composer/useDraftConfigControl.js";
 import { persistV4ComposerDraft, readV4ComposerDraft } from "@/v4/composer/composerDraftStore.js";
 import { captureComposerRecentSubmission } from "@/lib/composerRecent.js";
@@ -23,7 +23,7 @@ vi.mock("@/hooks/useWorkspacePrepare.js", () => ({
   prepareWorkspaceWithZCodeSessionService: prepareWorkspaceMock,
 }));
 
-vi.mock("@/hooks/useZCodeSessionService.js", () => ({
+vi.mock("@/hooks/useZodySessionService.js", () => ({
   useZCodeSessionService: () => ({ readWorkspacePresentation: vi.fn() }),
 }));
 

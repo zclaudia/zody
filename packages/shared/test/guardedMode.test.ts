@@ -3,9 +3,9 @@ import {
   getZCodeAgentAvailableModes,
   getZCodeAgentModeSelectOptions,
   normalizeAvailableZCodeMode,
-} from "../src/zcode-agent-model-state.js";
+} from "../src/zody-agent-model-state.js";
 import { submissionModeSchema } from "../src/zody-protocol-v4/submission.js";
-import { zcodeSessionModeSchema } from "../src/zcode-protocol-legacy-types.js";
+import { zcodeSessionModeSchema } from "../src/zody-protocol-legacy-types.js";
 import { executionStateSchema, resolveExecutionState } from "../src/execution-state.js";
 
 describe("guarded wire and mode catalog", () => {

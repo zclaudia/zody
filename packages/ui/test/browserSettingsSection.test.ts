@@ -63,7 +63,7 @@ vi.mock("@/hooks/useSettingService.js", () => ({
     refresh: vi.fn(async () => {}),
   }),
 }));
-vi.mock("@/hooks/useZCodeSessionService.js", () => ({
+vi.mock("@/hooks/useZodySessionService.js", () => ({
   useZCodeSessionService: () => ({}),
 }));
 vi.mock("@/i18n/IntlProvider.js", () => ({
@@ -73,7 +73,7 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
     },
   }),
 }));
-vi.mock("@/lib/zcodeDraftSkillInvalidation.js", () => ({
+vi.mock("@/lib/zodyDraftSkillInvalidation.js", () => ({
   invalidateDeferredDraftSessionForSkillChange: vi.fn(async () => {}),
 }));
 vi.mock("@/store/pluginManagementStore.js", () => ({

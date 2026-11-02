@@ -242,7 +242,7 @@ vi.mock("@/store/TabStoreProvider.js", () => ({
   },
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
+vi.mock("@/store/zodySessionStore.js", () => ({
   useZCodeSessionStore: Object.assign(
     (selector: (state: Record<string, unknown>) => unknown) =>
       selector({

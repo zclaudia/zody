@@ -10,7 +10,7 @@ import {
   buildTaskListCacheDescriptor,
   buildTaskListCacheKeyFromDescriptor,
 } from "@/lib/taskQueryCache.js";
-import { getTaskUnreadIndicator, useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { getTaskUnreadIndicator, useZCodeSessionStore } from "@/store/zodySessionStore.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
 
 function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {

@@ -1,5 +1,5 @@
 import type { ModelSelectionView } from "@zody/services";
-import { encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
+import { encodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
 
 // fork（F4.1b）：resolveLoginApiKeyDefaultProvider / resolveLoginApiKeyTemplateId /
 // resolveLoginApiKeyProviderLabel / resolveLoginApiKeyProviderFamilyDomain /

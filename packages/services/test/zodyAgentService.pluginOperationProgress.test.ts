@@ -55,7 +55,7 @@ describe("zcodeAgentService Plugin operation progress", () => {
         async disposeAllAndWait() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
     const service = createZCodeAgentService();
     const received: ZCodePluginOperationProgressNotification[] = [];
     const subscription = service.onDynamicPluginOperationProgress("suggested-progress")((event) =>

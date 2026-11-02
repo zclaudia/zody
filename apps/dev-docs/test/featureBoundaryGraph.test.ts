@@ -137,7 +137,7 @@ describe("feature boundary graph helpers", () => {
       "matchDangerousCommand · apps/zody-cli/packages/core/src/tool/handlers/guarded/command.ts",
       "resolveToolPermission · apps/zody-cli/packages/core/src/tool/executor/permission-flow.ts",
       "buildProtocolPermissionOptions · apps/zody-cli/packages/bootstrap/src/permission-options.ts",
-      "getZCodeAgentAvailableModes · packages/shared/src/zcode-agent-model-state.ts",
+      "getZCodeAgentAvailableModes · packages/shared/src/zody-agent-model-state.ts",
       "buildAutomationModeOption · packages/ui/src/settings/automationAgentConfigOptions.ts",
       "filterModeOptions · apps/zody-cli/packages/tui/src/app-mode-command.ts",
     ]);

@@ -13,7 +13,7 @@ import type {
   WindowHostTaskAddress,
 } from "@zody/shared/zody-protocol-v4";
 import { createServiceDescriptor } from "../descriptors.js";
-import type { ZCodeArchivedTaskDeletionResult } from "#src/session/zcodeTaskService.js";
+import type { ZCodeArchivedTaskDeletionResult } from "#src/session/zodyTaskService.js";
 import type {
   ZCodeTaskListItem,
   ZCodeTaskListQuery,

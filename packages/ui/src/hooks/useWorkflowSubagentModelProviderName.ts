@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { ZCodeConfigOption } from "@zody/shared";
-import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySessionStore.js";
 
 /**
  * 子代理模型的 provider 名从哪儿来：会话的模型清单

@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ZCodeToolExecResource } from "@zody/shared";
 import { expect, it } from "vitest";
-import { createZCodeAgentService } from "#src/zody-agent/zcodeAgentService.js";
-import { createZCodeAgentConnectionScope } from "#src/zody-agent/zcodeAgentConnectionScope.js";
+import { createZCodeAgentService } from "#src/zody-agent/zodyAgentService.js";
+import { createZCodeAgentConnectionScope } from "#src/zody-agent/zodyAgentConnectionScope.js";
 
 it("真实 stdio 严格解析 Bash 完成事实，只允许 trusted Host 订阅", async () => {
   const root = await mkdtemp(join(tmpdir(), "tool-resource-"));

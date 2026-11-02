@@ -4,7 +4,7 @@ import {
   ZCODE_SOURCE_HEADERS,
   ZCODE_SOURCE_REFERER_URL,
   ZCODE_SOURCE_TITLE,
-} from "../src/zcode-source-headers.js";
+} from "../src/zody-source-headers.js";
 
 describe("buildZCodeSourceHeadersFromContext", () => {
   it("默认只发基础上下文头，停发来源标识与设备标识（F2.10：D5 未决取中性值）", () => {
@@ -64,7 +64,7 @@ describe("buildZCodeSourceHeadersFromContext", () => {
     vi.stubGlobal("__ZCODE_SOURCE_TITLE__", "ForkCode");
     try {
       // 带 query 强制 vitest 重新执行模块，模拟 bundler define 注入后的构建产物。
-      const injected = await import("../src/zcode-source-headers.js?build-time-injected");
+      const injected = await import("../src/zody-source-headers.js?build-time-injected");
       const headers = injected.buildZCodeSourceHeadersFromContext({
         appVersion: "2.14.0",
         platform: "darwin",

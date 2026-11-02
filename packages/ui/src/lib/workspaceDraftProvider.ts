@@ -1,5 +1,5 @@
 import type { ZCodeProvider } from "@zody/shared";
-import type { WorkspaceZCodeUIState } from "@/store/zcodeSessionStore.js";
+import type { WorkspaceZCodeUIState } from "@/store/zodySessionStore.js";
 
 interface ResolveWorkspaceSwitchDraftProviderOptions {
   currentSelectedProvider: ZCodeProvider;

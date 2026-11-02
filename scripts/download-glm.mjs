@@ -19,7 +19,7 @@ const require = createRequire(import.meta.url);
 const REPO_ROOT = path.resolve(__dirname, "..");
 
 function readZCodeAgentRuntimeVersion() {
-  const runtimeSourcePath = path.join(REPO_ROOT, "packages/shared/src/zcode-agent-runtime.ts");
+  const runtimeSourcePath = path.join(REPO_ROOT, "packages/shared/src/zody-agent-runtime.ts");
   const runtimeSource = fs.readFileSync(runtimeSourcePath, "utf8");
   const match = runtimeSource.match(/version:\s*["']([^"']+)["']/);
   if (!match?.[1]) {

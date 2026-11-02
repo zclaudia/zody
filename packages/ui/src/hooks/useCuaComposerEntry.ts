@@ -21,8 +21,8 @@ import {
 } from "@/lib/cuaPlatform.js";
 import { setPendingSettingsSectionIntent } from "@/lib/settingsNavigation.js";
 import { usePluginManagementStore } from "@/store/pluginManagementStore.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
-import { getVisibleTaskMetas, getWorkspaceState } from "@/store/zcodeSessionStoreSelectors.js";
+import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { getVisibleTaskMetas, getWorkspaceState } from "@/store/zodySessionStoreSelectors.js";
 import { useOptionalTabStore } from "@/store/TabStoreProvider.js";
 
 /** 与 zcodeSessionStoreTaskSlice 的 isRunningStatus 同口径。 */

@@ -14,7 +14,7 @@ const { activeWorkspaceState } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
+vi.mock("@/store/zodySessionStore.js", () => ({
   getTaskMessages: (
     workspaceState: { taskMessagesByTaskId?: Record<string, unknown[]> },
     taskId: string,

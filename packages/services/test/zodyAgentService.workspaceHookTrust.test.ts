@@ -30,7 +30,7 @@ describe("ZCodeAgentService workspace Hook Trust", () => {
       },
     }));
     const { createZCodeAgentService } = await import(
-      "../src/zody-agent/zcodeAgentService.js"
+      "../src/zody-agent/zodyAgentService.js"
     );
     const service = createZCodeAgentService();
 

@@ -52,11 +52,11 @@ const categoryRules = [
   {
     category: "runtime-blocker",
     patterns: [
-      /^packages\/shared\/src\/zcode-agent-runtime\.ts$/u,
+      /^packages\/shared\/src\/zody-agent-runtime\.ts$/u,
       /^packages\/desktop\/scripts\/ensure-local-runtime-assets\.mjs$/u,
       /^packages\/desktop\/electron-builder\.config\.js$/u,
       /^packages\/desktop\/wdio\.conf\.ts$/u,
-      /^packages\/server\/src\/remote\/zcodeAgentDeploy\.ts$/u,
+      /^packages\/server\/src\/remote\/zodyAgentDeploy\.ts$/u,
       /^scripts\/(?:download-glm|prepare-prebuilds|sign-macos-runtime-binaries)\.(?:mjs|sh)$/u,
       /^packages\/services\/src\/providers\/(?:claude|codex|gemini)/u,
       /^packages\/services\/src\/model-provider\/modelProviderServiceApply\.ts$/u,
@@ -82,11 +82,12 @@ const categoryRules = [
   },
   {
     category: "compat-type",
+    // 修复原因：按当前源码路径分类；保留兼容值不应沿用已消失的旧文件名。
     patterns: [
       /^packages\/shared\/src\/acp-types\.ts$/u,
       /^packages\/shared\/src\/task-realtime\.ts$/u,
       /^packages\/shared\/src\/tool-plan-adapter\.ts$/u,
-      /^packages\/shared\/src\/(?:assistant-message-parts|assistant-presentation|channels|errors|index|mcp|model-selection-key|model-selection-types|permission-request-preview|protocol|subagents-types|test-ids|web-remote-control|zcode-agent-model-state|zody-agent-policy)\.ts$/u,
+      /^packages\/shared\/src\/(?:assistant-message-parts|assistant-presentation|channels|errors|index|mcp|model-selection-key|model-selection-types|permission-request-preview|protocol|subagents-types|test-ids|web-remote-control|zody-agent-model-state|zody-agent-policy)\.ts$/u,
       /^packages\/services\/src\/session\//u,
       /^packages\/services\/src\/usage-stats\//u,
       /^packages\/services\/src\/git\/repo\/gitCheckpointRepo\.ts$/u,
@@ -94,7 +95,7 @@ const categoryRules = [
       /^packages\/ui\/src\//u,
       /^packages\/web\/src\//u,
       /^packages\/ui\/src\/hooks\/useAcp/u,
-      /^packages\/ui\/src\/lib\/zcodeSessionProjection\.ts$/u,
+      /^packages\/ui\/src\/lib\/zodySessionProjection\.ts$/u,
       /^packages\/ui\/src\/store\/zcodeSessionStore/u,
     ],
   },

@@ -9,7 +9,7 @@ vi.mock("@zody/services/storage-startup", () => ({
   getTasksIndexDatabasePath: () => "/isolated/tasks.sqlite",
   resolveZCodeAgentSpawnCwd: async (...args: unknown[]) =>
     (
-      await import("../../services/src/zody-agent/zcodeAgentSpawnCwd.js")
+      await import("../../services/src/zody-agent/zodyAgentSpawnCwd.js")
     ).resolveZCodeAgentSpawnCwd(...(args as [never])),
   markTasksStoragePrepared: fixtures.mark,
 }));

@@ -7,11 +7,11 @@ import {
   buildZCodeDataSizeArmsPayload,
   createZCodeDataSizeTelemetryScheduler,
   type ZCodeDataSizeTelemetryState,
-} from "../src/main/desktopZCodeDataSizeTelemetry.js";
+} from "../src/main/desktopZodyDataSizeTelemetry.js";
 import {
   scanZCodeDataDirectory,
   type ZCodeDataSizeScanResult,
-} from "../src/main/zcodeDataSizeScanner.js";
+} from "../src/main/zodyDataSizeScanner.js";
 import {
   readZCodeDataSizeTelemetryState,
   writeZCodeDataSizeTelemetryState,

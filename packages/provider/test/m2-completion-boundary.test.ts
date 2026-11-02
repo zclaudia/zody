@@ -21,19 +21,19 @@ const productionRoots = [
 
 const legacyDtoOwners = new Set([
   "packages/services/src/model-provider/legacyModelProviderSerialized.ts",
-  "packages/services/src/model-provider/legacyZCodeConfigProviderReader.ts",
+  "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
   "packages/services/src/model-provider/legacyPersonalProviderConfigImporter.ts",
   "packages/services/src/model-provider/providerConfigRuntime.ts",
 ]);
 const legacyDtoTestOwners = new Set([
-  "packages/services/test/legacyZCodeConfigProviderReader.test.ts",
+  "packages/services/test/legacyZodyConfigProviderReader.test.ts",
   "packages/services/test/legacyPersonalProviderConfigImporter.test.ts",
   "packages/services/test/providerConfigRuntime.test.ts",
   "packages/ui/test/providerSettingsFormBoundary.test.ts",
 ]);
 const legacyApiFormatOwners = new Set([
   "packages/services/src/model-provider/legacyModelProviderSerialized.ts",
-  "packages/services/src/model-provider/legacyZCodeConfigProviderReader.ts",
+  "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
 ]);
 const testRoots = [
   "packages/desktop/test",

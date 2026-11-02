@@ -103,7 +103,7 @@ import {
   zcodeSessionStatusSchema,
   zcodeToolStateSchema,
   zcodeWorkspaceRefSchema,
-} from "../zcode-protocol-legacy-types.js";
+} from "../zody-protocol-legacy-types.js";
 import { zcodeTaskModeSchema } from "../zody-task-mode-schema.js";
 
 export * from "../localTtft.js";

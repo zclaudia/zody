@@ -9,7 +9,7 @@ import {
   buildTaskWorkspaceKey,
 } from "@/lib/taskQueryCache.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
 
 const WORKSPACE_PATH = "/repo/event-coordinator";
 

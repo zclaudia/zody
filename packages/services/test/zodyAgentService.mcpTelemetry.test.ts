@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ZCodeMcpTelemetryEvent, ZCodeMcpResourceSample } from "@zody/shared";
 import { afterEach, describe, expect, it } from "vitest";
-import { createZCodeAgentService } from "../src/zody-agent/zcodeAgentService.js";
+import { createZCodeAgentService } from "../src/zody-agent/zodyAgentService.js";
 
 const MCP_TELEMETRY_FAKE_AGENT = `
 let buffer = "";

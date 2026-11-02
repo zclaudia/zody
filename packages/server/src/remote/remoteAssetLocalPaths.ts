@@ -1,4 +1,4 @@
-import { REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS } from "./zcodeAgentOfficialPluginAssets.js";
+import { REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS } from "./zodyAgentOfficialPluginAssets.js";
 
 export function resolveRequiredLocalReleasePaths(
   platformArch: string,

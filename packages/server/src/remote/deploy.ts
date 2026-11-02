@@ -10,7 +10,7 @@ import {
   type RemoteResourcePackageSelection,
 } from "@zody/shared";
 import type { IRemoteBackend, RemoteEnvironment } from "./backend.js";
-import { deployZCodeAgentRuntime } from "./zcodeAgentDeploy.js";
+import { deployZCodeAgentRuntime } from "./zodyAgentDeploy.js";
 import {
   deployNodePtyPrebuilds,
   deployNodeRuntime,

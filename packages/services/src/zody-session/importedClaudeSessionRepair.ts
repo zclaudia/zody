@@ -1,11 +1,11 @@
 import type { ZCodeSessionStateSnapshot } from "@zody/shared";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { repairImportedClaudeSessionSnapshot } from "#src/session/claude-native/importedClaudeHistoryRepair.js";
-import type { IZCodeAgentService } from "#src/zody-agent/zcodeAgent.js";
+import type { IZCodeAgentService } from "#src/zody-agent/zodyAgent.js";
 import type {
   ZCodeSessionReadParams,
   ZCodeSessionResumeParams,
-} from "#src/zody-session/zcodeSession.js";
+} from "#src/zody-session/zodySession.js";
 
 const logger = createServiceLogger("zcode-session-service");
 

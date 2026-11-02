@@ -12,7 +12,7 @@ import {
 import {
   persistLastSelectedAgentProvider,
   readLastSelectedAgentProvider,
-} from "@/lib/zcodeProviderPreference.js";
+} from "@/lib/zodyProviderPreference.js";
 
 const MIN_INSTALL_DURATION_MS = 5_000;
 const MAX_INSTALL_DURATION_MS = 10_000;

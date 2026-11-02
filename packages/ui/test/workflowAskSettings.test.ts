@@ -89,7 +89,7 @@ import {
   workflowAskSettingsContent,
 } from "@/components/workflow-timeline/workflowAskSettings.js";
 // eslint-disable-next-line import/first
-import { encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
+import { encodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
 // eslint-disable-next-line import/first
 import { V4InteractionDialogs } from "@/v4/V4InteractionDialogs.js";
 

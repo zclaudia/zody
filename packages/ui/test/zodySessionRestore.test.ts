@@ -9,7 +9,7 @@ import {
 import {
   readDesktopContinuousSessionRestoreSnapshot,
   readWebRemoteReplayableSessionConfigOptions,
-} from "../src/lib/zcodeSessionRestore.js";
+} from "../src/lib/zodySessionRestore.js";
 
 const workspace = {
   workspacePath: "/workspace/app",

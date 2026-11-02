@@ -14,8 +14,8 @@ import {
   getTaskUiState,
   getWorkspaceState,
   useZCodeSessionStore,
-} from "@/store/zcodeSessionStore.js";
-import type { ElicitationFormDraft } from "@/store/zcodeSessionStoreTypes.js";
+} from "@/store/zodySessionStore.js";
+import type { ElicitationFormDraft } from "@/store/zodySessionStoreTypes.js";
 import { createCommandEnvelope } from "@/v4/commandFactory.js";
 import { pendingCommandRegistry } from "@/v4/pendingCommandRegistry.js";
 import { sendInteractionAutoResolutionSnooze } from "@/v4/interactionAutoResolutionCommand.js";

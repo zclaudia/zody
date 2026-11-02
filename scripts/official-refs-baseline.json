@@ -37,7 +37,7 @@
   "packages/services/test/nodeApiClient.test.ts": 2,
   "packages/services/test/nodeApiClientEndpoint.test.ts": 3,
   "packages/services/test/settingService.test.ts": 2,
-  "packages/services/test/zcodeAgentService.providerRegistry.test.ts": 1,
+  "packages/services/test/zodyAgentService.providerRegistry.test.ts": 1,
   "packages/shared/test/sharedContextImportState.test.ts": 4,
   "packages/shared/test/telemetryRedaction.test.ts": 2,
   "packages/shared/test/validation.test.ts": 1,

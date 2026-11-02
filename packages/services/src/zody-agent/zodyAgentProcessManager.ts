@@ -1,6 +1,6 @@
 import { localRuntimeNetworkCapture } from "#src/zody-agent/localRuntimeNetworkCapture.js";
-import { resolveZCodeAgentSpawnCwd } from "#src/zody-agent/zcodeAgentSpawnCwd.js";
-import type { ZCodeAgentStorageStartupSnapshot } from "#src/zody-agent/zcodeAgent.js";
+import { resolveZCodeAgentSpawnCwd } from "#src/zody-agent/zodyAgentSpawnCwd.js";
+import type { ZCodeAgentStorageStartupSnapshot } from "#src/zody-agent/zodyAgent.js";
 /* eslint-disable max-lines -- zcodeAgentProcessManager 集中维护 agent 子进程启动、复用、超时回收和 runtime identity，拆分会扩大进程生命周期状态同步面 */
 import { spawn, type ChildProcess, type StdioOptions } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -34,11 +34,11 @@ import {
 } from "../runtime-tools/providerRuntimeResolver.js";
 import { isEffectiveDevelopmentNodeEnv } from "#src/runtime-tools/nodeEnv.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
-import { ZCodeProtocolClient } from "./zcodeProtocolClient.js";
-import { ZCodeStdioTransport, type ZCodeStdioChildLike } from "./zcodeStdioTransport.js";
-import { readZCodeStdioTapDevState } from "./zcodeStdioTapDevConfig.js";
+import { ZCodeProtocolClient } from "./zodyProtocolClient.js";
+import { ZCodeStdioTransport, type ZCodeStdioChildLike } from "./zodyStdioTransport.js";
+import { readZCodeStdioTapDevState } from "./zodyStdioTapDevConfig.js";
 import { parseCuaNativeAuditLine } from "./cuaNativeAuditLog.js";
-import type { ZCodeAgentPresentationSurface } from "./zcodeAgentPresentationSurface.js";
+import type { ZCodeAgentPresentationSurface } from "./zodyAgentPresentationSurface.js";
 import { shouldSpawnInDetachedProcessGroup } from "../process/processTreeTerminator.js";
 import type { RuntimeProcessLifecycleReporter } from "../process/runtimeProcessLifecycle.js";
 import { buildAgentWorkspaceIdentityEnv } from "../runtime-tools/agentProxyEnv.js";

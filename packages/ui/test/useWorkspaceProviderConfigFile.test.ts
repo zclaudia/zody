@@ -13,7 +13,7 @@ const { stableWorkspaceZCodeService } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/hooks/useZCodeTaskService.js", () => ({
+vi.mock("@/hooks/useZodyTaskService.js", () => ({
   useZCodeTaskService: () => stableWorkspaceZCodeService,
 }));
 

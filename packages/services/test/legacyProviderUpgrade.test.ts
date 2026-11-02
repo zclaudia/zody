@@ -14,7 +14,7 @@ import {
   NodeZCodeBuiltinProviderConfigSource,
 } from "@zody/provider-node";
 import { getAppConfigDir, setDataBaseDir } from "../src/paths.js";
-import { readLegacyZCodeConfigProviders } from "../src/model-provider/legacyZCodeConfigProviderReader.js";
+import { readLegacyZCodeConfigProviders } from "../src/model-provider/legacyZodyConfigProviderReader.js";
 import { importLegacyPersonalProviderConfig } from "../src/model-provider/legacyPersonalProviderConfigImporter.js";
 
 let directory: string | undefined;

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createPluginManagementService } from "../src/plugins/pluginManagementService.js";
-import type { IZCodeAgentService } from "../src/zody-agent/zcodeAgent.js";
+import type { IZCodeAgentService } from "../src/zody-agent/zodyAgent.js";
 
 describe("pluginManagementService suggested prompt operations", () => {
   it("forwards trusted resolution and cancellation to the selected Agent service", async () => {

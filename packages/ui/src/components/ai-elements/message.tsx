@@ -98,9 +98,9 @@ import { useOptionalServices } from "@/hooks/useServices.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import type { Theme } from "@/useTheme.js";
-import { createZCodeFileCitationRemarkPlugin } from "@/lib/zcodeFileCitationRemarkPlugin.js";
+import { createZCodeFileCitationRemarkPlugin } from "@/lib/zodyFileCitationRemarkPlugin.js";
 import { windowsFileLinkEscapeRemarkPlugin } from "@/lib/windowsFileLinkEscapeRemarkPlugin.js";
-import { projectZCodeFileCitations } from "@/lib/zcodeFileCitation.js";
+import { projectZCodeFileCitations } from "@/lib/zodyFileCitation.js";
 import { rewriteMarkdownArtifactImageSources } from "@zody/shared";
 
 export type MessageProps = HTMLAttributes<HTMLDivElement> & {

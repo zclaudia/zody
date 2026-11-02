@@ -175,7 +175,7 @@ vi.mock("@/store/StoreProvider.js", () => ({
     }),
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
+vi.mock("@/store/zodySessionStore.js", () => ({
   useZCodeSessionStore: Object.assign(
     (selector: (state: unknown) => unknown) =>
       selector({

@@ -47,7 +47,7 @@ vi.mock("@/shortcuts/useShortcutBindings.js", () => ({
   useShortcutCommandLabel: () => "",
 }));
 
-vi.mock("@/hooks/useZCodeConfig.js", () => ({
+vi.mock("@/hooks/useZodyConfig.js", () => ({
   useToolbarConfigOptions: () => ({ error: null }),
 }));
 

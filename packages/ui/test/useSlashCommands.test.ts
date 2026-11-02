@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { selectWorkspaceZCodeState, useZCodeSessionStore } from "../src/store/zcodeSessionStore.js";
+import { selectWorkspaceZCodeState, useZCodeSessionStore } from "../src/store/zodySessionStore.js";
 
 describe("useSlashCommands", () => {
   beforeEach(() => {

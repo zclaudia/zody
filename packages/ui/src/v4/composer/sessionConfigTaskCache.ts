@@ -1,6 +1,6 @@
 import type { ZCodeConfigOption } from "@zody/shared";
 import type { SessionConfigState } from "@zody/shared/zody-protocol-v4";
-import { parseModelPickerValue } from "@/lib/zcodeSessionProjection.js";
+import { parseModelPickerValue } from "@/lib/zodySessionProjection.js";
 
 function resolveModelDisplayValue(
   options: readonly ZCodeConfigOption[],

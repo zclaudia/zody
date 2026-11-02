@@ -3,10 +3,10 @@ import { defineConfig } from "vitest/config";
 
 const processLifecycleTests = [
   "packages/services/test/processTreeTerminator.test.ts",
-  "packages/services/test/zcodeAgentService.test.ts",
-  "packages/services/test/zcodeAgentService.v4.test.ts",
+  "packages/services/test/zodyAgentService.test.ts",
+  "packages/services/test/zodyAgentService.v4.test.ts",
   "packages/services/test/zodyAgentProcessManager.test.ts",
-  "packages/services/test/zcodeStdioTransport.test.ts",
+  "packages/services/test/zodyStdioTransport.test.ts",
 ];
 const forkIsolatedTests = [
   ...processLifecycleTests,

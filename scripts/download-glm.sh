@@ -31,7 +31,7 @@ esac
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-GLM_RUNTIME_VERSION="$(node -e "const fs=require('fs');const source=fs.readFileSync('$REPO_ROOT/packages/shared/src/zcode-agent-runtime.ts','utf8');const match=source.match(/version:\\s*['\"]([^'\"]+)['\"]/);if(!match){throw new Error('Unable to parse ZCode Agent runtime version');}process.stdout.write(match[1]);")"
+GLM_RUNTIME_VERSION="$(node -e "const fs=require('fs');const source=fs.readFileSync('$REPO_ROOT/packages/shared/src/zody-agent-runtime.ts','utf8');const match=source.match(/version:\\s*['\"]([^'\"]+)['\"]/);if(!match){throw new Error('Unable to parse ZCode Agent runtime version');}process.stdout.write(match[1]);")"
 LOCAL_PLATFORM="${ZCODE_TARGET_OS:-$(uname -s | tr '[:upper:]' '[:lower:]')}"
 LOCAL_ARCH="${ZCODE_TARGET_ARCH:-$(uname -m)}"
 

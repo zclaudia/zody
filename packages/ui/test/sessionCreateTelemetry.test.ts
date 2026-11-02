@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildRemoteWorkspaceIdentity } from "@zody/shared";
 import { createSessionCreateReporter } from "@/lib/sessionCreateTelemetry.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
 
 describe("session_create", () => {
   it.each(["group", "project", "session"] as const)(

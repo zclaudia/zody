@@ -1,6 +1,6 @@
 import type { ZCodeStreamEvent, ZCodeTaskRuntimeStatus } from "@zody/shared";
 import type { TaskChatMessage } from "@/lib/taskChatMessageTypes.js";
-import { hasRunningZCodeTimeline } from "@/lib/zcodeTimelineRuntime.js";
+import { hasRunningZCodeTimeline } from "@/lib/zodyTimelineRuntime.js";
 
 type TaskStreamMirrorBatchEvent = Extract<ZCodeStreamEvent, { type: "task_stream_mirror_batch" }>;
 type TaskStreamMirrorOp = TaskStreamMirrorBatchEvent["ops"][number];

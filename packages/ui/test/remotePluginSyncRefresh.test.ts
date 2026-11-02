@@ -4,7 +4,7 @@ import { ZCODE_AGENT_PROVIDER } from "@zody/shared";
 import { refreshWorkspacePluginCapabilitiesAfterRemoteSync } from "../src/lib/remotePluginSyncRefresh.js";
 import { useCommandsStore } from "../src/store/commandsStore.js";
 import { useSkillStore } from "../src/store/skillStore.js";
-import { useZCodeSessionStore } from "../src/store/zcodeSessionStore.js";
+import { useZCodeSessionStore } from "../src/store/zodySessionStore.js";
 
 function makePluginCommand(
   overrides: Partial<Extract<ZCodeCommand, { source: "plugin" }>>,

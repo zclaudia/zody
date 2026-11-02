@@ -4,7 +4,7 @@ import type {
   TraceId,
   ZCodeStreamEvent,
   ZCodeTaskNetworkDebugStatusType,
-} from "./zcode-task-types-core.js";
+} from "./zody-task-types-core.js";
 
 const MODEL_NETWORK_STATUS_TYPES = new Set<ZCodeTaskNetworkDebugStatusType>([
   "model_request_started",

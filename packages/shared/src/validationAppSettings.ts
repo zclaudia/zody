@@ -5,7 +5,7 @@ import { isKnownRemoteResourcePackageId } from "./remoteResourcePackages.js";
 import { wslUserSchema } from "./wslUserValidation.js";
 import { ZCODE_ENABLED_AGENT_PROVIDERS } from "./zody-agent-policy.js";
 import { DYNAMIC_WORKFLOW_MODES } from "./dynamic-workflow-feature.js";
-import { normalizeZCodeEndpointOrigin } from "./zcodeEndpoint.js";
+import { normalizeZCodeEndpointOrigin } from "./zodyEndpoint.js";
 import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   remoteAccessSettingsPatchSchema,

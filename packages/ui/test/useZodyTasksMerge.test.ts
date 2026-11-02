@@ -3,7 +3,7 @@ import type { ZCodeTaskMeta } from "@zody/shared";
 import {
   mergeTaskMetaCandidates,
   mergeTaskWithOptimisticMeta,
-} from "@/lib/zcodeTaskMetaMerge.js";
+} from "@/lib/zodyTaskMetaMerge.js";
 
 function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
   return {

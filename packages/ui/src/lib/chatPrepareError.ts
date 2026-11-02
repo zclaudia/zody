@@ -4,7 +4,7 @@ import {
   type ZCodeProvider,
   type ZCodeError,
 } from "@zody/shared";
-import { normalizeZCodeUiError } from "@/lib/zcodeUiError.js";
+import { normalizeZCodeUiError } from "@/lib/zodyUiError.js";
 
 export const MODEL_CONFIG_MISSING_UI_ERROR_CODE = "model_config_missing";
 

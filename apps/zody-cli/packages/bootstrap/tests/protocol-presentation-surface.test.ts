@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyProtocolPresentationSurface,
   applyProtocolProviderRegistry,
-} from "../src/zcode-protocol-entrypoint.js";
+} from "../src/zody-protocol-entrypoint.js";
 
 describe("protocol presentation surface", () => {
   it("injects the process presentation surface without dropping session runtime config", () => {

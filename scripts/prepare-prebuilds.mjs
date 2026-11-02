@@ -300,7 +300,7 @@ const remoteOfficialPluginRequiredPaths = [
 ];
 
 function readZCodeAgentRuntimeVersion() {
-  const runtimeSourcePath = join(rootDir, "packages/shared/src/zcode-agent-runtime.ts");
+  const runtimeSourcePath = join(rootDir, "packages/shared/src/zody-agent-runtime.ts");
   const runtimeSource = readFileSync(runtimeSourcePath, "utf8");
   const match = runtimeSource.match(/version:\s*["']([^"']+)["']/);
   if (!match?.[1]) {

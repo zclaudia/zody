@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeZCodeUiError } from "@/lib/zcodeUiError.js";
+import { normalizeZCodeUiError } from "@/lib/zodyUiError.js";
 import {
   getProviderBusinessErrorMessageId,
   isProviderBusinessErrorCode,

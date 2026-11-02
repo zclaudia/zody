@@ -40,7 +40,7 @@ import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import {
   selectWorkspaceZCodeState,
   useZCodeSessionStore,
-} from "@/store/zcodeSessionStore.js";
+} from "@/store/zodySessionStore.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
 import { buildWorkspaceServiceLookup } from "@/lib/workspaceServiceResolver.js";
 import { applyTaskQueryCacheMutation } from "@/store/taskQueryCacheStore.js";

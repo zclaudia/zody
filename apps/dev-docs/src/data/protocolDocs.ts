@@ -98,7 +98,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "UI task 列表、缓存、导航和本地持久化使用；进入 ZCode Protocol 时必须找到对应 sessionId。",
     owner: "app/ui",
-    source: "packages/shared/src/zcode-task-types.ts#ZCodeTaskMeta",
+    source: "packages/shared/src/zody-task-types.ts#ZCodeTaskMeta",
     related: ["sessionId", "workspaceKey", "activeInputId"],
   },
   {
@@ -122,7 +122,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "UI 在每次直接发送、首发、队列 drain 时创建；通过 `session/send.inputId` 传给 agent；agent 在 turn 事件 payload 里原样回带。",
     owner: "app/ui creates, agent echoes",
-    source: "packages/shared/src/zcode-task-types.ts#createInputId",
+    source: "packages/shared/src/zody-task-types.ts#createInputId",
     aliases: ["clientMessageId 的新名", "per-input id"],
     related: ["activeInputId", "pendingInputId", "traceId"],
   },
@@ -134,7 +134,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "直接发送或队列 drain 开始时写入；收到匹配 inputId 的 completed/failed 后清理或被下一轮覆盖。",
     owner: "renderer store",
-    source: "packages/ui/src/store/zcodeSessionStoreTypes.ts#TaskRuntimeState",
+    source: "packages/ui/src/store/zodySessionStoreTypes.ts#TaskRuntimeState",
     aliases: ["activeRunId 的新名"],
     related: ["inputId", "taskRuntimeState", "taskStreamMirrorBatch"],
   },
@@ -156,7 +156,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "旧 renderer runtime 字段；新代码只在少数 replayable/mirror legacy 字段里保留 runId 名称。",
     owner: "deprecated",
-    source: "dae26032: packages/ui/src/store/zcodeSessionStoreTypes.ts",
+    source: "dae26032: packages/ui/src/store/zodySessionStoreTypes.ts",
     related: ["activeInputId", "taskRuntimeState"],
   },
   {
@@ -314,7 +314,7 @@ export const concepts: Concept[] = [
     summary: "Renderer store 的 task 运行态，只保存 UI 运行需要的 transient 信息。",
     lifecycle: "随 stream、snapshot、queue 和 stop 操作更新；不能作为 server authoritative state。",
     owner: "renderer store",
-    source: "packages/ui/src/store/zcodeSessionStoreTypes.ts#TaskRuntimeState",
+    source: "packages/ui/src/store/zodySessionStoreTypes.ts#TaskRuntimeState",
     related: ["activeInputId", "deliveryKind"],
   },
   {
@@ -325,7 +325,7 @@ export const concepts: Concept[] = [
       "手机远控 replayable 链路的 stream mirror 批次。字段名 runId 保留兼容，但语义上对应当前 input/mirror run。",
     lifecycle: "host 记录运行中流式 op；web remote 用 batchSeq/fromSeq/toSeq 恢复缺口。",
     owner: "host runtime",
-    source: "packages/shared/src/zcode-task-types.ts#TaskStreamMirrorBatch",
+    source: "packages/shared/src/zody-task-types.ts#TaskStreamMirrorBatch",
     related: ["inputId", "activeInputId", "deliveryKind", "eventSeq"],
   },
 ];
@@ -545,7 +545,7 @@ export const structures: StructureDoc[] = [
   {
     id: "zcode-stream-event",
     title: "ZCodeStreamEvent / TaskStreamMirrorableEvent",
-    path: "packages/shared/src/zcode-task-types.ts",
+    path: "packages/shared/src/zody-task-types.ts",
     purpose: "Host 到 renderer 的实时事件结构。现在同时携带 traceId 和可选 inputId。",
     oldShape: "每个 stream event 只有 traceId；UI 把它当 run id 使用。",
     newShape: "stream event 保留 traceId 做观测，同时新增 inputId 做输入归属。",
@@ -638,7 +638,7 @@ export const structures: StructureDoc[] = [
   {
     id: "task-runtime-state",
     title: "TaskRuntimeState",
-    path: "packages/ui/src/store/zcodeSessionStoreTypes.ts",
+    path: "packages/ui/src/store/zodySessionStoreTypes.ts",
     purpose: "Renderer 中每个 task 的运行态，驱动输入框状态、停止按钮、使用量和错误展示。",
     oldShape: "{ status, error, provider, usage, apiRetry, activeRunId?, activeRunOwnerClientId? }",
     newShape:
@@ -893,7 +893,7 @@ export const structures: StructureDoc[] = [
   {
     id: "mirror-compat",
     title: "Replayable Mirror Legacy Fields",
-    path: "packages/shared/src/zcode-task-types.ts + packages/ui/src/lib/zcodeTaskRuntimeMonitor.ts",
+    path: "packages/shared/src/zody-task-types.ts + packages/ui/src/lib/zcodeTaskRuntimeMonitor.ts",
     purpose:
       "手机远控 replayable 链路仍有 runId/ownerRunId 等历史命名，但文档必须标明语义是 input 归属。",
     oldShape: "{ runId, ownerRunId, traceId } 都容易被理解成 trace。",

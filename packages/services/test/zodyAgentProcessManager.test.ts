@@ -34,8 +34,8 @@ import type {
   RuntimeProcessLifecycleReporter,
   RuntimeProcessExceptionEvent,
 } from "../src/process/runtimeProcessLifecycle.js";
-import { setZCodeStdioTapDevEnabled } from "../src/zody-agent/zcodeStdioTapDevConfig.js";
-import { ZCodeStdioTransport } from "../src/zody-agent/zcodeStdioTransport.js";
+import { setZCodeStdioTapDevEnabled } from "../src/zody-agent/zodyStdioTapDevConfig.js";
+import { ZCodeStdioTransport } from "../src/zody-agent/zodyStdioTransport.js";
 import { CuaAgentAdmissionGate } from "../src/cua-permission-broker/cuaAgentAdmissionGate.js";
 
 function createDeferred<T>() {

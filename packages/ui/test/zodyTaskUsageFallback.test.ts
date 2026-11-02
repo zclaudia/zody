@@ -4,7 +4,7 @@ import {
   buildTaskContextUsageFromUsageUpdate,
   recordTaskContextUsageUpdate,
   resetTaskContextUsageUpdateRecordsForTest,
-} from "../src/lib/zcodeTaskUsageFallback.js";
+} from "../src/lib/zodyTaskUsageFallback.js";
 
 function createUsage(totalTokens: number) {
   return {

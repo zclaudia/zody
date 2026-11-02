@@ -1,6 +1,6 @@
 /* oxlint-disable eslint(max-lines) -- 平台事件（窗口/任务/更新/快捷键）共用同一生命周期。 */
 import { useEffect, useRef } from "react";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
 import type { IPlatformService } from "@zody/shared";
 import { isWorkspaceTab, type TabStoreState, type WindowTabState } from "@/store/tabStore.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";

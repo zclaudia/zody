@@ -129,7 +129,7 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
   }),
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
+vi.mock("@/store/zodySessionStore.js", () => ({
   selectWorkspaceZCodeState: () => ({ activeTaskId: "task-1" }),
   useZCodeSessionStore: (selector: (state: { selectDraftProvider: () => void }) => unknown) =>
     selector({ selectDraftProvider: vi.fn() }),

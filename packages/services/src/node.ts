@@ -96,9 +96,9 @@ export {
 } from "./setting/settingService.js";
 export { createCredentialService } from "./credential/credentialService.js";
 export { createBroadcastService } from "./broadcast/broadcastService.js";
-export { createZCodeAgentService } from "./zody-agent/zcodeAgentService.js";
-export { createZCodeTaskServiceAdapter } from "./zody-agent/zcodeTaskServiceAdapter.js";
-export { createZCodeSessionService } from "./zody-session/zcodeSessionService.js";
+export { createZCodeAgentService } from "./zody-agent/zodyAgentService.js";
+export { createZCodeTaskServiceAdapter } from "./zody-agent/zodyTaskServiceAdapter.js";
+export { createZCodeSessionService } from "./zody-session/zodySessionService.js";
 export {
   createZodyAgentCommandResolver,
   resolveDefaultZodyAgentCommand,
@@ -124,14 +124,14 @@ export {
   normalizeZCodeAgentNativeRuntimeSelection,
   projectZCodeAgentNativeRuntimeProviderSnapshot,
 } from "./zody-agent/nativeRuntimeStartupProfile.js";
-export { ZCodeProtocolClient } from "./zody-agent/zcodeProtocolClient.js";
+export { ZCodeProtocolClient } from "./zody-agent/zodyProtocolClient.js";
 export type { ZCodeProtocolTransport } from "./zody-agent/zodyProtocolTransport.js";
-export { ZCodeStdioTransport } from "./zody-agent/zcodeStdioTransport.js";
+export { ZCodeStdioTransport } from "./zody-agent/zodyStdioTransport.js";
 export {
   getZCodeStdioTapDevLogDir,
   readZCodeStdioTapDevState,
   setZCodeStdioTapDevEnabled,
-} from "./zody-agent/zcodeStdioTapDevConfig.js";
+} from "./zody-agent/zodyStdioTapDevConfig.js";
 export type { ZCodeStdioTapDevState } from "@zody/shared";
 export {
   createCuaHelperInstaller,
@@ -279,10 +279,10 @@ import { ISettingService } from "./setting/setting.js";
 import { IOnboardingRecordService } from "./onboarding/onboardingRecord.js";
 import { ICredentialService } from "./credential/credential.js";
 import { IBroadcastService } from "./broadcast/broadcast.js";
-import { IZCodeTaskService } from "./session/zcodeTaskService.js";
-import { IZCodeAgentService } from "./zody-agent/zcodeAgent.js";
+import { IZCodeTaskService } from "./session/zodyTaskService.js";
+import { IZCodeAgentService } from "./zody-agent/zodyAgent.js";
 import type { CuaOperationStateReporter } from "./zody-agent/cuaOperationTurnTracker.js";
-import { IZCodeSessionService } from "./zody-session/zcodeSession.js";
+import { IZCodeSessionService } from "./zody-session/zodySession.js";
 // fork（bots 移除）：IBotsService 随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
 import { IFileWatcherService } from "./fileWatcher/fileWatcher.js";
 import { IUsageStatsService } from "./usage-stats/usageStats.js";
@@ -314,7 +314,7 @@ import { createOnboardingRecordService } from "./onboarding/onboardingRecordServ
 import { createObservableSettingService } from "./setting/observableSettingService.js";
 import { createCredentialService } from "./credential/credentialService.js";
 import { createBroadcastService } from "./broadcast/broadcastService.js";
-import { createZCodeAgentService } from "./zody-agent/zcodeAgentService.js";
+import { createZCodeAgentService } from "./zody-agent/zodyAgentService.js";
 import type {
   ZodyAgentCommandResolver,
   ZodyAgentCommandResolverContext,
@@ -322,16 +322,16 @@ import type {
   ZodyAgentNativeRuntimeResolver,
 } from "./zody-agent/zodyAgentProcessManager.js";
 import { buildAgentTelemetrySpawnEnv } from "./zody-agent/agentTelemetryEnv.js";
-import { resolveZCodeAgentPresentationSurface } from "./zody-agent/zcodeAgentPresentationSurface.js";
-import { createZCodeTaskServiceAdapter } from "./zody-agent/zcodeTaskServiceAdapter.js";
-import { createZCodeSessionService } from "./zody-session/zcodeSessionService.js";
-import { createZCodeTaskIndexSyncer } from "./zody-agent/zcodeTaskIndexSyncer.js";
+import { resolveZCodeAgentPresentationSurface } from "./zody-agent/zodyAgentPresentationSurface.js";
+import { createZCodeTaskServiceAdapter } from "./zody-agent/zodyTaskServiceAdapter.js";
+import { createZCodeSessionService } from "./zody-session/zodySessionService.js";
+import { createZCodeTaskIndexSyncer } from "./zody-agent/zodyTaskIndexSyncer.js";
 import { TaskIndexRepo } from "./session/taskIndexRepo.js";
 // fork（bots 移除）：createBotsService / createBotRemoteWorkspaceService 随 bot channels
 // 功能整体删除（specs/bot-channels-removal.md）。
 import type { SessionMessageSendRequested } from "#src/session/sessionMailbox.js";
 import { createFileWatcherService } from "./fileWatcher/fileWatcherService.js";
-import { readLegacyZCodeConfigProviders } from "./model-provider/legacyZCodeConfigProviderReader.js";
+import { readLegacyZCodeConfigProviders } from "./model-provider/legacyZodyConfigProviderReader.js";
 // fork（F4.7）：officialAccountDataMigration 是一次性存量兼容清理（不依赖 OAuth 运行时），
 // 保留以满足 F4.1a 的升级清理规则与 E2E（旧版本直接升级到当前版本仍会清掉存量账号数据）。
 import { runOfficialAccountProviderDataMigration } from "./model-provider/officialAccountDataMigration.js";

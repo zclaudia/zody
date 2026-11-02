@@ -73,7 +73,7 @@ export type {
   ZCodePluginUpdateData,
   ZCodePluginsOverviewData,
 } from "./plugins.js";
-export { runZCodeProtocolAgent } from "./zcode-protocol-entrypoint.js";
+export { runZCodeProtocolAgent } from "./zody-protocol-entrypoint.js";
 // Exposed for the CLI's --output-format stream-json: it needs the same event
 // shape the protocol server emits, rather than inventing a second one.
 export { mapSessionEvent } from "./zody-protocol/session-mapper.js";

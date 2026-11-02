@@ -116,18 +116,18 @@ search runtime）。历史 `resourcePackages.selectedPackageIds` 只兼容读取
 - 桌面安装包携带 `resources/glm/zody.cjs`、`resources/tools/ugrep` 与 `resources/tools/ripgrep`；
   macOS/Linux 另携带 `resources/tools/bfs`。
 
-Agent runtime 版本事实源是 `packages/shared/src/zcode-agent-runtime.ts`。本地开发、desktop build、remote
+Agent runtime 版本事实源是 `packages/shared/src/zody-agent-runtime.ts`。本地开发、desktop build、remote
 manifest 和下载逻辑应共同读取它，不再从旧 provider runtime 清单推断。
 
 ## 当前入口
 
-- `packages/services/src/zody-agent/zcodeAgentService.ts`
+- `packages/services/src/zody-agent/zodyAgentService.ts`
 - `packages/services/src/zody-agent/zodyAgentProcessManager.ts`
-- `packages/services/src/zody-agent/zcodeProtocolClient.ts`
-- `packages/services/src/zody-agent/zcodeStdioTransport.ts`
-- `packages/services/src/zody-agent/zcodeAgentConnectionScope.ts`
+- `packages/services/src/zody-agent/zodyProtocolClient.ts`
+- `packages/services/src/zody-agent/zodyStdioTransport.ts`
+- `packages/services/src/zody-agent/zodyAgentConnectionScope.ts`
 - `packages/ui/src/v4/V4ConversationContext.tsx`
 - `packages/ui/src/v4/SessionPane.tsx`
-- `apps/zody-cli/packages/bootstrap/src/zcode-protocol-entrypoint.ts`
+- `apps/zody-cli/packages/bootstrap/src/zody-protocol-entrypoint.ts`
 - `apps/zody-cli/packages/bootstrap/src/zody-protocol/server.ts`
 - `apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/v4-gateway.ts`

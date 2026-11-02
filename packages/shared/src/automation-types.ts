@@ -1,4 +1,4 @@
-import type { ZCodeTaskMode } from "./zcode-task-types-core.js";
+import type { ZCodeTaskMode } from "./zody-task-types-core.js";
 // fork（bots移除）：定时任务 Bot 回推目标类型依赖随第三方 IM bot channels 全量删除。
 import type { ModelSelection } from "./model-selection.js";
 

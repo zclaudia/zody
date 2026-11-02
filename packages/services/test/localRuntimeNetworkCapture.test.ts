@@ -1,7 +1,7 @@
 import { Emitter } from "@zody/rpc";
 import { expect, it, vi } from "vitest";
 import { LocalRuntimeNetworkCapture } from "../src/zody-agent/localRuntimeNetworkCapture.js";
-import type { ZCodeProtocolClient } from "../src/zody-agent/zcodeProtocolClient.js";
+import type { ZCodeProtocolClient } from "../src/zody-agent/zodyProtocolClient.js";
 import type { ZCodeProtocolNotification } from "@zody/shared";
 
 it("已有和新本地 CLI 继承启停，旧批次隔离，不注册的 remote 不控制", () => {

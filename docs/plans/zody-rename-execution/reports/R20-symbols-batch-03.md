@@ -1,6 +1,6 @@
 # R20.4 batch-03
 
-状态：本批已实施，尚未提交；基线 `1b042046c373fa91c5ed80b1501bcf0677f2eb39`。不代表 R20.4 全部完成。
+状态：已提交 `d49aecefa7d1c3571bfae69fe4817950654b9298` 并获 DeepSeek 范围内 PASS；基线 `1b042046c373fa91c5ed80b1501bcf0677f2eb39`。不代表 R20.4 全部完成。
 
 A0 ProcessManager 剩余 17 个声明，以及 services 合同中同名但独立的 lifecycle event、shared 的 agent runtime 与 background control/bash/notification 7 个类型，共 25 个声明；逐个旧/新名、声明文件、引用数量和改名前 SHA 见 `output/zody-rename-r20-symbols/batch-03/batch-manifest.json`。类型服务在同一根项目载入授权 root/CLI 文件，两条同名 lifecycle 类型分别解析；`identifier-audit.json` 中唯一未绑定标识是 `storagePreparationWorker.test.ts` 的模块 mock 导出键，已与实际 export 同步。三个字符串仅为测试描述，未机械替换；env、wire、telemetry、序列化字段和业务状态均未改。
 
@@ -15,4 +15,4 @@ A0 ProcessManager 剩余 17 个声明，以及 services 合同中同名但独立
 - `lint-node24-final.log`：`pnpm lint` exit 0，303 warnings；`architecture-node24-final.log`：`pnpm architecture:check --changed` exit 0，0 violations。
 - `desktop-main-node24.log`：`pnpm exec tsc -b packages/desktop/tsconfig.main.json` exit 1，85 条诊断；与已独立核实的 854 基线按文件、行、列、TS 错误码比对无新增或消失，见 `desktop-main-comparison.log`。这不是 Desktop main 类型检查通过。
 
-原 1,602 条剩余声明候选并未因本批完成而全关闭；A0 已处理并补齐第二个生命周期类型，本批 shared 类型仅是 B0 中的闭合集合。其余共享协议/任务、CLI、UI、Desktop、provider、内部对象属性、动态引用及 151 个 manualReviewPaths 仍须按精确 owner 和实际绑定逐批完成。无提交；构建输出和源码锁在报告交付后交还主控。
+原 1,602 条剩余声明候选并未因本批完成而全关闭；A0 已处理并补齐第二个生命周期类型，本批 shared 类型仅是 B0 中的闭合集合。其余共享协议/任务、CLI、UI、Desktop、provider、内部对象属性、动态引用及 151 个 manualReviewPaths 仍须按精确 owner 和实际绑定逐批完成。实施交付时未提交；随后由主控冻结为上述候选，构建输出和源码锁已交还主控。

@@ -7,7 +7,7 @@ import {
   getWorkspaceDisplayedTaskState,
   getWorkspaceInitState,
   useZCodeSessionStore,
-} from "@/store/zcodeSessionStore.js";
+} from "@/store/zodySessionStore.js";
 
 export function useWorkspaceShellLifecycle({
   workspaceAbsPath,

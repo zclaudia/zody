@@ -8,7 +8,7 @@ import { MEDIA_PREVIEW_FORMATS } from "@zody/shared";
 import {
   extractZCodeFileCitationDirectives,
   resolveZCodeFileCitationPreviewKind,
-} from "@/lib/zcodeFileCitation.js";
+} from "@/lib/zodyFileCitation.js";
 import {
   isBalancedAssistantPathQuotePair,
   isAssistantPathQuoteCharacter,

@@ -106,8 +106,8 @@ import {
 import type { WorkspaceShellLayoutProps } from "@/app-shell/types.js";
 import { useTabStoreApi } from "@/store/TabStoreProvider.js";
 import { useWebRemoteControlMobileViewport } from "@/hooks/useWebRemoteControlMobileViewport.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
-import type { ComposerMentionPrefill } from "@/store/zcodeSessionStoreTypes.js";
+import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import type { ComposerMentionPrefill } from "@/store/zodySessionStoreTypes.js";
 
 const WEB_REMOTE_CONTROL_COLLAPSE_ONCE_SESSION_KEY =
   "zody:web-remote-control:collapse-navigation-once";

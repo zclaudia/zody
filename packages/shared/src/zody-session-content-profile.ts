@@ -6,7 +6,7 @@
 // 以保证可见性与投影策略判定和 full snapshot 完全一致（spec：docs/task/task-sqlite-index.md「Index read profile」）。
 // 不能改用 messageLimit：searchableText 取前 200K 字符、标题回退首条真实用户输入，都依赖历史开头。
 import type { ZCodeSessionStateSnapshot } from "./zody-protocol/index.js";
-import type { ZCodeMessagePart, ZCodeMessageWithParts } from "./zcode-protocol-legacy-types.js";
+import type { ZCodeMessagePart, ZCodeMessageWithParts } from "./zody-protocol-legacy-types.js";
 
 export type ZCodeSessionContentProfile = "full" | "index";
 

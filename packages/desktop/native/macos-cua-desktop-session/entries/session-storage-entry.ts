@@ -1,7 +1,7 @@
 // sealed sessionStorageEntry：只运行原 bootstrap 的 prepareStorageOnly 路径。
 // 不装载 TUI/CLI 全量入口；Host 通过 contract source 在私有 0700 文件里执行这份字节。
 import { writeSync } from "node:fs";
-import { runZCodeProtocolAgent } from "../../../../../apps/zody-cli/packages/bootstrap/src/zcode-protocol-entrypoint.js";
+import { runZCodeProtocolAgent } from "../../../../../apps/zody-cli/packages/bootstrap/src/zody-protocol-entrypoint.js";
 
 function argumentValue(argv: readonly string[], flag: string): string | undefined {
   const index = argv.indexOf(flag);

@@ -190,7 +190,7 @@ vi.mock("@/ChatEmptyState.js", () => ({
 vi.mock("@/hooks/useAutomationProjectOptions.js", () => ({
   useAutomationProjectOptions: () => stableHookValues.projectOptions,
 }));
-vi.mock("@/hooks/useZCodeConfig.js", () => ({
+vi.mock("@/hooks/useZodyConfig.js", () => ({
   useToolbarConfigOptions: () => stableHookValues.configResult,
 }));
 vi.mock("@/hooks/useServices.js", () => ({

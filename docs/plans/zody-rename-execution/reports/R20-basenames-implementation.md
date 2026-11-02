@@ -1,4 +1,4 @@
-当前候选：`1b042046c373fa91c5ed80b1501bcf0677f2eb39` 已提交；DeepSeek 复核发现 audit 脚本一处 basename 分类遗漏，修复及复审由后续批次收口。下文是实施时的过程记录。
+当前候选：`1b042046c373fa91c5ed80b1501bcf0677f2eb39` 已提交；DeepSeek 发现的 audit 分类遗漏已在 `d49aecef` 修复并复审 PASS，见 R20-symbols-batch-03-deepseek-review.md。下文是实施时的过程记录。
 
 # R20.4 basename 安全子集实施
 

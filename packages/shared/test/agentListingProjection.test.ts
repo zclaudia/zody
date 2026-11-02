@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { zcodeSyntheticUserMessageSourceSchema } from "../src/zcode-protocol-legacy-types.js";
+import { zcodeSyntheticUserMessageSourceSchema } from "../src/zody-protocol-legacy-types.js";
 import {
   getConversationMessageProjectionPolicy,
   getConversationModelOnlyTurnTriggerSource,

@@ -12,7 +12,7 @@ import {
   type ProviderBusinessErrorUiAction,
 } from "@/lib/providerBusinessError.js";
 import { resolveTelemetryAttribution } from "@/lib/chatErrorAttribution.js";
-import type { ZCodeUiError } from "@/lib/zcodeUiError.js";
+import type { ZCodeUiError } from "@/lib/zodyUiError.js";
 
 export const CHAT_ERROR_BANNER_ARMS_EVENT_NAME = "chat_error_banner";
 export const CHAT_ERROR_BANNER_ARMS_GROUP = "ui_error";

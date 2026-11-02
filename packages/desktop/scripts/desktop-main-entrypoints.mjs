@@ -3,6 +3,6 @@
 export const DESKTOP_MAIN_ENTRYPOINTS = Object.freeze({
   "main/index": "src/main/index.ts",
   "main/browserWebmRecorder": "src/main/browserView/electronBrowserWebmRecorder.ts",
-  "main/zcodeDataSizeWorker": "src/main/zcodeDataSizeWorker.ts",
+  "main/zodyDataSizeWorker": "src/main/zodyDataSizeWorker.ts",
   "main/storageScanWorker": "src/main/storageScanWorker.ts",
 });

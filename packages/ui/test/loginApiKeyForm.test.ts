@@ -3,7 +3,7 @@ import {
   buildLoginApiKeyDefaultModelPreferenceFromSelection,
   shouldShowLoginApiKeyLink,
 } from "@/login/LoginApiKeyForm.helpers.js";
-import { encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
+import { encodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
 
 // fork（F4.1b）：官方账号入口摘除后，LoginApiKeyForm 只承载通用 BYOK 模板引导。
 // 原 zai/bigmodel 硬编码选择、providerFamilyDomain 写入、表单回填 helpers 已删除，

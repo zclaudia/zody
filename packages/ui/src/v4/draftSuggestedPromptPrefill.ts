@@ -1,6 +1,6 @@
 import type { ZCodePluginReferenceCatalogEntry } from "@zody/shared";
 import { buildPluginMentionMarkdown } from "@/mentions/mentionMarkdown.js";
-import type { ComposerMentionPrefill } from "@/store/zcodeSessionStoreTypes.js";
+import type { ComposerMentionPrefill } from "@/store/zodySessionStoreTypes.js";
 
 export interface DraftSuggestedPromptPluginReference {
   stableId: string;

@@ -16,7 +16,7 @@ import {
   getTaskMeta,
   getTaskRuntimeState,
   useZCodeSessionStore,
-} from "@/store/zcodeSessionStore.js";
+} from "@/store/zodySessionStore.js";
 import {
   upsertTaskQueryCacheTaskMeta,
   useTaskQueryCacheStore,

@@ -4,7 +4,7 @@ import type {
   ZCodeTaskListWorkspaceScope,
 } from "@zody/services";
 import type { ZCodeTaskMeta } from "@zody/shared";
-import { resolveWorkspaceStateKey } from "@/store/zcodeSessionStoreSelectors.js";
+import { resolveWorkspaceStateKey } from "@/store/zodySessionStoreSelectors.js";
 
 export type TaskEntityKey = string;
 export type TaskListCacheKey = string;

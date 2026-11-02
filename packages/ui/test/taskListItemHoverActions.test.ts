@@ -145,10 +145,10 @@ vi.mock("@/components/ui/toast.js", () => ({
   toast: () => {},
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", async () => {
+vi.mock("@/store/zodySessionStore.js", async () => {
   const actual = await vi.importActual<
-    typeof import("@/store/zcodeSessionStore.js")
-  >("@/store/zcodeSessionStore.js");
+    typeof import("@/store/zodySessionStore.js")
+  >("@/store/zodySessionStore.js");
   return {
     ...actual,
     getTaskRuntimeState: () => "idle",
