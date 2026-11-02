@@ -78,16 +78,16 @@ val syncMobileWebAssets = tasks.register<Sync>("syncMobileWebAssets") {
     description = "Syncs the built mobile web page into app/src/main/assets/remote."
     dependsOn(buildMobileWeb)
     from(mobileWebDistDir) {
-        // Vite 的 HTML 产物名跟随源文件名（mobile.html）；壳按方案约定加载 index.html。
-        rename("mobile.html", "index.html")
-        // 手机构建用 hidden sourcemap：保留在 dist 里供本地调试，但不把整包源码塞进 APK。
+        // build-mobile-web-release.mjs 已把 Vite 的 mobile.html 规范化为 index.html，并清理 sourcemap；
+        // 这里不再重命名，也不保留 mobile.html 副本。release.json 随制品一并同步，M2 再决定 Shell 取舍。
+        // 保留 **/*.map 排除作为兜底：即使有人绕过构建脚本，也不把整包源码塞进 APK。
         exclude("**/*.map")
     }
     into(mobileWebAssetsDir)
     doFirst {
-        if (!mobileWebDistDir.file("mobile.html").asFile.isFile) {
+        if (!mobileWebDistDir.file("index.html").asFile.isFile) {
             throw GradleException(
-                "Mobile web build output is missing: ${mobileWebDistDir.file("mobile.html").asFile}. " +
+                "Mobile web build output is missing: ${mobileWebDistDir.file("index.html").asFile}. " +
                     "Run `pnpm build:mobile-web` or check the buildMobileWeb task output.",
             )
         }
