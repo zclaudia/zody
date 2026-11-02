@@ -107,12 +107,14 @@
 2. 只接受固定 Remote origin 和 spec 允许的 GET/HEAD；映射到 `/api/proxy/<backendId><path>`，原生注入 Bearer。
 3. 使用平台 HTTP client 在 WebView interceptor worker 执行，设置连接/读取超时、响应大小上限；禁止 UI 线程调用。
 4. 请求/响应头白名单、cookie/hop-by-hop 清理、无外部重定向、HTML/错误有界缓冲。
-5. 进程内 LRU key 包含 Gateway origin、backendId、路径和 query；只缓存 immutable GET 200，按条数和总字节回收。
-6. 每次调用接收 generation，返回时标记该 generation；controller 负责最终丢弃，不在 cache 内创建业务状态。
+5. M1 已证实 Gateway 会剥离 CSP、`X-Frame-Options`、`X-Content-Type-Options`、`Referrer-Policy` 和 `Allow`：按 spec 6.2 在原生返回 WebView 前补齐，并以契约测试与桌面 provider 的固定指令/Gateway origin 对齐，不能假设这些头会透传。
+6. 进程内 LRU key 包含 Gateway origin、backendId、路径和 query；只缓存 immutable GET 200，按条数和总字节回收。
+7. 每次调用接收 generation，返回时标记该 generation；controller 负责最终丢弃，不在 cache 内创建业务状态。
 
 测试：
 
 - 路径逃逸、方法、凭证注入、响应头、超时、大小限制、缓存 TTL/容量/LRU/backend 隔离。
+- 模拟 Gateway 已剥离安全头的响应，验证原生补齐 CSP、`X-Frame-Options`、`X-Content-Type-Options`、`Referrer-Policy` 和 405 `Allow`，且 Gateway origin 与桌面契约一致。
 - no-store/no-cache/private、错误、重定向不缓存；HEAD 不写错误缓存。
 - 用本地 fake server，不访问真实服务、不记录真实凭证。
 
@@ -160,7 +162,7 @@
 
 1. 新 APK + 新桌面完成重新配对、discovery、Remote 加载和现有业务恢复。
 2. 新 APK + 旧桌面停留 Shell；离线桌面保留设置/重试/切换电脑，无白屏和无限重试。
-3. 验证路径拒绝、旧 hash 404、CORS、Release HTTPS、凭证不进日志/Web Storage。
+3. 验证路径拒绝、旧 hash 404、CORS、Release HTTPS、凭证不进日志/Web Storage；真实 WebView 确认原生补齐的 CSP 与安全头生效，不是仅 provider 单测有效。
 4. 快速切换电脑和导航，确认旧 HTTP 响应、文件/通知 sessionId 不污染新会话。
 5. 验证进程死亡、Activity 重建、通知冷启动深链和 Remote 失败回 Shell。
 6. 检查 APK 不含完整 Remote，桌面包包含 Remote；记录包体变化但不把目录大小等同 APK 压缩收益。

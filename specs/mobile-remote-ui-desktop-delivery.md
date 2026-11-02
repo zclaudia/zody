@@ -149,6 +149,8 @@ Main 只负责装配 `MobileUiAssetProvider` 和 Gateway 转发，不承载 task
 - 只代理 Remote origin 下第 5 节允许的 GET/HEAD；其它请求返回本地错误或交给现有网络路径，不能形成通用代理。
 - 原生侧从当前会话上下文读取 Gateway、backendId 和凭证，构造 `/api/proxy/<backendId><path>` 并注入 Bearer。
 - 只转发必要请求头；剥离响应中的 cookie 和 hop-by-hop 头。
+- M1 真实 Gateway 验证确认：Gateway 的响应头 allowlist 只保留 `content-type`、`content-length`、`cache-control`、`etag` 等，provider 设置的 CSP、`X-Frame-Options`、`X-Content-Type-Options`、`Referrer-Policy` 和 405 `Allow` 不会到达手机。`RemoteUiProxy` 必须在交给 WebView 前按本 spec 的同一安全策略补齐这些头；不得依赖 provider 响应头直接透传，也不得为省事放宽 Gateway 鉴权或响应头白名单。
+- Android 的 CSP 生成与桌面 provider 是同一产品契约的两个平台实现：固定指令与当前 Gateway origin 必须由契约测试覆盖，后续修改必须同步，不能各自漂移为不同的安全策略。
 - Android `shouldInterceptRequest` 的平台 API 是同步的，网络等待只能发生在 WebView interceptor worker，严禁转到 UI 线程执行；设置连接/读取超时和响应大小上限。
 - UI HTML 和发布清单可以整包缓冲；业务 WSS/fetch、文件流和任务事件不经过此拦截器，因此不引入 zcharlie 的 body 头桥或 SSE-over-scheme 兜底。
 - 每个响应携带创建时的 navigation generation；backend 切换、返回 Shell 或 Activity 销毁后，旧 generation 的迟到响应不得成为新文档内容。
