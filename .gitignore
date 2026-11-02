@@ -6,6 +6,8 @@ dist-release/
 packages/desktop/dist-*/
 # 手机远控入口（mobile.html）的独立构建产物；与普通 Web 客户端的 dist/ 相互独立，不入库。
 packages/web/dist-mobile-remote/
+# Android 轻 Shell 的独立构建产物，只包含配对、设置和选电脑，不入库。
+packages/web/dist-mobile-shell/
 out/
 # 本地生成的草稿与临时产物；需要保留的品牌草稿已移到 docs/brand/。
 /output/
