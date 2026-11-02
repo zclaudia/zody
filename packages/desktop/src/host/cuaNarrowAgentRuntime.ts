@@ -3,8 +3,8 @@ import type { ModelSelection } from "@zody/shared";
 import type {
   ZodyAgentCommandResolverContext,
   ZodyAgentNativeRuntimeConfig,
-  ZCodeAgentNativeRuntimeResolver,
-  ZCodeAgentNativeRuntimeResolverContext,
+  ZodyAgentNativeRuntimeResolver,
+  ZodyAgentNativeRuntimeResolverContext,
   ZodyAgentNativeRuntimeStartupContext,
 } from "@zody/services/node";
 import {
@@ -69,7 +69,7 @@ export interface CuaNarrowDecisionEvent {
 export interface CuaNarrowAgentRuntime {
   readonly launcherPath: string;
   readonly profile: CuaNarrowAgentBuildProfile;
-  readonly resolve: ZCodeAgentNativeRuntimeResolver;
+  readonly resolve: ZodyAgentNativeRuntimeResolver;
 }
 
 export type CuaNarrowPrepareResult =
@@ -259,9 +259,9 @@ export async function prepareCuaNarrowAgentRuntime(
     taskTimeProviderGuard: false,
   });
 
-  const resolveWorkspace: ZCodeAgentNativeRuntimeResolver = async (
+  const resolveWorkspace: ZodyAgentNativeRuntimeResolver = async (
     context: ZodyAgentCommandResolverContext,
-    runtimeContext?: ZCodeAgentNativeRuntimeResolverContext,
+    runtimeContext?: ZodyAgentNativeRuntimeResolverContext,
   ): Promise<ZodyAgentNativeRuntimeConfig | null> => {
     let spawnContext: ZodyAgentNativeRuntimeStartupContext;
     try {

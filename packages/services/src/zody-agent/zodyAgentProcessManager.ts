@@ -102,7 +102,7 @@ export interface ZodyAgentNativeRuntimeStartupContext {
   };
 }
 
-export interface ZCodeAgentNativeRuntimeResolverContext {
+export interface ZodyAgentNativeRuntimeResolverContext {
   /** Called for every new Agent spawn; the Host must re-read current service facts. */
   readonly readStartupContext: () => Promise<ZodyAgentNativeRuntimeStartupContext>;
 }
@@ -114,9 +114,9 @@ export interface ZCodeAgentNativeRuntimeResolverContext {
  * resolver, so non-eligible local/remote workspaces never enter the native path.
  * This is routing, not an authorization or trust proof.
  */
-export type ZCodeAgentNativeRuntimeResolver = (
+export type ZodyAgentNativeRuntimeResolver = (
   context: ZodyAgentCommandResolverContext,
-  runtimeContext?: ZCodeAgentNativeRuntimeResolverContext,
+  runtimeContext?: ZodyAgentNativeRuntimeResolverContext,
 ) => Promise<ZodyAgentNativeRuntimeConfig | null> | ZodyAgentNativeRuntimeConfig | null;
 
 export interface ZodyAgentProcessManagerOptions {
@@ -127,7 +127,7 @@ export interface ZodyAgentProcessManagerOptions {
    * Optional per-workspace native-runtime selector. Only a non-null result overrides
    * the original resolver; otherwise the existing command resolution is preserved.
    */
-  nativeRuntimeResolver?: ZCodeAgentNativeRuntimeResolver;
+  nativeRuntimeResolver?: ZodyAgentNativeRuntimeResolver;
   presentationSurface?: ZCodeAgentPresentationSurface;
   requestTimeoutMs?: number;
   processLifecycleReporter?: RuntimeProcessLifecycleReporter;
@@ -184,7 +184,7 @@ export interface ZodyAgentProcessManagerOptions {
   startupIdentityRetryCooldownMs?: number;
 }
 
-interface ManagedZCodeAgentProcess {
+interface ManagedZodyAgentProcess {
   client: ZCodeProtocolClient;
   child: ChildProcess;
   cleanupPromise?: Promise<void>;
@@ -193,7 +193,7 @@ interface ManagedZCodeAgentProcess {
   idleTimer?: ReturnType<typeof setTimeout>;
   readyAt?: number;
   readyReported: boolean;
-  runtimeIdentity: ZCodeAgentRuntimeIdentity;
+  runtimeIdentity: ZodyAgentRuntimeIdentity;
   runtimeInstanceId: string;
   spawned: boolean;
   startedAt: number;
@@ -299,20 +299,20 @@ export function buildE2EAgentCoverageEnv(
  * 首个 getClient 重新拉起）。v4 订阅（sessions-index/workspace-config/conversation）
  * 都活在 CLI 进程内存里，进程换代即失效——订阅方收到本事件后必须重发 subscribe。
  */
-export interface ZCodeAgentRuntimeRestartedEvent {
+export interface ZodyAgentRuntimeRestartedEvent {
   workspaceKey: string;
-  runtimeIdentity: ZCodeAgentRuntimeIdentity;
+  runtimeIdentity: ZodyAgentRuntimeIdentity;
 }
 
-export interface ZCodeAgentRuntimeLifecycleEvent {
+export interface ZodyAgentRuntimeLifecycleEvent {
   workspacePath: string;
   workspaceIdentity?: string;
   workspaceKey: string;
-  runtimeIdentity: ZCodeAgentRuntimeIdentity;
+  runtimeIdentity: ZodyAgentRuntimeIdentity;
   state: "available" | "unavailable";
 }
 
-export interface ZCodeAgentRuntimeIdentity {
+export interface ZodyAgentRuntimeIdentity {
   generation: number;
   identity: string;
   processId?: number;
@@ -321,7 +321,7 @@ export interface ZCodeAgentRuntimeIdentity {
   lane?: string;
 }
 
-interface ZCodeAgentSpawnPreflight {
+interface ZodyAgentSpawnPreflight {
   command: string;
   args: string[];
   requestedCwd: string;
@@ -415,11 +415,11 @@ function findUpward(relativePath: string): string | null {
   }
 }
 
-async function buildZCodeAgentSpawnPreflight(
+async function buildZodyAgentSpawnPreflight(
   command: ZodyAgentCommand,
   workspacePath: string,
   spawnFallbackCwd?: string,
-): Promise<ZCodeAgentSpawnPreflight> {
+): Promise<ZodyAgentSpawnPreflight> {
   const commandPathKind = isAbsolute(command.command) ? "absolute" : "path-search";
   const requestedCwd = command.cwd ?? workspacePath;
   const {
@@ -445,7 +445,7 @@ async function buildZCodeAgentSpawnPreflight(
   };
 }
 
-function resolveBundledWorkspaceZCodeAgentCommand(
+function resolveBundledWorkspaceZodyAgentCommand(
   context: ZodyAgentCommandResolverContext,
 ): ZodyAgentCommand | null {
   const distEntrypoint = findUpward("apps/zody-cli/packages/cli/dist/zody.cjs");
@@ -483,7 +483,7 @@ function resolveBundledWorkspaceZCodeAgentCommand(
   };
 }
 
-function resolveDeployedZCodeAgentBinaryCommand(
+function resolveDeployedZodyAgentBinaryCommand(
   context: ZodyAgentCommandResolverContext,
 ): ZodyAgentCommand | null {
   // 旧 resolver 只识别 ZCODE_AGENT_SERVER_COMMAND env 和 monorepo 源码树。
@@ -504,7 +504,7 @@ function resolveDeployedZCodeAgentBinaryCommand(
   };
 }
 
-function resolveElectronRuntimeZCodeAgentCommand(
+function resolveElectronRuntimeZodyAgentCommand(
   context: ZodyAgentCommandResolverContext,
 ): ZodyAgentCommand | null {
   // 桌面打包态：host 跑在 Electron utility process 里，process.execPath 指向 Electron Helper，
@@ -552,7 +552,7 @@ function assertNativeCliFd(fd: number, field: string): void {
 }
 
 /** Validate a trusted native launcher config before it reaches spawn. */
-export function validateZCodeAgentNativeRuntimeConfig(
+export function validateZodyAgentNativeRuntimeConfig(
   config: ZodyAgentNativeRuntimeConfig,
 ): ZodyAgentNativeRuntimeConfig {
   assertAbsoluteNativeRuntimePath(config.launcherPath, "launcherPath");
@@ -589,11 +589,11 @@ function buildNativeCliStdio(cliInFd: number, cliOutFd: number): StdioOptions {
 }
 
 /** Build the Agent command from the trusted native launcher config. */
-export function resolveZCodeAgentNativeRuntimeCommand(
+export function resolveZodyAgentNativeRuntimeCommand(
   config: ZodyAgentNativeRuntimeConfig,
   context: ZodyAgentCommandResolverContext,
 ): ZodyAgentCommand {
-  validateZCodeAgentNativeRuntimeConfig(config);
+  validateZodyAgentNativeRuntimeConfig(config);
   const cliInFd = config.cliInFd ?? 6;
   const cliOutFd = config.cliOutFd ?? 7;
   const args = [
@@ -622,13 +622,13 @@ export function resolveZCodeAgentNativeRuntimeCommand(
   };
 }
 
-export function resolveDefaultZCodeAgentCommand(
+export function resolveDefaultZodyAgentCommand(
   context: ZodyAgentCommandResolverContext,
   options?: { nativeRuntime?: ZodyAgentNativeRuntimeConfig | null },
 ): ZodyAgentCommand | null {
   // 可信组合注入优先于任何 PATH/env 发现；环境变量不能改写固定 native 启动。
   if (options?.nativeRuntime) {
-    return resolveZCodeAgentNativeRuntimeCommand(options.nativeRuntime, context);
+    return resolveZodyAgentNativeRuntimeCommand(options.nativeRuntime, context);
   }
   const command = process.env.ZCODE_AGENT_SERVER_COMMAND?.trim();
   if (command) {
@@ -645,12 +645,12 @@ export function resolveDefaultZCodeAgentCommand(
   // 顺序：env 显式覆盖 → monorepo dev 源码/dist（dev 改源码立刻生效，不会被远端历史装的 native binary
   // 抢先匹配）→ 桌面打包态 Electron Node runtime 跑 zody.cjs → 已部署 native binary（远端 SSH 兜底）。
   const bundled =
-    resolveBundledWorkspaceZCodeAgentCommand(context) ??
-    resolveElectronRuntimeZCodeAgentCommand(context);
+    resolveBundledWorkspaceZodyAgentCommand(context) ??
+    resolveElectronRuntimeZodyAgentCommand(context);
   return applyPresentationSurfaceToCommand(
     bundled
       ? { ...bundled, supportsStorageStartup: true }
-      : resolveDeployedZCodeAgentBinaryCommand(context),
+      : resolveDeployedZodyAgentBinaryCommand(context),
     context.presentationSurface,
   );
 }
@@ -689,7 +689,7 @@ function applyPresentationSurfaceToCommand(
   };
 }
 
-export function wrapZCodeAgentCommandWithStdioTapDevProxy(
+export function wrapZodyAgentCommandWithStdioTapDevProxy(
   command: ZodyAgentCommand,
   workspaceKey: string,
 ): ZodyAgentCommand {
@@ -739,13 +739,13 @@ export function wrapZCodeAgentCommandWithStdioTapDevProxy(
  * then the selective resolver for eligible workspaces, then the original resolver.
  * A selective resolver that returns `null` must not change local/remote behavior.
  */
-export function createZCodeAgentCommandResolver(
+export function createZodyAgentCommandResolver(
   options?: ZodyAgentProcessManagerOptions,
 ): ZodyAgentCommandResolver {
-  const fallbackResolver = options?.commandResolver ?? resolveDefaultZCodeAgentCommand;
+  const fallbackResolver = options?.commandResolver ?? resolveDefaultZodyAgentCommand;
   const nativeRuntime = options?.nativeRuntime;
   if (nativeRuntime) {
-    return (context) => resolveZCodeAgentNativeRuntimeCommand(nativeRuntime, context);
+    return (context) => resolveZodyAgentNativeRuntimeCommand(nativeRuntime, context);
   }
   // Selective startup-profile routing belongs to the chat/main lane only. Control-plane,
   // plugin, and background managers keep their original command resolver even when the
@@ -757,11 +757,11 @@ export function createZCodeAgentCommandResolver(
   return async (context) => {
     const selected = await nativeRuntimeResolver(context);
     if (!selected) return fallbackResolver(context);
-    return resolveZCodeAgentNativeRuntimeCommand(selected, context);
+    return resolveZodyAgentNativeRuntimeCommand(selected, context);
   };
 }
 
-function createZCodeStdioChildView(
+function createZodyStdioChildView(
   child: ChildProcess,
   command: ZodyAgentCommand,
 ): ZCodeStdioChildLike {
@@ -799,8 +799,8 @@ function createZCodeStdioChildView(
 }
 
 export class ZodyAgentProcessManager {
-  private readonly processesByWorkspaceKey = new Map<string, ManagedZCodeAgentProcess>();
-  private readonly ownedProcesses = new Set<ManagedZCodeAgentProcess>();
+  private readonly processesByWorkspaceKey = new Map<string, ManagedZodyAgentProcess>();
+  private readonly ownedProcesses = new Set<ManagedZodyAgentProcess>();
   private readonly startingByWorkspaceKey = new Map<string, Promise<ZCodeProtocolClient>>();
   private readonly restartGenerationByWorkspaceKey = new Map<string, number>();
   private readonly runtimeGenerationByWorkspaceKey = new Map<string, number>();
@@ -840,8 +840,8 @@ export class ZodyAgentProcessManager {
   private readonly startupIdentityRetryCooldownMs: number;
   private readonly lane: string | undefined;
   private readonly idleTimeoutMs: number | undefined;
-  private readonly runtimeRestartedEmitter = new Emitter<ZCodeAgentRuntimeRestartedEvent>();
-  private readonly runtimeLifecycleEmitter = new Emitter<ZCodeAgentRuntimeLifecycleEvent>();
+  private readonly runtimeRestartedEmitter = new Emitter<ZodyAgentRuntimeRestartedEvent>();
+  private readonly runtimeLifecycleEmitter = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
   /**
    * startup 身份握手连续失败计数与最近失败时间，按 workspaceKey 隔离。
    * 熔断状态唯一所有者是本 manager；成功启动即清零，冷却窗口过期后放行一次探测。
@@ -859,7 +859,7 @@ export class ZodyAgentProcessManager {
   readonly onRuntimeLifecycle = this.runtimeLifecycleEmitter.event;
 
   constructor(options?: ZodyAgentProcessManagerOptions) {
-    this.commandResolver = createZCodeAgentCommandResolver(options);
+    this.commandResolver = createZodyAgentCommandResolver(options);
     this.presentationSurface = options?.presentationSurface;
     this.requestTimeoutMs = options?.requestTimeoutMs;
     this.processLifecycleReporter = options?.processLifecycleReporter;
@@ -896,7 +896,7 @@ export class ZodyAgentProcessManager {
     }
   }
 
-  private clearIdleTimer(managed: ManagedZCodeAgentProcess): void {
+  private clearIdleTimer(managed: ManagedZodyAgentProcess): void {
     if (managed.idleTimer) {
       clearTimeout(managed.idleTimer);
       delete managed.idleTimer;
@@ -908,7 +908,7 @@ export class ZodyAgentProcessManager {
    * 主动回收整棵进程树（含挂在其下的 MCP 子进程）。归因为 expected/idle-timeout，
    * 不会被监控当作崩溃。到点时有新请求在飞则什么都不做，等下一次归零重新计时。
    */
-  private scheduleIdleReclaim(workspaceKey: string, managed: ManagedZCodeAgentProcess): void {
+  private scheduleIdleReclaim(workspaceKey: string, managed: ManagedZodyAgentProcess): void {
     if (!this.idleTimeoutMs || this.disposed || managed.exited) {
       return;
     }
@@ -949,7 +949,7 @@ export class ZodyAgentProcessManager {
   }
 
   private recordTerminationIntent(
-    managed: ManagedZCodeAgentProcess,
+    managed: ManagedZodyAgentProcess,
     reason: AgentProcessCleanupReason,
   ): void {
     if (managed.firstCleanupReason) {
@@ -1002,7 +1002,7 @@ export class ZodyAgentProcessManager {
     this.startupIdentityFailuresByWorkspaceKey.delete(workspaceKey);
   }
 
-  private reportRuntimeAvailable(managed: ManagedZCodeAgentProcess): void {
+  private reportRuntimeAvailable(managed: ManagedZodyAgentProcess): void {
     const { workspaceKey, generation, identity } = managed.runtimeIdentity;
     // Bug 根因：spawn 早于 startup ACK，且 getExistingClient 在 single-flight 中拒绝读取。
     // 提前通知会让 task-index 的 existing-only 订阅永久退回 dormant。两处边界共用此闸门，
@@ -1039,7 +1039,7 @@ export class ZodyAgentProcessManager {
     });
   }
 
-  private reportRuntimeUnavailable(managed: ManagedZCodeAgentProcess): void {
+  private reportRuntimeUnavailable(managed: ManagedZodyAgentProcess): void {
     const workspaceKey = managed.runtimeIdentity.workspaceKey;
     if (
       this.availableRuntimeIdentityByWorkspaceKey.get(workspaceKey) !==
@@ -1059,7 +1059,7 @@ export class ZodyAgentProcessManager {
     });
   }
 
-  private reportRuntimeReady(managed: ManagedZCodeAgentProcess): void {
+  private reportRuntimeReady(managed: ManagedZodyAgentProcess): void {
     if (
       !managed.spawned ||
       managed.exited ||
@@ -1085,7 +1085,7 @@ export class ZodyAgentProcessManager {
   }
 
   private cleanupManagedProcess(
-    managed: ManagedZCodeAgentProcess,
+    managed: ManagedZodyAgentProcess,
     reason: AgentProcessCleanupReason,
     options: { reportError?: boolean } = {},
   ): Promise<void> {
@@ -1138,7 +1138,7 @@ export class ZodyAgentProcessManager {
     return cleanupPromise;
   }
 
-  private async cleanupManagedProcessForShutdown(managed: ManagedZCodeAgentProcess): Promise<void> {
+  private async cleanupManagedProcessForShutdown(managed: ManagedZodyAgentProcess): Promise<void> {
     await this.cleanupManagedProcessWithRetry(
       managed,
       "manager-dispose",
@@ -1148,7 +1148,7 @@ export class ZodyAgentProcessManager {
   }
 
   private async cleanupManagedProcessWithRetry(
-    managed: ManagedZCodeAgentProcess,
+    managed: ManagedZodyAgentProcess,
     reason: AgentProcessCleanupReason,
     retryReason: AgentProcessCleanupReason,
     retryScope: string,
@@ -1341,7 +1341,7 @@ export class ZodyAgentProcessManager {
     if (admissionSignal.aborted) {
       throw admissionSignal.reason ?? new Error("Zody agent process start was cancelled.");
     }
-    const effectiveCommand = wrapZCodeAgentCommandWithStdioTapDevProxy(command, workspaceKey);
+    const effectiveCommand = wrapZodyAgentCommandWithStdioTapDevProxy(command, workspaceKey);
     log("ZCode agent command resolved", {
       workspaceKey,
       command: command.command,
@@ -1367,7 +1367,7 @@ export class ZodyAgentProcessManager {
       throw new Error("Zody agent process start was cancelled.");
     }
     // cwd 探测也让出事件循环，必须放在最终 admission 与销毁/代际检查之前。
-    const spawnPreflight = await buildZCodeAgentSpawnPreflight(
+    const spawnPreflight = await buildZodyAgentSpawnPreflight(
       effectiveCommand,
       params.workspacePath,
       this.spawnFallbackCwd,
@@ -1412,7 +1412,7 @@ export class ZodyAgentProcessManager {
     const stderrTail = createAgentStderrTail();
     let transportChild: ZCodeStdioChildLike;
     try {
-      transportChild = createZCodeStdioChildView(child, effectiveCommand);
+      transportChild = createZodyStdioChildView(child, effectiveCommand);
     } catch (error) {
       child.kill();
       throw error;
@@ -1487,7 +1487,7 @@ export class ZodyAgentProcessManager {
     this.runtimeGenerationByWorkspaceKey.set(workspaceKey, runtimeGeneration);
     // 生命周期事件关联只需要本次 runtime 的不透明身份，不能复用包含 workspaceKey 的协议 identity。
     const runtimeInstanceId = `agent-${randomUUID()}`;
-    const runtimeIdentity: ZCodeAgentRuntimeIdentity = {
+    const runtimeIdentity: ZodyAgentRuntimeIdentity = {
       generation: runtimeGeneration,
       identity: this.lane
         ? `${workspaceKey}:${runtimeGeneration}:${child.pid ?? "unknown"}:${this.lane}`
@@ -1496,7 +1496,7 @@ export class ZodyAgentProcessManager {
       ...(this.lane ? { lane: this.lane } : {}),
       workspaceKey,
     };
-    const managed: ManagedZCodeAgentProcess = {
+    const managed: ManagedZodyAgentProcess = {
       child,
       client,
       exited: false,
@@ -1769,7 +1769,7 @@ export class ZodyAgentProcessManager {
   async getRuntimeIdentity(params: {
     workspacePath: string;
     workspaceIdentity?: string;
-  }): Promise<ZCodeAgentRuntimeIdentity> {
+  }): Promise<ZodyAgentRuntimeIdentity> {
     const workspaceKey = resolveWorkspaceKey(params);
     const managed = this.processesByWorkspaceKey.get(workspaceKey);
     // runtime identity 是查询接口，旧实现却复用了启动型 getClient，

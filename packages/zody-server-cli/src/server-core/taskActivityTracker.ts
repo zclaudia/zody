@@ -1,7 +1,7 @@
 import { Emitter, type Event, type IDisposable } from "@zody/rpc";
 import type {
   IZCodeAgentService,
-  ZCodeAgentRuntimeLifecycleEvent,
+  ZodyAgentRuntimeLifecycleEvent,
   ZCodeAgentWorkspaceTarget,
 } from "@zody/services";
 import type { ConversationTelemetryFact } from "@zody/shared/zody-protocol-v4";
@@ -65,7 +65,7 @@ export function createTaskActivityTracker(
     publishCount();
   };
 
-  const acceptLifecycle = (event: ZCodeAgentRuntimeLifecycleEvent): void => {
+  const acceptLifecycle = (event: ZodyAgentRuntimeLifecycleEvent): void => {
     if (disposed) return;
     const key = event.workspaceKey || workspaceKey(event);
     if (event.state === "unavailable") {

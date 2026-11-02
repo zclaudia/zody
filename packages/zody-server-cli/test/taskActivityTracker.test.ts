@@ -1,7 +1,7 @@
 import { Emitter } from "@zody/rpc";
 import type {
   IZCodeAgentService,
-  ZCodeAgentRuntimeLifecycleEvent,
+  ZodyAgentRuntimeLifecycleEvent,
   ZCodeAgentWorkspaceTarget,
 } from "@zody/services";
 import type { ConversationTelemetryFact } from "@zody/shared/zody-protocol-v4";
@@ -26,7 +26,7 @@ function fact(
 
 describe("Core-local TaskActivityTracker", () => {
   it("counts authoritative turn facts for all workspace clients and deduplicates by workspaceKey + sessionId", () => {
-    const lifecycle = new Emitter<ZCodeAgentRuntimeLifecycleEvent>();
+    const lifecycle = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
     const telemetryByWorkspace = new Map<string, Emitter<ConversationTelemetryFact>>();
     const workspaceKey = (target: ZCodeAgentWorkspaceTarget): string =>
       target.workspaceIdentity?.trim() || target.workspacePath;
@@ -77,7 +77,7 @@ describe("Core-local TaskActivityTracker", () => {
   });
 
   it("publishes count changes immediately for Supervisor task-activity snapshots", () => {
-    const lifecycle = new Emitter<ZCodeAgentRuntimeLifecycleEvent>();
+    const lifecycle = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
     const telemetry = new Emitter<ConversationTelemetryFact>();
     const agentService = {
       onAgentRuntimeLifecycle: lifecycle.event,

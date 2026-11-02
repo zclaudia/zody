@@ -1,9 +1,9 @@
 import { ZCODE_DATA_ROOT_DIR_NAME } from "./dataDir.js";
 
-export type ZCodeAgentBinaryKind = "native-binary";
+export type ZodyAgentBinaryKind = "native-binary";
 
-export interface ZCodeAgentRuntimeDescriptor {
-  binaryKind: ZCodeAgentBinaryKind;
+export interface ZodyAgentRuntimeDescriptor {
+  binaryKind: ZodyAgentBinaryKind;
   binaryEnvVar: string;
   bundledResourceDir: string;
   version: string;
@@ -25,7 +25,7 @@ export function resolvePlatformBinaryName(binaryName: string, platform: string):
   return platform === "win32" ? `${binaryName}.exe` : binaryName;
 }
 
-export const ZCODE_AGENT_RUNTIME: ZCodeAgentRuntimeDescriptor = {
+export const ZCODE_AGENT_RUNTIME: ZodyAgentRuntimeDescriptor = {
   binaryKind: "native-binary",
   binaryEnvVar: "GLM_BINARY_PATH",
   bundledResourceDir: "glm",
@@ -43,6 +43,6 @@ export const ZCODE_AGENT_RUNTIME: ZCodeAgentRuntimeDescriptor = {
   },
 };
 
-export function getZCodeAgentRuntime(): ZCodeAgentRuntimeDescriptor {
+export function getZCodeAgentRuntime(): ZodyAgentRuntimeDescriptor {
   return ZCODE_AGENT_RUNTIME;
 }

@@ -313,6 +313,216 @@
       ],
       "verification": "reports/R20-symbols-next-controller-verification.md",
       "review": "reports/R20-symbols-deepseek-review-2.md"
+    },
+    {
+      "id": "R20.4-symbols-03",
+      "base": "1b042046c373fa91c5ed80b1501bcf0677f2eb39",
+      "candidate": null,
+      "status": "controller-verified-pending-review",
+      "records": [
+        {
+          "old": "ZCodeAgentNativeRuntimeResolverContext",
+          "new": "ZodyAgentNativeRuntimeResolverContext",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentNativeRuntimeResolver",
+          "new": "ZodyAgentNativeRuntimeResolver",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ManagedZCodeAgentProcess",
+          "new": "ManagedZodyAgentProcess",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentRuntimeRestartedEvent",
+          "new": "ZodyAgentRuntimeRestartedEvent",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentRuntimeLifecycleEvent",
+          "new": "ZodyAgentRuntimeLifecycleEvent",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentRuntimeIdentity",
+          "new": "ZodyAgentRuntimeIdentity",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentSpawnPreflight",
+          "new": "ZodyAgentSpawnPreflight",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "buildZCodeAgentSpawnPreflight",
+          "new": "buildZodyAgentSpawnPreflight",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "resolveBundledWorkspaceZCodeAgentCommand",
+          "new": "resolveBundledWorkspaceZodyAgentCommand",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "resolveDeployedZCodeAgentBinaryCommand",
+          "new": "resolveDeployedZodyAgentBinaryCommand",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "resolveElectronRuntimeZCodeAgentCommand",
+          "new": "resolveElectronRuntimeZodyAgentCommand",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "validateZCodeAgentNativeRuntimeConfig",
+          "new": "validateZodyAgentNativeRuntimeConfig",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "resolveZCodeAgentNativeRuntimeCommand",
+          "new": "resolveZodyAgentNativeRuntimeCommand",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "resolveDefaultZCodeAgentCommand",
+          "new": "resolveDefaultZodyAgentCommand",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "wrapZCodeAgentCommandWithStdioTapDevProxy",
+          "new": "wrapZodyAgentCommandWithStdioTapDevProxy",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "createZCodeAgentCommandResolver",
+          "new": "createZodyAgentCommandResolver",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "createZCodeStdioChildView",
+          "new": "createZodyStdioChildView",
+          "declarationBefore": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentRuntimeLifecycleEvent",
+          "new": "ZodyAgentRuntimeLifecycleEvent",
+          "declarationBefore": "packages/services/src/zody-agent/zcodeAgent.ts",
+          "declarationAfter": "packages/services/src/zody-agent/zcodeAgent.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentBinaryKind",
+          "new": "ZodyAgentBinaryKind",
+          "declarationBefore": "packages/shared/src/zcode-agent-runtime.ts",
+          "declarationAfter": "packages/shared/src/zcode-agent-runtime.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeAgentRuntimeDescriptor",
+          "new": "ZodyAgentRuntimeDescriptor",
+          "declarationBefore": "packages/shared/src/zcode-agent-runtime.ts",
+          "declarationAfter": "packages/shared/src/zcode-agent-runtime.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeBackgroundTaskControlStatus",
+          "new": "ZodyBackgroundTaskControlStatus",
+          "declarationBefore": "packages/shared/src/background-task-controls.ts",
+          "declarationAfter": "packages/shared/src/background-task-controls.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeBackgroundTaskControlItem",
+          "new": "ZodyBackgroundTaskControlItem",
+          "declarationBefore": "packages/shared/src/background-task-controls.ts",
+          "declarationAfter": "packages/shared/src/background-task-controls.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeBackgroundTaskNotificationInfo",
+          "new": "ZodyBackgroundTaskNotificationInfo",
+          "declarationBefore": "packages/shared/src/background-task-notifications.ts",
+          "declarationAfter": "packages/shared/src/background-task-notifications.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeBackgroundBashJobStatus",
+          "new": "ZodyBackgroundBashJobStatus",
+          "declarationBefore": "packages/shared/src/background-bash-jobs.ts",
+          "declarationAfter": "packages/shared/src/background-bash-jobs.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        },
+        {
+          "old": "ZCodeBackgroundBashJob",
+          "new": "ZodyBackgroundBashJob",
+          "declarationBefore": "packages/shared/src/background-bash-jobs.ts",
+          "declarationAfter": "packages/shared/src/background-bash-jobs.ts",
+          "category": "internal-binding",
+          "owner": "R20.4"
+        }
+      ],
+      "controllerReport": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-03-controller-verification.md",
+      "review": null
     }
   ]
 }

@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it, vi } from "vitest";
 const resolver = vi.hoisted(() => vi.fn());
-vi.mock("@zody/services/storage-startup", () => ({ resolveDefaultZCodeAgentCommand: resolver }));
+vi.mock("@zody/services/storage-startup", () => ({ resolveDefaultZodyAgentCommand: resolver }));
 import {
   prepareHostStorage,
   prepareSessionStorage,

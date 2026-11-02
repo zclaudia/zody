@@ -2,7 +2,7 @@ import type { ZCodeMessageWithParts } from "./zcode-protocol-legacy-types.js";
 import { textFromZCodeMessageParts } from "./zcode-protocol-legacy-types.js";
 import type { ZCodeStreamEvent } from "./zcode-task-types-core.js";
 
-export interface ZCodeBackgroundTaskNotificationInfo {
+export interface ZodyBackgroundTaskNotificationInfo {
   error?: string;
   outputFile?: string;
   result?: string;
@@ -13,7 +13,7 @@ export interface ZCodeBackgroundTaskNotificationInfo {
 
 export function parseZCodeBackgroundTaskNotificationText(
   text: string | undefined,
-): { notification: ZCodeBackgroundTaskNotificationInfo; toolUseId: string } | null {
+): { notification: ZodyBackgroundTaskNotificationInfo; toolUseId: string } | null {
   const trimmed = text?.trim();
   if (!trimmed?.startsWith("<task-notification>")) {
     return null;
@@ -37,8 +37,8 @@ export function parseZCodeBackgroundTaskNotificationText(
 
 export function collectZCodeBackgroundTaskNotificationsByToolUseId(
   messages: readonly ZCodeMessageWithParts[],
-): Map<string, ZCodeBackgroundTaskNotificationInfo> {
-  const notifications = new Map<string, ZCodeBackgroundTaskNotificationInfo>();
+): Map<string, ZodyBackgroundTaskNotificationInfo> {
+  const notifications = new Map<string, ZodyBackgroundTaskNotificationInfo>();
   for (const message of messages) {
     if (message.info.role !== "user") {
       continue;
@@ -72,7 +72,7 @@ export function zcodeBackgroundTaskNotificationToolUpdateStatus(
 
 export function attachZCodeBackgroundTaskNotificationToRaw(
   raw: unknown,
-  notification: ZCodeBackgroundTaskNotificationInfo | undefined,
+  notification: ZodyBackgroundTaskNotificationInfo | undefined,
 ): unknown {
   if (!notification) {
     return raw;

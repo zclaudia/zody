@@ -19,7 +19,7 @@ import {
   type ZCodeSlashCommand,
   type ZCodePermissionRequest,
   type ZCodeElicitationRequest,
-  type ZCodeBackgroundTaskControlItem,
+  type ZodyBackgroundTaskControlItem,
   type ZCodeSessionActiveTurnKind,
   type ZCodeContextUsageBreakdownItem,
   type InputId,
@@ -63,7 +63,7 @@ export interface TaskRuntimeState {
   usage: TaskUsageState | null;
   apiRetry: ZCodeApiRetryStatus | null;
   /** Agent 明确上报的后台任务控制项；host 运行期状态，不落盘持久化。 */
-  backgroundTaskControls: ZCodeBackgroundTaskControlItem[];
+  backgroundTaskControls: ZodyBackgroundTaskControlItem[];
   /** 当前 session active turn 的类型；用于区分普通生成和 compact 维护态。 */
   activeTurnKind?: ZCodeSessionActiveTurnKind;
   activeInputId?: InputId;

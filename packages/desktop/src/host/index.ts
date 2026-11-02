@@ -126,7 +126,7 @@ import {
   readCuaNarrowAgentBuildProfile,
   type CuaNarrowDecisionEvent,
 } from "./cuaNarrowAgentRuntime.js";
-import type { ZCodeAgentNativeRuntimeResolver } from "@zody/services/node";
+import type { ZodyAgentNativeRuntimeResolver } from "@zody/services/node";
 import { createTaskRealtimeBridgeForHostInit } from "./taskRealtimeBridge.js";
 import { createMobileNotificationEventBridge } from "./mobileNotificationEventBridge.js";
 import { createMobileNotificationDeliveryBridge } from "./mobileNotificationDeliveryBridge.js";
@@ -1226,7 +1226,7 @@ function createReportingRemoteZCodeTaskService<T extends object>(
 
 function resolveLocalNarrowAgentWiring(
   preparedWorkspacePaths: readonly string[],
-): { zodyAgentNativeRuntimeResolver: ZCodeAgentNativeRuntimeResolver } | undefined {
+): { zodyAgentNativeRuntimeResolver: ZodyAgentNativeRuntimeResolver } | undefined {
   if (injectedAgentWiring) return undefined;
   // The compile-time profile is the only opt-in. A normal build never installs a
   // selective resolver and therefore keeps the existing Agent command path untouched.
@@ -1255,7 +1255,7 @@ function resolveLocalNarrowAgentWiring(
       nativeApproval: "per-capture-native-confirmation",
     });
   };
-  const zodyAgentNativeRuntimeResolver: ZCodeAgentNativeRuntimeResolver = async (
+  const zodyAgentNativeRuntimeResolver: ZodyAgentNativeRuntimeResolver = async (
     context,
     runtimeContext,
   ) => {

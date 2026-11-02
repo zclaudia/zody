@@ -40,8 +40,8 @@ import {
   zcodeApiRetryFromStreamRecoveryPayload,
   zcodeTaskNetworkDebugStatusFromPayload,
   type ZCodeApiRetryStatus,
-  type ZCodeBackgroundTaskNotificationInfo,
-  type ZCodeBackgroundTaskControlItem,
+  type ZodyBackgroundTaskNotificationInfo,
+  type ZodyBackgroundTaskControlItem,
   type ZCodeConfigOption,
   type ZCodePersistedMessage,
   type ZCodePersistedMessagePart,
@@ -105,7 +105,7 @@ export interface ZCodeSessionEventProjectionState extends ZCodeToolProjectionMem
   activePromptInputIdBySession?: Map<string, InputId>;
   rewindControlTurnKeys?: Set<string>;
   activeApiRetrySessionIds?: Set<string>;
-  backgroundTaskControlsBySession?: Map<string, ZCodeBackgroundTaskControlItem[]>;
+  backgroundTaskControlsBySession?: Map<string, ZodyBackgroundTaskControlItem[]>;
   streamedTurnKeys?: Set<string>;
 }
 
@@ -1317,7 +1317,7 @@ function backgroundTaskNotificationToolUpdateFromInput(params: {
 function zcodeMessageToZCodePersistedMessage(
   message: ZCodeMessageWithParts,
   goalIteration?: number,
-  backgroundTaskNotifications?: ReadonlyMap<string, ZCodeBackgroundTaskNotificationInfo>,
+  backgroundTaskNotifications?: ReadonlyMap<string, ZodyBackgroundTaskNotificationInfo>,
 ): ZCodePersistedMessage {
   const tools: ZCodePersistedToolCall[] = [];
   const parts: ZCodePersistedMessagePart[] = [];
@@ -1766,7 +1766,7 @@ function compactFailureToTimelineEvent(
 
 function mapToolPart(
   part: Extract<ZCodeMessagePart, { type: "tool" }>,
-  backgroundTaskNotifications?: ReadonlyMap<string, ZCodeBackgroundTaskNotificationInfo>,
+  backgroundTaskNotifications?: ReadonlyMap<string, ZodyBackgroundTaskNotificationInfo>,
 ): ZCodePersistedToolCall {
   const state = part.state;
   const taskNotification = backgroundTaskNotifications?.get(part.callId);
@@ -2750,7 +2750,7 @@ function pendingExitPlanModeToElicitationEvent(
 
 function ensureProjectionBackgroundTaskControlsCache(
   state: ZCodeSessionEventProjectionState | undefined,
-): Map<string, ZCodeBackgroundTaskControlItem[]> | null {
+): Map<string, ZodyBackgroundTaskControlItem[]> | null {
   if (!state) {
     return null;
   }
@@ -2761,7 +2761,7 @@ function ensureProjectionBackgroundTaskControlsCache(
 function setProjectionBackgroundTaskControls(
   state: ZCodeSessionEventProjectionState | undefined,
   taskId: string,
-  jobs: ZCodeBackgroundTaskControlItem[],
+  jobs: ZodyBackgroundTaskControlItem[],
 ) {
   ensureProjectionBackgroundTaskControlsCache(state)?.set(taskId, jobs);
 }
@@ -2769,7 +2769,7 @@ function setProjectionBackgroundTaskControls(
 export function syncZCodeSessionBackgroundTaskProjection(
   state: ZCodeSessionEventProjectionState | undefined,
   taskId: string,
-  jobs: ZCodeBackgroundTaskControlItem[],
+  jobs: ZodyBackgroundTaskControlItem[],
 ) {
   setProjectionBackgroundTaskControls(state, taskId, jobs);
 }
@@ -2791,7 +2791,7 @@ function updateProjectionBackgroundTaskControlsFromPayload(
   state: ZCodeSessionEventProjectionState | undefined,
   taskId: string,
   payload: Record<string, unknown>,
-): ZCodeBackgroundTaskControlItem[] | null {
+): ZodyBackgroundTaskControlItem[] | null {
   const parsedJobs = parseZCodeBackgroundTaskControlItems([payload]);
   if (parsedJobs.length === 0) {
     return null;

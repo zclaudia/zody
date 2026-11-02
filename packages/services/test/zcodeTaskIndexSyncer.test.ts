@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   SessionsIndexTopicWireFrame,
   IZCodeAgentService,
-  ZCodeAgentRuntimeLifecycleEvent,
+  ZodyAgentRuntimeLifecycleEvent,
   ZCodeAgentSessionTarget,
 } from "../src/zody-agent/zcodeAgent.js";
 import { TaskIndexRepo } from "../src/session/taskIndexRepo.js";
@@ -60,7 +60,7 @@ interface TestEnv {
   agent: IZCodeAgentService;
   indexEmitter: TestTopicEmitter<SessionsIndexTopicFrame, SessionsIndexTopicWireFrame>;
   configEmitter: TestTopicEmitter<WorkspaceConfigTopicFrame, WorkspaceConfigTopicWireFrame>;
-  lifecycleEmitter: Emitter<ZCodeAgentRuntimeLifecycleEvent>;
+  lifecycleEmitter: Emitter<ZodyAgentRuntimeLifecycleEvent>;
   repo: TaskIndexRepo;
 }
 
@@ -203,7 +203,7 @@ function setupEnv(
     WorkspaceConfigTopicFrame,
     WorkspaceConfigTopicWireFrame
   >();
-  const lifecycleEmitter = new Emitter<ZCodeAgentRuntimeLifecycleEvent>();
+  const lifecycleEmitter = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
   const agent: IZCodeAgentService = {
     subscribeSessionsIndexV4: vi.fn(async () => {
       const ack = {

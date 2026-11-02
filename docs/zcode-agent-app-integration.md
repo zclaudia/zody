@@ -1,8 +1,8 @@
-# ZCode Agent 与 App 当前集成
+# Zody Agent 与 App 当前集成
 
 更新日期：2026-09-04
 
-ZCode App 只启动 ZCode Agent（`apps/zcode-cli` 的 `zcode app-server --stdio`）。退役的多 Agent
+Zody App 只启动 Zody Agent（`apps/zody-cli` 的 `zody app-server --stdio`）。退役的多 Agent
 process manager、第三方 runtime installer、proxy traffic 和 UI agent switch 不属于当前产品路径。
 
 ## 进程与服务边界
@@ -14,8 +14,8 @@ Renderer / Web UI
      IZCodeSessionService（仍存的 lifecycle/workspace config facade）
      IZCodeTaskService（列表组织态、兼容查询和 remote wrapper）
   -> window-scoped Local Host Process
-  -> ZCodeAgentProcessManager
-  -> workspaceKey-scoped zcode app-server --stdio
+  -> ZodyAgentProcessManager
+  -> workspaceKey-scoped zody app-server --stdio
 ```
 
 - UI 不管理子进程、不解析 stdio 帧，也不直接调用 service concrete implementation。
@@ -42,7 +42,7 @@ Renderer / Web UI
 
 ## 协议
 
-stdio 使用 LF 分隔的 NDJSON，schema 位于 `packages/shared/src/zcode-protocol-v4/`。Host 的
+stdio 使用 LF 分隔的 NDJSON，schema 位于 `packages/shared/src/zody-protocol-v4/`。Host 的
 `zcodeProtocolClient` 和 `zcodeStdioTransport` 负责请求、通知和运行时代际；高频原始 frame/chunk 日志必须
 用 service logger 的 `debug`。
 
@@ -102,11 +102,11 @@ tasks-index 建立后台订阅时由 Agent spawn preflight 动态检查真实 cw
 
 ## 远程资源与打包
 
-当前默认远端部署/桌面打包只保留 ZCode Agent 及必要工具/runtime（例如 Node、node-pty、ripgrep 和各平台
+当前默认远端部署/桌面打包只保留 Zody Agent 及必要工具/runtime（例如 Node、node-pty、ripgrep 和各平台
 search runtime）。历史 `resourcePackages.selectedPackageIds` 只兼容读取，不能裁剪当前必需资源。构建脚本、
 签名和 Windows 资源锁检查都不得把本机残留的退役第三方 runtime 重新带入产物。
 
-- `@zcode/desktop` 的 `prepare:glm` 仅保留为手动下载旧原生 Agent 的兼容兜底；默认本机打包通过
+- `@zody/desktop` 的 `prepare:glm` 仅保留为手动下载旧原生 Agent 的兼容兜底；默认本机打包通过
   `prepare:agent-bundle` 准备 `zody.cjs`。`prepare:native-search` 按目标平台下载 `bfs`、`ugrep`、`ripgrep`
   预编译归档，旧 `prepare:rg` 不再作为独立维护入口暴露。
 - `pnpm dev:desktop` 的本地 runtime 自检只补齐当前平台的 native-search 工具集和必需平台 helper：
@@ -121,13 +121,13 @@ manifest 和下载逻辑应共同读取它，不再从旧 provider runtime 清�
 
 ## 当前入口
 
-- `packages/services/src/zcode-agent/zcodeAgentService.ts`
-- `packages/services/src/zcode-agent/zcodeAgentProcessManager.ts`
-- `packages/services/src/zcode-agent/zcodeProtocolClient.ts`
-- `packages/services/src/zcode-agent/zcodeStdioTransport.ts`
-- `packages/services/src/zcode-agent/zcodeAgentConnectionScope.ts`
+- `packages/services/src/zody-agent/zcodeAgentService.ts`
+- `packages/services/src/zody-agent/zodyAgentProcessManager.ts`
+- `packages/services/src/zody-agent/zcodeProtocolClient.ts`
+- `packages/services/src/zody-agent/zcodeStdioTransport.ts`
+- `packages/services/src/zody-agent/zcodeAgentConnectionScope.ts`
 - `packages/ui/src/v4/V4ConversationContext.tsx`
 - `packages/ui/src/v4/SessionPane.tsx`
 - `apps/zody-cli/packages/bootstrap/src/zcode-protocol-entrypoint.ts`
-- `apps/zody-cli/packages/bootstrap/src/zcode-protocol/server.ts`
-- `apps/zody-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts`
+- `apps/zody-cli/packages/bootstrap/src/zody-protocol/server.ts`
+- `apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/v4-gateway.ts`

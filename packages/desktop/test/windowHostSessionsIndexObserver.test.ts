@@ -1,5 +1,5 @@
 import { Emitter } from "@zody/rpc";
-import type { IZCodeAgentService, ZCodeAgentRuntimeLifecycleEvent } from "@zody/services";
+import type { IZCodeAgentService, ZodyAgentRuntimeLifecycleEvent } from "@zody/services";
 import type {
   SessionsIndexTopicWireCandidate,
   SessionSummary,
@@ -24,7 +24,7 @@ function summary(overrides: Partial<SessionSummary> = {}): SessionSummary {
 describe("WindowHostSessionsIndexObserver", () => {
   it("runtime available 在 subscribe ACK 前到达时不会递归创建第二条订阅", async () => {
     const frames = new Emitter<SessionsIndexTopicWireCandidate>();
-    const lifecycle = new Emitter<ZCodeAgentRuntimeLifecycleEvent>();
+    const lifecycle = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
     const subscribeSessionsIndexV4 = vi.fn(async () => {
       lifecycle.fire({
         workspaceKey: "/work/demo",

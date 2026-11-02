@@ -21,11 +21,11 @@ import {
 } from "@zody/shared/process-diagnostic";
 import {
   buildE2EAgentCoverageEnv,
-  createZCodeAgentCommandResolver,
-  resolveDefaultZCodeAgentCommand,
-  resolveZCodeAgentNativeRuntimeCommand,
-  validateZCodeAgentNativeRuntimeConfig,
-  wrapZCodeAgentCommandWithStdioTapDevProxy,
+  createZodyAgentCommandResolver,
+  resolveDefaultZodyAgentCommand,
+  resolveZodyAgentNativeRuntimeCommand,
+  validateZodyAgentNativeRuntimeConfig,
+  wrapZodyAgentCommandWithStdioTapDevProxy,
   ZodyAgentProcessManager,
   type ZodyAgentCommand,
 } from "../src/zody-agent/zodyAgentProcessManager.js";
@@ -82,7 +82,7 @@ describe("resolveZCodeAgentNativeRuntimeCommand", () => {
   const context = { workspacePath: "/repo/workspace", workspaceKey: "/repo/workspace" };
 
   it("uses the fixed native launcher argv and fd6/7 protocol streams", () => {
-    const command = resolveZCodeAgentNativeRuntimeCommand(
+    const command = resolveZodyAgentNativeRuntimeCommand(
       {
         launcherPath: "/opt/zody/native/zody-native",
         env: { CUSTOM_ENV: "1" },
@@ -117,29 +117,29 @@ describe("resolveZCodeAgentNativeRuntimeCommand", () => {
 
   it("rejects relative launchers, wrong entries, env Node mode, and duplicate fds", () => {
     expect(() =>
-      validateZCodeAgentNativeRuntimeConfig({ launcherPath: "zody-native" }),
+      validateZodyAgentNativeRuntimeConfig({ launcherPath: "zody-native" }),
     ).toThrow(/absolute path/);
     expect(() =>
-      validateZCodeAgentNativeRuntimeConfig({
+      validateZodyAgentNativeRuntimeConfig({
         launcherPath: "/opt/zody/native/zody-native",
         entryName: "other.mjs" as never,
       }),
     ).toThrow(/native entry/);
     expect(() =>
-      validateZCodeAgentNativeRuntimeConfig({
+      validateZodyAgentNativeRuntimeConfig({
         launcherPath: "/opt/zody/native/zody-native",
         env: { ELECTRON_RUN_AS_NODE: "1" },
       }),
     ).toThrow(/ELECTRON_RUN_AS_NODE/);
     expect(() =>
-      validateZCodeAgentNativeRuntimeConfig({
+      validateZodyAgentNativeRuntimeConfig({
         launcherPath: "/opt/zody/native/zody-native",
         cliInFd: 6,
         cliOutFd: 6,
       }),
     ).toThrow(/must differ/);
     expect(() =>
-      validateZCodeAgentNativeRuntimeConfig({
+      validateZodyAgentNativeRuntimeConfig({
         launcherPath: "/opt/zody/native/zody-native",
         launchMode: "other" as never,
       }),
@@ -147,12 +147,12 @@ describe("resolveZCodeAgentNativeRuntimeCommand", () => {
   });
 
   it("appends the workspace relay flag only for the explicit relay mode", () => {
-    const direct = resolveZCodeAgentNativeRuntimeCommand(
+    const direct = resolveZodyAgentNativeRuntimeCommand(
       { launcherPath: "/opt/zody/native/zody-native", launchMode: "direct" },
       context,
     );
     expect(direct.args?.at(-1)).toBe("7");
-    const relay = resolveZCodeAgentNativeRuntimeCommand(
+    const relay = resolveZodyAgentNativeRuntimeCommand(
       { launcherPath: "/opt/zody/native/zody-native", launchMode: "workspace-relay" },
       context,
     );
@@ -173,10 +173,10 @@ describe("resolveZCodeAgentNativeRuntimeCommand", () => {
     process.env.ZCODE_AGENT_SERVER_COMMAND = "/tmp/attacker-cli";
     try {
       const nativeConfig = { launcherPath: "/opt/zody/native/zody-native" };
-      const command = resolveDefaultZCodeAgentCommand(context, { nativeRuntime: nativeConfig });
+      const command = resolveDefaultZodyAgentCommand(context, { nativeRuntime: nativeConfig });
       expect(command?.command).toBe("/opt/zody/native/zody-native");
       expect(command?.nativeLauncher).toBe(true);
-      expect(wrapZCodeAgentCommandWithStdioTapDevProxy(command!, context.workspaceKey)).toBe(
+      expect(wrapZodyAgentCommandWithStdioTapDevProxy(command!, context.workspaceKey)).toBe(
         command,
       );
     } finally {
@@ -196,7 +196,7 @@ describe("createZCodeAgentCommandResolver", () => {
         : null,
     );
     const fallbackResolver = vi.fn(() => ({ command: "/opt/zody/bin/zcode" }));
-    const resolver = createZCodeAgentCommandResolver({
+    const resolver = createZodyAgentCommandResolver({
       commandResolver: fallbackResolver,
       nativeRuntimeResolver,
     });
@@ -216,7 +216,7 @@ describe("createZCodeAgentCommandResolver", () => {
 
   it("keeps the original resolver intact when the selective resolver declines", async () => {
     const fallbackResolver = vi.fn(() => ({ command: "/opt/zody/bin/zcode" }));
-    const resolver = createZCodeAgentCommandResolver({
+    const resolver = createZodyAgentCommandResolver({
       commandResolver: fallbackResolver,
       nativeRuntimeResolver: () => null,
     });
@@ -228,7 +228,7 @@ describe("createZCodeAgentCommandResolver", () => {
   it("keeps the explicit native runtime override as the highest-priority composition", async () => {
     const nativeRuntimeResolver = vi.fn(() => null);
     const fallbackResolver = vi.fn(() => ({ command: "/opt/zody/bin/zcode" }));
-    const resolver = createZCodeAgentCommandResolver({
+    const resolver = createZodyAgentCommandResolver({
       nativeRuntime: { launcherPath: "/opt/zody/native/zody-native" },
       nativeRuntimeResolver,
       commandResolver: fallbackResolver,
@@ -250,7 +250,7 @@ describe("createZCodeAgentCommandResolver", () => {
     const fallbackResolver = vi.fn(() => ({ command: "/opt/zody/bin/zcode" }));
 
     await expect(
-      createZCodeAgentCommandResolver({
+      createZodyAgentCommandResolver({
         commandResolver: fallbackResolver,
         nativeRuntimeResolver,
       })(context),
@@ -258,7 +258,7 @@ describe("createZCodeAgentCommandResolver", () => {
     expect(nativeRuntimeResolver).toHaveBeenCalledTimes(1);
 
     for (const lane of ["mcp-status", "plugin", "background"]) {
-      const resolver = createZCodeAgentCommandResolver({
+      const resolver = createZodyAgentCommandResolver({
         commandResolver: fallbackResolver,
         nativeRuntimeResolver,
         lane,
@@ -495,7 +495,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
 
     process.chdir(desktopDir);
 
-    const command = resolveDefaultZCodeAgentCommand({
+    const command = resolveDefaultZodyAgentCommand({
       workspacePath: "/repo/workspace",
       workspaceKey: "/repo/workspace",
     });
@@ -533,7 +533,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
       writeFileSync(source, "");
       writeFileSync(bytecode, "");
       process.chdir(root);
-      const command = resolveDefaultZCodeAgentCommand({
+      const command = resolveDefaultZodyAgentCommand({
         workspacePath: root,
         workspaceKey: root,
         presentationSurface: "desktop",
@@ -558,7 +558,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     writeFileSync(source, "");
     process.chdir(root);
     expect(() =>
-      resolveDefaultZCodeAgentCommand({ workspacePath: root, workspaceKey: root }),
+      resolveDefaultZodyAgentCommand({ workspacePath: root, workspaceKey: root }),
     ).toThrow(/字节码入口缺失/);
   });
 
@@ -587,7 +587,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
 
     process.chdir(desktopDir);
 
-    const command = resolveDefaultZCodeAgentCommand({
+    const command = resolveDefaultZodyAgentCommand({
       presentationSurface: "desktop",
       workspacePath: "/repo/workspace",
       workspaceKey: "/repo/workspace",
@@ -608,7 +608,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
       process.env.ZCODE_AGENT_SERVER_COMMAND = "zcode-agent";
       process.env.ZCODE_AGENT_SERVER_ARGS_JSON = JSON.stringify(input);
 
-      const command = resolveDefaultZCodeAgentCommand({
+      const command = resolveDefaultZodyAgentCommand({
         presentationSurface: "desktop",
         workspacePath: "/repo/workspace",
         workspaceKey: "/repo/workspace",
@@ -640,7 +640,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     process.env[ZCODE_AGENT_RUNTIME.binaryEnvVar] = binaryPath;
     process.chdir(sandboxRoot);
 
-    const command = resolveDefaultZCodeAgentCommand({
+    const command = resolveDefaultZodyAgentCommand({
       workspacePath: "/repo/workspace",
       workspaceKey: "/repo/workspace",
     });
@@ -2204,7 +2204,7 @@ setInterval(() => {}, 1000);
     setDataBaseDir(sandboxRoot);
     setZCodeStdioTapDevEnabled(true);
 
-    const wrapped = wrapZCodeAgentCommandWithStdioTapDevProxy(
+    const wrapped = wrapZodyAgentCommandWithStdioTapDevProxy(
       {
         command: "zcode-agent",
         args: ["app-server", "--stdio"],
@@ -2250,14 +2250,14 @@ setInterval(() => {}, 1000);
       setDataBaseDir(sandboxRoot);
       setZCodeStdioTapDevEnabled(true);
 
-      const command = resolveDefaultZCodeAgentCommand({
+      const command = resolveDefaultZodyAgentCommand({
         presentationSurface: "desktop",
         workspacePath: "/repo/workspace",
         workspaceKey: "/repo/workspace",
       });
       expect(command).not.toBeNull();
 
-      const wrapped = wrapZCodeAgentCommandWithStdioTapDevProxy(command!, "/repo/workspace");
+      const wrapped = wrapZodyAgentCommandWithStdioTapDevProxy(command!, "/repo/workspace");
 
       expect(wrapped.args).toEqual([
         realpathSync(tapScript),

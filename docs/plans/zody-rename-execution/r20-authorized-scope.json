@@ -17768,7 +17768,9 @@
       "scripts/zody-distribution-runner.test.mjs",
       "scripts/zody-distribution-smoke.mjs",
       "vitest.config.ts",
-      "vitest.setup.ts"
+      "vitest.setup.ts",
+      "docs/settings-storage-management.md",
+      "packages/desktop/test/upstreamReplayFixtureResolution.test.ts"
     ],
     "basenameCandidates": [
       {
@@ -18778,7 +18780,7 @@
     "report": "docs/plans/zody-rename-execution/reports/R20-symbols.md",
     "counts": {
       "sourceFiles": 3276,
-      "pathConsumerFiles": 3296,
+      "pathConsumerFiles": 3298,
       "basenameCandidates": 198,
       "manualReviewPaths": 151
     },
@@ -19960,6 +19962,40 @@
       "packages/ui/test/zcodeTimelineRuntime.test.ts": "packages/ui/test/zodyTimelineRuntime.test.ts",
       "apps/zody-cli/packages/bootstrap/tests/helpers/fake-zcode-app.ts": "apps/zody-cli/packages/bootstrap/tests/helpers/fake-zody-app.ts"
     },
-    "basenamePathState": "98-move batch controller verification complete; independent review pending"
+    "basenamePathState": "98-move batch controller verification complete; independent review pending",
+    "reviewCorrections": [
+      {
+        "candidate": "1b042046c373fa91c5ed80b1501bcf0677f2eb39",
+        "path": "scripts/audit-zody-agent-remnants.mjs",
+        "change": "Exact compat-type basename zcode-agent-policy to zody-agent-policy. Preserve unmoved model-state and all unrelated classification behavior."
+      }
+    ],
+    "remainingBasenameExactExtensions": [
+      {
+        "path": "docs/settings-storage-management.md",
+        "change": "Only current scanner/worker source path references corresponding to the remaining basename moves."
+      },
+      {
+        "path": "packages/desktop/test/upstreamReplayFixtureResolution.test.ts",
+        "change": "Focused regression for renamed E2E basename-derived caseName and existing strict/capture fixture resolution; no production fixture/payload migration."
+      }
+    ]
+  },
+  "substep5CurrentDocs": {
+    "baseline": "1b042046c373fa91c5ed80b1501bcf0677f2eb39",
+    "writeSet": [
+      "docs/runtime-tools/agent-electron-node-runtime.md",
+      "docs/windows-agent-process-cleanup-state-machine.md",
+      "docs/windows-test-compatibility.md",
+      "docs/workspace-project-removal-runtime-release.md",
+      "docs/zcode-agent-app-integration.md",
+      "docs/architecture/federated-node-hub-state-and-migration-plan.md"
+    ],
+    "rules": [
+      "Correct verified current package/path/symbol/product references; preserve historical claims and external identifiers.",
+      "Distinguish current data defaults from historical migration sources and unimplemented proposals.",
+      "After batch-03 freezes, reconcile exact renamed symbol references against that candidate."
+    ],
+    "report": "docs/plans/zody-rename-execution/reports/R20-current-docs.md"
   }
 }

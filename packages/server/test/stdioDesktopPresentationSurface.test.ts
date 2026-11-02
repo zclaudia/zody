@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { IModelSelectionService, IZCodeAgentService } from "@zody/services";
 import {
   disposeServiceResourcesAndWait,
-  resolveDefaultZCodeAgentCommand,
+  resolveDefaultZodyAgentCommand,
   setDataBaseDir,
   type ZodyAgentCommand,
   type ZodyAgentCommandResolverContext,
@@ -181,7 +181,7 @@ describe("stdio Desktop presentation surface", () => {
 
     let resolvedCommand: ZodyAgentCommand | null = null;
     const commandResolver = vi.fn((context: ZodyAgentCommandResolverContext) => {
-      resolvedCommand = resolveDefaultZCodeAgentCommand(context);
+      resolvedCommand = resolveDefaultZodyAgentCommand(context);
       // 集成测试只验证入口装配与最终命令，不启动长驻 Agent 子进程。
       return null;
     });

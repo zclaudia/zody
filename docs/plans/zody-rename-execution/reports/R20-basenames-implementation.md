@@ -1,3 +1,5 @@
+当前候选：`1b042046c373fa91c5ed80b1501bcf0677f2eb39` 已提交；DeepSeek 复核发现 audit 脚本一处 basename 分类遗漏，修复及复审由后续批次收口。下文是实施时的过程记录。
+
 # R20.4 basename 安全子集实施
 
 基线 `e79eab7d35ba576140ff57698ca0fff122629366`。以新基线重新扫描、计算 SHA 和生成源码 patch；与旧预检比较未发现新增产品消费者。刷新后 source/test patch 在主工作树 `git apply --check` 均退出 0，再按 source → test 顺序应用。原批准的 99 个中有 1 个 E2E 测试因 case-name 关联未闭合而退回；本批实际移动 25 个源码、73 个测试/测试 helper，共 98 个。准确旧/新路径和基线 SHA 见 `output/zody-rename-r20-basenames/candidate-files-effective.json`。

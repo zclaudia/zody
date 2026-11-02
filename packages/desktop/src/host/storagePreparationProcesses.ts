@@ -11,7 +11,7 @@ import {
   zcodeStoragePreparationFrameSchema,
   type DatabaseStartupState,
 } from "@zody/shared";
-import { resolveDefaultZCodeAgentCommand } from "@zody/services/storage-startup";
+import { resolveDefaultZodyAgentCommand } from "@zody/services/storage-startup";
 
 type Phase = NonNullable<DatabaseStartupState["databasePhase"]>;
 const workerMessageSchema = z.discriminatedUnion("type", [
@@ -136,7 +136,7 @@ export async function prepareSessionStorage(options: {
     }
     entry = options.storagePreparationEntryUrl;
   } else {
-    const command = resolveDefaultZCodeAgentCommand({
+    const command = resolveDefaultZodyAgentCommand({
       workspacePath: options.cwd,
       workspaceKey: options.cwd,
       presentationSurface: "desktop",

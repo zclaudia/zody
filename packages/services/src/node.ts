@@ -100,10 +100,10 @@ export { createZCodeAgentService } from "./zody-agent/zcodeAgentService.js";
 export { createZCodeTaskServiceAdapter } from "./zody-agent/zcodeTaskServiceAdapter.js";
 export { createZCodeSessionService } from "./zody-session/zcodeSessionService.js";
 export {
-  createZCodeAgentCommandResolver,
-  resolveDefaultZCodeAgentCommand,
-  resolveZCodeAgentNativeRuntimeCommand,
-  validateZCodeAgentNativeRuntimeConfig,
+  createZodyAgentCommandResolver,
+  resolveDefaultZodyAgentCommand,
+  resolveZodyAgentNativeRuntimeCommand,
+  validateZodyAgentNativeRuntimeConfig,
   ZodyAgentProcessManager,
 } from "./zody-agent/zodyAgentProcessManager.js";
 export type {
@@ -111,8 +111,8 @@ export type {
   ZodyAgentCommandResolver,
   ZodyAgentCommandResolverContext,
   ZodyAgentNativeRuntimeConfig,
-  ZCodeAgentNativeRuntimeResolver,
-  ZCodeAgentNativeRuntimeResolverContext,
+  ZodyAgentNativeRuntimeResolver,
+  ZodyAgentNativeRuntimeResolverContext,
   ZodyAgentNativeRuntimeStartupContext,
   ZodyAgentProcessManagerOptions,
 } from "./zody-agent/zodyAgentProcessManager.js";
@@ -319,7 +319,7 @@ import type {
   ZodyAgentCommandResolver,
   ZodyAgentCommandResolverContext,
   ZodyAgentNativeRuntimeConfig,
-  ZCodeAgentNativeRuntimeResolver,
+  ZodyAgentNativeRuntimeResolver,
 } from "./zody-agent/zodyAgentProcessManager.js";
 import { buildAgentTelemetrySpawnEnv } from "./zody-agent/agentTelemetryEnv.js";
 import { resolveZCodeAgentPresentationSurface } from "./zody-agent/zcodeAgentPresentationSurface.js";
@@ -1023,7 +1023,7 @@ export function createLocalServices(options: {
   /** Trusted sealed wrapper injection; takes precedence over PATH/env command discovery. */
   zodyAgentNativeRuntime?: ZodyAgentNativeRuntimeConfig;
   /** Build-time opt-in narrow selector; null falls back to the original resolver. */
-  zodyAgentNativeRuntimeResolver?: ZCodeAgentNativeRuntimeResolver;
+  zodyAgentNativeRuntimeResolver?: ZodyAgentNativeRuntimeResolver;
   /** Desktop Main 提前异步采集的本机 runtime 环境；Local Host 注入后不再同步启动 login shell。 */
   runtimeProcessEnvPatch?: Record<string, string>;
   /** 本地桌面上次 workspace 缺失时，仅用于 Agent 子进程 spawn.cwd 兜底。 */

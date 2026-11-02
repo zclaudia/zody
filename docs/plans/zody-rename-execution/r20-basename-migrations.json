@@ -20,8 +20,8 @@
     {
       "id": "R20.4-basename-02",
       "base": "e79eab7d35ba576140ff57698ca0fff122629366",
-      "candidate": null,
-      "status": "controller-verified-pending-review",
+      "candidate": "1b042046c373fa91c5ed80b1501bcf0677f2eb39",
+      "status": "review-CHANGES_REQUIRED",
       "moves": [
         {
           "old": "packages/desktop/src/main/zcodeDataSizeTelemetryState.ts",
@@ -613,9 +613,10 @@
         }
       ],
       "deferredE2E": "packages/desktop/test/e2e/conversation-session/manual-review/pending/conversation-session-workspace-zcodeignore.test.ts",
-      "review": null,
+      "review": "docs/plans/zody-rename-execution/reports/R20-basenames-deepseek-review-1.md",
       "controllerReport": "docs/plans/zody-rename-execution/reports/R20-basenames-controller-verification.md",
-      "cleanRebuildEvidence": "output/zody-rename-r20-basenames/clean-rebuild-report.md"
+      "cleanRebuildEvidence": "output/zody-rename-r20-basenames/clean-rebuild-report.md",
+      "remainingReviewFinding": "scripts/audit-zody-agent-remnants.mjs compat-type path regex still uses zcode-agent-policy; assigned to batch-03 sole writer."
     }
   ]
 }

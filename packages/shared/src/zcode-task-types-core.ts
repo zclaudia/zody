@@ -5,7 +5,7 @@
 // ZCodePlanStep / ZCodePermissionRequest 及其依赖闭包（含 realtime 传输基础类型）。
 // zcode-task-types.ts / task-realtime.ts 仍保留旧协议兼容面，共用本文件中的核心类型。
 
-import type { ZCodeBackgroundTaskControlItem } from "./background-task-controls.js";
+import type { ZodyBackgroundTaskControlItem } from "./background-task-controls.js";
 import type { ToolCallDisplay } from "./zody-protocol-v4/toolDisplay.js";
 import type {
   ZCodeContextUsageBreakdownItem,
@@ -930,7 +930,7 @@ export interface ZCodeBackgroundTaskControlItemsUpdate {
   taskId: string;
   traceId: TraceId;
   inputId?: InputId;
-  jobs: ZCodeBackgroundTaskControlItem[];
+  jobs: ZodyBackgroundTaskControlItem[];
 }
 /** 残余数据 flush 后通知 UI 重新拉取快照，确保迟到的流式数据能被渲染 */
 export interface ZCodeTaskSnapshotUpdated {
@@ -1029,7 +1029,7 @@ export interface ZCodeSessionRuntimeSnapshot {
    */
   todoGroups?: ZCodeTodoGroup[] | null;
   /** 兼容字段：承载 host/runtime 运行态后台任务 control，可随 snapshot 恢复，但不持久化到 session JSON。 */
-  backgroundBashJobs?: ZCodeBackgroundTaskControlItem[];
+  backgroundBashJobs?: ZodyBackgroundTaskControlItem[];
 }
 export interface ZCodeTaskSnapshotHistory {
   /** 响应态历史窗口是否裁掉了更早消息；只由 getTaskSnapshot 返回，不写入 session JSON。 */

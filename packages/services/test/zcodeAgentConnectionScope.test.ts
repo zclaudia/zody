@@ -16,7 +16,7 @@ import { sessionsIndexTopic, workspaceConfigTopic } from "@zody/shared/zody-prot
 import { describe, expect, it, vi } from "vitest";
 import type {
   IZCodeAgentService,
-  ZCodeAgentRuntimeLifecycleEvent,
+  ZodyAgentRuntimeLifecycleEvent,
   ZCodeAgentCuaPermissionObservation,
 } from "../src/zody-agent/zcodeAgent.js";
 import {
@@ -167,10 +167,10 @@ function setupBase() {
 
 function attachRuntimeLifecycle(
   base: IZCodeAgentService,
-): Emitter<ZCodeAgentRuntimeLifecycleEvent> {
-  const runtimeLifecycle = new Emitter<ZCodeAgentRuntimeLifecycleEvent>();
+): Emitter<ZodyAgentRuntimeLifecycleEvent> {
+  const runtimeLifecycle = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
   Object.assign(base, {
-    onAgentRuntimeLifecycle: vi.fn((listener: (event: ZCodeAgentRuntimeLifecycleEvent) => void) =>
+    onAgentRuntimeLifecycle: vi.fn((listener: (event: ZodyAgentRuntimeLifecycleEvent) => void) =>
       runtimeLifecycle.event(listener),
     ),
   });
@@ -180,8 +180,8 @@ function attachRuntimeLifecycle(
 function makeRuntimeLifecycleEvent(
   target: { workspacePath: string; workspaceIdentity?: string },
   generation: number,
-  state: ZCodeAgentRuntimeLifecycleEvent["state"],
-): ZCodeAgentRuntimeLifecycleEvent {
+  state: ZodyAgentRuntimeLifecycleEvent["state"],
+): ZodyAgentRuntimeLifecycleEvent {
   const workspaceKey = target.workspaceIdentity?.trim() || target.workspacePath;
   return {
     ...target,

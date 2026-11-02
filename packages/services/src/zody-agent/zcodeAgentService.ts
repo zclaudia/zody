@@ -164,7 +164,7 @@ import type {
   IZCodeAgentService,
   ZCodeAgentBackgroundBashOutputParams,
   ZCodeAgentAppRuntimePreferences,
-  ZCodeAgentRuntimeLifecycleEvent,
+  ZodyAgentRuntimeLifecycleEvent,
   ZCodeAgentAddPluginMarketplaceParams,
   ZCodeAgentAppUsageParams,
   ZCodeAgentCancelPluginOperationParams,
@@ -5907,7 +5907,7 @@ export function createZCodeAgentService(
       return processManager.onRuntimeRestarted(listener);
     },
 
-    onAgentRuntimeLifecycle(listener: (event: ZCodeAgentRuntimeLifecycleEvent) => void) {
+    onAgentRuntimeLifecycle(listener: (event: ZodyAgentRuntimeLifecycleEvent) => void) {
       return processManager.onRuntimeLifecycle(listener);
     },
 

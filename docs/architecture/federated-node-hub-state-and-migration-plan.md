@@ -26,7 +26,9 @@
 | persistence   | 引入稳定 Node / Workspace 身份、跨节点视图配置、Hub 目录缓存和迁移 ledger。        |
 | recovery      | 多 Node 游标、节点离线、拓扑变化、双数据库迁移和旧 identity alias 都需要恢复协议。 |
 
-### 当前事实
+### 方案形成时的事实与待核实假设
+
+以下条目保留方案形成时的背景；除明确标注的当前路径外，不代表各项在当前源码中均已验证。
 
 1. Task 列表持久行来自各 endpoint 的 `tasks-index.sqlite`，Session runtime 和正文仍由 CLI
    Session Store 权威持有。当前 UI 会把每个 endpoint 的 active / pinned / archived 全量拉回，
@@ -35,15 +37,20 @@
 3. 自定义分组当前存于单个 `tasks-index.sqlite` 的
    `task_groups / task_group_members / task_group_view_node_orders`，排序是用户显式顺序，
    不是时间排序；当前 Grouped 视图明确不聚合 remote endpoint。
-4. App 模型配置权威文件为 `~/.zcode/v2/config.json`。当前 Provider metadata、Base URL 和
-   自定义 API Key 仍混在同一配置 / registry snapshot 中。
+4. 方案形成时假设 App 模型配置位于 `~/.zcode/v2/config.json`，并假设 Provider metadata、
+   Base URL 和自定义 API Key 混在同一配置 / registry snapshot 中；该假设不作为当前配置权威。
+   当前默认数据根为 `~/.zody`，App 的 dataBaseDir 可覆盖用于计算应用数据目录的基目录，不会因此修改进程 HOME；模型配置的现行所有者和字段
+   应以当前 Provider Registry 实现为准。
 5. SSH / WSL 当前是混合权威：
    - 文件、Git、Terminal、Agent、Task、Skills、Plugins 在远端；
    - Settings、Credential、Model Provider 在 Desktop；
    - Subagent 设置服务仍在 Desktop，但远端 CLI runtime 实际读取远端定义和状态，存在事实源分裂。
-6. 旧 SSH Task 数据实际同时落在目标机的两套数据库：
+6. 历史 SSH Task 数据可能位于目标机旧 `.zcode` 数据根的两套数据库：
    - `~/.zcode/v2/tasks-index.sqlite`
    - `~/.zcode/cli/db/db.sqlite`
+
+   当前默认分别为 `~/.zody/v2/tasks-index.sqlite` 和 `~/.zody/cli/db/db.sqlite`。
+   App 的 dataBaseDir 及 CLI 的 session DB 配置可分别覆盖这些默认路径；旧路径仅表示迁移来源。
 7. 旧 SSH workspace key 的格式为：
 
 ```text
@@ -313,7 +320,7 @@ Authority profile:
    └─ NodeId / version / capability / endpoint
 
 统一 RPC / frame 层
-└─ @zcode/rpc IMessagePassingProtocol + typed runtime schema
+└─ @zody/rpc IMessagePassingProtocol + typed runtime schema
 
 Transport adapter
 ├─ MessagePort
@@ -864,8 +871,10 @@ GlobalTaskRef      = { nodeId, workspaceId, taskId }
 
 ### 迁移面
 
+以下 `.zcode` 路径表示历史迁移来源，不表示当前默认目标；当前默认数据根和可覆盖项见上文。
+
 ```text
-目标 Node
+历史来源 Node
 ├─ ~/.zcode/v2/tasks-index.sqlite
 │  ├─ tasks
 │  ├─ task_group_members
@@ -1093,10 +1102,10 @@ prepared
 
 - `packages/shared/src/remote-workspace-identity.ts`
 - `packages/shared/src/remoteTarget.ts`
-- `packages/shared/src/zcode-protocol/index.ts`
+- `packages/shared/src/zody-protocol/index.ts`
 - `packages/services/src/session/taskIndexRepo.ts`
 - `packages/services/src/session/automationRepo.ts`
-- `apps/zcode-cli/packages/adapters/src/storage/session-store/`
+- `apps/zody-cli/packages/adapters/src/storage/session-store/`
 - `packages/ui/src/hooks/useWorkspaceTaskLists.ts`
 - `packages/ui/src/hooks/useGlobalTaskList.ts`
 - `packages/ui/src/hooks/useGroupedTaskView.ts`
@@ -1116,8 +1125,10 @@ prepared
 - `packages/server/src/remote/wsl-backend.ts`
 - `packages/server/src/remote/docker-backend.ts`
 - `packages/services/src/node.ts`
-- `packages/services/src/zcode-agent/zcodeAgentProcessManager.ts`
-- `scripts/build-zcode-lite.mjs`
+- `packages/services/src/zody-agent/zodyAgentProcessManager.ts`
+
+计划项：`scripts/build-zcode-lite.mjs` 在本次核对的源码中不存在；如后续实施 Lite 构建，
+由该实现的 owner 确定构建入口，不将此路径视为现有文件。
 
 ### should-inspect
 

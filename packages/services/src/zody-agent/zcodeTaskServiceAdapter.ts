@@ -47,8 +47,8 @@ import {
   shouldMaterializeZCodeStreamingToolInputPreview,
   type ZCodeApiRetryStatus,
   type ZCodeAssistantMessageFeedback,
-  type ZCodeBackgroundTaskNotificationInfo,
-  type ZCodeBackgroundTaskControlItem,
+  type ZodyBackgroundTaskNotificationInfo,
+  type ZodyBackgroundTaskControlItem,
   type ZCodeBackgroundTurnAttribution,
   type ZCodeCancelTaskCommandResult,
   type ZCodeCodexConnectivityCheckResult,
@@ -267,7 +267,7 @@ export function createZCodeTaskServiceAdapter(
   const runtimeCommands = new Map<string, ZCodeTaskRuntimeCommand[]>();
   const runtimeCommandDrains = new Map<string, Promise<void>>();
   const apiRetryByTaskKey = new Map<string, ZCodeApiRetryStatus | null>();
-  const backgroundTaskControlsByTaskKey = new Map<string, ZCodeBackgroundTaskControlItem[]>();
+  const backgroundTaskControlsByTaskKey = new Map<string, ZodyBackgroundTaskControlItem[]>();
   const streamedTurnText = new Map<string, { messageId?: string; text: string }>();
   const activePromptInputIds = new Map<string, InputId>();
   const toolProjectionMemoryByTaskKey = new Map<string, ZCodeToolProjectionMemory>();
@@ -3666,7 +3666,7 @@ function backgroundTaskNotificationToolUpdateFromInput(params: {
 function mapMessage(
   message: ZCodeMessageWithParts,
   goalIteration?: number,
-  backgroundTaskNotifications?: ReadonlyMap<string, ZCodeBackgroundTaskNotificationInfo>,
+  backgroundTaskNotifications?: ReadonlyMap<string, ZodyBackgroundTaskNotificationInfo>,
 ): ZCodePersistedMessage {
   const tools: ZCodePersistedToolCall[] = [];
   const parts: ZCodePersistedMessagePart[] = [];
@@ -3895,7 +3895,7 @@ function synthesizeCompactionTimeline(
 
 function mapToolPart(
   part: Extract<ZCodeMessagePart, { type: "tool" }>,
-  backgroundTaskNotifications?: ReadonlyMap<string, ZCodeBackgroundTaskNotificationInfo>,
+  backgroundTaskNotifications?: ReadonlyMap<string, ZodyBackgroundTaskNotificationInfo>,
 ): ZCodePersistedToolCall {
   const state = part.state;
   const taskNotification = backgroundTaskNotifications?.get(part.callId);
@@ -4097,7 +4097,7 @@ function mapSessionEvent(
   streamedTurnText: Map<string, { messageId?: string; text: string }>,
   activePromptInputId?: InputId,
   toolProjectionMemory?: ZCodeToolProjectionMemory,
-  backgroundTaskControlsByTaskKey?: Map<string, ZCodeBackgroundTaskControlItem[]>,
+  backgroundTaskControlsByTaskKey?: Map<string, ZodyBackgroundTaskControlItem[]>,
   hasActiveApiRetry = false,
 ): ZCodeStreamEvent[] {
   const protocolTraceId = event.traceId ?? generateTraceId(params.taskId);
@@ -5250,18 +5250,18 @@ function pendingExitPlanModeToElicitationEvent(
 }
 
 function setTaskBackgroundTaskControlCache(
-  cache: Map<string, ZCodeBackgroundTaskControlItem[]> | undefined,
+  cache: Map<string, ZodyBackgroundTaskControlItem[]> | undefined,
   cacheKey: string,
-  jobs: ZCodeBackgroundTaskControlItem[],
+  jobs: ZodyBackgroundTaskControlItem[],
 ) {
   cache?.set(cacheKey, jobs);
 }
 
 function updateTaskBackgroundTaskControlCacheFromPayload(
-  cache: Map<string, ZCodeBackgroundTaskControlItem[]> | undefined,
+  cache: Map<string, ZodyBackgroundTaskControlItem[]> | undefined,
   cacheKey: string,
   payload: Record<string, unknown>,
-): ZCodeBackgroundTaskControlItem[] | null {
+): ZodyBackgroundTaskControlItem[] | null {
   const parsedJobs = parseZCodeBackgroundTaskControlItems([payload]);
   if (parsedJobs.length === 0) {
     return null;
@@ -5426,7 +5426,7 @@ function mapSessionInfoLikePayload(
   inputId: InputId | undefined,
   eventId: string | undefined,
   payload: Record<string, unknown>,
-  backgroundTaskControlsByTaskKey?: Map<string, ZCodeBackgroundTaskControlItem[]>,
+  backgroundTaskControlsByTaskKey?: Map<string, ZodyBackgroundTaskControlItem[]>,
   cacheKey = taskId,
 ): ZCodeStreamEvent[] {
   const events: ZCodeStreamEvent[] = [];

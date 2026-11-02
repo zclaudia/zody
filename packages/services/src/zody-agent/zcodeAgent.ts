@@ -210,7 +210,7 @@ export const ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE = "ZCODE_AGENT_RUNTIME_UNAVAIL
 
 export type ZCodeAgentRuntimePolicy = "start-if-needed" | "existing-only";
 
-export interface ZCodeAgentRuntimeLifecycleEvent extends ZCodeAgentWorkspaceTarget {
+export interface ZodyAgentRuntimeLifecycleEvent extends ZCodeAgentWorkspaceTarget {
   workspaceKey: string;
   runtimeIdentity: ZCodeAgentWorkspaceRuntimeIdentity;
   state: "available" | "unavailable";
@@ -996,7 +996,7 @@ export interface IZCodeAgentService {
    * 这是被动 observer attach/detach 的唯一生命周期信号，不表达用户使用租约。
    */
   onAgentRuntimeLifecycle?: (
-    listener: (event: ZCodeAgentRuntimeLifecycleEvent) => void,
+    listener: (event: ZodyAgentRuntimeLifecycleEvent) => void,
   ) => IDisposable;
   /** 当前 desktop-local CUA turn 是否仍在执行，用于 Helper recovery 避免中途回收 Agent。 */
   hasActiveCuaOperationTurn(): boolean;

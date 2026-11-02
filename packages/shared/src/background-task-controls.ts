@@ -1,4 +1,4 @@
-export type ZCodeBackgroundTaskControlStatus =
+export type ZodyBackgroundTaskControlStatus =
   | "pending"
   | "running"
   | "completed"
@@ -6,14 +6,14 @@ export type ZCodeBackgroundTaskControlStatus =
   | "killed"
   | "lost";
 
-export interface ZCodeBackgroundTaskControlItem {
+export interface ZodyBackgroundTaskControlItem {
   jobId: string;
   toolCallId?: string;
   command: string;
   taskKind: "agent" | "bash";
   cancellable?: boolean;
   title?: string;
-  status: ZCodeBackgroundTaskControlStatus;
+  status: ZodyBackgroundTaskControlStatus;
   startedAt?: number;
   elapsedMs?: number;
   pid?: number;
@@ -23,7 +23,7 @@ export interface ZCodeBackgroundTaskControlItem {
   raw?: unknown;
 }
 
-const ACTIVE_BACKGROUND_TASK_CONTROL_STATUSES = new Set<ZCodeBackgroundTaskControlStatus>([
+const ACTIVE_BACKGROUND_TASK_CONTROL_STATUSES = new Set<ZodyBackgroundTaskControlStatus>([
   "running",
 ]);
 
@@ -148,7 +148,7 @@ function normalizeToken(value: string | undefined): string {
   );
 }
 
-type BackgroundTaskControlKind = ZCodeBackgroundTaskControlItem["taskKind"];
+type BackgroundTaskControlKind = ZodyBackgroundTaskControlItem["taskKind"];
 
 function taskKindFromToken(token: string): BackgroundTaskControlKind | undefined {
   if (
@@ -243,7 +243,7 @@ function readDisplayCommand(
   );
 }
 
-function normalizeStatus(value: string | undefined): ZCodeBackgroundTaskControlStatus {
+function normalizeStatus(value: string | undefined): ZodyBackgroundTaskControlStatus {
   const normalized = normalizeToken(value);
   if (
     normalized === "queued" ||
@@ -319,11 +319,11 @@ function readJobId(record: Record<string, unknown>, command: string): string {
 
 export function parseZCodeBackgroundTaskControlItems(
   value: unknown,
-): ZCodeBackgroundTaskControlItem[] {
+): ZodyBackgroundTaskControlItem[] {
   if (!Array.isArray(value)) {
     return [];
   }
-  const jobsById = new Map<string, ZCodeBackgroundTaskControlItem>();
+  const jobsById = new Map<string, ZodyBackgroundTaskControlItem>();
   for (const item of value) {
     if (!isPlainRecord(item)) {
       continue;
@@ -352,7 +352,7 @@ export function parseZCodeBackgroundTaskControlItems(
     const stdoutTail = readStringField(item, ["stdoutTail", "stdout_tail"]);
     const stderrTail = readStringField(item, ["stderrTail", "stderr_tail"]);
     const outputTail = readStringField(item, ["outputTail", "output_tail"]);
-    const job: ZCodeBackgroundTaskControlItem = {
+    const job: ZodyBackgroundTaskControlItem = {
       jobId,
       ...(toolCallId ? { toolCallId } : {}),
       command,
@@ -374,13 +374,13 @@ export function parseZCodeBackgroundTaskControlItems(
 }
 
 export function isActiveZCodeBackgroundTaskControlItem(
-  job: ZCodeBackgroundTaskControlItem,
+  job: ZodyBackgroundTaskControlItem,
 ): boolean {
   return ACTIVE_BACKGROUND_TASK_CONTROL_STATUSES.has(job.status);
 }
 
 export function getZCodeBackgroundTaskControlItemElapsedMs(
-  job: ZCodeBackgroundTaskControlItem,
+  job: ZodyBackgroundTaskControlItem,
   now = Date.now(),
 ): number {
   const elapsedFromStart =
@@ -389,10 +389,10 @@ export function getZCodeBackgroundTaskControlItemElapsedMs(
 }
 
 export function collectVisibleZCodeBackgroundTaskControlItems(
-  jobs: readonly ZCodeBackgroundTaskControlItem[],
+  jobs: readonly ZodyBackgroundTaskControlItem[],
   now = Date.now(),
   thresholdMs = 30_000,
-): Array<ZCodeBackgroundTaskControlItem & { elapsedMs: number }> {
+): Array<ZodyBackgroundTaskControlItem & { elapsedMs: number }> {
   return jobs
     .filter(isActiveZCodeBackgroundTaskControlItem)
     .map((job) => ({
