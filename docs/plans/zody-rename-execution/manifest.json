@@ -5484,6 +5484,153 @@
       ],
       "task": "R20",
       "status": "planned"
+    },
+    {
+      "old": "apps/zcode-cli/packages/bootstrap/src/zcode-protocol",
+      "new": "apps/zody-cli/packages/bootstrap/src/zody-protocol",
+      "files": [
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/account-provider-config.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/ai-sdk-warning-logger.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/automation-port.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/background-work-owner.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/browser-control-broker.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/computer-use-operation-event.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/dynamic-workflow-policy.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/fork-model-selection.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/interaction-broker.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/interaction-preferences.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/interaction-response-race.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mapper.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/CONTRACT.md",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/appTools.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/appToolsContract.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/appToolsProtocol.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/callRaces.test.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/contract.example.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/contract.test.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/contract.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/handlers.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/index.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/instances.test.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/instances.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/module.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/notifications.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/protocol.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/resourceContract.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/samplingCalls.test.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/samplingCalls.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/samplingProtocol.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp-ui/sessionAccess.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/message-mapper.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-io-preferences.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-mapper.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/permission-options.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/plugin-reference-catalog.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/plugin-ui-surfaces.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/plugins.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/process-child-processes.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/protocol-mcp-config.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/provider-runtime-headers.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/resource-sampler.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/runtime-cleanup.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/runtime-identity.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/runtime-resources.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/saved-workflows-run.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/saved-workflows.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-operations.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-types.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/session-debug.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/session-mapper.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/session-residency.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/session-resident-pool.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/skill-reference-catalog.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/slash-commands.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/startup-resource.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/storage-startup.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/subagent-session-query.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/transport.test.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/transport.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/usage-stats-builder.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/v4-bridge.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/v4-workspace-config.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/workflow-settings-answer.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/workspace-hook-trust.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/workspace-model-runtime.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/workspace.ts"
+      ],
+      "task": "R20",
+      "status": "planned",
+      "ordering": "与 apps/zcode-cli 父目录迁移为原子映射；父路径变更后在新父路径调整子目录名，不重复搬迁"
+    },
+    {
+      "old": "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4",
+      "new": "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4",
+      "files": [
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/assistant-feedback-persistence.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/attachment-upload-registry.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/cold-event-merge.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/cold-file-change-summaries.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/cold-session-resume.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/command-inbox.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/attachment-refs.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/cua-live-submission.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/assistant-feedback.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/canonical-intent-replay.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/file-rewind.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/fork-edit-retry.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/goal-compact.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/index.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/interaction-background.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/model-config.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/queue.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/selection-side-session.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/session-flow.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/session-mgmt.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/input-admission.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/input-intent.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/prompt-turn.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/record-access.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/types.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/conversation-telemetry-facts.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/conversation-telemetry-workflow-facts.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/conversation-topic-publisher.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/conversation-workflow-run-deltas.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/create-session-command-fact.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/cua-app-snapshot.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/cua-permission-observation.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/event-normalizer.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/index.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/interaction-registry.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/local-ttft-clock.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/local-ttft-compaction.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/local-ttft.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/mcp-elicitation.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/model-config-mutation.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/persistent-command-facts.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/persistent-command-index.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection-bash-progress.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/projection-rows.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/projection-state.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/queue-auto-drain.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/replay.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/sessions-index-fanout-throttle.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/sessions-index-projection.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/sessions-index-publisher-registry.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/sessions-index-publisher.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/stable-fork-target.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/task-list-session-membership.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/topic-frame-reservation.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/transcript-hydration.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts",
+        "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/workspace-config-publisher.ts"
+      ],
+      "task": "R20",
+      "status": "planned",
+      "ordering": "与 apps/zcode-cli 父目录迁移为原子映射；父路径变更后在新父路径调整子目录名，不重复搬迁"
     }
   ],
   "scriptCandidates": [
@@ -5517,11 +5664,11 @@
     },
     {
       "old": "scripts/zcode-distribution.test.mjs",
-      "new": "scripts/zody-distribution.test.mjs",
+      "new": "scripts/zody-distribution-runner.test.mjs",
       "task": "R10",
-      "status": "destination-conflict",
+      "status": "planned",
       "basis": "路径含 zcode；目录迁移不意味着每个文件名要改",
-      "retention": "目标 scripts/zody-distribution.test.mjs 已存在；主控须先裁决合并，禁止覆盖"
+      "conflictResolution": "旧 runner 测试迁往 runner 名称；已有 zody-distribution.test.mjs 保留并只更新 import，workflow 持续执行两者。"
     },
     {
       "old": "scripts/zcode-distribution/assets.mjs",
@@ -5629,7 +5776,7 @@
   "counts": {
     "trackedFiles": 20673,
     "occurrences": 96836,
-    "directoryMoves": 11,
+    "directoryMoves": 13,
     "scriptCandidates": 17,
     "tasks": 26,
     "frozenPackageCopies": 45,
@@ -6902,5 +7049,176 @@
     "rootPackage": "zody（已改名，不在旧名列表）",
     "fixtureRule": "tracked package.json outside workspace and frozen copies",
     "frozenRule": "tracked native freeze evidence; never rewrite mechanically"
+  },
+  "explicitRetentions": [
+    {
+      "old": "zcode-plugins-official",
+      "new": "zcode-plugins-official",
+      "category": "explicit-retention",
+      "owner": "shared marketplace identity / CLI marketplace persistence",
+      "direction": "按引用处定义与使用；不得泛化到同前缀其他标识",
+      "files": [
+        "packages/shared/src/plugin-marketplaces.ts",
+        "apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts"
+      ],
+      "retentionReason": "市场 ID 与已安装缓存引用的外部身份",
+      "retentionUntil": "无计划退役",
+      "task": "R54",
+      "acceptance": "RENAME-PLUGIN-INSTALL",
+      "status": "planned"
+    },
+    {
+      "old": "zcode-cua",
+      "new": "zcode-cua",
+      "category": "explicit-retention",
+      "owner": "shared MCP matcher / external PyPI server",
+      "direction": "按引用处定义与使用；不得泛化到同前缀其他标识",
+      "files": [
+        "packages/shared/src/mcp.ts",
+        "apps/zcode-cli/packages/bootstrap/src/mcp-config.ts"
+      ],
+      "retentionReason": "外部 MCP/PyPI 名称，非内部 workspace 包",
+      "retentionUntil": "无计划退役",
+      "task": "R54",
+      "acceptance": "RENAME-PLUGIN-INSTALL",
+      "status": "planned"
+    },
+    {
+      "old": "zcode_mobile_secure_store",
+      "new": "zcode_mobile_secure_store",
+      "category": "explicit-retention",
+      "owner": "Android SecureKeyValueStore",
+      "direction": "按引用处定义与使用；不得泛化到同前缀其他标识",
+      "files": [
+        "packages/android/app/src/main/java/io/github/zclaudia/zody/mobile/bridge/SecureKeyValueStore.kt"
+      ],
+      "retentionReason": "Android 安全存储文件名，保留现有数据",
+      "retentionUntil": "无计划退役",
+      "task": "R61",
+      "acceptance": "RENAME-DATA",
+      "status": "planned"
+    },
+    {
+      "old": "zcode-sandbox://",
+      "new": "zcode-sandbox://",
+      "category": "explicit-retention",
+      "owner": "Desktop plugin sandbox protocol",
+      "direction": "按引用处定义与使用；不得泛化到同前缀其他标识",
+      "files": [
+        "packages/desktop/src/main/pluginSandbox/contract.ts",
+        "packages/desktop/src/main/pluginSandbox/protocol.ts",
+        "packages/desktop/src/main/pluginSandbox/session.ts"
+      ],
+      "retentionReason": "插件 origin 身份及既有浏览器存储",
+      "retentionUntil": "无计划退役",
+      "task": "R51",
+      "acceptance": "RENAME-PLUGIN-WIRE",
+      "status": "planned"
+    },
+    {
+      "old": "persist:plugin-sandbox-v2-*",
+      "new": "persist:plugin-sandbox-v2-*",
+      "category": "explicit-retention",
+      "owner": "Desktop plugin sandbox session",
+      "direction": "按引用处定义与使用；不得泛化到同前缀其他标识",
+      "files": [
+        "packages/desktop/src/main/pluginSandbox/contract.ts",
+        "packages/desktop/src/main/pluginSandbox/CONTRACT.md"
+      ],
+      "retentionReason": "稳定 partition 避免重置插件存储",
+      "retentionUntil": "无计划退役",
+      "task": "R51",
+      "acceptance": "RENAME-PLUGIN-WIRE",
+      "status": "planned"
+    },
+    {
+      "old": "zcode.json",
+      "new": "zcode.json",
+      "category": "explicit-retention",
+      "owner": "workspace hook configuration discovery and trust",
+      "direction": "按引用处定义与使用；不得泛化到同前缀其他标识",
+      "files": [
+        "packages/shared/src/workspace-hook-config.ts",
+        "packages/shared/src/workspace-hook-mutation.ts"
+      ],
+      "retentionReason": "真实旧来源身份，原摘要和授权不自动迁移到新路径",
+      "retentionUntil": "不随插件 1.0 退役",
+      "task": "R47",
+      "acceptance": "RENAME-TRUST",
+      "status": "planned"
+    },
+    {
+      "old": ".zcode/config.json",
+      "new": ".zcode/config.json",
+      "category": "explicit-retention",
+      "owner": "workspace hook configuration discovery and trust",
+      "direction": "按引用处定义与使用；不得泛化到同前缀其他标识",
+      "files": [
+        "packages/shared/src/workspace-hook-config.ts",
+        "packages/shared/src/workspace-hook-mutation.ts"
+      ],
+      "retentionReason": "真实旧来源身份，原摘要和授权不自动迁移到新路径",
+      "retentionUntil": "不随插件 1.0 退役",
+      "task": "R47",
+      "acceptance": "RENAME-TRUST",
+      "status": "planned"
+    },
+    {
+      "old": "window.zcode / zcode/gen-ui/* / registered zcode/* metadata",
+      "new": "window.zcode / zcode/gen-ui/* / registered zcode/* metadata",
+      "category": "explicit-retention",
+      "owner": "plugin sandbox bridge and shared contracts",
+      "direction": "按引用处定义与使用；不得泛化到同前缀其他标识",
+      "files": [
+        "packages/desktop/src/renderer/src/plugin-sandbox/alias.ts",
+        "packages/desktop/src/renderer/src/plugin-sandbox/aliasRuntime.ts",
+        "packages/shared/src/gen-ui/contract.ts",
+        "packages/shared/src/mcp-apps/contract.ts"
+      ],
+      "retentionReason": "登记字段的旧插件运行时兼容，1.0 退役前一个 minor 警告；历史读取另行决定",
+      "retentionUntil": "1.0 运行时别名退役门禁",
+      "task": "R50/R51/R52/R53",
+      "acceptance": "RENAME-PLUGIN-WIRE",
+      "status": "planned"
+    },
+    {
+      "old": "ZCODE_PLUGIN_ROOT / ZCODE_PLUGIN_DATA / ZCODE_PLUGIN_ID",
+      "new": "ZCODE_PLUGIN_ROOT / ZCODE_PLUGIN_DATA / ZCODE_PLUGIN_ID",
+      "category": "explicit-retention",
+      "owner": "CLI plugin context and shell/hook projection",
+      "direction": "按引用处定义与使用；不得泛化到同前缀其他标识",
+      "files": [
+        "apps/zcode-cli/packages/adapters/src/plugins/mcp.ts",
+        "apps/zcode-cli/packages/bootstrap/src/custom-command-shell-expansion.ts",
+        "apps/zcode-cli/packages/core/src/hooks/configured-runner-input.ts",
+        "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-runtime.ts"
+      ],
+      "retentionReason": "从权威插件上下文双注入；不扩展普通 ZCODE env",
+      "retentionUntil": "1.0 插件兼容退役门禁",
+      "task": "R55",
+      "acceptance": "RENAME-PLUGIN-ENV",
+      "status": "planned"
+    }
+  ],
+  "directoryMoveOrdering": "11 个顶层/已有映射加 2 个 bootstrap 嵌套目录；父移动与子名映射视为同一最终路径，先构造最终路径再执行，避免重复移动。",
+  "lockfileOwnership": {
+    "task": "R21",
+    "entries": [
+      {
+        "old": "pnpm-lock.yaml",
+        "new": "pnpm-lock.yaml",
+        "policy": "唯一写者增量更新并核对第三方解析差异"
+      },
+      {
+        "old": "apps/zcode-cli/pnpm-lock.yaml",
+        "new": "apps/zody-cli/pnpm-lock.yaml",
+        "policy": "审计并仅在必要时增量映射；不无故更改依赖"
+      },
+      {
+        "old": "apps/zcode-cli/skills-lock.json",
+        "new": "apps/zody-cli/skills-lock.json",
+        "policy": "随父目录迁移并审计；外部来源不机械改名，无事实依据不变更"
+      }
+    ]
   }
 }

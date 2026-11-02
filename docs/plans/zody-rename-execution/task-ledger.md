@@ -14,7 +14,7 @@ Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan usi
 
 | Task | Status  | Implementation  | Review / gate                                                       |
 | ---- | ------- | --------------- | ------------------------------------------------------------------- |
-| R00  | review  | /root/terra_r00 | controller revisions applied; DeepSeek review running               |
+| R00  | review  | /root/terra_r00 | DeepSeek review-2 PASS for initial dispatch scopes; later writeSets gated on R01               |
 | R01  | running | /root/terra_r01 | documentation-only work; no product code dispatch before R00 review |
 | R02  | planned | unassigned      | not run                                                             |
 | R10  | planned | unassigned      | not run                                                             |
@@ -57,3 +57,17 @@ Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan usi
 - R01 exact grant expanded by controller to protocol-layer docs, mobile master spec, new specs/zody-rename-runtime-contract.md and correction of survey frozen-input facts. This is within the accepted implementation plan.
 - R02 preliminary read-only evidence: reports/R02-preflight.md; archive and two pins match, full restore/old-product validation outstanding. Native frozen source is partly tracked, contrary to the old survey statement.
 - DeepSeek known agent remains running as confirmed by wait_agent; not restarted or replaced. Global list_agents failed on an unrelated active writer, so polling uses the known ID.
+
+## R00 review and W1 dispatch
+
+- DeepSeek R00 review-1: CHANGES_REQUIRED, saved in reports/R00-deepseek-review-1.md. Terra fixed explicit external identities, two bootstrap protocol mappings (13 total), runner-test collision and nested lock ownership. Independent re-review is running on the same Broker agent.
+- Collision decision: old scripts/zcode-distribution.test.mjs becomes scripts/zody-distribution-runner.test.mjs; existing scripts/zody-distribution.test.mjs keeps its coverage and updates imports. Both remain in CI.
+- R01 DeepSeek agent: broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19ccf-8092-7d11-9010-8010e395f2a5, same DeepSeek route/model and read-only grant. R01 target specs are not yet marked accepted.
+- R02 exact write root: implementation cwd/output/zody-rename-r02, plus its report. Explicit source whitelist is the five named archive/sidecar/manifest/snapshot inputs and recorded acceptance metadata in R02-preflight. No active native/output materials were overwritten. Restore result is pass; old runtime provenance and runtime smoke remain incomplete.
+- R10 grant: its file-assignments writeSet plus docs/desktop/configurable-data-directory.md, docs/desktop/dev-deep-link.md and docs/desktop/finder-open-folder-deep-link.md for current-fact corrections. No scope/env/wire/lock/frozen-resource modifications. This is staged implementation, not a completed phase or release.
+
+## Preparation review disposition
+
+- R00 DeepSeek review-2: PASS for initial dispatch scope; saved in reports/R00-deepseek-review-2.md. Count now includes two nested bootstrap protocol moves (13 mappings). It does not assert subsequent interface tasks are already verified.
+- R01 DeepSeek review-1: CHANGES_REQUIRED (reports/R01-deepseek-review-1.md), permitting R10 but blocking wire/plugin interface dispatch. Terra has addressed field-level ownership, separate RemoteServer/Agent stdio, Web and mobile consumers, manifest readers and exact env keys; re-review pending.
+- R10 completed by Terra, staged for independent review: distribution 17 tests, services process manager 66 tests and official-refs 17 tests reported passing. Controller diff review found only granted P1 changes; independent re-run/review pending. Extra grant includes services process-manager test and third-party/SPEC current script path.
