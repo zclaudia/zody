@@ -120,5 +120,4 @@ provenance and requires normal re-review.
 ## Out of scope
 
 This spec does not rename the CLI product entry point, desktop branding, Android,
-distribution scripts, internal `ZCODE_` identifiers, plugin manifest filenames,
-or tool schemas. Those have separate ownership and specs.
+distribution scripts or tool schemas. Internal environment names hard-cut to `ZODY_`; plugin environment and manifest compatibility follow the [rename contract](../../../../../docs/plans/zody-rename-execution/contract-map.md). Hook trust remains bound to the actual source and its original digest: a legacy path is not a new-path approval.

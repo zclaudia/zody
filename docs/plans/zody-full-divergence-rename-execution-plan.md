@@ -180,15 +180,15 @@ flowchart TD
 - **依赖**：R40；可与 R42/R44 并行。
 - **写范围**：`packages/server/src/entry-stdio.ts`、`remote/handshake.ts`、services 的 Agent stdio transport、CLI stdio 对端及对应测试；不写 shared、rpc、`remote/connect.ts`、HTTP 或插件沙箱。
 - **操作**：接入 R40 门禁，新旧两向不进入业务；明确握手失败、EOF、取消与残余数据处理，关闭所属流/进程，不用延迟绕过同步问题。
-- **测试 seed**：`packages/server/test/{stdioLifecycle,remoteConnect}.test.ts`、`packages/services/test/zcodeStdioTransport.test.ts`。`remoteConnect.test.ts` 在本任务结束后交 R43，不允许并行编辑。
+- **测试 seed**：`packages/server/test/{stdioLifecycle,remoteConnect}.test.ts`、`packages/services/test/zcodeStdioTransport.test.ts`；R41 独写新增 `packages/server/test/stdioHandshake.test.ts`，覆盖 server strict ack、新旧、EOF/取消和剩余缓冲。RemoteServer hello/ack 与 Agent LF JSON 协议分别处理，不给 Agent 套用该 schema。`remoteConnect.test.ts` 在本任务结束后交 R43，不允许并行编辑。
 - **验收**：同代成功、双向不兼容可见拒绝、零 admission/业务写入、资源释放；真实旧产物组合留 R48 集成执行。返回调用接口给 R43。
 
 ### R42 — HTTP/Web/手机 attachment 门禁
 
 - **依赖**：R40；W4 并行候选。
-- **写范围**：`packages/server/src/http.ts`、当前 `packages/zcode-server-cli/src/server-core/http.ts`、`packages/desktop/src/host/serverRemoteConnection.ts`、manifest 中 Web/手机连接和 attachment 入口、相应测试；不写 shared、stdio、部署代码或 R44 主桥文件。两套 HTTP 实现与各自发行启动入口必须在 R00/R01 分别登记，P2 后映射到新目录。
+- **写范围**：`packages/server/src/http.ts`、当前 `packages/zcode-server-cli/src/server-core/http.ts`、`packages/desktop/src/host/serverRemoteConnection.ts`、`packages/client/src/websocket.ts`、`packages/web/src/main.tsx`、`packages/web/src/mobile-remote/gatewayTerminalTransport.ts`、`packages/desktop/src/main/remote-access/gatewayDeviceTransportHello.ts` 及相应测试；不写 shared、stdio、部署代码或 R44 主桥文件。两套 HTTP 实现与各自发行启动入口必须在 R00/R01 分别登记，P2 后映射到新目录。
 - **操作**：在 `/ws/host` 和 `/ws` 各自业务通道前校验兼容；认证/capability 单次消费继续有效；新客户端对旧 Server 也须在业务前拒绝。手机连接已有 Host attachment，不为版本检测创建第二套 runtime。
-- **测试 seed**：`packages/desktop/test/serverRemoteConnection.test.ts`、当前 `packages/zcode-server-cli/test/coreHttp.test.ts`；手机 E2E 从 `docs/testing/mobile-remote-phase2-e2e-plan.md` 与本次 test-map 领取。
+- **测试 seed**：`packages/desktop/test/serverRemoteConnection.test.ts`、当前 `packages/zcode-server-cli/test/coreHttp.test.ts`、`packages/web/test/mobileRemoteGatewayTerminalTransport.test.ts`；planned `packages/client/test/zodyRenameWebsocket.test.ts`、`packages/web/test/zodyRenameBootstrap.test.ts` 由 R42 独写；手机 E2E 从 `docs/testing/mobile-remote-phase2-e2e-plan.md` 与本次 test-map 领取。
 - **验收**：连续与可重放模式分别覆盖同代连接、旧缓存页、双向混布、断线恢复和清理；字段/token/身份伪造不能提升成 trusted host。测试真实组合由 R48 收口。
 
 ### R43 — 部署、启动与运行版本验证
@@ -273,7 +273,7 @@ flowchart TD
 ### R54 — manifest 发现、同步、seed 与安装升级
 
 - **依赖**：R51/R52/R53 已集成；独占插件发现与 official runtime。
-- **写范围**：CLI adapters 的 `plugins/{index,zip-source,marketplace}.ts`、skills 发现引用；bootstrap `app/{bundled-plugins,official-plugin-runtime}.ts`；services `plugin-sync/`、内置 seed/打包调用者及测试。独占 R01 分配的 RENAME-PLUGIN-INSTALL 交互 spec 与 case-local fixture；排除 R51 的 wire spec、插件 `mcp.ts` 和 core hook env。
+- **写范围**：CLI adapters 的 `plugins/{index,zip-source,marketplace}.ts`、skills 发现引用；bootstrap `app/{bundled-plugins,official-plugin-runtime}.ts`；services `plugin-sync/pluginSyncService.ts`、`skills/skillsService.ts`、`commands/commandsService.ts`、`subagents/subagentsService.ts`、`settings-sync/settingsSyncService.ts`、内置 seed/打包调用者及测试。独占 R01 分配的 RENAME-PLUGIN-INSTALL 交互 spec 与 case-local fixture；排除 R51 的 wire spec、插件 `mcp.ts` 和 core hook env。
 - **操作**：新 manifest 优先；新文件存在但非法直接失败；仅缺失才回退旧格式，其余格式相对顺序保持、不合并字段。发现/同步/seed/打包/安装升级使用同一优先规则。
 - **测试 seed**：bootstrap `plugins.test.ts`、`official-plugin-runtime.test.ts`、Server `remoteAssetInstaller.test.ts` 及 plugin-sync 测试。
 - **验收**：新旧并存、非法新清单、仅旧清单、更新/重装、内置插件首次 seed 都覆盖；市场 id、外部 CUA 名、签名/来源信息不变。交付 official runtime 文件锁给 R55。
@@ -282,7 +282,7 @@ flowchart TD
 
 - **依赖**：R54、R30；不可与 R54 并行。
 - **写范围**：CLI adapters `plugins/mcp.ts`、core `hooks/configured-runner-input.ts`、bootstrap `custom-command-shell-expansion.ts` 与 `app/{official-plugin-runtime,built-in-node-repl}.ts` 及测试；`UI_PLUGIN.md`、`UI_PLUGIN.en.md` 的插件 env/模板条款；独占 R01 分配的 RENAME-PLUGIN-ENV 交互 spec 与 case-local fixture/manifest。R00/R01 须逐项列明实际文件，不允许覆盖 R51/R54 的用例或公共 fixture。
-- **操作**：从权威插件上下文生成两组 ROOT/DATA/ID；模板识别设计登记的新旧前缀，外部 env 不能分别覆盖两组身份值。保留原模板支持范围，不把所有 ZCODE env 重新兼容。
+- **操作**：从权威插件上下文生成两组 ROOT/DATA/ID/NAME，保留 CLAUDE 的 ROOT/DATA；模板识别设计登记的新旧前缀，外部 env 不能分别覆盖两组身份值。保留原模板支持范围，不把所有 ZCODE env 重新兼容。
 - **测试 seed**：bootstrap `plugin-runtime-features.test.ts`；现有 `plugin-runtime-env-agent-projection` pending E2E 只作为输入，不能当作已准入/已通过。
 - **验收**：插件子进程、hook、模板中的两组值一致，真实 env 覆盖顺序有断言；普通 B 组旧变量仍无效；公开文档与 fixture 同步。
 

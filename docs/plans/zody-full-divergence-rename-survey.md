@@ -283,7 +283,7 @@ P4.5 验收矩阵包括:旧插件、新插件、双键相等、双键冲突、�
 
 **重做工序(依赖顺序)**:P2 更新 18 处硬编码及配套测试 → P5 在最终源码上重跑 `build-cua-desktop-session.mjs`(新 entries+pins 头)→ Helper 重编译+native tests → controller 重签(身份 pins 常量不变,`io.github.zclaudia.zody.cua-helper` bundle id **不动**——它被 DR 字符串钉死,动它=换信任根)→ 窄资源 stage/manifest 重出 → demo-defaults 四 pin 重录 → 冻结归档重导出+`restore-cua-narrow-frozen` 复检 → 主 app 重打包过全部 afterPack 断言。
 
-注意:`packages/desktop/native/macos-cua-*` 六个目录与 `output/cua-*` 全部是 **git 外本地冻结材料**,改名在 git 里看不到 diff,但本地构建链会静默失去输入——重走工序时必须先确认冻结材料在场(用 `restore-cua-narrow-frozen.mjs` 归档机制)。
+注意：R02 preflight 纠正：native 冻结目录并非全部在 git 外，当前有 3770 个 tracked 文件；`output/` 被忽略，旧归档存在。tracked 内容与本地忽略材料均需核实，不能凭 git diff 判定输入齐全。重走工序前确认对应源码、摘要和归档，并在隔离目录演练恢复。
 
 P2 前保存可复原的旧归档、摘要、签名身份与匹配源码版本;复原演练写入隔离目录,不覆盖现有冻结材料。P2 至 P5 通过前暂停 macOS arm64 CUA 发行,不得复用旧冻结包把中间版本标为已发布。P5 后若再修改 sealed inputs,重新执行受影响冻结链,不沿用此前发布通过结论。
 
