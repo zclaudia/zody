@@ -80,6 +80,38 @@ class MobileShellConfigContractTest {
     }
 
     @Test
+    fun gatewayRejectsBackslashDotSegmentsAndEncodedPathEscapes() {
+        listOf(
+            "https://gateway.example/a\\b",
+            "https://gateway.example/a/../b",
+            "https://gateway.example/a/./b",
+            "https://gateway.example/%2e%2e/b",
+            "https://gateway.example/%2E%2E/b",
+            "https://gateway.example/a%2fb",
+            "https://gateway.example/a%5cb",
+            "https://gateway.example/a%00b",
+            "https://gateway.example/a//b",
+            "https://gateway.example/%252e%252e/b",
+            "https://gateway.example/%ff",
+            "https://gateway.example/a b",
+        ).forEach { value ->
+            assertNull("expected path escape rejection for $value", normalizeMobileShellGatewayUrl(value, true))
+        }
+    }
+
+    @Test
+    fun gatewayAllowsSafeDeploymentPrefixAndEncodedSafeCharacters() {
+        assertEquals(
+            "https://gateway.example/team.v1/base",
+            normalizeMobileShellGatewayUrl("https://gateway.example/team.v1/base/", false),
+        )
+        assertEquals(
+            "https://gateway.example/team",
+            normalizeMobileShellGatewayUrl("https://gateway.example/%74eam", false),
+        )
+    }
+
+    @Test
     fun writeDraftAppliesDefaultsAndTrims() {
         val write = parseMobileShellConfigWriteJson(
             """{"gatewayUrl":"https://gateway.example/","namespace":"  ","credential":"  zgd_abc  ","backendId":"  pc-1  "}""",
@@ -196,16 +228,25 @@ class MobileShellConfigContractTest {
     }
 
     @Test
-    fun toStringDoesNotExposeCredential() {
+    fun toStringDoesNotExposeGatewayOrCredential() {
         val config = MobileShellConfig(
-            gatewayUrl = "https://gateway.example",
+            gatewayUrl = "https://internal-gateway.example/private",
             namespace = "zody",
             credential = "zgd_secret_value",
             backendId = "pc-1",
             configRevision = 1,
         )
+        val write = MobileShellConfigWrite(
+            gatewayUrl = "https://internal-gateway.example/private",
+            namespace = "zody",
+            credential = "zgd_secret_value",
+            backendId = "pc-1",
+        )
 
-        assertFalse(config.toString().contains("zgd_secret_value"))
-        assertTrue(config.toString().contains("redacted"))
+        listOf(config.toString(), write.toString()).forEach { rendered ->
+            assertFalse(rendered.contains("internal-gateway.example"))
+            assertFalse(rendered.contains("zgd_secret_value"))
+            assertTrue(rendered.contains("<redacted>"))
+        }
     }
 }

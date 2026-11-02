@@ -53,7 +53,9 @@ class MobileShellConfigException(
  * - 构造时零 IO，绝不静默删除旧凭证；旧 schema 只由 [inspect] 检测，必须用户确认后调用
  *   [confirmRepairAndClear] 才清理；
  * - [saveConfig]、[clearConfig]、[confirmRepairAndClear]、[getOrCreateClientInstanceId] 串行执行；
- * - 每次写入（含清除）都把 configRevision 递增并单独持久化，配置被清除后仍单调；
+ * - 每次写入（含清除）先持久化下一 configRevision（write-ahead），再写/删配置；配置被清除后
+ *   revision 仍单调。这里不是数据库事务：第二步失败时调用方收到异常、不会当作成功，旧配置保持
+ *   可见，重试会基于已落盘的更高 revision 继续递增，绝不回退或复用 revision；
  * - `clientInstanceId` 按 backendId 懒生成并持久化，同一 backend 复用、不同 backend 不同；
  * - 保存/读取失败直接抛出，不返回“成功”或半份配置；消息不含凭证。
  *
@@ -104,8 +106,10 @@ class MobileShellConfigStore(
             backendId = normalized.backendId,
             configRevision = nextRevision,
         )
-        writeOrThrow(MobileShellConfigContract.CONFIG_STORAGE_KEY, encodeMobileShellConfig(config))
+        // write-ahead：先落盘 revision 再写配置。若配置写入失败，调用方收到异常且旧配置仍在；
+        // 重试从已落盘的 revision 继续递增，不会复用刚失败的 revision。
         writeOrThrow(MobileShellConfigContract.REVISION_STORAGE_KEY, nextRevision.toString())
+        writeOrThrow(MobileShellConfigContract.CONFIG_STORAGE_KEY, encodeMobileShellConfig(config))
         config
     }
 
@@ -130,8 +134,9 @@ class MobileShellConfigStore(
             else -> 0L
         }
         val nextRevision = nextRevision(currentRevision)
-        removeOrThrow(MobileShellConfigContract.CONFIG_STORAGE_KEY)
+        // 同样 write-ahead：清除失败时配置还在，但 revision 已前进；重试不会复用旧值。
         writeOrThrow(MobileShellConfigContract.REVISION_STORAGE_KEY, nextRevision.toString())
+        removeOrThrow(MobileShellConfigContract.CONFIG_STORAGE_KEY)
         nextRevision
     }
 
@@ -141,7 +146,8 @@ class MobileShellConfigStore(
      * 只有 [inspect] 仍处于 `RequiresRepair` 时才删除旧 `config`、旧 backend 的
      * `client-instance-id:*`、新配置和新 clientInstanceId 映射；一次调用完成并递增 revision。
      * 未确认（Unconfigured/Ready）返回 [MobileShellRepairResult.NothingToRepair]，不触碰存储。
-     * 重复调用幂等；若底层写入中途失败，再次调用会从剩余状态继续清理。
+     * 重复调用幂等；底层写入中途失败时调用方收到异常，再次调用会从剩余状态继续清理。
+     * 这是串行 + write-ahead 的可恢复流程，不是真正事务：revision 先落盘，因此失败重试不会复用。
      */
     fun confirmRepairAndClear(): MobileShellRepairResult = synchronized(lock) {
         val state = inspectLocked()
@@ -151,16 +157,19 @@ class MobileShellConfigStore(
 
         val legacy = readValue(MobileShellConfigContract.LEGACY_CONFIG_STORAGE_KEY)
         val legacyBackendId = parseLegacyBackendId(legacy)
+        // repair 可能面对损坏的 revision key；readRevisionSafe 已把不可解析值降为 0，
+        // 这里直接递增并覆盖写回，避免再次读取坏值导致无法恢复。
         val currentRevision = readRevisionSafe() ?: 0L
-        val nextRevision = nextRevision(currentRevision)
+        val nextRevision = incrementRevision(currentRevision)
 
+        // write-ahead：即使后续删除失败，revision 也不复用；调用方收到异常，状态仍是待修复。
+        writeOrThrow(MobileShellConfigContract.REVISION_STORAGE_KEY, nextRevision.toString())
         removeOrThrow(MobileShellConfigContract.CONFIG_STORAGE_KEY)
         removeOrThrow(MobileShellConfigContract.LEGACY_CONFIG_STORAGE_KEY)
         removeOrThrow(MobileShellConfigContract.CLIENT_INSTANCE_IDS_STORAGE_KEY)
         legacyBackendId?.let {
             removeOrThrow("${MobileShellConfigContract.LEGACY_CLIENT_INSTANCE_ID_PREFIX}$it")
         }
-        writeOrThrow(MobileShellConfigContract.REVISION_STORAGE_KEY, nextRevision.toString())
         MobileShellRepairResult.Cleared(nextRevision)
     }
 
@@ -169,6 +178,11 @@ class MobileShellConfigStore(
      * 同一 backend 跨进程/升级后复用；换 backend 得到不同 id。
      */
     fun getOrCreateClientInstanceId(backendId: String): String = synchronized(lock) {
+        // 旧 schema/损坏配置必须先重新配对；不能在未确认的升级状态写新的持久身份。
+        val state = inspectLocked()
+        if (state is MobileShellConfigState.RequiresRepair) {
+            throw state.toException()
+        }
         val normalizedBackendId = backendId.trim()
         if (normalizedBackendId.isEmpty() ||
             normalizedBackendId.length > MobileShellConfigContract.MAX_BACKEND_ID_CHARS
@@ -224,7 +238,21 @@ class MobileShellConfigStore(
             return MobileShellConfigState.RequiresRepair(MobileShellRepairReason.LEGACY_SCHEMA)
         }
         val rawConfig = readValue(MobileShellConfigContract.CONFIG_STORAGE_KEY)
-            ?: return MobileShellConfigState.Unconfigured
+        if (rawConfig == null) {
+            // 未配置也要校验 revision key：损坏的 revision 不能继续被写入路径复用。
+            // 按 INVALID_CONFIG 进入重新配对/清理流程，避免损坏后无恢复入口。
+            val revisionOk = try {
+                readRevision()
+                true
+            } catch (_: MobileShellConfigException) {
+                false
+            }
+            return if (revisionOk) {
+                MobileShellConfigState.Unconfigured
+            } else {
+                MobileShellConfigState.RequiresRepair(MobileShellRepairReason.INVALID_CONFIG)
+            }
+        }
         val config = parsePersistedMobileShellConfig(rawConfig, allowInsecureTransport)
             ?: return MobileShellConfigState.RequiresRepair(MobileShellRepairReason.INVALID_CONFIG)
         // revision key 损坏同样 fail closed；不把配置当成可继续使用。
@@ -280,7 +308,10 @@ class MobileShellConfigStore(
 
     private fun nextRevision(currentConfigRevision: Long): Long {
         val stored = readRevision()
-        val base = maxOf(stored, currentConfigRevision)
+        return incrementRevision(maxOf(stored, currentConfigRevision))
+    }
+
+    private fun incrementRevision(base: Long): Long {
         if (base >= MobileShellConfigContract.MAX_SAFE_INTEGER) {
             throw MobileShellConfigException(
                 MobileShellConfigFailure.WRITE_FAILED,

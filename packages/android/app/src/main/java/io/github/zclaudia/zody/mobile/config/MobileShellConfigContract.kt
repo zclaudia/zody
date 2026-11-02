@@ -25,7 +25,7 @@ data class MobileShellConfig(
      * 避免控制器或诊断代码误把整个对象写进日志。
      */
     override fun toString(): String =
-        "MobileShellConfig(gatewayUrl=$gatewayUrl, namespace=$namespace, credential=<redacted>, " +
+        "MobileShellConfig(gatewayUrl=<redacted>, namespace=$namespace, credential=<redacted>, " +
             "backendId=$backendId, configRevision=$configRevision)"
 }
 
@@ -37,7 +37,7 @@ data class MobileShellConfigWrite(
     val backendId: String?,
 ) {
     override fun toString(): String =
-        "MobileShellConfigWrite(gatewayUrl=$gatewayUrl, namespace=$namespace, " +
+        "MobileShellConfigWrite(gatewayUrl=<redacted>, namespace=$namespace, " +
             "credential=<redacted>, backendId=$backendId)"
 }
 
@@ -76,10 +76,13 @@ object MobileShellConfigContract {
 }
 
 /**
- * 归一化 Gateway 地址，规则与 shared `tryNormalizeRemoteAccessGatewayUrl` 一致：
+ * 归一化 Gateway 地址，规则与 shared `tryNormalizeRemoteAccessGatewayUrl` 及
+ * `RemoteUiPaths.normalizeSessionContext` 的 fail-closed 方向一致：
  * - 统一 http/ws、https/wss；
  * - 去掉尾部斜杠，保留部署前缀；
  * - 拒绝相对地址、用户信息、query、fragment 和非法端口；
+ * - 拒绝反斜杠、NUL/控制字符、编码斜杠/反斜杠、点段与无法安全解码的路径，
+ *   避免 `/../` 或 `%2e%2e` 进入持久配置后被原生代理或 Gateway 再次解释；
  * - release（`allowInsecureTransport=false`）只允许 https。
  */
 fun normalizeMobileShellGatewayUrl(
@@ -90,12 +93,17 @@ fun normalizeMobileShellGatewayUrl(
     if (trimmed.isEmpty() || trimmed.length > MobileShellConfigContract.MAX_GATEWAY_URL_CHARS) {
         return null
     }
+    if (trimmed.contains('\\') || trimmed.any { it.code < 0x20 || it.code == 0x7F }) {
+        return null
+    }
     val uri = try {
         URI(trimmed)
     } catch (_: URISyntaxException) {
         return null
     }
-    if (!uri.isAbsolute || uri.rawUserInfo != null || uri.rawQuery != null || uri.rawFragment != null) {
+    if (!uri.isAbsolute || uri.isOpaque ||
+        uri.rawUserInfo != null || uri.rawQuery != null || uri.rawFragment != null
+    ) {
         return null
     }
     val scheme = when (uri.scheme?.lowercase()) {
@@ -112,8 +120,63 @@ fun normalizeMobileShellGatewayUrl(
         port in 1..65535 -> ":$port"
         else -> return null
     }
-    val path = uri.rawPath.orEmpty().trimEnd('/')
+    // 尾部斜杠按 shared 归一化规则去掉；去掉后仍含空段（如 /a//b）才按路径逃逸拒绝。
+    val rawPath = uri.rawPath.orEmpty().trimEnd('/')
+    if (rawPath.contains('\\') || rawPath.contains('\u0000') || rawPath.contains("//")) {
+        return null
+    }
+    if (rawPath.any { it.code < 0x20 || it.code == 0x7F }) {
+        return null
+    }
+    if (DANGEROUS_PATH_ESCAPE.containsMatchIn(rawPath)) {
+        return null
+    }
+    val decodedPath = decodePercentEncodedPath(rawPath) ?: return null
+    val path = decodedPath.trimEnd('/')
+    if (path.isNotEmpty()) {
+        if (!path.startsWith("/") || path.contains("//") || !SAFE_GATEWAY_BASE_PATH.matches(path)) {
+            return null
+        }
+        if (path.split('/').any { it == "." || it == ".." }) {
+            return null
+        }
+    }
     return "$scheme://$host$normalizedPort$path"
+}
+
+private val DANGEROUS_PATH_ESCAPE = Regex("%(?:2f|5c|00|0d|0a)", RegexOption.IGNORE_CASE)
+private val SAFE_GATEWAY_BASE_PATH = Regex("^/[A-Za-z0-9._~/-]+$")
+
+/**
+ * 只按字节做严格百分号解码；非法转义、非 ASCII 或 UTF-8 替换字符都返回 null。
+ * 这与 RemoteUiPaths 的校验方向一致：先拒绝危险转义，再解码，再按段拒绝点段。
+ */
+private fun decodePercentEncodedPath(raw: String): String? {
+    val bytes = java.io.ByteArrayOutputStream(raw.length)
+    var index = 0
+    while (index < raw.length) {
+        val char = raw[index]
+        if (char == '%') {
+            if (index + 2 >= raw.length) {
+                return null
+            }
+            val high = Character.digit(raw[index + 1], 16)
+            val low = Character.digit(raw[index + 2], 16)
+            if (high < 0 || low < 0) {
+                return null
+            }
+            bytes.write((high shl 4) or low)
+            index += 3
+        } else {
+            if (char.code > 0x7F) {
+                return null
+            }
+            bytes.write(char.code)
+            index += 1
+        }
+    }
+    val decoded = String(bytes.toByteArray(), Charsets.UTF_8)
+    return if (decoded.indexOf(0xFFFD.toChar()) >= 0) null else decoded
 }
 
 /**

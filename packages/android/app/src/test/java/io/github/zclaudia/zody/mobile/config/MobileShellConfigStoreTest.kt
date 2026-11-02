@@ -31,6 +31,8 @@ class MobileShellConfigStoreTest {
         private val values = Collections.synchronizedMap(LinkedHashMap<String, String>(initial))
         var setDelayMillis: Long = 0
         var failure: RuntimeException? = null
+        val failSetKeys: MutableSet<String> = mutableSetOf()
+        val failRemoveKeys: MutableSet<String> = mutableSetOf()
 
         fun snapshot(): Map<String, String> = synchronized(values) { values.toMap() }
 
@@ -41,11 +43,17 @@ class MobileShellConfigStoreTest {
                 Thread.sleep(setDelayMillis)
             }
             failure?.let { throw it }
+            if (key in failSetKeys) {
+                throw IllegalStateException("injected set failure for $key")
+            }
             synchronized(values) { values[key] = value }
         }
 
         override fun remove(key: String) {
             failure?.let { throw it }
+            if (key in failRemoveKeys) {
+                throw IllegalStateException("injected remove failure for $key")
+            }
             synchronized(values) { values.remove(key) }
         }
     }
@@ -185,6 +193,151 @@ class MobileShellConfigStoreTest {
         )
         assertEquals("https://gateway.example", persisted.getString("gatewayUrl"))
         assertEquals(4, persisted.getLong("configRevision"))
+    }
+
+    @Test
+    fun failedConfigWriteKeepsRevisionAdvancedAndNeverReportsSuccess() {
+        val secure = InMemorySecureStore()
+        val store = store(secure)
+        secure.failSetKeys += MobileShellConfigContract.CONFIG_STORAGE_KEY
+
+        try {
+            store.saveConfig(validWrite)
+            fail("config write failure must surface to the caller")
+        } catch (error: MobileShellConfigException) {
+            assertEquals(MobileShellConfigFailure.WRITE_FAILED, error.failure)
+        }
+
+        // write-ahead：revision 已落盘，配置仍是未配置；调用方不会看到成功。
+        assertEquals("1", secure.get(MobileShellConfigContract.REVISION_STORAGE_KEY))
+        assertNull(secure.get(MobileShellConfigContract.CONFIG_STORAGE_KEY))
+        assertEquals(MobileShellConfigState.Unconfigured, store.inspect())
+
+        secure.failSetKeys.clear()
+        val retried = store.saveConfig(validWrite)
+        assertEquals(2, retried.configRevision)
+        assertEquals("2", secure.get(MobileShellConfigContract.REVISION_STORAGE_KEY))
+    }
+
+    @Test
+    fun failedRevisionWriteLeavesNoConfigAndRetryStartsAtOne() {
+        val secure = InMemorySecureStore()
+        val store = store(secure)
+        secure.failSetKeys += MobileShellConfigContract.REVISION_STORAGE_KEY
+
+        try {
+            store.saveConfig(validWrite)
+            fail("revision write failure must surface to the caller")
+        } catch (error: MobileShellConfigException) {
+            assertEquals(MobileShellConfigFailure.WRITE_FAILED, error.failure)
+        }
+        assertNull(secure.get(MobileShellConfigContract.REVISION_STORAGE_KEY))
+        assertNull(secure.get(MobileShellConfigContract.CONFIG_STORAGE_KEY))
+
+        secure.failSetKeys.clear()
+        assertEquals(1, store.saveConfig(validWrite).configRevision)
+    }
+
+    @Test
+    fun failedClearKeepsConfigVisibleButRevisionIsNotReusedOnRetry() {
+        val secure = InMemorySecureStore()
+        val store = store(secure)
+        store.saveConfig(validWrite)
+        secure.failRemoveKeys += MobileShellConfigContract.CONFIG_STORAGE_KEY
+
+        try {
+            store.clearConfig()
+            fail("clear failure must surface to the caller")
+        } catch (error: MobileShellConfigException) {
+            assertEquals(MobileShellConfigFailure.WRITE_FAILED, error.failure)
+        }
+
+        assertEquals("2", secure.get(MobileShellConfigContract.REVISION_STORAGE_KEY))
+        assertEquals(
+            MobileShellConfigState.Ready(
+                MobileShellConfig(
+                    gatewayUrl = "https://gateway.example",
+                    namespace = "zody",
+                    credential = "zgd_device_credential",
+                    backendId = "desktop-1",
+                    configRevision = 1,
+                ),
+            ),
+            store.inspect(),
+        )
+
+        secure.failRemoveKeys.clear()
+        assertEquals(3, store.clearConfig())
+        assertEquals("3", secure.get(MobileShellConfigContract.REVISION_STORAGE_KEY))
+        assertNull(secure.get(MobileShellConfigContract.CONFIG_STORAGE_KEY))
+    }
+
+    @Test
+    fun failedRepairIsRecoverableAndRevisionIsNotReused() {
+        val secure = InMemorySecureStore(
+            mapOf(MobileShellConfigContract.LEGACY_CONFIG_STORAGE_KEY to legacyConfig),
+        )
+        val store = store(secure)
+        secure.failRemoveKeys += MobileShellConfigContract.LEGACY_CONFIG_STORAGE_KEY
+
+        try {
+            store.confirmRepairAndClear()
+            fail("repair failure must surface to the caller")
+        } catch (error: MobileShellConfigException) {
+            assertEquals(MobileShellConfigFailure.WRITE_FAILED, error.failure)
+        }
+
+        assertEquals("1", secure.get(MobileShellConfigContract.REVISION_STORAGE_KEY))
+        assertEquals(legacyConfig, secure.get(MobileShellConfigContract.LEGACY_CONFIG_STORAGE_KEY))
+        assertEquals(
+            MobileShellConfigState.RequiresRepair(MobileShellRepairReason.LEGACY_SCHEMA),
+            store.inspect(),
+        )
+
+        secure.failRemoveKeys.clear()
+        assertEquals(MobileShellRepairResult.Cleared(2), store.confirmRepairAndClear())
+        assertNull(secure.get(MobileShellConfigContract.LEGACY_CONFIG_STORAGE_KEY))
+        assertEquals("2", secure.get(MobileShellConfigContract.REVISION_STORAGE_KEY))
+    }
+
+    @Test
+    fun clientInstanceIdFailsClosedForLegacyOrCorruptedConfig() {
+        val legacySecure = InMemorySecureStore(
+            mapOf(MobileShellConfigContract.LEGACY_CONFIG_STORAGE_KEY to legacyConfig),
+        )
+        try {
+            store(legacySecure).getOrCreateClientInstanceId("desktop-1")
+            fail("legacy config must block new client identity writes")
+        } catch (error: MobileShellConfigException) {
+            assertEquals(MobileShellConfigFailure.REQUIRES_REPAIR, error.failure)
+        }
+        assertNull(legacySecure.get(MobileShellConfigContract.CLIENT_INSTANCE_IDS_STORAGE_KEY))
+
+        val corruptedSecure = InMemorySecureStore(
+            mapOf(MobileShellConfigContract.CONFIG_STORAGE_KEY to "not-json"),
+        )
+        try {
+            store(corruptedSecure).getOrCreateClientInstanceId("desktop-1")
+            fail("corrupted config must block new client identity writes")
+        } catch (error: MobileShellConfigException) {
+            assertEquals(MobileShellConfigFailure.CONFIG_INVALID, error.failure)
+        }
+        assertNull(corruptedSecure.get(MobileShellConfigContract.CLIENT_INSTANCE_IDS_STORAGE_KEY))
+    }
+
+    @Test
+    fun corruptedRevisionFailsClosedAndRemainsRepairable() {
+        val secure = InMemorySecureStore(
+            mapOf(MobileShellConfigContract.REVISION_STORAGE_KEY to "not-a-revision"),
+        )
+        val store = store(secure)
+
+        assertEquals(
+            MobileShellConfigState.RequiresRepair(MobileShellRepairReason.INVALID_CONFIG),
+            store.inspect(),
+        )
+        assertEquals(MobileShellRepairResult.Cleared(1), store.confirmRepairAndClear())
+        assertEquals("1", secure.get(MobileShellConfigContract.REVISION_STORAGE_KEY))
     }
 
     @Test
