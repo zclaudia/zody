@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "profile": "local-self-signed",
+  "bundleId": "io.github.zclaudia.zody.cua-helper",
+  "executableName": "Zody Computer Use",
+  "bundleShortVersion": "",
+  "bundleVersion": "",
+  "architectures": ["arm64", "x86_64"],
+  "minimumMacOSVersion": "",
+  "leafCertificateSha256": "",
+  "designatedRequirement": "",
+  "executableSha256": "",
+  "entitlements": {}
+}

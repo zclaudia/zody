@@ -1,0 +1,13 @@
+{
+  "name": "architecture-final",
+  "argv": [
+    "pnpm",
+    "architecture:check",
+    "--changed"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:48:15.573682+00:00",
+  "seconds": 2.739,
+  "exitCode": 0,
+  "log": "architecture-final.log"
+}

@@ -1,6 +1,6 @@
 # R2 Server CLI 与 daemon 生命周期测试计划
 
-本文是 `r2-server-cli-and-daemon.md` 的可执行测试补充，覆盖 R2-CLI-01—R2-CLI-14 以及 P0/P1 发布链路。测试把业务状态留在 Server Core，把 Supervisor 限制在生命周期快照和控制面；不会为了统计运行任务在 Supervisor 中复制 Task/Session registry。
+本文是 `r2-server-cli-and-daemon.md` 的可执行测试补充，覆盖 R2-CLI-01—R2-CLI-15 以及 P0/P1 发布链路。测试把业务状态留在 Server Core，把 Supervisor 限制在生命周期快照和控制面；不会为了统计运行任务在 Supervisor 中复制 Task/Session registry。
 
 ## 测试边界
 
@@ -33,6 +33,7 @@ CLI 命令解析 ── JSONL control contract ──> Supervisor
 | R2-CLI-12 | `coreHttp.test.ts`：server-info、Web replayable `/ws`、capability-gated `/ws/host`、ticket 重放与过期 401、显式稳定 serverId；`serverIdentity.test.ts` ownership marker 到 installationId；`hostCapability.test.ts` TTL/一次性语义；真实 Core wiring/transport RPC frame 仍留作 R3 Transport contract |
 | R2-CLI-13 | `cli.test.ts`/真实 daemon 验证 `--server-root` 全链路；`lock.test.ts` 不同 data root 的锁互不干扰；`platform.test.ts` 不同 canonical root 派生不同 service identity 和 descriptor 文件名，并安全识别旧固定 service id |
 | R2-CLI-14 | `platform.test.ts` 三平台 descriptor 使用 stable launcher 并携带绝对 server root；`pathsAndRelease.test.ts`/`contracts.test.ts` Node 22 runtime manifest 校验；`packaging.test.ts` staging 布局（bundle 裸依赖扫描、生产依赖闭包、node-pty 交叉打包白名单、@lydell linux prebuild 补齐、spawn-helper 执行位、manifest entrypoints、Windows cmd/zip）；`agentWiring.test.ts` 验证接线计算和显式配置优先，`runtimeUpdateIntegration.test.ts` 用真实 old/new Core 子进程验证 update 后按 release runtime 重算 wiring 与 data root |
+| R2-CLI-15 | `releaseInstaller.test.ts` 以真实 shell 执行 POSIX stable launcher：正常路径、symlink 安装根、current.json 记录别名 releaseDir、含空格路径均命中同一物理 release；`releases/` 本身为 symlink 时与写入侧 canonical 校验一致可启动；相对路径、不存在、悬空链接、物理逃逸的 `releaseDir` 仍 fail-closed；`pathsAndRelease.test.ts` 钉住写入侧 canonical 校验与 launcher 语义一致 |
 | P0-01 | `packaging.test.ts` 六平台 staging、Windows cmd/zip、runtime/tools、runtime/packages、agent 外置依赖闭包 |
 | P0-02 | `releaseDownload.test.ts` catalog、SHA-256、超时、临时文件清理和目标校验 |
 | P0-03 | `releaseInstaller.test.ts` immutable archive install、stable launcher、pending/current 原子切换、并发复用及 incoming 清理 |

@@ -293,7 +293,11 @@ export function resolveInputCommandForAdmission(
   if (envelope.type === "createSession") {
     const firstInput = (
       envelope.payload as {
-        firstInput?: { text: string; attachments?: AttachmentRef[] };
+        firstInput?: {
+          text: string;
+          attachments?: AttachmentRef[];
+          inputOrigin?: "desktop" | "mobile";
+        };
       }
     ).firstInput;
     return firstInput
@@ -301,6 +305,7 @@ export function resolveInputCommandForAdmission(
           kind: "sendText",
           text: firstInput.text,
           attachments: firstInput.attachments ?? [],
+          ...(firstInput.inputOrigin ? { inputOrigin: firstInput.inputOrigin } : {}),
         }
       : null;
   }
@@ -1500,6 +1505,61 @@ export function createConversationV4Gateway(
       return {
         status: "resumed",
         persistedMessages: activated.persistedMessages,
+        ...(activated.persistedMessagesReloadRequired
+          ? { messagesReloadRequired: true }
+          : {}),
+      };
+    },
+    // I19 history 只读阶段：冷会话按定义还不在 context.sessions，不能走
+    // loadPersistedEvents（它需要 active record 的 eventStore/artifact reader）。
+    // 这里直接从 sessionStore 的持久 transcript 物化只读历史投影；usage、artifact
+    // 文件摘要等 record-only 事实留给 READY 的权威 hydration，不在这里伪造。
+    loadColdHistory: async (sessionId) => {
+      const store = context.deps.sessionStore;
+      if (!store) return { events: [], synthesized: false, sourceEventSeq: 0 };
+      const session = await store.getSession(sessionId as SessionId);
+      if (!session) return { events: [], synthesized: false, sourceEventSeq: 0 };
+      const sessionEntries = store.sessionEntries?.bind(store);
+      const source = await loadPersistedConversationMaterialization({
+        memoryEvents: [],
+        sessionId,
+        store: {
+          getSession: (id) => store.getSession(id),
+          messages: (input) => store.messages(input),
+          readTarget: (input) => store.readTarget(input),
+          ...(sessionEntries
+            ? {
+                sessionEntries: (input) =>
+                  sessionEntries(input).catch((error) => {
+                    context.logger?.warn("v4 cold history session entries read failed", {
+                      error: error instanceof Error ? error.message : String(error),
+                      event: "zcode_protocol.v4.cold_history_session_entries_failed",
+                      module: "bootstrap.zcode_protocol",
+                      sessionId,
+                    });
+                    return [];
+                  }),
+              }
+            : {}),
+        },
+      });
+      const merged = mergeColdConversationEvents({
+        memoryEvents: [],
+        messages: source.messages,
+        sessionId,
+        goalVerificationEntries: source.goalVerificationEntries,
+        ...(Object.prototype.hasOwnProperty.call(source, "target")
+          ? { target: source.target }
+          : {}),
+      });
+      return {
+        events: merged.events,
+        // session 已存在：即使 transcript 为空，空历史也是 durable 权威事实。
+        synthesized: true,
+        sourceEventSeq: 0,
+        ...(source.sharedContextImport
+          ? { sharedContextImport: source.sharedContextImport }
+          : {}),
       };
     },
     emitWireFrame: (wire) =>
@@ -1777,7 +1837,7 @@ export function createConversationV4Gateway(
     // 冷订阅不再在 eventStore / transcript 之间 XOR。message/part
     // 是已完成正文权威，session_entry 只补 legacy goal，内存事件只补
     // 未持久 in-flight 和 queue/permission/control 等 ephemeral 状态。
-    loadPersistedEvents: async (sessionId, persistedMessages) => {
+    loadPersistedEvents: async (sessionId, persistedMessages, loadOptions) => {
       // dwf workflow actor / subagent 这类 detached live child 没有自己的
       // bootstrap record（事件经 ingestDetachedLiveSession 走父 record 的 sink 路由）。
       // context.sessions.get 取不到 record 时不能直接返回 synthesized:false——
@@ -1794,6 +1854,11 @@ export function createConversationV4Gateway(
       // 代价：contextWindow 分母会按父 record 的当前模型解析而不是 actor 模型，纯展示层偏差。
       const record = await resolveConversationBackingRecord(context, sessionId);
       if (!record) {
+        // I19 history 只读阶段：cold 历史投影先于 runtime activation 发布，
+        // 此时 record 尚未入册是正常状态，不能按异常落盘；发布空历史后由 READY 补物化。
+        if (loadOptions?.historyOnly) {
+          return { events: [], synthesized: false, sourceEventSeq: 0 };
+        }
         // 诊断：hydrate 预期在 runtime 已由 cold-resume 激活后执行；连父 record 兜底
         // 都落空时，返回空事件会把真实的生命周期竞态伪装成“历史为空”，必须留下明确现场。
         context.logger?.warn("ZCode Protocol v4 hydrate has no active runtime", {

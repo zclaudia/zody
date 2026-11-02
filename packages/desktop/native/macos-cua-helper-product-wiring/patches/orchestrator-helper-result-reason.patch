@@ -1,0 +1,30 @@
+--- a/src/orchestrator.mm
++++ b/src/orchestrator.mm
+@@ -492,7 +492,26 @@
+   NSDictionary* result = static_cast<NSDictionary*>(parsed);
+   if (!exited || helper_code != 0) {
+     status = "blocked";
+-    reason = "helper-exit-not-success";
++    // 中文原因：helper 非 0 退出时保留其窄原因，避免统一 helper-exit-not-success
++    // 遮盖实际 capture/revoke 失败；只接受有界安全字符，不改变授权/检查语义。
++    reason = exited ? "helper-exit-" + std::to_string(helper_code) : "helper-exit-timeout";
++    NSString* helper_reason = result[@"reason"];
++    if (exited && [helper_reason isKindOfClass:[NSString class]] && [helper_reason length] > 0 &&
++        [helper_reason length] <= 128) {
++      std::string candidate([helper_reason UTF8String]);
++      bool safe = true;
++      for (char character : candidate) {
++        const bool allowed = (character >= 'a' && character <= 'z') ||
++                             (character >= 'A' && character <= 'Z') ||
++                             (character >= '0' && character <= '9') || character == '-' ||
++                             character == '_' || character == '.' || character == ':';
++        if (!allowed) {
++          safe = false;
++          break;
++        }
++      }
++      if (safe) reason = candidate;
++    }
+     return 3;
+   }
+   if (![result[@"ok"] isKindOfClass:[NSNumber class]] ||

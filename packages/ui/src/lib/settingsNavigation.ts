@@ -20,7 +20,9 @@ export type SettingsSectionId =
   | "computerUse"
   | "remoteAccess"
   | "automations"
-  | "shortcuts";
+  | "shortcuts"
+  // 仅手机 Web Remote Control 可见的连接分区；桌面/普通 Web 由平台可见性过滤掉。
+  | "connection";
 
 export type SettingsPluginTabTarget = "plugins" | "mcps" | "skills" | "commands";
 export type SettingsPluginNavigationOrigin = "plugin-store";
@@ -76,7 +78,8 @@ function isSettingsSectionId(value: string): value is SettingsSectionId {
     value === "computerUse" ||
     value === "remoteAccess" ||
     value === "automations" ||
-    value === "shortcuts"
+    value === "shortcuts" ||
+    value === "connection"
   );
 }
 
@@ -164,14 +167,23 @@ export function writeLastSettingsSectionPreference(section: SettingsSectionId): 
   }
 }
 
+export function consumeInitialSettingsSectionWithSource(
+  fallbackSection: SettingsSectionId = "general",
+): { section: SettingsSectionId; explicit: boolean } {
+  const lastSection = readLastSettingsSectionPreference(fallbackSection);
+  const pending = consumePendingSettingsSectionWithSource(lastSection);
+  // 手机需要区分“最近分区”与“显式深链”：前者先展示设置首页，后者直达目标。
+  // 不能用 section 值是否相同判断来源，因为显式 intent 可能恰好等于最近分区。
+  return {
+    section: resolveSettingsSection(pending.section, lastSection),
+    explicit: pending.explicit,
+  };
+}
+
 export function consumeInitialSettingsSection(
   fallbackSection: SettingsSectionId = "general",
 ): SettingsSectionId {
-  const lastSection = readLastSettingsSectionPreference(fallbackSection);
-  // 普通打开设置页以前把 consumePendingSettingsSection 的 fallback 写死为
-  // modelProvider，导致没有显式跳转意图时也总进“模型供应商”。这里先读上次停留分区，
-  // 再让 quickpick / 管理模型这类一次性意图覆盖它，保留显式入口的直达语义。
-  return resolveSettingsSection(consumePendingSettingsSection(lastSection), lastSection);
+  return consumeInitialSettingsSectionWithSource(fallbackSection).section;
 }
 
 export function setPendingSettingsSection(section: SettingsSectionId): void {
@@ -277,11 +289,11 @@ function clearPendingSettingsSectionIntent(): void {
   }
 }
 
-export function consumePendingSettingsSection(
-  fallbackSection: SettingsSectionId = "general",
-): SettingsSectionId {
+function consumePendingSettingsSectionWithSource(
+  fallbackSection: SettingsSectionId,
+): { section: SettingsSectionId; explicit: boolean } {
   if (typeof window === "undefined") {
-    return fallbackSection;
+    return { section: fallbackSection, explicit: false };
   }
 
   try {
@@ -292,16 +304,22 @@ export function consumePendingSettingsSection(
 
     if (raw === "skills") {
       // 旧 Skills 使用复数 id；迁移到当前独立 skill 分区。
-      return "skill";
+      return { section: "skill", explicit: true };
     }
     if (raw && isSettingsSectionId(raw)) {
-      return resolveSettingsSection(raw, fallbackSection);
+      return { section: resolveSettingsSection(raw, fallbackSection), explicit: true };
     }
   } catch {
     // 忽略浏览器存储异常，不影响主流程。
   }
 
-  return fallbackSection;
+  return { section: fallbackSection, explicit: false };
+}
+
+export function consumePendingSettingsSection(
+  fallbackSection: SettingsSectionId = "general",
+): SettingsSectionId {
+  return consumePendingSettingsSectionWithSource(fallbackSection).section;
 }
 
 function setPendingPluginTab(tab: SettingsPluginTabTarget): void {

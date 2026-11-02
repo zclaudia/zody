@@ -1,0 +1,1857 @@
+{
+  "name": "session-entry.mjs",
+  "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/app/Contents/Resources/session-entry.mjs",
+  "sha256": "121eefaa6375bb94cabe9d7c50a7fd8c18e9730dfcaaf51aaaaa13fe5b760456",
+  "bytes": 32008658,
+  "maxBytes": 67108864,
+  "metafilePath": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/audit/session-entry.mjs.metafile.json",
+  "metafileSha256": "80f0ed9a2dd524b3659c7c6d11f01e2359a8eb459f71ba9b5eb3358568d03449",
+  "inputCount": 3134,
+  "staticImports": [
+    "node:module",
+    "node:async_hooks",
+    "async_hooks",
+    "node:net",
+    "node:fs",
+    "node:fs/promises",
+    "node:os",
+    "node:path",
+    "node:crypto",
+    "node:sqlite",
+    "node:child_process",
+    "node:util",
+    "node:timers/promises",
+    "node:string_decoder",
+    "node:worker_threads",
+    "net",
+    "http",
+    "https",
+    "tls",
+    "events",
+    "url",
+    "assert",
+    "dns",
+    "stream",
+    "crypto",
+    "fs",
+    "path",
+    "util",
+    "os",
+    "node:dns/promises",
+    "node:stream",
+    "node:http",
+    "node:https",
+    "node:stream/web",
+    "node:process",
+    "node:diagnostics_channel",
+    "node:buffer",
+    "node:stream/promises",
+    "node:vm",
+    "node:util/types",
+    "node:sea",
+    "zlib",
+    "node:perf_hooks",
+    "node:readline",
+    "node:console",
+    "node:url",
+    "node:v8"
+  ],
+  "nonBuiltinStaticImports": [],
+  "runtimeRequires": [
+    "buffer",
+    "string_decoder",
+    "stream",
+    "os",
+    "tty",
+    "util",
+    "net",
+    "events",
+    "tls",
+    "fs",
+    "path",
+    "zlib",
+    "assert",
+    "timers",
+    "child_process",
+    "process",
+    "perf_hooks",
+    "crypto",
+    "inspector",
+    "async_hooks"
+  ],
+  "runtimeExternals": [],
+  "webAssemblyReferences": {
+    "count": 18,
+    "matches": [
+      {
+        "line": 107942,
+        "snippet": "const sections = WebAssembly.Module.customSections(module2, \"dylink.0\");"
+      },
+      {
+        "line": 107978,
+        "snippet": "if (descriptor2.wasm instanceof WebAssembly.Module) {"
+      },
+      {
+        "line": 107981,
+        "snippet": "module2 = await WebAssembly.compile(descriptor2.wasm);"
+      },
+      {
+        "line": 108024,
+        "snippet": "const extImports = WebAssembly.Module.imports(module2);"
+      },
+      {
+        "line": 108042,
+        "snippet": "const extExportNames = new Set(WebAssembly.Module.exports(module2).filter((e2) => e2.kind === \"function\").map((e2) => e2.name));"
+      },
+      {
+        "line": 108051,
+        "snippet": "importObj.env.__memory_base = new WebAssembly.Global({ value: \"i32\", mutable: false }, memoryBase);"
+      },
+      {
+        "line": 108053,
+        "snippet": "importObj.env.__table_base = new WebAssembly.Global({ value: \"i32\", mutable: false }, tableBase);"
+      },
+      {
+        "line": 108068,
+        "snippet": "if (resolved instanceof WebAssembly.Global) {"
+      },
+      {
+        "line": 108071,
+        "snippet": "importObj.env[imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+      },
+      {
+        "line": 108075,
+        "snippet": "importObj[\"GOT.mem\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+      },
+      {
+        "line": 108082,
+        "snippet": "importObj[\"GOT.func\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, idx);"
+      },
+      {
+        "line": 108084,
+        "snippet": "importObj[\"GOT.func\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+      },
+      {
+        "line": 108100,
+        "snippet": "const instance = await WebAssembly.instantiate(module2, importObj);"
+      },
+      {
+        "line": 108563,
+        "snippet": "if (options2 instanceof WebAssembly.Module)"
+      },
+      {
+        "line": 108599,
+        "snippet": "if (wasmInput instanceof WebAssembly.Module) {"
+      },
+      {
+        "line": 108602,
+        "snippet": "return WebAssembly.compile(wasmInput);"
+      },
+      {
+        "line": 108606,
+        "snippet": "return WebAssembly.compile(buf);"
+      },
+      {
+        "line": 108671,
+        "snippet": "const instance = await WebAssembly.instantiate(module2, {"
+      }
+    ]
+  },
+  "licenses": {
+    "packageCount": 169,
+    "saved": [
+      {
+        "name": "agent-base",
+        "version": "9.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "data-uri-to-buffer",
+        "version": "8.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "degenerator",
+        "version": "7.0.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "get-uri",
+        "version": "8.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "http-proxy-agent",
+        "version": "9.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "https-proxy-agent",
+        "version": "9.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "iconv-lite",
+        "version": "0.7.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "lru-cache",
+        "version": "7.18.3",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "pac-proxy-agent",
+        "version": "9.0.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "pac-resolver",
+        "version": "9.0.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "proxy-agent",
+        "version": "8.0.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "proxy-from-env",
+        "version": "2.1.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "socks-proxy-agent",
+        "version": "10.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "unbash",
+        "version": "4.0.1",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "typescript",
+        "version": "5.9.3",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.txt"
+        ]
+      },
+      {
+        "name": "@ai-sdk/anthropic",
+        "version": "3.0.81",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@ai-sdk/gateway",
+        "version": "3.0.121",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@ai-sdk/openai",
+        "version": "3.0.65",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@ai-sdk/openai-compatible",
+        "version": "2.0.60",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@ai-sdk/provider",
+        "version": "3.0.14",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@ai-sdk/provider-utils",
+        "version": "4.0.39",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "@ai-sdk/provider",
+        "version": "3.0.10",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@ai-sdk/provider-utils",
+        "version": "4.0.27",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "@borewit/text-codec",
+        "version": "0.2.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.txt"
+        ]
+      },
+      {
+        "name": "@jimp/core",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/diff",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/file-ops",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/js-bmp",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/js-gif",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/js-jpeg",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/js-png",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "pngjs",
+        "version": "7.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/js-tiff",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-blit",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-blur",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-circle",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-color",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-contain",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-cover",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-crop",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-displace",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-dither",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-fisheye",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-flip",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-hash",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-mask",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-print",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-quantize",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-resize",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-rotate",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/plugin-threshold",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/types",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@jimp/utils",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@modelcontextprotocol/client",
+        "version": "2.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@modelcontextprotocol/core",
+        "version": "2.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/api",
+        "version": "1.9.1",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/context-async-hooks",
+        "version": "2.6.1",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/core",
+        "version": "2.6.1",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/exporter-metrics-otlp-http",
+        "version": "0.214.0",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/exporter-metrics-otlp-proto",
+        "version": "0.214.0",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/exporter-trace-otlp-proto",
+        "version": "0.214.0",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/otlp-exporter-base",
+        "version": "0.214.0",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/otlp-transformer",
+        "version": "0.214.0",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/resources",
+        "version": "2.6.1",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/sdk-metrics",
+        "version": "2.6.1",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/sdk-trace-base",
+        "version": "2.6.1",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/semantic-conventions",
+        "version": "1.43.0",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@protobufjs/aspromise",
+        "version": "1.1.2",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@protobufjs/base64",
+        "version": "1.1.2",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@protobufjs/eventemitter",
+        "version": "1.1.0",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@protobufjs/float",
+        "version": "1.0.2",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@protobufjs/inquire",
+        "version": "1.1.0",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@protobufjs/pool",
+        "version": "1.1.0",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@protobufjs/utf8",
+        "version": "1.1.0",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@tokenizer/inflate",
+        "version": "0.4.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@vercel/oidc",
+        "version": "3.2.0",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "ai",
+        "version": "6.0.193",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@opentelemetry/api",
+        "version": "1.9.0",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "any-base",
+        "version": "1.1.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "ast-types",
+        "version": "0.13.4",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "await-to-js",
+        "version": "3.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "basic-ftp",
+        "version": "5.2.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.txt"
+        ]
+      },
+      {
+        "name": "bmp-ts",
+        "version": "1.0.9",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "buffer-crc32",
+        "version": "0.2.13",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "buffer-from",
+        "version": "1.1.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "chromium-bidi",
+        "version": "0.6.3",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "urlpattern-polyfill",
+        "version": "10.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "cross-spawn",
+        "version": "7.0.6",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "debug",
+        "version": "4.4.3",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "diff",
+        "version": "9.0.0",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "electron",
+        "version": "41.0.3",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "escodegen",
+        "version": "2.1.0",
+        "license": "BSD-2-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.BSD"
+        ]
+      },
+      {
+        "name": "esprima",
+        "version": "4.0.1",
+        "license": "BSD-2-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.BSD"
+        ]
+      },
+      {
+        "name": "estraverse",
+        "version": "5.3.0",
+        "license": "BSD-2-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.BSD"
+        ]
+      },
+      {
+        "name": "esutils",
+        "version": "2.0.3",
+        "license": "BSD-2-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.BSD"
+        ]
+      },
+      {
+        "name": "eventsource",
+        "version": "3.0.7",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "eventsource-parser",
+        "version": "3.1.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "exif-parser",
+        "version": "0.1.12",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "file-type",
+        "version": "21.3.4",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "license"
+        ]
+      },
+      {
+        "name": "gifwrap",
+        "version": "0.10.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "has-flag",
+        "version": "4.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "license"
+        ]
+      },
+      {
+        "name": "ieee754",
+        "version": "1.2.1",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "image-q",
+        "version": "4.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "ip-address",
+        "version": "10.1.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "ipaddr.js",
+        "version": "1.9.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "jimp",
+        "version": "1.6.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "jose",
+        "version": "6.2.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "jpeg-js",
+        "version": "0.4.4",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "marked",
+        "version": "16.4.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "meriyah",
+        "version": "7.1.2",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "mime",
+        "version": "3.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "mitt",
+        "version": "3.0.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "ms",
+        "version": "2.1.3",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "license.md"
+        ]
+      },
+      {
+        "name": "netmask",
+        "version": "2.1.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "omggif",
+        "version": "1.0.10",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "pako",
+        "version": "1.0.11",
+        "license": "(MIT AND Zlib)",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "parse-bmfont-ascii",
+        "version": "1.0.6",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "parse-bmfont-binary",
+        "version": "1.0.6",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "parse-bmfont-xml",
+        "version": "1.1.6",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "path-key",
+        "version": "3.1.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "license"
+        ]
+      },
+      {
+        "name": "pend",
+        "version": "1.2.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "pixelmatch",
+        "version": "5.3.0",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "pkce-challenge",
+        "version": "5.0.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "playwright-core",
+        "version": "1.59.1",
+        "license": "Apache-2.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE",
+          "NOTICE"
+        ]
+      },
+      {
+        "name": "protobufjs",
+        "version": "7.5.5",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "quickjs-wasi",
+        "version": "2.2.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "safer-buffer",
+        "version": "2.1.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "sax",
+        "version": "1.6.0",
+        "license": "BlueOak-1.0.0",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "semver",
+        "version": "7.7.4",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "shebang-command",
+        "version": "2.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "license"
+        ]
+      },
+      {
+        "name": "shebang-regex",
+        "version": "3.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "license"
+        ]
+      },
+      {
+        "name": "simple-xml-to-json",
+        "version": "1.2.7",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "license"
+        ]
+      },
+      {
+        "name": "smart-buffer",
+        "version": "4.2.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "socks",
+        "version": "2.8.7",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "source-map",
+        "version": "0.6.1",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "source-map-support",
+        "version": "0.5.21",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "strtok3",
+        "version": "10.3.5",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.txt"
+        ]
+      },
+      {
+        "name": "supports-color",
+        "version": "8.1.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "license"
+        ]
+      },
+      {
+        "name": "tinycolor2",
+        "version": "1.6.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "token-types",
+        "version": "6.1.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.txt"
+        ]
+      },
+      {
+        "name": "tslib",
+        "version": "2.8.1",
+        "license": "0BSD",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.txt"
+        ]
+      },
+      {
+        "name": "uint8array-extras",
+        "version": "1.5.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "license"
+        ]
+      },
+      {
+        "name": "utif2",
+        "version": "4.1.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "which",
+        "version": "2.0.2",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "isexe",
+        "version": "2.0.0",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "xml2js",
+        "version": "0.5.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "xmlbuilder",
+        "version": "11.0.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "yaml",
+        "version": "2.9.0",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "yauzl",
+        "version": "3.3.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "4.6.5",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod-to-json-schema",
+        "version": "3.25.2",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      }
+    ],
+    "missing": [
+      "@ai-sdk/provider-utils",
+      "@ai-sdk/provider-utils",
+      "omggif",
+      "parse-bmfont-ascii",
+      "quickjs-wasi"
+    ]
+  }
+}

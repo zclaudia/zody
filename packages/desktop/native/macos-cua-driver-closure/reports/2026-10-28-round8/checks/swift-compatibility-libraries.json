@@ -1,0 +1,12 @@
+[
+  {
+    "path": "/Library/Developer/CommandLineTools/usr/lib/swift/macosx/libswiftCompatibility56.a",
+    "bytes": 88768,
+    "sha256": "299acc4caf4a629bbbc245a72117de225cac9569c786a4deaa1c14a22cb5762b"
+  },
+  {
+    "path": "/Library/Developer/CommandLineTools/usr/lib/swift/macosx/libswiftCompatibilityPacks.a",
+    "bytes": 17208,
+    "sha256": "2b3931b08bc4e49a25b60bd5ff6176b0761139de695ef4f0bc940509eb333ad4"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "route": "deepseek-flash",
+  "provider": "magpie",
+  "model": "group/deepseek",
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "investigator": {
+    "id": "broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19067-1db6-7e30-9334-bac3e898aed7",
+    "access": "read-only"
+  },
+  "implementation": {
+    "id": "broker:deepseek-flash-rw-ec6bf2fd7be1a108:01a1906a-28a0-75d2-9361-09cc2f67c44a",
+    "access": "workspace-write"
+  },
+  "workerComputerUseGrant": false
+}

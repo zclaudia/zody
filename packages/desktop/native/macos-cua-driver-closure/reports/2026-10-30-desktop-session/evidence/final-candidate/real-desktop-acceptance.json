@@ -1,0 +1,72 @@
+{
+  "candidate": "controller-signed-capture-delivery",
+  "uiCandidate": "controller-ui-capture-delivery",
+  "sessionId": "sess_9e87a356-41ec-473b-a482-ae6bfbbbcad8",
+  "target": {
+    "pid": 14879,
+    "windowId": 87802
+  },
+  "nativeHelperPid": 15368,
+  "signedNodePid": 15399,
+  "controllerActions": [
+    "UI Send exact screenshot code",
+    "Allow only this time for node_repl tool",
+    "No native Allow click"
+  ],
+  "humanConfirmationReplyReceived": false,
+  "nativePromptWindowObservedViaMetadata": true,
+  "promptAfterTimeout": [],
+  "outcome": "120000ms inner call timeout; no delivered capture event or returned image",
+  "screenshotPassed": false,
+  "uiStopAfterScreenshotPassed": false,
+  "nativeFenced": "not established",
+  "events": [
+    {
+      "timestamp": "2026-10-30T09:03:17.521Z",
+      "event": "mcp.tools.registered",
+      "sessionId": "sess_9e87a356-41ec-473b-a482-ae6bfbbbcad8",
+      "turnId": "turn_91dc9c96-7061-4adb-a0b7-6726530d0041",
+      "context": {
+        "queryId": "01a18c0c-94a0-7ac5-9bde-d6e06cfb3dbf",
+        "turnNumber": 0,
+        "registeredToolCount": 1,
+        "serverCount": 1
+      }
+    },
+    {
+      "timestamp": "2026-10-30T09:03:37.073Z",
+      "event": "tool.call.started",
+      "sessionId": "sess_9e87a356-41ec-473b-a482-ae6bfbbbcad8",
+      "turnId": "turn_91dc9c96-7061-4adb-a0b7-6726530d0041",
+      "context": {
+        "queryId": "01a18c0c-94a0-7ac5-9bde-d6e06cfb3dbf",
+        "turnNumber": 0,
+        "providerId": "deepseek",
+        "modelId": "deepseek-flash",
+        "iteration": 0,
+        "querySource": "main_turn",
+        "toolName": "mcp__node_repl__js"
+      }
+    },
+    {
+      "timestamp": "2026-10-30T09:05:37.106Z",
+      "event": "tool.call.failed",
+      "sessionId": "sess_9e87a356-41ec-473b-a482-ae6bfbbbcad8",
+      "turnId": "turn_91dc9c96-7061-4adb-a0b7-6726530d0041",
+      "durationMs": 120025,
+      "context": {
+        "queryId": "01a18c0c-94a0-7ac5-9bde-d6e06cfb3dbf",
+        "turnNumber": 0,
+        "providerId": "deepseek",
+        "modelId": "deepseek-flash",
+        "iteration": 0,
+        "querySource": "main_turn",
+        "toolName": "mcp__node_repl__js"
+      },
+      "error": {
+        "name": "ProtocolError",
+        "message": "The operation was aborted due to timeout"
+      }
+    }
+  ]
+}

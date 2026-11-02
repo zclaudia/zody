@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button.js";
 import { Kbd, KbdGroup } from "@/components/ui/kbd.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { formatShortcutBindingLabelParts } from "@/shortcuts/label.js";
+import { useSettingsPresentation } from "@/settings/SettingsPresentationContext.js";
+import { SETTINGS_TOUCH_MIN_SIZE_11_CLASS } from "@/settings/settingsMobileClasses.js";
 
 export interface RecordingState {
   commandId: ShortcutCommandId;
@@ -55,6 +57,7 @@ export function ShortcutBindingRow({
   onClearAll,
 }: ShortcutBindingRowProps) {
   const { intl } = useZCodeIntl();
+  const { isMobile } = useSettingsPresentation();
   const conflictBinding = isRecording ? recording?.conflictBinding : null;
 
   // 录制内嵌块：出现在被替换条目 / 追加条目的位置（预览 kbd 抢占焦点）
@@ -148,64 +151,105 @@ export function ShortcutBindingRow({
     );
   }
 
+  const bindingsContent = (
+    <>
+      {bindings.map((binding, index) =>
+        isRecording && recording?.mode === "replace" && recording.bindingIndex === index
+          ? renderRecorder()
+          : renderBinding(binding, index),
+      )}
+      {/* 未分配命令录第一条：bindings 为空时录制态占满键位单元格 */}
+      {isRecording && recording?.mode === "replace" && recording?.bindingIndex === null
+        ? renderRecorder()
+        : null}
+      {bindings.length === 0 && !isRecording ? (
+        <button
+          type="button"
+          disabled={menuChannelUnavailable}
+          className="w-fit rounded-lg px-0 py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label={intl.formatMessage(
+            { id: "settings.shortcuts.rebindAria" },
+            { command: commandLabel },
+          )}
+          data-testid={`settings-shortcut-bind-${entry.id}-unassigned`}
+          onClick={() => onRecord(null)}
+        >
+          <Kbd>{intl.formatMessage({ id: "settings.shortcuts.notSet" })}</Kbd>
+        </button>
+      ) : null}
+    </>
+  );
+
+  const scopeLabel =
+    entry.scope === "composer"
+      ? intl.formatMessage({ id: "settings.shortcuts.scopeComposer" })
+      : intl.formatMessage({ id: "settings.shortcuts.scopeGlobal" });
+
+  const clearButton = (
+    <Button
+      variant="ghost"
+      size="icon"
+      className={SETTINGS_TOUCH_MIN_SIZE_11_CLASS}
+      aria-label={intl.formatMessage(
+        { id: "settings.shortcuts.clearAria" },
+        { command: commandLabel },
+      )}
+      // Web 端 menu 通道命令与录制入口同置灰：其默认键被根级回退监听固定消费，
+      // 清除成未分配也不会真的失效，放行会产出「显示未分配却仍触发」的分裂状态
+      disabled={menuChannelUnavailable || bindings.length === 0}
+      onClick={onClearAll}
+      data-testid={`settings-shortcut-clear-${entry.id}`}
+    >
+      <Trash2 className="size-4" />
+    </Button>
+  );
+
+  // 手机不再把桌面四列压进 320px：改为纵向命令卡片，命令、绑定、scope 与操作
+  // 各自换行；桌面固定表格 class 保持不变（spec mobile-settings-ia-navigation §1.2）。
+  if (isMobile) {
+    return (
+      <div
+        className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3 text-ui-base"
+        data-testid={`settings-shortcut-row-${entry.id}`}
+        data-settings-shortcut-layout="card"
+      >
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+          <span className="min-w-0 flex-1 text-ui-base font-medium text-foreground">
+            {commandLabel}
+          </span>
+          <span
+            className="inline-flex shrink-0 items-center rounded-full bg-surface px-2 py-0.5 text-ui-sm text-foreground-subtle"
+            data-testid={`settings-shortcut-scope-${entry.id}`}
+          >
+            {scopeLabel}
+          </span>
+        </div>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="flex min-w-0 flex-1 flex-col items-start gap-1.5">{bindingsContent}</span>
+          {clearButton}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_80px_72px] items-center border-t border-border px-4 py-3 text-ui-base"
       data-testid={`settings-shortcut-row-${entry.id}`}
+      data-settings-shortcut-layout="table"
     >
       <span className="flex min-w-0 items-center">
         <span className="truncate">{commandLabel}</span>
       </span>
-      <span className="flex min-w-0 flex-col items-start gap-1.5">
-        {bindings.map((binding, index) =>
-          isRecording && recording?.mode === "replace" && recording.bindingIndex === index
-            ? renderRecorder()
-            : renderBinding(binding, index),
-        )}
-        {/* 未分配命令录第一条：bindings 为空时录制态占满键位单元格 */}
-        {isRecording && recording?.mode === "replace" && recording?.bindingIndex === null
-          ? renderRecorder()
-          : null}
-        {bindings.length === 0 && !isRecording ? (
-          <button
-            type="button"
-            disabled={menuChannelUnavailable}
-            className="w-fit rounded-lg px-0 py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
-            aria-label={intl.formatMessage(
-              { id: "settings.shortcuts.rebindAria" },
-              { command: commandLabel },
-            )}
-            data-testid={`settings-shortcut-bind-${entry.id}-unassigned`}
-            onClick={() => onRecord(null)}
-          >
-            <Kbd>{intl.formatMessage({ id: "settings.shortcuts.notSet" })}</Kbd>
-          </button>
-        ) : null}
-      </span>
+      <span className="flex min-w-0 flex-col items-start gap-1.5">{bindingsContent}</span>
       {/* 作用域独立成列：global = 全局生效；composer = 仅聊天输入框内生效 */}
       <span
         className="text-ui-sm text-foreground-subtle"
         data-testid={`settings-shortcut-scope-${entry.id}`}
       >
-        {entry.scope === "composer"
-          ? intl.formatMessage({ id: "settings.shortcuts.scopeComposer" })
-          : intl.formatMessage({ id: "settings.shortcuts.scopeGlobal" })}
+        {scopeLabel}
       </span>
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label={intl.formatMessage(
-          { id: "settings.shortcuts.clearAria" },
-          { command: commandLabel },
-        )}
-        // Web 端 menu 通道命令与录制入口同置灰：其默认键被根级回退监听固定消费，
-        // 清除成未分配也不会真的失效，放行会产出「显示未分配却仍触发」的分裂状态
-        disabled={menuChannelUnavailable || bindings.length === 0}
-        onClick={onClearAll}
-        data-testid={`settings-shortcut-clear-${entry.id}`}
-      >
-        <Trash2 className="size-4" />
-      </Button>
+      {clearButton}
     </div>
   );
 }

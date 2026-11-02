@@ -1,0 +1,22 @@
+{
+  "route": {
+    "id": "deepseek-flash",
+    "provider": "magpie",
+    "model": "group/deepseek"
+  },
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "workers": [
+    {
+      "role": "native-launchservices",
+      "access": "workspace-write",
+      "id": "broker:deepseek-flash-rw-ec6bf2fd7be1a108:01a18b7a-7ae3-7982-9592-bf4fdfb467d5"
+    },
+    {
+      "role": "host-app-packaging",
+      "access": "workspace-write",
+      "id": "broker:deepseek-flash-rw-ec6bf2fd7be1a108:01a18b79-ddd4-7ac1-8175-fea629f41b57"
+    }
+  ],
+  "computerUseGrant": false,
+  "defaultDisabled": true
+}

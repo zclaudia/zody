@@ -46,7 +46,7 @@ import {
   session,
   webContents,
 } from "electron";
-import type { UtilityProcess as ElectronUtilityProcess } from "electron";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 import { spawn } from "node:child_process";
 import { join, resolve } from "node:path";
 import { homedir } from "node:os";
@@ -184,6 +184,12 @@ import {
   loadWindow,
   spawnHostProcess,
 } from "./desktopHostProcess.js";
+import { resolveCandidateNativeHostLaunch } from "./candidateNativeHostLaunch.js";
+import {
+  createRemoteAccessSettingsForLaunch,
+  isCandidateRemoteAccessBlocked,
+  shouldLoadRemoteAccessCredential,
+} from "./candidateRemoteAccess.js";
 import { spawnCronScheduler, type CronSchedulerHandle } from "./desktopCronScheduler.js";
 import {
   clearDeepLinkRoutesForWindow,
@@ -575,6 +581,10 @@ const WINDOWS_AGENT_FORCE_KILL_TIMEOUT_MS = 2_000;
 
 const broadcastHub = new BroadcastHub();
 const taskRealtimeBus = new TaskRealtimeBus({ logger });
+// 编译期候选装配：普通构建为 undefined，仍走 Electron utilityProcess。候选构建由
+// tsup define 注入固定 launcher/cwd；这不是签名或 OS 验证结果，Main 只选择传输。
+const candidateNativeHostLaunch = resolveCandidateNativeHostLaunch();
+const candidateRemoteAccessBlocked = isCandidateRemoteAccessBlocked(candidateNativeHostLaunch);
 // 内存诊断计数器：desktopResourceTelemetry 每 60s collect
 // 一次写主日志。will-download 监听数用于观察关窗后 defaultSession 是否残留监听。
 mainMemoryDiagnosticsRegistry.register("taskBus", () => taskRealtimeBus.collectMemoryDiagnostics());
@@ -656,7 +666,7 @@ let hasPreparedAppQuit = false;
 const windowWorkspaceMap = new Map<number, Set<string>>();
 const windowTaskRealtimeHostIdMap = new Map<number, string>();
 const windowUnreadCountMap = new Map<number, number>();
-const windowHostProcessMap = new Map<number, ElectronUtilityProcess>();
+const windowHostProcessMap = new Map<number, HostProcessHandle>();
 const cuaPipFocusRouter = createCuaPipFocusRouter({
   send: (windowId, event) => {
     windowHostProcessMap.get(windowId)?.postMessage({
@@ -665,7 +675,7 @@ const cuaPipFocusRouter = createCuaPipFocusRouter({
     });
   },
 });
-const hostRunningTaskCountMap = new Map<ElectronUtilityProcess, number>();
+const hostRunningTaskCountMap = new Map<HostProcessHandle, number>();
 const windowsCuaOperationIndicator = createWindowsCuaOperationIndicator({
   platform: process.platform,
   getLocale: () => currentApplicationLocale,
@@ -685,14 +695,11 @@ function wakeCronScheduler(automationId: string): void {
 }
 // fork（F4.3）：forwardOffPeakRunResult / wakeOffPeakScheduler（闲时结果转发与唤醒）随闲时任务全链路删除。
 // 选一个本地 host 执行派发：本期本地 workspace 由任一本地窗口 host 的 createTask 按 path 拉起/复用 agent。
-function resolveCronDispatchHost(): ElectronUtilityProcess | null {
+function resolveCronDispatchHost(): HostProcessHandle | null {
   const first = windowHostProcessMap.values().next();
   return first.done ? null : first.value;
 }
-const disposingHostProcessTimers = new WeakMap<
-  ElectronUtilityProcess,
-  ReturnType<typeof setTimeout>
->();
+const disposingHostProcessTimers = new WeakMap<HostProcessHandle, ReturnType<typeof setTimeout>>();
 const webRemoteControlManagerRef = {
   current: null as ReturnType<typeof createWebRemoteControlManager> | null,
 };
@@ -708,6 +715,40 @@ const remoteAccessCredentialStore = createRemoteAccessCredentialStore({
   credentialService: webRemoteControlCredentialService,
   logger,
 });
+const remoteAccessSettings = createRemoteAccessSettingsForLaunch(
+  {
+    isEnabled: async () => (await mainSettingService.get()).remoteAccess?.enabled === true,
+    // 第二批 E2：缺省视为 true（与读取 schema 的 catch(true) 一致），关闭时手机任意路径打开被立即拒绝。
+    isArbitraryPathOpenAllowed: async () =>
+      (await mainSettingService.get()).remoteAccess?.allowMobileOpenArbitraryPath !== false,
+    setEnabled: async (enabled) => {
+      const settings = await mainSettingService.get();
+      await mainSettingService.update({
+        // settings 更新是顶层浅合并，remoteAccess 必须整对象写回；
+        // 旧快照可能缺失该字段（协议里仍是 optional），这里补齐默认值。
+        remoteAccess: {
+          enabled,
+          gatewayUrl: settings.remoteAccess?.gatewayUrl ?? "",
+          namespace: settings.remoteAccess?.namespace ?? DEFAULT_REMOTE_ACCESS_NAMESPACE,
+          allowMobileOpenArbitraryPath: settings.remoteAccess?.allowMobileOpenArbitraryPath ?? true,
+        },
+      });
+      // Main 是开关写入方：通知所有窗口刷新设置快照（与 setAutoDownloadAndInstallUpdates 同一路径）。
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
+          win.webContents.send(PlatformChannels.SettingsChanged);
+        }
+      }
+      // T3.2：SetRemoteAccessEnabled 走的是 Main 内部写入，不经过 renderer 的 SyncAppSettings；
+      // 这里显式刷新 gateway backend，保证开关变化立即反映到连接状态。
+      void reloadRemoteGatewayBackendConfig();
+    },
+  },
+  candidateNativeHostLaunch,
+);
+async function reloadRemoteGatewayBackendConfig(): Promise<void> {
+  await remoteGatewayBackend.reloadConfig();
+}
 /**
  * T3.2：App 级唯一 gateway backend 连接所有者。
  *
@@ -722,12 +763,15 @@ const gatewayDeviceTransport = createGatewayDeviceTransport({
 const remoteGatewayBackend = createRemoteGatewayBackend({
   loadConfig: async () => {
     const settings = await mainSettingService.get();
+    const enabled = await remoteAccessSettings.isEnabled();
     return {
-      enabled: settings.remoteAccess?.enabled === true,
+      enabled,
       gatewayUrl: settings.remoteAccess?.gatewayUrl ?? "",
       namespace: settings.remoteAccess?.namespace ?? DEFAULT_REMOTE_ACCESS_NAMESPACE,
       // 凭证只从 Main 凭据服务读取，不进 settings、不进日志。
-      credential: await remoteAccessCredentialStore.load(),
+      credential: shouldLoadRemoteAccessCredential(candidateNativeHostLaunch, enabled)
+        ? await remoteAccessCredentialStore.load()
+        : undefined,
     };
   },
   logger,
@@ -766,17 +810,17 @@ remoteGatewayBackend.onChannelClosed((info) =>
 );
 const appLaunchGate = createAppLaunchGate();
 const appLaunchCoordinator = createAppLaunchCoordinator(appLaunchGate);
-async function resolveCurrentZCodeEndpointOrigin() {
+async function resolveCurrentZodyEndpointOrigin() {
   return resolveZCodeEndpointOrigin({
     env: ZCODE_ENV,
     envBaseOrigin: resolveZCodeEndpointEnvBaseOrigin(hostProcessLocalEnv),
-    overrideOrigin: (await mainSettingService.get()).zcodeEndpointOrigin,
+    overrideOrigin: (await mainSettingService.get()).zodyEndpointOrigin,
   });
 }
 // fork（F4.7）：官方账号 OAuth 下线后不再注入 userId/授权/营销参数 loader，
 // TelemetryCore 回落到匿名遥测（空 userId、无 Authorization）。
 const appTelemetryCore = createTelemetryCore({
-  resolveZCodeEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
+  resolveZCodeEndpointOrigin: resolveCurrentZodyEndpointOrigin,
   fetchImpl: createDesktopTelemetryFetch(net),
 });
 const appTelemetryRuntime = createAppTelemetryRuntime({
@@ -907,35 +951,7 @@ const webRemoteControlManager = createWebRemoteControlManager({
   appVersion: ZCODE_VERSION || app.getVersion(),
   // T2.3：启动恢复只看 App 级开关；旧的 webRemoteControlLastEnabledContext 已随 relay
   // 体系删除，只在设置迁移时读取原始 JSON。
-  remoteAccessSettings: {
-    isEnabled: async () => (await mainSettingService.get()).remoteAccess?.enabled === true,
-    // 第二批 E2：缺省视为 true（与读取 schema 的 catch(true) 一致），关闭时手机任意路径打开被立即拒绝。
-    isArbitraryPathOpenAllowed: async () =>
-      (await mainSettingService.get()).remoteAccess?.allowMobileOpenArbitraryPath !== false,
-    setEnabled: async (enabled) => {
-      const settings = await mainSettingService.get();
-      await mainSettingService.update({
-        // settings 更新是顶层浅合并，remoteAccess 必须整对象写回；
-        // 旧快照可能缺失该字段（协议里仍是 optional），这里补齐默认值。
-        remoteAccess: {
-          enabled,
-          gatewayUrl: settings.remoteAccess?.gatewayUrl ?? "",
-          namespace: settings.remoteAccess?.namespace ?? DEFAULT_REMOTE_ACCESS_NAMESPACE,
-          allowMobileOpenArbitraryPath:
-            settings.remoteAccess?.allowMobileOpenArbitraryPath ?? true,
-        },
-      });
-      // Main 是开关写入方：通知所有窗口刷新设置快照（与 setAutoDownloadAndInstallUpdates 同一路径）。
-      for (const win of BrowserWindow.getAllWindows()) {
-        if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
-          win.webContents.send(PlatformChannels.SettingsChanged);
-        }
-      }
-      // T3.2：SetRemoteAccessEnabled 走的是 Main 内部写入，不经过 renderer 的 SyncAppSettings；
-      // 这里显式刷新 gateway backend，保证开关变化立即反映到连接状态。
-      void remoteGatewayBackend.reloadConfig();
-    },
-  },
+  remoteAccessSettings,
   featureGate: createWebRemoteControlFeatureGate(),
   getGatewayConnectionStatus: () => remoteGatewayBackend.getStatus(),
   remoteWorkspaceDirectory,
@@ -1102,12 +1118,18 @@ function syncImmediateAppSettings(patch: Partial<AppSettings>) {
   }
 
   if (patch.remoteAccess !== undefined) {
-    // 设置页既可能走新 IPC，也可能直接 useSettings.update 写 remoteAccess；两条路径都在这里
-    // 收敛到同一个 App 级 runtime 启停方法，避免出现第二个 runtime 控制入口。
-    void webRemoteControlManagerRef.current?.applyRemoteAccessEnabled(patch.remoteAccess.enabled);
-    // T3.2：重新读取完整配置（地址/namespace 也可能一起变了）。backend 内部按四要素签名
-    // 去重，只有真正影响连接的字段变化才重连。
-    void remoteGatewayBackend.reloadConfig();
+    if (candidateRemoteAccessBlocked) {
+      // 隔离本地截图候选不能因账号原有设置启动 runtime 或重连 gateway；
+      // renderer 若直接写 settings，本进程也不据此启用远控。
+      logger.info("[remote-access] candidate build ignored remoteAccess settings change");
+    } else {
+      // 设置页既可能走新 IPC，也可能直接 useSettings.update 写 remoteAccess；两条路径都在这里
+      // 收敛到同一个 App 级 runtime 启停方法，避免出现第二个 runtime 控制入口。
+      void webRemoteControlManagerRef.current?.applyRemoteAccessEnabled(patch.remoteAccess.enabled);
+      // T3.2：重新读取完整配置（地址/namespace 也可能一起变了）。backend 内部按四要素签名
+      // 去重，只有真正影响连接的字段变化才重连。
+      void remoteGatewayBackend.reloadConfig();
+    }
   }
 
   if (patch.recentProjects !== undefined) {
@@ -1541,7 +1563,7 @@ async function resolveZCodeEndpointSelection(): Promise<"production" | "test" | 
   if (ZCODE_ENV === "production") {
     return "production";
   }
-  const origin = await resolveCurrentZCodeEndpointOrigin();
+  const origin = await resolveCurrentZodyEndpointOrigin();
   if (origin === DEFAULT_ZCODE_ENDPOINT_ORIGIN) {
     return "production";
   }
@@ -1881,6 +1903,7 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
         },
         {
           hostProcessLocalEnv,
+          nativeHostLaunch: candidateNativeHostLaunch,
           getMobileNotificationContext,
           publishMobileNotification: async (request) => {
             const status = remoteGatewayBackend.getStatus();
@@ -2227,7 +2250,7 @@ app.whenReady().then(async () => {
     settingService: mainSettingService,
     locale: currentApplicationLocale,
     deviceMid,
-    resolveEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
+    resolveEndpointOrigin: resolveCurrentZodyEndpointOrigin,
     updateFeedSource: resolveUpdateFeedSourceFromStartupConfig({
       argv: process.argv,
       env: process.env,
@@ -2443,7 +2466,9 @@ app.whenReady().then(async () => {
         await remoteAccessCredentialStore.clear();
         await remoteGatewayBackend.reloadConfig();
       },
-      testConnection: (input) => remoteGatewayBackend.testConnection(input),
+      testConnection: candidateRemoteAccessBlocked
+        ? async () => ({ ok: false, reason: "unconfigured" as const })
+        : (input) => remoteGatewayBackend.testConnection(input),
     },
     createRemoteWorkspaceSession: remoteSessionManager.createRemoteWorkspaceSession,
     getRemoteConnectionStats: remoteSessionManager.getRemoteConnectionStats,

@@ -1,0 +1,14 @@
+{
+  "modDate": "2026-10-29T14:53:59",
+  "serialNumber": {
+    "hex": "0082cec55fe452ac01"
+  },
+  "trustSettings": [
+    {
+      "kSecTrustSettingsPolicy": {
+        "hex": "2a864886f763640110"
+      },
+      "kSecTrustSettingsPolicyName": "CodeSigning"
+    }
+  ]
+}

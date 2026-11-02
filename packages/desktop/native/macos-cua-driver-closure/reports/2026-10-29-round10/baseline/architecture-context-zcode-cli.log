@@ -1,0 +1,19 @@
+
+> zody@0.1.0 architecture:context /Users/zhvala/SourceCode/zody
+> node scripts/architecture/architecture-check.mjs context zcode-cli
+
+# Architecture context: zcode-cli
+owner: unassigned
+managed: false
+requires: none
+
+## Files
+- module.ts: missing
+- apps/zcode-cli/packages/contracts/src/tools/contract.ts
+
+## Direct dependency contracts
+- none discovered
+
+## Boundaries
+- Cross-module imports must use declared requirements and public entrypoints.
+- Add a contract example and contract test before exposing a new capability.

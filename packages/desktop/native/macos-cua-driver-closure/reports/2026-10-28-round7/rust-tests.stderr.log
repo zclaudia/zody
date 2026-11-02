@@ -1,0 +1,311 @@
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling libc v0.2.186
+   Compiling cfg-if v1.0.4
+   Compiling typenum v1.20.0
+   Compiling version_check v0.9.5
+   Compiling stable_deref_trait v1.2.1
+   Compiling serde_core v1.0.228
+   Compiling zerocopy v0.8.48
+   Compiling autocfg v1.5.0
+   Compiling serde v1.0.228
+   Compiling getrandom v0.4.2
+   Compiling smallvec v1.15.1
+   Compiling itoa v1.0.18
+   Compiling rand_core v0.10.1
+   Compiling generic-array v0.14.7
+   Compiling memchr v2.8.0
+   Compiling litemap v0.8.2
+   Compiling hybrid-array v0.4.14
+   Compiling writeable v0.6.3
+   Compiling icu_normalizer_data v2.2.0
+   Compiling num-traits v0.2.19
+   Compiling parking_lot_core v0.9.12
+   Compiling zmij v1.0.21
+   Compiling ref-cast v1.0.25
+   Compiling subtle v2.6.1
+   Compiling utf8_iter v1.0.4
+   Compiling icu_properties_data v2.2.0
+   Compiling serde_json v1.0.149
+   Compiling once_cell v1.21.4
+   Compiling bitflags v2.11.1
+   Compiling scopeguard v1.2.0
+   Compiling lock_api v0.4.14
+   Compiling syn v2.0.117
+   Compiling regex-syntax v0.8.10
+   Compiling crypto-common v0.2.2
+   Compiling getrandom v0.2.17
+   Compiling errno v0.3.14
+   Compiling simd-adler32 v0.3.9
+   Compiling getrandom v0.3.4
+   Compiling crc32fast v1.5.0
+   Compiling equivalent v1.0.2
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling synstructure v0.13.2
+   Compiling num-integer v0.1.46
+   Compiling rand_core v0.6.4
+   Compiling cpufeatures v0.2.17
+   Compiling num-bigint v0.4.8
+   Compiling inout v0.2.2
+   Compiling aho-corasick v1.1.4
+   Compiling ahash v0.8.12
+   Compiling adler2 v2.0.1
+   Compiling cmov v0.5.4
+   Compiling bytes v1.11.1
+   Compiling thiserror v1.0.69
+   Compiling percent-encoding v2.3.2
+   Compiling httparse v1.10.1
+   Compiling pin-project-lite v0.2.17
+   Compiling regex-automata v0.4.14
+   Compiling num-rational v0.4.2
+   Compiling ctutils v0.4.2
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling zerocopy-derive v0.8.48
+   Compiling zerovec-derive v0.11.3
+   Compiling serde_derive v1.0.228
+   Compiling displaydoc v0.2.5
+   Compiling ref-cast-impl v1.0.25
+   Compiling zerofrom v0.1.8
+   Compiling parking_lot v0.12.5
+   Compiling thiserror-impl v1.0.69
+   Compiling zeroize_derive v1.5.0
+   Compiling miniz_oxide v0.8.9
+   Compiling num-iter v0.1.46
+   Compiling num-complex v0.4.6
+   Compiling serde_derive_internals v0.29.1
+   Compiling block-buffer v0.12.1
+   Compiling bit-vec v0.8.0
+   Compiling foldhash v0.2.0
+   Compiling borrow-or-share v0.2.4
+   Compiling core-foundation-sys v0.8.7
+   Compiling allocator-api2 v0.2.21
+   Compiling unicode-general-category v1.1.0
+   Compiling rustix v1.1.4
+   Compiling ciborium-io v0.2.2
+   Compiling data-encoding v2.11.0
+   Compiling hashbrown v0.16.1
+   Compiling core-foundation v0.10.1
+   Compiling schemars_derive v1.2.1
+   Compiling bit-set v0.8.0
+   Compiling cipher v0.5.2
+   Compiling num v0.4.3
+   Compiling flate2 v1.1.9
+   Compiling zeroize v1.8.2
+   Compiling tokio-macros v2.7.0
+   Compiling foreign-types-macros v0.2.3
+   Compiling futures-macro v0.3.32
+   Compiling universal-hash v0.6.1
+   Compiling http v1.4.0
+   Compiling sha1 v0.10.6
+   Compiling fdeflate v0.3.7
+   Compiling signal-hook-registry v1.4.8
+   Compiling yoke v0.8.2
+   Compiling socket2 v0.6.3
+   Compiling mio v1.2.0
+   Compiling outref v0.5.2
+   Compiling byteorder v1.5.0
+   Compiling slab v0.4.12
+   Compiling log v0.4.29
+   Compiling futures-task v0.3.32
+   Compiling foreign-types-shared v0.3.1
+   Compiling dyn-clone v1.0.20
+   Compiling hashbrown v0.17.1
+   Compiling utf-8 v0.7.6
+   Compiling anyhow v1.0.102
+   Compiling lazy_static v1.5.0
+   Compiling powerfmt v0.2.0
+   Compiling futures-core v0.3.32
+   Compiling futures-sink v0.3.32
+   Compiling micromap v0.3.0
+   Compiling pxfm v0.1.29
+   Compiling vsimd v0.8.0
+   Compiling zune-core v0.5.1
+   Compiling indexmap v2.14.0
+   Compiling zune-jpeg v0.5.15
+   Compiling uuid-simd v0.8.0
+   Compiling futures-util v0.3.32
+   Compiling deranged v0.5.8
+   Compiling fraction v0.15.4
+   Compiling foreign-types v0.5.0
+   Compiling tokio v1.52.1
+   Compiling moxcms v0.8.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_chacha v0.3.1
+   Compiling half v2.7.1
+   Compiling fluent-uri v0.4.1
+   Compiling ciborium-ll v0.2.2
+   Compiling rand v0.8.6
+   Compiling ciborium v0.2.2
+   Compiling email_address v0.2.9
+   Compiling schemars v1.2.1
+   Compiling referencing v0.46.10
+   Compiling tungstenite v0.24.0
+   Compiling png v0.18.1
+   Compiling poly1305 v0.9.1
+   Compiling fancy-regex v0.18.0
+   Compiling chacha20 v0.10.1
+   Compiling core-graphics-types v0.2.0
+   Compiling regex v1.12.3
+   Compiling tracing-attributes v0.1.31
+   Compiling form_urlencoded v1.2.2
+   Compiling aead v0.6.1
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling hmac v0.12.1
+   Compiling jsonschema-regex v0.46.10
+   Compiling tracing-core v0.1.36
+   Compiling num-conv v0.2.1
+   Compiling time-core v0.1.8
+   Compiling num-cmp v0.1.0
+   Compiling fastrand v2.4.1
+   Compiling unsafe-libyaml v0.2.11
+   Compiling byteorder-lite v0.1.0
+   Compiling bytemuck v1.25.0
+   Compiling cua-driver-core v0.37.0 (/Users/zhvala/SourceCode/zody/output/cua-driver-round7/candidate-work/controller-first/full-source/crates/cua-driver-core)
+   Compiling bytecount v0.6.9
+   Compiling ryu v1.0.23
+   Compiling image v0.25.10
+   Compiling tempfile v3.27.0
+   Compiling tracing v0.1.44
+   Compiling serde_yaml_ng v0.10.0
+   Compiling time v0.3.47
+   Compiling core-graphics v0.24.0 (/Users/zhvala/SourceCode/zody/output/cua-driver-round7/candidate-work/controller-first/full-source/vendor/core-graphics)
+warning: function `CGDisplayMoveCursorToPoint` is never used
+   --> vendor/core-graphics/src/display.rs:761:8
+    |
+761 |     fn CGDisplayMoveCursorToPoint(display: CGDirectDisplayID, point: CGPoint) -> CGError;
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `CGWarpMouseCursorPosition` is never used
+   --> vendor/core-graphics/src/display.rs:762:8
+    |
+762 |     fn CGWarpMouseCursorPosition(point: CGPoint) -> CGError;
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `CGAssociateMouseAndMouseCursorPosition` is never used
+   --> vendor/core-graphics/src/display.rs:763:8
+    |
+763 |     fn CGAssociateMouseAndMouseCursorPosition(connected: boolean_t) -> CGError;
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `CGEventPost` is never used
+   --> vendor/core-graphics/src/event.rs:732:8
+    |
+732 |     fn CGEventPost(tapLocation: CGEventTapLocation, event: crate::sys::CGEventRef);
+    |        ^^^^^^^^^^^
+
+warning: function `CGEventTapPostEvent` is never used
+   --> vendor/core-graphics/src/event.rs:734:8
+    |
+734 |     fn CGEventTapPostEvent(tapProxy: CGEventTapProxy, event: crate::sys::CGEventRef);
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `CGEventPostToPid` is never used
+   --> vendor/core-graphics/src/event.rs:738:8
+    |
+738 |     fn CGEventPostToPid(pid: libc::pid_t, event: crate::sys::CGEventRef);
+    |        ^^^^^^^^^^^^^^^^
+
+warning: `core-graphics` (lib) generated 6 warnings
+   Compiling hkdf v0.12.4
+   Compiling chacha20poly1305 v0.11.0
+   Compiling coset v0.4.2
+   Compiling async-trait v0.1.89
+   Compiling sha2 v0.10.9
+   Compiling uuid v1.23.1
+   Compiling fs2 v0.4.3
+   Compiling base64 v0.22.1
+   Compiling cua-driver-contract v0.37.0 (/Users/zhvala/SourceCode/zody/output/cua-driver-round7/candidate-work/controller-first/full-source/crates/cua-driver-contract)
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling icu_collections v2.2.0
+   Compiling icu_locale_core v2.2.0
+   Compiling icu_provider v2.2.0
+   Compiling tokio-tungstenite v0.24.0
+   Compiling icu_normalizer v2.2.0
+   Compiling icu_properties v2.2.0
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling jsonschema v0.46.10
+   Compiling url v2.5.8
+warning: method `authorize_dispatch` is never used
+   --> crates/cua-driver-core/src/session_authorization.rs:391:19
+    |
+198 | impl EffectiveAuthorizationContext {
+    | ---------------------------------- method in this implementation
+...
+391 |     pub(crate) fn authorize_dispatch(&self) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `commit_authorized_dispatch`, `commit_under`, and `authorize_dispatch` are never used
+   --> crates/cua-driver-core/src/session_manifest.rs:511:19
+    |
+ 85 | impl SessionManifest {
+    | -------------------- methods in this implementation
+...
+511 |     pub(crate) fn commit_authorized_dispatch(&self) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+522 |     pub(crate) fn commit_under(&self, t: &crate::native_domain::Token<'_>) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^
+...
+547 |     pub(crate) fn authorize_dispatch(&self) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^^^^^^^
+
+warning: multiple variants are never constructed
+  --> crates/cua-driver-core/src/window_lease.rs:71:5
+   |
+70 | pub enum Change {
+   |          ------ variants in this enum
+71 |     Stable,
+   |     ^^^^^^
+72 |     FocusPid,
+   |     ^^^^^^^^
+73 |     FocusWindow,
+   |     ^^^^^^^^^^^
+74 |     WindowMissing,
+   |     ^^^^^^^^^^^^^
+75 |     WindowRebuilt,
+   |     ^^^^^^^^^^^^^
+76 |     ProcessReused,
+   |     ^^^^^^^^^^^^^
+77 |     Bounds,
+   |     ^^^^^^
+78 |     Offscreen,
+   |     ^^^^^^^^^
+79 |     Layer,
+   |     ^^^^^
+80 |     UnknownAx,
+   |     ^^^^^^^^^
+81 |     UnknownInput,
+   |     ^^^^^^^^^^^^
+82 |     UserKey,
+   |     ^^^^^^^
+83 |     UserModifier,
+   |     ^^^^^^^^^^^^
+84 |     UserButton,
+   |     ^^^^^^^^^^
+85 |     Expired,
+   |     ^^^^^^^
+86 |     Revoked,
+   |     ^^^^^^^
+87 |     FocusAba,
+   |     ^^^^^^^^
+88 |     RebuildAba,
+   |     ^^^^^^^^^^
+89 |     InputAba,
+   |     ^^^^^^^^
+   |
+   = note: `Change` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: `cua-driver-core` (lib) generated 3 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.68s
+     Running tests/round7_dependency_boundaries.rs (/Users/zhvala/SourceCode/zody/output/cua-driver-round7/controller-pure-tests/target/aarch64-apple-darwin/debug/deps/round7_dependency_boundaries-bf7767d607d27003)

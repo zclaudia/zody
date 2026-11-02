@@ -1,0 +1,53 @@
+[
+  {
+    "argv": [
+      "sh",
+      "output/cua-launchservices/preflight-probe/build.sh"
+    ],
+    "exitCode": 0,
+    "stdout": "/Users/zhvala/SourceCode/zody/output/cua-launchservices/preflight-probe/Zody CUA Preflight Probe.app/Contents/MacOS/ZodyCuaPreflightProbe: Mach-O 64-bit executable arm64\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "codesign",
+      "--force",
+      "--sign",
+      "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+      "--options",
+      "runtime",
+      "--timestamp=none",
+      "--requirements",
+      "=designated => identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+      "output/cua-launchservices/preflight-probe/Zody CUA Preflight Probe.app"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": "output/cua-launchservices/preflight-probe/Zody CUA Preflight Probe.app: replacing existing signature\n"
+  },
+  {
+    "argv": [
+      "codesign",
+      "--verify",
+      "--strict",
+      "--verbose=2",
+      "output/cua-launchservices/preflight-probe/Zody CUA Preflight Probe.app"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": "output/cua-launchservices/preflight-probe/Zody CUA Preflight Probe.app: valid on disk\noutput/cua-launchservices/preflight-probe/Zody CUA Preflight Probe.app: satisfies its Designated Requirement\n"
+  },
+  {
+    "argv": [
+      "codesign",
+      "-d",
+      "--verbose=4",
+      "--entitlements",
+      ":-",
+      "output/cua-launchservices/preflight-probe/Zody CUA Preflight Probe.app"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": "Executable=/Users/zhvala/SourceCode/zody/output/cua-launchservices/preflight-probe/Zody CUA Preflight Probe.app/Contents/MacOS/ZodyCuaPreflightProbe\nIdentifier=io.github.zclaudia.zody.cua-helper\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20500 size=355 flags=0x10000(runtime) hashes=4+3 location=embedded\nVersionPlatform=1\nVersionMin=918016\nVersionSDK=1769472\nHash type=sha256 size=32\nCandidateCDHash sha256=27343b44ec20eeb01a2de74250a8a09bd21820b0\nCandidateCDHashFull sha256=27343b44ec20eeb01a2de74250a8a09bd21820b06a107cdfeafed63ffe64f203\nHash choices=sha256\nCMSDigest=27343b44ec20eeb01a2de74250a8a09bd21820b06a107cdfeafed63ffe64f203\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=16384\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=27343b44ec20eeb01a2de74250a8a09bd21820b0\nSignature size=2103\nAuthority=Zody Local Computer Use\nSigned Time=Oct 30, 2026 at 19:44:56\nInfo.plist entries=12\nTeamIdentifier=not set\nRuntime Version=27.0.0\nSealed Resources version=2 rules=13 files=0\nInternal requirements count=1 size=112\nwarning: Specifying ':' in the path is deprecated and will not work in a future release\n"
+  }
+]

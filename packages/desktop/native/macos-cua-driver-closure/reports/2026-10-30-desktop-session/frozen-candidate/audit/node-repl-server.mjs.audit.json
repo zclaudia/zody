@@ -1,0 +1,162 @@
+{
+  "name": "node-repl-server.mjs",
+  "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/app/Contents/Resources/node-repl-server.mjs",
+  "sha256": "ee616be55c18dfb0cc84ca76c4c98f9606e0e7739a7a956d795fbfef7eb0edc7",
+  "bytes": 3552725,
+  "maxBytes": 67108864,
+  "metafilePath": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/audit/node-repl-server.mjs.metafile.json",
+  "metafileSha256": "d7d399fb1cde88619f16c3109b7c20b4a112cba92408adb4d3d94ab1d25c4775",
+  "inputCount": 627,
+  "staticImports": [
+    "node:module",
+    "node:worker_threads",
+    "node:process",
+    "node:fs",
+    "node:util",
+    "node:path",
+    "node:vm",
+    "node:os",
+    "node:crypto",
+    "node:net",
+    "node:stream",
+    "node:stream/promises",
+    "node:fs/promises",
+    "node:url",
+    "node:async_hooks",
+    "async_hooks",
+    "node:child_process"
+  ],
+  "nonBuiltinStaticImports": [],
+  "runtimeRequires": [],
+  "runtimeExternals": [],
+  "webAssemblyReferences": {
+    "count": 0,
+    "matches": []
+  },
+  "licenses": {
+    "packageCount": 12,
+    "saved": [
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@modelcontextprotocol/client",
+        "version": "2.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@modelcontextprotocol/core",
+        "version": "2.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "@modelcontextprotocol/server",
+        "version": "2.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "eventsource",
+        "version": "3.0.7",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "eventsource-parser",
+        "version": "3.1.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "jose",
+        "version": "6.2.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "meriyah",
+        "version": "7.1.2",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "pkce-challenge",
+        "version": "5.0.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "4.6.5",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod-to-json-schema",
+        "version": "3.25.2",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "3.25.76",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      }
+    ],
+    "missing": []
+  }
+}

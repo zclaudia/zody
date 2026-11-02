@@ -2,7 +2,7 @@
 // 职责：拉起/销毁常驻 scheduler 进程；把 scheduler 的派发请求路由给某个本地 host（转成 CronRun）；
 // 把 host 回报的 CronRunResult 转回 scheduler 结算。scheduler 只碰 tasks-index，createTask 在 host 域执行。
 import { utilityProcess as electronUtilityProcess } from "electron";
-import type { UtilityProcess as ElectronUtilityProcess } from "electron";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 import { HostMessageTypes } from "@zcode/shared";
 import { buildHostProcessEnv, schedulerModulePath } from "./desktopRuntimeEnv.js";
 import { ingestSchedulerSelfResourceSample } from "./processResourceSelfHeapSource.js";
@@ -31,7 +31,7 @@ interface CronSchedulerDeps {
     error: (...args: unknown[]) => void;
   };
   /** 选一个能执行本地 workspace 派发的 host；无可用 host 时返回 null（scheduler 会退避重试）。 */
-  resolveDispatchHost: () => ElectronUtilityProcess | null;
+  resolveDispatchHost: () => HostProcessHandle | null;
   // fork（F4.3）：onOffPeakActiveCountChanged（闲时 keep-awake 计数）随闲时任务全链路删除。
 }
 

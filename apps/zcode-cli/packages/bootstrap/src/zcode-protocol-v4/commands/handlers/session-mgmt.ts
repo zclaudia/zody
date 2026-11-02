@@ -18,6 +18,7 @@ import {
   resolveSubmittedExecutionState,
   V4InputAdmissionRejectedError,
 } from "../input-admission.js";
+import { cancelCuaLiveSubmission, registerCuaLiveSubmission } from "../cua-live-submission.js";
 
 /**
  * createSession：回落面最后一项的原生化。
@@ -91,6 +92,7 @@ async function createSession(
     const admission = commandAdmissionOf(envelope);
     const durableAdmission =
       (await host.admitInputCommand?.(envelope, sessionId, admission)) ?? null;
+    let cuaTicket: ReturnType<typeof registerCuaLiveSubmission> = undefined;
     try {
       const attachments = await mapAttachmentRefsToTurnAttachments(
         record.app,
@@ -98,10 +100,12 @@ async function createSession(
       );
       const intent = inputIntentMetadata(envelope, {
         text: payload.firstInput.text,
+        inputOrigin: payload.firstInput.inputOrigin,
         requestedDelivery: "startNow",
         attachmentRefs: payload.firstInput.attachments,
         ...resolveSubmittedExecutionState(record, payload.firstInput),
       });
+      cuaTicket = registerCuaLiveSubmission(record, envelope, payload.firstInput.inputOrigin);
       const started = await startPromptTurn(host, record, {
         content: payload.firstInput.text,
         inputId: envelope.commandId,
@@ -114,6 +118,7 @@ async function createSession(
         ...(started.messageId ? { messageId: started.messageId } : {}),
       };
     } catch (error) {
+      cancelCuaLiveSubmission(record, cuaTicket);
       if (durableAdmission) {
         try {
           await host.cancelInputCommand?.(

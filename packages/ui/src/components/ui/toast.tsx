@@ -45,12 +45,16 @@ export function upsertToastItem(items: readonly ToastItem[], item: ToastItem): T
 }
 
 export function resolveToastStackClassName(position: ToastPosition): string {
+  // Bugfix(dialogs-7): 顶部堆叠用 calc+env 消费顶部安全区（刘海上移），与底部堆叠既有
+  // bottom-[calc(...+env(safe-area-inset-bottom))] 的写法对称；桌面 env=0，计算值仍为 4rem 不变。
+  // 手机导航面板高度可折叠/拖拽导致的「toast 不感知 shell 布局」属跨组件耦合，本批按指令做最小修复。
+  const topInset = "top-[calc(4rem+env(safe-area-inset-top))]";
   const bottomInset = "bottom-[calc(1rem+env(safe-area-inset-bottom))]";
   switch (position) {
     case "top-center":
-      return "fixed top-16 left-1/2 z-[9999] flex -translate-x-1/2 flex-col items-center gap-2";
+      return `fixed ${topInset} left-1/2 z-[9999] flex -translate-x-1/2 flex-col items-center gap-2`;
     case "top-right":
-      return "fixed right-4 top-16 z-[9999] flex max-w-[calc(100vw-2rem)] flex-col items-end gap-2";
+      return `fixed right-4 ${topInset} z-[9999] flex max-w-[calc(100vw-2rem)] flex-col items-end gap-2`;
     case "bottom-center":
       return `fixed ${bottomInset} left-1/2 z-[9999] flex -translate-x-1/2 flex-col items-center gap-2`;
     case "bottom-left":
@@ -316,7 +320,10 @@ export function ToastMessageView({
           ? "origin-bottom-left w-[min(300px,calc(100vw-1rem))] max-w-[min(300px,calc(100vw-1rem))] border-popover-border text-foreground shadow-lg"
           : isNotice
             ? "w-[min(536px,calc(100vw-2rem))] border-border text-foreground"
-            : "border-border px-4 py-3 text-foreground whitespace-pre-line",
+            : // Bugfix(dialogs-6): default 变体此前是唯一没有宽度防护的变体，长单行消息在 390/320px
+              // 手机上把 left-1/2 + -translate-x-1/2 的容器撑出视口、首尾不可读。对齐 isNotice 的
+              // min(100vw-…) 模式；用 max-w 而非 w，短消息在桌面仍按内容收缩，渲染不变。
+              "max-w-[min(536px,calc(100vw-2rem))] border-border px-4 py-3 text-foreground whitespace-pre-line",
         // 右上角 Toast 曾复用顶部居中的纵向缩放动画，无法表达其从右侧进入的空间关系。
         isTopRight
           ? visible

@@ -60,6 +60,8 @@ import type { ProjectMemoryExtractionScheduler } from "./helpers/project-memory-
 import type { ProjectMemoryUpdate } from "./helpers/project-memory-dream.js";
 import type { RuntimeTelemetryFacade } from "../telemetry/runtime-telemetry.js";
 import type { WorkspaceHookRuntimeAdmissionPort } from "../hooks/workspace-hook-runtime-admission.js";
+import type { CuaSubmissionCoordinator } from "./cua/cua-submission-coordinator.js";
+import type { RuntimeCuaSubmissionTurnScope } from "./cua/cua-submission-turn-scope.js";
 
 export interface AgentRuntimeInternal
   extends AgentRuntimeCoreMethods, AgentRuntimeTurnMethods, AgentRuntimeHookMethods {
@@ -166,4 +168,10 @@ export interface AgentRuntimeInternal
   sessionStartHookRan: boolean;
   sessionTitleGenerationAttempted: boolean;
   agentTelemetry: RuntimeTelemetryFacade;
+  /** 仅由可信 deps 构造；缺身份时不存在，不生成替代宿主身份。 */
+  cuaSubmissionCoordinator?: CuaSubmissionCoordinator;
+  /** 当前活动 turn scope；同一 turn 的重复创建返回同一 handle。 */
+  cuaSubmissionTurnScope?: RuntimeCuaSubmissionTurnScope;
+  /** 按 activeTurn 对象隔离，关闭后保留 tombstone，防止同一 turn 重新签发复活。 */
+  cuaSubmissionTurnScopesByTurn?: WeakMap<ActiveTurnSteeringState, RuntimeCuaSubmissionTurnScope>;
 }

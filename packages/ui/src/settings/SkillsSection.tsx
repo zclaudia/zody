@@ -973,7 +973,7 @@ export function SkillsSection({
           }
         }}
       >
-        <DialogContent className="max-h-[min(80vh,640px)] max-w-xl overflow-hidden p-0">
+        <DialogContent className="max-h-[min(80dvh,640px)] max-w-xl overflow-hidden p-0">
           {detailSkill ? (
             <div className="flex min-h-0 flex-col">
               <DialogHeader className="border-b border-popover-border px-4 pt-4 pb-3">

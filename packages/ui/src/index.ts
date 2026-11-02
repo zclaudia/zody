@@ -31,6 +31,12 @@ export { Root } from "./Root.js";
 export { UpdateStatusWindowRoot } from "./UpdateStatusWindowRoot.js";
 export type { WebRemoteControlTerminalTransportState } from "./root/types.js";
 export { setWebRemoteControlTerminalTransportState } from "./webRemoteControlTerminalTransportState.js";
+export {
+  backOutOfWebRemoteControlMobileConnectionSettingsHistory,
+  clearWebRemoteControlMobileConnectionSettingsHistoryState,
+  isWebRemoteControlMobileConnectionSettingsHistoryState,
+  pushWebRemoteControlMobileConnectionSettingsHistory,
+} from "./mobileNavigationHistory.js";
 export { ConfirmDialogHost } from "./ConfirmDialog.js";
 export { Terminal } from "./Terminal.js";
 export { GitGraphPane } from "./git-graph/GitGraphPane.js";
@@ -103,6 +109,7 @@ export {
 export type { FileDisplayDescriptor, FileDisplayOptions } from "./lib/fileDisplay.js";
 export { playTaskNotificationSound } from "./lib/taskNotificationSound.js";
 export { installDocumentHiddenMotionPause } from "./lib/documentHiddenMotionPause.js";
+export { installMobileKeyboardInsetTracker } from "./lib/mobileKeyboardInset.js";
 export {
   applyUiFontSizePx,
   loadUiFontSizePx,

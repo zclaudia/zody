@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  cleanupPackagedSourcemaps,
   removeSourceMapFilesInDirectory,
   stripSourceMappingUrlComments,
   stripSourceMappingUrlCommentsInDirectory,
@@ -47,6 +48,49 @@ describe("packaged sourcemap cleanup", () => {
       expect(readFileSync(cssFile, "utf8")).toBe(".x{color:red}");
       expect(readFileSync(jsonFile, "utf8")).toBe('{"sourceMappingURL":"keep"}');
       expect(existsSync(mapFile)).toBe(false);
+    } finally {
+      rmSync(rootDir, { force: true, recursive: true });
+    }
+  });
+
+  it("不得改动 signed cua-narrow 槽内的 sourceMappingURL 和 map 文件", async () => {
+    const rootDir = mkdtempSync(resolve(tmpdir(), "zcode-sourcemap-cleanup-signed-slot-"));
+    try {
+      const signedResources = resolve(
+        rootDir,
+        "cua-narrow",
+        "Zody CUA Desktop Session.app",
+        "Contents",
+        "Resources",
+      );
+      const normalResources = resolve(rootDir, "remote-runtime");
+      mkdirSync(signedResources, { recursive: true });
+      mkdirSync(normalResources, { recursive: true });
+
+      const signedEntry = resolve(signedResources, "host-entry.mjs");
+      const signedMap = resolve(signedResources, "host-entry.mjs.map");
+      const normalEntry = resolve(normalResources, "index.js");
+      const normalMap = resolve(normalResources, "index.js.map");
+      const signedSource = "export const signed = true;\n//# sourceMappingURL=host-entry.mjs.map\n";
+      writeFileSync(signedEntry, signedSource);
+      writeFileSync(signedMap, '{"signed":true}');
+      writeFileSync(normalEntry, "console.log('ok');\n//# sourceMappingURL=index.js.map\n");
+      writeFileSync(normalMap, "{}");
+
+      await cleanupPackagedSourcemaps({
+        appAsarPath: resolve(rootDir, "missing.asar"),
+        resourcesDir: rootDir,
+        runAsarCommand: () => undefined,
+        runTimedSync: (_label, run) => run(),
+        runTimedAsync: async (_label, run) => run(),
+        replaceAppAsarFromStaging: async () => undefined,
+        logger: { log: () => undefined },
+      });
+
+      expect(readFileSync(signedEntry, "utf8")).toBe(signedSource);
+      expect(readFileSync(signedMap, "utf8")).toBe('{"signed":true}');
+      expect(readFileSync(normalEntry, "utf8")).toBe("console.log('ok');\n");
+      expect(existsSync(normalMap)).toBe(false);
     } finally {
       rmSync(rootDir, { force: true, recursive: true });
     }

@@ -104,6 +104,8 @@ function Harness() {
       switcher, activeWorkspacePath:workspace.workspacePath, activeWorkspaceIdentity:workspace.workspaceIdentity,
       workspaceRemoteSessionId:workspace.workspaceRemoteSessionId, activeTaskId:'task-current',
       initialNavigationIntent:'chat', fileTreeOpenRequest:request,
+      // 设置入口统一进入应用设置；这里只验证齿轮菜单只暴露一个动作。
+      onOpenAppSettings:() => { window.__settingsMenuOpened = true; },
       onSelectTask:() => {}, renderChatHeader:() => null,
       chatContent:React.createElement('textarea', {'data-testid':'composer', defaultValue:'draft stays in chat'}),
     }),
@@ -171,6 +173,17 @@ try {
     await page.goto(`${origin}/mobile-shell-routing-fixture`);
     const composer = page.getByTestId("composer");
     await composer.fill("composer draft to preserve");
+    // MC-SHELL-02：齿轮菜单只保留一个“设置”动作，不再有独立“连接设置”菜单项。
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    const settingsItems = page.getByRole("menuitem");
+    assert.equal(await settingsItems.count(), 1, "settings menu exposes exactly one action");
+    assert.equal(
+      await page.getByRole("menuitem", { name: "Connection settings", exact: true }).count(),
+      0,
+      "connection settings is no longer a separate menu action",
+    );
+    await settingsItems.first().click();
+    await page.waitForFunction(() => window.__settingsMenuOpened === true);
     await page.getByRole("button", { name: "Files", exact: true }).click();
     await page.getByRole("button", { name: "src", exact: true }).waitFor();
     assert.equal(
@@ -225,7 +238,7 @@ try {
     assert.deepEqual(errors, []);
     await page.screenshot({ path: resolve(artifactDir, "mobile-shell-routing.png") });
     console.log(
-      "PASS MC-SHELL-01 file entry/reveal/back, composer preservation, live search scope update, and task navigation",
+      "PASS MC-SHELL-01/02 file entry/reveal/back, composer preservation, live search scope update, task navigation, and single settings entry",
     );
   } finally {
     await context.close();

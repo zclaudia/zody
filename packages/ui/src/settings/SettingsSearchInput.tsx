@@ -3,6 +3,10 @@ import type { ComponentProps } from "react";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
+import {
+  SETTINGS_MOBILE_INPUT_SAFE_CLASS,
+  SETTINGS_TOUCH_MIN_SIZE_11_CLASS,
+} from "@/settings/settingsMobileClasses.js";
 
 export function SettingsSearchInput({
   className,
@@ -32,6 +36,7 @@ export function SettingsSearchInput({
         className={cn(
           "h-9 rounded-xl pl-9 [&::-webkit-search-cancel-button]:appearance-none",
           canClear && "pr-9",
+          SETTINGS_MOBILE_INPUT_SAFE_CLASS,
           className,
         )}
       />
@@ -40,7 +45,10 @@ export function SettingsSearchInput({
           type="button"
           variant="ghost"
           size="icon-sm"
-          className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full text-foreground-subtle"
+          className={cn(
+            "absolute right-1 top-1/2 -translate-y-1/2 rounded-full text-foreground-subtle",
+            SETTINGS_TOUCH_MIN_SIZE_11_CLASS,
+          )}
           aria-label={clearLabel}
           data-testid={clearTestId}
           onClick={onClear}

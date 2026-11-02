@@ -1,3 +1,7 @@
+/* eslint-disable max-lines -- 手机远控壳集中持有页面/浮层导航状态、history 返回桥和
+   mobileViewState 同步；首页、能力浮层、目录选择器、通知与返回处理已各自拆出独立文件，
+   剩余部分是聊天表面与全局浮层的 JSX，其状态与回调都在本组件，强拆只会增加跨文件透传成本
+   （对齐 WebRemoteControlMobileTaskHome.tsx 的同规则豁免先例）。 */
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowLeft, Bell, LoaderIcon, Search, FolderOpen } from "lucide-react";
 import {
@@ -9,6 +13,7 @@ import { Button } from "@/components/ui/button.js";
 import { MobileNotificationsFeature } from "@/MobileNotificationsFeature.js";
 import { MobileWorkspacePicker } from "@/MobileWorkspacePicker.js";
 import { WebRemoteControlMobileHomePage } from "@/WebRemoteControlMobileHomePage.js";
+import { WebRemoteControlMobileSettingsMenu } from "@/WebRemoteControlMobileSettingsMenu.js";
 import type { MobileFileBrowserOpenRequest } from "@/MobileWorkspaceFileBrowser.js";
 import {
   MobileFeatureOverlay,
@@ -22,7 +27,13 @@ import { useWebRemoteControlMobileShellBack } from "@/hooks/useWebRemoteControlM
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import {
+  backOutOfWebRemoteControlMobileOverlayHistory,
+  clearWebRemoteControlMobileOverlayHistoryState,
   isWebRemoteControlMobileChatHistoryState,
+  pushWebRemoteControlMobileChatHistory,
+  pushWebRemoteControlMobileOverlayHistory,
+  resolveInitialWebRemoteControlMobilePage,
+  type WebRemoteControlMobileOverlayHistoryEntry,
   type WebRemoteControlMobilePage,
 } from "@/mobileNavigationHistory.js";
 import type { WebRemoteControlTerminalTransportState } from "@/root/types.js";
@@ -30,37 +41,6 @@ import type { WebRemoteControlWorkspaceSwitcherApi } from "@/root/types.js";
 import { useWebRemoteControlTerminalTransportState } from "@/webRemoteControlTerminalTransportState.js";
 
 export { isWebRemoteControlMobileChatHistoryState } from "@/mobileNavigationHistory.js";
-
-function pushWebRemoteControlMobileChatHistory() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  if (isWebRemoteControlMobileChatHistoryState(window.history.state)) {
-    return;
-  }
-
-  window.history.pushState({ zcodeMobilePage: "chat" }, "");
-}
-
-function resolveInitialWebRemoteControlMobilePage(
-  initialNavigationIntent?: WebRemoteControlMobileNavigationIntent,
-): WebRemoteControlMobilePage {
-  if (initialNavigationIntent === "chat") {
-    return "chat";
-  }
-
-  // Bugfix: 手机端在聊天页刷新时，React 内存状态会丢失，但浏览器会保留当前 history.state。
-  // 这里复用点击进入聊天页时写入的 history state，避免刷新后只恢复 task 选中态却回到任务首页。
-  if (
-    typeof window !== "undefined" &&
-    isWebRemoteControlMobileChatHistoryState(window.history.state)
-  ) {
-    return "chat";
-  }
-
-  return "home";
-}
 
 export function WebRemoteControlMobileShell({
   activeTaskId,
@@ -74,6 +54,7 @@ export function WebRemoteControlMobileShell({
   initialWorkspaceList,
   isSidePaneOpen = false,
   onCloseSidePane,
+  onOpenAppSettings,
   onSelectTask,
   onStartDraftInWorkspace,
   renderChatHeader,
@@ -91,6 +72,7 @@ export function WebRemoteControlMobileShell({
   initialWorkspaceList?: WebRemoteControlWorkspaceListResult;
   isSidePaneOpen?: boolean;
   onCloseSidePane?: () => void;
+  onOpenAppSettings?: () => void;
   onSelectTask: (
     targetWorkspacePath: string,
     taskId: string,
@@ -118,17 +100,39 @@ export function WebRemoteControlMobileShell({
   const canOpenNotifications =
     capabilities?.notificationFeed === 1 &&
     Boolean(switcher.getNotificationReader && switcher.openNotification);
-  const closeFeature = useCallback(() => setFeaturePage(null), []);
+  // 走查 shell-1：浮层打开压入 overlay history 条目（iOS Safari 无返回桥，系统返回靠条目先关浮层）；
+  // 统一关闭入口把 React 状态与 history 条目一起回收（UI 返回键/Android 返回桥共用，popstate 回写幂等不成环）。
+  const openFeature = useCallback((page: WebRemoteControlMobileFeaturePage) => {
+    setFeaturePage(page);
+    pushWebRemoteControlMobileOverlayHistory(page);
+  }, []);
+  const openWorkspacePicker = useCallback(() => {
+    setWorkspacePickerOpen(true);
+    pushWebRemoteControlMobileOverlayHistory("workspacePicker");
+  }, []);
+  const closeFeature = useCallback(() => {
+    setFeaturePage(null);
+    backOutOfWebRemoteControlMobileOverlayHistory();
+  }, []);
+  const closeWorkspacePicker = useCallback(() => {
+    setWorkspacePickerOpen(false);
+    backOutOfWebRemoteControlMobileOverlayHistory();
+  }, []);
+  // 走查 shell-1：刷新会保留 history state，但浮层 React 状态已丢。挂载时剥掉残留的
+  // overlay 标识（保留宿主页面标识），避免下一次开浮层叠在废条目上、系统返回时复活旧浮层。
   useEffect(() => {
-    if (initialNavigationIntent === "files") setFeaturePage("files");
-  }, [initialNavigationIntent]);
+    clearWebRemoteControlMobileOverlayHistoryState();
+  }, []);
+  useEffect(() => {
+    if (initialNavigationIntent === "files") openFeature("files");
+  }, [initialNavigationIntent, openFeature]);
   const openFiles = useMobileFileEntryNavigation({
     switcher,
     activeWorkspacePath,
     activeWorkspaceIdentity,
     fileTreeOpenRequest,
     fileBrowserEnabled: capabilities?.fileBrowser === 1,
-    setFeaturePage,
+    setFeaturePage: openFeature,
   });
   const [currentPage, setCurrentPage] = useState<WebRemoteControlMobilePage>(() =>
     resolveInitialWebRemoteControlMobilePage(initialNavigationIntent),
@@ -168,7 +172,36 @@ export function WebRemoteControlMobileShell({
   // T6.2：Android 返回键经 IPlatformService 分发到页面。页面比 WebView 历史更清楚当前 UI：
   // 浮层打开时先关浮层，聊天页先回首页；首页返回 false，由宿主做历史回退/退出。
   const platform = useOptionalPlatform();
-  const closeWorkspacePicker = useCallback(() => setWorkspacePickerOpen(false), []);
+  // 走查 shell-1：popstate 落在 overlay 条目（前进/层间返回）时按条目回写浮层状态；
+  // 与打开入口走同一套能力闸门，避免复活能力已关闭的浮层。只改 React 状态，不再动 history。
+  const applyOverlayFromHistory = useCallback(
+    (overlay: WebRemoteControlMobileOverlayHistoryEntry) => {
+      if (overlay === "workspacePicker") {
+        setFeaturePage(null);
+        if (canOpenOtherProject) {
+          setWorkspacePickerOpen(true);
+        }
+        return;
+      }
+      setWorkspacePickerOpen(false);
+      if (overlay === "files" && capabilities?.fileBrowser !== 1) {
+        return;
+      }
+      if (overlay === "search" && capabilities?.historySearch !== 1) {
+        return;
+      }
+      if (overlay === "notifications" && !canOpenNotifications) {
+        return;
+      }
+      setFeaturePage(overlay);
+    },
+    [canOpenNotifications, canOpenOtherProject, capabilities],
+  );
+  // popstate 落回基础条目时清掉全部浮层；统一关闭路径已回收状态时是幂等空操作（不形成回环）。
+  const clearOverlayFromHistory = useCallback(() => {
+    setFeaturePage(null);
+    setWorkspacePickerOpen(false);
+  }, []);
   useWebRemoteControlMobileShellBack({
     platform: platform ?? undefined,
     currentPage,
@@ -181,6 +214,8 @@ export function WebRemoteControlMobileShell({
     setHomeRefreshKey,
     workspacePickerOpen,
     closeWorkspacePicker,
+    applyOverlayFromHistory,
+    clearOverlayFromHistory,
   });
 
   useEffect(() => {
@@ -241,69 +276,79 @@ export function WebRemoteControlMobileShell({
             onNavigateHome={navigateHome}
             onNavigateToChat={navigateToChat}
             onSwitchingWorkspaceChange={setSwitchingWorkspace}
+            onOpenAppSettings={onOpenAppSettings}
             onOpenSearch={
-              capabilities?.historySearch === 1 ? () => setFeaturePage("search") : undefined
+              capabilities?.historySearch === 1 ? () => openFeature("search") : undefined
             }
             onOpenFiles={capabilities?.fileBrowser === 1 ? openFiles : undefined}
             onOpenNotifications={
-              canOpenNotifications ? () => setFeaturePage("notifications") : undefined
+              canOpenNotifications ? () => openFeature("notifications") : undefined
             }
-            onOpenOtherProject={
-              canOpenOtherProject ? () => setWorkspacePickerOpen(true) : undefined
-            }
+            onOpenOtherProject={canOpenOtherProject ? openWorkspacePicker : undefined}
           />
         ) : (
           <section
             className="flex h-full min-h-0 min-w-0 flex-col bg-background text-foreground"
             data-mobile-page="chat"
           >
-            <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border bg-header px-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={intl.formatMessage({
-                  id: "webRemoteControl.mobileShell.backHome",
-                })}
-                onClick={navigateHome}
-              >
-                <ArrowLeft className="size-4" />
-              </Button>
-              <span className="min-w-0 flex-1 truncate text-ui-base font-medium">
-                {intl.formatMessage({ id: "webRemoteControl.mobileShell.chatTitle" })}
-              </span>
-              {capabilities?.fileBrowser === 1 ? (
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label={intl.formatMessage({ id: "mobileFileBrowser.title" })}
-                  onClick={() => setFeaturePage("files")}
-                >
-                  <FolderOpen className="size-4" />
-                </Button>
-              ) : null}
-              {capabilities?.historySearch === 1 ? (
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label={intl.formatMessage({ id: "mobileSearch.title" })}
-                  onClick={() => setFeaturePage("search")}
-                >
-                  <Search className="size-4" />
-                </Button>
-              ) : null}
-              {canOpenNotifications ? (
+            {/* 走查 touch-9：viewport-fit=cover 时外层消费 .zcode-safe-area-top 压到刘海之下
+                （env 为 0 的环境不变）；内层保持 h-11 原栏高。 */}
+            <div className="zcode-safe-area-top shrink-0 border-b border-border bg-header">
+              <div className="flex h-11 items-center gap-1 px-2">
                 <Button
                   type="button"
-                  size="icon-sm"
                   variant="ghost"
-                  aria-label={intl.formatMessage({ id: "mobileNotifications.title" })}
-                  onClick={() => setFeaturePage("notifications")}
+                  size="icon-sm"
+                  className="size-11"
+                  aria-label={intl.formatMessage({
+                    id: "webRemoteControl.mobileShell.backHome",
+                  })}
+                  onClick={navigateHome}
                 >
-                  <Bell className="size-4" />
+                  <ArrowLeft className="size-4" />
                 </Button>
-              ) : null}
-              <WebRemoteControlThemeMenu />
+                <span className="min-w-0 flex-1 truncate text-ui-base font-medium">
+                  {intl.formatMessage({ id: "webRemoteControl.mobileShell.chatTitle" })}
+                </span>
+                {capabilities?.fileBrowser === 1 ? (
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    className="size-11"
+                    aria-label={intl.formatMessage({ id: "mobileFileBrowser.title" })}
+                    onClick={() => openFeature("files")}
+                  >
+                    <FolderOpen className="size-4" />
+                  </Button>
+                ) : null}
+                {capabilities?.historySearch === 1 ? (
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    className="size-11"
+                    aria-label={intl.formatMessage({ id: "mobileSearch.title" })}
+                    onClick={() => openFeature("search")}
+                  >
+                    <Search className="size-4" />
+                  </Button>
+                ) : null}
+                {canOpenNotifications ? (
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    className="size-11"
+                    aria-label={intl.formatMessage({ id: "mobileNotifications.title" })}
+                    onClick={() => openFeature("notifications")}
+                  >
+                    <Bell className="size-4" />
+                  </Button>
+                ) : null}
+                <WebRemoteControlMobileSettingsMenu onOpenAppSettings={onOpenAppSettings} />
+                {/* 走查 shell-3/touch-3：size-11 经 ThemeMenu 的 className 透传到触发钮
+                    （icon-sm 视觉不变），补齐顶栏第 5 个 44px 命中区。 */}
+                <WebRemoteControlThemeMenu className="size-11" />
+              </div>
             </div>
             {renderChatHeader({ onBackHome: navigateHome })}
             <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
@@ -406,11 +451,12 @@ export function WebRemoteControlMobileShell({
       ) : null}
       {terminalTransportState === "reconnecting" ? (
         <div
-          className="pointer-events-none absolute top-3 left-1/2 z-50 flex -translate-x-1/2 justify-center px-3"
+          className="zcode-safe-area-top pointer-events-none absolute top-3 left-1/2 z-50 flex -translate-x-1/2 justify-center px-3"
           aria-live="polite"
           aria-busy="true"
           data-web-remote-control-reconnect-notice="true"
         >
+          {/* 走查 viewport-3：消费 .zcode-safe-area-top 让提示落到状态栏/刘海之下（env 为 0 时位置不变）。 */}
           <div className="flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-lg border border-border bg-toast px-3 py-2 text-ui-base text-foreground shadow-lg">
             <LoaderIcon className="size-4 shrink-0 animate-spin text-foreground-subtle" />
             <span className="min-w-0 whitespace-nowrap">

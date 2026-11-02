@@ -1,0 +1,1132 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-driver-closure-comparison",
+  "generatedAt": "2026-10-28T04:51:23.714Z",
+  "policy": {
+    "path": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-driver-closure/round7/comparison-policy.json",
+    "baselineReportPath": "reports/2026-10-28/report.json.gz",
+    "baselineSha256": "edd486bce8b588211526907f8510fa19fed91d37bfb9b1d60f4c76d8ef53fe79"
+  },
+  "inputs": {
+    "baseline": {
+      "path": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-driver-closure/reports/2026-10-28/report.json.gz",
+      "sha256": "edd486bce8b588211526907f8510fa19fed91d37bfb9b1d60f4c76d8ef53fe79",
+      "sourceFingerprint": "e35c1bf8c59307bbb8252d2b64b6fef5203753b9604c3270ccd934507197f108",
+      "sourceFileCount": 752
+    },
+    "candidate": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-driver-round7/controller-final-audit/report.json",
+      "sha256": "47e3e04225b46a370dcd7a8d7844013c4a4d777bcd5b903fc05185209d924fb9",
+      "sourceFingerprint": "83b273705e50256aba20064b3039c069d04595f072d45e1460791400d58bdfae",
+      "sourceFileCount": 753
+    }
+  },
+  "identity": {
+    "revision": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+    "sourceRoot": "libs/cua-driver/rust",
+    "target": "aarch64-apple-darwin",
+    "package": "cua-driver-sdk"
+  },
+  "gates": {
+    "baseline": "pass",
+    "candidate": "pass",
+    "dependencyPolicy": "pass",
+    "supplements": "pass",
+    "verificationFailed": false,
+    "exitCode": 0
+  },
+  "graph": {
+    "baselinePackageCount": 298,
+    "candidatePackageCount": 259,
+    "delta": -39,
+    "removed": [
+      {
+        "name": "async-compat",
+        "version": "0.2.5",
+        "key": "async-compat@0.2.5",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "bstr",
+        "version": "1.13.0",
+        "key": "bstr@1.13.0",
+        "features": [
+          "alloc",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "camino",
+        "version": "1.2.4",
+        "key": "camino@1.2.4",
+        "features": [
+          "serde1"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "cargo_metadata",
+        "version": "0.19.2",
+        "key": "cargo_metadata@0.19.2",
+        "features": [
+          "default"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "cargo-platform",
+        "version": "0.1.9",
+        "key": "cargo-platform@0.1.9",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "chrono-tz",
+        "version": "0.10.4",
+        "key": "chrono-tz@0.10.4",
+        "features": [
+          "default",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "chrono",
+        "version": "0.4.45",
+        "key": "chrono@0.4.45",
+        "features": [
+          "alloc",
+          "clock",
+          "default",
+          "iana-time-zone",
+          "js-sys",
+          "now",
+          "oldtime",
+          "std",
+          "wasm-bindgen",
+          "wasmbind",
+          "winapi",
+          "windows-link"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "fs-err",
+        "version": "2.11.0",
+        "key": "fs-err@2.11.0",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "futures-io",
+        "version": "0.3.32",
+        "key": "futures-io@0.3.32",
+        "features": [
+          "default",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "globset",
+        "version": "0.4.19",
+        "key": "globset@0.4.19",
+        "features": [
+          "simd-accel"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "heck",
+        "version": "0.5.0",
+        "key": "heck@0.5.0",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "iana-time-zone",
+        "version": "0.1.65",
+        "key": "iana-time-zone@0.1.65",
+        "features": [
+          "fallback"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "ipnet",
+        "version": "2.12.0",
+        "key": "ipnet@2.12.0",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "lru",
+        "version": "0.18.1",
+        "key": "lru@0.18.1",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "msvc_spectre_libs",
+        "version": "0.1.3",
+        "key": "msvc_spectre_libs@0.1.3",
+        "features": [
+          "error"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "phf_shared",
+        "version": "0.12.1",
+        "key": "phf_shared@0.12.1",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "phf",
+        "version": "0.12.1",
+        "key": "phf@0.12.1",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "rand",
+        "version": "0.10.2",
+        "key": "rand@0.10.2",
+        "features": [
+          "alloc",
+          "default",
+          "std",
+          "std_rng",
+          "sys_rng",
+          "thread_rng"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "regorus",
+        "version": "0.10.1",
+        "key": "regorus@0.10.1",
+        "features": [
+          "arc",
+          "base64",
+          "base64url",
+          "cache",
+          "coverage",
+          "default",
+          "full-opa",
+          "glob",
+          "graph",
+          "hex",
+          "http",
+          "jsonschema",
+          "msvc_spectre_libs",
+          "net",
+          "opa-runtime",
+          "rand",
+          "regex",
+          "rvm",
+          "semver",
+          "serde_yaml",
+          "std",
+          "time",
+          "urlquery",
+          "uuid",
+          "yaml"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "rquickjs-core",
+        "version": "0.14.0",
+        "key": "rquickjs-core@0.14.0",
+        "features": [
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "rquickjs-sys",
+        "version": "0.14.0",
+        "key": "rquickjs-sys@0.14.0",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "rquickjs",
+        "version": "0.14.0",
+        "key": "rquickjs@0.14.0",
+        "features": [
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "serde_spanned",
+        "version": "1.1.1",
+        "key": "serde_spanned@1.1.1",
+        "features": [
+          "alloc",
+          "serde",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "serde_yaml",
+        "version": "0.9.34+deprecated",
+        "key": "serde_yaml@0.9.34+deprecated",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "siphasher",
+        "version": "1.0.2",
+        "key": "siphasher@1.0.2",
+        "features": [
+          "default",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "spin",
+        "version": "0.10.1",
+        "key": "spin@0.10.1",
+        "features": [
+          "mutex",
+          "spin_mutex"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "static_assertions",
+        "version": "1.1.0",
+        "key": "static_assertions@1.1.0",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "toml_datetime",
+        "version": "0.7.5+spec-1.1.0",
+        "key": "toml_datetime@0.7.5+spec-1.1.0",
+        "features": [
+          "alloc",
+          "serde",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "toml_parser",
+        "version": "1.1.2+spec-1.1.0",
+        "key": "toml_parser@1.1.2+spec-1.1.0",
+        "features": [
+          "alloc",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "toml_writer",
+        "version": "1.1.2+spec-1.1.0",
+        "key": "toml_writer@1.1.2+spec-1.1.0",
+        "features": [
+          "alloc",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "toml",
+        "version": "0.9.12+spec-1.1.0",
+        "key": "toml@0.9.12+spec-1.1.0",
+        "features": [
+          "default",
+          "display",
+          "parse",
+          "serde",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "uniffi_core",
+        "version": "0.31.0",
+        "key": "uniffi_core@0.31.0",
+        "features": [
+          "default",
+          "tokio"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "uniffi_internal_macros",
+        "version": "0.31.0",
+        "key": "uniffi_internal_macros@0.31.0",
+        "features": [
+          "default"
+        ],
+        "kind": "proc-macro",
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "uniffi_macros",
+        "version": "0.31.0",
+        "key": "uniffi_macros@0.31.0",
+        "features": [
+          "default"
+        ],
+        "kind": "proc-macro",
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "uniffi_meta",
+        "version": "0.31.0",
+        "key": "uniffi_meta@0.31.0",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "uniffi_pipeline",
+        "version": "0.31.0",
+        "key": "uniffi_pipeline@0.31.0",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "uniffi",
+        "version": "0.31.0",
+        "key": "uniffi@0.31.0",
+        "features": [
+          "cargo-metadata",
+          "default",
+          "tokio"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "winnow",
+        "version": "0.7.15",
+        "key": "winnow@0.7.15",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "winnow",
+        "version": "1.0.3",
+        "key": "winnow@1.0.3",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      }
+    ],
+    "added": [],
+    "versionChanged": [],
+    "versionSetChanged": [
+      {
+        "name": "rand",
+        "from": [
+          "0.10.2",
+          "0.8.6"
+        ],
+        "to": [
+          "0.8.6"
+        ],
+        "removed": [
+          "0.10.2"
+        ],
+        "added": []
+      }
+    ],
+    "featureChanged": [
+      {
+        "name": "aho-corasick",
+        "version": "1.1.4",
+        "baseline": [
+          "default",
+          "perf-literal",
+          "std"
+        ],
+        "candidate": [
+          "perf-literal",
+          "std"
+        ]
+      },
+      {
+        "name": "chacha20",
+        "version": "0.10.1",
+        "baseline": [
+          "cipher",
+          "rng",
+          "xchacha",
+          "zeroize"
+        ],
+        "candidate": [
+          "cipher",
+          "xchacha",
+          "zeroize"
+        ]
+      },
+      {
+        "name": "cua-driver-contract",
+        "version": "0.37.0",
+        "baseline": [],
+        "candidate": [
+          "default"
+        ]
+      },
+      {
+        "name": "cua-driver-core",
+        "version": "0.37.0",
+        "baseline": [
+          "default",
+          "rego",
+          "script",
+          "yaml"
+        ],
+        "candidate": [
+          "yaml"
+        ]
+      },
+      {
+        "name": "futures-core",
+        "version": "0.3.32",
+        "baseline": [
+          "alloc",
+          "default",
+          "std"
+        ],
+        "candidate": [
+          "alloc",
+          "std"
+        ]
+      },
+      {
+        "name": "getrandom",
+        "version": "0.4.2",
+        "baseline": [
+          "std",
+          "sys_rng"
+        ],
+        "candidate": [
+          "sys_rng"
+        ]
+      },
+      {
+        "name": "hashbrown",
+        "version": "0.17.1",
+        "baseline": [
+          "allocator-api2",
+          "default",
+          "default-hasher",
+          "equivalent",
+          "inline-more",
+          "raw-entry"
+        ],
+        "candidate": []
+      },
+      {
+        "name": "indexmap",
+        "version": "2.14.0",
+        "baseline": [
+          "default",
+          "serde",
+          "std"
+        ],
+        "candidate": [
+          "default",
+          "std"
+        ]
+      },
+      {
+        "name": "semver",
+        "version": "1.0.28",
+        "baseline": [
+          "default",
+          "serde",
+          "std"
+        ],
+        "candidate": [
+          "default",
+          "std"
+        ]
+      },
+      {
+        "name": "serde_core",
+        "version": "1.0.228",
+        "baseline": [
+          "alloc",
+          "default",
+          "rc",
+          "result",
+          "std"
+        ],
+        "candidate": [
+          "alloc",
+          "result",
+          "std"
+        ]
+      },
+      {
+        "name": "serde_json",
+        "version": "1.0.149",
+        "baseline": [
+          "alloc",
+          "default",
+          "std",
+          "unbounded_depth"
+        ],
+        "candidate": [
+          "alloc",
+          "default",
+          "std"
+        ]
+      },
+      {
+        "name": "serde",
+        "version": "1.0.228",
+        "baseline": [
+          "alloc",
+          "default",
+          "derive",
+          "rc",
+          "serde_derive",
+          "std"
+        ],
+        "candidate": [
+          "alloc",
+          "default",
+          "derive",
+          "serde_derive",
+          "std"
+        ]
+      },
+      {
+        "name": "thiserror",
+        "version": "2.0.18",
+        "baseline": [
+          "default",
+          "std"
+        ],
+        "candidate": []
+      },
+      {
+        "name": "uuid",
+        "version": "1.23.1",
+        "baseline": [
+          "default",
+          "fast-rng",
+          "rng",
+          "std",
+          "v4"
+        ],
+        "candidate": [
+          "default",
+          "rng",
+          "std",
+          "v4"
+        ]
+      }
+    ],
+    "sourceChanged": []
+  },
+  "lock": {
+    "baseline": {
+      "entryCount": 569,
+      "checksumEntries": 558
+    },
+    "candidate": {
+      "entryCount": 569,
+      "checksumEntries": 558
+    },
+    "delta": {
+      "entryCount": 0,
+      "checksumEntries": 0
+    },
+    "note": "lock entries are counts only in the reports; verify both Cargo.lock files directly for identity and checksum stability"
+  },
+  "excluded": {
+    "packages": [
+      "rquickjs",
+      "rquickjs-core",
+      "rquickjs-sys",
+      "regorus",
+      "uniffi"
+    ],
+    "prefixes": [
+      "uniffi_"
+    ],
+    "baselinePresent": [
+      "regorus",
+      "rquickjs",
+      "rquickjs-core",
+      "rquickjs-sys",
+      "uniffi",
+      "uniffi_core",
+      "uniffi_internal_macros",
+      "uniffi_macros",
+      "uniffi_meta",
+      "uniffi_pipeline"
+    ],
+    "candidatePresent": []
+  },
+  "features": {
+    "core": {
+      "package": "cua-driver-core",
+      "required": [
+        "yaml"
+      ],
+      "forbidden": [
+        "script",
+        "rego"
+      ],
+      "actual": [
+        {
+          "version": "0.37.0",
+          "features": [
+            "yaml"
+          ]
+        }
+      ]
+    },
+    "platform": {
+      "package": "platform-macos",
+      "required": [
+        "zody-dev-no-input",
+        "zody-strict-frame-gate"
+      ],
+      "forbidden": [
+        "zody-dev-probe"
+      ],
+      "actual": [
+        {
+          "version": "0.37.0",
+          "features": [
+            "default",
+            "zody-dev-no-input",
+            "zody-strict-frame-gate"
+          ]
+        }
+      ]
+    }
+  },
+  "licenses": {
+    "baseline": {
+      "packageCount": 298,
+      "missing": 14,
+      "partial": 2,
+      "reviewRequired": 6,
+      "mpl": 6
+    },
+    "candidate": {
+      "packageCount": 259,
+      "missing": 13,
+      "partial": 1,
+      "reviewRequired": 0,
+      "mpl": 0
+    },
+    "missing": {
+      "baselineCount": 14,
+      "candidateCount": 13,
+      "delta": -1,
+      "retained": [
+        "block2@0.6.2",
+        "objc2-app-kit@0.3.2",
+        "objc2-cloud-kit@0.3.2",
+        "objc2-core-data@0.3.2",
+        "objc2-core-foundation@0.3.2",
+        "objc2-core-graphics@0.3.2",
+        "objc2-core-image@0.3.2",
+        "objc2-core-text@0.3.2",
+        "objc2-core-video@0.3.2",
+        "objc2-encode@4.1.0",
+        "objc2-foundation@0.3.2",
+        "objc2-quartz-core@0.3.2",
+        "objc2@0.6.4"
+      ],
+      "retainedExact": [
+        "block2@0.6.2",
+        "objc2-app-kit@0.3.2",
+        "objc2-cloud-kit@0.3.2",
+        "objc2-core-data@0.3.2",
+        "objc2-core-foundation@0.3.2",
+        "objc2-core-graphics@0.3.2",
+        "objc2-core-image@0.3.2",
+        "objc2-core-text@0.3.2",
+        "objc2-core-video@0.3.2",
+        "objc2-encode@4.1.0",
+        "objc2-foundation@0.3.2",
+        "objc2-quartz-core@0.3.2",
+        "objc2@0.6.4"
+      ],
+      "materialEvidenceChanged": [],
+      "versionReplacement": [],
+      "clearedByGraphRemoval": [
+        "siphasher@1.0.2"
+      ],
+      "new": [],
+      "newExact": [],
+      "newVersionReplacement": []
+    },
+    "partial": {
+      "baselineCount": 2,
+      "candidateCount": 1,
+      "delta": -1,
+      "retained": [
+        "shlex@1.3.0"
+      ],
+      "retainedExact": [
+        "shlex@1.3.0"
+      ],
+      "materialEvidenceChanged": [],
+      "versionReplacement": [],
+      "clearedByGraphRemoval": [
+        "msvc_spectre_libs@0.1.3"
+      ],
+      "new": [],
+      "newExact": [],
+      "newVersionReplacement": []
+    },
+    "reviewRequired": {
+      "baselineCount": 6,
+      "candidateCount": 0,
+      "delta": -6,
+      "retained": [],
+      "retainedExact": [],
+      "materialEvidenceChanged": [],
+      "versionReplacement": [],
+      "clearedByGraphRemoval": [
+        "uniffi_core@0.31.0",
+        "uniffi_internal_macros@0.31.0",
+        "uniffi_macros@0.31.0",
+        "uniffi_meta@0.31.0",
+        "uniffi_pipeline@0.31.0",
+        "uniffi@0.31.0"
+      ],
+      "new": [],
+      "newExact": [],
+      "newVersionReplacement": []
+    },
+    "mpl": {
+      "baselineCount": 6,
+      "candidateCount": 0,
+      "delta": -6,
+      "retained": [],
+      "retainedExact": [],
+      "materialEvidenceChanged": [],
+      "versionReplacement": [],
+      "clearedByGraphRemoval": [
+        "uniffi_core@0.31.0",
+        "uniffi_internal_macros@0.31.0",
+        "uniffi_macros@0.31.0",
+        "uniffi_meta@0.31.0",
+        "uniffi_pipeline@0.31.0",
+        "uniffi@0.31.0"
+      ],
+      "new": [],
+      "newExact": [],
+      "newVersionReplacement": []
+    },
+    "residualGaps": {
+      "missing": [
+        "block2@0.6.2",
+        "objc2-app-kit@0.3.2",
+        "objc2-cloud-kit@0.3.2",
+        "objc2-core-data@0.3.2",
+        "objc2-core-foundation@0.3.2",
+        "objc2-core-graphics@0.3.2",
+        "objc2-core-image@0.3.2",
+        "objc2-core-text@0.3.2",
+        "objc2-core-video@0.3.2",
+        "objc2-encode@4.1.0",
+        "objc2-foundation@0.3.2",
+        "objc2-quartz-core@0.3.2",
+        "objc2@0.6.4"
+      ],
+      "partial": [
+        "shlex@1.3.0"
+      ],
+      "reviewRequired": [],
+      "mpl": []
+    },
+    "legalConclusion": "not-made",
+    "legalReviewCompleted": false
+  },
+  "supplements": {
+    "status": "pass",
+    "baseline": {
+      "manifestPath": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-driver-closure/license-supplements/manifest.json",
+      "manifestSha256": "6b75bf6283798de5d363835e6db41a0ff92948d3f47dac9034807d5f1e0515c8",
+      "entryCount": 22,
+      "sourceRevision": "2d2f99228d4d2508dc6fcc84c176b296e146714a"
+    },
+    "candidate": {
+      "manifestPath": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-driver-closure/round7/license-supplements/manifest.json",
+      "manifestSha256": "9683d541d692cdeddf3c7b2f5d80a96bf5f965e03bc91d7ba553575f13c7b487",
+      "entryCount": 15,
+      "sourceRevision": "2d2f99228d4d2508dc6fcc84c176b296e146714a"
+    },
+    "retained": [
+      "block2@0.5.1",
+      "cua-driver-contract@0.37.0",
+      "cua-driver-core@0.37.0",
+      "cua-driver-sdk@0.37.0",
+      "cursor-overlay@0.37.0",
+      "jsonschema-regex@0.46.10",
+      "objc-sys@0.3.5",
+      "objc2-app-kit@0.2.2",
+      "objc2-foundation@0.2.2",
+      "objc2-quartz-core@0.2.2",
+      "objc2@0.5.2",
+      "pip-preview@0.37.0",
+      "platform-macos@0.37.0",
+      "uuid-simd@0.8.0",
+      "vsimd@0.8.0"
+    ],
+    "droppedOutsideGraph": [
+      "rquickjs-core@0.14.0",
+      "uniffi@0.31.0",
+      "uniffi_core@0.31.0",
+      "uniffi_internal_macros@0.31.0",
+      "uniffi_macros@0.31.0",
+      "uniffi_meta@0.31.0",
+      "uniffi_pipeline@0.31.0"
+    ],
+    "workspaceCargoHashesUpdated": [
+      "cua-driver-contract@0.37.0",
+      "cua-driver-core@0.37.0",
+      "cua-driver-sdk@0.37.0",
+      "cursor-overlay@0.37.0",
+      "pip-preview@0.37.0",
+      "platform-macos@0.37.0"
+    ],
+    "unknownIdentity": [],
+    "textDrift": []
+  },
+  "productAdoption": "blocked",
+  "productAdoptionReason": "dependency trimming candidate only; native, signing, TCC, runtime and legal review remain separate gates",
+  "blockedItems": [
+    {
+      "gate": "productAdoption",
+      "status": "blocked",
+      "reason": "dependency trimming candidate only; native, signing, TCC, runtime and legal review remain separate gates"
+    },
+    {
+      "gate": "licenses.missing",
+      "status": "blocked",
+      "reason": "13 residual missing gaps in the candidate graph"
+    },
+    {
+      "gate": "licenses.partial",
+      "status": "blocked",
+      "reason": "1 residual partial gaps in the candidate graph"
+    },
+    {
+      "gate": "lockIdentity",
+      "status": "not-evaluated",
+      "reason": "compare both Cargo.lock files directly"
+    }
+  ],
+  "limitations": [
+    "comparison reads only the supplied reports and policy",
+    "license evidence is not a legal conclusion and does not complete review",
+    "version replacement and graph removal do not by themselves resolve license obligations",
+    "lock package identities and checksums are not available in the reports and are not inferred",
+    "no build, system input, signing, TCC or product adoption evidence is produced"
+  ]
+}

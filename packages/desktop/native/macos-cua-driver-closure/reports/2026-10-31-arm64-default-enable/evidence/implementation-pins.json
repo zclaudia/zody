@@ -1,0 +1,11 @@
+{
+  "docs/plans/computer-use-macos-phase1-arm64-screenshot.md": "03d09d7b7451fd531c3567761e4a7d005944125f3c9297cfeeeefe2d47edcdf0",
+  "packages/desktop/electron-builder.config.js": "b2ecd0e52b6b5dff3e0cd4282607fa0e847b20167ca27411a9af8d782274e40c",
+  "packages/desktop/scripts/bundle.mjs": "c4e33d0d18a67741630507ae05a201e8b3c441dc92b34b323a4082ed1a9386a3",
+  "packages/desktop/scripts/macos-cua-narrow-resources-build.test.mjs": "078ee1c41a9edbb253e1d48dbc098a41e83db4a4ca20ce23539a943d3fc7c967",
+  "packages/desktop/scripts/macos-cua-narrow-resources-bundle-args.test.mjs": "2ad1bccb0337160ea56307bd13ae9b62d7c9f61840ab6676e0a6f511984c3072",
+  "packages/desktop/tsup.config.ts": "4d0f8a54750c37e4d8dcf83660eb29c1868403efabace307a129e11fbb8e6558",
+  "specs/computer-use-macos-phase1.md": "8c7934aa0d65756dada10c9176b2f8d72802a277605e78b0ff2fe877ad1df019",
+  "packages/desktop/scripts/macos-cua-demo-defaults.mjs": "1e1895ed6ab323bffdbff7f6d22ad1f5154eac40402918f7d40848865db42f12",
+  "packages/desktop/test/macosCuaDemoDefaults.test.ts": "5e55d759c5c77e3d6ff75499a8f3a4bb04ed4977167298950f5f96158f093abb"
+}

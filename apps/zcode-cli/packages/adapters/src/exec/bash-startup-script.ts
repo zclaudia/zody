@@ -131,7 +131,10 @@ function hashContent(content: string): string {
 }
 
 function sanitizePathSegment(value: string): string {
-  return value.replace(/[^A-Za-z0-9._-]+/gu, "-").replace(/^-+|-+$/gu, "") || "unknown";
+  const sanitized = value.replace(/[^A-Za-z0-9._-]+/gu, "-").replace(/^-+|-+$/gu, "");
+  // I16：sessionId 直接作为 bash-startup 子目录；`.`/`..` 会逃出 rootDir。
+  if (!sanitized || sanitized === "." || sanitized === "..") return "unknown";
+  return sanitized;
 }
 
 function shellQuote(value: string): string {

@@ -146,7 +146,7 @@ const webRemoteControlLastEnabledContextSchema = z.object({
   workspaceIdentity: nonEmptyStringSchema.optional(),
   initialTaskId: nonEmptyStringSchema.optional(),
 });
-const zcodeEndpointOriginSchema = z.preprocess((value) => {
+const zodyEndpointOriginSchema = z.preprocess((value) => {
   if (typeof value !== "string") {
     return undefined;
   }
@@ -161,19 +161,19 @@ const zcodeEndpointOriginSchema = z.preprocess((value) => {
   }
 }, z.string().optional());
 
-function sanitizeZCodeEndpointOrigin(value: unknown): unknown {
+function sanitizeZodyEndpointOrigin(value: unknown): unknown {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return value;
   }
   const raw = value as Record<string, unknown>;
-  if (!("zcodeEndpointOrigin" in raw)) {
+  if (!("zodyEndpointOrigin" in raw)) {
     return value;
   }
-  const parsed = zcodeEndpointOriginSchema.safeParse(raw.zcodeEndpointOrigin);
+  const parsed = zodyEndpointOriginSchema.safeParse(raw.zodyEndpointOrigin);
   if (parsed.success && typeof parsed.data === "string") {
-    return { ...raw, zcodeEndpointOrigin: parsed.data };
+    return { ...raw, zodyEndpointOrigin: parsed.data };
   }
-  const { zcodeEndpointOrigin: _zcodeEndpointOrigin, ...next } = raw;
+  const { zodyEndpointOrigin: _zodyEndpointOrigin, ...next } = raw;
   // 非生产 endpoint override 是开发辅助字段，坏值只丢弃该字段，不能拖垮整个 settings 读取。
   return next;
 }
@@ -566,7 +566,7 @@ const appSettingsObjectSchema = z.object({
     namespace: DEFAULT_REMOTE_ACCESS_NAMESPACE,
     allowMobileOpenArbitraryPath: true,
   }),
-  zcodeEndpointOrigin: zcodeEndpointOriginSchema.optional(),
+  zodyEndpointOrigin: zodyEndpointOriginSchema.optional(),
 });
 
 export const appSettingsSchema = z.preprocess(
@@ -576,7 +576,7 @@ export const appSettingsSchema = z.preprocess(
         migrateMessageStreamShowReasoningDefault(
           migrateCloseToTrayOnWindowsDefault(
             migrateLegacyLocalePreference(
-              sanitizeZCodeEndpointOrigin(
+              sanitizeZodyEndpointOrigin(
                 migrateLegacyWorkspaceSession(
                   migrateLegacyBuiltinAgentCliProviders(
                     migrateLegacyWebRemoteControlToRemoteAccess(value),
@@ -671,5 +671,5 @@ export const appSettingsPatchSchema = z.object({
     .optional(),
   settingsSyncFirstRunPromptHandled: z.boolean().optional(),
   remoteAccess: remoteAccessSettingsPatchSchema.optional(),
-  zcodeEndpointOrigin: zcodeEndpointOriginSchema.optional(),
+  zodyEndpointOrigin: zodyEndpointOriginSchema.optional(),
 });

@@ -1,0 +1,10 @@
+{
+  "startedAt": "2026-10-31T05:21:05.676940+00:00",
+  "priorSourceManifestSha256": "e01cf79931f8c493195f7b01765cb76b8612fe6e74a8cac2ccb5ddd7d65454fe",
+  "priorFiles": 4275,
+  "changedSincePriorFreeze": [],
+  "userAuthorization": "default-enable only testedarm64/macOS single-window screenshot self-use demo; nativeconfirmation+Stop retained",
+  "readOnlyInvestigator": "broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19067-1db6-7e30-9334-bac3e898aed7",
+  "freshness": "Node24.14.0 PASS ahead32/behind0",
+  "architectureBaseline": "0violations"
+}

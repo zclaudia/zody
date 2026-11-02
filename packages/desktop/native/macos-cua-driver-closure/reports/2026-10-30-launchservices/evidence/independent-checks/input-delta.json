@@ -1,0 +1,14 @@
+{
+  "session-storage-entry.mjs.inputs.json": [],
+  "tasks-storage-worker.mjs.inputs.json": [
+    "packages/services/src/zcode-agent/zcodeAgentProcessManager.ts"
+  ],
+  "node-repl-server.mjs.inputs.json": [],
+  "cli-entry.mjs.inputs.json": [],
+  "session-entry.mjs.inputs.json": [],
+  "host-entry.mjs.inputs.json": [
+    "packages/desktop/src/host/nodeHostEntryConfig.ts",
+    "packages/desktop/native/macos-cua-desktop-session/entries/host-entry.ts",
+    "packages/services/src/zcode-agent/zcodeAgentProcessManager.ts"
+  ]
+}

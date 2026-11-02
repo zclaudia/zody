@@ -1,7 +1,7 @@
 import { getDatabaseStartupPortPayload } from "./databaseStartupRelay.js";
 import { randomUUID } from "node:crypto";
 import { app, BrowserWindow, Menu, MessageChannelMain } from "electron";
-import type { UtilityProcess as ElectronUtilityProcess } from "electron";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 import { HostMessageTypes, InternalChannels, PlatformChannels, type Locale } from "@zcode/shared";
 import { scheduleArmsBrowserPerfLoadNudge } from "./armsBrowserPerfLoadNudge.js";
 import { createBrowserWindow } from "./desktopWindowChrome.js";
@@ -27,14 +27,14 @@ export function createWindow(options: {
   logger: { info: (...args: unknown[]) => void; warn: (...args: unknown[]) => void };
   forceQuitRef: { current: boolean };
   handleBeforeClose?: (win: BrowserWindow, label: string) => boolean;
-  windowHostProcessMap: Map<number, ElectronUtilityProcess>;
+  windowHostProcessMap: Map<number, HostProcessHandle>;
   spawnHostProcess: (
     win: BrowserWindow,
     label: string,
     initMessage: HostInitMessage,
-  ) => ElectronUtilityProcess;
+  ) => HostProcessHandle;
   disposeHostProcess: (
-    child: ElectronUtilityProcess,
+    child: HostProcessHandle,
     label: string,
     forceKillDelayMs?: number,
   ) => void;

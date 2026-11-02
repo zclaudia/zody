@@ -33,7 +33,11 @@ export function isBashMergedOutputRequest(request: ExecutionRequest): boolean {
 }
 
 export function sanitizePathSegment(value: string): string {
-  return value.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120) || "unknown";
+  const sanitized = value.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120);
+  // I16：sessionId/toolCallId 现在是独立目录层，`.`/`..` 会让 join 逃出父目录；
+  // 统一替换为占位名，确保派生路径始终留在输出根内。
+  if (!sanitized || sanitized === "." || sanitized === "..") return "unknown";
+  return sanitized;
 }
 
 export function abortSignalReason(signal: AbortSignal | undefined): unknown {

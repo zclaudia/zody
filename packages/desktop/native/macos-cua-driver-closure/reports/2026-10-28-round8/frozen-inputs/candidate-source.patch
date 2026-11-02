@@ -1,0 +1,2377 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index d89701f..14a74c6 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1085,6 +1085,15 @@ dependencies = [
+  "uuid",
+ ]
+ 
++[[package]]
++name = "cua-macos-visual"
++version = "0.37.0"
++dependencies = [
++ "core-foundation",
++ "image",
++ "screencapturekit",
++]
++
+ [[package]]
+ name = "cursor-overlay"
+ version = "0.37.0"
+diff --git a/Cargo.toml b/Cargo.toml
+index 42c90e3..ab81066 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -1,6 +1,6 @@
+ [workspace]
+ resolver = "2"
+-members = ["crates/cua-driver-sdk", "crates/cua-driver-core", "crates/cua-driver-contract", "crates/platform-macos", "crates/platform-windows", "crates/platform-linux", "crates/cursor-overlay", "crates/cua-cursor-motion", "crates/pip-preview"]
++members = ["crates/cua-driver-sdk", "crates/cua-driver-core", "crates/cua-driver-contract", "crates/cua-macos-visual", "crates/platform-macos", "crates/platform-windows", "crates/platform-linux", "crates/cursor-overlay", "crates/cua-cursor-motion", "crates/pip-preview"]
+ 
+ [workspace.package]
+ version = "0.37.0"
+diff --git a/crates/cua-macos-visual/Cargo.toml b/crates/cua-macos-visual/Cargo.toml
+new file mode 100644
+index 0000000..8fcf848
+--- /dev/null
++++ b/crates/cua-macos-visual/Cargo.toml
+@@ -0,0 +1,20 @@
++[package]
++name = "cua-macos-visual"
++version.workspace = true
++edition.workspace = true
++license.workspace = true
++description = "Narrow macOS visual observation candidate: CGWindow facts, one-window ScreenCaptureKit frame and PNG encoding"
++publish = false
++
++[lib]
++crate-type = ["rlib"]
++
++[dependencies]
++# 只开 PNG，显式绕开 workspace 的 image features（png+jpeg），避免 JPEG 编码器进入新图。
++image = { version = "0.25", default-features = false, features = ["png"] }
++
++[target.'cfg(target_os = "macos")'.dependencies]
++core-foundation = "0.10"
++# 默认 feature 为空。macos_14_2 是读取 content_rect 的最小 feature，
++# 同时保留 macos_14_0 的 SCScreenshotManager/point_pixel_scale API。
++screencapturekit = { version = "8.0.1", features = ["macos_14_2"] }
+diff --git a/crates/cua-macos-visual/LICENSE-MIT b/crates/cua-macos-visual/LICENSE-MIT
+new file mode 100644
+index 0000000..b8b198c
+--- /dev/null
++++ b/crates/cua-macos-visual/LICENSE-MIT
+@@ -0,0 +1,21 @@
++MIT License
++
++Copyright (c) 2025 Cua AI, Inc.
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+diff --git a/crates/cua-macos-visual/PROVENANCE.md b/crates/cua-macos-visual/PROVENANCE.md
+new file mode 100644
+index 0000000..89e53a3
+--- /dev/null
++++ b/crates/cua-macos-visual/PROVENANCE.md
+@@ -0,0 +1,165 @@
++# cua-macos-visual provenance
++
++Fixed upstream revision: `2d2f99228d4d2508dc6fcc84c176b296e146714a`
++
++Fixed upstream source root: `libs/cua-driver/rust`
++
++This crate is a functional subset, not an ABI-equivalent replacement for the
++R7 SDK graph. It owns one observation's window facts, pixels and conversion
++checks only. It does not own submissions, leases, frame publication, input
++dispatch, AX semantics, screen recording, clipboard, overlay/PiP, browser or
++daemon lifecycle.
++
++## Source mapping
++
++### `crates/platform-macos/src/windows.rs` -> `src/window.rs`
++
++Kept:
++
++- `CGWindowListCopyWindowInfo` restricted to on-screen, non-desktop-element
++  windows (`kCGWindowListOptionOnScreenOnly |
++  kCGWindowListExcludeDesktopElements`).
++- Optional reads of `kCGWindowNumber`, `kCGWindowOwnerPID`, `kCGWindowLayer`
++  and all four `kCGWindowBounds` components.
++- Pure checked parsing (`RawWindowFact` -> `WindowIdentity`): missing keys,
++  non-finite values, non-positive sizes, non-layer-0 windows and values that do
++  not fit `u32`/`i32` are rejected. Nothing is defaulted to `0` or truncated.
++
++Removed:
++
++- `kCGWindowOwnerName`, `kCGWindowName`, z-index, on-screen and Space fields.
++- SkyLight Space queries, AX reachability filtering and helper-window pruning.
++- All public window enumeration and selection helpers. The remaining reader is
++  `pub(crate)` and only reachable from the crate-private capture path.
++
++Not supported this round: off-Space, minimized and accessory/overlay windows.
++Because enumeration is on-screen only, an absent window is `WindowNotFound`, not
++a silently accepted zero fact. A request with a non-zero layer is rejected.
++
++### `crates/platform-macos/src/capture.rs` -> `src/capture.rs` + `src/observe.rs`
++
++Kept:
++
++- `SCShareableContent::get()` and selection of the one exact requested window.
++- Desktop-independent `SCContentFilter` built with `with_window`.
++- `point_pixel_scale` / `content_rect` output sizing, rounded and bounded.
++- `SCStreamConfiguration` with `shows_cursor(false)`.
++- `SCScreenshotManager::capture_image`.
++- CGImage dimension/RGBA length checks.
++- Identity revalidation before capture, against the selected SCK window and
++  after the frame is returned. Drift is rejected; the window is never reselected.
++
++Added pure orchestration:
++
++- `observe_once` takes injected before/select/capture/after/encode closures and
++  enforces the order. Tests prove drift stops later stages, a bad RGBA length
++  stops before the after-check, an after-drift stops before encoding, and no
++  empty PNG can become a successful frame. The native path calls this same
++  function, so the tested order is the order actually used.
++
++Removed:
++
++- The two-second plan cache, native capture gate, worker timeout, retry after
++  identity change, shell `screencapture` fallback and SkyLight fallback.
++- `capture_consent`, display capture, overlay exclusion, video recording,
++  recording hooks and all input/pointer/overlay/PiP dependencies.
++
++Not solved here:
++
++- `SCScreenshotManager::capture_image` ends in a one-shot
++  `SyncCompletion::wait()` inside `screencapturekit 8.0.1`; if the system never
++  invokes the callback, this synchronous call can stay pending indefinitely.
++  This candidate deliberately adds no fake timeout or cancellation.
++- CGWindow PID/window/geometry agreement is observation consistency only. It is
++  not process-incarnation proof, foreground authorization, a lease or a
++  published final frame.
++
++### `crates/cua-driver-core/src/image_utils.rs` -> `src/png.rs`
++
++Kept:
++
++- `encode_rgba_to_png`, now using `PngEncoder` directly from the caller's slice
++  with no `rgba.to_vec()` clone.
++- `png_dimensions` as an explicitly header-only IHDR parser.
++
++Added:
++
++- `verify_png_matches_dimensions` first bounds the input length and walks the
++  chunk container with checked lengths. It verifies every chunk CRC, requires
++  IHDR first, at least one IDAT and a final zero-length IEND, and rejects any
++  trailing bytes. `image` then performs only the bounded pixel decode. This
++  rejects a 24-byte IHDR-only fake, truncation (including a missing IEND), a bad
++  IEND or other chunk CRC, trailing garbage, non-RGBA8 colour type, wrong pixel
++  byte count and aggregate pixel/RGBA budget overflow before a success frame can
++  be formed.
++- Aggregate pixel/RGBA budget checks (`MAX_CAPTURE_PIXELS`, `MAX_RGBA_BYTES`)
++  in addition to the per-side limit.
++
++Removed:
++
++- JPEG encoding, PNG-to-JPEG conversion, resizing, crosshair drawing and
++  BGRA conversion.
++- The workspace `image` feature set. This crate depends on `image 0.25` with
++  `default-features = false, features = ["png"]`, so JPEG encoding is not
++  compiled through this crate's direct dependency.
++
++### `crates/platform-macos/src/tools/px_frame.rs` -> `src/geometry.rs`
++
++Kept:
++
++- `validate_capture_frame`'s coherent 1x/2x scale rule and refusal on zero or
++  non-finite bounds.
++
++Removed:
++
++- `WindowPxFrame::to_screen`. It has no validated caller in this round, and an
++  unchecked public pixel-to-screen transform would accept NaN/infinity or a
++  zero scale. It is not carried as a public API.
++- `ToolResult` refusal JSON, `error_structured`, `resolve_or_refuse` and the
++  native `resolve_window_px_frame` convenience. This crate exposes only pure
++  geometry; a frame is not wired to action dispatch.
++
++## Dependency and platform notes
++
++- `screencapturekit = 8.0.1` with `features = ["macos_14_2"]`.
++  `default = []`; `macos_14_2` enables `macos_14_0`, which enables `macos_13_0`.
++  `macos_14_2` is the minimum feature that exposes `SCContentFilter::content_rect`
++  (the method is `#[cfg(feature = "macos_14_2")]` in 8.0.1). The capture plan
++  still uses `SCScreenshotManager` and `point_pixel_scale` from `macos_14_0`.
++- The dependency's `build.rs` always configures and builds the Swift bridge and
++  links multiple Apple frameworks. Enabling only `macos_14_0` does not remove
++  the recording Swift sources from the dependency build, and this crate does not
++  claim that the upstream SCK library contains no recording code. Raising the
++  feature floor to `macos_14_2` likewise does not remove those sources.
++- The existing R7 SDK/platform crates keep their own `macos_15_0` selection;
++  this crate does not change those old candidates.
++- `build.rs` is a new, crate-local link-path helper. It runs only the absolute
++  `/usr/bin/xcrun --find swiftc`, requires one absolute
++  `<toolchain>/usr/bin/swiftc` result, verifies that compiler file, derives the
++  same toolchain's `usr/lib/swift/macosx`, and verifies that both
++  `libswiftCompatibility56.a` and `libswiftCompatibilityPacks.a` exist. Only
++  then does it emit `cargo:rustc-link-search=native=...`. It also emits
++  `cargo:rustc-link-arg=-Wl,-rpath,/usr/lib/swift` for this crate's test/final
++  executable, because upstream Swift objects reference the system Swift runtime
++  through `@rpath` and the compatibility-library search path alone does not
++  satisfy runtime loading. This is the standard system runtime directory; the
++  script does not set `DYLD_LIBRARY_PATH`, copy a library, disable validation,
++  force-link unrelated frameworks, modify a registry/global SDK setting, or
++  lower the deployment target. The Swift object files keep their own autolink
++  directives. It has no `DEVELOPER_DIR`, `xcode-select`, or hard-coded global
++  fallback: xcrun failure, a relative/multi-line/wrong-layout result, or a
++  missing library fails the build. An `rlib` does not carry this runtime
++  closure: a future Helper consumer must put the same rpath on its own final
++  executable. The existing minimum-deployment warnings for upstream Swift
++  objects are not resolved by this helper.
++- No cache, lease, registry migration, shell, SkyLight, AX SPI or TCC request is
++  introduced.
++
++## License
++
++- `LICENSE-MIT` is a verbatim copy of the fixed upstream root `LICENSE.md` at
++  `2d2f99228d4d2508dc6fcc84c176b296e146714a`, SHA-256
++  `c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9`,
++  1069 bytes. It is not a template.
++- The crate expression is the workspace `MIT`; the copied text is the actual
++  copyright/license body from the fixed upstream object.
+diff --git a/crates/cua-macos-visual/build.rs b/crates/cua-macos-visual/build.rs
+new file mode 100644
+index 0000000..069365d
+--- /dev/null
++++ b/crates/cua-macos-visual/build.rs
+@@ -0,0 +1,65 @@
++//! Add the active toolchain's Swift compatibility library directory to the
++//! native link search path. The upstream SwiftPM build scripts only know the
++//! full-Xcode `Toolchains/XcodeDefault.xctoolchain` layout; a Command Line
++//! Tools-only host installs the same libraries under `usr/lib/swift/macosx`.
++//!
++//! This script emits the compatibility-library search path and the fixed system
++//! Swift runtime rpath. It does not copy a library, force-link an unrelated
++//! framework, change the SDK, or lower the deployment target. The Swift object
++//! files carry the actual autolink directives, so the linker can resolve them
++//! after the verified directory is on its search path.
++
++use std::path::PathBuf;
++use std::process::Command;
++
++#[path = "src/swift_link.rs"]
++mod swift_link;
++
++fn main() {
++    println!("cargo:rerun-if-changed=build.rs");
++    println!("cargo:rerun-if-changed=src/swift_link.rs");
++    println!("cargo:rerun-if-env-changed=DEVELOPER_DIR");
++    println!("cargo:rerun-if-env-changed=TOOLCHAINS");
++
++    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("macos") {
++        return;
++    }
++
++    let compiler = xcrun_find_swiftc();
++    if !compiler.is_file() {
++        panic!(
++            "xcrun returned {}, but it is not a regular compiler file",
++            compiler.display()
++        );
++    }
++    let directory = swift_link::swift_lib_dir_from_compiler(&compiler).unwrap_or_else(|| {
++        panic!(
++            "xcrun returned {}, which is not <toolchain>/usr/bin/swiftc",
++            compiler.display()
++        )
++    });
++    if !swift_link::has_required_compat_libs(&directory) {
++        panic!(
++            "{} is missing libswiftCompatibility56.a or \
++             libswiftCompatibilityPacks.a",
++            directory.display()
++        );
++    }
++    println!("cargo:rustc-link-search=native={}", directory.display());
++
++    // 上游 Swift 对象带 @rpath 依赖；compat 库搜索路径不能替代运行期 rpath。
++    // 这里只补标准系统运行时目录，供本 crate 的测试/最终可执行文件解析。
++    println!("cargo:rustc-link-arg=-Wl,-rpath,/usr/lib/swift");
++}
++
++fn xcrun_find_swiftc() -> PathBuf {
++    let output = Command::new("/usr/bin/xcrun")
++        .args(["--find", "swiftc"])
++        .output()
++        .unwrap_or_else(|error| panic!("failed to run /usr/bin/xcrun: {error}"));
++    if !output.status.success() {
++        panic!("/usr/bin/xcrun --find swiftc failed with {}", output.status);
++    }
++    swift_link::parse_xcrun_swiftc(&output.stdout)
++        .unwrap_or_else(|error| panic!("invalid /usr/bin/xcrun --find swiftc output: {error}"))
++}
+diff --git a/crates/cua-macos-visual/src/capture.rs b/crates/cua-macos-visual/src/capture.rs
+new file mode 100644
+index 0000000..ac627cc
+--- /dev/null
++++ b/crates/cua-macos-visual/src/capture.rs
+@@ -0,0 +1,152 @@
++//! Crate-private single-window ScreenCaptureKit capture.
++//!
++//! No cache, lease, retry, timeout, shell/SkyLight fallback or consent
++//! bypass. Identity order and drift rejection live in [`crate::observe`]; this
++//! module only reads CG facts and turns the exact SCK window into RGBA.
++
++#![allow(dead_code)]
++
++use screencapturekit::prelude::{SCContentFilter, SCShareableContent, SCStreamConfiguration};
++use screencapturekit::screenshot_manager::{CGImageExt, SCScreenshotManager};
++
++use crate::error::VisualError;
++use crate::geometry::{
++    checked_pixel_dimensions, checked_pixel_extent, CaptureRequest, PixelDimensions, WindowBounds,
++    WindowIdentity, MAX_CAPTURE_SIDE,
++};
++use crate::observe::{observe_once, RawFrame};
++use crate::png::encode_rgba_to_png;
++use crate::window;
++
++struct CapturePlan {
++    filter: SCContentFilter,
++    config: SCStreamConfiguration,
++    output: PixelDimensions,
++}
++
++/// Capture one exact window and return a validated, non-empty PNG frame.
++///
++/// `SCScreenshotManager::capture_image` waits on a one-shot completion with no
++/// timeout. If the system never invokes that callback, this synchronous call
++/// can remain pending indefinitely; this candidate deliberately adds no fake
++/// timeout or cancellation. A trusted host must own that lifecycle before this
++/// path can be exposed.
++#[allow(dead_code)]
++pub(crate) fn capture_window_png(
++    request: &CaptureRequest,
++) -> Result<crate::CapturedFrame, VisualError> {
++    request.validate()?;
++    let expected = request.expected_identity();
++    observe_once(
++        &expected,
++        || window::window_identity(request.window_id),
++        || build_plan(request),
++        capture_frame,
++        || window::window_identity(request.window_id),
++        |raw| encode_rgba_to_png(&raw.rgba, raw.dimensions.width, raw.dimensions.height),
++    )
++}
++
++/// Select the one exact shareable window and build its fixed output plan.
++///
++/// The returned identity is checked by [`observe_once`] before capture, so a
++/// changed or substituted SCK window is rejected without reselection.
++fn build_plan(request: &CaptureRequest) -> Result<(WindowIdentity, CapturePlan), VisualError> {
++    let content = SCShareableContent::get()
++        .map_err(|error| native(format!("SCShareableContent::get failed: {error}")))?;
++    let window = content
++        .windows()
++        .into_iter()
++        .find(|window| window.window_id() == request.window_id)
++        .ok_or(VisualError::WindowNotFound {
++            window_id: request.window_id,
++        })?;
++
++    let frame = window.frame();
++    let pid = window
++        .owning_application()
++        .map(|application| application.process_id())
++        .ok_or_else(|| native("selected SCK window has no owning application"))?;
++    let selected = WindowIdentity::new(
++        request.window_id,
++        pid,
++        window.window_layer(),
++        WindowBounds::new(
++            frame.origin.x,
++            frame.origin.y,
++            frame.size.width,
++            frame.size.height,
++        ),
++    );
++
++    let filter = SCContentFilter::create().with_window(&window).build();
++    let scale = f64::from(filter.point_pixel_scale());
++    let rect = filter.content_rect();
++    let (points_width, points_height) = if content_rect_usable(rect) {
++        (rect.size.width, rect.size.height)
++    } else {
++        (frame.size.width, frame.size.height)
++    };
++    let output_width = checked_pixel_extent(points_width * scale, "SCK output width")?;
++    let output_height = checked_pixel_extent(points_height * scale, "SCK output height")?;
++    let output = checked_pixel_dimensions(output_width, output_height)?;
++
++    let config = SCStreamConfiguration::new()
++        .with_width(output_width)
++        .with_height(output_height)
++        .with_shows_cursor(false);
++    Ok((
++        selected,
++        CapturePlan {
++            filter,
++            config,
++            output,
++        },
++    ))
++}
++
++fn capture_frame(plan: CapturePlan) -> Result<RawFrame, VisualError> {
++    let image =
++        SCScreenshotManager::capture_image(&plan.filter, &plan.config).map_err(|error| {
++            native(format!(
++                "SCScreenshotManager::capture_image failed: {error}"
++            ))
++        })?;
++    let width = image_dim(image.width(), "CGImage width")?;
++    let height = image_dim(image.height(), "CGImage height")?;
++    let dimensions = checked_pixel_dimensions(width, height)?;
++    if dimensions != plan.output {
++        return Err(native(format!(
++            "SCK returned {width}x{height}, configured {}x{}",
++            plan.output.width, plan.output.height
++        )));
++    }
++    let rgba = image
++        .rgba_data()
++        .map_err(|error| native(format!("CGImage::rgba_data failed: {error}")))?;
++    Ok(RawFrame { dimensions, rgba })
++}
++
++fn content_rect_usable(rect: screencapturekit::cg::CGRect) -> bool {
++    rect.size.width.is_finite()
++        && rect.size.height.is_finite()
++        && rect.size.width > 0.0
++        && rect.size.height > 0.0
++}
++
++fn image_dim(value: usize, label: &'static str) -> Result<u32, VisualError> {
++    if value == 0 || value > MAX_CAPTURE_SIDE as usize {
++        return Err(VisualError::DimensionRejected {
++            label,
++            value: value as f64,
++        });
++    }
++    u32::try_from(value).map_err(|_| VisualError::DimensionRejected {
++        label,
++        value: value as f64,
++    })
++}
++
++fn native(message: impl Into<String>) -> VisualError {
++    VisualError::NativeCapture(message.into())
++}
+diff --git a/crates/cua-macos-visual/src/error.rs b/crates/cua-macos-visual/src/error.rs
+new file mode 100644
+index 0000000..ad8b1a7
+--- /dev/null
++++ b/crates/cua-macos-visual/src/error.rs
+@@ -0,0 +1,145 @@
++//! Errors raised by the narrow visual observation crate.
++
++use std::fmt;
++
++/// Stage at which a window identity was re-derived.
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub enum DriftStage {
++    /// CGWindowList facts read immediately before the SCK request.
++    BeforeCapture,
++    /// The exact window selected out of SCShareableContent.
++    SelectedWindow,
++    /// CGWindowList facts read again after the SCK frame was returned.
++    AfterCapture,
++}
++
++impl fmt::Display for DriftStage {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        match self {
++            Self::BeforeCapture => f.write_str("before capture"),
++            Self::SelectedWindow => f.write_str("selected SCK window"),
++            Self::AfterCapture => f.write_str("after capture"),
++        }
++    }
++}
++
++/// Failure modes for pure validation and the crate-private native path.
++#[derive(Debug, Clone, PartialEq)]
++pub enum VisualError {
++    /// No trusted Helper approval integration owns this observation yet.
++    HostNotApproved,
++    /// The request is structurally unusable before any native call.
++    InvalidRequest(&'static str),
++    /// A raw CGWindowList fact is missing or cannot be represented exactly.
++    InvalidWindowFact { field: &'static str },
++    /// An identity is internally invalid even when compared with itself.
++    InvalidIdentity { field: &'static str },
++    /// WindowServer no longer lists the requested CGWindowID.
++    WindowNotFound { window_id: u32 },
++    /// PID, layer, bounds or window id changed at the given stage.
++    WindowDrift { window_id: u32, stage: DriftStage },
++    /// Capture pixels are not a coherent 1x/2x representation of the bounds.
++    FrameMismatch {
++        window_id: u32,
++        bounds_width: f64,
++        bounds_height: f64,
++        capture_width: u32,
++        capture_height: u32,
++        scale_x: f64,
++        scale_y: f64,
++    },
++    /// A side or the aggregate pixel budget was exceeded.
++    PixelBudgetExceeded {
++        width: u32,
++        height: u32,
++        pixels: u64,
++        max_pixels: u64,
++    },
++    /// A raw extent was zero, non-finite or outside the configured side limit.
++    DimensionRejected { label: &'static str, value: f64 },
++    /// RGBA byte length does not equal width*height*4.
++    RgbaLengthMismatch {
++        width: u32,
++        height: u32,
++        expected: u64,
++        actual: u64,
++    },
++    /// PNG parsing or encoding failed.
++    PngEncoding(String),
++    /// Encoded PNG dimensions do not match the capture dimensions.
++    PngMismatch {
++        expected_width: u32,
++        expected_height: u32,
++        actual_width: u32,
++        actual_height: u32,
++    },
++    /// A native CG/SCK call failed or returned facts we refuse.
++    NativeCapture(String),
++}
++
++impl fmt::Display for VisualError {
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        match self {
++            Self::HostNotApproved => f.write_str("capture requires a trusted Helper approval"),
++            Self::InvalidRequest(reason) => write!(f, "invalid capture request: {reason}"),
++            Self::InvalidWindowFact { field } => {
++                write!(f, "invalid CGWindowList fact: {field}")
++            }
++            Self::InvalidIdentity { field } => write!(f, "invalid window identity: {field}"),
++            Self::WindowNotFound { window_id } => {
++                write!(f, "WindowServer does not list window id {window_id}")
++            }
++            Self::WindowDrift { window_id, stage } => {
++                write!(f, "window id {window_id} changed identity {stage}")
++            }
++            Self::FrameMismatch {
++                window_id,
++                bounds_width,
++                bounds_height,
++                capture_width,
++                capture_height,
++                scale_x,
++                scale_y,
++            } => write!(
++                f,
++                "window id {window_id}: capture {capture_width}x{capture_height} is not a 1x/2x \
++                 match for bounds {bounds_width}x{bounds_height} (scale {scale_x:.4}/{scale_y:.4})"
++            ),
++            Self::PixelBudgetExceeded {
++                width,
++                height,
++                pixels,
++                max_pixels,
++            } => write!(
++                f,
++                "capture {width}x{height} needs {pixels} pixels, over the {max_pixels} pixel budget"
++            ),
++            Self::DimensionRejected { label, value } => {
++                write!(f, "rejected capture {label}: {value}")
++            }
++            Self::RgbaLengthMismatch {
++                width,
++                height,
++                expected,
++                actual,
++            } => write!(
++                f,
++                "RGBA byte length {actual} != {width}*{height}*4 ({expected})"
++            ),
++            Self::PngEncoding(reason) => write!(f, "PNG failure: {reason}"),
++            Self::PngMismatch {
++                expected_width,
++                expected_height,
++                actual_width,
++                actual_height,
++            } => write!(
++                f,
++                "encoded PNG is {actual_width}x{actual_height}, expected \
++                 {expected_width}x{expected_height}"
++            ),
++            Self::NativeCapture(reason) => write!(f, "native capture failure: {reason}"),
++        }
++    }
++}
++
++impl std::error::Error for VisualError {}
+diff --git a/crates/cua-macos-visual/src/geometry.rs b/crates/cua-macos-visual/src/geometry.rs
+new file mode 100644
+index 0000000..ffab80e
+--- /dev/null
++++ b/crates/cua-macos-visual/src/geometry.rs
+@@ -0,0 +1,390 @@
++//! Pure window geometry, identity, raw-fact parsing and request validation.
++
++use crate::error::{DriftStage, VisualError};
++
++/// Hard per-side ceiling for one observation.
++pub const MAX_CAPTURE_SIDE: u32 = 8192;
++/// Aggregate pixel ceiling for one observation (128 MiB of RGBA).
++///
++/// 旧的单边 16384 上限允许 16384x16384，即 1 GiB RGBA。这里同时约束
++/// 单边和总像素，避免只检查单边仍能放大分配。
++pub const MAX_CAPTURE_PIXELS: u64 = 33_554_432;
++/// Aggregate RGBA byte ceiling derived from [`MAX_CAPTURE_PIXELS`].
++pub const MAX_RGBA_BYTES: u64 = MAX_CAPTURE_PIXELS * 4;
++
++/// WindowServer bounds in logical points.
++#[derive(Debug, Clone, Copy, PartialEq)]
++pub struct WindowBounds {
++    pub x: f64,
++    pub y: f64,
++    pub width: f64,
++    pub height: f64,
++}
++
++impl WindowBounds {
++    pub const fn new(x: f64, y: f64, width: f64, height: f64) -> Self {
++        Self {
++            x,
++            y,
++            width,
++            height,
++        }
++    }
++
++    /// A frame is usable only when every component is finite and it has area.
++    pub fn is_usable(&self) -> bool {
++        self.x.is_finite()
++            && self.y.is_finite()
++            && self.width.is_finite()
++            && self.height.is_finite()
++            && self.width > 0.0
++            && self.height > 0.0
++    }
++
++    fn same_bits(&self, other: &Self) -> bool {
++        self.x.to_bits() == other.x.to_bits()
++            && self.y.to_bits() == other.y.to_bits()
++            && self.width.to_bits() == other.width.to_bits()
++            && self.height.to_bits() == other.height.to_bits()
++    }
++}
++
++/// One observation's exact WindowServer identity.
++#[derive(Debug, Clone, Copy, PartialEq)]
++pub struct WindowIdentity {
++    pub window_id: u32,
++    pub pid: i32,
++    pub layer: i32,
++    pub bounds: WindowBounds,
++}
++
++impl WindowIdentity {
++    pub const fn new(window_id: u32, pid: i32, layer: i32, bounds: WindowBounds) -> Self {
++        Self {
++            window_id,
++            pid,
++            layer,
++            bounds,
++        }
++    }
++}
++
++/// Raw values read from one CGWindowList dictionary before validation.
++///
++/// Every field stays optional so a missing key is a refusal rather than a
++/// fabricated `0`. Parsing this struct never touches CoreFoundation or the OS;
++/// the native reader limits its query to on-screen windows, but this parser
++/// cannot independently prove visibility.
++#[derive(Debug, Clone, Copy, PartialEq, Default)]
++pub(crate) struct RawWindowFact {
++    pub window_id: Option<i64>,
++    pub pid: Option<i64>,
++    pub layer: Option<i64>,
++    pub x: Option<f64>,
++    pub y: Option<f64>,
++    pub width: Option<f64>,
++    pub height: Option<f64>,
++}
++
++/// Convert a raw window number to a nonzero `u32`; overflow is not truncated.
++pub(crate) fn checked_window_id(value: Option<i64>) -> Option<u32> {
++    value
++        .and_then(|value| u32::try_from(value).ok())
++        .filter(|window_id| *window_id != 0)
++}
++
++/// Parse one exact layer-0 on-screen window fact.
++///
++/// Missing, non-finite, non-positive or out-of-range fields fail. This round
++/// does not support off-Space, minimized or accessory/overlay windows. The
++/// native reader queries only on-screen windows; this pure parser does not
++/// prove visibility and never treats a missing fact as a valid default.
++pub(crate) fn parse_window_identity(raw: &RawWindowFact) -> Result<WindowIdentity, VisualError> {
++    let window_id = checked_window_id(raw.window_id)
++        .ok_or(VisualError::InvalidWindowFact { field: "window_id" })?;
++    let pid = raw
++        .pid
++        .and_then(|value| i32::try_from(value).ok())
++        .filter(|pid| *pid > 0)
++        .ok_or(VisualError::InvalidWindowFact { field: "pid" })?;
++    let layer = raw
++        .layer
++        .and_then(|value| i32::try_from(value).ok())
++        .filter(|layer| *layer == 0)
++        .ok_or(VisualError::InvalidWindowFact { field: "layer" })?;
++    let x = required_finite(raw.x, "x")?;
++    let y = required_finite(raw.y, "y")?;
++    let width = required_positive(raw.width, "width")?;
++    let height = required_positive(raw.height, "height")?;
++    Ok(WindowIdentity::new(
++        window_id,
++        pid,
++        layer,
++        WindowBounds::new(x, y, width, height),
++    ))
++}
++
++fn required_finite(value: Option<f64>, field: &'static str) -> Result<f64, VisualError> {
++    value
++        .filter(|value| value.is_finite())
++        .ok_or(VisualError::InvalidWindowFact { field })
++}
++
++fn required_positive(value: Option<f64>, field: &'static str) -> Result<f64, VisualError> {
++    required_finite(value, field).and_then(|value| {
++        if value > 0.0 {
++            Ok(value)
++        } else {
++            Err(VisualError::InvalidWindowFact { field })
++        }
++    })
++}
++
++/// Validate an identity even when it will be compared with itself.
++pub(crate) fn validate_window_identity(identity: &WindowIdentity) -> Result<(), VisualError> {
++    if identity.window_id == 0 {
++        return Err(VisualError::InvalidIdentity { field: "window_id" });
++    }
++    if identity.pid <= 0 {
++        return Err(VisualError::InvalidIdentity { field: "pid" });
++    }
++    if identity.layer != 0 {
++        return Err(VisualError::InvalidIdentity { field: "layer" });
++    }
++    if !identity.bounds.is_usable() {
++        return Err(VisualError::InvalidIdentity { field: "bounds" });
++    }
++    Ok(())
++}
++
++/// Validated pixel dimensions.
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub struct PixelDimensions {
++    pub width: u32,
++    pub height: u32,
++}
++
++/// Validate one pixel extent and the aggregate budget.
++pub fn checked_pixel_dimensions(width: u32, height: u32) -> Result<PixelDimensions, VisualError> {
++    if width == 0 || height == 0 {
++        return Err(VisualError::DimensionRejected {
++            label: "pixel dimensions",
++            value: 0.0,
++        });
++    }
++    if width > MAX_CAPTURE_SIDE || height > MAX_CAPTURE_SIDE {
++        return Err(VisualError::DimensionRejected {
++            label: "pixel side",
++            value: f64::from(width.max(height)),
++        });
++    }
++    let pixels = u64::from(width) * u64::from(height);
++    if pixels > MAX_CAPTURE_PIXELS {
++        return Err(VisualError::PixelBudgetExceeded {
++            width,
++            height,
++            pixels,
++            max_pixels: MAX_CAPTURE_PIXELS,
++        });
++    }
++    Ok(PixelDimensions { width, height })
++}
++
++/// Round a positive finite point/pixel extent into the side limit.
++pub fn checked_pixel_extent(value: f64, label: &'static str) -> Result<u32, VisualError> {
++    if !value.is_finite() || value <= 0.0 {
++        return Err(VisualError::DimensionRejected { label, value });
++    }
++    let rounded = value.round();
++    if rounded < 1.0 || rounded > f64::from(MAX_CAPTURE_SIDE) {
++        return Err(VisualError::DimensionRejected {
++            label,
++            value: rounded,
++        });
++    }
++    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
++    Ok(rounded as u32)
++}
++
++/// Check that an RGBA buffer exactly matches width*height*4 and the budget.
++pub fn checked_rgba_len(width: u32, height: u32, actual: usize) -> Result<u64, VisualError> {
++    let dims = checked_pixel_dimensions(width, height)?;
++    let expected = u64::from(dims.width) * u64::from(dims.height) * 4;
++    if actual as u64 != expected {
++        return Err(VisualError::RgbaLengthMismatch {
++            width,
++            height,
++            expected,
++            actual: actual as u64,
++        });
++    }
++    Ok(expected)
++}
++
++/// Validate that capture pixels and bounds describe one 1x/2x frame.
++pub fn validate_capture_frame(
++    window_id: u32,
++    bounds: &WindowBounds,
++    capture_px_w: u32,
++    capture_px_h: u32,
++) -> Result<f64, VisualError> {
++    if !bounds.is_usable() {
++        return Err(VisualError::WindowNotFound { window_id });
++    }
++    checked_pixel_dimensions(capture_px_w, capture_px_h)?;
++    let scale_x = f64::from(capture_px_w) / bounds.width;
++    let scale_y = f64::from(capture_px_h) / bounds.height;
++    let nearest = if (scale_x - 1.0).abs() <= (scale_x - 2.0).abs() {
++        1.0
++    } else {
++        2.0
++    };
++    let coherent = scale_x.is_finite()
++        && scale_y.is_finite()
++        && (scale_x - scale_y).abs() <= 0.03
++        && (scale_x - nearest).abs() <= 0.03
++        && (scale_y - nearest).abs() <= 0.03;
++    if coherent {
++        Ok(nearest)
++    } else {
++        Err(VisualError::FrameMismatch {
++            window_id,
++            bounds_width: bounds.width,
++            bounds_height: bounds.height,
++            capture_width: capture_px_w,
++            capture_height: capture_px_h,
++            scale_x,
++            scale_y,
++        })
++    }
++}
++
++/// Reject any PID, layer, bounds or window-id change. No reselection.
++///
++/// Values are validated before comparison, so two identical invalid identities
++/// are refused, and bounds compare by IEEE bit pattern rather than `==`
++/// (notably `0.0` vs `-0.0`).
++pub fn validate_identity(
++    expected: &WindowIdentity,
++    actual: &WindowIdentity,
++    stage: DriftStage,
++) -> Result<(), VisualError> {
++    validate_window_identity(expected)?;
++    validate_window_identity(actual)?;
++    if expected.window_id != actual.window_id
++        || expected.pid != actual.pid
++        || expected.layer != actual.layer
++        || !expected.bounds.same_bits(&actual.bounds)
++    {
++        return Err(VisualError::WindowDrift {
++            window_id: expected.window_id,
++            stage,
++        });
++    }
++    Ok(())
++}
++
++/// One exact window observation request. No permission is carried here.
++#[derive(Debug, Clone, Copy, PartialEq)]
++pub struct CaptureRequest {
++    pub window_id: u32,
++    pub expected_pid: i32,
++    pub expected_layer: i32,
++    pub expected_bounds: WindowBounds,
++}
++
++impl CaptureRequest {
++    pub const fn new(
++        window_id: u32,
++        expected_pid: i32,
++        expected_layer: i32,
++        expected_bounds: WindowBounds,
++    ) -> Self {
++        Self {
++            window_id,
++            expected_pid,
++            expected_layer,
++            expected_bounds,
++        }
++    }
++
++    pub fn validate(&self) -> Result<(), VisualError> {
++        if self.window_id == 0 {
++            return Err(VisualError::InvalidRequest(
++                "window_id must not be the CG null window id",
++            ));
++        }
++        if self.expected_pid <= 0 {
++            return Err(VisualError::InvalidRequest(
++                "expected_pid must be a positive process id",
++            ));
++        }
++        if self.expected_layer != 0 {
++            return Err(VisualError::InvalidRequest(
++                "only layer-0 on-screen windows are supported in this round",
++            ));
++        }
++        if !self.expected_bounds.is_usable() {
++            return Err(VisualError::InvalidRequest(
++                "expected bounds must be finite, positive and have area",
++            ));
++        }
++        Ok(())
++    }
++
++    pub fn expected_identity(&self) -> WindowIdentity {
++        WindowIdentity::new(
++            self.window_id,
++            self.expected_pid,
++            self.expected_layer,
++            self.expected_bounds,
++        )
++    }
++}
++
++/// A successful observation is only formed with non-empty encoded bytes.
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub struct CapturedFrame {
++    window_id: u32,
++    dimensions: PixelDimensions,
++    png: Vec<u8>,
++}
++
++impl CapturedFrame {
++    pub(crate) fn new(
++        window_id: u32,
++        dimensions: PixelDimensions,
++        png: Vec<u8>,
++    ) -> Result<Self, VisualError> {
++        if png.is_empty() {
++            return Err(VisualError::InvalidRequest(
++                "refusing to form an empty successful capture",
++            ));
++        }
++        Ok(Self {
++            window_id,
++            dimensions,
++            png,
++        })
++    }
++
++    pub fn window_id(&self) -> u32 {
++        self.window_id
++    }
++
++    pub fn width(&self) -> u32 {
++        self.dimensions.width
++    }
++
++    pub fn height(&self) -> u32 {
++        self.dimensions.height
++    }
++
++    pub fn png(&self) -> &[u8] {
++        &self.png
++    }
++
++    pub fn into_png(self) -> Vec<u8> {
++        self.png
++    }
++}
+diff --git a/crates/cua-macos-visual/src/geometry_tests.rs b/crates/cua-macos-visual/src/geometry_tests.rs
+new file mode 100644
+index 0000000..66e65a5
+--- /dev/null
++++ b/crates/cua-macos-visual/src/geometry_tests.rs
+@@ -0,0 +1,173 @@
++use crate::error::VisualError;
++use crate::geometry::{
++    checked_window_id, parse_window_identity, RawWindowFact, WindowBounds, WindowIdentity,
++};
++
++fn valid_fact() -> RawWindowFact {
++    RawWindowFact {
++        window_id: Some(11),
++        pid: Some(4242),
++        layer: Some(0),
++        x: Some(100.0),
++        y: Some(580.0),
++        width: Some(500.0),
++        height: Some(500.0),
++    }
++}
++
++#[test]
++fn parse_requires_every_field_and_rejects_missing_values() {
++    assert_eq!(
++        parse_window_identity(&valid_fact()),
++        Ok(WindowIdentity::new(
++            11,
++            4242,
++            0,
++            WindowBounds::new(100.0, 580.0, 500.0, 500.0)
++        ))
++    );
++
++    let fields: [(&str, RawWindowFact); 7] = [
++        (
++            "window_id",
++            RawWindowFact {
++                window_id: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "pid",
++            RawWindowFact {
++                pid: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "layer",
++            RawWindowFact {
++                layer: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "x",
++            RawWindowFact {
++                x: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "y",
++            RawWindowFact {
++                y: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "width",
++            RawWindowFact {
++                width: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "height",
++            RawWindowFact {
++                height: None,
++                ..valid_fact()
++            },
++        ),
++    ];
++    for (field, fact) in fields {
++        assert_eq!(
++            parse_window_identity(&fact),
++            Err(VisualError::InvalidWindowFact { field })
++        );
++    }
++}
++
++#[test]
++fn parse_rejects_overflow_non_layer_zero_and_invalid_bounds() {
++    for (field, fact) in [
++        (
++            "window_id",
++            RawWindowFact {
++                window_id: Some(0),
++                ..valid_fact()
++            },
++        ),
++        (
++            "window_id",
++            RawWindowFact {
++                window_id: Some(i64::from(u32::MAX) + 1),
++                ..valid_fact()
++            },
++        ),
++        (
++            "pid",
++            RawWindowFact {
++                pid: Some(0),
++                ..valid_fact()
++            },
++        ),
++        (
++            "pid",
++            RawWindowFact {
++                pid: Some(i64::from(i32::MAX) + 1),
++                ..valid_fact()
++            },
++        ),
++        (
++            "layer",
++            RawWindowFact {
++                layer: Some(1),
++                ..valid_fact()
++            },
++        ),
++        (
++            "layer",
++            RawWindowFact {
++                layer: Some(i64::from(i32::MAX) + 1),
++                ..valid_fact()
++            },
++        ),
++        (
++            "width",
++            RawWindowFact {
++                width: Some(0.0),
++                ..valid_fact()
++            },
++        ),
++        (
++            "width",
++            RawWindowFact {
++                width: Some(f64::NAN),
++                ..valid_fact()
++            },
++        ),
++        (
++            "height",
++            RawWindowFact {
++                height: Some(f64::INFINITY),
++                ..valid_fact()
++            },
++        ),
++    ] {
++        assert!(
++            matches!(
++                parse_window_identity(&fact),
++                Err(VisualError::InvalidWindowFact { field: got }) if got == field
++            ),
++            "{field}"
++        );
++    }
++}
++
++#[test]
++fn checked_window_id_rejects_zero_negative_and_overflow() {
++    assert_eq!(checked_window_id(None), None);
++    assert_eq!(checked_window_id(Some(0)), None);
++    assert_eq!(checked_window_id(Some(-1)), None);
++    assert_eq!(checked_window_id(Some(u32::MAX.into())), Some(u32::MAX));
++    assert_eq!(checked_window_id(Some(i64::from(u32::MAX) + 1)), None);
++}
+diff --git a/crates/cua-macos-visual/src/lib.rs b/crates/cua-macos-visual/src/lib.rs
+new file mode 100644
+index 0000000..e44451b
+--- /dev/null
++++ b/crates/cua-macos-visual/src/lib.rs
+@@ -0,0 +1,42 @@
++//! Narrow macOS visual observation candidate.
++//!
++//! This crate owns one observation's window facts, pixels and conversion
++//! checks. It does not own submission, leases, frame publication or input
++//! permission. The public capture entry stays closed until a trusted Helper
++//! approval integration exists; the native CG/SCK path is crate-private and
++//! must not be reachable from the public API.
++
++mod error;
++mod geometry;
++#[cfg(test)]
++mod geometry_tests;
++mod observe;
++mod png;
++#[cfg(test)]
++#[path = "swift_link.rs"]
++mod swift_link;
++
++#[cfg(target_os = "macos")]
++mod capture;
++#[cfg(target_os = "macos")]
++mod window;
++
++pub use error::{DriftStage, VisualError};
++pub use geometry::{
++    checked_pixel_dimensions, checked_pixel_extent, checked_rgba_len, validate_capture_frame,
++    validate_identity, CaptureRequest, CapturedFrame, PixelDimensions, WindowBounds,
++    WindowIdentity, MAX_CAPTURE_PIXELS, MAX_CAPTURE_SIDE, MAX_RGBA_BYTES,
++};
++pub use png::{encode_rgba_to_png, png_dimensions, verify_png_matches_dimensions};
++
++/// Public capture request entry.
++///
++/// The request is validated purely, then refused with
++/// [`VisualError::HostNotApproved`]. There is deliberately no boolean/env
++/// approval, no success stub and no fallback to native enumeration: the CG
++/// window facts and ScreenCaptureKit capture remain `pub(crate)` until a
++/// trusted Helper approval owner is wired in.
++pub fn request_window_capture(request: &CaptureRequest) -> Result<CapturedFrame, VisualError> {
++    request.validate()?;
++    Err(VisualError::HostNotApproved)
++}
+diff --git a/crates/cua-macos-visual/src/observe.rs b/crates/cua-macos-visual/src/observe.rs
+new file mode 100644
+index 0000000..e4072e8
+--- /dev/null
++++ b/crates/cua-macos-visual/src/observe.rs
+@@ -0,0 +1,214 @@
++//! Pure observation orchestration shared by the crate-private native path.
++//!
++//! The caller injects every fact read and the capture step. This module owns
++//! the order of validation, so tests can prove that drift stops the pipeline
++//! before later stages or reselection run.
++
++use crate::error::{DriftStage, VisualError};
++use crate::geometry::{
++    checked_rgba_len, validate_capture_frame, validate_identity, validate_window_identity,
++    CapturedFrame, PixelDimensions, WindowIdentity,
++};
++use crate::png::verify_png_matches_dimensions;
++
++/// Pixel bytes returned by one capture step.
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub(crate) struct RawFrame {
++    pub dimensions: PixelDimensions,
++    pub rgba: Vec<u8>,
++}
++
++/// Run one observation in a fixed order with injected facts.
++///
++/// Order: validate expected -> before identity -> select exact window ->
++/// capture -> RGBA length/geometry -> after identity -> encode -> bounded PNG
++/// decode -> form non-empty [`CapturedFrame`]. A failure never falls through to
++/// a later stage and never selects another window.
++pub(crate) fn observe_once<Before, Select, Capture, After, Encode, Token>(
++    expected: &WindowIdentity,
++    before: Before,
++    select: Select,
++    capture: Capture,
++    after: After,
++    encode: Encode,
++) -> Result<CapturedFrame, VisualError>
++where
++    Before: FnOnce() -> Result<WindowIdentity, VisualError>,
++    Select: FnOnce() -> Result<(WindowIdentity, Token), VisualError>,
++    Capture: FnOnce(Token) -> Result<RawFrame, VisualError>,
++    After: FnOnce() -> Result<WindowIdentity, VisualError>,
++    Encode: FnOnce(&RawFrame) -> Result<Vec<u8>, VisualError>,
++{
++    validate_window_identity(expected)?;
++
++    let before_identity = before()?;
++    validate_identity(expected, &before_identity, DriftStage::BeforeCapture)?;
++
++    let (selected_identity, token) = select()?;
++    validate_identity(expected, &selected_identity, DriftStage::SelectedWindow)?;
++
++    let raw = capture(token)?;
++    checked_rgba_len(raw.dimensions.width, raw.dimensions.height, raw.rgba.len())?;
++    validate_capture_frame(
++        expected.window_id,
++        &expected.bounds,
++        raw.dimensions.width,
++        raw.dimensions.height,
++    )?;
++
++    let after_identity = after()?;
++    validate_identity(expected, &after_identity, DriftStage::AfterCapture)?;
++
++    let png = encode(&raw)?;
++    verify_png_matches_dimensions(&png, raw.dimensions.width, raw.dimensions.height)?;
++    CapturedFrame::new(expected.window_id, raw.dimensions, png)
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::geometry::{PixelDimensions, WindowBounds};
++    use crate::png::encode_rgba_to_png;
++    use std::cell::RefCell;
++
++    fn expected_for(width: u32, height: u32) -> WindowIdentity {
++        WindowIdentity::new(
++            11,
++            4242,
++            0,
++            WindowBounds::new(0.0, 0.0, f64::from(width), f64::from(height)),
++        )
++    }
++
++    fn raw_frame(width: u32, height: u32) -> RawFrame {
++        RawFrame {
++            dimensions: PixelDimensions { width, height },
++            rgba: vec![0x40; (width * height * 4) as usize],
++        }
++    }
++
++    fn run(
++        expected: WindowIdentity,
++        before: WindowIdentity,
++        selected: WindowIdentity,
++        after: WindowIdentity,
++        raw: RawFrame,
++        encode_empty: bool,
++    ) -> (Result<(), VisualError>, Vec<&'static str>) {
++        let log = RefCell::new(Vec::new());
++        let result = observe_once(
++            &expected,
++            || {
++                log.borrow_mut().push("before");
++                Ok(before)
++            },
++            || {
++                log.borrow_mut().push("select");
++                Ok((selected, ()))
++            },
++            |()| {
++                log.borrow_mut().push("capture");
++                Ok(raw)
++            },
++            || {
++                log.borrow_mut().push("after");
++                Ok(after)
++            },
++            |raw| {
++                log.borrow_mut().push("encode");
++                if encode_empty {
++                    Ok(Vec::new())
++                } else {
++                    encode_rgba_to_png(&raw.rgba, raw.dimensions.width, raw.dimensions.height)
++                }
++            },
++        )
++        .map(|frame| assert!(!frame.png().is_empty()));
++        (result, log.into_inner())
++    }
++
++    #[test]
++    fn stops_before_later_stages_on_before_or_selected_drift() {
++        let expected = expected_for(2, 2);
++        let bad = WindowIdentity::new(11, 9999, 0, expected.bounds);
++
++        let (result, log) = run(expected, bad, expected, expected, raw_frame(2, 2), false);
++        assert!(matches!(
++            result,
++            Err(VisualError::WindowDrift {
++                stage: DriftStage::BeforeCapture,
++                ..
++            })
++        ));
++        assert_eq!(log, vec!["before"]);
++
++        let (result, log) = run(expected, expected, bad, expected, raw_frame(2, 2), false);
++        assert!(matches!(
++            result,
++            Err(VisualError::WindowDrift {
++                stage: DriftStage::SelectedWindow,
++                ..
++            })
++        ));
++        assert_eq!(log, vec!["before", "select"]);
++    }
++
++    #[test]
++    fn stops_before_encode_on_after_drift() {
++        let expected = expected_for(2, 2);
++        let bad = WindowIdentity::new(11, 9999, 0, expected.bounds);
++        let (result, log) = run(expected, expected, expected, bad, raw_frame(2, 2), false);
++        assert!(matches!(
++            result,
++            Err(VisualError::WindowDrift {
++                stage: DriftStage::AfterCapture,
++                ..
++            })
++        ));
++        assert_eq!(log, vec!["before", "select", "capture", "after"]);
++    }
++
++    #[test]
++    fn bad_rgba_or_empty_png_never_forms_a_success_frame() {
++        let expected = expected_for(2, 2);
++        let bad_raw = RawFrame {
++            dimensions: PixelDimensions {
++                width: 2,
++                height: 2,
++            },
++            rgba: vec![0; 15],
++        };
++        let (result, log) = run(expected, expected, expected, expected, bad_raw, false);
++        assert!(matches!(
++            result,
++            Err(VisualError::RgbaLengthMismatch { .. })
++        ));
++        assert_eq!(log, vec!["before", "select", "capture"]);
++
++        let (result, log) = run(
++            expected,
++            expected,
++            expected,
++            expected,
++            raw_frame(2, 2),
++            true,
++        );
++        assert!(matches!(result, Err(VisualError::PngEncoding(_))));
++        assert_eq!(log, vec!["before", "select", "capture", "after", "encode"]);
++    }
++
++    #[test]
++    fn success_forms_a_non_empty_frame() {
++        let expected = expected_for(2, 2);
++        let (result, log) = run(
++            expected,
++            expected,
++            expected,
++            expected,
++            raw_frame(2, 2),
++            false,
++        );
++        assert_eq!(result, Ok(()));
++        assert_eq!(log, vec!["before", "select", "capture", "after", "encode"]);
++    }
++}
+diff --git a/crates/cua-macos-visual/src/png.rs b/crates/cua-macos-visual/src/png.rs
+new file mode 100644
+index 0000000..8b07932
+--- /dev/null
++++ b/crates/cua-macos-visual/src/png.rs
+@@ -0,0 +1,355 @@
++//! PNG-only encoding, IHDR header parsing and bounded full-frame verification.
++
++use image::codecs::png::{PngDecoder, PngEncoder};
++use image::{ColorType, ImageDecoder, ImageEncoder, Limits};
++
++use crate::error::VisualError;
++use crate::geometry::{checked_pixel_dimensions, MAX_CAPTURE_SIDE, MAX_RGBA_BYTES};
++
++const PNG_SIGNATURE: [u8; 8] = [137, 80, 78, 71, 13, 10, 26, 10];
++/// Input PNG byte bound checked before the decoder reads any header/metadata.
++pub const MAX_PNG_BYTES: usize = MAX_RGBA_BYTES as usize + 4 * 1024 * 1024;
++const PNG_CHUNK_OVERHEAD: usize = 12;
++const PNG_IHDR_DATA_LEN: u32 = 13;
++const PNG_MAX_CHUNK_LEN: u32 = 0x7FFF_FFFF;
++
++const CRC_TABLE: [u32; 256] = make_crc_table();
++
++const fn make_crc_table() -> [u32; 256] {
++    let mut table = [0_u32; 256];
++    let mut index = 0;
++    while index < 256 {
++        let mut crc = index as u32;
++        let mut bit = 0;
++        while bit < 8 {
++            crc = if crc & 1 == 0 {
++                crc >> 1
++            } else {
++                0xEDB8_8320 ^ (crc >> 1)
++            };
++            bit += 1;
++        }
++        table[index] = crc;
++        index += 1;
++    }
++    table
++}
++
++fn crc32(bytes: &[u8]) -> u32 {
++    let mut crc = 0xFFFF_FFFF_u32;
++    for &byte in bytes {
++        let index = ((crc ^ u32::from(byte)) & 0xFF) as usize;
++        crc = CRC_TABLE[index] ^ (crc >> 8);
++    }
++    !crc
++}
++
++/// Parse width/height from the IHDR chunk only.
++///
++/// This is deliberately a header parser: 24 bytes are enough. It does not
++/// verify IDAT, CRC or pixel content. Use
++/// [`verify_png_matches_dimensions`] before accepting a frame.
++pub fn png_dimensions(data: &[u8]) -> Result<(u32, u32), VisualError> {
++    if data.len() < 24 {
++        return Err(VisualError::PngEncoding("PNG data too small".into()));
++    }
++    if data[..8] != PNG_SIGNATURE {
++        return Err(VisualError::PngEncoding("PNG signature mismatch".into()));
++    }
++    if &data[12..16] != b"IHDR" {
++        return Err(VisualError::PngEncoding("PNG missing IHDR chunk".into()));
++    }
++    let width = u32::from_be_bytes([data[16], data[17], data[18], data[19]]);
++    let height = u32::from_be_bytes([data[20], data[21], data[22], data[23]]);
++    if width == 0 || height == 0 || width > MAX_CAPTURE_SIDE || height > MAX_CAPTURE_SIDE {
++        return Err(VisualError::DimensionRejected {
++            label: "PNG dimensions",
++            value: f64::from(width.max(height)),
++        });
++    }
++    Ok((width, height))
++}
++
++/// Encode top-down, row-major RGBA bytes as a PNG.
++///
++/// `PngEncoder` writes directly from the caller's slice, avoiding an extra
++/// `rgba.to_vec()` clone. The encoded bytes are then fully decoded once by
++/// [`verify_png_matches_dimensions`] before being returned.
++pub fn encode_rgba_to_png(rgba: &[u8], width: u32, height: u32) -> Result<Vec<u8>, VisualError> {
++    let dims = checked_pixel_dimensions(width, height)?;
++    let expected = u64::from(dims.width) * u64::from(dims.height) * 4;
++    if rgba.len() as u64 != expected {
++        return Err(VisualError::RgbaLengthMismatch {
++            width,
++            height,
++            expected,
++            actual: rgba.len() as u64,
++        });
++    }
++    let mut output = Vec::new();
++    PngEncoder::new(&mut output)
++        .write_image(rgba, width, height, ColorType::Rgba8.into())
++        .map_err(|error| VisualError::PngEncoding(error.to_string()))?;
++    if output.is_empty() {
++        return Err(VisualError::PngEncoding(
++            "PNG encoder produced no bytes".into(),
++        ));
++    }
++    verify_png_matches_dimensions(&output, width, height)?;
++    Ok(output)
++}
++
++/// Verify one PNG's complete chunk container and then fully decode its pixels.
++///
++/// The input length is bounded before any decoder read. A bounded chunk walker
++/// verifies every chunk CRC, requires IHDR first, at least one IDAT, and a final
++/// zero-length IEND with no trailing bytes. Only then does `image` decode pixels
++/// under `Limits`; a 24-byte IHDR-only fake, truncation, bad chunk CRC, non-RGBA8
++/// colour type or wrong pixel byte count is rejected.
++pub fn verify_png_matches_dimensions(
++    png: &[u8],
++    width: u32,
++    height: u32,
++) -> Result<(), VisualError> {
++    decode_png_with_limits(png, width, height, png_limits(), MAX_PNG_BYTES)
++}
++
++fn png_limits() -> Limits {
++    // Limits is non-exhaustive; start from its default and tighten every field.
++    let mut limits = Limits::default();
++    limits.max_image_width = Some(MAX_CAPTURE_SIDE);
++    limits.max_image_height = Some(MAX_CAPTURE_SIDE);
++    limits.max_alloc = Some(MAX_RGBA_BYTES + 4 * 1024 * 1024);
++    limits
++}
++
++fn decode_png_with_limits(
++    png: &[u8],
++    width: u32,
++    height: u32,
++    limits: Limits,
++    max_input_bytes: usize,
++) -> Result<(), VisualError> {
++    checked_png_input(png, max_input_bytes)?;
++    checked_pixel_dimensions(width, height)?;
++    verify_png_container(png, max_input_bytes)?;
++
++    // image 0.25.10's PngDecoder::new uses Limits::no_limits(). Use with_limits
++    // so width/height/allocation budgets are set before read_info and metadata.
++    let decoder = PngDecoder::with_limits(std::io::Cursor::new(png), limits)
++        .map_err(|error| VisualError::PngEncoding(format!("PNG header rejected: {error}")))?;
++    let (actual_width, actual_height) = decoder.dimensions();
++    if actual_width != width || actual_height != height {
++        return Err(VisualError::PngMismatch {
++            expected_width: width,
++            expected_height: height,
++            actual_width,
++            actual_height,
++        });
++    }
++    let color = decoder.color_type();
++    if color != ColorType::Rgba8 {
++        return Err(VisualError::PngEncoding(format!(
++            "PNG colour type {color:?} is not RGBA8"
++        )));
++    }
++    let total_bytes = decoder.total_bytes();
++    let expected = u64::from(width) * u64::from(height) * 4;
++    if total_bytes != expected {
++        return Err(VisualError::PngEncoding(format!(
++            "PNG pixel payload {total_bytes} bytes != {expected}"
++        )));
++    }
++    if total_bytes > MAX_RGBA_BYTES {
++        return Err(VisualError::PixelBudgetExceeded {
++            width,
++            height,
++            pixels: u64::from(width) * u64::from(height),
++            max_pixels: MAX_RGBA_BYTES / 4,
++        });
++    }
++    let mut buffer = vec![0_u8; total_bytes as usize];
++    decoder
++        .read_image(&mut buffer)
++        .map_err(|error| VisualError::PngEncoding(format!("PNG pixel decode rejected: {error}")))?;
++    Ok(())
++}
++
++/// Walk the PNG chunk container under a byte bound before pixel decoding.
++///
++/// This is deliberately a closure check, not another image decoder: `image`
++/// still owns inflate/pixel decode. The walker rejects malformed lengths, bad
++/// chunk CRCs, a missing/early IEND, and any bytes after IEND. In particular,
++/// `image` may stop at the last IDAT and never observe IEND, so this check makes
++/// container truncation and trailing garbage explicit.
++fn verify_png_container(png: &[u8], max_input_bytes: usize) -> Result<(), VisualError> {
++    checked_png_input(png, max_input_bytes)?;
++
++    let mut offset = PNG_SIGNATURE.len();
++    let mut saw_ihdr = false;
++    let mut saw_idat = false;
++    let mut saw_iend = false;
++    while offset < png.len() {
++        if png.len() - offset < PNG_CHUNK_OVERHEAD {
++            return Err(png_container_error("truncated chunk header or CRC"));
++        }
++        let length = u32::from_be_bytes([
++            png[offset],
++            png[offset + 1],
++            png[offset + 2],
++            png[offset + 3],
++        ]);
++        if length > PNG_MAX_CHUNK_LEN {
++            return Err(png_container_error("chunk length exceeds the PNG limit"));
++        }
++        let chunk_len = length as usize;
++        let data_start = offset + 8;
++        let data_end = data_start
++            .checked_add(chunk_len)
++            .ok_or_else(|| png_container_error("chunk length overflow"))?;
++        let crc_end = data_end
++            .checked_add(4)
++            .ok_or_else(|| png_container_error("chunk CRC offset overflow"))?;
++        if crc_end > png.len() {
++            return Err(png_container_error("chunk extends past the input"));
++        }
++        let chunk_type = &png[offset + 4..data_start];
++        let stored_crc = u32::from_be_bytes([
++            png[data_end],
++            png[data_end + 1],
++            png[data_end + 2],
++            png[data_end + 3],
++        ]);
++        let actual_crc = crc32(&png[offset + 4..data_end]);
++        if stored_crc != actual_crc {
++            return Err(png_container_error("chunk CRC mismatch"));
++        }
++
++        if chunk_type == b"IHDR" {
++            if saw_ihdr || offset != PNG_SIGNATURE.len() {
++                return Err(png_container_error("IHDR must be the first chunk once"));
++            }
++            if length != PNG_IHDR_DATA_LEN {
++                return Err(png_container_error("IHDR has the wrong length"));
++            }
++            saw_ihdr = true;
++        } else if chunk_type == b"IDAT" {
++            if !saw_ihdr {
++                return Err(png_container_error("IDAT before IHDR"));
++            }
++            saw_idat = true;
++        } else if chunk_type == b"IEND" {
++            if length != 0 {
++                return Err(png_container_error("IEND has a non-zero length"));
++            }
++            if !saw_idat {
++                return Err(png_container_error("IEND before any IDAT"));
++            }
++            saw_iend = true;
++            offset = crc_end;
++            if offset != png.len() {
++                return Err(png_container_error("trailing bytes after IEND"));
++            }
++            break;
++        }
++        offset = crc_end;
++    }
++
++    if !saw_ihdr || !saw_idat || !saw_iend {
++        return Err(png_container_error("missing IHDR, IDAT or IEND"));
++    }
++    if offset != png.len() {
++        return Err(png_container_error("container ends before the input ends"));
++    }
++    Ok(())
++}
++
++fn checked_png_input(png: &[u8], max_input_bytes: usize) -> Result<(), VisualError> {
++    if png.is_empty() {
++        return Err(VisualError::PngEncoding(
++            "refusing to accept an empty PNG".into(),
++        ));
++    }
++    if png.len() > max_input_bytes {
++        return Err(VisualError::PngEncoding(format!(
++            "PNG input {} bytes over the {max_input_bytes} byte bound",
++            png.len()
++        )));
++    }
++    if png.len() < PNG_SIGNATURE.len() + PNG_CHUNK_OVERHEAD {
++        return Err(png_container_error("PNG is too short for a chunk"));
++    }
++    if png[..PNG_SIGNATURE.len()] != PNG_SIGNATURE {
++        return Err(png_container_error("signature mismatch"));
++    }
++    Ok(())
++}
++
++fn png_container_error(message: &'static str) -> VisualError {
++    VisualError::PngEncoding(format!("PNG container rejected: {message}"))
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn input_length_is_bounded_before_the_decoder() {
++        let bytes = vec![0_u8; 32];
++        assert!(matches!(
++            decode_png_with_limits(&bytes, 1, 1, png_limits(), 16),
++            Err(VisualError::PngEncoding(_))
++        ));
++    }
++
++    #[test]
++    fn decoder_dimension_limit_applies_before_pixel_use() {
++        let png = encode_rgba_to_png(&vec![0_u8; 2 * 2 * 4], 2, 2).expect("encode");
++        let mut limits = png_limits();
++        limits.max_image_width = Some(1);
++        limits.max_image_height = Some(1);
++        assert!(decode_png_with_limits(&png, 2, 2, limits, MAX_PNG_BYTES).is_err());
++    }
++
++    #[test]
++    fn decoder_allocation_limit_is_enforced() {
++        let png = encode_rgba_to_png(&vec![0_u8; 8 * 8 * 4], 8, 8).expect("encode");
++        let mut limits = png_limits();
++        limits.max_alloc = Some(16);
++        assert!(decode_png_with_limits(&png, 8, 8, limits, MAX_PNG_BYTES).is_err());
++    }
++
++    #[test]
++    fn container_rejects_missing_iend_bad_iend_crc_and_trailing_bytes() {
++        let png = encode_rgba_to_png(&vec![0_u8; 2 * 2 * 4], 2, 2).expect("encode");
++        let iend = png
++            .windows(4)
++            .rposition(|window| window == b"IEND")
++            .expect("IEND");
++        assert_eq!(&png[iend..iend + 4], b"IEND");
++        assert_eq!(&png[iend - 4..iend], &[0_u8; 4], "IEND length zero");
++
++        let without_iend = &png[..png.len() - PNG_CHUNK_OVERHEAD];
++        assert!(verify_png_matches_dimensions(without_iend, 2, 2).is_err());
++
++        let mut bad_iend_crc = png.clone();
++        bad_iend_crc[iend + 4] ^= 0xFF;
++        assert!(verify_png_matches_dimensions(&bad_iend_crc, 2, 2).is_err());
++
++        let mut trailing = png.clone();
++        trailing.extend_from_slice(b"trailing");
++        assert!(verify_png_matches_dimensions(&trailing, 2, 2).is_err());
++    }
++
++    #[test]
++    fn every_truncation_of_a_real_png_is_rejected() {
++        let png = encode_rgba_to_png(&vec![0_u8; 2 * 2 * 4], 2, 2).expect("encode");
++        for cut in 0..png.len() {
++            assert!(
++                verify_png_matches_dimensions(&png[..cut], 2, 2).is_err(),
++                "truncation at {cut} was accepted"
++            );
++        }
++        assert_eq!(verify_png_matches_dimensions(&png, 2, 2), Ok(()));
++    }
++}
+diff --git a/crates/cua-macos-visual/src/swift_link.rs b/crates/cua-macos-visual/src/swift_link.rs
+new file mode 100644
+index 0000000..baeeec3
+--- /dev/null
++++ b/crates/cua-macos-visual/src/swift_link.rs
+@@ -0,0 +1,129 @@
++//! Pure helpers for locating the active toolchain's Swift compatibility libs.
++//!
++//! This file is shared by `build.rs` (with `#[path]`) and the crate's pure unit
++//! tests. Filesystem existence is checked separately by the build script.
++
++use std::path::{Path, PathBuf};
++
++/// Parse the single absolute compiler path returned by
++/// `/usr/bin/xcrun --find swiftc`.
++pub(crate) fn parse_xcrun_swiftc(stdout: &[u8]) -> Result<PathBuf, &'static str> {
++    let value = std::str::from_utf8(stdout).map_err(|_| "output is not UTF-8")?;
++    let value = value.trim();
++    if value.is_empty() {
++        return Err("output is empty");
++    }
++    let mut lines = value.lines();
++    let line = lines.next().ok_or("output is empty")?;
++    if lines.next().is_some() {
++        return Err("output contains more than one line");
++    }
++    let compiler = Path::new(line);
++    if !compiler.is_absolute() {
++        return Err("compiler path is not absolute");
++    }
++    if compiler.file_name() != Some(std::ffi::OsStr::new("swiftc")) {
++        return Err("compiler path does not end in swiftc");
++    }
++    swift_lib_dir_from_compiler(compiler)
++        .ok_or("compiler path is not <toolchain>/usr/bin/swiftc")?;
++    Ok(compiler.to_path_buf())
++}
++
++/// Derive `usr/lib/swift/macosx` from `<toolchain>/usr/bin/swiftc`.
++pub(crate) fn swift_lib_dir_from_compiler(compiler: &Path) -> Option<PathBuf> {
++    if !compiler.is_absolute() || compiler.file_name()? != "swiftc" {
++        return None;
++    }
++    let bin = compiler.parent()?;
++    if bin.file_name()? != "bin" {
++        return None;
++    }
++    let usr = bin.parent()?;
++    if usr.file_name()? != "usr" {
++        return None;
++    }
++    Some(usr.join("lib/swift/macosx"))
++}
++
++/// Both libraries are required before the directory is trusted for linking.
++#[allow(dead_code)]
++pub(crate) fn has_required_compat_libs(directory: &Path) -> bool {
++    directory.join("libswiftCompatibility56.a").is_file()
++        && directory.join("libswiftCompatibilityPacks.a").is_file()
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn parses_clt_swiftc() {
++        assert_eq!(
++            parse_xcrun_swiftc(b"/Library/Developer/CommandLineTools/usr/bin/swiftc\n"),
++            Ok(PathBuf::from(
++                "/Library/Developer/CommandLineTools/usr/bin/swiftc"
++            ))
++        );
++        assert_eq!(
++            swift_lib_dir_from_compiler(Path::new(
++                "/Library/Developer/CommandLineTools/usr/bin/swiftc"
++            )),
++            Some(PathBuf::from(
++                "/Library/Developer/CommandLineTools/usr/lib/swift/macosx"
++            ))
++        );
++    }
++
++    #[test]
++    fn parses_xcode_toolchain_swiftc() {
++        let compiler = b"/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc\n";
++        assert_eq!(
++            parse_xcrun_swiftc(compiler),
++            Ok(PathBuf::from(
++                "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
++            ))
++        );
++        assert_eq!(
++            swift_lib_dir_from_compiler(Path::new(
++                "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
++            )),
++            Some(PathBuf::from(
++                "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
++            ))
++        );
++    }
++
++    #[test]
++    fn rejects_relative_wrong_layout_and_wrong_file_name() {
++        for output in [
++            b"usr/bin/swiftc\n".as_slice(),
++            b"/Library/Developer/CommandLineTools/bin/swiftc\n".as_slice(),
++            b"/Library/Developer/CommandLineTools/usr/lib/swiftc\n".as_slice(),
++            b"/Library/Developer/CommandLineTools/usr/bin/clang\n".as_slice(),
++        ] {
++            assert!(parse_xcrun_swiftc(output).is_err(), "{output:?}");
++        }
++        assert_eq!(
++            swift_lib_dir_from_compiler(Path::new("usr/bin/swiftc")),
++            None
++        );
++        assert_eq!(
++            swift_lib_dir_from_compiler(Path::new(
++                "/Library/Developer/CommandLineTools/bin/swiftc"
++            )),
++            None
++        );
++    }
++
++    #[test]
++    fn rejects_empty_multiline_and_non_utf8_output_without_fallback() {
++        assert!(parse_xcrun_swiftc(b"").is_err());
++        assert!(parse_xcrun_swiftc(b"\n").is_err());
++        assert!(parse_xcrun_swiftc(
++            b"/Library/Developer/CommandLineTools/usr/bin/swiftc\n/tmp/swiftc\n"
++        )
++        .is_err());
++        assert!(parse_xcrun_swiftc(&[0xFF]).is_err());
++    }
++}
+diff --git a/crates/cua-macos-visual/src/window.rs b/crates/cua-macos-visual/src/window.rs
+new file mode 100644
+index 0000000..5ea806b
+--- /dev/null
++++ b/crates/cua-macos-visual/src/window.rs
+@@ -0,0 +1,118 @@
++//! Crate-private CGWindowList fact reader.
++//!
++//! Only on-screen layer-0 window id, owning PID, layer and bounds are read.
++//! Every required key stays optional until the pure parser accepts it; missing
++//! values are never replaced with `0`. Off-Space, minimized and accessory
++//! windows are not listed or are rejected, matching this round's support.
++
++#![allow(dead_code)]
++
++use core_foundation::{
++    array::{CFArray, CFArrayRef},
++    base::{CFGetTypeID, CFTypeRef, TCFType},
++    dictionary::CFDictionary,
++    number::CFNumber,
++    string::CFString,
++};
++use std::os::raw::c_void;
++
++use crate::error::VisualError;
++use crate::geometry::{checked_window_id, parse_window_identity, RawWindowFact, WindowIdentity};
++
++const K_CG_WINDOW_LIST_ON_SCREEN_ONLY: u32 = 1;
++const K_CG_WINDOW_LIST_EXCLUDE_DESKTOP_ELEMENTS: u32 = 16;
++const K_CG_NULL_WINDOW_ID: u32 = 0;
++
++#[link(name = "CoreGraphics", kind = "framework")]
++extern "C" {
++    fn CGWindowListCopyWindowInfo(option: u32, relative_to_window: u32) -> CFArrayRef;
++}
++
++/// Read the current on-screen WindowServer identity for exactly `window_id`.
++pub(crate) fn window_identity(window_id: u32) -> Result<WindowIdentity, VisualError> {
++    let options = K_CG_WINDOW_LIST_ON_SCREEN_ONLY | K_CG_WINDOW_LIST_EXCLUDE_DESKTOP_ELEMENTS;
++    let raw = unsafe { CGWindowListCopyWindowInfo(options, K_CG_NULL_WINDOW_ID) };
++    if raw.is_null() {
++        return Err(VisualError::WindowNotFound { window_id });
++    }
++    let windows: CFArray<CFTypeRef> = unsafe { CFArray::wrap_under_create_rule(raw as _) };
++    for item in windows.iter() {
++        let item = *item;
++        let dict_type = CFDictionary::<*const c_void, *const c_void>::type_id();
++        if unsafe { CFGetTypeID(item) } != dict_type {
++            continue;
++        }
++        let dict: CFDictionary<*const c_void, *const c_void> =
++            unsafe { CFDictionary::wrap_under_get_rule(item as _) };
++        let fact = raw_fact(&dict);
++        // 先做 checked id；无法表示或为 0 的条目不匹配，也不截断。
++        let Some(id) = checked_window_id(fact.window_id) else {
++            continue;
++        };
++        if id != window_id {
++            continue;
++        }
++        return parse_window_identity(&fact);
++    }
++    Err(VisualError::WindowNotFound { window_id })
++}
++
++fn raw_fact(dict: &CFDictionary<*const c_void, *const c_void>) -> RawWindowFact {
++    let [x, y, width, height] = raw_bounds(dict);
++    RawWindowFact {
++        window_id: number(dict, "kCGWindowNumber"),
++        pid: number(dict, "kCGWindowOwnerPID"),
++        layer: number(dict, "kCGWindowLayer"),
++        x,
++        y,
++        width,
++        height,
++    }
++}
++
++fn number(dict: &CFDictionary<*const c_void, *const c_void>, key: &str) -> Option<i64> {
++    let key = CFString::new(key);
++    dict.find(key.as_concrete_TypeRef() as *const c_void)
++        .and_then(|value| unsafe {
++            let value = *value;
++            if CFGetTypeID(value) == CFNumber::type_id() {
++                CFNumber::wrap_under_get_rule(value as _).to_i64()
++            } else {
++                None
++            }
++        })
++}
++
++fn raw_bounds(dict: &CFDictionary<*const c_void, *const c_void>) -> [Option<f64>; 4] {
++    let key = CFString::new("kCGWindowBounds");
++    let Some(value) = dict.find(key.as_concrete_TypeRef() as *const c_void) else {
++        return [None; 4];
++    };
++    unsafe {
++        let value = *value;
++        if CFGetTypeID(value) != CFDictionary::<*const c_void, *const c_void>::type_id() {
++            return [None; 4];
++        }
++        let bounds: CFDictionary<*const c_void, *const c_void> =
++            CFDictionary::wrap_under_get_rule(value as _);
++        [
++            real_number(&bounds, "X"),
++            real_number(&bounds, "Y"),
++            real_number(&bounds, "Width"),
++            real_number(&bounds, "Height"),
++        ]
++    }
++}
++
++fn real_number(dict: &CFDictionary<*const c_void, *const c_void>, key: &str) -> Option<f64> {
++    let key = CFString::new(key);
++    dict.find(key.as_concrete_TypeRef() as *const c_void)
++        .and_then(|value| unsafe {
++            let value = *value;
++            if CFGetTypeID(value) == CFNumber::type_id() {
++                CFNumber::wrap_under_get_rule(value as _).to_f64()
++            } else {
++                None
++            }
++        })
++}
+diff --git a/crates/cua-macos-visual/tests/pure_visual.rs b/crates/cua-macos-visual/tests/pure_visual.rs
+new file mode 100644
+index 0000000..f6d720e
+--- /dev/null
++++ b/crates/cua-macos-visual/tests/pure_visual.rs
+@@ -0,0 +1,272 @@
++use cua_macos_visual::{
++    checked_pixel_dimensions, checked_pixel_extent, checked_rgba_len, encode_rgba_to_png,
++    png_dimensions, request_window_capture, validate_capture_frame, validate_identity,
++    verify_png_matches_dimensions, CaptureRequest, DriftStage, VisualError, WindowBounds,
++    WindowIdentity, MAX_CAPTURE_PIXELS, MAX_CAPTURE_SIDE, MAX_RGBA_BYTES,
++};
++
++fn request() -> CaptureRequest {
++    CaptureRequest::new(11, 4242, 0, WindowBounds::new(100.0, 580.0, 500.0, 500.0))
++}
++
++fn fake_png_header(width: u32, height: u32) -> Vec<u8> {
++    let mut bytes = vec![137, 80, 78, 71, 13, 10, 26, 10];
++    bytes.extend_from_slice(&13_u32.to_be_bytes());
++    bytes.extend_from_slice(b"IHDR");
++    bytes.extend_from_slice(&width.to_be_bytes());
++    bytes.extend_from_slice(&height.to_be_bytes());
++    assert_eq!(bytes.len(), 24);
++    bytes
++}
++
++#[test]
++fn valid_request_is_refused_without_host_approval() {
++    assert_eq!(
++        request_window_capture(&request()),
++        Err(VisualError::HostNotApproved)
++    );
++}
++
++#[test]
++fn structurally_invalid_requests_fail_before_any_native_call() {
++    let zero_window = CaptureRequest::new(0, 4242, 0, WindowBounds::new(0.0, 0.0, 10.0, 10.0));
++    assert!(matches!(
++        request_window_capture(&zero_window),
++        Err(VisualError::InvalidRequest(_))
++    ));
++
++    for pid in [0, -1] {
++        let bad = CaptureRequest::new(11, pid, 0, WindowBounds::new(0.0, 0.0, 10.0, 10.0));
++        assert!(matches!(
++            request_window_capture(&bad),
++            Err(VisualError::InvalidRequest(_))
++        ));
++    }
++
++    for layer in [1, -1] {
++        let bad = CaptureRequest::new(11, 4242, layer, WindowBounds::new(0.0, 0.0, 10.0, 10.0));
++        assert!(matches!(
++            request_window_capture(&bad),
++            Err(VisualError::InvalidRequest(_))
++        ));
++    }
++
++    for bounds in [
++        WindowBounds::new(0.0, 0.0, 0.0, 10.0),
++        WindowBounds::new(0.0, 0.0, 10.0, -1.0),
++        WindowBounds::new(f64::NAN, 0.0, 10.0, 10.0),
++        WindowBounds::new(0.0, 0.0, f64::INFINITY, 10.0),
++    ] {
++        let bad = CaptureRequest::new(11, 4242, 0, bounds);
++        assert!(matches!(
++            request_window_capture(&bad),
++            Err(VisualError::InvalidRequest(_))
++        ));
++    }
++}
++
++#[test]
++fn capture_frame_accepts_coherent_1x_and_2x() {
++    let bounds = WindowBounds::new(100.0, 580.0, 500.0, 500.0);
++    assert_eq!(validate_capture_frame(11, &bounds, 500, 500), Ok(1.0));
++    assert_eq!(validate_capture_frame(11, &bounds, 1000, 1000), Ok(2.0));
++    assert_eq!(validate_capture_frame(11, &bounds, 1000, 1001), Ok(2.0));
++}
++
++#[test]
++fn capture_frame_rejects_missing_or_degenerate_bounds() {
++    for bounds in [
++        WindowBounds::new(0.0, 0.0, 0.0, 0.0),
++        WindowBounds::new(0.0, 0.0, -1.0, 10.0),
++        WindowBounds::new(f64::NAN, 0.0, 10.0, 10.0),
++    ] {
++        assert_eq!(
++            validate_capture_frame(11, &bounds, 1000, 1000),
++            Err(VisualError::WindowNotFound { window_id: 11 })
++        );
++    }
++}
++
++#[test]
++fn capture_frame_rejects_wrong_surface_scale() {
++    let bounds = WindowBounds::new(72.0, 88.0, 880.0, 448.0);
++    assert!(matches!(
++        validate_capture_frame(55, &bounds, 1920, 960),
++        Err(VisualError::FrameMismatch { .. })
++    ));
++    let point_bounds = WindowBounds::new(0.0, 0.0, 500.0, 500.0);
++    assert!(matches!(
++        validate_capture_frame(11, &point_bounds, 250, 250),
++        Err(VisualError::FrameMismatch { .. })
++    ));
++}
++
++#[test]
++fn identity_drift_is_rejected_at_every_stage() {
++    let expected = request().expected_identity();
++    let stages = [
++        DriftStage::BeforeCapture,
++        DriftStage::SelectedWindow,
++        DriftStage::AfterCapture,
++    ];
++    for stage in stages {
++        for actual in [
++            WindowIdentity::new(12, 4242, 0, expected.bounds),
++            WindowIdentity::new(11, 9999, 0, expected.bounds),
++            WindowIdentity::new(11, 4242, 0, WindowBounds::new(100.0, 580.0, 501.0, 500.0)),
++        ] {
++            assert_eq!(
++                validate_identity(&expected, &actual, stage),
++                Err(VisualError::WindowDrift {
++                    window_id: 11,
++                    stage
++                })
++            );
++        }
++        // A non-zero layer is not drift: the actual identity is invalid before
++        // comparison, matching the validation-first order in `validate_identity`.
++        let wrong_layer = WindowIdentity::new(11, 4242, 1, expected.bounds);
++        assert_eq!(
++            validate_identity(&expected, &wrong_layer, stage),
++            Err(VisualError::InvalidIdentity { field: "layer" })
++        );
++        assert_eq!(validate_identity(&expected, &expected, stage), Ok(()));
++    }
++}
++
++#[test]
++fn invalid_identities_are_rejected_even_when_equal() {
++    let invalid = [
++        WindowIdentity::new(0, 4242, 0, WindowBounds::new(0.0, 0.0, 10.0, 10.0)),
++        WindowIdentity::new(11, 0, 0, WindowBounds::new(0.0, 0.0, 10.0, 10.0)),
++        WindowIdentity::new(11, 4242, 1, WindowBounds::new(0.0, 0.0, 10.0, 10.0)),
++        WindowIdentity::new(11, 4242, 0, WindowBounds::new(0.0, 0.0, 0.0, 10.0)),
++        WindowIdentity::new(11, 4242, 0, WindowBounds::new(f64::NAN, 0.0, 10.0, 10.0)),
++    ];
++    for identity in invalid {
++        assert!(matches!(
++            validate_identity(&identity, &identity, DriftStage::BeforeCapture),
++            Err(VisualError::InvalidIdentity { .. })
++        ));
++    }
++}
++
++#[test]
++fn bounds_compare_by_bits_and_reject_negative_zero_drift() {
++    let expected = WindowIdentity::new(11, 4242, 0, WindowBounds::new(0.0, 10.0, 100.0, 100.0));
++    let actual = WindowIdentity::new(11, 4242, 0, WindowBounds::new(-0.0, 10.0, 100.0, 100.0));
++    assert_eq!(
++        validate_identity(&expected, &actual, DriftStage::AfterCapture),
++        Err(VisualError::WindowDrift {
++            window_id: 11,
++            stage: DriftStage::AfterCapture
++        })
++    );
++}
++
++#[test]
++fn pixel_dimensions_bound_side_and_aggregate_memory() {
++    assert_eq!(checked_pixel_dimensions(1, 1).unwrap().width, 1);
++    assert!(checked_pixel_dimensions(0, 1).is_err());
++    assert!(checked_pixel_dimensions(MAX_CAPTURE_SIDE + 1, 1).is_err());
++    assert!(checked_pixel_dimensions(MAX_CAPTURE_SIDE, 4096).is_ok());
++
++    let over = checked_pixel_dimensions(MAX_CAPTURE_SIDE, MAX_CAPTURE_SIDE);
++    assert!(matches!(
++        over,
++        Err(VisualError::PixelBudgetExceeded {
++            pixels,
++            max_pixels: MAX_CAPTURE_PIXELS,
++            ..
++        }) if pixels > MAX_CAPTURE_PIXELS
++    ));
++    assert_eq!(MAX_RGBA_BYTES, MAX_CAPTURE_PIXELS * 4);
++}
++
++#[test]
++fn pixel_extent_rejects_non_finite_zero_and_oversized_values() {
++    assert_eq!(checked_pixel_extent(500.4, "width"), Ok(500));
++    for value in [0.0, -1.0, f64::NAN, f64::INFINITY, 8193.0] {
++        assert!(checked_pixel_extent(value, "width").is_err(), "{value}");
++    }
++}
++
++#[test]
++fn rgba_length_must_equal_width_height_and_four() {
++    assert_eq!(checked_rgba_len(2, 2, 16), Ok(16));
++    assert!(matches!(
++        checked_rgba_len(2, 2, 15),
++        Err(VisualError::RgbaLengthMismatch {
++            expected: 16,
++            actual: 15,
++            ..
++        })
++    ));
++    assert!(matches!(
++        checked_rgba_len(2, 2, 17),
++        Err(VisualError::RgbaLengthMismatch {
++            expected: 16,
++            actual: 17,
++            ..
++        })
++    ));
++    assert!(matches!(
++        checked_rgba_len(MAX_CAPTURE_SIDE, MAX_CAPTURE_SIDE, 16),
++        Err(VisualError::PixelBudgetExceeded { .. })
++    ));
++}
++
++#[test]
++fn header_parser_accepts_a_fake_while_verifier_requires_a_full_png() {
++    let fake = fake_png_header(1, 1);
++    assert_eq!(png_dimensions(&fake), Ok((1, 1)));
++    assert!(verify_png_matches_dimensions(&fake, 1, 1).is_err());
++}
++
++#[test]
++fn png_round_trip_has_matching_dimensions_and_non_empty_bytes() {
++    let rgba = vec![0x7Fu8; 3 * 2 * 4];
++    let png = encode_rgba_to_png(&rgba, 3, 2).expect("encode");
++    assert!(!png.is_empty());
++    assert_eq!(png_dimensions(&png), Ok((3, 2)));
++    assert_eq!(verify_png_matches_dimensions(&png, 3, 2), Ok(()));
++}
++
++#[test]
++fn png_rejects_empty_truncated_non_png_and_dimension_mismatch() {
++    assert!(png_dimensions(&[]).is_err());
++    assert!(png_dimensions(b"not a PNG file at all").is_err());
++    assert!(verify_png_matches_dimensions(&[], 1, 1).is_err());
++
++    let png = encode_rgba_to_png(&vec![0u8; 2 * 2 * 4], 2, 2).expect("encode");
++    assert!(matches!(
++        verify_png_matches_dimensions(&png, 3, 2),
++        Err(VisualError::PngMismatch { .. })
++    ));
++    assert!(verify_png_matches_dimensions(&png[..12], 2, 2).is_err());
++}
++
++#[test]
++fn png_verifier_rejects_crc_corruption_and_aggregate_budget() {
++    let png = encode_rgba_to_png(&vec![0u8; 8 * 8 * 4], 8, 8).expect("encode");
++    let position = png
++        .windows(4)
++        .position(|window| window == b"IDAT")
++        .expect("IDAT");
++    let mut corrupted = png.clone();
++    corrupted[position + 4 + 2] ^= 0xFF;
++    assert!(verify_png_matches_dimensions(&corrupted, 8, 8).is_err());
++
++    let big = fake_png_header(MAX_CAPTURE_SIDE, MAX_CAPTURE_SIDE);
++    assert!(matches!(
++        verify_png_matches_dimensions(&big, MAX_CAPTURE_SIDE, MAX_CAPTURE_SIDE),
++        Err(VisualError::PixelBudgetExceeded { .. })
++    ));
++}
++
++#[test]
++fn encoder_rejects_zero_dimensions_and_wrong_buffer_lengths() {
++    assert!(encode_rgba_to_png(&[], 0, 0).is_err());
++    assert!(encode_rgba_to_png(&[0u8; 15], 2, 2).is_err());
++    assert!(encode_rgba_to_png(&[0u8; 17], 2, 2).is_err());
++}

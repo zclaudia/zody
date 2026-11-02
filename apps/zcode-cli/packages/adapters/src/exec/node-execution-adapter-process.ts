@@ -20,12 +20,7 @@ import {
   revalidateShellInitSnapshotForExecution,
   supportsShellInitSnapshot,
 } from "./shell-init-snapshot.js";
-import {
-  IO_DRAIN_TIMEOUT_MS,
-  resolveDefaultOutputRootDir,
-  sanitizePathSegment,
-  waitForPromise,
-} from "./execution-utils.js";
+import { IO_DRAIN_TIMEOUT_MS, sanitizePathSegment, waitForPromise } from "./execution-utils.js";
 import type {
   ExitState,
   InternalExecutionRunOptions,
@@ -70,8 +65,9 @@ export class NodeExecutionAdapterProcess extends NodeExecutionAdapterResults {
       env,
       platform: this.platform,
     });
-    const rootDir =
-      this.options.outputRootDir ?? resolveDefaultOutputRootDir(this.options.processEnv);
+    // I16：内部 source 脚本与输出文件必须落在同一个实际选中的根；
+    // 配置根不可写时 run() 已回落到默认/临时根，这里继续用配置根会在 spawn 前失败。
+    const rootDir = this.outputRootDir;
     const sessionId = sanitizePathSegment(String(request.trace?.sessionId ?? "unknown-session"));
     const snapshotEnv = resolvedCommand.envOverlay
       ? { ...env, ...resolvedCommand.envOverlay }

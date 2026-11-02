@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--target",
+    "aarch64-apple-darwin",
+    "--package",
+    "cua-driver-core",
+    "--no-default-features",
+    "--features",
+    "yaml",
+    "--test",
+    "round7_dependency_boundaries",
+    "--",
+    "--test-threads=1"
+  ],
+  "code": 0,
+  "source": "/Users/zhvala/SourceCode/zody/output/cua-driver-round7/candidate-work/controller-first/full-source",
+  "cacheStatus": "pass",
+  "archives": 316,
+  "scope": "three reviewed pure Rust regressions; no native tool invocation"
+}

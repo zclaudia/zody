@@ -1,0 +1,14 @@
+[
+  "/usr/bin/codesign",
+  "--force",
+  "--sign",
+  "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+  "--options",
+  "runtime",
+  "--timestamp=none",
+  "--identifier",
+  "io.github.zclaudia.zody.cua-helper",
+  "--requirements",
+  "=designated => identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+  "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/helper/Zody CUA Helper Round11.app"
+]

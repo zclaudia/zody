@@ -1,0 +1,15 @@
+{
+  "name": "native-build",
+  "argv": [
+    "node",
+    "packages/desktop/scripts/build-cua-desktop-session.mjs",
+    "--output-root",
+    "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-build",
+    "--skip-tests"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:23:21.576935+00:00",
+  "seconds": 21.472,
+  "exitCode": 0,
+  "log": "native-build.log"
+}

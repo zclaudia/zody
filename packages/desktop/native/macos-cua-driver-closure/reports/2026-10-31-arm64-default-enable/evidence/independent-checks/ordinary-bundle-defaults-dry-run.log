@@ -1,0 +1,12 @@
+
+> zody@0.1.0 bundle:desktop /Users/zhvala/SourceCode/zody
+> pnpm --filter @zcode/desktop run bundle -- --os mac --arch arm64 --skip-prepare --skip-build --dry-run
+
+
+> @zcode/desktop@ bundle /Users/zhvala/SourceCode/zody/packages/desktop
+> node scripts/bundle.mjs -- --os mac --arch arm64 --skip-prepare --skip-build --dry-run
+
+[bundle] target=mac/arm64
+[bundle] skipPrepare=true skipBuild=true
+[bundle] cuaNarrowManifest=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-prepared-production/manifest.json
+[bundle] dry-run: pnpm exec electron-builder --config electron-builder.config.js --mac --arm64

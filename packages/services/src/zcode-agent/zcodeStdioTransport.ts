@@ -1,4 +1,5 @@
-import type { ChildProcessWithoutNullStreams } from "node:child_process";
+import type { Readable, Writable } from "node:stream";
+import type { ChildProcess } from "node:child_process";
 import { StringDecoder } from "node:string_decoder";
 import { Emitter } from "@zcode/rpc";
 import type { ZCodeProtocolMessage } from "@zcode/shared";
@@ -22,6 +23,21 @@ interface ZCodeStdioTransportOptions {
   onStderrLine?: (line: string) => void;
   ownedProcessGroupId?: number;
   ownedProcessStartedAtMs?: number;
+}
+
+/** Narrow stdio surface so a native launcher can expose protocol on fd6/7. */
+export interface ZCodeStdioChildLike {
+  readonly pid?: number;
+  readonly stdin: Writable;
+  readonly stdout: Readable;
+  readonly stderr: Readable;
+  readonly killed: boolean;
+  readonly exitCode: number | null;
+  readonly signalCode: NodeJS.Signals | null;
+  once(event: string, listener: (...args: any[]) => void): unknown;
+  off?(event: string, listener: (...args: any[]) => void): unknown;
+  /** Original ChildProcess for process-tree ownership; native fd views delegate to it. */
+  readonly processTreeChild?: import("node:child_process").ChildProcess;
 }
 
 const STDIO_EOF_EXIT_WAIT_MS = 1_800;
@@ -53,8 +69,12 @@ export class ZCodeStdioTransport implements ZCodeProtocolTransport {
   readonly onMessage = this.messageEmitter.event;
   readonly onClose = this.closeEmitter.event;
 
+  private getProcessTreeChild(): ChildProcess {
+    return this.child.processTreeChild ?? (this.child as unknown as ChildProcess);
+  }
+
   constructor(
-    private readonly child: ChildProcessWithoutNullStreams,
+    private readonly child: ZCodeStdioChildLike,
     private readonly options?: ZCodeStdioTransportOptions,
   ) {
     this.stderrCollector = new AgentStderrCollector(child.stderr, options?.onStderrLine);
@@ -106,7 +126,10 @@ export class ZCodeStdioTransport implements ZCodeProtocolTransport {
       // Windows 和 POSIX 下 agent wrapper 可能继续拉起 runtime/MCP 子进程，
       // 只 kill 父进程会留下后代进程或短时间锁住 workspace cwd。
       const ownedProcessGroupId = this.options?.ownedProcessGroupId;
-      terminateProcessTree(this.child, ownedProcessGroupId ? { ownedProcessGroupId } : {});
+      terminateProcessTree(
+        this.getProcessTreeChild(),
+        ownedProcessGroupId ? { ownedProcessGroupId } : {},
+      );
     }
   }
 
@@ -169,7 +192,7 @@ export class ZCodeStdioTransport implements ZCodeProtocolTransport {
     }
     // app 关闭时 host 必须等进程树的 SIGTERM/SIGKILL 兜底跑完；
     // 即使根 child 已在 EOF 窗口内退出，也要用预先保存的快照回收后代。
-    const terminationResult = await terminateProcessTreeAndWait(this.child, {
+    const terminationResult = await terminateProcessTreeAndWait(this.getProcessTreeChild(), {
       ...(this.options?.ownedProcessGroupId
         ? { ownedProcessGroupId: this.options.ownedProcessGroupId }
         : {}),
@@ -351,7 +374,7 @@ export class ZCodeStdioTransport implements ZCodeProtocolTransport {
     const childHadExited = this.hasChildExited();
     const liveTree = childHadExited
       ? undefined
-      : await captureProcessTreeSnapshotAsync(this.child, {
+      : await captureProcessTreeSnapshotAsync(this.getProcessTreeChild(), {
           log: processTreeLogger,
           ...(windowsCleanupDeadlineAtMs === undefined ? {} : { windowsCleanupDeadlineAtMs }),
           ownedProcessStartedAtMs: this.options?.ownedProcessStartedAtMs,

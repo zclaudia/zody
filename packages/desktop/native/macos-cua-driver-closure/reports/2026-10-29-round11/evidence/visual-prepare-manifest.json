@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-helper-round11-visual-prepare",
+  "status": "pass",
+  "generatedAt": "2026-10-29T13:30:39.765Z",
+  "outputRoot": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final",
+  "source": {
+    "root": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-final/full-source",
+    "revisionPin": "421530ae2c2cab7b537226e459905916c849c1cf76095db0a45f574f9c49e02e",
+    "treeSha256": "421530ae2c2cab7b537226e459905916c849c1cf76095db0a45f574f9c49e02e",
+    "files": 776,
+    "licenses": {
+      "LICENSE-MIT": "c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9",
+      "PROVENANCE.md": "d0a9af00cc90391749284f20fd0ddb4f59e69f9ec6477b1d824b97986428f82d",
+      "native/DERIVATION.md": "2b6546f1b1182e71feddbba9dbfdf9efa275aacc2937f4c2c6370aa3ca3c3847",
+      "native/licenses/LICENSE-APACHE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "native/licenses/LICENSE-MIT": "5464a5ed6a2143a9d31e5516c7336a312c3c067cdc6ad15323f18fdf8d9755ae"
+    }
+  },
+  "overlay": {
+    "root": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/visual-overlay",
+    "patch": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/visual-overlay/round11-visual.patch",
+    "patchSha256": "601b6296bd6f48b954fb76acb6265f489203b73ffc82c937af72581a0b804d9a",
+    "helperSha256": "5b52f478f357d8e275b6f1db3d2b91ae7bd76f0f774f65f736169420f63e2a8b",
+    "headerSha256": "7b0a4f85815190272cec8ef04baa9b85a5c4b661fc3c7e2bb84725d58498f0b2",
+    "modified": [
+      "crates/cua-macos-visual/Cargo.toml",
+      "crates/cua-macos-visual/src/capture.rs",
+      "crates/cua-macos-visual/src/lib.rs",
+      "crates/cua-macos-visual/src/session.rs"
+    ]
+  },
+  "derived": {
+    "root": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/source",
+    "visualCrateRoot": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/source/crates/cua-macos-visual",
+    "treeSha256": "03fc37adc98f44e0853784d39aa2480e8932535e35300fd3a6b5f9303074b3e1",
+    "files": 777
+  },
+  "lock": {
+    "copiedSha256": "b452891b69961ba3c0bec6fe8122c9c61317f208b301004077b70e91455ac122",
+    "r9Sha256": "b452891b69961ba3c0bec6fe8122c9c61317f208b301004077b70e91455ac122"
+  },
+  "toolchain": {
+    "root": "/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin",
+    "cargo": "/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin/cargo",
+    "target": "aarch64-apple-darwin",
+    "deploymentTarget": "14.2",
+    "offline": true,
+    "locked": true
+  }
+}

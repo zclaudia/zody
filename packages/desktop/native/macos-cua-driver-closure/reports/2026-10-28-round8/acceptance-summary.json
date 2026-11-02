@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "round": 8,
+  "startedLocalDate": "2026-10-28",
+  "acceptedLocalDate": "2026-10-29",
+  "scope": "visual-root candidate and review tools; not product/native acceptance",
+  "source": {
+    "status": "candidate-rebuilt",
+    "output": "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/candidate-work/controller-accepted/full-source",
+    "base": {
+      "fileCount": 753,
+      "treeSha256": "f110f6466d06036ff9a028c7e35bd4f3b6fe312b67607c2a3f930f1c250f8d48"
+    },
+    "candidate": {
+      "fileCount": 767,
+      "treeSha256": "4cbad8776947504f9883bf5370d6802177090d7a01075c5640b64a730950d9de"
+    },
+    "patch": {
+      "path": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-driver-closure/round8/candidate-source.patch",
+      "sha256": "9117756a71b9324cd0444848692a973a3c86972e9f8763470f6c5c5c529f9ed8",
+      "bytes": 85499
+    },
+    "sourceManifestSha256": "2e6311683b23ed5d33470202d70fcaab313a60fe0fae01b116c3408a19f905bb",
+    "reviewConfigSha256": "4f54251b2eca301106d7f0600d9d86f4f0855fcde91d8bd3c937d0deab2cc58b",
+    "delta": {
+      "modified": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "added": [
+        "crates/cua-macos-visual/build.rs",
+        "crates/cua-macos-visual/Cargo.toml",
+        "crates/cua-macos-visual/LICENSE-MIT",
+        "crates/cua-macos-visual/PROVENANCE.md",
+        "crates/cua-macos-visual/src/capture.rs",
+        "crates/cua-macos-visual/src/error.rs",
+        "crates/cua-macos-visual/src/geometry_tests.rs",
+        "crates/cua-macos-visual/src/geometry.rs",
+        "crates/cua-macos-visual/src/lib.rs",
+        "crates/cua-macos-visual/src/observe.rs",
+        "crates/cua-macos-visual/src/png.rs",
+        "crates/cua-macos-visual/src/swift_link.rs",
+        "crates/cua-macos-visual/src/window.rs",
+        "crates/cua-macos-visual/tests/pure_visual.rs"
+      ],
+      "removed": []
+    },
+    "dependencyPolicy": {
+      "visualRoot": "crates/cua-macos-visual",
+      "preservedFeatures": [
+        "zody-dev-no-input",
+        "zody-strict-frame-gate"
+      ]
+    }
+  },
+  "gates": {
+    "source": "pass",
+    "dependencies": "pass",
+    "licenses": "pass",
+    "toolchain": "pass",
+    "build": "pass",
+    "sourceAuditComplete": true,
+    "evidenceComplete": true,
+    "productAdoption": "blocked",
+    "productAdoptionReason": "closure audit never authorizes product adoption; native, signing, TCC and runtime evidence remain separate gates",
+    "verificationFailed": false,
+    "exitCode": 0
+  },
+  "build": {
+    "status": "pass",
+    "command": "build",
+    "target": "aarch64-apple-darwin",
+    "package": "cua-macos-visual",
+    "buildScriptCount": 8,
+    "compiledProcMacroCount": 0,
+    "artifactCount": 30,
+    "sdkArtifacts": [
+      {
+        "packageId": "path+file:///private/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-driver-closure-audit-qIVp9C/full-source/crates/cua-macos-visual#0.37.0",
+        "identity": {
+          "name": "cua-macos-visual",
+          "version": "0.37.0"
+        },
+        "targetName": "cua_macos_visual",
+        "crateTypes": [
+          "rlib"
+        ],
+        "path": "aarch64-apple-darwin/debug/libcua_macos_visual.rlib",
+        "bytes": 979200,
+        "sha256": "93408d54bfcdc5b1a74343fecc7adf65640bbd37aacbbbf218766a9062e60953"
+      }
+    ],
+    "platform": {
+      "sdkPath": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "sdkVersion": "27.0",
+      "sdkStatus": "pass",
+      "clangPath": "/usr/bin/clang",
+      "clangVersion": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+      "clangStatus": "pass",
+      "errors": [],
+      "deploymentTarget": null,
+      "deploymentTargetSource": "forced unset in the isolated build environment; rustc/build default applies"
+    },
+    "isolation": {
+      "home": "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-driver-closure-audit-qIVp9C/driver-build/home",
+      "cargoHome": "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-driver-closure-audit-qIVp9C/cargo-home",
+      "targetRoot": "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-driver-closure-audit-qIVp9C/driver-build/target",
+      "osSandbox": false,
+      "note": "HOME/CARGO_HOME/target are private staging paths; this is not an OS sandbox"
+    }
+  },
+  "licenses": {
+    "packageCount": 30,
+    "packageMaterialFiles": 62,
+    "missing": 0,
+    "partial": 0,
+    "reviewRequired": 0,
+    "mpl": 0,
+    "supplements": "not-requested",
+    "legacySdkMissing": 13,
+    "legacySdkPartial": 1,
+    "legalConclusion": false
+  },
+  "tests": {
+    "pureRustUnit": 16,
+    "pureRustIntegration": 16,
+    "driverVitest": 87,
+    "driverVitestFiles": 10,
+    "typecheck": "pass",
+    "lint": {
+      "errors": 0,
+      "warnings": 301
+    },
+    "architectureViolations": 0
+  },
+  "inputPreservation": {
+    "externalFiles": 16101,
+    "round7EvidenceFiles": 457,
+    "unchanged": true
+  },
+  "product": {
+    "defaultDisabled": true,
+    "zcodeCuaPlaceholder": true,
+    "nativeCaptureExecuted": false,
+    "nativeInputExecuted": false,
+    "certificatesInstalled": false,
+    "permissionsChanged": false,
+    "helperAccepted": false,
+    "fencedAccepted": false,
+    "d06Complete": false
+  },
+  "workers": {
+    "route": "deepseek-flash",
+    "provider": "magpie",
+    "model": "commandcode-plan/deepseek/deepseek-v4.1-flash",
+    "native": "broker:deepseek-flash-rw-c2d541bc0c4e8861:01a182fd-d69b-7961-b8e4-65dde35f8272",
+    "comparison": "broker:deepseek-flash-rw-c2d541bc0c4e8861:01a182fd-d70b-77a2-a25f-1bcd023ab087",
+    "prepare": "broker:deepseek-flash-rw-c2d541bc0c4e8861:01a182fe-b547-73a3-acf8-d89de3feba2f"
+  }
+}

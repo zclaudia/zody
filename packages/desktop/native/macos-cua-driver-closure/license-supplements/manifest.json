@@ -1,0 +1,519 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-driver-closure-license-supplements",
+  "sourceRevision": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+  "entries": [
+    {
+      "name": "cua-driver-contract",
+      "version": "0.37.0",
+      "lockChecksum": null,
+      "cargoTomlSha256": "a0bfc462c279b13e3021325ffdfcb9240848f54273a5a4b8fc0d9a92a99528ac",
+      "cargoVcsSha1": null,
+      "cargoVcsInfoSha256": null,
+      "source": {
+        "repo": "https://github.com/trycua/cua",
+        "commit": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+        "path": "LICENSE.md"
+      },
+      "text": {
+        "path": "texts/cua-2d2f992-LICENSE.md",
+        "sha256": "c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9",
+        "bytes": 1069
+      },
+      "relation": {
+        "kind": "workspace-root-license",
+        "licenseExpression": "MIT",
+        "workspaceCargoTomlSha256": "82c651026dc8690ffb6fa0573643a74c4c4e14892ec2082d0235436352101e56",
+        "evidence": "cua-driver-contract/Cargo.toml declares license.workspace=true and version.workspace=true; Cargo.toml [workspace.package] declares MIT 0.37.0"
+      }
+    },
+    {
+      "name": "cua-driver-core",
+      "version": "0.37.0",
+      "lockChecksum": null,
+      "cargoTomlSha256": "45879755c898cbb6e8e3bc2c9066bc366b6c1dc1ced04a0c4dd7ac775d28d3af",
+      "cargoVcsSha1": null,
+      "cargoVcsInfoSha256": null,
+      "source": {
+        "repo": "https://github.com/trycua/cua",
+        "commit": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+        "path": "LICENSE.md"
+      },
+      "text": {
+        "path": "texts/cua-2d2f992-LICENSE.md",
+        "sha256": "c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9",
+        "bytes": 1069
+      },
+      "relation": {
+        "kind": "workspace-root-license",
+        "licenseExpression": "MIT",
+        "workspaceCargoTomlSha256": "82c651026dc8690ffb6fa0573643a74c4c4e14892ec2082d0235436352101e56",
+        "evidence": "cua-driver-core/Cargo.toml declares license.workspace=true and version.workspace=true; Cargo.toml [workspace.package] declares MIT 0.37.0"
+      }
+    },
+    {
+      "name": "cua-driver-sdk",
+      "version": "0.37.0",
+      "lockChecksum": null,
+      "cargoTomlSha256": "23582bc798fc72b2c9bac3ee57baee597fb376906525a75d442c3796aead0f94",
+      "cargoVcsSha1": null,
+      "cargoVcsInfoSha256": null,
+      "source": {
+        "repo": "https://github.com/trycua/cua",
+        "commit": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+        "path": "LICENSE.md"
+      },
+      "text": {
+        "path": "texts/cua-2d2f992-LICENSE.md",
+        "sha256": "c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9",
+        "bytes": 1069
+      },
+      "relation": {
+        "kind": "workspace-root-license",
+        "licenseExpression": "MIT",
+        "workspaceCargoTomlSha256": "82c651026dc8690ffb6fa0573643a74c4c4e14892ec2082d0235436352101e56",
+        "evidence": "cua-driver-sdk/Cargo.toml declares license.workspace=true and version.workspace=true; Cargo.toml [workspace.package] declares MIT 0.37.0"
+      }
+    },
+    {
+      "name": "cursor-overlay",
+      "version": "0.37.0",
+      "lockChecksum": null,
+      "cargoTomlSha256": "de44389abe226ebe55a31578467a0732e90e82274e4c52a7f03502c3bb40237d",
+      "cargoVcsSha1": null,
+      "cargoVcsInfoSha256": null,
+      "source": {
+        "repo": "https://github.com/trycua/cua",
+        "commit": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+        "path": "LICENSE.md"
+      },
+      "text": {
+        "path": "texts/cua-2d2f992-LICENSE.md",
+        "sha256": "c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9",
+        "bytes": 1069
+      },
+      "relation": {
+        "kind": "workspace-root-license",
+        "licenseExpression": "MIT",
+        "workspaceCargoTomlSha256": "82c651026dc8690ffb6fa0573643a74c4c4e14892ec2082d0235436352101e56",
+        "evidence": "cursor-overlay/Cargo.toml declares license.workspace=true and version.workspace=true; Cargo.toml [workspace.package] declares MIT 0.37.0"
+      }
+    },
+    {
+      "name": "pip-preview",
+      "version": "0.37.0",
+      "lockChecksum": null,
+      "cargoTomlSha256": "7277a1ae52015d4e6352bb47e4f64f8bfdf4764928e85454c701eb8bf2c42c62",
+      "cargoVcsSha1": null,
+      "cargoVcsInfoSha256": null,
+      "source": {
+        "repo": "https://github.com/trycua/cua",
+        "commit": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+        "path": "LICENSE.md"
+      },
+      "text": {
+        "path": "texts/cua-2d2f992-LICENSE.md",
+        "sha256": "c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9",
+        "bytes": 1069
+      },
+      "relation": {
+        "kind": "workspace-root-license",
+        "licenseExpression": "MIT",
+        "workspaceCargoTomlSha256": "82c651026dc8690ffb6fa0573643a74c4c4e14892ec2082d0235436352101e56",
+        "evidence": "pip-preview/Cargo.toml declares license.workspace=true and version.workspace=true; Cargo.toml [workspace.package] declares MIT 0.37.0"
+      }
+    },
+    {
+      "name": "platform-macos",
+      "version": "0.37.0",
+      "lockChecksum": null,
+      "cargoTomlSha256": "97b9816756ac1e00ece918d01a39826195af196021c33a6cc8130f7438e79c75",
+      "cargoVcsSha1": null,
+      "cargoVcsInfoSha256": null,
+      "source": {
+        "repo": "https://github.com/trycua/cua",
+        "commit": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+        "path": "LICENSE.md"
+      },
+      "text": {
+        "path": "texts/cua-2d2f992-LICENSE.md",
+        "sha256": "c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9",
+        "bytes": 1069
+      },
+      "relation": {
+        "kind": "workspace-root-license",
+        "licenseExpression": "MIT",
+        "workspaceCargoTomlSha256": "82c651026dc8690ffb6fa0573643a74c4c4e14892ec2082d0235436352101e56",
+        "evidence": "platform-macos/Cargo.toml declares license.workspace=true and version.workspace=true; Cargo.toml [workspace.package] declares MIT 0.37.0"
+      }
+    },
+    {
+      "name": "block2",
+      "version": "0.5.1",
+      "lockChecksum": "2c132eebf10f5cad5289222520a4a058514204aed6d791f1cf4fe8088b82d15f",
+      "cargoTomlSha256": "5b1e38f82e1a70cf6493c2d2b0c6085bb671bd1c98316d2d71baea53674f227c",
+      "cargoVcsSha1": "4fc083f1c6d6784577e38b0ee8dbd344481e2fd2",
+      "cargoVcsInfoSha256": "c7d07646edd3c42e73f0338d4549e885c4fdb3a47ae08f6caa9e1b99ddfbc2af",
+      "source": {
+        "repo": "https://github.com/madsmtm/objc2",
+        "commit": "4fc083f1c6d6784577e38b0ee8dbd344481e2fd2",
+        "path": "LICENSE.txt"
+      },
+      "text": {
+        "path": "texts/objc2-4fc083f-LICENSE.txt",
+        "sha256": "e353f37b12aefbb9f9b29490e837cfee05d9bda70804b3562839a3285c1df1e5",
+        "bytes": 1066
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MIT",
+        "evidence": "repository root LICENSE.txt at the exact locked .cargo_vcs_info commit"
+      }
+    },
+    {
+      "name": "objc-sys",
+      "version": "0.3.5",
+      "lockChecksum": "cdb91bdd390c7ce1a8607f35f3ca7151b65afc0ff5ff3b34fa350f7d7c7e4310",
+      "cargoTomlSha256": "a53c0faf4873ad69640d01b1d64a32b4fa7a75a12b8b7980f6f2de9c1308a865",
+      "cargoVcsSha1": "4fc083f1c6d6784577e38b0ee8dbd344481e2fd2",
+      "cargoVcsInfoSha256": "e29ffefb7383547f359963a78b8b7edaffe36b4ac85b4fd7561e8f7bb976f53c",
+      "source": {
+        "repo": "https://github.com/madsmtm/objc2",
+        "commit": "4fc083f1c6d6784577e38b0ee8dbd344481e2fd2",
+        "path": "LICENSE.txt"
+      },
+      "text": {
+        "path": "texts/objc2-4fc083f-LICENSE.txt",
+        "sha256": "e353f37b12aefbb9f9b29490e837cfee05d9bda70804b3562839a3285c1df1e5",
+        "bytes": 1066
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MIT",
+        "evidence": "repository root LICENSE.txt at the exact locked .cargo_vcs_info commit"
+      }
+    },
+    {
+      "name": "objc2",
+      "version": "0.5.2",
+      "lockChecksum": "46a785d4eeff09c14c487497c162e92766fbb3e4059a71840cecc03d9a50b804",
+      "cargoTomlSha256": "1f14e0f35c5f9ca2b197f8941cf546eb21c93111df661f5a283749a9191e10f3",
+      "cargoVcsSha1": "4fc083f1c6d6784577e38b0ee8dbd344481e2fd2",
+      "cargoVcsInfoSha256": "d03afa2337425d306d38828cb7b6b2a8f81222522fe0c6749bf332da23ca878d",
+      "source": {
+        "repo": "https://github.com/madsmtm/objc2",
+        "commit": "4fc083f1c6d6784577e38b0ee8dbd344481e2fd2",
+        "path": "LICENSE.txt"
+      },
+      "text": {
+        "path": "texts/objc2-4fc083f-LICENSE.txt",
+        "sha256": "e353f37b12aefbb9f9b29490e837cfee05d9bda70804b3562839a3285c1df1e5",
+        "bytes": 1066
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MIT",
+        "evidence": "repository root LICENSE.txt at the exact locked .cargo_vcs_info commit"
+      }
+    },
+    {
+      "name": "uniffi",
+      "version": "0.31.0",
+      "lockChecksum": "b8c6dec3fc6645f71a16a3fa9ff57991028153bd194ca97f4b55e610c73ce66a",
+      "cargoTomlSha256": "fe4fa94d48f00c9761a99e693044acd3cc9b20d50a9542e5dfed0f9efae1c1e7",
+      "cargoVcsSha1": "309762f55db3f0548194a9ceba3027fa64b18a93",
+      "cargoVcsInfoSha256": "0563039b0cd56ee16454635176f2e7987df5668e905f7d9620ec8fee4df8e304",
+      "source": {
+        "repo": "https://github.com/mozilla/uniffi-rs",
+        "commit": "309762f55db3f0548194a9ceba3027fa64b18a93",
+        "path": "LICENSE"
+      },
+      "text": {
+        "path": "texts/uniffi-309762f-LICENSE",
+        "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+        "bytes": 16725
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MPL-2.0",
+        "evidence": "repository root LICENSE at the exact locked .cargo_vcs_info commit"
+      }
+    },
+    {
+      "name": "uniffi_core",
+      "version": "0.31.0",
+      "lockChecksum": "b0ef62e69762fbb9386dcb6c87cd3dd05d525fa8a3a579a290892e60ddbda47e",
+      "cargoTomlSha256": "804c1d9c2e02aa5cee974a7fa37d9d8fd9cf98b91f84c7aacbd96df8b992cc11",
+      "cargoVcsSha1": "309762f55db3f0548194a9ceba3027fa64b18a93",
+      "cargoVcsInfoSha256": "e248666ee52412766204c0038addf4a0d15e6548b6e611e2d36b09718a90ebcb",
+      "source": {
+        "repo": "https://github.com/mozilla/uniffi-rs",
+        "commit": "309762f55db3f0548194a9ceba3027fa64b18a93",
+        "path": "LICENSE"
+      },
+      "text": {
+        "path": "texts/uniffi-309762f-LICENSE",
+        "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+        "bytes": 16725
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MPL-2.0",
+        "evidence": "repository root LICENSE at the exact locked .cargo_vcs_info commit"
+      }
+    },
+    {
+      "name": "uniffi_internal_macros",
+      "version": "0.31.0",
+      "lockChecksum": "98f51ebca0d9a4b2aa6c644d5ede45c56f73906b96403c08a1985e75ccb64a01",
+      "cargoTomlSha256": "5bf24e51de42f1f3f210e2f7aea93e8c009841681da52372a9405fb456aa1a28",
+      "cargoVcsSha1": "309762f55db3f0548194a9ceba3027fa64b18a93",
+      "cargoVcsInfoSha256": "c1043030eb244252fca38c567f1f5a9168d930a05037c41952f0cd33133c4a19",
+      "source": {
+        "repo": "https://github.com/mozilla/uniffi-rs",
+        "commit": "309762f55db3f0548194a9ceba3027fa64b18a93",
+        "path": "LICENSE"
+      },
+      "text": {
+        "path": "texts/uniffi-309762f-LICENSE",
+        "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+        "bytes": 16725
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MPL-2.0",
+        "evidence": "repository root LICENSE at the exact locked .cargo_vcs_info commit"
+      }
+    },
+    {
+      "name": "uniffi_macros",
+      "version": "0.31.0",
+      "lockChecksum": "db9d12529f1223d014fd501e5f29ca0884d15d6ed5ddddd9f506e55350327dc3",
+      "cargoTomlSha256": "fa2952f4374e3c43c48a26494ea415a72c2af5a8b167ebb7640d2330a8c48fa8",
+      "cargoVcsSha1": "309762f55db3f0548194a9ceba3027fa64b18a93",
+      "cargoVcsInfoSha256": "d92b9f0eed27ed5535af7ee758fd5574f3bcc3930fef4372a7eb13eda9b31572",
+      "source": {
+        "repo": "https://github.com/mozilla/uniffi-rs",
+        "commit": "309762f55db3f0548194a9ceba3027fa64b18a93",
+        "path": "LICENSE"
+      },
+      "text": {
+        "path": "texts/uniffi-309762f-LICENSE",
+        "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+        "bytes": 16725
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MPL-2.0",
+        "evidence": "repository root LICENSE at the exact locked .cargo_vcs_info commit"
+      }
+    },
+    {
+      "name": "uniffi_meta",
+      "version": "0.31.0",
+      "lockChecksum": "9df6d413db2827c68588f8149d30d49b71d540d46539e435b23a7f7dbd4d4f86",
+      "cargoTomlSha256": "5c8d988cf84e2bd05016bfcebbca9babfa5f8da38e945a4e169a16086bc8ef66",
+      "cargoVcsSha1": "309762f55db3f0548194a9ceba3027fa64b18a93",
+      "cargoVcsInfoSha256": "701fb8f8651ce60ea2234b65c746ab4c942b6f8e258be041c0d028a3ee07f4b6",
+      "source": {
+        "repo": "https://github.com/mozilla/uniffi-rs",
+        "commit": "309762f55db3f0548194a9ceba3027fa64b18a93",
+        "path": "LICENSE"
+      },
+      "text": {
+        "path": "texts/uniffi-309762f-LICENSE",
+        "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+        "bytes": 16725
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MPL-2.0",
+        "evidence": "repository root LICENSE at the exact locked .cargo_vcs_info commit"
+      }
+    },
+    {
+      "name": "uniffi_pipeline",
+      "version": "0.31.0",
+      "lockChecksum": "a806dddc8208f22efd7e95a5cdf88ed43d0f3271e8f63b47e757a8bbdb43b63a",
+      "cargoTomlSha256": "0b76e06eff1b01b084af137e0fd840aa16e05b25863ec8ef994ab87a11fc47e9",
+      "cargoVcsSha1": "309762f55db3f0548194a9ceba3027fa64b18a93",
+      "cargoVcsInfoSha256": "3a021e2e51252e47505794941fccedc5a9dbb1f3763f72e45b442c64e077a57e",
+      "source": {
+        "repo": "https://github.com/mozilla/uniffi-rs",
+        "commit": "309762f55db3f0548194a9ceba3027fa64b18a93",
+        "path": "LICENSE"
+      },
+      "text": {
+        "path": "texts/uniffi-309762f-LICENSE",
+        "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+        "bytes": 16725
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MPL-2.0",
+        "evidence": "repository root LICENSE at the exact locked .cargo_vcs_info commit"
+      }
+    },
+    {
+      "name": "objc2-app-kit",
+      "version": "0.2.2",
+      "lockChecksum": "e4e89ad9e3d7d297152b17d39ed92cd50ca8063a89a9fa569046d41568891eff",
+      "cargoTomlSha256": "3ae36868a6318fb30bc564f207821b311ee1fb0081d29294266440be29b08280",
+      "cargoVcsSha1": "e282618be4c3a3b9542957e0c8540e9588472ce8",
+      "cargoVcsInfoSha256": "00c185f1f53bfb1ce12e84970c71060b2a14fded09d5a12d3c8dcb80a3ddc880",
+      "source": {
+        "repo": "https://github.com/madsmtm/objc2",
+        "commit": "e282618be4c3a3b9542957e0c8540e9588472ce8",
+        "path": "LICENSE.txt"
+      },
+      "text": {
+        "path": "texts/objc2-e282618-LICENSE.txt",
+        "sha256": "e353f37b12aefbb9f9b29490e837cfee05d9bda70804b3562839a3285c1df1e5",
+        "bytes": 1066
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MIT",
+        "evidence": "repository root LICENSE.txt at the exact locked .cargo_vcs_info commit e282618be4c3a3b9542957e0c8540e9588472ce8"
+      }
+    },
+    {
+      "name": "objc2-foundation",
+      "version": "0.2.2",
+      "lockChecksum": "0ee638a5da3799329310ad4cfa62fbf045d5f56e3ef5ba4149e7452dcf89d5a8",
+      "cargoTomlSha256": "32e045ebbc4c009b67f63070744b1a443958eb5807f4a8facdc4de2754e1bfa9",
+      "cargoVcsSha1": "e282618be4c3a3b9542957e0c8540e9588472ce8",
+      "cargoVcsInfoSha256": "7b719bdefdecba77a57c93b272ea0dff6e087bc3d2fa8576cd812d6c6af38c27",
+      "source": {
+        "repo": "https://github.com/madsmtm/objc2",
+        "commit": "e282618be4c3a3b9542957e0c8540e9588472ce8",
+        "path": "LICENSE.txt"
+      },
+      "text": {
+        "path": "texts/objc2-e282618-LICENSE.txt",
+        "sha256": "e353f37b12aefbb9f9b29490e837cfee05d9bda70804b3562839a3285c1df1e5",
+        "bytes": 1066
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MIT",
+        "evidence": "repository root LICENSE.txt at the exact locked .cargo_vcs_info commit e282618be4c3a3b9542957e0c8540e9588472ce8"
+      }
+    },
+    {
+      "name": "objc2-quartz-core",
+      "version": "0.2.2",
+      "lockChecksum": "e42bee7bff906b14b167da2bac5efe6b6a07e6f7c0a21a7308d40c960242dc7a",
+      "cargoTomlSha256": "1c09139b63daef0bad18254082fb6df7d36e1293ac9235b404903ecd74c5c5dd",
+      "cargoVcsSha1": "e282618be4c3a3b9542957e0c8540e9588472ce8",
+      "cargoVcsInfoSha256": "5ca8a09a1fa3be6bee79e9a122d4fd68b45b2ccd8de7a2923390aaf30032d34e",
+      "source": {
+        "repo": "https://github.com/madsmtm/objc2",
+        "commit": "e282618be4c3a3b9542957e0c8540e9588472ce8",
+        "path": "LICENSE.txt"
+      },
+      "text": {
+        "path": "texts/objc2-e282618-LICENSE.txt",
+        "sha256": "e353f37b12aefbb9f9b29490e837cfee05d9bda70804b3562839a3285c1df1e5",
+        "bytes": 1066
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MIT",
+        "evidence": "repository root LICENSE.txt at the exact locked .cargo_vcs_info commit e282618be4c3a3b9542957e0c8540e9588472ce8"
+      }
+    },
+    {
+      "name": "jsonschema-regex",
+      "version": "0.46.10",
+      "lockChecksum": "6dbd1086b01b9349fd4ef9a07433965af64c8ce8159abe633a189e4ff817bd13",
+      "cargoTomlSha256": "20e63efd164fea2387b6e96e0cfdf884cda134ed30d6303fe3878765bbc00bc8",
+      "cargoVcsSha1": "ecaeceac2340908a8fbf71404442296bd1536520",
+      "cargoVcsInfoSha256": "2b54c249bd05840a70140b31d83c578716430e0725f6910f3be6ebc55a2dbe8c",
+      "source": {
+        "repo": "https://github.com/Stranger6667/jsonschema",
+        "commit": "ecaeceac2340908a8fbf71404442296bd1536520",
+        "path": "LICENSE"
+      },
+      "text": {
+        "path": "texts/jsonschema-ecaceca-LICENSE",
+        "sha256": "117829c3ca21efb132d81a44b55363d395ab8eea18526873bc828da4c0e5f038",
+        "bytes": 1075
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MIT",
+        "evidence": "repository root LICENSE at the exact locked .cargo_vcs_info commit ecaeceac2340908a8fbf71404442296bd1536520"
+      }
+    },
+    {
+      "name": "rquickjs-core",
+      "version": "0.14.0",
+      "lockChecksum": "6657979a24d543e5fc66f32cef2f47ca82ce8eb55cec5f7d59a12b7b570bbf24",
+      "cargoTomlSha256": "a496d9302ac21dbb9415d7bb64e0f3e46e0a14ff748c15bd18275c3cba5d54f3",
+      "cargoVcsSha1": "d7ef5eeae702fea24c03643064de454f1c1dd4b0",
+      "cargoVcsInfoSha256": "e190cce6765d39976b2ec608b2deea0a571f8dcc1329d4750928a6d26fa177bc",
+      "source": {
+        "repo": "https://github.com/DelSkayn/rquickjs",
+        "commit": "d7ef5eeae702fea24c03643064de454f1c1dd4b0",
+        "path": "LICENSE"
+      },
+      "text": {
+        "path": "texts/rquickjs-d7ef5ee-LICENSE",
+        "sha256": "976ad3d07927343ab99b31510625acba89eac8e0e517c712925620ddeda91b70",
+        "bytes": 1111
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MIT",
+        "evidence": "repository root LICENSE at the exact locked .cargo_vcs_info commit d7ef5eeae702fea24c03643064de454f1c1dd4b0"
+      }
+    },
+    {
+      "name": "uuid-simd",
+      "version": "0.8.0",
+      "lockChecksum": "23b082222b4f6619906941c17eb2297fff4c2fb96cb60164170522942a200bd8",
+      "cargoTomlSha256": "ec723e989ff2ceff4e2d51c831093fb3e5f5e69f8496afd01bbf6648e37e2464",
+      "cargoVcsSha1": "d74c030d9dc4f3cae02146d1f497ff62726ef09a",
+      "cargoVcsInfoSha256": "9235ab068fdb6b50a2b0fdad57df40ed34461ea3a81e7d3a1584962f3f84e5a9",
+      "source": {
+        "repo": "https://github.com/Nugine/simd",
+        "commit": "d74c030d9dc4f3cae02146d1f497ff62726ef09a",
+        "path": "LICENSE"
+      },
+      "text": {
+        "path": "texts/simd-d74c030-LICENSE",
+        "sha256": "71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d",
+        "bytes": 1062
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MIT",
+        "evidence": "repository root LICENSE at the exact locked .cargo_vcs_info commit d74c030d9dc4f3cae02146d1f497ff62726ef09a"
+      }
+    },
+    {
+      "name": "vsimd",
+      "version": "0.8.0",
+      "lockChecksum": "5c3082ca00d5a5ef149bb8b555a72ae84c9c59f7250f013ac822ac2e49b19c64",
+      "cargoTomlSha256": "7a3defd1f3b642bc229a518351f3feb23a69ddaf0349414562edbeeca40d60ad",
+      "cargoVcsSha1": "d74c030d9dc4f3cae02146d1f497ff62726ef09a",
+      "cargoVcsInfoSha256": "b6a479e65704d09745d31e0d86d23ca44ba673b01ddd0da81cc8ba619a92b2aa",
+      "source": {
+        "repo": "https://github.com/Nugine/simd",
+        "commit": "d74c030d9dc4f3cae02146d1f497ff62726ef09a",
+        "path": "LICENSE"
+      },
+      "text": {
+        "path": "texts/simd-d74c030-LICENSE",
+        "sha256": "71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d",
+        "bytes": 1062
+      },
+      "relation": {
+        "kind": "repository-root-license",
+        "licenseExpression": "MIT",
+        "evidence": "repository root LICENSE at the exact locked .cargo_vcs_info commit d74c030d9dc4f3cae02146d1f497ff62726ef09a"
+      }
+    }
+  ]
+}

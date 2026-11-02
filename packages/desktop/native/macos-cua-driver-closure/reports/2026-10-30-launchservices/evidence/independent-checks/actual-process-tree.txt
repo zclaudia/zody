@@ -1,0 +1,7 @@
+76851     1 Zody CUA Launchservices Candidate
+77272 76851 /Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session
+77278     1 /Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session
+77279 77278 zody-host-local-1
+77382 77279 /Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session
+77429     1 /Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session
+77436 77429 /Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/Resources/node

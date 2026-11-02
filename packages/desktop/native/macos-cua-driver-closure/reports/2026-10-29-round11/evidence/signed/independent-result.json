@@ -1,0 +1,19 @@
+{
+  "sourceFiles": 57,
+  "sourceChanged": [],
+  "png": {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/capture-zody.png",
+    "sha256": "08e3632568f1a71ff90f9e75c02a0d55f8ffd616bc68402c2d087c5a70617fe5",
+    "bytes": 238063,
+    "width": 2400,
+    "height": 1600,
+    "visualInspection": "Zody app window, nonblank UI; no desktop-wide capture"
+  },
+  "leaseAfterRun": {
+    "exclusiveLockReacquired": true,
+    "inode": 149745182,
+    "uid": 501,
+    "mode": "0o600"
+  },
+  "originalNodeSha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+}

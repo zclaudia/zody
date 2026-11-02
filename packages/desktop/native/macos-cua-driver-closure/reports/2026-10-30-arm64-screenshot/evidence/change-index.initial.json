@@ -1,0 +1,670 @@
+{
+  "createdAt": "2026-10-30T17:41:12.826870+00:00",
+  "baseline": "opening dirty workspace; additional timing explicitly recorded",
+  "changes": [
+    {
+      "path": ".oxlintrc.json",
+      "before": "09c4f218c535cd800cf0d0ee41f0251c3777d1805ab71b5fd28e99267e34e692",
+      "after": "60200dd35d4c30681d29c044a923510238203ad967e0f26f1775b0da7f0c2d09",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "apps/zcode-cli/packages/cli/src/cua-launch-session.ts",
+      "before": "db05a5850de0c5a9a802362860b1dbf0edfa9a9a8046f80f9dc546b861788ff1",
+      "after": "65044391575111f994fb7479b3dbe489e2d3404b1cabc76a1721f69099fea779",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "apps/zcode-cli/packages/cli/tests/cua-launch-session.test.ts",
+      "before": "56379024d3923bfb00d61d2741bf151e7d4a16bdf542098c45c1b182c85df996",
+      "after": "1deee86c4f61722b299a59d53ce515476e8f2abdd47ac648889dc211b6c8964e",
+      "baselineTiming": "additional-captured-during-work",
+      "new": false
+    },
+    {
+      "path": "apps/zcode-cli/packages/node-repl-host/src/cell-helper-transport.ts",
+      "before": null,
+      "after": "7fdde35a55fd7b980f5c212bb5dc3c1f6ce7d473e591555f658cc10b61137049",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "apps/zcode-cli/packages/node-repl-host/src/cua-node-repl-mcp-port.ts",
+      "before": "a442df02fd33b8c47863e7f0efc7de361c9307a91fc7edb2ad2c504c16133812",
+      "after": "7ff5cdda59cfc59250f68aab151420ef4713027cf694a183b084b983dc51813e",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "apps/zcode-cli/packages/node-repl-host/src/subprocess-executor.ts",
+      "before": "ac65b7ba34b41d0a7f14b2cef550d3f1fa2143e48246e6958dce9f753d8bfb4e",
+      "after": "dd243103752128de404e04bff3046e9cab8075dd97b31cac745f5e4f3c9d57e5",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "apps/zcode-cli/packages/node-repl-host/test/cell-helper-transport.test.ts",
+      "before": null,
+      "after": "c2d774e8ff1c8951d0f272ab6976f68c2d0c626511d08eb1e1b06434ca638c65",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "apps/zcode-cli/packages/node-repl-host/test/cua-node-repl-mcp-port.test.ts",
+      "before": "11d83388f82e3184ade49994e695b14d93ae32edd1ae4b33bf9c0d9fc7309e03",
+      "after": "d4ecd13190d261eeb6aa774f5ab8ec6460a2db81a3dce12921de786be17ee1e7",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "docs/plans/computer-use-macos-phase1-arm64-screenshot.md",
+      "before": null,
+      "after": "68aa4a6d327b7eda27341ca915ba6bb8d21b660814b7c08644ecb63d88f3d95b",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/electron-builder.config.js",
+      "before": "cc1be0a3922aca2e8abcf24dea08bf526862e37bda84945a7d145e3c6fde4df1",
+      "after": "a5c212bf5bd03b6faf6495dd9a995f9aa9da118c0120b97b176866a25a4a2c5b",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/entries/cli-entry.ts",
+      "before": "ec9abbc5c52a53bab02783a92794ca2b44600e34c3927efecbca5656e54af174",
+      "after": "076d8773c9ac9232976419c99358c01245129b20853130a9a5e85554e8ce4a1a",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/patches/capture-owner-stop-header.patch",
+      "before": null,
+      "after": "254c5a9cdec143519a1e0a3d4dd0f222af3880ebeb5510c2d8e0948a17699f33",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/patches/capture-owner-stop-lifecycle.patch",
+      "before": null,
+      "after": "2614f20dc473dd0c1f0bfe337ccc929560f387c0af0e23ffde6665352577ff1a",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/source-baseline.json",
+      "before": "11a5613328e6c5546a4388d3e073b78e67e3c29d2fb7110d3e31736f31d6d13b",
+      "after": "dd899c0b58f43d4e246afe03dacce8b0d5dcb9dc5157678f664a066eb85d0c96",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_cell_protocol.h",
+      "before": null,
+      "after": "3d9ae4c4e97491d91d0d5afb2e149088479ec48f41e81d0ee78e0bf04a688e62",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_cell_protocol.mm",
+      "before": null,
+      "after": "2d005152dc61923161b1994f905fa8e9f2d4957d86a32784f8016478ffcde87e",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_cell_relay.h",
+      "before": null,
+      "after": "84fde609bdabd90168a7fb1d3fb5c8224e47f53372884fac5ee625307d4486b9",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_cell_relay.mm",
+      "before": null,
+      "after": "2b55d42789c515345840d0795f1d1e5e7aff3140032fc2d7e5f3dbde98ca852c",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_cell_transport.h",
+      "before": null,
+      "after": "1c50ec30c5957bf63ed3ecc225a948410fe31b58c1af0424878f4255652c4499",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_cell_transport.mm",
+      "before": null,
+      "after": "fe862db9e0e716eda9c04004d286a6d88eeaa2aa50b428d4b0052a055aa06260",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_launcher.h",
+      "before": "ab6dfb7909a6bb63fe1f8feacfcfb962eb25ddbd8b701d0213a278e7b3e33e02",
+      "after": "0739f465fdfb3b9e10a75716cee4dc29e5a86875181c44928ea65b8592e33bf2",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_launcher.mm",
+      "before": "ad07b4bf306b68ff3acdf68d7d32e3b171f83467f6d622cdbb2124edb3592182",
+      "after": "2eb92d125623ee159e629dc88c7b24cd4b8da05022fdef7fdcdb273c939a41cd",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_node_process.h",
+      "before": "95e2b8d245ecdc55a79f1572bbe2340839cba1207622441700f66f62dabbcd4b",
+      "after": "d545506d455949229f94c44dd2ffb15ade52ad99d830af4e782a883392998aaf",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_node_process.mm",
+      "before": "4f207855d3df2a495f8f23ea3d6b474b49edfee27b1f484d970beb7380d718a6",
+      "after": "ba65657e8ad8d642f0dc478b76b671a52c8f2df341b3f474cdb01235c08e8c8a",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_supervisor.mm",
+      "before": "52398553f1e796ee9a724c1af00360df7a5b07b57961af9398e62991ea76e8cf",
+      "after": "a9c76baa9c4d671312f273a05aac3b2ecddeeed86fc3a3472c83a574913a3eec",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_transport_auth.h",
+      "before": null,
+      "after": "9805fc89f308201d3d45e60ddf0c7209dd6fe94149f60920fb05dfd7138da3b1",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/src/session_transport_auth.mm",
+      "before": null,
+      "after": "e92018a7ec4d043373f80ba29378edbcdfebf36b1402c65e5abc712e29ae0b83",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/tests/session_cell_identity_test.mm",
+      "before": null,
+      "after": "e04a52fb31a606b11e161dc6bc6e9a613c8fcd24b1cdc04d69a513964ca22577",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/tests/session_cell_protocol_test.mm",
+      "before": null,
+      "after": "4a1b97fb8e95c298d1e7316236831d7ba28d843d630f636858255f41e58f0f9b",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/tests/session_cell_relay_test.mm",
+      "before": null,
+      "after": "19c3ef887fc1c4f3af400f1625f340e2870405ce2e7592816049fe49a843a509",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/tests/session_transport_auth_test.mm",
+      "before": null,
+      "after": "1a2475ce79c44ee36f8c95833379bdbfc1dfcc48c0fe5d0cdb4683691dc6dfd4",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/tests/stop_capture_owner_test.mm",
+      "before": null,
+      "after": "7316d7ed2033f7f8e5d32ec9fd0fc121eaf8046f17598cc989ff15c7370e199b",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/visual-stop/include/capture_owner_stop_facts.h",
+      "before": null,
+      "after": "4b4b6353b20091c09424d6774803e7affb77923f564cd8db02288a69642aecbe",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/visual-stop/include/cua_r11_visual.h",
+      "before": null,
+      "after": "6caaceca21727ca75ae0a24123589b20fed0833dd9e9d45f0a5734ddc9a1c760",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/visual-stop/patches/cua-r11-stop-visual.patch",
+      "before": null,
+      "after": "8fb636b377a269754072027e739dd5417c230c59720c9cf3a864d0c9be342385",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/visual-stop/source-baseline.json",
+      "before": null,
+      "after": "9898eb0507850b62613baf0625d3673f8c1a30eab9d5cf26118b82bff23b3adb",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/build-cua-desktop-stop-visual.mjs",
+      "before": null,
+      "after": "ec7ace23a7389c453bf9c936111403f5e9fa1f19332c682d606ab99f886f2e3a",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/build-cua-normal-host-candidate.mjs",
+      "before": null,
+      "after": "5bfaaafcbd629054732892e2d97e641e037c28f2c0cc220d4a9f6b8278f9f799",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-session-compile-args.mjs",
+      "before": null,
+      "after": "675c398c904075095268faf69e794d4421549ecd09b8391787e691fdc96c5cf9",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-session-config.mjs",
+      "before": "e1eab0b2df2fea217703e7f37a837096279df33c9c9e72f936ad392fedc92fa3",
+      "after": "686083bc903f007307c286531822ffbbc6bc86ecd25a8c11dc916564deb68345",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-session-manifest.mjs",
+      "before": "6aa718a58202abbf62d2ed3013bf14fc2ffecc3edd258aa002d8f963e7bac602",
+      "after": "7c7df9eb4fce0030726690dcd1cba959fe1c655197ed37ce9958e402f3280052",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-session-native-tests.mjs",
+      "before": "d849edd248b84c2dda95972944c35acca25f6f1010c4083aa82bf958d29b4283",
+      "after": "d4753c018dfbf610303dbbed929489a111f3b65af89230740fcf6721f389ef4a",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-session-patch.mjs",
+      "before": null,
+      "after": "0152f87528c4abc7beb2fb0341cb67abb5f28d25f93a62d8fa748477dc22f283",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-session-pins.mjs",
+      "before": null,
+      "after": "475d681ead9ef8e5bbd399f33a325c50fbcc52552a9c2103f18f303d19d9de07",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-session-source.mjs",
+      "before": "2252f53e731ec590664b8fe9fb8634984abf19b5c50334ad5b165666d511bfc2",
+      "after": "b0e615fbe5acd7b59d3249dff3387bd274718d99e3abb03a978e6e09889877a0",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-stop-visual-build.mjs",
+      "before": null,
+      "after": "b4c23409a9df0e8a2437002bca1f4aff9523a0298ce989462782d0934aa7c80a",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-stop-visual-config.mjs",
+      "before": null,
+      "after": "92e4e3f612feb92f589c39cf25e005de2e999c6eaa15b2f0523bc0987ee7d72a",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-stop-visual-errors.mjs",
+      "before": null,
+      "after": "7130920bdb35f232092bcd0ffca13ada7faf92120959c845d51fab8e331944b4",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-stop-visual-harness.mjs",
+      "before": null,
+      "after": "93cd4ab184a3c1514e2817c87ef2353ce9a895e1c0b684373c70a80cb2a3384c",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-stop-visual-source.mjs",
+      "before": null,
+      "after": "80778e2d27811b87ee052c923790a3f076b7a36162c3638f4317eb20df01af34",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-stop-visual-toolchain.mjs",
+      "before": null,
+      "after": "92392b38e5389f7fa10644d58ab5a735bf7e5868322f0bb060e6ad72a7ee8cf8",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-desktop-stop-visual-verify.mjs",
+      "before": null,
+      "after": "69b9b346d77cb41c7a40472654dd638d88e999057ee9f1d90c2191ddb46e8903",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-app-copy.mjs",
+      "before": null,
+      "after": "b956b09b4dfcc6fe22e737114e132d1cdcf6bc9627b29d1899819b737fc73ced",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-asar.mjs",
+      "before": null,
+      "after": "14996427c58cc3ad9ec8e041116c579dfccbca9e143c5ad75911b11c3124a890",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-build.mjs",
+      "before": null,
+      "after": "cc90265b8a2a5bf8f86c8db54495b13360ee6476e23457ef65afae62b902d6df",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-config.mjs",
+      "before": null,
+      "after": "f81540feec82ddb4fd284dc71552f69416afac1b657e16563ba7a4211783e665",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-evidence.mjs",
+      "before": null,
+      "after": "9858c449d7e3bac9883c18ffeaea84f4dfcdb7b0e8ed48bdeb396fcce5c15e0e",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-identity.mjs",
+      "before": null,
+      "after": "63c55538ac07e32b88f4c354a366fa57fb42979ccdb774da19db96ce762d1251",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-output.mjs",
+      "before": null,
+      "after": "8c0fb2b4b30f8ad10439a78d80fec7fc902ce960b20e98b085fb9a8a2dda8f58",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-profile-values.mjs",
+      "before": null,
+      "after": "41b53f7b64401655eb68167f734abebb5ec4c8bea19a274e8aa8a0f700b22256",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-profile.mjs",
+      "before": null,
+      "after": "7c51cd8905a80114b0623e458d026b628e42eff1748f6d66159e987b3ff4ff5e",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-provider-profile.mjs",
+      "before": null,
+      "after": "c1303795f4d8556b951d575c8591ad21402e76b98ca04468ceb8c560cb28c888",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/lib/normal-host-candidate-startup-snapshot.mjs",
+      "before": null,
+      "after": "ca8f5a63d94a2ca211009c21f9b770aebd99695816fff64c2a846d989ab5d88a",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/scripts/macos-cua-narrow-resources-build.test.mjs",
+      "before": "e76e21efa97f3a9dc983a28303497739042b2279af629795a2bbf0656b27802e",
+      "after": "ecbf0f0f215968f5d8305dd451b0bd6e31ee67f263a5bf229507cd90a3e564fc",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/scripts/macos-cua-narrow-resources-manifest.test.mjs",
+      "before": "4139573c6e04d7a5c9e556d79fe9ab7674a932c5444a20b2477efe81c581daa6",
+      "after": "d0b79c5c9e1807c3b3e3c6eaa0ce40f3c832aee29dc0d7c283cad3ddccdf0642",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/scripts/macos-cua-narrow-resources-prepare-core.mjs",
+      "before": "667554d984bf1d34ece8aa85d715e790934392e42fb54c54dfc94a4f491c8e3f",
+      "after": "d3a508ec241d47bd6f63937a0b39e96d96f772fb7602760a882f5beb74621651",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/scripts/macos-cua-narrow-resources-validate.mjs",
+      "before": "51be42230419c7a3eb7b2bc96801c5db60c571278c76b041f3efdcc5511b0a69",
+      "after": "de2ce794987c8da0c7a0a265afdfebc398964c078750c8e7ebf3720e66dcf267",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/scripts/macos-cua-narrow-resources.mjs",
+      "before": "265290752e038279f5ae15dd4c958f3750a49b7988c2b7ab4f547952b08975c9",
+      "after": "dabdce75f2b649641a3d62e82dbd5bb8573f1245d66c283cf0d92da7015324f3",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/src/host/cuaNarrowAgentProfile.ts",
+      "before": null,
+      "after": "11a94795e5cf52c7d5f5cbfd212d89a7bfc69b481f4570fb71492b27fe5182a1",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/src/host/cuaNarrowAgentResources.ts",
+      "before": null,
+      "after": "051fb0ac6436e1259fbfdd8684aa42e1bea4cac7001e00f7d0e8908757f6d4e5",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/src/host/cuaNarrowAgentRuntime.ts",
+      "before": "13155969c471cc351b73bdfa1921ef3b39521281ce4ad15e6e03d4de67cf446a",
+      "after": "3615196629fb1e8b37e7d7f51fc8d6f29fdd28e4840a54ae579a26adc5a8ceec",
+      "baselineTiming": "additional-captured-during-work",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/src/host/index.ts",
+      "before": "230bea1980e2b8b10f82c018e707a8a92ba0fe8bda7a12d04fb1ed03318baf0f",
+      "after": "2c24b27848f946608da5732b8c1aa31bb41580082c8d8efe5376d1f5a207c3b7",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/src/main/desktopRuntimeEnv.ts",
+      "before": "fe4afc0d9159f1e6050dff4e59a364150f48e8e082ada68a882812e1a27d962c",
+      "after": "9634c6097b9b842a2482a24d1ec3415f9f8e7fb45fdcc14b7373da7947a15b3a",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/test/cuaNarrowAgentRuntime.test.ts",
+      "before": "9c032a4b108fca00a95cd231f5e53f00968bc7d255ee6b42e075e2db129d1245",
+      "after": "3c2f6f4583cd5e86d37e1f62322e0a8a524d5bf16b1821200f0b9bc2423fa47b",
+      "baselineTiming": "additional-captured-during-work",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/test/desktopRuntimeEnv.test.ts",
+      "before": "c57dd22cf6ba90b4116f01a7ed08798a3391e9f4729386d45cf06d35abdc7d44",
+      "after": "d490810ba61fe366246831809a476387be4616ae819e92ab264d0d8803cf62a6",
+      "baselineTiming": "additional-captured-during-work",
+      "new": false
+    },
+    {
+      "path": "packages/desktop/test/normalHostCandidateAssembly.test.ts",
+      "before": null,
+      "after": "ba97537282c47afc26e43fd68764b3fdf614ee8fdd873507b8ec20b3d5fd48e0",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/test/normalHostCandidateProfile.test.ts",
+      "before": null,
+      "after": "0f3220d9dda92cec670f1265983943786abe639c7f2262a6f5a759d30803688c",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/test/stopDesktopSessionSourcePatches.test.ts",
+      "before": null,
+      "after": "837fcf1889bcbc0419ffd2435dfba4c42cd7acf17559e263299c7685387e5f97",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/test/stopDesktopStopVisualBuild.test.ts",
+      "before": null,
+      "after": "f0f38bf0c3fc7ce9703c21998f3142659c0e8b219678f17d0d5a46ea37fe0b4b",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/desktop/tsup.config.ts",
+      "before": "e828f5b8d68ea5418c2f6f21cdb3bd972dd88b8d7ef31bc1cc821e39b07fac2a",
+      "after": "ff75ab04a6c1d1f1acc41a4c6cc0b449f4302dcc8cc86527a3f20f547332512e",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/services/src/node.ts",
+      "before": "397bfb343e3931c7410e32080fd6febfaa9d950ec5d8740bcb315eae6b4f6389",
+      "after": "d75eb85b18a3edbadfa08fbf3b6800d88fbf24ba7ed4ba4208c61bbed7e31db5",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/services/src/zcode-agent/nativeRuntimeStartupProfile.ts",
+      "before": null,
+      "after": "8d24c82ce4d3a68b3b8cc67795057c745c5844c471617274f412bd924859ad42",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/services/src/zcode-agent/zcodeAgentProcessManager.ts",
+      "before": "fbb707d6b3c9bd39f7713a85088b7a58a4f88a853edb9989a475d7945d9a7fa2",
+      "after": "ce2014f30818756e49eb9d700285869eb04da95a5c9fee1b56b15ce93170e318",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/services/src/zcode-agent/zcodeAgentService.ts",
+      "before": "1c67373979e3e9024a1a2f7323d37fda949cc6d1840bb17a2d39ec9e375df49e",
+      "after": "45c618d61862c0f2805e8d565aec0b9d278d82db3d2e4615b0c9b9407b6b6d61",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/services/test/nativeRuntimeStartupProfile.test.ts",
+      "before": null,
+      "after": "9f4fd0424bd0a06716b7c9588f37ad684b517bb74590582d9d8bb6d442b03a3c",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "packages/services/test/zcodeAgentProcessManager.test.ts",
+      "before": "63893da42e128bd1ee35e9d1bc68f2701c8f29fb0e25b5f5fff933beafb0b9d7",
+      "after": "b180879ef23d69e0313308102fcafeadf788fadbbe9f1c9e663c97fe181b2b20",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/shared/src/cua-helper-transport-auth.ts",
+      "before": null,
+      "after": "df8aa5eeefbc36ff03d7d80bda76b24b40be657de904a488183c268cacb06e19",
+      "baselineTiming": "new-file",
+      "new": true
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "before": "2bcb062615fb1ec80565833c5b80b056005121a58310fa21baf306ef6bb93b07",
+      "after": "50a8835f57ee9ffbf7a06c09f7c514fc37d9e4ae3aef2730fbafd4980a1efc6a",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "specs/computer-use-macos-phase1.md",
+      "before": "eff33e81e1ea0850a9960a8d3afbe822e0b4f7814f94af0908940b99e94cceca",
+      "after": "db9a7dea5f9aebddfb33468d69ffa4a73292b9c2224b6bcf084127ab3b350c23",
+      "baselineTiming": "opening",
+      "new": false
+    },
+    {
+      "path": "packages/shared/package.json",
+      "before": "6519e196ae9de154a0b4837558eaa25f561a8eefffdb0cb0f8c16e9c939d4059",
+      "after": "76614ce8c00212c8344161e6b23db56adf6adbe12705ac3fb77a9ecfd5e6a481",
+      "baselineTiming": "HEAD; no corresponding opening-status modification",
+      "new": false
+    },
+    {
+      "path": "packages/shared/test/cuaHelperTransportAuth.test.ts",
+      "before": null,
+      "after": "060cac430b2e6db5489344f749bc962ece304bba0747ea518ba6782263e6925c",
+      "baselineTiming": "new-file; absent opening-status tracked file",
+      "new": true
+    }
+  ],
+  "notCopiedAbsent": [],
+  "excludedGeneratedTypeArtifacts": [
+    "apps/zcode-cli/packages/node-repl-host/dist-types/cell-child-transport.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/cell-child-transport.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/cell-executor.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/cell-executor.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/cell-protocol.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/cell-protocol.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/control-only-protocol.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/control-only-protocol.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/control-only.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/control-only.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/cua-runtime.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/cua-runtime.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/node-repl-mcp-runtime.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/node-repl-mcp-runtime.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/node-repl-session-executor.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/node-repl-session-executor.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/request-context.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/request-context.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/subprocess-executor.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/subprocess-executor.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/subprocess-launch.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/subprocess-launch.d.ts.map",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/worker-executor.d.ts",
+    "apps/zcode-cli/packages/node-repl-host/dist-types/worker-executor.d.ts.map"
+  ]
+}

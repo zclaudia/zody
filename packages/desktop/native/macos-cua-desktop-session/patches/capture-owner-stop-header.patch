@@ -1,0 +1,27 @@
+--- a/src/capture_owner.h
++++ b/src/capture_owner.h
+@@ -5,6 +5,7 @@
+ #include <string>
+ 
+ #include "authority_client.h"
++#include "capture_owner_stop_facts.h"
+ #include "machine_lease.h"
+ 
+ namespace zody::cua::round11 {
+@@ -34,6 +35,16 @@
+   bool revoked = false;
+   // 只有 native callback 明确归还资源后才为 true；否则不得释放 lease。
+   bool resources_released = true;
++  // 以下字段只做真实事件审计，不参与授权/取消决策：
++  // 唯一取消锁存仍是 capture_owner 内部的 revoked 原子。
++  bool authority_stopped = false;
++  stop_visual::AuthorityStopFact authority_stop = stop_visual::AuthorityStopFact::None;
++  bool visual_started = false;
++  bool visual_wait_returned = false;
++  bool os_submitted = false;
++  bool late_frame_dropped = false;
++  stop_visual::CallbackReleaseFact callback_release =
++      stop_visual::CallbackReleaseFact::NotStarted;
+ };
+ 
+ // 实际 CABI 执行 owner：同一 machine lock、同一 authority ref，三个 checkpoint

@@ -1,0 +1,20 @@
+✔ default darwin arm64 build selects the pinned narrow profile and manifest (6.040291ms)
+✔ explicit narrow manifest is absolute, arm64-only and exported to builder env (0.309458ms)
+✔ CLI and env manifests must agree (0.137625ms)
+✔ explicit narrow manifest rejects non-darwin or non-arm64 targets (0.097958ms)
+✔ explicit narrow assembly rejects the candidate Host launch seam (0.160417ms)
+✔ narrow extra resources copy app and validated manifest bytes into the independent slot (0.128042ms)
+✔ signIgnore covers the cua-narrow slot without changing cua-helper (0.183333ms)
+✔ explicit empty CLI manifest never degrades to an unrequested build (0.079375ms)
+✔ explicit --cua-narrow-manifest without a path is rejected (0.741666ms)
+✔ explicit --cua-narrow-manifest with a path still creates a narrow request (1.253875ms)
+✔ default darwin arm64 bundle request selects the pinned manifest and profile (5.043084ms)
+✔ unsupported bundle targets keep the narrow request disabled (0.137834ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73.919375

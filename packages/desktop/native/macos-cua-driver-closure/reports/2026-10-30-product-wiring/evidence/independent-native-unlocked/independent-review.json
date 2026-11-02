@@ -1,0 +1,9 @@
+{
+  "helperResult": {
+    "status": "blocked",
+    "reason": "visual-wait-failed",
+    "captureEntry": false
+  },
+  "openExitDoesNotProveHelperSuccess": true,
+  "machineLockReacquired": true
+}

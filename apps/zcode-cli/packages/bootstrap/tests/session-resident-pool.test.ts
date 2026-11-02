@@ -789,6 +789,18 @@ async function subscribeConversation(
   return { ack, initialFrame: conversationTopicFrameSchema.parse(wire.frame) };
 }
 
+/** I19：history 帧先返回；runtime/record 是否物化由 READY 收口。 */
+async function awaitConversationReady(
+  server: ZCodeProtocolAgentServer,
+  requestId: string,
+): Promise<void> {
+  await requestResult(server, {
+    id: requestId,
+    method: V4_METHODS.conversationRowsRange,
+    params: { sessionId: SESSION_ID, limit: 1 },
+  });
+}
+
 describe("session resident pool（集成：真 sqlite + server + binder）", () => {
   let tempRoot: string;
 
@@ -848,6 +860,8 @@ describe("session resident pool（集成：真 sqlite + server + binder）", () 
       server.takePostResponseMessages("idx-sub");
 
       const subscribed = await subscribeConversation(server, "conv-sub", "conn-desktop");
+      // I19：subscribe 先返回历史；activation 由 READY 收口后再断言 record/app 已物化。
+      await awaitConversationReady(server, "conv-sub-ready");
       expect(sessions.has(SESSION_ID)).toBe(true);
       expect(createdApps).toHaveLength(1);
 
@@ -904,6 +918,8 @@ describe("session resident pool（集成：真 sqlite + server + binder）", () 
           (row) => row.kind === "assistantText" && row.text === "回答",
         ),
       ).toBe(true);
+      // 历史行来自 durable store；record/第二个 app 由 READY 物化。
+      await awaitConversationReady(server, "conv-resub-ready");
       expect(sessions.has(SESSION_ID)).toBe(true);
       expect(createdApps).toHaveLength(2);
     } finally {
@@ -911,7 +927,7 @@ describe("session resident pool（集成：真 sqlite + server + binder）", () 
     }
   });
 
-  it("再激活闸门：app.close 收尾完成前，同 session 的冷订阅等待后成功", async () => {
+  it("再激活闸门：history 不等待 app.close 收尾，runtime 收尾完成后物化", async () => {
     const dbPath = join(tempRoot, "sessions.db");
     await seedPersistedSession(dbPath);
     let releaseClose: (() => void) | undefined;
@@ -929,6 +945,7 @@ describe("session resident pool（集成：真 sqlite + server + binder）", () 
     });
     try {
       const subscribed = await subscribeConversation(server, "gate-sub", "conn-gate");
+      await awaitConversationReady(server, "gate-sub-ready");
       await requestResult(server, {
         id: "gate-unsub",
         method: V4_METHODS.conversationUnsubscribe,
@@ -940,20 +957,15 @@ describe("session resident pool（集成：真 sqlite + server + binder）", () 
       });
       expect(sessions.has(SESSION_ID)).toBe(false); // 同步段已摘除，close 收尾挂起中
 
-      let resubscribeSettled = false;
-      const resubscribePromise = subscribeConversation(server, "gate-resub", "conn-gate-2").then(
-        (result) => {
-          resubscribeSettled = true;
-          return result;
-        },
-      );
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      expect(resubscribeSettled).toBe(false); // 闸门：收尾未完成不物化新 record
+      // I19：history 直接来自 durable store，不被 app.close 的收尾闸门阻塞；
+      // 真正等待闸门的是 READY 的 runtime 物化。
+      const resubscribed = await subscribeConversation(server, "gate-resub", "conn-gate-2");
+      expect(resubscribed.initialFrame?.payload.kind).toBe("snapshot");
       expect(createdApps).toHaveLength(1);
+      expect(sessions.has(SESSION_ID)).toBe(false);
 
       releaseClose?.();
-      const resubscribed = await resubscribePromise;
-      expect(resubscribed.initialFrame?.payload.kind).toBe("snapshot");
+      await awaitConversationReady(server, "gate-resub-ready");
       expect(sessions.has(SESSION_ID)).toBe(true);
       expect(createdApps).toHaveLength(2);
     } finally {

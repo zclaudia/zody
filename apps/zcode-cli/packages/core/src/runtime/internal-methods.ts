@@ -35,11 +35,24 @@ import type {
   ExecutionShellSelection,
 } from "./deps.js";
 import type { BackgroundResultOriginMeta, ContextUsageBreakdownItem } from "@zcode/contracts";
+import type {
+  CuaSubmissionProducerPort,
+  CuaSubmissionProjection,
+  CuaSubmissionRef,
+  CuaSubmissionTurnInvalidationReason,
+  CuaSubmissionTurnScope,
+} from "@zcode/contracts";
+import type { CuaLiveSubmissionRegistrar } from "./cua/cua-submission-coordinator.js";
+import type {
+  CuaNativeCaptureConfirmationInput,
+  CuaNativeCaptureConfirmationResult,
+} from "./methods/cua-submission.js";
 import type { RuntimeCommand, RuntimeCommandId } from "./command-queue.js";
 import type { RuntimeMessageEntry } from "../agent/message-history.js";
 import type {
   ActiveTurnInfo,
   AcquireForegroundPromotionLeaseResult,
+  ActiveForegroundExecutionState,
   ActiveTurnKind,
   ActiveTurnSteeringState,
   AgentRuntimeConfig,
@@ -65,6 +78,23 @@ import type {
 } from "./types.js";
 
 export interface AgentRuntimeCoreMethods {
+  getCuaSubmissionProjection(): CuaSubmissionProjection;
+  getCuaSubmissionRegistrar(): CuaLiveSubmissionRegistrar | undefined;
+  getCuaSubmissionProducerPort(): CuaSubmissionProducerPort | undefined;
+  getCurrentCuaSubmissionRef(): CuaSubmissionRef | undefined;
+  createCuaSubmissionTurnScope(): CuaSubmissionTurnScope | undefined;
+  requestCuaNativeCaptureConfirmation(
+    input: CuaNativeCaptureConfirmationInput,
+  ): Promise<CuaNativeCaptureConfirmationResult>;
+  invalidateCuaSubmissionTurnScopeForTurn(
+    activeTurn: ActiveTurnSteeringState,
+    reason: CuaSubmissionTurnInvalidationReason,
+  ): void;
+  invalidateCuaSubmissionTurnScopeForForeground(
+    state: ActiveForegroundExecutionState,
+    reason: CuaSubmissionTurnInvalidationReason,
+  ): void;
+  invalidateCuaSubmissionTurnScopeOnDispose(): void;
   updateConfig(
     patch: Pick<AgentRuntimeConfig, "mode" | "planEnabled" | "language" | "outputStyle">,
   ): void;

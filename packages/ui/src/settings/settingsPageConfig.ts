@@ -68,6 +68,14 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     titleId: "settings.appearanceTitle",
     groupId: "basics",
   },
+  // 手机 Web Remote Control 的连接分区由 bootstrap 注入能力后才显示；
+  // 桌面 remoteAccess 与手机连接配置仍是不同领域，不能合并。
+  {
+    id: "connection",
+    icon: Cable,
+    titleId: "webRemoteControl.mobileSettings.connectionSection",
+    groupId: "basics",
+  },
   {
     id: "modelProvider",
     icon: Package,
@@ -171,6 +179,7 @@ export const SETTINGS_SECTIONS = BASE_SETTINGS_SECTIONS.filter(
   (section) =>
     section.id !== "computerUse" &&
     section.id !== "remoteAccess" &&
+    section.id !== "connection" &&
     isSettingsSectionEnabled(section.id),
 );
 
@@ -178,22 +187,24 @@ export interface SettingsPageConfigOptions {
   isDesktop?: boolean;
   isMacDesktop?: boolean;
   isWindowsDesktop?: boolean;
+  /** 仅手机 Web Remote Control 且连接能力已注入时为 true。 */
+  isWebRemoteControlMobile?: boolean;
 }
 
 export function createSettingsPageConfig({
   isDesktop = false,
   isMacDesktop = false,
   isWindowsDesktop = false,
+  isWebRemoteControlMobile = false,
 }: SettingsPageConfigOptions = {}) {
   const showRemoteAccess = isDesktop || isMacDesktop || isWindowsDesktop;
-  // 电脑控制与远程访问同为桌面能力入口：导航层只按平台显示，分区内容形态
-  // （占位构建说明卡 / narrow 构建开关）由 ComputerUseSection 按构建能力信号决定，
-  // 见 specs/computer-use-settings-unification.md。
-  const showComputerUse = isDesktop || isMacDesktop || isWindowsDesktop;
   const settingsSections = BASE_SETTINGS_SECTIONS.filter((section) => {
     // 远程访问由桌面 Main 的 gateway backend 提供，Web/手机页面没有这个能力。
     if (section.id === "remoteAccess" && !showRemoteAccess) return false;
-    if (section.id === "computerUse" && !showComputerUse) return false;
+    // 手机连接分区只在手机 Web Remote Control 且 bootstrap 已注入连接能力时出现。
+    if (section.id === "connection" && !isWebRemoteControlMobile) return false;
+    // 0.1.0 只有 Browser Use 可用；系统级 Computer Use 仍是占位能力，不向用户展示入口。
+    if (section.id === "computerUse") return false;
     return isSettingsSectionEnabled(section.id);
   });
   const settingsSectionGroups = BASE_SETTINGS_SECTION_GROUPS.map((group) => ({

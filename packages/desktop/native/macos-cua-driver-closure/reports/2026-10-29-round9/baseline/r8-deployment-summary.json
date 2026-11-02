@@ -1,0 +1,16 @@
+[
+  {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-accepted-pure-tests/target/aarch64-apple-darwin/debug/deps/pure_visual-8047401fc308023e",
+    "minos": [
+      "11.0"
+    ],
+    "rpath": true
+  },
+  {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-accepted-pure-tests/target/aarch64-apple-darwin/debug/deps/cua_macos_visual-a5e9348a41f847bc",
+    "minos": [
+      "11.0"
+    ],
+    "rpath": true
+  }
+]

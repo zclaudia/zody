@@ -1,0 +1,8 @@
+
+running 3 tests
+test disabled_script_feature_does_not_register_run_script ... ok
+test explicit_rego_policy_is_rejected_without_rego_feature ... ok
+test yaml_explicit_deny_stays_deny ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

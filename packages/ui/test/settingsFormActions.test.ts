@@ -10,8 +10,10 @@ describe("settings form actions", () => {
   // 移到该共享组件；这里改为在真实位置断言尺寸，并确认子智能体页确实走同一组件。
   it("列表头部 New 按钮统一由共享组件渲染", () => {
     const actions = readSource("src/settings/SettingsResourceHeaderActions.tsx");
+    expect(actions).toContain('size="default"');
+    expect(actions).toContain('className={cn("rounded-lg", SETTINGS_TOUCH_MIN_H_11_CLASS)}');
     expect(actions).toMatch(
-      /size="default"\s+className="rounded-lg"\s+data-settings-create-action=\{newActionId\}\s+aria-label=\{newLabel\}/,
+      /data-settings-create-action=\{newActionId\}\s+aria-label=\{newLabel\}/,
     );
     expect(readSource("src/settings/SubagentsSection.tsx")).toContain(
       "<SettingsResourceHeaderActions",

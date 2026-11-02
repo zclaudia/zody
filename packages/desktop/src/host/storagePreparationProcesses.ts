@@ -62,9 +62,16 @@ export function prepareHostStorage(
   path: string,
   report: (phase: Phase, migration?: DatabaseMigrationFacts) => void,
   signal: AbortSignal,
+  options?: { workerUrl?: URL },
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const worker = new Worker(new URL("./tasksStorageWorker.js", import.meta.url), {
+    if (options?.workerUrl !== undefined && options.workerUrl.protocol !== "data:") {
+      throw new Error("Storage Worker snapshot must be a data: ESM URL");
+    }
+    const workerUrl = options?.workerUrl
+      ? options.workerUrl
+      : new URL("./tasksStorageWorker.js", import.meta.url);
+    const worker = new Worker(workerUrl, {
       workerData: { path },
     });
     let done = false;
@@ -110,6 +117,8 @@ export function prepareHostStorage(
 export async function prepareSessionStorage(options: {
   cwd: string;
   env?: Record<string, string>;
+  /** Fixed sealed storage entry snapshot injected by the signed Host wrapper. */
+  storagePreparationEntryUrl?: URL;
   signal: AbortSignal;
   report: (
     phase: Phase,
@@ -118,18 +127,30 @@ export async function prepareSessionStorage(options: {
   preparedPaths?: Set<string>;
   observePath: (path: string) => Promise<void>;
 }): Promise<void> {
-  const command = resolveDefaultZCodeAgentCommand({
-    workspacePath: options.cwd,
-    workspaceKey: options.cwd,
-    presentationSurface: "desktop",
-  });
-  if (!command?.supportsStorageStartup || !command.storagePreparationEntry)
-    throw statusError("unsupported_runtime");
-  const entry = command.storagePreparationEntry;
+  let entry: string | URL;
+  let cwd = options.cwd;
+  let env = { ...process.env, ...options.env };
+  if (options.storagePreparationEntryUrl !== undefined) {
+    if (options.storagePreparationEntryUrl.protocol !== "data:") {
+      throw new Error("Session storage entry snapshot must be a data: ESM URL");
+    }
+    entry = options.storagePreparationEntryUrl;
+  } else {
+    const command = resolveDefaultZCodeAgentCommand({
+      workspacePath: options.cwd,
+      workspaceKey: options.cwd,
+      presentationSurface: "desktop",
+    });
+    if (!command?.supportsStorageStartup || !command.storagePreparationEntry)
+      throw statusError("unsupported_runtime");
+    entry = command.storagePreparationEntry;
+    cwd = command.cwd ?? options.cwd;
+    env = { ...env, ...command.env };
+  }
   await new Promise<void>((resolve, reject) => {
     const child = new Worker(entry, {
-      argv: ["app-server", "--stdio", "--prepare-storage", "--cwd", command.cwd ?? options.cwd],
-      env: { ...process.env, ...options.env, ...command.env },
+      argv: ["app-server", "--stdio", "--prepare-storage", "--cwd", cwd],
+      env,
       stdin: true,
       stdout: true,
       stderr: true,

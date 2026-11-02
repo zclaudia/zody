@@ -1,0 +1,20 @@
+{
+  "name": "cua-subprocess-tests",
+  "argv": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "packages/node-repl-host/test/sealed-resource.test.ts",
+    "packages/node-repl-host/test/cell-snapshot-execution.test.ts",
+    "packages/node-repl-host/test/subprocess-launch.test.ts",
+    "packages/node-repl-host/test/subprocess-executor.test.ts",
+    "packages/node-repl-host/test/cua-node-repl-mcp-port.test.ts",
+    "packages/bootstrap/tests/cua-node-repl-mcp-port-wiring.test.ts"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody/apps/zcode-cli",
+  "startedAt": "2026-10-30T14:22:27.681933+00:00",
+  "seconds": 9.357,
+  "exitCode": 0,
+  "log": "cua-subprocess-tests.log"
+}

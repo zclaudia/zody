@@ -3,6 +3,10 @@ import { createInterface } from "node:readline";
 import { connect } from "node:net";
 import { readFile } from "node:fs/promises";
 const [port, htmlPath, source] = process.argv.slice(2);
+// 首开屏障场景：initialize 先挂起，等控制端 release-initialize 再响应，
+// 用于验证页面在 initialize 未完成时不挂载、放行后无需重试直接挂载。
+const gateInitialize = process.argv.includes("gate-initialize");
+let pendingInitialize;
 const control = connect(Number(port), "127.0.0.1");
 const sendEvent = (event) => control.write(JSON.stringify({ source, ...event }) + "\n");
 const respond = (id, result) =>
@@ -45,6 +49,11 @@ createInterface({ input: control }).on("line", (line) => {
       sendEvent({ type: "released", key: command.key });
     }
   }
+  if (command.type === "release-initialize" && pendingInitialize) {
+    respond(pendingInitialize.id, pendingInitialize.result);
+    pendingInitialize = undefined;
+    sendEvent({ type: "initialize-released" });
+  }
 });
 createInterface({ input: process.stdin }).on("line", async (line) => {
   const message = JSON.parse(line);
@@ -57,13 +66,20 @@ createInterface({ input: process.stdin }).on("line", async (line) => {
   if (message.id === undefined) return;
   const { id, method, params } = message;
   switch (method) {
-    case "initialize":
-      respond(id, {
+    case "initialize": {
+      const initializeResult = {
         protocolVersion: "2025-11-25",
         capabilities: { tools: {}, resources: { subscribe: true } },
         serverInfo: { name: "host-e2e", version: "1" },
-      });
+      };
+      if (gateInitialize) {
+        pendingInitialize = { id, result: initializeResult };
+        sendEvent({ type: "initialize-waiting" });
+        break;
+      }
+      respond(id, initializeResult);
       break;
+    }
     case "tools/list":
       respond(id, {
         tools: [

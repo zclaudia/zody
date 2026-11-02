@@ -7,6 +7,7 @@ import type { DatabaseStartupState } from "@zcode/shared";
 import { DatabaseStartupCoordinator } from "./databaseStartupCoordinator.js";
 import { StartupDiskSampler } from "./startupDiskSampler.js";
 import { prepareHostStorage, prepareSessionStorage } from "./storagePreparationProcesses.js";
+import type { VerifiedHostStorageResources } from "./hostStorageResources.js";
 
 const BASELINE_BUDGET_MS = 250;
 export function createHostDatabaseStartup(options: {
@@ -14,6 +15,7 @@ export function createHostDatabaseStartup(options: {
   cwd: string;
   workingDirectories?: string[];
   env?: Record<string, string>;
+  storageResources?: VerifiedHostStorageResources;
   publish: (state: DatabaseStartupState) => void;
   initializeServices: () => Promise<void>;
   onFailure: (error: unknown) => void;
@@ -52,6 +54,9 @@ export function createHostDatabaseStartup(options: {
           (phase, migration) =>
             report("preparing_host_storage", phase, { databaseId: "tasks-index", migration }),
           abort.signal,
+          options.storageResources
+            ? { workerUrl: options.storageResources.tasksStorageWorker.workerUrl }
+            : undefined,
         );
         markTasksStoragePrepared(tasksPath);
         report("preparing_session_storage", "checking");
@@ -74,6 +79,12 @@ export function createHostDatabaseStartup(options: {
           await prepareSessionStorage({
             cwd,
             env: options.env,
+            ...(options.storageResources
+              ? {
+                  storagePreparationEntryUrl:
+                    options.storageResources.sessionStorageEntry.workerUrl,
+                }
+              : {}),
             signal: abort.signal,
             preparedPaths,
             report: (phase, details) =>

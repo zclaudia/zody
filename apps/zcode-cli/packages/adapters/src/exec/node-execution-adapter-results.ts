@@ -1,6 +1,10 @@
-import { mkdir, open, rm } from "node:fs/promises";
+import { lstat, mkdir, open, rm } from "node:fs/promises";
 import { dirname } from "node:path";
-import { BashFileOutput, diagnoseLostBashOutput } from "./bash-file-output.js";
+import {
+  BashFileOutput,
+  diagnoseLostBashOutput,
+  removeEmptyOutputDirectory,
+} from "./bash-file-output.js";
 import { NodeExecutionAdapterBase } from "./node-execution-adapter-base.js";
 import { DEFAULT_TIMEOUT_MS, formatTimeoutDuration } from "./execution-utils.js";
 import type {
@@ -55,7 +59,11 @@ export class NodeExecutionAdapterResults extends NodeExecutionAdapterBase {
     return result;
   }
 
-  protected async ensureBackgroundOutputFiles(paths: ExecutionOutputPaths): Promise<void> {
+  protected async ensureBackgroundOutputFiles(
+    paths: ExecutionOutputPaths,
+    request: ExecutionRequest,
+  ): Promise<void> {
+    const created: string[] = [];
     for (const path of new Set([
       paths.outputPath,
       paths.stdoutPersistedOutputPath,
@@ -63,9 +71,17 @@ export class NodeExecutionAdapterResults extends NodeExecutionAdapterBase {
     ])) {
       if (!path) continue;
       await mkdir(dirname(path), { recursive: true });
+      // I16：先判断本次是否新建，spawn 失败/取消时只删除这些空文件，
+      // 不碰同一 toolCall 路径下已经存在的历史输出。
+      const existing = await lstat(path).catch((error: NodeJS.ErrnoException) => {
+        if (error.code === "ENOENT") return undefined;
+        throw error;
+      });
       const handle = await open(path, "a", 0o600);
       await handle.close();
+      if (existing === undefined) created.push(path);
     }
+    this.rememberCreatedOutputFiles(request, created);
   }
 
   protected async normalizeBashBackgroundLifecycleForegroundResult(
@@ -118,6 +134,8 @@ export class NodeExecutionAdapterResults extends NodeExecutionAdapterBase {
         // foreground lifecycle 的主结算曾与 artifact 清理耦合，删除异常会让
         // outcome 永久悬空。清理仅是 best-effort；结果仍按 foreground 契约隐藏冗余路径。
       }
+      // I16：前台结算未保留 artifact 时，清理变空的 per-toolCall 目录（另一路仍有产物时保留）。
+      await removeEmptyOutputDirectory(path);
     }
     if (
       stream.artifactPath === undefined &&

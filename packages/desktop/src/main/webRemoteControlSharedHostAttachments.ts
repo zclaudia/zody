@@ -1,5 +1,6 @@
 import { BrowserWindow, MessageChannelMain } from "electron";
-import type { MessagePortMain, UtilityProcess as ElectronUtilityProcess } from "electron";
+import type { MessagePortMain } from "electron";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 import {
   HostMessageTypes,
   type MobileNotificationPrincipal,
@@ -20,7 +21,7 @@ interface WebRemoteControlSharedHostAttachContext {
 interface WebRemoteControlSharedHostAttachment {
   entryId: string;
   attachmentId: string;
-  process: ElectronUtilityProcess;
+  process: HostProcessHandle;
   port: MessagePortMain;
   remoteKind?: RemoteUsageRemoteKind;
 }
@@ -44,7 +45,7 @@ function createSharedHostError(
 }
 
 export function createWebRemoteControlSharedHostAttachments(dependencies: {
-  windowHostProcessMap: Map<number, ElectronUtilityProcess>;
+  windowHostProcessMap: Map<number, HostProcessHandle>;
   createMessageChannel?: () => { port1: MessagePortMain; port2: MessagePortMain };
   attachRemoteWorkspaceSessionHost: (params: {
     windowId: number;
@@ -54,7 +55,7 @@ export function createWebRemoteControlSharedHostAttachments(dependencies: {
     workspaceKey: string;
     clientMode: "web-remote-replayable";
   }) => {
-    process: ElectronUtilityProcess;
+    process: HostProcessHandle;
     port: MessagePortMain;
     remoteKind: RemoteUsageRemoteKind;
   };

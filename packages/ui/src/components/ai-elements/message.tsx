@@ -153,10 +153,28 @@ export const MessageAction = ({
   label,
   variant = "ghost",
   size = "icon-sm",
+  className,
   ...props
 }: MessageActionProps) => {
+  // Bugfix：消息操作按钮（复制/编辑/点赞/踩等）桌面为 24px 的 icon-sm，触屏命中区不足
+  // 44×44px，纯触控误触率高。触屏态把图标按钮盒撑到 44px（视觉图标不变），桌面密度不变；
+  // 非 icon 尺寸不套用固定 44px 方盒，避免文本按钮被压宽。命中区作用域按 D1 §1 统一为
+  // (hover: none) and (pointer: coarse)（spec: docs/web-remote-control/mobile-viewport-input-and-touch.md，
+  // 走查 chat-5；评审修正：单一 hover:none 不满足触控目标统一作用域，下划线在 Tailwind
+  // 任意值中转译为空格，保证编译出的 and 两侧有空白）。
+  // cva 的 VariantProps 允许调用方显式传 null，解构默认值只能兜住 undefined；
+  // null 不属于 icon 尺寸，直接跳过命中区扩展，避免对 null 调 startsWith。
+  const touchHitAreaClassName = size?.startsWith("icon")
+    ? "[@media(hover:none)_and_(pointer:coarse)]:size-11"
+    : null;
   const button = (
-    <Button size={size} type="button" variant={variant} {...props}>
+    <Button
+      size={size}
+      type="button"
+      variant={variant}
+      className={cn(touchHitAreaClassName, className)}
+      {...props}
+    >
       {children}
       <span className="sr-only">{label || tooltip}</span>
     </Button>
@@ -1366,6 +1384,11 @@ export const MessageResponse = memo(
     );
     const responseClassName = cn(
       "size-full text-ui-base leading-[1.75] tracking-wide [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+      // Bugfix：长无断点 token（长哈希/base64/长 token）会撑破正文容器，在手机 390px 视口
+      // 被时间线 overflow-x-hidden 直接裁掉且无横向滚动可看全文。容器级 wrap-anywhere
+      // （overflow-wrap:anywhere，可继承到行内子元素）让这类内容换行；正常文本在断行前
+      // 就有空格/标点边界，桌面无视觉回归。Streamdown 链接已用同一 wrap-anywhere 工具（走查 chat-7）。
+      "wrap-anywhere",
       className,
     );
     const fallbackClassName = cn(responseClassName, "whitespace-pre-wrap break-words");

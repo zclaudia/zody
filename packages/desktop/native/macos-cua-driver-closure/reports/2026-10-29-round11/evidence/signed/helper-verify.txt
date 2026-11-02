@@ -1,0 +1,2 @@
+/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app: valid on disk
+/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app: satisfies its Designated Requirement

@@ -24,6 +24,22 @@ export function stripSourceMappingUrlComments(source) {
   return source.replace(SOURCE_MAPPING_URL_LINE_RE, "").replace(SOURCE_MAPPING_URL_BLOCK_RE, "");
 }
 
+// cua-narrow 槽内是已签名 Helper，通用 sourcemap 后处理不得写入或删除其中任何文件，
+// 否则会破坏代码签名。普通资源与旧 cua-helper 策略保持不变。
+function isSignedCuaNarrowResourcePath(filePath) {
+  const parts = filePath.split(/[\\/]/);
+  for (let index = 0; index + 2 < parts.length; index += 1) {
+    if (
+      parts[index] === "cua-narrow" &&
+      parts[index + 1].endsWith(".app") &&
+      parts[index + 2] === "Contents"
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function walkFiles(rootDir, visitor) {
   if (!existsSync(rootDir)) {
     return;
@@ -31,6 +47,9 @@ function walkFiles(rootDir, visitor) {
 
   for (const entry of readdirSync(rootDir)) {
     const entryPath = resolve(rootDir, entry);
+    if (isSignedCuaNarrowResourcePath(entryPath)) {
+      continue;
+    }
     const stat = statSync(entryPath);
     if (stat.isDirectory()) {
       walkFiles(entryPath, visitor);

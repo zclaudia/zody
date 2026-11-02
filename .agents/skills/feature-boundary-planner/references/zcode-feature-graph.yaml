@@ -883,6 +883,9 @@ nodes:
       - "电脑控制"
       - "桌面操作"
     docs:
+      - "specs/computer-use-macos-phase1.md"
+      - "docs/design/computer-use-macos-phase1.md"
+      - "docs/plans/computer-use-macos-phase1-implementation.md"
       - "docs/product-capability-map-office-computer-use.md"
       - "docs/cua-permission-broker/zcode-cua-permission-broker.md"
       - "docs/cua-get-app-state-user-title.md"
@@ -895,6 +898,12 @@ nodes:
       - symbol: "OFFICIAL_PLUGIN_DEFINITIONS"
         file: "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
       - file: "apps/zcode-cli/packages/zcode-cua-plugin/skills/computer-use/SKILL.md"
+      - symbol: "createComputerUseRuntime"
+        file: "packages/zcode-cua/index.js"
+      - symbol: "createComputerUseBridgeGlobals"
+        file: "apps/zcode-cli/packages/node-repl-host/src/cua-bridge.ts"
+      - symbol: "createNodeReplCuaBroker"
+        file: "apps/zcode-cli/packages/node-repl-host/src/cua-broker.ts"
 
   - id: "capability.conversation-runtime"
     kind: "capability"
@@ -1667,7 +1676,11 @@ nodes:
       - "remote control"
       - "手机远控"
       - "重连恢复"
+      - "手机通知搜索文件第一批规划"
     docs:
+      - "specs/mobile-remote-control-via-gateway.md"
+      - "specs/mobile-remote-phase1.md"
+      - "docs/plans/mobile-remote-phase1-implementation.md"
       - "docs/web-remote-control/web-remote-control-architecture.md"
       - "docs/web-remote-control/task-realtime-sync.md"
       - "docs/web-remote-control-task-command-queue.md"
@@ -1750,7 +1763,10 @@ nodes:
       - "sticky folders"
       - "文件树"
       - "目录吸顶"
+      - "手机文件浏览规划"
     docs:
+      - "specs/mobile-remote-phase1.md"
+      - "docs/testing/mobile-remote-phase1-cases.md"
       - "docs/ui/workspace-file-tree.md"
       - "docs/testing/workspace-file-tree-e2e-coverage.md"
 
@@ -2230,6 +2246,8 @@ nodes:
       - "手机远控任务首页"
       - "手机任务状态"
     docs:
+      - "specs/mobile-remote-control-via-gateway.md"
+      - "specs/mobile-remote-phase1.md"
       - "docs/web-remote-control/mobile-task-home-design.md"
     codeSeeds:
       - symbol: "WebRemoteControlMobileTaskHome"

@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "/usr/bin/open",
+    "-n",
+    "-W",
+    "-g",
+    "--stdout",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-native-unlocked/app.stdout",
+    "--stderr",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-native-unlocked/app.stderr",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/helper/Zody CUA Helper Round11.app",
+    "--args",
+    "--run-once",
+    "--window-id",
+    "85709",
+    "--pid",
+    "64169",
+    "--layer",
+    "0",
+    "--x",
+    "1454",
+    "--y",
+    "80",
+    "--width",
+    "333",
+    "--height",
+    "222",
+    "--output",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-native-unlocked/zody.png"
+  ],
+  "unchangedSignedCandidate": true,
+  "userUnlocked": "2026-10-30 reply done; existing screen-recording authorization"
+}

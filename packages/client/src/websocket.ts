@@ -99,7 +99,20 @@ export function connectViaWebSocket(
   });
 }
 
-export function connectViaProtocol(protocol: IMessagePassingProtocol): IServiceAccessor {
+export function connectViaProtocol(
+  protocol: IMessagePassingProtocol,
+): IServiceAccessor {
+  return connectViaProtocolOwned(protocol).services;
+}
+
+/** Create remote services together with the owner that releases their pending RPCs. */
+export function connectViaProtocolOwned(protocol: IMessagePassingProtocol): {
+  services: IServiceAccessor;
+  dispose(): void;
+} {
   const client = new ChannelClient(protocol);
-  return new RemoteServiceAccess(client);
+  return {
+    services: new RemoteServiceAccess(client),
+    dispose: () => client.dispose(),
+  };
 }

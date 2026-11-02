@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-desktop-session-derived-source-baseline",
+  "note": "在只读 product-wiring 基线上追加 capture_owner 正常截图不自动 revoke，以及 Stop 事实/在途生命周期派生 patch；严格按序应用。",
+  "productBaseline": "../macos-cua-helper-product-wiring/source-baseline.json",
+  "headers": [
+    {
+      "id": "capture-owner-stop-facts",
+      "file": "src/capture_owner_stop_facts.h",
+      "path": "visual-stop/include/capture_owner_stop_facts.h",
+      "sha256": "4b4b6353b20091c09424d6774803e7affb77923f564cd8db02288a69642aecbe"
+    }
+  ],
+  "patches": [
+    {
+      "id": "capture-owner-no-auto-revoke",
+      "file": "src/capture_owner.mm",
+      "path": "patches/capture-owner-no-auto-revoke.patch",
+      "sha256": "23623df967ea221777d8869120f323f740bae287cb31fa038c7a08de8f7652f5",
+      "beforeSha256": "ccb3e5a3e9ffc375b96ea45b386cbb1b9430d8ab979113646e26661a5174516c",
+      "afterSha256": "66bac542860bb9fbc17ca0e53aca24db5bc53ea2949197e58461b0f293d292be"
+    },
+    {
+      "id": "capture-owner-stop-header",
+      "file": "src/capture_owner.h",
+      "path": "patches/capture-owner-stop-header.patch",
+      "sha256": "254c5a9cdec143519a1e0a3d4dd0f222af3880ebeb5510c2d8e0948a17699f33",
+      "beforeSha256": "a7f6f89a26e2e64a215f2441c68d354460a4d6617959cff8d219a7b38382f14f",
+      "afterSha256": "27f6b59c3c6e7bcb3804790499c836dcd2972ec978040546333ddb1da5553827"
+    },
+    {
+      "id": "capture-owner-stop-lifecycle",
+      "file": "src/capture_owner.mm",
+      "path": "patches/capture-owner-stop-lifecycle.patch",
+      "sha256": "2614f20dc473dd0c1f0bfe337ccc929560f387c0af0e23ffde6665352577ff1a",
+      "beforeSha256": "66bac542860bb9fbc17ca0e53aca24db5bc53ea2949197e58461b0f293d292be",
+      "afterSha256": "db8abff26208a164590919dfdaa138446f88a56c7c6232b59f486a47f7901116"
+    }
+  ]
+}

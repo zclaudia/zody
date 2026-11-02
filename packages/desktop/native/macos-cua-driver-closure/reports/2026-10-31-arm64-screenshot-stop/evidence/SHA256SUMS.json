@@ -1,0 +1,38 @@
+{
+  "createdAt": "2026-10-31T04:57:35.846094+00:00",
+  "evidenceMembersVerified": 68,
+  "evidenceMismatches": [],
+  "sourceMembersVerified": 4275,
+  "sourceMismatches": 0,
+  "acceptanceScope": "arm64/macOS26.6.2 single-window screenshot + real completion-held UI Stop PASS; full Phase1/default enable NOT accepted",
+  "files": {
+    "build-and-stop-evidence.tar.gz": {
+      "bytes": 1398450,
+      "sha256": "eb7bb9f1ed26cd814493a3837dcc2b3bf027a821b6c950d2fe44926339572e9c"
+    },
+    "change-index.json": {
+      "bytes": 491,
+      "sha256": "99bdfeca92c3dcfa816338c96cadade9be325d6641a4d4cddb2ba03f9666de9c"
+    },
+    "prior-product-implementation.patch": {
+      "bytes": 123019,
+      "sha256": "1944b127ec15ca56ac47b127a4c86a8af75668cb1d89a70cf9fa2e9234d1f326"
+    },
+    "source-and-patch-stop-final.tar.gz": {
+      "bytes": 9492636,
+      "sha256": "535b9b95c843f8422ba13ba7eefbe91187e3d822a057c30498205097a0ab9eed"
+    },
+    "source-sha256.json": {
+      "bytes": 617511,
+      "sha256": "e01cf79931f8c493195f7b01765cb76b8612fe6e74a8cac2ccb5ddd7d65454fe"
+    },
+    "status-update.patch": {
+      "bytes": 39639,
+      "sha256": "1081261091c38b6928b7033eb6038f73fd1c31f1f55f116f79879387f660d769"
+    },
+    "candidate-quit-observation.json": {
+      "bytes": 284,
+      "sha256": "e45bd4379d319c8892bb60902198fcb64521e8aa60e64a5852229e27db9fda57"
+    }
+  }
+}

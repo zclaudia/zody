@@ -1,0 +1,86 @@
+{
+  "status": "pass",
+  "outputRoot": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery",
+  "artifact": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/helper/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session",
+  "artifactSha256": "60d55178c97ef40d301ef6982bb5be03deda2044cca0860ac1d99503c1dac493",
+  "architectures": [
+    "arm64"
+  ],
+  "minimumMacOSVersion": "14.2",
+  "entries": [
+    {
+      "name": "host-entry.mjs",
+      "bytes": 40170047,
+      "sha256": "8f0eb2beb78365508d9e16d478e3f050e753a0d6015c4a5f7542776ade6a75f6"
+    },
+    {
+      "name": "cli-entry.mjs",
+      "bytes": 32844777,
+      "sha256": "e3e04379a0f6d197b7ac4f34a2d7e8a0c0db64d05c77a437b427cbfd65480721"
+    },
+    {
+      "name": "session-entry.mjs",
+      "bytes": 32008658,
+      "sha256": "121eefaa6375bb94cabe9d7c50a7fd8c18e9730dfcaaf51aaaaa13fe5b760456"
+    }
+  ],
+  "runtimeExternals": [],
+  "acceptance": {
+    "nativeBuild": "pass",
+    "nativeTests": "pass",
+    "signedHostStartup": "not-verified-by-builder",
+    "signedHostFullLoad": "blocked",
+    "reason": "controller signed-host evidence showed a Node WebAssembly failure; hello or immediate Dispose is not full Host load evidence, and the builder cannot sign or run the Host",
+    "requiredEvidence": "controller signed app start plus a real Host session/tool/network flow; native builder alone cannot supply it",
+    "licenseInventory": "real missing licenses retained per entry/embedded resource; this build does not claim zero missing"
+  },
+  "runtimeCompatibility": {
+    "nodeMode": "--jitless",
+    "webAssemblyAvailable": false,
+    "hostLoad": {
+      "status": "blocked",
+      "reason": "host sealed bundle still contains WebAssembly references; under --jitless they must not be reached at import or request time, and the builder does not claim full Host load"
+    },
+    "networkAdapter": "real node-fetch@3.3.2 installed by host-entry/cli-entry before startup; proxy/custom CA explicitly rejected, no silent direct fallback",
+    "evidence": "output/cua-desktop-session/independent-checks/signed-host-recheck.json"
+  },
+  "candidateFetch": {
+    "name": "node-fetch",
+    "version": "3.3.2",
+    "license": "MIT",
+    "installedBy": [
+      "host-entry.mjs",
+      "cli-entry.mjs"
+    ],
+    "bundledIn": [
+      "host-entry.mjs",
+      "cli-entry.mjs",
+      "session-entry.mjs"
+    ]
+  },
+  "auxiliaryResources": [
+    {
+      "name": "node-repl-server.mjs",
+      "bytes": 3552725,
+      "sha256": "ee616be55c18dfb0cc84ca76c4c98f9606e0e7739a7a956d795fbfef7eb0edc7"
+    }
+  ],
+  "embeddedResources": {
+    "tasksStorageWorker": {
+      "name": "tasks-storage-worker.mjs",
+      "bytes": 1470554,
+      "sha256": "413d0ba493721998d0cf45c79b2a0095d96cdfa4b80c0e3de66eac5a6ecd14f4"
+    },
+    "sessionStorageEntry": {
+      "name": "session-storage-entry.mjs",
+      "bytes": 30879885,
+      "sha256": "dabc7edd880156296b35efafab8368b706956d19a2031a9df352be4916158723"
+    }
+  },
+  "tests": [
+    "session-binding-confirmation:pass",
+    "session-control:pass",
+    "session-capture-file:pass",
+    "session-exit-policy:pass"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "/usr/bin/open",
+    "-n",
+    "-W",
+    "-g",
+    "--stdout",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-native-visible/app.stdout",
+    "--stderr",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-native-visible/app.stderr",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/helper/Zody CUA Helper Round11.app",
+    "--args",
+    "--run-once",
+    "--window-id",
+    "85709",
+    "--pid",
+    "64169",
+    "--layer",
+    "0",
+    "--x",
+    "680",
+    "--y",
+    "76",
+    "--width",
+    "1200",
+    "--height",
+    "800",
+    "--output",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-native-visible/zody.png"
+  ],
+  "unchangedSignedCandidate": true,
+  "targetRaisedViaCUA": true
+}

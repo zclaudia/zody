@@ -1,0 +1,25 @@
+{
+  "observedAt": "2026-10-30T08:21:24.352782+00:00",
+  "candidate": "controller-ui-acceptance",
+  "uiPid": 63970,
+  "targetWindowId": 87532,
+  "method": "controller cua_repl AX observation after real UI Send",
+  "actualModelTurnCompleted": true,
+  "requestedTool": "node_repl js",
+  "modelReportedToolUnavailable": true,
+  "nativePromptObserved": false,
+  "screenshot": false,
+  "stopTest": false,
+  "classification": "actual desktop turn/tool-discovery failure; no native capture attempted",
+  "uiQuit": {
+    "method": "controller CmdQ via cua_repl",
+    "electronExitCode": 0,
+    "trackedPidsAbsent": [
+      63970,
+      64397,
+      64551,
+      64582
+    ],
+    "note": "graceful candidate shutdown after tool unavailable; not native Fenced or screenshot stop acceptance"
+  }
+}

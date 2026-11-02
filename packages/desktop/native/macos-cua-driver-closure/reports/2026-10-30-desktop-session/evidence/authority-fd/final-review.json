@@ -1,0 +1,53 @@
+{
+  "observedAt": "2026-10-30T11:29:22.999381+00:00",
+  "frozenFilesUnchanged": 1309,
+  "zcodeCuaPlaceholder": true,
+  "captureCount": 1,
+  "postStopCaptureDeliveries": 0,
+  "nativeTests": [
+    {
+      "name": "session-binding-confirmation",
+      "status": "pass",
+      "stdout": "ok session-binding-confirmation",
+      "sha256": "8dc8b05cd32e2307c135816047023248a10acb089e778baef69c76eab7f5d1b0"
+    },
+    {
+      "name": "session-control",
+      "status": "pass",
+      "stdout": "ok session-control",
+      "sha256": "e2345419dbc811f8539b5e496387adb9405cbb1f919be09dac68bbb31fee7a83"
+    },
+    {
+      "name": "session-capture-file",
+      "status": "pass",
+      "stdout": "ok session-capture-file",
+      "sha256": "aa3bf9dc2407839a0c95cf22827389c7528b52609396db3123a29d929af06bff"
+    },
+    {
+      "name": "session-authority-fd",
+      "status": "pass",
+      "stdout": "ok session-authority-fd",
+      "sha256": "1adc5e09541791b69966c82121d6e567e7cf08b87a86bbd7f4726b058686dcaa"
+    },
+    {
+      "name": "session-exit-policy",
+      "status": "pass",
+      "stdout": "ok session-exit-policy",
+      "sha256": "b147a642638cc87e1831c330d996626bc3e356868388e8b22639e7767c95b3e9"
+    }
+  ],
+  "checks": [
+    {
+      "check": "typecheck",
+      "exitCode": 0
+    },
+    {
+      "check": "lint",
+      "exitCode": 0
+    },
+    {
+      "check": "architecture",
+      "exitCode": 0
+    }
+  ]
+}

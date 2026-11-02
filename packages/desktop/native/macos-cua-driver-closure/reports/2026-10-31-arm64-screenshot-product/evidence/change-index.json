@@ -1,0 +1,92 @@
+[
+  {
+    "path": "docs/plans/computer-use-macos-phase1-arm64-screenshot.md",
+    "beforeSha256": "2957afec1b2ab6256a37a815f6c10a10cfc1a1ac3235e13ee495255cfc5994c0",
+    "afterSha256": "32b70ac6450ba528994032e0c63441c2287674525a25498328f3d21261ff385d"
+  },
+  {
+    "path": "packages/desktop/electron-builder.config.js",
+    "beforeSha256": "a5c212bf5bd03b6faf6495dd9a995f9aa9da118c0120b97b176866a25a4a2c5b",
+    "afterSha256": "b8a6c4f5f48a156d997530ea71cb50610d524af6df67ee528637a26ed02201c0"
+  },
+  {
+    "path": "packages/desktop/scripts/build-cua-normal-host-candidate.mjs",
+    "beforeSha256": "831e1bf9e9c61c40102922d082f1d3c3774becbc6b3a1009271afe01227a6422",
+    "afterSha256": "ed2438e29aac1ea67451f9235ae14dde78c9a37117e306d3f73ecfe7d751265e"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/cua-desktop-candidate-app-files.mjs",
+    "beforeSha256": "f625eaf798aa246b21d119913a655ddc95e0989f0419f4a6da532052b506ad6d",
+    "afterSha256": "0022dfb95bb41cea9eda866c5469347dd78c14657c6c15ff63f90adb365e3213"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/normal-host-candidate-asar.mjs",
+    "beforeSha256": "14996427c58cc3ad9ec8e041116c579dfccbca9e143c5ad75911b11c3124a890",
+    "afterSha256": "9d01a13a05d8f623c90ec4b1e61a5bd421aeb78b992ae275b9cc519c70495e29"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/normal-host-candidate-identity.mjs",
+    "beforeSha256": "63c55538ac07e32b88f4c354a366fa57fb42979ccdb774da19db96ce762d1251",
+    "afterSha256": "06817714a0323f7e4fe4b912ae73d4f8e634157cdc09df0a37a84144a400701c"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/normal-host-candidate-output.mjs",
+    "beforeSha256": "8c0fb2b4b30f8ad10439a78d80fec7fc902ce960b20e98b085fb9a8a2dda8f58",
+    "afterSha256": "e4174ad3542f51839b4b03894996ace995e845b5df776e09e19ff4ee33792ae2"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-asar-integrity.mjs",
+    "beforeSha256": null,
+    "afterSha256": "666b7c1610b2b3115b838fcf2f3af54d19a15cdf9e1ef5065197dc9455f98c6a"
+  },
+  {
+    "path": "packages/desktop/test/macosAsarIntegrity.test.ts",
+    "beforeSha256": null,
+    "afterSha256": "036e5aeada9006cffeb4265b3fe895317f346823aba783e32f33dcb8c4314be0"
+  },
+  {
+    "path": "packages/desktop/test/normalHostCandidateAssembly.test.ts",
+    "beforeSha256": "ee0bc1b38276b8ad78c9387341ba8491c8cf46ba7f61338655d113d87bd655d2",
+    "afterSha256": "0a84f3d061924c3ae2ac4210caaa5e2ccbf1501f59df0ebc8ebb8f044c276196"
+  },
+  {
+    "path": "packages/desktop/test/normalHostCandidateIdentity.test.ts",
+    "beforeSha256": null,
+    "afterSha256": "3c9abd5a15875ee5cdc3933c21eb868a4b0e7a7474917e564126563497a10308"
+  },
+  {
+    "path": "packages/desktop/test/normalHostCandidateManifest.test.ts",
+    "beforeSha256": null,
+    "afterSha256": "db51604f8a77ee990fb618591bfd15fe8216e653771218019c372e1f08715568"
+  },
+  {
+    "path": "packages/desktop/test/normalHostCandidateProfile.test.ts",
+    "beforeSha256": "0f3220d9dda92cec670f1265983943786abe639c7f2262a6f5a759d30803688c",
+    "afterSha256": "4a39961422d26e480bd905af733678255907d49b3f5f8ed58c631483a36ba937"
+  },
+  {
+    "path": "packages/services/src/zcode-agent/cuaNativeAuditLog.ts",
+    "beforeSha256": null,
+    "afterSha256": "b5015e13d687274640161e8a5e6a2a0a9761cc23908804d2414215c38725b555"
+  },
+  {
+    "path": "packages/services/src/zcode-agent/zcodeAgentProcessManager.ts",
+    "beforeSha256": "ce2014f30818756e49eb9d700285869eb04da95a5c9fee1b56b15ce93170e318",
+    "afterSha256": "71dd2ada38c8f51e4919cac2e48dd85b08dac64dfdba2cd029227316509315bd"
+  },
+  {
+    "path": "packages/services/test/cuaNativeAuditLog.test.ts",
+    "beforeSha256": null,
+    "afterSha256": "33e0ef2ac490a886a5c0a91bb8e013eb32e3338c352265e7764d413d73157cbc"
+  },
+  {
+    "path": "packages/services/test/zcodeAgentProcessManager.test.ts",
+    "beforeSha256": "b180879ef23d69e0313308102fcafeadf788fadbbe9f1c9e663c97fe181b2b20",
+    "afterSha256": "c56d55abb676ac796f7aae6045a55b700e7ae4f77fb908993d819d83a9ea016a"
+  },
+  {
+    "path": "specs/computer-use-macos-phase1.md",
+    "beforeSha256": "f5fdca28409ed5228f4ae6806185b7dfa0d7bf9cdb090e4e861247fc228db44f",
+    "afterSha256": "9366c6906c4e51bf9869e8aba703e4544c925de105ba5944aa1f988ee3a5bc82"
+  }
+]

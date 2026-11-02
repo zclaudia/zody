@@ -1,0 +1,1009 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-desktop-session-native-candidate",
+  "status": "pass",
+  "generatedAt": "2026-10-30T09:01:12.409Z",
+  "unsigned": true,
+  "defaultDisabled": true,
+  "placeholderDefault": true,
+  "signing": {
+    "performed": false,
+    "acceptance": "blocked",
+    "reason": "builder does not sign, alter certificates/TCC, request UI grant, or capture"
+  },
+  "interface": {
+    "stdin": "sealed ESM until EOF",
+    "fd3": "native<->entry NDJSON control; session-ready first",
+    "fd5": "host bridge",
+    "fd6": "CLI input",
+    "fd7": "CLI output",
+    "fd4": "reserved",
+    "entryAllowlist": [
+      "host-entry.mjs",
+      "cli-entry.mjs",
+      "session-entry.mjs"
+    ],
+    "bootstrapPayload": "{}",
+    "captureResultDirection": "native->TS same authority connection, after real release",
+    "nodeSpawn": {
+      "argv": [
+        "--jitless",
+        "--no-warnings",
+        "--input-type=module"
+      ],
+      "stdout": "explicitly inherited under POSIX_SPAWN_CLOEXEC_DEFAULT",
+      "stderr": "explicitly inherited under POSIX_SPAWN_CLOEXEC_DEFAULT",
+      "order": "spawn -> verify loaded code for actual child PID -> write sealed JS to stdin"
+    }
+  },
+  "outputRoot": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery",
+  "app": {
+    "name": "Zody CUA Desktop Session.app",
+    "path": "helper/Zody CUA Desktop Session.app",
+    "bundleIdentifier": "io.github.zclaudia.zody.cua-helper"
+  },
+  "toolchain": {
+    "sdk": {
+      "requested": "macosx27.0",
+      "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "version": "27.0"
+    },
+    "compiler": {
+      "path": "/Library/Developer/CommandLineTools/usr/bin/clang++",
+      "versionFirstLine": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
+    }
+  },
+  "node": {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/Resources/node",
+    "sha256": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+    "version": "v24.14.0",
+    "license": "licenses/node-LICENSE.txt"
+  },
+  "identityPins": {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/identity-pins.json",
+    "values": {
+      "leafSha256": "a7f7afa6a507b71c996f4a9bfbf6eef908d67054acdca93833bcd4c94c13ef0b",
+      "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+      "nodeIdentifier": "io.github.zclaudia.zody.cua-helper.node",
+      "nodeLeafSha256": "a7f7afa6a507b71c996f4a9bfbf6eef908d67054acdca93833bcd4c94c13ef0b",
+      "nodeDesignatedRequirement": "identifier \"io.github.zclaudia.zody.cua-helper.node\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+      "nodeCdhash": "3c57a9bb9f4e8b748ac80d60bc78cdde14767218"
+    }
+  },
+  "sourceStage": {
+    "stageRoot": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source",
+    "productBaseline": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/source-baseline.json",
+    "productStage": {
+      "r11SourceCount": 19,
+      "r10SourceCount": 15,
+      "verifiedCount": 34,
+      "patches": [
+        {
+          "id": "orchestrator-empty-bootstrap",
+          "file": "src/orchestrator.mm",
+          "patchPath": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/patches/orchestrator-empty-bootstrap.patch",
+          "patchSha256": "b729d8dac9dcdf8b12097eaff0ce7cdfdbb02e25478948e965a1504b4886c792",
+          "fuzz": 0,
+          "beforeSha256": "e6230a10c58868000d5f4aace8bcb6a53efee657625854ee5c9308f4dcf6089d",
+          "afterSha256": "1bc70a4c308a10a568ea86195b391ffabff791f8f7e0d467e0bb3248cbbc1b77"
+        },
+        {
+          "id": "orchestrator-helper-result-reason",
+          "file": "src/orchestrator.mm",
+          "patchPath": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/patches/orchestrator-helper-result-reason.patch",
+          "patchSha256": "b5845a60273058f10df48461739d4149cb75b66acbbba5c74422e6cc52cc96d8",
+          "fuzz": 0,
+          "beforeSha256": "1bc70a4c308a10a568ea86195b391ffabff791f8f7e0d467e0bb3248cbbc1b77",
+          "afterSha256": "3d75fd48ab1244560782dc19fa23cdbbabb2447ca803d708cb0d190c431b03ec"
+        },
+        {
+          "id": "node-stderr-observability",
+          "file": "src/node_process.mm",
+          "patchPath": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/patches/node-stderr-observability.patch",
+          "patchSha256": "3a904322b945df0e09ab202dd75e09449f5e0f7b6f48a305386f8c1db22dd242",
+          "fuzz": 0,
+          "beforeSha256": "59e15644f01b5bbcf4816b0e712c999346258ed791f8390f03d7039bf2f9d021",
+          "afterSha256": "8bee72852318fdf64b61114b239a5428c111f46df29766d05aae37048e0aa4cc"
+        }
+      ],
+      "sourceHashes": {
+        "round11/src/authority_client.h": "69544e503b4652804fcd6a1c729dd7fe35a1f6a94101b6a4f4a4227ecc275e93",
+        "round11/src/authority_client.mm": "7274d1b2f79fcaa71e263a1b6a3211cf60f4c05ba4682cf0b581c47bfd84e075",
+        "round11/src/bundle_paths.h": "62d6c52441f5da4a3991a52a35e4ded189bbd47f41e98e08fc24fe0c9a3fc5c9",
+        "round11/src/bundle_paths.mm": "276d43b9c769884c401543e316bad05c06088903c84dfac6ed28a275d646c966",
+        "round11/src/capture_owner.h": "a7f6f89a26e2e64a215f2441c68d354460a4d6617959cff8d219a7b38382f14f",
+        "round11/src/capture_owner.mm": "ccb3e5a3e9ffc375b96ea45b386cbb1b9430d8ab979113646e26661a5174516c",
+        "round11/src/machine_lease.h": "8df297f234a41678c8d052344bb2383eb914a725d7e0af644719aa5cf85cb0f9",
+        "round11/src/machine_lease.mm": "5c16cda5d41837dcb220fc3513c1f722efedbd89c908122be72cbf4b5baf8c1b",
+        "round11/src/main.mm": "085542973ea23b5195f5d56a49acbd5d4e418386c25cd9bb3d159daa613ea2dd",
+        "round11/src/node_process.h": "fefb26ab207fb41a2f3618ace4d07fda00161d98379c1bb04ccfdfc4cbf7220f",
+        "round11/src/node_process.mm": "8bee72852318fdf64b61114b239a5428c111f46df29766d05aae37048e0aa4cc",
+        "round11/src/orchestrator.h": "a62d0510d8dce7a13a396638a5565ac3265b6e32b87390ce3cdf96a7a87d30cd",
+        "round11/src/orchestrator.mm": "3d75fd48ab1244560782dc19fa23cdbbabb2447ca803d708cb0d190c431b03ec",
+        "round11/src/peer_auth.h": "636f3f31af2e657bb4ddeaf50bea3db20b2e92da69fbc467c55f646015e46d23",
+        "round11/src/peer_auth.mm": "f8947693701056e544500aebafddc86307279540834a6fe0f7551a92f7b61142",
+        "round11/src/r11_pins.h": "1be71f6983b4d9e5269df148fe01ac3dab8e63cde9d261405771591510b460b6",
+        "round11/src/r11_pins.mm": "af44e539958d377841ed1f6927e612eeca5523abb0d2737f6d540e4bd9fbcca1",
+        "round11/src/r11_self_identity.h": "f653fd96e7290353670e871295d6b65fce2deacda1bdb8801abc1eea352e1e71",
+        "round11/src/r11_self_identity.mm": "50889c42a208134320ab94eca0998e3def05b362a1fba04cbdb4cd860e83f20f",
+        "r10/src/calibration_profile.h": "8cd9da272de90dba45b807425d164d93d53e04ac2eacc73fd29649b0bb87d80d",
+        "r10/src/cli_common.h": "bb4d4545b0b1a3d5da39222b7cfda0a3fddabde463fd73ad0a98cca5b0b4beff",
+        "r10/src/macho_artifact.h": "85984a0e25d91ee922278ceeddb0e729479ff0b80de19984631f4026314bd833",
+        "r10/src/peer_frame.mm": "263574f244177c3d0c0ae36167ed9ae3d7db8a30a2afc1bcc6eca74fea2b9e2b",
+        "r10/src/peer_internal.h": "aa93a3576ced5d7a5332350cd01e3f4a630da0793ed03ad9d01a5e8cff3220f3",
+        "r10/src/peer_socket.h": "ef29202676e6484ce9cff0c4a32ff109ffb9a139884440bb963d170cb87855f6",
+        "r10/src/peer_socket.mm": "a6e274faf1a6994e67e80bc3855b9b071555b4a8cb7dd216a2ad591237845856",
+        "r10/src/policy.h": "b4bd22644ab26f8ceaf075ca4497f376e7246fb9d529a7d1c381421a6e402d07",
+        "r10/src/profile.h": "143b23a93be081441345bc358bf89cac48743b0d1b68502283bc7c652e6db6f3",
+        "r10/src/profile.mm": "124befc37b4c24eb85abf94cbe28a6241b13240448eadef7199a4dc33ab42c4e",
+        "r10/src/pure_policy.h": "8b2a10e88733dcef61c152e4fd9c49952cc1fa1a1d849babc4a65937bf31a7f0",
+        "r10/src/report.h": "7e0e1227ddb4614b7e4ced8bdfd978c59798cbe080a58544e3172a32d0658b58",
+        "r10/src/security_identity.h": "078e5129ceb343519db24f47b270378d87430713db661636637b3b54a2f2ec4a",
+        "r10/src/security_identity.mm": "fd1f5e62d1bdef5488016a656ffc61c3616b6069eda1ea0a9792c985771b29b2",
+        "r10/src/static_artifact.h": "e148e1e93d622cc664040df46277bab2edb77886e9d9fd7b7cbe3acb063416ad"
+      }
+    },
+    "extraPatch": {
+      "id": "capture-owner-no-auto-revoke",
+      "file": "src/capture_owner.mm",
+      "patchPath": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-desktop-session/patches/capture-owner-no-auto-revoke.patch",
+      "patchSha256": "23623df967ea221777d8869120f323f740bae287cb31fa038c7a08de8f7652f5",
+      "beforeSha256": "ccb3e5a3e9ffc375b96ea45b386cbb1b9430d8ab979113646e26661a5174516c",
+      "afterSha256": "66bac542860bb9fbc17ca0e53aca24db5bc53ea2949197e58461b0f293d292be",
+      "fuzz": 0
+    },
+    "sessionSources": [
+      "confirmation.h",
+      "confirmation.mm",
+      "confirmation_state.h",
+      "confirmation_state.mm",
+      "session_binding.h",
+      "session_binding.mm",
+      "session_capture_file.h",
+      "session_capture_file.mm",
+      "session_control.h",
+      "session_control.mm",
+      "session_exit_policy.h",
+      "session_launcher.h",
+      "session_launcher.mm",
+      "session_main.mm",
+      "session_node_process.h",
+      "session_node_process.mm",
+      "session_supervisor.h",
+      "session_supervisor.mm",
+      "window_identity.h",
+      "window_identity.mm"
+    ],
+    "sessionHashes": {
+      "session/src/confirmation.h": "c082c0b4a4304d211a0730359d77b5d7addd09b82e33a18494b6652490b6fee6",
+      "session/src/confirmation.mm": "57c9d3107b8cd41e61e123b778ecb27e0fc88cce0f75d620f96150bc736b27d5",
+      "session/src/confirmation_state.h": "7e749d3699b88172b71f77cc2e6ea5682e4c97417ac7f0a0808c43b7547c29bc",
+      "session/src/confirmation_state.mm": "f4ed5a2f483255c276b971d48f7c6a64ca1218b2e8a61d14ae222a81e71a6c48",
+      "session/src/session_binding.h": "b1c55ade838210524e35b657fad778a9a01f3233f6c0e5cf0d988936aac97e6a",
+      "session/src/session_binding.mm": "5172f44d0c166fb3aa3e04d9c3e77cc01c474ab76103fe4b0fe48ae3c96951c8",
+      "session/src/session_capture_file.h": "a00ebb9210118ecd9fafac5155f0729a0605813a13cb7979dd09e4d2ad3f4e6d",
+      "session/src/session_capture_file.mm": "d54feb49f1a960f160cbe133600771286f815873c28a7dbfd08ef5306ec68e45",
+      "session/src/session_control.h": "8280269dd23b933f07c112f696d6f3841d0fe621c66101226813d9cf3afacfe7",
+      "session/src/session_control.mm": "d056c53a6ec0d1ca5c877ec41c7ac54cee45c9d63b88bb474b14295bba77f64f",
+      "session/src/session_exit_policy.h": "ebb3d71b1cb428ed361b70640008a9afedcb5a93a0a8375a6ba8a8433442d0be",
+      "session/src/session_launcher.h": "ab6dfb7909a6bb63fe1f8feacfcfb962eb25ddbd8b701d0213a278e7b3e33e02",
+      "session/src/session_launcher.mm": "ad07b4bf306b68ff3acdf68d7d32e3b171f83467f6d622cdbb2124edb3592182",
+      "session/src/session_main.mm": "29d1664c1df2228c234fd182f82e1dcc8f9dbda14482db0bebe5f614253f4b61",
+      "session/src/session_node_process.h": "95e2b8d245ecdc55a79f1572bbe2340839cba1207622441700f66f62dabbcd4b",
+      "session/src/session_node_process.mm": "4f207855d3df2a495f8f23ea3d6b474b49edfee27b1f484d970beb7380d718a6",
+      "session/src/session_supervisor.h": "bcd1afa7197f09892bd566d2d97ffe27c51bc700127b3c46b82f111aa492f3aa",
+      "session/src/session_supervisor.mm": "f3de3a5cdae4e75a7a81ef0b1c49f832bed0659c7f750e8ed4d797080dc2d143",
+      "session/src/window_identity.h": "c2539e7c8c2181b7400dd5a15183689dde66928a5b6c445d5cd2c5dffa955847",
+      "session/src/window_identity.mm": "35f90d6a8c4dae77d4911218fa8005e66024760bbefa8e9d286c44d18aa7e9be"
+    }
+  },
+  "entries": [
+    {
+      "name": "host-entry.mjs",
+      "path": "Contents/Resources/host-entry.mjs",
+      "sha256": "8f0eb2beb78365508d9e16d478e3f050e753a0d6015c4a5f7542776ade6a75f6",
+      "bytes": 40170047,
+      "maxBytes": 67108864,
+      "inputCount": 1038,
+      "runtimeExternals": [],
+      "webAssemblyReferences": {
+        "count": 21,
+        "matches": [
+          {
+            "line": 106450,
+            "snippet": "mod = await WebAssembly.compile(require_llhttp_simd_wasm());"
+          },
+          {
+            "line": 106452,
+            "snippet": "mod = await WebAssembly.compile(llhttpWasmData || require_llhttp_wasm());"
+          },
+          {
+            "line": 106454,
+            "snippet": "return await WebAssembly.instantiate(mod, {"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          },
+          {
+            "line": 167969,
+            "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+          }
+        ]
+      },
+      "licenses": {
+        "packageCount": 18,
+        "missing": [
+          "data-uri-to-buffer"
+        ]
+      }
+    },
+    {
+      "name": "cli-entry.mjs",
+      "path": "Contents/Resources/cli-entry.mjs",
+      "sha256": "e3e04379a0f6d197b7ac4f34a2d7e8a0c0db64d05c77a437b427cbfd65480721",
+      "bytes": 32844777,
+      "maxBytes": 67108864,
+      "inputCount": 3183,
+      "runtimeExternals": [],
+      "webAssemblyReferences": {
+        "count": 18,
+        "matches": [
+          {
+            "line": 134686,
+            "snippet": "const sections = WebAssembly.Module.customSections(module2, \"dylink.0\");"
+          },
+          {
+            "line": 134722,
+            "snippet": "if (descriptor2.wasm instanceof WebAssembly.Module) {"
+          },
+          {
+            "line": 134725,
+            "snippet": "module2 = await WebAssembly.compile(descriptor2.wasm);"
+          },
+          {
+            "line": 134768,
+            "snippet": "const extImports = WebAssembly.Module.imports(module2);"
+          },
+          {
+            "line": 134786,
+            "snippet": "const extExportNames = new Set(WebAssembly.Module.exports(module2).filter((e3) => e3.kind === \"function\").map((e3) => e3.name));"
+          },
+          {
+            "line": 134795,
+            "snippet": "importObj.env.__memory_base = new WebAssembly.Global({ value: \"i32\", mutable: false }, memoryBase);"
+          },
+          {
+            "line": 134797,
+            "snippet": "importObj.env.__table_base = new WebAssembly.Global({ value: \"i32\", mutable: false }, tableBase);"
+          },
+          {
+            "line": 134812,
+            "snippet": "if (resolved instanceof WebAssembly.Global) {"
+          },
+          {
+            "line": 134815,
+            "snippet": "importObj.env[imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+          },
+          {
+            "line": 134819,
+            "snippet": "importObj[\"GOT.mem\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+          },
+          {
+            "line": 134826,
+            "snippet": "importObj[\"GOT.func\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, idx);"
+          },
+          {
+            "line": 134828,
+            "snippet": "importObj[\"GOT.func\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+          },
+          {
+            "line": 134844,
+            "snippet": "const instance = await WebAssembly.instantiate(module2, importObj);"
+          },
+          {
+            "line": 135307,
+            "snippet": "if (options2 instanceof WebAssembly.Module)"
+          },
+          {
+            "line": 135343,
+            "snippet": "if (wasmInput instanceof WebAssembly.Module) {"
+          },
+          {
+            "line": 135346,
+            "snippet": "return WebAssembly.compile(wasmInput);"
+          },
+          {
+            "line": 135350,
+            "snippet": "return WebAssembly.compile(buf);"
+          },
+          {
+            "line": 135415,
+            "snippet": "const instance = await WebAssembly.instantiate(module2, {"
+          }
+        ]
+      },
+      "licenses": {
+        "packageCount": 176,
+        "missing": [
+          "@ai-sdk/provider-utils",
+          "@ai-sdk/provider-utils",
+          "data-uri-to-buffer",
+          "omggif",
+          "parse-bmfont-ascii",
+          "quickjs-wasi"
+        ]
+      }
+    },
+    {
+      "name": "session-entry.mjs",
+      "path": "Contents/Resources/session-entry.mjs",
+      "sha256": "121eefaa6375bb94cabe9d7c50a7fd8c18e9730dfcaaf51aaaaa13fe5b760456",
+      "bytes": 32008658,
+      "maxBytes": 67108864,
+      "inputCount": 3134,
+      "runtimeExternals": [],
+      "webAssemblyReferences": {
+        "count": 18,
+        "matches": [
+          {
+            "line": 107942,
+            "snippet": "const sections = WebAssembly.Module.customSections(module2, \"dylink.0\");"
+          },
+          {
+            "line": 107978,
+            "snippet": "if (descriptor2.wasm instanceof WebAssembly.Module) {"
+          },
+          {
+            "line": 107981,
+            "snippet": "module2 = await WebAssembly.compile(descriptor2.wasm);"
+          },
+          {
+            "line": 108024,
+            "snippet": "const extImports = WebAssembly.Module.imports(module2);"
+          },
+          {
+            "line": 108042,
+            "snippet": "const extExportNames = new Set(WebAssembly.Module.exports(module2).filter((e2) => e2.kind === \"function\").map((e2) => e2.name));"
+          },
+          {
+            "line": 108051,
+            "snippet": "importObj.env.__memory_base = new WebAssembly.Global({ value: \"i32\", mutable: false }, memoryBase);"
+          },
+          {
+            "line": 108053,
+            "snippet": "importObj.env.__table_base = new WebAssembly.Global({ value: \"i32\", mutable: false }, tableBase);"
+          },
+          {
+            "line": 108068,
+            "snippet": "if (resolved instanceof WebAssembly.Global) {"
+          },
+          {
+            "line": 108071,
+            "snippet": "importObj.env[imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+          },
+          {
+            "line": 108075,
+            "snippet": "importObj[\"GOT.mem\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+          },
+          {
+            "line": 108082,
+            "snippet": "importObj[\"GOT.func\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, idx);"
+          },
+          {
+            "line": 108084,
+            "snippet": "importObj[\"GOT.func\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+          },
+          {
+            "line": 108100,
+            "snippet": "const instance = await WebAssembly.instantiate(module2, importObj);"
+          },
+          {
+            "line": 108563,
+            "snippet": "if (options2 instanceof WebAssembly.Module)"
+          },
+          {
+            "line": 108599,
+            "snippet": "if (wasmInput instanceof WebAssembly.Module) {"
+          },
+          {
+            "line": 108602,
+            "snippet": "return WebAssembly.compile(wasmInput);"
+          },
+          {
+            "line": 108606,
+            "snippet": "return WebAssembly.compile(buf);"
+          },
+          {
+            "line": 108671,
+            "snippet": "const instance = await WebAssembly.instantiate(module2, {"
+          }
+        ]
+      },
+      "licenses": {
+        "packageCount": 169,
+        "missing": [
+          "@ai-sdk/provider-utils",
+          "@ai-sdk/provider-utils",
+          "omggif",
+          "parse-bmfont-ascii",
+          "quickjs-wasi"
+        ]
+      }
+    }
+  ],
+  "entryPins": {
+    "host-entry.mjs": "8f0eb2beb78365508d9e16d478e3f050e753a0d6015c4a5f7542776ade6a75f6",
+    "cli-entry.mjs": "e3e04379a0f6d197b7ac4f34a2d7e8a0c0db64d05c77a437b427cbfd65480721",
+    "session-entry.mjs": "121eefaa6375bb94cabe9d7c50a7fd8c18e9730dfcaaf51aaaaa13fe5b760456"
+  },
+  "auxiliaryResources": [
+    {
+      "name": "node-repl-server.mjs",
+      "path": "Contents/Resources/node-repl-server.mjs",
+      "sha256": "ee616be55c18dfb0cc84ca76c4c98f9606e0e7739a7a956d795fbfef7eb0edc7",
+      "bytes": 3552725,
+      "maxBytes": 67108864,
+      "capability": "node-repl-mcp-and-cell-server; cell owns only per-call broker capability",
+      "inputCount": 627,
+      "runtimeExternals": [],
+      "webAssemblyReferences": {
+        "count": 0,
+        "matches": []
+      },
+      "licenses": {
+        "packageCount": 12,
+        "missing": []
+      }
+    }
+  ],
+  "embeddedResources": {
+    "tasksStorageWorker": {
+      "name": "tasks-storage-worker.mjs",
+      "sha256": "413d0ba493721998d0cf45c79b2a0095d96cdfa4b80c0e3de66eac5a6ecd14f4",
+      "bytes": 1470554,
+      "maxBytes": 67108864,
+      "inputCount": 352,
+      "runtimeExternals": [],
+      "webAssemblyReferences": {
+        "count": 0,
+        "matches": []
+      },
+      "licenses": {
+        "packageCount": 1,
+        "missing": []
+      },
+      "embeddedIn": "host-entry.mjs"
+    },
+    "sessionStorageEntry": {
+      "name": "session-storage-entry.mjs",
+      "sha256": "dabc7edd880156296b35efafab8368b706956d19a2031a9df352be4916158723",
+      "bytes": 30879885,
+      "maxBytes": 67108864,
+      "inputCount": 3131,
+      "runtimeExternals": [],
+      "webAssemblyReferences": {
+        "count": 18,
+        "matches": [
+          {
+            "line": 66886,
+            "snippet": "const sections = WebAssembly.Module.customSections(module2, \"dylink.0\");"
+          },
+          {
+            "line": 66922,
+            "snippet": "if (descriptor2.wasm instanceof WebAssembly.Module) {"
+          },
+          {
+            "line": 66925,
+            "snippet": "module2 = await WebAssembly.compile(descriptor2.wasm);"
+          },
+          {
+            "line": 66968,
+            "snippet": "const extImports = WebAssembly.Module.imports(module2);"
+          },
+          {
+            "line": 66986,
+            "snippet": "const extExportNames = new Set(WebAssembly.Module.exports(module2).filter((e2) => e2.kind === \"function\").map((e2) => e2.name));"
+          },
+          {
+            "line": 66995,
+            "snippet": "importObj.env.__memory_base = new WebAssembly.Global({ value: \"i32\", mutable: false }, memoryBase);"
+          },
+          {
+            "line": 66997,
+            "snippet": "importObj.env.__table_base = new WebAssembly.Global({ value: \"i32\", mutable: false }, tableBase);"
+          },
+          {
+            "line": 67012,
+            "snippet": "if (resolved instanceof WebAssembly.Global) {"
+          },
+          {
+            "line": 67015,
+            "snippet": "importObj.env[imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+          },
+          {
+            "line": 67019,
+            "snippet": "importObj[\"GOT.mem\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+          },
+          {
+            "line": 67026,
+            "snippet": "importObj[\"GOT.func\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, idx);"
+          },
+          {
+            "line": 67028,
+            "snippet": "importObj[\"GOT.func\"][imp.name] = new WebAssembly.Global({ value: \"i32\", mutable: true }, 0);"
+          },
+          {
+            "line": 67044,
+            "snippet": "const instance = await WebAssembly.instantiate(module2, importObj);"
+          },
+          {
+            "line": 67507,
+            "snippet": "if (options2 instanceof WebAssembly.Module)"
+          },
+          {
+            "line": 67543,
+            "snippet": "if (wasmInput instanceof WebAssembly.Module) {"
+          },
+          {
+            "line": 67546,
+            "snippet": "return WebAssembly.compile(wasmInput);"
+          },
+          {
+            "line": 67550,
+            "snippet": "return WebAssembly.compile(buf);"
+          },
+          {
+            "line": 67615,
+            "snippet": "const instance = await WebAssembly.instantiate(module2, {"
+          }
+        ]
+      },
+      "licenses": {
+        "packageCount": 169,
+        "missing": [
+          "@ai-sdk/provider-utils",
+          "@ai-sdk/provider-utils",
+          "omggif",
+          "parse-bmfont-ascii",
+          "quickjs-wasi"
+        ]
+      },
+      "embeddedIn": "host-entry.mjs"
+    }
+  },
+  "candidateFetch": {
+    "name": "node-fetch",
+    "version": "3.3.2",
+    "license": "MIT",
+    "importSpecifier": "node-fetch",
+    "installedBy": [
+      "host-entry.mjs",
+      "cli-entry.mjs"
+    ],
+    "bundledIn": [
+      "host-entry.mjs",
+      "cli-entry.mjs",
+      "session-entry.mjs"
+    ],
+    "packageDir": "/Users/zhvala/SourceCode/zody/node_modules/node-fetch",
+    "packageJson": {
+      "path": "/Users/zhvala/SourceCode/zody/node_modules/node-fetch/package.json",
+      "sha256": "058acbc2474901ffa0b95c3f9d0903111426b118b55f928300e448d7252fc27d"
+    },
+    "licenseFile": {
+      "path": "/Users/zhvala/SourceCode/zody/node_modules/node-fetch/LICENSE.md",
+      "sha256": "3e2c11dcf3f17ab585baab8faba54772d7872f1c6e026022acd4b4006665efb0"
+    },
+    "lockfile": {
+      "path": "/Users/zhvala/SourceCode/zody/pnpm-lock.yaml",
+      "sha256": "2bcb062615fb1ec80565833c5b80b056005121a58310fa21baf306ef6bb93b07",
+      "resolution": "node-fetch@3.3.2",
+      "note": "workspace transitive resolution; bundle records actual inputs and hashes"
+    },
+    "entries": {
+      "host-entry.mjs": {
+        "bundleSha256": "8f0eb2beb78365508d9e16d478e3f050e753a0d6015c4a5f7542776ade6a75f6",
+        "bundleBytes": 40170047,
+        "inputs": [
+          {
+            "path": "node_modules/fetch-blob/file.js",
+            "sha256": "c8bcea7adb270e2dbfa1bea29e149fd22214b26210641b479d5ce90af410cd78"
+          },
+          {
+            "path": "node_modules/fetch-blob/from.js",
+            "sha256": "8083ba1d38737d94fe02d51255a5b827f3f2a83894764f60c3a2f3bc28ea96e8"
+          },
+          {
+            "path": "node_modules/fetch-blob/index.js",
+            "sha256": "5b56afbb2cc10d38ed6631954e17e4dfa90322b688bef7c0db3a2bda6c901587"
+          },
+          {
+            "path": "node_modules/fetch-blob/streams.cjs",
+            "sha256": "15fb4df5ad63eb35c7b00f7ffacc41848ae9c77e3d9fc7ff7ce229908d7752ae"
+          },
+          {
+            "path": "node_modules/formdata-polyfill/esm.min.js",
+            "sha256": "20c154d9698bdaaeb4101be7eb40dca8173afa264597889617826209219fa8aa"
+          },
+          {
+            "path": "node_modules/node-domexception/index.js",
+            "sha256": "3e6a21f8571491212953eacf1df4024371f45f4bee6bca1994504ff26636e2bd"
+          },
+          {
+            "path": "node_modules/node-fetch/node_modules/data-uri-to-buffer/dist/index.js",
+            "sha256": "2600a836f11329477b5be94145cdb95a7b4888a5acb60851b1276beab3d9e29a"
+          },
+          {
+            "path": "node_modules/node-fetch/src/body.js",
+            "sha256": "d020a3939fb74cc090b9f1bbbc9c911ca08bb63ea4ddf7f7e51fd7a9c727809d"
+          },
+          {
+            "path": "node_modules/node-fetch/src/errors/abort-error.js",
+            "sha256": "d6d4901c84d535e7290a21990a34695e38610b39cb7656f9d5b09f5992d6a1f4"
+          },
+          {
+            "path": "node_modules/node-fetch/src/errors/base.js",
+            "sha256": "daa8a93e18a486104cd90447a8a578e05f99556313920205af0febf0738d4239"
+          },
+          {
+            "path": "node_modules/node-fetch/src/errors/fetch-error.js",
+            "sha256": "00f6fb52638c718611c25eb0483045202604449abe13ce71368da8a137061b38"
+          },
+          {
+            "path": "node_modules/node-fetch/src/headers.js",
+            "sha256": "eeed838f73cfb5915df245da11c9450134d14529acab3ffa5307c48ca2f9f39e"
+          },
+          {
+            "path": "node_modules/node-fetch/src/index.js",
+            "sha256": "e0a76062a308610126191bb288925470a2fb84fbbe5c913b444165d64fd9c4b5"
+          },
+          {
+            "path": "node_modules/node-fetch/src/request.js",
+            "sha256": "4a57dfc72f98d37646d7d0b464ad6157700fc875116618cb7af40238d0cbae4c"
+          },
+          {
+            "path": "node_modules/node-fetch/src/response.js",
+            "sha256": "c80a8b52cf1cd498382b28eff8033910bd941a3ec90fb64eaa80359e366bc475"
+          },
+          {
+            "path": "node_modules/node-fetch/src/utils/get-search.js",
+            "sha256": "36c03bb646f180b55509f27c29322a7bcc7429522eeffc31de92fbfaa6d16300"
+          },
+          {
+            "path": "node_modules/node-fetch/src/utils/is-redirect.js",
+            "sha256": "c7daf781e794df6d6374b162ac0a6b6a129abe717f652ba1cbb3963e80ac3e5d"
+          },
+          {
+            "path": "node_modules/node-fetch/src/utils/is.js",
+            "sha256": "cffc99b6cfbf9efe5feaa9a921d4ed77fec43cb7e946dad28322c7cc3017c25c"
+          },
+          {
+            "path": "node_modules/node-fetch/src/utils/multipart-parser.js",
+            "sha256": "71a98e3306e3188e4d5c3b6bc6038697eb666eae831bd164abf59ba8982e8bb9"
+          },
+          {
+            "path": "node_modules/node-fetch/src/utils/referrer.js",
+            "sha256": "faa38a719154c59db7689f51414a16e0ffc10cfe4a024a23a4a5cdcae88272b0"
+          },
+          {
+            "path": "node_modules/web-streams-polyfill/dist/ponyfill.es2018.js",
+            "sha256": "a08d04713a8bf455e3668dc8b65c370b8f45d8652246c6ceb9523aa5adac037f"
+          }
+        ]
+      },
+      "cli-entry.mjs": {
+        "bundleSha256": "e3e04379a0f6d197b7ac4f34a2d7e8a0c0db64d05c77a437b427cbfd65480721",
+        "bundleBytes": 32844777,
+        "inputs": [
+          {
+            "path": "apps/zcode-cli/packages/adapters/node_modules/data-uri-to-buffer/dist/common.js",
+            "sha256": "d5e5a5db5c7791cd378eb8ffd704a82b4c08d48a029e4250594d3d30e266bc07"
+          },
+          {
+            "path": "apps/zcode-cli/packages/adapters/node_modules/data-uri-to-buffer/dist/node.js",
+            "sha256": "1f635887e9e64ef19f1342ee0bb7734563a7acfee2058be66f6e695a7a02a3d7"
+          },
+          {
+            "path": "node_modules/fetch-blob/file.js",
+            "sha256": "c8bcea7adb270e2dbfa1bea29e149fd22214b26210641b479d5ce90af410cd78"
+          },
+          {
+            "path": "node_modules/fetch-blob/from.js",
+            "sha256": "8083ba1d38737d94fe02d51255a5b827f3f2a83894764f60c3a2f3bc28ea96e8"
+          },
+          {
+            "path": "node_modules/fetch-blob/index.js",
+            "sha256": "5b56afbb2cc10d38ed6631954e17e4dfa90322b688bef7c0db3a2bda6c901587"
+          },
+          {
+            "path": "node_modules/fetch-blob/streams.cjs",
+            "sha256": "15fb4df5ad63eb35c7b00f7ffacc41848ae9c77e3d9fc7ff7ce229908d7752ae"
+          },
+          {
+            "path": "node_modules/formdata-polyfill/esm.min.js",
+            "sha256": "20c154d9698bdaaeb4101be7eb40dca8173afa264597889617826209219fa8aa"
+          },
+          {
+            "path": "node_modules/node-domexception/index.js",
+            "sha256": "3e6a21f8571491212953eacf1df4024371f45f4bee6bca1994504ff26636e2bd"
+          },
+          {
+            "path": "node_modules/node-fetch/node_modules/data-uri-to-buffer/dist/index.js",
+            "sha256": "2600a836f11329477b5be94145cdb95a7b4888a5acb60851b1276beab3d9e29a"
+          },
+          {
+            "path": "node_modules/node-fetch/src/body.js",
+            "sha256": "d020a3939fb74cc090b9f1bbbc9c911ca08bb63ea4ddf7f7e51fd7a9c727809d"
+          },
+          {
+            "path": "node_modules/node-fetch/src/errors/abort-error.js",
+            "sha256": "d6d4901c84d535e7290a21990a34695e38610b39cb7656f9d5b09f5992d6a1f4"
+          },
+          {
+            "path": "node_modules/node-fetch/src/errors/base.js",
+            "sha256": "daa8a93e18a486104cd90447a8a578e05f99556313920205af0febf0738d4239"
+          },
+          {
+            "path": "node_modules/node-fetch/src/errors/fetch-error.js",
+            "sha256": "00f6fb52638c718611c25eb0483045202604449abe13ce71368da8a137061b38"
+          },
+          {
+            "path": "node_modules/node-fetch/src/headers.js",
+            "sha256": "eeed838f73cfb5915df245da11c9450134d14529acab3ffa5307c48ca2f9f39e"
+          },
+          {
+            "path": "node_modules/node-fetch/src/index.js",
+            "sha256": "e0a76062a308610126191bb288925470a2fb84fbbe5c913b444165d64fd9c4b5"
+          },
+          {
+            "path": "node_modules/node-fetch/src/request.js",
+            "sha256": "4a57dfc72f98d37646d7d0b464ad6157700fc875116618cb7af40238d0cbae4c"
+          },
+          {
+            "path": "node_modules/node-fetch/src/response.js",
+            "sha256": "c80a8b52cf1cd498382b28eff8033910bd941a3ec90fb64eaa80359e366bc475"
+          },
+          {
+            "path": "node_modules/node-fetch/src/utils/get-search.js",
+            "sha256": "36c03bb646f180b55509f27c29322a7bcc7429522eeffc31de92fbfaa6d16300"
+          },
+          {
+            "path": "node_modules/node-fetch/src/utils/is-redirect.js",
+            "sha256": "c7daf781e794df6d6374b162ac0a6b6a129abe717f652ba1cbb3963e80ac3e5d"
+          },
+          {
+            "path": "node_modules/node-fetch/src/utils/is.js",
+            "sha256": "cffc99b6cfbf9efe5feaa9a921d4ed77fec43cb7e946dad28322c7cc3017c25c"
+          },
+          {
+            "path": "node_modules/node-fetch/src/utils/multipart-parser.js",
+            "sha256": "71a98e3306e3188e4d5c3b6bc6038697eb666eae831bd164abf59ba8982e8bb9"
+          },
+          {
+            "path": "node_modules/node-fetch/src/utils/referrer.js",
+            "sha256": "faa38a719154c59db7689f51414a16e0ffc10cfe4a024a23a4a5cdcae88272b0"
+          },
+          {
+            "path": "node_modules/web-streams-polyfill/dist/ponyfill.es2018.js",
+            "sha256": "a08d04713a8bf455e3668dc8b65c370b8f45d8652246c6ceb9523aa5adac037f"
+          }
+        ]
+      },
+      "session-entry.mjs": {
+        "bundleSha256": "121eefaa6375bb94cabe9d7c50a7fd8c18e9730dfcaaf51aaaaa13fe5b760456",
+        "bundleBytes": 32008658,
+        "inputs": [
+          {
+            "path": "apps/zcode-cli/packages/adapters/node_modules/data-uri-to-buffer/dist/common.js",
+            "sha256": "d5e5a5db5c7791cd378eb8ffd704a82b4c08d48a029e4250594d3d30e266bc07"
+          },
+          {
+            "path": "apps/zcode-cli/packages/adapters/node_modules/data-uri-to-buffer/dist/node.js",
+            "sha256": "1f635887e9e64ef19f1342ee0bb7734563a7acfee2058be66f6e695a7a02a3d7"
+          }
+        ]
+      }
+    }
+  },
+  "acceptance": {
+    "nativeBuild": "pass",
+    "nativeTests": "pass",
+    "signedHostStartup": "not-verified-by-builder",
+    "signedHostFullLoad": "blocked",
+    "reason": "controller signed-host evidence showed a Node WebAssembly failure; hello or immediate Dispose is not full Host load evidence, and the builder cannot sign or run the Host",
+    "requiredEvidence": "controller signed app start plus a real Host session/tool/network flow; native builder alone cannot supply it",
+    "licenseInventory": "real missing licenses retained per entry/embedded resource; this build does not claim zero missing"
+  },
+  "runtimeCompatibility": {
+    "nodeMode": "--jitless",
+    "webAssemblyAvailable": false,
+    "hostLoad": {
+      "status": "blocked",
+      "reason": "host sealed bundle still contains WebAssembly references; under --jitless they must not be reached at import or request time, and the builder does not claim full Host load"
+    },
+    "networkAdapter": "real node-fetch@3.3.2 installed by host-entry/cli-entry before startup; proxy/custom CA explicitly rejected, no silent direct fallback",
+    "evidence": "output/cua-desktop-session/independent-checks/signed-host-recheck.json"
+  },
+  "closureBoundary": {
+    "pureJavaScript": "inlined by esbuild; no runtime package resolution",
+    "runtimeExternals": [],
+    "requireBase": "process.execPath (signed Node), never process.cwd()",
+    "nodeReplCell": {
+      "serverPathSource": "process.execPath sibling node-repl-server.mjs, sha256 verified by cli-entry",
+      "toctou": "hash verification and cell exec are separate path operations; not closed this round",
+      "authorityFd": "cell does not inherit the authority fd; per-call broker capability only",
+      "claim": "not full D06 isolation"
+    },
+    "unsupportedNativeCapabilities": {
+      "bufferutil": {
+        "capability": "optional-native-ws-buffer",
+        "shim": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-desktop-session/runtime/unsupported-bufferutil.cjs",
+        "sha256": "90b9c49cdd1924706abbcf9f10a1771626973c5bb2d82ef831fc9499398e6109"
+      },
+      "koffi": {
+        "capability": "win32-only-ffi",
+        "shim": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/koffi-unavailable-darwin.mjs",
+        "sha256": "3e61791e3482451848295cfd1d1dd5bb96ee3845b057f84917090fc190a43f08"
+      },
+      "node-pty": {
+        "capability": "terminal",
+        "shim": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-desktop-session/runtime/unsupported-node-pty.cjs",
+        "sha256": "964aefe6034720f945f39577d2f06e888b713899a7843985eca509bf81884231"
+      },
+      "ssh2": {
+        "capability": "ssh-remote",
+        "shim": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-desktop-session/runtime/unsupported-ssh2.cjs",
+        "sha256": "3e240ea0f3c843f3a0f9b5a1dab5ac6f53bb4578e7378376eaa425cd110964e7"
+      },
+      "utf-8-validate": {
+        "capability": "optional-native-ws-validation",
+        "shim": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-desktop-session/runtime/unsupported-utf-8-validate.cjs",
+        "sha256": "64eea5db850da1f401cb3fa5b9dcd3fa5fe07e5213d39f7196329d19fc93250c"
+      }
+    },
+    "notClaimed": [
+      "full Host dependency closure",
+      "node-pty terminal",
+      "ssh2 remote transport",
+      "optional native ws accelerators",
+      "Node builtin fetch/undici model-session network readiness under --jitless",
+      "full D06 cell isolation",
+      "signed or TCC-authorized acceptance"
+    ]
+  },
+  "build": {
+    "command": "/Library/Developer/CommandLineTools/usr/bin/clang++ -std=c++17 -x objective-c++ -fobjc-arc -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mmacosx-version-min=14.2 -O2 -Wall -Wextra -Werror -DCUA_R11_HAVE_VISUAL -I /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src -I /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/r10/src -I /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src -I /Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/confirmation_state.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/confirmation.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/session_binding.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/window_identity.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/session_node_process.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/session_capture_file.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/session_control.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/session_launcher.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/session_supervisor.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/session_main.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/authority_client.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/bundle_paths.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/capture_owner.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/machine_lease.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/peer_auth.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/src/r11_self_identity.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/r10/src/peer_socket.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/r10/src/peer_frame.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/r10/src/security_identity.mm /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/source/r10/src/profile.mm -x none /Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib/libcua_macos_visual_round11.a -L /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift -Wl,-rpath,/usr/lib/swift -liconv -lbsm -framework Foundation -framework Security -framework CoreFoundation -framework CoreGraphics -framework ScreenCaptureKit -framework AppKit -o /Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/app/Contents/MacOS/macos-cua-desktop-session",
+    "warnings": "",
+    "target": {
+      "architecture": "arm64",
+      "minimumMacOSVersion": "14.2"
+    }
+  },
+  "artifact": {
+    "path": "helper/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session",
+    "absolutePath": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/helper/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session",
+    "sha256": "60d55178c97ef40d301ef6982bb5be03deda2044cca0860ac1d99503c1dac493",
+    "sizeBytes": 5373240,
+    "architectures": [
+      "arm64"
+    ],
+    "minosValues": [
+      "14.2"
+    ],
+    "rpaths": [
+      "/usr/lib/swift"
+    ],
+    "linked": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/helper/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session:\n\t/usr/lib/libiconv.2.dylib (compatibility version 7.0.0, current version 7.0.0)\n\t/usr/lib/libbsm.0.dylib (compatibility version 1.0.0, current version 1.0.0)\n\t/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 5027.0.69)\n\t/System/Library/Frameworks/Security.framework/Versions/A/Security (compatibility version 1.0.0, current version 62460.1.2)\n\t/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 5027.0.69)\n\t/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics (compatibility version 64.0.0, current version 2050.0.0)\n\t/System/Library/Frameworks/ScreenCaptureKit.framework/Versions/A/ScreenCaptureKit (compatibility version 1.0.0, current version 1.0.0)\n\t/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit (compatibility version 45.0.0, current version 2775.10.103)\n\t/usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0)\n\t/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 2200.27.0)\n\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1359.0.0)\n\t/usr/lib/swift/libswiftAVFoundation.dylib (compatibility version 1.0.0, current version 2450.77.5, weak)\n\t/usr/lib/swift/libswiftCore.dylib (compatibility version 0.0.0, current version 0.0.0)\n\t/usr/lib/swift/libswiftCoreAudio.dylib (compatibility version 1.0.0, current version 482.102.10, weak)\n\t/usr/lib/swift/libswiftCoreFoundation.dylib (compatibility version 1.0.0, current version 120.100.0, weak)\n\t/usr/lib/swift/libswiftCoreImage.dylib (compatibility version 1.0.0, current version 3.0.0, weak)\n\t/usr/lib/swift/libswiftCoreMIDI.dylib (compatibility version 1.0.0, current version 6.0.0, weak)\n\t/usr/lib/swift/libswiftDarwin.dylib (compatibility version 1.0.0, current version 428.0.10, weak)\n\t/usr/lib/swift/libswiftDispatch.dylib (compatibility version 1.0.0, current version 1605.0.2, weak)\n\t/usr/lib/swift/libswiftIOKit.dylib (compatibility version 1.0.0, current version 1.0.0, weak)\n\t/usr/lib/swift/libswiftMetal.dylib (compatibility version 1.0.0, current version 382.5.3, weak)\n\t/usr/lib/swift/libswiftOSLog.dylib (compatibility version 1.0.0, current version 10.0.0, weak)\n\t/usr/lib/swift/libswiftObjectiveC.dylib (compatibility version 1.0.0, current version 973.1.0, weak)\n\t/usr/lib/swift/libswiftQuartzCore.dylib (compatibility version 1.0.0, current version 5.0.0, weak)\n\t/usr/lib/swift/libswiftSpatial.dylib (compatibility version 1.0.0, current version 1.0.0, weak)\n\t/usr/lib/swift/libswiftUniformTypeIdentifiers.dylib (compatibility version 1.0.0, current version 917.0.1, weak)\n\t/usr/lib/swift/libswiftXPC.dylib (compatibility version 1.0.0, current version 167.0.2, weak)\n\t/usr/lib/swift/libswiftos.dylib (compatibility version 1.0.0, current version 1090.0.0, weak)\n\t/usr/lib/swift/libswiftsimd.dylib (compatibility version 1.0.0, current version 25.0.0, weak)\n\t/usr/lib/swift/libswiftCoreGraphics.dylib (compatibility version 1.0.0, current version 1.0.0)\n"
+  },
+  "resources": {
+    "staticlib": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib/libcua_macos_visual_round11.a",
+      "sha256": "d29c63e84c43c7e7b9495ffeea37f08f2a0e5bc6015243b4a368f17060bb459e"
+    },
+    "visualHeader": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib/cua_r11_visual.h",
+      "sha256": "7b0a4f85815190272cec8ef04baa9b85a5c4b661fc3c7e2bb84725d58498f0b2"
+    },
+    "infoPlist": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/helper/Zody CUA Desktop Session.app/Contents/Info.plist",
+      "sha256": "2e2720b0211f06e588438f3172ae83a028f30ad4bd01ca9291e2096b68ab5cc6"
+    },
+    "pinsHeader": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/cua_desktop_session_pins.h",
+      "sha256": "bca0020c11c5b3ce3023ab4ba43b6deabf01e7014c81511c9ba0a0708039fe0d",
+      "note": "build stage only; not distributed"
+    },
+    "entryAuditRoot": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/audit"
+  },
+  "tests": [
+    {
+      "name": "session-binding-confirmation",
+      "status": "pass",
+      "stdout": "ok session-binding-confirmation",
+      "sha256": "8dc8b05cd32e2307c135816047023248a10acb089e778baef69c76eab7f5d1b0"
+    },
+    {
+      "name": "session-control",
+      "status": "pass",
+      "stdout": "ok session-control",
+      "sha256": "e2345419dbc811f8539b5e496387adb9405cbb1f919be09dac68bbb31fee7a83"
+    },
+    {
+      "name": "session-capture-file",
+      "status": "pass",
+      "stdout": "ok session-capture-file",
+      "sha256": "aa3bf9dc2407839a0c95cf22827389c7528b52609396db3123a29d929af06bff"
+    },
+    {
+      "name": "session-exit-policy",
+      "status": "pass",
+      "stdout": "ok session-exit-policy",
+      "sha256": "b147a642638cc87e1831c330d996626bc3e356868388e8b22639e7767c95b3e9"
+    }
+  ]
+}

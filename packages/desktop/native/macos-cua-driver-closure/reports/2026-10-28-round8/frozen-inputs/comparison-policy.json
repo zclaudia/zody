@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 2,
+  "kind": "zody-cua-driver-closure-comparison-policy",
+  "baseline": {
+    "reportPath": "reports/2026-10-28-round7/report.json.gz",
+    "sha256": "2678c734af8c072b12d91081acfbc8aa52b6c56a9c761b6f3f6fff9037498cd2",
+    "revision": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+    "sourceRoot": "libs/cua-driver/rust",
+    "target": "aarch64-apple-darwin",
+    "package": "cua-driver-sdk",
+    "reviewConfigSha256": "73171d6112f54c2541f2905f96310e04c3d5b15e49c313d5484b354ecf359ac0",
+    "sourceManifestSha256": "53fc08d9835f27c07ae756f93a345b9d0a0cf6d9197aa01db03796fc605f5267",
+    "sourceFileCount": 753,
+    "graphPackageCount": 259,
+    "lockEntryCount": 569,
+    "lockChecksumEntries": 558,
+    "license": {
+      "packageCount": 259,
+      "missing": 13,
+      "partial": 1,
+      "reviewRequired": 0,
+      "mpl": 0
+    },
+    "supplements": {
+      "manifestPath": "round7/license-supplements/manifest.json",
+      "manifestSha256": "9683d541d692cdeddf3c7b2f5d80a96bf5f965e03bc91d7ba553575f13c7b487",
+      "entryCount": 15,
+      "sourceRevision": "2d2f99228d4d2508dc6fcc84c176b296e146714a"
+    }
+  },
+  "candidate": {
+    "revision": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+    "sourceRoot": "libs/cua-driver/rust",
+    "target": "aarch64-apple-darwin",
+    "package": "cua-macos-visual"
+  },
+  "rootTransition": {
+    "fromPackage": "cua-driver-sdk",
+    "toPackage": "cua-macos-visual",
+    "revision": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+    "sourceRoot": "libs/cua-driver/rust",
+    "target": "aarch64-apple-darwin",
+    "functionalEquivalent": false,
+    "interfaceEquivalent": "not-established",
+    "abiEquivalent": "not-established",
+    "toolEquivalent": "not-established",
+    "legacyRootUncompiled": true,
+    "scopeChanges": {
+      "removedFromCandidateGraph": [
+        "cua-driver-sdk",
+        "cua-driver-core",
+        "platform-macos",
+        "clipboard-rs",
+        "cursor-overlay",
+        "pip-preview",
+        "cua-cursor-motion",
+        "rquickjs",
+        "rquickjs-core",
+        "rquickjs-sys",
+        "quickjs",
+        "quickjs-ng",
+        "rego",
+        "regorus",
+        "uniffi"
+      ],
+      "baselineOnlyFeaturePackages": ["cua-driver-core", "platform-macos"]
+    }
+  },
+  "excludedPackages": [
+    "cua-driver-sdk",
+    "cua-driver-core",
+    "platform-macos",
+    "clipboard-rs",
+    "cursor-overlay",
+    "pip-preview",
+    "cua-cursor-motion",
+    "rquickjs",
+    "rquickjs-core",
+    "rquickjs-sys",
+    "quickjs",
+    "quickjs-ng",
+    "rego",
+    "regorus",
+    "uniffi"
+  ],
+  "excludedPackagePrefixes": ["uniffi_"],
+  "forbiddenFeatures": ["zody-dev-probe", "zody-dev-no-input", "zody-strict-frame-gate"],
+  "featureScope": {
+    "baselineOnly": [
+      {
+        "package": "cua-driver-core",
+        "required": ["yaml"],
+        "forbidden": ["script", "rego"]
+      },
+      {
+        "package": "platform-macos",
+        "required": ["zody-dev-no-input", "zody-strict-frame-gate"],
+        "forbidden": ["zody-dev-probe"]
+      }
+    ]
+  },
+  "productAdoption": "blocked",
+  "legalConclusion": "not-made"
+}

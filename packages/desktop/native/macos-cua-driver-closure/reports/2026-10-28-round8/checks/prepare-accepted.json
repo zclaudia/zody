@@ -1,0 +1,49 @@
+{
+  "status": "candidate-rebuilt",
+  "output": "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/candidate-work/controller-accepted/full-source",
+  "base": {
+    "fileCount": 753,
+    "treeSha256": "f110f6466d06036ff9a028c7e35bd4f3b6fe312b67607c2a3f930f1c250f8d48"
+  },
+  "candidate": {
+    "fileCount": 767,
+    "treeSha256": "4cbad8776947504f9883bf5370d6802177090d7a01075c5640b64a730950d9de"
+  },
+  "patch": {
+    "path": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-driver-closure/round8/candidate-source.patch",
+    "sha256": "9117756a71b9324cd0444848692a973a3c86972e9f8763470f6c5c5c529f9ed8",
+    "bytes": 85499
+  },
+  "sourceManifestSha256": "2e6311683b23ed5d33470202d70fcaab313a60fe0fae01b116c3408a19f905bb",
+  "reviewConfigSha256": "4f54251b2eca301106d7f0600d9d86f4f0855fcde91d8bd3c937d0deab2cc58b",
+  "delta": {
+    "modified": [
+      "Cargo.lock",
+      "Cargo.toml"
+    ],
+    "added": [
+      "crates/cua-macos-visual/build.rs",
+      "crates/cua-macos-visual/Cargo.toml",
+      "crates/cua-macos-visual/LICENSE-MIT",
+      "crates/cua-macos-visual/PROVENANCE.md",
+      "crates/cua-macos-visual/src/capture.rs",
+      "crates/cua-macos-visual/src/error.rs",
+      "crates/cua-macos-visual/src/geometry_tests.rs",
+      "crates/cua-macos-visual/src/geometry.rs",
+      "crates/cua-macos-visual/src/lib.rs",
+      "crates/cua-macos-visual/src/observe.rs",
+      "crates/cua-macos-visual/src/png.rs",
+      "crates/cua-macos-visual/src/swift_link.rs",
+      "crates/cua-macos-visual/src/window.rs",
+      "crates/cua-macos-visual/tests/pure_visual.rs"
+    ],
+    "removed": []
+  },
+  "dependencyPolicy": {
+    "visualRoot": "crates/cua-macos-visual",
+    "preservedFeatures": [
+      "zody-dev-no-input",
+      "zody-strict-frame-gate"
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-driver-closure-comparison-policy",
+  "baseline": {
+    "reportPath": "reports/2026-10-28/report.json.gz",
+    "sha256": "edd486bce8b588211526907f8510fa19fed91d37bfb9b1d60f4c76d8ef53fe79",
+    "revision": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+    "sourceRoot": "libs/cua-driver/rust",
+    "reviewConfigSha256": "47b34fa4435d441be6b85fe719ac8ce0ab37b2c5fa419760f149348a49c5c65f",
+    "sourceManifestSha256": "8903b3423ff2ddcd91b738a3d758f4d567c1c96513e0f3fc3a013e48fd063586",
+    "sourceFileCount": 752,
+    "graphPackageCount": 298,
+    "lockEntryCount": 569,
+    "lockChecksumEntries": 558,
+    "license": {
+      "packageCount": 298,
+      "missing": 14,
+      "partial": 2,
+      "reviewRequired": 6,
+      "mpl": 6
+    },
+    "supplements": {
+      "manifestPath": "license-supplements/manifest.json",
+      "manifestSha256": "6b75bf6283798de5d363835e6db41a0ff92948d3f47dac9034807d5f1e0515c8",
+      "entryCount": 22,
+      "sourceRevision": "2d2f99228d4d2508dc6fcc84c176b296e146714a"
+    }
+  },
+  "candidate": {
+    "revision": "2d2f99228d4d2508dc6fcc84c176b296e146714a",
+    "sourceRoot": "libs/cua-driver/rust",
+    "target": "aarch64-apple-darwin",
+    "package": "cua-driver-sdk"
+  },
+  "excludedPackages": ["rquickjs", "rquickjs-core", "rquickjs-sys", "regorus", "uniffi"],
+  "excludedPackagePrefixes": ["uniffi_"],
+  "coreFeatures": {
+    "package": "cua-driver-core",
+    "required": ["yaml"],
+    "forbidden": ["script", "rego"]
+  },
+  "platformFeatures": {
+    "package": "platform-macos",
+    "required": ["zody-dev-no-input", "zody-strict-frame-gate"],
+    "forbidden": ["zody-dev-probe"]
+  },
+  "productAdoption": "blocked",
+  "legalConclusion": "not-made",
+  "forbiddenFeatures": ["zody-dev-probe"]
+}

@@ -93,9 +93,14 @@ export class SessionResidentPool {
   /**
    * 获取协议请求租约。全进程计数防跨 session 的 async workspace 操作与 sampler
    * 回收并发；按 session 计数表达精确所有权并参与该 session 的 eligibility。
+   *
+   * `waitForDeactivation=false` 只跳过“等旧 app.close 收尾”这一段，租约本身仍持有。
+   * I19 冷订阅历史投影直接从 durable store 读取，不需要等 runtime 去激活；真正需要
+   * 串行化的 activation 在 `activateSessionForResume` 内部仍会等待同一个闸门。
    */
   async acquireOperation(
     sessionIdsInput?: string | readonly string[],
+    options: { waitForDeactivation?: boolean } = {},
   ): Promise<() => void> {
     const sessionIds = [
       ...new Set(
@@ -128,7 +133,9 @@ export class SessionResidentPool {
 
     try {
       for (const sessionId of sessionIds) {
-        await this.waitForDeactivation(sessionId);
+        if (options.waitForDeactivation !== false) {
+          await this.waitForDeactivation(sessionId);
+        }
         this.touch(sessionId);
       }
       return release;

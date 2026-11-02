@@ -17,6 +17,8 @@ export interface ActiveCuaNodeReplCall {
 export interface NodeReplCuaBrokerConnection {
   socketPath: string;
   token: string;
+  /** 每次 js 调用唯一；broker 用它拒绝旧 capability，并从 main 侧取绑定 context。 */
+  invocationId: string;
 }
 
 export interface ComputerUseRuntimeBridge {
@@ -63,7 +65,7 @@ export function createComputerUseBridgeGlobals(input: {
         {
           method,
           input: methodInput,
-          context: requestContext(active.requestMeta),
+          invocationId: input.broker!.invocationId,
         },
         active.signal,
       );
@@ -108,48 +110,9 @@ function readPrimaryAppIdentity(result: CallToolResult): NodeReplCuaAppIdentity 
   };
 }
 
-function requestContext(meta: NodeReplRequestMeta): Record<string, unknown> {
-  const stringMeta = (key: string): string | undefined => {
-    const value = meta[key];
-    return typeof value === "string" && value.trim() ? value.trim() : undefined;
-  };
-  const sessionId = stringMeta("session_id");
-  if (!sessionId) throw new Error("node_repl CUA request is missing session_id metadata");
-  const workspacePath = stringMeta("workspace_path");
-  const workspaceIdentity = stringMeta("workspace_identity");
-  const workspaceKey = stringMeta("workspace_key") ?? workspaceIdentity ?? workspacePath;
-  if (!workspaceKey) throw new Error("node_repl CUA request is missing workspaceKey metadata");
-  const clientMode = stringMeta("client_mode") ?? "desktop-continuous";
-  const deliveryKind = stringMeta("delivery_kind") ?? clientMode;
-  return {
-    runtimeScope: meta.runtime_scope === "subagent" ? "subagent" : "main",
-    sessionId,
-    ...(workspacePath ? { workspacePath } : {}),
-    ...(workspaceIdentity ? { workspaceIdentity } : {}),
-    workspaceKey,
-    ...(stringMeta("remote_session_id")
-      ? { remoteSessionId: stringMeta("remote_session_id") }
-      : {}),
-    ...(stringMeta("turn_id") ? { turnId: stringMeta("turn_id") } : {}),
-    clientMode,
-    deliveryKind,
-    ...(stringMeta("trace_id")
-      ? {
-          trace: {
-            traceId: stringMeta("trace_id"),
-            ...(stringMeta("span_id") ? { spanId: stringMeta("span_id") } : {}),
-            ...(stringMeta("parent_span_id")
-              ? { parentSpanId: stringMeta("parent_span_id") }
-              : {}),
-          },
-        }
-      : {}),
-  };
-}
-
 async function sendCuaBrokerRequest(
   broker: NodeReplCuaBrokerConnection,
-  request: { method: string; input: unknown; context: Record<string, unknown> },
+  request: { method: string; input: unknown; invocationId: string },
   signal: AbortSignal,
 ): Promise<{ result: CallToolResult; responseMeta?: Record<string, unknown> }> {
   const id = randomUUID();
@@ -157,7 +120,10 @@ async function sendCuaBrokerRequest(
     const socket = createConnection(broker.socketPath);
     let buffer = "";
     let settled = false;
-    const finish = (error?: unknown, value?: { result: CallToolResult; responseMeta?: Record<string, unknown> }) => {
+    const finish = (
+      error?: unknown,
+      value?: { result: CallToolResult; responseMeta?: Record<string, unknown> },
+    ) => {
       if (settled) return;
       settled = true;
       signal.removeEventListener("abort", onAbort);
@@ -188,7 +154,10 @@ async function sendCuaBrokerRequest(
           responseMeta?: Record<string, unknown>;
         };
         if (payload.id !== id) throw new Error("Computer Use broker response id mismatch");
-        if (payload.ok !== true) throw new Error(typeof payload.error === "string" ? payload.error : "Computer Use broker failed");
+        if (payload.ok !== true)
+          throw new Error(
+            typeof payload.error === "string" ? payload.error : "Computer Use broker failed",
+          );
         if (!payload.result) throw new Error("Computer Use broker returned no result");
         finish(undefined, { result: payload.result, responseMeta: payload.responseMeta });
       } catch (error) {

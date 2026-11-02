@@ -1,0 +1,2012 @@
+--- a/docs/plans/computer-use-macos-phase1-arm64-screenshot.md
++++ b/docs/plans/computer-use-macos-phase1-arm64-screenshot.md
+@@ -1,23 +1,23 @@
+ # macOS Computer Use Phase 1：arm64/macOS 窄截图 opt-in 实施计划
+ 
+-2026-10-31。状态：实现已落盘，验收未完成，产品未接受；功能默认禁用，`zcodeCuaPlaceholder:true`。本计划只服务于用户已对齐的窄方案，不扩大首期能力，不把开发候选、模拟测试或旧证据当作本轮通过。
++2026-10-31。状态：部分验收完成，Stop 待原生确认，实现已落盘；生产 UI+PNG 正例与 native audit 已实测/完成，但 completion-held Stop 未执行，产品尚未接受；功能默认禁用，`zcodeCuaPlaceholder:true`。本计划只服务于用户已对齐的窄方案，不扩大首期能力，不把开发候选、模拟测试或旧证据当作完整通过。
+ 
+ ## 基线与只读材料
+ 
+ - 仓库：`/Users/zhvala/SourceCode/zody`，Node 固定 `24.14.0`。controller 已用指定 Node 实跑带 fetch 的 freshness 检查并通过：相对 `origin/main` ahead 32 / behind 0。该基线记录不是产品结论。
+ - 只读参考：`specs/computer-use-macos-phase1.md`、`docs/plans/computer-use-macos-phase1-closeout.md`、`packages/desktop/native/macos-cua-driver-closure/reports/2026-10-30-closeout/ACCEPTANCE.md`。
+ - 只读冻结：R11 源码/构建/验收，以及 `output/cua-helper-round11/`、`output/cua-phase1-closeout/`、`reports/2026-10-30-closeout/` 和既有 launchservices/desktop-session 产物。不得改写旧输出、旧报告、旧冻结源或旧结论。
+-- 本轮派生源码 patch、构建与运行输出：`output/cua-arm64-screenshot/`。本轮验收归档：`packages/desktop/native/macos-cua-driver-closure/reports/2026-10-30-arm64-screenshot/`。
++- 本轮派生源码 patch、构建与运行输出：`output/cua-arm64-screenshot/`；产品阶段新产物：`output/cua-arm64-screenshot-product/`，旧 output/reports 只读。本轮验收归档：`packages/desktop/native/macos-cua-driver-closure/reports/2026-10-31-arm64-screenshot-product/`。
+ - worker ID 由 controller 另行登记；本文件不记录、不推定。
+ 
+ ## 2026-10-31 状态账本
+ 
+-实现已落盘；以下仅记录执行层次，不构成产品验收或 blocker 关闭。详细链接见 [spec 状态账本](../../specs/computer-use-macos-phase1.md#2026-10-31-状态账本实现已落盘产品未验收)。
++实现已落盘；以下仅记录执行层次，不构成产品验收或 blocker 关闭。详细链接见 [spec 状态账本](../../specs/computer-use-macos-phase1.md)。
+ 
+-- **编译/链接**：生产与诊断 visual 各自编译/Rust 46 项完成；fake-visual native harness 6 场景为模拟；新生产 Helper 编译/链接 10 个 native 程序完成，诊断复用同一 native source；生产/诊断签名与真实 prepare-narrow 资源校验完成。日志：[helper-production.log](../../output/cua-arm64-screenshot/independent-checks/helper-production.log)、[visual-production.log](../../output/cua-arm64-screenshot/independent-checks/visual-production.log)。
+-- **模拟/单元**：Root 独立最终 Host 130、cell 66、narrow Node 35、Stop 15 项通过；CLI `node:test` 与 shared auth 早期通过；根 typecheck、lint 301 warnings/0 errors、architecture 0 violations。日志：[host-tests-final.log](../../output/cua-arm64-screenshot/independent-checks/host-tests-final.log)、[cell-tests-final.log](../../output/cua-arm64-screenshot/independent-checks/cell-tests-final.log)、[lint-final.log](../../output/cua-arm64-screenshot/independent-checks/lint-final.log)。
+-- **实际原生**：仅完成 macOS 26.6.2 arm64 suspended Node 基础正例与 unsigned 映像负例；生产 cell/authority 实际正例未完成，错 certificate/DR/非空 entitlements 负例未分别覆盖。日志：[suspended-node-positive.log](../../output/cua-arm64-screenshot/independent-checks/suspended-node-positive.log)、[suspended-node-negative.log](../../output/cua-arm64-screenshot/independent-checks/suspended-node-negative.log)。
+-- **产品**：正式 electron-builder `--dir` 本次 PASS（root pinned deps + recovered transient space）；normal afterPack/afterSign 的 `assertPackagedCuaNarrowResource` livecodesign/tree/manifest exact 校验 PASS，child-audit ASAR statuses 0；outer Electron unsigned 为 test config，nested Helper/Node 仍为固定 local-selfsigned。此前 2 次 large ASAR missing `.next` 原因未证，不声明 OOM/OS kill；低磁盘重试失败，最终 PASS 处于 diagnostic observation。资源装配 PASS 不等同 normal Host 产品验收：normal Host 未运行、Mac LOCKED，W3 生产实际正例与 W4/W5 pending。日志：[formal-pack-child-audit.json](../../output/cua-arm64-screenshot/independent-checks/formal-pack-child-audit.json)、[formal-pack-child-audit.log](../../output/cua-arm64-screenshot/independent-checks/formal-pack-child-audit.log)、[recovery-incident](../../output/cua-arm64-screenshot/recovery-incident/)。
++- **编译/链接**：生产与诊断 visual 各自编译/Rust 46 项完成；fake-visual native harness 6 场景为模拟；新生产 Helper 编译/链接 10 个 native 程序完成，诊断复用同一 native source；生产/诊断签名与真实 prepare-narrow 资源校验完成；最新 production-audit 与 diagnostic-audit build input 独立 hash 核对为 2091 个 workspace input 引用、916 distinct、0 mismatch，7 个 virtual esbuild define 另行记账。日志：[helper-production.log](../../output/cua-arm64-screenshot/independent-checks/helper-production.log)、[visual-production.log](../../output/cua-arm64-screenshot/independent-checks/visual-production.log)。
++- **模拟/单元**：Root 独立最终 Host 130、cell 66、narrow Node 35、Stop 15 项通过；CLI `node:test` 与 shared auth 早期通过；根 typecheck、lint 301 warnings/0 errors、architecture 0 violations；`desktop/services/zcode-cli` policy 为 `managed:false`，故 architecture 0 不证明 unmanaged runtime 边界，root diff review 另行记录。日志：[host-tests-final.log](../../output/cua-arm64-screenshot/independent-checks/host-tests-final.log)、[cell-tests-final.log](../../output/cua-arm64-screenshot/independent-checks/cell-tests-final.log)、[lint-final.log](../../output/cua-arm64-screenshot/independent-checks/lint-final.log)。
++- **实际原生**：measured platform 为实际 arm64 macOS 26.6.2（build 25G83）、Node 24.14.0；suspended signedNode 前置 probe 正例与 **unsigned 映像**负例已独立实测；diagnostic-audit cell `990` 于 12:21:33.717 suspended、12:21:33.730 loaded verified 后才 resume（source 3,575,522 bytes）；独立 `SecCodeCopyGuest` 严格 fixed leaf DR/CDHash `3c57a9bb…`、flags 65536、空 entitlements 通过；最新 diagnostic Helper/Node strict `codesign` pass 的 hashes 保持 `4b3156…`/`14931e…` 不变。错 certificate、错 DR、非空 entitlements 以及 ready/socket fake endpoint/rebind/replay 负例仍未分别覆盖。attempt #1 native confirmation 120s timeout、cell SIGKILL/reaped，无 actual OS completion/UIStop。日志：[suspended-node-positive.log](../../output/cua-arm64-screenshot/independent-checks/suspended-node-positive.log)、[suspended-node-negative.log](../../output/cua-arm64-screenshot/independent-checks/suspended-node-negative.log)、[diagnostic-cell-independent-loaded-identity.json](../../output/cua-arm64-screenshot-product/diagnostic-cell-independent-loaded-identity.json)、[diagnostic-attempt1-native-events.log](../../output/cua-arm64-screenshot-product/diagnostic-attempt1-native-events.log)。
++- **产品**：此前 formal electron-builder `--dir` 与 narrow 资源装配 PASS（root pinned deps + recovered transient space；normal afterPack/afterSign 的 `assertPackagedCuaNarrowResource` livecodesign/tree/manifest exact 校验 PASS，child-audit ASAR statuses 0；outer Electron unsigned 为 test config，nested Helper/Node 仍为固定 local-selfsigned）。此前 2 次 large ASAR missing `.next` 原因未证，不声明 OOM/OS kill；低磁盘重试失败，最终 PASS 处于 diagnostic observation。2026-10-31 cleanup 后 63GB free、Mac unlocked；identity 修复后的产品候选已完成系统启动：main `79594`、Host `80007`、Helper `80104`、Node `80108`，启动快照匹配 `DeepSeek/deepseek-flash`、reasoning `max`；UI 实测得到单窗口 PNG `1172x976`、`108925` bytes、SHA-256 `e1bca9e1d32237e21bb07ad1e8655268fbab04557d87d330c14112ed062d523e`。该 PNG 来自先前 `controller-normal-host-production`，仍是独立的真实证据；最新 `controller-normal-host-production-audit` 以 production manifest 重建 PASS `30.511s`，但未启动、无新截图，仅构成 build/log 增量。首次候选 PID 49687 的 SIGTRAP 已定位为 unified log `electron_main_delegate_mac.mm:65 Unable to find helper app`，对应四个 Chromium Helper 名称未随父 identity 重命名；ASAR whole-archive/raw-header 与 afterPack stale hash 是另立的 packaging defect，candidate `fuse4EnableEmbeddedAsarIntegrityValidation` 实测 ASCII `48`（false），不归因于本次 SIGTRAP，也不改 fuse。native audit 已完成（2 文件 150 项：84 parser + 66 ProcessManager），audit 后根 typecheck、lint 301 warnings/0 errors、architecture 0 violations 通过。diagnostic-audit build `39.925s`，PIDs main `99745`、Host `264`、Helper `350`、signed CLI `360`；W4 生产截图正例已成立，W5/completion-held Stop 仍 PENDING（用户对 native click 可见性问题的回复仍未到），attempt #1 timeout 不是 Stop。日志：[formal-pack-child-audit.json](../../output/cua-arm64-screenshot/independent-checks/formal-pack-child-audit.json)、[formal-pack-child-audit.log](../../output/cua-arm64-screenshot/independent-checks/formal-pack-child-audit.log)、[native-audit-independent-tests.log](../../output/cua-arm64-screenshot-product/independent-checks/native-audit-independent-tests.log)、[产品阶段输出](../../output/cua-arm64-screenshot-product/)。
+ 
+ Native cell 上限沿用既有 30 分钟 MCP max；actual per-tool 默认 600 秒与 `AbortSignal` 不变。
+ 
+@@ -25,9 +25,13 @@
+ 
+ 保留普通、完整的 Electron utility Host 及其 PTY/SSH/remote。仅在显式构建 opt-in 的 `explicit build profile` 与 Agent 启动实际配置严格匹配时，将既有唯一 Agent 经现有 Helper `workspace-relay` 路由到 signedNode sealedCLI；复用既有 `CommandInbox`、`CuaSubmissionAuthority`、authority/lease/frame 与 Stop。profile 固定实验本地 workspace allowlist、已测 arm64/macOS 与 native 资源 hash，并须由 Host 既有 service 重读启动默认 selection、`providerRevisionSha256` 与 normalized `proxy`/`noProxy`/`CA` path digest 后严格比较。`providerRevisionSha256` 由既有 `ProviderSettingsView` 的公开非秘密 provider/model transport 事实规范化计算，不含 credential/header；Provider Registry numeric revision 是 process-local，不能跨启动 pin。profile 只保存该 digest 与默认 selection，不归档整份 provider 配置或内部 baseUrl；network digest 只证明 proxy/noProxy/CA path 配置相等，不证明 CA 文件内容 pin 或全面 proxy/custom CA。任一不匹配/读取失败时 Agent 启动 resolver 返回 `null`，保留 ordinary Agent 且 CUA 不可用。检查只在新的 Agent spawn 选择路径；已运行 Agent 不按 task 切换，不新增 task-time provider guard、UI 限制或自动 kill/restart。默认构建及不满足 profile 的构建继续走普通 Agent，不存在按 task 静默切换。
+ 
+-正式 electron-builder 资源链必须同时复制 Helper.app 与经 `validateNarrowManifest` 验证的原 `manifest.json` 精确 bytes 到 `Resources/cua-narrow/manifest.json`，afterPack/afterSign 复核摘要；无输入默认不装配、不启用，临时 launcher SHA 生成的 pass manifest 不能替代正式验证。普通 Host 窄候选使用独立 `CFBundleIdentifier`、显示名和 Electron profile（system entry 不激活安装版），仅作 UI identity build-time seam；不设置 `candidateNativeHostLaunch`，不变 Helper/Node 身份及既有 CLI store/authority，不加用户交互，`productDefaultDisabled=true` 与 `explicitCandidateOptIn=true` 分开记账，Hostworker 只做必要真实接线修复且不新增进程结构。
++正式 electron-builder 资源链必须同时复制 Helper.app 与经 `validateNarrowManifest` 验证的原 `manifest.json` 精确 bytes 到 `Resources/cua-narrow/manifest.json`，afterPack/afterSign 复核摘要；无输入默认不装配、不启用，临时 launcher SHA 生成的 pass manifest 不能替代正式验证。普通 Host 窄候选使用独立 `CFBundleIdentifier`、显示名和 Electron profile（system entry 不激活安装版），仅作 UI identity build-time seam；不设置 `candidateNativeHostLaunch`，不变固定受信 CUA Helper/Node 身份及既有 CLI store/authority，不加用户交互，`productDefaultDisabled=true` 与 `explicitCandidateOptIn=true` 分开记账，Hostworker 只做必要真实接线修复且不新增进程结构。
++
++**候选 UI identity / Chromium Helper 重命名合同（2026-10-31 补充）。** candidate UI identity 变更必须在构建期一致重命名**既有** Chromium `Helper.app` 及其全部现有 variant 的 bundle、可执行文件与 `CFBundleExecutable`，使名称与父 app 的期望 parent name 一致。不得为此新增 helper 进程、launcher 或 wrapper，完整 ordinary Host topology 不变；固定受信 CUA Helper 与 Node 的既有 bytes/identity 不变。回归须验证：重命名后所有既有 helper 均能解析，framework 相对链接保持，native Helper identity 不变。该合同只修复候选 UI identity 装配，不改变运行时授权、进程结构或 CUA 能力。
+ 
+ 普通 Host 仍是不受信 transport。`hostInstanceId`/`runtimeInstanceId` 只用于路由与关联，`intent.inputOrigin` 连接分类不能抵御被篡改的 Host。实际截图依赖既有逐次原生确认；该 Host 来源可信性缺口明确保留，不得以签名 Node、Helper peer 校验或来源分类宣称关闭。
++
++**原生审计可观测性（2026-10-31 补充）。** 产品 Host 只在 `effectiveCommand.nativeLauncher` 实际成立时，把严格匹配现有 native source schema 的 `[cua-native]` 审计 marker 以 `info` 转发到既有 Host 日志；普通 CLI 与任意 raw stderr 仍仅 debug。拒绝未知 marker、额外字段、控制字符、畸形 JSON 和超长行，并从校验字段重建规范行。允许集合为 confirmation、cell、machine lease、capture、以及 stop-diagnostic 的 visual gate marker；`capture-resource-release` 当前不存在。该日志只提供运营证据关联，不证明身份/授权，Host 来源可信性缺口继续保留；不新增授权状态、进程/runtime、协议、UI 或签名路径。
+ 
+ sealedCLI 固定 `--jitless`，保留既有 shims/network 适配及其模块、WASM、代理、自定义 CA 等局限；不增加 JIT/LV/entitlement，不声称完整 CLI 兼容。本轮只支持单窗口 screenshot，不新增截图 runtime，不发布完整 CUA API。
+ 
+@@ -78,12 +82,16 @@
+ | W0 | 规格与计划 | 文档审查 | 本文件与 spec 顶部章节 | 仅文档，不宣称能力 |
+ | W1 | 构建 profile 与 Agent 启动门 | 默认构建无候选；profile 限定实验本地 workspace allowlist、已测 arm64/macOS、native 资源 hash；启动默认 selection、`providerRevisionSha256`、normalized proxy/noProxy/CA path digest 不匹配/读取失败时 resolver 返回 `null` | 新 Agent spawn 时由 Host 既有 service 重读；digest 来自 `ProviderSettingsView` 公开非秘密 transport 事实，不含 credential/header；numeric revision 不跨启动 pin；不归档完整 provider 配置/内部 baseUrl | 仅 spawn 选择路径；网络 digest 不证明 CA 内容 pin/全面 proxy；已运行 Agent 不按 task 切换，不自动 kill/restart，不加 UI 限制 |
+ | W2 | 普通 Host 路由 | 普通路径 PTY/SSH/remote 回归；remote 与不满足 eligibility 时 CUA 不可用 | 既有唯一 Agent 经 Helper `workspace-relay` 到 sealedCLI，保留单一 runtime | 不替换普通 Host，不新增队列/Agent/授权 |
+-| W3 | seal/CLI、cell 与 authority 启动 | 真实 `START_SUSPENDED` Node 正负例；错误 DR/CDHash/非空 entitlement 不执行、不投递、不释放 capability；同 UID fake cell/authority endpoint/rebind、错误/缺失/重放/跨角色 proof fail closed | Helper `posix_spawn`、实际 PID 核验、resume/kill+reap；Helper 读取 pinned sealed server；`cell.sock` 与 capture authority socket 都做 `transportAuthenticationKey` 握手；仅 Helper proof，canonical `helper-proof` MAC、冻结 `role='cell'`/`role='authority'`、64hex challenge/sourceSha、decimal bounds；CLI `timingSafeEqual` 后才行；authority 握手后才进入原 `AuthorityFdReader` | 不新增进程/UI；Node 前置 probe 已独立实测（见下），生产 cell、authority 与 ready/socket 认证仍待做；失败即阻断 |
+-| W4 | 单窗口截图与交付 | 同一 lineage scope、真实单窗口、交付前复核、迟到结果拒绝；`captureCuaRuntimeOnce` 先固定本轮 turn scope 再 await connect，proof 失败关闭 scope，await 后不换绑；原 authority 协议字节无损 | 复用 R9/R11 视觉桥与既有 frame/lease owner | 不新增截图 runtime；Host 来源仍不可信，仅逐次原生确认 |
+-| W5 | Stop 与在途验收 | Stop 在未 admission、未 submit、completion 未消费/未交付、已交付等所有阶段都可 cancel/requestStop；在途验收仅在 completion 未消费/未交付时计数；实际 callbackReleased + lease release；unknown 保留 lease | authority 先撤销并关闭准入/结果接收，再 cancel/drop；诊断 gate 仅调度真实 completion | Stop 功能不得受验收时点限制；不以交付后取消、pre-admission gate、不同 lineage 或 UI cancel 代替在途 Stop |
++| W3 | seal/CLI、cell 与 authority 启动 | 真实 `START_SUSPENDED` Node 正负例；错误 DR/CDHash/非空 entitlement 不执行、不投递、不释放 capability；同 UID fake cell/authority endpoint/rebind、错误/缺失/重放/跨角色 proof fail closed | Helper `posix_spawn`、实际 PID 核验、resume/kill+reap；Helper 读取 pinned sealed server；`cell.sock` 与 capture authority socket 都做 `transportAuthenticationKey` 握手；仅 Helper proof，canonical `helper-proof` MAC、冻结 `role='cell'`/`role='authority'`、64hex challenge/sourceSha、decimal bounds；CLI `timingSafeEqual` 后才行；authority 握手后才进入原 `AuthorityFdReader` | 不新增进程/UI；suspended signedNode 前置 probe 正负例已独立实测；diagnostic-audit cell `990` 已有 suspended→loaded verified→resume 正例与直接 OS 身份 probe；错 certificate/DR/非空 entitlement 与 fake endpoint/rebind/replay 负例尚未分别覆盖；失败即阻断 |
++| W4 | 单窗口截图与交付 | 同一 lineage scope、真实单窗口、交付前复核、迟到结果拒绝；`captureCuaRuntimeOnce` 先固定本轮 turn scope 再 await connect，proof 失败关闭 scope，await 后不换绑；原 authority 协议字节无损 | 复用 R9/R11 视觉桥与既有 frame/lease owner | 不新增截图 runtime；Host 来源仍不可信，仅逐次原生确认；产品生产单窗口 PNG 正例已成立 |
++| W5 | Stop 与在途验收 | Stop 在未 admission、未 submit、completion 未消费/未交付、已交付等所有阶段都可 cancel/requestStop；在途验收仅在 completion 未消费/未交付时计数；实际 callbackReleased + lease release；unknown 保留 lease | authority 先撤销并关闭准入/结果接收，再 cancel/drop；诊断 gate 仅调度真实 completion | Stop 功能不得受验收时点限制；completion-held UI Stop 仍 PENDING，native click 可见性问题的用户回复仍未到，attempt #1 timeout 不计数；不以交付后取消、pre-admission gate、不同 lineage 或 UI cancel 代替在途 Stop |
+ | W6 | 分层验证与归档 | 根 typecheck/lint/architecture；必要 Host/CLI/CUA/原生测试 | 独立归档源码、派生 patch、构建、签名、命令输出与实测证据 | 编译/链接、模拟、真实原生、产品分账，不互相替代 |
+ 
+ **构建证据输入合同（2026-10-31 补充）。** 独立编译已见三组 compile PASS 但 evidence writer ENOENT；esbuild virtual `<define:NAME>` 是生成表达式而非磁盘路径。writer 必须固定 virtual input 的 name、精确 expression SHA-256、byte count，不转储原始配置/secret；filesystem input 仍按源文件 SHA-256，unknown/unresolved virtual 一律 fail closed。该修复不改变进程、UX、授权或验证矩阵；Host worker 在 spec 落盘后实施并通知 controller。
++
++**ASAR integrity 装配合同（2026-10-31 产品阶段补充）。** 产品阶段首次系统启动 PID 49687 无 UI SIGTRAP；不得宣称 header metadata defect 是本次崩溃的根因。candidate 的 `fuse4EnableEmbeddedAsarIntegrityValidation` 实际读取为 ASCII `48`（false），保持 vanilla 未改，因此当前终止不能归因于 header 校验；实际 fatal 已在状态账本按 unified logs 记录，独立 launch 仍需复验。已确认的 packaging defect 是 candidate `Info.plist` 的 `ElectronAsarIntegrity` 使用了 WHOLE archive hash `4c73cb…`，而 raw header hash 为 `153d9c…`；上一轮 app 嵌入 `772740…`、当前 FINAL header 为 `fffcb7…`，差异来自 afterPack repack/sourcemap rewrite。官方 Electron ASAR integrity 文档与已安装 `app-builder-lib/out/asar/integrity.js` 的 `hashHeader` 均要求 raw header UTF-8 bytes 的 exact SHA-256。
++
++合同：archive full SHA-256 与 header integrity hash 分账记录，禁止互相替代；`Info.plist` 的 integrity 值必须在 FINAL ASAR rewrite 之后、签名之前刷新；candidate 与 formal Darwin 构建路径必须由同一个 packager owner 执行同一刷新；不得修改 fuses/LV、Helper/Node 签名或既有身份，candidate fuse4 保持实测 ASCII `48`（false）的 vanilla 状态；unknown、missing ASAR 或 invalid header 一律 fail closed。该 metadata 格式与刷新修复仍然有效且必要，但当前 fuse 未启用，不能据此声称 header 校验导致本次崩溃。窄回归场景只覆盖：FINAL rewrite 后 header SHA-256 与 `Info.plist` 相等且 archive full SHA 单独记录；模拟 rewrite 后 header 变化时 stale `Info.plist` 被拒绝；candidate 与 formal Darwin 路径都由同一 owner 刷新；missing/invalid/unknown 全部 fail closed。该合同不改变进程、UX、授权，不新增平台/功能验证矩阵。
+ 
+ ## 最小验收场景
+ 
+@@ -92,16 +100,16 @@
+ 1. **普通 Host**：完整 Electron utility Host 的 PTY/SSH/remote 保留；默认 `zcodeCuaPlaceholder:true`，CUA 不可用。
+ 2. **显式 opt-in 生效**：profile 与启动实际配置全部匹配，独立实测使用固定已测模型配置；既有唯一 Agent 经 Helper `workspace-relay` → signedNode sealedCLI，复用既有 `CommandInbox`/authority/lease/frame，单窗口截图链可用。
+ 3. **回退**：opt-in 构建但 profile 任一字段不匹配/读取失败，以及 remote workspace，均使 resolver 返回 `null`、保留普通 Agent 且 CUA 不可用；不出现按 task 静默切换或自动 kill/restart。
+-4. **suspended Node 正例**：前置 probe 已在本机 macOS 26.6.2 arm64 独立实测：真实 signedNode `SSTOP` → 核验实际 CDHash/DR/空 entitlements → `SIGCONT` → stdout `42` → `exit 0`/reap；日志为 `output/cua-arm64-screenshot/independent-checks/suspended-node-positive.log`。生产 Helper cell 的同类正例仍待实现与验收。
+-5. **suspended Node 负例**：前置 probe 只独立实测 **unsigned 映像** loaded-code-invalid：同样 `SSTOP`，不 `SIGCONT`、不发送 stdin，`SIGKILL`/reap，marker 不存在；日志为 `output/cua-arm64-screenshot/independent-checks/suspended-node-negative.log`。错 certificate、错 DR、非空 entitlements 均未分别测试，不列作已通过；生产 Helper cell 的同类负例仍待实现与验收。ready/socket 负例须覆盖同 UID fake cell/authority endpoint/rebind、错误/缺失/重放/跨角色 proof；均不发送 `CellRequest`/cap、不建立 wire authority session/发送 scope/ref/capture，且 fail closed。authority 正例须验证先固定 turn scope、await 后不换绑、proof 后原协议字节完整进入 `AuthorityFdReader`。
+-6. **截图 + 在途 Stop**：真实单窗口截图；同 lineage 截图 completion 未消费/未交付时 UI Stop，authority 先撤销；native cancel/drop 迟到图片；只有实际 callbackReleased 与 lease release 后才报告释放，unknown 保留 lease。
+-7. **仓库与分层检查**：根 `pnpm typecheck`、`pnpm lint`、`pnpm architecture:check --changed` 及必要相关测试；编译/链接、模拟测试、真实原生调用、产品验收分别记账。
++4. **suspended Node 正例**：前置 probe 已在本机 macOS 26.6.2 arm64 独立实测：真实 signedNode `SSTOP` → 核验实际 CDHash/DR/空 entitlements → `SIGCONT` → stdout `42` → `exit 0`/reap；日志为 `output/cua-arm64-screenshot/independent-checks/suspended-node-positive.log`。diagnostic-audit cell `990` 也已在 `SSTOP` 下完成 loaded verify 后才 resume，独立 `SecCodeCopyGuest` 的 fixed leaf DR/CDHash/flags/空 entitlements 通过；该正例不替代 W3 全部 ready/socket 负例。
++5. **suspended Node 负例**：前置 probe 只独立实测 **unsigned 映像** loaded-code-invalid：同样 `SSTOP`，不 `SIGCONT`、不发送 stdin，`SIGKILL`/reap，marker 不存在；日志为 `output/cua-arm64-screenshot/independent-checks/suspended-node-negative.log`。错 certificate、错 DR、非空 entitlements 均未分别测试，不列作已通过。ready/socket 负例须覆盖同 UID fake cell/authority endpoint/rebind、错误/缺失/重放/跨角色 proof；均不发送 `CellRequest`/cap、不建立 wire authority session/发送 scope/ref/capture，且 fail closed；这些负例当前仍未分别取得证据。authority 正例须验证先固定 turn scope、await 后不换绑、proof 后原协议字节完整进入 `AuthorityFdReader`。
++6. **截图 + 在途 Stop**：产品生产 UI 已取得真实单窗口 PNG `1172x976`、`108925` bytes、SHA-256 `e1bca9e1…`，W4 截图正例成立；该证据来自先前 production run，最新 production-audit 仅构建、未启动、无新截图。同 lineage 截图 completion 未消费/未交付时 UI Stop 仍未执行，W5 保持 PENDING；diagnostic attempt #1 在 native confirmation 120s 后 timeout，`authority-eof`、SIGKILL/reaped，不记 Stop。后续 authority 先撤销，native cancel/drop 迟到图片；只有实际 callbackReleased 与 lease release 后才报告释放，unknown 保留 lease。
++7. **仓库与分层检查**：根 `pnpm typecheck`、`pnpm lint`（301 warnings/0 errors）、`pnpm architecture:check --changed`（0 violations）及必要相关测试已通过，native audit 独立 2 文件 150 项通过；编译/链接、模拟测试、真实原生调用、产品验收分别记账。
+ 
+ 执行受阻、未运行或环境不满足时如实记录 blocked/not-run；不写通过结论。真实 `SCScreenshotManager` one-shot 的 in-flight 证据必须来自真实 OS completion 调度，诊断 gate 只能控制其调度，不得合成 frame、completion 或成功；生产默认无 gate。
+ 
+ ## 保留缺口与阻断项
+ 
+-- **前置 probe 已测、生产仍待做**：controller 在本机 macOS 26.6.2 arm64 独立实测 suspended signedNode 正例（CDHash/DR/空 entitlements 后 `SIGCONT`、stdout `42`、exit 0/reap）与 **unsigned 映像** loaded-code-invalid 负例（无 `SIGCONT`/stdin、SIGKILL/reap、marker 不存在），日志在 `output/cua-arm64-screenshot/independent-checks/`。本轮未分别覆盖错 certificate、错 DR、非空 entitlements 负例，不扩大列作已通过。该探针不替代生产 Helper `posix_spawn`、cell.sock/fd 中继、capability 与隔离验收；生产正负例未完成前 W3/W4 仍不得记通过。若无法稳定保持基础正负例区分，必须阻断，不得降级为 spawn 后检查或路径/普通 `codesign` 检查。
++- **前置 probe 与 cell 正例已测、负例/Stop 未完成**：controller 在本机 macOS 26.6.2 arm64 独立实测 suspended signedNode 正例（CDHash/DR/空 entitlements 后 `SIGCONT`、stdout `42`、exit 0/reap）与 **unsigned 映像** loaded-code-invalid 负例（无 `SIGCONT`/stdin、SIGKILL/reap、marker 不存在），日志在 `output/cua-arm64-screenshot/independent-checks/`。diagnostic-audit cell `990` 已完成 suspended→loaded verified→resume，独立 loaded OS probe 通过；该正例不替代 W3 全部 ready/socket 认证。错 certificate、错 DR、非空 entitlements 与 fake endpoint/rebind/replay 负例仍未分别覆盖，不扩大列作已通过。W4 生产截图正例已成立；completion-held W5 Stop 仍 PENDING，attempt #1 timeout 不是 Stop。若无法稳定保持基础正负例区分，必须阻断，不得降级为 spawn 后检查或路径/普通 `codesign` 检查。
+ - 普通 Host 来源可信性缺口保留；不新增可抵御恶意 Host 的声明或代码路径。
+ - live task 配置兼容缺口保留：Host 启动时没有 task actual model，不能证明后续 task override、模型或 provider 配置变化兼容；独立验收只覆盖固定已测模型配置，用户自行切换模型不算验收。完整 CLI 兼容缺口继续保留。
+ - sealedCLI 的 `--jitless`、shims 与网络适配局限保留；不宣称完整 CLI 兼容，不增加 JIT/LV/TCC entitlement。
+@@ -111,4 +119,4 @@
+ 
+ ## 归档要求
+ 
+-`output/cua-arm64-screenshot/` 至少分开保存 opening/source 摘要、相对基线 patch、构建输入与签名/资源摘要、编译链接日志、模拟/单元测试结果、真实 suspended Node 正负例、ready/socket fake endpoint/rebind 与 replay 负例、真实单窗口截图与同 lineage 在途 Stop 证据。构建输入须区分 filesystem 精确 source SHA-256 与 esbuild virtual `<define:NAME>` 的 name/expression SHA-256/byte count；不得归档原始配置或 secret，unknown/unresolved virtual fail closed。真实 256-bit key 不得写入日志或归档，只保存 redacted 结果与命令摘要。`reports/2026-10-30-arm64-screenshot/ACCEPTANCE.md` 只汇总实际执行与保留阻断，明确区分编译/链接、模拟、真实原生调用和产品验收；未执行项不得留白或写成通过。
++`output/cua-arm64-screenshot/` 至少分开保存 opening/source 摘要、相对基线 patch、构建输入与签名/资源摘要、编译链接日志、模拟/单元测试结果、真实 suspended Node 正负例、ready/socket fake endpoint/rebind 与 replay 负例、真实单窗口截图与同 lineage 在途 Stop 证据；产品阶段新产物单独写入 `output/cua-arm64-screenshot-product/`。构建输入须区分 filesystem 精确 source SHA-256 与 esbuild virtual `<define:NAME>` 的 name/expression SHA-256/byte count；不得归档原始配置或 secret，unknown/unresolved virtual fail closed。ASAR 证据须分开记录 archive full SHA-256 与 `Info.plist` header integrity hash，并注明 FINAL rewrite 后、签名前的刷新结果；不得用其中之一替代另一个。真实 256-bit key 不得写入日志或归档，只保存 redacted 结果与命令摘要。`reports/2026-10-31-arm64-screenshot-product/ACCEPTANCE.md` 只汇总实际执行与保留阻断，明确区分编译/链接、模拟、真实原生调用和产品验收；未执行项不得留白或写成通过。
+--- a/packages/desktop/electron-builder.config.js
++++ b/packages/desktop/electron-builder.config.js
+@@ -16,6 +16,7 @@
+   restoreTargetNodePtyPrebuild,
+ } from "./scripts/node-pty-package-assets.mjs";
+ import { cleanupPackagedSourcemaps } from "./scripts/packaged-sourcemap-cleanup.mjs";
++import { refreshMacosAsarIntegrity } from "./scripts/macos-asar-integrity.mjs";
+ import {
+   NARROW_MANIFEST_ENV,
+   assertPackagedNarrowResource,
+@@ -454,6 +455,21 @@
+   });
+ }
+ 
++async function refreshPackagedDarwinAsarIntegrity(context) {
++  if (context.electronPlatformName !== "darwin") return null;
++  const appName = `${context.packager?.appInfo?.productFilename ?? "Zody"}.app`;
++  const integrity = await refreshMacosAsarIntegrity({
++    appAsarPath: resolveAppAsarPath(context),
++    infoPlistPath: resolve(context.appOutDir, appName, "Contents", "Info.plist"),
++  });
++  // 修复依据：afterPack 可能重写 app.asar，electron-builder 早先写入的 header hash 会过期；
++  // 必须在最后一次 rewrite 后、签名前按 raw header 刷新，archive full SHA 仅单独记账。
++  console.log(
++    `[afterPack] app.asar integrity refreshed header_sha256=${integrity.headerSha256} header_bytes=${integrity.headerBytes} archive_sha256=${integrity.archiveSha256} archive_bytes=${integrity.archiveBytes}`,
++  );
++  return integrity;
++}
++
+ function assertPackagedNativeResourcePolicy(context) {
+   const appAsarPath = resolveAppAsarPath(context);
+   const entries = parseAsarListWithPackState(
+@@ -693,6 +709,9 @@
+     );
+     await runTimedAsync("afterPack:stripPackagedSourcemapReferences", () =>
+       stripPackagedSourcemapReferences(context),
++    );
++    await runTimedAsync("afterPack:refreshDarwinAsarIntegrity", () =>
++      refreshPackagedDarwinAsarIntegrity(context),
+     );
+     if (narrowValidated) {
+       await runTimedAsync("afterPack:assertPackagedCuaNarrowResource", async () => {
+--- a/packages/desktop/scripts/build-cua-normal-host-candidate.mjs
++++ b/packages/desktop/scripts/build-cua-normal-host-candidate.mjs
+@@ -6,7 +6,7 @@
+ // runtime node_modules and renderer/preload/plugin-sandbox outputs, then repacks the asar.
+ // It does not sign, install, request TCC, launch the UI, or run a real capture.
+ import { mkdir, mkdtemp, readFile, readdir, rename, rm } from "node:fs/promises";
+-import { dirname, join, relative, resolve, sep } from "node:path";
++import { basename, dirname, join, relative, resolve, sep } from "node:path";
+ import { getBuildMetadata } from "./build-metadata.mjs";
+ import { DESKTOP_MAIN_ENTRYPOINTS } from "./desktop-main-entrypoints.mjs";
+ import { resolveDesktopProductFlavor } from "./desktop-product-identity.mjs";
+@@ -34,11 +34,7 @@
+   rewriteNormalHostCandidateAppIdentity,
+   resolveShellLayout,
+ } from "./lib/normal-host-candidate-profile.mjs";
+-import {
+-  extractAppAsar,
+-  packAppAsar,
+-  setElectronAsarIntegrityHash,
+-} from "./lib/normal-host-candidate-asar.mjs";
++import { extractAppAsar, packAppAsar } from "./lib/normal-host-candidate-asar.mjs";
+ import {
+   assertNoSymlinks,
+   exists,
+@@ -61,6 +57,7 @@
+   writeHostProfile,
+   writePackagedNarrowManifest,
+ } from "./lib/normal-host-candidate-output.mjs";
++import { refreshMacosAsarIntegrity } from "./macos-asar-integrity.mjs";
+ 
+ async function assemble(options) {
+   const buildMetadata = {
+@@ -121,6 +118,8 @@
+     const candidateUiIdentity = await rewriteNormalHostCandidateAppIdentity({
+       infoPlistPath: join(appBundle, "Contents", "Info.plist"),
+       packageJsonPath: appPackageJson.path,
++      frameworksDir: join(appBundle, "Contents", "Frameworks"),
++      sourceApplicationName: basename(options.appShell, ".app"),
+     });
+     await assertNoSymlinks(join(appDir, "node_modules"), "normal Host runtime node_modules");
+     const packageNames = await readdir(join(appDir, "node_modules"));
+@@ -239,7 +238,16 @@
+       copiedAppAsarUnpackedPath: copiedLayout.appAsarUnpackedPath,
+     });
+ 
+-    setElectronAsarIntegrityHash(join(appBundle, "Contents", "Info.plist"), packed.sha256);
++    const asarIntegrity = await refreshMacosAsarIntegrity({
++      appAsarPath: copiedLayout.appAsarPath,
++      infoPlistPath: join(appBundle, "Contents", "Info.plist"),
++    });
++    if (
++      asarIntegrity.archiveBytes !== packed.bytes ||
++      asarIntegrity.archiveSha256 !== packed.sha256
++    ) {
++      throw new Error("app.asar changed after packing before integrity refresh");
++    }
+     await writeHostProfile({ staging, prepared, narrowManifestPath: options.narrowManifest });
+ 
+     const candidateManifest = await buildNormalHostCandidateManifest({
+@@ -254,7 +262,7 @@
+       packageNames,
+       appDir,
+       entries,
+-      packed,
++      asarIntegrity,
+       asarFiles,
+       nodePtyHelperInfo,
+       publicBuildEvidence,
+@@ -295,6 +303,8 @@
+         networkDigest: result.profile.network.digestSha256,
+         manifestSha256: result.profile.resourceManifest.sha256,
+         buildEvidenceInputsSha256: result.candidateManifest.buildEvidence.inputsSha256,
++        appAsarArchiveSha256: result.candidateManifest.appAsar.archiveSha256,
++        appAsarHeaderSha256: result.candidateManifest.appAsar.headerSha256,
+         builderSigned: false,
+         launchedUi: false,
+         requestedTcc: false,
+--- a/packages/desktop/scripts/lib/cua-desktop-candidate-app-files.mjs
++++ b/packages/desktop/scripts/lib/cua-desktop-candidate-app-files.mjs
+@@ -31,7 +31,9 @@
+   return {
+     path,
+     bytes: info.size,
+-    sha256: createHash("sha256").update(await readFile(path)).digest("hex"),
++    sha256: createHash("sha256")
++      .update(await readFile(path))
++      .digest("hex"),
+   };
+ }
+ 
+@@ -110,9 +112,7 @@
+           relativeTarget === ".." ||
+           relativeTarget.startsWith(`..${sep}`)
+         ) {
+-          throw new Error(
+-            `${label} symlink escapes the app bundle: ${childPath} -> ${target}`,
+-          );
++          throw new Error(`${label} symlink escapes the app bundle: ${childPath} -> ${target}`);
+         }
+         symlinks.push({ path: childPath, target, resolvedTarget });
+       } else if (child.isDirectory()) {
+@@ -141,33 +141,33 @@
+       stdio: "pipe",
+     });
+   } catch {
+-    execFileSync(
+-      "/usr/libexec/PlistBuddy",
+-      ["-c", `Add :${key} string ${value}`, plistPath],
+-      { stdio: "pipe" },
+-    );
++    execFileSync("/usr/libexec/PlistBuddy", ["-c", `Add :${key} string ${value}`, plistPath], {
++      stdio: "pipe",
++    });
+   }
+ }
+ 
+ export function getPlistString(plistPath, key) {
+-  return execFileSync(
+-    "/usr/libexec/PlistBuddy",
+-    ["-c", `Print :${key}`, plistPath],
+-    { encoding: "utf8" },
+-  ).trim();
+-}
+-
+-const ELECTRON_HELPER_NAMES = Object.freeze([
+-  "Electron Helper",
+-  "Electron Helper (GPU)",
+-  "Electron Helper (Renderer)",
+-  "Electron Helper (Plugin)",
++  return execFileSync("/usr/libexec/PlistBuddy", ["-c", `Print :${key}`, plistPath], {
++    encoding: "utf8",
++  }).trim();
++}
++
++const CHROMIUM_HELPER_SUFFIXES = Object.freeze([
++  "Helper",
++  "Helper (GPU)",
++  "Helper (Renderer)",
++  "Helper (Plugin)",
+ ]);
+ 
+-export async function renameElectronHelperBundles(frameworksDir, applicationName) {
++export async function renameElectronHelperBundles(
++  frameworksDir,
++  applicationName,
++  { sourceApplicationName = "Electron" } = {},
++) {
+   const renamed = [];
+-  for (const sourceName of ELECTRON_HELPER_NAMES) {
+-    const suffix = sourceName.slice("Electron ".length);
++  for (const suffix of CHROMIUM_HELPER_SUFFIXES) {
++    const sourceName = `${sourceApplicationName} ${suffix}`;
+     const targetName = `${applicationName} ${suffix}`;
+     const sourceBundle = join(frameworksDir, `${sourceName}.app`);
+     const targetBundle = join(frameworksDir, `${targetName}.app`);
+--- a/packages/desktop/scripts/lib/normal-host-candidate-asar.mjs
++++ b/packages/desktop/scripts/lib/normal-host-candidate-asar.mjs
+@@ -1,11 +1,9 @@
+ // app.asar extraction/repacking for the normal utility Host candidate.
+ // The source shell is an existing electron-builder --dir output; this module only replaces
+-// archived runtime files, preserves the complete node_modules tree, and refreshes the
+-// Electron embedded-integrity hash. It never signs or launches the app.
++// archived runtime files and preserves the complete node_modules tree. The shared macOS
++// integrity owner refreshes Info.plist after this module's final archive rewrite.
+ import { createHash } from "node:crypto";
+-import { execFileSync } from "node:child_process";
+ import { readFile, rename, rm, stat } from "node:fs/promises";
+-import { join } from "node:path";
+ import asar from "@electron/asar";
+ import { createAppAsarPackArgs } from "../app-asar-repack.mjs";
+ 
+@@ -70,15 +68,3 @@
+     ]);
+   }
+ }
+-
+-export function setElectronAsarIntegrityHash(infoPlistPath, hash) {
+-  if (typeof hash !== "string" || !/^[0-9a-f]{64}$/.test(hash)) {
+-    throw new Error("Electron asar integrity hash must be lowercase sha256");
+-  }
+-  execFileSync(
+-    "/usr/libexec/PlistBuddy",
+-    ["-c", `Set :ElectronAsarIntegrity:Resources/app.asar:hash ${hash}`, infoPlistPath],
+-    { stdio: "pipe" },
+-  );
+-  return join(infoPlistPath);
+-}
+--- a/packages/desktop/scripts/lib/normal-host-candidate-identity.mjs
++++ b/packages/desktop/scripts/lib/normal-host-candidate-identity.mjs
+@@ -5,6 +5,7 @@
+ import { isAbsolute } from "node:path";
+ import { promisify } from "node:util";
+ import { NarrowResourceError } from "../macos-cua-narrow-resources-base.mjs";
++import { renameElectronHelperBundles } from "./cua-desktop-candidate-app-files.mjs";
+ 
+ export const NORMAL_HOST_CANDIDATE_APP_BUNDLE_NAME = "Zody CUA Normal Host Candidate.app";
+ export const NORMAL_HOST_CANDIDATE_DISPLAY_NAME = "Zody CUA Normal Host Candidate";
+@@ -25,12 +26,25 @@
+ export async function rewriteNormalHostCandidateAppIdentity({
+   infoPlistPath,
+   packageJsonPath,
++  frameworksDir,
++  sourceApplicationName,
+   runPlutil = runPlutilCommand,
++  renameHelpers = renameElectronHelperBundles,
+ }) {
+-  if (!isAbsolute(infoPlistPath) || !isAbsolute(packageJsonPath)) {
++  if (!isAbsolute(infoPlistPath) || !isAbsolute(packageJsonPath) || !isAbsolute(frameworksDir)) {
+     throw new NarrowResourceError(
+       "normal-host-identity-path",
+-      "candidate Info.plist and package.json paths must be absolute",
++      "candidate Info.plist, package.json, and Frameworks paths must be absolute",
++    );
++  }
++  if (
++    typeof sourceApplicationName !== "string" ||
++    !sourceApplicationName.trim() ||
++    /[/:]/.test(sourceApplicationName)
++  ) {
++    throw new NarrowResourceError(
++      "normal-host-identity-helper-source",
++      "candidate source application name is required for Chromium Helper renaming",
+     );
+   }
+   for (const [key, value] of [
+@@ -43,10 +57,17 @@
+   const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8"));
+   packageJson.name = NORMAL_HOST_CANDIDATE_PACKAGE_NAME;
+   await writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`, { mode: 0o600 });
++  // 修复依据：Electron 41 的 GetHelperAppPath 先尝试固定 Electron Helper，再按父 app
++  // 的应用名寻找 "<name> Helper"；正式 shell 的四个 Chromium Helper 必须与候选父名一致。
++  // 该步骤只重命名既有 helper bundle/executable/plist，不创建进程或 wrapper。
++  const chromiumHelpers = await renameHelpers(frameworksDir, NORMAL_HOST_CANDIDATE_DISPLAY_NAME, {
++    sourceApplicationName,
++  });
+   return {
+     appBundleName: NORMAL_HOST_CANDIDATE_APP_BUNDLE_NAME,
+     displayName: NORMAL_HOST_CANDIDATE_DISPLAY_NAME,
+     bundleIdentifier: NORMAL_HOST_CANDIDATE_BUNDLE_ID,
+     packageName: NORMAL_HOST_CANDIDATE_PACKAGE_NAME,
++    chromiumHelpers,
+   };
+ }
+--- a/packages/desktop/scripts/lib/normal-host-candidate-output.mjs
++++ b/packages/desktop/scripts/lib/normal-host-candidate-output.mjs
+@@ -87,6 +87,31 @@
+   await writeFile(join(staging, "host-profile.json"), hostProfileSource, { mode: 0o600 });
+ }
+ 
++export function createAppAsarManifestFacts({ entries, integrity }) {
++  return {
++    entries,
++    algorithm: integrity.algorithm,
++    headerBytes: integrity.headerBytes,
++    headerSha256: integrity.headerSha256,
++    archiveBytes: integrity.archiveBytes,
++    archiveSha256: integrity.archiveSha256,
++    embeddedIntegrityUpdated: true,
++  };
++}
++
++function finalizeCandidateUiIdentity(candidateUiIdentity, finalPath) {
++  return {
++    ...candidateUiIdentity,
++    chromiumHelpers: candidateUiIdentity.chromiumHelpers.map((helper) => ({
++      ...helper,
++      executable: {
++        ...helper.executable,
++        path: finalPath(helper.executable.path),
++      },
++    })),
++  };
++}
++
+ export async function buildNormalHostCandidateManifest({
+   options,
+   appBundle,
+@@ -99,7 +124,7 @@
+   packageNames,
+   appDir,
+   entries,
+-  packed,
++  asarIntegrity,
+   asarFiles,
+   nodePtyHelperInfo,
+   publicBuildEvidence,
+@@ -128,7 +153,7 @@
+       appAsar: finalPath(copiedLayout.appAsarPath),
+       appAsarUnpacked: finalPath(copiedLayout.appAsarUnpackedPath),
+       packageMain: parsedPackageJson.main,
+-      identity: candidateUiIdentity,
++      identity: finalizeCandidateUiIdentity(candidateUiIdentity, finalPath),
+     },
+     buildProfile: {
+       kind: prepared.profile.kind,
+@@ -154,12 +179,7 @@
+       externalSymlinks: 0,
+       topLevelEntries: packageNames.length,
+     },
+-    appAsar: {
+-      entries: asarFiles.length,
+-      bytes: packed.bytes,
+-      sha256: packed.sha256,
+-      embeddedIntegrityUpdated: true,
+-    },
++    appAsar: createAppAsarManifestFacts({ entries: asarFiles.length, integrity: asarIntegrity }),
+     nativeUnpacked: {
+       nodePtySpawnHelperMode: (nodePtyHelperInfo.mode & 0o777).toString(8).padStart(4, "0"),
+       modePreservedFromShell: true,
+--- /dev/null
++++ b/packages/desktop/scripts/macos-asar-integrity.mjs
+@@ -0,0 +1,194 @@
++// Shared macOS ASAR integrity owner for electron-builder and the normal Host candidate.
++// Electron hashes the raw ASAR header string, not the whole archive. The plist hash must be
++// refreshed after the last ASAR rewrite and before any signing step.
++import { execFile } from "node:child_process";
++import { createHash } from "node:crypto";
++import { createReadStream } from "node:fs";
++import { stat } from "node:fs/promises";
++import { isAbsolute } from "node:path";
++import { promisify } from "node:util";
++import asar from "@electron/asar";
++
++const execFileAsync = promisify(execFile);
++const PLISTBUDDY_PATH = "/usr/libexec/PlistBuddy";
++const ASAR_INTEGRITY_KEY_PATH = ":ElectronAsarIntegrity:Resources/app.asar";
++
++export class MacosAsarIntegrityError extends Error {
++  constructor(code, message, cause) {
++    super(message, cause ? { cause } : undefined);
++    this.name = "MacosAsarIntegrityError";
++    this.code = code;
++  }
++}
++
++function integrityError(code, message, cause) {
++  return new MacosAsarIntegrityError(code, message, cause);
++}
++
++function sha256(bytes) {
++  return createHash("sha256").update(bytes).digest("hex");
++}
++
++async function sha256File(path) {
++  const hash = createHash("sha256");
++  for await (const chunk of createReadStream(path)) hash.update(chunk);
++  return hash.digest("hex");
++}
++
++function isPlainObject(value) {
++  return value !== null && typeof value === "object" && !Array.isArray(value);
++}
++
++function assertRawHeader(rawHeader) {
++  if (typeof rawHeader?.headerString !== "string" || rawHeader.headerString.length === 0) {
++    throw integrityError("asar-integrity-invalid-header", "ASAR raw header string is missing");
++  }
++  if (!Number.isInteger(rawHeader.headerSize) || rawHeader.headerSize <= 0) {
++    throw integrityError("asar-integrity-invalid-header", "ASAR raw header size is invalid");
++  }
++  if (!isPlainObject(rawHeader.header) || !isPlainObject(rawHeader.header.files)) {
++    throw integrityError("asar-integrity-invalid-header", "ASAR header has no filesystem root");
++  }
++  return Buffer.from(rawHeader.headerString, "utf8");
++}
++
++export async function readMacosAsarIntegrity(appAsarPath) {
++  if (!isAbsolute(appAsarPath)) {
++    throw integrityError("asar-integrity-path", "app.asar path must be absolute");
++  }
++
++  let archiveInfo;
++  try {
++    archiveInfo = await stat(appAsarPath);
++  } catch (cause) {
++    if (cause?.code === "ENOENT") {
++      throw integrityError(
++        "asar-integrity-missing-archive",
++        `app.asar is missing: ${appAsarPath}`,
++        cause,
++      );
++    }
++    throw integrityError(
++      "asar-integrity-unreadable-archive",
++      `app.asar is unreadable: ${appAsarPath}`,
++      cause,
++    );
++  }
++  if (!archiveInfo.isFile()) {
++    throw integrityError(
++      "asar-integrity-unreadable-archive",
++      `app.asar is not a file: ${appAsarPath}`,
++    );
++  }
++  let archiveSha256;
++  try {
++    archiveSha256 = await sha256File(appAsarPath);
++  } catch (cause) {
++    throw integrityError(
++      "asar-integrity-unreadable-archive",
++      `app.asar is unreadable: ${appAsarPath}`,
++      cause,
++    );
++  }
++
++  let rawHeader;
++  try {
++    rawHeader = asar.getRawHeader(appAsarPath);
++  } catch (cause) {
++    throw integrityError(
++      "asar-integrity-invalid-header",
++      `app.asar header is invalid: ${appAsarPath}`,
++      cause,
++    );
++  }
++  const headerBytes = assertRawHeader(rawHeader);
++
++  return Object.freeze({
++    // 修复依据：app-builder-lib 的 hashHeader 读取 readAsarHeader().header，即
++    // getRawHeader().headerString 的 UTF-8 字节；whole-archive SHA 只能单独记录。
++    algorithm: "SHA256",
++    headerBytes: headerBytes.length,
++    headerSha256: sha256(headerBytes),
++    archiveBytes: archiveInfo.size,
++    archiveSha256,
++  });
++}
++
++async function runPlistBuddyCommand(args) {
++  const { stdout } = await execFileAsync(PLISTBUDDY_PATH, args, {
++    encoding: "utf8",
++    maxBuffer: 64 * 1024,
++  });
++  return stdout;
++}
++
++async function readIntegrityPlistValue(infoPlistPath, key, runPlistBuddy) {
++  let value;
++  try {
++    value = await runPlistBuddy(["-c", `Print ${ASAR_INTEGRITY_KEY_PATH}:${key}`, infoPlistPath]);
++  } catch (cause) {
++    throw integrityError(
++      "asar-integrity-plist-entry",
++      `Info.plist lacks ${ASAR_INTEGRITY_KEY_PATH}:${key}`,
++      cause,
++    );
++  }
++  const normalized = value.trim();
++  if (!normalized) {
++    throw integrityError(
++      "asar-integrity-plist-entry",
++      `Info.plist has an empty ${ASAR_INTEGRITY_KEY_PATH}:${key}`,
++    );
++  }
++  return normalized;
++}
++
++export async function refreshMacosAsarIntegrity({
++  appAsarPath,
++  infoPlistPath,
++  runPlistBuddy = runPlistBuddyCommand,
++}) {
++  if (!isAbsolute(infoPlistPath)) {
++    throw integrityError("asar-integrity-path", "Info.plist path must be absolute");
++  }
++
++  const integrity = await readMacosAsarIntegrity(appAsarPath);
++  const previousAlgorithm = await readIntegrityPlistValue(
++    infoPlistPath,
++    "algorithm",
++    runPlistBuddy,
++  );
++  // 未知算法不能静默改写成 SHA256 后宣称校验通过；只有既有 SHA256 条目可刷新。
++  if (previousAlgorithm !== "SHA256") {
++    throw integrityError(
++      "asar-integrity-plist-algorithm",
++      `Info.plist ASAR algorithm is unsupported: ${previousAlgorithm}`,
++    );
++  }
++  await readIntegrityPlistValue(infoPlistPath, "hash", runPlistBuddy);
++
++  await runPlistBuddy([
++    "-c",
++    `Set ${ASAR_INTEGRITY_KEY_PATH}:hash ${integrity.headerSha256}`,
++    infoPlistPath,
++  ]);
++  await runPlistBuddy([
++    "-c",
++    `Set ${ASAR_INTEGRITY_KEY_PATH}:algorithm ${integrity.algorithm}`,
++    infoPlistPath,
++  ]);
++
++  const refreshedHash = await readIntegrityPlistValue(infoPlistPath, "hash", runPlistBuddy);
++  const refreshedAlgorithm = await readIntegrityPlistValue(
++    infoPlistPath,
++    "algorithm",
++    runPlistBuddy,
++  );
++  if (refreshedHash !== integrity.headerSha256 || refreshedAlgorithm !== integrity.algorithm) {
++    throw integrityError(
++      "asar-integrity-refresh-mismatch",
++      "Info.plist ASAR integrity did not persist the refreshed values",
++    );
++  }
++  return integrity;
++}
+--- /dev/null
++++ b/packages/desktop/test/macosAsarIntegrity.test.ts
+@@ -0,0 +1,226 @@
++import { execFileSync } from "node:child_process";
++import { createHash } from "node:crypto";
++import {
++  existsSync,
++  mkdirSync,
++  mkdtempSync,
++  readFileSync,
++  rmSync,
++  statSync,
++  writeFileSync,
++} from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import asar from "@electron/asar";
++import { afterEach, describe, expect, it } from "vitest";
++import { packAppAsar } from "../scripts/lib/normal-host-candidate-asar.mjs";
++import { createAppAsarManifestFacts } from "../scripts/lib/normal-host-candidate-output.mjs";
++import {
++  readMacosAsarIntegrity,
++  refreshMacosAsarIntegrity,
++} from "../scripts/macos-asar-integrity.mjs";
++
++const createdRoots: string[] = [];
++
++afterEach(() => {
++  for (const root of createdRoots.splice(0).reverse()) {
++    rmSync(root, { recursive: true, force: true });
++  }
++});
++
++function createRoot(): string {
++  const root = mkdtempSync(join(tmpdir(), "zody-macos-asar-integrity-"));
++  createdRoots.push(root);
++  return root;
++}
++
++function sha256(value: string | Buffer): string {
++  return createHash("sha256").update(value).digest("hex");
++}
++
++async function createArchive(root: string, marker = "first"): Promise<string> {
++  const sourceDir = join(root, "app-source");
++  const archivePath = join(root, "app.asar");
++  mkdirSync(join(sourceDir, "out", "main"), { recursive: true });
++  mkdirSync(join(sourceDir, "node_modules", "node-pty", "prebuilds", "darwin-arm64"), {
++    recursive: true,
++  });
++  writeFileSync(join(sourceDir, "package.json"), '{"main":"out/main/index.js"}\n');
++  writeFileSync(join(sourceDir, "out", "main", "index.js"), `${marker}\n`);
++  writeFileSync(
++    join(sourceDir, "node_modules", "node-pty", "prebuilds", "darwin-arm64", "spawn-helper"),
++    "native-helper",
++  );
++  await packAppAsar({
++    sourceDir,
++    appAsarPath: archivePath,
++    targetPlatformKey: "darwin-arm64",
++  });
++  return archivePath;
++}
++
++function writeInfoPlist(infoPlistPath: string, hash = "0".repeat(64)): void {
++  mkdirSync(join(infoPlistPath, ".."), { recursive: true });
++  writeFileSync(
++    infoPlistPath,
++    `<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++  <key>ElectronAsarIntegrity</key>
++  <dict>
++    <key>Resources/app.asar</key>
++    <dict>
++      <key>hash</key>
++      <string>${hash}</string>
++      <key>algorithm</key>
++      <string>SHA256</string>
++    </dict>
++  </dict>
++</dict>
++</plist>
++`,
++  );
++}
++
++function readPlistValue(infoPlistPath: string, key: string): string {
++  return execFileSync(
++    "/usr/libexec/PlistBuddy",
++    ["-c", `Print :ElectronAsarIntegrity:Resources/app.asar:${key}`, infoPlistPath],
++    { encoding: "utf8" },
++  ).trim();
++}
++
++describe("macOS ASAR integrity", () => {
++  it("hashes the exact raw header separately from the full archive", async () => {
++    const root = createRoot();
++    const archivePath = await createArchive(root);
++    const integrity = await readMacosAsarIntegrity(archivePath);
++    const rawHeader = asar.getRawHeader(archivePath);
++
++    expect(integrity).toEqual({
++      algorithm: "SHA256",
++      headerBytes: Buffer.byteLength(rawHeader.headerString, "utf8"),
++      headerSha256: sha256(Buffer.from(rawHeader.headerString, "utf8")),
++      archiveBytes: statSync(archivePath).size,
++      archiveSha256: sha256(readFileSync(archivePath)),
++    });
++    expect(integrity.headerSha256).not.toBe(integrity.archiveSha256);
++  });
++
++  it.skipIf(process.platform !== "darwin")(
++    "replaces a stale plist hash after the final ASAR rewrite",
++    async () => {
++      const root = createRoot();
++      const archivePath = await createArchive(root, "first");
++      const infoPlistPath = join(root, "Fixture.app", "Contents", "Info.plist");
++      writeInfoPlist(infoPlistPath);
++
++      const first = await refreshMacosAsarIntegrity({ appAsarPath: archivePath, infoPlistPath });
++      expect(readPlistValue(infoPlistPath, "hash")).toBe(first.headerSha256);
++      expect(readPlistValue(infoPlistPath, "hash")).not.toBe(first.archiveSha256);
++
++      await createArchive(root, "rewritten-after-pack");
++      const second = await refreshMacosAsarIntegrity({ appAsarPath: archivePath, infoPlistPath });
++
++      expect(second.headerSha256).not.toBe(first.headerSha256);
++      expect(second.archiveSha256).not.toBe(first.archiveSha256);
++      expect(readPlistValue(infoPlistPath, "hash")).toBe(second.headerSha256);
++      expect(readPlistValue(infoPlistPath, "algorithm")).toBe("SHA256");
++    },
++  );
++
++  it("fails closed for a missing or malformed archive", async () => {
++    const root = createRoot();
++    await expect(readMacosAsarIntegrity(join(root, "missing.asar"))).rejects.toMatchObject({
++      code: "asar-integrity-missing-archive",
++    });
++
++    const malformedPath = join(root, "malformed.asar");
++    writeFileSync(malformedPath, "not-an-asar");
++    await expect(readMacosAsarIntegrity(malformedPath)).rejects.toMatchObject({
++      code: "asar-integrity-invalid-header",
++    });
++  });
++
++  it.skipIf(process.platform !== "darwin")(
++    "fails closed when the plist has no ASAR integrity entry",
++    async () => {
++      const root = createRoot();
++      const archivePath = await createArchive(root);
++      const infoPlistPath = join(root, "Fixture.app", "Contents", "Info.plist");
++      mkdirSync(join(infoPlistPath, ".."), { recursive: true });
++      writeFileSync(
++        infoPlistPath,
++        `<?xml version="1.0" encoding="UTF-8"?>\n<plist version="1.0"><dict/></plist>\n`,
++      );
++
++      await expect(
++        refreshMacosAsarIntegrity({ appAsarPath: archivePath, infoPlistPath }),
++      ).rejects.toMatchObject({ code: "asar-integrity-plist-entry" });
++    },
++  );
++
++  it("keeps candidate manifest archive and header digests explicit", () => {
++    const facts = createAppAsarManifestFacts({
++      entries: 3,
++      integrity: {
++        algorithm: "SHA256",
++        headerBytes: 512,
++        headerSha256: "a".repeat(64),
++        archiveBytes: 4096,
++        archiveSha256: "b".repeat(64),
++      },
++    });
++
++    expect(facts).toEqual({
++      entries: 3,
++      algorithm: "SHA256",
++      headerBytes: 512,
++      headerSha256: "a".repeat(64),
++      archiveBytes: 4096,
++      archiveSha256: "b".repeat(64),
++      embeddedIntegrityUpdated: true,
++    });
++    expect(facts).not.toHaveProperty("bytes");
++    expect(facts).not.toHaveProperty("sha256");
++  });
++
++  it("refreshes formal Darwin integrity after ASAR rewrites and before afterSign", () => {
++    const configSource = readFileSync(
++      join(import.meta.dirname, "../electron-builder.config.js"),
++      "utf8",
++    );
++    const injectIndex = configSource.indexOf(
++      'runTimedAsync("afterPack:injectHoistedRuntimeModulesIntoAsar"',
++    );
++    const stripIndex = configSource.indexOf(
++      'runTimedAsync("afterPack:stripPackagedSourcemapReferences"',
++    );
++    const refreshIndex = configSource.indexOf(
++      'runTimedAsync("afterPack:refreshDarwinAsarIntegrity"',
++    );
++    const afterSignIndex = configSource.indexOf("afterSign: async");
++
++    expect(injectIndex).toBeGreaterThan(-1);
++    expect(stripIndex).toBeGreaterThan(injectIndex);
++    expect(refreshIndex).toBeGreaterThan(stripIndex);
++    expect(afterSignIndex).toBeGreaterThan(refreshIndex);
++    expect(configSource.slice(afterSignIndex)).not.toContain("refreshDarwinAsarIntegrity");
++  });
++
++  it("keeps the candidate and formal builders on the shared refresh helper", () => {
++    const candidateSource = readFileSync(
++      join(import.meta.dirname, "../scripts/build-cua-normal-host-candidate.mjs"),
++      "utf8",
++    );
++    const configSource = readFileSync(
++      join(import.meta.dirname, "../electron-builder.config.js"),
++      "utf8",
++    );
++
++    expect(candidateSource).toContain("refreshMacosAsarIntegrity");
++    expect(configSource).toContain("refreshMacosAsarIntegrity");
++    expect(existsSync(join(import.meta.dirname, "../scripts/macos-asar-integrity.mjs"))).toBe(true);
++  });
++});
+--- a/packages/desktop/test/normalHostCandidateAssembly.test.ts
++++ b/packages/desktop/test/normalHostCandidateAssembly.test.ts
+@@ -11,13 +11,9 @@
+   writeFileSync,
+ } from "node:fs";
+ import { tmpdir } from "node:os";
+-import { dirname, join } from "node:path";
++import { join } from "node:path";
+ import { afterEach, describe, expect, it } from "vitest";
+-import {
+-  extractAppAsar,
+-  packAppAsar,
+-  setElectronAsarIntegrityHash,
+-} from "../scripts/lib/normal-host-candidate-asar.mjs";
++import { extractAppAsar, packAppAsar } from "../scripts/lib/normal-host-candidate-asar.mjs";
+ import { writeNormalHostBuildEvidence } from "../scripts/lib/normal-host-candidate-evidence.mjs";
+ import { copyNormalHostAppBundle } from "../scripts/lib/normal-host-candidate-app-copy.mjs";
+ 
+@@ -136,40 +132,6 @@
+     ).toBe("native-module");
+   });
+ 
+-  it.skipIf(process.platform !== "darwin")(
+-    "updates embedded asar integrity without changing the signing algorithm",
+-    () => {
+-      const root = createRoot();
+-      const plistPath = join(root, "Info.plist");
+-      mkdirSync(dirname(plistPath), { recursive: true });
+-      writeFileSync(
+-        plistPath,
+-        `<?xml version="1.0" encoding="UTF-8"?>
+-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+-<plist version="1.0">
+-<dict>
+-  <key>ElectronAsarIntegrity</key>
+-  <dict>
+-    <key>Resources/app.asar</key>
+-    <dict>
+-      <key>hash</key>
+-      <string>${"0".repeat(64)}</string>
+-      <key>algorithm</key>
+-      <string>SHA256</string>
+-    </dict>
+-  </dict>
+-</dict>
+-</plist>
+-`,
+-      );
+-      const nextHash = "a".repeat(64);
+-      setElectronAsarIntegrityHash(plistPath, nextHash);
+-      const updated = readFileSync(plistPath, "utf8");
+-      expect(updated).toContain(nextHash);
+-      expect(updated).toContain("<string>SHA256</string>");
+-    },
+-  );
+-
+   it("reads app.asar entries through the API without writing into cwd", async () => {
+     const root = createRoot();
+     const sourceDir = join(root, "app");
+--- /dev/null
++++ b/packages/desktop/test/normalHostCandidateIdentity.test.ts
+@@ -0,0 +1,190 @@
++import { execFileSync } from "node:child_process";
++import { createHash } from "node:crypto";
++import {
++  existsSync,
++  lstatSync,
++  mkdirSync,
++  mkdtempSync,
++  readFileSync,
++  readlinkSync,
++  rmSync,
++  writeFileSync,
++} from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { afterEach, describe, expect, it } from "vitest";
++import { renameElectronHelperBundles } from "../scripts/lib/cua-desktop-candidate-app-files.mjs";
++import {
++  NORMAL_HOST_CANDIDATE_BUNDLE_ID,
++  NORMAL_HOST_CANDIDATE_DISPLAY_NAME,
++  NORMAL_HOST_CANDIDATE_PACKAGE_NAME,
++  rewriteNormalHostCandidateAppIdentity,
++} from "../scripts/lib/normal-host-candidate-profile.mjs";
++
++const createdRoots: string[] = [];
++
++afterEach(() => {
++  for (const root of createdRoots.splice(0).reverse()) {
++    rmSync(root, { recursive: true, force: true });
++  }
++});
++
++function createRoot(): string {
++  const root = mkdtempSync(join(tmpdir(), "zody-normal-host-helper-identity-"));
++  createdRoots.push(root);
++  return root;
++}
++
++function writePlist(path: string, values: Record<string, string>): void {
++  const entries = Object.entries(values)
++    .map(([key, value]) => `<key>${key}</key><string>${value}</string>`)
++    .join("\n");
++  mkdirSync(join(path, ".."), { recursive: true });
++  writeFileSync(
++    path,
++    `<?xml version="1.0" encoding="UTF-8"?>\n<plist version="1.0"><dict>\n${entries}\n</dict></plist>\n`,
++  );
++}
++
++function createHelperBundle(frameworksDir: string, name: string): void {
++  const executablePath = join(frameworksDir, `${name}.app`, "Contents", "MacOS", name);
++  mkdirSync(join(executablePath, ".."), { recursive: true });
++  const executable = Buffer.alloc(16);
++  executable.writeUInt32BE(0xfeedfacf, 0);
++  writeFileSync(executablePath, executable);
++  writePlist(join(frameworksDir, `${name}.app`, "Contents", "Info.plist"), {
++    CFBundleExecutable: name,
++    CFBundleIdentifier: `io.github.zclaudia.zody.helper.${name}`,
++    CFBundleName: name,
++    CFBundleDisplayName: name,
++  });
++}
++
++function readPlistString(path: string, key: string): string {
++  return execFileSync("/usr/libexec/PlistBuddy", ["-c", `Print :${key}`, path], {
++    encoding: "utf8",
++  }).trim();
++}
++
++function sha256File(path: string): string {
++  return createHash("sha256").update(readFileSync(path)).digest("hex");
++}
++
++describe("normal Host candidate Chromium helper identity", () => {
++  it.skipIf(process.platform !== "darwin")(
++    "renames all four existing shell helpers and preserves native identities",
++    async () => {
++      const root = createRoot();
++      const appBundle = join(root, NORMAL_HOST_CANDIDATE_DISPLAY_NAME + ".app");
++      const contentsDir = join(appBundle, "Contents");
++      const frameworksDir = join(contentsDir, "Frameworks");
++      const sourceApplicationName = "Zody Preview";
++      const sourceNames = [
++        "Zody Preview Helper",
++        "Zody Preview Helper (GPU)",
++        "Zody Preview Helper (Renderer)",
++        "Zody Preview Helper (Plugin)",
++      ];
++      for (const sourceName of sourceNames) createHelperBundle(frameworksDir, sourceName);
++
++      const frameworkVersionsDir = join(frameworksDir, "Electron Framework.framework", "Versions");
++      mkdirSync(join(frameworkVersionsDir, "A"), { recursive: true });
++      execFileSync("ln", ["-s", "A", join(frameworkVersionsDir, "Current")]);
++      const frameworkLink = join(frameworkVersionsDir, "Current");
++      const frameworkLinkTarget = readlinkSync(frameworkLink);
++
++      const nativeHelperPath = join(
++        contentsDir,
++        "Resources",
++        "cua-helper",
++        "CUA Helper.app",
++        "Contents",
++        "MacOS",
++        "cua-helper",
++      );
++      mkdirSync(join(nativeHelperPath, ".."), { recursive: true });
++      writeFileSync(nativeHelperPath, "fixed-native-helper-bytes");
++      const nativeHelperSha256 = sha256File(nativeHelperPath);
++
++      const infoPlistPath = join(contentsDir, "Info.plist");
++      writePlist(infoPlistPath, {
++        CFBundleIdentifier: "io.github.zclaudia.zody.preview",
++        CFBundleName: sourceApplicationName,
++        CFBundleDisplayName: sourceApplicationName,
++      });
++      const packageJsonPath = join(contentsDir, "Resources", "package.json");
++      mkdirSync(join(packageJsonPath, ".."), { recursive: true });
++      writeFileSync(packageJsonPath, JSON.stringify({ name: "@zcode/desktop" }));
++
++      const identity = await rewriteNormalHostCandidateAppIdentity({
++        infoPlistPath,
++        packageJsonPath,
++        frameworksDir,
++        sourceApplicationName,
++      });
++
++      expect(identity.chromiumHelpers).toHaveLength(4);
++      for (const [index, sourceName] of sourceNames.entries()) {
++        const suffix = sourceName.slice(sourceApplicationName.length + 1);
++        const targetName = `${NORMAL_HOST_CANDIDATE_DISPLAY_NAME} ${suffix}`;
++        expect(existsSync(join(frameworksDir, `${sourceName}.app`))).toBe(false);
++        expect(existsSync(join(frameworksDir, `${targetName}.app`))).toBe(true);
++        expect(
++          existsSync(join(frameworksDir, `${targetName}.app`, "Contents", "MacOS", targetName)),
++        ).toBe(true);
++        expect(
++          readPlistString(
++            join(frameworksDir, `${targetName}.app`, "Contents", "Info.plist"),
++            "CFBundleExecutable",
++          ),
++        ).toBe(targetName);
++        expect(identity.chromiumHelpers[index]).toMatchObject({
++          from: `${sourceName}.app`,
++          to: `${targetName}.app`,
++        });
++      }
++
++      expect(readPlistString(infoPlistPath, "CFBundleIdentifier")).toBe(
++        NORMAL_HOST_CANDIDATE_BUNDLE_ID,
++      );
++      expect(readPlistString(infoPlistPath, "CFBundleName")).toBe(
++        NORMAL_HOST_CANDIDATE_DISPLAY_NAME,
++      );
++      expect(JSON.parse(readFileSync(packageJsonPath, "utf8"))).toMatchObject({
++        name: NORMAL_HOST_CANDIDATE_PACKAGE_NAME,
++      });
++      expect(lstatSync(frameworkLink).isSymbolicLink()).toBe(true);
++      expect(readlinkSync(frameworkLink)).toBe(frameworkLinkTarget);
++      expect(sha256File(nativeHelperPath)).toBe(nativeHelperSha256);
++    },
++  );
++
++  it.skipIf(process.platform !== "darwin")(
++    "keeps the existing Electron Helper rename path working",
++    async () => {
++      const root = createRoot();
++      const frameworksDir = join(root, "Frameworks");
++      const sourceNames = [
++        "Electron Helper",
++        "Electron Helper (GPU)",
++        "Electron Helper (Renderer)",
++        "Electron Helper (Plugin)",
++      ];
++      for (const sourceName of sourceNames) createHelperBundle(frameworksDir, sourceName);
++
++      const renamed = await renameElectronHelperBundles(frameworksDir, "Old Candidate");
++
++      expect(renamed).toHaveLength(4);
++      for (const [index, sourceName] of sourceNames.entries()) {
++        const suffix = sourceName.slice("Electron ".length);
++        const targetName = `Old Candidate ${suffix}`;
++        expect(existsSync(join(frameworksDir, `${sourceName}.app`))).toBe(false);
++        expect(existsSync(join(frameworksDir, `${targetName}.app`))).toBe(true);
++        expect(renamed[index]).toMatchObject({
++          from: `${sourceName}.app`,
++          to: `${targetName}.app`,
++        });
++      }
++    },
++  );
++});
+--- /dev/null
++++ b/packages/desktop/test/normalHostCandidateManifest.test.ts
+@@ -0,0 +1,150 @@
++import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join, relative, sep } from "node:path";
++import { afterEach, describe, expect, it } from "vitest";
++import {
++  buildNormalHostCandidateManifest,
++  writeCandidateManifest,
++} from "../scripts/lib/normal-host-candidate-output.mjs";
++
++const createdRoots: string[] = [];
++
++afterEach(() => {
++  for (const root of createdRoots.splice(0).reverse()) {
++    rmSync(root, { recursive: true, force: true });
++  }
++});
++
++function createRoot(): string {
++  const root = mkdtempSync(join(tmpdir(), "zody-normal-host-manifest-"));
++  createdRoots.push(root);
++  return root;
++}
++
++function createCompiledEntries(appDir: string) {
++  return Object.fromEntries(
++    ["main", "host", "scheduler"].map((name) => {
++      const outDir = join(appDir, "out", name);
++      mkdirSync(outDir, { recursive: true });
++      writeFileSync(join(outDir, "index.js"), `${name}\n`);
++      return [name, { bytes: 1, sha256: "a".repeat(64) }];
++    }),
++  );
++}
++
++describe("normal Host candidate manifest identity", () => {
++  it("normalizes every Chromium helper executable path to the final output", async () => {
++    const root = createRoot();
++    const staging = join(root, ".normal-host-candidate-fixture");
++    const finalRoot = join(root, "normal-host-candidate-final");
++    const appBundle = join(staging, "Zody CUA Normal Host Candidate.app");
++    const appDir = join(staging, "app-runtime");
++    const copiedLayout = {
++      appAsarPath: join(appBundle, "Contents", "Resources", "app.asar"),
++      appAsarUnpackedPath: join(appBundle, "Contents", "Resources", "app.asar.unpacked"),
++    };
++    const targetHelperName = "Zody CUA Normal Host Candidate Helper";
++    const stagingExecutablePath = join(
++      appBundle,
++      "Contents",
++      "Frameworks",
++      `${targetHelperName}.app`,
++      "Contents",
++      "MacOS",
++      targetHelperName,
++    );
++    const candidateUiIdentity = {
++      appBundleName: "Zody CUA Normal Host Candidate.app",
++      displayName: "Zody CUA Normal Host Candidate",
++      bundleIdentifier: "io.github.zclaudia.zody.cua-normal-host-candidate",
++      packageName: "zody-cua-normal-host-candidate",
++      chromiumHelpers: [
++        {
++          from: "Zody Preview Helper.app",
++          to: `${targetHelperName}.app`,
++          executable: {
++            path: stagingExecutablePath,
++            bytes: 1234,
++            sha256: "b".repeat(64),
++            mode: "0755",
++            entitlementsSha256: "c".repeat(64),
++          },
++        },
++      ],
++    };
++    const finalPath = (path: string) => {
++      const relativePath = relative(staging, path);
++      if (!relativePath || relativePath === ".." || relativePath.startsWith(`..${sep}`)) {
++        throw new Error(`candidate manifest path is outside staging: ${path}`);
++      }
++      return join(finalRoot, relativePath);
++    };
++    const candidateManifest = await buildNormalHostCandidateManifest({
++      options: { appShell: join(root, "Zody Preview.app") },
++      appBundle,
++      copiedLayout,
++      parsedPackageJson: { main: "out/main/index.js" },
++      candidateUiIdentity,
++      prepared: {
++        profile: {
++          kind: "zody-cua-narrow-agent-profile",
++          schemaVersion: 1,
++          capability: "screenshot.single-window",
++          testedTarget: { os: "darwin", arch: "arm64" },
++          workspaceAllowlist: [],
++          provider: { revisionSha256: "d".repeat(64) },
++          network: { digestSha256: "e".repeat(64) },
++          resourceManifest: { sha256: "f".repeat(64) },
++        },
++        manifestSha256: "f".repeat(64),
++        launcherSha256: "0".repeat(64),
++        networkDigestSha256: "e".repeat(64),
++        profileSource: "fixture",
++      },
++      manifestDestination: join(appBundle, "Contents", "Resources", "cua-narrow", "manifest.json"),
++      reused: {},
++      packageNames: ["node-pty"],
++      appDir,
++      entries: createCompiledEntries(appDir),
++      asarIntegrity: {
++        algorithm: "SHA256",
++        headerBytes: 512,
++        headerSha256: "1".repeat(64),
++        archiveBytes: 4096,
++        archiveSha256: "2".repeat(64),
++      },
++      asarFiles: ["/package.json"],
++      nodePtyHelperInfo: { mode: 0o100755 },
++      publicBuildEvidence: {
++        directory: "build-evidence",
++        inputs: "build-evidence/inputs.json",
++        inputsSha256: "3".repeat(64),
++        builds: {},
++      },
++      finalPath,
++    });
++
++    await writeCandidateManifest({ staging, candidateManifest });
++
++    const manifestSource = readFileSync(
++      join(staging, "normal-host-candidate-manifest.json"),
++      "utf8",
++    );
++    const serialized = JSON.parse(manifestSource);
++    const helper = serialized.app.identity.chromiumHelpers[0];
++    const expectedExecutablePath = join(finalRoot, relative(staging, stagingExecutablePath));
++
++    expect(manifestSource).not.toContain(staging);
++    expect(helper.executable.path).toBe(expectedExecutablePath);
++    expect(helper.executable).toMatchObject({
++      bytes: 1234,
++      sha256: "b".repeat(64),
++      mode: "0755",
++      entitlementsSha256: "c".repeat(64),
++    });
++    expect(helper).toMatchObject({
++      from: "Zody Preview Helper.app",
++      to: `${targetHelperName}.app`,
++    });
++  });
++});
+--- a/packages/desktop/test/normalHostCandidateProfile.test.ts
++++ b/packages/desktop/test/normalHostCandidateProfile.test.ts
+@@ -303,12 +303,25 @@
+       JSON.stringify({ name: "@zcode/desktop", main: "out/main/index.js" }),
+     );
+     const plutilCalls: string[][] = [];
+-
+-    await rewriteNormalHostCandidateAppIdentity({
++    const helperRenameCalls: Array<[string, string, { sourceApplicationName: string }]> = [];
++
++    const identity = await rewriteNormalHostCandidateAppIdentity({
+       infoPlistPath,
+       packageJsonPath,
++      frameworksDir: join(root, "Frameworks"),
++      sourceApplicationName: "Zody Preview",
+       runPlutil: async (file, args) => {
+         plutilCalls.push([file, ...args]);
++      },
++      renameHelpers: async (frameworksDir, applicationName, options) => {
++        helperRenameCalls.push([frameworksDir, applicationName, options]);
++        return [
++          {
++            from: "Zody Preview Helper.app",
++            to: `${NORMAL_HOST_CANDIDATE_DISPLAY_NAME} Helper.app`,
++            executable: { path: "fixture", bytes: 1, sha256: "a".repeat(64) },
++          },
++        ];
+       },
+     });
+ 
+@@ -347,6 +360,14 @@
+       name: NORMAL_HOST_CANDIDATE_PACKAGE_NAME,
+       main: "out/main/index.js",
+     });
++    expect(helperRenameCalls).toEqual([
++      [
++        join(root, "Frameworks"),
++        NORMAL_HOST_CANDIDATE_DISPLAY_NAME,
++        { sourceApplicationName: "Zody Preview" },
++      ],
++    ]);
++    expect(identity.chromiumHelpers).toHaveLength(1);
+   });
+ 
+   it("parses a manifest option but assembly still requires an original", () => {
+--- /dev/null
++++ b/packages/services/src/zcode-agent/cuaNativeAuditLog.ts
+@@ -0,0 +1,341 @@
++import { z } from "zod";
++
++const CUA_NATIVE_AUDIT_PREFIX = "[cua-native] ";
++const CUA_NATIVE_AUDIT_MAX_LINE_CHARS = 4_096;
++const NODE_IDENTIFIER = "io.github.zclaudia.zody.cua-helper.node";
++
++const pidSchema = z.number().int().min(1).max(2_147_483_647);
++const positiveIntegerSchema = z.number().int().min(1).max(Number.MAX_SAFE_INTEGER);
++const nonNegativeIntegerSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
++const cdhash40Schema = z.string().regex(/^[0-9a-f]{40}$/u);
++const sha256Schema = z.string().regex(/^[0-9a-f]{64}$/u);
++
++const confirmationReasonSchema = z.enum([
++  "user-approved",
++  "user-canceled",
++  "owner-invalidated",
++  "authority-eof",
++  "confirmation-stale",
++  "shutdown",
++  "relay-liveness-error",
++  "relay-eof",
++  "signal",
++  "supervisor-destroyed",
++]);
++
++const captureReasonSchema = z.enum([
++  "connection-failed",
++  "entry-clean-exit",
++  "entry-fatal",
++  "entry-stopped",
++  "session-stopping",
++  "confirmation-unavailable",
++  "confirmation-denied",
++  "user-canceled",
++  "confirmation-invalidated",
++  "confirmation-canceled",
++  "peer-auth-failed",
++  "peer-pid-mismatch",
++  "node-loaded-code-mismatch",
++  "authority-transport-failed",
++  "bootstrap-failed",
++  "binding-invalid",
++  "window-target-invalid",
++  "machine-lease-unavailable",
++  "capture-file-name-unavailable",
++  "capture-file-verify-failed",
++  "capture-canceled",
++  "capture-result-not-accepted",
++  "capture-result-transport-failed",
++  "machine-lease-release-unconfirmed",
++  "final-owner-check-failed",
++  "post-confirm-check-failed",
++  "authority-buffer-not-empty",
++  "authority-fd-mode-failed",
++  "machine-lease-not-held",
++  "capture-context-incomplete",
++  "tcc-not-authorized",
++  "visual-start-denied",
++  "visual-take-png-failed",
++  "visual-png-invalid",
++  "visual-wait-failed",
++  "visual-resources-not-released",
++  "visual-destroy-pending",
++  "visual-staticlib-missing",
++  "capture-facts-missing",
++  "authority-revoke-failed",
++  "authority-revoke-not-confirmed",
++  "capture-create-failed",
++  "capture-write-failed",
++  "capture-fsync-failed",
++  "capture-failed",
++  "visual-failed",
++  "tcc-failed",
++  "capture-context-failed",
++  "peer-rejected",
++  "control-failed",
++  "transport-closed",
++  "authority-failed",
++  "unexpected-control-frame",
++]);
++
++const confirmationPresentedSchema = z
++  .object({ generation: positiveIntegerSchema })
++  .strict()
++  .transform((value) => ({ generation: value.generation }));
++
++const confirmationResolvedSchema = z
++  .object({
++    generation: positiveIntegerSchema,
++    allowed: z.boolean(),
++    reason: confirmationReasonSchema,
++  })
++  .strict()
++  .superRefine((value, context) => {
++    if (value.allowed !== (value.reason === "user-approved")) {
++      context.addIssue({ code: "custom", message: "confirmation result is inconsistent" });
++    }
++  })
++  .transform((value) => ({
++    generation: value.generation,
++    allowed: value.allowed,
++    reason: value.reason,
++  }));
++
++const cellSpawnedSchema = z
++  .object({ pid: pidSchema, suspended: z.boolean() })
++  .strict()
++  .transform((value) => ({ pid: value.pid, suspended: value.suspended }));
++
++const cellLoadedCodeSchema = z
++  .object({
++    pid: pidSchema,
++    verified: z.boolean(),
++    identifier: z.union([z.literal(NODE_IDENTIFIER), z.literal("")]),
++    cdhash: z.union([cdhash40Schema, z.literal("")]),
++    entitlementsEmpty: z.boolean(),
++  })
++  .strict()
++  .superRefine((value, context) => {
++    if (
++      value.verified &&
++      (value.identifier !== NODE_IDENTIFIER || value.cdhash === "" || !value.entitlementsEmpty)
++    ) {
++      context.addIssue({ code: "custom", message: "verified cell identity is incomplete" });
++    }
++  })
++  .transform((value) => ({
++    pid: value.pid,
++    verified: value.verified,
++    identifier: value.identifier,
++    cdhash: value.cdhash,
++    entitlementsEmpty: value.entitlementsEmpty,
++  }));
++
++const cellResumedSchema = z
++  .object({ pid: pidSchema })
++  .strict()
++  .transform((value) => ({ pid: value.pid }));
++
++const cellSourceSentSchema = z
++  .object({ pid: pidSchema, bytes: nonNegativeIntegerSchema })
++  .strict()
++  .transform((value) => ({ pid: value.pid, bytes: value.bytes }));
++
++const cellPeerVerifiedSchema = z
++  .object({
++    pid: pidSchema,
++    identifier: z.literal(NODE_IDENTIFIER),
++    cdhash: cdhash40Schema,
++    entitlementsEmpty: z.literal(true),
++  })
++  .strict()
++  .transform((value) => ({
++    pid: value.pid,
++    identifier: value.identifier,
++    cdhash: value.cdhash,
++    entitlementsEmpty: value.entitlementsEmpty,
++  }));
++
++const cellReapedSchema = z
++  .object({
++    pid: pidSchema,
++    confirmed: z.boolean(),
++    exitCode: z.union([z.number().int().min(0).max(255), z.null()]),
++    signal: z.union([z.number().int().min(1).max(128), z.null()]),
++  })
++  .strict()
++  .superRefine((value, context) => {
++    if (value.exitCode !== null && value.signal !== null) {
++      context.addIssue({ code: "custom", message: "reaped status cannot contain both fields" });
++    }
++  })
++  .transform((value) => ({
++    pid: value.pid,
++    confirmed: value.confirmed,
++    exitCode: value.exitCode,
++    signal: value.signal,
++  }));
++
++const machineLeaseReleasedSchema = z
++  .object({ confirmed: z.boolean() })
++  .strict()
++  .transform((value) => ({ confirmed: value.confirmed }));
++
++const captureDeliveredSchema = z
++  .object({
++    sha256: sha256Schema,
++    width: z.number().int().min(1).max(0xffff_ffff),
++    height: z.number().int().min(1).max(0xffff_ffff),
++    bytes: nonNegativeIntegerSchema,
++    resourcesReleased: z.literal(true),
++    machineLeaseReleased: z.literal(true),
++  })
++  .strict()
++  .transform((value) => ({
++    sha256: value.sha256,
++    width: value.width,
++    height: value.height,
++    bytes: value.bytes,
++    resourcesReleased: true,
++    machineLeaseReleased: true,
++  }));
++
++const captureRejectedSchema = z
++  .object({ reason: captureReasonSchema })
++  .strict()
++  .transform((value) => ({ reason: value.reason }));
++
++const visualCompletionHeldSchema = z
++  .object({
++    captureErrorPresent: z.boolean(),
++    hasImage: z.boolean(),
++    requestId: positiveIntegerSchema,
++  })
++  .strict()
++  .transform((value) => ({
++    captureErrorPresent: value.captureErrorPresent,
++    hasImage: value.hasImage,
++    requestId: value.requestId,
++  }));
++
++const visualSubmitReturnSchema = z
++  .object({ requestId: positiveIntegerSchema, targetMatches: z.boolean() })
++  .strict()
++  .transform((value) => ({ requestId: value.requestId, targetMatches: value.targetMatches }));
++
++const visualStopGateReleaseSchema = z
++  .object({
++    completionConsumed: z.literal(false),
++    gateResult: z.literal("stopped"),
++    heldCompletionDiscarded: z.literal(true),
++    requestId: positiveIntegerSchema,
++  })
++  .strict()
++  .transform((value) => ({
++    completionConsumed: false,
++    gateResult: "stopped" as const,
++    heldCompletionDiscarded: true,
++    requestId: value.requestId,
++  }));
++
++const visualStopGateTimeoutSchema = z
++  .object({
++    gateResult: z.literal("deadline-timeout"),
++    heldCompletionDiscarded: z.literal(true),
++    requestId: positiveIntegerSchema,
++    timeoutMs: z.literal(30_000),
++  })
++  .strict()
++  .transform((value) => ({
++    gateResult: "deadline-timeout" as const,
++    heldCompletionDiscarded: true,
++    requestId: value.requestId,
++    timeoutMs: 30_000,
++  }));
++
++const visualStopGateErrorSchema = z
++  .object({
++    gateResult: z.enum(["missing-operation", "invalid-result"]),
++    heldCompletionDiscarded: z.literal(true),
++    requestId: positiveIntegerSchema,
++  })
++  .strict()
++  .transform((value) => ({
++    gateResult: value.gateResult,
++    heldCompletionDiscarded: true,
++    requestId: value.requestId,
++  }));
++
++const markerSchemas = {
++  "confirmation-presented": confirmationPresentedSchema,
++  "confirmation-resolved": confirmationResolvedSchema,
++  "cell-spawned": cellSpawnedSchema,
++  "cell-loaded-code": cellLoadedCodeSchema,
++  "cell-resumed": cellResumedSchema,
++  "cell-source-sent": cellSourceSentSchema,
++  "cell-peer-verified": cellPeerVerifiedSchema,
++  "cell-reaped": cellReapedSchema,
++  "machine-lease-released": machineLeaseReleasedSchema,
++  "capture-delivered": captureDeliveredSchema,
++  "capture-rejected": captureRejectedSchema,
++  "visual-completion-held": visualCompletionHeldSchema,
++  "visual-submit-return": visualSubmitReturnSchema,
++  "visual-stop-gate-release": visualStopGateReleaseSchema,
++  "visual-stop-gate-timeout": visualStopGateTimeoutSchema,
++  "visual-stop-gate-error": visualStopGateErrorSchema,
++} as const;
++
++function containsControlCharacter(value: string): boolean {
++  for (const character of value) {
++    const codePoint = character.codePointAt(0)!;
++    if (codePoint < 0x20 || codePoint === 0x7f) return true;
++  }
++  return false;
++}
++
++/**
++ * 只接受 native source 中实际存在的固定审计行。
++ *
++ * 根因：raw stderr 在正式包只走 debug，运行中的 cell 验证和 visual gate 事实无法进入
++ * 既有 Host 日志。这里不转发原 JSON，而是严格校验后重建规范行，避免任意 CLI 文本、
++ * 额外 secret 字段或超长内容借诊断通道进入生产日志。
++ */
++export function parseCuaNativeAuditLine(line: string): string | undefined {
++  if (
++    line.length === 0 ||
++    line.length > CUA_NATIVE_AUDIT_MAX_LINE_CHARS ||
++    containsControlCharacter(line) ||
++    !line.startsWith(CUA_NATIVE_AUDIT_PREFIX)
++  ) {
++    return undefined;
++  }
++
++  const body = line.slice(CUA_NATIVE_AUDIT_PREFIX.length);
++  if (body === "machine-lease-acquired") {
++    return line;
++  }
++
++  const separator = body.indexOf(" ");
++  if (separator <= 0) return undefined;
++  const marker = body.slice(0, separator) as keyof typeof markerSchemas;
++  const payloadText = body.slice(separator + 1);
++  if (
++    !Object.hasOwn(markerSchemas, marker) ||
++    !payloadText.startsWith("{") ||
++    !payloadText.endsWith("}")
++  ) {
++    return undefined;
++  }
++
++  let payload: unknown;
++  try {
++    payload = JSON.parse(payloadText);
++  } catch {
++    return undefined;
++  }
++
++  const parsed = markerSchemas[marker].safeParse(payload);
++  if (!parsed.success) return undefined;
++  return `${CUA_NATIVE_AUDIT_PREFIX}${marker} ${JSON.stringify(parsed.data)}`;
++}
+--- a/packages/services/src/zcode-agent/zcodeAgentProcessManager.ts
++++ b/packages/services/src/zcode-agent/zcodeAgentProcessManager.ts
+@@ -37,6 +37,7 @@
+ import { ZCodeProtocolClient } from "./zcodeProtocolClient.js";
+ import { ZCodeStdioTransport, type ZCodeStdioChildLike } from "./zcodeStdioTransport.js";
+ import { readZCodeStdioTapDevState } from "./zcodeStdioTapDevConfig.js";
++import { parseCuaNativeAuditLine } from "./cuaNativeAuditLog.js";
+ import type { ZCodeAgentPresentationSurface } from "./zcodeAgentPresentationSurface.js";
+ import { shouldSpawnInDetachedProcessGroup } from "../process/processTreeTerminator.js";
+ import type { RuntimeProcessLifecycleReporter } from "../process/runtimeProcessLifecycle.js";
+@@ -1455,6 +1456,16 @@
+           return;
+         }
+         stderrTail.append(line);
++        if (effectiveCommand.nativeLauncher) {
++          // 根因：fixed native launcher 的审计 marker 过去只进 debug/退出 tail，正式包
++          // 看不到存活 cell 的验证与 diagnostic gate；这里只提升严格解析后的固定行，
++          // 不转发普通 CLI stderr，也不把该自报日志当作身份或授权事实。
++          const normalizedAuditLine = parseCuaNativeAuditLine(line);
++          if (normalizedAuditLine) {
++            log("CUA native audit", normalizedAuditLine);
++            return;
++          }
++        }
+         debugLog(line);
+       },
+       ownedProcessStartedAtMs: spawnRequestedAt,
+--- /dev/null
++++ b/packages/services/test/cuaNativeAuditLog.test.ts
+@@ -0,0 +1,160 @@
++import { describe, expect, it } from "vitest";
++import { parseCuaNativeAuditLine } from "../src/zcode-agent/cuaNativeAuditLog.js";
++
++const NODE_IDENTIFIER = "io.github.zclaudia.zody.cua-helper.node";
++const NODE_CDHASH = "3c57a9bb9f4e8b748ac80d60bc78cdde14767218";
++const PNG_SHA256 = "e1bca9e1d32237e21bb07ad1e8655268fbab04557d87d330c14112ed062d523e";
++
++const confirmationReasons = [
++  "user-approved",
++  "user-canceled",
++  "owner-invalidated",
++  "authority-eof",
++  "confirmation-stale",
++  "shutdown",
++  "relay-liveness-error",
++  "relay-eof",
++  "signal",
++  "supervisor-destroyed",
++] as const;
++
++const captureReasons = [
++  "connection-failed",
++  "entry-clean-exit",
++  "entry-fatal",
++  "entry-stopped",
++  "session-stopping",
++  "confirmation-unavailable",
++  "confirmation-denied",
++  "user-canceled",
++  "confirmation-invalidated",
++  "confirmation-canceled",
++  "peer-auth-failed",
++  "peer-pid-mismatch",
++  "node-loaded-code-mismatch",
++  "authority-transport-failed",
++  "bootstrap-failed",
++  "binding-invalid",
++  "window-target-invalid",
++  "machine-lease-unavailable",
++  "capture-file-name-unavailable",
++  "capture-file-verify-failed",
++  "capture-canceled",
++  "capture-result-not-accepted",
++  "capture-result-transport-failed",
++  "machine-lease-release-unconfirmed",
++  "final-owner-check-failed",
++  "post-confirm-check-failed",
++  "authority-buffer-not-empty",
++  "authority-fd-mode-failed",
++  "machine-lease-not-held",
++  "capture-context-incomplete",
++  "tcc-not-authorized",
++  "visual-start-denied",
++  "visual-take-png-failed",
++  "visual-png-invalid",
++  "visual-wait-failed",
++  "visual-resources-not-released",
++  "visual-destroy-pending",
++  "visual-staticlib-missing",
++  "capture-facts-missing",
++  "authority-revoke-failed",
++  "authority-revoke-not-confirmed",
++  "capture-create-failed",
++  "capture-write-failed",
++  "capture-fsync-failed",
++  "capture-failed",
++  "visual-failed",
++  "tcc-failed",
++  "capture-context-failed",
++  "peer-rejected",
++  "control-failed",
++  "transport-closed",
++  "authority-failed",
++  "unexpected-control-frame",
++] as const;
++
++const acceptedMarkers = [
++  "[cua-native] confirmation-presented {\"generation\":1}",
++  "[cua-native] confirmation-resolved {\"generation\":1,\"allowed\":true,\"reason\":\"user-approved\"}",
++  "[cua-native] cell-spawned {\"pid\":83436,\"suspended\":true}",
++  `[cua-native] cell-loaded-code {"pid":83436,"verified":true,"identifier":"${NODE_IDENTIFIER}","cdhash":"${NODE_CDHASH}","entitlementsEmpty":true}`,
++  "[cua-native] cell-resumed {\"pid\":83436}",
++  "[cua-native] cell-source-sent {\"pid\":83436,\"bytes\":26843545}",
++  `[cua-native] cell-peer-verified {"pid":83436,"identifier":"${NODE_IDENTIFIER}","cdhash":"${NODE_CDHASH}","entitlementsEmpty":true}`,
++  "[cua-native] cell-reaped {\"pid\":83436,\"confirmed\":true,\"exitCode\":0,\"signal\":null}",
++  "[cua-native] machine-lease-acquired",
++  "[cua-native] machine-lease-released {\"confirmed\":true}",
++  `[cua-native] capture-delivered {"sha256":"${PNG_SHA256}","width":1440,"height":900,"bytes":108925,"resourcesReleased":true,"machineLeaseReleased":true}`,
++  "[cua-native] capture-rejected {\"reason\":\"connection-failed\"}",
++  "[cua-native] visual-completion-held {\"captureErrorPresent\":false,\"hasImage\":true,\"requestId\":7}",
++  "[cua-native] visual-submit-return {\"requestId\":7,\"targetMatches\":true}",
++  "[cua-native] visual-stop-gate-release {\"completionConsumed\":false,\"gateResult\":\"stopped\",\"heldCompletionDiscarded\":true,\"requestId\":7}",
++  "[cua-native] visual-stop-gate-timeout {\"gateResult\":\"deadline-timeout\",\"heldCompletionDiscarded\":true,\"requestId\":7,\"timeoutMs\":30000}",
++  "[cua-native] visual-stop-gate-error {\"gateResult\":\"missing-operation\",\"heldCompletionDiscarded\":true,\"requestId\":7}",
++] as const;
++
++describe("parseCuaNativeAuditLine", () => {
++  it.each(acceptedMarkers)("accepts and preserves the exact native line: %s", (line) => {
++    expect(parseCuaNativeAuditLine(line)).toBe(line);
++  });
++
++  it.each(confirmationReasons)("accepts the fixed confirmation reason %s", (reason) => {
++    const allowed = reason === "user-approved";
++    const line = `[cua-native] confirmation-resolved {"generation":2,"allowed":${allowed},"reason":"${reason}"}`;
++    expect(parseCuaNativeAuditLine(line)).toBe(line);
++  });
++
++  it.each(captureReasons)("accepts the fixed capture reason %s", (reason) => {
++    const line = `[cua-native] capture-rejected {"reason":"${reason}"}`;
++    expect(parseCuaNativeAuditLine(line)).toBe(line);
++  });
++
++  it("reconstructs canonical field order instead of forwarding raw JSON", () => {
++    expect(
++      parseCuaNativeAuditLine('[cua-native] cell-spawned {"suspended":true,"pid":83436}'),
++    ).toBe('[cua-native] cell-spawned {"pid":83436,"suspended":true}');
++  });
++
++  it("rejects unknown markers, malformed JSON, payloads on payload-free markers, and extra fields", () => {
++    expect(parseCuaNativeAuditLine('[cua-native] unknown {"pid":1}')).toBeUndefined();
++    expect(parseCuaNativeAuditLine('[cua-native] constructor {"pid":1}')).toBeUndefined();
++    expect(parseCuaNativeAuditLine("[cua-native] cell-resumed {not-json}")).toBeUndefined();
++    expect(parseCuaNativeAuditLine("[cua-native] machine-lease-acquired {}")).toBeUndefined();
++    expect(
++      parseCuaNativeAuditLine(
++        '[cua-native] cell-spawned {"pid":1,"suspended":true,"secret":"raw-secret"}',
++      ),
++    ).toBeUndefined();
++    expect(
++      parseCuaNativeAuditLine(
++        '[cua-native] visual-completion-held {"captureErrorPresent":false,"hasImage":true,"requestId":1,"secret":"raw-secret"}',
++      ),
++    ).toBeUndefined();
++  });
++
++  it("rejects invalid types, enum values, hashes, control characters, and oversize lines", () => {
++    expect(parseCuaNativeAuditLine('[cua-native] cell-resumed {"pid":"83436"}')).toBeUndefined();
++    expect(parseCuaNativeAuditLine('[cua-native] cell-source-sent {"pid":1,"bytes":-1}')).toBeUndefined();
++    expect(parseCuaNativeAuditLine('[cua-native] cell-spawned {"pid":1,"suspended":1}')).toBeUndefined();
++    expect(parseCuaNativeAuditLine('[cua-native] capture-rejected {"reason":"dynamic detail"}')).toBeUndefined();
++    expect(parseCuaNativeAuditLine('[cua-native] confirmation-resolved {"generation":1,"allowed":true,"reason":"user-approved","extra":true}')).toBeUndefined();
++    expect(parseCuaNativeAuditLine(`[cua-native] cell-peer-verified {"pid":1,"identifier":"${NODE_IDENTIFIER}","cdhash":"abc","entitlementsEmpty":true}`)).toBeUndefined();
++    expect(parseCuaNativeAuditLine(`[cua-native] capture-delivered {"sha256":"${"A".repeat(64)}","width":1,"height":1,"bytes":1,"resourcesReleased":true,"machineLeaseReleased":true}`)).toBeUndefined();
++    expect(parseCuaNativeAuditLine('[cua-native] cell-resumed {"pid":1}\u0007')).toBeUndefined();
++    expect(parseCuaNativeAuditLine(`${acceptedMarkers[3]}${"x".repeat(5000)}`)).toBeUndefined();
++  });
++
++  it("requires successful cell verification to use the pinned identifier, hash, and empty entitlements", () => {
++    expect(
++      parseCuaNativeAuditLine(
++        '[cua-native] cell-loaded-code {"pid":1,"verified":true,"identifier":"","cdhash":"","entitlementsEmpty":false}',
++      ),
++    ).toBeUndefined();
++    expect(
++      parseCuaNativeAuditLine(
++        `[cua-native] cell-loaded-code {"pid":1,"verified":true,"identifier":"${NODE_IDENTIFIER}","cdhash":"${NODE_CDHASH}","entitlementsEmpty":false}`,
++      ),
++    ).toBeUndefined();
++  });
++});
+--- a/packages/services/test/zcodeAgentProcessManager.test.ts
++++ b/packages/services/test/zcodeAgentProcessManager.test.ts
+@@ -1854,6 +1854,72 @@
+     }
+   });
+ 
++  it("仅 fixed native launcher 把严格匹配的 cua-native 审计行提升为 info", async () => {
++    const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-cua-native-audit-"));
++    createdDirs.push(workspacePath);
++    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
++    const debugSpy = vi.spyOn(console, "debug").mockImplementation(() => undefined);
++    const nativeLine =
++      '[cua-native] cell-loaded-code {"pid":83436,"verified":true,"identifier":"io.github.zclaudia.zody.cua-helper.node","cdhash":"3c57a9bb9f4e8b748ac80d60bc78cdde14767218","entitlementsEmpty":true}';
++    const secretLine = '[cua-native] cell-spawned {"pid":1,"suspended":true,"secret":"raw-secret"}';
++    const script = `process.stderr.write(${JSON.stringify(`${nativeLine}\n${secretLine}\n`)}); setTimeout(() => process.exit(0), 250);`;
++    const manager = new ZCodeAgentProcessManager({
++      commandResolver: () => ({
++        command: process.execPath,
++        args: ["-e", script],
++        cwd: workspacePath,
++        nativeLauncher: true,
++      }),
++    });
++
++    try {
++      await manager.getClient({ workspacePath });
++      await vi.waitFor(() =>
++        expect(logSpy).toHaveBeenCalledWith(
++          expect.any(String),
++          "CUA native audit",
++          nativeLine,
++        ),
++      );
++      const auditLogCalls = logSpy.mock.calls.filter((call) => call[1] === "CUA native audit");
++      expect(JSON.stringify(auditLogCalls)).not.toContain("raw-secret");
++      expect(debugSpy).not.toHaveBeenCalled();
++    } finally {
++      manager.disposeAll();
++      logSpy.mockRestore();
++      debugSpy.mockRestore();
++    }
++  });
++
++  it("ordinary CLI 不把 cua-native 形式 stderr 提升为 info", async () => {
++    const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-ordinary-cua-audit-"));
++    createdDirs.push(workspacePath);
++    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
++    const line =
++      '[cua-native] cell-resumed {"pid":83436}';
++    const script = `process.stderr.write(${JSON.stringify(`${line}\n`)}); setTimeout(() => process.exit(0), 250);`;
++    const manager = new ZCodeAgentProcessManager({
++      commandResolver: () => ({
++        command: process.execPath,
++        args: ["-e", script],
++        cwd: workspacePath,
++      }),
++    });
++
++    try {
++      await manager.getClient({ workspacePath });
++      await vi.waitFor(() => expect(logSpy).toHaveBeenCalled());
++      expect(logSpy).not.toHaveBeenCalledWith(
++        expect.any(String),
++        "CUA native audit",
++        expect.anything(),
++      );
++    } finally {
++      manager.disposeAll();
++      logSpy.mockRestore();
++    }
++  });
++
+   it.each([false, true, "expanded"])(
+     "生产态存活进程即时转发异常且隔离 reporter 失败（%s）",
+     async (failReporter) => {
+--- a/specs/computer-use-macos-phase1.md
++++ b/specs/computer-use-macos-phase1.md
+@@ -1,25 +1,31 @@
+ # macOS Computer Use 首期集成规格
+ 
+-## 2026-10-30 arm64/macOS 窄截图 opt-in（用户已对齐，待实测）
+-
+-本轮只定义一条显式 opt-in 的窄截图链，不改变默认产品能力，也不把任何开发测试或已有候选记为本轮验收通过。实现现已落盘，但产品验收与 W3 生产实际正例、W4、W5 仍未完成；规格先行，对应测试仍须先于后续行为修改。R11 冻结源、旧输出与旧报告均只读；本轮派生 patch、构建和输出统一写入 `output/cua-arm64-screenshot/`，验收归档写入 `packages/desktop/native/macos-cua-driver-closure/reports/2026-10-30-arm64-screenshot/`。既有 `output/cua-helper-round11/`、`output/cua-phase1-closeout/` 与 `reports/2026-10-30-closeout/` 不修改、不覆盖、不重写。
+-
+-### 2026-10-31 状态账本（实现已落盘，产品未验收）
++## 2026-10-30 arm64/macOS 窄截图 opt-in（用户已对齐，部分验收完成，Stop 待原生确认）
++
++本轮只定义一条显式 opt-in 的窄截图链，不改变默认产品能力，也不把任何开发测试或已有候选记为本轮验收通过。实现现已落盘；产品生产 UI+PNG 正例（1172x976）已实测，native audit strict schema 已 complete；completion-held Stop 仍未执行（native click 未取得），W4 截图正例已成立但 W5/完整产品验收保持 PENDING，当前为部分验收完成、Stop 待原生确认。规格先行，对应测试仍须先于后续行为修改。R11 冻结源、旧输出与旧报告均只读；本轮派生 patch、构建和输出统一写入 `output/cua-arm64-screenshot/`，产品阶段新产物写入 `output/cua-arm64-screenshot-product/`，验收归档写入 `packages/desktop/native/macos-cua-driver-closure/reports/2026-10-31-arm64-screenshot-product/`。既有 `output/cua-helper-round11/`、`output/cua-phase1-closeout/` 与 `reports/2026-10-30-closeout/` 不修改、不覆盖、不重写。
++
++### 2026-10-31 状态账本（产品正例已实测，Stop 仍 PENDING）
+ 
+ 以下仅记录执行事实，不构成产品验收、成功声明或 blocker 关闭。
+ 
+ | 层次 | 已记录事实 | 证据 |
+ | --- | --- | --- |
+-| 编译/链接 | 生产与诊断 visual 各自编译/Rust 46 项完成；fake-visual native harness 6 场景为模拟；新生产 Helper 编译/链接 10 个 native 程序完成，诊断复用同一 native source 未重复跑测试；生产/诊断固定 local-self-signed 身份、真实 prepare-narrow 资源校验完成 | [visual-production.log](../output/cua-arm64-screenshot/independent-checks/visual-production.log)、[visual-diagnostic.log](../output/cua-arm64-screenshot/independent-checks/visual-diagnostic.log)、[helper-production.log](../output/cua-arm64-screenshot/independent-checks/helper-production.log)、[helper-diagnostic.log](../output/cua-arm64-screenshot/independent-checks/helper-diagnostic.log)、[sign-helper-production.log](../output/cua-arm64-screenshot/independent-checks/sign-helper-production.log)、[prepare-narrow-production.log](../output/cua-arm64-screenshot/independent-checks/prepare-narrow-production.log) |
+-| 模拟/单元 | Root 独立最终 Host 130、cell 66、narrow Node 35、Stop 15 项通过；CLI `node:test` 与 shared auth 早期通过；根 typecheck、lint（301 warnings/0 errors）、architecture（0 violations）完成 | [host-tests-final.log](../output/cua-arm64-screenshot/independent-checks/host-tests-final.log)、[cell-tests-final.log](../output/cua-arm64-screenshot/independent-checks/cell-tests-final.log)、[narrow-resource-tests-final.log](../output/cua-arm64-screenshot/independent-checks/narrow-resource-tests-final.log)、[stop-tools-final.log](../output/cua-arm64-screenshot/independent-checks/stop-tools-final.log)、[cli-launch-tests.log](../output/cua-arm64-screenshot/independent-checks/cli-launch-tests.log)、[auth-contract-tests.log](../output/cua-arm64-screenshot/independent-checks/auth-contract-tests.log)、[typecheck-final.log](../output/cua-arm64-screenshot/independent-checks/typecheck-final.log)、[lint-final.log](../output/cua-arm64-screenshot/independent-checks/lint-final.log)、[architecture-final.log](../output/cua-arm64-screenshot/independent-checks/architecture-final.log) |
+-| 实际原生 | 本机 macOS 26.6.2 arm64 仅完成 suspended Node 基础正例与 unsigned 映像负例；未分别覆盖错 certificate、错 DR、非空 entitlements，未完成生产 cell/authority 实际正例 | [suspended-node-positive.log](../output/cua-arm64-screenshot/independent-checks/suspended-node-positive.log)、[suspended-node-negative.log](../output/cua-arm64-screenshot/independent-checks/suspended-node-negative.log) |
+-| 产品 | 正式 electron-builder `--dir` 本次 PASS（root pinned deps + recovered transient space）；normal afterPack/afterSign 的 `assertPackagedCuaNarrowResource` livecodesign/tree/manifest exact 校验 PASS，child-audit ASAR statuses 0；outer Electron unsigned 为 test config，nested Helper/Node 仍为固定 local-selfsigned。此前 2 次 large ASAR missing `.next` 原因未证，不声明 OOM/OS kill；低磁盘重试失败，最终 PASS 处于 diagnostic observation。资源装配 PASS 不等同 normal Host 产品验收：normal Host 未运行、Mac LOCKED，W3 生产实际正例与 W4/W5 仍 pending | [formal-pack-child-audit.json](../output/cua-arm64-screenshot/independent-checks/formal-pack-child-audit.json)、[formal-pack-child-audit.log](../output/cua-arm64-screenshot/independent-checks/formal-pack-child-audit.log)、[recovery-incident](../output/cua-arm64-screenshot/recovery-incident/) |
++| 编译/链接 | 生产与诊断 visual 各自编译/Rust 46 项完成；fake-visual native harness 6 场景为模拟；新生产 Helper 编译/链接 10 个 native 程序完成，诊断复用同一 native source 未重复跑测试；生产/诊断固定 local-self-signed 身份、真实 prepare-narrow 资源校验完成；最新 production-audit 与 diagnostic-audit build input 独立 hash 核对为 2091 个 workspace input 引用、916 distinct、0 mismatch，7 个 virtual esbuild define 另行记账 | [visual-production.log](../output/cua-arm64-screenshot/independent-checks/visual-production.log)、[visual-diagnostic.log](../output/cua-arm64-screenshot/independent-checks/visual-diagnostic.log)、[helper-production.log](../output/cua-arm64-screenshot/independent-checks/helper-production.log)、[helper-diagnostic.log](../output/cua-arm64-screenshot/independent-checks/helper-diagnostic.log)、[sign-helper-production.log](../output/cua-arm64-screenshot/independent-checks/sign-helper-production.log)、[prepare-narrow-production.log](../output/cua-arm64-screenshot/independent-checks/prepare-narrow-production.log) |
++| 模拟/单元 | Root 独立最终 Host 130、cell 66、narrow Node 35、Stop 15 项通过；native audit 独立 2 文件 150 项通过（84 parser + 66 ProcessManager）；CLI `node:test` 与 shared auth 早期通过；audit 后根 typecheck、lint（301 warnings/0 errors）、architecture（0 violations）通过；`desktop/services/zcode-cli` policy 为 `managed:false`，故 architecture 0 不证明 unmanaged runtime 边界，root diff review 另行记录 | [host-tests-final.log](../output/cua-arm64-screenshot/independent-checks/host-tests-final.log)、[cell-tests-final.log](../output/cua-arm64-screenshot/independent-checks/cell-tests-final.log)、[native-audit-independent-tests.log](../output/cua-arm64-screenshot-product/independent-checks/native-audit-independent-tests.log)、[typecheck-after-native-audit.log](../output/cua-arm64-screenshot-product/independent-checks/typecheck-after-native-audit.log)、[lint-after-native-audit.log](../output/cua-arm64-screenshot-product/independent-checks/lint-after-native-audit.log)、[architecture-after-native-audit.log](../output/cua-arm64-screenshot-product/independent-checks/architecture-after-native-audit.log) |
++| 实际原生 | measured platform 为实际 arm64 macOS 26.6.2（build 25G83）、Node 24.14.0：产品生产 UI+PNG 成功（1172x976、108925 bytes、SHA-256 `e1bca9e1…`）；diagnostic-audit cell 990 于 12:21:33.717 suspended、12:21:33.730 loaded verified 后才 resume，source 3,575,522 bytes；独立 `SecCodeCopyGuest` 严格 fixed leaf DR/CDHash `3c57a9bb…`/flags 65536/空 entitlements 通过；最新 diagnostic Helper/Node strict `codesign` pass 的 hashes 保持 `4b3156…`/`14931e…` 不变；attempt #1 native confirmation 120s timeout `authority-eof`、SIGKILL/reaped、capture-rejected，无 actual OS completion/UIStop。负例仍只覆盖 unsigned 映像，错 certificate/错 DR/非空 entitlements 未分别覆盖 | [production-observation.json](../output/cua-arm64-screenshot-product/production-observation.json)、[diagnostic-cell-independent-loaded-identity.json](../output/cua-arm64-screenshot-product/diagnostic-cell-independent-loaded-identity.json)、[diagnostic-attempt1-native-events.log](../output/cua-arm64-screenshot-product/diagnostic-attempt1-native-events.log) |
++| 产品 | formal electron-builder `--dir` 与 narrow 资源装配此前 PASS；2026-10-31 cleanup 后 63GB free、Mac unlocked，独立新候选已组装，但首次系统启动 PID 49687 在无 UI 时 SIGTRAP。已确认 packaging defect（InfoPlist whole-archive hash `4c73cb…` vs raw-header `153d9c…`；旧 app embedded `772740…` vs FINAL header `fffcb7…`），详见下节；candidate `fuse4EnableEmbeddedAsarIntegrityValidation` 实际读取为 ASCII `48`（false），与 vanilla 一致且未改，故该 header metadata defect 不能被归因为本次 SIGTRAP/终止原因。root unified logs 已定位 process 49687 于 11:24:53 FATAL `electron/shell/app/electron_main_delegate_mac.mm:65 Unable to find helper app`；父 display/name 已改但 Chromium helper bundle/executable 名仍为 `ZodyPreview`。该 identity 装配问题与 header metadata defect 分账，fuse4 仍 false，不互相归因。normal Host 产品 UI+PNG 正例来自先前 `controller-normal-host-production`，仍是独立的真实证据；最新 `controller-normal-host-production-audit` 以 production manifest 重建 PASS 30.511s，但未启动、无新截图，仅构成 build/log 增量。diagnostic-audit build/PIDs 为 main 99745、host 264、helper 350、signed CLI 360；W5/completion-held Stop 仍 PENDING（native click 未取得，用户对 click 可见性问题的回复仍未到），attempt #1 timeout 不是 Stop。产品阶段新输出见 `output/cua-arm64-screenshot-product/`，旧 outputs/reports 只读 | [formal-pack-child-audit.json](../output/cua-arm64-screenshot/independent-checks/formal-pack-child-audit.json)、[formal-pack-child-audit.log](../output/cua-arm64-screenshot/independent-checks/formal-pack-child-audit.log)、[诊断审计 #1](../output/cua-arm64-screenshot-product/diagnostic-attempt1-native-events.log)、[产品阶段输出](../output/cua-arm64-screenshot-product/) |
+ 
+ Native cell 上限沿用既有 30 分钟 MCP max；actual per-tool 默认 600 秒与 `AbortSignal` 语义不变。以上状态不新增验证矩阵，也不关闭任何既有 blocker。
+ 
+ ### 构建证据输入合同（2026-10-31 补充）
+ 
+ 独立编译发现三组 compile PASS 但 final assembly evidence writer 报 ENOENT；根因是 esbuild virtual `<define:NAME>` input 是生成表达式，不是磁盘路径。证据 writer 必须显式分类并固定 virtual input 的 name、精确 supplied expression SHA256 与 byte count，不得把表达式当文件路径读取，也不得转储原始配置或 secret；filesystem input 继续按精确源文件 SHA-256 记录。unknown 或 unresolved virtual input 必须 fail closed。该项只修证据输入分类，不改变进程、交互或授权，不新增验证矩阵；Host worker 在本 spec 落盘后实施，完成后通知 controller。
++
++### ASAR integrity 装配合同（2026-10-31 产品阶段补充）
++
++产品阶段首次系统启动 PID 49687 无 UI SIGTRAP；不得宣称 header metadata defect 是本次崩溃的根因。candidate 的 `fuse4EnableEmbeddedAsarIntegrityValidation` 实际读取为 ASCII `48`（false），保持 vanilla 未改，因此当前终止不能归因于 header 校验；实际 fatal 已在状态账本按 unified logs 记录，独立 launch 仍需复验。已确认的 packaging defect 是 candidate `Info.plist` 的 `ElectronAsarIntegrity` 使用了 WHOLE archive hash `4c73cb…`，而 raw header hash 为 `153d9c…`；上一轮 app 嵌入 `772740…`、当前 FINAL header 为 `fffcb7…`，差异来自 afterPack repack/sourcemap rewrite。官方 Electron ASAR integrity 文档与已安装 `app-builder-lib/out/asar/integrity.js` 的 `hashHeader` 均要求 raw header UTF-8 bytes 的 exact SHA-256。
++
++合同：archive full SHA-256 与 header integrity hash 分账记录，禁止互相替代；`Info.plist` 的 integrity 值必须在 FINAL ASAR rewrite 之后、签名之前刷新；candidate 与 formal Darwin 构建路径必须由同一个 packager owner 执行同一刷新；不得修改 fuses/LV、Helper/Node 签名或既有身份，candidate fuse4 保持实测 ASCII `48`（false）的 vanilla 状态；unknown、missing ASAR 或 invalid header 一律 fail closed。该 metadata 格式与刷新修复仍然有效且必要，但当前 fuse 未启用，不能据此声称 header 校验导致本次崩溃。窄回归场景只覆盖：FINAL rewrite 后 header SHA-256 与 Info.plist 相等且 archive full SHA 单独记录；模拟 rewrite 后 header 变化时 stale Info.plist 被拒绝；candidate 与 formal Darwin 路径都由同一 owner 刷新；missing/invalid/unknown 全部 fail closed。该合同不改变进程、UX、授权，不新增平台/功能验证矩阵。
+ 
+ ### 决策与适用边界
+ 
+@@ -40,7 +46,11 @@
+ 4. 该检查只在 Agent spawn 时选择一次路径。已运行 Agent 不因 task、模型选择或配置变化而切换路径，不新增 task-time provider guard，也不因配置变化自动 kill/restart Agent；不新增 UI 限制。用户自行切换模型或 task override 不算兼容性验收。
+ 5. Host 启动时没有 task actual model，因此 startup profile 匹配不能证明后续 task override、模型或 provider 配置变化的兼容性；该 live task 配置兼容缺口与完整 CLI 兼容缺口继续保留。独立验收只使用固定、已测的模型配置。
+ 
+-正式 electron-builder 资源链除复制 Helper.app 外，必须把通过 `validateNarrowManifest` 的原 manifest 精确 bytes 复制到 `Resources/cua-narrow/manifest.json`，并在 afterPack/afterSign 复核摘要；无输入时不装配、不启用，不得用临时 launcher SHA 生成的 pass manifest 替代正式验证。普通 Host 的窄候选须使用独立 `CFBundleIdentifier`、显示名和 Electron profile（system entry 不激活已安装版），该差异仅作为 UI identity 的 build-time seam：不设置 `candidateNativeHostLaunch`，不改变 Helper/Node 身份或既有 CLI store/authority，不新增用户交互，并将 `productDefaultDisabled=true` 与 `explicitCandidateOptIn=true` 分开记账；Hostworker 只做必要真实接线修复，不新增进程结构。
++正式 electron-builder 资源链除复制 Helper.app 外，必须把通过 `validateNarrowManifest` 的原 manifest 精确 bytes 复制到 `Resources/cua-narrow/manifest.json`，并在 afterPack/afterSign 复核摘要；无输入时不装配、不启用，不得用临时 launcher SHA 生成的 pass manifest 替代正式验证。普通 Host 的窄候选须使用独立 `CFBundleIdentifier`、显示名和 Electron profile（system entry 不激活已安装版），该差异仅作为 UI identity 的 build-time seam：不设置 `candidateNativeHostLaunch`，不改变固定受信 CUA Helper/Node 身份或既有 CLI store/authority，不新增用户交互，并将 `productDefaultDisabled=true` 与 `explicitCandidateOptIn=true` 分开记账；Hostworker 只做必要真实接线修复，不新增进程结构。
++
++### 候选 UI identity / Chromium Helper 重命名合同（2026-10-31）
++
++candidate UI identity 变更必须在构建期一致重命名**既有** Chromium `Helper.app` 及其全部现有 variant 的 bundle、可执行文件与 `CFBundleExecutable`，使名称与父 app 的期望 parent name 一致。不得为此新增 helper 进程、launcher 或 wrapper，完整 ordinary Host topology 不变；固定受信 CUA Helper 与 Node 的既有 bytes/identity 不变。验收须覆盖：重命名后所有既有 helper 均能解析，framework 相对链接保持，native Helper identity 不变。该合同只修复候选 UI identity 装配，不改变运行时授权、进程结构或 CUA 能力。
+ 
+ ### 所有者与信任边界
+ 
+@@ -147,6 +157,8 @@
+ 
+ 测试诊断 gate 只能控制**真实 OS completion 的调度时机**，用于稳定构造“completion 尚未消费/交付”的在途窗口；它不得合成 frame、伪造 completion、跳过 authority 或制造成功。生产默认为无 gate，不能由环境变量或 UI 打开；测试/诊断配置与产品路径分开记账。
+ 
++**原生审计 marker 可观测性（2026-10-31）。** 仅当本次 Agent 命令实际配置为 fixed native launcher 时，Host 才可把 native stderr 中严格匹配固定 schema 的 `[cua-native]` 审计 marker 以 `info` 转发到既有 Host 日志；普通 CLI、普通原生 stderr 和无法解析/超限/带额外字段的行仍只走原 debug 路径，不进入生产日志。允许集合只来自现有 native source：`confirmation-presented`、`confirmation-resolved`、`cell-spawned`、`cell-loaded-code`、`cell-resumed`、`cell-source-sent`、`cell-peer-verified`、`cell-reaped`、`machine-lease-acquired`、`machine-lease-released`、`capture-delivered`、`capture-rejected`，以及 diagnostic feature 的 `visual-completion-held`、`visual-submit-return`、`visual-stop-gate-release`、`visual-stop-gate-timeout`、`visual-stop-gate-error`。每类 marker 必须按 source 的精确字段、类型、固定 reason/gate 枚举、PID/generation/requestId 边界、40/64 位小写 hex 与 identifier 约束校验，并从校验后字段重建规范行，不能转发原始 JSON；未知 marker、额外 `secret` 字段、控制字符、非 JSON 或超长行一律拒绝。production 不产生 `visual-*` marker；只有 stop-diagnostic 构建可观察 completion gate。`capture-resource-release` 当前不存在，不得虚构。该日志只用于运营观察和证据关联，native 事件仍是 self-report，严格解析不证明 Helper/Node/cell 身份、授权或 Host 来源可信；普通 Host 可伪造 origin 的缺口继续 OPEN，不新增 auth state、队列、runtime、事件协议、UI、签名或权限。
++
+ ```mermaid
+ sequenceDiagram
+   participant UI as Zody UI
+@@ -175,10 +187,11 @@
+ 1. 普通 Host 路径：完整 Electron utility Host 的 PTY/SSH/remote 保留；默认 `zcodeCuaPlaceholder:true`，CUA 不可用。
+ 2. 显式 opt-in 且启动 profile 全部匹配：独立实测使用固定已测模型配置，既有唯一 Agent 经 Helper `workspace-relay` → signedNode sealedCLI，复用既有 `CommandInbox`/authority/lease/frame；单窗口截图链可用。
+ 3. opt-in 构建下启动 profile 任一字段不匹配/读取失败，以及 remote workspace：resolver 返回 `null`，普通 Agent 路径保留，CUA 不可用；无按 task 静默切换或自动 kill/restart。
+-4. 真实 suspended Node 前置 probe 已在本机 macOS 26.6.2 arm64 独立实测：正例核验实际 DR/CDHash/空 entitlement 后 resume 并执行；负例只覆盖 unsigned 映像 loaded-code-invalid，不 resume、不读 stdin、SIGKILL/reap。未分别覆盖错 certificate、错 DR、非空 entitlements，不扩大列作已通过；生产 `START_SUSPENDED` cell 的同类正负例仍待实现与验收。ready/socket 最小负例还必须覆盖同 UID fake cell endpoint/rebind、fake authority endpoint、错误/缺失/重放或跨角色 HMAC proof：均 fail closed，未发送 `CellRequest`/cap。authority 可先固定本地 turn scope 再 await connect，但 proof 前不得建立 wire session/发送 scope/ref/capture，失败必须关闭该 scope；await 后不得换绑新 turn。authority proof 成功后原协议字节必须无损进入 `AuthorityFdReader`。
+-5. 真实单窗口截图；同 lineage 在途 Stop 由 authority 先撤销，completion 未消费/未交付，native cancel 丢弃迟到图片，实际 callbackReleased 与 lease release 后才报告释放；unknown 保留 lease。
++4. 真实 suspended Node 前置 probe 已在本机 macOS 26.6.2 arm64 独立实测：正例核验实际 DR/CDHash/空 entitlement 后 resume 并执行；负例只覆盖 unsigned 映像 loaded-code-invalid，不 resume、不读 stdin、SIGKILL/reap。未分别覆盖错 certificate、错 DR、非空 entitlements，不扩大列作已通过。生产 `START_SUSPENDED` cell 990 已在 diagnostic-audit 实测：12:21:33.717 suspended，12:21:33.730 loaded verified 后才 resume，source 3,575,522 bytes；独立 `SecCodeCopyGuest` 严格 fixed leaf DR/CDHash `3c57a9bb…`/flags 65536/空 entitlements 0 通过（`diagnostic-cell-independent-loaded-identity.json`）。ready/socket 最小负例还必须覆盖同 UID fake cell endpoint/rebind、fake authority endpoint、错误/缺失/重放或跨角色 HMAC proof：均 fail closed，未发送 `CellRequest`/cap。authority 可先固定本地 turn scope 再 await connect，但 proof 前不得建立 wire session/发送 scope/ref/capture，失败必须关闭该 scope；await 后不得换绑新 turn。authority proof 成功后原协议字节必须无损进入 `AuthorityFdReader`。
++5. 真实单窗口截图已由 production UI 得到 PNG：1172x976、108925 bytes、SHA-256 `e1bca9e1…`。同 lineage 在途 Stop 仍未执行：diagnostic attempt #1 在 native confirmation 展示后 120s 未点击，timeout `authority-eof`/allowed false，cell SIGKILL/reaped，capture-rejected `connection-failed`；该 timeout 不是 Stop，不记通过。Stop PENDING，等待用户实际 native click；只有 authority 先撤销、completion 未消费/未交付、native cancel 丢弃迟到图片、实际 callbackReleased 与 lease release 后才报告释放，unknown 保留 lease。
+ 6. 根 `pnpm typecheck`、`pnpm lint`、`pnpm architecture:check --changed` 及必要相关测试；执行或受限状态如实记录。
+-7. 编译/链接、模拟测试、真实原生调用、产品验收分账记录，不互相替代；签名/资源摘要与命令独立归档。
++7. fixed native launcher 的 `[cua-native]` 审计行已实现 controller 复核的 strict schema/bounded info 通道（仅 nativeLauncher → Host info；普通 CLI 与任意 stderr 保持 debug-only）；额外字段/畸形/超长输入拒绝。独立 `cuaNativeAuditLog`/ProcessManager 测试 2 文件 150 项通过（84 parser + 66 ProcessManager），audit 后 typecheck/lint/architecture 通过。该审计行是 operational self-report，不作为身份或授权证明；直接 `SecCodeCopyGuest` loaded identity 是独立证据。production 无 `visual-*`，diagnostic gate 事件需在 stop-diagnostic 构建中单独验证。
++8. 编译/链接、模拟测试、真实原生调用、产品验收分账记录，不互相替代；签名/资源摘要与命令独立归档。
+ 
+ 以下既有缺口继续保留，不因本轮关闭：完整 D06/OS 隔离；输入 native Fenced；所有后代退出；6 项 JS 许可 missing；Intel 与最低 macOS 实机；升级后的身份/TCC 稳定性；普通 Host 来源可信性；完整 CLI 兼容；`SCStream`、OS 内部取消与真实全后代清理。
+ 

@@ -3,6 +3,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PlatformSecureStore } from "@zcode/shared";
+import { saveMobileRemoteSettingsDraft } from "../src/mobile-remote/mobileRemoteSettingsDraft.js";
 
 /**
  * 手机首次使用流程（T4.2）：设置页 → 选电脑页 → 可建连配置。
@@ -142,5 +143,77 @@ describe("mobile remote setup flow (375px)", () => {
     await waitFor(() => expect(createBackendDiscovery).toHaveBeenCalledTimes(2));
     expect((await store.load())?.credential).toBe("zgd_saved");
     expect(resolved).toBeInstanceOf(Promise);
+  });
+});
+
+/**
+ * 首次配置与已连接会话内浮层共用的草稿校验/保存 helper（spec §4.1）。
+ * 这里锁定抽取前的 scopeChanged/backendId 保留语义，防止两条写入路径分叉。
+ */
+describe("shared mobile remote settings draft save helper", () => {
+  const savedConfig = {
+    gatewayUrl: "https://gateway.example.com",
+    namespace: "zody",
+    credential: "zgd_saved",
+    backendId: "backend-1",
+  };
+
+  function createSaveStore() {
+    return { save: vi.fn(async () => {}) };
+  }
+
+  it("keeps the selected backend when the draft does not change the connection scope", async () => {
+    const store = createSaveStore();
+    const result = await saveMobileRemoteSettingsDraft({
+      store,
+      initial: savedConfig,
+      draft: {
+        // 尾部斜杠经归一化后与原配置相同，不算作用域变化。
+        gatewayUrl: "https://gateway.example.com/",
+        namespace: "zody",
+        credential: "",
+      },
+      allowInsecureTransport: true,
+    });
+
+    expect(result.scopeChanged).toBe(false);
+    expect(result.config).toEqual(savedConfig);
+    expect(store.save).toHaveBeenCalledOnce();
+    expect(store.save).toHaveBeenCalledWith(savedConfig);
+  });
+
+  it.each([
+    ["gateway", { gatewayUrl: "https://gateway-2.example.com", namespace: "zody", credential: "" }],
+    ["namespace", { gatewayUrl: "https://gateway.example.com", namespace: "team", credential: "" }],
+    [
+      "credential",
+      { gatewayUrl: "https://gateway.example.com", namespace: "zody", credential: "zgd_new" },
+    ],
+  ])("changing the %s drops the old backend and reports scope change", async (_label, draft) => {
+    const store = createSaveStore();
+    const result = await saveMobileRemoteSettingsDraft({
+      store,
+      initial: savedConfig,
+      draft,
+      allowInsecureTransport: true,
+    });
+
+    expect(result.scopeChanged).toBe(true);
+    expect(result.config).not.toHaveProperty("backendId");
+    expect(store.save).toHaveBeenCalledWith(result.config);
+  });
+
+  it("rejects an invalid draft without writing to the store", async () => {
+    const store = createSaveStore();
+
+    await expect(
+      saveMobileRemoteSettingsDraft({
+        store,
+        initial: savedConfig,
+        draft: { gatewayUrl: "ftp://gateway.example.com", namespace: "zody", credential: "" },
+        allowInsecureTransport: true,
+      }),
+    ).rejects.toThrow();
+    expect(store.save).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,7 @@
 import type { RendererTelemetryEventPayload } from "@zcode/shared";
 /* eslint-disable max-lines -- Web 远程控制 manager 承担 gateway app payload 路由与 workspace bridge 编排。 */
-import type { MessagePortMain, UtilityProcess as ElectronUtilityProcess } from "electron";
+import type { MessagePortMain } from "electron";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 import {
   ChannelClient,
   MessagePortProtocol,
@@ -70,7 +71,7 @@ import { isValidLocalWorkspaceDirectory } from "./desktopDeepLink.js";
 interface WebRemoteControlHostAttachmentHandle {
   entryId: string;
   attachmentId: string;
-  process: ElectronUtilityProcess;
+  process: HostProcessHandle;
   port: MessagePortMain;
   remoteKind?: RemoteUsageRemoteKind;
 }

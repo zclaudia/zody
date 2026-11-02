@@ -1,0 +1,26 @@
+{
+  "observedAt": "2026-10-31T05:45:02.287428+00:00",
+  "mainPid": 58923,
+  "cohort": [
+    {
+      "pid": 59359,
+      "ppid": 58923,
+      "role": "zody-host-local-1"
+    },
+    {
+      "pid": 59385,
+      "ppid": 59359,
+      "role": "/Users/zhvala/SourceCode/zody/output/cua-arm64-default-enable/ordinary-app/mac-arm64/Zody Preview.app/Contents/Resources/cua-narrow/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session"
+    },
+    {
+      "pid": 59428,
+      "ppid": 1,
+      "role": "/Users/zhvala/SourceCode/zody/output/cua-arm64-default-enable/ordinary-app/mac-arm64/Zody Preview.app/Contents/Resources/cua-narrow/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session"
+    },
+    {
+      "pid": 59429,
+      "ppid": 59428,
+      "role": "/Users/zhvala/SourceCode/zody/output/cua-arm64-default-enable/ordinary-app/mac-arm64/Zody Preview.app/Contents/Resources/cua-narrow/Zody CUA Desktop Session.app/Contents/Resources/node"
+    }
+  ]
+}

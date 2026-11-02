@@ -1,0 +1,461 @@
+{
+  "kind": "round9-controller-graph-comparison",
+  "scope": "Same visual root; narrower implementation, not full Driver/ABI equivalence. System frameworks are not Cargo graph packages.",
+  "graph": {
+    "baselinePackageCount": 30,
+    "candidatePackageCount": 20,
+    "delta": -10,
+    "removed": [
+      {
+        "name": "apple-cf",
+        "version": "0.9.3",
+        "key": "apple-cf@0.9.3",
+        "features": [
+          "cg",
+          "cm",
+          "cv",
+          "dispatch",
+          "iosurface"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "apple-metal",
+        "version": "0.6.0",
+        "key": "apple-metal@0.6.0",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "crossbeam-queue",
+        "version": "0.3.12",
+        "key": "crossbeam-queue@0.3.12",
+        "features": [
+          "alloc",
+          "default",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "crossbeam-utils",
+        "version": "0.8.21",
+        "key": "crossbeam-utils@0.8.21",
+        "features": [
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "doom-fish-utils",
+        "version": "0.3.2",
+        "key": "doom-fish-utils@0.3.2",
+        "features": [
+          "default"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "futures-core",
+        "version": "0.3.32",
+        "key": "futures-core@0.3.32",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "futures-task",
+        "version": "0.3.32",
+        "key": "futures-task@0.3.32",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "futures-util",
+        "version": "0.3.32",
+        "key": "futures-util@0.3.32",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "pin-project-lite",
+        "version": "0.2.17",
+        "key": "pin-project-lite@0.2.17",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "screencapturekit",
+        "version": "8.0.1",
+        "key": "screencapturekit@8.0.1",
+        "features": [
+          "default",
+          "macos_13_0",
+          "macos_14_0",
+          "macos_14_2"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      }
+    ],
+    "added": [],
+    "versionChanged": [],
+    "versionSetChanged": [],
+    "featureChanged": [],
+    "sourceChanged": []
+  },
+  "licenses": {
+    "baseline": {
+      "packageCount": 30,
+      "missing": 0,
+      "partial": 0,
+      "reviewRequired": 0,
+      "mpl": 0
+    },
+    "candidate": {
+      "packageCount": 20,
+      "missing": 0,
+      "partial": 0,
+      "reviewRequired": 0,
+      "mpl": 0
+    },
+    "missing": {
+      "baselineCount": 0,
+      "candidateCount": 0,
+      "delta": 0,
+      "retained": [],
+      "retainedExact": [],
+      "materialEvidenceChanged": [],
+      "versionReplacement": [],
+      "clearedByGraphRemoval": [],
+      "new": [],
+      "newExact": [],
+      "newVersionReplacement": []
+    },
+    "partial": {
+      "baselineCount": 0,
+      "candidateCount": 0,
+      "delta": 0,
+      "retained": [],
+      "retainedExact": [],
+      "materialEvidenceChanged": [],
+      "versionReplacement": [],
+      "clearedByGraphRemoval": [],
+      "new": [],
+      "newExact": [],
+      "newVersionReplacement": []
+    },
+    "reviewRequired": {
+      "baselineCount": 0,
+      "candidateCount": 0,
+      "delta": 0,
+      "retained": [],
+      "retainedExact": [],
+      "materialEvidenceChanged": [],
+      "versionReplacement": [],
+      "clearedByGraphRemoval": [],
+      "new": [],
+      "newExact": [],
+      "newVersionReplacement": []
+    },
+    "mpl": {
+      "baselineCount": 0,
+      "candidateCount": 0,
+      "delta": 0,
+      "retained": [],
+      "retainedExact": [],
+      "materialEvidenceChanged": [],
+      "versionReplacement": [],
+      "clearedByGraphRemoval": [],
+      "new": [],
+      "newExact": [],
+      "newVersionReplacement": []
+    },
+    "residualGaps": {
+      "missing": [],
+      "partial": [],
+      "reviewRequired": [],
+      "mpl": []
+    },
+    "legalConclusion": "not-made",
+    "legalReviewCompleted": false
+  },
+  "probe": {
+    "command": "/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin/cargo",
+    "args": [
+      "tree",
+      "--locked",
+      "--offline",
+      "--target",
+      "aarch64-apple-darwin",
+      "--package",
+      "cua-macos-visual-link-probe",
+      "--edges",
+      "normal,build",
+      "--prefix",
+      "none",
+      "--format",
+      "{p}|{f}"
+    ],
+    "code": 0,
+    "packages": [
+      {
+        "name": "adler2",
+        "version": "2.0.1",
+        "path": null,
+        "kind": null,
+        "features": []
+      },
+      {
+        "name": "autocfg",
+        "version": "1.5.0",
+        "path": null,
+        "kind": null,
+        "features": []
+      },
+      {
+        "name": "bitflags",
+        "version": "2.11.1",
+        "path": null,
+        "kind": null,
+        "features": []
+      },
+      {
+        "name": "bytemuck",
+        "version": "1.25.0",
+        "path": null,
+        "kind": null,
+        "features": [
+          "extern_crate_alloc"
+        ]
+      },
+      {
+        "name": "byteorder-lite",
+        "version": "0.1.0",
+        "path": null,
+        "kind": null,
+        "features": [
+          "default",
+          "std"
+        ]
+      },
+      {
+        "name": "cfg-if",
+        "version": "1.0.4",
+        "path": null,
+        "kind": null,
+        "features": []
+      },
+      {
+        "name": "core-foundation-sys",
+        "version": "0.8.7",
+        "path": null,
+        "kind": null,
+        "features": [
+          "link"
+        ]
+      },
+      {
+        "name": "core-foundation",
+        "version": "0.10.1",
+        "path": null,
+        "kind": null,
+        "features": [
+          "default",
+          "link"
+        ]
+      },
+      {
+        "name": "crc32fast",
+        "version": "1.5.0",
+        "path": null,
+        "kind": null,
+        "features": [
+          "default",
+          "std"
+        ]
+      },
+      {
+        "name": "cua-macos-visual-link-probe",
+        "version": "0.37.0",
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-final/full-source/crates/cua-macos-visual-link-probe",
+        "kind": null,
+        "features": []
+      },
+      {
+        "name": "cua-macos-visual",
+        "version": "0.37.0",
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-final/full-source/crates/cua-macos-visual",
+        "kind": null,
+        "features": []
+      },
+      {
+        "name": "fdeflate",
+        "version": "0.3.7",
+        "path": null,
+        "kind": null,
+        "features": []
+      },
+      {
+        "name": "flate2",
+        "version": "1.1.9",
+        "path": null,
+        "kind": null,
+        "features": [
+          "any_impl",
+          "default",
+          "miniz_oxide",
+          "rust_backend"
+        ]
+      },
+      {
+        "name": "image",
+        "version": "0.25.10",
+        "path": null,
+        "kind": null,
+        "features": [
+          "png"
+        ]
+      },
+      {
+        "name": "libc",
+        "version": "0.2.186",
+        "path": null,
+        "kind": null,
+        "features": [
+          "default",
+          "std"
+        ]
+      },
+      {
+        "name": "miniz_oxide",
+        "version": "0.8.9",
+        "path": null,
+        "kind": null,
+        "features": [
+          "default",
+          "simd",
+          "simd-adler32",
+          "with-alloc"
+        ]
+      },
+      {
+        "name": "moxcms",
+        "version": "0.8.1",
+        "path": null,
+        "kind": null,
+        "features": [
+          "avx",
+          "avx_luts",
+          "avx_shaper_fixed_point_paths",
+          "avx_shaper_paths",
+          "default",
+          "lut",
+          "neon",
+          "neon_luts",
+          "neon_shaper_fixed_point_paths",
+          "neon_shaper_paths",
+          "sse",
+          "sse_luts",
+          "sse_shaper_fixed_point_paths",
+          "sse_shaper_paths"
+        ]
+      },
+      {
+        "name": "num-traits",
+        "version": "0.2.19",
+        "path": null,
+        "kind": null,
+        "features": [
+          "default",
+          "std"
+        ]
+      },
+      {
+        "name": "png",
+        "version": "0.18.1",
+        "path": null,
+        "kind": null,
+        "features": []
+      },
+      {
+        "name": "pxfm",
+        "version": "0.1.29",
+        "path": null,
+        "kind": null,
+        "features": []
+      },
+      {
+        "name": "simd-adler32",
+        "version": "0.3.9",
+        "path": null,
+        "kind": null,
+        "features": [
+          "const-generics",
+          "default",
+          "std"
+        ]
+      }
+    ]
+  },
+  "lock": {
+    "entryCount": 571,
+    "checksumEntries": 558
+  },
+  "source": {
+    "selected": 710,
+    "candidate": 776,
+    "modified": 38,
+    "added": 66,
+    "unchanged": 672,
+    "removed": 0
+  }
+}

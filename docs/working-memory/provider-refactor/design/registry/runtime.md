@@ -200,6 +200,12 @@ Provider 仍能完整运行；需要 Account 进一步约束的 Built-in Provide
 └─ process registry runtime
 ```
 
+Built-in watcher 的监听方式固定为**文件级** `fs.watch(activeFilePath)`：收到 `rename`（原子替换或删除）后
+关闭并按路径重建 watcher；重建失败（文件暂不存在）置空，由下一次读取/物化后的刷新或后续 `read` 重新武装，
+不得回退目录级监听——macOS 26（darwin 25.x）上目录级 `fs.watch` 对改写/新建/删除/重命名均不派发事件
+（Node 22–26 全系实测），目录监听在生产等同失效。事件仍只作为触发信号，内容变化以既有文件锁下的
+读取+签名比对为准，去重与 `watch-error` 语义不变。
+
 Entry 负责定位物理文件并显式注入路径；`@zcode/provider-node` 不假设 Desktop、Worker、CLI 或 TUI 的安装目录。Host 与 Worker 各自读取同一 Environment 的文件，Registry 对象和 View 不跨进程传输。
 
 ZCode Built-in 的远端同步由 Environment 组合根拥有。Local Host、Remote Host、Standalone Server 和没有

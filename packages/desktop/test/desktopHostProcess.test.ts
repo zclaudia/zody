@@ -1,4 +1,8 @@
 import { EventEmitter } from "node:events";
+import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   HostMessageTypes,
@@ -12,6 +16,7 @@ import {
   loadWindow,
   spawnHostProcess,
 } from "../src/main/desktopHostProcess.js";
+import type { NodeHostProcess } from "../src/main/nodeHostProcess.js";
 
 vi.mock("../src/main/databaseStartupRelay.js", () => ({
   bindDatabaseStartupRelay: (_win: unknown, _child: unknown, startupId: string) => ({
@@ -23,6 +28,10 @@ vi.mock("../src/main/databaseStartupRelay.js", () => ({
 const electronMock = vi.hoisted(() => ({
   fork: vi.fn(),
   isPackaged: false,
+  channels: [] as Array<{
+    port1: EventEmitter & { posted: unknown[] };
+    port2: EventEmitter & { posted: unknown[] };
+  }>,
 }));
 
 afterEach(() => {
@@ -41,8 +50,11 @@ vi.mock("electron", () => ({
     getAllWindows: vi.fn(() => []),
   },
   MessageChannelMain: class {
-    port1 = {};
-    port2 = {};
+    port1 = createMainPort();
+    port2 = createMainPort();
+    constructor() {
+      electronMock.channels.push(this);
+    }
   },
   utilityProcess: {
     fork: electronMock.fork,
@@ -51,6 +63,18 @@ vi.mock("electron", () => ({
     getAllWebContents: vi.fn(() => []),
   },
 }));
+
+function createMainPort() {
+  const port = Object.assign(new EventEmitter(), {
+    posted: [] as unknown[],
+    start: vi.fn(),
+    close: vi.fn(),
+  });
+  Object.assign(port, {
+    postMessage: vi.fn((message: unknown) => port.posted.push(message)),
+  });
+  return port;
+}
 
 class MockUtilityProcess extends EventEmitter {
   pid: number | undefined = 12345;
@@ -106,6 +130,60 @@ describe("desktopHostProcess fork Host env（fork 灰度本地值 F2.6a / D1b）
     expect(init.deliveryKind).toBeUndefined();
     child.emit("exit", 0);
   });
+});
+
+describe("desktopHostProcess native candidate transport", () => {
+  it.skipIf(process.platform === "win32")(
+    "uses the configured native launcher and waits for the real Host hello before InitLocal",
+    async () => {
+      const forkCallsBefore = electronMock.fork.mock.calls.length;
+      const dir = mkdtempSync(join(tmpdir(), "zody-native-host-"));
+      const fixture = fileURLToPath(new URL("./fixtures/nativeHostFdProbe.mjs", import.meta.url));
+      const launcher = join(dir, "native-host");
+      writeFileSync(launcher, `#!/bin/sh\nexec "${process.execPath}" "${fixture}" "$@"\n`, {
+        mode: 0o755,
+      });
+      chmodSync(launcher, 0o755);
+      const win = { id: 7, webContents: { id: 11, postMessage: vi.fn() } };
+      const broadcastHub = { register: vi.fn(), unregister: vi.fn() };
+      const host = spawnHostProcess(
+        win as never,
+        "native-window",
+        { type: HostMessageTypes.InitLocal, workspacePath: "/repo" },
+        {
+          hostProcessLocalEnv: {},
+          logger: { info: vi.fn(), warn: vi.fn() },
+          broadcastHub: broadcastHub as never,
+          windowHostProcessMap: new Map(),
+          hostRunningTaskCountMap: new Map(),
+          nativeHostLaunch: {
+            launcherPath: launcher,
+            cwd: dir,
+            env: { NATIVE_HOST_ECHO_HOST_ID: "1" },
+          },
+        },
+      );
+      try {
+        expect(electronMock.fork).toHaveBeenCalledTimes(forkCallsBefore);
+        await expect((host as NodeHostProcess).waitForHostId()).resolves.toBe("probe-host");
+        const ready = await new Promise<{ hostId?: string }>((resolve) => {
+          host.on("message", (message) => resolve(message as { hostId?: string }));
+        });
+        expect(ready.hostId).toBe("probe-host");
+        expect(win.webContents.postMessage).toHaveBeenCalled();
+        await vi.waitFor(() => {
+          const channel = electronMock.channels.at(-1);
+          expect(channel?.port2.posted).toContainEqual({ echo: "hello" });
+        });
+        const exited = new Promise<void>((resolve) => host.once("exit", () => resolve()));
+        host.kill();
+        await exited;
+      } finally {
+        host.kill();
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+  );
 });
 
 describe("desktopHostProcess CUA operation state routing", () => {

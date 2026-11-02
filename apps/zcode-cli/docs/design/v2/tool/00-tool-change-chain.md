@@ -1714,3 +1714,8 @@ interrupted result。修复不改变工具 schema、权限、执行时机、协�
 > fork（bots 移除，2026-10-20）：botGroupSource 持久化、botIdentity/mentionedBot 模型投影与
 > conversation-quotes 的 bot 材料分支随第三方 IM bot channels 全量删除
 > （specs/bot-channels-removal.md）。conversationQuotes（通用会话引用材料）保留。
+
+
+### 2026-10-30 真实桌面 CUA 装配续作
+
+用户已批准可信 Host/CLI 迁至固定签名 Node，Electron 仅为 UI；原生 Helper 对每次新的截图授权确认会话与精确窗口。复用同一 CommandInbox、CuaSubmissionAuthority、活动 turn scope、producer 与停止链；candidate → 原生确认 → owner/目标复核 → lease/截图 → 交付复核。确认不是第二 authority，也不能将 remote/mobile 输入转为 desktop。原生等待期间 stop/EOF 必须关闭准入，晚到确认或图片丢弃。图片继续现有 CallToolResult image 到 node_repl_images 路径；未完成可信 launcher/peer/封装资源的 composition 不得开放。详见根 spec 与 desktop-session 计划；placeholder 与默认入口保持禁用。

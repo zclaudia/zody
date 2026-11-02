@@ -1,0 +1,12 @@
+[
+  {
+    "path": "docs/plans/computer-use-macos-phase1-arm64-screenshot.md",
+    "beforeSha256": "32b70ac6450ba528994032e0c63441c2287674525a25498328f3d21261ff385d",
+    "afterSha256": "654b928e90d7f7b7020d136aa33675028b9f8ccc71222a423421d89db97514be"
+  },
+  {
+    "path": "specs/computer-use-macos-phase1.md",
+    "beforeSha256": "9366c6906c4e51bf9869e8aba703e4544c925de105ba5944aa1f988ee3a5bc82",
+    "afterSha256": "28e7a34ff077eac97afd0092fa4869062f64b84b3c8f3ca5b1c8e6649a31ec34"
+  }
+]

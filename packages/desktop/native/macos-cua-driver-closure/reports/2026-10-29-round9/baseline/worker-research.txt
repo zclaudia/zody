@@ -1,0 +1,76 @@
+Delegated read-only investigation; suggestions are not acceptance. Controller retains lock records and chooses build deployment floor 14.2 per spec, not this worker's proposed 14.0.
+
+**调查结论**
+- 可实施，且建议**不要裁剪 SCK 8.0.1 整包**，而是在 `cua-macos-visual` 内新增一个极窄 Swift completion bridge，直接调用 `SCShareableContent` / `SCContentFilter` / `SCStreamConfiguration` / `SCScreenshotManager`，并在 Swift 内完成 `CGImage -> RGBA`。这样可完全移除 `screencapturekit`、`apple-cf`、`apple-metal`。
+- 原因：这三个依赖不是截图 API 必需，而是 SCK 包的整包/整 Swift target 耦合。`screencapturekit-8.0.1/Cargo.toml:86-99` 无条件依赖 `apple-cf` 和 `apple-metal`；`swift-bridge/Package.swift:26-41` 无条件把 `MetalBridge`、`ScreenCaptureKitCoreMediaBridge` 编进 `ScreenCaptureKitBridge`。裁剪整包需要 vendoring 并同时改 Cargo.toml、Package.swift 和多份 Swift 源，仍会留下 Rust wrapper/FFI。
+- completion handler 源码级可以避免 Swift concurrency，但最终二进制是否仍 autolink `libswift_Concurrency.dylib` 必须用 `nm`/`otool` 验证，不能只看源码。
+- R8 最终二进制已经证明过度链接：实际链接了 `Metal`、`QuartzCore`、`AVFoundation`、`AppKit`、`CoreVideo`、`VideoToolbox`、`libswiftMetal`、`@rpath/libswift_Concurrency`；且最终二进制 `minos 11.0`，Swift object 为 `minos 13.0`，部署目标不闭合。新 Helper 必须修正。
+
+**源码与构建证据**
+- R8 冻结树：`/Users/zhvala/SourceCode/zody/output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual`
+- R8 视觉 crate 当前依赖：`crates/cua-macos-visual/Cargo.toml:16-20`，其中 `screencapturekit = { version = "8.0.1", features = ["macos_14_2"] }`。
+- R8 `build.rs` 只做 Swift 兼容库搜索路径和 rpath，不负责编译/链接 SCK：`crates/cua-macos-visual/build.rs:41-52`。真正编译 Swift 和链接 framework 的是 SCK 的 build script。
+- 实际 registry 源码：`/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-accepted-pure-tests/cache/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/screencapturekit-8.0.1`
+- 该包 `.cargo_vcs_info.json` 记录 git SHA：`2a9f13bcbeadb0aabc5596f0ff3d2ba71da8c1d0`；R8 的 `originalCache` 是 blocked，实际验收使用上述 accepted pure-test cache 的 29 个 registry 包。
+- SCK 构建耦合：`screencapturekit-8.0.1/build.rs:168` 无条件链接 `ScreenCaptureKit`；`:207-217` 执行 `swift build -c release`；`:252-275` 无条件链接 `Foundation`、`CoreGraphics`、`CoreMedia`、`IOSurface`，并加 `/usr/lib/swift` 和 Xcode toolchain rpath。
+- Swift target 耦合：`swift-bridge/Package.swift:28` 让 `ScreenCaptureKitBridge` 依赖 `ScreenCaptureKitCoreMediaBridge` 和 `MetalBridge`；`ar t` 显示 `libScreenCaptureKitBridge.a` 内含 `ScreenCaptureKitBridge.o`、`ScreenCaptureKitCoreMediaBridge.o`、`MetalBridge.o`。
+- 录屏/音频/选择器耦合：`ContentSharingPicker.swift:3` 无条件 `import AppKit`；`AudioDevices.swift:3` 无条件 `import AVFoundation`；`ScreenshotManager.swift:4-7` 还导入 `CoreMedia`、`UniformTypeIdentifiers`。因此即使只做截图，最终二进制也会链接 AppKit/AVFoundation/CoreMedia 等。
+- 现有截图 Swift 使用 `Task`/`await`：`ScreenshotManager.swift:23-34`、`53-65`；`ShareableContent.swift:74-85`、`127-138`。`nm -u ScreenshotManager.o` 可见 `_swift_task_create`、`_swift_continuation_await`、`_swift_continuation_init` 等符号。这是 SCK 实现选择，不是 API 必需。
+- SDK header 明确提供 completion 版本：`SCScreenshotManager.h:152-153` 的 `captureImageWithFilter:configuration:completionHandler:`；`SCShareableContent.h:168` 的 `getShareableContentExcludingDesktopWindows:onScreenWindowsOnly:completionHandler:`。controller 已确认本机 SDK 可用。
+- 必需窗口/尺寸 API：`SCStream.h:152` 的 `initWithDesktopIndependentWindow:`；`:120`/`:125` 的 `pointPixelScale`/`contentRect`；`:230`/`:235` 的 width/height；`:254` 的 pixelFormat；`:274` 的 showsCursor；`:289` 的 sourceRect。
+- R8 现有 Rust 截图路径：`src/capture.rs:9-10` 直接导入 SCK prelude/screenshot_manager；`:55-97` 构造窗口 filter/config；`:108-127` 调用 `SCScreenshotManager::capture_image`。`src/observe.rs:27-65` 的 before/select/capture/after/encode 顺序应保留。
+
+**建议的最小实现边界**
+- Swift 侧只保留一个新文件，例如 `crates/cua-macos-visual/swift/CuaCaptureBridge.swift`，imports 仅需 `Foundation`、`CoreGraphics`、`ScreenCaptureKit`，必要时 `CoreVideo` 只为 `kCVPixelFormatType_32BGRA`。不要 import `Metal`、`QuartzCore`、`CoreMedia`、`UniformTypeIdentifiers`、`AppKit`、`AVFoundation`、`IOSurface`。
+- Swift ABI 建议用 opaque plan handle，而不是把 `SCWindow`/`SCContentFilter` 暴露给 Rust：
+  - `cua_sc_plan_create(window_id, expected_pid, expected_layer, expected_bounds..., out facts, out_error) -> *mut Plan`
+  - `cua_sc_plan_capture(plan, max_side, max_bytes, callback, user_data)`
+  - `cua_sc_plan_release(plan)`
+- `plan_create` 内：`SCShareableContent.get(excludingDesktopWindows: true, onScreenWindowsOnly: true, completionHandler:)` 找到 exact `windowID`，校验 `owningApplication.processID`、`windowLayer`、`frame`；创建 `SCContentFilter(desktopIndependentWindow:)`；读 `pointPixelScale`/`contentRect`；用 `SCStreamConfiguration()` 显式设 width/height、`pixelFormat = kCVPixelFormatType_32BGRA`、`showsCursor = false`。不要依赖默认 width 1920/height 1080，也不要依赖默认 pixelFormat。
+- `plan_capture` 内：调用 `SCScreenshotManager.captureImage(contentFilter:configuration:completionHandler:)`；completion 内校验 image、尺寸、`max_side`/`max_bytes`，用 `CGContext` 以 `premultipliedLast` + device RGB 绘制为 RGBA，再把 `rgba ptr/len/width/height` 传给 C callback。缓冲区在 callback 返回前有效，Rust 复制后 Swift 释放。
+- 不要添加 `Task`、`async`、`await`、`DispatchSemaphore` 或 5 秒伪超时。`SCScreenshotManager` 没有可信取消 API；如果 callback 永不返回，Rust operation 必须保持存活，不能释放 `user_data`。有界取消只能靠独立 Helper 进程边界，不能靠 Rust timeout。
+- Rust 侧保留 `error.rs`、`geometry.rs`、`geometry_tests.rs`、`observe.rs`、`png.rs`、`tests/pure_visual.rs`、`swift_link.rs`；保留 `window.rs` 的 CGWindow facts（仍用 `core-foundation`，不引入 Swift）。重写 `capture.rs` 为调用新 bridge；删除 `screencapturekit` 依赖。
+- `Cargo.toml` 只保留 `image`（png）和 macOS 下的 `core-foundation`；不再有 `screencapturekit`、`apple-cf`、`apple-metal`。`Cargo.lock` 中三者应消失。
+- 若坚持裁剪 SCK 整包（不推荐）：必须 vendoring 后改 `Cargo.toml` 删除 `apple-metal`/`apple-cf`，改 `Package.swift` 删除 `MetalBridge`/`CoreMediaBridge` 依赖，删除/移出 `Metal.swift`、`AudioDevices.swift`、`ContentSharingPicker.swift`、`RecordingOutput.swift`、`CoreMedia.swift`、`Stream.swift` 的 stream 控制部分，并重写 `ScreenshotManager.swift` 去掉 `Task`。这仍会保留 SCK Rust wrapper 和大量 FFI，不建议作为最小方案。
+- 若裁剪，Swift 符号保留：`sc_screenshot_manager_capture_image`、`sc_shareable_content_get_with_options`、`sc_content_filter_create_with_desktop_independent_window`、`sc_content_filter_get_content_rect`、`sc_content_filter_get_point_pixel_scale`、`sc_window_get_window_id`、`sc_window_get_frame_packed`、`sc_window_get_window_layer`、`sc_window_get_owning_application`、`sc_running_application_get_process_id`、`sc_stream_configuration_create`、`sc_stream_configuration_set_width`、`_set_height`、`_set_shows_cursor`、`_set_pixel_format`、`cgimage_render_rgba_into`（或 `_strided`），以及对应 retain/release。
+- 若裁剪，明确排除：`sc_stream_*`、`sc_stream_add_*`、`start/stop_capture`、`sc_recording_*`、`sc_content_sharing_picker_*`、`sc_audio_*`、`cm_sample_buffer_*`、`cv_*`、`iosurface_*`、`metal_*`、`nsview_*`、`sc_screenshot_manager_capture_sample_buffer`、`capture_image_in_rect`、`sc_screenshot_configuration_*`、`sc_screenshot_output_*`、batch/title/display 等未用 getter。
+- 许可/来源：若复用 `CoreGraphicsStrided.swift` 的 CGContext 绘制逻辑，保留 SCK 的 `LICENSE-MIT`/`LICENSE-APACHE` 和 provenance。该文件路径为 `.../screencapturekit-8.0.1/swift-bridge/Sources/ScreenCaptureKitBridge/CoreGraphicsStrided.swift`，SHA-256 `b86b0a4250b363ce59d29686e952aafa208ae604b79e89dd0d9c2da175b50b45`；SCK `LICENSE-MIT` SHA-256 `5464a5ed...`。现有 `cua-macos-visual/LICENSE-MIT` 是 CUA upstream 根许可，不自动覆盖 SCK 代码。
+
+**最终 Helper 的链接/rpath/部署验证**
+- 建议直接 `swiftc` 编译单文件，不用 SwiftPM，避免 SwiftPM 的默认 platform 和 target 依赖：
+  - `swiftc -parse-as-library -O -target arm64-apple-macos14.0 -sdk "$(xcrun --sdk macosx --show-sdk-path)" -module-name CuaCaptureBridge -c swift/CuaCaptureBridge.swift -o "$OUT/CuaCaptureBridge.o"`
+  - `libtool -static -o "$OUT/libCuaCaptureBridge.a" "$OUT/CuaCaptureBridge.o"`
+- `build.rs` 只对 macOS 生效，emit：
+  - `cargo:rustc-link-search=native=$OUT`
+  - `cargo:rustc-link-lib=static=CuaCaptureBridge`
+  - `cargo:rustc-link-lib=framework=ScreenCaptureKit`
+  - `cargo:rustc-link-lib=framework=Foundation`
+  - `cargo:rustc-link-lib=framework=CoreGraphics`
+  - 需要 BGRA 常量时再加 `CoreVideo`
+  - `cargo:rustc-link-arg=-Wl,-rpath,/usr/lib/swift`
+- **rpath 的关键边界**：`rustc-link-arg` 不会随 rlib 传播给下游 Helper。R8 README 已明确“rlib 不携带 runtime closure，未来 Helper 必须自己加同样 rpath”。如果 Helper 是独立 crate，Helper 的最终链接必须重复 `-L`、`-l static=CuaCaptureBridge`、frameworks 和 `-rpath /usr/lib/swift`；不能只依赖 `cua-macos-visual/build.rs`。
+- 部署目标建议直接定为 macOS 14.0：`SCScreenshotManager` 从 14.0 开始，`pointPixelScale`/`contentRect` 也是 14.0。最终 Helper 设置 `MACOSX_DEPLOYMENT_TARGET=14.0`，Swift 用 `-target arm64-apple-macos14.0`。不要重复 R8 的 `minos 11.0` 最终二进制配 `13.0` Swift object。若产品必须支持 13，则 Helper 编译到 13 并在 `if #available(macOS 14.0, *)` 内调用，13 上明确返回 unsupported。
+- Swift compatibility 库不是随 Helper 发布的库，而是 toolchain 的静态库：
+  - `/Library/Developer/CommandLineTools/usr/lib/swift/macosx/libswiftCompatibility56.a`
+  - `/Library/Developer/CommandLineTools/usr/lib/swift/macosx/libswiftCompatibilityPacks.a`
+  - 现有 `swift_link.rs:51-54` 和 `build.rs:41-47` 强制要求它们，这是因为 R8 的 `AppleMetalBridge.o` autolink 了 `swiftCompatibility56`。新 bridge 不应无条件复制这个 gate；先编译后用 `nm -u` 检查是否真的出现 `__swift_FORCE_LOAD_$_swiftCompatibility56` / `Packs`，只有出现才加 `<toolchain>/usr/lib/swift/macosx` 链接搜索路径。
+- 真实链接验证命令：
+  - `ar t "$OUT/libCuaCaptureBridge.a"`
+  - `otool -l "$OUT/CuaCaptureBridge.o"` 检查 `LC_BUILD_VERSION minos 14.0` 和 `LC_LINKER_OPTION`
+  - `nm -u "$OUT/CuaCaptureBridge.o"` 检查不应出现 `_swift_task_create`、`_swift_continuation_*`
+  - 用固定 Rust 1.97.1：`/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin/cargo`
+  - 构建一个 link-only/ABI probe，不调用截图：`#[used]` 引用 `cua_sc_plan_create`，或调用一个纯 `cua_bridge_abi_version()`；确保静态库被拉入。
+  - 最终二进制 `nm -gU | rg '_cua_'` 应看到 bridge 符号；`otool -L` 应只出现允许的 `ScreenCaptureKit`、`Foundation`、`CoreGraphics`、`CoreFoundation`（必要时 `CoreVideo`），不应出现 `Metal.framework`、`QuartzCore.framework`、`AVFoundation.framework`、`AppKit.framework`、`VideoToolbox.framework`、`IOSurface.framework`、`CoreMedia.framework`、`libswiftMetal.dylib`。
+  - `otool -l` 检查 `LC_RPATH` 包含 `/usr/lib/swift`；`otool -L` 若有 `@rpath/libswift_Concurrency.dylib`，应能由该 rpath 解析。运行 link-only/pure ABI probe 可证明 dyld 加载，不触发 TCC/截图。
+  - `vtool -show-build` 或 `otool -l` 检查最终 `minos >= 14.0`，不能低于 Swift object 的 minos。
+
+**剩余假设与风险**
+- `SCScreenshotManager.captureImage` 的 SDR 输出按 header 是 BGRA；假设不做 HDR，`CGContext` 转 RGBA 使用 premultiplied alpha。若未来要 HDR/RGhA，当前 8-bit RGBA 路径不成立。
+- completion handler 只调用一次、在任意内部队列执行；Rust operation state 必须 `Send + Sync`，且不能在 callback 前释放。
+- `captureImage` 没有取消 API；如果系统不回调，Rust 侧只能保持 operation 存活或依赖进程退出，不能伪造 timeout。
+- 是否仍 autolink `libswift_Concurrency` 取决于 Swift/Foundation 的 autolink，源码不用 `Task` 不保证 `otool -L` 完全消失；若产品硬性要求最终二进制无 concurrency runtime，需要改用 ObjC/objc2 bridge，而不是 Swift。
+- `SCShareableContent.get` 会触发屏幕录制权限/TCC；本轮只读，没有调用。未来只能在可信 Helper 许可接入后调用，公开入口继续 `HostNotApproved`。
+- 当前只验证 arm64 macOS 26.6.2 / SDK 27.0；Intel、最低 macOS、Retina/多显示器和真实 TCC 仍未验收。
+- 建议 controller 先写 spec，明确：Rust `CaptureOperation` 是 completion 状态唯一所有者；Swift `Plan` 只持有本次 SCK 对象；callback exactly-once；无 timeout/无重试/无窗口重选；默认禁用和 `HostNotApproved` 不变。
+
+本轮只读调查，未写入文件、未调用原生截图/TCC/输入、未修改 registry、未联网追 HEAD。

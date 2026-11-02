@@ -174,6 +174,7 @@ vi.mock("@/store/TabStoreProvider.js", () => ({
 vi.mock("@/lib/settingsNavigation.js", () => ({
   addPendingSettingsSectionListener: () => () => {},
   consumeInitialSettingsSection: () => "general",
+  consumeInitialSettingsSectionWithSource: () => ({ section: "general", explicit: false }),
   consumePendingSettingsPluginTab: () => undefined,
   consumePendingSettingsPluginOrigin: () => undefined,
   consumePendingSettingsPluginScopeKey: () => undefined,
@@ -300,6 +301,7 @@ describe("SettingsPage integrated terminal shell", () => {
         isDesktop: false,
         isMacDesktop: false,
         isWindowsDesktop: true,
+        isWebRemoteControlMobile: false,
       },
     ]);
     expect(html).toContain('aria-label="settings.navLabel"');

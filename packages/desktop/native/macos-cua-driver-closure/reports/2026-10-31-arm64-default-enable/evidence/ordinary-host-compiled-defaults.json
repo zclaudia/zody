@@ -1,0 +1,29 @@
+{
+  "profileChunk": "packages/desktop/out/host/chunk-HR4TGW6Y.js",
+  "profileChunkSha256": "3265ca044385616843c06e9f6af5d0d8797e1a274fe65776764a97470e093883",
+  "reachableFromHostIndex": true,
+  "hostIndexSha256": "5570ebea138a4766c03ecae227ab23789434a8a911ebc621db25b3f00ae08870",
+  "compiledDefaultManifestSha256": "3b059dfb06507bc2ca1966f5bba5476cbae96ec4356e0fe588b3fc892f0b0cfb",
+  "hostBundleFiles": {
+    "packages/desktop/out/host/hostEntry.js": "c77b3da58bf9c09c1bc508d7664228386bf262317015c7ed5236996bf3445129",
+    "packages/desktop/out/host/tasksStorageWorker.js": "100bac0682440224cbd6ba34a702d5139b62499d729d16ae77a35ed9537fa8dd",
+    "packages/desktop/out/host/chunk-TCX2Y7FL.js": "fe19e8c40dcc1cdfdbb67fa16527b259a4d1a7534d91bf2d32f26c82f213fad9",
+    "packages/desktop/out/host/chunk-7G47GFQ4.js": "e081525ad0fd701f7af4fc6d0d1231b53238d0672276845cf1cdac8630e42bb4",
+    "packages/desktop/out/host/chunk-QBLSDBP3.js": "de4342755941b924bc74d30a2626a2c4916fb48e2254f71f2cdbfa476f4815fe",
+    "packages/desktop/out/host/chunk-HR4TGW6Y.js": "3265ca044385616843c06e9f6af5d0d8797e1a274fe65776764a97470e093883",
+    "packages/desktop/out/host/chunk-ZW66UQYT.js": "e4150e0337366a785bde81461e23aa25baee43a5e697c0bdf7aa74918d79bfc2",
+    "packages/desktop/out/host/index.js": "5570ebea138a4766c03ecae227ab23789434a8a911ebc621db25b3f00ae08870",
+    "packages/desktop/out/host/chunk-BRN5DZJN.js": "0200a02806a97711e9e2d710b1d1adc76d76b4a41655321920db3eba33ae9614",
+    "packages/desktop/out/host/chunk-FA7MFAJ2.js": "e5e360961a3eb0b505bfe04e27bab7a548c9b27e0bd1246b5b429ba2a0c0ec1d",
+    "packages/desktop/out/host/chunk-SB2FFUZM.js": "6457e10edb2ae17268621e5f531b281510db88fd9cf5f71fd0f16a56cf6ffde7",
+    "packages/desktop/out/host/chunk-X7R4BVFO.js": "b0092dc44ed0c4cb6522af847196f9e4d5c6783f33269d8ba423e404005503a9",
+    "packages/desktop/out/host/chunk-RYAW4CT3.js": "f5d74b60a995aff5e9ca45bc218dcf59a2f1b302c1f3ed15ed22777c22beed60",
+    "packages/desktop/out/host/chunk-42S7EZEM.js": "b8632fa62266ad9ab50b2ffdc8b4ae0d1850e71bdf9f537e93dbf35b7c4069fd",
+    "packages/desktop/out/host/chunk-H3KT5PQP.js": "b89449c8ea51e596b46b2f46d78eed50921dabe7a9b1463b3ebf1450f037d860",
+    "packages/desktop/out/host/chunk-SBYYFYHE.js": "8c6f4859c1fdd1bbbf41ef904361456d2464cc681573489f635f7dbf81b6866a",
+    "packages/desktop/out/host/chunk-GA6NJXVA.js": "04f9939a8083c0975c336bce3bec306d0d1b4696cbac19f83dca06dac6fcf551",
+    "packages/desktop/out/host/chunk-IUJT256U.js": "27e3890ed455c17b901dfaf28ac98aadcbc2731f5a73d66e3493c13b3bc37aa7",
+    "packages/desktop/out/host/chunk-GXFAICQV.js": "b9b18f011849936374c217e484543b7d717e4e96414aaf06aefd4ae1ee6a825f",
+    "packages/desktop/out/host/chunk-6QYUKCXX.js": "c838f20ced77d1ff45e2f3f888b76a2f77188e592541bb23c7d0a5beb5181707"
+  }
+}

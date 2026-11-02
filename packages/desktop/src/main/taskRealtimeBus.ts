@@ -1,5 +1,5 @@
 /* oxlint-disable eslint(max-lines) -- task realtime bus owns lease, stream batching, replay and command routing state in one main-process coordinator. */
-import type { UtilityProcess as ElectronUtilityProcess } from "electron";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 import {
   type TaskOwnerCommandDelivery,
   type TaskOwnerCommandRequest,
@@ -35,7 +35,7 @@ type HostExitListener = () => void;
 interface RegisteredRealtimeHost {
   hostId: string;
   windowId: number;
-  child: ElectronUtilityProcess;
+  child: HostProcessHandle;
   workspaceKeys: Set<string>;
   deliveryKind: TaskRealtimeHostDeliveryKind;
   onMessage: HostMessageListener;
@@ -142,7 +142,7 @@ export class TaskRealtimeBus {
   registerHost(params: {
     hostId: string;
     windowId: number;
-    child: ElectronUtilityProcess;
+    child: HostProcessHandle;
     workspaceKeys: Iterable<string>;
     deliveryKind?: TaskRealtimeHostDeliveryKind;
   }): void {

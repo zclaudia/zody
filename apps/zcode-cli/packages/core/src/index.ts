@@ -152,6 +152,11 @@ export type {
   ClientFacingPorts,
 } from "./runtime/helpers/child-client-ports.js";
 export type {
+  CuaLiveSubmissionRegistrar,
+  CuaLiveSubmissionRegistrationResult,
+  CuaLiveSubmissionTicket,
+} from "./runtime/cua/cua-submission-coordinator.js";
+export type {
   ActiveTurnInfo,
   AgentRuntimeConfig,
   AgentRuntimeDeps,

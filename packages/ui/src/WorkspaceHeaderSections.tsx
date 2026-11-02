@@ -523,6 +523,10 @@ export function WorkspaceHeaderTitleSection({
               size={compact ? "icon-sm" : "icon-md"}
               data-testid={TID_WORKSPACE_MORE_BUTTON}
               aria-label={intl.formatMessage({ id: "common.more" })}
+              // Bugfix(dialogs-4): 顶栏「更多」触发按钮只有 24/28px，低于触屏 44px 命中区标准（spec D1）。
+              // 触屏态用伪元素向四周扩出透明命中区（icon-sm +20px → 44px、icon-md +20px → 48px），
+              // 视觉尺寸与桌面密度不变；伪元素命中扩展仅 (hover:none)/(pointer:coarse) 生效。
+              className="relative [@media(hover:none)_and_(pointer:coarse)]:before:absolute [@media(hover:none)_and_(pointer:coarse)]:before:-inset-2.5 [@media(hover:none)_and_(pointer:coarse)]:before:content-['']"
             >
               <Ellipsis className="size-4" />
             </Button>

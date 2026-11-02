@@ -1,0 +1,42 @@
+
+running 16 tests
+test geometry_tests::checked_window_id_rejects_zero_negative_and_overflow ... ok
+test geometry_tests::parse_rejects_overflow_non_layer_zero_and_invalid_bounds ... ok
+test geometry_tests::parse_requires_every_field_and_rejects_missing_values ... ok
+test observe::tests::bad_rgba_or_empty_png_never_forms_a_success_frame ... ok
+test observe::tests::stops_before_encode_on_after_drift ... ok
+test observe::tests::stops_before_later_stages_on_before_or_selected_drift ... ok
+test observe::tests::success_forms_a_non_empty_frame ... ok
+test png::tests::container_rejects_missing_iend_bad_iend_crc_and_trailing_bytes ... ok
+test png::tests::decoder_allocation_limit_is_enforced ... ok
+test png::tests::decoder_dimension_limit_applies_before_pixel_use ... ok
+test png::tests::every_truncation_of_a_real_png_is_rejected ... ok
+test png::tests::input_length_is_bounded_before_the_decoder ... ok
+test swift_link::tests::parses_clt_swiftc ... ok
+test swift_link::tests::parses_xcode_toolchain_swiftc ... ok
+test swift_link::tests::rejects_empty_multiline_and_non_utf8_output_without_fallback ... ok
+test swift_link::tests::rejects_relative_wrong_layout_and_wrong_file_name ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 16 tests
+test bounds_compare_by_bits_and_reject_negative_zero_drift ... ok
+test capture_frame_accepts_coherent_1x_and_2x ... ok
+test capture_frame_rejects_missing_or_degenerate_bounds ... ok
+test capture_frame_rejects_wrong_surface_scale ... ok
+test encoder_rejects_zero_dimensions_and_wrong_buffer_lengths ... ok
+test header_parser_accepts_a_fake_while_verifier_requires_a_full_png ... ok
+test identity_drift_is_rejected_at_every_stage ... ok
+test invalid_identities_are_rejected_even_when_equal ... ok
+test pixel_dimensions_bound_side_and_aggregate_memory ... ok
+test pixel_extent_rejects_non_finite_zero_and_oversized_values ... ok
+test png_rejects_empty_truncated_non_png_and_dimension_mismatch ... ok
+test png_round_trip_has_matching_dimensions_and_non_empty_bytes ... ok
+test png_verifier_rejects_crc_corruption_and_aggregate_budget ... ok
+test rgba_length_must_equal_width_height_and_four ... ok
+test structurally_invalid_requests_fail_before_any_native_call ... ok
+test valid_request_is_refused_without_host_approval ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

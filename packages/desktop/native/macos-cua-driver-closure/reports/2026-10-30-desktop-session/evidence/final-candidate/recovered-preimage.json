@@ -1,0 +1,6 @@
+{
+  "path": "packages/desktop/tsup.config.ts",
+  "source": "git show HEAD:packages/desktop/tsup.config.ts",
+  "openingSha256": "556f4e18400e381430fc44191977175cc23ad990e9f564823defb7ae0f3a87d8",
+  "matchesOpening": true
+}

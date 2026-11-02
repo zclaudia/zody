@@ -3,6 +3,7 @@ import { BashFileOutput } from "./bash-file-output.js";
 import { readCapturedCwd } from "./cwd-capture.js";
 import { defaultCwdDialect } from "./execution-command.js";
 import { NodeExecutionAdapterProcess } from "./node-execution-adapter-process.js";
+import type { OutputCollector } from "./output-collector.js";
 import { resolveLegacyExecutionOutputEncoding } from "./outputEncoding.js";
 import {
   DEFAULT_TIMEOUT_MS,
@@ -41,10 +42,13 @@ export class NodeExecutionAdapterRun extends NodeExecutionAdapterProcess {
       : undefined;
 
     if (this.closePromise) {
+      // I16：后台预创建的空输出文件不能因为 adapter 在 spawn 前已关闭而残留。
+      await this.discardCreatedOutputFiles(request);
       return this.createStoppedResult(startedAt, "cancelled", "Execution adapter is shutting down");
     }
 
     if (options.signal?.aborted) {
+      await this.discardCreatedOutputFiles(request);
       return this.createStoppedResult(startedAt, "cancelled", "Execution cancelled before spawn");
     }
 
@@ -71,31 +75,10 @@ export class NodeExecutionAdapterRun extends NodeExecutionAdapterProcess {
     });
     // 任务记录单独解析会重复同步执行 Windows chcp；复用执行时的编码值。
     internalOptions.onOutputEncodingResolved?.(legacyOutputEncoding);
-    const file = useBashMergedOutput
-      ? new BashFileOutput(
-          this.outputPathForRequest(request, "stdout")!,
-          this.platform,
-          legacyOutputEncoding,
-        )
-      : undefined;
-    const stdout = file
-      ? undefined
-      : this.createOutputCollector(
-          request,
-          "stdout",
-          legacyOutputEncoding,
-          onPersistedLimit,
-          aggregatePersistedBudget,
-        );
-    const stderr = file
-      ? undefined
-      : this.createOutputCollector(
-          request,
-          "stderr",
-          legacyOutputEncoding,
-          onPersistedLimit,
-          aggregatePersistedBudget,
-        );
+    // I16：输出根在 try 内准备（且已登记 active execution），close() 能等待本次 run 结束。
+    let file: BashFileOutput | undefined;
+    let stdout: OutputCollector | undefined;
+    let stderr: OutputCollector | undefined;
     let child: ChildProcess | undefined;
     let cwdDialect: ExecutionShellDialect = defaultCwdDialect(this.platform);
     let cwdFilePath: string | undefined;
@@ -178,12 +161,67 @@ export class NodeExecutionAdapterRun extends NodeExecutionAdapterProcess {
     }
 
     try {
+      try {
+        // I16：执行前先确定输出根（配置根 → 默认数据根 → 临时根），路径缓存供本次执行与后台记录复用。
+        await this.prepareOutputPaths(request);
+      } catch (error) {
+        // 三层都不可用时保留既有失败语义：按 spawn_error 结算，不挂起、不无限重试。
+        const result = this.createResult({
+          status: "spawn_error",
+          startedAt,
+          completedAt: new Date(),
+          stdout: { text: "", bytes: 0, truncated: false },
+          stderr: { text: "", bytes: 0, truncated: false },
+          timedOut: false,
+          cancelled: false,
+          error: this.toFailure("spawn_error", error),
+        });
+        this.emitResult(options, result);
+        return result;
+      }
+
+      // 根准备期间可能收到取消/关闭；此时尚未创建输出文件，直接按 spawn 前取消结算。
+      const stoppedAfterOutputRootPreparation = stoppedBeforeSpawn();
+      if (stoppedAfterOutputRootPreparation) {
+        // I16：后台运行在进入 run() 前已预创建空 stdout/stderr，取消时一并清理。
+        await this.discardCreatedOutputFiles(request);
+        return stoppedAfterOutputRootPreparation;
+      }
+
+      file = useBashMergedOutput
+        ? new BashFileOutput(
+            this.outputPathForRequest(request, "stdout")!,
+            this.platform,
+            legacyOutputEncoding,
+          )
+        : undefined;
+      stdout = file
+        ? undefined
+        : this.createOutputCollector(
+            request,
+            "stdout",
+            legacyOutputEncoding,
+            onPersistedLimit,
+            aggregatePersistedBudget,
+          );
+      stderr = file
+        ? undefined
+        : this.createOutputCollector(
+            request,
+            "stderr",
+            legacyOutputEncoding,
+            onPersistedLimit,
+            aggregatePersistedBudget,
+          );
+
       const prepared = await this.prepareChildSpawn(request);
 
       // shell init snapshot 创建是异步的；用户可能在等待期间取消或关闭 adapter。
 
       const stoppedAfterCommandPreparation = stoppedBeforeSpawn();
       if (stoppedAfterCommandPreparation) {
+        // I16：通用 pipe 执行同样不能留下后台预创建的空输出文件。
+        await this.discardCreatedOutputFiles(request);
         return stoppedAfterCommandPreparation;
       }
 
@@ -282,6 +320,9 @@ export class NodeExecutionAdapterRun extends NodeExecutionAdapterProcess {
       }
 
       if (stdout && stderr) {
+        // 闭包内不能依赖对可变 let 的收窄，先固定本次执行的两路 collector。
+        const pipedStdout = stdout;
+        const pipedStderr = stderr;
         if (options.onEvent) {
           progressTimer = setInterval(() => {
             if (
@@ -295,16 +336,22 @@ export class NodeExecutionAdapterRun extends NodeExecutionAdapterProcess {
               type: "progress",
               elapsedMs,
               pid: spawnedChild.pid,
-              stdoutBytes: stdout.bytes,
-              stderrBytes: stderr.bytes,
-              stdoutTail: stdout.tailText(),
-              stderrTail: stderr.tailText(),
+              stdoutBytes: pipedStdout.bytes,
+              stderrBytes: pipedStderr.bytes,
+              stdoutTail: pipedStdout.tailText(),
+              stderrTail: pipedStderr.tailText(),
               timestamp: new Date(),
             });
           }, this.progressIntervalMs);
           progressTimer.unref?.();
         }
-        this.attachPipedOutput(spawnedChild, stdout, stderr, legacyOutputEncoding, options);
+        this.attachPipedOutput(
+          spawnedChild,
+          pipedStdout,
+          pipedStderr,
+          legacyOutputEncoding,
+          options,
+        );
       }
       const inputFailure = this.writeChildInput(spawnedChild, request.stdin);
 
@@ -317,7 +364,10 @@ export class NodeExecutionAdapterRun extends NodeExecutionAdapterProcess {
           terminationRequested,
         );
         await Promise.all([stdout!.close(), stderr!.close()]);
+        // I16：通用 pipe 的 spawn 失败不能留下后台预创建的空输出文件。
+        if (exitState.error) await this.discardCreatedOutputFiles(request);
       } else if (exitState.error) {
+        // I16：Bash merged 由 BashFileOutput.discard() 按 created 判定，避免删除既有输出。
         await file.discard();
       }
       const stdoutResult = file
@@ -365,7 +415,11 @@ export class NodeExecutionAdapterRun extends NodeExecutionAdapterProcess {
       this.emitResult(options, result);
       return result;
     } catch (error) {
-      if (!child) await file?.discard();
+      if (!child) {
+        // I16：spawn 前的异常同样删除本次预创建的空输出；既有文件由 created 记录保护。
+        if (file) await file.discard();
+        else await this.discardCreatedOutputFiles(request);
+      }
       if (stopRequested || this.closePromise || options.signal?.aborted) {
         return createPreSpawnStoppedResult();
       }

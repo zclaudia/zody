@@ -110,6 +110,7 @@ import type { RuntimeTaskRegistry } from "../runtime-task/registry.js";
 import type { BashTimeoutPolicy } from "../tool/bash-timeout-policy.js";
 import type { PresentationSurface } from "../context/types.js";
 import type { WorkspaceHookRuntimeAdmissionPort } from "../hooks/workspace-hook-runtime-admission.js";
+import type { CuaSubmissionRuntimeOptions } from "./cua/cua-submission-coordinator.js";
 
 // -----------------------------------------------
 // Agent Runtime
@@ -324,6 +325,11 @@ export interface AgentRuntimeDeps {
   agentTelemetry?: AgentExecutionTelemetryPort;
   agentTelemetryCausation?: AgentTelemetryCausation;
   agentTelemetryCausationMode?: "child" | "linked_root";
+  /**
+   * 可信宿主显式注入的 CUA submission identity。缺任一字段/与 runtime session 不一致时
+   * 不构造 coordinator；runtime 不生成替代 Host incarnation。
+   */
+  cuaSubmission?: CuaSubmissionRuntimeOptions;
   appVersion?: string;
   eventStore: SessionEventStorePort;
   sessionStore?: SessionStorePort;

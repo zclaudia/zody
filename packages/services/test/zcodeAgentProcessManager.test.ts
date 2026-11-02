@@ -21,7 +21,10 @@ import {
 } from "@zcode/shared/process-diagnostic";
 import {
   buildE2EAgentCoverageEnv,
+  createZCodeAgentCommandResolver,
   resolveDefaultZCodeAgentCommand,
+  resolveZCodeAgentNativeRuntimeCommand,
+  validateZCodeAgentNativeRuntimeConfig,
   wrapZCodeAgentCommandWithStdioTapDevProxy,
   ZCodeAgentProcessManager,
   type ZCodeAgentCommand,
@@ -71,6 +74,320 @@ describe("E2E agent coverage", () => {
       expect(readFileSync(preloadPath, "utf8")).toContain("coverageFlushStarted");
     } finally {
       rmSync(artifactDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("resolveZCodeAgentNativeRuntimeCommand", () => {
+  const context = { workspacePath: "/repo/workspace", workspaceKey: "/repo/workspace" };
+
+  it("uses the fixed native launcher argv and fd6/7 protocol streams", () => {
+    const command = resolveZCodeAgentNativeRuntimeCommand(
+      {
+        launcherPath: "/opt/zody/native/zody-native",
+        env: { CUSTOM_ENV: "1" },
+      },
+      context,
+    );
+    expect(command.command).toBe("/opt/zody/native/zody-native");
+    expect(command.args).toEqual([
+      "--launch-session",
+      "--entry-name",
+      "cli-entry.mjs",
+      "--cli-in-fd",
+      "6",
+      "--cli-out-fd",
+      "7",
+    ]);
+    expect(command.env).toEqual({ CUSTOM_ENV: "1" });
+    expect(command.nativeLauncher).toBe(true);
+    expect(command.supportsStorageStartup).toBe(false);
+    expect(command.stdioIndexes).toEqual({ stdin: 6, stdout: 7, stderr: 2 });
+    expect(command.stdio).toEqual([
+      "ignore",
+      "ignore",
+      "pipe",
+      "ignore",
+      "ignore",
+      "ignore",
+      "pipe",
+      "pipe",
+    ]);
+  });
+
+  it("rejects relative launchers, wrong entries, env Node mode, and duplicate fds", () => {
+    expect(() =>
+      validateZCodeAgentNativeRuntimeConfig({ launcherPath: "zody-native" }),
+    ).toThrow(/absolute path/);
+    expect(() =>
+      validateZCodeAgentNativeRuntimeConfig({
+        launcherPath: "/opt/zody/native/zody-native",
+        entryName: "other.mjs" as never,
+      }),
+    ).toThrow(/native entry/);
+    expect(() =>
+      validateZCodeAgentNativeRuntimeConfig({
+        launcherPath: "/opt/zody/native/zody-native",
+        env: { ELECTRON_RUN_AS_NODE: "1" },
+      }),
+    ).toThrow(/ELECTRON_RUN_AS_NODE/);
+    expect(() =>
+      validateZCodeAgentNativeRuntimeConfig({
+        launcherPath: "/opt/zody/native/zody-native",
+        cliInFd: 6,
+        cliOutFd: 6,
+      }),
+    ).toThrow(/must differ/);
+    expect(() =>
+      validateZCodeAgentNativeRuntimeConfig({
+        launcherPath: "/opt/zody/native/zody-native",
+        launchMode: "other" as never,
+      }),
+    ).toThrow(/launchMode/);
+  });
+
+  it("appends the workspace relay flag only for the explicit relay mode", () => {
+    const direct = resolveZCodeAgentNativeRuntimeCommand(
+      { launcherPath: "/opt/zody/native/zody-native", launchMode: "direct" },
+      context,
+    );
+    expect(direct.args?.at(-1)).toBe("7");
+    const relay = resolveZCodeAgentNativeRuntimeCommand(
+      { launcherPath: "/opt/zody/native/zody-native", launchMode: "workspace-relay" },
+      context,
+    );
+    expect(relay.args).toEqual([
+      "--launch-session",
+      "--entry-name",
+      "cli-entry.mjs",
+      "--cli-in-fd",
+      "6",
+      "--cli-out-fd",
+      "7",
+      "--launch-via-workspace",
+    ]);
+  });
+
+  it("wins over PATH/env command discovery and is never wrapped by stdio tap", () => {
+    const previous = process.env.ZCODE_AGENT_SERVER_COMMAND;
+    process.env.ZCODE_AGENT_SERVER_COMMAND = "/tmp/attacker-cli";
+    try {
+      const nativeConfig = { launcherPath: "/opt/zody/native/zody-native" };
+      const command = resolveDefaultZCodeAgentCommand(context, { nativeRuntime: nativeConfig });
+      expect(command?.command).toBe("/opt/zody/native/zody-native");
+      expect(command?.nativeLauncher).toBe(true);
+      expect(wrapZCodeAgentCommandWithStdioTapDevProxy(command!, context.workspaceKey)).toBe(
+        command,
+      );
+    } finally {
+      if (previous === undefined) delete process.env.ZCODE_AGENT_SERVER_COMMAND;
+      else process.env.ZCODE_AGENT_SERVER_COMMAND = previous;
+    }
+  });
+});
+
+describe("createZCodeAgentCommandResolver", () => {
+  const context = { workspacePath: "/repo/workspace", workspaceKey: "/repo/workspace" };
+
+  it("uses the selective native runtime only for the workspace it accepts", async () => {
+    const nativeRuntimeResolver = vi.fn((resolverContext: { workspacePath: string }) =>
+      resolverContext.workspacePath === context.workspacePath
+        ? { launcherPath: "/opt/zody/native/zody-native", launchMode: "workspace-relay" as const }
+        : null,
+    );
+    const fallbackResolver = vi.fn(() => ({ command: "/opt/zody/bin/zcode" }));
+    const resolver = createZCodeAgentCommandResolver({
+      commandResolver: fallbackResolver,
+      nativeRuntimeResolver,
+    });
+
+    await expect(resolver(context)).resolves.toMatchObject({
+      command: "/opt/zody/native/zody-native",
+      nativeLauncher: true,
+      args: expect.arrayContaining(["--launch-via-workspace"]),
+    });
+    expect(fallbackResolver).not.toHaveBeenCalled();
+
+    await expect(
+      resolver({ workspacePath: "/repo/other", workspaceKey: "/repo/other" }),
+    ).resolves.toEqual({ command: "/opt/zody/bin/zcode" });
+    expect(fallbackResolver).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the original resolver intact when the selective resolver declines", async () => {
+    const fallbackResolver = vi.fn(() => ({ command: "/opt/zody/bin/zcode" }));
+    const resolver = createZCodeAgentCommandResolver({
+      commandResolver: fallbackResolver,
+      nativeRuntimeResolver: () => null,
+    });
+
+    await expect(resolver(context)).resolves.toEqual({ command: "/opt/zody/bin/zcode" });
+    expect(fallbackResolver).toHaveBeenCalledWith(context);
+  });
+
+  it("keeps the explicit native runtime override as the highest-priority composition", async () => {
+    const nativeRuntimeResolver = vi.fn(() => null);
+    const fallbackResolver = vi.fn(() => ({ command: "/opt/zody/bin/zcode" }));
+    const resolver = createZCodeAgentCommandResolver({
+      nativeRuntime: { launcherPath: "/opt/zody/native/zody-native" },
+      nativeRuntimeResolver,
+      commandResolver: fallbackResolver,
+    });
+
+    expect(await resolver(context)).toMatchObject({
+      command: "/opt/zody/native/zody-native",
+      nativeLauncher: true,
+    });
+    expect(nativeRuntimeResolver).not.toHaveBeenCalled();
+    expect(fallbackResolver).not.toHaveBeenCalled();
+  });
+
+  it("applies the selective resolver only to the chat/main lane", async () => {
+    const nativeRuntimeResolver = vi.fn(() => ({
+      launcherPath: "/opt/zody/native/zody-native",
+      launchMode: "workspace-relay" as const,
+    }));
+    const fallbackResolver = vi.fn(() => ({ command: "/opt/zody/bin/zcode" }));
+
+    await expect(
+      createZCodeAgentCommandResolver({
+        commandResolver: fallbackResolver,
+        nativeRuntimeResolver,
+      })(context),
+    ).resolves.toMatchObject({ nativeLauncher: true });
+    expect(nativeRuntimeResolver).toHaveBeenCalledTimes(1);
+
+    for (const lane of ["mcp-status", "plugin", "background"]) {
+      const resolver = createZCodeAgentCommandResolver({
+        commandResolver: fallbackResolver,
+        nativeRuntimeResolver,
+        lane,
+      });
+      await expect(await resolver(context)).toEqual({ command: "/opt/zody/bin/zcode" });
+    }
+    expect(nativeRuntimeResolver).toHaveBeenCalledTimes(1);
+    expect(fallbackResolver).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe("selective native runtime spawn", () => {
+  const roots: string[] = [];
+
+  afterEach(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    for (const root of roots.splice(0).reverse()) {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  function createRoot(prefix: string): string {
+    const root = mkdtempSync(join(tmpdir(), `zcode-agent-selective-${prefix}-`));
+    roots.push(root);
+    return root;
+  }
+
+  function createNativeLauncher(root: string, markerName: string) {
+    const launcherPath = join(root, "native-launcher.sh");
+    const markerPath = join(root, markerName);
+    writeFileSync(
+      launcherPath,
+      `#!/bin/sh\nprintf '%s\\n' "$@" > ${JSON.stringify(markerPath)}\nsleep 30\n`,
+      { mode: 0o755 },
+    );
+    return { launcherPath, markerPath };
+  }
+
+  function fallbackCommand(root: string, markerName: string): ZCodeAgentCommand {
+    const markerPath = join(root, markerName);
+    return {
+      command: process.execPath,
+      args: [
+        "-e",
+        `require("node:fs").writeFileSync(${JSON.stringify(markerPath)}, "fallback"); setInterval(() => {}, 1000);`,
+      ],
+      cwd: root,
+    };
+  }
+
+  function readLines(path: string): string[] {
+    return readFileSync(path, "utf8").trim().split("\n");
+  }
+
+  it("spawns the native workspace-relay launcher through getClient for chat", async () => {
+    const root = createRoot("chat-native");
+    const { launcherPath, markerPath } = createNativeLauncher(root, "native-args.txt");
+    const nativeRuntimeResolver = vi.fn(() => ({
+      launcherPath,
+      launchMode: "workspace-relay" as const,
+    }));
+    const commandResolver = vi.fn(() => fallbackCommand(root, "fallback.txt"));
+    const manager = new ZCodeAgentProcessManager({ commandResolver, nativeRuntimeResolver });
+
+    try {
+      await manager.getClient({ workspacePath: root });
+      await vi.waitFor(() => expect(existsSync(markerPath)).toBe(true));
+      expect(readLines(markerPath)).toEqual([
+        "--launch-session",
+        "--entry-name",
+        "cli-entry.mjs",
+        "--cli-in-fd",
+        "6",
+        "--cli-out-fd",
+        "7",
+        "--launch-via-workspace",
+      ]);
+      expect(nativeRuntimeResolver).toHaveBeenCalledTimes(1);
+      expect(commandResolver).not.toHaveBeenCalled();
+      expect(manager.listManagedProcesses()).toHaveLength(1);
+    } finally {
+      manager.disposeAll();
+    }
+  });
+
+  it("keeps the ordinary resolver for declined, remote, and mcp-status lanes", async () => {
+    const root = createRoot("fallbacks");
+    const nativeRuntimeResolver = vi.fn(() => ({
+      launcherPath: join(root, "must-not-spawn.sh"),
+      launchMode: "workspace-relay" as const,
+    }));
+
+    const normalManager = new ZCodeAgentProcessManager({
+      commandResolver: () => fallbackCommand(root, "normal-fallback.txt"),
+      nativeRuntimeResolver: () => null,
+    });
+    try {
+      await normalManager.getClient({ workspacePath: root });
+      await vi.waitFor(() => expect(existsSync(join(root, "normal-fallback.txt"))).toBe(true));
+    } finally {
+      normalManager.disposeAll();
+    }
+
+    const remoteManager = new ZCodeAgentProcessManager({
+      commandResolver: () => fallbackCommand(root, "remote-fallback.txt"),
+      nativeRuntimeResolver: (context) =>
+        context.workspaceIdentity?.startsWith("remote:") ? null : nativeRuntimeResolver(),
+    });
+    try {
+      await remoteManager.getClient({
+        workspacePath: "/remote/workspace",
+        workspaceIdentity: "remote:host:/remote/workspace",
+      });
+      await vi.waitFor(() => expect(existsSync(join(root, "remote-fallback.txt"))).toBe(true));
+    } finally {
+      remoteManager.disposeAll();
+    }
+
+    const mcpManager = new ZCodeAgentProcessManager({
+      commandResolver: () => fallbackCommand(root, "mcp-fallback.txt"),
+      nativeRuntimeResolver,
+      lane: "mcp-status",
+    });
+    try {
+      await mcpManager.getClient({ workspacePath: root });
+      await vi.waitFor(() => expect(existsSync(join(root, "mcp-fallback.txt"))).toBe(true));
+      expect(nativeRuntimeResolver).not.toHaveBeenCalled();
+    } finally {
+      mcpManager.disposeAll();
     }
   });
 });
@@ -1534,6 +1851,72 @@ setInterval(() => {}, 1000);
     } finally {
       manager.disposeAll();
       errorSpy.mockRestore();
+    }
+  });
+
+  it("仅 fixed native launcher 把严格匹配的 cua-native 审计行提升为 info", async () => {
+    const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-cua-native-audit-"));
+    createdDirs.push(workspacePath);
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    const debugSpy = vi.spyOn(console, "debug").mockImplementation(() => undefined);
+    const nativeLine =
+      '[cua-native] cell-loaded-code {"pid":83436,"verified":true,"identifier":"io.github.zclaudia.zody.cua-helper.node","cdhash":"3c57a9bb9f4e8b748ac80d60bc78cdde14767218","entitlementsEmpty":true}';
+    const secretLine = '[cua-native] cell-spawned {"pid":1,"suspended":true,"secret":"raw-secret"}';
+    const script = `process.stderr.write(${JSON.stringify(`${nativeLine}\n${secretLine}\n`)}); setTimeout(() => process.exit(0), 250);`;
+    const manager = new ZCodeAgentProcessManager({
+      commandResolver: () => ({
+        command: process.execPath,
+        args: ["-e", script],
+        cwd: workspacePath,
+        nativeLauncher: true,
+      }),
+    });
+
+    try {
+      await manager.getClient({ workspacePath });
+      await vi.waitFor(() =>
+        expect(logSpy).toHaveBeenCalledWith(
+          expect.any(String),
+          "CUA native audit",
+          nativeLine,
+        ),
+      );
+      const auditLogCalls = logSpy.mock.calls.filter((call) => call[1] === "CUA native audit");
+      expect(JSON.stringify(auditLogCalls)).not.toContain("raw-secret");
+      expect(debugSpy).not.toHaveBeenCalled();
+    } finally {
+      manager.disposeAll();
+      logSpy.mockRestore();
+      debugSpy.mockRestore();
+    }
+  });
+
+  it("ordinary CLI 不把 cua-native 形式 stderr 提升为 info", async () => {
+    const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-ordinary-cua-audit-"));
+    createdDirs.push(workspacePath);
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    const line =
+      '[cua-native] cell-resumed {"pid":83436}';
+    const script = `process.stderr.write(${JSON.stringify(`${line}\n`)}); setTimeout(() => process.exit(0), 250);`;
+    const manager = new ZCodeAgentProcessManager({
+      commandResolver: () => ({
+        command: process.execPath,
+        args: ["-e", script],
+        cwd: workspacePath,
+      }),
+    });
+
+    try {
+      await manager.getClient({ workspacePath });
+      await vi.waitFor(() => expect(logSpy).toHaveBeenCalled());
+      expect(logSpy).not.toHaveBeenCalledWith(
+        expect.any(String),
+        "CUA native audit",
+        expect.anything(),
+      );
+    } finally {
+      manager.disposeAll();
+      logSpy.mockRestore();
     }
   });
 

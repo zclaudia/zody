@@ -1,0 +1,26 @@
+{
+  "name": "ordinary-bundle-defaults-dry-run",
+  "argv": [
+    "/usr/bin/env",
+    "-u",
+    "ZCODE_CUA_NARROW_MANIFEST",
+    "-u",
+    "ZCODE_CUA_NARROW_AGENT_JSON",
+    "-u",
+    "ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON",
+    "pnpm",
+    "bundle:desktop",
+    "--os",
+    "mac",
+    "--arch",
+    "arm64",
+    "--skip-prepare",
+    "--skip-build",
+    "--dry-run"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-31T05:42:13.082447+00:00",
+  "seconds": 3.252,
+  "exitCode": 0,
+  "log": "ordinary-bundle-defaults-dry-run.log"
+}

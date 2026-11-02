@@ -1,0 +1,16 @@
+{
+  "name": "package-candidate",
+  "argv": [
+    "node",
+    "packages/desktop/scripts/build-cua-desktop-candidate-app.mjs",
+    "--helper-app",
+    "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-signed/Zody CUA Desktop Session.app",
+    "--output",
+    "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:24:23.910172+00:00",
+  "seconds": 7.546,
+  "exitCode": 0,
+  "log": "package-candidate.log"
+}

@@ -1,0 +1,43 @@
+{
+  "manualAbi": {
+    "baseline": [
+      "_cua_driver_abi_is_compatible_v1",
+      "_cua_driver_abi_version_v1",
+      "_cua_driver_buffer_free_v1",
+      "_cua_driver_create_v1",
+      "_cua_driver_destroy_v1",
+      "_cua_driver_invoke_v1",
+      "_cua_driver_is_available_v1",
+      "_cua_driver_list_tools_json_v1",
+      "_cua_driver_metadata_json_v1",
+      "_cua_driver_operation_cancel_v1",
+      "_cua_driver_operation_release_v1",
+      "_cua_driver_session_create_v1",
+      "_cua_driver_session_destroy_v1",
+      "_cua_driver_session_invoke_v1",
+      "_cua_driver_shutdown_v1"
+    ],
+    "candidate": [
+      "_cua_driver_abi_is_compatible_v1",
+      "_cua_driver_abi_version_v1",
+      "_cua_driver_buffer_free_v1",
+      "_cua_driver_create_v1",
+      "_cua_driver_destroy_v1",
+      "_cua_driver_invoke_v1",
+      "_cua_driver_is_available_v1",
+      "_cua_driver_list_tools_json_v1",
+      "_cua_driver_metadata_json_v1",
+      "_cua_driver_operation_cancel_v1",
+      "_cua_driver_operation_release_v1",
+      "_cua_driver_session_create_v1",
+      "_cua_driver_session_destroy_v1",
+      "_cua_driver_session_invoke_v1",
+      "_cua_driver_shutdown_v1"
+    ],
+    "equal": true
+  },
+  "uniffiNamedSymbols": {
+    "baseline": 276,
+    "candidate": 0
+  }
+}

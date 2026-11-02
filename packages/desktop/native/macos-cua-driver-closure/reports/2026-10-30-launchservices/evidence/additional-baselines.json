@@ -1,0 +1,7 @@
+{
+  "packages/desktop/src/host/nodeHostEntryConfig.ts": {
+    "source": "output/cua-desktop-session/frozen-capture-delivery/source/packages/desktop/src/host/nodeHostEntryConfig.ts",
+    "sha256": "f0acb87d2542df9e45c0d17d7dfe959efea90b3369ccfbf51e213dc31f9a315c",
+    "kind": "previous frozen capture delivery; not current-turn opening snapshot"
+  }
+}

@@ -85,13 +85,8 @@ async function result(id: string) {
 async function outputPath(id: string) {
   const sessionId = (await getV4PaneSnapshot()).sessionId;
   expect(sessionId).not.toBe("draft");
-  const path = join(
-    getE2EAppDataPaths().storageRoot,
-    "cli",
-    "exec",
-    sessionId!,
-    `${id}-stdout.log`,
-  );
+  // I16：输出文件在 per-toolCall 目录下，消费方按新目录合同拼接校验路径。
+  const path = join(getE2EAppDataPaths().storageRoot, "cli", "exec", sessionId!, id, "stdout.log");
   outputs.add(path);
   return path;
 }

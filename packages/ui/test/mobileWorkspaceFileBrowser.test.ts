@@ -26,11 +26,35 @@ vi.mock("@/previewPaneContent.js", () => ({
   PreviewPaneContent: () => createElement("div", { "data-preview-pane-content": "mounted" }),
 }));
 
+// jsdom 没有布局，真实 useVirtualizer 视口高度为 0 时一行也不渲染；
+// 这里替换为确定性 fake（全部行展开），行渲染本身由真机/桌面环境验证。
+vi.mock("@tanstack/react-virtual", () => ({
+  useVirtualizer: ({ count }: { count: number }) => ({
+    getVirtualItems: () =>
+      Array.from({ length: count }, (_, index) => ({
+        index,
+        key: index,
+        start: index * 48,
+        end: (index + 1) * 48,
+        size: 48,
+      })),
+    getTotalSize: () => count * 48,
+    measure: () => {},
+    measureElement: () => {},
+    scrollToIndex: () => {},
+    scrollToOffset: () => {},
+  }),
+}));
+
 const WORKSPACE_PATH = "/workspace";
 const REVEAL_FILE_PATH = `${WORKSPACE_PATH}/report.bin`;
 
 function file(path: string): FileEntry {
   return { name: path.split("/").pop() ?? path, path, type: "file" };
+}
+
+function directory(path: string): FileEntry {
+  return { name: path.split("/").filter(Boolean).pop() ?? path, path, type: "directory" };
 }
 
 function errnoError(code: string, message: string): Error & { code: string } {
@@ -42,10 +66,7 @@ function errnoError(code: string, message: string): Error & { code: string } {
 describe("mobile workspace file browser integration", () => {
   it("uses a dedicated authenticated-scope browser with bounded reads and preview capability", () => {
     const source = readFileSync("packages/ui/src/MobileWorkspaceFileBrowser.tsx", "utf8");
-    const hookSource = readFileSync(
-      "packages/ui/src/hooks/useMobileWorkspaceFiles.ts",
-      "utf8",
-    );
+    const hookSource = readFileSync("packages/ui/src/hooks/useMobileWorkspaceFiles.ts", "utf8");
 
     expect(source).toContain('data-testid="mobile-file-browser"');
     expect(source).toContain('actionsCapability="read-only"');
@@ -116,29 +137,50 @@ describe("resolveMobileFileBrowserError（MF05 错误三分类）", () => {
       keepPreviousEntries: true,
     });
 
-    expect(resolveMobileFileBrowserError(new Error("UNSUPPORTED_EXTERNAL_DIRECTORY"))).toMatchObject(
-      {
-        category: "unsupportedExternalDirectory",
-        messageId: "mobileFileBrowser.unsupportedExternalDirectory",
-        keepPreviousEntries: false,
-      },
-    );
+    expect(
+      resolveMobileFileBrowserError(new Error("UNSUPPORTED_EXTERNAL_DIRECTORY")),
+    ).toMatchObject({
+      category: "unsupportedExternalDirectory",
+      messageId: "mobileFileBrowser.unsupportedExternalDirectory",
+      keepPreviousEntries: false,
+    });
   });
 });
 
-function createBrowserHarness(options: { refreshError?: () => Error; revealFile?: boolean } = {}) {
+function createBrowserHarness(
+  options: {
+    refreshError?: () => Error;
+    revealFile?: boolean;
+    /** 注入一个可进入的子目录，用于面包屑/滚动复位/等待态用例。 */
+    subdirectory?: string;
+    /** 子目录导航的 readdir 永远挂起，模拟弱网等待态。 */
+    hangSubdirectoryRead?: boolean;
+  } = {},
+) {
   const firstEntries = [file(`${WORKSPACE_PATH}/alpha.txt`)];
-  const saveFile = vi.fn(async () => ({ success: true }));
+  const subdirectoryPath = options.subdirectory
+    ? `${WORKSPACE_PATH}/${options.subdirectory}`
+    : null;
+  const rootEntries = subdirectoryPath
+    ? [...firstEntries, directory(subdirectoryPath)]
+    : firstEntries;
   let readdirCalls = 0;
+  const saveFile = vi.fn(async () => ({ success: true }));
   const services = {
     fileService: {
-      readdir: vi.fn(async () => {
+      readdir: vi.fn(async ({ path }: { path: string }) => {
         readdirCalls += 1;
         // 首次加载成功以获得旧列表；之后的刷新（含 watcher 重读）按注入错误失败。
         if (readdirCalls > 1 && options.refreshError) {
           throw options.refreshError();
         }
-        return firstEntries;
+        if (subdirectoryPath && path === subdirectoryPath) {
+          if (options.hangSubdirectoryRead) {
+            return new Promise<FileEntry[]>(() => undefined);
+          }
+          return [file(`${subdirectoryPath}/inner.txt`)];
+        }
+        return rootEntries;
       }),
       stat: vi.fn(async () => ({
         path: REVEAL_FILE_PATH,
@@ -230,10 +272,7 @@ describe("MobileWorkspaceFileBrowser 错误与保存 UI（MF05/MF08）", () => {
     [
       "offline",
       () =>
-        errnoError(
-          "ZCODE_REMOTE_WORKSPACE_DISCONNECTED",
-          "ZCODE_REMOTE_WORKSPACE_DISCONNECTED",
-        ),
+        errnoError("ZCODE_REMOTE_WORKSPACE_DISCONNECTED", "ZCODE_REMOTE_WORKSPACE_DISCONNECTED"),
       "远程工作区已断开，重连后自动刷新。",
     ],
   ])("刷新失败(%s)时显示分类文案与旧列表标识", async (category, createError, expectedCopy) => {
@@ -291,5 +330,128 @@ describe("MobileWorkspaceFileBrowser 错误与保存 UI（MF05/MF08）", () => {
     // 分块读取挂起时保存仍在进行：保存按钮禁用、原生保存尚未被调用。
     expect(saveButton.getAttribute("disabled")).not.toBeNull();
     expect(services.fileService.readFileRange).toHaveBeenCalled();
+  });
+
+  it("searchfile-2: 目录切换等待态下旧列表置灰禁用并显示加载指示", async () => {
+    const { view } = createBrowserHarness({
+      subdirectory: "sub",
+      hangSubdirectoryRead: true,
+    });
+
+    // 首屏加载完成后出现可进入的子目录。
+    fireEvent.click(await screen.findByText("sub"));
+
+    // readdir 挂起：标题已切到新目录，但旧列表仍渲染——必须置灰禁用并叠加加载指示。
+    const loadingBanner = await screen.findByText("加载中...");
+    expect(loadingBanner.getAttribute("data-mobile-file-loading")).toBe("");
+    const scrollContainer = view.container.querySelector("[aria-busy]");
+    expect(scrollContainer).not.toBeNull();
+    expect(scrollContainer?.getAttribute("aria-busy")).toBe("true");
+    expect(scrollContainer?.className).toContain("opacity-50");
+    expect(scrollContainer?.className).toContain("pointer-events-none");
+    // 旧列表保留渲染（置灰而非清空），行内容仍可见但不可交互。
+    expect(view.container.querySelector("[data-mobile-file-row]")).not.toBeNull();
+  });
+
+  it("searchfile-11/12: 进入子目录后滚动回顶部并出现可跳层的面包屑", async () => {
+    const { view } = createBrowserHarness({ subdirectory: "sub" });
+
+    const scrollContainer = await waitFor(() => {
+      const node = view.container.querySelector("[aria-busy]");
+      expect(node).not.toBeNull();
+      return node as HTMLElement;
+    });
+    await screen.findByText("sub");
+
+    // 模拟用户在根目录已滚动到中部。
+    scrollContainer.scrollTop = 120;
+    fireEvent.click(screen.getByText("sub"));
+
+    // 导航提交后同步回到顶部（searchfile-11）。
+    await waitFor(() => expect(scrollContainer.scrollTop).toBe(0));
+    // 面包屑出现：根 + 当前子目录（searchfile-12）。
+    const breadcrumb = view.container.querySelector("[data-mobile-file-breadcrumb]");
+    expect(breadcrumb).not.toBeNull();
+    expect(breadcrumb?.textContent).toContain("workspace");
+    expect(breadcrumb?.textContent).toContain("sub");
+    // 子目录内容已加载。
+    await screen.findByText("inner.txt");
+
+    // 点击根面包屑跳回 workspace 根，根目录条目重新可见。
+    fireEvent.click(view.container.querySelector('[data-mobile-file-crumb="/workspace"]')!);
+    await screen.findByText("alpha.txt");
+    expect(scrollContainer.scrollTop).toBe(0);
+  });
+
+  it("searchfile-12 评审修复: 触屏态可点 crumb 命中区为 44×44 最小盒（两个方向同时达标）", async () => {
+    // 本仓 jsdom 未实现 window.matchMedia：注入触屏态判定后还原。
+    const originalMatchMedia = window.matchMedia;
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      writable: true,
+      value: (query: string) => ({
+        matches: query === "(hover: none) and (pointer: coarse)",
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+      }),
+    });
+    try {
+      const { view } = createBrowserHarness({ subdirectory: "sub" });
+      await screen.findByText("sub");
+      fireEvent.click(screen.getByText("sub"));
+
+      await waitFor(() =>
+        expect(view.container.querySelector("[data-mobile-file-breadcrumb]")).not.toBeNull(),
+      );
+      const crumb = view.container.querySelector(
+        '[data-mobile-file-crumb="/workspace"]',
+      ) as HTMLElement;
+      expect(crumb).not.toBeNull();
+      // 水平与垂直都不依赖标签宽度/伪元素：直接是 44×44 最小盒。
+      expect(crumb.className).toContain("min-h-11");
+      expect(crumb.className).toContain("min-w-11");
+      expect(crumb.className).not.toContain("before:");
+    } finally {
+      if (originalMatchMedia) {
+        Object.defineProperty(window, "matchMedia", {
+          configurable: true,
+          writable: true,
+          value: originalMatchMedia,
+        });
+      } else {
+        delete (window as { matchMedia?: unknown }).matchMedia;
+      }
+    }
+  });
+
+  it("searchfile-11 回归守护: 预览关闭后恢复原滚动位置，不被目录切换复位效果清零", async () => {
+    const { view } = createBrowserHarness();
+
+    const scrollContainer = await waitFor(() => {
+      const node = view.container.querySelector("[aria-busy]");
+      expect(node).not.toBeNull();
+      return node as HTMLElement;
+    });
+    await screen.findByText("alpha.txt");
+
+    // 在根目录滚动后点击文件行进入预览：行点击会把当前位置存入 savedScrollTop。
+    scrollContainer.scrollTop = 120;
+    fireEvent.click(screen.getByText("alpha.txt"));
+    // 预览打开期间列表卸载（滚动容器不在 DOM），savedScrollTop 保留 120。
+    await waitFor(() =>
+      expect(view.container.querySelector("[data-preview-pane-content]")).not.toBeNull(),
+    );
+    expect(view.container.querySelector("[aria-busy]")).toBeNull();
+
+    // 点返回关闭预览：应恢复到进入前的 120，而不是被目录复位效果清成 0。
+    fireEvent.click(screen.getByRole("button", { name: "上一步" }));
+    await waitFor(() =>
+      expect(view.container.querySelector("[data-preview-pane-content]")).toBeNull(),
+    );
+    const restoredContainer = view.container.querySelector("[aria-busy]") as HTMLElement;
+    expect(restoredContainer).not.toBeNull();
+    expect(restoredContainer.scrollTop).toBe(120);
   });
 });

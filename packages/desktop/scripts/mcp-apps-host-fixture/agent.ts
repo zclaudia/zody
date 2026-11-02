@@ -100,6 +100,8 @@ export async function startAgent(
       sockets.get(source)!.write(JSON.stringify({ type: "release", key }) + "\n"),
     disconnect: (source: string) =>
       sockets.get(source)!.write(JSON.stringify({ type: "disconnect" }) + "\n"),
+    releaseInitialize: (source: string) =>
+      sockets.get(source)!.write(JSON.stringify({ type: "release-initialize" }) + "\n"),
     notify: (source: string, uri: string) =>
       sockets.get(source)!.write(JSON.stringify({ type: "notify", uri }) + "\n"),
     async session(
@@ -108,6 +110,7 @@ export async function startAgent(
       serverName = "fixture",
       workspaceIdentity?: string,
       demo?: { serverScript: string; resourceUri: string },
+      gateInitialize = false,
     ) {
       await mkdir(workspacePath, { recursive: true });
       const workspace = {
@@ -126,7 +129,13 @@ export async function startAgent(
             command: node,
             args: demo
               ? [demo.serverScript]
-              : [join(root, "mcp-server.mjs"), String(port), join(root, "widget.html"), source],
+              : [
+                  join(root, "mcp-server.mjs"),
+                  String(port),
+                  join(root, "widget.html"),
+                  source,
+                  ...(gateInitialize ? ["gate-initialize"] : []),
+                ],
             env: [],
             protocolVersion: "legacy",
             isolation: "session",

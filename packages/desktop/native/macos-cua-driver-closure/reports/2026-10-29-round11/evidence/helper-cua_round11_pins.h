@@ -1,0 +1,12 @@
+#pragma once
+// 由 final-build 生成。身份 pin 为空表示未获批构建在任何 capture/lease 前拒绝；
+// 资源 pin 来自本次实际复制/打包后的 bytes。
+#define CUA_ROUND11_PIN_BUNDLE_ID "io.github.zclaudia.zody.cua-helper"
+#define CUA_ROUND11_PIN_LEAF_SHA256 ""
+#define CUA_ROUND11_PIN_DESIGNATED_REQUIREMENT ""
+#define CUA_ROUND11_PIN_NODE_SHA256 "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+#define CUA_ROUND11_PIN_AUTHORITY_SHA256 "e0bb13d090179121b7a89bf85009e3a749647beb9c2611b0219d5d72cdf2ae62"
+#define CUA_ROUND11_PIN_NODE_IDENTIFIER ""
+#define CUA_ROUND11_PIN_NODE_LEAF_SHA256 ""
+#define CUA_ROUND11_PIN_NODE_DESIGNATED_REQUIREMENT ""
+#define CUA_ROUND11_PIN_NODE_CDHASH ""

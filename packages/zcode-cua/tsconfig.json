@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": false,
+    "strict": true,
+    "types": ["node"]
+  },
+  "include": [
+    "control-protocol.d.ts",
+    "control-channel.d.ts",
+    "producer-control.d.ts",
+    "test/control-protocol.test.ts",
+    "test/control-channel.test.ts",
+    "test/control-channel-frames.test.ts",
+    "test/control-channel-child.test.ts",
+    "test/producer-control.test.ts"
+  ]
+}

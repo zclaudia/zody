@@ -1,0 +1,23 @@
+Executable=/Applications/Zody.app/Contents/MacOS/Zody
+Identifier=Electron
+Format=app bundle with Mach-O thin (arm64)
+CodeDirectory v=20400 size=392 flags=0x20002(adhoc,linker-signed) hashes=9+0 location=embedded
+VersionPlatform=1
+VersionMin=786432
+VersionSDK=1704448
+Hash type=sha256 size=32
+CandidateCDHash sha256=35d594ff563992e91b0cf727f1aa77bd5fb1e7f9
+CandidateCDHashFull sha256=35d594ff563992e91b0cf727f1aa77bd5fb1e7f9df31c796f0d08545393b70ba
+Hash choices=sha256
+CMSDigest=35d594ff563992e91b0cf727f1aa77bd5fb1e7f9df31c796f0d08545393b70ba
+CMSDigestType=2
+Executable Segment base=0
+Executable Segment limit=16384
+Executable Segment flags=0x1
+Page size=4096
+CDHash=35d594ff563992e91b0cf727f1aa77bd5fb1e7f9
+Signature=adhoc
+Info.plist=not bound
+TeamIdentifier=not set
+Sealed Resources=none
+Internal requirements=none

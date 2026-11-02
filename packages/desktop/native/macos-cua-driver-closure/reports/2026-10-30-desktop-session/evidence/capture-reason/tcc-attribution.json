@@ -1,0 +1,20 @@
+{
+  "source": "macOS unified log; tccd; sender_pid15368; 2026-10-30 18:13:15 local",
+  "service": "kTCCServiceScreenCapture",
+  "preflight": true,
+  "requesting": {
+    "identifier": "io.github.zclaudia.zody.cua-helper",
+    "pid": 15368
+  },
+  "responsible": {
+    "identifier": "com.openai.codex",
+    "pid": 8157
+  },
+  "subject": "com.openai.codex",
+  "result": {
+    "authValue": 2,
+    "authReason": 4,
+    "error": null
+  },
+  "interpretation": "Records actual attribution only; does not prove independent Helper TCC acceptance or identify capture failure."
+}

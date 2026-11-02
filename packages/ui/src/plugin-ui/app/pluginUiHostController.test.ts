@@ -26,6 +26,9 @@ function fixture() {
   const onPhase = vi.fn((phase: string) => {
     if (phase === "mounted") mounted.resolve();
   });
+  const ports: {
+    current?: (event: { sandboxId: string; initId: number; port: unknown }) => void;
+  } = {};
   const deps = {
     bridge: {
       prepareSandbox: () => {
@@ -38,7 +41,12 @@ function fixture() {
     platform: {
       getOwnerWebContentsId: async () => 1,
       disposeSandbox: dispose,
-      onPorts: () => () => {},
+      onPorts: (
+        listener: (event: { sandboxId: string; initId: number; port: unknown }) => void,
+      ) => {
+        ports.current = listener;
+        return () => {};
+      },
     },
     scope: { workspacePath: "/w", sessionId: "s", scope: { kind: "surface", surfaceId: "panel" } },
     presentation: { pluginId: "p", serverName: "m", resourceUri: "ui://app" },
@@ -63,6 +71,7 @@ function fixture() {
     dispose,
     order,
     onPhase,
+    ports,
   };
 }
 describe("controller preparation and disposal", () => {
@@ -124,5 +133,20 @@ describe("controller preparation and disposal", () => {
     await a;
     expect(f.order).toEqual(["revoke", "guest"]);
     expect(f.close).toHaveBeenCalledTimes(1);
+  });
+  // I20：显式撤销（删除/重载/来源失效）后，迟到的端口与结果不得重新挂载或复活页面。
+  it("does not revive a disposed page when a late port or result arrives", async () => {
+    const f = fixture();
+    f.controller.start();
+    await f.entered.promise;
+    f.prepared.resolve(handle);
+    await f.mounted.promise;
+    const disposal = f.controller.dispose();
+    f.ports.current?.({ sandboxId: "old", initId: 2, port: {} });
+    f.controller.notifyToolResult({ content: [] } as never);
+    await disposal;
+    expect(f.deps.createTransport).not.toHaveBeenCalled();
+    expect(f.close).toHaveBeenCalledOnce();
+    expect(f.controller.phase).toBe("disposed");
   });
 });

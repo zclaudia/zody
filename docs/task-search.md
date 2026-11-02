@@ -1,5 +1,7 @@
 # Task Search
 
+手机端新增搜索的范围、active/pinned/archived 合并、部分结果、渐增上限和片段定位见 [手机第一批 spec](../specs/mobile-remote-phase1.md)。该能力尚在规划；下面的现有 Command Center 不能被当作手机全 App 搜索已经实现。
+
 侧栏“新建任务”下方提供“搜索”入口，快捷键为 `Cmd/Ctrl+K`。入口打开统一 Command Center；空搜索时展示当前任务最近变更、最近任务和分组命令，输入关键词后按命令、任务正文和文件匹配当前已打开 workspace 的 active 任务与文件。
 
 搜索数据仍通过各 workspace scope 对应的 `zcodeTaskService.listTaskList` 获取：本地 workspace 通过本窗口

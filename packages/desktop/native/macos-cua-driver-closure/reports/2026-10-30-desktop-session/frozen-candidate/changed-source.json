@@ -1,0 +1,587 @@
+[
+  {
+    "path": "apps/zcode-cli/docs/design/v2/tool/00-tool-change-chain.md",
+    "openingSha256": "90d62b6002e5ae26e1bc50396f208503b196475c1f5d63fd8429971606d1be21",
+    "sha256": "6356fb47f35ac0844e5a55d487141ca77e903e4d8396451185cad7197a6c79a8"
+  },
+  {
+    "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority-capture.ts",
+    "openingSha256": null,
+    "sha256": "ec75cf066190f90ef26b05564730fb176529ca4caadaae438acfebd7f1f18454"
+  },
+  {
+    "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority-contract.ts",
+    "openingSha256": "a3241f5b489f35d30b58e8b90806850d9115943f6ffc14faa2f819c2bd2a4da3",
+    "sha256": "b3b10eef9666cafbb18904250f34451d2948fa1e019bd757e1e7cf2dac245d24"
+  },
+  {
+    "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority-protocol.ts",
+    "openingSha256": "91a8a365cd93b5824e808de6b08b9bfbc16de2ffcb5c93884203a64573a0c483",
+    "sha256": "0aa6cebd3c194e007043b56db952103e461247bb623da0862bea6254cbe68902"
+  },
+  {
+    "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority-session.ts",
+    "openingSha256": "fae78b95e40ed7ae8f09f4f0925aa7388644ab1ace326ccb8058ea6e0c1b7d4b",
+    "sha256": "0d9a139db48bd3bf32855e483fbf0e516cef961a23bf3b199b0eeb3b84600325"
+  },
+  {
+    "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority.ts",
+    "openingSha256": "066f1632d7c023dd906f3415e109a13950706708aa10ebb6d6d5c892b07b55c8",
+    "sha256": "ee222a130d4c32e69773e74098312c7859282145abd5dfbdcb31ad56b2a17434"
+  },
+  {
+    "path": "apps/zcode-cli/packages/adapters/tests/cua-native-authority-capture.test.ts",
+    "openingSha256": null,
+    "sha256": "37f28b235a327909aa0d74e5c1ff56127af798add9a827b91ff9790856008afb"
+  },
+  {
+    "path": "apps/zcode-cli/packages/adapters/tests/cua-native-authority.test.ts",
+    "openingSha256": "2f26cf49fc4f2cde44c70cdcc57b8bb12e6d908e36b5d1d702c6025a1a298902",
+    "sha256": "0763f4d764d7f0a6a77c64878c4e6263ea57b4bac03b1c678d12cf6a7e582bf0"
+  },
+  {
+    "path": "apps/zcode-cli/packages/bootstrap/src/app/create-app.ts",
+    "openingSha256": "06759d4881bede64c9371add56509bc03e67b10a19e90f8754e953d2a67d9561",
+    "sha256": "63204e71a6e3d79b8ef47139fd9216a6b2468b89c7057402ac93804bebddf76b"
+  },
+  {
+    "path": "apps/zcode-cli/packages/bootstrap/src/app/cua-runtime-native-capture.ts",
+    "openingSha256": null,
+    "sha256": "237963c3c99a6fa29dece23137f12b610685d85be32e60e7c7204da954c2dc52"
+  },
+  {
+    "path": "apps/zcode-cli/packages/bootstrap/src/app/types.ts",
+    "openingSha256": "646ed762f77fc25d21c914998eda7646bf0f903522194d41bbcaa994047ff173",
+    "sha256": "4634331f7154553970e955a2156d4aeeb8b4185933b08f32c0bf259aff3fd89f"
+  },
+  {
+    "path": "apps/zcode-cli/packages/bootstrap/src/index.ts",
+    "openingSha256": "af86f54c5dd5441d166fbe6e9a8cf85b55a51b410b0c430fe8a36f1f1b0b832d",
+    "sha256": "2dce276f2adfe72e88dc521251368ded1dc7d0ec948fb0522ff43fc7ee9b852a"
+  },
+  {
+    "path": "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-entrypoint.ts",
+    "openingSha256": "379bcc133f9baeb3d0d5b9bd234a0eab27e170799bbd102eb2d95b3f29ce9e08",
+    "sha256": "1bb0972772b29d235f99a67f968906498cd8a563d661979882c908eee8ac8211"
+  },
+  {
+    "path": "apps/zcode-cli/packages/bootstrap/tests/cua-node-repl-mcp-port-wiring.test.ts",
+    "openingSha256": null,
+    "sha256": "7960cc14e9a5653d29a9102c564003fbc2b71fab4fef7ba417f61939d2e669a5"
+  },
+  {
+    "path": "apps/zcode-cli/packages/bootstrap/tests/cua-runtime-control.integration.test.ts",
+    "openingSha256": "e6c0042e79cfc7e4fc745614da1d10d02ebb0b6b9fa3c2b52e9e2a473a276c6b",
+    "sha256": "722bc441befce6c0126b3e34dd9606a97351defd5a4ca03a5872ec0c7d115311"
+  },
+  {
+    "path": "apps/zcode-cli/packages/bootstrap/tests/cua-runtime-native-capture.test.ts",
+    "openingSha256": null,
+    "sha256": "8ac4406c982ceed55957ca8ef740fb1cb0a2b2c2a95df1305aec67be3e73734f"
+  },
+  {
+    "path": "apps/zcode-cli/packages/cli/package.json",
+    "openingSha256": "b3d42cc239e15aef7b6369d0c8355d11aa873484502075b88adeca3c82751e95",
+    "sha256": "32b1009526fa102e16df5402cec3ccf55703f6b0cd28664a66eaf301bac56226"
+  },
+  {
+    "path": "apps/zcode-cli/packages/cli/src/cua-launch-session.ts",
+    "openingSha256": null,
+    "sha256": "db05a5850de0c5a9a802362860b1dbf0edfa9a9a8046f80f9dc546b861788ff1"
+  },
+  {
+    "path": "apps/zcode-cli/packages/cli/src/index.ts",
+    "openingSha256": "4bb9803d6d9cba0ea0b3e5a913b54277333cd58474df0de3a72eebf041c36148",
+    "sha256": "269afa0c1144aaebfe741f66258db5e10ebce9bdd824c20ea25c72e50e4c24d0"
+  },
+  {
+    "path": "apps/zcode-cli/packages/cli/tests/cua-launch-session.test.ts",
+    "openingSha256": null,
+    "sha256": "56379024d3923bfb00d61d2741bf151e7d4a16bdf542098c45c1b182c85df996"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/package.json",
+    "openingSha256": "5416d8998e94d262c9d65491142e51e57e16f1adaed07a5ce02f6b598ec2679c",
+    "sha256": "dc39106094c234e41122eaa3eb8d61875c877ecd030b627575c9399ff2534016"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/cua-capture-runtime.ts",
+    "openingSha256": null,
+    "sha256": "ba20cf3dc73a1c2eac9aaf11565cb9665150907c826e7da28bf7d67634e8b453"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/cua-node-repl-mcp-port.ts",
+    "openingSha256": null,
+    "sha256": "debf463f1a0869b8bac6b0681f33acbc30c2c6b1c73a1389ce68bf268f47c009"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/server.ts",
+    "openingSha256": "3614a00618d10ccc60fdda9accae25ca258c0acc1e193f958b9b6b19236ef219",
+    "sha256": "4fa31afc8d3545e5126818e2858ef8fc370ac1080840ec3e6c4299981e8953bc"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/subprocess-executor.ts",
+    "openingSha256": "e24a63a3ce4592940df6134d6198fdcc1de41bba3d7c332d1917e3b5823ba66e",
+    "sha256": "fa639f2742f2d255a60a110195d456a6665847037b464af02bbb33f9e89cabd3"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/subprocess-launch.ts",
+    "openingSha256": "1e8f6549a8424cf85361f08850257a1b6907dca13521e8c91784aa16a942f718",
+    "sha256": "8c419fa286993d5e2acc5da7246f5a63ba576575e497ca2918e28f74ef7f7cd5"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/test/cua-capture-runtime.test.ts",
+    "openingSha256": null,
+    "sha256": "cd97e3a2bf1c47c43e3349a1e5349e75366083856443160fcd92a66ad4cce048"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/test/cua-node-repl-mcp-port.test.ts",
+    "openingSha256": null,
+    "sha256": "4d3f93a7e03f038d4ef88cb5ba28d2a9c49d66ec931681415a091e614a40ea92"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/test/subprocess-executor.test.ts",
+    "openingSha256": "a919bf9e04bd778bac8f98c6597319313142390d388060ba9c977473e81c01dc",
+    "sha256": "a4eca096a61f4d995c16f09e5a375dcd7c55d90ba4afd02635ac5afde93630c1"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/test/subprocess-launch.test.ts",
+    "openingSha256": null,
+    "sha256": "689457970e4f820f26a2f04a468cb19de7ec7d34f5d378a6f53ce47902750593"
+  },
+  {
+    "path": "docs/plans/computer-use-macos-phase1-desktop-session.md",
+    "openingSha256": null,
+    "sha256": "c8db8d282e26427461a9d549263e6ccd20a2dedddf208654c4b46cc3a37ac21e"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/entries/cli-entry.ts",
+    "openingSha256": null,
+    "sha256": "20252a6cf2d9b938c9b27afffd565fc63d042d618e23d12ae365023f8122c15b"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/entries/entry-fatal.ts",
+    "openingSha256": null,
+    "sha256": "148a495937608b774ccf5c684da055441de3c746e4f857a2a6eab7262f479a17"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/entries/host-entry.ts",
+    "openingSha256": null,
+    "sha256": "c4e641bea0a0a1de3980a45e49f5de05f74ce858e78e1ac951d08d5064268774"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/entries/session-entry.ts",
+    "openingSha256": null,
+    "sha256": "b71e202799991e729d4117bb6d77a02ca4adc93345b5edec5b136b9302d1cfe6"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/entries/session-storage-entry.ts",
+    "openingSha256": null,
+    "sha256": "60f30836a6611a5018231be885503cb19e55c61a96269dbe97bed346056d2fcd"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/patches/capture-owner-no-auto-revoke.patch",
+    "openingSha256": null,
+    "sha256": "23623df967ea221777d8869120f323f740bae287cb31fa038c7a08de8f7652f5"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/runtime/candidate-fetch.ts",
+    "openingSha256": null,
+    "sha256": "8fd61e37a4b7d6d9201898859d561329db9542035f7b75fad4b3d1880bb0403f"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/runtime/unsupported-bufferutil.cjs",
+    "openingSha256": null,
+    "sha256": "90b9c49cdd1924706abbcf9f10a1771626973c5bb2d82ef831fc9499398e6109"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/runtime/unsupported-native-pins.json",
+    "openingSha256": null,
+    "sha256": "26d88e3b0d91bfe6cc1d41063707f63a535efd8f9f7ad5127af81d587afc1dcd"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/runtime/unsupported-node-pty.cjs",
+    "openingSha256": null,
+    "sha256": "964aefe6034720f945f39577d2f06e888b713899a7843985eca509bf81884231"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/runtime/unsupported-ssh2.cjs",
+    "openingSha256": null,
+    "sha256": "3e240ea0f3c843f3a0f9b5a1dab5ac6f53bb4578e7378376eaa425cd110964e7"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/runtime/unsupported-utf-8-validate.cjs",
+    "openingSha256": null,
+    "sha256": "64eea5db850da1f401cb3fa5b9dcd3fa5fe07e5213d39f7196329d19fc93250c"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/source-baseline.json",
+    "openingSha256": null,
+    "sha256": "11a5613328e6c5546a4388d3e073b78e67e3c29d2fb7110d3e31736f31d6d13b"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/confirmation.h",
+    "openingSha256": null,
+    "sha256": "c082c0b4a4304d211a0730359d77b5d7addd09b82e33a18494b6652490b6fee6"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/confirmation.mm",
+    "openingSha256": null,
+    "sha256": "57c9d3107b8cd41e61e123b778ecb27e0fc88cce0f75d620f96150bc736b27d5"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/confirmation_state.h",
+    "openingSha256": null,
+    "sha256": "7e749d3699b88172b71f77cc2e6ea5682e4c97417ac7f0a0808c43b7547c29bc"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/confirmation_state.mm",
+    "openingSha256": null,
+    "sha256": "f4ed5a2f483255c276b971d48f7c6a64ca1218b2e8a61d14ae222a81e71a6c48"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_binding.h",
+    "openingSha256": null,
+    "sha256": "b1c55ade838210524e35b657fad778a9a01f3233f6c0e5cf0d988936aac97e6a"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_binding.mm",
+    "openingSha256": null,
+    "sha256": "5172f44d0c166fb3aa3e04d9c3e77cc01c474ab76103fe4b0fe48ae3c96951c8"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_capture_file.h",
+    "openingSha256": null,
+    "sha256": "a00ebb9210118ecd9fafac5155f0729a0605813a13cb7979dd09e4d2ad3f4e6d"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_capture_file.mm",
+    "openingSha256": null,
+    "sha256": "d54feb49f1a960f160cbe133600771286f815873c28a7dbfd08ef5306ec68e45"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_control.h",
+    "openingSha256": null,
+    "sha256": "8280269dd23b933f07c112f696d6f3841d0fe621c66101226813d9cf3afacfe7"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_control.mm",
+    "openingSha256": null,
+    "sha256": "d056c53a6ec0d1ca5c877ec41c7ac54cee45c9d63b88bb474b14295bba77f64f"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_exit_policy.h",
+    "openingSha256": null,
+    "sha256": "ebb3d71b1cb428ed361b70640008a9afedcb5a93a0a8375a6ba8a8433442d0be"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_launcher.h",
+    "openingSha256": null,
+    "sha256": "ab6dfb7909a6bb63fe1f8feacfcfb962eb25ddbd8b701d0213a278e7b3e33e02"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_launcher.mm",
+    "openingSha256": null,
+    "sha256": "ad07b4bf306b68ff3acdf68d7d32e3b171f83467f6d622cdbb2124edb3592182"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_main.mm",
+    "openingSha256": null,
+    "sha256": "29d1664c1df2228c234fd182f82e1dcc8f9dbda14482db0bebe5f614253f4b61"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_node_process.h",
+    "openingSha256": null,
+    "sha256": "95e2b8d245ecdc55a79f1572bbe2340839cba1207622441700f66f62dabbcd4b"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_node_process.mm",
+    "openingSha256": null,
+    "sha256": "4f207855d3df2a495f8f23ea3d6b474b49edfee27b1f484d970beb7380d718a6"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_supervisor.h",
+    "openingSha256": null,
+    "sha256": "bcd1afa7197f09892bd566d2d97ffe27c51bc700127b3c46b82f111aa492f3aa"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/session_supervisor.mm",
+    "openingSha256": null,
+    "sha256": "f3de3a5cdae4e75a7a81ef0b1c49f832bed0659c7f750e8ed4d797080dc2d143"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/window_identity.h",
+    "openingSha256": null,
+    "sha256": "c2539e7c8c2181b7400dd5a15183689dde66928a5b6c445d5cd2c5dffa955847"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/src/window_identity.mm",
+    "openingSha256": null,
+    "sha256": "35f90d6a8c4dae77d4911218fa8005e66024760bbefa8e9d286c44d18aa7e9be"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/tests/session_binding_test.mm",
+    "openingSha256": null,
+    "sha256": "dfb55f3004fd9a3bc92246771ee7dd8aa04be5f0b6a0fe5d5897506422877466"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/tests/session_capture_file_test.mm",
+    "openingSha256": null,
+    "sha256": "91d9518d6eff0472dae12b717936432c27a73a9fbf848686d765326911e60beb"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/tests/session_control_test.mm",
+    "openingSha256": null,
+    "sha256": "7af461c58595831d0f6d11cb2461c0a7a90c2eb6ae1d6bc5f94be278b0b1ada9"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/tests/session_exit_policy_test.mm",
+    "openingSha256": null,
+    "sha256": "7d6bc9fe025310a41d68726d1c4b4f6a372bed031b219abae5aa4af5395687df"
+  },
+  {
+    "path": "packages/desktop/scripts/build-cua-desktop-session.mjs",
+    "openingSha256": null,
+    "sha256": "3b48b81c6d528fe66aebc887d1e0719966dce6e8ce9908ef03d1c74bf155fce1"
+  },
+  {
+    "path": "packages/desktop/scripts/build-cua-desktop-ui.mjs",
+    "openingSha256": null,
+    "sha256": "52e4870642bcdd2806d6f72ae48e6fb08a0da327268de6db0f2f594d26f8ec75"
+  },
+  {
+    "path": "packages/desktop/scripts/cua-desktop-session-bundle.test.mjs",
+    "openingSha256": null,
+    "sha256": "b9da34e178bd542e648192443599c40146c9e72f254d316f4660488fc837b00b"
+  },
+  {
+    "path": "packages/desktop/scripts/cua-desktop-session-candidate-fetch.test.mjs",
+    "openingSha256": null,
+    "sha256": "5489fa7912acfcbf33d99375a813061464f134af111647e494eaba8d26dd84c8"
+  },
+  {
+    "path": "packages/desktop/scripts/desktop-main-entrypoints.mjs",
+    "openingSha256": null,
+    "sha256": "2397c8dbceb100d7169dab7e4e16b0f3f070447a63e05745ff7844a54dd3419f"
+  },
+  {
+    "path": "packages/desktop/scripts/hostInitProbe.ts",
+    "openingSha256": null,
+    "sha256": "fc363caf60ed3bc65db74b9b993b131dbfb1e5a138d9103f2a21e6101b7a536b"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/cua-desktop-session-bundle.mjs",
+    "openingSha256": null,
+    "sha256": "ab9afbe9938ef66fd15e8a4402baa70836f256713b71610a373dc6f4654ebefb"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/cua-desktop-session-config.mjs",
+    "openingSha256": null,
+    "sha256": "b7cf0ea5c79e26b3e012aec19806ae80754a5df5465ec2b722cabc9232874315"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/cua-desktop-session-dependencies.mjs",
+    "openingSha256": null,
+    "sha256": "6ded5fc9c169898b4ae8ab46127185bb2e032a7a88dabb2a0a71de0909f99df0"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/cua-desktop-session-manifest.mjs",
+    "openingSha256": null,
+    "sha256": "1065c4932f4b1e247f06914c48b93de79b9c71605ea0da8819e95ee86cd16e10"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/cua-desktop-session-native-tests.mjs",
+    "openingSha256": null,
+    "sha256": "dd3544ae155f0b5d25abd1361105900689d071cb63b9c83b5e28e5e0cc3672c3"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/cua-desktop-session-source.mjs",
+    "openingSha256": null,
+    "sha256": "2252f53e731ec590664b8fe9fb8634984abf19b5c50334ad5b165666d511bfc2"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/cua-desktop-session-toolchain.mjs",
+    "openingSha256": null,
+    "sha256": "f7fe4b3813dad463357806a2c02505c1cfdc6c05b85bc7995e3276225730fdb7"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/cua-desktop-session-workspace-source.mjs",
+    "openingSha256": null,
+    "sha256": "67c9fdaad34104baf46381c796157010c46490e4f7e015368971e39fcdbffe39"
+  },
+  {
+    "path": "packages/desktop/src/common/nodeHostBridgeProtocol.ts",
+    "openingSha256": null,
+    "sha256": "558f19b44f44a314c0afae1c0ecb650b900833e611c35705f868a1848e3c55ff"
+  },
+  {
+    "path": "packages/desktop/src/common/nodeHostBridgeTransport.ts",
+    "openingSha256": null,
+    "sha256": "b882bed48322cbb1e9015f4b9cc15ce070496f236e22b2baaaa7eec6a0505710"
+  },
+  {
+    "path": "packages/desktop/src/host/candidateNodeNetwork.ts",
+    "openingSha256": null,
+    "sha256": "5a3f2fd038293bf2cc8e3a4c6386f1c5a6d3cefc7a1a90122b45607c035e2ad0"
+  },
+  {
+    "path": "packages/desktop/src/host/electronPort.ts",
+    "openingSha256": "312788db4c1147f5ad319b342153835e2f96140c9dccc5a1ce8bbc31c87ca670",
+    "sha256": "53967e9050e6941c83cf90f0711b71de5a9d0ece961da06288f01951196b5fb2"
+  },
+  {
+    "path": "packages/desktop/src/host/hostDatabaseStartup.ts",
+    "openingSha256": "0a7940a50dd9ce3250abc298420d70cd84f81c78a4bae2a2adacf6e684062edb",
+    "sha256": "aa417963de4e7b0fdc12952bcae9c89d864321c4fc1c51a8cb67b5a818261530"
+  },
+  {
+    "path": "packages/desktop/src/host/hostEntry.ts",
+    "openingSha256": null,
+    "sha256": "8933c3e3537f9f5a49cb43c6e3dfb9dd377b05969b9d528ebd91c86c2619e654"
+  },
+  {
+    "path": "packages/desktop/src/host/hostStorageResources.ts",
+    "openingSha256": null,
+    "sha256": "e896a8d39146a990331db8591b3d449ee4dc88178472e8970eb7f0fa087d765c"
+  },
+  {
+    "path": "packages/desktop/src/host/index.ts",
+    "openingSha256": "adddd7892192f9c67fb276cbbcd364e0496d52969c6a6d074564cfb6cff6ee4d",
+    "sha256": "230bea1980e2b8b10f82c018e707a8a92ba0fe8bda7a12d04fb1ed03318baf0f"
+  },
+  {
+    "path": "packages/desktop/src/host/nodeHostBridge.ts",
+    "openingSha256": null,
+    "sha256": "e218b84e5122a178d08038ae59f1de09f3e488c65680ff8dcca26fc7ce257c4e"
+  },
+  {
+    "path": "packages/desktop/src/host/nodeHostEntryConfig.ts",
+    "openingSha256": null,
+    "sha256": "f0acb87d2542df9e45c0d17d7dfe959efea90b3369ccfbf51e213dc31f9a315c"
+  },
+  {
+    "path": "packages/desktop/src/host/storagePreparationProcesses.ts",
+    "openingSha256": "b31be1809f05411b309f5e7bd0eafd6e5a3977d876d8b9b06370d81d95382701",
+    "sha256": "2da176bd005a89112faf0299202ed7c33e33a6debfd68f34729369be27af9047"
+  },
+  {
+    "path": "packages/desktop/src/main/broadcastHub.ts",
+    "openingSha256": "71159c59e0e4750c54d091dfba47cf1a51ea42a2669fd11ad7360576c92cbb64",
+    "sha256": "dfb1f2d1a9f6cc08495218f73629267e0435357ad5746a9d3c4acd879e979ce1"
+  },
+  {
+    "path": "packages/desktop/src/main/candidateNativeHostLaunch.ts",
+    "openingSha256": null,
+    "sha256": "fbf2dd480eb0e59558196fe31b20ccc5c5acdee27d1de28814e6bc389d77bab5"
+  },
+  {
+    "path": "packages/desktop/src/main/candidateRemoteAccess.ts",
+    "openingSha256": null,
+    "sha256": "42d3740fff875f55b4978eee803be4fa638154bf49304a8b5e7ec410993fa9fa"
+  },
+  {
+    "path": "packages/desktop/src/main/databaseStartupRelay.ts",
+    "openingSha256": "f21b6ba15a6d2f4bbe0ab7aa1a7cccc44b26d197661a80b25ce9dfbf0e0948ef",
+    "sha256": "49917dcbabd673ae2fb2d982ffb12f97ef8d9e3181377a02923ce5c3528eb732"
+  },
+  {
+    "path": "packages/desktop/src/main/desktopCronScheduler.ts",
+    "openingSha256": "b07e1b2ad059ebef257383a63e94c0f0ac24b8f082ce387089596dc7f51f719f",
+    "sha256": "d94ae47b183f61a02429641f63ca53ba55b2236d8b0b281a37c738813d34ede3"
+  },
+  {
+    "path": "packages/desktop/src/main/desktopHostProcess.ts",
+    "openingSha256": "dd9b0e8d6da8607b352f213d981110d42bb292f009e03857054ac3b0e9145820",
+    "sha256": "a6b23d210182729572c1e21ad1d249083e1c93f654c0ebc3dc5e2446f093c58b"
+  },
+  {
+    "path": "packages/desktop/src/main/desktopRemoteSessions.ts",
+    "openingSha256": "ea3439e7f07ade4a50b0cb3b0e76960d52a719af22c005a065a19791c45337ff",
+    "sha256": "5eb25454e6b60d1604c66daa90203b48908288c82d7e69eb7abcade05c43de16"
+  },
+  {
+    "path": "packages/desktop/src/main/desktopWindowLifecycle.ts",
+    "openingSha256": "105d6988965c13a30b2f9b8b65324df4f6089023c506f333bc719f206e4bf07c",
+    "sha256": "8ff4bf781f0783fdc971fdfae2b2285e5c6d25583d8c657a89c5bc5c95b8fb94"
+  },
+  {
+    "path": "packages/desktop/src/main/hostProcessHandle.ts",
+    "openingSha256": null,
+    "sha256": "ce2ad9b79d5403ddbd1d100c65b5df0c13a69d66cf886907c8693cb686760885"
+  },
+  {
+    "path": "packages/desktop/src/main/index.ts",
+    "openingSha256": "ccfc88be6ed1cbc8e54ef720f5e7bc9191666083e1eef2d3b2f963d46b0ac3a2",
+    "sha256": "f2d5cbae9437b7e2f48b7966056c84def4076f41dfa2cf5cbb05e7304e149b60"
+  },
+  {
+    "path": "packages/desktop/src/main/nodeHostProcess.ts",
+    "openingSha256": null,
+    "sha256": "e3b02b59d67c0b2039e01d7743d3b09f1ae57e0a1fd801d8839f47b272becc25"
+  },
+  {
+    "path": "packages/desktop/src/main/resourceManagerHostSampling.ts",
+    "openingSha256": "2aef15722eb08cc76af05d7b318fb07f156e17d2741fddaaa4e22421478da7ee",
+    "sha256": "750e802f8fe7c9113410c3fef70a8e8b3c69731dfd503fc0dc131751f057c08f"
+  },
+  {
+    "path": "packages/desktop/src/main/resourceManagerNetwork.ts",
+    "openingSha256": "b9440b0a918ba1c86cc49626ed79abf4b60133bd9b72ce5da6c1cee706171500",
+    "sha256": "83f14290517ed8311d7188a7677901f6b59808e7049a034575a930fe9f04c547"
+  },
+  {
+    "path": "packages/desktop/src/main/resourceManagerWindow.ts",
+    "openingSha256": "6c7995a41de0e43e7d4a99f66afeea41cfbaa1aee77e2703632b7d5a9d5c925b",
+    "sha256": "70973c296807a95c55ecab114710f9a07ca9fcb196ce2d18bb2a849f986ae968"
+  },
+  {
+    "path": "packages/desktop/src/main/taskRealtimeBus.ts",
+    "openingSha256": "4f1764545489fe687456e956b42ee59c93a04f6aa08736c5168a932a1bcfa80b",
+    "sha256": "38cff98488cc51a262f96562451848fc55f2d5590eb5c694124397414252264f"
+  },
+  {
+    "path": "packages/desktop/src/main/webRemoteControlManager.ts",
+    "openingSha256": "80019b65a63c3e70e4dd726bb2ca38bd7473f068bead2460b59071b66ff34c16",
+    "sha256": "97423545ba4de4a77fa7de58e531b065d9d5fcd1fffc6ad7ee53ec66f1eb5f98"
+  },
+  {
+    "path": "packages/desktop/src/main/webRemoteControlSharedHostAttachments.ts",
+    "openingSha256": "4ef43805526bbffc3aac625d9cf60729db00bbdfbcb4830eb0b0178c4d0f00a8",
+    "sha256": "55ffc9b15a1c8d68487d3a168be2c958eb39394ee49bc1a35e9a8f326778a11b"
+  },
+  {
+    "path": "packages/desktop/tsup.config.ts",
+    "openingSha256": "556f4e18400e381430fc44191977175cc23ad990e9f564823defb7ae0f3a87d8",
+    "sha256": "e828f5b8d68ea5418c2f6f21cdb3bd972dd88b8d7ef31bc1cc821e39b07fac2a"
+  },
+  {
+    "path": "packages/services/src/node.ts",
+    "openingSha256": "be5ce019137976deacabecd5e6fbb70b7ce646a3d424e946752e7b333f4fb9e0",
+    "sha256": "397bfb343e3931c7410e32080fd6febfaa9d950ec5d8740bcb315eae6b4f6389"
+  },
+  {
+    "path": "packages/services/src/providers/api/nodeApiNetwork.ts",
+    "openingSha256": "d1de83d63f3affc8618eae799a921dc27a93437f2af58070d195a76a0462e9b3",
+    "sha256": "fb2bd464c2376068522b6604da4448deef77e2eeab26d47366646cf90f50d0f2"
+  },
+  {
+    "path": "packages/services/src/zcode-agent/zcodeAgentProcessManager.ts",
+    "openingSha256": "75dbfb76b1e74153069ddd102e1cf7775e67c4fef1721b15f4ba8771fef91d5e",
+    "sha256": "489d90df6f49869e266f5b82f01f31739ac4ef897274547abb081533bfb470f7"
+  },
+  {
+    "path": "packages/services/src/zcode-agent/zcodeAgentService.ts",
+    "openingSha256": "daca22317e2a673e613c50af04b5a5f83cf94883ccfb769aeff7a659e6b90000",
+    "sha256": "1c67373979e3e9024a1a2f7323d37fda949cc6d1840bb17a2d39ec9e375df49e"
+  },
+  {
+    "path": "packages/services/src/zcode-agent/zcodeStdioTransport.ts",
+    "openingSha256": "e39da8384f9bfd545f20fd160d057007329fe9cabc21bb2c5ff8244cc317d932",
+    "sha256": "f477b5a68b0f3da14300e132e2689973c3cf92ab64b8a85276f5c4cbc9488d52"
+  },
+  {
+    "path": "specs/computer-use-macos-phase1.md",
+    "openingSha256": "fcdfede3d0c51a93bc9cad886d9f7fae65711725d071378bf0671fa8ce6f12bb",
+    "sha256": "67946371f37aec32acb843f9b058defb2f8b20c3a20af4383053d00e1f6705e7"
+  }
+]

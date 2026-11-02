@@ -297,7 +297,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     const { executeDesktopCommand } = await import("../src/main/desktopCommandHandlers.js");
     const { shell } = await import("electron");
     const commandOptions = createCommandOptions({
-      settings: { zcodeEndpointOrigin: "https://zcode.z.ai" },
+      settings: { zodyEndpointOrigin: "https://zcode.z.ai" },
     });
 
     await executeDesktopCommand({
@@ -332,7 +332,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
       command: DesktopCommandIds.SetZCodeEndpointTest,
     });
     expect(commandOptions.settingService.update).toHaveBeenLastCalledWith({
-      zcodeEndpointOrigin: TEST_ZCODE_ENDPOINT_ORIGIN,
+      zodyEndpointOrigin: TEST_ZCODE_ENDPOINT_ORIGIN,
     });
 
     // fork（F3.1）：Production(default) 现在表示「清空覆盖、回到 env/默认」，
@@ -342,7 +342,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
       command: DesktopCommandIds.SetZCodeEndpointProduction,
     });
     expect(commandOptions.settingService.update).toHaveBeenLastCalledWith({
-      zcodeEndpointOrigin: undefined,
+      zodyEndpointOrigin: undefined,
     });
 
     await executeDesktopCommand({
@@ -350,7 +350,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
       command: DesktopCommandIds.ResetZCodeEndpoint,
     });
     expect(commandOptions.settingService.update).toHaveBeenLastCalledWith({
-      zcodeEndpointOrigin: undefined,
+      zodyEndpointOrigin: undefined,
     });
     expect(onZCodeEndpointChanged).toHaveBeenCalledTimes(3);
   });
@@ -369,12 +369,12 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     expect(promptWindow?.loadURL).toHaveBeenCalledWith(expect.stringContaining("data:text/html"));
 
     promptWindow?.emitTitle(
-      "zcode-endpoint-submit:" + encodeURIComponent("http://localhost:3030/path"),
+      "zody-endpoint-submit:" + encodeURIComponent("http://localhost:3030/path"),
     );
     await commandPromise;
 
     expect(commandOptions.settingService.update).toHaveBeenCalledWith({
-      zcodeEndpointOrigin: "http://localhost:3030",
+      zodyEndpointOrigin: "http://localhost:3030",
     });
     expect(onZCodeEndpointChanged).toHaveBeenCalledTimes(1);
   });
@@ -569,7 +569,7 @@ function createCommandOptions(options?: {
   onDesktopZoomChanged?: () => void;
   onRelaunchApp?: () => Promise<void>;
   onZCodeEndpointChanged?: () => void;
-  settings?: { zcodeEndpointOrigin?: string; desktopZoomLevel?: number };
+  settings?: { zodyEndpointOrigin?: string; desktopZoomLevel?: number };
 }) {
   return {
     command: DesktopCommandIds.OpenChangelog,

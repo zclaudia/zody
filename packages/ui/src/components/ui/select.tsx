@@ -7,6 +7,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils.js";
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react";
 
+// 触控行高（spec D1）：选项与触发器在 (hover:none) 触屏态抬到 ≥44px，桌面保持原高度。
+const TOUCH_MIN_H_11 = "[@media(hover:none)_and_(pointer:coarse)]:min-h-11";
+
 // resize 大会话时 Select trigger 跟随基础控件批量重排，
 // transition-all 会把布局/滚动条相关属性也动画化；这里限定为颜色过渡。
 const selectTriggerVariants = cva(
@@ -75,7 +78,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-variant={variant}
       data-size={size}
-      className={cn(selectTriggerVariants({ variant, size }), className)}
+      className={cn(selectTriggerVariants({ variant, size }), TOUCH_MIN_H_11, className)}
       {...props}
     >
       {children}
@@ -152,6 +155,7 @@ const SelectItem = React.forwardRef<React.ElementRef<typeof SelectPrimitive.Item
         data-slot="select-item"
         className={cn(
           "relative flex min-h-7 w-full cursor-default items-center gap-2 rounded-md px-2 py-1 text-ui-base/relaxed text-foreground outline-hidden select-none data-[highlighted]:bg-menu-hover data-[highlighted]:text-foreground data-disabled:pointer-events-none data-disabled:text-foreground-subtlest data-disabled:opacity-100 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+          TOUCH_MIN_H_11,
           className,
         )}
         {...props}

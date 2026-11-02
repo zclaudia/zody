@@ -1,0 +1,10 @@
+{
+  "checked": 1175,
+  "changedOrMissing": [],
+  "prefixes": [
+    "packages/desktop/native/macos-cua-driver-closure/reports/",
+    "packages/desktop/native/macos-cua-helper",
+    "packages/zcode-cua/",
+    "apps/zcode-cli/packages/node-repl-host/"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "snapshot-writer-final-tests",
+  "argv": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "packages/node-repl-host/test/cell-source-writer.test.ts",
+    "packages/node-repl-host/test/cell-snapshot-execution.test.ts"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody/apps/zcode-cli",
+  "startedAt": "2026-10-30T14:24:04.218455+00:00",
+  "seconds": 2.202,
+  "exitCode": 0,
+  "log": "snapshot-writer-final-tests.log"
+}

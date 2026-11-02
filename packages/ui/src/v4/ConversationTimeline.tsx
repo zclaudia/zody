@@ -155,7 +155,11 @@ function ConversationBackToBottomButton({
       data-testid={TID_V4_TIMELINE_BOTTOM}
       onClick={() =>
         runUserAction({
-          input: { featureId: "conversation.navigation", action: "jump_bottom", trigger: "button" },
+          input: {
+            featureId: "conversation.navigation",
+            action: "jump_bottom",
+            trigger: "button",
+          },
           operation: onClick,
           completed: { resultSource: "local_commit" },
           failureStage: "timeline_scroll",
@@ -188,7 +192,9 @@ function resolvePendingScrollMemoryRestoreWait(
   if (!hasRows || !element) return "rows";
 
   const restoredTop = resolveChatSessionScrollRestoreTop(state, element);
-  return restoredTop + SCROLL_MEMORY_RESTORE_TOLERANCE_PX < state.scrollTop ? "content" : null;
+  return restoredTop + SCROLL_MEMORY_RESTORE_TOLERANCE_PX < state.scrollTop
+    ? "content"
+    : null;
 }
 
 function canReleasePendingScrollMemoryRestore(
@@ -200,20 +206,33 @@ function canReleasePendingScrollMemoryRestore(
 ): boolean {
   if (!element) return false;
   if (pendingRestore.waitFor === "rows" && rowCount === 0) return false;
-  const restoredTop = resolveChatSessionScrollRestoreTop(pendingRestore.state, element);
+  const restoredTop = resolveChatSessionScrollRestoreTop(
+    pendingRestore.state,
+    element,
+  );
   const targetIsRepresentable =
-    restoredTop + SCROLL_MEMORY_RESTORE_TOLERANCE_PX >= pendingRestore.state.scrollTop;
-  if (targetIsRepresentable || element.scrollHeight >= pendingRestore.state.scrollHeight) {
+    restoredTop + SCROLL_MEMORY_RESTORE_TOLERANCE_PX >=
+    pendingRestore.state.scrollTop;
+  if (
+    targetIsRepresentable ||
+    element.scrollHeight >= pendingRestore.state.scrollHeight
+  ) {
     return true;
   }
   // 新 lease 的首帧 rows 可能仍是截断尾窗；只要还能拉取更早历史，就继续保留原始
   // 恢复意图，避免把临时 clamp 后的 scrollTop 当成最终阅读锚点。
-  return rowCount > 0 && !hasOlderRows && pendingRestore.rowWindowKey !== rowWindowKey;
+  return (
+    rowCount > 0 &&
+    !hasOlderRows &&
+    pendingRestore.rowWindowKey !== rowWindowKey
+  );
 }
 
 interface ConversationScrollMemoryScopeCaptureProps {
   scopeKey: string | null;
-  capture: (previousKey: string | null) => ConversationScrollMemoryScopeSnapshot | null;
+  capture: (
+    previousKey: string | null,
+  ) => ConversationScrollMemoryScopeSnapshot | null;
   commit: (snapshot: ConversationScrollMemoryScopeSnapshot | null) => void;
 }
 
@@ -244,7 +263,10 @@ class ConversationScrollMemoryScopeCapture extends Component<
 }
 
 /** tanstack 默认测量的竖向复刻：优先 ResizeObserver entry（不触发同步布局）。 */
-function measureRowHeight(element: Element, entry: ResizeObserverEntry | undefined): number {
+function measureRowHeight(
+  element: Element,
+  entry: ResizeObserverEntry | undefined,
+): number {
   const boxSize = entry?.borderBoxSize?.[0];
   if (boxSize) {
     return Math.round(boxSize.blockSize);
@@ -252,7 +274,9 @@ function measureRowHeight(element: Element, entry: ResizeObserverEntry | undefin
   return Math.round(element.getBoundingClientRect().height);
 }
 
-function getUnitHeightCacheKey(unit: ConversationTurnRenderUnit | undefined): string | undefined {
+function getUnitHeightCacheKey(
+  unit: ConversationTurnRenderUnit | undefined,
+): string | undefined {
   return unit?.key;
 }
 
@@ -312,7 +336,9 @@ export interface ConversationTimelineProps {
   conversationFindQuery?: string;
   conversationFindActiveIndex?: number;
   conversationFindNavigationRequestId?: number;
-  onConversationFindMatchStateChange?: (state: ConversationFindMatchState) => void;
+  onConversationFindMatchStateChange?: (
+    state: ConversationFindMatchState,
+  ) => void;
   searchResultHighlightRequest?: ChatSearchResultHighlightRequest | null;
   onSearchResultHighlightDone?: (requestId: number) => void;
   sessionPhase?: SessionPhase;
@@ -378,7 +404,10 @@ function ConversationTimelineImpl({
   // fork（F4.8）：headerSlot 高度跟踪/scrollMargin 随分享导入只读块删除。
   const [liveNowMs, setLiveNowMs] = useState(() => Date.now());
   // 插件卡片展示模型——同资源替代 + 最近三回合自动展开 + 手动固定；推导结果发布给卡片自己读。
-  const pluginUiDerivation = useMemo(() => deriveLogicalUiInstances(rows), [rows]);
+  const pluginUiDerivation = useMemo(
+    () => deriveLogicalUiInstances(rows),
+    [rows],
+  );
   useEffect(() => {
     setPluginUiInstanceDerivation(sessionKey, pluginUiDerivation);
   }, [pluginUiDerivation, sessionKey]);
@@ -397,33 +426,49 @@ function ConversationTimelineImpl({
   }, [pluginUiDerivation, sessionKey, pluginUiDisclosureVersion]);
   // fork（bot-channels 移除）：useBotTopicPreparations 订阅与 withTopicPreparationMessages
   // 话题准备投影随 bot channel 删除（specs/bot-channels-removal.md），渲染单元直接来自 CLI rows。
-  const renderUnits = useMemo(
-    () =>
-      buildConversationTurnRenderUnits(rows, {
-        nowMs: liveNowMs,
-        sessionPhase,
-        pluginUiPinResolver,
-      }),
-    [liveNowMs, pluginUiPinResolver, rows, sessionPhase],
+  // perf-1/perf-2：把上一次 renderUnits 回传给 builder 做输入指纹比对，流式 delta 帧与
+  // 运行静默期 1s 时钟只有内容真正变化的 turn（流式尾轮/运行轮耗时）会重建，
+  // 其余 turn 复用旧引用，虚拟窗口内 ConversationTurnGroup 的 memo 不再无差别失效。
+  // ref 写入发生在 useMemo 内：React 丢弃本次渲染或 StrictMode 双调用时，
+  // previousUnits 只是等价输入，复用是幂等纯函数，不会产生错误状态。
+  const previousRenderUnitsRef = useRef<readonly ConversationTurnRenderUnit[]>(
+    [],
   );
+  const renderUnits = useMemo(() => {
+    const nextUnits = buildConversationTurnRenderUnits(rows, {
+      nowMs: liveNowMs,
+      sessionPhase,
+      pluginUiPinResolver,
+      previousUnits: previousRenderUnitsRef.current,
+    });
+    previousRenderUnitsRef.current = nextUnits;
+    return nextUnits;
+  }, [liveNowMs, pluginUiPinResolver, rows, sessionPhase]);
   const { virtualizedUnits, liveUnit, liveUnitIndex } = useMemo(
     () => splitConversationTimelineLiveTail(renderUnits),
     [renderUnits],
   );
-  const hasRunningUnit = useMemo(() => renderUnits.some((unit) => unit.isRunning), [renderUnits]);
+  const hasRunningUnit = useMemo(
+    () => renderUnits.some((unit) => unit.isRunning),
+    [renderUnits],
+  );
   const turnNavigatorQueryRowIds = useMemo(
     () =>
       new Set(
         renderUnits.flatMap((unit) =>
-          unit.visibleUserInputs.filter((row) => row.origin === "realUser").map((row) => row.rowId),
+          unit.visibleUserInputs
+            .filter((row) => row.origin === "realUser")
+            .map((row) => row.rowId),
         ),
       ),
     [renderUnits],
   );
   const turnNavigatorQueryRowIdsRef = useRef(turnNavigatorQueryRowIds);
   turnNavigatorQueryRowIdsRef.current = turnNavigatorQueryRowIds;
-  const centeredEmptyLayout = centerEmptyStateWithDock && renderUnits.length === 0;
-  const responsiveCenteredEmptyLayout = centeredEmptyLayout && !compactEmptyStateWithDock;
+  const centeredEmptyLayout =
+    centerEmptyStateWithDock && renderUnits.length === 0;
+  const responsiveCenteredEmptyLayout =
+    centeredEmptyLayout && !compactEmptyStateWithDock;
   // 高频值经 ref 供稳定回调读取（不进依赖数组）。
   const rowsRef = useRef(rows);
   rowsRef.current = rows;
@@ -468,7 +513,8 @@ function ConversationTimelineImpl({
     key: string;
     state: ChatSessionScrollMemoryState;
   } | null>(null);
-  const pendingDetachedScrollRestoreRef = useRef<PendingScrollMemoryRestore | null>(null);
+  const pendingDetachedScrollRestoreRef =
+    useRef<PendingScrollMemoryRestore | null>(null);
   // 组件「已账目」的 scrollTop——scroll 事件读取值或组件自身
   // 程序化写入（贴底/prepend 平移）后的回读值。贴底 effect 拿它对账未观察滚动
   // （滚动已发生、scroll 事件未派发），防止过期 following=true 把用户/测试的上滚拽回底部。
@@ -478,7 +524,9 @@ function ConversationTimelineImpl({
     firstRowId: number | null;
     totalSize: number;
   }>({ firstRowId: null, totalSize: 0 });
-  const pendingPrependVirtualAnchorRef = useRef<PrependVirtualAnchor | null>(null);
+  const pendingPrependVirtualAnchorRef = useRef<PrependVirtualAnchor | null>(
+    null,
+  );
   const heightCacheRef = useRef<TimelineRowHeightCache | null>(null);
   if (heightCacheRef.current === null) {
     heightCacheRef.current = new TimelineRowHeightCache();
@@ -489,7 +537,8 @@ function ConversationTimelineImpl({
     viewportHeightPx: 0,
     activeQueryRowId: undefined as number | undefined,
   });
-  const [turnNavigatorContainerWidthPx, setTurnNavigatorContainerWidthPx] = useState(0);
+  const [turnNavigatorContainerWidthPx, setTurnNavigatorContainerWidthPx] =
+    useState(0);
   const turnNavigatorJumpFrameRef = useRef<number | null>(null);
   const turnNavigatorHydrationAttemptRef = useRef<{
     attemptCount: number;
@@ -497,7 +546,10 @@ function ConversationTimelineImpl({
     retryTimer: number | null;
     status: "idle" | "in-flight" | "waiting" | "terminal";
   }>({ attemptCount: 0, key: null, retryTimer: null, status: "idle" });
-  const [turnNavigatorHydrationRetryRevision, setTurnNavigatorHydrationRetryRevision] = useState(0);
+  const [
+    turnNavigatorHydrationRetryRevision,
+    setTurnNavigatorHydrationRetryRevision,
+  ] = useState(0);
   const timelineRootRef = useRef<HTMLDivElement>(null);
   const composerDockRef = useRef<HTMLDivElement>(null);
   // 右侧状态面板完整 inline 展开时，中间消息列和输入 dock 必须使用同一偏移；
@@ -545,7 +597,11 @@ function ConversationTimelineImpl({
       const observer = new ResizeObserver((entries) => {
         const entry = entries[0];
         const borderBox = entry?.borderBoxSize?.[0];
-        commitWidth(borderBox?.inlineSize ?? entry?.contentRect.width ?? element.clientWidth);
+        commitWidth(
+          borderBox?.inlineSize ??
+            entry?.contentRect.width ??
+            element.clientWidth,
+        );
       });
       observer.observe(element);
       return () => observer.disconnect();
@@ -590,7 +646,10 @@ function ConversationTimelineImpl({
     });
     void onLoadAllOlder().then((result) => {
       if (attempt.key !== hydrationKey) return;
-      if (result.status === "hydrated" || result.status === "not-enough-queries") {
+      if (
+        result.status === "hydrated" ||
+        result.status === "not-enough-queries"
+      ) {
         attempt.status = "terminal";
         return;
       }
@@ -599,9 +658,10 @@ function ConversationTimelineImpl({
         return;
       }
       attempt.attemptCount += 1;
-      const retryDelayMs = resolveConversationTurnNavigatorHydrationRetryDelayMs(
-        attempt.attemptCount,
-      );
+      const retryDelayMs =
+        resolveConversationTurnNavigatorHydrationRetryDelayMs(
+          attempt.attemptCount,
+        );
       if (retryDelayMs === null) {
         attempt.status = "terminal";
         return;
@@ -651,16 +711,22 @@ function ConversationTimelineImpl({
   );
   // 动态测高：virtualizer 对窗口内元素挂 ResizeObserver，流式行长高即回调此处；
   // 同时把真实高度写入稳定的 turnId 缓存。
-  const measureElement = useCallback((element: Element, entry: ResizeObserverEntry | undefined) => {
-    const height = measureRowHeight(element, entry);
-    const indexAttr = element.getAttribute("data-index");
-    const unit = indexAttr === null ? undefined : virtualizedUnitsRef.current[Number(indexAttr)];
-    const cacheKey = getUnitHeightCacheKey(unit);
-    if (cacheKey !== undefined) {
-      heightCacheRef.current?.set(cacheKey, height);
-    }
-    return height;
-  }, []);
+  const measureElement = useCallback(
+    (element: Element, entry: ResizeObserverEntry | undefined) => {
+      const height = measureRowHeight(element, entry);
+      const indexAttr = element.getAttribute("data-index");
+      const unit =
+        indexAttr === null
+          ? undefined
+          : virtualizedUnitsRef.current[Number(indexAttr)];
+      const cacheKey = getUnitHeightCacheKey(unit);
+      if (cacheKey !== undefined) {
+        heightCacheRef.current?.set(cacheKey, height);
+      }
+      return height;
+    },
+    [],
+  );
 
   const [, commitMeasuredLayout] = useState(0);
   const virtualizer = useVirtualizer({
@@ -683,23 +749,24 @@ function ConversationTimelineImpl({
   };
   const virtualRows = virtualizer.getVirtualItems();
   const totalSize = virtualizer.getTotalSize();
-  const turnNavigatorVirtualItems: ConversationTurnNavigatorVirtualItem[] = useMemo(() => {
-    const historyItems = virtualRows.map((row) => ({
-      index: row.index,
-      size: row.size,
-      start: row.start,
-    }));
-    if (liveUnitIndex === null) return historyItems;
-    return [
-      ...historyItems,
-      {
-        index: liveUnitIndex,
-        start: totalSize,
-        // live tail 不参与 virtualizer 测高；覆盖剩余滚动区即可供目录判定当前轮次。
-        size: Number.MAX_SAFE_INTEGER - totalSize,
-      },
-    ];
-  }, [liveUnitIndex, totalSize, virtualRows]);
+  const turnNavigatorVirtualItems: ConversationTurnNavigatorVirtualItem[] =
+    useMemo(() => {
+      const historyItems = virtualRows.map((row) => ({
+        index: row.index,
+        size: row.size,
+        start: row.start,
+      }));
+      if (liveUnitIndex === null) return historyItems;
+      return [
+        ...historyItems,
+        {
+          index: liveUnitIndex,
+          start: totalSize,
+          // live tail 不参与 virtualizer 测高；覆盖剩余滚动区即可供目录判定当前轮次。
+          size: Number.MAX_SAFE_INTEGER - totalSize,
+        },
+      ];
+    }, [liveUnitIndex, totalSize, virtualRows]);
   const mountedRowsKey = useMemo(
     () =>
       [
@@ -721,7 +788,9 @@ function ConversationTimelineImpl({
   const commitFollowing = useCallback((following: boolean) => {
     if (followingRef.current === following) return;
     followingRef.current = following;
-    setBackToBottomVisible(shouldShowBackToBottom(following, unitsRef.current.length));
+    setBackToBottomVisible(
+      shouldShowBackToBottom(following, unitsRef.current.length),
+    );
   }, []);
 
   const clearUserScrollIntent = useCallback(() => {
@@ -730,15 +799,19 @@ function ConversationTimelineImpl({
     scrollbarPointerIdRef.current = null;
   }, []);
 
-  const getActiveUserScrollIntent = useCallback((): TimelineUserScrollIntent => {
-    const current = userScrollIntentRef.current;
-    const interactionActive =
-      touchClientYRef.current !== null || scrollbarPointerIdRef.current !== null;
-    if (interactionActive) {
-      return current.intent === "none" ? "unknown" : current.intent;
-    }
-    return Date.now() - current.observedAt <= USER_SCROLL_INTENT_TTL_MS ? current.intent : "none";
-  }, []);
+  const getActiveUserScrollIntent =
+    useCallback((): TimelineUserScrollIntent => {
+      const current = userScrollIntentRef.current;
+      const interactionActive =
+        touchClientYRef.current !== null ||
+        scrollbarPointerIdRef.current !== null;
+      if (interactionActive) {
+        return current.intent === "none" ? "unknown" : current.intent;
+      }
+      return Date.now() - current.observedAt <= USER_SCROLL_INTENT_TTL_MS
+        ? current.intent
+        : "none";
+    }, []);
 
   const markLayoutScrollGuard = useCallback(() => {
     layoutScrollGuardUntilRef.current = Date.now() + LAYOUT_SCROLL_GUARD_MS;
@@ -752,7 +825,11 @@ function ConversationTimelineImpl({
       // running -> terminal 会在同一帧迁移 live tail、折叠工作历史并触发
       // virtualizer 测高。向上滚动必须在 scroll 事件之前先拿走滚动权，否则终态
       // layout effect 会拿过期的 following=true 把用户重新拽到底部。
-      if (intent === "awayFromBottom" && element && element.scrollHeight > element.clientHeight) {
+      if (
+        intent === "awayFromBottom" &&
+        element &&
+        element.scrollHeight > element.clientHeight
+      ) {
         commitFollowing(false);
       }
     },
@@ -766,16 +843,21 @@ function ConversationTimelineImpl({
     [markUserScrollIntent],
   );
 
-  const handleTouchStartCapture = useCallback((event: ReactTouchEvent<HTMLDivElement>) => {
-    touchClientYRef.current = event.touches[0]?.clientY ?? null;
-  }, []);
+  const handleTouchStartCapture = useCallback(
+    (event: ReactTouchEvent<HTMLDivElement>) => {
+      touchClientYRef.current = event.touches[0]?.clientY ?? null;
+    },
+    [],
+  );
 
   const handleTouchMoveCapture = useCallback(
     (event: ReactTouchEvent<HTMLDivElement>) => {
       const nextClientY = event.touches[0]?.clientY;
       const previousClientY = touchClientYRef.current;
       if (nextClientY === undefined || previousClientY === null) return;
-      markUserScrollIntent(timelineTouchScrollIntent(previousClientY, nextClientY));
+      markUserScrollIntent(
+        timelineTouchScrollIntent(previousClientY, nextClientY),
+      );
       touchClientYRef.current = nextClientY;
     },
     [markUserScrollIntent],
@@ -809,11 +891,14 @@ function ConversationTimelineImpl({
     [markUserScrollIntent],
   );
 
-  const handlePointerEndCapture = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    if (scrollbarPointerIdRef.current === event.pointerId) {
-      scrollbarPointerIdRef.current = null;
-    }
-  }, []);
+  const handlePointerEndCapture = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (scrollbarPointerIdRef.current === event.pointerId) {
+        scrollbarPointerIdRef.current = null;
+      }
+    },
+    [],
+  );
 
   const syncMessageLayerMask = useCallback((element: HTMLDivElement) => {
     const messageLayer = messageLayerRef.current;
@@ -838,8 +923,14 @@ function ConversationTimelineImpl({
       0,
       viewportHeight - COMPOSER_MESSAGE_MASK_TRANSPARENT_HEIGHT_PX,
     );
-    const opaqueEnd = Math.max(0, transparentStart - COMPOSER_MESSAGE_MASK_FADE_PX);
-    const viewportTopInLayer = Math.max(0, element.scrollTop - messageLayer.offsetTop);
+    const opaqueEnd = Math.max(
+      0,
+      transparentStart - COMPOSER_MESSAGE_MASK_FADE_PX,
+    );
+    const viewportTopInLayer = Math.max(
+      0,
+      element.scrollTop - messageLayer.offsetTop,
+    );
     const maskImage = `linear-gradient(to bottom, black 0, black ${opaqueEnd}px, transparent ${transparentStart}px, transparent 100%)`;
 
     // dock 的透明 padding 能保留分屏 focus ring，但消息会从留白透出；
@@ -857,9 +948,14 @@ function ConversationTimelineImpl({
       syncMessageLayerMask(element);
       const viewportRect = element.getBoundingClientRect();
       const queryPositions: ConversationTurnNavigatorQueryPosition[] = [];
-      for (const rowElement of element.querySelectorAll<HTMLElement>("[data-row-id]")) {
+      for (const rowElement of element.querySelectorAll<HTMLElement>(
+        "[data-row-id]",
+      )) {
         const rowId = Number(rowElement.dataset.rowId);
-        if (!Number.isSafeInteger(rowId) || !turnNavigatorQueryRowIdsRef.current.has(rowId)) {
+        if (
+          !Number.isSafeInteger(rowId) ||
+          !turnNavigatorQueryRowIdsRef.current.has(rowId)
+        ) {
           continue;
         }
         const rowRect = rowElement.getBoundingClientRect();
@@ -945,15 +1041,20 @@ function ConversationTimelineImpl({
     [buildCurrentScrollMemoryState, scrollMemoryKey],
   );
 
-  const notifyScrollObserversAfterCommit = useCallback((element: HTMLDivElement) => {
-    scheduleMicrotask(() => {
-      if (scrollRef.current !== element) return;
-      element.dispatchEvent(new Event("scroll"));
-    });
-  }, []);
+  const notifyScrollObserversAfterCommit = useCallback(
+    (element: HTMLDivElement) => {
+      scheduleMicrotask(() => {
+        if (scrollRef.current !== element) return;
+        element.dispatchEvent(new Event("scroll"));
+      });
+    },
+    [],
+  );
 
   const captureScrollMemoryBeforeScopeMutation = useCallback(
-    (previousKey: string | null): ConversationScrollMemoryScopeSnapshot | null => {
+    (
+      previousKey: string | null,
+    ): ConversationScrollMemoryScopeSnapshot | null => {
       const pendingRestore = pendingDetachedScrollRestoreRef.current;
       if (pendingRestore?.key === previousKey) {
         // 会话数据尚未到达时 DOM 只能读到被钳制的 scrollTop=0；此时切换
@@ -986,7 +1087,9 @@ function ConversationTimelineImpl({
     markProgrammaticScroll();
     // 草稿安全居中允许内容在低高度下向下溢出；若沿用真实会话吸底，
     // 顶部安全留白会被滚走。草稿始终展示顶部，真实会话继续吸底。
-    element.scrollTop = responsiveCenteredEmptyLayout ? 0 : element.scrollHeight;
+    element.scrollTop = responsiveCenteredEmptyLayout
+      ? 0
+      : element.scrollHeight;
     // 回读取钳制后的落点入账（浏览器会把赋值钳到最大可滚动距离）。
     lastObservedScrollTopRef.current = element.scrollTop;
     syncTurnNavigatorViewport(element);
@@ -1013,9 +1116,11 @@ function ConversationTimelineImpl({
       const nextWidth = contentColumn.clientWidth;
       const element = scrollRef.current;
       if (!element) return;
-      const viewportHeightChanged = observedViewportHeight !== element.clientHeight;
+      const viewportHeightChanged =
+        observedViewportHeight !== element.clientHeight;
       observedViewportHeight = element.clientHeight;
-      if (nextWidth === stableContentWidthRef.current && !viewportHeightChanged) return;
+      if (nextWidth === stableContentWidthRef.current && !viewportHeightChanged)
+        return;
       markLayoutScrollGuard();
       commitFollowing(
         reconcileFollowingForContentAnchor({
@@ -1053,7 +1158,8 @@ function ConversationTimelineImpl({
             }),
           );
           flushSync(() => {
-            for (const item of measurements) virtualizer.resizeItem(item.index, item.height);
+            for (const item of measurements)
+              virtualizer.resizeItem(item.index, item.height);
             // 缓存可能已经更新且没有差量，仍需明确提交，不能依赖空回调冲刷旧任务。
             commitMeasuredLayout((revision) => revision + 1);
           });
@@ -1061,7 +1167,8 @@ function ConversationTimelineImpl({
           committingMeasuredLayoutRef.current = false;
           // 暂停的是本批次会写入高度的观察目标，不推迟测高或吸底。下一帧继续
           // 观察内容列宽度，以覆盖视口停止后仍在进行的 CSS 宽度过渡。
-          if (observeContentFrame !== null) window.cancelAnimationFrame(observeContentFrame);
+          if (observeContentFrame !== null)
+            window.cancelAnimationFrame(observeContentFrame);
           if (!disposed) {
             observeContentFrame = window.requestAnimationFrame(() => {
               observeContentFrame = null;
@@ -1079,7 +1186,10 @@ function ConversationTimelineImpl({
         stableContentWidthRef.current = contentColumn.clientWidth;
         contentWidthResizeActiveRef.current = false;
         // 同步提交可能触发其他布局处理；用户上滚或定位始终优先。
-        if (followingRef.current && getActiveUserScrollIntent() !== "awayFromBottom")
+        if (
+          followingRef.current &&
+          getActiveUserScrollIntent() !== "awayFromBottom"
+        )
           scrollToBottom();
         return;
       }
@@ -1106,7 +1216,8 @@ function ConversationTimelineImpl({
     return () => {
       disposed = true;
       observer.disconnect();
-      if (observeContentFrame !== null) window.cancelAnimationFrame(observeContentFrame);
+      if (observeContentFrame !== null)
+        window.cancelAnimationFrame(observeContentFrame);
       if (contentWidthResizeSettleTimerRef.current !== null) {
         window.clearTimeout(contentWidthResizeSettleTimerRef.current);
         contentWidthResizeSettleTimerRef.current = null;
@@ -1159,7 +1270,10 @@ function ConversationTimelineImpl({
         userScrollIntent: getActiveUserScrollIntent(),
       });
       commitFollowing(following);
-      if (anchorActionAfterContentChange(following, isContentWidthChanging()) === "stickToBottom") {
+      if (
+        anchorActionAfterContentChange(following, isContentWidthChanging()) ===
+        "stickToBottom"
+      ) {
         scrollToBottom();
       }
     });
@@ -1199,7 +1313,9 @@ function ConversationTimelineImpl({
       element.scrollTop = resolveChatSessionScrollRestoreTop(state, element);
       lastObservedScrollTopRef.current = element.scrollTop;
       followingRef.current = false;
-      setBackToBottomVisible(shouldShowBackToBottom(false, unitsRef.current.length));
+      setBackToBottomVisible(
+        shouldShowBackToBottom(false, unitsRef.current.length),
+      );
       syncTurnNavigatorViewport(element);
       userAdjustedScrollSinceRestoreRef.current = false;
       cacheCurrentScrollMemoryState(element);
@@ -1265,7 +1381,9 @@ function ConversationTimelineImpl({
     ) {
       // 前插超过 viewport + overscan 后旧可见 turn 会被卸载，DOM 不能作为跨
       // commit 锚点；这里保存 virtualizer 按稳定 turn key 维护的 measurement 起点。
-      const anchorMeasurement = virtualizer.getVirtualItemForOffset(element.scrollTop);
+      const anchorMeasurement = virtualizer.getVirtualItemForOffset(
+        element.scrollTop,
+      );
       const anchorUnit = anchorMeasurement
         ? virtualizedUnitsRef.current[anchorMeasurement.index]
         : undefined;
@@ -1299,7 +1417,12 @@ function ConversationTimelineImpl({
     // scrollToBottom 只更新组件内 ref；若用户点击后立刻切任务，scope
     // cleanup/scroll 事件可能还没运行，旧 Map 会把下次恢复重新带回中部甚至顶部。
     saveCurrentScrollMemory();
-  }, [clearUserScrollIntent, commitFollowing, saveCurrentScrollMemory, scrollToBottom]);
+  }, [
+    clearUserScrollIntent,
+    commitFollowing,
+    saveCurrentScrollMemory,
+    scrollToBottom,
+  ]);
 
   useLayoutEffect(() => {
     if (!scrollToBottomActionRef) return;
@@ -1313,7 +1436,10 @@ function ConversationTimelineImpl({
   }, [handleBackToBottom, scrollToBottomActionRef]);
 
   const scrollToQuery = useCallback(
-    (target: { unitIndex: number; rowId: number }, behavior: ScrollBehavior = "auto") => {
+    (
+      target: { unitIndex: number; rowId: number },
+      behavior: ScrollBehavior = "auto",
+    ) => {
       clearUserScrollIntent();
       commitFollowing(false);
       if (turnNavigatorJumpFrameRef.current !== null) {
@@ -1322,7 +1448,9 @@ function ConversationTimelineImpl({
       }
 
       const scrollMountedQuery = (element: HTMLDivElement): boolean => {
-        const rowElement = element.querySelector<HTMLElement>(`[data-row-id="${target.rowId}"]`);
+        const rowElement = element.querySelector<HTMLElement>(
+          `[data-row-id="${target.rowId}"]`,
+        );
         if (!rowElement) return false;
         const targetTop =
           element.scrollTop +
@@ -1376,11 +1504,19 @@ function ConversationTimelineImpl({
           });
           return;
         }
-        turnNavigatorJumpFrameRef.current = window.requestAnimationFrame(alignMountedQuery);
+        turnNavigatorJumpFrameRef.current =
+          window.requestAnimationFrame(alignMountedQuery);
       };
-      turnNavigatorJumpFrameRef.current = window.requestAnimationFrame(alignMountedQuery);
+      turnNavigatorJumpFrameRef.current =
+        window.requestAnimationFrame(alignMountedQuery);
     },
-    [clearUserScrollIntent, commitFollowing, liveUnitIndex, syncTurnNavigatorViewport, virtualizer],
+    [
+      clearUserScrollIntent,
+      commitFollowing,
+      liveUnitIndex,
+      syncTurnNavigatorViewport,
+      virtualizer,
+    ],
   );
 
   useLayoutEffect(() => {
@@ -1429,7 +1565,13 @@ function ConversationTimelineImpl({
       }
       virtualizer.scrollToIndex(unitIndex, { align: "start", behavior });
     },
-    [clearUserScrollIntent, commitFollowing, liveUnitIndex, syncTurnNavigatorViewport, virtualizer],
+    [
+      clearUserScrollIntent,
+      commitFollowing,
+      liveUnitIndex,
+      syncTurnNavigatorViewport,
+      virtualizer,
+    ],
   );
 
   useConversationTimelineFind({
@@ -1462,7 +1604,9 @@ function ConversationTimelineImpl({
 
   const rowCount = renderUnits.length;
   const rowWindowKey = `${rows.length}:${rows[0]?.rowId ?? "none"}:${rows[rows.length - 1]?.rowId ?? "none"}`;
-  const pendingGuideKey = pendingGuides.map((item) => item.queueItemId).join(":");
+  const pendingGuideKey = pendingGuides
+    .map((item) => item.queueItemId)
+    .join(":");
 
   // V4 迁移删除旧 ChatView 滚动 hook 后，sessionKey effect 仍固定滚到底部，
   // 导致残留的 renderer-local 记忆模块彻底断线。这里在清测高并重新 measure 后按 scope
@@ -1533,7 +1677,11 @@ function ConversationTimelineImpl({
 
   useLayoutEffect(() => {
     const pendingRestore = pendingDetachedScrollRestoreRef.current;
-    if (rowCount === 0 || !pendingRestore || pendingRestore.key !== scrollMemoryKey) {
+    if (
+      rowCount === 0 ||
+      !pendingRestore ||
+      pendingRestore.key !== scrollMemoryKey
+    ) {
       return;
     }
 
@@ -1594,7 +1742,9 @@ function ConversationTimelineImpl({
     const pendingRestore = pendingDetachedScrollRestoreRef.current;
     const pendingRestoreOwnsAnchor = pendingRestore?.key === scrollMemoryKey;
     const didPrepend =
-      prev.firstRowId !== null && nextFirstRowId !== null && nextFirstRowId < prev.firstRowId;
+      prev.firstRowId !== null &&
+      nextFirstRowId !== null &&
+      nextFirstRowId < prev.firstRowId;
     let viewportAdjustment: number | null = null;
     if (didPrepend && !pendingRestoreOwnsAnchor && scrollRef.current) {
       const previousVirtualAnchor = pendingPrependVirtualAnchorRef.current;
@@ -1669,8 +1819,10 @@ function ConversationTimelineImpl({
       commitFollowing(following);
     }
     if (
-      anchorActionAfterContentChange(followingRef.current, isContentWidthChanging()) ===
-      "stickToBottom"
+      anchorActionAfterContentChange(
+        followingRef.current,
+        isContentWidthChanging(),
+      ) === "stickToBottom"
     ) {
       scrollToBottom();
     }
@@ -1720,7 +1872,10 @@ function ConversationTimelineImpl({
   return (
     <div
       ref={timelineRootRef}
-      className={cn("relative flex min-h-0 flex-1 flex-col", compactForRemoteControl && "min-w-0")}
+      className={cn(
+        "relative flex min-h-0 flex-1 flex-col",
+        compactForRemoteControl && "min-w-0",
+      )}
     >
       {selectionActions ? (
         <ConversationSelectionTooltip
@@ -1742,8 +1897,13 @@ function ConversationTimelineImpl({
       <ConversationTurnNavigator
         renderUnits={renderUnits}
         isHydratingDirectory={loadingOlder}
-        scrollOffsetPx={virtualizer.scrollOffset ?? turnNavigatorViewport.scrollOffsetPx}
-        viewportHeightPx={virtualizer.scrollRect?.height ?? turnNavigatorViewport.viewportHeightPx}
+        scrollOffsetPx={
+          virtualizer.scrollOffset ?? turnNavigatorViewport.scrollOffsetPx
+        }
+        viewportHeightPx={
+          virtualizer.scrollRect?.height ??
+          turnNavigatorViewport.viewportHeightPx
+        }
         virtualItems={turnNavigatorVirtualItems}
         activeQueryRowId={turnNavigatorViewport.activeQueryRowId}
         onJumpToQuery={scrollToQuery}
@@ -1938,20 +2098,35 @@ function ConversationTimelineImpl({
                   !centeredEmptyLayout && summaryPanelInlineOffsetClassName,
                 )}
               >
-                <div data-v4-back-to-bottom-anchor="composer-dock" className="relative">
-                  {backToBottomVisible ? (
-                    <ConversationBackToBottomButton
-                      // 分屏下 composer 属于滚动视口内的 sticky dock；按钮若挂在
-                      // timeline 外层 absolute bottom，会相对整个 pane 落到 input 下方。
-                      //
-                      // 圆钮采用自己的居中定位；`pointer-events-auto` 保留：
-                      // 它是"按钮点得动"唯一可断言的契约。
-                      className="pointer-events-auto absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 shadow-sm"
-                      label={intl.formatMessage({ id: "chat.scrollToBottom" })}
-                      onClick={handleBackToBottom}
-                    />
-                  ) : null}
-                  {bottomDock}
+                {/* composer-1/viewport-2（mobile-viewport-input-and-touch D2）：dock 底部消费
+                      .zcode-keyboard-inset-bottom（= max(--zcode-keyboard-inset, env(safe-area-inset-bottom))，
+                      styles.css 工具类）做键盘与 Home 横条避让。桌面端两个 inset 恒为 0px，
+                      该包装层 padding-bottom 为 0，桌面渲染不变；iOS 键盘弹出时变量由
+                      installMobileKeyboardInsetTracker 唯一写入，composer 与其工具行、@ //
+                      建议面板整体抬到软键盘之上；Android Chromium resizes-content 下布局
+                      viewport 已收缩、变量≈0，仅保留安全区兜底。此元素自身只承载这一个
+                      底部类，不与 .zcode-safe-area-bottom 同层叠加（spec §2.5 禁止双重补偿）。 */}
+                <div className="zcode-keyboard-inset-bottom">
+                  <div
+                    data-v4-back-to-bottom-anchor="composer-dock"
+                    className="relative"
+                  >
+                    {backToBottomVisible ? (
+                      <ConversationBackToBottomButton
+                        // 分屏下 composer 属于滚动视口内的 sticky dock；按钮若挂在
+                        // timeline 外层 absolute bottom，会相对整个 pane 落到 input 下方。
+                        //
+                        // 圆钮采用自己的居中定位；`pointer-events-auto` 保留：
+                        // 它是"按钮点得动"唯一可断言的契约。
+                        className="pointer-events-auto absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 shadow-sm"
+                        label={intl.formatMessage({
+                          id: "chat.scrollToBottom",
+                        })}
+                        onClick={handleBackToBottom}
+                      />
+                    ) : null}
+                    {bottomDock}
+                  </div>
                 </div>
               </div>
             </div>

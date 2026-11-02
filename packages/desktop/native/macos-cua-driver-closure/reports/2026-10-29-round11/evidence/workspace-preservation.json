@@ -1,0 +1,10 @@
+{
+  "baselineFiles": 18539,
+  "modifiedExisting": [
+    "apps/zcode-cli/docs/design/v2/tool/00-tool-change-chain.md",
+    "apps/zcode-cli/packages/core/package.json",
+    "specs/computer-use-macos-phase1.md"
+  ],
+  "missingExisting": [],
+  "otherBaselineFilesUnchanged": true
+}

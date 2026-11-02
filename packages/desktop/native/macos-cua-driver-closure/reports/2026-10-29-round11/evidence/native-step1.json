@@ -1,0 +1,40 @@
+{
+  "preflight": {
+    "status": "blocked",
+    "reason": "signing-pin-missing",
+    "captureEntry": false,
+    "leasePath": "/tmp/io.github.zclaudia.zody.cua.machine.501.lock",
+    "signature": {
+      "pinConfigured": false,
+      "codeCreated": true,
+      "codeValid": true,
+      "staticCodeCreated": true,
+      "resourceSealValid": false,
+      "signingInformationAvailable": true,
+      "adhoc": true,
+      "certificatePresent": false,
+      "hardenedRuntime": false,
+      "leafPinMatched": false,
+      "designatedRequirementMatched": false,
+      "identifierMatched": false,
+      "entitlementsPresent": false,
+      "forbiddenEntitlementsPresent": false,
+      "entitlementsEmpty": true,
+      "identifier": "macos-cua-helper-round11",
+      "leafSha256": "",
+      "designatedRequirement": "cdhash H\"33483a6245c47f41a0661f28519c3e98080610bd\""
+    }
+  },
+  "busy": {
+    "status": "busy",
+    "path": "/tmp/io.github.zclaudia.zody.cua.machine.501.lock"
+  },
+  "afterHolderExit": {
+    "status": "acquired",
+    "path": "/tmp/io.github.zclaudia.zody.cua.machine.501.lock",
+    "device": 16777233,
+    "inode": 149745182
+  },
+  "sameInode": true,
+  "captureInvoked": false
+}

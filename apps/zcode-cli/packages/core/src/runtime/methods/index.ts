@@ -12,6 +12,17 @@ import { getProjectId } from "./config.js";
 import { setWorkingDirectory } from "./config.js";
 import { ensureSessionPersistedForExternalActivity } from "./config.js";
 import { getActiveTurnInfo } from "./config.js";
+import {
+  createCuaSubmissionTurnScope,
+  getCuaSubmissionProducerPort,
+  getCuaSubmissionProjection,
+  getCuaSubmissionRegistrar,
+  getCurrentCuaSubmissionRef,
+  invalidateCuaSubmissionTurnScopeForForeground,
+  invalidateCuaSubmissionTurnScopeForTurn,
+  invalidateCuaSubmissionTurnScopeOnDispose,
+  requestCuaNativeCaptureConfirmation,
+} from "./cua-submission.js";
 import { getTools } from "./config.js";
 import { invalidateToolCache } from "./config.js";
 import { getToolRegistry } from "./config.js";
@@ -219,6 +230,16 @@ export function installAgentRuntimeMethods(ctor: AgentRuntimeConstructor): void 
   proto.testModelConnectivity = testModelConnectivity;
   proto.recordExternalUserPrompt = recordExternalUserPrompt;
   proto.getActiveTurnInfo = getActiveTurnInfo;
+  proto.getCuaSubmissionProjection = getCuaSubmissionProjection;
+  proto.getCuaSubmissionRegistrar = getCuaSubmissionRegistrar;
+  proto.getCuaSubmissionProducerPort = getCuaSubmissionProducerPort;
+  proto.getCurrentCuaSubmissionRef = getCurrentCuaSubmissionRef;
+  proto.createCuaSubmissionTurnScope = createCuaSubmissionTurnScope;
+  proto.requestCuaNativeCaptureConfirmation = requestCuaNativeCaptureConfirmation;
+  proto.invalidateCuaSubmissionTurnScopeForTurn = invalidateCuaSubmissionTurnScopeForTurn;
+  proto.invalidateCuaSubmissionTurnScopeForForeground =
+    invalidateCuaSubmissionTurnScopeForForeground;
+  proto.invalidateCuaSubmissionTurnScopeOnDispose = invalidateCuaSubmissionTurnScopeOnDispose;
   proto.getTools = getTools;
   proto.invalidateToolCache = invalidateToolCache;
   proto.getToolRegistry = getToolRegistry;

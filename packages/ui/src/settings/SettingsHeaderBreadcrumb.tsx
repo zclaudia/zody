@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, type ReactNo
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
+import { SETTINGS_TOUCH_MIN_H_11_CLASS } from "@/settings/settingsMobileClasses.js";
 
 export interface SettingsBreadcrumbItem {
   label: string;
@@ -130,7 +131,10 @@ export function SettingsHeaderBreadcrumb({
                   data-testid={
                     index === 0 ? "settings-breadcrumb-section" : "settings-breadcrumb-item"
                   }
-                  className="pointer-events-auto min-w-0 shrink text-foreground-subtle hover:text-foreground [app-region:no-drag]"
+                  className={cn(
+                    "pointer-events-auto min-w-0 shrink text-foreground-subtle hover:text-foreground [app-region:no-drag]",
+                    SETTINGS_TOUCH_MIN_H_11_CLASS,
+                  )}
                   onClick={item.onSelect}
                 >
                   <span className="truncate">{item.label}</span>

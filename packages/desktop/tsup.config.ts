@@ -1,8 +1,9 @@
 import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { isAbsolute, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { defineConfig } from "tsup";
 import { getBuildMetadata } from "./scripts/build-metadata.mjs";
+import { DESKTOP_MAIN_ENTRYPOINTS } from "./scripts/desktop-main-entrypoints.mjs";
 import { resolveDesktopProductFlavor } from "./scripts/desktop-product-identity.mjs";
 const { copyGenUiRuntimeAssets } = await import(
   pathToFileURL(resolve(import.meta.dirname, "scripts/gen-ui-runtime-assets.mjs")).href
@@ -11,6 +12,12 @@ const { copyGenUiRuntimeAssets } = await import(
 const { loadBuiltinProviderConfig } = await import(
   pathToFileURL(resolve(import.meta.dirname, "../../scripts/builtin-provider-config.mjs")).href
 );
+// tsup 会打包配置文件本身；静态 import 会把 defaults/constants 搬进 config bundle，令其
+// import.meta.dirname 从 scripts 目录重定位，REPO_ROOT 随之错误。保持与上面构建工具一致的
+// 动态 absolute URL 加载，让 defaults 作为独立模块按真实文件位置解析。
+const { resolveMacosCuaDemoBuildSelection } = await import(
+  pathToFileURL(resolve(import.meta.dirname, "scripts/macos-cua-demo-defaults.mjs")).href
+);
 const { resolveBuildTimeConfig, createBuildTimeConfigDefines } = await import(
   pathToFileURL(resolve(import.meta.dirname, "../../scripts/build-time-config.mjs")).href
 );
@@ -18,6 +25,15 @@ const { resolveBuildTimeConfig, createBuildTimeConfigDefines } = await import(
 const buildTimeConfigDefines = createBuildTimeConfigDefines(
   await resolveBuildTimeConfig(process.env),
 );
+// Self-use CUA default: darwin/arm64 builds select the pinned tested profile unless an
+// explicit profile/manifest selection is present. Unsupported targets keep the existing
+// undefined define and normal Host path.
+const cuaDemoBuildSelection = await resolveMacosCuaDemoBuildSelection({
+  env: process.env,
+  targetOs: process.env.ZCODE_TARGET_OS ?? process.platform,
+  targetArch: process.env.ZCODE_TARGET_ARCH ?? process.arch,
+});
+const cuaNarrowAgentDefine = resolveCuaNarrowAgentDefine(cuaDemoBuildSelection?.profileJson);
 
 const buildMetadata = getBuildMetadata();
 
@@ -173,7 +189,107 @@ function createMainDefines() {
     __ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__: JSON.stringify(
       resolveBuildPackagedAgentTelemetryEnv(process.env),
     ),
+    // 独立 candidate UI 构建可在构建期注入固定 native launcher 配置。这里只接受
+    // 构建机提供的 JSON；它不是运行时环境开关，也不是签名/TCC 验证结果。普通构建
+    // 编译为 undefined，保持既有 Electron utilityProcess Host 路径。
+    __ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__: resolveCandidateNativeHostLaunchDefine(
+      process.env.ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON,
+    ),
+    // Normal CUA candidate UI identity is injected only by its dedicated assembly builder.
+    // The regular desktop main build never selects this identity at runtime.
+    __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__: "undefined",
   };
+}
+
+export function resolveCandidateNativeHostLaunchDefine(raw: string | undefined): string {
+  const value = raw?.trim();
+  if (!value) return "undefined";
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch (error) {
+    throw new Error(
+      `ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON is not valid JSON: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON must be a JSON object");
+  }
+  const candidate = parsed as Record<string, unknown>;
+  const launcherPath = candidate.launcherPath;
+  const cwd = candidate.cwd;
+  if (typeof launcherPath !== "string" || !isAbsolute(launcherPath)) {
+    throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.launcherPath must be absolute");
+  }
+  if (typeof cwd !== "string" || !isAbsolute(cwd)) {
+    throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.cwd must be absolute");
+  }
+  if (candidate.entryName !== undefined && candidate.entryName !== "host-entry.mjs") {
+    throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.entryName must be host-entry.mjs");
+  }
+  if (
+    candidate.bridgeFd !== undefined &&
+    (!Number.isInteger(candidate.bridgeFd) ||
+      (candidate.bridgeFd as number) < 3 ||
+      (candidate.bridgeFd as number) > 1_024)
+  ) {
+    throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.bridgeFd must be 3..1024");
+  }
+  if (candidate.env !== undefined) {
+    if (
+      typeof candidate.env !== "object" ||
+      candidate.env === null ||
+      Array.isArray(candidate.env)
+    ) {
+      throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.env must be an object");
+    }
+    for (const [key, envValue] of Object.entries(candidate.env as Record<string, unknown>)) {
+      if (typeof envValue !== "string") {
+        throw new Error(`ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.env.${key} must be a string`);
+      }
+      if (key === "ELECTRON_RUN_AS_NODE") {
+        throw new Error(
+          "ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.env must not set ELECTRON_RUN_AS_NODE",
+        );
+      }
+    }
+  }
+  const normalized = {
+    launcherPath,
+    cwd,
+    ...(candidate.entryName !== undefined ? { entryName: candidate.entryName } : {}),
+    ...(candidate.bridgeFd !== undefined ? { bridgeFd: candidate.bridgeFd } : {}),
+    ...(candidate.env !== undefined ? { env: candidate.env } : {}),
+  };
+  return JSON.stringify(normalized);
+}
+
+/**
+ * 普通 Host 的窄 Agent 构建期选择。
+ *
+ * darwin/arm64 默认由共享选择器提供已实测 profile；显式 JSON 覆盖仍按原 API 接受。
+ * 编译为 `undefined` 时保持普通 Agent。它不是 runtime 开关：启动时 Host 仍会校验固定
+ * 槽位、资源摘要、已测目标、workspace allowlist 与 storage 准备。
+ */
+export function resolveCuaNarrowAgentDefine(raw: string | undefined): string {
+  const value = raw?.trim();
+  if (!value) return "undefined";
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch (error) {
+    throw new Error(
+      `ZCODE_CUA_NARROW_AGENT_JSON is not valid JSON: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new Error("ZCODE_CUA_NARROW_AGENT_JSON must be a JSON object");
+  }
+  return JSON.stringify(parsed);
 }
 
 const desktopNodeRuntimeExternals = [
@@ -201,13 +317,7 @@ function createDevReadyMarkerHook(target: "main" | "host" | "preload"): string {
 export default defineConfig([
   {
     name: "main",
-    entry: {
-      "main/index": "src/main/index.ts",
-      "main/browserWebmRecorder": "src/main/browserView/electronBrowserWebmRecorder.ts",
-      "main/zcodeDataSizeWorker": "src/main/zcodeDataSizeWorker.ts",
-      // 资源管理器「存储」tab 的扫描 Worker：main 持有 StorageService，遍历放独立线程，供 new Worker(new URL()) 解析。
-      "main/storageScanWorker": "src/main/storageScanWorker.ts",
-    },
+    entry: { ...DESKTOP_MAIN_ENTRYPOINTS },
     outDir: "out",
     format: "esm",
     platform: "node",
@@ -302,6 +412,8 @@ export default defineConfig([
     name: "host",
     entry: {
       "host/index": "src/host/index.ts",
+      // Native launcher's fixed sealed ESM entry (`--entry-name host-entry.mjs`).
+      "host/hostEntry": "src/host/hostEntry.ts",
       "host/tasksStorageWorker": "src/host/tasksStorageWorker.ts",
     },
     outDir: "out",
@@ -321,7 +433,11 @@ export default defineConfig([
       "@zcode/provider-node",
       "@zcode/zcode-cua",
     ],
-    define: createSharedDefines(),
+    define: {
+      ...createSharedDefines(),
+      // darwin/arm64 self-use default, with explicit build-profile override preserved.
+      __ZCODE_CUA_NARROW_AGENT__: cuaNarrowAgentDefine,
+    },
     // 与 main 保持一致的 chunk 隔离策略，避免 host/main 产物相互覆盖。
     esbuildOptions(options) {
       applyDesktopTsupEsbuildSecurityOptions(options);

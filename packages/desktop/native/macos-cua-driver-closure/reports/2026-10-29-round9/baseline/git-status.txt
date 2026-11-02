@@ -1,0 +1,484 @@
+ M .agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml
+ M AGENTS.md
+ M DESIGN.md
+ M THIRD-PARTY-NOTICES.md
+ M apps/zcode-cli/docs/design/v2/tool/00-tool-change-chain.md
+ M apps/zcode-cli/e2e/compact-microcompact/case-background-bash.mjs
+ M apps/zcode-cli/packages/adapters/src/exec/bash-file-output.ts
+ M apps/zcode-cli/packages/adapters/src/exec/bash-startup-script.ts
+ M apps/zcode-cli/packages/adapters/src/exec/execution-utils.ts
+ M apps/zcode-cli/packages/adapters/src/exec/node-execution-adapter-base.ts
+ M apps/zcode-cli/packages/adapters/src/exec/node-execution-adapter-lifecycle.ts
+ M apps/zcode-cli/packages/adapters/src/exec/node-execution-adapter-process.ts
+ M apps/zcode-cli/packages/adapters/src/exec/node-execution-adapter-results.ts
+ M apps/zcode-cli/packages/adapters/src/exec/node-execution-adapter-run.ts
+ M apps/zcode-cli/packages/adapters/src/mcp/index.ts
+ M apps/zcode-cli/packages/adapters/tests/bash-direct-execution.test.ts
+ M apps/zcode-cli/packages/adapters/tests/bash-file-output.test.ts
+ M apps/zcode-cli/packages/adapters/tests/bash-resource-lifecycle.test.ts
+ M apps/zcode-cli/packages/adapters/tests/bash-shutdown.test.ts
+ M apps/zcode-cli/packages/adapters/tests/exec.test.ts
+ M apps/zcode-cli/packages/adapters/tests/fixtures/bash-direct-probe.cjs
+ M apps/zcode-cli/packages/bootstrap/package.json
+ M apps/zcode-cli/packages/bootstrap/src/app/create-app.ts
+ M apps/zcode-cli/packages/bootstrap/src/app/types.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/cold-session-resume.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/command-inbox.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/session-flow.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/session-mgmt.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-operations.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-types.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol/session-resident-pool.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol/v4-bridge.ts
+ M apps/zcode-cli/packages/bootstrap/src/zcode-protocol/workspace-model-runtime.ts
+ M apps/zcode-cli/packages/bootstrap/tests/command-inbox.test.ts
+ M apps/zcode-cli/packages/bootstrap/tests/protocol-unbound-resume.test.ts
+ M apps/zcode-cli/packages/bootstrap/tests/session-resident-pool.test.ts
+ M apps/zcode-cli/packages/bootstrap/tests/session-selection-cold-resume.test.ts
+ M apps/zcode-cli/packages/bootstrap/tests/v4-cold-resume.test.ts
+ M apps/zcode-cli/packages/bootstrap/tests/v4-gateway.test.ts
+ M apps/zcode-cli/packages/cli/src/plugin-host-command.ts
+ M apps/zcode-cli/packages/contracts/src/index.ts
+ M apps/zcode-cli/packages/core/src/index.ts
+ M apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts
+ M apps/zcode-cli/packages/core/src/runtime/internal-methods.ts
+ M apps/zcode-cli/packages/core/src/runtime/internal.ts
+ M apps/zcode-cli/packages/core/src/runtime/methods/index.ts
+ M apps/zcode-cli/packages/core/src/runtime/methods/prompt-admission.ts
+ M apps/zcode-cli/packages/core/src/runtime/methods/runtime-command-queue.ts
+ M apps/zcode-cli/packages/core/src/runtime/methods/steering.ts
+ M apps/zcode-cli/packages/core/src/runtime/types.ts
+ M apps/zcode-cli/packages/core/tests/runtime-background-bash-output.test.ts
+ M apps/zcode-cli/packages/node-repl-host/dist-types/browser-bridge.d.ts
+ M apps/zcode-cli/packages/node-repl-host/dist-types/browser-bridge.d.ts.map
+ M apps/zcode-cli/packages/node-repl-host/dist-types/cua-bridge.d.ts
+ M apps/zcode-cli/packages/node-repl-host/dist-types/cua-bridge.d.ts.map
+ M apps/zcode-cli/packages/node-repl-host/dist-types/cua-broker.d.ts
+ M apps/zcode-cli/packages/node-repl-host/dist-types/cua-broker.d.ts.map
+ M apps/zcode-cli/packages/node-repl-host/dist-types/server.d.ts
+ M apps/zcode-cli/packages/node-repl-host/dist-types/server.d.ts.map
+ M apps/zcode-cli/packages/node-repl-host/package.json
+ M apps/zcode-cli/packages/node-repl-host/src/browser-bridge.ts
+ M apps/zcode-cli/packages/node-repl-host/src/cua-bridge.ts
+ M apps/zcode-cli/packages/node-repl-host/src/cua-broker.ts
+ M apps/zcode-cli/packages/node-repl-host/src/server.ts
+ M apps/zcode-cli/packages/node-repl-host/test/cua-bridge.test.ts
+ M apps/zcode-cli/packages/node-repl-host/test/mcp-server.test.ts
+ M apps/zcode-cli/vitest.config.ts
+ M docs/README.md
+ M docs/architecture/r2-server-cli-and-daemon-test-plan.md
+ M docs/background-bash-output-details.md
+ M docs/browser-use/2026-07-13-browser-settings-spec.md
+ M docs/conversation-session-case-catalog.md
+ M docs/model-provider-regression-case-catalog.md
+ M docs/settings-list-create-actions.md
+ M docs/specs/workspace-hook-trust.md
+ M docs/task-search.md
+ M docs/testing/conversation-session-e2e-coverage-matrix.md
+ M docs/testing/workspace-file-tree-e2e-coverage.md
+ M docs/tmpdir-storage-paths-spec.md
+ M docs/ui/settings-sidebar-layout.md
+ M docs/v4-refactor/17-cold-resume-runtime-activation.md
+ M package.json
+ M packages/client/src/index.ts
+ M packages/client/src/remoteServiceAccess.ts
+ M packages/client/src/websocket.ts
+ M packages/client/test/remoteServiceAccess.test.ts
+ M packages/desktop/package.json
+ M packages/desktop/scripts/mcp-apps-host-fixture/agent.ts
+ M packages/desktop/scripts/mcp-apps-host-fixture/chain-main.ts
+ M packages/desktop/scripts/mcp-apps-host-fixture/mcp-server.mjs
+ M packages/desktop/src/host/index.ts
+ M packages/desktop/src/main/desktopHostProcess.ts
+ M packages/desktop/src/main/pluginSandbox/CONTRACT.md
+ M packages/desktop/src/main/pluginSandbox/clearOrder.test.ts
+ M packages/desktop/src/main/pluginSandbox/hostLifecycle.test.ts
+ M packages/desktop/test/desktopHostProcess.test.ts
+ M packages/desktop/test/e2e/conversation-session/conversation-session-background-bash-output.test.ts
+ M packages/desktop/test/e2e/conversation-session/conversation-session-bash-direct-output.test.ts
+ M packages/desktop/test/e2e/helpers/provider-readiness-history-fixture.ts
+ M packages/provider-node/test/zcode-builtin-reasoning-map.test.ts
+ M packages/services/src/node.ts
+ M packages/services/src/zcode-agent/zcodeAgentProcessManager.ts
+ M packages/services/src/zcode-agent/zcodeAgentService.ts
+ M packages/services/test/zcodeAgentProcessManager.test.ts
+ M packages/services/test/zcodeAgentService.v4.test.ts
+ M packages/shared/src/zcode-protocol-v4/command.ts
+ M packages/shared/src/zcode-protocol/index.ts
+ M packages/shared/test/zcodeProtocolV4Command.test.ts
+ M packages/ui/src/DirectoryBrowser.tsx
+ M packages/ui/src/ElicitationDialog.tsx
+ M packages/ui/src/LexicalChatInput.tsx
+ M packages/ui/src/MobileNotificationCenter.tsx
+ M packages/ui/src/MobileNotificationsFeature.tsx
+ M packages/ui/src/MobileWorkspaceFileBrowser.tsx
+ M packages/ui/src/MobileWorkspacePicker.tsx
+ M packages/ui/src/PermissionDialog.tsx
+ M packages/ui/src/Root.tsx
+ M packages/ui/src/SettingsPage.tsx
+ M packages/ui/src/SlashCommandPlugin.tsx
+ M packages/ui/src/ToolCallBlocks/ToolSummaryRow.tsx
+ M packages/ui/src/WebRemoteControlMobileBackendPicker.tsx
+ M packages/ui/src/WebRemoteControlMobileHomePage.tsx
+ M packages/ui/src/WebRemoteControlMobileSearch.tsx
+ M packages/ui/src/WebRemoteControlMobileSettingsScreen.tsx
+ M packages/ui/src/WebRemoteControlMobileShell.tsx
+ M packages/ui/src/WebRemoteControlMobileTaskHome.tsx
+ M packages/ui/src/WebRemoteControlRecentProjects.tsx
+ M packages/ui/src/WebRemoteControlThemeMenu.tsx
+ M packages/ui/src/WorkspaceHeaderSections.tsx
+ M packages/ui/src/app-shell/BackgroundBashOutputSidePane.tsx
+ M packages/ui/src/app-shell/WorkspaceShellLayout.tsx
+ M packages/ui/src/components/ai-elements/message.tsx
+ M packages/ui/src/components/ai-elements/reasoning.tsx
+ M packages/ui/src/components/ui/dropdown-menu.tsx
+ M packages/ui/src/components/ui/select.tsx
+ M packages/ui/src/components/ui/switch.tsx
+ M packages/ui/src/components/ui/toast.tsx
+ M packages/ui/src/hooks/useMobileNotificationFeed.ts
+ M packages/ui/src/hooks/useWebRemoteControlMobileShellBack.ts
+ M packages/ui/src/i18n/locales/en-US.ts
+ M packages/ui/src/i18n/locales/zh-CN.ts
+ M packages/ui/src/index.ts
+ M packages/ui/src/lib/settingsNavigation.ts
+ M packages/ui/src/mentions/MentionPlugin.tsx
+ M packages/ui/src/mentions/components/MentionPanel.tsx
+ M packages/ui/src/mobileFileBrowserSave.ts
+ M packages/ui/src/mobileNavigationHistory.ts
+ M packages/ui/src/plugin-ui/CONTRACT.md
+ M packages/ui/src/plugin-ui/adapters/sandboxPageOwners.test.ts
+ M packages/ui/src/plugin-ui/app/pluginUiHostController.test.ts
+ M packages/ui/src/plugin-ui/app/pluginUiPageManager.test.ts
+ M packages/ui/src/previewPaneImageContent.tsx
+ M packages/ui/src/root/RootWorkspaceContent.tsx
+ M packages/ui/src/root/types.ts
+ M packages/ui/src/settings/AddMarketplaceSourceDialog.tsx
+ M packages/ui/src/settings/AutomationEditView.tsx
+ M packages/ui/src/settings/ExternalAgentImportDialog.tsx
+ M packages/ui/src/settings/InstalledPluginManagement.tsx
+ M packages/ui/src/settings/ModelProviderSection.tsx
+ M packages/ui/src/settings/PluginStoreSourcesDialog.tsx
+ M packages/ui/src/settings/SettingsFormTextarea.tsx
+ M packages/ui/src/settings/SettingsHeaderBreadcrumb.tsx
+ M packages/ui/src/settings/SettingsPageParts.tsx
+ M packages/ui/src/settings/SettingsResourceHeaderActions.tsx
+ M packages/ui/src/settings/SettingsSearchInput.tsx
+ M packages/ui/src/settings/ShortcutBindingRow.tsx
+ M packages/ui/src/settings/ShortcutSearchBar.tsx
+ M packages/ui/src/settings/ShortcutSettingsSection.tsx
+ M packages/ui/src/settings/SkillsSection.tsx
+ M packages/ui/src/settings/model-provider-section/Detail.tsx
+ M packages/ui/src/settings/model-provider-section/ModelConfigHelp.tsx
+ M packages/ui/src/settings/model-provider-section/Navigation.tsx
+ M packages/ui/src/settings/model-provider-section/ProviderModelMetadataDialog.tsx
+ M packages/ui/src/settings/model-provider-section/ProviderStatusIndicator.tsx
+ M packages/ui/src/settings/model-provider-section/ProviderTemplatePicker.tsx
+ M packages/ui/src/settings/model-provider-section/SectionLayout.tsx
+ M packages/ui/src/settings/saved-workflows/SavedWorkflowLaunchDialog.tsx
+ M packages/ui/src/settings/saved-workflows/SavedWorkflowMoveDialog.tsx
+ M packages/ui/src/styles.css
+ M packages/ui/src/v4/ConversationComposer.tsx
+ M packages/ui/src/v4/ConversationStatusPanel.tsx
+ M packages/ui/src/v4/ConversationTimeline.tsx
+ M packages/ui/src/v4/SessionPane.tsx
+ M packages/ui/src/v4/V4UserInputDialog.tsx
+ M packages/ui/src/v4/composer/V4ComposerToolbar.tsx
+ M packages/ui/src/v4/conversationTurnRenderUnits.ts
+ M packages/ui/test/collapsible.test.ts
+ M packages/ui/test/directoryBrowser.test.ts
+ M packages/ui/test/mentionPanel.test.ts
+ M packages/ui/test/mobileFileBrowserSave.test.ts
+ M packages/ui/test/mobileNotificationCenter.test.ts
+ M packages/ui/test/mobileWorkspaceFileBrowser.test.ts
+ M packages/ui/test/mobileWorkspacePicker.test.ts
+ M packages/ui/test/previewPaneImageContent.test.ts
+ M packages/ui/test/providerTemplatePicker.test.ts
+ M packages/ui/test/settingsFormActions.test.ts
+ M packages/ui/test/settingsListCreateAction.test.ts
+ M packages/ui/test/settingsNavigation.test.ts
+ M packages/ui/test/settingsPageIntegratedTerminalShell.test.ts
+ M packages/ui/test/toast.test.ts
+ M packages/ui/test/toolLayout.test.ts
+ M packages/ui/test/v4ConversationComposerAttachmentProgress.test.ts
+ M packages/ui/test/v4ConversationStatusPanel.test.ts
+ M packages/ui/test/webRemoteControlMobileSetup.test.ts
+ M packages/ui/test/webRemoteControlMobileShell.test.ts
+ M packages/ui/test/webRemoteControlMobileTaskHomeRecentProjects.test.ts
+ M packages/web/mobile.html
+ M packages/web/src/mobile-remote/bootstrap.tsx
+ M packages/web/src/mobile-remote/main.tsx
+ M packages/web/src/mobile-remote/mobileNotificationActionResult.tsx
+ M packages/web/src/mobile-remote/mobileNotificationNotice.tsx
+ M packages/web/src/mobile-remote/mobileRemoteSetup.tsx
+ M packages/web/src/webRemoteControlLoadingScreen.tsx
+ M packages/web/src/webRemoteControlVersionNotice.tsx
+ M packages/web/test/externalRelayFrameGapRecovery.test.ts
+ M packages/web/test/mobileRemoteSetup.test.ts
+ M packages/zcode-cua/package.json
+ M pnpm-lock.yaml
+ M specs/fork-official-deps-removal-plan.md
+ M specs/fork-official-deps-removal-tasks.md
+ M third-party/inventory.json
+ M vitest.config.ts
+?? apps/zcode-cli/packages/adapters/src/exec/bash-output-retention.ts
+?? apps/zcode-cli/packages/adapters/src/mcp/control-only-contract.ts
+?? apps/zcode-cli/packages/adapters/src/mcp/control-only-launcher.ts
+?? apps/zcode-cli/packages/adapters/src/mcp/control-only-lifecycle.ts
+?? apps/zcode-cli/packages/adapters/src/mcp/control-only-ready.ts
+?? apps/zcode-cli/packages/adapters/tests/bash-output-cancel-cleanup.test.ts
+?? apps/zcode-cli/packages/adapters/tests/control-only-launcher-boundary.test.ts
+?? apps/zcode-cli/packages/adapters/tests/control-only-launcher.test.ts
+?? apps/zcode-cli/packages/adapters/tests/fixtures/control-only-ready-child.mjs
+?? apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/cua-live-submission.ts
+?? apps/zcode-cli/packages/bootstrap/src/zcode-protocol/runtime-identity.ts
+?? apps/zcode-cli/packages/bootstrap/tests/cua-host-live-submission.test.ts
+?? apps/zcode-cli/packages/bootstrap/tests/cua-startup-identity.test.ts
+?? apps/zcode-cli/packages/cli/tests/zcode-cua-plugin-host-authority.node-test.ts
+?? apps/zcode-cli/packages/contracts/src/interfaces/cua-submission.port.ts
+?? apps/zcode-cli/packages/core/src/runtime/cua/
+?? apps/zcode-cli/packages/core/src/runtime/methods/cua-submission.ts
+?? apps/zcode-cli/packages/core/tests/cua-control-channel-integration.test.ts
+?? apps/zcode-cli/packages/core/tests/cua-submission-lineage.test.ts
+?? apps/zcode-cli/packages/core/tests/cua-submission-runtime.test.ts
+?? apps/zcode-cli/packages/core/tests/fixtures/cua-runtime-fixture.ts
+?? apps/zcode-cli/packages/node-repl-host/CONTRACT.md
+?? apps/zcode-cli/packages/node-repl-host/D06-DIAGNOSTIC.md
+?? apps/zcode-cli/packages/node-repl-host/dist-types/cell-child-transport.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/cell-child-transport.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/cell-executor.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/cell-executor.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/cell-protocol.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/cell-protocol.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/control-only-protocol.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/control-only-protocol.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/control-only.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/control-only.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/cua-runtime.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/cua-runtime.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/node-repl-mcp-runtime.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/node-repl-mcp-runtime.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/node-repl-session-executor.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/node-repl-session-executor.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/request-context.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/request-context.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/subprocess-executor.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/subprocess-executor.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/subprocess-launch.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/subprocess-launch.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/dist-types/worker-executor.d.ts
+?? apps/zcode-cli/packages/node-repl-host/dist-types/worker-executor.d.ts.map
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-diagnostic.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-failure-tests.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-policy.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-preflight.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-probe-runtime.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-probes-fork.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-probes-seatbelt.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-resources.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-abort-probe.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-browser-probe.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-build-assets.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-debugger-probe.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-evidence.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-manifest.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-native-probes.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-native.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-policy.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-probe-common.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-profile.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5-resources.ts
+?? apps/zcode-cli/packages/node-repl-host/scripts/d06-round5.ts
+?? apps/zcode-cli/packages/node-repl-host/src/cell-child-transport.ts
+?? apps/zcode-cli/packages/node-repl-host/src/cell-executor.ts
+?? apps/zcode-cli/packages/node-repl-host/src/cell-protocol.ts
+?? apps/zcode-cli/packages/node-repl-host/src/control-only-protocol.ts
+?? apps/zcode-cli/packages/node-repl-host/src/control-only.ts
+?? apps/zcode-cli/packages/node-repl-host/src/cua-runtime.ts
+?? apps/zcode-cli/packages/node-repl-host/src/node-repl-mcp-runtime.ts
+?? apps/zcode-cli/packages/node-repl-host/src/node-repl-session-executor.ts
+?? apps/zcode-cli/packages/node-repl-host/src/request-context.ts
+?? apps/zcode-cli/packages/node-repl-host/src/subprocess-executor.ts
+?? apps/zcode-cli/packages/node-repl-host/src/subprocess-launch.ts
+?? apps/zcode-cli/packages/node-repl-host/src/worker-executor.ts
+?? apps/zcode-cli/packages/node-repl-host/test/cell-protocol.test.ts
+?? apps/zcode-cli/packages/node-repl-host/test/control-only-entry.test.ts
+?? apps/zcode-cli/packages/node-repl-host/test/cua-broker.test.ts
+?? apps/zcode-cli/packages/node-repl-host/test/d06/
+?? apps/zcode-cli/packages/node-repl-host/test/fixtures/
+?? apps/zcode-cli/packages/node-repl-host/test/mcp-runtime-lifecycle.test.ts
+?? apps/zcode-cli/packages/node-repl-host/test/mcp-runtime-ownership.test.ts
+?? apps/zcode-cli/packages/node-repl-host/test/subprocess-executor.test.ts
+?? config/cua-helper-local-self-signed.example.json
+?? docs/design/computer-use-macos-phase1.md
+?? docs/fork/upstream-review-ledger.md
+?? docs/fork/upstream-sync-policy.md
+?? docs/performance/collapsible-hidden-measurement.md
+?? docs/plans/computer-use-macos-phase1-agent-work.md
+?? docs/plans/computer-use-macos-phase1-implementation.md
+?? docs/plans/computer-use-macos-phase1-round2.md
+?? docs/plans/computer-use-macos-phase1-round3.md
+?? docs/plans/computer-use-macos-phase1-round4.md
+?? docs/plans/computer-use-macos-phase1-round5.md
+?? docs/plans/computer-use-macos-phase1-round6.md
+?? docs/plans/computer-use-macos-phase1-round7.md
+?? docs/plans/computer-use-macos-phase1-round8.md
+?? docs/plans/upstream-v3.16.2-implementation-plan.md
+?? docs/plans/upstream-v3.16.2-port-plan.md
+?? docs/plugin-ui-background-execution.md
+?? docs/testing/macos-cua-local-self-signed-doctor.md
+?? docs/web-remote-control/mobile-settings-ia-navigation.md
+?? docs/web-remote-control/mobile-viewport-input-and-touch.md
+?? packages/client/test/ownedProtocolConnection.test.ts
+?? packages/desktop/.tmp/
+?? packages/desktop/native/macos-cua-driver-closure/
+?? packages/desktop/native/macos-cua-helper-diagnostic/
+?? packages/desktop/scripts/audit-macos-cua-driver-closure.mjs
+?? packages/desktop/scripts/build-macos-cua-helper-diagnostic.mjs
+?? packages/desktop/scripts/compare-macos-cua-driver-closure.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-cache-archive.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-cache-rebuild.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-cache.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-command.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-comparison-core.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-comparison-graph.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-comparison-output.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-comparison-report.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-comparison-supplements.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-comparison-transition-policy.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-comparison-transition.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-core.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-dependencies.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-license-summary.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-license-supplements.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-license-text.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-licenses.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-patch.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-prepare.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-report-support.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-report.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-source.mjs
+?? packages/desktop/scripts/lib/cua-driver-closure-toolchain.mjs
+?? packages/desktop/scripts/lib/cua-driver-round7-prepare-config.mjs
+?? packages/desktop/scripts/lib/cua-driver-round7-prepare-licenses.mjs
+?? packages/desktop/scripts/lib/cua-driver-round7-prepare-patch.mjs
+?? packages/desktop/scripts/lib/cua-driver-round7-prepare-source.mjs
+?? packages/desktop/scripts/lib/cua-driver-round8-prepare-config.mjs
+?? packages/desktop/scripts/lib/cua-driver-round8-prepare-policy.mjs
+?? packages/desktop/scripts/lib/cua-helper-diagnostic-artifacts.mjs
+?? packages/desktop/scripts/lib/cua-helper-diagnostic-build.mjs
+?? packages/desktop/scripts/lib/cua-helper-diagnostic-command.mjs
+?? packages/desktop/scripts/lib/cua-helper-diagnostic-core.mjs
+?? packages/desktop/scripts/lib/cua-helper-diagnostic-manifest.mjs
+?? packages/desktop/scripts/lib/cua-helper-diagnostic-toolchain.mjs
+?? packages/desktop/scripts/lib/cua-helper-diagnostic-verify.mjs
+?? packages/desktop/scripts/mcp-apps-host-fixture/chain-initialize-barrier.ts
+?? packages/desktop/scripts/prepare-macos-cua-driver-round7.mjs
+?? packages/desktop/scripts/prepare-macos-cua-driver-round8.mjs
+?? packages/desktop/scripts/test-macos-cua-helper-diagnostic.mjs
+?? packages/desktop/test/e2e/fixtures/cases/plugins/plugin-storage-read-scheduling.json
+?? packages/desktop/test/e2e/fixtures/upstream/plugin-management/plugin-storage-read-scheduling.json
+?? packages/desktop/test/e2e/helpers/plugin-storage-read-scheduling.ts
+?? packages/desktop/test/e2e/plugins/manual-review/pending/plugin-storage-read-scheduling.test.ts
+?? packages/desktop/test/e2e/settings/manual-review/pending/provider-empty-state.test.ts
+?? packages/desktop/test/fixtures/cua-driver-closure-comparison-fixtures.mjs
+?? packages/desktop/test/fixtures/cua-driver-round8-comparison-fixtures.mjs
+?? packages/desktop/test/fixtures/cua-driver-round8-prepare-fixtures.mjs
+?? packages/desktop/test/macosCuaDriverCacheRebuild.test.ts
+?? packages/desktop/test/macosCuaDriverClosure.test.ts
+?? packages/desktop/test/macosCuaDriverClosureDependencies.test.ts
+?? packages/desktop/test/macosCuaDriverLicenseSupplements.test.ts
+?? packages/desktop/test/macosCuaDriverRound6.test.ts
+?? packages/desktop/test/macosCuaDriverRound7Comparison.test.ts
+?? packages/desktop/test/macosCuaDriverRound7Prepare.test.ts
+?? packages/desktop/test/macosCuaDriverRound8Comparison.test.ts
+?? packages/desktop/test/macosCuaDriverRound8Prepare.test.ts
+?? packages/desktop/test/macosCuaDriverToolchain.test.ts
+?? packages/desktop/test/macosCuaHelperDiagnostic.test.ts
+?? packages/desktop/test/macosCuaHelperLocalSelfSignedDoctor.test.ts
+?? packages/private/
+?? packages/services/test/pluginUiBridgePrepareRaces.test.ts
+?? packages/shared/test/zcodeProtocolRuntimeIdentity.test.ts
+?? packages/ui/src/WebRemoteControlMobileSettingsMenu.tsx
+?? packages/ui/src/hooks/useWebRemoteControlMobileViewport.ts
+?? packages/ui/src/lib/backgroundBashOutputTitle.ts
+?? packages/ui/src/lib/mobileKeyboardInset.ts
+?? packages/ui/src/settings/MobileSettingsNavigation.tsx
+?? packages/ui/src/settings/SettingsPresentationContext.tsx
+?? packages/ui/src/settings/model-provider-section/EmptyState.tsx
+?? packages/ui/src/settings/settingsMobileClasses.ts
+?? packages/ui/test/accordion.test.ts
+?? packages/ui/test/backgroundBashOutputTitle.test.ts
+?? packages/ui/test/composerImeCompositionEnter.test.ts
+?? packages/ui/test/dropdownMenuTouchRows.test.ts
+?? packages/ui/test/elicitationDialogTouchTargets.test.ts
+?? packages/ui/test/lexicalTextContentSync.test.ts
+?? packages/ui/test/mobileChatReadabilityTouch.test.ts
+?? packages/ui/test/mobileKeyboardInset.test.ts
+?? packages/ui/test/mobileNavigationHistory.test.ts
+?? packages/ui/test/mobileSettingsNavigation.test.ts
+?? packages/ui/test/modelProviderEmptyState.test.ts
+?? packages/ui/test/permissionDialogMobileEnter.test.ts
+?? packages/ui/test/settingsMobileControls.test.ts
+?? packages/ui/test/settingsMobileLayoutContract.test.ts
+?? packages/ui/test/settingsMobilePresentation.test.ts
+?? packages/ui/test/settingsPageMobileContract.test.ts
+?? packages/ui/test/useConversationTimelineFindSearchResult.test.ts
+?? packages/ui/test/useMobileNotificationFeed.test.ts
+?? packages/ui/test/v4ComposerToolbarResponsiveTrigger.test.ts
+?? packages/ui/test/v4ConversationTurnRenderUnitsIncremental.test.ts
+?? packages/ui/test/v4SessionPaneComposerSlot.test.ts
+?? packages/ui/test/v4UserInputDialogMobile.test.ts
+?? packages/ui/test/webRemoteControlMobileSearch.test.tsx
+?? packages/ui/test/webRemoteControlMobileSettingsMenu.test.ts
+?? packages/ui/test/webRemoteControlMobileShellOverlayHistory.test.ts
+?? packages/ui/test/webRemoteControlMobileTaskHomeBatchFixes.test.ts
+?? packages/ui/test/workspaceHeaderMoreTouchTarget.test.ts
+?? packages/web/src/mobile-remote/mobileRemoteConnectionSettingsSurface.tsx
+?? packages/web/src/mobile-remote/mobileRemoteSettingsDraft.ts
+?? packages/web/test/mobileRemoteDialogSurface.test.ts
+?? packages/web/test/mobileRemoteSessionSurface.test.ts
+?? packages/web/test/webRemoteControlLoadingScreen.test.ts
+?? packages/zcode-cua/CONTROL-CHANNEL.md
+?? packages/zcode-cua/CONTROL-PROTOCOL.md
+?? packages/zcode-cua/PRODUCER-CONTROL.md
+?? packages/zcode-cua/control-channel-codec.js
+?? packages/zcode-cua/control-channel-dispatcher.js
+?? packages/zcode-cua/control-channel-errors.js
+?? packages/zcode-cua/control-channel-framing.js
+?? packages/zcode-cua/control-channel-inbound-ack.js
+?? packages/zcode-cua/control-channel-inbound.js
+?? packages/zcode-cua/control-channel-limits.js
+?? packages/zcode-cua/control-channel-options.js
+?? packages/zcode-cua/control-channel-request.js
+?? packages/zcode-cua/control-channel-writer.js
+?? packages/zcode-cua/control-channel.d.ts
+?? packages/zcode-cua/control-channel.js
+?? packages/zcode-cua/control-protocol-ack.js
+?? packages/zcode-cua/control-protocol-crypto.js
+?? packages/zcode-cua/control-protocol-json.js
+?? packages/zcode-cua/control-protocol-limits.js
+?? packages/zcode-cua/control-protocol-replay.js
+?? packages/zcode-cua/control-protocol-revocation.js
+?? packages/zcode-cua/control-protocol-schema.js
+?? packages/zcode-cua/control-protocol.d.ts
+?? packages/zcode-cua/control-protocol.js
+?? packages/zcode-cua/producer-control.d.ts
+?? packages/zcode-cua/producer-control.js
+?? packages/zcode-cua/test/
+?? packages/zcode-cua/tsconfig.json
+?? patches/@radix-ui__react-collapsible@1.1.12.patch
+?? scripts/doctor-macos-cua-helper-local.mjs
+?? scripts/lib/cua-helper-local-binary-checks.mjs
+?? scripts/lib/cua-helper-local-cli.mjs
+?? scripts/lib/cua-helper-local-commands.mjs
+?? scripts/lib/cua-helper-local-doctor.mjs
+?? scripts/lib/cua-helper-local-macho.mjs
+?? scripts/lib/cua-helper-local-profile.mjs
+?? scripts/lib/cua-helper-local-requirement-checks.mjs
+?? scripts/lib/cua-helper-local-result.mjs
+?? scripts/lib/cua-helper-local-signature-checks.mjs
+?? scripts/lib/cua-helper-local-utils.mjs
+?? specs/computer-use-macos-phase1.md
+?? specs/model-provider-settings-empty-state.md

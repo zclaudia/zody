@@ -153,8 +153,8 @@ describe("mobile original file save", () => {
           resolveSecondStat = resolve;
         });
       }),
-      readFileRange: vi.fn(async ({ length }: { offset: number; length: number }) =>
-        new Uint8Array(length),
+      readFileRange: vi.fn(
+        async ({ length }: { offset: number; length: number }) => new Uint8Array(length),
       ),
     } as unknown as IFileService;
     const platform = createPlatform();
@@ -197,6 +197,60 @@ describe("mobile original file save", () => {
     expect(first).toEqual({ success: false, error: "disk full" });
     expect(second).toEqual({ success: true });
     expect(saveFile).toHaveBeenCalledTimes(2);
+  });
+
+  it("searchfile-9: 原生写入进行中收到取消，立即按取消收尾，不等写入结果", async () => {
+    const controller = new AbortController();
+    let resolveWrite!: (result: { success: boolean }) => void;
+    const saveFile = vi.fn(
+      () =>
+        new Promise<{ success: boolean }>((resolve) => {
+          resolveWrite = resolve;
+        }),
+    );
+    const fileService = createFileService(8);
+
+    const pending = saveMobileOriginalFile({
+      fileService,
+      platform: { saveFile } as unknown as Pick<IPlatformService, "saveFile">,
+      path: "/workspace/source.bin",
+      suggestedName: "source.bin",
+      signal: controller.signal,
+    });
+    // 读取完成、进入原生写入阶段后取消。
+    await vi.waitFor(() => expect(saveFile).toHaveBeenCalledOnce());
+    controller.abort();
+
+    await expect(pending).resolves.toEqual({ success: false, canceled: true });
+    // 迟到的写入结果不再改变取消结论：pending 已按取消收敛。
+    resolveWrite({ success: true });
+    expect(saveFile).toHaveBeenCalledOnce();
+  });
+
+  it("searchfile-9: 写入阶段未取消时返回真实写入结果；取消后发起的写入不触达平台", async () => {
+    const fileService = createFileService(8);
+    const saveFile = vi.fn(async () => ({ success: true }));
+    const first = await saveMobileOriginalFile({
+      fileService,
+      platform: { saveFile } as unknown as Pick<IPlatformService, "saveFile">,
+      path: "/workspace/source.bin",
+      suggestedName: "source.bin",
+    });
+    expect(first).toEqual({ success: true });
+
+    // 发起写入前已取消：不调用 platform.saveFile（既有发起前检查仍然有效）。
+    const controller = new AbortController();
+    controller.abort();
+    const saveFileAfterAbort = vi.fn(async () => ({ success: true }));
+    const second = await saveMobileOriginalFile({
+      fileService,
+      platform: { saveFile: saveFileAfterAbort } as unknown as Pick<IPlatformService, "saveFile">,
+      path: "/workspace/source.bin",
+      suggestedName: "source.bin",
+      signal: controller.signal,
+    });
+    expect(second).toEqual({ success: false, canceled: true });
+    expect(saveFileAfterAbort).not.toHaveBeenCalled();
   });
 
   it("uses the AbortError shape so cancel results are distinguishable from failures", () => {

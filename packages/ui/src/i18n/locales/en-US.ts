@@ -1316,6 +1316,12 @@ const enUS: Record<string, string> = {
   "webRemoteControl.status.active": "Phone connected",
   "webRemoteControl.status.error": "Connection failed",
   "webRemoteControl.themeMenu.trigger": "Choose theme",
+  "webRemoteControl.mobileSettings.trigger": "Settings",
+  "webRemoteControl.mobileSettings.connectionSection": "Connection",
+  "webRemoteControl.mobileSettings.connectionSection.description":
+    "Manage the gateway connection between this phone and the desktop. The device credential stays in this device's secure storage and is never displayed or written to logs.",
+  "webRemoteControl.mobileSettings.save": "Save",
+  "webRemoteControl.mobileSettings.saving": "Saving…",
   "webRemoteControl.statusDetail.idle": "Ready to connect.",
   "webRemoteControl.statusDetail.starting": "Starting remote control...",
   "webRemoteControl.statusDetail.running": "Scan the QR code or open the link on your phone.",
@@ -2287,6 +2293,75 @@ const enUS: Record<string, string> = {
     "Delete cookies, site data, and cache from the built-in browser. This cannot be undone.",
   "settings.browser.clearAll.action": "Clear all",
   "settings.browser.clearAll.success": "All built-in browser data cleared",
+  "settings.browser.extension.section": "Chrome extension",
+  "settings.browser.extension.desktopOnly":
+    "Chrome extension pairing and management are available in the Zody desktop app.",
+  "settings.browser.extension.install.title": "Install the Chrome extension",
+  "settings.browser.extension.install.description":
+    "Zody needs the browser extension to control this Chrome profile. Branded Chrome does not allow one-click installation; load it manually:",
+  "settings.browser.extension.install.step1":
+    "Open chrome://extensions in Chrome and enable Developer mode.",
+  "settings.browser.extension.install.step2":
+    "Build the extension, then click “Load unpacked”.",
+  "settings.browser.extension.install.step3": "Select the build output directory below.",
+  "settings.browser.extension.install.openDirectory": "Open build output directory",
+  "settings.browser.extension.install.missing":
+    "Build output does not exist yet. Run the command above first.",
+  "settings.browser.extension.status.listening": "Bridge is listening on 127.0.0.1:{port}.",
+  "settings.browser.extension.status.unavailable":
+    "Bridge is unavailable. If the port is in use, change it and retry.",
+  "settings.browser.extension.statusFailed": "Failed to read Chrome extension status",
+  "settings.browser.extension.port.title": "Bridge port",
+  "settings.browser.extension.port.description":
+    "Zody and the Chrome extension must use the same port. Changing it disconnects the extension until it reconnects with the new port.",
+  "settings.browser.extension.port.save": "Save port",
+  "settings.browser.extension.port.saved": "Bridge is now listening on the new port.",
+  "settings.browser.extension.port.invalid": "Port must be an integer between 1 and 65535.",
+  "settings.browser.extension.port.inUse":
+    "That port is already in use. The previous port was restored.",
+  "settings.browser.extension.port.failed":
+    "Port change failed. The previous port was restored.",
+  "settings.browser.extension.default.title": "Default browser backend",
+  "settings.browser.extension.default.description":
+    "Saves a concrete browserId. Without a choice, the built-in browser stays default; if the selected Chrome profile is offline, requests fail closed instead of silently switching back.",
+  "settings.browser.extension.default.iab": "Built-in browser (IAB)",
+  "settings.browser.extension.default.chrome": "Chrome extension",
+  "settings.browser.extension.default.missing": "Configured but not visible: {browserId}",
+  "settings.browser.extension.default.failClosed":
+    "The default profile is not visible or offline; Browser Use will fail closed.",
+  "settings.browser.extension.pairing.title": "Pair Chrome profile",
+  "settings.browser.extension.pairing.description":
+    "Creates a one-time pairing code for this window only. Compare the pairing session shown in the extension popup.",
+  "settings.browser.extension.pairing.begin": "Pair Chrome profile",
+  "settings.browser.extension.pairing.cancel": "Cancel pairing",
+  "settings.browser.extension.pairing.code": "Pairing code",
+  "settings.browser.extension.pairing.session": "Pairing session",
+  "settings.browser.extension.pairing.extensionId": "Extension ID",
+  "settings.browser.extension.pairing.profile": "Profile instance",
+  "settings.browser.extension.pairing.waiting": "Waiting for the extension…",
+  "settings.browser.extension.pairing.instructions":
+    "Open the Chrome extension popup, verify the pairing session, then enter the pairing code. The code is never shown in other windows.",
+  "settings.browser.extension.pairing.failed":
+    "Could not start pairing. Check the bridge status.",
+  "settings.browser.extension.profile.empty":
+    "No Chrome profile is paired to this window yet.",
+  "settings.browser.extension.profile.connected": "Connected · generation {generation}",
+  "settings.browser.extension.profile.disconnected": "Paired, currently offline",
+  "settings.browser.extension.profile.boundHere": "Bound to this window",
+  "settings.browser.extension.profile.unbound":
+    "Previous window is gone; can be transferred here",
+  "settings.browser.extension.transfer": "Transfer to this window",
+  "settings.browser.extension.transfer.success":
+    "Profile transferred to this window. Re-authorize existing tabs.",
+  "settings.browser.extension.transfer.failed":
+    "Transfer failed. Make sure the profile is still visible.",
+  "settings.browser.extension.revoke": "Revoke pairing",
+  "settings.browser.extension.revoke.success": "Chrome profile pairing revoked.",
+  "settings.browser.extension.revoke.failed": "Failed to revoke pairing.",
+  "settings.browser.extension.revoke.confirmTitle": "Revoke Chrome profile pairing?",
+  "settings.browser.extension.revoke.confirmDescription":
+    "The profile disconnects from this window immediately and controlled tabs are released. Pair again to use it.",
+  "settings.browser.extension.revoke.confirmAction": "Revoke pairing",
   "settings.browser.clear.failed": "Failed to clear built-in browser data.",
   "settings.browser.clearAll.confirmTitle": "Clear all built-in browser data?",
   "settings.browser.clearAll.confirmDescription":
@@ -5028,6 +5103,18 @@ const enUS: Record<string, string> = {
   "chat.permission.cua.allowForProject": "Always allow Computer Use in this project",
   "chat.permission.cua.allowForProject.description":
     "Do not ask again for official Computer Use actions in this project",
+  // macOS CUA in-app screenshot confirmation (specs/computer-use-macos-phase1.md):
+  // follows the standard tool permission policy (allow_once/allow_always/deny, plus
+  // Full access when supported); only allow_once keeps a dedicated label. The default
+  // action and Esc are both deny.
+  "chat.permission.cua.screenshotConfirm.title": "Screenshot confirmation",
+  "chat.permission.cua.screenshotConfirm.summary":
+    "The agent wants to capture a screenshot of this window.",
+  "chat.permission.cua.screenshotConfirm.allowOnce": "Allow this screenshot",
+  "chat.permission.cua.screenshotConfirm.target.ownerName": "App",
+  "chat.permission.cua.screenshotConfirm.target.windowName": "Window",
+  "chat.permission.cua.screenshotConfirm.target.pid": "PID",
+  "chat.permission.cua.screenshotConfirm.target.windowId": "Window ID",
   "chat.permission.deny": "Deny",
   "chat.permission.denyAlways": "Always deny",
   "chat.permission.files": "Files",

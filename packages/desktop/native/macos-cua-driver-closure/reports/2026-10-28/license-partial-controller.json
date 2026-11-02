@@ -1,0 +1,24 @@
+[
+  {
+    "repo": "jedisct1/rust-siphash",
+    "url": "https://raw.githubusercontent.com/jedisct1/rust-siphash/db8172048a1c9bdef0dcec782d965c236161af13/LICENSE-MIT",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "repo": "jedisct1/rust-siphash",
+    "url": "https://raw.githubusercontent.com/jedisct1/rust-siphash/db8172048a1c9bdef0dcec782d965c236161af13/LICENSE-APACHE",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "repo": "comex/rust-shlex",
+    "url": "https://raw.githubusercontent.com/comex/rust-shlex/4a0724b0b62ef715467875b040a890ce75a8a829/LICENSE-APACHE",
+    "bytes": 566,
+    "sha256": "553fffcd9b1cb158bc3e9edc35da85ca5c3b3d7d2e61c883ebcfa8a65814b583",
+    "local": "/tmp/zody-cua-r6-controller-shlex-LICENSE-APACHE"
+  },
+  {
+    "repo": "microsoft/rust_msvc_spectre_libs",
+    "url": "https://raw.githubusercontent.com/microsoft/rust_msvc_spectre_libs/ba10bb6445cd033defab3c573d554de3a8fe10fd/LICENSE-APACHE",
+    "error": "HTTP Error 404: Not Found"
+  }
+]

@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Loader2Icon } from "lucide-react";
+import { ChevronRight, Loader2Icon } from "lucide-react";
 import { ProviderStatusIndicator } from "./ProviderStatusIndicator.js";
 
 import { TID_MODEL_PROVIDER_NAV_ITEM, testId } from "@zcode/shared";
@@ -73,12 +73,14 @@ function ModelProviderNavigationButton({
   selectedNodeKey,
   onSelectNavItem,
   showIcon = true,
+  mobileList = false,
 }: {
   item: ModelProviderNavItem;
   label: string;
   selectedNodeKey: string | null;
   onSelectNavItem: (item: ModelProviderNavItem) => void;
   showIcon?: boolean;
+  mobileList?: boolean;
 }) {
   const isSelected = item.key === selectedNodeKey;
   const inactiveItemClassName = "border-transparent text-foreground hover:border-border-hover/60";
@@ -92,22 +94,36 @@ function ModelProviderNavigationButton({
         data-state={isSelected ? "selected" : "idle"}
         data-testid={testId(TID_MODEL_PROVIDER_NAV_ITEM, item.key)}
         onClick={() => onSelectNavItem(item)}
-        className={`relative box-border flex h-8 w-full items-center gap-2 rounded-lg border px-2 py-1 text-left text-ui-base font-medium transition-colors max-md:size-8 max-md:justify-center max-md:gap-0 max-md:px-0 ${
-          isSelected
-            ? "border-border-hover bg-card-selected text-foreground"
-            : inactiveItemClassName
-        }`}
+        className={
+          mobileList
+            ? `relative box-border flex min-h-11 w-full items-center gap-3 border-t border-border px-3 py-2 text-left text-ui-base font-medium transition-colors first:border-t-0 ${
+                isSelected
+                  ? "bg-card-selected text-foreground"
+                  : "text-foreground hover:bg-surface-hover"
+              }`
+            : `relative box-border flex h-8 w-full items-center gap-2 rounded-lg border px-2 py-1 text-left text-ui-base font-medium transition-colors max-md:size-8 max-md:justify-center max-md:gap-0 max-md:px-0 ${
+                isSelected
+                  ? "border-border-hover bg-card-selected text-foreground"
+                  : inactiveItemClassName
+              }`
+        }
       >
         {showIcon ? (
           <span className="shrink-0 text-current">{renderModelProviderNavIcon(item)}</span>
         ) : null}
-        <span className="flex min-w-0 flex-1 items-center gap-1.5 max-md:sr-only">
+        <span
+          className={`flex min-w-0 flex-1 items-center gap-1.5 ${mobileList ? "" : "max-md:sr-only"}`}
+        >
           <span className="min-w-0 truncate">{label}</span>
         </span>
         {"provider" in item ? (
           <ProviderStatusIndicator
             provider={item.type === "preset" ? item.statusProvider : item.provider}
+            inline={mobileList}
           />
+        ) : null}
+        {mobileList ? (
+          <ChevronRight className="size-4 shrink-0 text-foreground-subtlest" aria-hidden="true" />
         ) : null}
       </button>
     </ControlHintTooltip>
@@ -137,12 +153,14 @@ function SortableModelProviderNavigationButton({
   label,
   selectedNodeKey,
   onSelectNavItem,
+  mobileList = false,
 }: {
   providerId: string;
   item: ModelProviderNavItem;
   label: string;
   selectedNodeKey: string | null;
   onSelectNavItem: (item: ModelProviderNavItem) => void;
+  mobileList?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: providerId,
@@ -172,22 +190,36 @@ function SortableModelProviderNavigationButton({
         {...attributes}
         {...listeners}
         onKeyDown={handleKeyDown}
-        className={`relative box-border flex h-8 w-full cursor-grab touch-pan-y select-none items-center gap-2 rounded-lg border px-2 py-1 text-left text-ui-base font-medium transition-colors active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 max-md:size-8 max-md:justify-center max-md:gap-0 max-md:px-0 ${
-          isSelected
-            ? "border-border-hover bg-card-selected text-foreground"
-            : inactiveItemClassName
-        } ${isDragging ? "z-20 opacity-70" : ""}`}
+        className={
+          mobileList
+            ? `relative box-border flex min-h-11 w-full cursor-grab touch-pan-y select-none items-center gap-3 border-t border-border px-3 py-2 text-left text-ui-base font-medium transition-colors first:border-t-0 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 ${
+                isSelected
+                  ? "bg-card-selected text-foreground"
+                  : "text-foreground hover:bg-surface-hover"
+              } ${isDragging ? "z-20 opacity-70" : ""}`
+            : `relative box-border flex h-8 w-full cursor-grab touch-pan-y select-none items-center gap-2 rounded-lg border px-2 py-1 text-left text-ui-base font-medium transition-colors active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 max-md:size-8 max-md:justify-center max-md:gap-0 max-md:px-0 ${
+                isSelected
+                  ? "border-border-hover bg-card-selected text-foreground"
+                  : inactiveItemClassName
+              } ${isDragging ? "z-20 opacity-70" : ""}`
+        }
       >
         <span className="shrink-0 text-current" aria-hidden="true">
           {renderModelProviderNavIcon(item)}
         </span>
-        <span className="flex min-w-0 flex-1 items-center gap-1.5 max-md:sr-only">
+        <span
+          className={`flex min-w-0 flex-1 items-center gap-1.5 ${mobileList ? "" : "max-md:sr-only"}`}
+        >
           <span className="min-w-0 truncate">{label}</span>
         </span>
         {"provider" in item ? (
           <ProviderStatusIndicator
             provider={item.type === "preset" ? item.statusProvider : item.provider}
+            inline={mobileList}
           />
+        ) : null}
+        {mobileList ? (
+          <ChevronRight className="size-4 shrink-0 text-foreground-subtlest" aria-hidden="true" />
         ) : null}
       </div>
     </ControlHintTooltip>
@@ -198,13 +230,19 @@ function PresetProviderCardNavigation({
   group,
   selectedNodeKey,
   onSelectNavItem,
+  mobileList = false,
 }: {
   group: ModelProviderNavGroup;
   selectedNodeKey: string | null;
   onSelectNavItem: (item: ModelProviderNavItem) => void;
+  mobileList?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-2 max-md:items-center max-md:gap-1">
+    <div
+      className={
+        mobileList ? "flex flex-col" : "flex flex-col gap-2 max-md:items-center max-md:gap-1"
+      }
+    >
       {group.items.map((item) => (
         <ModelProviderNavigationButton
           key={item.key}
@@ -212,6 +250,7 @@ function PresetProviderCardNavigation({
           label={resolveModelProviderSideNavLabel(item)}
           selectedNodeKey={selectedNodeKey}
           onSelectNavItem={onSelectNavItem}
+          mobileList={mobileList}
         />
       ))}
     </div>
@@ -225,6 +264,7 @@ function SortableProviderNavigationGroup({
   onReorderProviderIds,
   reorderableProviderIds,
   sensors,
+  mobileList = false,
 }: {
   group: ModelProviderNavGroup;
   selectedNodeKey: string | null;
@@ -232,6 +272,7 @@ function SortableProviderNavigationGroup({
   onReorderProviderIds?: (providerIds: string[]) => Promise<void>;
   reorderableProviderIds?: ReadonlySet<string>;
   sensors: ReturnType<typeof useSensors>;
+  mobileList?: boolean;
 }) {
   const authoritativeProviderIds = useMemo(
     () =>
@@ -282,7 +323,11 @@ function SortableProviderNavigationGroup({
         items={[...optimisticOrder.renderedIds]}
         strategy={verticalListSortingStrategy}
       >
-        <div className="flex flex-col gap-1 max-md:items-center">
+        <div
+          className={
+            mobileList ? "flex flex-col" : "flex flex-col gap-1 max-md:items-center"
+          }
+        >
           {renderedItems.map((item) => {
             const providerId = getSortableProviderId(item, reorderableProviderIds);
             if (!providerId) {
@@ -293,6 +338,7 @@ function SortableProviderNavigationGroup({
                   label={item.label}
                   selectedNodeKey={selectedNodeKey}
                   onSelectNavItem={onSelectNavItem}
+                  mobileList={mobileList}
                 />
               );
             }
@@ -304,6 +350,7 @@ function SortableProviderNavigationGroup({
                 label={item.label}
                 selectedNodeKey={selectedNodeKey}
                 onSelectNavItem={onSelectNavItem}
+                mobileList={mobileList}
               />
             );
           })}
@@ -343,6 +390,7 @@ export function ModelProviderSectionNavigation({
   onSelectNavItem,
   onReorderProviderIds,
   reorderableProviderIds,
+  mobileList = false,
 }: {
   navigationGroups: ModelProviderNavGroup[];
   selectedNodeKey: string | null;
@@ -350,6 +398,8 @@ export function ModelProviderSectionNavigation({
   onSelectNavItem: (item: ModelProviderNavItem) => void;
   onReorderProviderIds?: (providerIds: string[]) => Promise<void>;
   reorderableProviderIds?: ReadonlySet<string>;
+  /** 手机设置使用完整文字 Provider 列表，不再压缩为 56px 图标栏。 */
+  mobileList?: boolean;
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -359,13 +409,26 @@ export function ModelProviderSectionNavigation({
   );
 
   return (
-    <aside className="px-1.5 py-3 md:py-2 md:px-2">
-      <div className="flex min-h-0 flex-col gap-3 max-md:gap-1">
+    <aside className={mobileList ? "" : "px-1.5 py-3 md:py-2 md:px-2"}>
+      <div
+        className={
+          mobileList ? "flex min-h-0 flex-col" : "flex min-h-0 flex-col gap-3 max-md:gap-1"
+        }
+      >
         {navigationGroups
           .filter((group) => group.id !== "custom" || group.items.length > 0)
           .map((group) => (
-            <div key={group.id} className="flex flex-col gap-2 max-md:gap-1">
-              <div className="flex h-7 items-center justify-between px-2 py-1 max-md:hidden">
+            <div
+              key={group.id}
+              className={mobileList ? "flex flex-col" : "flex flex-col gap-2 max-md:gap-1"}
+            >
+              <div
+                className={
+                  mobileList
+                    ? "flex h-11 items-center justify-between px-3 text-ui-sm font-semibold text-foreground-subtlest"
+                    : "flex h-7 items-center justify-between px-2 py-1 max-md:hidden"
+                }
+              >
                 <h3 className="text-ui-sm font-semibold text-foreground-subtlest">{group.title}</h3>
                 {shouldShowModelProviderGroupLoadingIndicator({
                   groupId: group.id,
@@ -380,6 +443,7 @@ export function ModelProviderSectionNavigation({
                   group={group}
                   selectedNodeKey={selectedNodeKey}
                   onSelectNavItem={onSelectNavItem}
+                  mobileList={mobileList}
                 />
               ) : (
                 <SortableProviderNavigationGroup
@@ -389,6 +453,7 @@ export function ModelProviderSectionNavigation({
                   onReorderProviderIds={onReorderProviderIds}
                   reorderableProviderIds={reorderableProviderIds}
                   sensors={sensors}
+                  mobileList={mobileList}
                 />
               )}
             </div>

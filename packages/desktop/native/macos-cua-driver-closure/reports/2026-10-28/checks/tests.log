@@ -1,0 +1,9 @@
+
+ RUN  v4.1.4 /Users/zhvala/SourceCode/zody
+
+
+ Test Files  9 passed (9)
+      Tests  97 passed (97)
+   Start at  11:46:31
+   Duration  4.06s (transform 435ms, setup 228ms, import 536ms, tests 6.39s, environment 1ms)
+

@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-10-31T04:31:23.761624+00:00",
+  "sourceManifestMeaning": "source-file index SHA256, not Rust frozen-tree hash",
+  "evidenceMembersVerified": 126,
+  "evidenceMismatches": [],
+  "files": {
+    "build-and-live-evidence.tar.gz": {
+      "bytes": 1904204,
+      "sha256": "d111bb71673dd17489c20c805bd6895dad8fc9c2bc3e4e1a19029c6a25c2ee35"
+    },
+    "change-index.json": {
+      "bytes": 4195,
+      "sha256": "c0060ab53bddb40092911ea65a71a63b90f2bd8b5dc44819d9bf35af58b1ee21"
+    },
+    "incremental.patch": {
+      "bytes": 123019,
+      "sha256": "1944b127ec15ca56ac47b127a4c86a8af75668cb1d89a70cf9fa2e9234d1f326"
+    },
+    "source-and-patch-product-final.tar.gz": {
+      "bytes": 9481065,
+      "sha256": "fae6b3a2ddebf93a8a59ab71dc85c7211ac45845866079c86ac2c3e0c4a67a01"
+    },
+    "source-sha256.json": {
+      "bytes": 617511,
+      "sha256": "98a35c35cbd050e7c7d778720777d5a017965b6eabc153d0f78e8400b0868c4d"
+    }
+  },
+  "StopAcceptance": "PENDING: no native click/OS completion/UI Stop in diagnostic attempt1",
+  "sourcesVerified": 4275,
+  "sourceMismatches": 0
+}

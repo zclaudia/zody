@@ -2524,6 +2524,8 @@ Electron/Chromium target-specific notices are shipped separately under Resources
 
 - @ai-sdk/anthropic@3.0.81: modified by ZCode; the changes are recorded in patches/@ai-sdk__anthropic@3.0.81.patch in the source repository.
 
+- @radix-ui/react-collapsible@1.1.12: modified by ZCode; the changes are recorded in patches/@radix-ui__react-collapsible@1.1.12.patch in the source repository.
+
 ## License and NOTICE texts
 
 ### Notice 6ed4f049cce59e05197d585bdf8a39980b45d546d6ea718ee344555f3a867c3a

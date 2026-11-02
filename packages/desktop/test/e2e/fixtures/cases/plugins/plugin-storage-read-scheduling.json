@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "caseName": "plugin-storage-read-scheduling",
+  "spec": "./test/e2e/plugins/plugin-storage-read-scheduling.test.ts",
+  "providerFixtures": [],
+  "providerRequestPolicy": "none",
+  "fileFixtures": [
+    "loopback directory marketplace manifest with a warm local plugin and a stalled ZIP download server"
+  ],
+  "requests": []
+}

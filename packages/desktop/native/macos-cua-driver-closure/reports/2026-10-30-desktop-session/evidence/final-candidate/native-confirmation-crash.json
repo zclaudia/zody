@@ -1,0 +1,1098 @@
+{
+  "pid": 97169,
+  "procName": "macos-cua-desktop-session",
+  "exception": {
+    "codes": "0x0000000000000001, 0x0000428d85c94af8",
+    "rawCodes": [
+      1,
+      73175602383608
+    ],
+    "type": "EXC_BAD_ACCESS",
+    "signal": "SIGSEGV",
+    "subtype": "KERN_INVALID_ADDRESS at 0x0000428d85c94af8"
+  },
+  "termination": {
+    "flags": 0,
+    "code": 11,
+    "namespace": "SIGNAL",
+    "indicator": "Segmentation fault: 11",
+    "byProc": "exc handler",
+    "byPid": 97169
+  },
+  "faultingThread": 0,
+  "threads": [
+    {
+      "triggered": true,
+      "id": 160669026,
+      "threadState": {
+        "x": [
+          {
+            "value": 31395430400
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 73175602383576
+          },
+          {
+            "value": 18446726483666796544
+          },
+          {
+            "value": 31384280064
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 18446726482597246976
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 31397258688
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 63
+          },
+          {
+            "value": 32
+          },
+          {
+            "value": 31382351344
+          },
+          {
+            "value": 8309253921,
+            "symbolLocation": 1,
+            "symbol": "OBJC_CLASS_$___NSArrayM"
+          },
+          {
+            "value": 8309253920,
+            "symbolLocation": 0,
+            "symbol": "OBJC_CLASS_$___NSArrayM"
+          },
+          {
+            "value": 13838368193116719835
+          },
+          {
+            "value": 8332409744
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 31386682784
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 31386682792
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 8309121632,
+            "symbolLocation": 224,
+            "symbol": "_main_thread"
+          },
+          {
+            "value": 1
+          },
+          {
+            "value": 8309489664,
+            "symbolLocation": 8,
+            "symbol": "OBJC_METACLASS_$_NSWMDeferredTransactionQueue"
+          },
+          {
+            "value": 8265375744,
+            "symbolLocation": 0,
+            "symbol": "OBJC_IVAR_$_NSScrubberChangeTransition._view"
+          }
+        ],
+        "flavor": "ARM_THREAD_STATE64",
+        "lr": {
+          "value": 6486831412
+        },
+        "cpsr": {
+          "value": 4096
+        },
+        "fp": {
+          "value": 6162978912
+        },
+        "sp": {
+          "value": 6162978864
+        },
+        "esr": {
+          "value": 2449473541,
+          "description": "(Data Abort) byte read Translation fault"
+        },
+        "pc": {
+          "value": 6481805332,
+          "matchesCrashFrame": 1
+        },
+        "far": {
+          "value": 73175602383608
+        }
+      },
+      "queue": "com.apple.main-thread",
+      "frames": [
+        {
+          "imageOffset": 32788,
+          "symbol": "objc_release",
+          "symbolLocation": 16,
+          "imageIndex": 4
+        },
+        {
+          "imageOffset": 131380,
+          "symbol": "__RELEASE_OBJECTS_IN_THE_ARRAY__",
+          "symbolLocation": 116,
+          "imageIndex": 5
+        },
+        {
+          "imageOffset": 131184,
+          "symbol": "-[__NSArrayM dealloc]",
+          "symbolLocation": 148,
+          "imageIndex": 5
+        },
+        {
+          "imageOffset": 64676,
+          "symbol": "AutoreleasePoolPage::releaseUntil(objc_object**)",
+          "symbolLocation": 204,
+          "imageIndex": 4
+        },
+        {
+          "imageOffset": 49456,
+          "symbol": "objc_autoreleasePoolPop",
+          "symbolLocation": 244,
+          "imageIndex": 4
+        },
+        {
+          "imageOffset": 247220,
+          "symbol": "_CFAutoreleasePoolPop",
+          "symbolLocation": 32,
+          "imageIndex": 5
+        },
+        {
+          "imageOffset": 200352,
+          "symbol": "-[NSAutoreleasePool drain]",
+          "symbolLocation": 136,
+          "imageIndex": 6
+        },
+        {
+          "imageOffset": 180588,
+          "symbol": "-[NSApplication run]",
+          "symbolLocation": 416,
+          "imageIndex": 7
+        },
+        {
+          "imageOffset": 81752,
+          "symbol": "main",
+          "symbolLocation": 2276,
+          "imageIndex": 0
+        },
+        {
+          "imageOffset": 132324,
+          "symbol": "start",
+          "symbolLocation": 6992,
+          "imageIndex": 8
+        }
+      ]
+    },
+    {
+      "id": 160669041,
+      "name": "com.apple.NSEventThread",
+      "threadState": {
+        "x": [
+          {
+            "value": 268451845
+          },
+          {
+            "value": 21592279046
+          },
+          {
+            "value": 8589934592,
+            "objc-selector": "r:extension:extensionRequest:"
+          },
+          {
+            "value": 134153303490560
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 134153303490560
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 4294967295
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 17179869184
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 31235
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 18446744073709551569
+          },
+          {
+            "value": 8332458600
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 4294967295
+          },
+          {
+            "value": 2
+          },
+          {
+            "value": 134153303490560
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 134153303490560
+          },
+          {
+            "value": 21592279046
+          },
+          {
+            "value": 6166405256
+          },
+          {
+            "value": 8589934592,
+            "objc-selector": "r:extension:extensionRequest:"
+          },
+          {
+            "value": 18446744073709550527
+          },
+          {
+            "value": 4412409862
+          }
+        ],
+        "flavor": "ARM_THREAD_STATE64",
+        "lr": {
+          "value": 6486238628
+        },
+        "cpsr": {
+          "value": 4096
+        },
+        "fp": {
+          "value": 6166405104
+        },
+        "sp": {
+          "value": 6166405024
+        },
+        "esr": {
+          "value": 1442840704,
+          "description": "(Syscall)"
+        },
+        "pc": {
+          "value": 6486162484
+        },
+        "far": {
+          "value": 0
+        }
+      },
+      "frames": [
+        {
+          "imageOffset": 3124,
+          "symbol": "mach_msg2_trap",
+          "symbolLocation": 8,
+          "imageIndex": 10
+        },
+        {
+          "imageOffset": 79268,
+          "symbol": "mach_msg2_internal",
+          "symbolLocation": 76,
+          "imageIndex": 10
+        },
+        {
+          "imageOffset": 39360,
+          "symbol": "mach_msg_overwrite",
+          "symbolLocation": 480,
+          "imageIndex": 10
+        },
+        {
+          "imageOffset": 4032,
+          "symbol": "mach_msg",
+          "symbolLocation": 24,
+          "imageIndex": 10
+        },
+        {
+          "imageOffset": 516360,
+          "symbol": "__CFRunLoopServiceMachPort",
+          "symbolLocation": 160,
+          "imageIndex": 5
+        },
+        {
+          "imageOffset": 510452,
+          "symbol": "__CFRunLoopRun",
+          "symbolLocation": 1188,
+          "imageIndex": 5
+        },
+        {
+          "imageOffset": 1372772,
+          "symbol": "_CFRunLoopRunSpecificWithOptions",
+          "symbolLocation": 532,
+          "imageIndex": 5
+        },
+        {
+          "imageOffset": 1420460,
+          "symbol": "_NSEventThread",
+          "symbolLocation": 184,
+          "imageIndex": 7
+        },
+        {
+          "imageOffset": 27736,
+          "symbol": "_pthread_start",
+          "symbolLocation": 136,
+          "imageIndex": 11
+        },
+        {
+          "imageOffset": 7196,
+          "symbol": "thread_start",
+          "symbolLocation": 8,
+          "imageIndex": 11
+        }
+      ]
+    },
+    {
+      "id": 160669134,
+      "frames": [
+        {
+          "imageOffset": 3124,
+          "symbol": "mach_msg2_trap",
+          "symbolLocation": 8,
+          "imageIndex": 10
+        },
+        {
+          "imageOffset": 79268,
+          "symbol": "mach_msg2_internal",
+          "symbolLocation": 76,
+          "imageIndex": 10
+        },
+        {
+          "imageOffset": 39360,
+          "symbol": "mach_msg_overwrite",
+          "symbolLocation": 480,
+          "imageIndex": 10
+        },
+        {
+          "imageOffset": 4032,
+          "symbol": "mach_msg",
+          "symbolLocation": 24,
+          "imageIndex": 10
+        },
+        {
+          "imageOffset": 1941360,
+          "symbol": "__copy_window_description_list_internal_direct_block_invoke",
+          "symbolLocation": 192,
+          "imageIndex": 12
+        },
+        {
+          "imageOffset": 3857384,
+          "symbol": "CGSPropertyListCreateWithBlockRequiringType",
+          "symbolLocation": 84,
+          "imageIndex": 12
+        },
+        {
+          "imageOffset": 1941076,
+          "symbol": "copy_window_description_list_internal_direct",
+          "symbolLocation": 204,
+          "imageIndex": 12
+        },
+        {
+          "imageOffset": 1941812,
+          "symbol": "SLWindowListCopyWindowInfo",
+          "symbolLocation": 136,
+          "imageIndex": 12
+        },
+        {
+          "imageOffset": 24600,
+          "symbol": "zody::cua::desktop_session::(anonymous namespace)::lookup(int, unsigned int, zody::cua::desktop_session::SessionTarget&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>&)",
+          "symbolLocation": 160,
+          "imageIndex": 0
+        },
+        {
+          "imageOffset": 25476,
+          "symbol": "zody::cua::desktop_session::window_still_matches(zody::cua::desktop_session::SessionTarget const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>&)",
+          "symbolLocation": 68,
+          "imageIndex": 0
+        },
+        {
+          "imageOffset": 63948,
+          "symbol": "zody::cua::desktop_session::SessionSupervisor::handle_connection(zody::cua::desktop_session::SessionSupervisor::OwnedFd&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>&)",
+          "symbolLocation": 3228,
+          "imageIndex": 0
+        },
+        {
+          "imageOffset": 51492,
+          "symbol": "zody::cua::desktop_session::SessionSupervisor::run()",
+          "symbolLocation": 280,
+          "imageIndex": 0
+        },
+        {
+          "imageOffset": 82628,
+          "symbol": "void* std::__1::__thread_proxy[abi:nqe220106]<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct>>, main::$_0>>(void*)",
+          "symbolLocation": 52,
+          "imageIndex": 0
+        },
+        {
+          "imageOffset": 27736,
+          "symbol": "_pthread_start",
+          "symbolLocation": 136,
+          "imageIndex": 11
+        },
+        {
+          "imageOffset": 7196,
+          "symbol": "thread_start",
+          "symbolLocation": 8,
+          "imageIndex": 11
+        }
+      ],
+      "threadState": {
+        "x": [
+          {
+            "value": 0
+          },
+          {
+            "value": 17183031299
+          },
+          {
+            "value": 343598634259
+          },
+          {
+            "value": 77253576765203
+          },
+          {
+            "value": 137615047137283
+          },
+          {
+            "value": 77253576753152
+          },
+          {
+            "value": 64
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 17179869184
+          },
+          {
+            "value": 64
+          },
+          {
+            "value": 6147
+          },
+          {
+            "value": 32041
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 17987
+          },
+          {
+            "value": 40
+          },
+          {
+            "value": 18446744073709551569
+          },
+          {
+            "value": 8332458600
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 64
+          },
+          {
+            "value": 77253576753152
+          },
+          {
+            "value": 137615047137283
+          },
+          {
+            "value": 77253576765203
+          },
+          {
+            "value": 17183031299
+          },
+          {
+            "value": 6167552680
+          },
+          {
+            "value": 343598634259
+          },
+          {
+            "value": 18446744073709550527
+          },
+          {
+            "value": 3162115
+          }
+        ],
+        "flavor": "ARM_THREAD_STATE64",
+        "lr": {
+          "value": 6486238628
+        },
+        "cpsr": {
+          "value": 4096
+        },
+        "fp": {
+          "value": 6167552336
+        },
+        "sp": {
+          "value": 6167552256
+        },
+        "esr": {
+          "value": 1442840704,
+          "description": "(Syscall)"
+        },
+        "pc": {
+          "value": 6486162484
+        },
+        "far": {
+          "value": 0
+        }
+      }
+    },
+    {
+      "id": 160672381,
+      "frames": [],
+      "threadState": {
+        "x": [
+          {
+            "value": 6164115456
+          },
+          {
+            "value": 19003
+          },
+          {
+            "value": 6163578880
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 409604
+          },
+          {
+            "value": 18446744073709551615
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          }
+        ],
+        "flavor": "ARM_THREAD_STATE64",
+        "lr": {
+          "value": 0
+        },
+        "cpsr": {
+          "value": 4096
+        },
+        "fp": {
+          "value": 0
+        },
+        "sp": {
+          "value": 6164115456
+        },
+        "esr": {
+          "value": 1442840704,
+          "description": "(Syscall)"
+        },
+        "pc": {
+          "value": 6486420488
+        },
+        "far": {
+          "value": 0
+        }
+      }
+    },
+    {
+      "id": 160672477,
+      "frames": [],
+      "threadState": {
+        "x": [
+          {
+            "value": 6165262336
+          },
+          {
+            "value": 58395
+          },
+          {
+            "value": 6164725760
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 409604
+          },
+          {
+            "value": 18446744073709551615
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          }
+        ],
+        "flavor": "ARM_THREAD_STATE64",
+        "lr": {
+          "value": 0
+        },
+        "cpsr": {
+          "value": 4096
+        },
+        "fp": {
+          "value": 0
+        },
+        "sp": {
+          "value": 6165262336
+        },
+        "esr": {
+          "value": 1442840704,
+          "description": "(Syscall)"
+        },
+        "pc": {
+          "value": 6486420488
+        },
+        "far": {
+          "value": 0
+        }
+      }
+    },
+    {
+      "id": 160672485,
+      "frames": [],
+      "threadState": {
+        "x": [
+          {
+            "value": 6166982656
+          },
+          {
+            "value": 59407
+          },
+          {
+            "value": 6166446080
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 409604
+          },
+          {
+            "value": 18446744073709551615
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          }
+        ],
+        "flavor": "ARM_THREAD_STATE64",
+        "lr": {
+          "value": 0
+        },
+        "cpsr": {
+          "value": 4096
+        },
+        "fp": {
+          "value": 0
+        },
+        "sp": {
+          "value": 6166982656
+        },
+        "esr": {
+          "value": 1442840704,
+          "description": "(Syscall)"
+        },
+        "pc": {
+          "value": 6486420488
+        },
+        "far": {
+          "value": 0
+        }
+      }
+    }
+  ],
+  "usedImages": [
+    {
+      "source": "P",
+      "arch": "arm64",
+      "base": 4303896576,
+      "CFBundleShortVersionString": "0.1.0",
+      "CFBundleIdentifier": "io.github.zclaudia.zody.cua-helper",
+      "size": 3735552,
+      "uuid": "f9e04122-8344-397f-a0c4-d6e01f567a28",
+      "path": "/Users/USER/*/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session",
+      "name": "macos-cua-desktop-session",
+      "CFBundleVersion": "1"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 4391796736,
+      "CFBundleShortVersionString": "3.0",
+      "CFBundleIdentifier": "com.apple.security.csparser",
+      "size": 114688,
+      "uuid": "54d0f766-9081-3c48-a978-b372b0777944",
+      "path": "/System/Library/Frameworks/Security.framework/Versions/A/PlugIns/csparser.bundle/Contents/MacOS/csparser",
+      "name": "csparser",
+      "CFBundleVersion": "61901.160.44"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 4394549248,
+      "size": 49152,
+      "uuid": "690edff1-56be-3018-bec2-9f63287ceb2d",
+      "path": "/usr/lib/libobjc-trampolines.dylib",
+      "name": "libobjc-trampolines.dylib"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 4580966400,
+      "CFBundleShortVersionString": "353.14",
+      "CFBundleIdentifier": "com.apple.AGXMetalG14X",
+      "size": 8404992,
+      "uuid": "19fe2421-8ed8-3c18-8f6a-50d862113d95",
+      "path": "/System/Library/Extensions/AGXMetalG14X.bundle/Contents/MacOS/AGXMetalG14X",
+      "name": "AGXMetalG14X",
+      "CFBundleVersion": "353.14"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 6481772544,
+      "size": 338764,
+      "uuid": "03bd9e32-cf0a-37b0-898a-3ce8de06d842",
+      "path": "/usr/lib/libobjc.A.dylib",
+      "name": "libobjc.A.dylib"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 6486700032,
+      "CFBundleShortVersionString": "6.9",
+      "CFBundleIdentifier": "com.apple.CoreFoundation",
+      "size": 5629376,
+      "uuid": "9b672762-7b1f-30bc-96de-f176b372d66d",
+      "path": "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+      "name": "CoreFoundation",
+      "CFBundleVersion": "5026.6.7"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 6512320512,
+      "CFBundleShortVersionString": "6.9",
+      "CFBundleIdentifier": "com.apple.Foundation",
+      "size": 16661152,
+      "uuid": "91dace39-fa28-3191-818d-1fcc6a0e615a",
+      "path": "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+      "name": "Foundation",
+      "CFBundleVersion": "5026.6.7"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 6558502912,
+      "CFBundleShortVersionString": "6.9",
+      "CFBundleIdentifier": "com.apple.AppKit",
+      "size": 24261792,
+      "uuid": "b6b4bdad-6428-3e64-8747-275700109b46",
+      "path": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit",
+      "name": "AppKit",
+      "CFBundleVersion": "2685.70.101"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 6482329600,
+      "size": 734464,
+      "uuid": "74e52480-c2bd-3c8d-812d-95fe2b74a096",
+      "path": "/usr/lib/dyld",
+      "name": "dyld"
+    },
+    {
+      "size": 0,
+      "source": "A",
+      "base": 0,
+      "uuid": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 6486159360,
+      "size": 250600,
+      "uuid": "c6a4a4cb-92e6-3baf-aae0-e8306259209a",
+      "path": "/usr/lib/system/libsystem_kernel.dylib",
+      "name": "libsystem_kernel.dylib"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 6486413312,
+      "size": 52028,
+      "uuid": "a373f0b0-9880-326a-88b4-dd8be4e33072",
+      "path": "/usr/lib/system/libsystem_pthread.dylib",
+      "name": "libsystem_pthread.dylib"
+    },
+    {
+      "source": "P",
+      "arch": "arm64e",
+      "base": 6595432448,
+      "CFBundleShortVersionString": "1.600.0",
+      "CFBundleIdentifier": "com.apple.SkyLight",
+      "size": 5990944,
+      "uuid": "0c8f41c6-6d93-3db3-b522-ca8cff5c3b33",
+      "path": "/System/Library/PrivateFrameworks/SkyLight.framework/Versions/A/SkyLight",
+      "name": "SkyLight"
+    }
+  ]
+}

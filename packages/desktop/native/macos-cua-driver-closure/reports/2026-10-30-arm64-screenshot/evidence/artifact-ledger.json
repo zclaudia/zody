@@ -1,0 +1,88 @@
+{
+  "production": {
+    "nativeUnsignedSha256": "bd6cd92b2f548a2aae92e71cf328c5352b80acad71a3da6ca312b51380e0b4eb",
+    "staticlibSha256": "d57549a53bffc6ac17788d6ace2b8bfe7df9b3a85db54b2f42c837b5812d7910",
+    "nodeSha256": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+    "signedHelperSha256": "8cedd3d4ce79deea8449cd838f70068eba4bc924580749619c9cb72050c94515",
+    "stageTreeSha256": "53dddb1ce5c65617ad725a6b1e67db6dffd6ab9e24f721121a76d9fcb27756ae",
+    "preparedManifestSha256": "3b059dfb06507bc2ca1966f5bba5476cbae96ec4356e0fe588b3fc892f0b0cfb",
+    "nativeTests": 10,
+    "entries": {
+      "host-entry.mjs": "ec744eacab5d893da63f09aaf5703fda9d8e105be4c6e77af294a811ca980379",
+      "cli-entry.mjs": "58f470b8a1148bd4a4bf7b88a94955a97168ca70890802aced70d0ef966b00d5",
+      "session-entry.mjs": "55176b58ea2a0728a1ed471ab943723c185d62b3e892d8d0a69922167ad3dc6e"
+    },
+    "licenseMissing": {
+      "cli-entry.mjs.audit.json": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/provider-utils",
+        "data-uri-to-buffer",
+        "omggif",
+        "parse-bmfont-ascii",
+        "quickjs-wasi"
+      ],
+      "node-repl-server.mjs.audit.json": [],
+      "session-storage-entry.mjs.audit.json": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/provider-utils",
+        "omggif",
+        "parse-bmfont-ascii",
+        "quickjs-wasi"
+      ],
+      "host-entry.mjs.audit.json": [
+        "data-uri-to-buffer"
+      ],
+      "session-entry.mjs.audit.json": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/provider-utils",
+        "omggif",
+        "parse-bmfont-ascii",
+        "quickjs-wasi"
+      ],
+      "tasks-storage-worker.mjs.audit.json": []
+    }
+  },
+  "diagnostic": {
+    "nativeUnsignedSha256": "f0dd436967878bb9205fd172c7a641c6eb747d6471b510903647f54055fe84c0",
+    "staticlibSha256": "b2162ccbb1e33985a2ebdecab8b8f4cb8f8af0f1719f3bb424c9c535f410bdba",
+    "nodeSha256": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+    "signedHelperSha256": "4b31561c5f00c8d007c7a13a6c29fb026ffab5220efebaa74da72599b5e943b0",
+    "stageTreeSha256": "7cee8380562d2b06fdfa3e6e211318047bdd40be3d24c646e7b16618618bdef2",
+    "preparedManifestSha256": "c1501abc407edef6c3b5398a9b32bfce28466cc5554a097dc9ca3d885dbe995e",
+    "nativeTests": 0,
+    "entries": {
+      "host-entry.mjs": "1984b871274e54ae3a54de4f2d096bc2dbef0104ded44ed6c4d588ed672a94b2",
+      "cli-entry.mjs": "92d7d89258285b30eb19f0ce635c062420018119c051654a0ffd9d64c7468dc4",
+      "session-entry.mjs": "82e342d6b8ab8fdd69bfdacf50305583ec333dc0d2a5490212d1673bc0f273e6"
+    },
+    "licenseMissing": {
+      "cli-entry.mjs.audit.json": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/provider-utils",
+        "data-uri-to-buffer",
+        "omggif",
+        "parse-bmfont-ascii",
+        "quickjs-wasi"
+      ],
+      "node-repl-server.mjs.audit.json": [],
+      "session-storage-entry.mjs.audit.json": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/provider-utils",
+        "omggif",
+        "parse-bmfont-ascii",
+        "quickjs-wasi"
+      ],
+      "host-entry.mjs.audit.json": [
+        "data-uri-to-buffer"
+      ],
+      "session-entry.mjs.audit.json": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/provider-utils",
+        "omggif",
+        "parse-bmfont-ascii",
+        "quickjs-wasi"
+      ],
+      "tasks-storage-worker.mjs.audit.json": []
+    }
+  }
+}

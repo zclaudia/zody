@@ -1,0 +1,301 @@
+diff -ru output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/build.rs output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/build.rs
+--- output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/build.rs	2026-10-28 23:51:00
++++ output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/build.rs	2026-10-28 23:54:00
+@@ -3,10 +3,11 @@
+ //! full-Xcode `Toolchains/XcodeDefault.xctoolchain` layout; a Command Line
+ //! Tools-only host installs the same libraries under `usr/lib/swift/macosx`.
+ //!
+-//! This script only emits a search path. It does not copy a library, force-link
+-//! an unrelated framework, change the SDK, or lower the deployment target. The
+-//! Swift object files carry the actual autolink directives, so the linker can
+-//! resolve them after the verified directory is on its search path.
++//! This script emits the compatibility-library search path and the fixed system
++//! Swift runtime rpath. It does not copy a library, force-link an unrelated
++//! framework, change the SDK, or lower the deployment target. The Swift object
++//! files carry the actual autolink directives, so the linker can resolve them
++//! after the verified directory is on its search path.
+ 
+ use std::path::PathBuf;
+ use std::process::Command;
+diff -ru output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/src/capture.rs output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/capture.rs
+--- output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/src/capture.rs	2026-10-28 23:51:00
++++ output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/capture.rs	2026-10-28 23:54:00
+@@ -11,8 +11,8 @@
+ 
+ use crate::error::VisualError;
+ use crate::geometry::{
+-    checked_pixel_dimensions, checked_pixel_extent, CaptureRequest, PixelDimensions,
+-    WindowBounds, WindowIdentity, MAX_CAPTURE_SIDE,
++    checked_pixel_dimensions, checked_pixel_extent, CaptureRequest, PixelDimensions, WindowBounds,
++    WindowIdentity, MAX_CAPTURE_SIDE,
+ };
+ use crate::observe::{observe_once, RawFrame};
+ use crate::png::encode_rgba_to_png;
+@@ -51,9 +51,7 @@
+ ///
+ /// The returned identity is checked by [`observe_once`] before capture, so a
+ /// changed or substituted SCK window is rejected without reselection.
+-fn build_plan(
+-    request: &CaptureRequest,
+-) -> Result<(WindowIdentity, CapturePlan), VisualError> {
++fn build_plan(request: &CaptureRequest) -> Result<(WindowIdentity, CapturePlan), VisualError> {
+     let content = SCShareableContent::get()
+         .map_err(|error| native(format!("SCShareableContent::get failed: {error}")))?;
+     let window = content
+@@ -108,8 +106,12 @@
+ }
+ 
+ fn capture_frame(plan: CapturePlan) -> Result<RawFrame, VisualError> {
+-    let image = SCScreenshotManager::capture_image(&plan.filter, &plan.config)
+-        .map_err(|error| native(format!("SCScreenshotManager::capture_image failed: {error}")))?;
++    let image =
++        SCScreenshotManager::capture_image(&plan.filter, &plan.config).map_err(|error| {
++            native(format!(
++                "SCScreenshotManager::capture_image failed: {error}"
++            ))
++        })?;
+     let width = image_dim(image.width(), "CGImage width")?;
+     let height = image_dim(image.height(), "CGImage height")?;
+     let dimensions = checked_pixel_dimensions(width, height)?;
+diff -ru output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/src/geometry_tests.rs output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/geometry_tests.rs
+--- output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/src/geometry_tests.rs	2026-10-28 23:51:00
++++ output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/geometry_tests.rs	2026-10-28 23:54:00
+@@ -28,13 +28,55 @@
+     );
+ 
+     let fields: [(&str, RawWindowFact); 7] = [
+-        ("window_id", RawWindowFact { window_id: None, ..valid_fact() }),
+-        ("pid", RawWindowFact { pid: None, ..valid_fact() }),
+-        ("layer", RawWindowFact { layer: None, ..valid_fact() }),
+-        ("x", RawWindowFact { x: None, ..valid_fact() }),
+-        ("y", RawWindowFact { y: None, ..valid_fact() }),
+-        ("width", RawWindowFact { width: None, ..valid_fact() }),
+-        ("height", RawWindowFact { height: None, ..valid_fact() }),
++        (
++            "window_id",
++            RawWindowFact {
++                window_id: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "pid",
++            RawWindowFact {
++                pid: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "layer",
++            RawWindowFact {
++                layer: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "x",
++            RawWindowFact {
++                x: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "y",
++            RawWindowFact {
++                y: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "width",
++            RawWindowFact {
++                width: None,
++                ..valid_fact()
++            },
++        ),
++        (
++            "height",
++            RawWindowFact {
++                height: None,
++                ..valid_fact()
++            },
++        ),
+     ];
+     for (field, fact) in fields {
+         assert_eq!(
+@@ -47,31 +89,55 @@
+ #[test]
+ fn parse_rejects_overflow_non_layer_zero_and_invalid_bounds() {
+     for (field, fact) in [
+-        ("window_id", RawWindowFact { window_id: Some(0), ..valid_fact() }),
+         (
+             "window_id",
+             RawWindowFact {
++                window_id: Some(0),
++                ..valid_fact()
++            },
++        ),
++        (
++            "window_id",
++            RawWindowFact {
+                 window_id: Some(i64::from(u32::MAX) + 1),
+                 ..valid_fact()
+             },
+         ),
+-        ("pid", RawWindowFact { pid: Some(0), ..valid_fact() }),
+         (
+             "pid",
+             RawWindowFact {
++                pid: Some(0),
++                ..valid_fact()
++            },
++        ),
++        (
++            "pid",
++            RawWindowFact {
+                 pid: Some(i64::from(i32::MAX) + 1),
+                 ..valid_fact()
+             },
+         ),
+-        ("layer", RawWindowFact { layer: Some(1), ..valid_fact() }),
+         (
+             "layer",
+             RawWindowFact {
++                layer: Some(1),
++                ..valid_fact()
++            },
++        ),
++        (
++            "layer",
++            RawWindowFact {
+                 layer: Some(i64::from(i32::MAX) + 1),
+                 ..valid_fact()
+             },
+         ),
+-        ("width", RawWindowFact { width: Some(0.0), ..valid_fact() }),
++        (
++            "width",
++            RawWindowFact {
++                width: Some(0.0),
++                ..valid_fact()
++            },
++        ),
+         (
+             "width",
+             RawWindowFact {
+diff -ru output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/src/observe.rs output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/observe.rs
+--- output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/src/observe.rs	2026-10-28 23:51:00
++++ output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/observe.rs	2026-10-28 23:54:00
+@@ -48,11 +48,7 @@
+     validate_identity(expected, &selected_identity, DriftStage::SelectedWindow)?;
+ 
+     let raw = capture(token)?;
+-    checked_rgba_len(
+-        raw.dimensions.width,
+-        raw.dimensions.height,
+-        raw.rgba.len(),
+-    )?;
++    checked_rgba_len(raw.dimensions.width, raw.dimensions.height, raw.rgba.len())?;
+     validate_capture_frame(
+         expected.window_id,
+         &expected.bounds,
+@@ -183,7 +179,10 @@
+             rgba: vec![0; 15],
+         };
+         let (result, log) = run(expected, expected, expected, expected, bad_raw, false);
+-        assert!(matches!(result, Err(VisualError::RgbaLengthMismatch { .. })));
++        assert!(matches!(
++            result,
++            Err(VisualError::RgbaLengthMismatch { .. })
++        ));
+         assert_eq!(log, vec!["before", "select", "capture"]);
+ 
+         let (result, log) = run(
+diff -ru output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/src/png.rs output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/png.rs
+--- output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/src/png.rs	2026-10-28 23:51:00
++++ output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/png.rs	2026-10-28 23:54:00
+@@ -4,9 +4,7 @@
+ use image::{ColorType, ImageDecoder, ImageEncoder, Limits};
+ 
+ use crate::error::VisualError;
+-use crate::geometry::{
+-    checked_pixel_dimensions, MAX_CAPTURE_SIDE, MAX_RGBA_BYTES,
+-};
++use crate::geometry::{checked_pixel_dimensions, MAX_CAPTURE_SIDE, MAX_RGBA_BYTES};
+ 
+ const PNG_SIGNATURE: [u8; 8] = [137, 80, 78, 71, 13, 10, 26, 10];
+ /// Input PNG byte bound checked before the decoder reads any header/metadata.
+diff -ru output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/src/window.rs output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/window.rs
+--- output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/src/window.rs	2026-10-28 23:51:00
++++ output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/window.rs	2026-10-28 23:54:00
+@@ -17,9 +17,7 @@
+ use std::os::raw::c_void;
+ 
+ use crate::error::VisualError;
+-use crate::geometry::{
+-    checked_window_id, parse_window_identity, RawWindowFact, WindowIdentity,
+-};
++use crate::geometry::{checked_window_id, parse_window_identity, RawWindowFact, WindowIdentity};
+ 
+ const K_CG_WINDOW_LIST_ON_SCREEN_ONLY: u32 = 1;
+ const K_CG_WINDOW_LIST_EXCLUDE_DESKTOP_ELEMENTS: u32 = 16;
+diff -ru output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/tests/pure_visual.rs output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/tests/pure_visual.rs
+--- output/cua-driver-round8/candidate-work/controller-final/full-source/crates/cua-macos-visual/tests/pure_visual.rs	2026-10-28 23:51:00
++++ output/cua-driver-round8/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/tests/pure_visual.rs	2026-10-28 23:54:00
+@@ -6,12 +6,7 @@
+ };
+ 
+ fn request() -> CaptureRequest {
+-    CaptureRequest::new(
+-        11,
+-        4242,
+-        0,
+-        WindowBounds::new(100.0, 580.0, 500.0, 500.0),
+-    )
++    CaptureRequest::new(11, 4242, 0, WindowBounds::new(100.0, 580.0, 500.0, 500.0))
+ }
+ 
+ fn fake_png_header(width: u32, height: u32) -> Vec<u8> {
+@@ -118,16 +113,14 @@
+         for actual in [
+             WindowIdentity::new(12, 4242, 0, expected.bounds),
+             WindowIdentity::new(11, 9999, 0, expected.bounds),
+-            WindowIdentity::new(
+-                11,
+-                4242,
+-                0,
+-                WindowBounds::new(100.0, 580.0, 501.0, 500.0),
+-            ),
++            WindowIdentity::new(11, 4242, 0, WindowBounds::new(100.0, 580.0, 501.0, 500.0)),
+         ] {
+             assert_eq!(
+                 validate_identity(&expected, &actual, stage),
+-                Err(VisualError::WindowDrift { window_id: 11, stage })
++                Err(VisualError::WindowDrift {
++                    window_id: 11,
++                    stage
++                })
+             );
+         }
+         // A non-zero layer is not drift: the actual identity is invalid before
+@@ -160,18 +153,8 @@
+ 
+ #[test]
+ fn bounds_compare_by_bits_and_reject_negative_zero_drift() {
+-    let expected = WindowIdentity::new(
+-        11,
+-        4242,
+-        0,
+-        WindowBounds::new(0.0, 10.0, 100.0, 100.0),
+-    );
+-    let actual = WindowIdentity::new(
+-        11,
+-        4242,
+-        0,
+-        WindowBounds::new(-0.0, 10.0, 100.0, 100.0),
+-    );
++    let expected = WindowIdentity::new(11, 4242, 0, WindowBounds::new(0.0, 10.0, 100.0, 100.0));
++    let actual = WindowIdentity::new(11, 4242, 0, WindowBounds::new(-0.0, 10.0, 100.0, 100.0));
+     assert_eq!(
+         validate_identity(&expected, &actual, DriftStage::AfterCapture),
+         Err(VisualError::WindowDrift {

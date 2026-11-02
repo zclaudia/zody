@@ -41,7 +41,7 @@ async function probe(shell, name, execute) {
   await fs.mkdir(cwd);
   const writer = join(cwd, "writer.cjs");
   const release = join(cwd, "release");
-  const path = join(root, "probe", "output-stdout.log");
+  const path = join(root, "probe", "output", "stdout.log");
   const adapter = new NodeExecutionAdapter({
     outputRootDir: root,
     progressThresholdMs: 0,

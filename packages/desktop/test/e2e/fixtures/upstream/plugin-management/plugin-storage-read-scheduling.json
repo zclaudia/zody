@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "caseName": "plugin-storage-read-scheduling",
+  "spec": "./test/e2e/plugins/plugin-storage-read-scheduling.test.ts",
+  "fixtures": []
+}

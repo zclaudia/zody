@@ -1,0 +1,15 @@
+{
+  "name": "verify-helper",
+  "argv": [
+    "/usr/bin/codesign",
+    "--verify",
+    "--strict",
+    "--verbose=2",
+    "output/cua-phase1-closeout/controller-signed/Zody CUA Desktop Session.app"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:24:23.508779+00:00",
+  "seconds": 0.13,
+  "exitCode": 0,
+  "log": "verify-helper.log"
+}

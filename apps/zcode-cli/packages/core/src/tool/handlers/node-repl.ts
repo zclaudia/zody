@@ -22,6 +22,10 @@ import { formatJsModelContent } from "./node-repl-model-content.js";
 const sessions = new Map<SessionId, NodeReplSession>();
 const activeToolContexts = new Map<SessionId, ToolExecutionContext>();
 const browserRuntimeGenerations = new Map<SessionId, number>();
+/** 每次 js 调用前从 Host 刷新；未配置时保持 IAB 默认。 */
+const browserDefaultBrowserIds = new Map<SessionId, string | undefined>();
+/** 持久 facade 用于会话运行期间设置变化时更新 defaultBrowserId。 */
+const browserFacades = new Map<SessionId, ReturnType<typeof setupBrowserRuntime>>();
 let browserRuntimeGenerationSequence = 0;
 
 function isBrowserSurfaceSideEffect(command: import("@zcode/contracts").BrowserCommand): boolean {
@@ -88,7 +92,7 @@ function buildInjectedGlobals(
         throw new Error("Browser runtime binding is stale after kernel reset");
       }
     };
-    setupBrowserRuntime({
+    const facade = setupBrowserRuntime({
       globals,
       transport: {
         list: async () => {
@@ -150,7 +154,11 @@ function buildInjectedGlobals(
         },
       },
       documentationRoot: context.browserDocumentationRoot,
+      ...(browserDefaultBrowserIds.get(context.sessionId)
+        ? { defaultBrowserId: browserDefaultBrowserIds.get(context.sessionId) }
+        : {}),
     });
+    browserFacades.set(context.sessionId, facade);
 
     globals.setupBrowserRuntime = setupBrowserRuntime;
   }
@@ -184,6 +192,8 @@ function getSession(context: ToolExecutionContext): NodeReplSession {
 export function disposeNodeReplSession(sessionId: SessionId): void {
   activeToolContexts.delete(sessionId);
   browserRuntimeGenerations.delete(sessionId);
+  browserDefaultBrowserIds.delete(sessionId);
+  browserFacades.delete(sessionId);
   const session = sessions.get(sessionId);
   if (session) {
     session.dispose();
@@ -239,7 +249,25 @@ function extensionForImageMimeType(mimeType: string): string {
 
 const jsHandler: ToolHandler = async (input, context): Promise<JsOutput> => {
   const { code, timeout_ms: timeoutMs, title } = JsRuntimeInputSchema.parse(input);
+  if (context.browserControlPort?.getDefaultBrowserId) {
+    try {
+      const defaultBrowserId = await context.browserControlPort.getDefaultBrowserId({
+        sessionId: context.sessionId,
+        ...(context.turnId ? { turnId: context.turnId } : {}),
+        ...(context.traceContext ? { traceContext: context.traceContext } : {}),
+        signal: context.abortSignal,
+      });
+      browserDefaultBrowserIds.set(context.sessionId, defaultBrowserId?.trim() || undefined);
+    } catch {
+      // 设置读取失败不能让 js 工具整体失败；保留上一次已知值，未配置时仍是 IAB 默认。
+      // 真正的选择/执行错误会在 agent.browsers.* 调用处返回 backend_unavailable。
+    }
+  }
   const session = getSession(context);
+  // 会话已存在时 injectedGlobals 不会重建；每次调用前把最新设置推给持久 facade。
+  browserFacades
+    .get(context.sessionId)
+    ?.setDefaultBrowserId(browserDefaultBrowserIds.get(context.sessionId));
   activeToolContexts.set(context.sessionId, context);
   let runResult: Awaited<ReturnType<NodeReplSession["run"]>>;
   try {

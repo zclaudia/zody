@@ -17,6 +17,7 @@ import { createHostDatabaseStartup } from "./hostDatabaseStartup.js";
 import { createHostNetworkCapture } from "./hostNetworkCapture.js";
 import { randomUUID } from "node:crypto";
 import { dirname, join } from "node:path";
+import type * as Electron from "electron";
 import { createPluginSandboxRegistrationBridge } from "./pluginSandbox/index.js";
 // fork（bot channels 移除，specs/bot-channels-removal.md）：windowTopicResourceRelay
 // 随第三方 IM bot 的 topic/resource 反向 relay 删除；ChannelClient/反向 attach 结构由 server 侧保留。
@@ -117,6 +118,15 @@ import type {
 } from "@zcode/server/remote";
 import type { RemoteTarget } from "@zcode/shared";
 import { wrapElectronPort } from "./electronPort.js";
+import type { HostParentPortLike, HostParentPortMessageEvent } from "./nodeHostBridge.js";
+import { createInjectedNodeHostBridge } from "./nodeHostEntryConfig.js";
+import {
+  CUA_NARROW_STARTUP_SNAPSHOT_LOG_MARKER,
+  prepareCuaNarrowAgentRuntime,
+  readCuaNarrowAgentBuildProfile,
+  type CuaNarrowDecisionEvent,
+} from "./cuaNarrowAgentRuntime.js";
+import type { ZCodeAgentNativeRuntimeResolver } from "@zcode/services/node";
 import { createTaskRealtimeBridgeForHostInit } from "./taskRealtimeBridge.js";
 import { createMobileNotificationEventBridge } from "./mobileNotificationEventBridge.js";
 import { createMobileNotificationDeliveryBridge } from "./mobileNotificationDeliveryBridge.js";
@@ -192,7 +202,21 @@ type RemoteAssetDirs = Pick<
   "assetSource" | "mockCdnDir" | "remoteCdnBaseUrl" | "remoteCdnBaseUrls" | "remoteCacheDir"
 >;
 
-const { parentPort } = process;
+const injectedNodeHost = createInjectedNodeHostBridge(process);
+const nodeHostBridge = injectedNodeHost?.bridge;
+const utilityParentPort = (process as NodeJS.Process & { parentPort?: Electron.ParentPort })
+  .parentPort;
+const resolvedParentPort = injectedNodeHost?.bridge.parentPort ?? utilityParentPort;
+if (!resolvedParentPort) {
+  throw new Error("Host parentPort is unavailable");
+}
+const parentPort: HostParentPortLike = resolvedParentPort as HostParentPortLike;
+const hostStorageResources = injectedNodeHost?.storageResources;
+const injectedAgentWiring = injectedNodeHost?.agentRuntime
+  ? { zcodeAgentNativeRuntime: injectedNodeHost.agentRuntime }
+  : nodeHostBridge
+    ? { zcodeAgentCommandResolver: (): null => null }
+    : undefined;
 const hostNetworkCapture = createHostNetworkCapture(parentPort);
 
 // 进程检索体验优化：host 由 utilityProcess 拉起时外壳仍是 Electron Helper，
@@ -1200,6 +1224,108 @@ function createReportingRemoteZCodeTaskService<T extends object>(
   });
 }
 
+function resolveLocalNarrowAgentWiring(
+  preparedWorkspacePaths: readonly string[],
+): { zcodeAgentNativeRuntimeResolver: ZCodeAgentNativeRuntimeResolver } | undefined {
+  if (injectedAgentWiring) return undefined;
+  // The compile-time profile is the only opt-in. A normal build never installs a
+  // selective resolver and therefore keeps the existing Agent command path untouched.
+  if (readCuaNarrowAgentBuildProfile() === undefined) return undefined;
+  const resourcesPath = (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath;
+  const report = (event: CuaNarrowDecisionEvent) => {
+    if (event.kind === "narrow-runtime-startup-snapshot") {
+      // Bounded, parseable readback for producing the next build profile. No raw provider,
+      // base URL, proxy, CA path, key, or header value is ever included.
+      logger.info(
+        `${CUA_NARROW_STARTUP_SNAPSHOT_LOG_MARKER}${JSON.stringify({
+          kind: event.kind,
+          reason: event.reason,
+          providerRevisionSha256: event.providerRevisionSha256,
+          selection: event.selection,
+          networkDigestSha256: event.networkDigestSha256,
+          snapshotSource: event.snapshotSource,
+          taskTimeProviderGuard: event.taskTimeProviderGuard,
+        })}`,
+      );
+      return;
+    }
+    logger.info(`cua narrow agent ${event.kind}: ${event.reason}`, {
+      ...event,
+      hostTrust: "ordinary-host-untrusted-transport",
+      nativeApproval: "per-capture-native-confirmation",
+    });
+  };
+  const zcodeAgentNativeRuntimeResolver: ZCodeAgentNativeRuntimeResolver = async (
+    context,
+    runtimeContext,
+  ) => {
+    try {
+      if (context.workspaceIdentity && isRemoteWorkspaceIdentity(context.workspaceIdentity)) {
+        logger.info("cua narrow agent fallback: remote workspace keeps original Agent path", {
+          reason: "remote-workspace",
+          workspacePath: context.workspacePath,
+          hostTrust: "ordinary-host-untrusted-transport",
+        });
+        return null;
+      }
+      if (!runtimeContext) {
+        logger.warn("cua narrow agent unavailable: startup context reader missing", {
+          reason: "startup-context-unavailable",
+          hostTrust: "ordinary-host-untrusted-transport",
+        });
+        return null;
+      }
+      const startupContext = await runtimeContext.readStartupContext();
+      const result = await prepareCuaNarrowAgentRuntime({
+        resourcesPath,
+        preparedWorkspacePaths,
+        startupContext,
+        report,
+      });
+      if (result.status === "disabled") return null;
+      if (result.status === "unsupported") {
+        logger.warn(`cua narrow agent unavailable: ${result.reason}`, {
+          reason: result.reason,
+          detail: result.detail,
+          workspacePath: context.workspacePath,
+          snapshotSource: "existing-host-services",
+          hostTrust: "ordinary-host-untrusted-transport",
+        });
+        return null;
+      }
+      // Reuse the same snapshot for this spawn. The resolver itself still performs the
+      // strict comparison and never treats build-profile values as runtime proof.
+      const selected = await result.runtime.resolve(context, {
+        readStartupContext: async () => startupContext,
+      });
+      if (selected) {
+        logger.info("cua narrow agent route selected", {
+          launcherPath: result.runtime.launcherPath,
+          capability: result.runtime.profile.capability,
+          workspacePath: context.workspacePath,
+          providerRevisionSha256: startupContext.providerRevisionSha256,
+          providerSelection: startupContext.selection,
+          networkDigestSha256: result.runtime.profile.network.digestSha256,
+          snapshotSource: "existing-host-services",
+          taskTimeProviderGuard: false,
+          hostTrust: "ordinary-host-untrusted-transport",
+          nativeApproval: "per-capture-native-confirmation",
+        });
+      }
+      return selected;
+    } catch (error) {
+      logger.warn("cua narrow agent unavailable: startup profile read failed", {
+        reason: error instanceof Error ? error.message : String(error),
+        workspacePath: context.workspacePath,
+        snapshotSource: "existing-host-services",
+        hostTrust: "ordinary-host-untrusted-transport",
+      });
+      return null;
+    }
+  };
+  return { zcodeAgentNativeRuntimeResolver };
+}
+
 function warmUpZCodeAgent(
   services: ServiceCollection,
   context: { workspacePath?: string; workspaceIdentity?: string },
@@ -2006,6 +2132,7 @@ async function disposeHostResources(reason: string): Promise<HostShutdownResult>
       });
     }
     activeHostApiNetworkTransport = null;
+    nodeHostBridge?.dispose();
     return shutdownResult;
   })();
 
@@ -2057,6 +2184,7 @@ function disposeHostResourcesBestEffort(reason: string): void {
     activeSessionRealtimePort.dispose();
     activeSessionRealtimePort = null;
   }
+  nodeHostBridge?.dispose();
 }
 
 process.once("SIGTERM", () => {
@@ -2108,7 +2236,7 @@ process.on(
   }),
 );
 
-parentPort.on("message", async (e: Electron.MessageEvent) => {
+parentPort.on("message", async (e: HostParentPortMessageEvent) => {
   const result = parseHostIncomingMessageEvent(e);
   if (!result.success) {
     logger.error("invalid parentPort message:", formatZodError(result.error));
@@ -2617,11 +2745,21 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
       logger.error("init-local message missing MessagePort");
       return;
     }
+    const effectiveHostId = nodeHostBridge?.hostId ?? msg.hostId;
+    if (nodeHostBridge && msg.hostId && msg.hostId !== nodeHostBridge.hostId) {
+      logger.warn("ignoring InitLocal hostId; using sealed Node Host identity", {
+        requestedHostId: msg.hostId,
+        hostId: nodeHostBridge.hostId,
+      });
+    }
     if (databaseStartup) {
       port.close();
       databaseStartup.coordinator.publish();
       return;
     }
+    const preparedWorkspacePaths =
+      msg.agentWarmupTargets?.map((target) => target.workspacePath) ??
+      (msg.workspacePath ? [msg.workspacePath] : []);
     let basePortClosed = false;
     port.once("close", () => {
       basePortClosed = true;
@@ -2629,10 +2767,9 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
     databaseStartup = createHostDatabaseStartup({
       startupId: msg.databaseStartupId,
       cwd: msg.agentSpawnFallbackCwd ?? process.cwd(),
-      workingDirectories:
-        msg.agentWarmupTargets?.map((target) => target.workspacePath) ??
-        (msg.workspacePath ? [msg.workspacePath] : []),
+      workingDirectories: preparedWorkspacePaths,
       env: msg.runtimeProcessEnvPatch,
+      ...(hostStorageResources ? { storageResources: hostStorageResources } : {}),
       publish: (state) => {
         parentPort?.postMessage({ type: HostResponseTypes.DatabaseStartupState, state });
         if (state.phase === "ready") {
@@ -2653,7 +2790,14 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
         ),
       initializeServices: async () => {
         logger.info("initializing local services");
-        activeSessionRealtimePort = createTaskRealtimeBridgeForHostInit(msg, parentPort);
+        // 先由 Host 完成原 storage preparation，再决定窄 Agent 路由；sealedCLI 的
+        // supportsStorageStartup=false 不能替代这次准备。
+        const agentWiring =
+          injectedAgentWiring ?? resolveLocalNarrowAgentWiring(preparedWorkspacePaths);
+        activeSessionRealtimePort = createTaskRealtimeBridgeForHostInit(
+          { ...msg, hostId: effectiveHostId },
+          parentPort,
+        );
         // fork（F4.7）：旧 Team 账号补组织入口随 OAuth/账号链删除；注入同一个
         // Setting 实例即可与网络代理读取共用写队列。
         const { service: settingService } = createSettingServiceWithMigrations();
@@ -2664,7 +2808,7 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
             noProxy: settings.httpProxyNoProxy,
             caCertPath: settings.httpProxyCaCertPath,
           };
-        });
+        }, injectedNodeHost?.networkTransportDependencies);
         const services = await initializeHostApiNetworkTransportOwner({
           transport: hostApiNetworkTransport,
           log: (message, details) => logger.warn(message, details),
@@ -2673,6 +2817,10 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
               parentPort,
               settingService,
               hostApiNetworkTransport,
+              // 与 desktopHostProcess 的 hostId 同源：这是本 Host UtilityProcess 的真实实例身份，
+              // 不是每次业务命令可替换的值。
+              hostInstanceId: effectiveHostId,
+              ...agentWiring,
               authorizeLocalMediaPreviewPath,
               // launch.md「The user's choice」：本机用户选择变化后，推给本窗口所有在线的远程 Host。
               forwardDynamicWorkflowUserMode: (mode) => {
@@ -2802,9 +2950,7 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
             .ensureSource({
               kind: "local",
               workspacePath: target.workspacePath,
-              ...(target.workspaceIdentity
-                ? { workspaceIdentity: target.workspaceIdentity }
-                : {}),
+              ...(target.workspaceIdentity ? { workspaceIdentity: target.workspaceIdentity } : {}),
             })
             .then((ensured) => {
               logger.info("mobile notification local source lifecycle result", {

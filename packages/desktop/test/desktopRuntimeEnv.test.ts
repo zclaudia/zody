@@ -995,4 +995,16 @@ describe("desktopRuntimeEnv runtime identity", () => {
     expect(runtimeSessionDataPath).toBeUndefined();
     expect(appMock.getPath).not.toHaveBeenCalledWith("appData");
   });
+
+  it("普通 CUA 候选 UI 名称只接受构建期非空字符串", async () => {
+    const { resolveNormalCuaCandidateUiName } = await import("../src/main/desktopRuntimeEnv.js");
+
+    expect(resolveNormalCuaCandidateUiName(undefined)).toBeUndefined();
+    expect(resolveNormalCuaCandidateUiName("Zody CUA Normal Host Candidate")).toBe(
+      "Zody CUA Normal Host Candidate",
+    );
+    expect(() => resolveNormalCuaCandidateUiName("   ")).toThrow(
+      "normal CUA candidate UI name must not be empty",
+    );
+  });
 });

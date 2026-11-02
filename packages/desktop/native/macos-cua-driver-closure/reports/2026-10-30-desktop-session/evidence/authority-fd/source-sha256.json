@@ -1,0 +1,9 @@
+{
+  ".oxlintrc.json": "09c4f218c535cd800cf0d0ee41f0251c3777d1805ab71b5fd28e99267e34e692",
+  "packages/desktop/native/macos-cua-desktop-session/src/session_supervisor.mm": "52398553f1e796ee9a724c1af00360df7a5b07b57961af9398e62991ea76e8cf",
+  "packages/desktop/native/macos-cua-desktop-session/src/session_authority_fd.h": "ad7e174074e3c2109cc466735caf072554c8f9f9d34e6095c60ca9b4769dd0dd",
+  "packages/desktop/native/macos-cua-desktop-session/src/session_authority_fd.mm": "5542b8d713509ab4fb52dbe0f20688fcba060b714e54ed7bfedd9e3c4f63bbe7",
+  "packages/desktop/native/macos-cua-desktop-session/tests/session_authority_fd_test.mm": "841630b5d6b2400a5cd437e6debae69b988964dadfbc93791641e828df94dc26",
+  "packages/desktop/scripts/lib/cua-desktop-session-config.mjs": "2b2badadacbd476578fad0c5b0c0c3a4de124168dec7577ecfd50159935d50c6",
+  "packages/desktop/scripts/lib/cua-desktop-session-native-tests.mjs": "3468e5446eef4bbe95f7e665a69b71f80f098041229a1c905b3aa42eac642dee"
+}

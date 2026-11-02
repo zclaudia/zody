@@ -1,0 +1,2441 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 2f0412f3..42c90e3f 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -1,6 +1,6 @@
+ [workspace]
+ resolver = "2"
+-members = ["../harness","crates/cua-driver-sdk", "crates/cua-driver-core", "crates/cua-driver-contract", "crates/platform-macos", "crates/platform-windows", "crates/platform-linux", "crates/cursor-overlay", "crates/cua-cursor-motion", "crates/pip-preview"]
++members = ["crates/cua-driver-sdk", "crates/cua-driver-core", "crates/cua-driver-contract", "crates/platform-macos", "crates/platform-windows", "crates/platform-linux", "crates/cursor-overlay", "crates/cua-cursor-motion", "crates/pip-preview"]
+ 
+ [workspace.package]
+ version = "0.37.0"
+diff --git a/crates/cua-driver-contract/Cargo.toml b/crates/cua-driver-contract/Cargo.toml
+index a41ae2a7..b3509ed3 100644
+--- a/crates/cua-driver-contract/Cargo.toml
++++ b/crates/cua-driver-contract/Cargo.toml
+@@ -13,4 +13,8 @@ path = "src/bin/cua-contract-gen.rs"
+ serde = { workspace = true }
+ serde_json = { workspace = true }
+ schemars = "1.2.1"
+-uniffi.workspace = true
++uniffi = { workspace = true, optional = true }
++
++[features]
++default = []
++uniffi = ["dep:uniffi"]
+diff --git a/crates/cua-driver-contract/src/cursor.rs b/crates/cua-driver-contract/src/cursor.rs
+index 461b6381..41a9a34c 100644
+--- a/crates/cua-driver-contract/src/cursor.rs
++++ b/crates/cua-driver-contract/src/cursor.rs
+@@ -9,6 +9,7 @@
+ use serde::{Deserialize, Serialize};
+ use serde_json::Value;
+ 
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+ #[derive(
+     Debug,
+     Clone,
+@@ -22,7 +23,6 @@ use serde_json::Value;
+     Hash,
+     PartialOrd,
+     Ord,
+-    uniffi::Enum,
+ )]
+ #[serde(rename_all = "snake_case")]
+ pub enum CursorAction {
+@@ -137,6 +137,7 @@ pub enum CursorTarget {
+     Desktop,
+ }
+ 
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+ #[derive(
+     Debug,
+     Clone,
+@@ -147,7 +148,6 @@ pub enum CursorTarget {
+     schemars::JsonSchema,
+     PartialEq,
+     Eq,
+-    uniffi::Enum,
+ )]
+ #[serde(rename_all = "snake_case")]
+ pub enum CursorReducedMotion {
+@@ -157,8 +157,15 @@ pub enum CursorReducedMotion {
+     Off,
+ }
+ 
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+ #[derive(
+-    Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, PartialEq, Eq, uniffi::Record,
++    Debug,
++    Clone,
++    Serialize,
++    Deserialize,
++    schemars::JsonSchema,
++    PartialEq,
++    Eq,
+ )]
+ pub struct CursorThemeSelection {
+     pub theme_id: String,
+@@ -169,6 +176,7 @@ pub struct CursorThemeSelection {
+ // Trajectory style of the agent cursor. The motion-lab candidate ids are
+ // accepted as aliases on input; outputs always use the snake_case names.
+ // Variants carry no doc comments so the schema stays a plain string enum.
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+ #[derive(
+     Debug,
+     Clone,
+@@ -180,7 +188,6 @@ pub struct CursorThemeSelection {
+     PartialEq,
+     Eq,
+     Hash,
+-    uniffi::Enum,
+ )]
+ #[serde(rename_all = "snake_case")]
+ pub enum CursorMotionStyle {
+@@ -236,6 +243,7 @@ impl CursorMotionStyle {
+ }
+ 
+ // How long each agent cursor move takes.
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+ #[derive(
+     Debug,
+     Clone,
+@@ -247,7 +255,6 @@ impl CursorMotionStyle {
+     PartialEq,
+     Eq,
+     Hash,
+-    uniffi::Enum,
+ )]
+ #[serde(rename_all = "snake_case")]
+ pub enum CursorMotionTiming {
+@@ -286,7 +293,8 @@ impl CursorMotionTiming {
+ }
+ 
+ /// One cursor effect: `on`, `off`, or `default` (the style's own setting).
+-#[derive(Debug, Clone, Copy, Serialize, schemars::JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, schemars::JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "lowercase")]
+ pub enum CursorEffectSetting {
+     On,
+@@ -342,6 +350,7 @@ where
+ 
+ /// Per-effect overrides for the agent cursor. An omitted field keeps the current setting.
+ /// `on` and `off` set it; `default` restores the style default.
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+ #[derive(
+     Debug,
+     Clone,
+@@ -352,7 +361,6 @@ where
+     schemars::JsonSchema,
+     PartialEq,
+     Eq,
+-    uniffi::Record,
+ )]
+ #[serde(deny_unknown_fields)]
+ pub struct CursorMotionEffects {
+@@ -399,6 +407,7 @@ pub struct CursorMotionEffects {
+ }
+ 
+ /// Effects in use after applying overrides to the style's defaults.
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+ #[derive(
+     Debug,
+     Clone,
+@@ -409,7 +418,6 @@ pub struct CursorMotionEffects {
+     schemars::JsonSchema,
+     PartialEq,
+     Eq,
+-    uniffi::Record,
+ )]
+ pub struct CursorMotionEffectsOutput {
+     pub trail: bool,
+diff --git a/crates/cua-driver-contract/src/inputs.rs b/crates/cua-driver-contract/src/inputs.rs
+index 5a0fca6b..ead6f01b 100644
+--- a/crates/cua-driver-contract/src/inputs.rs
++++ b/crates/cua-driver-contract/src/inputs.rs
+@@ -166,8 +166,17 @@ fn capture_scope_schema(_: &mut SchemaGenerator) -> Schema {
+     })
+ }
+ 
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+ #[derive(
+-    Debug, Clone, Copy, Default, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum,
++    Debug,
++    Clone,
++    Copy,
++    Default,
++    Serialize,
++    Deserialize,
++    JsonSchema,
++    PartialEq,
++    Eq,
+ )]
+ #[serde(rename_all = "snake_case")]
+ pub enum CaptureScope {
+@@ -202,7 +211,8 @@ impl std::fmt::Display for CaptureScope {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum EscalationReason {
+     AxTreePixelMismatch,
+@@ -235,7 +245,8 @@ impl EscalationReason {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+ pub enum DesktopScope {
+     #[serde(rename = "desktop")]
+     Desktop,
+@@ -250,7 +261,8 @@ fn desktop_scope_schema(generator: &mut SchemaGenerator) -> Schema {
+ /// `display_id="primary"` is the portable desktop target in this release.
+ /// Platforms that cannot address another display reject it explicitly rather
+ /// than silently changing coordinate spaces.
+-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+ #[serde(tag = "kind", rename_all = "snake_case")]
+ pub enum ActionTarget {
+     Window { pid: u32, window_id: u64 },
+@@ -287,7 +299,8 @@ impl JsonSchema for DesktopScope {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum ClickButton {
+     Left,
+@@ -305,7 +318,8 @@ impl ClickButton {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum ScrollDirection {
+     Up,
+@@ -325,7 +339,8 @@ impl ScrollDirection {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum ScrollBy {
+     Line,
+@@ -341,7 +356,8 @@ impl ScrollBy {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct StartSessionInput {
+     /// Optional stable public label for this run (e.g. "research-run-1").
+     /// When omitted, the authenticated transport lease's implicit session is
+@@ -370,7 +386,8 @@ impl ToolInput for StartSessionInput {
+     const TOOL_NAME: &'static str = "start_session";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct EscalateSessionInput {
+     /// Public label of the legacy capture-scope session to escalate.
+     pub session: String,
+@@ -386,7 +403,8 @@ impl ToolInput for EscalateSessionInput {
+     const TOOL_NAME: &'static str = "escalate_session";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct GetSessionStateInput {
+     /// Optional public label. When omitted, inspect the caller's attached
+     /// implicit session.
+@@ -399,7 +417,8 @@ impl ToolInput for GetSessionStateInput {
+     const TOOL_NAME: &'static str = "get_session_state";
+ }
+ 
+-#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct GetSessionInput {
+     /// Optional public label. When omitted, inspect the caller's attached
+     /// implicit session.
+@@ -412,7 +431,8 @@ impl ToolInput for GetSessionInput {
+     const TOOL_NAME: &'static str = "get_session";
+ }
+ 
+-#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct ListSessionsInput {
+     /// Maximum number of content-free summaries to return (default 50, max
+     /// 100). Ordinary agent transports are scoped to their own lease.
+@@ -428,7 +448,8 @@ impl ToolInput for ListSessionsInput {
+     const TOOL_NAME: &'static str = "list_sessions";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct EndSessionInput {
+     /// Optional public label to end. When omitted, end the caller's attached
+     /// implicit session.
+@@ -437,7 +458,8 @@ pub struct EndSessionInput {
+     pub session: Option<String>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct SetAgentCursorEnabledInput {
+     /// Public label of the session that owns the cursor.
+@@ -453,7 +475,8 @@ impl ToolInput for SetAgentCursorEnabledInput {
+ /// Cursor motion for a session, with the fields of `set_agent_cursor_motion` minus `session`.
+ /// Omitted or null fields keep the saved default (`cursor.motion.*` in the driver config), then
+ /// the built-in `signature_arc`.
+-#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct CursorMotionSelection {
+     /// Trajectory style. `signature_arc` (default) is one arc with a small follow-through;
+@@ -513,7 +536,8 @@ pub struct CursorMotionSelection {
+     pub turn_radius: Option<f64>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct SetAgentCursorMotionInput {
+     /// Public label of the session that owns the cursor. Omitted or null motion fields keep
+@@ -580,7 +604,8 @@ impl ToolInput for SetAgentCursorMotionInput {
+     const TOOL_NAME: &'static str = "set_agent_cursor_motion";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct SetAgentCursorThemeInput {
+     /// Public label of the session that owns the cursor.
+@@ -598,7 +623,8 @@ impl ToolInput for SetAgentCursorThemeInput {
+     const TOOL_NAME: &'static str = "set_agent_cursor_theme";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct GetAgentCursorStateInput {
+     /// Public label of the session whose cursor to inspect.
+@@ -613,7 +639,8 @@ impl ToolInput for EndSessionInput {
+     const TOOL_NAME: &'static str = "end_session";
+ }
+ 
+-#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct GetDesktopStateInput {
+     /// For multi-call work, prefer a short public session label and repeat it on every call that
+@@ -630,7 +657,7 @@ pub struct GetDesktopStateInput {
+     /// desktop-scope x/y taken from it are mapped back automatically.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     #[schemars(schema_with = "nonnegative_integer_schema")]
+-    #[uniffi(default = None)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+     pub max_image_dimension: Option<u32>,
+ }
+ 
+@@ -642,7 +669,8 @@ impl ToolInput for GetDesktopStateInput {
+     const TOOL_NAME: &'static str = "get_desktop_state";
+ }
+ 
+-#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct GetScreenSizeInput {
+     /// For multi-call work, prefer a short public session label and repeat it on every call that
+@@ -656,7 +684,8 @@ impl ToolInput for GetScreenSizeInput {
+     const TOOL_NAME: &'static str = "get_screen_size";
+ }
+ 
+-#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct GetCursorPositionInput {
+     /// For multi-call work, prefer a short public session label and repeat it on every call that
+@@ -670,7 +699,8 @@ impl ToolInput for GetCursorPositionInput {
+     const TOOL_NAME: &'static str = "get_cursor_position";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct MoveCursorInput {
+     /// Destination X: window-local screenshot pixels for a window target, native
+@@ -695,7 +725,8 @@ pub struct MoveCursorInput {
+     pub session: Option<String>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct SetWindowFrameInput {
+     /// Process ID that owns the window.
+@@ -732,7 +763,8 @@ impl ToolInput for SetWindowFrameInput {
+ /// trimming surrounding whitespace and otherwise remain case-sensitive. On
+ /// macOS, three periods in a label also match the ellipsis character that
+ /// native menu titles use (`Save As...` finds `Save As…`).
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct InvokeMenuInput {
+     /// Process ID of the application that owns the menu.
+@@ -792,14 +824,16 @@ impl ToolInput for LegacyClickInput {
+     const TOOL_NAME: &'static str = "click";
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum InputDeliveryMode {
+     Background,
+     Foreground,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(untagged)]
+ pub enum ClickPosition {
+     Coordinates { x: f64, y: f64 },
+@@ -807,7 +841,8 @@ pub enum ClickPosition {
+     CapturedCoordinates { x: f64, y: f64, capture_id: String },
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+ #[serde(try_from = "ClickWireInput")]
+ pub struct ClickInput {
+     pub target: ActionTarget,
+@@ -935,7 +970,8 @@ impl ToolInput for ClickInput {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct DragInput {
+     #[schemars(schema_with = "number_schema")]
+@@ -977,7 +1013,8 @@ impl ToolInput for DragInput {
+     const TOOL_NAME: &'static str = "drag";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ScrollInput {
+     #[schemars(schema_with = "number_schema")]
+@@ -1010,7 +1047,8 @@ impl ToolInput for ScrollInput {
+     const TOOL_NAME: &'static str = "scroll";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct TypeTextInput {
+     pub text: String,
+@@ -1033,7 +1071,8 @@ impl ToolInput for TypeTextInput {
+     const TOOL_NAME: &'static str = "type_text";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ClipboardReadInput {
+     /// Return plain-text clipboard content in addition to the available types.
+@@ -1051,7 +1090,8 @@ impl ToolInput for ClipboardReadInput {
+     const TOOL_NAME: &'static str = "clipboard_read";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ClipboardWriteInput {
+     /// Plain text to place on the clipboard.
+@@ -1077,7 +1117,8 @@ impl ToolInput for ClipboardWriteInput {
+     const TOOL_NAME: &'static str = "clipboard_write";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct PressKeyInput {
+     pub key: String,
+@@ -1103,7 +1144,8 @@ impl ToolInput for PressKeyInput {
+     const TOOL_NAME: &'static str = "press_key";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct HotkeyInput {
+     // Enforced by the parser as well as the schema so a typed input can never
+diff --git a/crates/cua-driver-contract/src/lib.rs b/crates/cua-driver-contract/src/lib.rs
+index d412e1a4..36eb9ce6 100644
+--- a/crates/cua-driver-contract/src/lib.rs
++++ b/crates/cua-driver-contract/src/lib.rs
+@@ -131,6 +131,7 @@ pub fn is_action_result_tool(name: &str) -> bool {
+     ACTION_RESULT_TOOLS.contains(&name)
+ }
+ 
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+ #[derive(
+     Debug,
+     Clone,
+@@ -142,7 +143,6 @@ pub fn is_action_result_tool(name: &str) -> bool {
+     Eq,
+     PartialOrd,
+     Ord,
+-    uniffi::Enum,
+ )]
+ #[serde(rename_all = "snake_case")]
+ pub enum Platform {
+@@ -151,6 +151,7 @@ pub enum Platform {
+     Linux,
+ }
+ 
++#[cfg(feature = "uniffi")]
+ uniffi::setup_scaffolding!("cua_driver_contract");
+ 
+ /// Whether a client contract is also the canonical live MCP schema, or a
+diff --git a/crates/cua-driver-contract/src/outputs.rs b/crates/cua-driver-contract/src/outputs.rs
+index de182f91..d337a1e6 100644
+--- a/crates/cua-driver-contract/src/outputs.rs
++++ b/crates/cua-driver-contract/src/outputs.rs
+@@ -163,7 +163,8 @@ fn strip_schema_titles(value: &mut Value) {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum EffectiveScope {
+     Window,
+@@ -180,7 +181,8 @@ impl EffectiveScope {
+ }
+ 
+ /// Successful structured result shared by session state and escalation tools.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct SessionStateOutput {
+     pub session: String,
+     pub capture_scope: CaptureScope,
+@@ -199,14 +201,16 @@ pub struct SessionStateOutput {
+ 
+ impl ToolOutput for SessionStateOutput {}
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum SessionLifecycleState {
+     Active,
+     Ending,
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum SessionClientKindOutput {
+     Cli,
+@@ -216,7 +220,8 @@ pub enum SessionClientKindOutput {
+     TypescriptSdk,
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum SessionTransportOutput {
+     Cli,
+@@ -226,7 +231,8 @@ pub enum SessionTransportOutput {
+ }
+ 
+ /// Content-free lifecycle state safe for an ordinary agent transport.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct SessionOutput {
+     /// Sanitized public label, or null for an unnamed implicit session.
+     #[schemars(required, schema_with = "nullable_string_schema")]
+@@ -243,7 +249,8 @@ pub struct SessionOutput {
+ 
+ impl ToolOutput for SessionOutput {}
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct ListSessionsOutput {
+     pub sessions: Vec<SessionOutput>,
+     #[schemars(required, schema_with = "nullable_string_schema")]
+@@ -253,7 +260,8 @@ pub struct ListSessionsOutput {
+ impl ToolOutput for ListSessionsOutput {}
+ 
+ /// Successful structured result returned by `start_session`.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct StartSessionOutput {
+     #[serde(flatten)]
+     pub state: SessionStateOutput,
+@@ -267,7 +275,8 @@ pub struct StartSessionOutput {
+ impl ToolOutput for StartSessionOutput {}
+ 
+ /// Successful structured result returned by `end_session`.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct EndSessionOutput {
+     pub session: String,
+     #[schemars(schema_with = "inactive_schema")]
+@@ -284,7 +293,8 @@ impl ToolOutput for EndSessionOutput {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct CursorMotionOutput {
+     pub start_handle: f64,
+     pub end_handle: f64,
+@@ -323,7 +333,8 @@ fn cursor_motion_timing_output_schema(
+     <crate::CursorMotionTiming as JsonSchema>::json_schema(generator)
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct CursorThemeOutput {
+     pub id: String,
+     pub version: String,
+@@ -333,7 +344,8 @@ pub struct CursorThemeOutput {
+     pub fallback: Option<String>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct CursorVisualOutput {
+     pub requested_action: crate::CursorAction,
+     pub resolved_action: crate::CursorAction,
+@@ -343,13 +355,15 @@ pub struct CursorVisualOutput {
+     pub preempted_count: u64,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct CursorPointOutput {
+     pub x: f64,
+     pub y: f64,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct SetAgentCursorEnabledOutput {
+     pub session: String,
+     pub enabled: bool,
+@@ -357,7 +371,8 @@ pub struct SetAgentCursorEnabledOutput {
+ 
+ impl ToolOutput for SetAgentCursorEnabledOutput {}
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct SetAgentCursorMotionOutput {
+     pub session: String,
+     pub motion: CursorMotionOutput,
+@@ -365,7 +380,8 @@ pub struct SetAgentCursorMotionOutput {
+ 
+ impl ToolOutput for SetAgentCursorMotionOutput {}
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct SetAgentCursorThemeOutput {
+     pub session: String,
+     pub theme: CursorThemeOutput,
+@@ -373,7 +389,8 @@ pub struct SetAgentCursorThemeOutput {
+ 
+ impl ToolOutput for SetAgentCursorThemeOutput {}
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct GetAgentCursorStateOutput {
+     pub session: String,
+     pub enabled: bool,
+@@ -540,7 +557,8 @@ pub struct CursorPositionOutput {
+ 
+ impl ToolOutput for CursorPositionOutput {}
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct ClipboardReadOutput {
+     pub supported: bool,
+     pub types: Vec<String>,
+@@ -562,7 +580,8 @@ impl ToolOutput for ClipboardReadOutput {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct ClipboardWriteOutput {
+     pub supported: bool,
+     pub written_type: String,
+@@ -586,7 +605,8 @@ impl ToolOutput for ClipboardWriteOutput {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum ActionEffect {
+     Confirmed,
+@@ -596,7 +616,8 @@ pub enum ActionEffect {
+     Refused,
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum ActionRoute {
+     Accessibility,
+@@ -607,7 +628,8 @@ pub enum ActionRoute {
+     TrustedInput,
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum ActionDeliveryMode {
+     Background,
+@@ -616,7 +638,8 @@ pub enum ActionDeliveryMode {
+     Unknown,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ActionDelivery {
+     pub mode: ActionDeliveryMode,
+@@ -624,14 +647,16 @@ pub struct ActionDelivery {
+     pub delivered_count: Option<u32>,
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum ActionEvidenceKind {
+     ValueReadback,
+     WindowChange,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ActionEvidence {
+     pub kind: ActionEvidenceKind,
+@@ -642,7 +667,8 @@ pub struct ActionEvidence {
+ }
+ 
+ /// Why a `refused` action sent no input, and what to do instead.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ActionError {
+     pub code: String,
+@@ -650,7 +676,8 @@ pub struct ActionError {
+     pub hint: Option<String>,
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum ActionEscalationTarget {
+     Pixel,
+@@ -659,7 +686,8 @@ pub enum ActionEscalationTarget {
+     Session,
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum ActionEscalationReason {
+     RouteUnavailable,
+@@ -669,14 +697,16 @@ pub enum ActionEscalationReason {
+     PermissionRequired,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ActionEscalation {
+     pub target: ActionEscalationTarget,
+     pub reason: ActionEscalationReason,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ActionResult {
+     pub effect: ActionEffect,
+@@ -710,7 +740,8 @@ pub struct ActionResult {
+ }
+ 
+ /// A call an agent can make next: `{tool, arguments}`.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ActionNextCall {
+     pub tool: String,
+diff --git a/crates/cua-driver-contract/src/verification.rs b/crates/cua-driver-contract/src/verification.rs
+index 72ed6462..47313fb1 100644
+--- a/crates/cua-driver-contract/src/verification.rs
++++ b/crates/cua-driver-contract/src/verification.rs
+@@ -79,7 +79,8 @@ fn nullable_unknown_reason_schema(_: &mut SchemaGenerator) -> Schema {
+     })
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct BoundsExpectation {
+     #[schemars(schema_with = "number_schema")]
+@@ -95,7 +96,8 @@ pub struct BoundsExpectation {
+     pub tolerance_px: Option<f64>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ElementSelector {
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+@@ -106,7 +108,8 @@ pub struct ElementSelector {
+     pub label_contains: Option<String>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct WindowPredicate {
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+@@ -115,7 +118,8 @@ pub struct WindowPredicate {
+     pub bounds: Option<BoundsExpectation>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ElementPredicate {
+     pub selector: ElementSelector,
+@@ -135,7 +139,8 @@ pub struct ElementPredicate {
+     pub selected: Option<bool>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct StatePredicate {
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+@@ -144,7 +149,8 @@ pub struct StatePredicate {
+     pub element: Option<ElementPredicate>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct VerifyStateInput {
+     /// Exact process whose window may be observed.
+@@ -180,7 +186,8 @@ impl ToolInput for VerifyStateInput {
+     const TOOL_NAME: &'static str = "verify_state";
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum VerificationStatus {
+     Satisfied,
+@@ -188,7 +195,8 @@ pub enum VerificationStatus {
+     Unknown,
+ }
+ 
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(rename_all = "snake_case")]
+ pub enum UnknownReason {
+     InvalidPredicate,
+@@ -200,7 +208,8 @@ pub enum UnknownReason {
+     StabilityUnproven,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct PredicateOutcome {
+     pub index: u64,
+     pub status: VerificationStatus,
+@@ -211,7 +220,8 @@ pub struct PredicateOutcome {
+     pub observed_json: Option<String>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct VerifyStateOutput {
+     pub status: VerificationStatus,
+     pub stable: bool,
+diff --git a/crates/cua-driver-contract/src/visual.rs b/crates/cua-driver-contract/src/visual.rs
+index 0cc9c2c6..cd286dca 100644
+--- a/crates/cua-driver-contract/src/visual.rs
++++ b/crates/cua-driver-contract/src/visual.rs
+@@ -61,7 +61,8 @@ fn region_kinds_schema(_: &mut SchemaGenerator) -> Schema {
+ }
+ 
+ /// Exact screen content that produced the immutable capture.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ #[serde(tag = "kind", rename_all = "snake_case")]
+ pub enum VisualCaptureSource {
+     Window {
+@@ -75,7 +76,8 @@ pub enum VisualCaptureSource {
+ }
+ 
+ /// Screenshot identity and geometry retained by the Driver capture registry.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct VisualScreenshotReference {
+     /// Opaque identity for these exact encoded pixels, such as a content digest.
+     pub reference: String,
+@@ -98,7 +100,8 @@ pub struct VisualScreenshotReference {
+ /// `action_x = m11 * px + m12 * py + tx`
+ ///
+ /// `action_y = m21 * px + m22 * py + ty`
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(tag = "kind", rename_all = "snake_case")]
+ pub enum VisualActionCoordinateSpace {
+     /// Action coordinates are the same physical pixel coordinates as the PNG.
+@@ -155,7 +158,8 @@ impl VisualActionCoordinateSpace {
+ }
+ 
+ /// Immutable capture provenance echoed by a parse result.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct VisualCaptureProvenance {
+     pub capture_id: String,
+     pub source: VisualCaptureSource,
+@@ -166,7 +170,8 @@ pub struct VisualCaptureProvenance {
+ }
+ 
+ /// Optional, model-neutral controls for one bounded parse.
+-#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ParseVisualRegionsOptions {
+     /// Region kinds to return (`text`, `icon`). Omit for all kinds.
+@@ -186,7 +191,8 @@ pub struct ParseVisualRegionsOptions {
+ /// Parse one immutable screenshot capture. Pass the `capture_id` returned by
+ /// `get_window_state` or `get_desktop_state`; the Driver capture registry
+ /// resolves it to the exact pixels and action-coordinate transform.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ParseVisualRegionsInput {
+     /// `capture_id` of a screenshot returned by get_window_state or get_desktop_state.
+@@ -204,6 +210,7 @@ impl ToolInput for ParseVisualRegionsInput {
+     }
+ }
+ 
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+ #[derive(
+     Debug,
+     Clone,
+@@ -215,7 +222,6 @@ impl ToolInput for ParseVisualRegionsInput {
+     Eq,
+     PartialOrd,
+     Ord,
+-    uniffi::Enum,
+ )]
+ #[serde(rename_all = "snake_case")]
+ pub enum VisualRegionKind {
+@@ -228,7 +234,8 @@ pub enum VisualRegionKind {
+ /// `x` and `y` name the left and top pixel edges. The right and bottom edges
+ /// are excluded. A region therefore covers every pixel whose center lies in
+ /// this half-open box; its geometric center may lie between pixels.
+-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct VisualRegionBounds {
+     #[schemars(schema_with = "pixel_integer_schema")]
+     pub x: u32,
+@@ -254,7 +261,8 @@ impl VisualRegionBounds {
+ }
+ 
+ /// One parser-observed region in the exact source screenshot pixel space.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct VisualRegion {
+     /// Stable identifier unique within this parse result.
+     pub id: String,
+@@ -285,7 +293,8 @@ impl VisualRegion {
+ }
+ 
+ /// Identity of the extension and model that produced a result.
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct VisualParserMetadata {
+     pub extension_id: String,
+     pub extension_version: String,
+@@ -307,7 +316,8 @@ pub struct VisualParserMetadata {
+     pub fixture_sha256: Option<String>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct VisualParseWarning {
+     pub code: String,
+     pub message: String,
+@@ -315,7 +325,8 @@ pub struct VisualParseWarning {
+     pub detail: Option<String>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct VisualParseTiming {
+     pub duration_ms: u64,
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+@@ -324,7 +335,8 @@ pub struct VisualParseTiming {
+     pub inference_ms: Option<u64>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct ParseVisualRegionsOutput {
+     #[schemars(schema_with = "visual_regions_schema")]
+     pub schema: String,
+@@ -345,6 +357,7 @@ impl ToolOutput for ParseVisualRegionsOutput {
+ }
+ 
+ /// Stable machine-readable failures for capture lookup and visual parsing.
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+ #[derive(
+     Debug,
+     Clone,
+@@ -356,7 +369,6 @@ impl ToolOutput for ParseVisualRegionsOutput {
+     Eq,
+     PartialOrd,
+     Ord,
+-    uniffi::Enum,
+ )]
+ #[serde(rename_all = "snake_case")]
+ pub enum VisualParseErrorCode {
+@@ -378,7 +390,8 @@ pub enum VisualParseErrorCode {
+     InferenceFailed,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+ pub struct VisualParseError {
+     pub code: VisualParseErrorCode,
+     pub message: String,
+diff --git a/crates/cua-driver-contract/src/windows.rs b/crates/cua-driver-contract/src/windows.rs
+index 25fb314e..2caa6e30 100644
+--- a/crates/cua-driver-contract/src/windows.rs
++++ b/crates/cua-driver-contract/src/windows.rs
+@@ -31,7 +31,8 @@ fn nullable_z_index_schema(_: &mut SchemaGenerator) -> Schema {
+     json_schema!({"type":["integer","null"]})
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ListAppsInput {}
+ 
+@@ -39,7 +40,8 @@ impl ToolInput for ListAppsInput {
+     const TOOL_NAME: &'static str = "list_apps";
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct ListWindowsInput {
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+@@ -61,7 +63,8 @@ impl ToolInput for ListWindowsInput {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ #[serde(deny_unknown_fields)]
+ pub struct GetWindowStateInput {
+     #[schemars(schema_with = "pid_schema")]
+@@ -102,29 +105,29 @@ pub struct GetWindowStateInput {
+     /// partial tree flagged `truncated` rather than failing.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     #[schemars(schema_with = "timeout_ms_schema")]
+-    #[uniffi(default = None)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+     pub timeout_ms: Option<u32>,
+     /// Tree representation to return: `markdown` (default), `elements`, or
+     /// `both`.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     #[schemars(schema_with = "tree_format_schema")]
+-    #[uniffi(default = None)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+     pub tree_format: Option<String>,
+     /// Return only what changed since this earlier `snapshot_id`.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     #[schemars(schema_with = "string_schema")]
+-    #[uniffi(default = None)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+     pub since: Option<String>,
+     /// Include `_note` and the full `background_input` report.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     #[schemars(schema_with = "bool_schema")]
+-    #[uniffi(default = None)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+     pub verbose: Option<bool>,
+     /// Restore the previous full response (both representations, all
+     /// metadata, platform walk limits).
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     #[schemars(schema_with = "bool_schema")]
+-    #[uniffi(default = None)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+     pub full_output: Option<bool>,
+ }
+ 
+@@ -178,7 +181,8 @@ where
+     Option::<T>::deserialize(deserializer)
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct AppInfo {
+     pub pid: u32,
+     pub name: String,
+@@ -194,14 +198,16 @@ pub struct AppInfo {
+     pub last_used: Option<String>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct ListAppsOutput {
+     pub apps: Vec<AppInfo>,
+ }
+ 
+ impl ToolOutput for ListAppsOutput {}
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct WindowBounds {
+     pub x: f64,
+     pub y: f64,
+@@ -209,7 +215,8 @@ pub struct WindowBounds {
+     pub height: f64,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct WindowInfo {
+     pub window_id: u64,
+     #[serde(deserialize_with = "required_nullable")]
+@@ -235,7 +242,8 @@ pub struct WindowInfo {
+     pub space_ids: Option<Vec<u64>>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct ListWindowsOutput {
+     pub windows: Vec<WindowInfo>,
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+@@ -252,7 +260,8 @@ impl ToolOutput for ListWindowsOutput {
+     }
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct ElementFrame {
+     pub x: f64,
+     pub y: f64,
+@@ -260,7 +269,8 @@ pub struct ElementFrame {
+     pub h: f64,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct WindowElement {
+     pub element_index: u64,
+     pub role: String,
+@@ -291,13 +301,15 @@ pub struct WindowElement {
+     pub max: Option<f64>,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct SnapshotImage {
+     pub mime_type: String,
+     pub data_base64: String,
+ }
+ 
+-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+ pub struct WindowStateOutput {
+     pub pid: u32,
+     pub window_id: u64,
+diff --git a/crates/cua-driver-core/Cargo.toml b/crates/cua-driver-core/Cargo.toml
+index 0cffa732..dfa7d8df 100644
+--- a/crates/cua-driver-core/Cargo.toml
++++ b/crates/cua-driver-core/Cargo.toml
+@@ -7,7 +7,7 @@ publish = false
+ 
+ [features]
+ zody-dev-probe = []
+-default = ["yaml", "rego", "script"]
++default = ["yaml"]
+ yaml = ["dep:regex"]
+ rego = ["dep:regorus"]
+ # `run_script` tool: an embedded QuickJS engine (rquickjs and quickjs-ng,
+diff --git a/crates/cua-driver-core/tests/round7_dependency_boundaries.rs b/crates/cua-driver-core/tests/round7_dependency_boundaries.rs
+new file mode 100644
+index 00000000..2240b0e1
+--- /dev/null
++++ b/crates/cua-driver-core/tests/round7_dependency_boundaries.rs
+@@ -0,0 +1,81 @@
++// SPDX-License-Identifier: MIT
++// Round 7 uses this isolated, pure regression target only. It never dispatches
++// a native tool and never starts the upstream application.
++
++#![cfg(feature = "yaml")]
++
++use std::fs;
++use std::path::PathBuf;
++use std::sync::atomic::{AtomicU64, Ordering};
++
++use cua_driver_core::policy::{PolicyDecision, PolicyEngine};
++use cua_driver_core::tool::ToolRegistry;
++
++static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
++
++struct TempPolicy(PathBuf);
++
++impl TempPolicy {
++    fn new(extension: &str, contents: &str) -> Self {
++        let serial = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
++        let path = std::env::temp_dir().join(format!(
++            "zody-cua-round7-{}-{}-{}.{}",
++            std::process::id(),
++            std::thread::current().name().unwrap_or("test"),
++            serial,
++            extension
++        ));
++        fs::write(&path, contents).expect("write temporary policy");
++        Self(path)
++    }
++
++    fn path(&self) -> &std::path::Path {
++        &self.0
++    }
++}
++
++impl Drop for TempPolicy {
++    fn drop(&mut self) {
++        let _ = fs::remove_file(&self.0);
++    }
++}
++
++#[cfg(not(feature = "rego"))]
++#[test]
++fn explicit_rego_policy_is_rejected_without_rego_feature() {
++    let policy = TempPolicy::new(
++        "rego",
++        "package cua.policy\n\ndefault allow := false\nallow := true\n",
++    );
++    let error = PolicyEngine::load(policy.path())
++        .expect_err("Rego must not load when the feature is disabled")
++        .to_string();
++    assert!(error.contains("Rego policy support is not enabled"), "{error}");
++}
++
++#[test]
++fn yaml_explicit_deny_stays_deny() {
++    let policy = TempPolicy::new(
++        "yaml",
++        "allow:\n  tools: [screenshot]\ndeny:\n  tools: [click]\n",
++    );
++    let engine = PolicyEngine::load(policy.path())
++        .expect("YAML policy loads")
++        .expect("YAML policy is enabled");
++    assert!(matches!(
++        engine.evaluate("click", &serde_json::json!({})),
++        PolicyDecision::Deny(_)
++    ));
++}
++
++#[cfg(not(feature = "script"))]
++#[test]
++fn disabled_script_feature_does_not_register_run_script() {
++    // Registration only constructs in-process values; it invokes no tool and
++    // crosses no native or system input boundary.
++    let mut registry = ToolRegistry::new();
++    registry.register_session_tools();
++    let names = registry.tool_names().collect::<Vec<_>>();
++    assert!(!names.contains(&"run_script"), "{names:?}");
++    assert!(names.contains(&"run_steps"), "{names:?}");
++}
+diff --git a/crates/cua-driver-sdk/Cargo.toml b/crates/cua-driver-sdk/Cargo.toml
+index 0acf0259..1f78d59b 100644
+--- a/crates/cua-driver-sdk/Cargo.toml
++++ b/crates/cua-driver-sdk/Cargo.toml
+@@ -14,13 +14,13 @@ crate-type = ["rlib", "cdylib"]
+ [dependencies]
+ async-trait = "0.1"
+ cua-driver-contract = { path = "../cua-driver-contract" }
+-cua-driver-core = { path = "../cua-driver-core", default-features = false }
++cua-driver-core = { path = "../cua-driver-core", default-features = false, features = ["yaml"] }
+ serde = { workspace = true }
+ serde_json = { workspace = true }
+ thiserror = { workspace = true }
+ tokio = { workspace = true }
+ tracing = { workspace = true }
+-uniffi = { workspace = true, features = ["tokio"] }
++uniffi = { workspace = true, optional = true, features = ["tokio"] }
+ uuid = { workspace = true }
+ cursor-overlay = { path = "../cursor-overlay" }
+ cua-cursor-motion = { path = "../cua-cursor-motion" }
+@@ -41,10 +41,10 @@ oo7 = { version = "=0.6.0", default-features = false, features = ["async-std", "
+ [features]
+ zody-dev-probe = []
+ default = []
++uniffi = ["dep:uniffi", "cua-driver-contract/uniffi"]
+ portal-input = ["platform-linux/portal-input"]
+ portal-capture = ["platform-linux/portal-capture"]
+ portal-libei = ["portal-input", "portal-capture"]
+ 
+ [dev-dependencies]
+ tempfile = "3"
+-uniffi = { workspace = true, features = ["bindgen"] }
+diff --git a/crates/cua-driver-sdk/src/activity_observer.rs b/crates/cua-driver-sdk/src/activity_observer.rs
+index cd49d1fa..05095be7 100644
+--- a/crates/cua-driver-sdk/src/activity_observer.rs
++++ b/crates/cua-driver-sdk/src/activity_observer.rs
+@@ -3,7 +3,8 @@
+ 
+ //! Optional content-free activity callbacks for embedding hosts.
+ 
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub enum DriverActivityKind {
+     AuthorizedAction,
+     AuthorizationRefused,
+@@ -17,7 +18,8 @@ pub enum DriverActivityKind {
+ /// A content-free lifecycle event emitted after native authorization decides
+ /// a call. It never carries arguments, page text, paths, typed input, images,
+ /// or raw resource identities.
+-#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct DriverActivityEvent {
+     pub kind: DriverActivityKind,
+     pub unix_ms: u64,
+@@ -32,7 +34,7 @@ pub struct DriverActivityEvent {
+ ///
+ /// Observations are informational and cannot grant authority or change a tool
+ /// result. Implementations should return quickly and hand off expensive work.
+-#[uniffi::export(with_foreign)]
++#[cfg_attr(feature = "uniffi", uniffi::export(with_foreign))]
+ pub trait DriverActivityObserver: Send + Sync {
+     fn on_activity(&self, event: DriverActivityEvent);
+ }
+diff --git a/crates/cua-driver-sdk/src/authorization_host.rs b/crates/cua-driver-sdk/src/authorization_host.rs
+index bcb7c63c..70fdf640 100644
+--- a/crates/cua-driver-sdk/src/authorization_host.rs
++++ b/crates/cua-driver-sdk/src/authorization_host.rs
+@@ -11,14 +11,16 @@ use cua_driver_core::consent::{
+ };
+ use thiserror::Error;
+ 
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub enum DriverAuthorizationAction {
+     Allow,
+     Deny,
+     Cancel,
+ }
+ 
+-#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct DriverAuthorizationDecision {
+     pub action: DriverAuthorizationAction,
+     pub request_digest: String,
+@@ -28,7 +30,8 @@ pub struct DriverAuthorizationDecision {
+ ///
+ /// `resource_json` contains an attested resource identity. Hosts must avoid
+ /// logging it or forwarding it to a model.
+-#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct DriverAuthorizationRequest {
+     pub schema: String,
+     pub nonce: String,
+@@ -47,7 +50,8 @@ pub struct DriverAuthorizationRequest {
+     pub request_digest: String,
+ }
+ 
+-#[derive(Debug, Error, uniffi::Error)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
++#[derive(Debug, Error)]
+ pub enum DriverAuthorizationHostError {
+     #[error("authorization host failed: {reason}")]
+     Failed { reason: String },
+@@ -58,7 +62,7 @@ pub enum DriverAuthorizationHostError {
+ /// Cua invokes this only for a residual boundary whose active permission mode
+ /// requires a host grant. Routine standard-mode automation and every
+ /// in-manifest bounded operation bypass it.
+-#[uniffi::export(with_foreign)]
++#[cfg_attr(feature = "uniffi", uniffi::export(with_foreign))]
+ #[async_trait]
+ pub trait DriverAuthorizationHost: Send + Sync {
+     async fn authorize(
+diff --git a/crates/cua-driver-sdk/src/cursor_motion.rs b/crates/cua-driver-sdk/src/cursor_motion.rs
+index d9429f7c..20d78bce 100644
+--- a/crates/cua-driver-sdk/src/cursor_motion.rs
++++ b/crates/cua-driver-sdk/src/cursor_motion.rs
+@@ -70,7 +70,8 @@ fn effects_out(e: cm::ResolvedEffects) -> CursorMotionEffectsOutput {
+ 
+ /// Knobs of the built-in styles. Defaults match Cua Driver
+ /// (`default_cursor_motion_params`).
+-#[derive(Debug, Clone, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq)]
+ pub struct CursorMotionParams {
+     pub style: CursorMotionStyle,
+     pub timing: CursorMotionTiming,
+@@ -108,7 +109,7 @@ impl From<CursorMotionParams> for cm::MotionParams {
+ }
+ 
+ /// Cua Driver's default motion knobs.
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn default_cursor_motion_params() -> CursorMotionParams {
+     let d = cm::MotionParams::default();
+     CursorMotionParams {
+@@ -129,14 +130,16 @@ pub fn default_cursor_motion_params() -> CursorMotionParams {
+ }
+ 
+ /// A point in screen points (y down).
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub struct CursorMotionPoint {
+     pub x: f64,
+     pub y: f64,
+ }
+ 
+ /// A target rect in screen points.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub struct CursorMotionRect {
+     pub x: f64,
+     pub y: f64,
+@@ -145,7 +148,8 @@ pub struct CursorMotionRect {
+ }
+ 
+ /// One move to plan.
+-#[derive(Debug, Clone, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq)]
+ pub struct CursorMoveRequest {
+     /// Current hotspot.
+     pub from_point: CursorMotionPoint,
+@@ -178,7 +182,8 @@ impl From<CursorMoveRequest> for cm::MoveRequest {
+ }
+ 
+ /// Path shape of a custom motion.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub enum CursorPathShape {
+     Straight,
+     /// The Cua cubic bezier; a positive `arc_size` bends to the natural side.
+@@ -195,7 +200,8 @@ pub enum CursorPathShape {
+ }
+ 
+ /// Speed curve along the path.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub enum CursorEase {
+     Linear,
+     MinJerk,
+@@ -207,7 +213,8 @@ pub enum CursorEase {
+ }
+ 
+ /// Overshoot or settle at the end of the glide.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub enum CursorSettle {
+     None,
+     FollowThrough {
+@@ -226,7 +233,8 @@ pub enum CursorSettle {
+ }
+ 
+ /// Duration model of a custom motion.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub enum CursorMotionDuration {
+     Fixed {
+         ms: f64,
+@@ -247,14 +255,16 @@ pub enum CursorMotionDuration {
+ }
+ 
+ /// `Tangent`: the tip leads the motion. `Fixed`: the rest pose.
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub enum CursorHeading {
+     Tangent,
+     Fixed,
+ }
+ 
+ /// The comet trail.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub struct CursorTrailSpec {
+     pub secs: f64,
+     pub fade_len: f64,
+@@ -266,7 +276,8 @@ pub struct CursorTrailSpec {
+ }
+ 
+ /// A complete custom motion.
+-#[derive(Debug, Clone, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq)]
+ pub struct CursorMotionSpec {
+     pub path: CursorPathShape,
+     pub ease: CursorEase,
+@@ -472,7 +483,7 @@ impl From<cm::MotionSpec> for CursorMotionSpec {
+ 
+ /// The spec behind a built-in style (`signature_arc`, `spring_settle` and
+ /// `comet_swoop`); `None` for the simulated styles.
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn cursor_motion_spec_for_style(
+     style: CursorMotionStyle,
+     params: CursorMotionParams,
+@@ -481,7 +492,8 @@ pub fn cursor_motion_spec_for_style(
+ }
+ 
+ /// One sample: seconds from the start, the hotspot, and the arrow's heading.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub struct CursorMotionSample {
+     pub t: f64,
+     pub x: f64,
+@@ -501,7 +513,8 @@ impl From<cm::Sample> for CursorMotionSample {
+ }
+ 
+ /// Speed glow.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub struct CursorGlow {
+     pub x: f64,
+     pub y: f64,
+@@ -510,7 +523,8 @@ pub struct CursorGlow {
+ }
+ 
+ /// One round-capped stroke of the comet trail.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub struct CursorTrailSegment {
+     pub ax: f64,
+     pub ay: f64,
+@@ -521,14 +535,16 @@ pub struct CursorTrailSegment {
+ }
+ 
+ /// Glow around the target after a magnetic lock-on.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub struct CursorMagnet {
+     pub rect: CursorMotionRect,
+     pub glow: f64,
+ }
+ 
+ /// Expanding click ring.
+-#[derive(Debug, Clone, Copy, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Copy, PartialEq)]
+ pub struct CursorRipple {
+     pub x: f64,
+     pub y: f64,
+@@ -538,7 +554,8 @@ pub struct CursorRipple {
+ }
+ 
+ /// The effects to paint at one moment.
+-#[derive(Debug, Clone, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq)]
+ pub struct CursorEffectFrame {
+     pub glow: Option<CursorGlow>,
+     pub trail: Vec<CursorTrailSegment>,
+@@ -595,12 +612,13 @@ fn rect_out(r: [f64; 4]) -> CursorMotionRect {
+ }
+ 
+ /// A planned move, played back by time.
+-#[derive(Debug, uniffi::Object)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
++#[derive(Debug)]
+ pub struct CursorTrajectory {
+     inner: cm::Trajectory,
+ }
+ 
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ impl CursorTrajectory {
+     /// Every sample at 120 Hz. Read once; interpolate locally per frame.
+     pub fn samples(&self) -> Vec<CursorMotionSample> {
+@@ -655,7 +673,7 @@ impl CursorTrajectory {
+ }
+ 
+ /// Plan one move for a built-in style.
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn plan_cursor_move(
+     params: CursorMotionParams,
+     request: CursorMoveRequest,
+@@ -666,7 +684,7 @@ pub fn plan_cursor_move(
+ }
+ 
+ /// Plan one move for a custom spec.
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn plan_cursor_spec(
+     spec: CursorMotionSpec,
+     request: CursorMoveRequest,
+@@ -677,7 +695,7 @@ pub fn plan_cursor_spec(
+ }
+ 
+ /// Click effects (ripple, squish) `age` seconds after a click at `(x, y)`.
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn cursor_click_effects(
+     effects: CursorMotionEffectsOutput,
+     age: f64,
+diff --git a/crates/cua-driver-sdk/src/embedded.rs b/crates/cua-driver-sdk/src/embedded.rs
+index 99075b3b..67faa84a 100644
+--- a/crates/cua-driver-sdk/src/embedded.rs
++++ b/crates/cua-driver-sdk/src/embedded.rs
+@@ -25,20 +25,23 @@ const DEFAULT_STARTUP_TIMEOUT_MS: u64 = 10_000;
+ const DEFAULT_SHUTDOWN_TIMEOUT_MS: u64 = 2_000;
+ const HANDSHAKE_ATTEMPT_TIMEOUT_MS: u64 = 500;
+ 
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub enum EmbeddedPermissionMode {
+     Standard,
+     Bounded,
+     Unrestricted,
+ }
+ 
+-#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct EmbeddedEnvironmentVariable {
+     pub name: String,
+     pub value: String,
+ }
+ 
+-#[derive(Debug, Clone, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone)]
+ pub struct EmbeddedDriverHostOptions {
+     pub binary_path: String,
+     pub host_bundle_id: String,
+@@ -46,9 +49,9 @@ pub struct EmbeddedDriverHostOptions {
+     pub startup_timeout_ms: Option<u64>,
+     pub shutdown_timeout_ms: Option<u64>,
+     pub permission_mode: Option<EmbeddedPermissionMode>,
+-    #[uniffi(default = None)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+     pub capability_manifest_path: Option<String>,
+-    #[uniffi(default = false)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
+     pub approve_capability_manifest: bool,
+     /// Deprecated aliases retained for compatibility.
+     pub session_policy_path: Option<String>,
+@@ -56,18 +59,20 @@ pub struct EmbeddedDriverHostOptions {
+     pub dangerously_bypass_approvals: bool,
+     pub environment: Vec<EmbeddedEnvironmentVariable>,
+     pub inherit_stderr: bool,
+-    #[uniffi(default = false)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = false))]
+     pub no_overlay: bool,
+ }
+ 
+-#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct EmbeddedMcpConfiguration {
+     pub command: String,
+     pub args: Vec<String>,
+     pub environment: Vec<EmbeddedEnvironmentVariable>,
+ }
+ 
+-#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct EmbeddedDriverConnection {
+     pub socket_path: String,
+     pub pid: u32,
+@@ -78,7 +83,8 @@ pub struct EmbeddedDriverConnection {
+     pub mcp: EmbeddedMcpConfiguration,
+ }
+ 
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub enum EmbeddedDriverHostState {
+     Stopped,
+     Starting,
+@@ -86,14 +92,16 @@ pub enum EmbeddedDriverHostState {
+     Stopping,
+ }
+ 
+-#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct EmbeddedDriverExit {
+     pub generation: String,
+     pub code: Option<i32>,
+     pub success: bool,
+ }
+ 
+-#[derive(Debug, Error, uniffi::Error)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
++#[derive(Debug, Error)]
+ pub enum EmbeddedDriverError {
+     #[error("invalid embedded host configuration: {reason}")]
+     Configuration { reason: String },
+@@ -164,7 +172,8 @@ struct HostInner {
+     last_exit: Option<EmbeddedDriverExit>,
+ }
+ 
+-#[derive(uniffi::Object)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
++#[derive()]
+ pub struct EmbeddedCuaDriverHost {
+     options: ValidatedOptions,
+     inner: Mutex<HostInner>,
+@@ -248,9 +257,9 @@ impl Drop for StartupTransitionGuard {
+     }
+ }
+ 
+-#[uniffi::export(async_runtime = "tokio")]
++#[cfg_attr(feature = "uniffi", uniffi::export(async_runtime = "tokio"))]
+ impl EmbeddedCuaDriverHost {
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn new(
+         binary_path: String,
+         host_bundle_id: String,
+@@ -273,7 +282,7 @@ impl EmbeddedCuaDriverHost {
+         })
+     }
+ 
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn with_options(
+         options: EmbeddedDriverHostOptions,
+     ) -> Result<Arc<Self>, EmbeddedDriverError> {
+diff --git a/crates/cua-driver-sdk/src/lib.rs b/crates/cua-driver-sdk/src/lib.rs
+index 5dfcfae0..cba9845b 100644
+--- a/crates/cua-driver-sdk/src/lib.rs
++++ b/crates/cua-driver-sdk/src/lib.rs
+@@ -116,7 +116,8 @@ fn host_sessions_json_for_prefix(runtime_prefix: &str) -> Value {
+     serde_json::json!({"count": sessions.len(), "sessions": sessions})
+ }
+ 
+-#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct ImageContent {
+     pub mime_type: String,
+     pub data_base64: String,
+@@ -124,7 +125,8 @@ pub struct ImageContent {
+ 
+ /// Transport-neutral result envelope used for open-ended tool calls and
+ /// desktop tools whose platform extensions are intentionally preserved as JSON.
+-#[derive(Debug, Clone, PartialEq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq)]
+ pub struct ToolResult {
+     pub text: String,
+     pub images: Vec<ImageContent>,
+@@ -139,7 +141,8 @@ pub struct ToolResult {
+ 
+ /// Transport-independent daemon identity used to prove that standalone and
+ /// embedded SDK/MCP routes reached a compatible Rust implementation.
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct DriverMetadata {
+     pub driver_version: String,
+     pub contract_version: String,
+@@ -154,13 +157,14 @@ pub struct DriverMetadata {
+ /// The TCC grants required by a macOS host application before it starts an
+ /// embedded driver. These probes execute in the importing SDK process so the
+ /// operating system attributes the request to the host application.
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub struct MacOsPermissionStatus {
+     pub accessibility: bool,
+     pub screen_recording: bool,
+ }
+ 
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn current_mac_os_permission_status() -> MacOsPermissionStatus {
+     #[cfg(target_os = "macos")]
+     {
+@@ -178,7 +182,7 @@ pub fn current_mac_os_permission_status() -> MacOsPermissionStatus {
+     }
+ }
+ 
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn request_mac_os_permissions() -> MacOsPermissionStatus {
+     #[cfg(target_os = "macos")]
+     {
+@@ -196,7 +200,7 @@ pub fn request_mac_os_permissions() -> MacOsPermissionStatus {
+     }
+ }
+ 
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn open_mac_os_screen_recording_settings() -> Result<(), DriverError> {
+     #[cfg(target_os = "macos")]
+     {
+@@ -266,7 +270,8 @@ fn request_mac_os_screen_recording() -> bool {
+     unsafe { CGRequestScreenCaptureAccess() }
+ }
+ 
+-#[derive(Debug, Error, uniffi::Error)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
++#[derive(Debug, Error)]
+ pub enum DriverError {
+     #[error("invalid SDK configuration: {reason}")]
+     Configuration { reason: String },
+@@ -299,7 +304,8 @@ pub enum DriverError {
+     },
+ }
+ 
+-#[derive(uniffi::Object)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
++#[derive()]
+ pub struct CuaDriver {
+     backend: DriverBackend,
+     client_kind: DaemonClientKind,
+@@ -409,7 +415,8 @@ fn validate_daemon_metadata(metadata: &DaemonMetadata) -> Result<(), DriverError
+ }
+ 
+ /// Process topology used by this SDK object.
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub enum DriverExecutionMode {
+     Embedded,
+     Daemon,
+@@ -418,7 +425,8 @@ pub enum DriverExecutionMode {
+ }
+ 
+ /// Options for a same-process Cua Driver SDK runtime.
+-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+ pub struct DriverOptions {
+     /// Preserve the temporary reduced screenshot surface used by older Claude
+     /// Code integrations. New applications should leave this false.
+@@ -426,7 +434,8 @@ pub struct DriverOptions {
+ }
+ 
+ /// Permission mode chosen by trusted host code for a runtime or session.
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+ #[serde(rename_all = "snake_case")]
+ pub enum SessionPermissionMode {
+     Standard,
+@@ -445,14 +454,15 @@ impl SessionPermissionMode {
+ }
+ 
+ /// Immutable authorization ceiling supplied before a runtime accepts actions.
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct RuntimeAuthorizationOptions {
+     pub allowed_modes: Vec<SessionPermissionMode>,
+     /// Mode inherited by calls made through the released `CuaDriver` object
+     /// rather than a trusted session-bound action surface.
+     pub compatibility_mode: SessionPermissionMode,
+     /// Optional in standard and unrestricted; required when compatibility mode is bounded.
+-    #[uniffi(default = None)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+     pub compatibility_capability_manifest_path: Option<String>,
+     /// Deprecated alias for `compatibility_capability_manifest_path`.
+     pub compatibility_bounded_manifest_path: Option<String>,
+@@ -463,7 +473,8 @@ pub struct RuntimeAuthorizationOptions {
+ 
+ /// Additive configured-runtime constructor options. Existing callers continue
+ /// to use [`DriverOptions`] and inherit the compatibility session.
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct ConfiguredDriverOptions {
+     pub claude_code_compatibility: bool,
+     pub authorization: RuntimeAuthorizationOptions,
+@@ -491,19 +502,21 @@ fn configured_driver_options_json(options: &ConfiguredDriverOptions) -> Value {
+ }
+ 
+ /// Trusted host request for one immutable, connection-bound action surface.
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+ pub struct TrustedSessionOptions {
+     pub public_session: String,
+     pub mode: SessionPermissionMode,
+     pub ttl_seconds: u64,
+     pub idle_ttl_seconds: u64,
+-    #[uniffi(default = None)]
++    #[cfg_attr(feature = "uniffi", uniffi(default = None))]
+     pub capability_manifest_path: Option<String>,
+     /// Deprecated alias for `capability_manifest_path`.
+     pub bounded_manifest_path: Option<String>,
+ }
+ 
+-#[derive(uniffi::Object)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
++#[derive()]
+ pub struct CuaDriverSession {
+     backend: SessionBackend,
+ }
+@@ -607,7 +620,8 @@ impl Drop for CuaDriverSession {
+ ///
+ /// The child receives configuration and actions only over inherited stdio. It
+ /// exposes no socket and cannot be reconnected after the host channel closes.
+-#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct PrivateWorkerOptions {
+     pub binary_path: String,
+     pub host_bundle_id: String,
+@@ -645,7 +659,8 @@ pub struct DriverHostOptions {
+ /// Runtime that imported the shared UniFFI SDK library. The language package
+ /// selects this automatically at its root entry point; callers do not need to
+ /// supply telemetry metadata.
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub enum SdkClientKind {
+     Python,
+     Typescript,
+@@ -688,7 +703,7 @@ macro_rules! desktop_tool_methods {
+ 
+ macro_rules! define_desktop_tool_methods {
+     ($($method:ident: $input:ty,)*) => {
+-        #[uniffi::export(async_runtime = "tokio")]
++        #[cfg_attr(feature = "uniffi", uniffi::export(async_runtime = "tokio"))]
+         impl CuaDriver {
+             $(
+                 pub async fn $method(&self, input: $input) -> Result<ToolResult, DriverError> {
+@@ -701,7 +716,7 @@ macro_rules! define_desktop_tool_methods {
+ 
+ macro_rules! define_session_desktop_tool_methods {
+     ($($method:ident: $input:ty,)*) => {
+-        #[uniffi::export(async_runtime = "tokio")]
++        #[cfg_attr(feature = "uniffi", uniffi::export(async_runtime = "tokio"))]
+         impl CuaDriverSession {
+             $(
+                 pub async fn $method(&self, input: $input) -> Result<ToolResult, DriverError> {
+@@ -735,7 +750,7 @@ desktop_tool_methods!(define_exported_tool_names);
+ 
+ macro_rules! define_native_window_methods {
+     ($driver:ty) => {
+-        #[uniffi::export(async_runtime = "tokio")]
++        #[cfg_attr(feature = "uniffi", uniffi::export(async_runtime = "tokio"))]
+         impl $driver {
+             pub async fn list_apps(
+                 &self,
+@@ -783,7 +798,7 @@ macro_rules! define_native_window_methods {
+ define_native_window_methods!(CuaDriver);
+ define_native_window_methods!(CuaDriverSession);
+ 
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ impl CuaDriver {
+     #[doc(hidden)]
+     pub fn runtime_scope_prefix(&self) -> Option<String> {
+@@ -799,7 +814,7 @@ impl CuaDriver {
+ 
+     /// Create a same-process driver runtime. This constructor never launches
+     /// `cua-driver` and never opens daemon IPC.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create(options: Option<DriverOptions>) -> Result<Arc<Self>, DriverError> {
+         cua_driver_core::authorization::validate_startup_authorization().map_err(|error| {
+             DriverError::Configuration {
+@@ -818,7 +833,7 @@ impl CuaDriver {
+     /// Create a same-process runtime with an explicit immutable authorization
+     /// ceiling. This is a trusted host constructor and is not exposed as an
+     /// agent tool. Existing `create()` callers remain unchanged.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_configured(options: ConfiguredDriverOptions) -> Result<Arc<Self>, DriverError> {
+         let native_options = configured_driver_options_json(&options);
+         Ok(Arc::new(Self {
+@@ -835,7 +850,7 @@ impl CuaDriver {
+     /// The callback object is immutable runtime configuration. Applications
+     /// must not expose it to an agent or implement it using ordinary MCP
+     /// elicitation, model-visible stdio, or an auto-accepting callback.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_configured_with_authorization_host(
+         options: ConfiguredDriverOptions,
+         host: Arc<dyn DriverAuthorizationHost>,
+@@ -855,7 +870,7 @@ impl CuaDriver {
+ 
+     /// Create a configured same-process runtime with a content-free activity
+     /// observer supplied by trusted embedding-host code.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_configured_with_activity_observer(
+         options: ConfiguredDriverOptions,
+         observer: Arc<dyn DriverActivityObserver>,
+@@ -873,7 +888,7 @@ impl CuaDriver {
+ 
+     /// Create a configured same-process runtime with both residual
+     /// authorization and content-free activity callbacks.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_configured_with_host_integrations(
+         options: ConfiguredDriverOptions,
+         host: Arc<dyn DriverAuthorizationHost>,
+@@ -893,7 +908,7 @@ impl CuaDriver {
+     }
+ 
+     /// Language-package entry point for a configured protected-host runtime.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_configured_with_authorization_host_and_client_kind(
+         options: ConfiguredDriverOptions,
+         host: Arc<dyn DriverAuthorizationHost>,
+@@ -910,7 +925,7 @@ impl CuaDriver {
+     }
+ 
+     /// Language-package entry point for a configured activity-observer runtime.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_configured_with_activity_observer_and_client_kind(
+         options: ConfiguredDriverOptions,
+         observer: Arc<dyn DriverActivityObserver>,
+@@ -927,7 +942,7 @@ impl CuaDriver {
+     }
+ 
+     /// Language-package entry point for both trusted host callbacks.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_configured_with_host_integrations_and_client_kind(
+         options: ConfiguredDriverOptions,
+         host: Arc<dyn DriverAuthorizationHost>,
+@@ -945,7 +960,7 @@ impl CuaDriver {
+     }
+ 
+     /// Language-package entry point for an explicitly configured runtime.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_configured_with_client_kind(
+         options: ConfiguredDriverOptions,
+         client_kind: SdkClientKind,
+@@ -962,7 +977,7 @@ impl CuaDriver {
+ 
+     /// Language-package entry point for the same-process runtime. The wrapper
+     /// at each package root selects the client kind automatically.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_with_client_kind(
+         options: Option<DriverOptions>,
+         client_kind: SdkClientKind,
+@@ -979,7 +994,7 @@ impl CuaDriver {
+ 
+     /// Connect to the default installed daemon or an explicitly selected socket.
+     /// This is the temporary compatibility path for released socket clients.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn connect(socket_path: Option<String>) -> Result<Arc<Self>, DriverError> {
+         let socket_path = socket_path.unwrap_or_else(|| socket_path_for_namespace("cua-driver"));
+         if socket_path.trim().is_empty() {
+@@ -995,7 +1010,7 @@ impl CuaDriver {
+ 
+     /// Language-package entry point that preserves the public `connect` API
+     /// while attaching a closed runtime category to daemon requests.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn connect_with_client_kind(
+         socket_path: Option<String>,
+         client_kind: SdkClientKind,
+@@ -1015,14 +1030,14 @@ impl CuaDriver {
+     /// This constructor directly spawns the supplied Cua Driver binary and
+     /// communicates only over inherited stdio. No daemon or reusable endpoint
+     /// is created.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_private_worker(options: PrivateWorkerOptions) -> Result<Arc<Self>, DriverError> {
+         create_private_worker_for_client(options, DaemonClientKind::Unknown)
+     }
+ 
+     /// Language-package entry point that preserves the worker constructor
+     /// while attaching the importing SDK runtime category.
+-    #[uniffi::constructor]
++    #[cfg_attr(feature = "uniffi", uniffi::constructor)]
+     pub fn create_private_worker_with_client_kind(
+         options: PrivateWorkerOptions,
+         client_kind: SdkClientKind,
+@@ -1349,7 +1364,7 @@ impl CuaDriver {
+ /// This remains a separate top-level capability instead of adding a required
+ /// method to the released `CuaDriverProtocol` / `CuaDriverLike` structural
+ /// interfaces.
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn create_trusted_session(
+     driver: Arc<CuaDriver>,
+     options: TrustedSessionOptions,
+@@ -1357,7 +1372,7 @@ pub fn create_trusted_session(
+     driver.create_trusted_session(options)
+ }
+ 
+-#[uniffi::export(async_runtime = "tokio")]
++#[cfg_attr(feature = "uniffi", uniffi::export(async_runtime = "tokio"))]
+ impl CuaDriver {
+     pub async fn metadata(&self) -> Result<DriverMetadata, DriverError> {
+         match &self.backend {
+@@ -1551,7 +1566,7 @@ impl CuaDriver {
+ desktop_tool_methods!(define_desktop_tool_methods);
+ desktop_tool_methods!(define_session_desktop_tool_methods);
+ 
+-#[uniffi::export(async_runtime = "tokio")]
++#[cfg_attr(feature = "uniffi", uniffi::export(async_runtime = "tokio"))]
+ impl CuaDriverSession {
+     pub async fn call_tool(
+         &self,
+@@ -1617,7 +1632,7 @@ impl CuaDriverSession {
+     }
+ }
+ 
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ impl CuaDriverSession {
+     /// Revoke the session-bound authority and release its native handle.
+     ///
+@@ -2007,6 +2022,7 @@ fn normalize_result(tool: &str, raw: Value) -> Result<ToolResult, DriverError> {
+     })
+ }
+ 
++#[cfg(feature = "uniffi")]
+ uniffi::setup_scaffolding!("cua_driver_sdk");
+ 
+ #[cfg(test)]
+diff --git a/crates/cua-driver-sdk/src/remote_foreign.rs b/crates/cua-driver-sdk/src/remote_foreign.rs
+index 0e51349f..656f9b77 100644
+--- a/crates/cua-driver-sdk/src/remote_foreign.rs
++++ b/crates/cua-driver-sdk/src/remote_foreign.rs
+@@ -11,20 +11,23 @@ use crate::remote::{
+ use crate::{CuaDriver, CuaDriverSession, DriverError, TrustedSessionOptions};
+ 
+ /// Opaque context established by the authenticated carrier, not guest claims.
+-#[derive(Clone, Debug, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Clone, Debug)]
+ pub struct ForeignDriverChannelIdentity {
+     pub authenticated_principal: String,
+     pub connection_generation: String,
+ }
+ 
+-#[derive(Clone, Debug, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Clone, Debug)]
+ pub struct ForeignDriverChannelCapabilities {
+     pub minimum_envelope_version: u32,
+     pub maximum_envelope_version: u32,
+     pub supports_cancellation: bool,
+ }
+ 
+-#[derive(Clone, Debug, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Clone, Debug)]
+ pub struct ForeignDriverRequestEnvelope {
+     pub envelope_version: u32,
+     pub request_id: String,
+@@ -34,7 +37,8 @@ pub struct ForeignDriverRequestEnvelope {
+     pub deadline_unix_ms: u64,
+ }
+ 
+-#[derive(Clone, Debug, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Clone, Debug)]
+ pub struct ForeignDriverResponseEnvelope {
+     pub envelope_version: u32,
+     pub request_id: String,
+@@ -45,13 +49,15 @@ pub struct ForeignDriverResponseEnvelope {
+     pub completion_known: bool,
+ }
+ 
+-#[derive(Debug, Error, uniffi::Error)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
++#[derive(Debug, Error)]
+ pub enum ForeignDriverChannelError {
+     #[error("remote carrier failed: {reason}")]
+     Failed { reason: String },
+ }
+ 
+-#[derive(Clone, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Clone)]
+ pub struct ForeignDriverBoundChannel {
+     pub channel: Arc<dyn ForeignDriverEnvelopeChannel>,
+ }
+@@ -59,7 +65,7 @@ pub struct ForeignDriverBoundChannel {
+ /// Trusted host implementation of the existing remote transport contract.
+ /// Identity is captured once when each channel is adapted. A bound channel
+ /// must retain its parent's authenticated principal and connection generation.
+-#[uniffi::export(with_foreign)]
++#[cfg_attr(feature = "uniffi", uniffi::export(with_foreign))]
+ #[async_trait]
+ pub trait ForeignDriverEnvelopeChannel: Send + Sync + 'static {
+     fn identity(&self) -> Result<ForeignDriverChannelIdentity, ForeignDriverChannelError>;
+@@ -192,7 +198,7 @@ impl DriverEnvelopeChannel for ForeignChannelAdapter {
+ }
+ 
+ /// Connect the canonical typed Driver to a host-provided remote carrier.
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn connect_remote_channel(
+     channel: Arc<dyn ForeignDriverEnvelopeChannel>,
+ ) -> Result<Arc<CuaDriver>, DriverError> {
+@@ -202,7 +208,7 @@ pub fn connect_remote_channel(
+ }
+ 
+ /// Bind a logical remote session without serializing its authority.
+-#[uniffi::export(async_runtime = "tokio")]
++#[cfg_attr(feature = "uniffi", uniffi::export(async_runtime = "tokio"))]
+ pub async fn create_remote_trusted_session(
+     driver: Arc<CuaDriver>,
+     options: TrustedSessionOptions,
+diff --git a/crates/cua-driver-sdk/src/remote_mcp.rs b/crates/cua-driver-sdk/src/remote_mcp.rs
+index 9edd2240..b1333ce6 100644
+--- a/crates/cua-driver-sdk/src/remote_mcp.rs
++++ b/crates/cua-driver-sdk/src/remote_mcp.rs
+@@ -20,13 +20,15 @@ const RESPONSE_LIMIT: usize = 16 * 1024 * 1024;
+ const CLEANUP: Duration = Duration::from_secs(2);
+ const MALFORMED: &str = "MCP Driver response is malformed; completion is unknown";
+ 
+-#[derive(Clone, Debug, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Clone, Debug)]
+ pub struct DriverServiceHeader {
+     pub name: String,
+     pub value: String,
+ }
+ 
+-#[derive(Clone, Debug, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Clone, Debug)]
+ pub struct DriverServiceRequest {
+     pub method: String,
+     pub path: String,
+@@ -35,14 +37,16 @@ pub struct DriverServiceRequest {
+     pub timeout_ms: u64,
+ }
+ 
+-#[derive(Clone, Debug, uniffi::Record)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
++#[derive(Clone, Debug)]
+ pub struct DriverServiceResponse {
+     pub status: u16,
+     pub headers: Vec<DriverServiceHeader>,
+     pub body: Vec<u8>,
+ }
+ 
+-#[derive(Debug, thiserror::Error, uniffi::Error)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
++#[derive(Debug, thiserror::Error)]
+ pub enum DriverServiceTransportError {
+     #[error("Driver service transport failed: {reason}")]
+     Failed { reason: String },
+@@ -52,7 +56,7 @@ pub enum DriverServiceTransportError {
+ /// The transport must enforce `timeout_ms` and bound buffered response bytes to
+ /// 16 MiB. Rust bounds caller waits independently but deliberately never aborts
+ /// an active response stream during receiver teardown.
+-#[uniffi::export(with_foreign)]
++#[cfg_attr(feature = "uniffi", uniffi::export(with_foreign))]
+ #[async_trait]
+ pub trait DriverServiceTransport: Send + Sync + 'static {
+     async fn send(
+@@ -84,7 +88,8 @@ struct Inner {
+     this: Weak<Inner>,
+ }
+ 
+-#[derive(uniffi::Object)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
++#[derive()]
+ pub struct McpDriverChannel {
+     inner: Arc<Inner>,
+     driver: Mutex<Option<Arc<CuaDriver>>>,
+@@ -95,7 +100,7 @@ fn remote(reason: String) -> DriverError {
+ }
+ 
+ /// Construct before opening so the owner can invalidate an in-flight initialize.
+-#[uniffi::export]
++#[cfg_attr(feature = "uniffi", uniffi::export)]
+ pub fn open_mcp_driver_channel(
+     transport: Arc<dyn DriverServiceTransport>,
+     authenticated_principal: String,
+@@ -120,7 +125,7 @@ pub fn open_mcp_driver_channel(
+     }))
+ }
+ 
+-#[uniffi::export(async_runtime = "tokio")]
++#[cfg_attr(feature = "uniffi", uniffi::export(async_runtime = "tokio"))]
+ impl McpDriverChannel {
+     pub async fn open(&self) -> Result<(), DriverError> {
+         {
+diff --git a/crates/cua-driver-sdk/src/worker.rs b/crates/cua-driver-sdk/src/worker.rs
+index d454564a..ad13bf1f 100644
+--- a/crates/cua-driver-sdk/src/worker.rs
++++ b/crates/cua-driver-sdk/src/worker.rs
+@@ -21,7 +21,8 @@ pub const PRIVATE_WORKER_PROTOCOL_VERSION: u32 = 1;
+ const DEFAULT_STARTUP_TIMEOUT_MS: u64 = 10_000;
+ const DEFAULT_SHUTDOWN_TIMEOUT_MS: u64 = 2_000;
+ 
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, uniffi::Enum)]
++#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+ #[serde(rename_all = "snake_case")]
+ pub enum ActionCompletion {
+     NotStarted,
+diff --git a/crates/platform-macos/Cargo.toml b/crates/platform-macos/Cargo.toml
+index fd0493b9..675c75bb 100644
+--- a/crates/platform-macos/Cargo.toml
++++ b/crates/platform-macos/Cargo.toml
+@@ -19,7 +19,7 @@ time = { workspace = true }
+ # Insertion-ordered map for the keyed per-session cursor render collection.
+ # IndexMap gives deterministic iteration order = stable cursor z-order frame
+ # to frame (a plain HashMap would flicker overlapping cursors).
+-cua-driver-core = { path = "../cua-driver-core" }
++cua-driver-core = { path = "../cua-driver-core", default-features = false, features = ["yaml"] }
+ cua-driver-contract = { path = "../cua-driver-contract" }
+ cursor-overlay = { path = "../cursor-overlay" }
+ pip-preview = { path = "../pip-preview" }

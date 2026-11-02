@@ -1,0 +1,51 @@
+Timestamp               Ty Process[PID:TID]
+2026-10-30 20:21:18.811 Df launchd[1:99c0a01] [gui/501/application.io.github.zclaudia.zody.cua-helper.150936605.150936610.2359C528-1380-4D53-BEF5-5EC31266F45D [71252]:] xpcproxy spawned with pid 71252
+2026-10-30 20:21:18.818 A  xpcproxy[71252:99c0df4] (libsystem_info.dylib) Retrieve User by ID
+2026-10-30 20:21:18.820 A  xpcproxy[71252:99c0df4] (libsystem_info.dylib) Resolve user group list
+2026-10-30 20:21:18.820 A  xpcproxy[71252:99c0df4] (libsystem_info.dylib) Membership API: translate identifier
+2026-10-30 20:21:18.823 Df launchd[1:99c004d] [gui/501/application.io.github.zclaudia.zody.cua-helper.150936605.150936610.2359C528-1380-4D53-BEF5-5EC31266F45D [71252]:] Successfully spawned macos-cua-desktop-session[71252] because launch job demand
+2026-10-30 20:21:18.843 A  macos-cua-desktop-session[71252:99c0df5] (libsystem_info.dylib) Membership API: translate identifier
+2026-10-30 20:21:18.846 E  macos-cua-desktop-session[71252:99c0df5] [com.apple.libsqlite3:logging-persist] cannot open file at line 51044 of [f0ca7bba1c]
+2026-10-30 20:21:18.846 E  macos-cua-desktop-session[71252:99c0df5] [com.apple.libsqlite3:logging-persist] os_unix.c:51044: (2) open(/private/var/db/DetachedSignatures) - No such file or directory
+2026-10-30 20:21:18.853 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecKeyVerifySignature
+2026-10-30 20:21:18.854 Df macos-cua-desktop-session[71252:99c0df5] [com.apple.xpc:connection] [0x101a6a5d0] activating connection: mach=true listener=false peer=false name=com.apple.analyticsd
+2026-10-30 20:21:18.854 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecTrustEvaluateIfNecessary
+2026-10-30 20:21:18.854 Df macos-cua-desktop-session[71252:99c0df5] [com.apple.securityd:keychain] Enabling System Keychain Always due to platform
+2026-10-30 20:21:18.855 Df macos-cua-desktop-session[71252:99c0df5] [com.apple.xpc:connection] [0x101a6c0f0] activating connection: mach=true listener=false peer=false name=com.apple.trustd.agent
+2026-10-30 20:21:18.856 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecTrustCopyAppleTrustAnchors
+2026-10-30 20:21:18.857 Df macos-cua-desktop-session[71252:99c0df9] [com.apple.xpc:connection] [0x101a6f280] activating connection: mach=true listener=false peer=false name=com.apple.lsd.mapdb
+2026-10-30 20:21:18.857 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecTrustCopyAppleTrustAnchors
+2026-10-30 20:21:18.857 Df macos-cua-desktop-session[71252:99c0dfa] [com.apple.CoreAnalytics:client] Received configuration update from daemon (initial)
+2026-10-30 20:21:18.857 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecKeyVerifySignature
+2026-10-30 20:21:18.858 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecTrustEvaluateIfNecessary
+2026-10-30 20:21:18.858 F  macos-cua-desktop-session[71252:99c0df9] [com.apple.runtime-issues:Security] __delegate_identifier__:Performance Diagnostics__:::____message__:This method should not be called on the main thread as it may lead to UI unresponsiveness.
+2026-10-30 20:21:18.858 A  macos-cua-desktop-session[71252:99c0df9] (libsystem_trace.dylib) Activity for state dumps
+2026-10-30 20:21:18.858 F  macos-cua-desktop-session[71252:99c0df9] [com.apple.runtime-issues:Security] __delegate_identifier__:Performance Diagnostics__:::____message__:This method should not be called on the main thread as it may lead to UI unresponsiveness.
+2026-10-30 20:21:18.858 A  macos-cua-desktop-session[71252:99c0df9] (libsystem_trace.dylib) Activity for state dumps
+2026-10-30 20:21:18.858 F  macos-cua-desktop-session[71252:99c0df9] [com.apple.runtime-issues:Security] __delegate_identifier__:Performance Diagnostics__:::____message__:This method should not be called on the main thread as it may lead to UI unresponsiveness.
+2026-10-30 20:21:18.858 A  macos-cua-desktop-session[71252:99c0df9] (libsystem_trace.dylib) Activity for state dumps
+2026-10-30 20:21:18.858 F  macos-cua-desktop-session[71252:99c0df9] [com.apple.runtime-issues:Security] __delegate_identifier__:Performance Diagnostics__:::____message__:This method should not be called on the main thread as it may lead to UI unresponsiveness.
+2026-10-30 20:21:18.858 A  macos-cua-desktop-session[71252:99c0df9] (libsystem_trace.dylib) Activity for state dumps
+2026-10-30 20:21:18.930 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecTrustCopyAppleTrustAnchors
+2026-10-30 20:21:18.930 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecTrustCopyAppleTrustAnchors
+2026-10-30 20:21:18.931 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecKeyVerifySignature
+2026-10-30 20:21:18.931 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecTrustEvaluateIfNecessary
+2026-10-30 20:21:18.931 F  macos-cua-desktop-session[71252:99c0dff] [com.apple.runtime-issues:Security] __delegate_identifier__:Performance Diagnostics__:::____message__:This method should not be called on the main thread as it may lead to UI unresponsiveness.
+2026-10-30 20:21:18.931 A  macos-cua-desktop-session[71252:99c0dff] (libsystem_trace.dylib) Activity for state dumps
+2026-10-30 20:21:18.931 F  macos-cua-desktop-session[71252:99c0dff] [com.apple.runtime-issues:Security] __delegate_identifier__:Performance Diagnostics__:::____message__:This method should not be called on the main thread as it may lead to UI unresponsiveness.
+2026-10-30 20:21:18.931 A  macos-cua-desktop-session[71252:99c0dff] (libsystem_trace.dylib) Activity for state dumps
+2026-10-30 20:21:18.932 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecTrustCopyAppleTrustAnchors
+2026-10-30 20:21:18.932 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecKeyVerifySignature
+2026-10-30 20:21:18.932 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecTrustEvaluateIfNecessary
+2026-10-30 20:21:18.932 F  macos-cua-desktop-session[71252:99c0dff] [com.apple.runtime-issues:Security] __delegate_identifier__:Performance Diagnostics__:::____message__:This method should not be called on the main thread as it may lead to UI unresponsiveness.
+2026-10-30 20:21:18.932 A  macos-cua-desktop-session[71252:99c0dff] (libsystem_trace.dylib) Activity for state dumps
+2026-10-30 20:21:18.933 F  macos-cua-desktop-session[71252:99c0dff] [com.apple.runtime-issues:Security] __delegate_identifier__:Performance Diagnostics__:::____message__:This method should not be called on the main thread as it may lead to UI unresponsiveness.
+2026-10-30 20:21:18.933 A  macos-cua-desktop-session[71252:99c0dff] (libsystem_trace.dylib) Activity for state dumps
+2026-10-30 20:21:18.933 A  macos-cua-desktop-session[71252:99c0df5] (Security) SecTrustCopyAppleTrustAnchors
+2026-10-30 20:21:23.934 Df macos-cua-desktop-session[71252:99c0df5] [com.apple.CoreAnalytics:client] Entering exit handler.
+2026-10-30 20:21:23.934 Df macos-cua-desktop-session[71252:99c0df5] [com.apple.CoreAnalytics:client] Queueing exit procedure onto XPC queue. Any further messages sent will be discarded. activeSendTransactions=0
+2026-10-30 20:21:23.934 Df macos-cua-desktop-session[71252:99c0dff] [com.apple.CoreAnalytics:client] Cancelling XPC connection. Any further reply handler invocations will not retry messages
+2026-10-30 20:21:23.934 Df macos-cua-desktop-session[71252:99c0dff] [com.apple.xpc:connection] [0x101a6a5d0] invalidated because the current process cancelled the connection by calling xpc_connection_cancel()
+2026-10-30 20:21:23.934 Df macos-cua-desktop-session[71252:99c0df5] [com.apple.CoreAnalytics:client] Exiting exit handler.
+2026-10-30 20:21:23.934 Df macos-cua-desktop-session[71252:99c0dfa] [com.apple.CoreAnalytics:client] XPC connection invalidated (daemon unloaded/disabled)
+2026-10-30 20:21:23.936 Df launchd[1:99c004d] [system:] removing child: pid/71252

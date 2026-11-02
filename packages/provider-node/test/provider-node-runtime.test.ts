@@ -25,6 +25,32 @@ import {
   ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
 } from "../src/index.js";
 
+// macOS 26(darwin 25)上 Node 的目录级 fs.watch 不再派发任何事件(22.14–26.7 全系复现,
+// 新建/删除/重命名/内容改写均为 0 事件,文件级 watch 正常)。ZCode Built-in Source 已改为
+// 文件级 watch + rename 后按路径重建(见 src 实现内中文说明);真实文件事件在不同平台的
+// 送达时机不稳定,因此这里只替换 node:fs 的 watch 为可控桩,由测试按真实回调签名注入
+// 文件事件,仍走生产的签名去重与 rename 重建路径;其余 fs 同步 API 保持原实现。
+const { directoryWatchListeners } = vi.hoisted(() => ({
+  directoryWatchListeners: [] as Array<
+    (eventType: string, fileName: string | Buffer | null) => void
+  >,
+}));
+
+vi.mock("node:fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs")>();
+  const stubbedWatch = ((_target, options?, listener?) => {
+    const callback = typeof options === "function" ? options : listener;
+    if (callback) directoryWatchListeners.push(callback);
+    return {
+      close() {},
+      on() {
+        return this;
+      },
+    } as unknown as import("node:fs").FSWatcher;
+  }) as unknown as typeof import("node:fs").watch;
+  return { ...actual, watch: stubbedWatch };
+});
+
 const temporaryDirectories: string[] = [];
 const zcodeBuiltinProviderConfigFilePath = fileURLToPath(
   new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
@@ -285,16 +311,48 @@ describe("@zcode/provider-node", () => {
     await source.read();
 
     await writeZCodeBuiltin(filePath, "model-a");
+    // macOS 26 目录级 fs.watch 不派发真实事件(见文件顶部说明),改为注入同一回调模拟 OS 事件
+    emitFileWatchEvent("change");
     await settleFileWatcher();
     expect(reasons).toEqual([]);
 
     await writeZCodeBuiltin(filePath, "model-b");
+    emitFileWatchEvent("change");
     await vi.waitFor(() => expect(reasons).toContain("file-changed"));
     await settleFileWatcher();
 
     expect(reasons).toEqual(["file-changed"]);
     expect((await source.read()).providers.get("zcodeBuiltin")?.builtinModelIds).toEqual([
       "model-b",
+    ]);
+    source.dispose();
+  });
+
+  it("ZCode Built-in Source 原子替换(rename)后重建 watcher 并继续监听", async () => {
+    const root = await temporaryDirectory();
+    const filePath = join(root, "zcodeBuiltin.json");
+    await writeZCodeBuiltin(filePath, "model-a");
+    const source = new NodeZCodeBuiltinProviderConfigSource({ bundledFilePath: filePath });
+    const reasons: string[] = [];
+    source.onDidChange((reason) => reasons.push(reason));
+    await source.read();
+    const listenersAfterFirstArm = directoryWatchListeners.length;
+
+    // 原子替换在文件级 watch 上表现为 rename:实现必须关闭旧 inode 的 watcher 并按路径重建
+    await writeZCodeBuiltin(filePath, "model-b");
+    emitFileWatchEvent("rename");
+    await vi.waitFor(() => expect(reasons).toContain("file-changed"));
+    await settleFileWatcher();
+    // 重建是本用例的判据:rename 后必须出现新的 watch 装配,而不是复用旧监听
+    expect(directoryWatchListeners.length).toBe(listenersAfterFirstArm + 1);
+
+    // 重建后的新 watcher 仍能捕捉后续内容变化
+    await writeZCodeBuiltin(filePath, "model-c");
+    emitFileWatchEvent("change");
+    await vi.waitFor(() => expect(reasons).toEqual(["file-changed", "file-changed"]));
+    await settleFileWatcher();
+    expect((await source.read()).providers.get("zcodeBuiltin")?.builtinModelIds).toEqual([
+      "model-c",
     ]);
     source.dispose();
   });
@@ -621,6 +679,13 @@ async function temporaryDirectory(): Promise<string> {
 
 async function settleFileWatcher(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 100));
+}
+
+function emitFileWatchEvent(eventType: "change" | "rename"): void {
+  const listener = directoryWatchListeners.at(-1);
+  if (!listener) throw new Error("文件 watcher 尚未建立:需要先完成一次 source.read()");
+  // 与生产一致的文件级回调入参:事件类型;内容判定仍由 source 内的签名去重负责
+  listener(eventType, null);
 }
 
 function emptyUpdate(): ProviderConfigLayerUpdate {

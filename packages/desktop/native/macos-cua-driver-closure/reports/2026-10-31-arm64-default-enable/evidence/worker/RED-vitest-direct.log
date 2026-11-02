@@ -1,0 +1,47 @@
+
+ RUN  v4.1.4 /Users/zhvala/SourceCode/zody
+
+ ❯ |unit| packages/desktop/test/macosCuaDemoDefaults.test.ts (4 tests | 2 failed) 104ms
+     × selects the pinned profile and manifest on darwin/arm64 without opt-in env 52ms
+     × preserves explicit profile and manifest overrides without requiring opt-in 46ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| packages/desktop/test/macosCuaDemoDefaults.test.ts > macOS CUA self-use build defaults > selects the pinned profile and manifest on darwin/arm64 without opt-in env
+NarrowResourceError: cua-narrow Helper executable does not satisfy strict signature verification
+ ❯ verifyCodeIdentity packages/desktop/scripts/macos-cua-narrow-resources-identity.mjs:185:11
+    183|   ]);
+    184|   if (verifyResult.code !== 0) {
+    185|     throw new NarrowResourceError(
+       |           ^
+    186|       "narrow-signature-invalid",
+    187|       `${label} does not satisfy strict signature verification`,
+ ❯ verifyNarrowApp packages/desktop/scripts/macos-cua-narrow-resources-verify-app.mjs:48:18
+ ❯ validateNarrowManifest packages/desktop/scripts/macos-cua-narrow-resources-validate.mjs:121:24
+ ❯ resolveDefaultSelection packages/desktop/scripts/macos-cua-demo-defaults.mjs:166:21
+ ❯ packages/desktop/test/macosCuaDemoDefaults.test.ts:27:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| packages/desktop/test/macosCuaDemoDefaults.test.ts > macOS CUA self-use build defaults > preserves explicit profile and manifest overrides without requiring opt-in
+NarrowResourceError: cua-narrow Helper executable does not satisfy strict signature verification
+ ❯ verifyCodeIdentity packages/desktop/scripts/macos-cua-narrow-resources-identity.mjs:185:11
+    183|   ]);
+    184|   if (verifyResult.code !== 0) {
+    185|     throw new NarrowResourceError(
+       |           ^
+    186|       "narrow-signature-invalid",
+    187|       `${label} does not satisfy strict signature verification`,
+ ❯ verifyNarrowApp packages/desktop/scripts/macos-cua-narrow-resources-verify-app.mjs:48:18
+ ❯ validateNarrowManifest packages/desktop/scripts/macos-cua-narrow-resources-validate.mjs:121:24
+ ❯ resolveDefaultSelection packages/desktop/scripts/macos-cua-demo-defaults.mjs:166:21
+ ❯ packages/desktop/test/macosCuaDemoDefaults.test.ts:85:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  13:32:47
+   Duration  341ms (transform 84ms, setup 33ms, import 79ms, tests 104ms, environment 0ms)
+

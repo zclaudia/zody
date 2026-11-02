@@ -1,0 +1,15 @@
+{
+  "changedExisting": [
+    "docs/design/computer-use-macos-phase1.md",
+    "docs/plans/computer-use-macos-phase1-implementation.md",
+    "packages/desktop/build/icon.icns",
+    "packages/desktop/build/icon.png",
+    "packages/desktop/build/icon_installer.icns",
+    "packages/desktop/build/icon_installer.png",
+    "packages/desktop/scripts/lib/cua-driver-closure-comparison-core.mjs",
+    "packages/desktop/scripts/lib/cua-driver-closure-comparison-report.mjs",
+    "specs/computer-use-macos-phase1.md",
+    "specs/fork-app-icon-integration.md"
+  ],
+  "missing": []
+}

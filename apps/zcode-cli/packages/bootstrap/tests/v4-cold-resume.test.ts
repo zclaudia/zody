@@ -64,6 +64,7 @@ import {
   ConversationV4Gateway,
   V4SubscribeSessionUnavailableError,
   type ColdSessionResumeOutcome,
+  type V4GatewayHost,
 } from "../src/zcode-protocol-v4/index.js";
 import { resolveSessionContextUsage } from "../src/zcode-protocol/session-mapper.js";
 import { getRegistryBackedModel } from "../src/app/provider-registry-selection.js";
@@ -116,7 +117,12 @@ function coldResumeHook(host: ColdHostStub) {
 
 function makeColdGateway(
   host: ColdHostStub,
-  options: { withResumeHook?: boolean; now?: () => number } = {},
+  options: {
+    withResumeHook?: boolean;
+    now?: () => number;
+    /** I19 反例用它注入 host 侧观测/门控钩子（admission、execute、resume 等）。 */
+    host?: Partial<V4GatewayHost>;
+  } = {},
 ): ConversationV4Gateway {
   const withResumeHook = options.withResumeHook ?? true;
   return new ConversationV4Gateway(
@@ -140,6 +146,7 @@ function makeColdGateway(
       }),
       getSessionUsageSeed: (sessionId) => host.usageSeeds.get(sessionId) ?? null,
       onError: (scope, error) => host.errors.push({ scope, error }),
+      ...options.host,
     },
     {
       now: options.now ?? (() => 1_700_000_999_000),
@@ -153,11 +160,12 @@ function makeEvent(
   seq: number,
   type: SessionEvent["type"],
   payload: unknown,
+  turnId?: string,
 ): SessionEvent {
   return {
     id: `event-${seq}` as EventId,
     sessionId: sessionId as SessionId,
-    turnId: undefined,
+    turnId: turnId as SessionEvent["turnId"],
     type,
     timestamp: new Date(1_700_000_000_000 + seq * 1000),
     traceId: "trace-cold" as TraceId,
@@ -166,10 +174,10 @@ function makeEvent(
   } as SessionEvent;
 }
 
-function subscribeParams(sessionId: string) {
+function subscribeParams(sessionId: string, connectionId = "conn-cold") {
   return {
     topic: conversationTopic(sessionId),
-    connectionId: "conn-cold",
+    connectionId,
     clientMode: "desktop-continuous",
   };
 }
@@ -180,6 +188,83 @@ function deferred() {
     resolve = complete;
   });
   return { promise, resolve };
+}
+
+/** I19：activation 需要用 reject 模拟失败终态。 */
+function rejectableDeferred() {
+  let resolve!: () => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<void>((complete, fail) => {
+    resolve = complete;
+    reject = fail;
+  });
+  // 测试只关心门，不让未消费的 rejection 变成 unhandled。
+  void promise.catch(() => undefined);
+  return { promise, resolve, reject };
+}
+
+/** I19：等待 promise 在有限 macrotask 内 settle，避免旧实现让用例挂到超时。 */
+async function settledWithin<T>(promise: Promise<T>, ticks = 50): Promise<T | null> {
+  let settled = false;
+  let value: T | null = null;
+  void promise.then(
+    (result) => {
+      settled = true;
+      value = result;
+    },
+    () => {
+      settled = true;
+    },
+  );
+  for (let index = 0; index < ticks && !settled; index += 1) {
+    await nextMacrotask();
+  }
+  return settled ? value : null;
+}
+
+/** I19：一段完整 durable 历史（userInput + assistantText），用于断言“历史先可见”。 */
+function makeColdHistoryEvents(sessionId: string): SessionEvent[] {
+  return [
+    makeEvent(sessionId, 1, SessionEventType.SessionCreated, {
+      mode: "default",
+      contextWindow: 200_000,
+    }),
+    makeEvent(
+      sessionId,
+      2,
+      SessionEventType.TurnStarted,
+      { turnNumber: 1, input: "历史输入" },
+      "turn-i19",
+    ),
+    makeEvent(
+      sessionId,
+      3,
+      SessionEventType.ModelStreaming,
+      { kind: "text_start", delta: "", done: false },
+      "turn-i19",
+    ),
+    makeEvent(
+      sessionId,
+      4,
+      SessionEventType.ModelStreaming,
+      { kind: "text_delta", delta: "历史回复", done: false },
+      "turn-i19",
+    ),
+    makeEvent(
+      sessionId,
+      5,
+      SessionEventType.ModelStreaming,
+      { kind: "text_end", delta: "", done: false },
+      "turn-i19",
+    ),
+  ];
+}
+
+function snapshotRowTexts(frame: ConversationTopicFrame | undefined): string[] {
+  if (frame?.payload.kind !== "snapshot") return [];
+  return frame.payload.snapshot.rows.window.flatMap((row) =>
+    row.kind === "userInput" || row.kind === "assistantText" ? [row.text] : [],
+  );
 }
 
 function nextMacrotask(): Promise<void> {
@@ -354,18 +439,26 @@ describe("v4 冷恢复（gateway 单元）", () => {
     );
 
     const first = gateway.subscribe(subscribeParams("sess-cold"));
+    // 等真实恢复进入 barrier（record 已入册、READY 未完成）后再发起第二个订阅：
+    // 这正是生产里「先开桌面、随后手机连入」的窗口，重复订阅必须加入同一 cold owner。
+    await resumeEntered.promise;
     const second = gateway.subscribe({
       ...subscribeParams("sess-cold"),
       clientMode: "web-remote-replayable",
       connectionId: "conn-cold-2",
     });
-    // 等真实恢复进入 barrier 后再放行，避免依赖内部 Promise 链的 microtask 层数。
-    await resumeEntered.promise;
     resumeGate.resolve();
 
     const [a, b] = await Promise.all([first, second]);
     expect(host.resumeCalls).toEqual(["sess-cold"]);
-    expect(loadedPersistedMessages).toEqual([messages]);
+    // record 已入册不改变事实：READY 完成前加入 cold owner 的订阅仍是 cold。
+    expect(a.ack.openTiming).toMatchObject({ sessionRuntimeState: "cold" });
+    expect(b.ack.openTiming).toMatchObject({ sessionRuntimeState: "cold" });
+    // I19：持久物化在 history 阶段只读一次（activation 尚未返回 M0），
+    // READY 复用这次读取；usage 种子仍用 activation 返回的 M0。
+    expect(loadedPersistedMessages).toEqual([undefined]);
+    // history 先返回不等待 READY；这里用只读 query 等待 READY 再断言 runtime 种子。
+    await gateway.rowsRange({ sessionId: "sess-cold", limit: 1 });
     expect(usagePersistedMessages).toEqual([messages]);
     if (a.initialFrame?.payload.kind !== "snapshot") {
       throw new Error("Expected desktop snapshot frame");
@@ -565,7 +658,7 @@ describe("v4 冷恢复（gateway 单元）", () => {
     }
   });
 
-  it("record 已入册但冷恢复失败时：command 保留 lifecycle error，且绝不 admission", async () => {
+  it("record 已入册但冷恢复失败时：历史仍交付，command 保留 lifecycle error 且绝不 admission", async () => {
     const host = makeColdHost();
     const resumeStarted = deferred();
     const resumeGate = deferred();
@@ -600,12 +693,14 @@ describe("v4 冷恢复（gateway 单元）", () => {
 
     try {
       resumeGate.resolve();
-      const [subscribeFailure, commandFailure] = await Promise.all([
-        subscribing.catch((error: unknown) => error),
+      // I19：history 已可先行交付（这里宿主返回 synthesized 空历史），
+      // activation 失败只终结 READY，不回滚已发布的历史快照。
+      const [subscribeResult, commandFailure] = await Promise.all([
+        subscribing,
         commanding.catch((error: unknown) => error),
       ]);
-      expect(subscribeFailure).toBeInstanceOf(V4SubscribeSessionUnavailableError);
-      expect(commandFailure).toBe(subscribeFailure);
+      expect(subscribeResult.initialFrame?.payload.kind).toBe("snapshot");
+      expect(commandFailure).toBeInstanceOf(V4SubscribeSessionUnavailableError);
       expect((commandFailure as V4SubscribeSessionUnavailableError).reasonCode).toBe(
         "fault.subscribe.resumeFailed",
       );
@@ -633,6 +728,28 @@ describe("v4 冷恢复（gateway 单元）", () => {
     expect(typed.reasonCode).toBe("fault.subscribe.sessionNotFound");
     // renderer 订阅错误块直显 message → reasonCode 必须随文透出。
     expect(typed.message).toContain("fault.subscribe.sessionNotFound");
+    // I19：history 阶段为未知会话建过的空 publisher/raw seq 状态必须随 READY 失败回收。
+    expect(gateway.collectMemoryDiagnostics()).toMatchObject({
+      publishers: 0,
+      rawSeqStates: 0,
+    });
+  });
+
+  it("未知会话的只读 query 同样不遗留冷投影状态", async () => {
+    const host = makeColdHost();
+    host.resumeImpl = async () => ({ status: "notFound" });
+    const gateway = makeColdGateway(host);
+
+    const failure = await gateway
+      .rowsRange({ sessionId: "sess-ghost-query", limit: 1 })
+      .then(() => null)
+      .catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(V4SubscribeSessionUnavailableError);
+    expect(gateway.collectMemoryDiagnostics()).toMatchObject({
+      publishers: 0,
+      rawSeqStates: 0,
+    });
+    gateway.dispose();
   });
 
   it("record 入册前恢复失败：保留原始 cause，并释放 rejected READY entry", async () => {
@@ -724,6 +841,13 @@ describe("v4 冷恢复（gateway 单元）", () => {
     });
     const gateway = makeColdGateway(host);
 
+    const history = await gateway.subscribe(subscribeParams("sess-cold"));
+    if (history.initialFrame?.payload.kind !== "snapshot") {
+      throw new Error("Expected snapshot initial frame");
+    }
+    // I19：history 快照先发布时不伪造 runtime usage；READY 完成后同一投影必须收敛到
+    // runtime usage seed。rowsRange 等待 READY，再取一次快照验证收敛结果。
+    await gateway.rowsRange({ sessionId: "sess-cold", limit: 1 });
     const result = await gateway.subscribe(subscribeParams("sess-cold"));
     if (result.initialFrame?.payload.kind !== "snapshot") {
       throw new Error("Expected snapshot initial frame");
@@ -774,6 +898,49 @@ function takeInitialFrameParams(
     throw new Error("cold-resume initial-frame adapter expected one complete physical wire");
   }
   return wire.frame;
+}
+
+/** I19：rowsRange 与 command/query 一样等待 cold owner 的 READY 终态。 */
+async function awaitColdReady(
+  server: ZCodeProtocolAgentServer,
+  sessionId: string,
+  requestId: string | number,
+): Promise<void> {
+  await requestResult(server, {
+    id: requestId,
+    method: V4_METHODS.conversationRowsRange,
+    params: { sessionId, limit: 1 },
+  });
+}
+
+async function subscribeSnapshot(
+  server: ZCodeProtocolAgentServer,
+  requestId: string,
+  params: { topic: string; connectionId: string; clientMode: string },
+): Promise<ConversationTopicFrame> {
+  await requestResult(server, {
+    id: requestId,
+    method: V4_METHODS.conversationSubscribe,
+    params,
+  });
+  return conversationTopicFrameSchema.parse(takeInitialFrameParams(server, requestId));
+}
+
+/**
+ * I19：history 首帧只含 durable 事实；runtime config/usage 种子在 READY 后才有。
+ * 等 READY 后重新订阅取一份 post-READY snapshot，用于断言 runtime 事实收敛。
+ */
+async function takeReadySnapshot(
+  server: ZCodeProtocolAgentServer,
+  requestId: string,
+  sessionId: string,
+  params: { topic: string; connectionId: string; clientMode: string },
+): Promise<ConversationTopicFrame> {
+  await awaitColdReady(server, sessionId, `${requestId}-ready`);
+  return subscribeSnapshot(server, `${requestId}-ready-subscribe`, {
+    ...params,
+    connectionId: `${params.connectionId}-ready`,
+  });
 }
 
 async function saveUserTextMessage(
@@ -840,6 +1007,8 @@ async function saveAssistantTextMessage(
 /** 冷恢复集成用最小 fake app（子集自 zcode-protocol.test.ts createFakeApp）。 */
 interface ColdFakeAppProbe {
   persistedMessagesReloadRequired?: boolean;
+  /** 模拟 resume 修补中断 compact timeline：在 reload 前写回 M1。 */
+  onBeforeReload?: () => Promise<void> | void;
   readTodosCalls: number;
   resumeCalls: number;
   resumeEventTypes?: SessionEvent["type"][];
@@ -950,6 +1119,10 @@ function createColdFakeApp(
                 hookRunId: `cold-resume-hook-${index + 1}`,
               };
         await runtimeSink?.onSessionEvent(makeEvent(String(sessionId), index + 1, type, payload));
+      }
+      if (probe?.persistedMessagesReloadRequired) {
+        // 先写回 M1，activateSessionForResume 随后才会真正重读 messages。
+        await probe.onBeforeReload?.();
       }
       return {
         directory: options?.runtimeConfig?.workingDirectory ?? WORKSPACE_PATH,
@@ -1114,6 +1287,233 @@ function createColdProviderRegistry(): ProviderRegistry {
   return new ProviderRegistry([provider]);
 }
 
+// I19 反例（2026-10-24 C4 已决）：不变量收窄为「runtime 先于实时事件 hydration」，
+// 冷历史投影可先发布。这些用例在当前实现上应为红：subscribe 在 activation+hydration
+// 完成前不返回任何状态，且 handleCommand 在 inbox 去重之前等待 READY。
+describe("I19 冷历史先展示后激活（gateway 单元）", () => {
+  it("反例：冷历史快照先于 runtime 激活返回，激活慢不阻塞历史", async () => {
+    const host = makeColdHost();
+    const sessionId = "sess-i19-history-first";
+    host.persistedEvents.set(sessionId, makeColdHistoryEvents(sessionId));
+    const resumeStarted = deferred();
+    const resumeGate = deferred();
+    host.resumeImpl = async (id) => {
+      resumeStarted.resolve();
+      await resumeGate.promise;
+      host.sessions.add(id);
+      return { status: "resumed", persistedMessages: [] };
+    };
+    const gateway = makeColdGateway(host);
+    const subscribing = gateway.subscribe(subscribeParams(sessionId));
+    try {
+      await resumeStarted.promise;
+      const history = await settledWithin(subscribing);
+
+      // 历史必须先可见：activation 仍被 gate 卡住时就已返回 snapshot。
+      expect(history).not.toBeNull();
+      expect(history?.ack.openTiming).toMatchObject({ sessionRuntimeState: "cold" });
+      expect(snapshotRowTexts(history?.initialFrame)).toEqual(
+        expect.arrayContaining(["历史输入", "历史回复"]),
+      );
+      // 初始帧只走 subscribe dispatch/outbox；history 先返回不应额外产生 online 帧。
+      expect(host.frames).toHaveLength(0);
+      expect(host.resumeCalls).toEqual([sessionId]);
+    } finally {
+      resumeGate.resolve();
+      await Promise.allSettled([subscribing]);
+      gateway.dispose();
+    }
+  });
+
+  it("反例：激活窗口内重复订阅加入同一 flight，各自先拿到历史快照", async () => {
+    const host = makeColdHost();
+    const sessionId = "sess-i19-duplicate-subscribe";
+    host.persistedEvents.set(sessionId, makeColdHistoryEvents(sessionId));
+    const resumeStarted = deferred();
+    const resumeGate = deferred();
+    host.resumeImpl = async (id) => {
+      resumeStarted.resolve();
+      await resumeGate.promise;
+      host.sessions.add(id);
+      return { status: "resumed", persistedMessages: [] };
+    };
+    const gateway = makeColdGateway(host);
+    const first = gateway.subscribe(subscribeParams(sessionId));
+    const second = (async () => {
+      await nextMacrotask();
+      return gateway.subscribe(subscribeParams(sessionId, "conn-cold-2"));
+    })();
+    try {
+      await resumeStarted.promise;
+      const firstHistory = await settledWithin(first);
+      const secondHistory = await settledWithin(second);
+      expect(firstHistory).not.toBeNull();
+      expect(secondHistory).not.toBeNull();
+      expect(snapshotRowTexts(firstHistory?.initialFrame)).toContain("历史回复");
+      expect(snapshotRowTexts(secondHistory?.initialFrame)).toContain("历史回复");
+      // 重复订阅只能加入同一 activation，不能重启第二个 runtime。
+      expect(host.resumeCalls).toEqual([sessionId]);
+    } finally {
+      resumeGate.resolve();
+      await Promise.allSettled([first, second]);
+      gateway.dispose();
+    }
+  });
+
+  it("反例：激活失败仍先交付历史；等待中的 command/query 以 lifecycle 终态收口且零 admission", async () => {
+    const host = makeColdHost();
+    const sessionId = "sess-i19-resume-failed";
+    host.persistedEvents.set(sessionId, makeColdHistoryEvents(sessionId));
+    const resumeStarted = deferred();
+    const resumeGate = rejectableDeferred();
+    host.resumeImpl = async () => {
+      resumeStarted.resolve();
+      await resumeGate.promise;
+      throw new Error("resume storage failed");
+    };
+    const admitCommandInput = vi.fn(async () => null);
+    const executeCommand = vi.fn(async () => undefined);
+    const gateway = makeColdGateway(host, {
+      host: { admitCommandInput, executeCommand },
+    });
+    const subscribing = gateway.subscribe(subscribeParams(sessionId));
+    try {
+      await resumeStarted.promise;
+      const history = await settledWithin(subscribing);
+      expect(history).not.toBeNull();
+      expect(snapshotRowTexts(history?.initialFrame)).toContain("历史输入");
+
+      const commanding = gateway
+        .handleCommand({
+          commandId: "cmd-i19-resume-failed",
+          clientId: "client-i19-resume-failed",
+          sessionId,
+          type: "sendText",
+          payload: { text: "继续" },
+          issuedAt: 1_700_000_999_000,
+        })
+        .then(
+          (ack) => ({ ack }),
+          (error: unknown) => ({ error }),
+        );
+      const ranging = gateway.rowsRange({ sessionId, limit: 10 }).then(
+        (value) => ({ value }),
+        (error: unknown) => ({ error }),
+      );
+      await nextMacrotask();
+      expect(admitCommandInput).not.toHaveBeenCalled();
+
+      resumeGate.reject(new Error("resume storage failed"));
+      const terminal = await Promise.race([
+        Promise.all([commanding, ranging]),
+        new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), 500)),
+      ]);
+      expect(terminal).not.toBe("timeout");
+      if (terminal === "timeout") return;
+      const [commandTerminal, rangeTerminal] = terminal;
+      expect("error" in commandTerminal ? commandTerminal.error : null).toMatchObject({
+        reasonCode: "fault.subscribe.resumeFailed",
+      });
+      expect("error" in rangeTerminal ? rangeTerminal.error : null).toMatchObject({
+        reasonCode: "fault.subscribe.resumeFailed",
+      });
+      expect(admitCommandInput).not.toHaveBeenCalled();
+      expect(executeCommand).not.toHaveBeenCalled();
+    } finally {
+      resumeGate.reject(new Error("cleanup"));
+      await Promise.allSettled([subscribing]);
+      gateway.dispose();
+    }
+  });
+
+  it("反例：冷 READY 等待前先按 commandId 去重，settled 重试不被恢复窗口阻塞", async () => {
+    const host = makeColdHost();
+    const sessionId = "sess-i19-command-dedup";
+    host.sessions.add(sessionId);
+    const executeCommand = vi.fn(async () => undefined);
+    const gateway = makeColdGateway(host, { host: { executeCommand } });
+    const command = {
+      commandId: "cmd-i19-command-dedup",
+      clientId: "client-i19-command-dedup",
+      sessionId,
+      type: "sendText" as const,
+      payload: { text: "先执行一次" },
+      issuedAt: 1_700_000_999_000,
+    };
+    const original = await gateway.handleCommand(command);
+    expect(original.status).toBe("accepted");
+    expect(executeCommand).toHaveBeenCalledTimes(1);
+
+    // 模拟 CLI 重启：publisher/runtime 释放，但 inbox 的 settled 幂等事实仍在。
+    gateway.disposeSession(sessionId);
+    host.sessions.delete(sessionId);
+
+    const resumeStarted = deferred();
+    const resumeGate = deferred();
+    host.resumeImpl = async (id) => {
+      resumeStarted.resolve();
+      await resumeGate.promise;
+      host.sessions.add(id);
+      return { status: "resumed", persistedMessages: [] };
+    };
+    const subscribing = gateway.subscribe(subscribeParams(sessionId));
+    try {
+      await resumeStarted.promise;
+      const retry = await settledWithin(gateway.handleCommand(command));
+
+      // 去重必须先于 READY：重试立刻回放 duplicate 终态，不等待 activation。
+      expect(retry).not.toBeNull();
+      expect(retry?.status).toBe("duplicate");
+      expect(executeCommand).toHaveBeenCalledTimes(1);
+      expect(host.resumeCalls).toEqual([sessionId]);
+    } finally {
+      resumeGate.resolve();
+      await Promise.allSettled([subscribing]);
+      gateway.dispose();
+    }
+  });
+
+  it("反例：READY 修补 compact 后用 M1 重新水化，不固化 history 的 M0", async () => {
+    const host = makeColdHost();
+    const sessionId = "sess-i19-m0-to-m1";
+    const m0 = makeColdHistoryEvents(sessionId);
+    const m1 = m0.map((event) =>
+      event.type === SessionEventType.ModelStreaming &&
+      (event.payload as { kind?: string }).kind === "text_delta"
+        ? { ...event, payload: { ...(event.payload as object), delta: "修补后的回复" } }
+        : event,
+    );
+    let loadCalls = 0;
+    const loadPersistedEvents = vi.fn(async () => {
+      loadCalls += 1;
+      return { events: loadCalls === 1 ? m0 : m1, synthesized: true };
+    });
+    host.resumeImpl = async (id) => {
+      host.sessions.add(id);
+      return {
+        status: "resumed",
+        persistedMessages: [],
+        messagesReloadRequired: true,
+      };
+    };
+    const gateway = makeColdGateway(host, { host: { loadPersistedEvents } });
+
+    try {
+      const history = await gateway.subscribe(subscribeParams(sessionId));
+      expect(snapshotRowTexts(history.initialFrame)).toContain("历史回复");
+
+      // rowsRange 等待 READY；resume 声明需要重读 M1，READY 必须重新水化投影。
+      await gateway.rowsRange({ sessionId, limit: 1 });
+      const converged = await gateway.subscribe(subscribeParams(sessionId));
+      expect(snapshotRowTexts(converged.initialFrame)).toContain("修补后的回复");
+      expect(snapshotRowTexts(converged.initialFrame)).not.toContain("历史回复");
+      expect(loadPersistedEvents).toHaveBeenCalledTimes(2);
+    } finally {
+      gateway.dispose();
+    }
+  });
+});
+
 describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
   let tempRoot: string;
 
@@ -1255,6 +1655,116 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     return { server, store };
   }
 
+  // I19 双交付链路：真实 v4-bridge 接线（sessionStore → loadColdHistory）下，
+  // history 必须在 activation 被闸住时先返回；READY 后同一订阅按既有 resync
+  // 语义收到权威投影（含 runtime usage），而不是停留在 history 帧。
+  it.each(["desktop-continuous", "web-remote-replayable"] as const)(
+    "I19: %s 冷历史先于 activation 返回，READY 后同一订阅收敛",
+    async (clientMode) => {
+      const dbPath = join(tempRoot, `i19-history-first-${clientMode}.db`);
+      await seedPersistedSession(dbPath);
+      const store = createSqliteSessionStore({ dbPath });
+      const providerRegistry = createColdProviderRegistry();
+      const activationStarted = deferred();
+      const activationGate = deferred();
+      const frames: ConversationTopicFrame[] = [];
+      const server = new ZCodeProtocolAgentServer({
+        createZCodeApp: async (options) => {
+          activationStarted.resolve();
+          await activationGate.promise;
+          return createColdFakeApp({ ...options, providerRegistry }, []);
+        },
+        cwd: WORKSPACE_PATH,
+        sessionStore: store,
+      });
+      server.setNotificationSink((message) => {
+        if (
+          "id" in message &&
+          message.method === zcodeProtocolMethods.sessionRequestRuntimePreferences
+        ) {
+          // activation 在 createZCodeApp 前会等待宿主偏好；history 不依赖它。
+          void server.handleMessage({
+            id: message.id,
+            result: {
+              nativeSearchEnhancementsEnabled: false,
+              memoryEnabled: false,
+            },
+          });
+          return;
+        }
+        if (!("method" in message) || message.method !== V4_NOTIFICATIONS.conversationFrame) {
+          return;
+        }
+        const wire = routedTopicWireFrameSchema.parse(
+          (message as { params: unknown }).params,
+        );
+        if (wire.kind === "complete") frames.push(wire.frame as ConversationTopicFrame);
+      });
+      const requestId = `i19-history-first-${clientMode}`;
+      const params = {
+        topic: conversationTopic(SESSION_ID),
+        connectionId: `conn-i19-${clientMode}`,
+        clientMode,
+      };
+      let subscribing: Promise<unknown> | undefined;
+      try {
+        subscribing = requestResult(server, {
+          id: requestId,
+          method: V4_METHODS.conversationSubscribe,
+          params,
+        });
+        await activationStarted.promise;
+        // activation 被闸住时历史必须已经可见；若实现退回等待 READY，这里会超时。
+        let timeout: ReturnType<typeof setTimeout> | undefined;
+        const gateTimeout = new Promise((_, reject) => {
+          timeout = setTimeout(
+            () => reject(new Error("history waited for gated activation")),
+            1000,
+          );
+        });
+        let subscribed: ReturnType<typeof v4ConversationSubscribeResultSchema.parse>;
+        try {
+          subscribed = v4ConversationSubscribeResultSchema.parse(
+            await Promise.race([subscribing, gateTimeout]),
+          );
+        } finally {
+          if (timeout) clearTimeout(timeout);
+        }
+        expect(subscribed.ack.openTiming).toMatchObject({
+          sessionRuntimeState: "cold",
+        });
+        const history = conversationTopicFrameSchema.parse(
+          takeInitialFrameParams(server, requestId),
+        );
+        if (history.payload.kind !== "snapshot") throw new Error("Expected snapshot");
+        expect(
+          history.payload.snapshot.rows.window.some(
+            (row) => row.kind === "assistantText" && row.text === "历史回答二",
+          ),
+        ).toBe(true);
+
+        activationGate.resolve();
+        await awaitColdReady(server, SESSION_ID, `${requestId}-ready`);
+        // READY 的权威水化按既有 resync 语义向同一 subscription 发 recovery 帧，
+        // 客户端不会停留在 history 帧的 runtime 占位值。
+        const recovery = frames.find(
+          (frame) => frame.subscriptionId === subscribed.ack.subscriptionId,
+        );
+        expect(recovery).toBeDefined();
+        expect(recovery?.payload.kind).toBe("snapshot");
+        if (recovery?.payload.kind !== "snapshot") return;
+        expect(recovery.payload.snapshot.usage.contextWindow).toMatchObject({
+          maxTokens: 1_000_000,
+          usedTokens: 2,
+        });
+      } finally {
+        activationGate.resolve();
+        await Promise.allSettled([subscribing ?? Promise.resolve()]);
+        store.close();
+      }
+    },
+  );
+
   // 模型恢复须走真实 App，不能让生命周期测试替身复制生产迁移逻辑。
   function bootRealRestartedServer(dbPath: string, registry = createColdProviderRegistry()) {
     const store = createSqliteSessionStore({ dbPath });
@@ -1312,14 +1822,24 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
       store.close();
       const { server, apps, close } = bootRealRestartedServer(dbPath);
       try {
+        const params = { topic: conversationTopic(SESSION_ID), connectionId: clientMode, clientMode };
         await requestResult(server, {
           id: "missing-reasoning",
           method: V4_METHODS.conversationSubscribe,
-          params: { topic: conversationTopic(SESSION_ID), connectionId: clientMode, clientMode },
+          params,
         });
-        const frame = conversationTopicFrameSchema.parse(
+        const history = conversationTopicFrameSchema.parse(
           takeInitialFrameParams(server, "missing-reasoning"),
         );
+        if (history.payload.kind !== "snapshot") throw new Error("Expected snapshot");
+        // I19：history 首帧先交付 durable 行；registry 容量/usage 属于 runtime 事实，
+        // 必须等 READY 的权威 hydration，不能在前一帧伪造。
+        expect(
+          history.payload.snapshot.rows.window.some(
+            (row) => row.kind === "assistantText" && row.text === "历史回答二",
+          ),
+        ).toBe(true);
+        const frame = await takeReadySnapshot(server, "missing-reasoning", SESSION_ID, params);
         if (frame.payload.kind !== "snapshot") throw new Error("Expected snapshot");
         expect(frame.payload.snapshot.config.modelSelection).toEqual(selection);
         expect(frame.payload.snapshot.usage.contextWindow).toMatchObject({
@@ -1485,6 +2005,9 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
           clientMode: "desktop-continuous",
         },
       });
+      // I19：subscribe 在 history 快照后即返回；workspace 修复属于 activation，
+      // 由等待 READY 的只读 query 收口。
+      await awaitColdReady(server, legacySessionId, "wsl-legacy-ready");
 
       expect(resumedWorkingDirectories).toEqual([workspacePath]);
       await expect(store.getSession(legacySessionId)).resolves.toMatchObject({
@@ -1545,6 +2068,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
           clientMode: "desktop-continuous",
         },
       });
+      await awaitColdReady(server, legacySessionId, "wsl-resolved-legacy-ready");
 
       expect(resumedWorkingDirectories).toEqual([workspacePath]);
       await expect(store.getSession(legacySessionId)).resolves.toMatchObject({
@@ -1584,7 +2108,9 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
       sessionStore: store,
     });
     try {
-      const response = await server.handleMessage({
+      // I19：durable 历史先于 activation 发布；workspace repair 是 READY 阶段的事，
+      // 失败只终结 READY，不回滚已可读的历史。
+      await requestResult(server, {
         id: "wsl-failed-atomic-repair",
         method: V4_METHODS.conversationSubscribe,
         params: {
@@ -1593,10 +2119,14 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
           clientMode: "desktop-continuous",
         },
       });
+      const frame = conversationTopicFrameSchema.parse(
+        takeInitialFrameParams(server, "wsl-failed-atomic-repair"),
+      );
+      // 空 transcript 的持久会话仍可发布空历史快照（durable 权威事实）。
+      expect(frame.payload.kind).toBe("snapshot");
+      // 让 activation 的 repair 失败先 settle，再断言没有物化 runtime。
+      await new Promise((resolve) => setImmediate(resolve));
 
-      expect(response).toMatchObject({
-        error: { message: expect.stringContaining("workspace repair") },
-      });
       expect(resumedWorkingDirectories).toEqual([]);
       await expect(store.getSession(sessionId)).resolves.toMatchObject({
         directory: workspaceIdentity,
@@ -1648,6 +2178,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
           clientMode: "desktop-continuous",
         },
       });
+      await awaitColdReady(server, sessionId, "wsl-concurrent-atomic-repair-ready");
 
       expect(resumedWorkingDirectories).toEqual([workspacePath]);
       await expect(store.getSession(sessionId)).resolves.toMatchObject({
@@ -2094,6 +2625,8 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
           clientMode: "desktop-continuous",
         },
       });
+      // legacy send 依赖 active record；先等 cold owner 的 READY。
+      await awaitColdReady(server, SESSION_ID, "open-child-ready");
       const result = await server.handleMessage({
         id: "legacy-send",
         method: zcodeProtocolMethods.sessionSend,
@@ -2169,13 +2702,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
         throw new Error("Expected snapshot initial frame");
       }
       const snapshot = frame.payload.snapshot;
-      // Bug 根因：旧 cold hydration 固定合成 20 万，导致首帧在后续 live 事件纠正前
-      // 已触发满载/压缩。首个原始 snapshot 必须直接使用当前 registry 的 1M。
-      expect(snapshot.usage.contextWindow).toMatchObject({
-        maxTokens: 1_000_000,
-        usedTokens: 2,
-      });
-      // 历史行齐全（transcript→event 合成路径：重启后 record 的内存事件日志为空）。
+      // I19：history 首帧先交付 durable 行（transcript→event 合成路径）。
       const texts = snapshot.rows.window
         .filter((row) => row.kind === "userInput" || row.kind === "assistantText")
         .map((row) => ("text" in row ? row.text : ""));
@@ -2190,10 +2717,29 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
         toolCallId: "call_cold_read",
         toolName: "Read",
       });
+      // runtime config/usage 属于 READY 的权威水化；history 帧不得伪造，
+      // READY 后重新订阅的快照必须收敛到当前 registry 的 1M。
+      const readyFrame = await takeReadySnapshot(server, "2", SESSION_ID, {
+        topic: conversationTopic(SESSION_ID),
+        connectionId: "conn-desktop",
+        clientMode: "desktop-continuous",
+      });
+      if (readyFrame.payload.kind !== "snapshot") {
+        throw new Error("Expected READY snapshot frame");
+      }
+      const readySnapshot = readyFrame.payload.snapshot;
+      expect(readySnapshot.usage.contextWindow).toMatchObject({
+        maxTokens: 1_000_000,
+        usedTokens: 2,
+      });
+      expect(readySnapshot.rows.window.find((row) => row.kind === "reasoning")).toMatchObject({
+        text: "历史思考二",
+        state: "complete",
+      });
       // control 可交互：完成态 + 输入直发（composer 不该禁用）。
-      expect(snapshot.control.phase).toBe("completedSuccess");
-      expect(snapshot.control.canStop).toBe(false);
-      expect(snapshot.inputRouting.mode).toBe("startNow");
+      expect(readySnapshot.control.phase).toBe("completedSuccess");
+      expect(readySnapshot.control.canStop).toBe(false);
+      expect(readySnapshot.inputRouting.mode).toBe("startNow");
 
       // 再发一轮：sendText 必须 accepted 并落到 runtime sendInput。
       const ack = commandAckSchema.parse(
@@ -2328,17 +2874,25 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
         takeInitialFrameParams(server, "subscribe-activation-only"),
       );
       if (frame.payload.kind !== "snapshot") throw new Error("Expected snapshot frame");
+      // I19：subscribe 首帧是 history；runtime 事实在 READY 后收敛。
+      await awaitColdReady(server, SESSION_ID, "subscribe-activation-only-ready");
+      const readyFrame = await subscribeSnapshot(server, "subscribe-activation-only-ready-subscribe", {
+        topic: conversationTopic(SESSION_ID),
+        connectionId: "conn-activation-only-ready",
+        clientMode: "desktop-continuous",
+      });
+      if (readyFrame.payload.kind !== "snapshot") throw new Error("Expected snapshot frame");
 
       // Bug 根因：旧 V4 resume 钩子会先构建一份无人消费的 legacy snapshot，
       // usage seed 随后又构建第二份。readTodos 只属于 full snapshot，可作为稳定 seam
       // 证明 V4 现在只做 activation + 自己的 durable hydration。
       expect(probe).toEqual({ readTodosCalls: 0, resumeCalls: 1 });
-      // 性能根因：同一份父会话 messages 过去又被 hydration、subagent seed、usage seed
-      // 各读一次。正常冷订阅必须只在 activation 起点物化一次。
+      // I19：history 阶段读一次 durable transcript，activation 再读一次 M0；
+      // READY 的权威 hydration 复用 activation 返回的 messages，不再重复读。
       expect(
         messagesSpy.mock.calls.filter(([input]) => input.sessionID === SESSION_ID),
-      ).toHaveLength(1);
-      expect(frame.payload.snapshot.usage.contextWindow).toMatchObject({
+      ).toHaveLength(2);
+      expect(readyFrame.payload.snapshot.usage.contextWindow).toMatchObject({
         // 当前分支的模型 registry 是 context-window 权威；窄读只替换 usage 取数，
         // 不能把冷 runtime projection 的旧 128k 分母重新覆盖到 V4 首帧。
         maxTokens: 1_000_000,
@@ -2357,7 +2911,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
         size: 1_000_000,
         used: 2,
       });
-      expect(frame.payload.snapshot.usage.contextWindow?.cache).toEqual(
+      expect(readyFrame.payload.snapshot.usage.contextWindow?.cache).toEqual(
         legacy.runtime.contextUsage?.cache,
       );
     } finally {
@@ -2399,7 +2953,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     }
   });
 
-  it("runtime 修补中断 compact 后只刷新一次持久物化", async () => {
+  it("runtime 修补中断 compact 后 READY 用 M1 重新水化投影", async () => {
     const dbPath = join(tempRoot, "sessions.db");
     await seedPersistedSession(dbPath);
     const probe: ColdFakeAppProbe = {
@@ -2409,6 +2963,17 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     };
     const { server, store } = bootRestartedServer(dbPath, [], probe);
     const messagesSpy = vi.spyOn(store, "messages");
+    probe.onBeforeReload = async () => {
+      // 模拟 resume 把中断 compact timeline 修补后写回 store（M0 → M1）。
+      await store.savePart({
+        id: "msg_cold_assistant_2_text" as MessagePart["id"],
+        sessionID: SESSION_ID,
+        messageID: "msg_cold_assistant_2" as MessageId,
+        type: "text",
+        text: "修补后的回答二",
+        time: { start: 4, end: 4 },
+      });
+    };
     try {
       await requestResult(server, {
         id: "subscribe-compact-refresh",
@@ -2419,32 +2984,68 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
           clientMode: "desktop-continuous",
         },
       });
+      const history = conversationTopicFrameSchema.parse(
+        takeInitialFrameParams(server, "subscribe-compact-refresh"),
+      );
+      if (history.payload.kind !== "snapshot") throw new Error("Expected snapshot");
+      // history 阶段先看到修补前的持久事实。
+      expect(
+        history.payload.snapshot.rows.window.some(
+          (row) => row.kind === "assistantText" && row.text === "历史回答二",
+        ),
+      ).toBe(true);
 
+      await awaitColdReady(server, SESSION_ID, "subscribe-compact-refresh-ready");
+      const ready = await subscribeSnapshot(server, "subscribe-compact-refresh-ready-subscribe", {
+        topic: conversationTopic(SESSION_ID),
+        connectionId: "conn-compact-refresh-ready",
+        clientMode: "desktop-continuous",
+      });
+      if (ready.payload.kind !== "snapshot") throw new Error("Expected snapshot");
+      // READY 必须收敛到 M1，不能把修补前的 M0 固化进投影。
+      expect(
+        ready.payload.snapshot.rows.window.some(
+          (row) => row.kind === "assistantText" && row.text === "修补后的回答二",
+        ),
+      ).toBe(true);
+      expect(
+        ready.payload.snapshot.rows.window.some(
+          (row) => row.kind === "assistantText" && row.text === "历史回答二",
+        ),
+      ).toBe(false);
+
+      // history 读一次、activation 读 M0 一次、reload 读 M1 一次；READY hydration 复用 M1。
       expect(
         messagesSpy.mock.calls.filter(([input]) => input.sessionID === SESSION_ID),
-      ).toHaveLength(2);
+      ).toHaveLength(3);
       expect(probe.resumeCalls).toBe(1);
     } finally {
       store.close();
     }
   });
 
-  it("compact 是最后操作：重启后的首帧保持压缩后 usage", async () => {
+  it("compact 是最后操作：READY 后的 usage 保持压缩后水位", async () => {
     const dbPath = join(tempRoot, "sessions.db");
     await seedPersistedCompactedSession(dbPath);
     const { server, store } = bootRestartedServer(dbPath, []);
+    const params = {
+      topic: conversationTopic(SESSION_ID),
+      connectionId: "conn-compact-desktop",
+      clientMode: "desktop-continuous",
+    };
     try {
       await requestResult(server, {
         id: "subscribe-compact-desktop",
         method: V4_METHODS.conversationSubscribe,
-        params: {
-          topic: conversationTopic(SESSION_ID),
-          connectionId: "conn-compact-desktop",
-          clientMode: "desktop-continuous",
-        },
+        params,
       });
-      const desktopFrame = conversationTopicFrameSchema.parse(
-        takeInitialFrameParams(server, "subscribe-compact-desktop"),
+      takeInitialFrameParams(server, "subscribe-compact-desktop");
+      // I19：history 首帧不带 runtime usage；READY 的权威 hydration 之后收敛。
+      const desktopFrame = await takeReadySnapshot(
+        server,
+        "subscribe-compact-desktop",
+        SESSION_ID,
+        params,
       );
       if (desktopFrame.payload.kind !== "snapshot") {
         throw new Error("Expected desktop snapshot frame");
@@ -2513,21 +3114,22 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     }
 
     const { server, close } = bootRealRestartedServer(dbPath);
+    const params = {
+      topic: conversationTopic(SESSION_ID),
+      connectionId: "conn-thought",
+      clientMode: "desktop-continuous",
+      // 即便 host 的 legacy hint 迟到/过期，Agent 自己的 durable selection 仍优先。
+      resumeThoughtLevel: "medium",
+    };
     try {
       await requestResult(server, {
         id: "subscribe-thought",
         method: V4_METHODS.conversationSubscribe,
-        params: {
-          topic: conversationTopic(SESSION_ID),
-          connectionId: "conn-thought",
-          clientMode: "desktop-continuous",
-          // 即便 host 的 legacy hint 迟到/过期，Agent 自己的 durable selection 仍优先。
-          resumeThoughtLevel: "medium",
-        },
+        params,
       });
-      const frame = conversationTopicFrameSchema.parse(
-        takeInitialFrameParams(server, "subscribe-thought"),
-      );
+      takeInitialFrameParams(server, "subscribe-thought");
+      // I19：config 种子在 READY 的权威 hydration 后可见。
+      const frame = await takeReadySnapshot(server, "subscribe-thought", SESSION_ID, params);
       if (frame.payload.kind !== "snapshot") throw new Error("Expected snapshot frame");
       expect(frame.payload.snapshot.config).toMatchObject({
         model: "glm-4.6",

@@ -1,0 +1,29 @@
+{
+  "identity": {
+    "name": "Zody Local Computer Use",
+    "keychain": "/Users/zhvala/Library/Keychains/login.keychain-db",
+    "sha256": "a7f7afa6a507b71c996f4a9bfbf6eef908d67054acdca93833bcd4c94c13ef0b",
+    "sha1": "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+    "keyAlgorithm": "RSA-3072",
+    "signatureAlgorithm": "SHA256",
+    "privateKeyExportable": false,
+    "allowedApplication": "/usr/bin/codesign",
+    "userApproval": "User replied \u5141\u8bb8 to the Round11 certificate-install proposal on 2026-10-29",
+    "importStatus": "success",
+    "trustStatus": "success",
+    "importFormat": "pemseq",
+    "trustDomain": "user",
+    "trustPolicy": "codeSign",
+    "temporaryPrivateFilesRemoved": true
+  },
+  "signedApp": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app",
+  "preflightExitCode": 0,
+  "files": {
+    "Contents/Info.plist": "a11ef13ef71076145c7e1bf5711b01c4cb023fa15da4ddcc7cdf9fb852c3d15c",
+    "Contents/MacOS/macos-cua-helper-round11": "f321465c59b8b71625abc88a4fe4c298cc16cfa8fe433fb28566247fa74f0b1a",
+    "Contents/Resources/authority-entry.mjs": "e0bb13d090179121b7a89bf85009e3a749647beb9c2611b0219d5d72cdf2ae62",
+    "Contents/Resources/licenses/node-LICENSE.txt": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18",
+    "Contents/Resources/node": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+    "Contents/_CodeSignature/CodeResources": "7307feb1ed81b9a049bc82e8e0c5ddf593e655759803bd879533389f5563c1e3"
+  }
+}

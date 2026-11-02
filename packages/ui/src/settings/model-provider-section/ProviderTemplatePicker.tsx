@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/button.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
+import { SettingsBreadcrumbReporter } from "@/settings/SettingsHeaderBreadcrumb.js";
+import { useSettingsPresentation } from "@/settings/SettingsPresentationContext.js";
+import { SETTINGS_TOUCH_MIN_SIZE_11_CLASS } from "@/settings/settingsMobileClasses.js";
 import { ProviderLogo } from "./ProviderLogo.js";
 import { useProviderDetailFeedback } from "./ProviderDetailFeedback.js";
 
@@ -32,7 +35,11 @@ export function ProviderTemplatePicker({
   creating: boolean;
 }) {
   const { intl, locale } = useZCodeIntl();
+  const { isMobile } = useSettingsPresentation();
   const { dismissFeedback, showFeedback } = useProviderDetailFeedback();
+  const templatePickerTitle = intl.formatMessage({
+    id: "settings.modelProvider.templatePickerTitle",
+  });
   const customLabel = intl.formatMessage({ id: "settings.modelProvider.newProviderName" });
   const zhipuIds = ["bigmodel-api", "zai-api", "bigmodel-standard-api", "zai-standard-api"];
   const groups = [
@@ -70,20 +77,26 @@ export function ProviderTemplatePicker({
   };
   return (
     <section className="space-y-5" data-testid={TID_MODEL_PROVIDER_TEMPLATE_PICKER}>
+      {isMobile ? (
+        // 手机 header 的父级返回与页内返回共用 onBack；空列表也能从模板页回到原层级。
+        <SettingsBreadcrumbReporter
+          items={[{ label: templatePickerTitle }]}
+          onSectionSelect={onBack}
+        />
+      ) : null}
       <div className="flex items-center gap-3">
         <Button
           type="button"
           variant="ghost"
           size="icon-sm"
+          className={SETTINGS_TOUCH_MIN_SIZE_11_CLASS}
           data-testid={TID_MODEL_PROVIDER_TEMPLATE_BACK_BUTTON}
           aria-label={intl.formatMessage({ id: "settings.modelProvider.templatePickerBack" })}
           onClick={onBack}
         >
           <ArrowLeftIcon className="size-4" aria-hidden="true" />
         </Button>
-        <h2 className="text-ui-lg font-semibold text-foreground">
-          {intl.formatMessage({ id: "settings.modelProvider.templatePickerTitle" })}
-        </h2>
+        <h2 className="text-ui-lg font-semibold text-foreground">{templatePickerTitle}</h2>
       </div>
 
       <div className="space-y-6">

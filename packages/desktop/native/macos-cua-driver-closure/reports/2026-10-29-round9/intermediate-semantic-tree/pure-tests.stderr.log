@@ -1,0 +1,23 @@
+   Compiling crc32fast v1.5.0
+   Compiling simd-adler32 v0.3.9
+   Compiling autocfg v1.5.0
+   Compiling cfg-if v1.0.4
+   Compiling adler2 v2.0.1
+   Compiling libc v0.2.186
+   Compiling pxfm v0.1.29
+   Compiling bitflags v2.11.1
+   Compiling byteorder-lite v0.1.0
+   Compiling core-foundation-sys v0.8.7
+   Compiling cua-macos-visual v0.37.0 (/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source/crates/cua-macos-visual)
+   Compiling bytemuck v1.25.0
+   Compiling miniz_oxide v0.8.9
+   Compiling fdeflate v0.3.7
+   Compiling num-traits v0.2.19
+   Compiling flate2 v1.1.9
+   Compiling png v0.18.1
+   Compiling core-foundation v0.10.1
+   Compiling moxcms v0.8.1
+   Compiling image v0.25.10
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 43.20s
+     Running unittests src/lib.rs (/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target/aarch64-apple-darwin/debug/deps/cua_macos_visual-b9968897de331208)
+     Running tests/pure_visual.rs (/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target/aarch64-apple-darwin/debug/deps/pure_visual-682ecf20a3946f12)

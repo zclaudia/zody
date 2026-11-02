@@ -1,0 +1,63 @@
+{
+  "uniqueInputs": 3743,
+  "changedInputs": [],
+  "graphs": [
+    {
+      "entry": "cli-entry.mjs",
+      "inputs": 3183,
+      "packages": 176,
+      "licenseMissing": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/provider-utils",
+        "data-uri-to-buffer",
+        "omggif",
+        "parse-bmfont-ascii",
+        "quickjs-wasi"
+      ]
+    },
+    {
+      "entry": "host-entry.mjs",
+      "inputs": 1038,
+      "packages": 18,
+      "licenseMissing": [
+        "data-uri-to-buffer"
+      ]
+    },
+    {
+      "entry": "node-repl-server.mjs",
+      "inputs": 627,
+      "packages": 12,
+      "licenseMissing": []
+    },
+    {
+      "entry": "session-entry.mjs",
+      "inputs": 3134,
+      "packages": 169,
+      "licenseMissing": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/provider-utils",
+        "omggif",
+        "parse-bmfont-ascii",
+        "quickjs-wasi"
+      ]
+    },
+    {
+      "entry": "session-storage-entry.mjs",
+      "inputs": 3131,
+      "packages": 169,
+      "licenseMissing": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/provider-utils",
+        "omggif",
+        "parse-bmfont-ascii",
+        "quickjs-wasi"
+      ]
+    },
+    {
+      "entry": "tasks-storage-worker.mjs",
+      "inputs": 352,
+      "packages": 1,
+      "licenseMissing": []
+    }
+  ]
+}

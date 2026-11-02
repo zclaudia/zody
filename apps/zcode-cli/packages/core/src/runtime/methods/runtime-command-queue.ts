@@ -426,6 +426,8 @@ function finishForegroundExecution(
   this: AgentRuntimeInternal,
   state: ActiveForegroundExecutionState,
 ): void {
+  // 正常 foreground 结束只释放本 execution 的 CUA consumer/binding；owner 撤销已先行通知。
+  this.invalidateCuaSubmissionTurnScopeForForeground(state, "scope-closed");
   state.disposeParentAbort();
   if (this.activeForegroundExecution === state) {
     this.activeForegroundExecution = undefined;
@@ -447,8 +449,14 @@ export function stopActiveForegroundExecution(
   this: AgentRuntimeInternal,
   options: StopActiveForegroundExecutionOptions = {},
 ): StopActiveForegroundExecutionResult {
+  // 既有内部 queue promotion 抢占以 preserveQueueAutoDrainOnCancel 区分；只有用户 stop
+  // 才锁存 CUA 撤销。expected id 不匹配时不得撤销新任务。
+  const userStop = options.preserveQueueAutoDrainOnCancel !== true;
   const active = this.activeForegroundExecution;
-  if (!active || active.controller.signal.aborted) {
+  if (!active) {
+    if (userStop && options.expectedForegroundExecutionId === undefined) {
+      this.cuaSubmissionCoordinator?.revokeCurrent("user-stop", { clearPending: true });
+    }
     return { kind: "idle" };
   }
   if (
@@ -459,6 +467,15 @@ export function stopActiveForegroundExecution(
       kind: "mismatch",
       activeForegroundExecutionId: active.foregroundExecutionId,
     };
+  }
+  if (active.controller.signal.aborted) {
+    if (userStop) {
+      this.cuaSubmissionCoordinator?.revokeCurrent("user-stop", { clearPending: true });
+    }
+    return { kind: "idle" };
+  }
+  if (userStop) {
+    this.cuaSubmissionCoordinator?.revokeCurrent("user-stop", { clearPending: true });
   }
   // sendQueuedNow 的内部抢占过去与用户手动 Stop 共用同一种 cancelled，
   // turn catch 因而把 queueAutoDrain 关闭。把调用意图固定在当前 foreground

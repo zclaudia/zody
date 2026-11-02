@@ -1,0 +1,68 @@
+{
+  "attempt": "retry-after-prior-confirmation-expired",
+  "sessionId": "sess_9e87a356-41ec-473b-a482-ae6bfbbbcad8",
+  "turnId": "turn_8b7f8fb2-9dbe-47cc-ac83-a64d721350a9",
+  "target": {
+    "pid": 14879,
+    "windowId": 87802
+  },
+  "toolError": "cua_native_capture_closed:eof",
+  "events": [
+    {
+      "timestamp": "2026-10-30T10:13:13.316Z",
+      "event": "tool.call.started",
+      "sessionId": "sess_9e87a356-41ec-473b-a482-ae6bfbbbcad8",
+      "turnId": "turn_8b7f8fb2-9dbe-47cc-ac83-a64d721350a9",
+      "status": "started",
+      "context": {
+        "queryId": "01a18c4c-6a88-74a2-8801-af0049dabfc1",
+        "turnNumber": 1,
+        "providerId": "deepseek",
+        "modelId": "deepseek-flash",
+        "iteration": 0,
+        "querySource": "main_turn",
+        "toolName": "mcp__node_repl__js"
+      }
+    },
+    {
+      "timestamp": "2026-10-30T10:13:15.735Z",
+      "event": "cua.submission.owner_revoked",
+      "sessionId": "sess_9e87a356-41ec-473b-a482-ae6bfbbbcad8",
+      "context": {
+        "projectionStatus": "revoked",
+        "reason": "control-lost",
+        "revision": 2,
+        "lineageId": "e9857fc6-e572-4652-9f70-10cf5578cb22"
+      }
+    },
+    {
+      "timestamp": "2026-10-30T10:13:15.762Z",
+      "event": "tool.call.completed",
+      "sessionId": "sess_9e87a356-41ec-473b-a482-ae6bfbbbcad8",
+      "turnId": "turn_8b7f8fb2-9dbe-47cc-ac83-a64d721350a9",
+      "durationMs": 2444,
+      "status": "completed",
+      "context": {
+        "queryId": "01a18c4c-6a88-74a2-8801-af0049dabfc1",
+        "turnNumber": 1,
+        "providerId": "deepseek",
+        "modelId": "deepseek-flash",
+        "iteration": 0,
+        "querySource": "main_turn",
+        "toolName": "mcp__node_repl__js"
+      }
+    }
+  ],
+  "nativeHelperStillAlive": true,
+  "nativeHelperPid": 15368,
+  "nodePid": 15399,
+  "captureDelivered": false,
+  "screenshotThenStopAccepted": false,
+  "note": "Old generation1 timed out with authority-eof. NEW generation2 was actually approved; capture failed afterwards. Controller diagnostic SIGTERM is not product Stop acceptance.",
+  "nativeConfirmation": {
+    "generation": 2,
+    "allowed": true,
+    "reason": "user-approved"
+  },
+  "nativeFailure": "capture-failed"
+}

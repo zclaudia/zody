@@ -1,0 +1,16 @@
+[
+  {
+    "repo": "madsmtm/objc2",
+    "url": "https://raw.githubusercontent.com/madsmtm/objc2/4fc083f1c6d6784577e38b0ee8dbd344481e2fd2/LICENSE.txt",
+    "sha256": "e353f37b12aefbb9f9b29490e837cfee05d9bda70804b3562839a3285c1df1e5",
+    "bytes": 1066,
+    "local": "/tmp/zody-cua-r6-controller-objc2-LICENSE"
+  },
+  {
+    "repo": "mozilla/uniffi-rs",
+    "url": "https://raw.githubusercontent.com/mozilla/uniffi-rs/309762f55db3f0548194a9ceba3027fa64b18a93/LICENSE",
+    "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+    "bytes": 16725,
+    "local": "/tmp/zody-cua-r6-controller-uniffi-LICENSE"
+  }
+]

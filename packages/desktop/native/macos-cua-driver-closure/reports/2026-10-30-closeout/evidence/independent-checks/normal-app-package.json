@@ -1,0 +1,19 @@
+{
+  "name": "normal-app-package",
+  "argv": [
+    "pnpm",
+    "exec",
+    "electron-builder",
+    "--config",
+    "electron-builder.config.js",
+    "--mac",
+    "--arm64",
+    "--dir",
+    "--config.directories.output=/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/normal-app"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody/packages/desktop",
+  "startedAt": "2026-10-30T14:40:57.578985+00:00",
+  "seconds": 97.959,
+  "exitCode": 1,
+  "log": "normal-app-package.log"
+}

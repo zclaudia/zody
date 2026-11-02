@@ -84,12 +84,23 @@ export interface LexicalChatInputHandle {
   ) => void;
   prependMentionIfMissing: (mention: ComposerMentionPrefill) => boolean;
   setMention: (mention: ComposerMentionPrefill, trailingText?: string) => void;
-  insertMention: (mention: ComposerMentionPrefill, selectionState?: EditorState) => void;
+  insertMention: (
+    mention: ComposerMentionPrefill,
+    selectionState?: EditorState,
+  ) => void;
   setText: (text: string) => void;
   setTextWithPluginMentions: (text: string) => void;
   setEditorStateJson: (editorStateJson: string) => void;
-  setSkillMention: (skillName: string, markdown?: string, trailingText?: string) => void;
-  setSlashCommandMention: (commandName: string, markdown?: string, trailingText?: string) => void;
+  setSkillMention: (
+    skillName: string,
+    markdown?: string,
+    trailingText?: string,
+  ) => void;
+  setSlashCommandMention: (
+    commandName: string,
+    markdown?: string,
+    trailingText?: string,
+  ) => void;
 }
 
 interface LexicalEnterSubmitOptions {
@@ -124,7 +135,10 @@ interface LeadingChineseSlashAliasInputOptions {
 const CHINESE_SLASH_ALIAS = "、";
 const STANDARD_SLASH_TRIGGER = "/";
 
-import { HISTORY_NAVIGATION_UPDATE_TAG, PROGRAMMATIC_UPDATE_TAG } from "./lib/editorUpdateTags.js";
+import {
+  HISTORY_NAVIGATION_UPDATE_TAG,
+  PROGRAMMATIC_UPDATE_TAG,
+} from "./lib/editorUpdateTags.js";
 
 export function shouldSubmitLexicalEnter({
   allowSubmitWhenEmpty = false,
@@ -162,7 +176,9 @@ export function shouldSubmitLexicalModifiedEnter({
   );
 }
 
-export function shouldResetLexicalEditorAfterSubmit(result: LexicalSubmitResult): boolean {
+export function shouldResetLexicalEditorAfterSubmit(
+  result: LexicalSubmitResult,
+): boolean {
   return result !== false;
 }
 
@@ -173,7 +189,10 @@ export function shouldNormalizeLeadingChineseSlashAliasInput({
   isComposing = false,
 }: LeadingChineseSlashAliasInputOptions): boolean {
   return (
-    data === CHINESE_SLASH_ALIAS && inputType === "insertText" && isAtEditorStart && !isComposing
+    data === CHINESE_SLASH_ALIAS &&
+    inputType === "insertText" &&
+    isAtEditorStart &&
+    !isComposing
   );
 }
 
@@ -210,7 +229,10 @@ function replaceEditorText(editor: LexicalEditor, text: string) {
 const INLINE_PLUGIN_MENTION_PATTERN =
   /\[@((?:\\.|[^\]])+)\]\(plugin:\/\/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+)\)/g;
 
-function replaceEditorTextWithPluginMentions(editor: LexicalEditor, text: string) {
+function replaceEditorTextWithPluginMentions(
+  editor: LexicalEditor,
+  text: string,
+) {
   editor.update(
     () => {
       const root = $getRoot();
@@ -220,9 +242,11 @@ function replaceEditorTextWithPluginMentions(editor: LexicalEditor, text: string
         let cursor = 0;
         for (const match of line.matchAll(INLINE_PLUGIN_MENTION_PATTERN)) {
           const start = match.index ?? 0;
-          if (start > cursor) paragraph.append($createTextNode(line.slice(cursor, start)));
+          if (start > cursor)
+            paragraph.append($createTextNode(line.slice(cursor, start)));
           const markdown = match[0];
-          const label = match[1]?.replaceAll("\\]", "]").replaceAll("\\[", "[") ?? "";
+          const label =
+            match[1]?.replaceAll("\\]", "]").replaceAll("\\[", "[") ?? "";
           const pluginId = match[2] ?? "";
           paragraph.append(
             $createPromptMentionNode({
@@ -315,7 +339,10 @@ export function prependEditorMentionIfMissing(
   return inserted;
 }
 
-function replaceEditorStateJson(editor: LexicalEditor, editorStateJson: string) {
+function replaceEditorStateJson(
+  editor: LexicalEditor,
+  editorStateJson: string,
+) {
   const editorState = editor.parseEditorState(editorStateJson);
   editor.setEditorState(editorState, { tag: PROGRAMMATIC_UPDATE_TAG });
 }
@@ -395,7 +422,9 @@ function appendEditorFileMention(
     () => {
       const root = $getRoot();
       const lastChild = root.getLastChild();
-      const paragraph = $isParagraphNode(lastChild) ? lastChild : $createParagraphNode();
+      const paragraph = $isParagraphNode(lastChild)
+        ? lastChild
+        : $createParagraphNode();
       if (!$isParagraphNode(lastChild)) {
         root.append(paragraph);
       }
@@ -427,7 +456,9 @@ function appendEditorPlainText(editor: LexicalEditor, text: string) {
     () => {
       const root = $getRoot();
       const lastChild = root.getLastChild();
-      const paragraph = $isParagraphNode(lastChild) ? lastChild : $createParagraphNode();
+      const paragraph = $isParagraphNode(lastChild)
+        ? lastChild
+        : $createParagraphNode();
       if (!$isParagraphNode(lastChild)) {
         root.append(paragraph);
       }
@@ -444,7 +475,9 @@ function appendEditorPlainText(editor: LexicalEditor, text: string) {
   );
 }
 
-function getPromptMentionIdAfterDomSelection(rootElement: HTMLElement): string | null {
+function getPromptMentionIdAfterDomSelection(
+  rootElement: HTMLElement,
+): string | null {
   const selection = window.getSelection();
   if (!selection?.isCollapsed || !selection.anchorNode) {
     return null;
@@ -527,11 +560,13 @@ function KeyboardPlugin({
   const effectiveShortcutBindings = useEffectiveShortcutBindings();
   const composerEffectiveRef = useRef({
     composerSend: effectiveShortcutBindings.composerSend ?? [],
-    composerInsertNewline: effectiveShortcutBindings.composerInsertNewline ?? [],
+    composerInsertNewline:
+      effectiveShortcutBindings.composerInsertNewline ?? [],
   });
   composerEffectiveRef.current = {
     composerSend: effectiveShortcutBindings.composerSend ?? [],
-    composerInsertNewline: effectiveShortcutBindings.composerInsertNewline ?? [],
+    composerInsertNewline:
+      effectiveShortcutBindings.composerInsertNewline ?? [],
   };
 
   useEffect(() => {
@@ -561,7 +596,8 @@ function KeyboardPlugin({
           return false;
         }
         if (scopedAction === "send") {
-          const modifiedScopedEnter = event.shiftKey || event.ctrlKey || event.metaKey;
+          const modifiedScopedEnter =
+            event.shiftKey || event.ctrlKey || event.metaKey;
           // 反转投递开启时带修饰组合让位主链（Ctrl+Enter = 反向 delivery，交付语义比键位更具体）
           if (!(modifiedScopedEnter && onModifiedSubmit)) {
             // 与主链裸 Enter 等价的门禁：无修饰组合受 submitDisabled / 手机视口 enterSubmits；
@@ -732,10 +768,18 @@ function KeyboardPlugin({
     // 非 Enter 物理键不存在手机软键盘误发问题，send 不受 enterSubmits 视口门禁；
     // 与反转投递（仅响应 Ctrl/Meta+Enter）无交集，无需让位。
     const handleNonEnterScopedKeydown = (event: KeyboardEvent) => {
-      if (disabled || event.repeat || event.isComposing || event.key === "Enter") {
+      if (
+        disabled ||
+        event.repeat ||
+        event.isComposing ||
+        event.key === "Enter"
+      ) {
         return;
       }
-      const scopedAction = resolveComposerKeyAction(event, composerEffectiveRef.current);
+      const scopedAction = resolveComposerKeyAction(
+        event,
+        composerEffectiveRef.current,
+      );
       if (!scopedAction) {
         return;
       }
@@ -754,7 +798,13 @@ function KeyboardPlugin({
       }
       event.preventDefault();
       const text = getEditorMarkdown(editor.getEditorState());
-      if (shouldSubmitLexicalEnter({ allowSubmitWhenEmpty, enterSubmits: true, text })) {
+      if (
+        shouldSubmitLexicalEnter({
+          allowSubmitWhenEmpty,
+          enterSubmits: true,
+          text,
+        })
+      ) {
         const submitResult = onSubmit(text);
         if (shouldResetLexicalEditorAfterSubmit(submitResult)) {
           resetEditor(editor);
@@ -764,15 +814,23 @@ function KeyboardPlugin({
 
     const unregisterRootListener = editor.registerRootListener(
       (rootElement, previousRootElement) => {
-        previousRootElement?.removeEventListener("keydown", handleRootKeyDownCapture, {
-          capture: true,
-        });
+        previousRootElement?.removeEventListener(
+          "keydown",
+          handleRootKeyDownCapture,
+          {
+            capture: true,
+          },
+        );
         rootElement?.addEventListener("keydown", handleRootKeyDownCapture, {
           capture: true,
         });
-        previousRootElement?.removeEventListener("keydown", handleNonEnterScopedKeydown, {
-          capture: true,
-        });
+        previousRootElement?.removeEventListener(
+          "keydown",
+          handleNonEnterScopedKeydown,
+          {
+            capture: true,
+          },
+        );
         rootElement?.addEventListener("keydown", handleNonEnterScopedKeydown, {
           capture: true,
         });
@@ -783,12 +841,16 @@ function KeyboardPlugin({
       unregisterEnter();
       unregisterBackspace();
       unregisterRootListener();
-      editor.getRootElement()?.removeEventListener("keydown", handleRootKeyDownCapture, {
-        capture: true,
-      });
-      editor.getRootElement()?.removeEventListener("keydown", handleNonEnterScopedKeydown, {
-        capture: true,
-      });
+      editor
+        .getRootElement()
+        ?.removeEventListener("keydown", handleRootKeyDownCapture, {
+          capture: true,
+        });
+      editor
+        .getRootElement()
+        ?.removeEventListener("keydown", handleNonEnterScopedKeydown, {
+          capture: true,
+        });
     };
   }, [
     allowSubmitWhenEmpty,
@@ -801,6 +863,106 @@ function KeyboardPlugin({
   ]);
 
   return null;
+}
+
+/**
+ * perf-8：onChange markdown 下发控制器（可单测的纯状态机，微任务合批 + 去重）。
+ *
+ * 旧实现每次 update 都把当前与前一 editorState 各做一次全量 markdown 序列化
+ * （成本随草稿长度线性，旧注释自认这段是「输入卡顿计时」热点），长草稿在手机上
+ * 打字延迟可感知。两步削减，行为保持等价：
+ * 1) 去重基准从「前一 editorState 的序列化文本」改为「上次实际下发的文本」，
+ *    且去重在冲刷时按「同任务终态」裁决（评审修复）：handleEditorUpdate 无条件
+ *    覆盖 pendingText——同任务后续 update 的 nextText 可能与上次已下发文本相同
+ *    （净回退），若在入口提前 return，已排队的中间文本会在冲刷时被当成终态下发，
+ *    而编辑器真实状态已是 nextText；冲刷时终态等于已下发值则整体跳过，父组件
+ *    现值即为终态，与旧实现逐次比对 prevEditorState 的最终状态一致，只是省掉
+ *    冗余下发，前一状态的整趟序列化也随之省掉。
+ * 2) 同一任务内的多次 update（IME 组合提交、粘贴常在一拍内多次触发）合并为
+ *    一次下发：冲刷点安排在微任务，位于任何后续宏任务（点击发送按钮、失焦、
+ *    Enter 提交）之前，提交/失焦经 onChange 读到的文本与同步路径完全一致，
+ *    不存在滞后尾差。
+ * 权衡：onChange 从「update 监听器内同步」变为「当前任务末尾」。消费方
+ * （ConversationComposer.updateText → setState）在 React 18 下本就批量异步提交，
+ * 时序无可观察差异；recordInputLag 的计时口径相应从「单次 update」放宽到
+ * 「合并批次」，方向一致（只用于打字卡顿诊断，不参与功能逻辑）。
+ */
+export function createTextContentSyncController(target: {
+  onChange: (text: string) => void;
+  taskId?: string | null;
+  /** IME 组合态由 compositionstart/end 维护；冲刷时读取最新值。 */
+  getIsComposing: () => boolean;
+}): {
+  /** 每次 Lexical update 调用一次；nextText 由调用方序列化后传入。 */
+  handleEditorUpdate: (params: {
+    isDirty: boolean;
+    nextText: string;
+    tags?: ReadonlySet<string>;
+  }) => void;
+  /** 丢弃在途微任务；卸载或 onChange 换绑时调用，避免旧闭包把文本下发给旧 onChange。 */
+  dispose: () => void;
+} {
+  const { onChange, taskId, getIsComposing } = target;
+  let disposed = false;
+  let scheduled = false;
+  let pendingText: string | null = null;
+  let pendingTags: ReadonlySet<string> | null = null;
+  let pendingStartedAt = 0;
+  // 空文档序列化为 ""，与旧实现首帧 nextText === previousText("") 跳过的行为对齐。
+  let lastEmittedText = "";
+  const flush = () => {
+    scheduled = false;
+    if (disposed || pendingText === null) return;
+    const nextText = pendingText;
+    const tags = pendingTags;
+    const lagMs = performance.now() - pendingStartedAt;
+    pendingText = null;
+    pendingTags = null;
+    // 去重在冲刷时按同任务终态裁决（评审修复）：终态等于上次已下发文本
+    // （净回退到已下发值）则跳过，父组件现值即终态，不下发过期中间值。
+    if (nextText === lastEmittedText) {
+      return;
+    }
+    lastEmittedText = nextText;
+    onChange(nextText);
+    // 程序化改写与 IME 组合态不算打字卡顿(判定在 recordInputLag 内统一短路)。
+    recordInputLag({
+      lagMs,
+      textLength: nextText.length,
+      isProgrammatic: tags?.has(PROGRAMMATIC_UPDATE_TAG) ?? false,
+      isComposing: getIsComposing(),
+      taskId: taskId ?? undefined,
+    });
+  };
+  const schedule = () => {
+    if (scheduled) return;
+    scheduled = true;
+    // 部分 WebView / 最小 DOM 运行时没有 queueMicrotask，保留 Promise 微任务降级。
+    if (typeof globalThis.queueMicrotask === "function") {
+      globalThis.queueMicrotask(flush);
+      return;
+    }
+    void Promise.resolve().then(flush);
+  };
+  return {
+    handleEditorUpdate({ isDirty, nextText, tags }) {
+      if (!isDirty) {
+        return;
+      }
+      // 输入卡顿计时:包住「全量序列化 + onChange 下发」这段处理热点。
+      if (!scheduled) {
+        pendingStartedAt = performance.now();
+      }
+      // 无条件覆盖 pending（评审修复）：即使 nextText 与上次已下发文本相同，
+      // 也必须顶掉已排队的中间文本，否则冲刷会下发过期值；去重由 flush 裁决。
+      pendingText = nextText;
+      pendingTags = tags ?? null;
+      schedule();
+    },
+    dispose() {
+      disposed = true;
+    },
+  };
 }
 
 /**
@@ -838,8 +1000,14 @@ function TextContentPlugin({
 
     // root 会重挂,用 registerRootListener 在新旧 root 上正确解绑/绑定。
     return editor.registerRootListener((rootElement, previousRootElement) => {
-      previousRootElement?.removeEventListener("compositionstart", handleCompositionStart);
-      previousRootElement?.removeEventListener("compositionend", handleCompositionEnd);
+      previousRootElement?.removeEventListener(
+        "compositionstart",
+        handleCompositionStart,
+      );
+      previousRootElement?.removeEventListener(
+        "compositionend",
+        handleCompositionEnd,
+      );
       rootElement?.addEventListener("compositionstart", handleCompositionStart);
       rootElement?.addEventListener("compositionend", handleCompositionEnd);
     });
@@ -850,34 +1018,24 @@ function TextContentPlugin({
       return;
     }
 
-    return editor.registerUpdateListener(
-      ({ dirtyElements, dirtyLeaves, editorState, prevEditorState, tags }) => {
-        if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
-          return;
-        }
-
-        // 输入卡顿计时:包住「全量序列化 + onChange 同步重渲染」这段处理热点。
-        const startedAt = performance.now();
-
-        const nextText = getEditorMarkdown(editorState);
-        const previousText = getEditorMarkdown(prevEditorState);
-        if (nextText === previousText) {
-          return;
-        }
-
-        onChange(nextText);
-
-        const lagMs = performance.now() - startedAt;
-        // 程序化改写与 IME 组合态不算打字卡顿(判定在 recordInputLag 内统一短路)。
-        recordInputLag({
-          lagMs,
-          textLength: nextText.length,
-          isProgrammatic: tags.has(PROGRAMMATIC_UPDATE_TAG),
-          isComposing: composingRef.current,
-          taskId: taskId ?? undefined,
+    const controller = createTextContentSyncController({
+      onChange,
+      taskId,
+      getIsComposing: () => composingRef.current,
+    });
+    const unregister = editor.registerUpdateListener(
+      ({ dirtyElements, dirtyLeaves, editorState, tags }) => {
+        controller.handleEditorUpdate({
+          isDirty: dirtyElements.size !== 0 || dirtyLeaves.size !== 0,
+          nextText: getEditorMarkdown(editorState),
+          tags,
         });
       },
     );
+    return () => {
+      controller.dispose();
+      unregister();
+    };
   }, [editor, onChange, taskId]);
 
   return null;
@@ -894,7 +1052,11 @@ function EditablePlugin({ editable }: { editable: boolean }) {
   return null;
 }
 
-function E2ELexicalInputBridgePlugin({ inputTestId }: { inputTestId?: string }) {
+function E2ELexicalInputBridgePlugin({
+  inputTestId,
+}: {
+  inputTestId?: string;
+}) {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -907,7 +1069,8 @@ function E2ELexicalInputBridgePlugin({ inputTestId }: { inputTestId?: string }) 
       getEditorState: () => editor.getEditorState(),
       getText: () => getEditorMarkdown(editor.getEditorState()),
       setText: (text: string) => replaceEditorText(editor, text),
-      setTextWithPluginMentions: (text: string) => replaceEditorTextWithPluginMentions(editor, text),
+      setTextWithPluginMentions: (text: string) =>
+        replaceEditorTextWithPluginMentions(editor, text),
       setEditorStateJson: (editorStateJson: string) =>
         replaceEditorStateJson(editor, editorStateJson),
     };
@@ -916,9 +1079,11 @@ function E2ELexicalInputBridgePlugin({ inputTestId }: { inputTestId?: string }) 
     const detachBridge = (input: HTMLElement | null) => {
       if (
         input &&
-        (input as { __zcodeLexicalInputE2E?: typeof bridge }).__zcodeLexicalInputE2E === bridge
+        (input as { __zcodeLexicalInputE2E?: typeof bridge })
+          .__zcodeLexicalInputE2E === bridge
       ) {
-        delete (input as { __zcodeLexicalInputE2E?: typeof bridge }).__zcodeLexicalInputE2E;
+        delete (input as { __zcodeLexicalInputE2E?: typeof bridge })
+          .__zcodeLexicalInputE2E;
       }
       input?.removeAttribute("data-e2e-lexical-bridge");
     };
@@ -944,7 +1109,9 @@ function E2ELexicalInputBridgePlugin({ inputTestId }: { inputTestId?: string }) 
       if (rootElement?.getAttribute("data-testid") === inputTestId) {
         return rootElement;
       }
-      return document.querySelector<HTMLElement>(`[data-testid="${inputTestId}"]`);
+      return document.querySelector<HTMLElement>(
+        `[data-testid="${inputTestId}"]`,
+      );
     };
 
     let retryTimer: number | null = null;
@@ -956,14 +1123,16 @@ function E2ELexicalInputBridgePlugin({ inputTestId }: { inputTestId?: string }) 
         retryTimer = null;
       }
     };
-    const unregisterRoot = editor.registerRootListener((rootElement, previousRootElement) => {
-      if (previousRootElement !== rootElement) {
-        detachBridge(previousRootElement);
-      }
-      // E2E bridge 之前只在 effect 里查询一次 DOM。
-      // 编辑器 root 如果比插件晚挂载或被 Lexical 重挂载，bridge 会永久缺失。
-      attachBridge(resolveInput(rootElement));
-    });
+    const unregisterRoot = editor.registerRootListener(
+      (rootElement, previousRootElement) => {
+        if (previousRootElement !== rootElement) {
+          detachBridge(previousRootElement);
+        }
+        // E2E bridge 之前只在 effect 里查询一次 DOM。
+        // 编辑器 root 如果比插件晚挂载或被 Lexical 重挂载，bridge 会永久缺失。
+        attachBridge(resolveInput(rootElement));
+      },
+    );
 
     tryAttachBridge();
     // edit 场景里 ChatPromptEditor 的 initialValue 回填、Lexical root 注册、
@@ -994,36 +1163,41 @@ function PromptHistoryPlugin({
   const applyingHistoryRef = useRef(false);
 
   useEffect(() => {
-    if (historyIndexRef.current !== null && entries[historyIndexRef.current] === undefined) {
+    if (
+      historyIndexRef.current !== null &&
+      entries[historyIndexRef.current] === undefined
+    ) {
       historyIndexRef.current = null;
     }
   }, [entries]);
 
   useEffect(() => {
-    return editor.registerUpdateListener(({ dirtyElements, dirtyLeaves, editorState }) => {
-      if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
-        return;
-      }
+    return editor.registerUpdateListener(
+      ({ dirtyElements, dirtyLeaves, editorState }) => {
+        if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
+          return;
+        }
 
-      if (applyingHistoryRef.current) {
-        applyingHistoryRef.current = false;
-        return;
-      }
+        if (applyingHistoryRef.current) {
+          applyingHistoryRef.current = false;
+          return;
+        }
 
-      const currentIndex = historyIndexRef.current;
-      if (currentIndex === null) {
-        return;
-      }
+        const currentIndex = historyIndexRef.current;
+        if (currentIndex === null) {
+          return;
+        }
 
-      if (entries[currentIndex] === undefined) {
-        historyIndexRef.current = null;
-        return;
-      }
+        if (entries[currentIndex] === undefined) {
+          historyIndexRef.current = null;
+          return;
+        }
 
-      if (getEditorMarkdown(editorState) !== entries[currentIndex]) {
-        historyIndexRef.current = null;
-      }
-    });
+        if (getEditorMarkdown(editorState) !== entries[currentIndex]) {
+          historyIndexRef.current = null;
+        }
+      },
+    );
   }, [editor, entries]);
 
   const applyHistoryEntry = useCallback(
@@ -1180,8 +1354,14 @@ function LeadingChineseSlashAliasPlugin({ disabled }: { disabled?: boolean }) {
     };
 
     return editor.registerRootListener((rootElement, previousRootElement) => {
-      previousRootElement?.removeEventListener("beforeinput", handleBeforeInput as EventListener);
-      rootElement?.addEventListener("beforeinput", handleBeforeInput as EventListener);
+      previousRootElement?.removeEventListener(
+        "beforeinput",
+        handleBeforeInput as EventListener,
+      );
+      rootElement?.addEventListener(
+        "beforeinput",
+        handleBeforeInput as EventListener,
+      );
     });
   }, [disabled, editor]);
 
@@ -1233,13 +1413,18 @@ export function insertEditorMention(
   mention: ComposerMentionPrefill,
   selectionState?: EditorState,
 ) {
-  const selection = selectionState?.read(() => $getSelection()?.clone() ?? null);
+  const selection = selectionState?.read(
+    () => $getSelection()?.clone() ?? null,
+  );
   editor.update(
     () => {
       // 浮层获取焦点后 Lexical 选区会丢失，恢复打开菜单前的光标，避免覆盖整份草稿。
       // 草稿可能在菜单打开期间被替换；旧节点不存在时不能恢复选区，否则 Lexical 会抛错。
       if ($isRangeSelection(selection)) {
-        if ($getNodeByKey(selection.anchor.key) && $getNodeByKey(selection.focus.key)) {
+        if (
+          $getNodeByKey(selection.anchor.key) &&
+          $getNodeByKey(selection.focus.key)
+        ) {
           $setSelection(selection);
         } else {
           $getRoot().selectEnd();
@@ -1280,23 +1465,48 @@ function EditorApiPlugin({
         markdown: string,
         data?: MentionItemData,
         trailingText = " ",
-      ) => appendEditorFileMention(editor, label, value, markdown, data, trailingText),
+      ) =>
+        appendEditorFileMention(
+          editor,
+          label,
+          value,
+          markdown,
+          data,
+          trailingText,
+        ),
       insertMention: (mention, selectionState) =>
         insertEditorMention(editor, mention, selectionState),
-      prependMentionIfMissing: (mention) => prependEditorMentionIfMissing(editor, mention),
+      prependMentionIfMissing: (mention) =>
+        prependEditorMentionIfMissing(editor, mention),
       setMention: (mention, trailingText) =>
         replaceEditorWithMention(editor, mention, trailingText),
       setText: (text: string) => replaceEditorText(editor, text),
-      setTextWithPluginMentions: (text: string) => replaceEditorTextWithPluginMentions(editor, text),
+      setTextWithPluginMentions: (text: string) =>
+        replaceEditorTextWithPluginMentions(editor, text),
       setEditorStateJson: (editorStateJson: string) =>
         replaceEditorStateJson(editor, editorStateJson),
-      setSkillMention: (skillName: string, markdown = `$${skillName}`, trailingText = " ") =>
-        replaceEditorWithSkillMention(editor, skillName, markdown, trailingText),
+      setSkillMention: (
+        skillName: string,
+        markdown = `$${skillName}`,
+        trailingText = " ",
+      ) =>
+        replaceEditorWithSkillMention(
+          editor,
+          skillName,
+          markdown,
+          trailingText,
+        ),
       setSlashCommandMention: (
         commandName: string,
         markdown = `/${commandName}`,
         trailingText = " ",
-      ) => replaceEditorWithSlashCommandMention(editor, commandName, markdown, trailingText),
+      ) =>
+        replaceEditorWithSlashCommandMention(
+          editor,
+          commandName,
+          markdown,
+          trailingText,
+        ),
     };
 
     return () => {
@@ -1434,35 +1644,35 @@ export function LexicalChatInput({
     },
     [editorApiRef, onSubmit],
   );
+  // 手机远控防 iOS 聚焦放大的输入字号在占位符与正文两处复用；先算一次，
+  // 也避免模板串内长调用被格式化器改写后破坏 mobileInputZoom 的源码级断言。
+  const inputTextSizeClassName = resolveMobileInputTextSizeClassName({
+    avoidIosInputFocusZoom,
+  });
   // Lexical 的 ContentEditable props 是一个互斥联合类型，
   // aria-placeholder 一旦出现就要求 placeholder 同时存在。
   // 之前直接写三元 JSX，TypeScript 在合并两条分支时没有正确保留这组联动约束，导致误报缺少 placeholder。
-  const contentEditableProps: React.ComponentProps<typeof ContentEditable> = placeholder
-    ? {
-        "aria-placeholder": placeholder,
-        placeholder: (
-          <div
-            className={`pointer-events-none absolute left-0 top-0 ${compactPlaceholder ? "line-clamp-2" : ""} ${resolveMobileInputTextSizeClassName(
-              {
-                avoidIosInputFocusZoom,
-              },
-            )} text-foreground-subtlest`}
-          >
-            {placeholder}
-          </div>
-        ),
-      }
-    : {
-        placeholder: null,
-      };
+  const contentEditableProps: React.ComponentProps<typeof ContentEditable> =
+    placeholder
+      ? {
+          "aria-placeholder": placeholder,
+          placeholder: (
+            <div
+              className={`pointer-events-none absolute left-0 top-0 ${compactPlaceholder ? "line-clamp-2" : ""} ${inputTextSizeClassName} text-foreground-subtlest`}
+            >
+              {placeholder}
+            </div>
+          ),
+        }
+      : {
+          placeholder: null,
+        };
 
   const contentEditable = (
     <ContentEditable
       // Bugfix: mention node 使用固定行高的 inline-flex chip，普通正文如果继承浏览器 normal line-height，
       // 在 token 后继续输入文字时会按不同 line box 计算基线；这里显式收口正文行高，并允许手机远控使用 16px 防止 iOS 聚焦放大。
-      className={`min-h-10 max-h-40 overflow-y-auto ${resolveMobileInputTextSizeClassName({
-        avoidIosInputFocusZoom,
-      })} text-foreground outline-none`}
+      className={`min-h-10 max-h-40 overflow-y-auto ${inputTextSizeClassName} text-foreground outline-none`}
       data-testid={inputTestId}
       onFocus={onFocus}
       {...contentEditableProps}
@@ -1487,7 +1697,10 @@ export function LexicalChatInput({
     <div className="relative flex-1">
       <LexicalComposer initialConfig={initialConfig}>
         <div className="relative">
-          <PlainTextPlugin contentEditable={contentEditable} ErrorBoundary={LexicalErrorBoundary} />
+          <PlainTextPlugin
+            contentEditable={contentEditable}
+            ErrorBoundary={LexicalErrorBoundary}
+          />
           <HistoryPlugin />
           <PromptClipboardPlugin />
           <TextContentPlugin onChange={onChange} taskId={taskId} />

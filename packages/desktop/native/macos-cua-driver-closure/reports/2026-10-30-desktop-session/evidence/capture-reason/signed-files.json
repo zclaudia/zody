@@ -1,0 +1,11 @@
+{
+  "Zody CUA Desktop Session.app/Contents/Info.plist": "2e2720b0211f06e588438f3172ae83a028f30ad4bd01ca9291e2096b68ab5cc6",
+  "Zody CUA Desktop Session.app/Contents/_CodeSignature/CodeResources": "16ade13fc6b970000ac35cc67f81aea0c4c12b062cde489f182465b88c575907",
+  "Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session": "b1065604e72e0632721be4b40a96610c4ad2f43237597ee205cabd7f98b9b1b0",
+  "Zody CUA Desktop Session.app/Contents/Resources/session-entry.mjs": "de5f471e0cf5efa1fcb8273455dc377d3e1f48ab7c583e5ca286121a616b946a",
+  "Zody CUA Desktop Session.app/Contents/Resources/host-entry.mjs": "678b88d351d99a0a869f51c1de03af7d8d7289e43ee1e4ced6cdcdbdd0b89e6b",
+  "Zody CUA Desktop Session.app/Contents/Resources/cli-entry.mjs": "526dd3fa3f3dbae5bca69ac4286d7f6ca473c98b93fdb310d231e46c0fc755cb",
+  "Zody CUA Desktop Session.app/Contents/Resources/node-repl-server.mjs": "ee616be55c18dfb0cc84ca76c4c98f9606e0e7739a7a956d795fbfef7eb0edc7",
+  "Zody CUA Desktop Session.app/Contents/Resources/node": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+  "Zody CUA Desktop Session.app/Contents/Resources/licenses/node-LICENSE.txt": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18"
+}

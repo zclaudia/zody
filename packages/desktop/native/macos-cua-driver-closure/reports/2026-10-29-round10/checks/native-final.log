@@ -1,0 +1,97 @@
+{
+  "status": "pass",
+  "evidence": {
+    "trueUnixPeerCapture": true,
+    "realSecurityRejection": true,
+    "syntheticPolicyPositive": true,
+    "positiveSignedHelper": "blocked",
+    "staticArtifactChecks": "performed",
+    "socketRetention": true,
+    "partialFrameDeadline": true,
+    "asidPinned": false,
+    "pidVersionPinned": false,
+    "loginSessionInferred": false,
+    "parentRelationshipInferred": false,
+    "nodeSignatureControl": "pass",
+    "nodeLoadedJsAttested": false
+  },
+  "scenarios": [
+    {
+      "id": "real-peer-adhoc-rejected",
+      "status": "pass"
+    },
+    {
+      "id": "wrong-pid",
+      "status": "pass"
+    },
+    {
+      "id": "wrong-uid",
+      "status": "pass"
+    },
+    {
+      "id": "default-blocked",
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-policy-positive",
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-wrong-bundle",
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-wrong-leaf",
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-wrong-dr",
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-requirement-failed",
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-adhoc",
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-missing-cert",
+      "status": "pass"
+    },
+    {
+      "id": "profile-world-writable",
+      "status": "pass"
+    },
+    {
+      "id": "profile-schema-boolean",
+      "status": "pass"
+    },
+    {
+      "id": "profile-schema-fractional",
+      "status": "pass"
+    },
+    {
+      "id": "existing-socket-retained",
+      "status": "pass"
+    },
+    {
+      "id": "replaced-socket-retained",
+      "status": "pass"
+    },
+    {
+      "id": "partial-frame-timeout",
+      "status": "pass"
+    },
+    {
+      "id": "invalid-profile",
+      "status": "pass"
+    },
+    {
+      "id": "positive-signed-helper-blocked",
+      "status": "pass"
+    }
+  ],
+  "calibrationStatus": "pass"
+}

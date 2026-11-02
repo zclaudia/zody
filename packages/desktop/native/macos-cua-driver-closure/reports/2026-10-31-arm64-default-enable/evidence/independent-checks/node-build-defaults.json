@@ -1,0 +1,14 @@
+{
+  "name": "node-build-defaults",
+  "argv": [
+    "node",
+    "--test",
+    "packages/desktop/scripts/macos-cua-narrow-resources-build.test.mjs",
+    "packages/desktop/scripts/macos-cua-narrow-resources-bundle-args.test.mjs"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-31T05:38:04.897586+00:00",
+  "seconds": 0.394,
+  "exitCode": 0,
+  "log": "node-build-defaults.log"
+}

@@ -1,0 +1,45 @@
+
+> @zcode/desktop@ test:macos-cua-narrow-resources /Users/zhvala/SourceCode/zody/packages/desktop
+> node --test scripts/macos-cua-narrow-resources-*.test.mjs
+
+✔ default build has no narrow request and no extra resource (0.756083ms)
+✔ explicit narrow manifest is absolute, arm64-only and exported to builder env (0.3055ms)
+✔ CLI and env manifests must agree (0.080042ms)
+✔ explicit narrow manifest rejects non-darwin or non-arm64 targets (0.100625ms)
+✔ explicit narrow assembly rejects the candidate Host launch seam (0.12675ms)
+✔ narrow extra resource uses validated stageAppPath and the independent slot (0.0785ms)
+✔ signIgnore covers the cua-narrow slot without changing cua-helper (0.18425ms)
+✔ explicit empty CLI manifest never degrades to an unrequested build (0.057083ms)
+✔ explicit --cua-narrow-manifest without a path is rejected (0.89425ms)
+✔ explicit --cua-narrow-manifest with a path still creates a narrow request (0.535833ms)
+✔ identity pins are read only from the fixed path and must match fixed hashes (10.433875ms)
+✔ codesign identity, DR, runtime flag, strict signature and empty entitlements are enforced (1.8485ms)
+✔ DR is read from codesign -d -r- and strict verify uses the fixed -R requirement (0.213375ms)
+✔ default leaf extraction uses codesign --extract-certificates=<prefix> and hashes leaf0 (2.406625ms)
+✔ leaf extraction fails when codesign does not write leaf0 (0.891667ms)
+✔ verifyMachO returns real architectures and rejects universal or failed tools (0.869ms)
+✔ fixed pin constants stay aligned with the read-only identity pins file (1.686417ms)
+✔ test root stays under the authorized output directory (0.164542ms)
+✔ manifest tree digest mismatch is rejected (41.793125ms)
+✔ absolute or escaping controlled paths are rejected (14.028833ms)
+✔ tampered staged resource is rejected by file manifest (13.537291ms)
+✔ desktop-session entry manifest hashes must match the signed app resources (17.409459ms)
+✔ round11 helper manifest is not accepted as the desktop-session assembly source (16.58625ms)
+✔ missing node-repl-server resource is rejected even with a matching tree manifest (17.316875ms)
+✔ live identity mismatch is rejected even when the manifest self-reports the fixed pin (15.042375ms)
+✔ symlink resources are rejected (4.451458ms)
+✔ native build manifest hash mismatch is rejected (18.703834ms)
+✔ prepare copies the desktop-session helper and records signed vs unsigned hashes (15.0315ms)
+✔ prepared output remains buildable and verifiable after moving the whole directory (38.088708ms)
+✔ prepare refuses to overwrite an existing stage without --replace (42.251833ms)
+✔ missing fixture pins are rejected before copying (8.677792ms)
+✔ packaged cua-narrow resources are revalidated after copy (28.769084ms)
+✔ tampered packaged cua-narrow resources are rejected (27.819959ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 393.570125

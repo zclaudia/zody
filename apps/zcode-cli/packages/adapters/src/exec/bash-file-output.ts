@@ -1,7 +1,7 @@
 import { subscribeBashOutputProgress } from "./bash-progress-poller.js";
 import { buildBashOutputPreview } from "./bash-output-preview.js";
 import { constants } from "node:fs";
-import { lstat, mkdir, open, rm, stat, statfs, type FileHandle } from "node:fs/promises";
+import { lstat, mkdir, open, rm, rmdir, stat, statfs, type FileHandle } from "node:fs/promises";
 import { dirname } from "node:path";
 import { decodeExecutionOutputBuffer } from "./outputEncoding.js";
 import type { ExecutionStreamResult, ExecutionOutputPreview } from "@zcode/contracts";
@@ -59,6 +59,9 @@ export class BashFileOutput {
       // 清理失败不能覆盖取消/spawn 的真实结果，也不能删除原有文件。
       await rm(this.path, { force: true }).catch(() => undefined);
     }
+    // I16：prepare 可能在 mkdir 之后、lstat/open 之前失败（created 仍为 false），
+    // 也要清理本次留下/空置的 toolCall 目录；目录里仍有其它产物时 rmdir 会失败并保留。
+    await removeEmptyOutputDirectory(this.path);
     this.prepared = false;
   }
 
@@ -148,6 +151,14 @@ export class BashFileOutput {
       };
     }
   }
+}
+
+/**
+ * I16：删除输出文件后清理已空的 per-toolCall 目录。
+ * 目录内仍有其它产物（如用户文件、另一路的 stderr.log）时 rmdir 失败，按约定保留。
+ */
+export async function removeEmptyOutputDirectory(outputPath: string): Promise<void> {
+  await rmdir(dirname(outputPath)).catch(() => undefined);
 }
 
 export async function readBashOutput(

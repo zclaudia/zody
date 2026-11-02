@@ -1,0 +1,11 @@
+{
+  "Contents/Info.plist": "2e2720b0211f06e588438f3172ae83a028f30ad4bd01ca9291e2096b68ab5cc6",
+  "Contents/MacOS/macos-cua-desktop-session": "43d1197052875497f1325f531d4fa29c1296218f5f7db8d5b9a3463155df6d7b",
+  "Contents/Resources/cli-entry.mjs": "e3e04379a0f6d197b7ac4f34a2d7e8a0c0db64d05c77a437b427cbfd65480721",
+  "Contents/Resources/host-entry.mjs": "8f0eb2beb78365508d9e16d478e3f050e753a0d6015c4a5f7542776ade6a75f6",
+  "Contents/Resources/licenses/node-LICENSE.txt": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18",
+  "Contents/Resources/node": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+  "Contents/Resources/node-repl-server.mjs": "ee616be55c18dfb0cc84ca76c4c98f9606e0e7739a7a956d795fbfef7eb0edc7",
+  "Contents/Resources/session-entry.mjs": "121eefaa6375bb94cabe9d7c50a7fd8c18e9730dfcaaf51aaaaa13fe5b760456",
+  "Contents/_CodeSignature/CodeResources": "39280a6f0de2abb1a9240bfdb653dc8ec6f202c725c8150d683df7fe3491eb09"
+}

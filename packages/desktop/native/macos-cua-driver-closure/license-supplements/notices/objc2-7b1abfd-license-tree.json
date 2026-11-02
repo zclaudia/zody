@@ -1,0 +1,37 @@
+{
+  "url": "https://codeload.github.com/madsmtm/objc2/tar.gz/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+  "sha256": "a6685e9b30da4c2b9ed807e8344d7248447daf1d5ab5b7af4fa3755545f96a4d",
+  "archiveBytes": 1309694,
+  "licensePaths": [
+    {
+      "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+      "bytes": 1339,
+      "regular": true
+    },
+    {
+      "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/crates/test-ui/ui/ns_copying_without_copy_helper.rs",
+      "bytes": 371,
+      "regular": true
+    },
+    {
+      "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/crates/test-ui/ui/ns_copying_without_copy_helper.stderr",
+      "bytes": 2007,
+      "regular": true
+    },
+    {
+      "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/framework-crates/objc2-cinematic/tests/mutable_copying.rs",
+      "bytes": 809,
+      "regular": true
+    },
+    {
+      "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/framework-crates/objc2-foundation/src/copying.rs",
+      "bytes": 8610,
+      "regular": true
+    },
+    {
+      "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/framework-crates/objc2-foundation/src/tests/copying.rs",
+      "bytes": 618,
+      "regular": true
+    }
+  ]
+}

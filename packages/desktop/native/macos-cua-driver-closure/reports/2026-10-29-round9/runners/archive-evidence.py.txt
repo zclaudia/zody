@@ -1,0 +1,43 @@
+from pathlib import Path
+import json,hashlib,gzip,shutil
+root=Path.cwd();o=root/'output/cua-driver-round9';dest=root/'packages/desktop/native/macos-cua-driver-closure/reports/2026-10-29-round9'
+dest.mkdir(parents=True,exist_ok=False)
+def cp(src,rel):
+ t=dest/rel;t.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(src,t)
+def gz(src,rel):
+ t=dest/rel;t.parent.mkdir(parents=True,exist_ok=True);t.write_bytes(gzip.compress(src.read_bytes(),mtime=0))
+a=o/'controller-final-audit';n=o/'controller-final-native'
+for name in ['AUDIT.md','licenses-index.json']:cp(a/name,name)
+for name in ['report.json','build.log']:gz(a/name,name+'.gz')
+cp(a/'candidate-source.patch','upstream-candidate.patch')
+shutil.copytree(a/'licenses',dest/'licenses')
+shutil.copytree(root/'packages/desktop/native/macos-cua-driver-closure/round9',dest/'frozen-inputs')
+shutil.copytree(o/'controller-derived-source',dest/'derived-source')
+shutil.copytree(o/'failed-attempts',dest/'failed-attempts')
+for p in n.iterdir():
+ if p.is_file():
+  if p.name=='cache.json':gz(p,'native/cache.json.gz')
+  else:cp(p,'native/'+p.name)
+for p in (o/'controller-checks').iterdir():
+ if p.is_file():cp(p,'checks/'+p.name)
+for name in ['typecheck-final.log','lint-final.log','architecture-final.log']:cp(o/name,'checks/'+name)
+for p in (o/'controller-baseline').iterdir():
+ if p.is_file():
+  if p.suffix=='.json' and p.stat().st_size>100000:gz(p,'baseline/'+p.name+'.gz')
+  else:cp(p,'baseline/'+p.name)
+for p in (o/'controller-sdk-probe').iterdir():
+ if p.is_file() and p.suffix in ['.swift','.log','.json']:cp(p,'sdk-investigation/'+p.name)
+for name in ['controller-verify.mjs','controller-compare.mjs','archive-evidence.py']:cp(o/name,'runners/'+name+'.txt')
+for p in (o/'controller-native-checks').iterdir():
+ if p.is_file() and p.name!='cache.json':cp(p,'intermediate-semantic-tree/'+p.name)
+# Preserve the intermediate successful audit separately; never substitute it for final-tree evidence.
+gz(o/'controller-accepted-audit/report.json','intermediate-semantic-tree/report.json.gz')
+for p in ['report.json','build.log']:
+ assert (a/p).exists()
+report=json.loads((a/'report.json').read_text());prepare=json.loads((o/'controller-checks/prepare-accepted.json').read_text());comparison=json.loads((o/'controller-checks/comparison.json').read_text())
+artifacts=json.loads((n/'artifacts.json').read_text())
+for path in artifacts['nativeBuildArtifacts']:
+ p=Path(path);artifacts.setdefault('nativeArtifactHashes',[]).append({'path':path,'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()})
+summary={'kind':'round9-controller-acceptance','tree':prepare['candidate'],'pins':{'patch':prepare['patch'],'sourceManifestSha256':prepare['sourceManifestSha256'],'reviewConfigSha256':prepare['reviewConfigSha256']},'rebuild':prepare,'gates':report['gates'],'graph':comparison['graph'],'licenseMaterials':report['licenses']['archive'],'libraryArtifacts':report['build']['preservedArtifacts'],'nativeArtifacts':artifacts,'tests':{'rustLib':34,'rustIntegration':16,'driverTools':106},'checks':{'typecheck':'pass','lint':{'errors':0,'warnings':301},'architectureViolations':0,'rustfmt':'pass'},'notExecuted':['native window enumeration','native screenshot','native input','TCC or certificate changes','signed Helper validation','native Fenced/Drained','full D06','Intel','minimum macOS device'],'productAdoption':'blocked','defaultDisabled':True,'zcodeCuaPlaceholder':True}
+(dest/'acceptance-summary.json').write_text(json.dumps(summary,indent=2)+'\n')
+print(dest)

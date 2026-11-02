@@ -2,8 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- 手机页面固定以设备宽度布局；viewport-fit 让安全区 inset 在端上生效。 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- 手机页面固定以设备宽度布局；viewport-fit 让安全区 inset 在端上生效。
+         interactive-widget=resizes-content 是 Android Chromium 108+ 的键盘行为开关：键盘弹起时压缩
+         initial containing block，100dvh 布局跟随缩小，底部输入区不被键盘遮挡（走查 searchfile-4）；
+         iOS Safari 不识别并忽略该字段，iOS 侧避让由 installMobileKeyboardInsetTracker 承担。
+         spec 见 docs/web-remote-control/mobile-viewport-input-and-touch.md §2.1。 -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
     <meta name="theme-color" content="#161616" />
     <meta name="color-scheme" content="dark" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />

@@ -1,4 +1,4 @@
-import type { UtilityProcess as ElectronUtilityProcess } from "electron";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 import {
   HostMessageTypes,
   HostResponseTypes,
@@ -38,7 +38,7 @@ function createClaimToken(windowId: number, requestId: string): string {
 }
 
 export class BroadcastHub {
-  private processes = new Map<number, ElectronUtilityProcess>();
+  private processes = new Map<number, HostProcessHandle>();
   /** 通用 opaque reservation/claim；不保存 Coding Plan 等业务状态。 */
   private readonly claims = new Map<string, BroadcastClaimRecord>();
 
@@ -48,7 +48,7 @@ export class BroadcastHub {
   }
 
   /** 注册 host process 并监听其广播消息 */
-  register(windowId: number, child: ElectronUtilityProcess): void {
+  register(windowId: number, child: HostProcessHandle): void {
     this.processes.set(windowId, child);
 
     child.on("message", (msg: unknown) => {
@@ -108,7 +108,7 @@ export class BroadcastHub {
    */
   private handleClaim(
     windowId: number,
-    source: ElectronUtilityProcess,
+    source: HostProcessHandle,
     requestId: string,
     key: string,
   ): void {

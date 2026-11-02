@@ -1,5 +1,5 @@
 import { spawn, execFile } from "node:child_process";
-import { mkdtemp, mkdir, readFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,13 +16,44 @@ const adapterSource = fileURLToPath(
 const driverSource = `
 import { NodeExecutionAdapter } from ${JSON.stringify(adapterSource)};
 import { spawn } from 'node:child_process';
-import { writeFile, access } from 'node:fs/promises';
+import { writeFile, access, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 async function main() {
   const mode = process.argv[2], root = process.argv[3];
   const ready = join(root, 'worker.pid');
+  if (mode === 'layout') {
+    const adapter = new NodeExecutionAdapter({ outputRootDir: root });
+    const request = (toolCallId) => ({
+      command: {
+        mode: 'shell', shellProfile: 'posix-bash',
+        shellOverride: { path: '/bin/bash', dialect: 'posix', source: 'user-config', display: { name: 'bash' } },
+        command: '"$TEST_NODE" "$TEST_SCRIPT"',
+      },
+      cwd: root,
+      timeoutMs: 5000,
+      env: { set: { TEST_NODE: process.execPath, TEST_SCRIPT: process.argv[4] } },
+      outputLimit: { persistOutput: 'always' },
+      trace: { sessionId: 'shutdown-session', attributes: { toolCallId } },
+    });
+    const failedRequest = request('failed-tool');
+    failedRequest.command = {
+      ...failedRequest.command,
+      // auto-detected 的具体路径才会按原样 spawn 并触发 ENOENT；user-config 在 posix 上会重新探测。
+      shellOverride: { ...failedRequest.command.shellOverride, path: join(root, 'missing-shell'), source: 'auto-detected' },
+    };
+    const failed = await adapter.run(failedRequest);
+    const kept = await adapter.run(request('shutdown-tool'));
+    console.log('FAILED ' + failed.status);
+    console.log('ARTIFACT ' + kept.stdout.artifactPath);
+    console.log('RESULT ' + kept.status);
+    await adapter.close();
+    const leftovers = await readdir(join(root, 'shutdown-session')).catch(() => []);
+    console.log('LEFTOVER ' + JSON.stringify(leftovers.sort()));
+    console.log('CLOSE_FINISHED');
+    return;
+  }
   if (mode === 'worker') {
     process.on('SIGTERM', () => {});
     await writeFile(ready, String(process.pid));
@@ -147,4 +178,40 @@ describe.skipIf(process.platform === "win32")("Bash shutdown in an isolated Node
     },
     20000,
   );
+
+  it("keeps produced output in its toolCall directory and removes failed-spawn directories", async () => {
+    const root = join(directory, "layout");
+    await mkdir(root);
+    const script = join(root, "keep.cjs");
+    await writeFile(script, "process.stdout.write('kept-output')");
+    const child = spawn(process.execPath, [driver, "layout", root, script], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout!.on("data", (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr!.on("data", (chunk) => {
+      stderr += chunk;
+    });
+    const deadline = setTimeout(() => child.kill("SIGKILL"), 15_000);
+    try {
+      const code = await new Promise<number | null>((resolve, reject) => {
+        child.once("error", reject);
+        child.once("close", resolve);
+      });
+      expect(code, stderr).toBe(0);
+      expect(stdout).toContain("FAILED spawn_error");
+      expect(stdout).toContain("RESULT completed");
+      const artifact = /ARTIFACT (.+)/u.exec(stdout)?.[1]?.trim();
+      expect(artifact).toBe(join(root, "shutdown-session", "shutdown-tool", "stdout.log"));
+      expect(await readFile(artifact!, "utf8")).toBe("kept-output");
+      // 已产生输出的目录跨 shutdown 保留；spawn 失败（prepare 后 discard）的 toolCall 目录被清理。
+      expect(stdout).toContain('LEFTOVER ["shutdown-tool"]');
+    } finally {
+      clearTimeout(deadline);
+      child.kill("SIGKILL");
+    }
+  }, 20000);
 });

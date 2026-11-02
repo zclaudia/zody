@@ -1,0 +1,62 @@
+{
+  "source": "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-accepted-pure-tests/cache/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/screencapturekit-8.0.1",
+  "registryArchive": {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-accepted-pure-tests/cache/cargo-home/registry/cache/index.crates.io-1949cf8c6b5b557f/screencapturekit-8.0.1.crate",
+    "sha256": "9ddaa8d6b16a2762c9a97c9a6297f04cb8ded0487e5ef02dc98b4e2bee3a26c7",
+    "bytes": 216361
+  },
+  "files": [
+    {
+      "path": "swift-bridge/Sources/ScreenCaptureKitBridge/ScreenshotManager.swift",
+      "sha256": "6737a988e36c183c7108d906aaf8dfd163d943355bf1d22318be4bc4448d5238",
+      "bytes": 21438
+    },
+    {
+      "path": "swift-bridge/Sources/ScreenCaptureKitBridge/ShareableContent.swift",
+      "sha256": "8b157597be5098d7024a902c8d4fffcc1ef78689eb0638b0c264c1bbbb2b6c43",
+      "bytes": 28719
+    },
+    {
+      "path": "swift-bridge/Sources/ScreenCaptureKitBridge/StreamConfiguration.swift",
+      "sha256": "f35fe19942db95cf100c07c71a30f74b7d8aee1d598f33d91bffb422d913c1be",
+      "bytes": 31584
+    },
+    {
+      "path": "swift-bridge/Sources/ScreenCaptureKitBridge/Core.swift",
+      "sha256": "c8f3959d4df06d5ab710ade3bbdacccccfdc41af131aea89caacba96ec8a7e27",
+      "bytes": 6794
+    },
+    {
+      "path": "swift-bridge/Sources/ScreenCaptureKitBridge/CoreGraphicsStrided.swift",
+      "sha256": "b86b0a4250b363ce59d29686e952aafa208ae604b79e89dd0d9c2da175b50b45",
+      "bytes": 3563
+    },
+    {
+      "path": "swift-bridge/Package.swift",
+      "sha256": "3a47ba3aee5745120b8c71b5a4e30bc68b456e65256c67c58bd32a5f788e70c4",
+      "bytes": 1770
+    },
+    {
+      "path": ".cargo_vcs_info.json",
+      "sha256": "0da1a14c2c045d67c4489c768597e6cc5533959b705ac3f5e5418e08f6fd77d7",
+      "bytes": 94
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "280f2df36444a1d9d7917fe4b09b948ff1acf207ce7cf794bc9bb1d5de6d74b1",
+      "bytes": 3447
+    },
+    {
+      "path": "LICENSE-MIT",
+      "sha256": "5464a5ed6a2143a9d31e5516c7336a312c3c067cdc6ad15323f18fdf8d9755ae",
+      "bytes": 1091
+    },
+    {
+      "path": "LICENSE-APACHE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    }
+  ],
+  "derivedSource": "crates/cua-macos-visual/native/CuaVisualCapture.swift",
+  "note": "Read-only originals. Derived source and R8-to-R9 patch separately frozen. No legal approval."
+}

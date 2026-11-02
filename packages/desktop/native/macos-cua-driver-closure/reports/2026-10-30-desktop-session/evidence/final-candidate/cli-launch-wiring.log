@@ -1,0 +1,12 @@
+✔ parses strict session-ready and rejects path/spoof shapes (1.034959ms)
+✔ launch requires this PID, private capture root and only optional explicit SHA (3.661125ms)
+✔ keeps fd3 lifetime after ready and stops on EOF (0.961667ms)
+✔ keeps fd3 lifetime after ready and stops on control error (2.181333ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 178.692333

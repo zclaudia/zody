@@ -1235,6 +1235,62 @@ describe("ConversationStatusPanel", () => {
     expect(html).not.toContain("100vw");
   });
 
+  // 走查 chat-4：手机 390px 视口下胶囊可达 20rem（约 82% 屏宽），正文滚动时被不透明胶囊
+  // 大面积遮挡。手机触屏视口（isMobileViewport）把上限收进 conversation 容器 60%；
+  // 桌面与宽屏 Web 维持原上限。
+  it("caps the pill at 60% of the conversation column only on mobile touch viewports", async () => {
+    const mobilePill = await renderStatusPanel({
+      summaryPanelVariantOverride: "mini",
+      isMobileViewport: true,
+    });
+    expect(mobilePill).toContain("max-w-[min(60cqw,20rem)]");
+    expect(mobilePill).not.toContain("max-w-[min(20rem,calc(100cqw-2rem))]");
+
+    const desktopPill = await renderStatusPanel({
+      summaryPanelVariantOverride: "mini",
+      isMobileViewport: false,
+    });
+    expect(desktopPill).toContain("max-w-[min(20rem,calc(100cqw-2rem))]");
+    expect(desktopPill).not.toContain("max-w-[min(60cqw,20rem)]");
+
+    // auto 在窄容器下同样呈现胶囊形态，手机触屏上限一并生效。
+    const autoMobile = await renderStatusPanel({
+      summaryPanelVariantOverride: null,
+      layoutMode: "auto",
+      isMobileViewport: true,
+    });
+    expect(autoMobile).toContain("max-w-[min(60cqw,20rem)]");
+  });
+
+  // 走查 chat-3：触屏（hover:none）没有 hover，分区头无论展开还是收起都看不到箭头，
+  // 无法从视觉判断可折叠性。触屏常显 chevron，桌面维持 hover/focus-visible 揭示。
+  it("keeps the section header chevron visible on touch viewports in both states", async () => {
+    const headerSlice = (html: string, section: string) => {
+      const marker = `data-status-section-trigger="${section}"`;
+      return html.slice(html.indexOf(marker), html.indexOf("</button>", html.indexOf(marker)));
+    };
+
+    // 终端分区默认折叠：收起箭头触屏常显。
+    const collapsed = await renderStatusPanel({
+      summaryPanelVariantOverride: "panel",
+      backgroundWorks: [backgroundWork({ workId: "bash-1", kind: "bash" })],
+    });
+    const collapsedHeader = headerSlice(collapsed, "terminal");
+    expect(collapsedHeader).toContain("[@media(hover:none)]:opacity-100");
+    expect(collapsedHeader).toContain("opacity-0");
+    expect(collapsedHeader).toContain("group-hover:opacity-100");
+
+    // 工作流分区默认展开：展开箭头触屏同样常显。
+    const expanded = await renderStatusPanel({
+      summaryPanelVariantOverride: "panel",
+      workflowRuns: [workflowRunProjection()],
+      workflowSectionOpen: true,
+    });
+    const expandedHeader = headerSlice(expanded, "workflow");
+    expect(expandedHeader).toContain("[@media(hover:none)]:opacity-100");
+    expect(expandedHeader).toContain("opacity-0");
+  });
+
   it("shows the ended-runs metric in the mini capsule when nothing else is alive", async () => {
     // Bug 复现：工作区无 Git 变更、workflow 跑完的瞬间——卸载闸门为了 run 目录入口保留
     // 壳（canRenderEndedWorkflows），但胶囊兜底链没有终态分支，渲染成一条 2px 空壳线。

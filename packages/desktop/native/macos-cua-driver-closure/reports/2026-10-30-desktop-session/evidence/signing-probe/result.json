@@ -1,0 +1,154 @@
+{
+  "purpose": "isolated same-leaf local-self-signed dynamic library load under hardened runtime with no entitlements; no product or system changes",
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/xcrun",
+        "--sdk",
+        "macosx27.0",
+        "--find",
+        "clang"
+      ],
+      "exitCode": 0,
+      "stdout": "/Library/Developer/CommandLineTools/usr/bin/clang\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/xcrun",
+        "--sdk",
+        "macosx27.0",
+        "--show-sdk-path"
+      ],
+      "exitCode": 0,
+      "stdout": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/Library/Developer/CommandLineTools/usr/bin/clang",
+        "-arch",
+        "arm64",
+        "-isysroot",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-mmacosx-version-min=14.2",
+        "-dynamiclib",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/lib.c",
+        "-install_name",
+        "@rpath/libprobe.dylib",
+        "-o",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/Library/Developer/CommandLineTools/usr/bin/clang",
+        "-arch",
+        "arm64",
+        "-isysroot",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-mmacosx-version-min=14.2",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main.c",
+        "-L/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe",
+        "-lprobe",
+        "-Wl,-rpath,@executable_path",
+        "-o",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "--force",
+        "--sign",
+        "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+        "--options",
+        "runtime",
+        "--timestamp=none",
+        "--identifier",
+        "io.github.zclaudia.zody.cua-probe.library",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib: replacing existing signature\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--strict",
+        "--verbose=4",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib: valid on disk\n/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib: satisfies its Designated Requirement\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "-d",
+        "--verbose=4",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Executable=/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib\nIdentifier=io.github.zclaudia.zody.cua-probe.library\nFormat=Mach-O thin (arm64)\nCodeDirectory v=20500 size=266 flags=0x10000(runtime) hashes=2+2 location=embedded\nVersionPlatform=1\nVersionMin=918016\nVersionSDK=1769472\nHash type=sha256 size=32\nCandidateCDHash sha256=9b749438373581fc4dc27c631d928ea9cb9f27b1\nCandidateCDHashFull sha256=9b749438373581fc4dc27c631d928ea9cb9f27b1d5a8858ea0bdaf112c63c919\nHash choices=sha256\nCMSDigest=9b749438373581fc4dc27c631d928ea9cb9f27b1d5a8858ea0bdaf112c63c919\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=16384\nExecutable Segment flags=0x0\nPage size=16384\nCDHash=9b749438373581fc4dc27c631d928ea9cb9f27b1\nSignature size=2103\nAuthority=Zody Local Computer Use\nSigned Time=Oct 30, 2026 at 14:03:59\nInfo.plist=not bound\nTeamIdentifier=not set\nRuntime Version=27.0.0\nSealed Resources=none\nInternal requirements count=1 size=120\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "--force",
+        "--sign",
+        "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+        "--options",
+        "runtime",
+        "--timestamp=none",
+        "--identifier",
+        "io.github.zclaudia.zody.cua-probe.main",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main: replacing existing signature\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--strict",
+        "--verbose=4",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main: valid on disk\n/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main: satisfies its Designated Requirement\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "-d",
+        "--verbose=4",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Executable=/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main\nIdentifier=io.github.zclaudia.zody.cua-probe.main\nFormat=Mach-O thin (arm64)\nCodeDirectory v=20500 size=295 flags=0x10000(runtime) hashes=3+2 location=embedded\nVersionPlatform=1\nVersionMin=918016\nVersionSDK=1769472\nHash type=sha256 size=32\nCandidateCDHash sha256=a63c84067039d78b510367e40cd8cd1d884c02bf\nCandidateCDHashFull sha256=a63c84067039d78b510367e40cd8cd1d884c02bf725f109858341fceecf647ea\nHash choices=sha256\nCMSDigest=a63c84067039d78b510367e40cd8cd1d884c02bf725f109858341fceecf647ea\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=16384\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=a63c84067039d78b510367e40cd8cd1d884c02bf\nSignature size=2103\nAuthority=Zody Local Computer Use\nSigned Time=Oct 30, 2026 at 14:03:59\nInfo.plist=not bound\nTeamIdentifier=not set\nRuntime Version=27.0.0\nSealed Resources=none\nInternal requirements count=1 size=116\n"
+    },
+    {
+      "argv": [
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main"
+      ],
+      "exitCode": -6,
+      "stdout": "",
+      "stderr": "dyld[47653]: Library not loaded: @rpath/libprobe.dylib\n  Referenced from: <9B0E3F23-B5D1-3C02-98ED-7B98D9EEA017> /Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/main\n  Reason: tried: '/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib' (code signature in <E902A67A-4504-33F3-B314-9B0B40BD97D8> '/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib' not valid for use in process: mapping process and mapped file (non-platform) have different Team IDs), '/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib' (code signature in <E902A67A-4504-33F3-B314-9B0B40BD97D8> '/Users/zhvala/SourceCode/zody/output/cua-desktop-session/signing-probe/libprobe.dylib' not valid for use in process: mapping process and mapped file (non-platform) have different Team IDs)\n"
+    }
+  ]
+}

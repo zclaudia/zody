@@ -26,6 +26,7 @@ import {
 } from "@/shortcuts/bindings.js";
 import { ShortcutBindingRow, type RecordingState } from "./ShortcutBindingRow.js";
 import { ShortcutSearchBar } from "./ShortcutSearchBar.js";
+import { useSettingsPresentation } from "./SettingsPresentationContext.js";
 import { useShortcutKeySearch } from "./useShortcutKeySearch.js";
 import { useShortcutRecording } from "./useShortcutRecording.js";
 
@@ -38,6 +39,7 @@ import { useShortcutRecording } from "./useShortcutRecording.js";
  */
 export function ShortcutSettingsSection({ isDesktop = false }: { isDesktop?: boolean }) {
   const { intl } = useZCodeIntl();
+  const { isMobile } = useSettingsPresentation();
   const { settings, update } = useSettings();
   const platform = usePlatform();
   const [query, setQuery] = useState("");
@@ -232,13 +234,22 @@ export function ShortcutSettingsSection({ isDesktop = false }: { isDesktop?: boo
         }
       />
 
-      <div className="overflow-hidden rounded-xl border border-border">
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_80px_72px] bg-surface px-4 py-3 text-ui-sm text-foreground-subtle">
-          <span>{intl.formatMessage({ id: "settings.shortcuts.columnHeaderCommand" })}</span>
-          <span>{intl.formatMessage({ id: "settings.shortcuts.columnHeaderBinding" })}</span>
-          <span>{intl.formatMessage({ id: "settings.shortcuts.columnHeaderScope" })}</span>
-          <span>{intl.formatMessage({ id: "settings.shortcuts.columnHeaderActions" })}</span>
-        </div>
+      <div
+        className={
+          isMobile
+            ? "flex flex-col gap-3"
+            : "overflow-hidden rounded-xl border border-border"
+        }
+        data-settings-shortcuts-list={isMobile ? "cards" : "table"}
+      >
+        {isMobile ? null : (
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_80px_72px] bg-surface px-4 py-3 text-ui-sm text-foreground-subtle">
+            <span>{intl.formatMessage({ id: "settings.shortcuts.columnHeaderCommand" })}</span>
+            <span>{intl.formatMessage({ id: "settings.shortcuts.columnHeaderBinding" })}</span>
+            <span>{intl.formatMessage({ id: "settings.shortcuts.columnHeaderScope" })}</span>
+            <span>{intl.formatMessage({ id: "settings.shortcuts.columnHeaderActions" })}</span>
+          </div>
+        )}
         {visibleCommands.map((entry) => (
           <ShortcutBindingRow
             key={entry.id}
@@ -270,7 +281,11 @@ export function ShortcutSettingsSection({ isDesktop = false }: { isDesktop?: boo
         ))}
         {visibleCommands.length === 0 ? (
           <div
-            className="border-t border-border px-4 py-8 text-center text-ui-sm text-foreground-subtle"
+            className={
+              isMobile
+                ? "rounded-xl border border-border px-4 py-8 text-center text-ui-sm text-foreground-subtle"
+                : "border-t border-border px-4 py-8 text-center text-ui-sm text-foreground-subtle"
+            }
             data-testid="settings-shortcut-search-empty"
           >
             {keySearch.binding !== null

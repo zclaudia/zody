@@ -100,15 +100,30 @@ export { createZCodeAgentService } from "./zcode-agent/zcodeAgentService.js";
 export { createZCodeTaskServiceAdapter } from "./zcode-agent/zcodeTaskServiceAdapter.js";
 export { createZCodeSessionService } from "./zcode-session/zcodeSessionService.js";
 export {
+  createZCodeAgentCommandResolver,
   resolveDefaultZCodeAgentCommand,
+  resolveZCodeAgentNativeRuntimeCommand,
+  validateZCodeAgentNativeRuntimeConfig,
   ZCodeAgentProcessManager,
 } from "./zcode-agent/zcodeAgentProcessManager.js";
 export type {
   ZCodeAgentCommand,
   ZCodeAgentCommandResolver,
   ZCodeAgentCommandResolverContext,
+  ZCodeAgentNativeRuntimeConfig,
+  ZCodeAgentNativeRuntimeResolver,
+  ZCodeAgentNativeRuntimeResolverContext,
+  ZCodeAgentNativeRuntimeStartupContext,
   ZCodeAgentProcessManagerOptions,
 } from "./zcode-agent/zcodeAgentProcessManager.js";
+export {
+  createZCodeAgentNativeRuntimeStartupContext,
+  digestZCodeAgentNativeRuntimeProviderSnapshot,
+  digestZCodeAgentNativeRuntimeNetwork,
+  normalizeZCodeAgentNativeRuntimeNetwork,
+  normalizeZCodeAgentNativeRuntimeSelection,
+  projectZCodeAgentNativeRuntimeProviderSnapshot,
+} from "./zcode-agent/nativeRuntimeStartupProfile.js";
 export { ZCodeProtocolClient } from "./zcode-agent/zcodeProtocolClient.js";
 export type { ZCodeProtocolTransport } from "./zcode-agent/zcodeProtocolTransport.js";
 export { ZCodeStdioTransport } from "./zcode-agent/zcodeStdioTransport.js";
@@ -220,6 +235,7 @@ export { createNodeApiClient, NodeApiClient } from "./providers/api/nodeApiClien
 export {
   createHostApiNetworkTransport,
   type HostApiNetworkTransport,
+  type HostApiNetworkTransportDependencies,
 } from "./providers/api/nodeApiNetwork.js";
 export {
   buildRuntimeProcessEnvPatch,
@@ -299,7 +315,12 @@ import { createObservableSettingService } from "./setting/observableSettingServi
 import { createCredentialService } from "./credential/credentialService.js";
 import { createBroadcastService } from "./broadcast/broadcastService.js";
 import { createZCodeAgentService } from "./zcode-agent/zcodeAgentService.js";
-import type { ZCodeAgentCommandResolver } from "./zcode-agent/zcodeAgentProcessManager.js";
+import type {
+  ZCodeAgentCommandResolver,
+  ZCodeAgentCommandResolverContext,
+  ZCodeAgentNativeRuntimeConfig,
+  ZCodeAgentNativeRuntimeResolver,
+} from "./zcode-agent/zcodeAgentProcessManager.js";
 import { buildAgentTelemetrySpawnEnv } from "./zcode-agent/agentTelemetryEnv.js";
 import { resolveZCodeAgentPresentationSurface } from "./zcode-agent/zcodeAgentPresentationSurface.js";
 import { createZCodeTaskServiceAdapter } from "./zcode-agent/zcodeTaskServiceAdapter.js";
@@ -327,6 +348,7 @@ import {
   IProviderSettingsService,
 } from "./model-provider/providerFacadeServices.js";
 import { createProviderSettingsConnectivityTester } from "./model-provider/providerSettingsConnectivity.js";
+import { createZCodeAgentNativeRuntimeStartupContext } from "./zcode-agent/nativeRuntimeStartupProfile.js";
 import {
   createProviderProvisioningSource,
   listProviderProvisioningCredentialKeys,
@@ -998,6 +1020,10 @@ export function createLocalServices(options: {
   // 注入点：默认 resolver 已能覆盖 dev/桌面/SSH 远端三类形态；
   // 测试或特殊宿主想强制走自定义 binary/参数时从这里注入。
   zcodeAgentCommandResolver?: ZCodeAgentCommandResolver;
+  /** Trusted sealed wrapper injection; takes precedence over PATH/env command discovery. */
+  zcodeAgentNativeRuntime?: ZCodeAgentNativeRuntimeConfig;
+  /** Build-time opt-in narrow selector; null falls back to the original resolver. */
+  zcodeAgentNativeRuntimeResolver?: ZCodeAgentNativeRuntimeResolver;
   /** Desktop Main 提前异步采集的本机 runtime 环境；Local Host 注入后不再同步启动 login shell。 */
   runtimeProcessEnvPatch?: Record<string, string>;
   /** 本地桌面上次 workspace 缺失时，仅用于 Agent 子进程 spawn.cwd 兜底。 */
@@ -1050,6 +1076,18 @@ export function createLocalServices(options: {
       sessionContext: "live" | "cached";
       command: BrowserCommand;
     }): Promise<{ ok: boolean; [k: string]: unknown }>;
+    /** 用户显式配置的默认 backend browserId；缺省保持 IAB 默认。 */
+    getDefaultBrowserId?(input: {
+      requestId: string;
+      sessionId: string;
+      turnId?: string;
+      workspaceKey: string;
+      workspacePath: string;
+      workspaceIdentity?: string;
+      remoteSessionId?: string;
+      clientMode: BrowserClientMode;
+      sessionContext: "live" | "cached";
+    }): Promise<string | undefined>;
   };
   /** Windows desktop-local Host 的 CUA turn 状态投影；其它 authority 会在装配层拒绝。 */
   cuaOperationStateReporter?: CuaOperationStateReporter;
@@ -1083,9 +1121,9 @@ export function createLocalServices(options: {
   const settingService = createObservableSettingService(
     options?.settingService ?? localSettings!.service,
   );
-  const resolveCurrentZCodeEndpointOrigin = async () =>
+  const resolveCurrentZodyEndpointOrigin = async () =>
     resolveRuntimeZCodeEndpointOrigin(process.env, {
-      overrideOrigin: (await settingService.get()).zcodeEndpointOrigin,
+      overrideOrigin: (await settingService.get()).zodyEndpointOrigin,
     });
   // fork（F4.7）：OAuth 凭据变更触发的账号派生 Key 失效、插件 UI 账号失效与
   // Provisioning OAuth 键复制随官方账号链删除；Credential Store 仍保留给 MCP OAuth 等通用能力。
@@ -1105,7 +1143,7 @@ export function createLocalServices(options: {
   // fork（F4.7）：401 时的 OAuth 凭据判定/登出钩子随官方账号链删除。
   const apiClient = createNodeApiClient({
     fetchImpl: hostApiNetworkTransport.fetch,
-    resolveZCodeEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
+    resolveZCodeEndpointOrigin: resolveCurrentZodyEndpointOrigin,
   });
   const systemService = createSystemService();
   // onboarding 资格与任务列表共用同一份全局 tasks-index；repo 懒加载数据库，提前构造不会
@@ -1125,7 +1163,7 @@ export function createLocalServices(options: {
       environmentConfigRoot: resolveAppConfigDir(),
       platform: clientConfigPlatform,
       appVersion: ZCODE_VERSION,
-      resolveEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
+      resolveEndpointOrigin: resolveCurrentZodyEndpointOrigin,
       onRefreshResult: (event) => {
         if (event.result === "updated")
           providerConfigLog.info(undefined, "ZCode Built-in CDN 配置已更新", event);
@@ -1665,6 +1703,26 @@ export function createLocalServices(options: {
         ? { resolveUserMode: resolveDynamicWorkflowUserMode }
         : {}),
     });
+  // Narrow runtime startup gate: inject the existing Host service readers, never a
+  // second provider/config store. The resolver invokes this callback only on a new spawn.
+  const zcodeAgentNativeRuntimeResolver =
+    options?.zcodeAgentNativeRuntimeResolver && !isDesktopAttachedRemote
+      ? (context: ZCodeAgentCommandResolverContext) =>
+          options.zcodeAgentNativeRuntimeResolver!(context, {
+            readStartupContext: async () => {
+              const [providerSettingsView, modelSelectionView, settings] = await Promise.all([
+                providerRuntime.providerSettings.getView(),
+                providerRuntime.modelSelection.getView(),
+                settingService.get(),
+              ]);
+              return createZCodeAgentNativeRuntimeStartupContext({
+                providerSettingsView,
+                modelSelectionView,
+                settings,
+              });
+            },
+          })
+      : undefined;
   // fork（F4.3）：offPeakTaskServiceForAgent 前向引用与 offPeakToolWiring（Off-Peak 工具面装配）
   // 随闲时任务全链路删除。
   const zcodeAgentService = createZCodeAgentService({
@@ -1680,6 +1738,8 @@ export function createLocalServices(options: {
     ...(resolveDynamicWorkflowUserMode ? { resolveDynamicWorkflowUserMode } : {}),
     forwardDynamicWorkflowUserMode: options?.forwardDynamicWorkflowUserMode,
     commandResolver: options?.zcodeAgentCommandResolver,
+    nativeRuntime: options?.zcodeAgentNativeRuntime,
+    nativeRuntimeResolver: zcodeAgentNativeRuntimeResolver,
     cuaHostInstanceId: options?.hostInstanceId,
     presentationSurface: resolveZCodeAgentPresentationSurface({
       runtimeSurface: options?.agentTelemetry?.runtimeSurface,
@@ -1768,7 +1828,7 @@ export function createLocalServices(options: {
         }),
         // 把 host 解析出的权威 origin（含 settings 覆盖）下发给 agent，否则 agent 侧只按
         // env 推导，test env + 自定义端点时两侧信任判定的输入分叉、官方 MCP 整体 fail closed。
-        ...buildAgentEndpointOriginEnv(await resolveCurrentZCodeEndpointOrigin()),
+        ...buildAgentEndpointOriginEnv(await resolveCurrentZodyEndpointOrigin()),
         // broker 凭据（socket/token）注入 agent spawn env，让内置 zcode-cua plugin 的
         // computer-use MCP server 经 __zcode-plugin-host 恢复 token 后连上 broker。
         ...cuaProductHelperEnv,

@@ -1,7 +1,14 @@
 export { RemoteServiceAccess } from "./remoteServiceAccess.js";
-export { connectViaProtocol, connectViaWebSocket } from "./websocket.js";
+export {
+  connectViaProtocol,
+  connectViaProtocolOwned,
+  connectViaWebSocket,
+} from "./websocket.js";
 export type { WebSocketConnectionCloseEvent } from "./websocket.js";
-export { connectViaMessagePort, createMessagePortServiceConnection } from "./messageport.js";
+export {
+  connectViaMessagePort,
+  createMessagePortServiceConnection,
+} from "./messageport.js";
 export type { MessagePortServiceConnection } from "./messageport.js";
 export {
   ACKNOWLEDGED_WEB_REMOTE_CONTROL_RELAY_LIMITS,

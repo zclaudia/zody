@@ -23,6 +23,7 @@ import {
 import { requireRecord } from "../record-access.js";
 import type { V4CommandCoreHost, V4SessionRecordView } from "../types.js";
 import { V4CommandNoopError } from "../../v4-gateway.js";
+import { cancelCuaLiveSubmission, registerCuaLiveSubmission } from "../cua-live-submission.js";
 
 /** 等 idle 轮询参数：25ms 间隔、5s 超时。 */
 const IDLE_POLL_INTERVAL_MS = 25;
@@ -48,7 +49,10 @@ async function sendText(
   const rawPayload = envelope.payload as CommandPayloadMap["sendText"];
   const record = requireRecord(host, envelope.sessionId);
   // Bug 根因：旧校验只看正文，UI 已允许的 attachment-only query 会在 CLI 被误判为空。
-  if (!hasPromptInput(rawPayload.text, rawPayload.attachments) && !rawPayload.conversationQuotes?.length) {
+  if (
+    !hasPromptInput(rawPayload.text, rawPayload.attachments) &&
+    !rawPayload.conversationQuotes?.length
+  ) {
     throw new V4InputAdmissionRejectedError("proto.invalidPayload", "input must not be empty");
   }
   const activeAutomationId = resolveTurnAutomationId({
@@ -114,6 +118,10 @@ async function sendText(
     );
   }
   let started;
+  let cuaTicket: ReturnType<typeof registerCuaLiveSubmission> = undefined;
+  const requestedDelivery =
+    payload.requestedDelivery ??
+    (routingMode === "guide" ? "guide" : routingMode === "enqueue" ? "queue" : "startNow");
   // 附件命令面：AttachmentRef → TurnAttachment 在闸门后映射（active turn 已排除）。
   try {
     const intent = submissionIntent({
@@ -122,9 +130,7 @@ async function sendText(
       // fork（bots 移除）：payload.botGroupSource 组装随 bot channels 全量删除
       // （specs/bot-channels-removal.md）。
       conversationQuotes: payload.conversationQuotes,
-      requestedDelivery:
-        payload.requestedDelivery ??
-        (routingMode === "guide" ? "guide" : routingMode === "enqueue" ? "queue" : "startNow"),
+      requestedDelivery,
       ...(payload.requestedDelivery !== "guide" && routingMode === "guide" && attachments?.length
         ? { fallbackReasonCode: "guide.attachmentsUnsupported" }
         : {}),
@@ -132,6 +138,10 @@ async function sendText(
       sharedContextRefs: payload.context_refs,
       ...(payload.source ? { source: payload.source } : {}),
     });
+    // guide/automation/plugin 代发不是可信桌面新提交；其余 desktop 输入才登记 ticket。
+    if (requestedDelivery !== "guide" && !activeAutomationId && !payload.source) {
+      cuaTicket = registerCuaLiveSubmission(record, envelope, payload.inputOrigin);
+    }
     started = await startPromptTurn(host, record, {
       content: payload.text,
       ...(payload.browserAmbientContext
@@ -155,6 +165,10 @@ async function sendText(
       // 抢占完成后的 startNow 会先落 deferred queue，待 lease 释放后再被自动 drain。
       ...(forceStartNow ? { requireIdle: true } : {}),
     });
+  } catch (error) {
+    // admission 失败撤销未消费 ticket；成功 queue 时保留到既有队列提升消费一次。
+    cancelCuaLiveSubmission(record, cuaTicket);
+    throw error;
   } finally {
     releaseForegroundPromotionLease();
   }

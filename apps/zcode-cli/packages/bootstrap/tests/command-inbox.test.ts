@@ -207,6 +207,101 @@ describe("CommandInbox 幂等（§6.2/§6.3）", () => {
     expect(retry.ack.result).toEqual({ type: "forkAssistant", sessionId: "fork-child" });
   });
 
+  it("I19：冷 READY 前的重试先去重，settled/in-flight 命中不读取 session gate 事实", async () => {
+    const getRevision = vi.fn(() => 7);
+    const getLogEpoch = vi.fn(() => "epoch-current");
+    const guard = vi.fn(() => ({ verdict: "allow" as const }));
+    const lookupTranscriptCommand = vi.fn(() => null);
+    const inbox = new CommandInbox(
+      makeHost({ getRevision, getLogEpoch, guard, lookupTranscriptCommand }),
+    );
+
+    const settledFirst = await inbox.handle(envelope({ commandId: "cmd-i19-settled" }));
+    expect(settledFirst.kind).toBe("execute");
+    if (settledFirst.kind !== "execute") return;
+    settledFirst.settle({ status: "accepted" });
+
+    getRevision.mockClear();
+    getLogEpoch.mockClear();
+    guard.mockClear();
+    lookupTranscriptCommand.mockClear();
+    const settledRetry = await inbox.handle(envelope({ commandId: "cmd-i19-settled" }));
+    expect(settledRetry.kind).toBe("ack");
+    if (settledRetry.kind !== "ack") return;
+    expect(settledRetry.ack.status).toBe("duplicate");
+    expect(getRevision).not.toHaveBeenCalled();
+    expect(getLogEpoch).not.toHaveBeenCalled();
+    expect(guard).not.toHaveBeenCalled();
+    expect(lookupTranscriptCommand).not.toHaveBeenCalled();
+
+    const inFlightFirst = await inbox.handle(envelope({ commandId: "cmd-i19-inflight" }));
+    expect(inFlightFirst.kind).toBe("execute");
+    if (inFlightFirst.kind !== "execute") return;
+    getRevision.mockClear();
+    getLogEpoch.mockClear();
+    guard.mockClear();
+    lookupTranscriptCommand.mockClear();
+    const inFlightRetry = inbox.handle(envelope({ commandId: "cmd-i19-inflight" }));
+    await Promise.resolve();
+    inFlightFirst.settle({ status: "accepted" });
+    const inFlightOutcome = await inFlightRetry;
+    expect(inFlightOutcome.kind).toBe("ack");
+    if (inFlightOutcome.kind !== "ack") return;
+    expect(inFlightOutcome.ack.status).toBe("duplicate");
+    expect(getRevision).not.toHaveBeenCalled();
+    expect(getLogEpoch).not.toHaveBeenCalled();
+    expect(guard).not.toHaveBeenCalled();
+    expect(lookupTranscriptCommand).not.toHaveBeenCalled();
+  });
+
+  it("I19：probe 只查内存幂等表（settled/in-flight），miss 不做分类或持久事实读取", async () => {
+    const getRevision = vi.fn(() => 7);
+    const getLogEpoch = vi.fn(() => "epoch-current");
+    const guard = vi.fn(() => ({ verdict: "allow" as const }));
+    const lookupTranscriptCommand = vi.fn(() => null);
+    const inbox = new CommandInbox(
+      makeHost({ getRevision, getLogEpoch, guard, lookupTranscriptCommand }),
+    );
+    const clearSpies = () => {
+      getRevision.mockClear();
+      getLogEpoch.mockClear();
+      guard.mockClear();
+      lookupTranscriptCommand.mockClear();
+    };
+
+    // miss：不进入分类/CAS/admission，也不读 durable 事实。
+    expect(await inbox.probe(envelope({ commandId: "cmd-i19-probe-miss" }))).toBeNull();
+    expect(getRevision).not.toHaveBeenCalled();
+    expect(getLogEpoch).not.toHaveBeenCalled();
+    expect(guard).not.toHaveBeenCalled();
+    expect(lookupTranscriptCommand).not.toHaveBeenCalled();
+
+    const settledFirst = await inbox.handle(envelope({ commandId: "cmd-i19-probe-settled" }));
+    expect(settledFirst.kind).toBe("execute");
+    if (settledFirst.kind !== "execute") return;
+    settledFirst.settle({ status: "accepted" });
+    clearSpies();
+    expect(await inbox.probe(envelope({ commandId: "cmd-i19-probe-settled" }))).toMatchObject({
+      status: "duplicate",
+    });
+    expect(getRevision).not.toHaveBeenCalled();
+    expect(guard).not.toHaveBeenCalled();
+    expect(lookupTranscriptCommand).not.toHaveBeenCalled();
+
+    // in-flight：probe 与首次执行共享同一 final，不另起 admission。
+    const inFlightFirst = await inbox.handle(envelope({ commandId: "cmd-i19-probe-inflight" }));
+    expect(inFlightFirst.kind).toBe("execute");
+    if (inFlightFirst.kind !== "execute") return;
+    clearSpies();
+    const probing = inbox.probe(envelope({ commandId: "cmd-i19-probe-inflight" }));
+    await Promise.resolve();
+    inFlightFirst.settle({ status: "accepted" });
+    expect(await probing).toMatchObject({ status: "duplicate" });
+    expect(getRevision).not.toHaveBeenCalled();
+    expect(guard).not.toHaveBeenCalled();
+    expect(lookupTranscriptCommand).not.toHaveBeenCalled();
+  });
+
   it("noop 结论进幂等表：同 commandId 重试 → duplicate 携带原 reasonCode", async () => {
     const inbox = new CommandInbox(
       makeHost({

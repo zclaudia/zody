@@ -21,6 +21,10 @@
     "./create-workflow-graph-bounds": {
       "types": "./dist/tool/handlers/create-workflow-graph-bounds.d.ts",
       "import": "./dist/tool/handlers/create-workflow-graph-bounds.js"
+    },
+    "./cua-submission": {
+      "types": "./dist/cua-submission.d.ts",
+      "import": "./dist/cua-submission.js"
     }
   },
   "scripts": {

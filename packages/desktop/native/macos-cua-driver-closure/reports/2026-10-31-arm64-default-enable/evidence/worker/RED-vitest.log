@@ -1,0 +1,12 @@
+Error: ERR_PNPM_PNPM_ENGINE_IDENTITY_UNVERIFIABLE
+
+  × verify the package manager identity
+  ╰─▶ Refusing to run pnpm@10.33.2: its npm registry signature could not be
+      verified (@pnpm/exe@10.33.2: https://registry.npmjs.org/@pnpm%2Fexe:
+      error sending request for url (https://registry.npmjs.org/@pnpm%2Fexe);
+      @pnpm/macos-arm64@10.33.2: https://registry.npmjs.org/@pnpm%2Fmacos-
+      arm64: error sending request for url (https://registry.npmjs.org/
+      @pnpm%2Fmacos-arm64)). The bytes its environment lockfile pins, resolved
+      through the configured package-manager registry, do not match a
+      published, signed release.
+

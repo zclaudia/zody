@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { rootCertificates } from "node:tls";
-import { Agent, ProxyAgent, fetch as undiciFetch, type Dispatcher } from "undici";
+import type { Dispatcher } from "undici";
 
 export interface HostApiNetworkOptions {
   httpProxy?: string;
@@ -84,7 +84,7 @@ export function resolveHostProxyForUrl(
     : { kind: "invalid", reason: "Configured Host proxy URL is invalid" };
 }
 
-interface HostApiNetworkTransportDependencies {
+export interface HostApiNetworkTransportDependencies {
   createDispatcher?: typeof createDispatcher;
   fetchWithDispatcher?: (
     input: string,
@@ -111,7 +111,13 @@ export function createHostApiNetworkTransport(
   const dispatcherFactory = dependencies.createDispatcher ?? createDispatcher;
   const fetchWithDispatcher =
     dependencies.fetchWithDispatcher ??
-    ((input, init) => undiciFetch(input, init as never) as unknown as Promise<Response>);
+    (async (input, init) => {
+      // 根因：npm undici 的 CJS 初始化链会立即加载 llhttp WebAssembly；在 --jitless
+      // 的固定签名 Node 下 WebAssembly 不存在，即使本次请求本可走 globalThis.fetch。
+      // 只有真正需要自定义 dispatcher 时才动态加载，直连/无 CA 路径不触碰 undici。
+      const { fetch: undiciFetch } = await import("undici");
+      return undiciFetch(input, init as never) as unknown as Promise<Response>;
+    });
 
   const fetch: typeof globalThis.fetch = async (input, init) => {
     if (disposed) {
@@ -239,6 +245,9 @@ async function createDispatcher(
   route: Exclude<HostProxyRoute, { kind: "invalid" }>,
   caCertPath: string | undefined,
 ): Promise<Dispatcher> {
+  // 保持生产默认语义：代理/自定义 CA 仍使用 npm undici。动态 import 让 sealed
+  // candidate 的直连路径不因 --jitless 缺少 WebAssembly 而在模块加载时崩溃。
+  const { Agent, ProxyAgent } = await import("undici");
   const customCa = caCertPath ? await readFile(caCertPath, "utf8") : undefined;
   const ca = customCa ? mergeHostApiCaCertificates(customCa) : undefined;
   if (route.kind === "proxy") {

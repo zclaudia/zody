@@ -1,0 +1,15 @@
+{
+  "modified": [
+    "docs/plans/computer-use-macos-phase1-arm64-screenshot.md",
+    "packages/desktop/electron-builder.config.js",
+    "packages/desktop/scripts/bundle.mjs",
+    "packages/desktop/scripts/macos-cua-narrow-resources-build.test.mjs",
+    "packages/desktop/scripts/macos-cua-narrow-resources-bundle-args.test.mjs",
+    "packages/desktop/tsup.config.ts",
+    "specs/computer-use-macos-phase1.md"
+  ],
+  "new": [
+    "packages/desktop/scripts/macos-cua-demo-defaults.mjs",
+    "packages/desktop/test/macosCuaDemoDefaults.test.ts"
+  ]
+}

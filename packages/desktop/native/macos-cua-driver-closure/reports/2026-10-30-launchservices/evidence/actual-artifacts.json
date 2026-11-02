@@ -1,0 +1,20 @@
+[
+  {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session",
+    "sha256": "92a1b227213ebc894edc27cc9f5d20a4e57eb4db4843d1c487ff8b44cf37faa9",
+    "bytes": 5424032,
+    "codesignMetadata": "codesign-0.txt"
+  },
+  {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/Resources/node",
+    "sha256": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+    "bytes": 118439728,
+    "codesignMetadata": "codesign-1.txt"
+  },
+  {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/MacOS/ZodyCUACandidate",
+    "sha256": "51ea98f5b4ff5e5c079a6953a886a10999e5b355a76bcd92ff5dd59cb7167bd9",
+    "bytes": 33968,
+    "codesignMetadata": "codesign-2.txt"
+  }
+]

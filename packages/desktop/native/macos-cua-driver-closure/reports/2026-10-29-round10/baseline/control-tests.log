@@ -1,0 +1,10 @@
+
+ RUN  v4.1.7 /Users/zhvala/SourceCode/zody/apps/zcode-cli
+
+··············································
+
+ Test Files  4 passed (4)
+      Tests  46 passed (46)
+   Start at  10:54:32
+   Duration  4.74s (transform 3.70s, setup 0ms, import 4.75s, tests 1.18s, environment 0ms)
+

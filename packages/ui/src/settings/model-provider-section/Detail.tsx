@@ -70,6 +70,8 @@ export function ModelProviderSectionDetail({
   };
 
   if (!selectedNavItem) {
+    // 空列表不再由详情判断：父层为空时直接渲染整块空状态，
+    // 这里没有选中项只表示 Provider 存在但导航选择尚未收敛。
     return <ModelProviderLoadingCard loadingLabel={loadingLabel} />;
   }
 

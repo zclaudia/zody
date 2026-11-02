@@ -1,0 +1,368 @@
+{
+  "name": "host-entry.mjs",
+  "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/app/Contents/Resources/host-entry.mjs",
+  "sha256": "8f0eb2beb78365508d9e16d478e3f050e753a0d6015c4a5f7542776ade6a75f6",
+  "bytes": 40170047,
+  "maxBytes": 67108864,
+  "metafilePath": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/audit/host-entry.mjs.metafile.json",
+  "metafileSha256": "d82fa252fec8515302fb5c6fccd1b788a886851ccd2902065174b1c6c4089431",
+  "inputCount": 1038,
+  "staticImports": [
+    "node:module",
+    "node:crypto",
+    "node:v8",
+    "node:events",
+    "node:net",
+    "node:path",
+    "node:fs",
+    "node:fs/promises",
+    "node:os",
+    "node:timers/promises",
+    "node:async_hooks",
+    "node:diagnostics_channel",
+    "node:child_process",
+    "node:readline",
+    "node:string_decoder",
+    "node:stream",
+    "node:worker_threads",
+    "node:util",
+    "node:zlib",
+    "fs",
+    "fs/promises",
+    "path",
+    "os",
+    "events",
+    "node:stream/promises",
+    "node:tls",
+    "node:http",
+    "node:https",
+    "node:buffer",
+    "node:url"
+  ],
+  "nonBuiltinStaticImports": [],
+  "runtimeRequires": [
+    "process",
+    "buffer",
+    "fs",
+    "stream",
+    "zlib",
+    "util",
+    "events",
+    "node:assert",
+    "node:http",
+    "node:stream",
+    "node:net",
+    "node:buffer",
+    "node:util",
+    "node:querystring",
+    "node:events",
+    "node:diagnostics_channel",
+    "node:tls",
+    "node:worker_threads",
+    "node:zlib",
+    "node:perf_hooks",
+    "node:util/types",
+    "node:crypto",
+    "node:http2",
+    "node:url",
+    "node:async_hooks",
+    "node:console",
+    "node:dns",
+    "string_decoder",
+    "crypto",
+    "https",
+    "http",
+    "net",
+    "tls",
+    "url",
+    "node:process",
+    "node:stream/web",
+    "worker_threads",
+    "path",
+    "child_process",
+    "os",
+    "tty",
+    "assert",
+    "timers",
+    "perf_hooks",
+    "inspector",
+    "async_hooks"
+  ],
+  "runtimeExternals": [],
+  "webAssemblyReferences": {
+    "count": 21,
+    "matches": [
+      {
+        "line": 106450,
+        "snippet": "mod = await WebAssembly.compile(require_llhttp_simd_wasm());"
+      },
+      {
+        "line": 106452,
+        "snippet": "mod = await WebAssembly.compile(llhttpWasmData || require_llhttp_wasm());"
+      },
+      {
+        "line": 106454,
+        "snippet": "return await WebAssembly.instantiate(mod, {"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      },
+      {
+        "line": 167969,
+        "snippet": "source: 'import { pathToFileURL as __cuaPathToFileURL } from \"node:url\";\\nimport { createRequire as __cuaCreateRequire } from \"node:module\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(process.exe"
+      }
+    ]
+  },
+  "licenses": {
+    "packageCount": 18,
+    "saved": [
+      {
+        "name": "chokidar",
+        "version": "4.0.3",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "readdirp",
+        "version": "4.1.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "croner",
+        "version": "10.0.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "fetch-blob",
+        "version": "3.2.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "formdata-polyfill",
+        "version": "4.0.10",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "ignore",
+        "version": "5.3.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE-MIT"
+        ]
+      },
+      {
+        "name": "node-domexception",
+        "version": "1.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "node-fetch",
+        "version": "3.3.2",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE.md"
+        ]
+      },
+      {
+        "name": "data-uri-to-buffer",
+        "version": "4.0.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "node-forge",
+        "version": "1.4.0",
+        "license": "(BSD-3-Clause OR GPL-2.0)",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "smol-toml",
+        "version": "1.6.1",
+        "license": "BSD-3-Clause",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "undici",
+        "version": "6.24.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "web-streams-polyfill",
+        "version": "3.3.3",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "ws",
+        "version": "8.20.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "yaml",
+        "version": "2.9.0",
+        "license": "ISC",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "yazl",
+        "version": "3.3.1",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "buffer-crc32",
+        "version": "1.0.0",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      },
+      {
+        "name": "zod",
+        "version": "4.6.5",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      }
+    ],
+    "missing": [
+      "data-uri-to-buffer"
+    ]
+  }
+}

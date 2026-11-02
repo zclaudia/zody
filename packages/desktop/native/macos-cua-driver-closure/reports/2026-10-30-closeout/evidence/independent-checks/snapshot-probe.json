@@ -1,0 +1,14 @@
+{
+  "name": "snapshot-probe",
+  "argv": [
+    "output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/Resources/node",
+    "--jitless",
+    "output/cua-phase1-closeout/snapshot-probe/probe.mjs",
+    "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/snapshot-probe"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:16:27.681820+00:00",
+  "seconds": 1.035,
+  "exitCode": 0,
+  "log": "snapshot-probe.log"
+}

@@ -1,0 +1,100 @@
+--- a/src/orchestrator.mm
++++ b/src/orchestrator.mm
+@@ -35,7 +35,9 @@
+ namespace zody::cua::round11 {
+ namespace {
+ 
+-constexpr size_t kMaxAuthorityJsBytes = 8 * 1024 * 1024;
++// 产品组合候选的 sealed ESM（真实 create-app/CommandInbox）约 27MB；
++// 有界提升到 32MiB，仍拒绝无上限快照。16KiB 帧上限不变。
++constexpr size_t kMaxAuthorityJsBytes = 32 * 1024 * 1024;
+ constexpr int kPeerTimeoutMs = 10'000;
+ 
+ std::string json_string(NSDictionary* value) {
+@@ -44,16 +46,6 @@
+   NSData* data = [NSJSONSerialization dataWithJSONObject:value options:0 error:&error];
+   if (data == nil || error != nil) return "";
+   return std::string(static_cast<const char*>(data.bytes), data.length);
+-}
+-
+-std::string uuid_string() {
+-  return std::string([[[NSUUID UUID] UUIDString] UTF8String]);
+-}
+-
+-std::string canonical_workspace() {
+-  char resolved[PATH_MAX] = {0};
+-  if (realpath(".", resolved) == nullptr) return "";
+-  return resolved;
+ }
+ 
+ bool create_private_run_dir(std::string& directory, std::string& error) {
+@@ -309,12 +301,6 @@
+     reason = "window-target-or-output-required";
+     return 3;
+   }
+-  const std::string workspace = canonical_workspace();
+-  if (workspace.empty()) {
+-    status = "blocked";
+-    reason = "canonical-workspace-unavailable";
+-    return 3;
+-  }
+ 
+   BundlePaths paths;
+   std::string error;
+@@ -347,24 +333,10 @@
+   }
+   node.close();
+ 
+-  const std::string trace_id = uuid_string();
+-  const std::string app_incarnation = uuid_string();
+-  const std::string producer = "producer-" + uuid_string();
+-  const std::string run_id = "run-" + uuid_string();
+-  const std::string turn_id = "turn-" + uuid_string();
+-  NSDictionary* bootstrap = @{
+-    @"traceId" : [NSString stringWithUTF8String:trace_id.c_str()],
+-    @"appIncarnation" : [NSString stringWithUTF8String:app_incarnation.c_str()],
+-    @"hostInstanceId" : [NSString stringWithUTF8String:("host-" + uuid_string()).c_str()],
+-    @"runtimeInstanceId" : [NSString stringWithUTF8String:("runtime-" + uuid_string()).c_str()],
+-    @"sessionId" : [NSString stringWithUTF8String:("session-" + uuid_string()).c_str()],
+-    @"workspaceKey" : [NSString stringWithUTF8String:workspace.c_str()],
+-    @"sourceCommandId" : [NSString stringWithUTF8String:("command-" + uuid_string()).c_str()],
+-    @"queueItemId" : [NSString stringWithUTF8String:("queue-" + uuid_string()).c_str()],
+-    @"producerIncarnation" : [NSString stringWithUTF8String:producer.c_str()],
+-    @"runId" : [NSString stringWithUTF8String:run_id.c_str()],
+-    @"turnId" : [NSString stringWithUTF8String:turn_id.c_str()],
+-  };
++  // 产品组合候选：不再生成随机 host/app/run/turn/source 身份。
++  // 只发送空 payload，由 runtime scope 在 sealed JS 内捕获真实身份；
++  // supervisor 严格从回执读取 trace/ref/producer/run/turn，不 fallback 造 ID。
++  NSDictionary* bootstrap = @{};
+   NSDictionary* bootstrapped = nil;
+   if (!authority_request_once(node_process.authority_fd, @"bootstrap", bootstrap, &bootstrapped,
+                               error)) {
+@@ -374,12 +346,26 @@
+     return 3;
+   }
+   NSDictionary* ref = bootstrapped[@"ref"];
+-  if (![bootstrapped[@"ok"] boolValue] || ref == nil) {
++  NSString* trace_id_value = bootstrapped[@"traceId"];
++  NSString* producer_value = bootstrapped[@"producerIncarnation"];
++  NSString* run_id_value = bootstrapped[@"runId"];
++  NSString* turn_id_value = bootstrapped[@"turnId"];
++  if (![bootstrapped[@"ok"] boolValue] || ![ref isKindOfClass:[NSDictionary class]] ||
++      ![trace_id_value isKindOfClass:[NSString class]] ||
++      ![producer_value isKindOfClass:[NSString class]] ||
++      ![run_id_value isKindOfClass:[NSString class]] ||
++      ![turn_id_value isKindOfClass:[NSString class]] ||
++      [trace_id_value length] == 0 || [producer_value length] == 0 ||
++      [run_id_value length] == 0 || [turn_id_value length] == 0) {
+     status = "blocked";
+     reason = "authority-bootstrap-rejected";
+     node_process.stop();
+     return 3;
+   }
++  const std::string trace_id = [trace_id_value UTF8String];
++  const std::string producer = [producer_value UTF8String];
++  const std::string run_id = [run_id_value UTF8String];
++  const std::string turn_id = [turn_id_value UTF8String];
+ 
+   std::string run_dir;
+   if (!create_private_run_dir(run_dir, error)) {

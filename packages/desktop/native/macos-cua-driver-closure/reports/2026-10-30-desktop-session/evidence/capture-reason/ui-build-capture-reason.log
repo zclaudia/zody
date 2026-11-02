@@ -1,0 +1,16 @@
+
+  output/cua-desktop-session/.ui-candidate-5FwNIH/app/main/index.js    4.3mb ⚠️
+  ...top-session/.ui-candidate-5FwNIH/app/main/storageScanWorker.js  833.6kb
+  ...p-session/.ui-candidate-5FwNIH/app/main/browserWebmRecorder.js   12.1kb
+  ...p-session/.ui-candidate-5FwNIH/app/main/zcodeDataSizeWorker.js    2.1kb
+
+⚡ Done in 252ms
+
+  .../cua-desktop-session/.ui-candidate-5FwNIH/app/scheduler/index.js  904.4kb
+
+⚡ Done in 74ms
+{
+  "status": "built",
+  "output": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-reason",
+  "trusted": false
+}

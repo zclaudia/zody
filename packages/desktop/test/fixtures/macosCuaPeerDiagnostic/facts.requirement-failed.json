@@ -1,0 +1,10 @@
+{
+  "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test",
+  "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "leafCertificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+  "adhoc": false,
+  "certificatePresent": true,
+  "codeValid": true,
+  "requirementMatched": false
+}

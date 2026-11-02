@@ -1,0 +1,870 @@
+{
+  "method": "Read-only TypeScript compiler overlay of opening preimages; current dependency declarations. No workspace file restored or changed.",
+  "baselineCount": 86,
+  "currentCount": 86,
+  "added": [],
+  "baseline": [
+    {
+      "file": "packages/desktop/src/main/appARMSBootstrap.ts",
+      "code": 6307,
+      "message": "File '/Users/zhvala/SourceCode/zody/packages/desktop/src/shared/armsRumShared.ts' is not listed within the file list of project ''. Projects must list all files or use an 'include' pattern.\n  File is ECMAScript module because '/Users/zhvala/SourceCode/zody/packages/desktop/package.json' has field \"type\" with value \"module\""
+    },
+    {
+      "file": "packages/desktop/src/main/applicationIcons.ts",
+      "code": 2345,
+      "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'.\n  Type 'undefined' is not assignable to type 'string'."
+    },
+    {
+      "file": "packages/desktop/src/main/applicationIcons.ts",
+      "code": 2345,
+      "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'.\n  Type 'undefined' is not assignable to type 'string'."
+    },
+    {
+      "file": "packages/desktop/src/main/autoUpdater.ts",
+      "code": 2339,
+      "message": "Property 'channel' does not exist on type '{ kind: \"idle\"; enabled: boolean; } | { kind: \"update-available\"; enabled: boolean; version: string; channel?: ElectronReleaseChannel | undefined; releaseNotes?: PostUpdateReleaseNotesPayload | undefined; } | { ...; } | { ...; }'.\n  Property 'channel' does not exist on type '{ kind: \"idle\"; enabled: boolean; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/autoUpdater.ts",
+      "code": 2339,
+      "message": "Property 'channel' does not exist on type '{ kind: \"idle\"; enabled: boolean; } | { kind: \"update-available\"; enabled: boolean; version: string; channel?: ElectronReleaseChannel | undefined; releaseNotes?: PostUpdateReleaseNotesPayload | undefined; } | { ...; } | { ...; }'.\n  Property 'channel' does not exist on type '{ kind: \"idle\"; enabled: boolean; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 18048,
+      "message": "'running' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'x' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'x' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'y' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'y' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'x' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'x' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'y' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'y' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'button' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'button' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'button' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'button' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'doubleClick' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'doubleClick' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'doubleClick' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'doubleClick' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'x' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'x' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'y' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'y' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 18048,
+      "message": "'tab.guest' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2322,
+      "message": "Type '{ lifecycle?: \"closed\" | \"deliverable\" | \"handoff\" | undefined; active?: true | undefined; tabId: string; url: string; title: string; viewport: { width: number; height: number; }; }' is not assignable to type '{ tabId: string; url: string; title: string; viewport: { width: number; height: number; }; active?: boolean | undefined; lifecycle?: \"active\" | \"deliverable\" | \"handoff\" | undefined; }'.\n  Types of property 'lifecycle' are incompatible.\n    Type '\"closed\" | \"deliverable\" | \"handoff\" | undefined' is not assignable to type '\"active\" | \"deliverable\" | \"handoff\" | undefined'.\n      Type '\"closed\"' is not assignable to type '\"active\" | \"deliverable\" | \"handoff\" | undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2367,
+      "message": "This comparison appears to be unintentional because the types '\"active\" | \"deliverable\" | \"handoff\"' and '\"closed\"' have no overlap."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2367,
+      "message": "This comparison appears to be unintentional because the types '\"active\" | \"deliverable\" | \"handoff\"' and '\"closed\"' have no overlap."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 7017,
+      "message": "Element implicitly has an 'any' type because type 'typeof globalThis' has no index signature."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2304,
+      "message": "Cannot find name 'Element'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2304,
+      "message": "Cannot find name 'Element'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2304,
+      "message": "Cannot find name 'Element'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 7006,
+      "message": "Parameter 'element' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 7006,
+      "message": "Parameter 'element' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2304,
+      "message": "Cannot find name 'HTMLElement'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2304,
+      "message": "Cannot find name 'HTMLInputElement'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightLocatorExecutor.ts",
+      "code": 2322,
+      "message": "Type 'ScrollAlignment | undefined' is not assignable to type 'ScrollAlignment'.\n  Type 'undefined' is not assignable to type 'ScrollAlignment'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserScreenshotSurfaceContracts.ts",
+      "code": 2305,
+      "message": "Module '\"@zcode/shared\"' has no exported member 'BrowserViewSurfaceScaleMode'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/electronBrowserWebmRecorder.ts",
+      "code": 2769,
+      "message": "No overload matches this call.\n  The last overload gave the following error.\n    Argument of type '\"console-message\"' is not assignable to parameter of type '\"zoom-changed\"'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/electronBrowserWebmRecorder.ts",
+      "code": 2769,
+      "message": "No overload matches this call.\n  The last overload gave the following error.\n    Argument of type '\"console-message\"' is not assignable to parameter of type '\"zoom-changed\"'."
+    },
+    {
+      "file": "packages/desktop/src/main/chromeLocalStorageManager.ts",
+      "code": 2345,
+      "message": "Argument of type 'ChildProcessByStdio<null, Readable, Readable>' is not assignable to parameter of type 'ChildProcessWithoutNullStreams'.\n  Types of property 'stdin' are incompatible.\n    Type 'null' is not assignable to type 'Writable'."
+    },
+    {
+      "file": "packages/desktop/src/main/chromeLocalStorageManager.ts",
+      "code": 2345,
+      "message": "Argument of type 'ChildProcessByStdio<null, Readable, Readable>' is not assignable to parameter of type 'ChildProcessWithoutNullStreams'.\n  Types of property 'stdin' are incompatible.\n    Type 'null' is not assignable to type 'Writable'."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7006,
+      "message": "Parameter '_traceId' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7019,
+      "message": "Rest parameter 'args' implicitly has an 'any[]' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7006,
+      "message": "Parameter '_traceId' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7019,
+      "message": "Rest parameter 'args' implicitly has an 'any[]' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7006,
+      "message": "Parameter '_traceId' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7019,
+      "message": "Rest parameter 'args' implicitly has an 'any[]' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7006,
+      "message": "Parameter '_traceId' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7019,
+      "message": "Rest parameter 'args' implicitly has an 'any[]' type."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopCrashCapture.ts",
+      "code": 2345,
+      "message": "Argument of type '{ entry: string; path: string; mtimeMs: number; size: number; } | undefined' is not assignable to parameter of type '{ entry: string; path: string; mtimeMs: number; size: number; }'.\n  Type 'undefined' is not assignable to type '{ entry: string; path: string; mtimeMs: number; size: number; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopCrashCapture.ts",
+      "code": 18048,
+      "message": "'dump' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopCronScheduler.ts",
+      "code": 6307,
+      "message": "File '/Users/zhvala/SourceCode/zody/packages/desktop/src/scheduler/schedulerProtocol.ts' is not listed within the file list of project ''. Projects must list all files or use an 'include' pattern.\n  File is ECMAScript module because '/Users/zhvala/SourceCode/zody/packages/desktop/package.json' has field \"type\" with value \"module\""
+    },
+    {
+      "file": "packages/desktop/src/main/desktopLinuxDeepLinkRegistration.ts",
+      "code": 2300,
+      "message": "Duplicate identifier 'iconName'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopLinuxDeepLinkRegistration.ts",
+      "code": 2300,
+      "message": "Duplicate identifier 'iconName'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopMainIpcPlatform.ts",
+      "code": 2305,
+      "message": "Module '\"@zcode/shared\"' has no exported member 'WindowControlsOverlayReadyPayload'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopPrintToPdf.ts",
+      "code": 2322,
+      "message": "Type 'ArrayBuffer | SharedArrayBuffer' is not assignable to type 'ArrayBuffer | undefined'.\n  Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength"
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 2739,
+      "message": "Type 'LookupAddress[]' is missing the following properties from type 'LookupAddress': address, family"
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 2339,
+      "message": "Property 'length' does not exist on type 'LookupAddress'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 2339,
+      "message": "Property 'some' does not exist on type 'LookupAddress'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 7031,
+      "message": "Binding element 'address' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 7031,
+      "message": "Binding element 'family' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 2345,
+      "message": "Argument of type 'LookupAddress' is not assignable to parameter of type 'string | LookupAddress[]'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 7053,
+      "message": "Element implicitly has an 'any' type because expression of type '0' can't be used to index type 'LookupAddress'.\n  Property '0' does not exist on type 'LookupAddress'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 18048,
+      "message": "'payload.data' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 18048,
+      "message": "'payload.data' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 2769,
+      "message": "No overload matches this call.\n  The last overload gave the following error.\n    Argument of type 'ArrayBuffer | undefined' is not assignable to parameter of type 'ArrayBuffer | ArrayLike<number>'.\n      Type 'undefined' is not assignable to type 'ArrayBuffer | ArrayLike<number>'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopShellIntegrationIdentity.ts",
+      "code": 7016,
+      "message": "Could not find a declaration file for module '../../scripts/desktop-product-identity.mjs'. '/Users/zhvala/SourceCode/zody/packages/desktop/scripts/desktop-product-identity.mjs' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopWindowLifecycle.ts",
+      "code": 2345,
+      "message": "Argument of type '{ runtimeProcessEnvPatch: Record<string, string>; agentSpawnFallbackCwd: string; agentWarmupTargets?: StartupWorkspaceWarmupTarget[] | undefined; type: \"init-local\"; deviceMid: string; workspacePath: string | undefined; workspaceIdentity: string | undefined; }' is not assignable to parameter of type 'HostInitMessage'.\n  Property 'zcodeBuiltinProviderConfigFilePath' is missing in type '{ runtimeProcessEnvPatch: Record<string, string>; agentSpawnFallbackCwd: string; agentWarmupTargets?: StartupWorkspaceWarmupTarget[] | undefined; type: \"init-local\"; deviceMid: string; workspacePath: string | undefined; workspaceIdentity: string | undefined; }' but required in type 'HostInitMessage'."
+    },
+    {
+      "file": "packages/desktop/src/main/index.ts",
+      "code": 7016,
+      "message": "Could not find a declaration file for module '../../scripts/desktop-product-identity.mjs'. '/Users/zhvala/SourceCode/zody/packages/desktop/scripts/desktop-product-identity.mjs' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/index.ts",
+      "code": 2345,
+      "message": "Argument of type 'Net' is not assignable to parameter of type 'DesktopTelemetryFetchSource'.\n  Types of property 'fetch' are incompatible.\n    Type '(input: string | Request, init?: (RequestInit & { bypassCustomProtocolHandlers?: boolean | undefined; }) | undefined) => Promise<Response>' is not assignable to type '(input: string | URL | Request, init?: RequestInit | undefined) => Promise<Response>'.\n      Types of parameters 'input' and 'input' are incompatible.\n        Type 'string | URL | Request' is not assignable to type 'string | Request'.\n          Type 'URL' is not assignable to type 'string | Request'."
+    },
+    {
+      "file": "packages/desktop/src/main/index.ts",
+      "code": 2322,
+      "message": "Type '(webContentsId: number) => (BrowserGuestExecutionContext & { tabId: string; }) | null' is not assignable to type '(webContentsId: number) => { workspaceKey: string; remoteSessionId?: string | undefined; sessionId: string; browserId: string; browserGeneration: number; tabId: string; } | undefined'.\n  Type '(BrowserGuestExecutionContext & { tabId: string; }) | null' is not assignable to type '{ workspaceKey: string; remoteSessionId?: string | undefined; sessionId: string; browserId: string; browserGeneration: number; tabId: string; } | undefined'.\n    Type 'null' is not assignable to type '{ workspaceKey: string; remoteSessionId?: string | undefined; sessionId: string; browserId: string; browserGeneration: number; tabId: string; } | undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/index.ts",
+      "code": 2322,
+      "message": "Type '(patch: Partial<AppSettings>) => void' is not assignable to type '(patch: unknown) => void'.\n  Types of parameters 'patch' and 'patch' are incompatible.\n    Type 'unknown' is not assignable to type 'Partial<AppSettings>'."
+    },
+    {
+      "file": "packages/desktop/src/main/index.ts",
+      "code": 2345,
+      "message": "Argument of type 'string | null' is not assignable to parameter of type 'string'.\n  Type 'null' is not assignable to type 'string'."
+    },
+    {
+      "file": "packages/desktop/src/main/manifestUpdateProvider.ts",
+      "code": 2352,
+      "message": "Conversion of type 'Record<string, unknown>' to type 'UpdateInfo' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.\n  Type 'Record<string, unknown>' is missing the following properties from type 'UpdateInfo': version, files, path, sha512, releaseDate"
+    },
+    {
+      "file": "packages/desktop/src/main/pluginSandbox/genUiProtocol.test.ts",
+      "code": 2322,
+      "message": "Type '\"gen-ui\" | \"mcp-app\"' is not assignable to type '\"gen-ui\" | undefined'.\n  Type '\"mcp-app\"' is not assignable to type '\"gen-ui\"'."
+    },
+    {
+      "file": "packages/desktop/src/main/resourceManagerStorage.ts",
+      "code": 2305,
+      "message": "Module '\"@zcode/services/node\"' has no exported member 'IStorageService'."
+    },
+    {
+      "file": "packages/desktop/src/main/resourceManagerStorage.ts",
+      "code": 7006,
+      "message": "Parameter 'snapshot' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/storageScanWorker.ts",
+      "code": 2305,
+      "message": "Module '\"@zcode/services\"' has no exported member 'StorageRootSpec'."
+    },
+    {
+      "file": "packages/desktop/src/main/storageScanWorkerProtocol.ts",
+      "code": 2305,
+      "message": "Module '\"@zcode/services\"' has no exported member 'StorageRootSpec'."
+    },
+    {
+      "file": "packages/desktop/src/main/taskRealtimeBus.ts",
+      "code": 2345,
+      "message": "Argument of type '{ eventId: string; workspacePath: string; workspaceKey: string; traceId: string; createdAt: number; reason: \"stream_mirror_owner_lost\" | \"stream_mirror_gap\" | \"task_created\" | \"user_message_saved\" | ... 9 more ... | \"task_deleted\"; type: \"task_snapshot_invalidated\"; taskId: string; workspaceIdentity?: string | undef...' is not assignable to parameter of type 'TaskRealtimeEvent'.\n  Type '{ eventId: string; workspacePath: string; workspaceKey: string; traceId: string; createdAt: number; type: \"task_stream_mirror_batch\"; taskId: string; runId: string; batchSeq: number; fromSeq: number; ... 5 more ...; ownerDeviceLabel?: string | undefined; }' is not assignable to type 'TaskRealtimeEvent'.\n    Type '{ eventId: string; workspacePath: string; workspaceKey: string; traceId: string; createdAt: number; type: \"task_stream_mirror_batch\"; taskId: string; runId: string; batchSeq: number; fromSeq: number; ... 5 more ...; ownerDeviceLabel?: string | undefined; }' is not assignable to type 'TaskStreamMirrorBatchEvent'.\n      Types of property 'ops' are incompatible.\n        Type '({ kind: \"user_message\"; messageId: string; content: string; timestamp: number; seq: number; attachments?: ({ kind: \"image\"; filename: string; mimeType: string; sizeBytes?: number | undefined; dataBase64?: string | undefined; localPath?: string | undefined; } | { ...; } | { ...; } | { ...; } | { ...; })[] | undefine...' is not assignable to type 'TaskStreamMirrorOp[]'.\n          Type '{ kind: \"user_message\"; messageId: string; content: string; timestamp: number; seq: number; attachments?: ({ kind: \"image\"; filename: string; mimeType: string; sizeBytes?: number | undefined; dataBase64?: string | undefined; localPath?: string | undefined; } | { ...; } | { ...; } | { ...; } | { ...; })[] | undefined...' is not assignable to type 'TaskStreamMirrorOp'.\n            Type '{ kind: \"stream_event\"; event: { [x: string]: unknown; type: string; taskId: string; traceId: string; }; seq: number; }' is not assignable to type 'TaskStreamMirrorOp'.\n              Type '{ kind: \"stream_event\"; event: { [x: string]: unknown; type: string; taskId: string; traceId: string; }; seq: number; }' is not assignable to type 'TaskStreamMirrorStreamEventOp & { seq: number; }'.\n                Type '{ kind: \"stream_event\"; event: { [x: string]: unknown; type: string; taskId: string; traceId: string; }; seq: number; }' is not assignable to type 'TaskStreamMirrorStreamEventOp'.\n                  Types of property 'event' are incompatible.\n                    Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is not assignable to type 'TaskStreamMirrorableEvent'.\n                      Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is not assignable to type 'ZCodeTaskNetworkDebugStatus & { inputId?: string | undefined; }'.\n                        Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is missing the following properties from type 'ZCodeTaskNetworkDebugStatus': eventKey, statusType, requestHeaders, responseHeaders, and 2 more."
+    },
+    {
+      "file": "packages/desktop/src/main/taskRealtimeBus.ts",
+      "code": 2345,
+      "message": "Argument of type '{ kind: \"user_message\"; messageId: string; content: string; timestamp: number; attachments?: ({ kind: \"image\"; filename: string; mimeType: string; sizeBytes?: number | undefined; dataBase64?: string | undefined; localPath?: string | undefined; } | { ...; } | { ...; } | { ...; } | { ...; })[] | undefined; } | { ...; }' is not assignable to parameter of type 'TaskStreamMirrorPublishOp'.\n  Type '{ kind: \"stream_event\"; event: { [x: string]: unknown; type: string; taskId: string; traceId: string; }; }' is not assignable to type 'TaskStreamMirrorPublishOp'.\n    Type '{ kind: \"stream_event\"; event: { [x: string]: unknown; type: string; taskId: string; traceId: string; }; }' is not assignable to type 'TaskStreamMirrorStreamEventOp'.\n      Types of property 'event' are incompatible.\n        Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is not assignable to type 'TaskStreamMirrorableEvent'.\n          Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is not assignable to type 'ZCodeTaskNetworkDebugStatus & { inputId?: string | undefined; }'.\n            Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is missing the following properties from type 'ZCodeTaskNetworkDebugStatus': eventKey, statusType, requestHeaders, responseHeaders, and 2 more."
+    },
+    {
+      "file": "packages/desktop/src/main/taskRealtimeBus.ts",
+      "code": 2339,
+      "message": "Property 'event' does not exist on type 'TaskStreamMirrorPublishOp'.\n  Property 'event' does not exist on type 'TaskStreamMirrorUserMessageOp'."
+    },
+    {
+      "file": "packages/desktop/src/main/webRemoteControlManager.ts",
+      "code": 18048,
+      "message": "'result.tasks' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/webRemoteControlSharedHostAttachments.ts",
+      "code": 2353,
+      "message": "Object literal may only specify known properties, and 'mobileNotificationPrincipal' does not exist in type '{ windowId: number; remoteSessionId: string; workspacePath: string; workspaceIdentity: string; workspaceKey: string; clientMode: \"web-remote-replayable\"; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/windowsChromeAppBoundKey.ts",
+      "code": 2339,
+      "message": "Property 'expectedAppVersion' does not exist on type 'ReadAppBoundKeyOptions'."
+    },
+    {
+      "file": "packages/desktop/src/main/windowsChromeAppBoundKey.ts",
+      "code": 2339,
+      "message": "Property 'expectedBuildCommit' does not exist on type 'ReadAppBoundKeyOptions'."
+    }
+  ],
+  "current": [
+    {
+      "file": "packages/desktop/src/main/appARMSBootstrap.ts",
+      "code": 6307,
+      "message": "File '/Users/zhvala/SourceCode/zody/packages/desktop/src/shared/armsRumShared.ts' is not listed within the file list of project ''. Projects must list all files or use an 'include' pattern.\n  File is ECMAScript module because '/Users/zhvala/SourceCode/zody/packages/desktop/package.json' has field \"type\" with value \"module\""
+    },
+    {
+      "file": "packages/desktop/src/main/applicationIcons.ts",
+      "code": 2345,
+      "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'.\n  Type 'undefined' is not assignable to type 'string'."
+    },
+    {
+      "file": "packages/desktop/src/main/applicationIcons.ts",
+      "code": 2345,
+      "message": "Argument of type 'string | undefined' is not assignable to parameter of type 'string'.\n  Type 'undefined' is not assignable to type 'string'."
+    },
+    {
+      "file": "packages/desktop/src/main/autoUpdater.ts",
+      "code": 2339,
+      "message": "Property 'channel' does not exist on type '{ kind: \"idle\"; enabled: boolean; } | { kind: \"update-available\"; enabled: boolean; version: string; channel?: ElectronReleaseChannel | undefined; releaseNotes?: PostUpdateReleaseNotesPayload | undefined; } | { ...; } | { ...; }'.\n  Property 'channel' does not exist on type '{ kind: \"idle\"; enabled: boolean; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/autoUpdater.ts",
+      "code": 2339,
+      "message": "Property 'channel' does not exist on type '{ kind: \"idle\"; enabled: boolean; } | { kind: \"update-available\"; enabled: boolean; version: string; channel?: ElectronReleaseChannel | undefined; releaseNotes?: PostUpdateReleaseNotesPayload | undefined; } | { ...; } | { ...; }'.\n  Property 'channel' does not exist on type '{ kind: \"idle\"; enabled: boolean; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 18048,
+      "message": "'running' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'x' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'x' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'y' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'y' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'x' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'x' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'y' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'y' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'button' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'button' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'button' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'button' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'doubleClick' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'doubleClick' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'doubleClick' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'doubleClick' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'x' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'x' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2339,
+      "message": "Property 'y' does not exist on type '{ type: \"click\"; selector?: string | undefined; x?: number | undefined; y?: number | undefined; button?: \"left\" | \"right\" | \"middle\" | undefined; doubleClick?: boolean | undefined; delayAfterMs?: number | undefined; } | { ...; } | { ...; }'.\n  Property 'y' does not exist on type '{ type: \"type\"; selector: string; text: string; delayAfterMs?: number | undefined; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 18048,
+      "message": "'tab.guest' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2322,
+      "message": "Type '{ lifecycle?: \"closed\" | \"deliverable\" | \"handoff\" | undefined; active?: true | undefined; tabId: string; url: string; title: string; viewport: { width: number; height: number; }; }' is not assignable to type '{ tabId: string; url: string; title: string; viewport: { width: number; height: number; }; active?: boolean | undefined; lifecycle?: \"active\" | \"deliverable\" | \"handoff\" | undefined; }'.\n  Types of property 'lifecycle' are incompatible.\n    Type '\"closed\" | \"deliverable\" | \"handoff\" | undefined' is not assignable to type '\"active\" | \"deliverable\" | \"handoff\" | undefined'.\n      Type '\"closed\"' is not assignable to type '\"active\" | \"deliverable\" | \"handoff\" | undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2367,
+      "message": "This comparison appears to be unintentional because the types '\"active\" | \"deliverable\" | \"handoff\"' and '\"closed\"' have no overlap."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserGuestManager.ts",
+      "code": 2367,
+      "message": "This comparison appears to be unintentional because the types '\"active\" | \"deliverable\" | \"handoff\"' and '\"closed\"' have no overlap."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 7017,
+      "message": "Element implicitly has an 'any' type because type 'typeof globalThis' has no index signature."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2304,
+      "message": "Cannot find name 'Element'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2304,
+      "message": "Cannot find name 'Element'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2304,
+      "message": "Cannot find name 'Element'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 7006,
+      "message": "Parameter 'element' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 7006,
+      "message": "Parameter 'element' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2304,
+      "message": "Cannot find name 'HTMLElement'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2304,
+      "message": "Cannot find name 'HTMLInputElement'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightExecutor.ts",
+      "code": 2584,
+      "message": "Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserPlaywrightLocatorExecutor.ts",
+      "code": 2322,
+      "message": "Type 'ScrollAlignment | undefined' is not assignable to type 'ScrollAlignment'.\n  Type 'undefined' is not assignable to type 'ScrollAlignment'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/browserScreenshotSurfaceContracts.ts",
+      "code": 2305,
+      "message": "Module '\"@zcode/shared\"' has no exported member 'BrowserViewSurfaceScaleMode'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/electronBrowserWebmRecorder.ts",
+      "code": 2769,
+      "message": "No overload matches this call.\n  The last overload gave the following error.\n    Argument of type '\"console-message\"' is not assignable to parameter of type '\"zoom-changed\"'."
+    },
+    {
+      "file": "packages/desktop/src/main/browserView/electronBrowserWebmRecorder.ts",
+      "code": 2769,
+      "message": "No overload matches this call.\n  The last overload gave the following error.\n    Argument of type '\"console-message\"' is not assignable to parameter of type '\"zoom-changed\"'."
+    },
+    {
+      "file": "packages/desktop/src/main/chromeLocalStorageManager.ts",
+      "code": 2345,
+      "message": "Argument of type 'ChildProcessByStdio<null, Readable, Readable>' is not assignable to parameter of type 'ChildProcessWithoutNullStreams'.\n  Types of property 'stdin' are incompatible.\n    Type 'null' is not assignable to type 'Writable'."
+    },
+    {
+      "file": "packages/desktop/src/main/chromeLocalStorageManager.ts",
+      "code": 2345,
+      "message": "Argument of type 'ChildProcessByStdio<null, Readable, Readable>' is not assignable to parameter of type 'ChildProcessWithoutNullStreams'.\n  Types of property 'stdin' are incompatible.\n    Type 'null' is not assignable to type 'Writable'."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7006,
+      "message": "Parameter '_traceId' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7019,
+      "message": "Rest parameter 'args' implicitly has an 'any[]' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7006,
+      "message": "Parameter '_traceId' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7019,
+      "message": "Rest parameter 'args' implicitly has an 'any[]' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7006,
+      "message": "Parameter '_traceId' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7019,
+      "message": "Rest parameter 'args' implicitly has an 'any[]' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7006,
+      "message": "Parameter '_traceId' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "code": 7019,
+      "message": "Rest parameter 'args' implicitly has an 'any[]' type."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopCrashCapture.ts",
+      "code": 2345,
+      "message": "Argument of type '{ entry: string; path: string; mtimeMs: number; size: number; } | undefined' is not assignable to parameter of type '{ entry: string; path: string; mtimeMs: number; size: number; }'.\n  Type 'undefined' is not assignable to type '{ entry: string; path: string; mtimeMs: number; size: number; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopCrashCapture.ts",
+      "code": 18048,
+      "message": "'dump' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopCronScheduler.ts",
+      "code": 6307,
+      "message": "File '/Users/zhvala/SourceCode/zody/packages/desktop/src/scheduler/schedulerProtocol.ts' is not listed within the file list of project ''. Projects must list all files or use an 'include' pattern.\n  File is ECMAScript module because '/Users/zhvala/SourceCode/zody/packages/desktop/package.json' has field \"type\" with value \"module\""
+    },
+    {
+      "file": "packages/desktop/src/main/desktopLinuxDeepLinkRegistration.ts",
+      "code": 2300,
+      "message": "Duplicate identifier 'iconName'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopLinuxDeepLinkRegistration.ts",
+      "code": 2300,
+      "message": "Duplicate identifier 'iconName'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopMainIpcPlatform.ts",
+      "code": 2305,
+      "message": "Module '\"@zcode/shared\"' has no exported member 'WindowControlsOverlayReadyPayload'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopPrintToPdf.ts",
+      "code": 2322,
+      "message": "Type 'ArrayBuffer | SharedArrayBuffer' is not assignable to type 'ArrayBuffer | undefined'.\n  Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength"
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 2739,
+      "message": "Type 'LookupAddress[]' is missing the following properties from type 'LookupAddress': address, family"
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 2339,
+      "message": "Property 'length' does not exist on type 'LookupAddress'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 2339,
+      "message": "Property 'some' does not exist on type 'LookupAddress'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 7031,
+      "message": "Binding element 'address' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 7031,
+      "message": "Binding element 'family' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 2345,
+      "message": "Argument of type 'LookupAddress' is not assignable to parameter of type 'string | LookupAddress[]'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 7053,
+      "message": "Element implicitly has an 'any' type because expression of type '0' can't be used to index type 'LookupAddress'.\n  Property '0' does not exist on type 'LookupAddress'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 18048,
+      "message": "'payload.data' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 18048,
+      "message": "'payload.data' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopSaveFile.ts",
+      "code": 2769,
+      "message": "No overload matches this call.\n  The last overload gave the following error.\n    Argument of type 'ArrayBuffer | undefined' is not assignable to parameter of type 'ArrayBuffer | ArrayLike<number>'.\n      Type 'undefined' is not assignable to type 'ArrayBuffer | ArrayLike<number>'."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopShellIntegrationIdentity.ts",
+      "code": 7016,
+      "message": "Could not find a declaration file for module '../../scripts/desktop-product-identity.mjs'. '/Users/zhvala/SourceCode/zody/packages/desktop/scripts/desktop-product-identity.mjs' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/desktopWindowLifecycle.ts",
+      "code": 2345,
+      "message": "Argument of type '{ runtimeProcessEnvPatch: Record<string, string>; agentSpawnFallbackCwd: string; agentWarmupTargets?: StartupWorkspaceWarmupTarget[] | undefined; type: \"init-local\"; deviceMid: string; workspacePath: string | undefined; workspaceIdentity: string | undefined; }' is not assignable to parameter of type 'HostInitMessage'.\n  Property 'zcodeBuiltinProviderConfigFilePath' is missing in type '{ runtimeProcessEnvPatch: Record<string, string>; agentSpawnFallbackCwd: string; agentWarmupTargets?: StartupWorkspaceWarmupTarget[] | undefined; type: \"init-local\"; deviceMid: string; workspacePath: string | undefined; workspaceIdentity: string | undefined; }' but required in type 'HostInitMessage'."
+    },
+    {
+      "file": "packages/desktop/src/main/index.ts",
+      "code": 7016,
+      "message": "Could not find a declaration file for module '../../scripts/desktop-product-identity.mjs'. '/Users/zhvala/SourceCode/zody/packages/desktop/scripts/desktop-product-identity.mjs' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/index.ts",
+      "code": 2345,
+      "message": "Argument of type 'Net' is not assignable to parameter of type 'DesktopTelemetryFetchSource'.\n  Types of property 'fetch' are incompatible.\n    Type '(input: string | Request, init?: (RequestInit & { bypassCustomProtocolHandlers?: boolean | undefined; }) | undefined) => Promise<Response>' is not assignable to type '(input: string | URL | Request, init?: RequestInit | undefined) => Promise<Response>'.\n      Types of parameters 'input' and 'input' are incompatible.\n        Type 'string | URL | Request' is not assignable to type 'string | Request'.\n          Type 'URL' is not assignable to type 'string | Request'."
+    },
+    {
+      "file": "packages/desktop/src/main/index.ts",
+      "code": 2322,
+      "message": "Type '(webContentsId: number) => (BrowserGuestExecutionContext & { tabId: string; }) | null' is not assignable to type '(webContentsId: number) => { workspaceKey: string; remoteSessionId?: string | undefined; sessionId: string; browserId: string; browserGeneration: number; tabId: string; } | undefined'.\n  Type '(BrowserGuestExecutionContext & { tabId: string; }) | null' is not assignable to type '{ workspaceKey: string; remoteSessionId?: string | undefined; sessionId: string; browserId: string; browserGeneration: number; tabId: string; } | undefined'.\n    Type 'null' is not assignable to type '{ workspaceKey: string; remoteSessionId?: string | undefined; sessionId: string; browserId: string; browserGeneration: number; tabId: string; } | undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/index.ts",
+      "code": 2322,
+      "message": "Type '(patch: Partial<AppSettings>) => void' is not assignable to type '(patch: unknown) => void'.\n  Types of parameters 'patch' and 'patch' are incompatible.\n    Type 'unknown' is not assignable to type 'Partial<AppSettings>'."
+    },
+    {
+      "file": "packages/desktop/src/main/index.ts",
+      "code": 2345,
+      "message": "Argument of type 'string | null' is not assignable to parameter of type 'string'.\n  Type 'null' is not assignable to type 'string'."
+    },
+    {
+      "file": "packages/desktop/src/main/manifestUpdateProvider.ts",
+      "code": 2352,
+      "message": "Conversion of type 'Record<string, unknown>' to type 'UpdateInfo' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.\n  Type 'Record<string, unknown>' is missing the following properties from type 'UpdateInfo': version, files, path, sha512, releaseDate"
+    },
+    {
+      "file": "packages/desktop/src/main/pluginSandbox/genUiProtocol.test.ts",
+      "code": 2322,
+      "message": "Type '\"gen-ui\" | \"mcp-app\"' is not assignable to type '\"gen-ui\" | undefined'.\n  Type '\"mcp-app\"' is not assignable to type '\"gen-ui\"'."
+    },
+    {
+      "file": "packages/desktop/src/main/resourceManagerStorage.ts",
+      "code": 2305,
+      "message": "Module '\"@zcode/services/node\"' has no exported member 'IStorageService'."
+    },
+    {
+      "file": "packages/desktop/src/main/resourceManagerStorage.ts",
+      "code": 7006,
+      "message": "Parameter 'snapshot' implicitly has an 'any' type."
+    },
+    {
+      "file": "packages/desktop/src/main/storageScanWorker.ts",
+      "code": 2305,
+      "message": "Module '\"@zcode/services\"' has no exported member 'StorageRootSpec'."
+    },
+    {
+      "file": "packages/desktop/src/main/storageScanWorkerProtocol.ts",
+      "code": 2305,
+      "message": "Module '\"@zcode/services\"' has no exported member 'StorageRootSpec'."
+    },
+    {
+      "file": "packages/desktop/src/main/taskRealtimeBus.ts",
+      "code": 2345,
+      "message": "Argument of type '{ eventId: string; workspacePath: string; workspaceKey: string; traceId: string; createdAt: number; reason: \"stream_mirror_owner_lost\" | \"stream_mirror_gap\" | \"task_created\" | \"user_message_saved\" | ... 9 more ... | \"task_deleted\"; type: \"task_snapshot_invalidated\"; taskId: string; workspaceIdentity?: string | undef...' is not assignable to parameter of type 'TaskRealtimeEvent'.\n  Type '{ eventId: string; workspacePath: string; workspaceKey: string; traceId: string; createdAt: number; type: \"task_stream_mirror_batch\"; taskId: string; runId: string; batchSeq: number; fromSeq: number; ... 5 more ...; ownerDeviceLabel?: string | undefined; }' is not assignable to type 'TaskRealtimeEvent'.\n    Type '{ eventId: string; workspacePath: string; workspaceKey: string; traceId: string; createdAt: number; type: \"task_stream_mirror_batch\"; taskId: string; runId: string; batchSeq: number; fromSeq: number; ... 5 more ...; ownerDeviceLabel?: string | undefined; }' is not assignable to type 'TaskStreamMirrorBatchEvent'.\n      Types of property 'ops' are incompatible.\n        Type '({ kind: \"user_message\"; messageId: string; content: string; timestamp: number; seq: number; attachments?: ({ kind: \"image\"; filename: string; mimeType: string; sizeBytes?: number | undefined; dataBase64?: string | undefined; localPath?: string | undefined; } | { ...; } | { ...; } | { ...; } | { ...; })[] | undefine...' is not assignable to type 'TaskStreamMirrorOp[]'.\n          Type '{ kind: \"user_message\"; messageId: string; content: string; timestamp: number; seq: number; attachments?: ({ kind: \"image\"; filename: string; mimeType: string; sizeBytes?: number | undefined; dataBase64?: string | undefined; localPath?: string | undefined; } | { ...; } | { ...; } | { ...; } | { ...; })[] | undefined...' is not assignable to type 'TaskStreamMirrorOp'.\n            Type '{ kind: \"stream_event\"; event: { [x: string]: unknown; type: string; taskId: string; traceId: string; }; seq: number; }' is not assignable to type 'TaskStreamMirrorOp'.\n              Type '{ kind: \"stream_event\"; event: { [x: string]: unknown; type: string; taskId: string; traceId: string; }; seq: number; }' is not assignable to type 'TaskStreamMirrorStreamEventOp & { seq: number; }'.\n                Type '{ kind: \"stream_event\"; event: { [x: string]: unknown; type: string; taskId: string; traceId: string; }; seq: number; }' is not assignable to type 'TaskStreamMirrorStreamEventOp'.\n                  Types of property 'event' are incompatible.\n                    Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is not assignable to type 'TaskStreamMirrorableEvent'.\n                      Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is not assignable to type 'ZCodeTaskNetworkDebugStatus & { inputId?: string | undefined; }'.\n                        Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is missing the following properties from type 'ZCodeTaskNetworkDebugStatus': eventKey, statusType, requestHeaders, responseHeaders, and 2 more."
+    },
+    {
+      "file": "packages/desktop/src/main/taskRealtimeBus.ts",
+      "code": 2345,
+      "message": "Argument of type '{ kind: \"user_message\"; messageId: string; content: string; timestamp: number; attachments?: ({ kind: \"image\"; filename: string; mimeType: string; sizeBytes?: number | undefined; dataBase64?: string | undefined; localPath?: string | undefined; } | { ...; } | { ...; } | { ...; } | { ...; })[] | undefined; } | { ...; }' is not assignable to parameter of type 'TaskStreamMirrorPublishOp'.\n  Type '{ kind: \"stream_event\"; event: { [x: string]: unknown; type: string; taskId: string; traceId: string; }; }' is not assignable to type 'TaskStreamMirrorPublishOp'.\n    Type '{ kind: \"stream_event\"; event: { [x: string]: unknown; type: string; taskId: string; traceId: string; }; }' is not assignable to type 'TaskStreamMirrorStreamEventOp'.\n      Types of property 'event' are incompatible.\n        Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is not assignable to type 'TaskStreamMirrorableEvent'.\n          Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is not assignable to type 'ZCodeTaskNetworkDebugStatus & { inputId?: string | undefined; }'.\n            Type '{ [x: string]: unknown; type: string; taskId: string; traceId: string; }' is missing the following properties from type 'ZCodeTaskNetworkDebugStatus': eventKey, statusType, requestHeaders, responseHeaders, and 2 more."
+    },
+    {
+      "file": "packages/desktop/src/main/taskRealtimeBus.ts",
+      "code": 2339,
+      "message": "Property 'event' does not exist on type 'TaskStreamMirrorPublishOp'.\n  Property 'event' does not exist on type 'TaskStreamMirrorUserMessageOp'."
+    },
+    {
+      "file": "packages/desktop/src/main/webRemoteControlManager.ts",
+      "code": 18048,
+      "message": "'result.tasks' is possibly 'undefined'."
+    },
+    {
+      "file": "packages/desktop/src/main/webRemoteControlSharedHostAttachments.ts",
+      "code": 2353,
+      "message": "Object literal may only specify known properties, and 'mobileNotificationPrincipal' does not exist in type '{ windowId: number; remoteSessionId: string; workspacePath: string; workspaceIdentity: string; workspaceKey: string; clientMode: \"web-remote-replayable\"; }'."
+    },
+    {
+      "file": "packages/desktop/src/main/windowsChromeAppBoundKey.ts",
+      "code": 2339,
+      "message": "Property 'expectedAppVersion' does not exist on type 'ReadAppBoundKeyOptions'."
+    },
+    {
+      "file": "packages/desktop/src/main/windowsChromeAppBoundKey.ts",
+      "code": 2339,
+      "message": "Property 'expectedBuildCommit' does not exist on type 'ReadAppBoundKeyOptions'."
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "status": "candidate-rebuilt",
+  "output": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-final/full-source",
+  "base": {
+    "fileCount": 767,
+    "treeSha256": "4cbad8776947504f9883bf5370d6802177090d7a01075c5640b64a730950d9de"
+  },
+  "candidate": {
+    "fileCount": 776,
+    "treeSha256": "421530ae2c2cab7b537226e459905916c849c1cf76095db0a45f574f9c49e02e"
+  },
+  "patch": {
+    "path": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-driver-closure/round9/candidate-source.patch",
+    "sha256": "2d4629a8985c59200fb4df5367d9b86ffdbaf4d7def49fccbd60201458a266da",
+    "bytes": 117293
+  },
+  "sourceManifestSha256": "939fee8c3ad251cba055bb97b917f130b74a876797c9228a7e0c7c20695144e3",
+  "reviewConfigSha256": "3f49c8358c5b17ed244da9d795a7eee5f41cbb4c7f584f136db3d19617b46c5b",
+  "delta": {
+    "modified": [
+      "Cargo.lock",
+      "Cargo.toml",
+      "crates/cua-macos-visual/build.rs",
+      "crates/cua-macos-visual/Cargo.toml",
+      "crates/cua-macos-visual/PROVENANCE.md",
+      "crates/cua-macos-visual/src/capture.rs",
+      "crates/cua-macos-visual/src/error.rs",
+      "crates/cua-macos-visual/src/lib.rs",
+      "crates/cua-macos-visual/src/observe.rs",
+      "crates/cua-macos-visual/src/swift_link.rs"
+    ],
+    "added": [
+      "crates/cua-macos-visual-link-probe/.cargo/config.toml",
+      "crates/cua-macos-visual-link-probe/build.rs",
+      "crates/cua-macos-visual-link-probe/Cargo.toml",
+      "crates/cua-macos-visual-link-probe/src/main.rs",
+      "crates/cua-macos-visual/native/CuaVisualCapture.swift",
+      "crates/cua-macos-visual/native/DERIVATION.md",
+      "crates/cua-macos-visual/native/licenses/LICENSE-APACHE",
+      "crates/cua-macos-visual/native/licenses/LICENSE-MIT",
+      "crates/cua-macos-visual/src/session.rs"
+    ],
+    "removed": []
+  },
+  "dependencyPolicy": {
+    "visualRoot": "crates/cua-macos-visual",
+    "probeRoot": "crates/cua-macos-visual-link-probe",
+    "preservedFeatures": [
+      "zody-dev-no-input",
+      "zody-strict-frame-gate"
+    ],
+    "swiftBridgeFiles": [
+      "crates/cua-macos-visual/native/CuaVisualCapture.swift"
+    ],
+    "visualDependencies": [
+      "core-foundation",
+      "image"
+    ],
+    "probeDependencies": [
+      "cua-macos-visual"
+    ]
+  },
+  "lockPolicy": {
+    "lockVersion": 4,
+    "visualDependencies": [
+      "core-foundation",
+      "image"
+    ],
+    "probeDependencies": [
+      "cua-macos-visual"
+    ],
+    "addedPathPackages": [
+      "cua-macos-visual-link-probe"
+    ],
+    "existingPackagesRetained": 570,
+    "unchangedPackages": 569,
+    "modifiedPackages": [
+      "cua-macos-visual"
+    ]
+  }
+}

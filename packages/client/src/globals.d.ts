@@ -335,6 +335,27 @@ declare global {
       ): Promise<ChromeBrowserDataImportResult>;
       /** 清理内置浏览器缓存或全部站点数据。 */
       clearEmbeddedBrowserData?(mode: "cache" | "all"): Promise<EmbeddedBrowserDataClearResult>;
+      /** 读取当前窗口可见的 Chrome 扩展 bridge/配对/Profile 状态。 */
+      getBrowserExtensionStatus?(): Promise<
+        import("@zcode/shared").BrowserExtensionBridgeStatus
+      >;
+      /** 在发起窗口生成一次性 Chrome 扩展配对码。 */
+      beginBrowserExtensionPairing?(): Promise<
+        import("@zcode/shared").BrowserExtensionPairingTicket | null
+      >;
+      cancelBrowserExtensionPairing?(pairingSessionId: string): Promise<void>;
+      setBrowserExtensionDefaultBackend?(
+        browserId: string | null,
+      ): Promise<import("@zcode/shared").BrowserExtensionActionResult>;
+      revokeBrowserExtensionProfile?(
+        profileInstanceId: string,
+      ): Promise<import("@zcode/shared").BrowserExtensionActionResult>;
+      transferBrowserExtensionProfile?(
+        profileInstanceId: string,
+      ): Promise<import("@zcode/shared").BrowserExtensionActionResult>;
+      setBrowserExtensionBridgePort?(
+        port: number,
+      ): Promise<import("@zcode/shared").BrowserExtensionActionResult>;
       /** 注册新版本已下载完毕的回调，返回 disposer */
       onUpdateReady(callback: (version: string) => void): () => void;
       /** 注册"手动检查更新"结果的回调，返回 disposer */

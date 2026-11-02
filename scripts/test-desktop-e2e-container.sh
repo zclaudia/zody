@@ -9,7 +9,7 @@ PNPM_VERSION="${PNPM_VERSION:-10.33.2}"
 DEFAULT_E2E_SPEC="./test/e2e/container-boot.test.ts,./test/e2e/smoke.test.ts,./test/e2e/e2ecase-regression.test.ts,./test/e2e/upstream-provider.test.ts,./test/e2e/task-list-archive-confirmation.test.ts"
 # 修复原因：formal/local replay 通过不等于 Docker admission；Assistant Preview Cards 的容器尝试
 # 停在镜像解析阶段，CDD01 则在 WDIO 内失败；两者都没有 replay-isolated 绿色证据。
-CONVERSATION_SESSION_VERIFIED_E2E_SPEC=""
+CONVERSATION_SESSION_VERIFIED_E2E_SPEC="./test/e2e/conversation-session/conversation-session-task-created-project-row.test.ts"
 # 只有通过人工 review、formal promotion 和单 spec Docker admission 的插件用例才能写入。
 PLUGIN_MANAGEMENT_VERIFIED_E2E_SPEC=""
 E2E_SPEC_PRESET="${E2E_SPEC_PRESET:-}"

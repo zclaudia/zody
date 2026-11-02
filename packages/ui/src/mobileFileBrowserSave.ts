@@ -24,6 +24,46 @@ function throwIfSaveAborted(signal: AbortSignal | undefined): void {
   }
 }
 
+/**
+ * searchfile-9：取消贯穿原生分块写入阶段。远端分块读取完成后，保存进入原生写入阶段
+ * （platform.saveFile，Android 原生桥按 256KiB 分块 append），此前 AbortSignal 只在读取阶段
+ * 与发起写入前被检查，写入进行中的「取消」按钮点了没有任何效果。这里让写入 promise 与
+ * 取消信号竞争：信号一旦中止立即按取消收尾，不等待写入结果，UI 的取消在整个保存期间都有确定收效。
+ *
+ * 边界说明：Android 原生桥的 append 循环是同步 JS，占满主线程期间点击事件只能在其结束后处理，
+ * 该路径下 race 仍以真实写入结果收尾（与现状一致）。要让同步写入本身可中断，需要桥接层
+ * （packages/web/src/mobile-remote/mobileRemoteFileBridge.ts）在 append 间让出事件循环并响应信号，
+ * 该文件不在本批次文件清单内。
+ */
+export async function raceMobileSaveWriteAgainstAbort(
+  write: Promise<SaveFileResult>,
+  signal?: AbortSignal,
+): Promise<SaveFileResult> {
+  if (!signal) {
+    return write;
+  }
+  if (signal.aborted) {
+    return { success: false, canceled: true };
+  }
+  return new Promise<SaveFileResult>((resolve, reject) => {
+    const onAbort = () => {
+      resolve({ success: false, canceled: true });
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+    write.then(
+      (result) => {
+        signal.removeEventListener("abort", onAbort);
+        resolve(result);
+      },
+      (error) => {
+        signal.removeEventListener("abort", onAbort);
+        // 写入失败不属于取消：按原错误抛出，UI 继续走错误 toast。
+        reject(error);
+      },
+    );
+  });
+}
+
 export async function readMobileFileForSave(
   fileService: Pick<IFileService, "stat" | "readFileRange">,
   path: string,
@@ -99,5 +139,9 @@ export async function saveMobileOriginalFile({
   }
   const exactBuffer = new ArrayBuffer(bytes.byteLength);
   new Uint8Array(exactBuffer).set(bytes);
-  return platform.saveFile({ data: exactBuffer, suggestedName });
+  // searchfile-9：原生写入阶段同样响应取消信号（见 raceMobileSaveWriteAgainstAbort）。
+  return raceMobileSaveWriteAgainstAbort(
+    platform.saveFile({ data: exactBuffer, suggestedName }),
+    signal,
+  );
 }

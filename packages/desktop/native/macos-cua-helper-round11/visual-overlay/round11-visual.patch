@@ -1,0 +1,360 @@
+diff --git a/crates/cua-macos-visual/Cargo.toml b/crates/cua-macos-visual/Cargo.toml
+index 1ecdfa8..b8f009e 100644
+--- a/crates/cua-macos-visual/Cargo.toml
++++ b/crates/cua-macos-visual/Cargo.toml
+@@ -7,7 +7,7 @@ description = "Narrow macOS visual observation candidate: CGWindow facts, one-wi
+ publish = false
+ 
+ [lib]
+-crate-type = ["rlib"]
++crate-type = ["rlib", "staticlib"]
+ 
+ [dependencies]
+ # 只开 PNG，显式绕开 workspace 的 image features（png+jpeg），避免 JPEG 编码器进入新图。
+diff --git a/crates/cua-macos-visual/src/capture.rs b/crates/cua-macos-visual/src/capture.rs
+index 3375e22..c6037df 100644
+--- a/crates/cua-macos-visual/src/capture.rs
++++ b/crates/cua-macos-visual/src/capture.rs
+@@ -8,15 +8,17 @@
+ #![allow(dead_code)]
+ 
+ use std::slice;
++use std::sync::Arc;
+ 
+ use crate::error::VisualError;
+ use crate::geometry::{
+     CaptureRequest, PixelDimensions, WindowIdentity, MAX_CAPTURE_SIDE, MAX_RGBA_BYTES,
+ };
++use crate::helper_bridge::{CallbackGate, CancelSlot};
+ use crate::observe::{finish_observation, validate_before_identity};
+ use crate::png::encode_rgba_to_png;
+ use crate::session::{
+-    self, AdmissionDecision, CaptureObservation, CompletionStatus, NativeCompletion,
++    self, AdmissionDecision, CaptureObservation, Checkpoint, CompletionStatus, NativeCompletion,
+ };
+ use crate::window;
+ 
+@@ -60,16 +62,35 @@ extern "C" {
+ /// The internal observer never adds a timeout. A missing native callback keeps
+ /// its bounded slot and this wait pending. Closing the observer is only result
+ /// reception closure, not proof of native stop, fence or drain.
++pub(crate) struct CaptureHooks {
++    pub(crate) operation_id: u64,
++    pub(crate) admission: session::AdmissionCheck,
++    pub(crate) cancel: Arc<CancelSlot>,
++    pub(crate) gate: Arc<CallbackGate>,
++}
++
+ pub(crate) fn capture_window_png(
+     request: &CaptureRequest,
++) -> Result<crate::CapturedFrame, VisualError> {
++    capture_window_png_with_hooks(request, None)
++}
++
++/// Private Helper entry. The supplied callback is rechecked at Swift admission
++/// and immediately before final frame delivery.
++pub(crate) fn capture_window_png_with_hooks(
++    request: &CaptureRequest,
++    hooks: Option<&CaptureHooks>,
+ ) -> Result<crate::CapturedFrame, VisualError> {
+     request.validate()?;
+     let expected = request.expected_identity();
++    if hooks.map_or(false, |hooks| hooks.cancel.is_canceled()) {
++        return Err(VisualError::CaptureCanceled);
++    }
+ 
+     let before = window::window_identity(request.window_id)?;
+     validate_before_identity(&expected, &before)?;
+ 
+-    let mut observation = start_native_capture(request)?;
++    let mut observation = start_native_capture(request, hooks)?;
+     let raw = observation.wait()?;
+ 
+     finish_observation(
+@@ -77,15 +98,49 @@ pub(crate) fn capture_window_png(
+         raw,
+         || window::window_identity(request.window_id),
+         |raw| encode_rgba_to_png(&raw.rgba, raw.dimensions.width, raw.dimensions.height),
+-        || observation.ensure_open(),
++        || {
++            observation.ensure_open()?;
++            if let Some(hooks) = hooks {
++                if !(hooks.admission)(
++                    hooks.operation_id,
++                    Checkpoint::FinalDelivery,
++                    &expected,
++                ) {
++                    return Err(VisualError::HostNotApproved);
++                }
++            }
++            Ok(())
++        },
+     )
+ }
+ 
+ /// Start exactly one native request after reserving one bounded callback slot.
+-fn start_native_capture(request: &CaptureRequest) -> Result<CaptureObservation, VisualError> {
++fn start_native_capture(
++    request: &CaptureRequest,
++    hooks: Option<&CaptureHooks>,
++) -> Result<CaptureObservation, VisualError> {
+     request.validate()?;
+     let coordinator = session::global();
+-    let observation = coordinator.reserve(request.expected_identity())?;
++    let observation = match hooks {
++        Some(hooks) => {
++            let gate = Arc::clone(&hooks.gate);
++            coordinator.reserve_with_hooks(
++                request.expected_identity(),
++                Some(Arc::clone(&hooks.admission)),
++                Some(Arc::new(move || gate.mark_released())),
++            )?
++        }
++        None => coordinator.reserve(request.expected_identity())?,
++    };
++    if let Some(hooks) = hooks {
++        hooks.cancel.attach(observation.cancel_handle());
++        if hooks.cancel.is_canceled() {
++            let error = VisualError::CaptureCanceled;
++            let _ = coordinator.abort_before_native(observation.id(), error.clone());
++            return Err(error);
++        }
++        hooks.gate.begin_native();
++    }
+ 
+     // SAFETY: both callbacks are `extern "C"` functions with fixed layouts.
+     // The Swift side owns no Rust userdata and receives only the never-reused
+@@ -102,6 +157,9 @@ fn start_native_capture(request: &CaptureRequest) -> Result<CaptureObservation,
+         )
+     };
+     if status != 0 {
++        if let Some(hooks) = hooks {
++            hooks.gate.native_start_failed();
++        }
+         let error = VisualError::NativeCapture(format!(
+             "Swift capture bridge refused request with status {status}"
+         ));
+diff --git a/crates/cua-macos-visual/src/lib.rs b/crates/cua-macos-visual/src/lib.rs
+index 747ce69..3500880 100644
+--- a/crates/cua-macos-visual/src/lib.rs
++++ b/crates/cua-macos-visual/src/lib.rs
+@@ -19,6 +19,8 @@ mod swift_link;
+ #[cfg(target_os = "macos")]
+ mod capture;
+ #[cfg(target_os = "macos")]
++mod helper_bridge;
++#[cfg(target_os = "macos")]
+ mod session;
+ #[cfg(target_os = "macos")]
+ mod window;
+diff --git a/crates/cua-macos-visual/src/session.rs b/crates/cua-macos-visual/src/session.rs
+index b98e257..3a2be61 100644
+--- a/crates/cua-macos-visual/src/session.rs
++++ b/crates/cua-macos-visual/src/session.rs
+@@ -54,7 +54,9 @@ struct Entry {
+     expected: WindowIdentity,
+     phase: Phase,
+     selected: Option<WindowIdentity>,
++    admission_check: Option<AdmissionCheck>,
+     admission_error: Option<VisualError>,
++    release_notifier: Option<ReleaseNotifier>,
+     callback_delivered: bool,
+     signal: Arc<Signal>,
+ }
+@@ -79,6 +81,21 @@ pub(crate) enum AdmissionDecision {
+     Rejected,
+ }
+ 
++/// A private checkpoint, not an authorization token. The trusted native
++/// callback behind it owns the Helper authority and machine-lock decision.
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub(crate) enum Checkpoint {
++    SwiftAdmission,
++    FinalDelivery,
++}
++
++/// Trusted native owner callback shared by Swift admission and final delivery.
++pub(crate) type AdmissionCheck =
++    Arc<dyn Fn(u64, Checkpoint, &WindowIdentity) -> bool + Send + Sync>;
++
++/// Called only after the Swift bridge reports callback resources returned.
++pub(crate) type ReleaseNotifier = Arc<dyn Fn() + Send + Sync>;
++
+ /// Native completion class. No field represents authorization.
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub(crate) enum CompletionStatus {
+@@ -239,6 +256,16 @@ impl CaptureCoordinator {
+     pub(crate) fn reserve(
+         &self,
+         expected: WindowIdentity,
++    ) -> Result<CaptureObservation, VisualError> {
++        self.reserve_with_hooks(expected, None, None)
++    }
++
++    /// Reserve with the private Helper's admission and release hooks.
++    pub(crate) fn reserve_with_hooks(
++        &self,
++        expected: WindowIdentity,
++        admission_check: Option<AdmissionCheck>,
++        release_notifier: Option<ReleaseNotifier>,
+     ) -> Result<CaptureObservation, VisualError> {
+         let mut registry = lock_registry(&self.registry);
+         if registry.entries.len() >= registry.capacity {
+@@ -257,7 +284,9 @@ impl CaptureCoordinator {
+                 expected,
+                 phase: Phase::Enumerating,
+                 selected: None,
++                admission_check,
+                 admission_error: None,
++                release_notifier,
+                 callback_delivered: false,
+                 signal: Arc::clone(&signal),
+             },
+@@ -272,6 +301,42 @@ impl CaptureCoordinator {
+ 
+     /// Linearization point between enumeration and screenshot start.
+     pub(crate) fn admit(&self, id: u64, actual: WindowIdentity) -> AdmissionDecision {
++        // 先做纯校验并复制钩子，避免在持有 registry 锁时调用 native
++        // 授权回调；回调可能等待 authority 或机器锁，不能与 visual 内部锁
++        // 形成环。提交阶段再重新检查 phase/canceled，重复回调只会被拒绝。
++        let (check, validation) = {
++            let registry = lock_registry(&self.registry);
++            let Some(entry) = registry.entries.get(&id) else {
++                return AdmissionDecision::Rejected;
++            };
++            if entry.phase != Phase::Enumerating {
++                return AdmissionDecision::Rejected;
++            }
++            let validation = validate_window_identity(&actual).and_then(|()| {
++                validate_identity(&entry.expected, &actual, DriftStage::SelectedWindow)
++            });
++            (entry.admission_check.clone(), validation)
++        };
++        if let Err(error) = validation {
++            self.record_admission_error(id, error);
++            return AdmissionDecision::Rejected;
++        }
++        {
++            let registry = lock_registry(&self.registry);
++            let Some(entry) = registry.entries.get(&id) else {
++                return AdmissionDecision::Rejected;
++            };
++            if lock_signal(&entry.signal).canceled {
++                return AdmissionDecision::Canceled;
++            }
++        }
++        if let Some(check) = check {
++            if !check(id, Checkpoint::SwiftAdmission, &actual) {
++                self.record_admission_error(id, VisualError::HostNotApproved);
++                return AdmissionDecision::Rejected;
++            }
++        }
++
+         let mut registry = lock_registry(&self.registry);
+         let Some(entry) = registry.entries.get_mut(&id) else {
+             return AdmissionDecision::Rejected;
+@@ -279,15 +344,6 @@ impl CaptureCoordinator {
+         if entry.phase != Phase::Enumerating {
+             return AdmissionDecision::Rejected;
+         }
+-        if let Err(error) = validate_window_identity(&actual) {
+-            entry.admission_error = Some(error);
+-            return AdmissionDecision::Rejected;
+-        }
+-        if let Err(error) = validate_identity(&entry.expected, &actual, DriftStage::SelectedWindow)
+-        {
+-            entry.admission_error = Some(error);
+-            return AdmissionDecision::Rejected;
+-        }
+         let state = lock_signal(&entry.signal);
+         if state.canceled {
+             return AdmissionDecision::Canceled;
+@@ -298,6 +354,15 @@ impl CaptureCoordinator {
+         AdmissionDecision::Proceed
+     }
+ 
++    fn record_admission_error(&self, id: u64, error: VisualError) {
++        let mut registry = lock_registry(&self.registry);
++        if let Some(entry) = registry.entries.get_mut(&id) {
++            if entry.phase == Phase::Enumerating {
++                entry.admission_error = Some(error);
++            }
++        }
++    }
++
+     /// Record exactly one native completion without claiming native stop,
+     /// callback-thread exit, Fenced or Drained. The slot is not released here.
+     ///
+@@ -332,37 +397,50 @@ impl CaptureCoordinator {
+     /// its bridge-owned pixel storage and borrow were handed back. This is not
+     /// evidence that the OS callback thread has returned or that SCK is idle.
+     pub(crate) fn release_callback(&self, id: u64) -> CallbackReleaseOutcome {
+-        let mut registry = lock_registry(&self.registry);
+-        let Some(entry) = registry.entries.remove(&id) else {
+-            return CallbackReleaseOutcome::DuplicateIgnored;
++        let notifier = {
++            let mut registry = lock_registry(&self.registry);
++            let Some(entry) = registry.entries.remove(&id) else {
++                return CallbackReleaseOutcome::DuplicateIgnored;
++            };
++            if !entry.callback_delivered {
++                let signal = Arc::clone(&entry.signal);
++                let mut state = lock_signal(&signal);
++                state.terminal = Some(Err(VisualError::NativeCapture(
++                    "Swift sent payload_released before delivering completion".to_owned(),
++                )));
++                signal.changed.notify_all();
++            }
++            entry.release_notifier
+         };
+-        if !entry.callback_delivered {
+-            let signal = Arc::clone(&entry.signal);
+-            let mut state = lock_signal(&signal);
+-            state.terminal = Some(Err(VisualError::NativeCapture(
+-                "Swift sent payload_released before delivering completion".to_owned(),
+-            )));
+-            signal.changed.notify_all();
++        if let Some(notifier) = notifier {
++            notifier();
+         }
+         CallbackReleaseOutcome::Released
+     }
+ 
+     /// A synchronous native start failure guarantees no callback will follow.
+     pub(crate) fn abort_before_native(&self, id: u64, error: VisualError) -> CompletionOutcome {
+-        let mut registry = lock_registry(&self.registry);
+-        let Some(entry) = registry.entries.remove(&id) else {
+-            return CompletionOutcome::DuplicateIgnored;
+-        };
+-        let signal = Arc::clone(&entry.signal);
+-        let mut state = lock_signal(&signal);
+-        if state.canceled {
+-            state.terminal = Some(Err(VisualError::CaptureCanceled));
++        let (outcome, notifier) = {
++            let mut registry = lock_registry(&self.registry);
++            let Some(entry) = registry.entries.remove(&id) else {
++                return CompletionOutcome::DuplicateIgnored;
++            };
++            let signal = Arc::clone(&entry.signal);
++            let mut state = lock_signal(&signal);
++            let outcome = if state.canceled {
++                state.terminal = Some(Err(VisualError::CaptureCanceled));
++                CompletionOutcome::DroppedCanceled
++            } else {
++                state.terminal = Some(Err(error));
++                CompletionOutcome::Delivered
++            };
+             signal.changed.notify_all();
+-            return CompletionOutcome::DroppedCanceled;
++            (outcome, entry.release_notifier)
++        };
++        if let Some(notifier) = notifier {
++            notifier();
+         }
+-        state.terminal = Some(Err(error));
+-        signal.changed.notify_all();
+-        CompletionOutcome::Delivered
++        outcome
+     }
+ 
+     #[cfg(test)]

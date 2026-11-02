@@ -1,0 +1,19 @@
+{
+  "name": "unit-defaults",
+  "argv": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "packages/desktop/test/macosCuaDemoDefaults.test.ts",
+    "packages/desktop/test/cuaNarrowAgentRuntime.test.ts",
+    "packages/desktop/test/tsupChunkIsolation.test.ts",
+    "packages/desktop/test/devStartupReadyState.test.ts",
+    "packages/desktop/test/electronBuilderCuaProducer.test.ts"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-31T05:38:04.897079+00:00",
+  "seconds": 8.34,
+  "exitCode": 1,
+  "log": "unit-defaults.log"
+}

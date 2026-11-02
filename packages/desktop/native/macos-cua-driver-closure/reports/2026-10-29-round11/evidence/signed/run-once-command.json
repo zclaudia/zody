@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/MacOS/macos-cua-helper-round11",
+    "--run-once",
+    "--window-id",
+    "85709",
+    "--pid",
+    "64169",
+    "--layer",
+    "0",
+    "--x",
+    "680",
+    "--y",
+    "76",
+    "--width",
+    "1200",
+    "--height",
+    "800",
+    "--output",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/capture-zody.png"
+  ],
+  "environment": {
+    "PATH": "/usr/bin:/bin",
+    "LANG": "C",
+    "LC_ALL": "C"
+  },
+  "targetSource": "CGWindowListCopyWindowInfo on-screen Zody window; no title recorded"
+}

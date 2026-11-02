@@ -1,0 +1,9 @@
+{
+  "binary": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-final-native/target/aarch64-apple-darwin/debug/cua-macos-visual-link-probe",
+  "bytes": 557520,
+  "sha256": "01a06969fbea1f8bd9cceb0530209828cbaa4b3015d5a02e3a992b004131ff25",
+  "nativeBuildArtifacts": [
+    "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-final-native/target/aarch64-apple-darwin/debug/build/cua-macos-visual-7a5889e08cba4c87/out/CuaVisualCapture.o",
+    "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-final-native/target/aarch64-apple-darwin/debug/build/cua-macos-visual-7a5889e08cba4c87/out/libcua_macos_visual_bridge.a"
+  ]
+}

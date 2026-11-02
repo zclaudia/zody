@@ -1,0 +1,49 @@
+{
+  "candidate": "capture-reason",
+  "sessionId": "sess_f53d017c-1e1f-456c-8446-954e64ff2d31",
+  "target": {
+    "pid": 72383,
+    "windowId": 87954
+  },
+  "helperPid": 72924,
+  "events": [
+    {
+      "timestamp": "2026-10-30T10:23:41.497Z",
+      "event": "tool.call.started",
+      "sessionId": "sess_f53d017c-1e1f-456c-8446-954e64ff2d31",
+      "turnId": "turn_8f5d3f61-7ab1-451b-9ecf-37b8204f499e",
+      "context": {
+        "queryId": "01a18c56-2438-7cfc-8b84-cd9ca3b31ebf",
+        "turnNumber": 0,
+        "providerId": "deepseek",
+        "modelId": "deepseek-flash",
+        "iteration": 0,
+        "querySource": "main_turn",
+        "toolName": "mcp__node_repl__js"
+      }
+    },
+    {
+      "timestamp": "2026-10-30T10:25:41.522Z",
+      "event": "tool.call.failed",
+      "sessionId": "sess_f53d017c-1e1f-456c-8446-954e64ff2d31",
+      "turnId": "turn_8f5d3f61-7ab1-451b-9ecf-37b8204f499e",
+      "durationMs": 120021,
+      "context": {
+        "queryId": "01a18c56-2438-7cfc-8b84-cd9ca3b31ebf",
+        "turnNumber": 0,
+        "providerId": "deepseek",
+        "modelId": "deepseek-flash",
+        "iteration": 0,
+        "querySource": "main_turn",
+        "toolName": "mcp__node_repl__js"
+      },
+      "error": {
+        "name": "ProtocolError",
+        "message": "The operation was aborted due to timeout"
+      }
+    }
+  ],
+  "captureDelivered": false,
+  "screenshotThenStopAccepted": false,
+  "note": "New diagnostic candidate waited for native confirmation and reached inner 120s timeout. Controller never approved native prompt. Do not reuse any later reply as approval of this expired generation."
+}

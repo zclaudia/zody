@@ -61,8 +61,9 @@ export function InstalledPluginDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[calc(100vh-3rem)] w-[min(600px,calc(100vw-2rem))] max-w-none gap-0 overflow-hidden p-0"
+        className="max-h-[calc(100dvh-3rem)] w-[min(600px,calc(100vw-2rem))] max-w-none gap-0 overflow-hidden p-0"
         data-testid="plugin-settings-detail-dialog"
+        data-settings-dialog="true"
         data-plugin-id={plugin?.id}
       >
         <DialogTitle className="sr-only">{plugin?.name ?? ""}</DialogTitle>
@@ -140,7 +141,7 @@ export function InstalledPluginDetailPanel({
   const sourceLabel = renderPluginSource(plugin);
 
   return (
-    <div className="max-h-[calc(100vh-3rem)] overflow-y-auto text-ui-base text-foreground">
+    <div className="max-h-[calc(100dvh-3rem)] overflow-y-auto text-ui-base text-foreground">
       <div className="border-b border-border px-5 pb-4 pt-5 pr-12">
         <div className="flex min-w-0 items-start gap-3">
           <div

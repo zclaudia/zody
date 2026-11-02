@@ -21,6 +21,7 @@ export function WebRemoteControlMobileHomePage({
   onNavigateHome,
   onNavigateToChat,
   onSwitchingWorkspaceChange,
+  onOpenAppSettings,
   onOpenSearch,
   onOpenFiles,
   onOpenNotifications,
@@ -37,6 +38,7 @@ export function WebRemoteControlMobileHomePage({
   onNavigateHome: () => void;
   onNavigateToChat: () => void;
   onSwitchingWorkspaceChange: (switching: boolean) => void;
+  onOpenAppSettings?: () => void;
   onOpenSearch?: () => void;
   onOpenFiles?: (workspaceKey: string) => void;
   onOpenNotifications?: () => void;
@@ -66,6 +68,7 @@ export function WebRemoteControlMobileHomePage({
       onSelectTask={onSelectTask}
       onStartDraftInWorkspace={onStartDraftInWorkspace}
       switcher={switcher}
+      onOpenAppSettings={onOpenAppSettings}
       onOpenSearch={onOpenSearch}
       onOpenFiles={onOpenFiles}
       onOpenNotifications={onOpenNotifications}

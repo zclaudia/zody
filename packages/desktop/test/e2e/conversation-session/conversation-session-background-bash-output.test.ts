@@ -49,12 +49,14 @@ async function launch(name: string) {
   await sendV4Prompt(`E2E_BGV_${name}: Run the exact background Bash fixture.`);
   await waitForV4AssistantMessageContaining(`E2E_BGV_${name}_DONE`, 60000);
   const sessionId = (await getV4PaneSnapshot()).sessionId!;
+  // I16：输出文件在 per-toolCall 目录下，消费方按新目录合同拼接校验路径。
   const outputPath = join(
     getE2EAppDataPaths().storageRoot,
     "cli",
     "exec",
     sessionId,
-    `toolu_bgv_${name}-stdout.log`,
+    `toolu_bgv_${name}`,
+    "stdout.log",
   );
   outputFiles.add(outputPath);
   await openRow();

@@ -1,0 +1,55 @@
+{
+  "kind": "zody-cua-narrow-build-audit",
+  "generatedAt": "2026-10-30T14:49:13.551Z",
+  "manifestPath": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-narrow-relocated/manifest.json",
+  "manifestSha256": "a58a47b1caddcc35b6ff68b5225a42dd2a2a2d7d0122a883f99b547778205c2f",
+  "packagedAppPath": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/normal-app/mac-arm64/Zody Preview.app/Contents/Resources/cua-narrow/Zody CUA Desktop Session.app",
+  "slot": "cua-narrow/Zody CUA Desktop Session.app",
+  "target": {
+    "os": "darwin",
+    "arch": "arm64",
+    "minimumMacOSVersion": "14.2"
+  },
+  "treeSha256": "02941c96c8aad395af7c741e77d61d6065b00cac05817732216d9a1f3e7c9fa4",
+  "signedBinarySha256": "a9fc07d84017a5b60c02a66cfd8e0a173bc01dbdc8270e345014e2548a53682e",
+  "nativeUnsignedBinarySha256": "9cdebe9bd33578b3b3a95440f2482c1e71c7a791bbfb01f3df0da65627a958f6",
+  "identity": {
+    "helperIdentifier": "io.github.zclaudia.zody.cua-helper",
+    "nodeIdentifier": "io.github.zclaudia.zody.cua-helper.node",
+    "leafSha256": "a7f7afa6a507b71c996f4a9bfbf6eef908d67054acdca93833bcd4c94c13ef0b",
+    "leafSha1": "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+    "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+    "nodeDesignatedRequirement": "identifier \"io.github.zclaudia.zody.cua-helper.node\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+    "nodeCdhash": "3c57a9bb9f4e8b748ac80d60bc78cdde14767218",
+    "hardenedRuntime": true,
+    "entitlementsEmpty": true
+  },
+  "licenses": [
+    {
+      "path": "Contents/Resources/licenses/node-LICENSE.txt",
+      "sha256": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18",
+      "bytes": 156926,
+      "associatedResource": "Contents/Resources/node"
+    }
+  ],
+  "restrictions": {
+    "defaultDisabled": true,
+    "placeholderDefault": true,
+    "hostActivation": false,
+    "cuaHelperSlotReused": false,
+    "reSign": false,
+    "installCertificate": false,
+    "requestTcc": false
+  },
+  "verification": {
+    "source": "fixed identity pins plus live codesign; manifest is not a trust root",
+    "strictSignature": true,
+    "hardenedRuntime": true,
+    "emptyEntitlements": true,
+    "noSymlinksOrHardlinks": true,
+    "contentManifestMatched": true,
+    "reSigned": false,
+    "installedCertificate": false,
+    "requestedTcc": false
+  }
+}

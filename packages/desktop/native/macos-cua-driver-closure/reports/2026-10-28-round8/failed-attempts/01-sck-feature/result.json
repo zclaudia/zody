@@ -1,0 +1,22 @@
+{
+  "command": [
+    "/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin/cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--target",
+    "aarch64-apple-darwin",
+    "--package",
+    "cua-macos-visual",
+    "--lib",
+    "--test",
+    "pure_visual",
+    "--",
+    "--test-threads=1"
+  ],
+  "code": 101,
+  "source": "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-probe/full-source",
+  "cacheStatus": "pass",
+  "archives": 316,
+  "scope": "reviewed visual crate pure Rust unit and integration tests; no native API invocation"
+}

@@ -28,41 +28,53 @@ const pool = () =>
   );
 afterEach(() => vi.useRealTimers());
 describe("MCP App page ownership", () => {
-  it("keeps a visible sidebar and recycles only after continuous five-minute absence", async () => {
+  // I20（2026-10-24 决策）：离屏/收起不是销毁信号，旧语义是连续离屏 5 分钟后 suspend。
+  it("keeps an offscreen page executing past five minutes and reuses the same owner on return", async () => {
     vi.useFakeTimers();
     const owner = pool();
     const page = make("page");
     await owner.add(page);
+    await owner.reserve(page);
     owner.visibility(page, false);
-    vi.advanceTimersByTime(299_999);
+    vi.advanceTimersByTime(15 * 60_000);
     expect(page.suspend).not.toHaveBeenCalled();
     owner.visibility(page, true);
     vi.advanceTimersByTime(600_000);
     expect(page.suspend).not.toHaveBeenCalled();
-    owner.visibility(page, false);
-    vi.advanceTimersByTime(300_000);
-    expect(page.suspend).toHaveBeenCalledOnce();
+    expect(owner.get("page")).toBe(page);
   });
-  it("pins approvals and calls, then releases immediately when the deadline has passed", async () => {
+  // I20：后台结果 settle（页面工具调用/采样结束）不等于页面可回收，旧语义会立即 suspend。
+  it("keeps an unanchored page when its background result settles after the offscreen deadline", async () => {
     vi.useFakeTimers();
     const owner = pool();
     const page = make("page");
     await owner.add(page);
+    await owner.reserve(page);
     page.setBusy(true);
     owner.visibility(page, false);
-    vi.advanceTimersByTime(300_000);
+    // 离屏定时器在页面忙时到点只移除定时器，不回收；随后结果 settle 仍不得销毁页面。
+    vi.advanceTimersByTime(5 * 60_000);
     expect(page.suspend).not.toHaveBeenCalled();
     page.setBusy(false);
     owner.settled(page);
-    expect(page.suspend).toHaveBeenCalledOnce();
+    expect(page.suspend).not.toHaveBeenCalled();
+    expect(owner.get("page")).toBe(page);
   });
-  it("evicts the least recently used eligible task and retains at most thirty tasks", async () => {
+  // I20：30 task 是硬上限，超限拒绝新页面；不得销毁无锚点的后台任务（旧语义 LRU 淘汰 first）。
+  it("rejects the thirty-first task without destroying a background page", async () => {
     const owner = pool();
     const first = make("first");
     await owner.add(first);
-    for (let n = 1; n < 31; n++) await owner.add(make(String(n)));
-    expect(first.destroy).toHaveBeenCalledOnce();
-    expect(owner.get("first")).toBeUndefined();
+    await owner.reserve(first);
+    for (let n = 1; n < 30; n++) {
+      const page = make(String(n));
+      await owner.add(page);
+      await owner.reserve(page);
+    }
+    await expect(owner.add(make("overflow"))).rejects.toThrow("capacity");
+    expect(first.destroy).not.toHaveBeenCalled();
+    expect(first.suspend).not.toHaveBeenCalled();
+    expect(owner.get("first")).toBe(first);
   });
   it("rejects overflow when all 64 pages are visible or busy", async () => {
     const owner = pool();
@@ -120,31 +132,45 @@ describe("MCP App page ownership", () => {
     await expect(pending).rejects.toThrow("removed");
     expect(owner.get(page.key)).toBeUndefined();
   });
-  it("does not reserve a deleted page after asynchronous recycling", async () => {
+  it("does not reserve or revive a page removed while its admission was pending", async () => {
     const owner = pool();
-    const entered = Promise.withResolvers<void>(),
-      recycled = Promise.withResolvers<boolean>();
-    const first = {
-      ...make("first", "task"),
-      suspend: vi.fn(() => {
-        entered.resolve();
-        return recycled.promise;
-      }),
-    };
-    await owner.add(first);
-    await owner.reserve(first);
-    for (let n = 1; n < 64; n++) {
-      const page = make(String(n), "task");
-      page.visible = true;
+    const page = make("late", "task");
+    const pendingAdd = owner.add(page);
+    const pendingReserve = owner.reserve(page);
+    owner.removeTask(page.task);
+    await expect(pendingAdd).rejects.toThrow("removed");
+    await expect(pendingReserve).rejects.toThrow("removed");
+    expect(owner.get(page.key)).toBeUndefined();
+  });
+  // I20：64 allocated 同样是硬上限；不得 suspend 无锚点的活页面来腾槽位。
+  it("rejects a sixty-fifth allocation without recycling a live background page", async () => {
+    const owner = pool();
+    const pages = Array.from({ length: 64 }, (_, i) => make(String(i), "task"));
+    for (const page of pages) {
       await owner.add(page);
       await owner.reserve(page);
     }
     const next = make("next");
     await owner.add(next);
-    const pending = owner.reserve(next);
-    await entered.promise;
-    owner.removeTask(next.task);
-    recycled.resolve(true);
-    await expect(pending).rejects.toThrow("removed");
+    await expect(owner.reserve(next)).rejects.toThrow("capacity");
+    for (const page of pages) expect(page.suspend).not.toHaveBeenCalled();
+  });
+  // I20：卡片与后台结果共享同一逻辑页面；并发准入只允许一个 owner，30 task 超限时拒绝新任务而不销毁现有页面。
+  it("admits one owner when the card and background result race at task capacity", async () => {
+    const owner = pool();
+    const background = make("shared");
+    await owner.add(background);
+    await owner.reserve(background);
+    for (let n = 1; n < 30; n++) await owner.add(make(String(n)));
+    const card = make("shared");
+    const [duplicate, overflow] = await Promise.allSettled([
+      owner.add(card),
+      owner.add(make("overflow")),
+    ]);
+    expect(duplicate.status).toBe("rejected");
+    expect(overflow.status).toBe("rejected");
+    expect(owner.get("shared")).toBe(background);
+    expect(background.suspend).not.toHaveBeenCalled();
+    expect(background.destroy).not.toHaveBeenCalled();
   });
 });

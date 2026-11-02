@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-peer-diagnostic-build",
+  "status": "pass",
+  "generatedAt": "2026-10-29T03:45:23.955Z",
+  "diagnosticOnly": true,
+  "grant": false,
+  "nativeCapabilityProven": false,
+  "runtimeConsumable": false,
+  "productHook": false,
+  "sourceRoot": "packages/desktop/native/macos-cua-peer-diagnostic",
+  "sources": [
+    {
+      "path": "README.md",
+      "sha256": "005aaefeb44f6edb398d205ecedc09c50725d599efce4c65e8bf6e8c908ccca0"
+    },
+    {
+      "path": "PROVENANCE.md",
+      "sha256": "e5528d70acf38b541ac925630d8ff1a260f7a2a6232309073f2c4c0a750189e5"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "606c36baf38b973227273df12a74930e4b4137280eea835c5cd623aa4553c13b"
+    },
+    {
+      "path": "src/main.mm",
+      "sha256": "bf9ed210cb18a04c50f78a5d19ebdb139cf4b509ad5bd3f46e363e7e7523a4f4"
+    },
+    {
+      "path": "src/cli_common.h",
+      "sha256": "bb4d4545b0b1a3d5da39222b7cfda0a3fddabde463fd73ad0a98cca5b0b4beff"
+    },
+    {
+      "path": "src/cli_common.mm",
+      "sha256": "97ab1e94138eeab69832517f09e007c164ac706d4db079422f51de694efb85e5"
+    },
+    {
+      "path": "src/serve_mode.mm",
+      "sha256": "8c6623319db34e6cbdc619ba436383a61f6329d6efebdc362d04300fa7076ff1"
+    },
+    {
+      "path": "src/client_modes.mm",
+      "sha256": "516e2155619deaf1d31138d987b42774aeb300fd2f936147725d9bb180eddc58"
+    },
+    {
+      "path": "src/pure_mode.mm",
+      "sha256": "6bdefa136ea108a4ac0e19baf4b460aebae20e40c1a68d158a3ec3006434c550"
+    },
+    {
+      "path": "src/peer_socket.h",
+      "sha256": "ef29202676e6484ce9cff0c4a32ff109ffb9a139884440bb963d170cb87855f6"
+    },
+    {
+      "path": "src/peer_socket.mm",
+      "sha256": "a6e274faf1a6994e67e80bc3855b9b071555b4a8cb7dd216a2ad591237845856"
+    },
+    {
+      "path": "src/peer_internal.h",
+      "sha256": "aa93a3576ced5d7a5332350cd01e3f4a630da0793ed03ad9d01a5e8cff3220f3"
+    },
+    {
+      "path": "src/peer_frame.mm",
+      "sha256": "263574f244177c3d0c0ae36167ed9ae3d7db8a30a2afc1bcc6eca74fea2b9e2b"
+    },
+    {
+      "path": "src/profile.h",
+      "sha256": "143b23a93be081441345bc358bf89cac48743b0d1b68502283bc7c652e6db6f3"
+    },
+    {
+      "path": "src/profile.mm",
+      "sha256": "124befc37b4c24eb85abf94cbe28a6241b13240448eadef7199a4dc33ab42c4e"
+    },
+    {
+      "path": "src/calibration_profile.h",
+      "sha256": "8cd9da272de90dba45b807425d164d93d53e04ac2eacc73fd29649b0bb87d80d"
+    },
+    {
+      "path": "src/calibration_profile.mm",
+      "sha256": "317251ab1051c1ce85227aaf5b927b634751364cc995fe67290e538e6bbca0c1"
+    },
+    {
+      "path": "src/policy.h",
+      "sha256": "b4bd22644ab26f8ceaf075ca4497f376e7246fb9d529a7d1c381421a6e402d07"
+    },
+    {
+      "path": "src/policy.mm",
+      "sha256": "c7fe0b30484917e6967dddbade36eda91ae7b855f78f7cb72e2d933f4a7b5689"
+    },
+    {
+      "path": "src/pure_policy.h",
+      "sha256": "8b2a10e88733dcef61c152e4fd9c49952cc1fa1a1d849babc4a65937bf31a7f0"
+    },
+    {
+      "path": "src/pure_policy.mm",
+      "sha256": "9acf6ea19827d289e53b081e66aa52bc79b894b0e7d53aee38edfd540c0553e9"
+    },
+    {
+      "path": "src/security_identity.h",
+      "sha256": "078e5129ceb343519db24f47b270378d87430713db661636637b3b54a2f2ec4a"
+    },
+    {
+      "path": "src/security_identity.mm",
+      "sha256": "fd1f5e62d1bdef5488016a656ffc61c3616b6069eda1ea0a9792c985771b29b2"
+    },
+    {
+      "path": "src/macho_artifact.h",
+      "sha256": "85984a0e25d91ee922278ceeddb0e729479ff0b80de19984631f4026314bd833"
+    },
+    {
+      "path": "src/macho_artifact.mm",
+      "sha256": "68de8ae6e85c1d275ec984215215d3605d6521db87ddafbea072984182c84df5"
+    },
+    {
+      "path": "src/static_artifact.h",
+      "sha256": "e148e1e93d622cc664040df46277bab2edb77886e9d9fd7b7cbe3acb063416ad"
+    },
+    {
+      "path": "src/static_artifact.mm",
+      "sha256": "0c54bd095d168a167890cfaa04a741bd0d328f5abf9188a81a5d8f0fd478fdd8"
+    },
+    {
+      "path": "src/report.h",
+      "sha256": "7e0e1227ddb4614b7e4ced8bdfd978c59798cbe080a58544e3172a32d0658b58"
+    },
+    {
+      "path": "src/report.mm",
+      "sha256": "be3e331c8dcec97b698a0941daccaa5da901eadf06ec46367734d7e99b0d6354"
+    }
+  ],
+  "provenance": {
+    "firstParty": true,
+    "license": "Apache-2.0",
+    "thirdPartyCodeIncluded": false,
+    "appleSdkHeadersAreInterfacesOnly": true
+  },
+  "build": {
+    "command": "/Library/Developer/CommandLineTools/usr/bin/clang++ -std=c++17 -x objective-c++ -fobjc-arc -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mmacosx-version-min=14.2 -O2 -Wall -Wextra -Werror -I /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic -I /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/main.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/cli_common.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/serve_mode.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/client_modes.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/pure_mode.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_socket.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_frame.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/profile.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/calibration_profile.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/policy.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/pure_policy.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/security_identity.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/macho_artifact.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/static_artifact.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/report.mm -framework Foundation -framework Security -lbsm -o /Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/build/staging-GmCw2f/macos-cua-peer-diagnostic",
+    "compiler": {
+      "path": "/Library/Developer/CommandLineTools/usr/bin/clang++",
+      "versionFirstLine": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
+    },
+    "sdk": {
+      "requested": "macosx27.0",
+      "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "version": "27.0"
+    },
+    "target": {
+      "architecture": "arm64",
+      "minimumMacOSVersion": "14.2"
+    },
+    "flags": [
+      "-std=c++17",
+      "-x",
+      "objective-c++",
+      "-fobjc-arc",
+      "-arch",
+      "arm64",
+      "-isysroot",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-mmacosx-version-min=14.2",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-I",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic",
+      "-I",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/main.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/cli_common.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/serve_mode.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/client_modes.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/pure_mode.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_socket.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_frame.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/profile.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/calibration_profile.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/policy.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/pure_policy.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/security_identity.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/macho_artifact.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/static_artifact.mm",
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/report.mm",
+      "-framework",
+      "Foundation",
+      "-framework",
+      "Security",
+      "-lbsm",
+      "-o",
+      "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/build/staging-GmCw2f/macos-cua-peer-diagnostic"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "verificationCommands": {
+      "architectures": "/usr/bin/lipo -archs /Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+      "minimumMacOS": "/usr/bin/otool -l /Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic"
+    }
+  },
+  "artifact": {
+    "path": "bin/macos-cua-peer-diagnostic",
+    "absolutePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+    "sha256": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+    "sizeBytes": 301208,
+    "architecture": "arm64",
+    "minimumMacOSVersion": "14.2",
+    "architectures": [
+      "arm64"
+    ],
+    "minosValues": [
+      "14.2"
+    ],
+    "explicitSigningPerformed": false,
+    "linkerAdhocProbeOnly": true,
+    "signedForAcceptance": false
+  },
+  "checkedScope": [
+    "fixed xcrun macosx27.0 SDK",
+    "arm64 thin executable",
+    "LC_BUILD_VERSION minimum macOS 14.2",
+    "source and artifact SHA-256"
+  ],
+  "limitations": [
+    "The linker may emit an ad-hoc signature; it is probe output only and is never treated as acceptance.",
+    "A real certificate-backed Helper identity, TCC, machine lease and native input remain unproven.",
+    "This artifact is not wired into the product build, installer, launcher, runtime or model tools."
+  ]
+}

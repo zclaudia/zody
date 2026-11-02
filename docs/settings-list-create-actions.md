@@ -9,7 +9,7 @@ Settings resource lists use one consistent treatment for their page-level create
 - The import action sits immediately to the left of the create action. Other utility actions such as folder, sync, and refresh remain before the import/create pair.
 - Page-level icon-only utility actions in Settings list headers use `variant="outline"` and `size="icon-lg"`. Row actions and detail actions are outside this rule.
 - The create action is the last control in the list header action group.
-- The rule applies equally to desktop and mobile Web layouts because both render the same responsive settings sections.
+- The rule applies equally to desktop and mobile Web layouts because both render the same responsive settings sections. On mobile Web, the action group may wrap without changing action order, and every action exposes at least a 44×44px coarse-pointer hit area; desktop sizing stays unchanged. See [mobile settings IA and navigation](web-remote-control/mobile-settings-ia-navigation.md).
 - Automations are excluded: scheduled-task and off-peak creation use their own multi-action controls.
 - Form submit buttons and nested additions such as adding a model or schedule are outside this rule.
 - Contextual imports such as a Hooks list-row action and migration confirmation actions are outside this page-header rule.

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-driver-round6-toolchain",
+  "version": "1.97.1",
+  "host": "aarch64-apple-darwin",
+  "sysrootDirectoryName": "1.97.1-aarch64-apple-darwin",
+  "rustc": {
+    "version": "1.97.1",
+    "commit": "8bab26f4f68e0e26f0bb7960be334d5b520ea452",
+    "sha256": "210df6794001b73ec3d453878707fa1e0bdcb63c427024a6e6574bbe5615a4da"
+  },
+  "cargo": {
+    "version": "1.97.1",
+    "commit": "c980f4866141969fab6254a680546a277789d6f0",
+    "sha256": "7672ead309d505577c018fff2cafb3433601f073e38cbe87359ac1f7b944bbf5"
+  },
+  "channelManifest": {
+    "url": "https://static.rust-lang.org/dist/channel-rust-1.97.1.toml",
+    "sha256": "03569b1886ceb5c05276b50c8431ab111de944cd6140fe1fa7d821dd8e0f29cf"
+  },
+  "preparationRecord": "output/cua-driver-round6/toolchain-preparation.json",
+  "noStableFallback": true
+}

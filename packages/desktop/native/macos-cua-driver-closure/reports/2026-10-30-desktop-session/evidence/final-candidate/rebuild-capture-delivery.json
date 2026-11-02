@@ -1,0 +1,64 @@
+[
+  {
+    "argv": [
+      "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+      "packages/desktop/scripts/build-cua-desktop-session.mjs",
+      "--output-root",
+      "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery"
+    ],
+    "exitCode": 0,
+    "log": "build-capture-delivery.log"
+  },
+  {
+    "argv": [
+      "codesign",
+      "--force",
+      "--sign",
+      "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+      "--options",
+      "runtime",
+      "--timestamp=none",
+      "--requirements",
+      "=designated => identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+      "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-signed-capture-delivery/Zody CUA Desktop Session.app"
+    ],
+    "exitCode": 0,
+    "log": "sign-capture-delivery.log"
+  },
+  {
+    "argv": [
+      "codesign",
+      "--verify",
+      "--strict",
+      "--verbose=2",
+      "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-signed-capture-delivery/Zody CUA Desktop Session.app"
+    ],
+    "exitCode": 0,
+    "log": "verify-helper-capture-delivery.log"
+  },
+  {
+    "argv": [
+      "codesign",
+      "--verify",
+      "--strict",
+      "--verbose=2",
+      "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-signed-capture-delivery/Zody CUA Desktop Session.app/Contents/Resources/node"
+    ],
+    "exitCode": 0,
+    "log": "verify-node-capture-delivery.log"
+  },
+  {
+    "argv": [
+      "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+      "packages/desktop/scripts/build-cua-desktop-ui.mjs",
+      "--launcher",
+      "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-signed-capture-delivery/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session",
+      "--launcher-cwd",
+      "/Users/zhvala/SourceCode/zody",
+      "--output",
+      "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery"
+    ],
+    "exitCode": 0,
+    "log": "ui-build-capture-delivery.log"
+  }
+]

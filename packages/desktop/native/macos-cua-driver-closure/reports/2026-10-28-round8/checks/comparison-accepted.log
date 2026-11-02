@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "reportPath": "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-accepted-comparison/comparison.json",
+  "graph": {
+    "baselinePackageCount": 259,
+    "candidatePackageCount": 30
+  },
+  "productAdoption": "blocked",
+  "licenseResidual": {
+    "missing": [],
+    "partial": [],
+    "reviewRequired": [],
+    "mpl": []
+  }
+}

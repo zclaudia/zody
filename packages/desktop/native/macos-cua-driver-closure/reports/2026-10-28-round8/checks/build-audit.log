@@ -1,0 +1,41 @@
+{
+  "status": "source-audit-pass",
+  "sourceAudit": "pass",
+  "productAdoption": "blocked",
+  "gates": {
+    "source": "pass",
+    "dependencies": "pass",
+    "licenses": "pass",
+    "toolchain": "pass",
+    "build": "pass",
+    "sourceAuditComplete": true,
+    "evidenceComplete": true,
+    "productAdoption": "blocked",
+    "productAdoptionReason": "closure audit never authorizes product adoption; native, signing, TCC and runtime evidence remain separate gates",
+    "verificationFailed": false,
+    "exitCode": 0
+  },
+  "originalCache": "blocked",
+  "reconstructedCache": "pass",
+  "targetGraph": "pass",
+  "build": "pass",
+  "reportPath": "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-build-audit/report.json",
+  "patch": {
+    "path": "candidate-source.patch",
+    "sha256": "232b9aceec9895691618877191e2bba446176d2befdedde1858e4ad74d28daf2",
+    "bytes": 765942,
+    "reconstruction": "pass"
+  },
+  "blockedItems": [
+    {
+      "gate": "originalCache",
+      "status": "blocked",
+      "reason": "original registry sources differ from their verified archives (including Cargo.lock)"
+    },
+    {
+      "gate": "productAdoption",
+      "status": "blocked",
+      "reason": "closure audit never authorizes product adoption; native, signing, TCC and runtime evidence remain separate gates"
+    }
+  ]
+}

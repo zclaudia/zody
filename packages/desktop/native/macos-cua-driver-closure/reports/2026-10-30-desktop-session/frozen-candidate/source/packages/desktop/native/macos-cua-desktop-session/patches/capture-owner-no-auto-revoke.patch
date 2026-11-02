@@ -1,0 +1,32 @@
+--- a/src/capture_owner.mm
++++ b/src/capture_owner.mm
+@@ -309,23 +309,14 @@
+   }
+ 
+   if (outcome.reason.empty()) {
+-    NSDictionary* revoke_result = nil;
+-    std::string revoke_error;
+-    NSDictionary* payload = @{@"traceId" : context.trace_id, @"ref" : context.ref};
+-    if (!authority.request(@"revoke", payload, &revoke_result, revoke_error)) {
+-      outcome.reason = "authority-revoke-failed";
+-    } else if (![revoke_result[@"ok"] boolValue] ||
+-               ![revoke_result[@"revocation"][@"status"] isEqualToString:@"revoked"]) {
+-      outcome.reason = "authority-revoke-not-confirmed";
+-    } else {
+-      outcome.revoked = true;
++    // 中文原因：生产截图正常结束后由 supervisor 在同一 live scope 提交 captureResult；
++    // 旧诊断的自动 revoke 会让 owner 先关闭 scope，导致真实结果变成迟到图。
++    if (outcome.png_sha256.empty()) {
++      outcome.reason = "capture-facts-missing";
++    } else {
+       outcome.ok = true;
+-      outcome.reason = "captured-and-revoked";
++      outcome.reason = "captured";
+     }
+-    if (!outcome.ok && !outcome.png_sha256.empty()) {
+-      // 仅回滚本次已成功创建的 PNG；写失败/O_EXCL 失败绝不删除既有路径。
+-      (void)unlink([context.output_path UTF8String]);
+-    }
+   }
+ #else
+   (void)authority;

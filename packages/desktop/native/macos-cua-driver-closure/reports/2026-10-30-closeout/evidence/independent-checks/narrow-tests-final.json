@@ -1,0 +1,14 @@
+{
+  "name": "narrow-tests-final",
+  "argv": [
+    "pnpm",
+    "--filter",
+    "@zcode/desktop",
+    "test:macos-cua-narrow-resources"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:49:34.804634+00:00",
+  "seconds": 1.424,
+  "exitCode": 0,
+  "log": "narrow-tests-final.log"
+}

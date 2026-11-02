@@ -1,0 +1,44 @@
+diff --git a/dist/index.js b/dist/index.js
+index 310f387a3e06971aae6dff19dad265110c150298..c4b5f0a587fb6e8a8a55f456ce27802bd0d2a665 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -150,9 +150,14 @@ var CollapsibleContentImpl = React.forwardRef((props, forwardedRef) => {
+       };
+       node.style.transitionDuration = "0s";
+       node.style.animationName = "none";
+-      const rect = node.getBoundingClientRect();
+-      heightRef.current = rect.height;
+-      widthRef.current = rect.width;
++      // PATCH(zody): hidden 节点不读几何。上游在此无条件 getBoundingClientRect，
++      // 批量收起的工具卡片会在一次提交内触发同阶强制布局；隐藏时跳过测量并保留
++      // 最近一次可见尺寸，供 animate-collapsible-up 等退出动画继续读取。
++      if (!node.hidden) {
++        const rect = node.getBoundingClientRect();
++        heightRef.current = rect.height;
++        widthRef.current = rect.width;
++      }
+       if (!isMountAnimationPreventedRef.current) {
+         node.style.transitionDuration = originalStylesRef.current.transitionDuration;
+         node.style.animationName = originalStylesRef.current.animationName;
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 01aeb633b4c4b7bb265c93cab49f7f89601ed1fa..338b70564804546307b3e600bebd97b5d9f1fd2c 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -109,9 +109,14 @@ var CollapsibleContentImpl = React.forwardRef((props, forwardedRef) => {
+       };
+       node.style.transitionDuration = "0s";
+       node.style.animationName = "none";
+-      const rect = node.getBoundingClientRect();
+-      heightRef.current = rect.height;
+-      widthRef.current = rect.width;
++      // PATCH(zody): hidden 节点不读几何。上游在此无条件 getBoundingClientRect，
++      // 批量收起的工具卡片会在一次提交内触发同阶强制布局；隐藏时跳过测量并保留
++      // 最近一次可见尺寸，供 animate-collapsible-up 等退出动画继续读取。
++      if (!node.hidden) {
++        const rect = node.getBoundingClientRect();
++        heightRef.current = rect.height;
++        widthRef.current = rect.width;
++      }
+       if (!isMountAnimationPreventedRef.current) {
+         node.style.transitionDuration = originalStylesRef.current.transitionDuration;
+         node.style.animationName = originalStylesRef.current.animationName;

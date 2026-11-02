@@ -71,7 +71,7 @@ export function PluginStoreSourcesDialog({
         <DialogTitle className="text-ui-lg font-medium text-foreground">
           {intl.formatMessage({ id: "settings.plugins.store.sources.title" })}
         </DialogTitle>
-        <div className="max-h-[min(420px,60vh)] space-y-1 overflow-y-auto">
+        <div className="max-h-[min(420px,60dvh)] space-y-1 overflow-y-auto">
           {sortedMarketplaces.length === 0 ? (
             <p className="px-1 py-2 text-ui-base text-foreground-subtle">
               {intl.formatMessage({ id: "settings.plugins.store.sources.empty" })}

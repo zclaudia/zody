@@ -690,8 +690,9 @@ function CustomRepeatDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[calc(100vh-2rem)] w-[400px] gap-0 overflow-y-auto border-border bg-card p-0 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)]"
+        className="max-h-[calc(100dvh-2rem)] w-[min(400px,calc(100vw-2rem))] gap-0 overflow-y-auto border-border bg-card p-0 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)]"
         aria-describedby={undefined}
+        data-settings-dialog="true"
         showCloseButton={false}
       >
         <DialogHeader className="px-5 pb-5 pt-5">

@@ -1,0 +1,79 @@
+[
+  {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "code": 0,
+    "stdout": "v24.14.0\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "pnpm",
+      "--version"
+    ],
+    "code": 0,
+    "stdout": "10.33.2\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/usr/bin/xcrun",
+      "--find",
+      "swiftc"
+    ],
+    "code": 0,
+    "stdout": "/Library/Developer/CommandLineTools/usr/bin/swiftc\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/usr/bin/xcrun",
+      "swiftc",
+      "--version"
+    ],
+    "code": 0,
+    "stdout": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx26.0\n",
+    "stderr": "swift-driver version: 1.168.6 "
+  },
+  {
+    "command": [
+      "/usr/bin/xcrun",
+      "--sdk",
+      "macosx",
+      "--show-sdk-version"
+    ],
+    "code": 0,
+    "stdout": "27.0\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/usr/bin/xcrun",
+      "--sdk",
+      "macosx",
+      "--show-sdk-path"
+    ],
+    "code": 0,
+    "stdout": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/usr/bin/sw_vers"
+    ],
+    "code": 0,
+    "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.2\nBuildVersion:\t\t25G83\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/usr/bin/uname",
+      "-m"
+    ],
+    "code": 0,
+    "stdout": "arm64\n",
+    "stderr": ""
+  }
+]

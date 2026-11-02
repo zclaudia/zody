@@ -1,0 +1,35 @@
+{
+  "candidateTreeSha256": "4cbad8776947504f9883bf5370d6802177090d7a01075c5640b64a730950d9de",
+  "sourceFiles": 767,
+  "modified": [
+    "Cargo.toml",
+    "Cargo.lock"
+  ],
+  "added": [
+    "crates/cua-macos-visual/Cargo.toml",
+    "crates/cua-macos-visual/LICENSE-MIT",
+    "crates/cua-macos-visual/PROVENANCE.md",
+    "crates/cua-macos-visual/build.rs",
+    "crates/cua-macos-visual/src/capture.rs",
+    "crates/cua-macos-visual/src/error.rs",
+    "crates/cua-macos-visual/src/geometry.rs",
+    "crates/cua-macos-visual/src/geometry_tests.rs",
+    "crates/cua-macos-visual/src/lib.rs",
+    "crates/cua-macos-visual/src/observe.rs",
+    "crates/cua-macos-visual/src/png.rs",
+    "crates/cua-macos-visual/src/swift_link.rs",
+    "crates/cua-macos-visual/src/window.rs",
+    "crates/cua-macos-visual/tests/pure_visual.rs"
+  ],
+  "removed": [],
+  "unchangedLegacyFiles": 751,
+  "lock": {
+    "before": 569,
+    "after": 570,
+    "allOldEntriesIdentical": true,
+    "registryChecksumsUnchanged": 558
+  },
+  "workspaceOnlyNewMember": true,
+  "licenseUpstreamExact": true,
+  "licenseSha256": "c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9"
+}

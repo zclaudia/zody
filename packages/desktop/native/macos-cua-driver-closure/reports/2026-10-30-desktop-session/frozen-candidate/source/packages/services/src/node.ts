@@ -1,0 +1,2134 @@
+import { IGenUiService } from "./gen-ui/contract.js";
+import { createGenUiService } from "./gen-ui/node.js";
+// fork（bots 移除）：channelReplyHostRequestSchema / channelReplyResultSchema 只被 bot channel
+// reply executor 使用，随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
+/* eslint-disable max-lines -- host process 服务注册和启动装配需要集中维护，拆散后会更难追踪依赖注入顺序 */
+// Node.js service implementations — NOT safe to import in browser code
+import { randomBytes } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import {
+  createNodeProviderRuntimePathEnv,
+  NodeModelSelectionConfigRepository,
+  PERSONAL_PROVIDER_CONFIG_FILE_NAME,
+} from "@zcode/provider-node";
+import { getAppConfigDir as resolveAppConfigDir } from "./paths.js";
+import {
+  buildLocalMediaPreviewUrl,
+  ZCODE_DATA_ROOT_DIR_NAME,
+  type DynamicWorkflowMode,
+  type ProviderProvisioningTrigger,
+} from "@zcode/shared";
+
+export {
+  materializeZCodeBuiltinProviderConfig,
+  ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
+} from "@zcode/provider-node";
+// fork（bots 移除）：readTopicResourceFromRelay / validateTopicResourceFromRelay 只被 topic
+// resource executor 使用，随 bot channels 功能整体删除；IChannel import 只服务已删除的
+// topicResourceRelayChannel options 槽位，随槽位一并摘除（消费方 windowTopicResourceRelay
+// 由 B4a 同波删除）。createTopicResourcePeers / TopicResourcePeers 的唯一生产消费方是
+// server http.ts 的 topic-resource relay 注册，该注册删除后此再导出失去消费方，
+// 模块 topicResourcePeers.ts 一并删除（specs/bot-channels-removal.md）。
+
+export { createFileService } from "./file/fileService.js";
+export {
+  attributeHostProcessTree,
+  createProcessResourceSampler,
+  createProcessResourceTableReader,
+  type HostResourceUsageAgent,
+  type ProcessResourceSample,
+  type ProcessResourceSampler,
+} from "./process/processResourceSampler.js";
+export { createMediaPreviewService } from "./media-preview/mediaPreview.js";
+// fork（F4.4）：createContentBundleCache / ContentBundle（云内容 ZIP 缓存）随 cloud-content 删除。
+export type { CreateFileServiceOptions } from "./file/fileService.js";
+export {
+  defaultWorkspaceFileSearchFilter,
+  type WorkspaceFileSearchDecision,
+  type WorkspaceFileSearchEntry,
+  type WorkspaceFileSearchFilter,
+} from "./file/workspaceFileMentionFilter.js";
+export {
+  createFsFaultInjector,
+  getProcessFsFaultInjector,
+  maybeThrowInjectedFsFault,
+  parseFsFaultRulesFromEnvValue,
+  resetProcessFsFaultInjectorForTests,
+  setFsFaultInjectorForTests,
+  ZCODE_E2E_FS_FAULTS_ALLOW_ENV,
+  ZCODE_E2E_FS_FAULTS_ENV,
+} from "./fs/fsFaultInjection.js";
+export type {
+  FsFaultCheckInput,
+  FsFaultHit,
+  FsFaultInjector,
+  FsFaultOperation,
+  FsFaultRuleConfig,
+  InjectedFsFaultError,
+} from "./fs/fsFaultInjection.js";
+export {
+  setDataBaseDir,
+  getDataBaseDir,
+  getZCodeDataRootDir,
+  getConversationWorkspaceDir,
+  getAppConfigDir,
+  getExportLogStageDir,
+  getExportLogDir,
+  getFeedbackRootDir,
+  getFeedbackAttachmentDir,
+  getFeedbackLogArchiveDir,
+  getGitCheckpointIndexRootDir,
+  copyDataDirectory,
+  validateDataBaseDirTarget,
+  ZCODE_WINDOWS_APP_INSTALL_DIR_ENV,
+} from "./paths.js";
+export { createGitService } from "./git/gitService.js";
+export { GitCommitMessageGenerator } from "./git/gitCommitMessageGenerator.js";
+export { createGitCheckpointService } from "./git/gitCheckpointService.js";
+export { createSystemService } from "./system/systemService.js";
+export { listSSHConfigAliasesFromLocalConfig } from "./system/sshConfigAlias.js";
+export { createTerminalService } from "./terminal/terminalService.js";
+export {
+  createSettingService,
+  createSettingServiceWithMigrations,
+} from "./setting/settingService.js";
+export { createCredentialService } from "./credential/credentialService.js";
+export { createBroadcastService } from "./broadcast/broadcastService.js";
+export { createZCodeAgentService } from "./zcode-agent/zcodeAgentService.js";
+export { createZCodeTaskServiceAdapter } from "./zcode-agent/zcodeTaskServiceAdapter.js";
+export { createZCodeSessionService } from "./zcode-session/zcodeSessionService.js";
+export {
+  resolveDefaultZCodeAgentCommand,
+  resolveZCodeAgentNativeRuntimeCommand,
+  validateZCodeAgentNativeRuntimeConfig,
+  ZCodeAgentProcessManager,
+} from "./zcode-agent/zcodeAgentProcessManager.js";
+export type {
+  ZCodeAgentCommand,
+  ZCodeAgentCommandResolver,
+  ZCodeAgentCommandResolverContext,
+  ZCodeAgentNativeRuntimeConfig,
+  ZCodeAgentProcessManagerOptions,
+} from "./zcode-agent/zcodeAgentProcessManager.js";
+export { ZCodeProtocolClient } from "./zcode-agent/zcodeProtocolClient.js";
+export type { ZCodeProtocolTransport } from "./zcode-agent/zcodeProtocolTransport.js";
+export { ZCodeStdioTransport } from "./zcode-agent/zcodeStdioTransport.js";
+export {
+  getZCodeStdioTapDevLogDir,
+  readZCodeStdioTapDevState,
+  setZCodeStdioTapDevEnabled,
+} from "./zcode-agent/zcodeStdioTapDevConfig.js";
+export type { ZCodeStdioTapDevState } from "@zcode/shared";
+export {
+  createCuaHelperInstaller,
+  requestHelperAccessibilityPermissionViaLaunchServices,
+  requestHelperScreenRecordingPermissionViaLaunchServices,
+} from "./cua-permission-broker/index.js";
+export {
+  canonicalizeCuaHelperInstallerOptions,
+  createCanonicalCuaHelperInstaller,
+  normalizeCuaHelperArch,
+  normalizeCuaHelperArchs,
+} from "./cua-permission-broker/cuaHelperInstaller.js";
+export type {
+  CuaHelperInstaller,
+  CuaHelperInstallerOptions,
+} from "./cua-permission-broker/index.js";
+// fork（bots 移除）：createBotsService 随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
+export { createFileWatcherService } from "./fileWatcher/fileWatcherService.js";
+// fork（F4.7）：OAuth 服务、logout handler 与 OAuth 凭据仓库随官方账号链删除。
+export { createTelemetryCore, ensureTelemetryDeviceMid } from "./telemetry/telemetryCore.js";
+export type { EnsureTelemetryDeviceMidOptions } from "./telemetry/telemetryCore.js";
+// fork（F4.7）：账号 provider 凭据存储与请求鉴权随官方账号链删除。
+export { importLegacyPersonalProviderConfig } from "./model-provider/legacyPersonalProviderConfigImporter.js";
+// fork（F4.7）：账号 provider 连接解析与失效通知随官方账号链删除。
+export {
+  createProviderConfigRuntime,
+  ProviderConfigRuntime,
+} from "./model-provider/providerConfigRuntime.js";
+export type { ProviderConfigRuntimeOptions } from "./model-provider/providerConfigRuntime.js";
+export {
+  createProviderRuntime,
+  createProviderRuntimeFromConfigRuntime,
+  EmptyAccountProviderConfigSource,
+  ProviderRuntime,
+} from "./model-provider/providerRuntime.js";
+export type {
+  ProviderRuntimeDependencies,
+  ProviderRuntimeOptions,
+} from "./model-provider/providerRuntime.js";
+export {
+  createProviderProvisioningSource,
+  listProviderProvisioningCredentialKeys,
+  resolveCredentialFilePath,
+  type ProviderProvisioningSource,
+  type ProviderProvisioningSourceOptions,
+} from "./model-provider/providerProvisioningSource.js";
+export {
+  createProviderProvisioningTarget,
+  type ProviderProvisioningTargetOptions,
+} from "./model-provider/providerProvisioningTarget.js";
+export {
+  createModelSelectionService,
+  createProviderSettingsService,
+  IModelSelectionService,
+  IProviderSettingsService,
+} from "./model-provider/providerFacadeServices.js";
+// fork（F4.7）：账号请求鉴权、Project Token 与派生凭据服务随官方账号链删除。
+export { createUsageStatsService } from "./usage-stats/usageStatsService.js";
+// Storage：service 与 adapters 工厂；desktop host 负责组装（Worker runner 在 desktop 包内）
+export { createStorageService } from "./storage/app/storageService.js";
+export type {
+  FsCleanerPort as StorageFsCleanerPort,
+  RootsResolverPort as StorageRootsResolverPort,
+  ScanRunnerPort as StorageScanRunnerPort,
+  StorageScanProgress,
+  StorageScanRunRequest,
+} from "./storage/app/ports.js";
+export { createFsStorageCleaner } from "./storage/adapters/fsCleaner.js";
+export {
+  createStorageRootsResolver,
+  resolveStorageRoots,
+} from "./storage/adapters/rootsResolver.js";
+export { createFsVolumeProbe } from "./storage/adapters/volumeProbe.js";
+export { runStorageScan } from "./storage/adapters/inProcessScanRunner.js";
+export { createClientConfigService } from "./client-config/clientConfigService.js";
+// fork（F2.6b）：client-config 本地值的公开入口（desktop 远程装配等宿主侧消费）。
+export {
+  resolveLocalDynamicWorkflowClientConfig,
+  resolveLocalRequestVerificationConfig,
+  LOCAL_MODEL_CONTEXT_BUDGET_STRATEGY,
+} from "./client-config/localClientConfig.js";
+export { createClientScenesService } from "./client-scenes/clientScenesService.js";
+export { createSkillsService } from "./skills/skillsService.js";
+export { createSkillSyncService } from "./skill-sync/skillSyncService.js";
+export { createMcpSyncService } from "./mcp-sync/mcpSyncService.js";
+export { createPluginSyncService } from "./plugin-sync/pluginSyncService.js";
+export { createPluginsService } from "./plugins/pluginsService.js";
+export { createPluginManagementService } from "./plugins/pluginManagementService.js";
+export { createSubagentsService } from "./subagents/subagentsService.js";
+export { createCommandsService } from "./commands/commandsService.js";
+export { createHooksService } from "./hooks/hooksService.js";
+export { createMemoryService } from "./memory/memoryService.js";
+export { createOutputStyleService } from "./output-style/outputStyleService.js";
+export { createSettingsSyncService } from "./settings-sync/settingsSyncService.js";
+export { createFeedbackDiagnosticArchive } from "./feedback/feedbackLogArchive.js";
+export { createFeedbackService } from "./feedback/feedbackService.js";
+export type { CreateFeedbackServiceOptions } from "./feedback/feedbackService.js";
+export { createLocalPromptAttachmentTransferService } from "./prompt-attachment-transfer/promptAttachmentTransferService.js";
+// fork（F4.8）：会话分享（发布/预览/导入）实现随 D6 决定整体删除。
+export { createNodeApiClient, NodeApiClient } from "./providers/api/nodeApiClient.js";
+export {
+  createHostApiNetworkTransport,
+  type HostApiNetworkTransport,
+  type HostApiNetworkTransportDependencies,
+} from "./providers/api/nodeApiNetwork.js";
+export {
+  buildRuntimeProcessEnvPatch,
+  captureLoginShellEnvSnapshot,
+  normalizeRuntimeProcessEnv,
+  prepareRuntimeProcessEnvPatch,
+} from "./runtime-tools/runtimeCommandEnv.js";
+
+// 定时任务管理与 scheduler 共用同一套 node-only 存储和 cron 语义。
+export {
+  AutomationRepo,
+  DISPATCH_RETRY_BASE_MS,
+  DISPATCH_RETRY_CAP_MS,
+  DISPATCH_MAX_ATTEMPTS,
+  CLAIM_STALE_MS,
+  computeRetryAt,
+} from "./session/automationRepo.js";
+export { AutomationService, InvalidCronExprError } from "./session/automationService.js";
+// fork（F4.3）：offPeakTaskRepo/offPeakTaskService/offPeakServerClient/offPeakMockGateway/
+// offPeakRuntimeModel 的 re-export（L285-302 一带）随闲时任务全链路删除。
+// host 域终态回填 files_changed 复用现有 task diff 汇总。
+export { buildTaskChangeSummary } from "./session/taskChangeSummary.js";
+export { createServiceLogger } from "./logger/serviceLogger.js";
+// fork（F4.6）：official-mcp/ 的官方 MCP 凭证解析与身份头构造随官方 MCP 删除。
+export {
+  computeAutomationNextRunAt,
+  computeNextRunAt,
+  computeScheduleRuleNextRunAt,
+  isOneShotAutomation,
+  isValidCronExpr,
+} from "./session/automationCron.js";
+
+import { ServiceCollection } from "./collection.js";
+import { IFileService } from "./file/file.js";
+import { IMediaPreviewService } from "./media-preview/mediaPreview.js";
+import { IGitService } from "./git/git.js";
+import { IGitCheckpointService } from "./git/gitCheckpoint.js";
+import { ISystemService } from "./system/system.js";
+import { ITerminalService } from "./terminal/terminal.js";
+import { ISettingService } from "./setting/setting.js";
+import { IOnboardingRecordService } from "./onboarding/onboardingRecord.js";
+import { ICredentialService } from "./credential/credential.js";
+import { IBroadcastService } from "./broadcast/broadcast.js";
+import { IZCodeTaskService } from "./session/zcodeTaskService.js";
+import { IZCodeAgentService } from "./zcode-agent/zcodeAgent.js";
+import type { CuaOperationStateReporter } from "./zcode-agent/cuaOperationTurnTracker.js";
+import { IZCodeSessionService } from "./zcode-session/zcodeSession.js";
+// fork（bots 移除）：IBotsService 随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
+import { IFileWatcherService } from "./fileWatcher/fileWatcher.js";
+import { IUsageStatsService } from "./usage-stats/usageStats.js";
+import { IClientScenesService } from "./client-scenes/clientScenes.js";
+import { ISkillsService } from "./skills/skills.js";
+import { ISkillSyncService } from "./skill-sync/skillSync.js";
+import { IMcpSyncService } from "./mcp-sync/mcpSync.js";
+import { IPluginSyncService } from "./plugin-sync/pluginSync.js";
+import { IPluginsService } from "./plugins/plugins.js";
+import { IPluginManagementService } from "./plugins/pluginManagement.js";
+import { ISubagentsService } from "./subagents/subagents.js";
+import { ICommandsService } from "./commands/commands.js";
+import { IHooksService } from "./hooks/hooks.js";
+import { IMemoryService } from "./memory/memory.js";
+import { IOutputStyleService } from "./output-style/outputStyle.js";
+import { ISettingsSyncService } from "./settings-sync/settingsSync.js";
+import { IFeedbackService } from "./feedback/feedback.js";
+import { IPromptAttachmentTransferService } from "./prompt-attachment-transfer/promptAttachmentTransfer.js";
+import { createFileService } from "./file/fileService.js";
+import { createMediaPreviewService } from "./media-preview/mediaPreview.js";
+import type { WorkspaceFileSearchFilter } from "./file/workspaceFileMentionFilter.js";
+import { createGitService } from "./git/gitService.js";
+import { GitCommitMessageGenerator } from "./git/gitCommitMessageGenerator.js";
+import { createGitCheckpointService } from "./git/gitCheckpointService.js";
+import { createSystemService } from "./system/systemService.js";
+import { createTerminalService } from "./terminal/terminalService.js";
+import { createSettingServiceWithMigrations } from "./setting/settingService.js";
+import { createOnboardingRecordService } from "./onboarding/onboardingRecordService.js";
+import { createObservableSettingService } from "./setting/observableSettingService.js";
+import { createCredentialService } from "./credential/credentialService.js";
+import { createBroadcastService } from "./broadcast/broadcastService.js";
+import { createZCodeAgentService } from "./zcode-agent/zcodeAgentService.js";
+import type {
+  ZCodeAgentCommandResolver,
+  ZCodeAgentNativeRuntimeConfig,
+} from "./zcode-agent/zcodeAgentProcessManager.js";
+import { buildAgentTelemetrySpawnEnv } from "./zcode-agent/agentTelemetryEnv.js";
+import { resolveZCodeAgentPresentationSurface } from "./zcode-agent/zcodeAgentPresentationSurface.js";
+import { createZCodeTaskServiceAdapter } from "./zcode-agent/zcodeTaskServiceAdapter.js";
+import { createZCodeSessionService } from "./zcode-session/zcodeSessionService.js";
+import { createZCodeTaskIndexSyncer } from "./zcode-agent/zcodeTaskIndexSyncer.js";
+import { TaskIndexRepo } from "./session/taskIndexRepo.js";
+// fork（bots 移除）：createBotsService / createBotRemoteWorkspaceService 随 bot channels
+// 功能整体删除（specs/bot-channels-removal.md）。
+import type { SessionMessageSendRequested } from "#src/session/sessionMailbox.js";
+import { createFileWatcherService } from "./fileWatcher/fileWatcherService.js";
+import { readLegacyZCodeConfigProviders } from "./model-provider/legacyZCodeConfigProviderReader.js";
+// fork（F4.7）：officialAccountDataMigration 是一次性存量兼容清理（不依赖 OAuth 运行时），
+// 保留以满足 F4.1a 的升级清理规则与 E2E（旧版本直接升级到当前版本仍会清掉存量账号数据）。
+import { runOfficialAccountProviderDataMigration } from "./model-provider/officialAccountDataMigration.js";
+import { resolveSubagentStateFile } from "./subagents/subagentStorage.js";
+// fork（F4.7）：官方账号 OAuth 仓库、账号连接解析与 Project Token 均已删除。
+import { createProviderConfigRuntime } from "./model-provider/providerConfigRuntime.js";
+import { fetchZCodeBuiltinRemoteRelease } from "./model-provider/zcodeBuiltinRemoteConfig.js";
+import {
+  createProviderRuntimeFromConfigRuntime,
+  type ProviderRuntime,
+} from "./model-provider/providerRuntime.js";
+import {
+  IModelSelectionService,
+  IProviderSettingsService,
+} from "./model-provider/providerFacadeServices.js";
+import { createProviderSettingsConnectivityTester } from "./model-provider/providerSettingsConnectivity.js";
+import {
+  createProviderProvisioningSource,
+  listProviderProvisioningCredentialKeys,
+  resolveCredentialFilePath,
+  type ProviderProvisioningSource,
+} from "./model-provider/providerProvisioningSource.js";
+import { createProviderProvisioningTarget } from "./model-provider/providerProvisioningTarget.js";
+import { IProviderProvisioningTargetService } from "./model-provider/providerProvisioning.js";
+import { resolveClientConfigPlatform } from "./runtime-tools/clientPlatform.js";
+import { createUsageStatsService } from "./usage-stats/usageStatsService.js";
+import { createClientConfigService } from "./client-config/clientConfigService.js";
+import { IClientConfigService } from "./client-config/clientConfig.js";
+import { resolveLocalDynamicWorkflowClientConfig } from "./client-config/localClientConfig.js";
+import { createClientScenesService } from "./client-scenes/clientScenesService.js";
+import { createSkillsService } from "./skills/skillsService.js";
+import { createSkillSyncService } from "./skill-sync/skillSyncService.js";
+import { createMcpSyncService } from "./mcp-sync/mcpSyncService.js";
+import {
+  IPluginUiAppToolsService,
+  IPluginUiSamplingService,
+  createPluginUiSamplingService,
+  IPluginUiBridgeService,
+  createPluginUiAppToolsService,
+  createPluginUiBridgeService,
+} from "./plugin-ui-bridge/index.js";
+import type { PluginSandboxHandle, PluginSandboxRegisterInput } from "@zcode/shared/mcp-apps";
+import { createPluginSyncService } from "./plugin-sync/pluginSyncService.js";
+import { createPluginsService } from "./plugins/pluginsService.js";
+import { createPluginManagementService } from "./plugins/pluginManagementService.js";
+import { createSubagentsService } from "./subagents/subagentsService.js";
+import { createCommandsService } from "./commands/commandsService.js";
+import { createHooksService } from "./hooks/hooksService.js";
+import { createMemoryService } from "./memory/memoryService.js";
+import { createOutputStyleService } from "./output-style/outputStyleService.js";
+import { createSettingsSyncService } from "./settings-sync/settingsSyncService.js";
+import {
+  createFeedbackService,
+  type CreateFeedbackServiceOptions,
+} from "./feedback/feedbackService.js";
+import { createLocalPromptAttachmentTransferService } from "./prompt-attachment-transfer/promptAttachmentTransferService.js";
+import { createNodeApiClient } from "./providers/api/nodeApiClient.js";
+import {
+  createHostApiNetworkTransport,
+  type HostApiNetworkTransport,
+} from "./providers/api/nodeApiNetwork.js";
+import type {
+  RuntimeProcessLifecycleReporter,
+  RuntimeTaskReporter,
+} from "#src/process/runtimeProcessLifecycle.js";
+import { initializeRuntimeProcessEnv } from "./runtime-tools/runtimeCommandEnv.js";
+import {
+  buildAgentEndpointOriginEnv,
+  buildAgentRuntimeEnv,
+} from "./runtime-tools/agentProxyEnv.js";
+import { ensureAppCaCert } from "./runtime-tools/appCaCert.js";
+import { buildHelperOpenArgs, isCuaLocalDevelopmentRuntime } from "@zcode/zcode-cua/broker/server";
+import { createServiceLogger, type ServiceLogger } from "#src/logger/serviceLogger.js";
+// fork（F4.3）：offPeak 服务的 import 与装配（IOffPeakTaskService/OffPeakTaskService/
+// OffPeakTaskRepo/offPeakServerClient/offPeakRuntimeModel）随闲时任务全链路删除。
+// fork（F4.6）：官方 MCP host 身份头解析器与可信 origin 注册表随官方 MCP 删除。
+import {
+  BROKER_SOCKET_ENV,
+  BROKER_UNAVAILABLE_ENV,
+  createCuaPipSessionService,
+  createCuaProductMcpServerResolver,
+  createProductCuaHelperHost,
+  CuaHelperLifecycleManager,
+  ICuaPermissionService,
+  ICuaPipSessionService,
+  isOfficialCuaPluginEnabledForWorkspace,
+  isPotentialZCodeCuaAgentMcpServer,
+  isScreenCaptureProbeSuccess,
+  reapOrphanedHelpers,
+  resolveStandaloneStatusLaunchCandidates,
+  shouldRunCuaScreenCaptureProbe,
+  type CuaHelperHost,
+  type CuaHelperTransportRestartOptions,
+  type CuaHelperTransportRestartResult,
+  type ManagedCuaProductHelperHost,
+  type CuaProductMcpServerResolver,
+  type CuaProductMcpServerResolverContext,
+  type CuaPermissionRestartOptions,
+  type CuaPermissionRestartResult,
+  type CuaPermissionState,
+  type CuaPermissionStatusQueryOptions,
+  type CuaPermissionStatusResult,
+} from "#src/cua-permission-broker/index.js";
+import {
+  resolveWindowsCuaRuntime,
+  WindowsCuaDevRuntimeResolutionError,
+  type WindowsCuaRuntime,
+} from "#src/cua-permission-broker/windowsCuaDevRuntime.js";
+import { createCanonicalCuaHelperInstaller } from "./cua-permission-broker/cuaHelperInstaller.js";
+import { WindowsCuaHelperHost } from "#src/cua-permission-broker/windowsCuaDevHelperHost.js";
+import {
+  getStableCuaPipeName,
+  resolveStableCuaWinRecipe,
+} from "#src/cua-permission-broker/stableCuaTransport.js";
+import { HELPER_APP_NAME } from "@zcode/zcode-cua/broker/helperConstants";
+import { resolveBrokerSocketPath } from "@zcode/zcode-cua/broker/socketPath";
+import {
+  DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
+  formatLogPrefix,
+  type ServiceAuthorityMode,
+  resolveRuntimeZCodeEndpointOrigin,
+  type BrowserBackendDescriptor,
+  type BrowserClientMode,
+  type BrowserCommand,
+  isZCodeCuaMcpCommand,
+  isZCodeCuaMcpPackageArg,
+  isZCodeCuaInternalFeatureEnabled,
+  ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+  type ZCodeAutomation,
+  type ZCodeAutomationRun,
+  getCapturedZCodeAgentTelemetryEnv,
+  ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
+  ZCODE_VERSION,
+  ZCODE_ENV,
+} from "@zcode/shared";
+
+// fork（F4.8）：conversation-share 的 Node 实现（服务/HTTP 客户端/connection scope）
+// 随会话分享功能删除；根入口仍只暴露 browser-safe 契约。
+
+interface ServiceWithDisposeAll {
+  disposeAll: () => void;
+}
+
+interface ServiceWithDisposeAllAndWait {
+  disposeAllAndWait: () => Promise<void>;
+}
+
+// Bug A: the Helper's first cold launch (large Node SEA + first-time Gatekeeper/notarization
+// assessment) routinely exceeds the old 5s health budget; warm it is <1s. Give the cold path
+// plenty of headroom.
+const CUA_HELPER_HEALTH_TIMEOUT_MS = 30_000;
+
+type DefaultCuaProductHelper = {
+  host: ManagedCuaProductHelperHost;
+  macPermissionHost?: CuaHelperHost;
+  resolver: CuaProductMcpServerResolver;
+};
+
+type ManagedDefaultCuaProductHelper = {
+  helper: DefaultCuaProductHelper;
+  seedContext?: CuaProductMcpServerResolverContext;
+};
+
+function hasDisposeAll(instance: unknown): instance is ServiceWithDisposeAll {
+  return (
+    typeof instance === "object" &&
+    instance !== null &&
+    "disposeAll" in instance &&
+    typeof (instance as { disposeAll?: unknown }).disposeAll === "function"
+  );
+}
+
+function hasDisposeAllAndWait(instance: unknown): instance is ServiceWithDisposeAllAndWait {
+  return (
+    typeof instance === "object" &&
+    instance !== null &&
+    typeof (instance as { disposeAllAndWait?: unknown }).disposeAllAndWait === "function"
+  );
+}
+
+interface ManagedCuaHelperHostDispose {
+  stop(): Promise<void>;
+}
+
+// 默认 Computer Use Helper 是长生命周期的独立 TCC 授权进程（持 broker socket + Accessibility/Screen Recording）。
+// 它不是 IPC 服务，不进 ServiceCollection 的 disposeAll 列表，但 host 释放时必须显式终止它，否则会以
+// 已授权主体常驻、甚至在 services 重建时再起一个 → 多实例/孤儿/权限主体泄漏。用与 ServiceCollection 绑定
+// 的 WeakMap 侧表登记，dispose 时统一终止（best-effort，不阻断其它资源回收）。
+const managedCuaHelperHosts = new WeakMap<ServiceCollection, ManagedCuaHelperHostDispose>();
+const providerRuntimes = new WeakMap<ServiceCollection, ProviderRuntime>();
+const providerProvisioningSources = new WeakMap<ServiceCollection, ProviderProvisioningSource>();
+const providerProvisioningTriggerDisposers = new WeakMap<
+  ServiceCollection,
+  readonly (() => void)[]
+>();
+// TaskIndexRepo 等各自持有 tasks-index.sqlite 的连接句柄；
+// dispose 链必须统一关闭：Windows 上句柄悬着会让宿主回收后临时目录 rm 撞 EBUSY
+// （stdioDesktopPresentationSurface 单测稳定复现），Linux 的 unlink-while-open 语义掩盖了泄漏。
+// 与其它侧表一样按 ServiceCollection 登记并在 dispose 时统一 close。
+const sharedSqliteRepos = new WeakMap<ServiceCollection, ReadonlyArray<{ close(): void }>>();
+// fork（F4.7）：账号请求鉴权侧表与 getAccountRequestAuthService 随官方账号链删除。
+// fork（F4.3）：OffPeakRequestAuthBuilder 侧表与 getOffPeakRequestAuthBuilder 随闲时任务全链路删除。
+
+/** Local Host 进程内的 Provisioning Source；不会把凭据通过通用 RPC 暴露给 Renderer。 */
+export function getProviderProvisioningSource(
+  services: ServiceCollection,
+): ProviderProvisioningSource | undefined {
+  return providerProvisioningSources.get(services);
+}
+const managedHostApiNetworkTransports = new WeakMap<ServiceCollection, HostApiNetworkTransport>();
+
+export function registerManagedCuaHelperHostForDispose(
+  services: ServiceCollection,
+  host: ManagedCuaHelperHostDispose,
+): void {
+  managedCuaHelperHosts.set(services, host);
+}
+
+export function registerHostApiNetworkTransportForDispose(
+  services: ServiceCollection,
+  transport: HostApiNetworkTransport,
+): void {
+  managedHostApiNetworkTransports.set(services, transport);
+}
+
+export function shouldEnableDefaultCuaProductHelper(
+  options: {
+    platform?: NodeJS.Platform;
+    env?: NodeJS.ProcessEnv;
+  } = {},
+): boolean {
+  // CUA 已随正式版默认开启（isZCodeCuaInternalFeatureEnabled 默认 ON，仅显式 0/false/off 关闭；2026-08 注释更正——旧注释称默认关闭已过期）。显式开启后 macOS 使用既有产品 Helper，Windows 使用安装包内 runtime；
+  // 两端都保持按需启动。关闭时不创建 host、不探测资源、不产生子进程或权限提示。
+  const env = options.env ?? process.env;
+  if (!isZCodeCuaInternalFeatureEnabled(env)) return false;
+  const platform = options.platform ?? process.platform;
+  return platform === "darwin" || platform === "win32";
+}
+
+/**
+ * 是否在当前 host 创建默认 CUA product Helper。Computer Use Helper 只能由**桌面本地** authority 创建：
+ * - desktop-attached-remote 与 standalone-server 都绝不自动创建，避免远端 workspace 在错误的
+ *   host 上启动 Helper，破坏 shared-host attachment 与权限边界；
+ * - 已显式注入 resolver 时不重复创建。
+ * 平台/环境层面的启用与否另由 shouldEnableDefaultCuaProductHelper 决定。
+ */
+export function shouldCreateDefaultCuaProductHelper(opts: {
+  serviceAuthorityMode?: ServiceAuthorityMode;
+  hasRemoteWorkspaceIdentity?: boolean;
+  hasInjectedResolver: boolean;
+  hasBuiltInCuaPlugin: boolean;
+}): boolean {
+  return (
+    opts.hasBuiltInCuaPlugin &&
+    opts.serviceAuthorityMode === "desktop-local" &&
+    !opts.hasRemoteWorkspaceIdentity &&
+    !opts.hasInjectedResolver
+  );
+}
+
+export function shouldUseCuaPermissionService(opts: {
+  platform?: NodeJS.Platform;
+  cuaEnabled: boolean;
+}): boolean {
+  const platform = opts.platform ?? process.platform;
+  return (platform === "darwin" || platform === "win32") && opts.cuaEnabled;
+}
+
+export function shouldRetainDefaultCuaProductHelper(): boolean {
+  // CUA 开关只门控后续 Agent admission；已创建的 Helper 只在 Host/App dispose 时停止。
+  return true;
+}
+
+export function shouldEnableCuaOperationStateReporter(opts: {
+  serviceAuthorityMode?: ServiceAuthorityMode;
+  hasReporter: boolean;
+}): boolean {
+  // CUA 操作状态属于物理桌面投影；远端 workspace/server 不得把自己的 turn 投影到本机屏幕。
+  return opts.hasReporter && opts.serviceAuthorityMode === "desktop-local";
+}
+
+export async function runCuaScreenCaptureReadinessProbe(
+  host: Pick<CuaHelperHost, "queryScreenCaptureProbe">,
+  screenRecording: "granted" | "denied" | "unknown",
+  queryOptions?: CuaPermissionStatusQueryOptions,
+): Promise<boolean> {
+  if (!shouldRunCuaScreenCaptureProbe(screenRecording, queryOptions)) {
+    return false;
+  }
+  try {
+    return isScreenCaptureProbeSuccess(await host.queryScreenCaptureProbe());
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Screen Recording 的展示态取值：优先短命 Helper 读到的 TCC 真值，拿不到才沿用常驻 Helper 的报告。
+ *
+ * 为什么不能直接信常驻 Helper：macOS 撤销 Screen Recording 对**已运行进程**不生效 ——
+ * 进程在退出前保留已获得的录屏能力，`CGPreflightScreenCaptureAccess()` 也继续返回撤销前的值。
+ * 于是用户在系统设置里关掉授权后，常驻 broker Helper 会一直报 granted 直到它自己重启，
+ * 设置页跟着显示「已授权」；而下一次 Helper 重启 CUA 就真的不可用了。
+ * 授予方向同样陈旧：刚授权完常驻 Helper 仍可能报 denied。
+ *
+ * fail-open 是刻意的：预检失败（open 失败 / 超时 / 结果不合法）时沿用报告值，
+ * 不比不做预检更糟。硬报 denied 会把已授权用户推进一次无意义的授权引导。
+ */
+export async function resolveCuaScreenRecordingState(
+  host: Pick<CuaHelperHost, "queryScreenRecordingPreflight">,
+  reported: "granted" | "denied" | "unknown",
+): Promise<"granted" | "denied" | "unknown"> {
+  // unknown 表示连 CGPreflight 符号都没拿到（macOS 10.15 前）。预检跑的是同一个 native 调用，
+  // 换个进程也只会得到 unknown，不值得花一次 LaunchServices 冷启。
+  if (reported === "unknown") return reported;
+  try {
+    return (await host.queryScreenRecordingPreflight()) ?? reported;
+  } catch {
+    return reported;
+  }
+}
+
+export function createDynamicCuaProductMcpServerResolver(options: {
+  isPluginEnabled: (context?: CuaProductMcpServerResolverContext) => boolean;
+  getResolver: (
+    context?: CuaProductMcpServerResolverContext,
+  ) => CuaProductMcpServerResolver | undefined | Promise<CuaProductMcpServerResolver | undefined>;
+  isResolverCurrent?: (
+    resolver: CuaProductMcpServerResolver,
+    context?: CuaProductMcpServerResolverContext,
+  ) => boolean;
+}): CuaProductMcpServerResolver {
+  return {
+    async resolveMcpServers(servers, context) {
+      if (!options.isPluginEnabled(context)) return servers;
+      const resolver = await options.getResolver(context);
+      if (!resolver) return servers;
+      const resolved = await resolver.resolveMcpServers(servers, context);
+      // delegate 可能跨过 Helper start/health await；dispose 在等待中置 terminal 时，不能把旧代际
+      // 刚注入的 socket/token 交给晚到 Agent。移除 CUA candidate，保持其它 MCP 原样。
+      return options.isResolverCurrent?.(resolver, context) === false
+        ? servers?.filter((server) => !isPotentialZCodeCuaAgentMcpServer(server))
+        : resolved;
+    },
+    async restart() {
+      // 委托到底层真实 resolver（由 ICuaPermissionService.restartHelper 经此调用）。
+      const resolver = await options.getResolver();
+      if (!resolver) {
+        throw new Error("Zody Computer Use is not enabled (plugin off or not product mode).");
+      }
+      await resolver.restart();
+    },
+    async restartAfterPermissionGrant(onboardingSessionId) {
+      // 授权完成后的 restart 必须保留 session id，才能复用底层的幂等与时序保障。
+      const resolver = await options.getResolver();
+      if (!resolver) {
+        throw new Error("Zody Computer Use is not enabled (plugin off or not product mode).");
+      }
+      await resolver.restartAfterPermissionGrant(onboardingSessionId);
+    },
+  };
+}
+
+let orphanHelperReaperHasRun = false;
+
+type CreateDefaultCuaProductHelperOptions = {
+  // 转发给 resolver，restart 前用来判断是否有活跃 turn（见 cuaProductMcpResolver.ts）。
+  // desktop-local agent service 会提供真实的 CUA turn 状态；其他调用方没有该状态时才回退为 false。
+  hasActiveTurn?: () => boolean;
+  platform?: NodeJS.Platform;
+  env?: NodeJS.ProcessEnv;
+  resourcesPath?: string;
+  arch?: NodeJS.Architecture;
+  electronVersion?: string;
+  resolveWindowsRuntime?: () => Promise<WindowsCuaRuntime>;
+  createMacHost?: () => CuaHelperHost;
+  createWindowsHost?: (runtime: WindowsCuaRuntime) => ManagedCuaProductHelperHost;
+};
+
+/**
+ * Windows 侧 Helper 宿主的懒解析包装：把「解析安装包运行时」推迟到首次 start()/checkHealth()，
+ * 并把解析结果缓存（含 rejection）。
+ *
+ * resolveWindowsCuaRuntime 可能因 missing-native-addon、artifact-integrity-mismatch、
+ * incompatible-runtime-manifest 等原因失败。若只向调用方抛错而没有诊断记录，设置页的
+ * 「未加载」状态无法说明具体原因。因此在这里记录一条带 reason 的
+ * error 日志，且因为 rejection 被缓存、日志挂在同一条 promise 链上，重复 start() 不会刷屏。
+ * 载荷只有 reason/artifact/errorName/message：解析发生在 mint token 与命名管道之前，天然不含密钥。
+ */
+export function createWindowsCuaHelperHost(options: {
+  resolveRuntime: () => Promise<WindowsCuaRuntime>;
+  createHost: (runtime: WindowsCuaRuntime) => ManagedCuaProductHelperHost;
+  logger?: ServiceLogger;
+}): ManagedCuaProductHelperHost {
+  let host: ManagedCuaProductHelperHost | undefined;
+  let resolving: Promise<ManagedCuaProductHelperHost> | undefined;
+  let stopped = false;
+  let lifecycleEpoch = 0;
+  let stopDrain: Promise<void> | undefined;
+  const logResolutionFailure = (error: unknown): void => {
+    if (!options.logger) return;
+    const resolutionError =
+      error instanceof WindowsCuaDevRuntimeResolutionError ? error : undefined;
+    const artifact = resolutionError?.artifact;
+    options.logger.error(undefined, "Windows CUA Helper runtime resolution failed", {
+      reason: resolutionError?.reason ?? "unknown",
+      ...(artifact ? { artifact } : {}),
+      errorName: error instanceof Error ? error.name : typeof error,
+      message: error instanceof Error ? error.message : String(error),
+    });
+  };
+  const assertActive = (epoch: number): void => {
+    if (stopped || epoch !== lifecycleEpoch) {
+      throw new Error("Windows Computer Use Helper startup stopped");
+    }
+  };
+  const getHost = async (epoch: number): Promise<ManagedCuaProductHelperHost> => {
+    assertActive(epoch);
+    if (host) return host;
+    resolving ??= options
+      .resolveRuntime()
+      // catch 只包住 resolveRuntime 本身：下面 then 里的 assertActive 抛出是 stop() 竞态，不是解析失败，
+      // 不能混进同一条诊断日志。
+      .catch((error: unknown) => {
+        logResolutionFailure(error);
+        throw error;
+      })
+      .then((runtime) => {
+        // stop() 会同步推进 epoch。运行时解析完成后必须再次检查，防止 dispose 返回后才构造并启动孤儿 Helper。
+        assertActive(epoch);
+        const nextHost = options.createHost(runtime);
+        assertActive(epoch);
+        host = nextHost;
+        return nextHost;
+      });
+    const resolvedHost = await resolving;
+    assertActive(epoch);
+    return resolvedHost;
+  };
+  const withActiveHost = async <T>(
+    operation: (activeHost: ManagedCuaProductHelperHost) => Promise<T>,
+  ): Promise<T> => {
+    const epoch = lifecycleEpoch;
+    const activeHost = await getHost(epoch);
+    assertActive(epoch);
+    return operation(activeHost);
+  };
+  return {
+    get running() {
+      return host?.running ?? false;
+    },
+    get socketPath() {
+      return host?.socketPath ?? null;
+    },
+    get pluginAuthority() {
+      return host?.pluginAuthority ?? null;
+    },
+    async start() {
+      return withActiveHost((activeHost) => activeHost.start());
+    },
+    async checkHealth(timeoutMs?: number) {
+      return withActiveHost((activeHost) => activeHost.checkHealth(timeoutMs));
+    },
+    async waitForTransport(timeoutMs?: number) {
+      return withActiveHost((activeHost) => {
+        if (!activeHost.waitForTransport) {
+          // 兼容旧注入 Host：没有两阶段接口时，完整 start handle 就是唯一可用 tuple。
+          return activeHost.start().then((handle) => ({
+            socketPath: handle.socketPath,
+            pluginAuthority: handle.pluginAuthority,
+          }));
+        }
+        return activeHost.waitForTransport(timeoutMs);
+      });
+    },
+    async restart() {
+      return withActiveHost((activeHost) => activeHost.restart());
+    },
+    async restartAfterCurrentStart() {
+      return withActiveHost((activeHost) => activeHost.restartAfterCurrentStart());
+    },
+    async restartAfterCurrentStartPreservingTransport(
+      restartOptions?: CuaHelperTransportRestartOptions,
+    ): Promise<CuaHelperTransportRestartResult> {
+      return withActiveHost((activeHost) => {
+        if (activeHost.restartAfterCurrentStartPreservingTransport) {
+          return activeHost.restartAfterCurrentStartPreservingTransport(restartOptions);
+        }
+        // 兼容旧注入 Host：wrapper 一旦暴露 preserving 接口，就必须代为提交 fresh-start
+        // marker；否则 producer 会在新 tuple 已启动后判定 fail-closed 契约被破坏。
+        restartOptions?.beforeFreshStart?.();
+        return activeHost.restartAfterCurrentStart().then((handle) => ({ handle, reused: false }));
+      });
+    },
+    async stop() {
+      if (stopDrain) return stopDrain;
+      stopped = true;
+      lifecycleEpoch += 1;
+      const pendingResolution = resolving;
+      stopDrain = (async () => {
+        // 等待已开始的解析落定，确保它观察到 terminal epoch；否则 dispose 之后仍可能晚到地启动 Helper。
+        await pendingResolution?.catch(() => undefined);
+        await host?.stop();
+      })();
+      return stopDrain;
+    },
+  };
+}
+
+export function createDefaultCuaProductHelper(
+  options: CreateDefaultCuaProductHelperOptions,
+): DefaultCuaProductHelper | undefined {
+  const platform = options.platform ?? process.platform;
+  const env = options.env ?? process.env;
+  if (!shouldEnableDefaultCuaProductHelper({ platform, env })) {
+    return undefined;
+  }
+  const logger = createServiceLogger("cua-product-helper");
+  // Best-effort, once per process: reap Helpers orphaned by prior sessions before minting a
+  // fresh one. Complements the per-Helper launcher-pid watchdog (helperMain); the reaper never
+  // throws, so it cannot block startup.
+  if (platform === "darwin" && !orphanHelperReaperHasRun) {
+    orphanHelperReaperHasRun = true;
+    reapOrphanedHelpers({ logger, env });
+  }
+  let macPermissionHost: CuaHelperHost | undefined;
+  let host: ManagedCuaProductHelperHost;
+  if (platform === "darwin") {
+    const bundledHelperAppPath = resolveBundledCuaHelperAppPath();
+    if (!bundledHelperAppPath) {
+      logger.error(
+        undefined,
+        "CUA product Helper is unavailable: packaged Resources path was not resolved",
+      );
+      return undefined;
+    }
+    macPermissionHost =
+      options.createMacHost?.() ??
+      createProductCuaHelperHost({
+        logger,
+        env: process.env,
+        helperInstaller: createCanonicalCuaHelperInstaller({
+          logger,
+          env: process.env,
+          bundledAppPath: bundledHelperAppPath,
+        }),
+        // 冲突解决原则：macOS 继续严格消费应用内置 Helper，不能退回下载源；
+        // Windows 才走下方独立的安装包 runtime 解析链路。
+        bundledHelperAppPath,
+        // tolerate the Helper's cold first-launch instead of the 5s default.
+        healthTimeoutMs: CUA_HELPER_HEALTH_TIMEOUT_MS,
+        // producer product factory 统一固定 ghost cursor/PiP=true、background=false。
+        // consumer 不再传伪动态 getter，避免两个仓库各保存一份产品策略。
+      });
+    host = macPermissionHost;
+  } else {
+    host = createWindowsCuaHelperHost({
+      resolveRuntime:
+        options.resolveWindowsRuntime ??
+        (() =>
+          resolveWindowsCuaRuntime({
+            platform,
+            env,
+            resourcesPath: options.resourcesPath,
+            arch: options.arch,
+            electronVersion: options.electronVersion,
+          })),
+      createHost:
+        options.createWindowsHost ??
+        ((runtime) =>
+          new WindowsCuaHelperHost({
+            runtime,
+            logger,
+            mintSocketPath: () => getStableCuaPipeName(),
+          })),
+      logger,
+    });
+  }
+  const resolver = createCuaProductMcpServerResolver(host, {
+    hasActiveTurn: options.hasActiveTurn,
+  });
+  return {
+    host,
+    ...(macPermissionHost ? { macPermissionHost } : {}),
+    resolver,
+  };
+}
+
+export const ZCODE_CUA_BUNDLED_HELPER_APP_PATH_ENV = "ZCODE_CUA_BUNDLED_HELPER_APP_PATH";
+
+export function resolveBundledCuaHelperAppPath(
+  env: NodeJS.ProcessEnv = process.env,
+): string | undefined {
+  const injectedPath = env[ZCODE_CUA_BUNDLED_HELPER_APP_PATH_ENV]?.trim();
+  if (injectedPath) {
+    return injectedPath;
+  }
+  const resourcesPath = (
+    process as NodeJS.Process & { resourcesPath?: string }
+  ).resourcesPath?.trim();
+  return resourcesPath ? join(resourcesPath, "cua-helper", HELPER_APP_NAME) : undefined;
+}
+
+export { isOfficialCuaPluginEnabledForWorkspace };
+
+export function hasGlobalCliZCodeCuaServer(env: NodeJS.ProcessEnv = process.env): boolean {
+  const home = env.HOME?.trim() || homedir();
+  // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
+  const configPath = join(home, ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json");
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(configPath, "utf8"));
+  } catch {
+    return false;
+  }
+  if (!isRecord(parsed)) return false;
+  if (isRecord(parsed.features) && parsed.features.mcp === false) return false;
+  if (!isRecord(parsed.mcp) || !isRecord(parsed.mcp.servers)) return false;
+  return Object.entries(parsed.mcp.servers).some(([name, config]) =>
+    isGlobalCliZCodeCuaServer(name, config),
+  );
+}
+
+function isGlobalCliZCodeCuaServer(name: string, config: unknown): boolean {
+  if (!isRecord(config)) return false;
+  if (config.enabled === false) return false;
+  if (typeof config.type === "string" && config.type !== "stdio") return false;
+  if (name === "computer-use") return true;
+  // 与 desktop/services resolver 和 CLI bootstrap 共用 @zcode/shared 的单一事实源，避免第三处
+  // 判定漂移：git/.git/本地路径形态的 zcode-cua 若这里漏判，全局 CLI env 注入不会带 broker
+  // socket/token，agent 会回退成 Python/uvx 自己持有 macOS TCC（违反 product broker 边界）。
+  if (typeof config.command === "string" && isZCodeCuaMcpCommand(config.command)) {
+    return true;
+  }
+  return (
+    Array.isArray(config.args) &&
+    config.args.some((arg) => typeof arg === "string" && isZCodeCuaMcpPackageArg(arg))
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * 创建包含所有本地服务的 ServiceCollection
+ *
+ * @param options.parentPort - Electron host process 的 parentPort，
+ *        用于 BroadcastService 跨窗口中转。传 null 则广播为空操作。
+ */
+export function createLocalServices(options: {
+  // fork（bot channels 移除，specs/bot-channels-removal.md）：topicResourceRelayChannel 槽位
+  // （第三方 IM bot 话题资源回传频道的注入口）随 bot channels 功能整体删除；传入方
+  // （server stdioServices / entry-http / zcode-server-cli core.ts）已同批摘除。
+  parentPort?: Parameters<typeof createBroadcastService>[0];
+  /** Host 装配层注入的设置权威；与网络 transport 必须来自同一 Window Host 生命周期。 */
+  settingService?: ISettingService;
+  // fork（F4.7）：prepareLegacyAccountConnections（旧 Team 账号补组织）随官方账号链删除。
+  /** 注入后由 ServiceCollection 接管释放，并供 Host 其它 app-managed 下载复用。 */
+  hostApiNetworkTransport?: HostApiNetworkTransport;
+  /** Desktop Host 请求 Main 登记 Agent 已授权的精确本地视频路径。 */
+  authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
+  /**
+   * 动态工作流用户选择变化后的转发口（docs/dynamic-workflow/launch.md「The user's choice」）：
+   * Desktop Host 把本机设置里的选择推给本窗口所有在线的 desktop-attached remote Host。
+   */
+  forwardDynamicWorkflowUserMode?: (mode: DynamicWorkflowMode | undefined) => void;
+  /** Desktop Host 请求 Main 登记已校验的插件 UI HTML，换取沙箱句柄。 */
+  registerPluginSandbox?: (input: PluginSandboxRegisterInput) => Promise<PluginSandboxHandle>;
+  /** fork（F2.9）：反馈本地化后只剩本地归档与展示回调，可在宿主侧覆盖。 */
+  feedback?: CreateFeedbackServiceOptions;
+  processLifecycleReporter?: RuntimeProcessLifecycleReporter;
+  taskRuntimeReporter?: RuntimeTaskReporter;
+  /** workspace 文件搜索默认使用内置过滤器；后续规则来源只需在 Host 装配时注入最终实现。 */
+  workspaceFileSearchFilter?: WorkspaceFileSearchFilter;
+  forwardSessionMessageSendRequested?: (
+    request: SessionMessageSendRequested,
+  ) => Promise<void> | void;
+  /** desktop local host 在 manual run 落库后直接派发，不经过 scheduler 正常路径。 */
+  onAutomationManualRunRequested?: (params: {
+    automation: ZCodeAutomation;
+    run: ZCodeAutomationRun;
+  }) => Promise<void>;
+  // fork（F4.3）：onOffPeakSchedulerWakeRequested（闲时 scheduler 唤醒回调）随闲时任务全链路删除。
+  // 注入点：默认 resolver 已能覆盖 dev/桌面/SSH 远端三类形态；
+  // 测试或特殊宿主想强制走自定义 binary/参数时从这里注入。
+  zcodeAgentCommandResolver?: ZCodeAgentCommandResolver;
+  /** Trusted sealed wrapper injection; takes precedence over PATH/env command discovery. */
+  zcodeAgentNativeRuntime?: ZCodeAgentNativeRuntimeConfig;
+  /** Desktop Main 提前异步采集的本机 runtime 环境；Local Host 注入后不再同步启动 login shell。 */
+  runtimeProcessEnvPatch?: Record<string, string>;
+  /** 本地桌面上次 workspace 缺失时，仅用于 Agent 子进程 spawn.cwd 兜底。 */
+  zcodeAgentSpawnFallbackCwd?: string;
+  /** desktop-attached remote server 从 Desktop Host 收到的一次性 Agent 网络配置。 */
+  remoteAgentNetwork?: {
+    httpProxy?: string;
+    noProxy?: string;
+  };
+  /** 所属 Environment 的 ZCode Built-in Provider Config 物理路径。 */
+  zcodeBuiltinProviderConfigFilePath: string;
+  /** HTTP Server 只有在调用方明确配置认证时才暴露跨 Environment Provisioning target。 */
+  providerProvisioningTargetEnabled?: boolean;
+  /** Desktop Host 私有通知；只在 Source 成功持久化后请求 Main 调度远端镜像。 */
+  onProviderProvisioningSourceChanged?: (
+    trigger: Exclude<ProviderProvisioningTrigger, "environment-online">,
+  ) => void;
+  serviceAuthorityMode?: ServiceAuthorityMode;
+  /** 真实 Host UtilityProcess 实例身份；只由 desktop Host 的 InitLocal 注入。 */
+  hostInstanceId?: string;
+  cuaProductMcpServerResolver?: CuaProductMcpServerResolver;
+  agentTelemetry?: {
+    getDeviceMid?: () => string | undefined;
+    runtimeSurface?: "desktop_local_host" | "remote_workspace_host";
+  };
+  /** browser-use 执行桥（host→main WebContentsView+CDP）；desktop host 注入，缺省则 browser 不可用。 */
+  browserControlExecutor?: {
+    list(input: {
+      requestId: string;
+      sessionId: string;
+      turnId?: string;
+      workspaceKey: string;
+      workspacePath: string;
+      workspaceIdentity?: string;
+      remoteSessionId?: string;
+      clientMode: BrowserClientMode;
+      sessionContext: "live" | "cached";
+    }): Promise<BrowserBackendDescriptor[]>;
+    execute(input: {
+      requestId: string;
+      browserId?: string;
+      browserGeneration?: number;
+      sessionId: string;
+      turnId?: string;
+      workspaceKey: string;
+      workspacePath: string;
+      workspaceIdentity?: string;
+      remoteSessionId?: string;
+      clientMode: BrowserClientMode;
+      sessionContext: "live" | "cached";
+      command: BrowserCommand;
+    }): Promise<{ ok: boolean; [k: string]: unknown }>;
+  };
+  /** Windows desktop-local Host 的 CUA turn 状态投影；其它 authority 会在装配层拒绝。 */
+  cuaOperationStateReporter?: CuaOperationStateReporter;
+}): ServiceCollection {
+  const isDesktopAttachedRemote = options?.serviceAuthorityMode === "desktop-attached-remote";
+  // host / remote server 以前直接沿用当前进程环境启动后续服务。
+  // GUI 启动的 desktop、SSH/WSL/Docker 拉起的 remote server 往往拿不到用户 login shell 里的 PATH，
+  // 导致 bun 这类只在 shell profile 里追加的命令在 ZCode Agent/终端里不可见。
+  // 这里在所有本地服务启动前统一修正运行时环境，并顺带把内置 rg 注入 PATH，
+  // 让 ZCode Agent、终端、认证 runtime 共用同一套命令解析结果。
+  initializeRuntimeProcessEnv(options?.runtimeProcessEnvPatch);
+
+  const desktopContextPromptEnabledRaw =
+    process.env[ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]?.trim();
+  const desktopContextPromptEnabled =
+    desktopContextPromptEnabledRaw === "1"
+      ? true
+      : desktopContextPromptEnabledRaw === "0"
+        ? false
+        : undefined;
+
+  // app 自签 CA：首次启动生成一份根 CA（幂等），供 agent 子进程经 NODE_EXTRA_CA_CERTS 信任、
+  // 出口代理用其私钥重签。生成失败不应阻断启动（例如只读文件系统），仅记录日志后继续。
+  try {
+    ensureAppCaCert();
+  } catch (error) {
+    console.error(formatLogPrefix("appCaCert", process.pid), "ensure app CA cert failed:", error);
+  }
+
+  const localSettings = options?.settingService ? null : createSettingServiceWithMigrations();
+  const settingService = createObservableSettingService(
+    options?.settingService ?? localSettings!.service,
+  );
+  const resolveCurrentZCodeEndpointOrigin = async () =>
+    resolveRuntimeZCodeEndpointOrigin(process.env, {
+      overrideOrigin: (await settingService.get()).zcodeEndpointOrigin,
+    });
+  // fork（F4.7）：OAuth 凭据变更触发的账号派生 Key 失效、插件 UI 账号失效与
+  // Provisioning OAuth 键复制随官方账号链删除；Credential Store 仍保留给 MCP OAuth 等通用能力。
+  const credentialService = createCredentialService();
+  const broadcastService = createBroadcastService(options?.parentPort ?? null);
+  const gitCheckpointService = createGitCheckpointService();
+  const hostApiNetworkTransport =
+    options?.hostApiNetworkTransport ??
+    createHostApiNetworkTransport(async () => {
+      const settings = await settingService.get();
+      return {
+        httpProxy: settings.httpProxy,
+        noProxy: settings.httpProxyNoProxy,
+        caCertPath: settings.httpProxyCaCertPath,
+      };
+    });
+  // fork（F4.7）：401 时的 OAuth 凭据判定/登出钩子随官方账号链删除。
+  const apiClient = createNodeApiClient({
+    fetchImpl: hostApiNetworkTransport.fetch,
+    resolveZCodeEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
+  });
+  const systemService = createSystemService();
+  // onboarding 资格与任务列表共用同一份全局 tasks-index；repo 懒加载数据库，提前构造不会
+  // 增加启动 I/O，后续 session syncer 也继续复用这一实例。
+  const taskIndexRepo = new TaskIndexRepo();
+  // onboarding 完成记录：官方账号下线后不再有登录 userId（BYOK/未登录一律 null），
+  // 见 docs/onboarding-record-spec.md；字段与 schema 保留以兼容既有记录读取。
+  const onboardingRecordService = createOnboardingRecordService({
+    loadUserId: async () => null,
+    hasExistingLocalTask: async () => (await taskIndexRepo.listTaskMetas({})).length > 0,
+  });
+  const providerConfigLog = createServiceLogger("provider-config");
+  const clientConfigPlatform = resolveClientConfigPlatform();
+  const providerConfigRuntime = createProviderConfigRuntime({
+    zcodeBuiltinFilePath: options.zcodeBuiltinProviderConfigFilePath,
+    zcodeBuiltinEnvironment: {
+      environmentConfigRoot: resolveAppConfigDir(),
+      platform: clientConfigPlatform,
+      appVersion: ZCODE_VERSION,
+      resolveEndpointOrigin: resolveCurrentZCodeEndpointOrigin,
+      onRefreshResult: (event) => {
+        if (event.result === "updated")
+          providerConfigLog.info(undefined, "ZCode Built-in CDN 配置已更新", event);
+        else providerConfigLog.debug(undefined, "ZCode Built-in 刷新检查", event);
+      },
+      fetchRelease: (endpointOrigin, signal) =>
+        fetchZCodeBuiltinRemoteRelease({
+          apiClient,
+          endpointOrigin,
+          signal,
+          appVersion: ZCODE_VERSION,
+          platform: clientConfigPlatform,
+        }),
+    },
+    onZCodeBuiltinRefreshError: (error) => {
+      providerConfigLog.warn(undefined, "ZCode Built-in Config 远端刷新失败", { error });
+    },
+    onPersonalConfigRecovery: (event) => {
+      providerConfigLog.warn(
+        undefined,
+        "Personal Provider Config 加载失败，已保留磁盘状态并以内存空配置降级",
+        {
+          error: event.error,
+        },
+      );
+    },
+    onPersonalConfigPollingError: (error) => {
+      // 轮询错误只在进入失败状态时回调一次；下一轮仍会自行重试，避免持续故障刷盘。
+      providerConfigLog.warn(undefined, "Personal Provider Config 轮询暂时失败，将继续重试", {
+        error,
+      });
+    },
+    // 已发布 config.json 保存的是 ZCode 用户配置；清理第三方 ACP 不能移除这条升级路径。
+    // Repository 仅在新 Personal 配置不存在时导入，并保留旧文件以便回滚。
+    readLegacyProviders: () => readLegacyZCodeConfigProviders(),
+  });
+  // fork（F4.1a）：官方账号 provider 下线后的一次性存量迁移。createLocalServices 是同步
+  // 装配，迁移以 fire-and-forget 执行：每个存储位置单项容错、零命中零写入（幂等）。
+  // fork（F4.7）：账号链删除后仍保留该兼容清理——旧版本直接升级时清掉 account:* 选择、
+  // oauth:* 凭据与子代理覆盖，避免残留数据继续被误读。
+  void runOfficialAccountProviderDataMigration({
+    personalRepository: providerConfigRuntime.personalRepository,
+    resolveAgentsStateFilePath: () => resolveSubagentStateFile(),
+    credentialsFilePath: resolveCredentialFilePath(resolveAppConfigDir()),
+  }).catch((error) => {
+    providerConfigLog.warn(undefined, "官方账号存量数据迁移未完成", { error });
+  });
+  // fork（F4.1a）：官方账号 provider 下线，不再向 Provider Runtime 注入账号源。
+  // Runtime 内部回落 EmptyAccountProviderConfigSource（fail-closed 空账号快照），
+  // 模型解析只剩 Built-in 模板与 Personal 自定义 provider（BYOK）。
+  const modelSelectionConfiguredDefaultSource = new NodeModelSelectionConfigRepository({
+    personalRepository: providerConfigRuntime.personalRepository,
+  });
+  const providerProvisioningSource = createProviderProvisioningSource({
+    personalRepository: providerConfigRuntime.personalRepository,
+    settingService,
+    credentialFilePath: resolveCredentialFilePath(resolveAppConfigDir()),
+    personalConfigFilePath: join(resolveAppConfigDir(), PERSONAL_PROVIDER_CONFIG_FILE_NAME),
+  });
+  const providerProvisioningDisposers = [
+    providerConfigRuntime.configService.onDidChange((reason) => {
+      // 每个 Window Host 都会轮询同一文件；只把本进程成功提交的 updated
+      // 作为同步触发，避免其它 Host 的 poll-changed 把一次保存重复计入多个代际。
+      if (reason === "personal:updated") {
+        options.onProviderProvisioningSourceChanged?.("personal-config");
+      }
+    }),
+    // fork（F4.7）：providerFamily* 账号连接设置不再参与账号解析，删除对应的
+    // Provisioning 触发；普通 Provider/BYOK 设置仍由 personal-config 触发同步。
+  ];
+  let providerConnectivityAgentService:
+    | Pick<IZCodeAgentService, "testModelConnectivity">
+    | undefined;
+  const providerRuntime = createProviderRuntimeFromConfigRuntime({
+    configRuntime: providerConfigRuntime,
+    modelSelectionConfiguredDefaultSource,
+    disposeModelSelectionConfiguredDefaultSource: () =>
+      modelSelectionConfiguredDefaultSource.dispose(),
+    testConnectivity: createProviderSettingsConnectivityTester({
+      testModelConnectivity: async (input) => {
+        if (!providerConnectivityAgentService) {
+          throw new Error("Agent Service 尚未完成模型连通性测试装配");
+        }
+        return providerConnectivityAgentService.testModelConnectivity(input);
+      },
+    }),
+  });
+  // mcpSync/hooks 里引用 zcodeAgentService 的闭包是惰性调用，声明顺序不影响初始化。
+  const skillsService = createSkillsService({ isDesktopRuntime: true });
+  const mcpSyncService = createMcpSyncService({
+    // mcp/list 的 host 消费点收拢到 mcpSync 服务；真实状态检查仍在 agent 进程。
+    listMcpServerStatuses: (params) => zcodeAgentService.listMcpServerStatuses(params),
+  });
+  const pluginSyncService = createPluginSyncService();
+  // fork（F4.7）：插件 UI 的官方账号上下文（accountContext/invalidate）随账号链删除，
+  // MCP App 实例直接绑定 agent 进程生命周期。
+  const pluginUiBridgeService = createPluginUiBridgeService({
+    openInstance: (params) => zcodeAgentService.openMcpUiInstance(params),
+    closeInstance: (params) => zcodeAgentService.closeMcpUiInstance(params),
+    validateInstance: (params) => zcodeAgentService.validateMcpUiInstance(params),
+    recycleInstance: (params) => zcodeAgentService.recycleMcpUiInstance(params),
+    // 插件 UI：资源读取与 UI 工具调用都发生在 session 所在的 agent 进程；host 只做校验与登记。
+    readMcpResource: (params) => zcodeAgentService.readMcpResource(params),
+    callMcpToolForUi: (params) => zcodeAgentService.callMcpToolForUi(params),
+    cancelMcpToolCallForUi: (params) => zcodeAgentService.cancelMcpToolCallForUi(params),
+    readMcpResourceForUi: (params) => zcodeAgentService.readMcpResourceForUi(params),
+    listMcpResourcesForUi: (params) => zcodeAgentService.listMcpResourcesForUi(params),
+    listMcpResourceTemplatesForUi: (params) =>
+      zcodeAgentService.listMcpResourceTemplatesForUi(params),
+    subscribeMcpResourceForUi: (params) => zcodeAgentService.subscribeMcpResourceForUi(params),
+    unsubscribeMcpResourceForUi: (params) => zcodeAgentService.unsubscribeMcpResourceForUi(params),
+    listPluginUiSurfaces: (params) => zcodeAgentService.listPluginUiSurfaces(params),
+    registerSandbox: options?.registerPluginSandbox,
+  });
+  // App-Provided Tools：页面工具登记与模型调用的认领 / 回传都发生在 session 所在的 agent 进程。
+  const pluginUiSamplingService = createPluginUiSamplingService({
+    sample: (params) => zcodeAgentService.sampleMcpApp(params),
+    cancelSampling: (params) => zcodeAgentService.cancelMcpAppSampling(params),
+  });
+  const pluginUiAppToolsService = createPluginUiAppToolsService({
+    registerAppToolsForUi: (params) => zcodeAgentService.registerAppToolsForUi(params),
+    unregisterAppToolsForUi: (params) => zcodeAgentService.unregisterAppToolsForUi(params),
+    claimAppToolCallForUi: (params) => zcodeAgentService.claimAppToolCallForUi(params),
+    resolveAppToolCallForUi: (params) => zcodeAgentService.resolveAppToolCallForUi(params),
+  });
+  const subagentsService = createSubagentsService({
+    isDesktopRuntime: true,
+  });
+  const commandsService = createCommandsService({ isDesktopRuntime: true });
+  const hooksService = createHooksService({
+    grantWorkspaceHookTrust: (params) => zcodeAgentService.grantWorkspaceHookTrust(params),
+  });
+  const memoryService = createMemoryService();
+  // 只要当前进程已经装配 Provider Runtime，就由该 Environment 自己的 Selection View
+  // 决定执行就绪状态。Desktop-attached remote 也读取远端自己的 Config/Account Facts。
+  const modelSelectionReadinessSource = providerRuntime.modelSelection;
+  // ===== Computer Use Helper lifecycle 层（port 自 feat）=====
+  // 约束：lifecycle coordinator 懒获取 + 代际 fence（dispose 仅来自显式 workspace 生命周期）；
+  // 不创建定时健康探测；Helper restart 尽可能复用 host transport，既有 Agent 的 session、
+  // 进程与 MCP stream 保持不变。
+  // P1-a mitigation：createDefaultCuaProductHelper() 在 zcodeAgentService 存在之前就要组装 resolver，
+  // 但"是否有活跃 turn"这个信号只有 zcodeAgentService 建好之后才能查询。用前向引用占位——resolver 真正
+  // 调用 hasActiveTurn() 发生在后续某次 resolveMcpServers（异步），那时 hasActiveTurnRef 早已被赋值。
+  // 先用前向引用连接 agent service 的 CUA turn tracker，避免在活跃 CUA 请求中途重启 Helper；
+  // service 创建完成后再赋值。Helper recovery 始终不能回收 Agent。
+  let hasActiveTurnRef: (() => boolean) | undefined;
+  const isCuaEnabledForContext = (context?: CuaProductMcpServerResolverContext): boolean =>
+    // 保留 main 原有 gate 行为（避免回归）：dev/internal 特性开启时（ZCODE_CUA_DEV_MODE=1 或
+    // ZCODE_CUA_PRODUCT_HELPER=1）即视为启用，不依赖 config.json 显式 enable——main 的 bootstrap
+    // 用 isZCodeCuaInternalFeatureEnabled 门控 bundled plugin，与 feat 的 workspace enablement 不同。
+    // 生产路径（dev mode off）回落到官方插件 workspace enablement 判定（与 feat 一致）。
+    isZCodeCuaInternalFeatureEnabled(process.env) ||
+    isOfficialCuaPluginEnabledForWorkspace({
+      env: process.env,
+      workingDirectory: context?.workspacePath,
+    });
+  const defaultCuaProductHelperLifecycle =
+    new CuaHelperLifecycleManager<ManagedDefaultCuaProductHelper>(async (managed) => {
+      await managed.helper.host.stop();
+    });
+  const createManagedDefaultCuaProductHelper = (
+    context?: CuaProductMcpServerResolverContext,
+  ): ManagedDefaultCuaProductHelper | undefined => {
+    const helper = createDefaultCuaProductHelper({
+      // 转发活跃-turn 查询（前向引用，zcodeAgentService 建好后赋值）。
+      hasActiveTurn: () => hasActiveTurnRef?.() ?? false,
+    });
+    if (!helper) return undefined;
+
+    // 历史默认装配启动 10 秒周期 watchdog；空闲期一次 broker_info 超时就会在后台
+    // 调用 resolver.restart()。Helper 不是 Agent runtime owner，且无需在没有 CUA 需求时自愈；
+    // 健康检查保留在 spawn env / resolver request boundary，避免后台 timer 干扰其他模块。
+    return {
+      helper,
+      ...(context ? { seedContext: context } : {}),
+    };
+  };
+  const getOrCreateDefaultCuaProductHelper = async (
+    context?: CuaProductMcpServerResolverContext,
+  ): Promise<DefaultCuaProductHelper | undefined> => {
+    const managed = await defaultCuaProductHelperLifecycle.acquire({
+      isAdmitted: () =>
+        shouldCreateDefaultCuaProductHelper({
+          serviceAuthorityMode: options?.serviceAuthorityMode,
+          hasRemoteWorkspaceIdentity: Boolean(context?.workspaceIdentity?.trim()),
+          hasInjectedResolver: Boolean(options?.cuaProductMcpServerResolver),
+          hasBuiltInCuaPlugin: isCuaEnabledForContext(context),
+        }),
+      shouldRetainCurrent: shouldRetainDefaultCuaProductHelper,
+      create: () => createManagedDefaultCuaProductHelper(context),
+    });
+    return managed?.helper;
+  };
+  const isDefaultCuaProductHelperCurrent = (helper: DefaultCuaProductHelper): boolean =>
+    defaultCuaProductHelperLifecycle.peek()?.helper === helper;
+  // Helper 懒启动：宿主启动时仅探测稳定 socket 上是否有一个
+  // 自启动（SDK 首调拉起）的 Helper。只 ping，绝不拉起；300ms 预算。probe 结果仅用于
+  // 状态展示 / PiP 凭据发现；权限详情与 onboarding 仍走显式 host 流。
+  const probeStableCuaHelperSocket = async (): Promise<string | null> => {
+    const socketPath =
+      process.platform === "win32" ? getStableCuaPipeName() : resolveBrokerSocketPath();
+    try {
+      const { createConnection } = await import("node:net");
+      return await new Promise<string | null>((resolve) => {
+        const socket = createConnection(socketPath);
+        const finish = (value: string | null): void => {
+          socket.destroy();
+          resolve(value);
+        };
+        const timer = setTimeout(() => finish(null), 300);
+        socket.on("connect", () => {
+          clearTimeout(timer);
+          socket.write(`{"id":0,"method":"ping","params":{}}\n`);
+          let buffer = "";
+          socket.on("data", (chunk: Buffer) => {
+            buffer += chunk.toString("utf8");
+            if (buffer.includes("\n")) {
+              try {
+                const nl = buffer.indexOf("\n");
+                const reply = JSON.parse(buffer.slice(0, nl)) as { ok?: boolean };
+                finish(reply.ok === true ? socketPath : null);
+              } catch {
+                finish(null);
+              }
+            }
+          });
+        });
+        socket.on("error", () => {
+          clearTimeout(timer);
+          finish(null);
+        });
+      });
+    } catch {
+      return null;
+    }
+  };
+
+  // 按需启动：拉起 standalone Helper（稳定 socket）。dev 场景（本 Helper 构建内嵌 dev
+  // policy）成对带 unsigned-launcher/external-escape argv，让 ad-hoc 签名的本进程也能过
+  // 签名门查询；产品 Helper 不嵌 dev policy，这对 argv 无效（产品签名天然过 Team 门）。
+  // 拉起后轮询 ping（5s/100ms），就绪返回 socket 路径，否则 null。
+  //
+  // dev 判定直接用上游的 isCuaLocalDevelopmentRuntime（@zcode/zcode-cua/broker/server，
+  // 即本文件已经用来 import buildHelperOpenArgs 的那个 subpath，可正常导入）。
+  //
+  // 行为等价性（别误读成安全加固）：上游是 `COMPILED_LOCAL_DEVELOPMENT_RUNTIME &&
+  // ZCODE_RUNTIME_ENV!=="production"`，而那个编译期常量只有 scripts/build-cua-helper-app.mjs
+  // 会用 define 折叠（Helper bundle）；desktop host bundle 没有该 define，于是回退成
+  // `process.env.NODE_ENV !== "production"` —— 正是复制品写的那一项。所以在**当前**打包形态下
+  // 两者逐字等价，关门靠的是 ZCODE_RUNTIME_ENV=production（打包态显式注入且不传 NODE_ENV）。
+  //
+  // 换成上游的收益是消除漂移面：折叠点、因子个数与 fail-closed 方向都由上游一处决定，
+  // 哪天 host bundle 也补上 __ZCODE_LOCAL_DEVELOPMENT_RUNTIME__ define（Helper 侧已经有），
+  // 编译期门自动生效，不需要再回来改这里。
+
+  const launchStandaloneCuaHelperForStatus = async (): Promise<string | null> => {
+    if (process.platform !== "darwin") return null;
+    const { existsSync } = await import("node:fs");
+    const { execFile } = await import("node:child_process");
+    const { promisify } = await import("node:util");
+    const socketPath = resolveBrokerSocketPath();
+    const appPath = resolveStandaloneStatusLaunchCandidates(process.env).find((candidate) =>
+      existsSync(candidate),
+    );
+    if (!appPath) return null;
+    // Helper 启动参数统一由 buildHelperOpenArgs 构造，避免多处手写导致漏传或漂移。
+    // 设置页只读权限探测不承载 PiP，不传 --launcher-pid 和 --pip-mode；
+    // exit-log 使用 .settings.exit.log。新增参数应定义在 HelperLaunchSpec 中供调用方共用。
+    const args = buildHelperOpenArgs({
+      appPath,
+      socketPath,
+      exitLogPath: `${socketPath}.settings.exit.log`,
+      ...(isCuaLocalDevelopmentRuntime(process.env)
+        ? { allowUnsignedLauncherLocalDev: true, allowExternalBrokerClientLocalDev: true }
+        : {}),
+    });
+    try {
+      await promisify(execFile)("/usr/bin/open", args, { timeout: 5_000 });
+    } catch {
+      // LaunchServices 已接单也可能超时；继续等 ping。
+    }
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      const ready = await probeStableCuaHelperSocket();
+      if (ready) return ready;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return null;
+  };
+
+  const launchWindowsCuaHelperForStatus = async (): Promise<string | null> => {
+    try {
+      const managed = await getOrCreateDefaultCuaProductHelper(undefined);
+      if (managed) void managed.host.start().catch(() => {});
+    } catch {}
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      const ready = await probeStableCuaHelperSocket();
+      if (ready) return ready;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return null;
+  };
+
+  // enabled 与 onCuaPipSessionLifecycle 是否挂上，都由 serviceAuthorityMode 单点决定；
+  // 提出来命名，避免下面的启动期诊断与真实取值漂移。
+  const cuaPipSessionEnabled =
+    process.platform === "darwin" && options?.serviceAuthorityMode === "desktop-local";
+  const cuaPipSessionService = createCuaPipSessionService({
+    enabled: cuaPipSessionEnabled,
+    resolveCredentials: async () => {
+      const host = defaultCuaProductHelperLifecycle.peek()?.helper.macPermissionHost;
+      // PiP 客户端以 role=presentation 声明，资格由 Helper 按对端（ZCode 主进程）签名 identifier 裁决。
+      if (host?.running && host.socketPath) {
+        return {
+          socketPath: host.socketPath,
+        };
+      }
+      // 懒启动：无托管 host 时探测稳定 socket 上自启动的 Helper（probe-only，不拉起）。
+      const stable = await probeStableCuaHelperSocket();
+      return stable ? { socketPath: stable } : undefined;
+    },
+  });
+  // 启动期就把 PiP 投递链的接线状态写出来。dev 实测 PiP 事件一条都没投，而
+  // 「enabled=false」与「lifecycle 回调没挂（tracker 整体 undefined、accept 全程 no-op）」
+  // 这两种成因在运行期都不产生任何日志，只能靠这行在启动时分辨——重启即可判定，
+  // 不必先跑一轮 CUA。scope 沿用 cua-pip-session：已验证该 logger 的 info 会进宿主日志。
+  createServiceLogger("cua-pip-session").info(undefined, "[cua-pip-session] wiring resolved", {
+    enabled: cuaPipSessionEnabled,
+    platform: process.platform,
+    serviceAuthorityMode: options?.serviceAuthorityMode ?? null,
+    lifecycleWired: options?.serviceAuthorityMode === "desktop-local",
+  });
+  // Computer Use Helper macOS 权限状态服务：renderer 经 host RPC 查询当前 Helper 的运行态与权限，并在
+  // 用户授权后从明确入口精确重启一次 Helper。重启**必须走 resolver.restart()**（不是裸 host.restart），
+  // 因为 resolver 优先复用既有 socket/token；裸 host.restart() 可能 fresh 新凭据，使已有 Agent
+  // 继续持有旧 transport，无法连接新的 broker。
+  const cuaPermissionService: ICuaPermissionService = {
+    async getStatus(
+      workspacePath: string,
+      workspaceIdentity?: string,
+      queryOptions?: CuaPermissionStatusQueryOptions,
+    ): Promise<CuaPermissionStatusResult> {
+      if (process.platform !== "darwin" && process.platform !== "win32") {
+        return {
+          available: false,
+          reason: "CUA permissions are only available on macOS and Windows.",
+        };
+      }
+      const context = workspacePath ? { workspacePath, workspaceIdentity } : undefined;
+      // 插件关闭只门控后续 Agent；权限页刷新不得进入 acquire，否则会把仍被已有 Agent 使用的 Helper 停掉。
+      if (
+        !shouldUseCuaPermissionService({
+          cuaEnabled: isCuaEnabledForContext(context),
+        })
+      ) {
+        return {
+          available: false,
+          reason: "Zody Computer Use is not enabled (plugin off or not product mode).",
+        };
+      }
+      // 懒启动：状态查询绝不拉起 Helper。托管 host 在（如刚完成授权流）→ 全量查询；
+      // 否则探测稳定 socket 上自启动的 Helper（probe-only）；都没有 → 未运行（首次使用时自动启动）。
+      const peeked = defaultCuaProductHelperLifecycle.peek()?.helper;
+      const helper = peeked && isDefaultCuaProductHelperCurrent(peeked) ? peeked : undefined;
+      const host = helper ? helper.macPermissionHost : undefined;
+      if (!host || !host.running) {
+        // Helper 按需启动：设置页查询 = 拉起 standalone Helper（稳定 socket、
+        // 无 launcher-pid → 300s 无访问自动休眠，不进托管体系）。拉起后经稳定 socket 查真值。
+        let stable = await probeStableCuaHelperSocket();
+        if (!stable) {
+          stable =
+            process.platform === "darwin"
+              ? await launchStandaloneCuaHelperForStatus()
+              : await launchWindowsCuaHelperForStatus();
+        }
+        if (!stable) {
+          return {
+            available: false,
+            reason:
+              "Zody Computer Use is not running; it will start automatically on first Computer Use use.",
+            idle: true,
+          } satisfies { available: false; reason: string; idle: true };
+        }
+        // standalone Helper 上直接查权限真值（身份模式，无 token）。
+        try {
+          const { callBrokerMethod } = await import("@zcode/zcode-cua/broker/helperHealth");
+          const report = await callBrokerMethod<{
+            grant_owner: string;
+            owner?: { display_name?: string };
+            accessibility: CuaPermissionState;
+            accessibility_probe_ok?: boolean;
+            screen_recording: CuaPermissionState;
+          }>({
+            socketPath: stable,
+            method: "permission_status",
+            timeoutMs: 3000,
+          });
+          return {
+            grantOwner: report.grant_owner,
+            grantOwnerDisplayName: report.owner?.display_name ?? report.grant_owner,
+            accessibility: report.accessibility,
+            accessibilityProbeOk: report.accessibility_probe_ok === true,
+            screenRecording: report.screen_recording,
+            screenCaptureProbeOk: false,
+          };
+        } catch {
+          return {
+            available: false,
+            reason: "Zody Computer Use is starting up; retry in a moment.",
+            idle: true,
+          } satisfies { available: false; reason: string; idle: true };
+        }
+      }
+      try {
+        const report = await host.queryPermissionStatus();
+        if (!helper || !isDefaultCuaProductHelperCurrent(helper)) {
+          return {
+            available: false,
+            reason: "Zody Computer Use lifecycle is disposed.",
+          };
+        }
+        // Screen Recording 的真值必须来自一个新进程：撤销对已运行的常驻 Helper 不生效，
+        // 它会一直报撤销前的 granted。拿不到真值时 fail-open 沿用 report 值。
+        const screenRecording = await resolveCuaScreenRecordingState(host, report.screen_recording);
+        if (!isDefaultCuaProductHelperCurrent(helper)) {
+          return {
+            available: false,
+            reason: "Zody Computer Use lifecycle is disposed.",
+          };
+        }
+        // 真实 screen-capture 探针：TCC screen_recording === "granted" 只说明系统记录了授权，并不保证
+        // WindowServer 已对本进程放行像素（wallpaper-frame / SR-not-live 背离）。只有真的抓到非空像素
+        // 才算 screen 端到端可用——UI 的"就绪/自动关闭"据此判定。fail-closed：探测抛错/超时一律 false。
+        // 用预检后的 state 做门控：预检已判 denied 时没有必要再花一次抓屏。
+        const screenCaptureProbeOk = await runCuaScreenCaptureReadinessProbe(
+          host,
+          screenRecording,
+          queryOptions,
+        );
+        if (!isDefaultCuaProductHelperCurrent(helper)) {
+          return {
+            available: false,
+            reason: "Zody Computer Use lifecycle is disposed.",
+          };
+        }
+        const reportedOwnerDisplayName =
+          typeof report.owner?.display_name === "string" ? report.owner.display_name : undefined;
+        return {
+          grantOwner: report.grant_owner,
+          grantOwnerDisplayName: reportedOwnerDisplayName ?? report.grant_owner,
+          accessibility: report.accessibility,
+          accessibilityProbeOk:
+            report.accessibility_probe?.ok === true &&
+            report.accessibility_probe?.classification === "functional",
+          screenRecording,
+          screenCaptureProbeOk,
+        };
+      } catch (error) {
+        return {
+          available: false,
+          reason: `Could not read Computer Use Helper permission status: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        };
+      }
+    },
+    async restartHelper(
+      workspacePath: string,
+      workspaceIdentity?: string,
+      restartOptions?: CuaPermissionRestartOptions,
+    ): Promise<CuaPermissionRestartResult> {
+      if (process.platform !== "darwin") {
+        return {
+          ok: false,
+          reason: "CUA permissions are only available on macOS.",
+        };
+      }
+      const context = workspacePath ? { workspacePath, workspaceIdentity } : undefined;
+      // 与 getStatus 一致：插件关闭时不触碰现有 Helper，避免设置页动作改变已有 Agent runtime。
+      if (
+        !shouldUseCuaPermissionService({
+          cuaEnabled: isCuaEnabledForContext(context),
+        })
+      ) {
+        return {
+          ok: false,
+          reason: "Zody Computer Use is not enabled (plugin off or not product mode).",
+        };
+      }
+      // 走 resolver.restart()，让 host 尽可能复用 transport；不得通过 disposeWorkspace
+      // 重建正在运行的 Agent。
+      const helper = await getOrCreateDefaultCuaProductHelper(context);
+      const resolver =
+        helper && helper.macPermissionHost && isDefaultCuaProductHelperCurrent(helper)
+          ? helper.resolver
+          : undefined;
+      if (!resolver) {
+        return {
+          ok: false,
+          reason: "Zody Computer Use is not enabled (plugin off or not product mode).",
+        };
+      }
+      try {
+        if (restartOptions?.reason === "permission_granted") {
+          await resolver.restartAfterPermissionGrant(restartOptions.onboardingSessionId);
+        } else {
+          await resolver.restart();
+        }
+        if (!helper || !isDefaultCuaProductHelperCurrent(helper)) {
+          return {
+            ok: false,
+            reason: "Zody Computer Use lifecycle is disposed.",
+          };
+        }
+        return { ok: true };
+      } catch (error) {
+        return {
+          ok: false,
+          reason: `Failed to restart Zody Computer Use: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        };
+      }
+    },
+  };
+  // 动态工作流的用户选择（docs/dynamic-workflow/launch.md「The user's choice」）：本机设置文件是唯一来源，
+  // 每次使用时读取。desktop-attached remote Host 读不到桌面的设置，选择由 desktop 推送
+  // （zcodeAgentService.syncDynamicWorkflowUserMode），这里不注入。读取失败按「跟随」处理。
+  const resolveDynamicWorkflowUserMode = isDesktopAttachedRemote
+    ? undefined
+    : async () => (await settingService.get()).dynamicWorkflowMode;
+  // fork（F2.6b）：本地动态工作流 offer 解析（env 三档覆盖 + 用户设置叠加），
+  // agent 策略与 client-config 服务消费同一份，避免出现「策略一个答案、界面另一个答案」。
+  const resolveLocalDynamicWorkflowOfferConfig = () =>
+    resolveLocalDynamicWorkflowClientConfig({
+      env: process.env,
+      ...(resolveDynamicWorkflowUserMode
+        ? { resolveUserMode: resolveDynamicWorkflowUserMode }
+        : {}),
+    });
+  // fork（F4.3）：offPeakTaskServiceForAgent 前向引用与 offPeakToolWiring（Off-Peak 工具面装配）
+  // 随闲时任务全链路删除。
+  const zcodeAgentService = createZCodeAgentService({
+    // fork（F4.7）：账号请求鉴权已随官方账号链删除，Agent 只消费 BYOK/自定义 provider。
+    ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
+    authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
+    // fork（F2.6b）：动态工作流 offer 改由本地模块提供（细则 D1b：固定 onDemand、来源 default，
+    // ZCODE_DYNAMIC_WORKFLOW_MODE 三档覆盖不变，叠加用户设置），不再经订阅服务读远端。
+    // 不按 serviceAuthorityMode 裁剪——SSH/WSL/Docker 的
+    // desktop-attached-remote Host 是它自己那些 workspace 的唯一裁决者，
+    // 灰度开启时远程 workspace 同样提供工作流。
+    resolveDynamicWorkflowClientConfig: resolveLocalDynamicWorkflowOfferConfig,
+    ...(resolveDynamicWorkflowUserMode ? { resolveDynamicWorkflowUserMode } : {}),
+    forwardDynamicWorkflowUserMode: options?.forwardDynamicWorkflowUserMode,
+    commandResolver: options?.zcodeAgentCommandResolver,
+    nativeRuntime: options?.zcodeAgentNativeRuntime,
+    cuaHostInstanceId: options?.hostInstanceId,
+    presentationSurface: resolveZCodeAgentPresentationSurface({
+      runtimeSurface: options?.agentTelemetry?.runtimeSurface,
+      serviceAuthorityMode: options?.serviceAuthorityMode,
+      desktopContextPromptEnabled,
+    }),
+    onAutomationManualRunRequested: options?.onAutomationManualRunRequested,
+    // createLocalServices 虽然暴露了 reporter 注入点，旧装配却没有继续传给
+    // ZCodeAgentProcessManager，导致 host 永远不向 main 上报 Agent spawn/exit，进程监控器
+    // 因而看不到实际运行的 Agent，也无法验证只读到可写升级是否复用同一进程。
+    processLifecycleReporter: options?.processLifecycleReporter,
+    spawnFallbackCwd: options?.zcodeAgentSpawnFallbackCwd,
+    // browser-use：host→main 执行桥透传给 agent service 的 onRequest browserExecute 路由。
+    browserControlExecutor: options?.browserControlExecutor,
+    // fork（bots 移除）：channelReplyExecutor / topicResourceExecutor / topicResourceValidator
+    // 三个 bot channel 装配项随 bot channels 功能整体删除（specs/bot-channels-removal.md）；
+    // zcodeAgentService 侧的参数与消费由 B1b 同波删除。
+    // fork（F4.6）：官方 MCP 身份头解析器与可信 origin 装配随官方 MCP 删除。
+    cuaOperationStateReporter: shouldEnableCuaOperationStateReporter({
+      serviceAuthorityMode: options?.serviceAuthorityMode,
+      hasReporter: Boolean(options?.cuaOperationStateReporter),
+    })
+      ? options?.cuaOperationStateReporter
+      : undefined,
+    // ZCode 只发布 turn/session 事实；面板 terminal policy 由 producer coordinator 决定。
+    ...(options?.serviceAuthorityMode === "desktop-local"
+      ? {
+          onCuaPipSessionLifecycle: (_workspace, event) => {
+            void cuaPipSessionService.publishLifecycle(event);
+          },
+        }
+      : {}),
+    // 设置页的 HTTP 代理、No Proxy + 自定义 CA 按 spawn 时读取注入 agent 子进程 env，
+    // 覆盖模型 API / MCP / Bash 出口流量并信任用户显式配置的证书；改动后下次启动 agent 生效。
+    resolveSpawnEnv: async (context) => {
+      const [settings] = await Promise.all([settingService.get(), providerRuntime.start()]);
+      // 本地 Host 准备解析快照；远程 CLI 继续由自己的文件 loader 读取和迁移配置。
+      if (!isDesktopAttachedRemote) await subagentsService.prepareRuntimeState(context);
+      const agentNetwork =
+        isDesktopAttachedRemote && options?.remoteAgentNetwork
+          ? options.remoteAgentNetwork
+          : {
+              httpProxy: settings.httpProxy,
+              noProxy: settings.httpProxyNoProxy,
+            };
+      const cuaPluginEnabled = isCuaEnabledForContext(context);
+      let cuaProductHelperEnv: Record<string, string> = {};
+      if (cuaPluginEnabled && (process.platform === "darwin" || process.platform === "win32")) {
+        const brokerSocket =
+          process.platform === "win32" ? getStableCuaPipeName() : resolveBrokerSocketPath();
+        cuaProductHelperEnv = {
+          [BROKER_SOCKET_ENV]: brokerSocket,
+          [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: randomBytes(16).toString("hex"),
+        };
+        if (process.platform === "win32") {
+          const recipe = await resolveStableCuaWinRecipe();
+          if (recipe) {
+            cuaProductHelperEnv["ZCODE_CUA_WIN_HELPER_RECIPE"] = JSON.stringify({
+              ...recipe,
+              hostPid: process.pid,
+            });
+          } else {
+            cuaProductHelperEnv = {
+              [BROKER_UNAVAILABLE_ENV]:
+                "broker_unavailable: windows helper recipe could not be resolved",
+            };
+          }
+        }
+      }
+      const telemetryEnv = getCapturedZCodeAgentTelemetryEnv();
+      const telemetryConfigured = Boolean(
+        telemetryEnv.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || telemetryEnv.OTEL_EXPORTER_OTLP_ENDPOINT,
+      );
+      // fork（F4.7）：官方账号下线后不再向 Agent 遥测注入 OAuth userId。
+      const telemetryDeviceMid = telemetryConfigured
+        ? options?.agentTelemetry?.getDeviceMid?.()?.trim()
+        : undefined;
+      // Host 是旧配置迁移的唯一写入者。Agent spawn 前等待初始化完成，避免 Worker
+      // 先拿到尚不存在的 provider_config.json 并发布短暂空 Registry。
+      await providerConfigRuntime.start();
+      return {
+        ...buildAgentRuntimeEnv({
+          httpProxy: agentNetwork.httpProxy,
+          noProxy: agentNetwork.noProxy,
+          caCertPath: settings.httpProxyCaCertPath,
+        }),
+        // 把 host 解析出的权威 origin（含 settings 覆盖）下发给 agent，否则 agent 侧只按
+        // env 推导，test env + 自定义端点时两侧信任判定的输入分叉、官方 MCP 整体 fail closed。
+        ...buildAgentEndpointOriginEnv(await resolveCurrentZCodeEndpointOrigin()),
+        // broker 凭据（socket/token）注入 agent spawn env，让内置 zcode-cua plugin 的
+        // computer-use MCP server 经 __zcode-plugin-host 恢复 token 后连上 broker。
+        ...cuaProductHelperEnv,
+        ...buildAgentTelemetrySpawnEnv({
+          deviceMid: telemetryDeviceMid,
+          runtimeSurface: options?.agentTelemetry?.runtimeSurface ?? "remote_workspace_host",
+          telemetryEnv,
+        }),
+        ...createNodeProviderRuntimePathEnv({
+          // Built-in Active 路径按当前 Endpoint 隔离，不能通过同步的固定路径
+          // getter 读取；Agent spawn 必须等待本轮 Endpoint Source 完成解析和物化。
+          zcodeBuiltinFilePath: await providerConfigRuntime.resolveZCodeBuiltinActiveFilePath(),
+          personalFilePath: join(resolveAppConfigDir(), PERSONAL_PROVIDER_CONFIG_FILE_NAME),
+        }),
+      };
+    },
+    ...(!isDesktopAttachedRemote
+      ? { readSubagentRuntimeConfig: subagentsService.readRuntimeConfig }
+      : {}),
+    ...(isDesktopAttachedRemote
+      ? { sessionRuntimePreferencesAuthority: "external" as const }
+      : {
+          sessionRuntimePreferencesAuthority: "local" as const,
+          resolveSessionRuntimePreferences: async (scope) => {
+            // 预算已统一，不能把可选远端配置作为本地/手机 shared-host 建会话的前置条件。
+            const settings = await settingService.get();
+            const modelContextBudgetStrategy = DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY;
+            return {
+              askUserQuestionAutoResolutionEnabled:
+                settings.askUserQuestionAutoResolutionEnabled !== false,
+              nativeSearchEnhancementsEnabled: settings.nativeSearchEnhancementsEnabled !== false,
+              memoryEnabled: settings.memoryEnabled === true,
+              modelContextBudgetStrategy,
+              // user-execution 只消费 Shell；共享默认策略是统一 result schema 的兼容占位，
+              // 不会覆盖 runtime-materialization 阶段已经固定的 strategy。
+              ...(scope === "user-execution" && settings.integratedTerminalShell
+                ? { integratedTerminalShell: settings.integratedTerminalShell }
+                : {}),
+            };
+          },
+        }),
+  });
+  providerConnectivityAgentService = zcodeAgentService;
+  // Helper health probe 短暂超时不应在 Computer Use turn 中途回收 Agent。resolver 会把 restart
+  // 推迟到下一个 request/turn 边界；若 broker 确实已失效，当前 turn 会自然失败并由下一次请求恢复。
+  hasActiveTurnRef = () => zcodeAgentService.hasActiveCuaOperationTurn();
+  // desktop-continuous UI 直接订阅 zcodeSessionService，绕开 ZCode task adapter 的
+  // mapServiceEvent 路径，导致 task_complete 永远不会写回 sqlite，侧边栏 spinner 不停。
+  // 在 services 层装配一个共享的 taskIndexRepo + syncer，session 任意入口都会唤醒
+  // shadow 订阅，把 runtime 终态收敛进 sqlite。
+  const zcodeTaskIndexSyncer = createZCodeTaskIndexSyncer({
+    agentService: zcodeAgentService,
+    taskIndexRepo,
+  });
+  // The plugin can be toggled at runtime. Do not let a previously created resolver continue
+  // health-checking/restarting Helper after disable, and create it lazily after enable.
+  // 动态 resolver：isPluginEnabled 与 helper 创建用同一个 isCuaEnabledForContext 门控（dev mode 一致），
+  // 避免开发场景下 resolver pass-through 而 helper 已建的割裂。
+  const defaultCuaProductMcpServerResolver = createDynamicCuaProductMcpServerResolver({
+    isPluginEnabled: (context) => isCuaEnabledForContext(context),
+    getResolver: async () => {
+      // peek-only——resolver 属托管 host 体系，host 未建时返回 undefined（懒启动下
+      // CUA 经 node_repl + 稳定 socket，不依赖此 resolver）；绝不在此 acquire。
+      const helper = defaultCuaProductHelperLifecycle.peek()?.helper;
+      return helper && isDefaultCuaProductHelperCurrent(helper) ? helper.resolver : undefined;
+    },
+    isResolverCurrent: (resolver) =>
+      defaultCuaProductHelperLifecycle.peek()?.helper.resolver === resolver,
+  });
+  const cuaProductMcpServerResolver =
+    options?.cuaProductMcpServerResolver ?? defaultCuaProductMcpServerResolver;
+  const zcodeSessionService = createZCodeSessionService({
+    agentService: zcodeAgentService,
+    taskIndexSyncer: zcodeTaskIndexSyncer,
+    cuaProductMcpServerResolver,
+  });
+  const gitCommitMessageGenerator = new GitCommitMessageGenerator({
+    currentModelProvider: {
+      async readCurrentModel() {
+        // Git sidecar 属于目标 Environment；初始模型直接读取同一 Host View，
+        // 不再通过临时 Agent workspace state 反推模型与 reasoning。
+        return (await providerRuntime.modelSelection.getView()).preferredSelection ?? null;
+      },
+    },
+    textGenerator: {
+      async generateText(params) {
+        return await zcodeAgentService.generateWorkspaceText({
+          workspacePath: params.workspacePath,
+          ...(params.workspaceIdentity ? { workspaceIdentity: params.workspaceIdentity } : {}),
+          selection: params.selection,
+          prompt: params.prompt,
+          querySource: params.querySource,
+        });
+      },
+    },
+    logger: createServiceLogger("git-commit-message"),
+  });
+  const gitService = createGitService({
+    commitMessageGenerator: gitCommitMessageGenerator,
+  });
+  // task wrapper 由 ZCode task service adapter 提供；核心 session 状态由 ZCode agent server 维护。
+  const zcodeTaskService = createZCodeTaskServiceAdapter({
+    zcodeAgentService,
+    taskIndexRepo,
+    taskIndexSyncer: zcodeTaskIndexSyncer,
+    settingService,
+    cuaProductMcpServerResolver,
+  });
+  // fork（bots 移除）：botRemoteWorkspaceService（bot 远端 workspace 桥，监听 parentPort 建
+  // bot 远控会话）随 bot channels 功能整体删除（specs/bot-channels-removal.md）；
+  // parentPort 选项本身保留——broadcastService 仍用它做跨窗口广播。
+  // fork（F4.7）：OAuth 服务与 401 条件登出/广播随官方账号链删除。
+  // fork（F4.3）：offPeakCredentialResolverDeps（闲时共享 Registry 凭据解析闭包）与
+  // buildOffPeakRequestAuthForTicket（闲时票据请求鉴权）随闲时任务全链路删除。
+  const fileService = createFileService({
+    workspaceFileSearchFilter: options?.workspaceFileSearchFilter,
+  });
+  const mediaPreviewService = createMediaPreviewService({
+    fileService,
+    authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
+    createLocalMediaPreviewUrl: buildLocalMediaPreviewUrl,
+  });
+  // fork（F4.8）：会话分享发布/导入服务（ConversationShareHttpClient/ConversationShareService）
+  // 随 D6「移除分享」整体删除，不再装配 IConversationShareService。
+  // 注册链上的懒工厂（如 automation）会各自创建 tasks-index sqlite repo；先收集到本数组，
+  // services 集合建好后在 return 前统一登记进 sharedSqliteRepos 侧表
+  const sqliteReposToClose: Array<{ close(): void }> = [];
+  // fork（F4.4）：营销触达（IMarketingTouchService，F2.8 起恒返回空）与云内容
+  // （ICloudContentService，仅服务营销素材分发）按官方依赖移除方案整体删除。
+  const services = new ServiceCollection()
+    .register(IFileService, fileService)
+    // fork 修复：F4.4 删除 ICloudContentService 注册时误删了链上相邻的 IMediaPreviewService
+    // 与 IGitService 注册，本地工作区的 git 状态/分支切换与媒体预览会因服务无法解析而运行时报错
+    //（单测未拉起完整集合、E2E 未跑，门禁未拦截）。此处按 main 原状恢复。
+    .register(IMediaPreviewService, mediaPreviewService)
+    .register(IGitService, gitService)
+    .register(IGitCheckpointService, gitCheckpointService)
+    .register(ISystemService, systemService)
+    .register(ITerminalService, createTerminalService({ settingService }))
+    .register(ISettingService, settingService)
+    .register(IOnboardingRecordService, onboardingRecordService)
+    .register(ICredentialService, credentialService)
+    .register(IBroadcastService, broadcastService)
+    .register(IZCodeTaskService, zcodeTaskService)
+    .register(IZCodeAgentService, zcodeAgentService)
+    .register(IZCodeSessionService, zcodeSessionService)
+    .register(ICuaPermissionService, cuaPermissionService)
+    .register(ICuaPipSessionService, cuaPipSessionService)
+    // fork（F4.8）：IConversationShareService 注册随会话分享功能删除。
+    // fork（bots 移除）：IBotsService 注册块（createBotsService 装配，依赖
+    // botRemoteWorkspaceService 桥）随 bot channels 功能整体删除
+    // （specs/bot-channels-removal.md）；相邻的 ICuaPipSessionService 注册、上方 F4.8 注释与
+    // 下方 IFileWatcherService 注册一律不动。
+    .register(IFileWatcherService, createFileWatcherService())
+    .register(
+      IUsageStatsService,
+      createUsageStatsService({
+        zcodeAgentService,
+      }),
+    )
+    // fork（F2.6b）：client-config 服务改纯本地实现，不再请求 /api/v1/client/configs；
+    // 动态工作流 offer 与 zcodeAgentService 同源（localClientConfig + 设置权威）。
+    .register(
+      IClientConfigService,
+      createClientConfigService({
+        resolveDynamicWorkflowClientConfig: resolveLocalDynamicWorkflowOfferConfig,
+      }),
+    )
+    .register(IClientScenesService, createClientScenesService({ apiClient }))
+    // fork（F4.3）：IOffPeakTaskService 注册段（闲时编排服务装配：repo/client/coding plan
+    // support/model selection/telemetry/scheduler 唤醒）随闲时任务全链路删除。
+    .register(ISkillsService, skillsService)
+    .register(ISkillSyncService, createSkillSyncService())
+    .register(IMcpSyncService, mcpSyncService)
+    .register(
+      IGenUiService,
+      createGenUiService({ registerSandbox: options?.registerPluginSandbox }),
+    )
+    .register(IPluginUiBridgeService, pluginUiBridgeService)
+    .register(IPluginUiSamplingService, pluginUiSamplingService)
+    .register(IPluginUiAppToolsService, pluginUiAppToolsService)
+    // 合并 MCP/Plugin Management 服务装配时误删了 plugin-sync 注册，
+    // RemoteServiceAccess 仍会请求该频道，导致本地候选枚举超时、远端同步无法开始。
+    .register(IPluginSyncService, pluginSyncService)
+    .register(IPluginsService, createPluginsService({ isDesktopRuntime: true }))
+    // 设置页插件管理薄服务——plugins/* 旧协议词的 host 侧唯一消费点。
+    .register(IPluginManagementService, createPluginManagementService({ zcodeAgentService }))
+    .register(ISubagentsService, subagentsService)
+    .register(ICommandsService, createCommandsService({ isDesktopRuntime: true }))
+    .register(
+      IHooksService,
+      createHooksService({
+        grantWorkspaceHookTrust: (params) => zcodeAgentService.grantWorkspaceHookTrust(params),
+      }),
+    )
+    .register(IMemoryService, createMemoryService())
+    .register(IOutputStyleService, createOutputStyleService())
+    .register(ISettingsSyncService, createSettingsSyncService({ settingService }))
+    .register(
+      IFeedbackService,
+      // fork（F2.9）：官方工单提交停用，feedback 不再注入 apiClient/credential/oauth，
+      // 服务只保留本地日志归档与历史工单读取能力。
+      createFeedbackService({
+        ...options?.feedback,
+      }),
+    )
+    .register(IPromptAttachmentTransferService, createLocalPromptAttachmentTransferService());
+
+  // 即使初始配置关闭也必须登记 lifecycle disposer：terminal fence 需要早于任意延迟 setting/acquire
+  // 恢复，不能把"当前还没有 Helper"误当成"不需要生命周期所有者"。dispose 时串行 stop host。
+  registerManagedCuaHelperHostForDispose(services, {
+    stop: async () => {
+      await defaultCuaProductHelperLifecycle.dispose();
+    },
+  });
+  registerHostApiNetworkTransportForDispose(services, hostApiNetworkTransport);
+  // disposer 注册完成后才排预热。若 createLocalServices 中途抛错，不能留下一个无人持有、却会在当前
+  // 调用栈结束后才创建的高权限 Helper；若返回后立即 dispose，terminal fence 会先于 acquire 生效。
+  // Helper 懒启动：不预热——Helper 由 SDK 首次 CUA 调用拉起（spawn env 注入
+  // 稳定 socket），或用户显式授权流（restartHelper）拉起。启动即零 Helper 常驻。
+
+  // fork（F4.3）：offPeakRequestAuthBuilders.set 随闲时任务全链路删除。
+
+  providerRuntimes.set(services, providerRuntime);
+  providerProvisioningSources.set(services, providerProvisioningSource);
+  providerProvisioningTriggerDisposers.set(services, providerProvisioningDisposers);
+  services
+    .register(IProviderSettingsService, providerRuntime.providerSettings)
+    .register(IModelSelectionService, providerRuntime.modelSelection);
+  if (isDesktopAttachedRemote || options.providerProvisioningTargetEnabled === true) {
+    services.register(
+      IProviderProvisioningTargetService,
+      createProviderProvisioningTarget({
+        providerRuntime,
+        personalRepository: providerConfigRuntime.personalRepository,
+        credentialService,
+        settingService,
+        personalConfigFilePath: join(resolveAppConfigDir(), PERSONAL_PROVIDER_CONFIG_FILE_NAME),
+        stateFilePath: join(resolveAppConfigDir(), "runtime", "provider", "provisioning.json"),
+        listProvisioningCredentialKeys: () =>
+          listProviderProvisioningCredentialKeys(resolveCredentialFilePath(resolveAppConfigDir())),
+      }),
+    );
+  }
+  const log = createServiceLogger("provider-runtime");
+  void providerRuntime.start().then(
+    () => {
+      const snapshot = providerRuntime.registryService.getSnapshot()!;
+      log.info("Provider Registry 已就绪", {
+        configRevision: snapshot.sourceRevisions.config,
+        providerCount: snapshot.registry.providers.length,
+      });
+    },
+    (error: unknown) => {
+      log.error("Provider 配置事实初始化失败", error);
+    },
+  );
+
+  // 见 sharedSqliteRepos 声明处注释：登记全部 tasks-index sqlite 句柄，dispose 链统一关闭
+  sqliteReposToClose.push(taskIndexRepo);
+  sharedSqliteRepos.set(services, sqliteReposToClose);
+  return services;
+}
+
+// fork（F4.7）：官方账号下线后 telemetry 不再读取 OAuth userId / ZCode JWT / 营销归因，
+// createTelemetryUserIdLoader / createTelemetryAuthorizationLoader /
+// createTelemetryMarketingParamsLoader 随账号链删除；TelemetryCore 的对应 loader 保持可选，
+// 缺省返回空 userId 与 null 授权（本地/匿名遥测）。
+
+export function disposeServiceResources(services: ServiceCollection): void {
+  // fork（F4.4）：云内容服务（含 content-bundle 缓存）已删除，不再有独立 dispose 段。
+  (
+    services.getOptional(IGenUiService) as (IGenUiService & { dispose?(): void }) | undefined
+  )?.dispose?.();
+  // Bugfix: host process 退出前以前没有统一遍历本地服务做资源回收，
+  // terminal/task wrapper 这类会拉起子进程的服务只能等宿主进程自己结束，时序上可能留下短暂残留。
+  // 这里集中调用各服务的本地 disposeAll 钩子，把“退出 app = 回收所有托管资源”落成机械动作。
+  const disposableServices = [
+    services.getOptional(ITerminalService),
+    services.getOptional(IZCodeTaskService),
+    services.getOptional(IZCodeAgentService),
+    services.getOptional(IZCodeSessionService),
+    // fork（bots 移除）：IBotsService dispose 项随 bot channels 功能整体删除
+    // （specs/bot-channels-removal.md）。
+    services.getOptional(IFileWatcherService),
+    services.getOptional(ISubagentsService),
+  ].filter((service) => service !== undefined);
+
+  for (const service of disposableServices) {
+    if (hasDisposeAll(service)) {
+      service.disposeAll();
+    }
+  }
+
+  // 同步 best-effort：终止托管的 Computer Use Helper（不 await，避免阻断同步 dispose 路径）。
+  const managedCuaHelperHost = managedCuaHelperHosts.get(services);
+  if (managedCuaHelperHost) {
+    void managedCuaHelperHost.stop().catch(() => {});
+  }
+  // 关闭共享 tasks-index sqlite 句柄（Windows 上悬着句柄会让后续目录清理撞 EBUSY）
+  for (const repo of sharedSqliteRepos.get(services) ?? []) repo.close();
+  sharedSqliteRepos.delete(services);
+  providerRuntimes.get(services)?.dispose();
+  for (const dispose of providerProvisioningTriggerDisposers.get(services) ?? []) dispose();
+  providerProvisioningTriggerDisposers.delete(services);
+  providerProvisioningSources.delete(services);
+  managedHostApiNetworkTransports.get(services)?.dispose();
+}
+
+export async function disposeServiceResourcesAndWait(services: ServiceCollection): Promise<void> {
+  (
+    services.getOptional(IGenUiService) as (IGenUiService & { dispose?(): void }) | undefined
+  )?.dispose?.();
+  // app 关闭时 host 需要等 agent 进程树完成 graceful + force 清理。
+  // 旧的同步 dispose 会在 host 退出时丢掉强杀 timer，导致 zcode-cli/app-server 变成孤儿进程。
+  const disposableServices = [
+    services.getOptional(ITerminalService),
+    services.getOptional(IZCodeTaskService),
+    services.getOptional(IZCodeAgentService),
+    services.getOptional(IZCodeSessionService),
+    // fork（bots 移除）：IBotsService dispose 项随 bot channels 功能整体删除
+    // （specs/bot-channels-removal.md）。
+    services.getOptional(IFileWatcherService),
+    services.getOptional(ISubagentsService),
+  ].filter((service) => service !== undefined);
+
+  for (const service of disposableServices) {
+    if (hasDisposeAllAndWait(service)) {
+      await service.disposeAllAndWait();
+    } else if (hasDisposeAll(service)) {
+      service.disposeAll();
+    }
+  }
+
+  // 等待托管的 Computer Use Helper 终止（best-effort）：Helper 是长生命周期高权限进程，服务释放语义必须显式
+  // 收口它，不能只靠 launcher-pid watchdog / 进程退出兜底。
+  const managedCuaHelperHost = managedCuaHelperHosts.get(services);
+  if (managedCuaHelperHost) {
+    await managedCuaHelperHost.stop().catch(() => {});
+  }
+  // 关闭共享 tasks-index sqlite 句柄（同 disposeServiceResources，异步收口路径也要释放）
+  for (const repo of sharedSqliteRepos.get(services) ?? []) repo.close();
+  sharedSqliteRepos.delete(services);
+  providerRuntimes.get(services)?.dispose();
+  for (const dispose of providerProvisioningTriggerDisposers.get(services) ?? []) dispose();
+  providerProvisioningTriggerDisposers.delete(services);
+  providerProvisioningSources.delete(services);
+  await managedHostApiNetworkTransports
+    .get(services)
+    ?.disposeAndWait()
+    .catch(() => {});
+}
+export { localRuntimeNetworkCapture } from "./zcode-agent/localRuntimeNetworkCapture.js";

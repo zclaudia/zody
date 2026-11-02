@@ -1,0 +1,63 @@
+
+running 43 tests
+test geometry_tests::checked_window_id_rejects_zero_negative_and_overflow ... ok
+test helper_bridge::tests::public_capture_entry_stays_closed ... ok
+test capture::tests::bridge_symbol_is_non_null_without_call ... ok
+test geometry_tests::parse_requires_every_field_and_rejects_missing_values ... ok
+test helper_bridge::tests::start_requires_a_callback_and_a_valid_request ... ok
+test geometry_tests::parse_rejects_overflow_non_layer_zero_and_invalid_bounds ... ok
+test capture::tests::completion_payload_is_bounded_before_forming_a_frame ... ok
+test helper_bridge::tests::callback_release_waits_for_worker_terminal_after_swift_release ... ok
+test helper_bridge::tests::destroy_waits_for_callback_release ... ok
+test helper_bridge::tests::take_png_is_one_shot_and_not_ready_before_terminal ... ok
+test helper_bridge::tests::start_callback_denial_returns_null ... ok
+test helper_bridge::tests::cancel_after_a_completed_png_rejects_take_and_wait ... ok
+test observe::tests::stops_before_encode_on_after_drift ... ok
+test observe::tests::stops_before_later_stages_on_before_or_selected_drift ... ok
+test png::tests::input_length_is_bounded_before_the_decoder ... ok
+test observe::tests::bad_rgba_or_empty_png_never_forms_a_success_frame ... ok
+test session::tests::bad_payload_error_is_terminal_and_releases_on_payload_released ... ok
+test session::tests::callback_delivery_does_not_release_capacity_before_payload_released ... ok
+test session::tests::cancel_after_admission_drops_late_pixels ... ok
+test session::tests::cancel_before_admission_never_starts_capture_and_releases_on_callback ... ok
+test session::tests::capacity_is_bounded_and_released_only_by_payload_released ... ok
+test session::tests::duplicate_admission_is_rejected_without_releasing_the_first_capture ... ok
+test session::tests::cancel_handle_wakes_a_thread_blocked_in_wait_and_keeps_the_slot ... ok
+test session::tests::duplicate_close_callback_and_release_are_idempotent ... ok
+test session::tests::observer_drop_after_admission_keeps_slot_until_bridge_release ... ok
+test session::tests::observer_drop_before_admission_prevents_capture_start ... ok
+test session::tests::release_before_completion_is_a_terminal_protocol_error ... ok
+test session::tests::selected_drift_is_rejected_and_callback_returns_stored_error ... ok
+test session::tests::successful_completion_delivers_exact_rgba ... ok
+test session::tests::wait_is_one_shot_and_final_check_observes_late_cancel ... ok
+test helper_bridge::tests::png_buffer_round_trips_through_the_c_allocator_pair ... ok
+test swift_link::tests::parses_sdk_path_and_fixed_swift_triples ... ok
+test swift_link::tests::parses_xcode_toolchain_swiftc ... ok
+test swift_link::tests::rejects_empty_multiline_and_non_utf8_output_without_fallback ... ok
+test swift_link::tests::parses_clt_swiftc ... ok
+test swift_link::tests::rejects_relative_wrong_layout_and_wrong_file_name ... ok
+test png::tests::container_rejects_missing_iend_bad_iend_crc_and_trailing_bytes ... ok
+test png::tests::decoder_dimension_limit_applies_before_pixel_use ... ok
+test png::tests::decoder_allocation_limit_is_enforced ... ok
+test observe::tests::success_forms_a_non_empty_frame ... ok
+test observe::tests::final_check_after_encode_observes_cancel_before_delivery ... ok
+test png::tests::every_truncation_of_a_real_png_is_rejected ... ok
+test helper_bridge::tests::cancel_wakes_a_wait_blocked_before_terminal ... ok
+
+test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+
+warning: field `id` is never read
+   --> crates/cua-macos-visual/src/helper_bridge.rs:181:5
+    |
+180 | struct Operation {
+    |        --------- field in this struct
+181 |     id: u64,
+    |     ^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `cua-macos-visual` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running unittests src/lib.rs (output/cua-helper-round11/controller-visual-final/target/debug/deps/cua_macos_visual-bb02f12e0237a829)
+

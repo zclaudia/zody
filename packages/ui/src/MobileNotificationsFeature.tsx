@@ -7,6 +7,16 @@ import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
 import type { WebRemoteControlWorkspaceSwitcherApi } from "@/root/types.js";
 
+// notify-5（spec D1）：size="sm" 按钮高 h-6（24px），触屏态用 ::after 负 inset 补足
+// 命中区 ≥44×44（上下各扩 10px、左右各 8px），视觉尺寸保持桌面尺度；作用域限定
+// (hover: none) and (pointer: coarse)，桌面密度不变。
+const touchHitArea =
+  "[@media(hover:none)_and_(pointer:coarse)]:relative " +
+  "[@media(hover:none)_and_(pointer:coarse)]:after:absolute " +
+  "[@media(hover:none)_and_(pointer:coarse)]:after:-inset-x-2 " +
+  "[@media(hover:none)_and_(pointer:coarse)]:after:-inset-y-2.5 " +
+  "[@media(hover:none)_and_(pointer:coarse)]:after:content-['']";
+
 export function MobileNotificationsFeature({
   switcher,
   onBack,
@@ -75,6 +85,7 @@ export function MobileNotificationsFeature({
             type="button"
             variant="outline"
             size="sm"
+            className={touchHitArea}
             disabled={requestingPermission}
             onClick={() => void requestPermission()}
           >
@@ -91,6 +102,7 @@ export function MobileNotificationsFeature({
           <Button
             variant="outline"
             size="sm"
+            className={touchHitArea}
             disabled={testStatus === "sending"}
             onClick={() => {
               setTestStatus("sending");

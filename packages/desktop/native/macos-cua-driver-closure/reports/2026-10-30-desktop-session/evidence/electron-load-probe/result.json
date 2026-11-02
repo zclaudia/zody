@@ -1,0 +1,99 @@
+{
+  "purpose": "actual Electron executable and Framework, isolated partial load probe; not a product package, both fixed local identity/hardened runtime, no entitlements; no UI launch asserted",
+  "source": "/Users/zhvala/SourceCode/zody/node_modules/electron/dist/Electron.app",
+  "inputs": {
+    "Contents/MacOS/Electron": "51ea98f5b4ff5e5c079a6953a886a10999e5b355a76bcd92ff5dd59cb7167bd9",
+    "Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework": "c2470009b466b43f0b6a33d81216a62f97ead3d1025096b3dbd6b2ae38449f94"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "--force",
+        "--sign",
+        "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+        "--options",
+        "runtime",
+        "--timestamp=none",
+        "--identifier",
+        "io.github.zclaudia.zody.probe.framework",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework: replacing existing signature\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--strict",
+        "--verbose=4",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework: valid on disk\n/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework: satisfies its Designated Requirement\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "-d",
+        "--verbose=4",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Executable=/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework\nIdentifier=io.github.zclaudia.zody.probe.framework\nFormat=Mach-O thin (arm64)\nCodeDirectory v=20500 size=347304 flags=0x10000(runtime) hashes=10847+2 location=embedded\nVersionPlatform=1\nVersionMin=786432\nVersionSDK=1704448\nHash type=sha256 size=32\nCandidateCDHash sha256=54d0f21202269e9e6b70a79ee4c6cb4b50a31d31\nCandidateCDHashFull sha256=54d0f21202269e9e6b70a79ee4c6cb4b50a31d3188f4dc3268cbe2884e805703\nHash choices=sha256\nCMSDigest=54d0f21202269e9e6b70a79ee4c6cb4b50a31d3188f4dc3268cbe2884e805703\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=168329216\nExecutable Segment flags=0x0\nPage size=16384\nCDHash=54d0f21202269e9e6b70a79ee4c6cb4b50a31d31\nSignature size=2103\nAuthority=Zody Local Computer Use\nSigned Time=Oct 30, 2026 at 14:06:56\nInfo.plist=not bound\nTeamIdentifier=not set\nRuntime Version=26.2.0\nSealed Resources=none\nInternal requirements count=1 size=116\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "--force",
+        "--sign",
+        "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+        "--options",
+        "runtime",
+        "--timestamp=none",
+        "--identifier",
+        "io.github.zclaudia.zody.probe.electron",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/MacOS/Electron"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/MacOS/Electron: replacing existing signature\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "--verify",
+        "--strict",
+        "--verbose=4",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/MacOS/Electron"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/MacOS/Electron: valid on disk\n/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/MacOS/Electron: satisfies its Designated Requirement\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/codesign",
+        "-d",
+        "--verbose=4",
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/MacOS/Electron"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Executable=/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/MacOS/Electron\nIdentifier=io.github.zclaudia.zody.probe.electron\nFormat=Mach-O thin (arm64)\nCodeDirectory v=20500 size=295 flags=0x10000(runtime) hashes=3+2 location=embedded\nVersionPlatform=1\nVersionMin=786432\nVersionSDK=1704448\nHash type=sha256 size=32\nCandidateCDHash sha256=c0c86e577d1028d027165a670b853b2b6c20cbd3\nCandidateCDHashFull sha256=c0c86e577d1028d027165a670b853b2b6c20cbd353bb140a4880a5244c979b8c\nHash choices=sha256\nCMSDigest=c0c86e577d1028d027165a670b853b2b6c20cbd353bb140a4880a5244c979b8c\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=16384\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=c0c86e577d1028d027165a670b853b2b6c20cbd3\nSignature size=2103\nAuthority=Zody Local Computer Use\nSigned Time=Oct 30, 2026 at 14:06:57\nInfo.plist=not bound\nTeamIdentifier=not set\nRuntime Version=26.2.0\nSealed Resources=none\nInternal requirements count=1 size=116\n"
+    },
+    {
+      "argv": [
+        "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/MacOS/Electron",
+        "--version"
+      ],
+      "exitCode": -6,
+      "stdout": "",
+      "stderr": "dyld[50086]: Library not loaded: @rpath/Electron Framework.framework/Electron Framework\n  Referenced from: <4C4C4450-5555-3144-A175-A5A5EB513DF3> /Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/MacOS/Electron\n  Reason: tried: '/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Electron Framework' (code signature in <4C4C4456-5555-3144-A1D7-2F9FC95F5CF0> '/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework' not valid for use in process: mapping process and mapped file (non-platform) have different Team IDs), '/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Electron Framework' (code signature in <4C4C4456-5555-3144-A1D7-2F9FC95F5CF0> '/Users/zhvala/SourceCode/zody/output/cua-desktop-session/electron-load-probe/Electron Probe.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework' not valid for use in process: mapping process and mapped file (non-platform) have different Team IDs)\n"
+    }
+  ]
+}

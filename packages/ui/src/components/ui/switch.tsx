@@ -16,6 +16,9 @@ function Switch({
       data-size={size}
       className={cn(
         "p-px peer group/switch relative inline-flex shrink-0 items-center rounded-full transition-all outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:ring-2 focus-visible:ring-input-border-focused/30 aria-invalid:ring-2 aria-invalid:ring-destructive/20 data-[size=default]:h-[18px] data-[size=default]:w-[32px] data-[size=sm]:h-[16px] data-[size=sm]:w-[28px] dark:aria-invalid:ring-destructive/40 data-checked:bg-primary data-unchecked:bg-primary/30 data-disabled:cursor-not-allowed data-disabled:opacity-50",
+        // 触控态用伪元素把实际命中区扩到 ≥44px：默认 18px + 2×14 = 46px，
+        // sm 16px + 2×14 = 44px；开关视觉尺寸与桌面完全一致。
+        "[@media(hover:none)_and_(pointer:coarse)]:after:-inset-y-[14px]",
         className,
       )}
       {...props}

@@ -1,0 +1,723 @@
+[
+  {
+    "file": "architecture-final.json",
+    "name": "architecture-final",
+    "argv": [
+      "pnpm",
+      "architecture:check",
+      "--changed"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:32:16.083475+00:00",
+    "seconds": 1.185,
+    "exitCode": 0,
+    "log": "architecture-final.log"
+  },
+  {
+    "file": "architecture-post-evidence-fix.json",
+    "name": "architecture-post-evidence-fix",
+    "argv": [
+      "pnpm",
+      "architecture:check",
+      "--changed"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:57:49.482547+00:00",
+    "seconds": 1.165,
+    "exitCode": 0,
+    "log": "architecture-post-evidence-fix.log"
+  },
+  {
+    "file": "auth-contract-tests.json",
+    "name": "auth-contract-tests",
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "packages/shared/test/cuaHelperTransportAuth.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T16:43:24.623624+00:00",
+    "seconds": 0.694,
+    "exitCode": 0,
+    "log": "auth-contract-tests.log"
+  },
+  {
+    "file": "cell-tests-final.json",
+    "name": "cell-tests-final",
+    "argv": [
+      "pnpm",
+      "--dir",
+      "apps/zcode-cli",
+      "exec",
+      "vitest",
+      "run",
+      "packages/node-repl-host/test/cell-helper-transport.test.ts",
+      "packages/node-repl-host/test/cua-node-repl-mcp-port.test.ts",
+      "packages/node-repl-host/test/subprocess-executor.test.ts",
+      "packages/node-repl-host/test/subprocess-launch.test.ts",
+      "packages/node-repl-host/test/sealed-resource.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:27:22.257860+00:00",
+    "seconds": 4.634,
+    "exitCode": 0,
+    "log": "cell-tests-final.log"
+  },
+  {
+    "file": "cell-tests.json",
+    "name": "cell-tests",
+    "argv": [
+      "pnpm",
+      "--dir",
+      "apps/zcode-cli",
+      "exec",
+      "vitest",
+      "run",
+      "packages/node-repl-host/test/cell-helper-transport.test.ts",
+      "packages/node-repl-host/test/cua-node-repl-mcp-port.test.ts",
+      "packages/node-repl-host/test/subprocess-executor.test.ts",
+      "packages/node-repl-host/test/subprocess-launch.test.ts",
+      "packages/node-repl-host/test/sealed-resource.test.ts",
+      "packages/cli/tests/cua-launch-session.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:16:03.526410+00:00",
+    "seconds": 7.347,
+    "exitCode": 1,
+    "log": "cell-tests.log"
+  },
+  {
+    "file": "cli-launch-tests.json",
+    "name": "cli-launch-tests",
+    "argv": [
+      "pnpm",
+      "exec",
+      "node",
+      "--import",
+      "tsx",
+      "--test",
+      "apps/zcode-cli/packages/cli/tests/cua-launch-session.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:23:45.346187+00:00",
+    "seconds": 0.982,
+    "exitCode": 0,
+    "log": "cli-launch-tests.log"
+  },
+  {
+    "file": "dependency-relink.json",
+    "name": "dependency-relink",
+    "argv": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile",
+      "--ignore-scripts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:31:06.451029+00:00",
+    "seconds": 3.478,
+    "exitCode": 0,
+    "log": "dependency-relink.log"
+  },
+  {
+    "file": "formal-pack-child-audit.json",
+    "name": "formal-pack-child-audit",
+    "argv": [
+      "/usr/bin/env",
+      "NODE_OPTIONS=--require=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/recovery-incident/asar-child-audit.cjs",
+      "ZCODE_TARGET_OS=darwin",
+      "ZCODE_TARGET_ARCH=arm64",
+      "ZCODE_ENABLE_MAC_SIGN=0",
+      "CSC_IDENTITY_AUTO_DISCOVERY=false",
+      "ZCODE_CUA_NARROW_MANIFEST=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-prepared-production/manifest.json",
+      "npm_config_user_agent=pnpm/10.33.2",
+      "pnpm",
+      "--dir",
+      "packages/desktop",
+      "exec",
+      "electron-builder",
+      "--config",
+      "electron-builder.config.js",
+      "--mac",
+      "--arm64",
+      "--dir",
+      "--config.directories.output=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-formal-production"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:37:07.338795+00:00",
+    "seconds": 85.422,
+    "exitCode": 0,
+    "log": "formal-pack-child-audit.log"
+  },
+  {
+    "file": "formal-pack-production-direct.json",
+    "name": "formal-pack-production-direct",
+    "argv": [
+      "/usr/bin/env",
+      "ZCODE_TARGET_OS=darwin",
+      "ZCODE_TARGET_ARCH=arm64",
+      "ZCODE_ENABLE_MAC_SIGN=0",
+      "CSC_IDENTITY_AUTO_DISCOVERY=false",
+      "ZCODE_CUA_NARROW_MANIFEST=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-prepared-production/manifest.json",
+      "node",
+      "node_modules/electron-builder/cli.js",
+      "--projectDir",
+      "packages/desktop",
+      "--config",
+      "electron-builder.config.js",
+      "--mac",
+      "--arm64",
+      "--dir",
+      "--config.directories.output=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-formal-production"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:30:12.797712+00:00",
+    "seconds": 25.163,
+    "exitCode": 1,
+    "log": "formal-pack-production-direct.log"
+  },
+  {
+    "file": "formal-pack-production-final.json",
+    "name": "formal-pack-production-final",
+    "argv": [
+      "/usr/bin/env",
+      "ZCODE_TARGET_OS=darwin",
+      "ZCODE_TARGET_ARCH=arm64",
+      "ZCODE_ENABLE_MAC_SIGN=0",
+      "CSC_IDENTITY_AUTO_DISCOVERY=false",
+      "ZCODE_CUA_NARROW_MANIFEST=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-prepared-production/manifest.json",
+      "npm_config_user_agent=pnpm/10.33.2",
+      "pnpm",
+      "--dir",
+      "packages/desktop",
+      "exec",
+      "electron-builder",
+      "--config",
+      "electron-builder.config.js",
+      "--mac",
+      "--arm64",
+      "--dir",
+      "--config.directories.output=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-formal-production"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:33:16.214766+00:00",
+    "seconds": 53.212,
+    "exitCode": 1,
+    "log": "formal-pack-production-final.log"
+  },
+  {
+    "file": "formal-pack-production-relinked.json",
+    "name": "formal-pack-production-relinked",
+    "argv": [
+      "/usr/bin/env",
+      "ZCODE_TARGET_OS=darwin",
+      "ZCODE_TARGET_ARCH=arm64",
+      "ZCODE_ENABLE_MAC_SIGN=0",
+      "CSC_IDENTITY_AUTO_DISCOVERY=false",
+      "ZCODE_CUA_NARROW_MANIFEST=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-prepared-production/manifest.json",
+      "npm_config_user_agent=pnpm/10.33.2",
+      "pnpm",
+      "--dir",
+      "packages/desktop",
+      "exec",
+      "electron-builder",
+      "--config",
+      "electron-builder.config.js",
+      "--mac",
+      "--arm64",
+      "--dir",
+      "--config.directories.output=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-formal-production"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:31:46.881336+00:00",
+    "seconds": 9.019,
+    "exitCode": 1,
+    "log": "formal-pack-production-relinked.log"
+  },
+  {
+    "file": "formal-pack-production.json",
+    "name": "formal-pack-production",
+    "argv": [
+      "/usr/bin/env",
+      "ZCODE_TARGET_OS=darwin",
+      "ZCODE_TARGET_ARCH=arm64",
+      "ZCODE_ENABLE_MAC_SIGN=0",
+      "CSC_IDENTITY_AUTO_DISCOVERY=false",
+      "ZCODE_CUA_NARROW_MANIFEST=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-prepared-production/manifest.json",
+      "pnpm",
+      "--dir",
+      "packages/desktop",
+      "exec",
+      "electron-builder",
+      "--config",
+      "electron-builder.config.js",
+      "--mac",
+      "--arm64",
+      "--dir",
+      "--config.directories.output=/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-formal-production"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:29:09.700496+00:00",
+    "seconds": 1.466,
+    "exitCode": 1,
+    "log": "formal-pack-production.log"
+  },
+  {
+    "file": "helper-diagnostic.json",
+    "name": "helper-diagnostic",
+    "argv": [
+      "node",
+      "packages/desktop/scripts/build-cua-desktop-session.mjs",
+      "--output-root",
+      "output/cua-arm64-screenshot/controller-helper-diagnostic",
+      "--visual-root",
+      "output/cua-arm64-screenshot/controller-visual-diagnostic",
+      "--skip-tests"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:28:38.622911+00:00",
+    "seconds": 20.321,
+    "exitCode": 0,
+    "log": "helper-diagnostic.log"
+  },
+  {
+    "file": "helper-production.json",
+    "name": "helper-production",
+    "argv": [
+      "node",
+      "packages/desktop/scripts/build-cua-desktop-session.mjs",
+      "--output-root",
+      "output/cua-arm64-screenshot/controller-helper-production",
+      "--visual-root",
+      "output/cua-arm64-screenshot/controller-visual-production"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:27:12.363436+00:00",
+    "seconds": 41.557,
+    "exitCode": 0,
+    "log": "helper-production.log"
+  },
+  {
+    "file": "host-evidence-tests-final.json",
+    "name": "host-evidence-tests-final",
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "packages/desktop/test/normalHostCandidateAssembly.test.ts",
+      "packages/desktop/test/normalHostCandidateProfile.test.ts",
+      "packages/desktop/test/cuaNarrowAgentRuntime.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:57:46.006899+00:00",
+    "seconds": 3.093,
+    "exitCode": 0,
+    "log": "host-evidence-tests-final.log"
+  },
+  {
+    "file": "host-tests-final.json",
+    "name": "host-tests-final",
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "packages/desktop/test/cuaNarrowAgentRuntime.test.ts",
+      "packages/desktop/test/normalHostCandidateProfile.test.ts",
+      "packages/desktop/test/normalHostCandidateAssembly.test.ts",
+      "packages/desktop/test/desktopRuntimeEnv.test.ts",
+      "packages/services/test/nativeRuntimeStartupProfile.test.ts",
+      "packages/services/test/zcodeAgentProcessManager.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:31:45.724599+00:00",
+    "seconds": 47.174,
+    "exitCode": 0,
+    "log": "host-tests-final.log"
+  },
+  {
+    "file": "host-tests.json",
+    "name": "host-tests",
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "packages/desktop/test/cuaNarrowAgentRuntime.test.ts",
+      "packages/desktop/test/normalHostCandidateProfile.test.ts",
+      "packages/desktop/test/normalHostCandidateAssembly.test.ts",
+      "packages/services/test/nativeRuntimeStartupProfile.test.ts",
+      "packages/services/test/zcodeAgentProcessManager.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T16:43:23.483930+00:00",
+    "seconds": 47.639,
+    "exitCode": 0,
+    "log": "host-tests.log"
+  },
+  {
+    "file": "lint-diagnostic.json",
+    "name": "lint-diagnostic",
+    "argv": [
+      "pnpm",
+      "lint"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:16:03.525715+00:00",
+    "seconds": 10.978,
+    "exitCode": 1,
+    "log": "lint-diagnostic.log"
+  },
+  {
+    "file": "lint-final.json",
+    "name": "lint-final",
+    "argv": [
+      "pnpm",
+      "lint"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:32:14.904593+00:00",
+    "seconds": 1.221,
+    "exitCode": 0,
+    "log": "lint-final.log"
+  },
+  {
+    "file": "lint-post-evidence-fix.json",
+    "name": "lint-post-evidence-fix",
+    "argv": [
+      "pnpm",
+      "lint"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:57:47.161223+00:00",
+    "seconds": 1.32,
+    "exitCode": 0,
+    "log": "lint-post-evidence-fix.log"
+  },
+  {
+    "file": "narrow-resource-tests-final.json",
+    "name": "narrow-resource-tests-final",
+    "argv": [
+      "node",
+      "--test",
+      "packages/desktop/scripts/macos-cua-narrow-resources-identity.test.mjs",
+      "packages/desktop/scripts/macos-cua-narrow-resources-build.test.mjs",
+      "packages/desktop/scripts/macos-cua-narrow-resources-bundle-args.test.mjs",
+      "packages/desktop/scripts/macos-cua-narrow-resources-manifest.test.mjs"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:33:17.369197+00:00",
+    "seconds": 0.456,
+    "exitCode": 0,
+    "log": "narrow-resource-tests-final.log"
+  },
+  {
+    "file": "normal-host-readback-build.json",
+    "name": "normal-host-readback-build",
+    "argv": [
+      "node",
+      "packages/desktop/scripts/build-cua-normal-host-candidate.mjs",
+      "--workspace-allowlist",
+      "/Users/zhvala/SourceCode/zody",
+      "--startup-snapshot",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/startup-readback-seed.json",
+      "--narrow-manifest",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-prepared-production/manifest.json",
+      "--app-shell",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-formal-production/mac-arm64/Zody Preview.app",
+      "--output",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-normal-host-readback"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:39:44.813062+00:00",
+    "seconds": 3.481,
+    "exitCode": 1,
+    "log": "normal-host-readback-build.log"
+  },
+  {
+    "file": "normal-host-source-compile-final.json",
+    "name": "normal-host-source-compile-final",
+    "argv": [
+      "node",
+      "--input-type=module",
+      "-e",
+      "import { mkdir,writeFile } from 'node:fs/promises';\nimport { resolve } from 'node:path';\nimport { getBuildMetadata } from './packages/desktop/scripts/build-metadata.mjs';\nimport { resolveDesktopProductFlavor } from './packages/desktop/scripts/desktop-product-identity.mjs';\nimport { loadBuiltinProviderConfig } from './scripts/builtin-provider-config.mjs';\nimport { createBuildTimeConfigDefines,resolveBuildTimeConfig } from './scripts/build-time-config.mjs';\nimport { DESKTOP_MAIN_ENTRYPOINTS,DESKTOP_HOST_ENTRYPOINTS,DESKTOP_SCHEDULER_ENTRYPOINTS } from './packages/desktop/scripts/lib/normal-host-candidate-config.mjs';\nimport { NORMAL_HOST_CANDIDATE_DISPLAY_NAME,createNormalHostNarrowProfile } from './packages/desktop/scripts/lib/normal-host-candidate-profile.mjs';\nimport { buildEntryGroup,sourceDefines } from './packages/desktop/scripts/lib/normal-host-candidate-build.mjs';\nimport { writeNormalHostBuildEvidence } from './packages/desktop/scripts/lib/normal-host-candidate-evidence.mjs';\nconst root=process.cwd(), output=resolve('output/cua-arm64-screenshot/controller-normal-host-source-compile');\nawait mkdir(output,{recursive:true});\nconst {environment}=await loadBuiltinProviderConfig({root});\nconst prepared=await createNormalHostNarrowProfile({narrowManifest:resolve('output/cua-arm64-screenshot/controller-prepared-production/manifest.json'),workspaceAllowlist:[root],startupSnapshot:resolve('output/cua-arm64-screenshot/startup-readback-seed.json'),testedMacOSVersion:'26.6.2'});\nconst shared=sourceDefines({buildMetadata:getBuildMetadata(),environment,productFlavor:resolveDesktopProductFlavor({...process.env,ZCODE_ENV:environment}),buildTimeDefines:createBuildTimeConfigDefines(await resolveBuildTimeConfig(process.env))});\nconst groups=[\n{name:'main',entryPoints:DESKTOP_MAIN_ENTRYPOINTS,defines:{...shared,__ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__:'undefined',__ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__:JSON.stringify(NORMAL_HOST_CANDIDATE_DISPLAY_NAME)}},\n{name:'host',entryPoints:DESKTOP_HOST_ENTRYPOINTS,defines:{...shared,__ZCODE_CUA_NARROW_AGENT__:JSON.stringify(prepared.profile)}},\n{name:'scheduler',entryPoints:DESKTOP_SCHEDULER_ENTRYPOINTS,defines:shared}];\nconst builds=[];\nfor(const group of groups){const result=await buildEntryGroup({...group,outDir:output,minify:true});if(result.errors.length) throw new Error('build errors');builds.push({name:group.name,metafile:result.metafile,defines:result.defines});}\nconst evidence=await writeNormalHostBuildEvidence({evidenceDir:resolve(output,'build-evidence'),builds});\nawait writeFile(resolve(output,'compile-result.json'),JSON.stringify({compiled:true,appAssembled:false,launched:false,profile:'synthetic readback-only; zero digests; not runtime eligibility',inputsSha256:evidence.inputsSha256},null,2)+'\\n');\nconsole.log(JSON.stringify({compiled:true,appAssembled:false,inputsSha256:evidence.inputsSha256}));\n"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:57:44.902832+00:00",
+    "seconds": 1.167,
+    "exitCode": 0,
+    "log": "normal-host-source-compile-final.log"
+  },
+  {
+    "file": "normal-host-source-compile.json",
+    "name": "normal-host-source-compile",
+    "argv": [
+      "node",
+      "--input-type=module",
+      "-e",
+      "import { mkdir,writeFile } from 'node:fs/promises';\nimport { resolve } from 'node:path';\nimport { getBuildMetadata } from './packages/desktop/scripts/build-metadata.mjs';\nimport { resolveDesktopProductFlavor } from './packages/desktop/scripts/desktop-product-identity.mjs';\nimport { loadBuiltinProviderConfig } from './scripts/builtin-provider-config.mjs';\nimport { createBuildTimeConfigDefines,resolveBuildTimeConfig } from './scripts/build-time-config.mjs';\nimport { DESKTOP_MAIN_ENTRYPOINTS,DESKTOP_HOST_ENTRYPOINTS,DESKTOP_SCHEDULER_ENTRYPOINTS } from './packages/desktop/scripts/lib/normal-host-candidate-config.mjs';\nimport { NORMAL_HOST_CANDIDATE_DISPLAY_NAME,createNormalHostNarrowProfile } from './packages/desktop/scripts/lib/normal-host-candidate-profile.mjs';\nimport { buildEntryGroup,sourceDefines } from './packages/desktop/scripts/lib/normal-host-candidate-build.mjs';\nimport { writeNormalHostBuildEvidence } from './packages/desktop/scripts/lib/normal-host-candidate-evidence.mjs';\nconst root=process.cwd(), output=resolve('output/cua-arm64-screenshot/controller-normal-host-source-compile');\nawait mkdir(output,{recursive:true});\nconst {environment}=await loadBuiltinProviderConfig({root});\nconst prepared=await createNormalHostNarrowProfile({narrowManifest:resolve('output/cua-arm64-screenshot/controller-prepared-production/manifest.json'),workspaceAllowlist:[root],startupSnapshot:resolve('output/cua-arm64-screenshot/startup-readback-seed.json'),testedMacOSVersion:'26.6.2'});\nconst shared=sourceDefines({buildMetadata:getBuildMetadata(),environment,productFlavor:resolveDesktopProductFlavor({...process.env,ZCODE_ENV:environment}),buildTimeDefines:createBuildTimeConfigDefines(await resolveBuildTimeConfig(process.env))});\nconst groups=[\n{name:'main',entryPoints:DESKTOP_MAIN_ENTRYPOINTS,defines:{...shared,__ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__:'undefined',__ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__:JSON.stringify(NORMAL_HOST_CANDIDATE_DISPLAY_NAME)}},\n{name:'host',entryPoints:DESKTOP_HOST_ENTRYPOINTS,defines:{...shared,__ZCODE_CUA_NARROW_AGENT__:JSON.stringify(prepared.profile)}},\n{name:'scheduler',entryPoints:DESKTOP_SCHEDULER_ENTRYPOINTS,defines:shared}];\nconst builds=[];\nfor(const group of groups){const result=await buildEntryGroup({...group,outDir:output,minify:true});if(result.errors.length) throw new Error('build errors');builds.push({name:group.name,metafile:result.metafile});}\nconst evidence=await writeNormalHostBuildEvidence({evidenceDir:resolve(output,'build-evidence'),builds});\nawait writeFile(resolve(output,'compile-result.json'),JSON.stringify({compiled:true,appAssembled:false,launched:false,profile:'synthetic readback-only; zero digests; not runtime eligibility',inputsSha256:evidence.inputsSha256},null,2)+'\\n');\nconsole.log(JSON.stringify({compiled:true,appAssembled:false,inputsSha256:evidence.inputsSha256}));\n"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:53:33.287670+00:00",
+    "seconds": 1.016,
+    "exitCode": 1,
+    "log": "normal-host-source-compile.log"
+  },
+  {
+    "file": "prepare-narrow-diagnostic.json",
+    "name": "prepare-narrow-diagnostic",
+    "argv": [
+      "node",
+      "packages/desktop/scripts/macos-cua-narrow-resources-prepare.mjs",
+      "--app",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-signed-diagnostic/Zody CUA Desktop Session.app",
+      "--native-build-manifest",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-helper-diagnostic/build/build-manifest.json",
+      "--output",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-prepared-diagnostic"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:30:13.947464+00:00",
+    "seconds": 3.627,
+    "exitCode": 0,
+    "log": "prepare-narrow-diagnostic.log"
+  },
+  {
+    "file": "prepare-narrow-production.json",
+    "name": "prepare-narrow-production",
+    "argv": [
+      "node",
+      "packages/desktop/scripts/macos-cua-narrow-resources-prepare.mjs",
+      "--app",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-signed-production/Zody CUA Desktop Session.app",
+      "--native-build-manifest",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-helper-production/build/build-manifest.json",
+      "--output",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-prepared-production"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:28:39.767933+00:00",
+    "seconds": 3.473,
+    "exitCode": 0,
+    "log": "prepare-narrow-production.log"
+  },
+  {
+    "file": "sign-helper-diagnostic.json",
+    "name": "sign-helper-diagnostic",
+    "argv": [
+      "/usr/bin/codesign",
+      "--force",
+      "--sign",
+      "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+      "--identifier",
+      "io.github.zclaudia.zody.cua-helper",
+      "--options",
+      "runtime",
+      "--timestamp=none",
+      "--requirements",
+      "=designated => identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-signed-diagnostic/Zody CUA Desktop Session.app"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:29:18.245343+00:00",
+    "seconds": 2.388,
+    "exitCode": 0,
+    "log": "sign-helper-diagnostic.log"
+  },
+  {
+    "file": "sign-helper-production.json",
+    "name": "sign-helper-production",
+    "argv": [
+      "/usr/bin/codesign",
+      "--force",
+      "--sign",
+      "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+      "--identifier",
+      "io.github.zclaudia.zody.cua-helper",
+      "--options",
+      "runtime",
+      "--timestamp=none",
+      "--requirements",
+      "=designated => identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-signed-production/Zody CUA Desktop Session.app"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:28:27.931513+00:00",
+    "seconds": 1.461,
+    "exitCode": 0,
+    "log": "sign-helper-production.log"
+  },
+  {
+    "file": "stop-source-patches.json",
+    "name": "stop-source-patches",
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "packages/desktop/test/stopDesktopSessionSourcePatches.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T16:19:51.599000+00:00",
+    "seconds": 1.302,
+    "exitCode": 0,
+    "log": "stop-source-patches.log"
+  },
+  {
+    "file": "stop-tool-tests-recovered.json",
+    "name": "stop-tool-tests-recovered",
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "packages/desktop/test/stopDesktopSessionSourcePatches.test.ts",
+      "packages/desktop/test/stopDesktopStopVisualBuild.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:14:33.289180+00:00",
+    "seconds": 1.657,
+    "exitCode": 0,
+    "log": "stop-tool-tests-recovered.log"
+  },
+  {
+    "file": "stop-tool-tests.json",
+    "name": "stop-tool-tests",
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "packages/desktop/test/stopDesktopSessionSourcePatches.test.ts",
+      "packages/desktop/test/stopDesktopStopVisualBuild.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T16:55:56.987956+00:00",
+    "seconds": 62.97,
+    "exitCode": 1,
+    "log": "stop-tool-tests.log"
+  },
+  {
+    "file": "stop-tools-final.json",
+    "name": "stop-tools-final",
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "packages/desktop/test/stopDesktopSessionSourcePatches.test.ts",
+      "packages/desktop/test/stopDesktopStopVisualBuild.test.ts"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:26:40.508819+00:00",
+    "seconds": 1.187,
+    "exitCode": 0,
+    "log": "stop-tools-final.log"
+  },
+  {
+    "file": "suspended-node-negative.json",
+    "name": "suspended-node-negative",
+    "argv": [
+      "output/cua-arm64-screenshot/suspended-node-probe/suspended-node-probe",
+      "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/suspended-node-probe/negative-marker",
+      "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/identity-pins.json"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T15:53:28.123637+00:00",
+    "seconds": 0.029,
+    "exitCode": 2,
+    "log": "suspended-node-negative.log"
+  },
+  {
+    "file": "suspended-node-positive.json",
+    "name": "suspended-node-positive",
+    "argv": [
+      "output/cua-arm64-screenshot/suspended-node-probe/run-positive.sh"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T15:53:26.682227+00:00",
+    "seconds": 1.377,
+    "exitCode": 0,
+    "log": "suspended-node-positive.log"
+  },
+  {
+    "file": "typecheck-final.json",
+    "name": "typecheck-final",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:33:17.910523+00:00",
+    "seconds": 4.502,
+    "exitCode": 0,
+    "log": "typecheck-final.log"
+  },
+  {
+    "file": "typecheck-post-evidence-fix.json",
+    "name": "typecheck-post-evidence-fix",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:57:48.371045+00:00",
+    "seconds": 2.657,
+    "exitCode": 0,
+    "log": "typecheck-post-evidence-fix.log"
+  },
+  {
+    "file": "typecheck.json",
+    "name": "typecheck",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T17:21:48.407916+00:00",
+    "seconds": 5.095,
+    "exitCode": 0,
+    "log": "typecheck.log"
+  },
+  {
+    "file": "visual-diagnostic.json",
+    "name": "visual-diagnostic",
+    "argv": [
+      "node",
+      "packages/desktop/scripts/build-cua-desktop-stop-visual.mjs",
+      "--profile",
+      "diagnostic",
+      "--output-root",
+      "output/cua-arm64-screenshot/controller-visual-diagnostic",
+      "--rust-tests",
+      "--skip-native-harness"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T16:55:56.987956+00:00",
+    "seconds": 192.534,
+    "exitCode": 0,
+    "log": "visual-diagnostic.log"
+  },
+  {
+    "file": "visual-production.json",
+    "name": "visual-production",
+    "argv": [
+      "node",
+      "packages/desktop/scripts/build-cua-desktop-stop-visual.mjs",
+      "--profile",
+      "production",
+      "--output-root",
+      "output/cua-arm64-screenshot/controller-visual-production",
+      "--rust-tests"
+    ],
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "startedAt": "2026-10-30T16:55:56.987957+00:00",
+    "seconds": 199.544,
+    "exitCode": 0,
+    "log": "visual-production.log"
+  }
+]

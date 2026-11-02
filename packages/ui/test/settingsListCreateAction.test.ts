@@ -25,7 +25,7 @@ describe("settings list create actions", () => {
 
     expect(action).toContain('variant="default"');
     expect(action).toContain('size="default"');
-    expect(action).toContain('className="rounded-lg"');
+    expect(action).toContain('className={cn("rounded-lg", SETTINGS_TOUCH_MIN_H_11_CLASS)}');
     expect(action).toContain('<Plus data-icon="inline-start"');
     expect(action).toContain("aria-label={newLabel}");
     expect(source).toContain('id: "settings.create.action"');

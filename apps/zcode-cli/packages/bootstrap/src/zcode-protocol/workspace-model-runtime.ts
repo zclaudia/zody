@@ -2,6 +2,7 @@
 import { createInMemorySessionEventStore } from "@zcode/adapters/storage";
 import type { ModelSelection } from "@zcode/contracts";
 import {
+  isRemoteWorkspaceIdentity,
   zcodeProviderTestModelConnectivityParamsSchema,
   zcodeWorkspaceReadPresentationParamsSchema,
   type ZCodeWorkspaceRef,
@@ -71,10 +72,24 @@ export async function createWorkspaceZCodeApp(
   workspace: ZCodeWorkspaceRef,
   options: Omit<ZCodeAppOptions, "providerRegistry">,
 ): Promise<ZCodeApp> {
+  // 只接受本进程 startup 帧固定下来的 Host/runtime 身份；调用方 options 的同名字段一律丢弃。
+  const { cuaLaunchIdentity: _untrustedLaunchIdentity, ...trustedOptions } = options;
+  const workspaceIdentity = workspace.workspaceIdentity?.trim();
+  const workspaceKey = workspaceIdentity || workspace.workspacePath;
+  const localTopLevel =
+    !workspace.remoteSessionId &&
+    !(workspaceIdentity && isRemoteWorkspaceIdentity(workspaceIdentity)) &&
+    options.runtimeConfig?.parentSessionId === undefined &&
+    options.sessionId !== undefined;
+  const cuaLaunchIdentity =
+    context.cuaLaunchIdentity && localTopLevel
+      ? { ...context.cuaLaunchIdentity, workspaceKey }
+      : undefined;
   const providerRuntimeHeadersPort =
     options.providerRuntimeHeadersPort ?? createProviderRuntimeHeadersPort(context, workspace);
   return context.deps.createZCodeApp({
-    ...options,
+    ...trustedOptions,
+    ...(cuaLaunchIdentity ? { cuaLaunchIdentity } : {}),
     includeVisualize: true,
     platform: context.deps.platform,
     providerRuntimeHeadersPort,

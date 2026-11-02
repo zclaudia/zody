@@ -1,0 +1,4722 @@
+--- opening/apps/zcode-cli/packages/bootstrap/tests/cua-node-repl-mcp-port-wiring.test.ts
++++ source/apps/zcode-cli/packages/bootstrap/tests/cua-node-repl-mcp-port-wiring.test.ts
+@@ -1,4 +1,4 @@
+-import { mkdtemp, rm, writeFile } from "node:fs/promises";
++import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+ import { tmpdir } from "node:os";
+ import { join, resolve } from "node:path";
+ import { createSqliteSessionStore } from "@zcode/adapters/storage";
+@@ -10,6 +10,11 @@
+ import { createRegistryBackedTestApp } from "./helpers/registry-backed-test-app.js";
+ 
+ const roots: string[] = [];
++const NODE_REPL_SERVER_PATH = resolve(
++  import.meta.dirname,
++  "../../node-repl-host/dist/mcp/server.js",
++);
++const NODE_REPL_SERVER_SNAPSHOT = await readFile(NODE_REPL_SERVER_PATH, "utf8");
+ 
+ afterEach(async () => {
+   await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
+@@ -110,7 +115,8 @@
+         captureRoot: root,
+       },
+       cuaNodeReplMcpPortFactory: createCuaNodeReplMcpPortFactory({
+-        serverPath: resolve(import.meta.dirname, "../../node-repl-host/dist/mcp/server.js"),
++        serverPath: NODE_REPL_SERVER_PATH,
++        sourceSnapshot: NODE_REPL_SERVER_SNAPSHOT,
+       }),
+       cwd: root,
+       env: { HOME: root, ZCODE_STORAGE_DIR: root },
+@@ -153,7 +159,8 @@
+     const sessionStore = createSqliteSessionStore({ dbPath: ":memory:" });
+     const app = await createRegistryBackedTestApp({
+       cuaNodeReplMcpPortFactory: createCuaNodeReplMcpPortFactory({
+-        serverPath: resolve(import.meta.dirname, "../../node-repl-host/dist/mcp/server.js"),
++        serverPath: NODE_REPL_SERVER_PATH,
++        sourceSnapshot: NODE_REPL_SERVER_SNAPSHOT,
+       }),
+       cwd: root,
+       env: { HOME: root, ZCODE_STORAGE_DIR: root },
+@@ -203,7 +210,8 @@
+         captureRoot: root,
+       },
+       cuaNodeReplMcpPortFactory: createCuaNodeReplMcpPortFactory({
+-        serverPath: resolve(import.meta.dirname, "../../node-repl-host/dist/mcp/server.js"),
++        serverPath: NODE_REPL_SERVER_PATH,
++        sourceSnapshot: NODE_REPL_SERVER_SNAPSHOT,
+       }),
+       cwd: root,
+       env: { HOME: root, ZCODE_STORAGE_DIR: root },
+--- opening/apps/zcode-cli/packages/node-repl-host/package.json
++++ source/apps/zcode-cli/packages/node-repl-host/package.json
+@@ -11,6 +11,7 @@
+     "./cua-broker": "./src/cua-broker.ts",
+     "./cua-capture-runtime": "./src/cua-capture-runtime.ts",
+     "./cua-node-repl-mcp-port": "./src/cua-node-repl-mcp-port.ts",
++    "./sealed-resource": "./src/sealed-resource.ts",
+     "./result": "./src/result.ts",
+     "./tool-contract": "./src/tool-contract.ts",
+     "./runtime-bridge": "./src/runtime-bridge.ts",
+--- opening/apps/zcode-cli/packages/node-repl-host/src/cell-child-transport.ts
++++ source/apps/zcode-cli/packages/node-repl-host/src/cell-child-transport.ts
+@@ -18,6 +18,87 @@
+   request: CellRequest;
+   responseMaxBytes: number;
+   signal: AbortSignal;
++  /** 可信 composition 已校验的 server 源码；只经私有 stdin 传送，不进 argv/env。 */
++  stdinSource?: string;
++}
++
++export interface CellSourceWriter {
++  readonly stream: Writable;
++  readonly source: string;
++  /** 已取消、已退出或已有传输错误时不再继续写。 */
++  isUnavailable(): boolean;
++  onError(error: unknown): void;
++}
++
++/**
++ * 把已核验源码快照写入 cell 的私有 stdin，并收口 backpressure/error/close。
++ *
++ * 独立导出是为了用可控 Writable 确定性覆盖 backpressure、error、abort 和提前 close；
++ * 生产路径只由 runCellChild 调用。写入结束时不删除 error 监听，等 close 再清理，
++ * 避免 EPIPE 在 end 后变成未处理异常。
++ */
++export function writeCellSource(input: CellSourceWriter): void {
++  const stdin = input.stream;
++  let ended = false;
++  let failed = false;
++
++  const fail = (error: unknown) => {
++    if (failed) return;
++    failed = true;
++    input.onError(error);
++  };
++  const cleanup = () => {
++    stdin.off("error", onError);
++    stdin.off("drain", onDrain);
++    stdin.off("close", onClose);
++  };
++  const end = () => {
++    if (ended || failed) return;
++    ended = true;
++    try {
++      stdin.end();
++    } catch (error) {
++      fail(error);
++    }
++  };
++  const onError = (error: unknown) => {
++    fail(error);
++  };
++  const onClose = () => {
++    cleanup();
++    if (!ended) {
++      fail(new Error("node_repl cell stdin closed before the source snapshot was sent"));
++    }
++  };
++  const onDrain = () => {
++    stdin.off("drain", onDrain);
++    if (failed || ended) return;
++    if (input.isUnavailable()) {
++      fail(new Error("node_repl cell source snapshot write was cancelled"));
++      stdin.destroy();
++      return;
++    }
++    end();
++  };
++
++  if (input.isUnavailable()) {
++    fail(new Error("node_repl cell source snapshot write was cancelled"));
++    stdin.destroy();
++    return;
++  }
++
++  stdin.on("error", onError);
++  stdin.once("close", onClose);
++  try {
++    if (!stdin.write(input.source, "utf8")) {
++      stdin.once("drain", onDrain);
++    } else {
++      end();
++    }
++  } catch (error) {
++    fail(error);
++    stdin.destroy();
++  }
+ }
+ 
+ /**
+@@ -34,7 +115,8 @@
+     const child = spawn(input.command, input.args, {
+       cwd: input.cwd,
+       env: input.env,
+-      stdio: ["ignore", "pipe", "pipe", "pipe", "pipe"],
++      // 普通路径 cell 保持 stdin=ignore；只有携带已核验快照时才启用私有 stdin 管道。
++      stdio: [input.stdinSource === undefined ? "ignore" : "pipe", "pipe", "pipe", "pipe", "pipe"],
+       windowsHide: true,
+     });
+     let settled = false;
+@@ -68,6 +150,7 @@
+     };
+     const closeOwnedPipes = () => {
+       // 直接 child 已退出；后代可能继承 fd4/stdout 并无限持有，父端必须主动收口。
++      child.stdin?.destroy();
+       (child.stdio[3] as Writable | null | undefined)?.destroy();
+       (child.stdio[4] as Readable | null | undefined)?.destroy();
+       child.stdout?.destroy();
+@@ -180,6 +263,23 @@
+         settle(transportError ?? new Error("node_repl cell failed to spawn"));
+       }
+     });
++
++    if (input.stdinSource !== undefined) {
++      if (!child.stdin) {
++        recordTransportError(new Error("node_repl cell source snapshot pipe is unavailable"));
++      } else {
++        writeCellSource({
++          stream: child.stdin,
++          source: input.stdinSource,
++          isUnavailable: () =>
++            settled ||
++            directExited ||
++            abortReason !== undefined ||
++            transportError !== undefined,
++          onError: recordTransportError,
++        });
++      }
++    }
+ 
+     const requestStream = child.stdio[3] as Writable | null | undefined;
+     if (!requestStream) {
+--- opening/apps/zcode-cli/packages/node-repl-host/src/cua-node-repl-mcp-port.ts
++++ source/apps/zcode-cli/packages/node-repl-host/src/cua-node-repl-mcp-port.ts
+@@ -19,6 +19,7 @@
+   type CuaCaptureImageResult,
+   type CuaCaptureTarget,
+ } from "./cua-capture-runtime.js";
++import { CELL_RUN_FLAG } from "./cell-protocol.js";
+ import { createNodeReplMcpRuntime } from "./node-repl-mcp-runtime.js";
+ import {
+   createSubprocessNodeReplExecutor,
+@@ -46,8 +47,14 @@
+   ): Promise<CuaCaptureImageResult>;
+   /** app 是否拥有原端口；true 时 wrapper.close 一并关闭原端口。 */
+   readonly closePort: boolean;
+-  /** 已打包的 node-repl server bundle；必须由可信 composition 显式提供。 */
++  /** 已打包的 node-repl server bundle 固定资源名；只作诊断，不作为执行路径。 */
+   readonly serverPath: string;
++  /**
++   * 已由可信 composition 在同一句柄校验并解码的 server 源码快照。
++   *
++   * CUA factory 必须提供；缺失直接失败，绝不退回 serverPath 重新打开执行。
++   */
++  readonly sourceSnapshot: string;
+   readonly cwd?: string;
+   readonly env?: NodeJS.ProcessEnv;
+   readonly logger?: Logger;
+@@ -59,7 +66,7 @@
+    */
+   readonly subprocess?: Omit<
+     SubprocessNodeReplExecutorOptions,
+-    "serverPath" | "launch" | "isSea" | "jitless"
++    "serverPath" | "sourceSnapshot" | "launch" | "isSea" | "jitless"
+   >;
+   /** 可选沿用宿主已有的 node_repl browser broker；不影响 CUA capture 的信任边界。 */
+   readonly browserBroker?: { readonly socketPath: string; readonly token: string };
+@@ -88,10 +95,38 @@
+  * node_repl 的 js 仍由 createNodeReplMcpRuntime 的真实工具合同执行，执行器强制走
+  * createSubprocessNodeReplExecutor（独立 cell），不在可信 CLI 进程内跑模型代码。
+  */
++const FORBIDDEN_SUBPROCESS_OVERRIDES = [
++  "launch",
++  "serverPath",
++  "sourceSnapshot",
++  "isSea",
++  "jitless",
++] as const;
++
++/**
++ * TypeScript 的 Omit 只约束正常调用方；这里再做运行时拒绝，防止 JS/动态输入通过
++ * subprocess 覆盖已校验快照或换用另一条启动形状。
++ */
++function assertNoSubprocessOverrides(subprocess: object | undefined): void {
++  if (!subprocess) return;
++  for (const key of FORBIDDEN_SUBPROCESS_OVERRIDES) {
++    if (Object.prototype.hasOwnProperty.call(subprocess, key)) {
++      throw new Error(`cua_node_repl_subprocess_override_forbidden:${key}`);
++    }
++  }
++}
++
+ export function createCuaNodeReplMcpPort(input: CuaNodeReplMcpPortInput): McpPort {
+   if (!input.serverPath) {
+     throw new Error("cua_node_repl_server_path_required");
+   }
++  // 构造时一次性校验并捕获快照。createLocal 是懒加载的，不能等后来再读可变 input；
++  // 否则调用方在构造后改写 input.sourceSnapshot 就能让后续 cell 执行另一份内容。
++  const sourceSnapshot = input.sourceSnapshot;
++  if (typeof sourceSnapshot !== "string" || sourceSnapshot.length === 0) {
++    throw new Error("cua_node_repl_source_snapshot_required");
++  }
++  assertNoSubprocessOverrides(input.subprocess);
+   if (isSeaRuntime()) {
+     // 本候选只服务固定签名 Node；SEA 无法通过 argv 关闭 JIT，显式拒绝而不是改普通默认。
+     throw new Error("cua_node_repl_jitless_requires_non_sea");
+@@ -121,6 +156,7 @@
+       executeJs: createSubprocessNodeReplExecutor({
+         ...input.subprocess,
+         serverPath: input.serverPath,
++        sourceSnapshot,
+         jitless: true,
+         ...(input.cwd ? { cwd: input.cwd } : {}),
+         ...(input.env ? { env: input.env } : {}),
+@@ -443,13 +479,25 @@
+   if (isSeaRuntime()) {
+     throw new Error("cua_node_repl_jitless_requires_non_sea");
+   }
++  if (!options.serverPath) {
++    throw new Error("cua_node_repl_server_path_required");
++  }
++  // factory 也必须在构造期捕获快照。它返回的 factory 可能在很久之后、甚至在调用方
++  // 改写 options 之后才被调用；后续只允许使用这里冻结的 sourceSnapshot。
++  const sourceSnapshot = options.sourceSnapshot;
++  if (typeof sourceSnapshot !== "string" || sourceSnapshot.length === 0) {
++    throw new Error("cua_node_repl_source_snapshot_required");
++  }
++  const serverPath = options.serverPath;
++  assertNoSubprocessOverrides(options.subprocess);
+   // 该配置不会交给 base MCP 端口：wrapper 会从 servers 中摘掉 node_repl 后只做本地
+-  // in-memory server 接线。这里保留真实 command/args 形状，便于状态面和诊断准确。
++  // in-memory server 接线。descriptor 如实表示 stdin ESM 快照启动，不留下可执行 path；
++  // 已核验 source 只经子进程私有 stdin，绝不进入 descriptor。
+   const toolTimeoutMs = resolveBoundedToolTimeoutMs(options.timeoutMs);
+   const localServerConfig: McpServerConfig = {
+     type: "stdio",
+     command: process.execPath,
+-    args: [options.serverPath],
++    args: ["--jitless", "--input-type=module", "-", CELL_RUN_FLAG],
+     ...(options.cwd ? { cwd: options.cwd } : {}),
+     ...(options.env
+       ? {
+@@ -467,6 +515,8 @@
+   const factory = ((input) =>
+     createCuaNodeReplMcpPort({
+       ...options,
++      serverPath,
++      sourceSnapshot,
+       timeoutMs: toolTimeoutMs,
+       port: input.port,
+       captureOnce: input.captureOnce,
+@@ -533,3 +583,11 @@
+     ...(result._meta ? { _meta: result._meta } : {}),
+   };
+ }
++
++export {
++  decodeUtf8Lossless,
++  readBoundedBytes,
++  readSealedResourceSnapshot,
++  type ReadSealedResourceOptions,
++  type SealedResourceSnapshot,
++} from "./sealed-resource.js";
+--- /dev/null
++++ source/apps/zcode-cli/packages/node-repl-host/src/sealed-resource.ts
+@@ -0,0 +1,146 @@
++import { createHash } from "node:crypto";
++import { constants as fsConstants } from "node:fs";
++import { open } from "node:fs/promises";
++
++const DEFAULT_CHUNK_BYTES = 64 * 1024;
++const SHA256_PATTERN = /^[0-9a-f]{64}$/u;
++
++export interface ReadSealedResourceOptions {
++  /** 固定同级资源名解析出的路径；只在打开时使用，校验后不再按路径执行。 */
++  path: string;
++  /** 封装构建钉住的原始字节 SHA-256（小写十六进制）。 */
++  expectedSha256: string;
++  /** 封装构建给出的资源字节上限。 */
++  maxBytes: number;
++  /** 所有权校验的期望 uid；默认取当前进程 uid。 */
++  expectedUid?: number;
++}
++
++export interface SealedResourceSnapshot {
++  /** 与已核验原始字节一一对应的 UTF-8 内容；字符串本身不可变。 */
++  readonly source: string;
++  readonly sha256: string;
++  readonly size: number;
++}
++
++/**
++ * 在同一个 O_NOFOLLOW 句柄上有界读取固定资源，校验元数据、上限、摘要和 UTF-8 无损性。
++ *
++ * 返回的 source 是同一份已核验字节的解码结果；调用方之后不得再按 path 打开执行。
++ * 读取期间文件即使增长，也会在超过 maxBytes 时拒绝，而不是继续读入更多内容。
++ */
++export async function readSealedResourceSnapshot(
++  options: ReadSealedResourceOptions,
++): Promise<SealedResourceSnapshot> {
++  // 在首个 await 前冻结本次校验输入；调用方之后即使改写 options 对象，也不能让
++  // open/read 期间的预期摘要、上限、路径或 owner 漂移。这不是新的授权状态。
++  const path = options.path;
++  const expectedSha256 = options.expectedSha256;
++  const maxBytes = options.maxBytes;
++  const expectedUid = options.expectedUid ?? process.getuid?.();
++
++  if (expectedUid === undefined) {
++    throw new Error("cua_node_repl_server_owner_check_unavailable");
++  }
++  if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0) {
++    throw new Error("cua_node_repl_server_size_limit_invalid");
++  }
++  if (!SHA256_PATTERN.test(expectedSha256)) {
++    throw new Error("cua_node_repl_server_sha_invalid");
++  }
++
++  let handle: Awaited<ReturnType<typeof open>>;
++  try {
++    // O_NONBLOCK 只为避免路径在校验前被换成 FIFO 时 open 挂起；后续 fstat 仍要求
++    // regular file，普通文件的 read 语义不受影响。
++    handle = await open(
++      path,
++      fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW | fsConstants.O_NONBLOCK,
++    );
++  } catch (error) {
++    throw new Error("cua_node_repl_server_open_failed", { cause: error });
++  }
++
++  try {
++    const info = await handle.stat();
++    if (!info.isFile()) throw new Error("cua_node_repl_server_not_regular");
++    if (info.uid !== expectedUid) throw new Error("cua_node_repl_server_owner_mismatch");
++    if ((info.mode & 0o022) !== 0) throw new Error("cua_node_repl_server_writable");
++    if (info.size <= 0 || info.size > maxBytes) {
++      throw new Error("cua_node_repl_server_size_out_of_bounds");
++    }
++
++    const bytes = await readBoundedBytes(
++      async (buffer) => {
++        const { bytesRead } = await handle.read(buffer, 0, buffer.length, null);
++        return bytesRead;
++      },
++      maxBytes,
++    );
++    if (bytes.length === 0) {
++      throw new Error("cua_node_repl_server_size_out_of_bounds");
++    }
++
++    const sha256 = createHash("sha256").update(bytes).digest("hex");
++    if (sha256 !== expectedSha256) {
++      throw new Error("cua_node_repl_server_sha_mismatch");
++    }
++    const source = decodeUtf8Lossless(bytes);
++    return Object.freeze({ source, sha256, size: bytes.length });
++  } finally {
++    await handle.close().catch(() => undefined);
++  }
++}
++
++/**
++ * 有界读取：最多读 maxBytes + 1 字节，超过 maxBytes 立即失败。
++ *
++ * 独立导出是为了用可控 reader 确定性覆盖“读取期间增长”；生产路径只传入同一句柄的 read。
++ */
++export async function readBoundedBytes(
++  readChunk: (buffer: Buffer) => Promise<number>,
++  maxBytes: number,
++  chunkBytes = DEFAULT_CHUNK_BYTES,
++): Promise<Buffer> {
++  if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0) {
++    throw new Error("cua_node_repl_server_size_limit_invalid");
++  }
++  if (!Number.isSafeInteger(chunkBytes) || chunkBytes <= 0) {
++    throw new Error("cua_node_repl_server_chunk_invalid");
++  }
++
++  const limit = maxBytes + 1;
++  const chunks: Buffer[] = [];
++  let total = 0;
++  while (total < limit) {
++    const buffer = Buffer.allocUnsafe(Math.min(chunkBytes, limit - total));
++    const bytesRead = await readChunk(buffer);
++    if (!Number.isInteger(bytesRead) || bytesRead < 0 || bytesRead > buffer.length) {
++      throw new Error("cua_node_repl_server_read_invalid");
++    }
++    if (bytesRead === 0) break;
++    chunks.push(buffer.subarray(0, bytesRead));
++    total += bytesRead;
++    if (total > maxBytes) {
++      throw new Error("cua_node_repl_server_size_out_of_bounds");
++    }
++  }
++  return Buffer.concat(chunks, total);
++}
++
++/**
++ * 无损 UTF-8 解码；保留 BOM，并回编码校验原始字节完全一致，避免 U+FFFD 替换后执行别的内容。
++ */
++export function decodeUtf8Lossless(bytes: Buffer): string {
++  const decoder = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
++  let source: string;
++  try {
++    source = decoder.decode(bytes);
++  } catch {
++    throw new Error("cua_node_repl_server_utf8_invalid");
++  }
++  if (!Buffer.from(source, "utf8").equals(bytes)) {
++    throw new Error("cua_node_repl_server_utf8_lossy");
++  }
++  return source;
++}
+--- opening/apps/zcode-cli/packages/node-repl-host/src/server.ts
++++ source/apps/zcode-cli/packages/node-repl-host/src/server.ts
+@@ -125,7 +125,19 @@
+     });
+ }
+ 
+-if (isMainThread && (await isDirectMcpEntrypoint(import.meta.url, process.argv[1]))) {
++// 固定 Node 以 `--input-type=module - CELL_RUN_FLAG` 从私有 stdin 接收已核验快照时，
++// argv[1] 是 "-"，import.meta.url 是 cwd/[eval1]，isDirectMcpEntrypoint 不会命中。
++// 这里只认显式 stdin+cell 模式启动 main，不把普通 import/普通直接执行入口放宽。
++const isStdinCellEntrypoint =
++  isMainThread &&
++  process.argv[1] === "-" &&
++  isCellInvocation(process.argv) &&
++  process.execArgv.includes("--input-type=module");
++
++if (
++  isMainThread &&
++  (isStdinCellEntrypoint || (await isDirectMcpEntrypoint(import.meta.url, process.argv[1])))
++) {
+   void main().catch((error) => {
+     process.stderr.write(
+       `node_repl MCP server failed: ${error instanceof Error ? error.stack : String(error)}\n`,
+--- opening/apps/zcode-cli/packages/node-repl-host/src/subprocess-executor.ts
++++ source/apps/zcode-cli/packages/node-repl-host/src/subprocess-executor.ts
+@@ -18,6 +18,7 @@
+   buildCellEnvironment,
+   isSeaRuntime,
+   resolveCellLaunch,
++  resolveCellSnapshotLaunch,
+   type CellLaunch,
+ } from "./subprocess-launch.js";
+ 
+@@ -44,6 +45,13 @@
+   launch?: CellLaunch;
+   /** 仅显式可信 composition 设置；默认保持原启动参数。 */
+   jitless?: boolean;
++  /**
++   * 已由可信 composition 在同句柄校验、解码的 node-repl server 源码快照。
++   *
++   * 提供时强制走固定 stdin ESM 入口，serverPath 只作诊断，不再打开执行；不能与 launch
++   * 注入或 SEA 组合，防止调用方用另一条启动形状绕过快照。
++   */
++  sourceSnapshot?: string;
+ }
+ 
+ /**
+@@ -60,14 +68,28 @@
+     options.env ?? process.env,
+     options.platform ?? process.platform,
+   );
++  const sourceSnapshot = options.sourceSnapshot;
++  if (sourceSnapshot !== undefined) {
++    if (typeof sourceSnapshot !== "string" || sourceSnapshot.length === 0) {
++      throw new Error("node_repl cell source snapshot is required");
++    }
++    if (options.launch !== undefined) {
++      throw new Error("node_repl cell source snapshot cannot be combined with a launch override");
++    }
++    if (options.isSea?.() ?? isSeaRuntime()) {
++      throw new Error("node_repl cell source snapshot is not supported in SEA");
++    }
++  }
+   const launch =
+-    options.launch ??
+-    resolveCellLaunch({
+-      execPath: process.execPath,
+-      serverPath: options.serverPath,
+-      sea: options.isSea?.() ?? isSeaRuntime(),
+-      ...(options.jitless === undefined ? {} : { jitless: options.jitless }),
+-    });
++    sourceSnapshot !== undefined
++      ? resolveCellSnapshotLaunch({ execPath: process.execPath })
++      : (options.launch ??
++        resolveCellLaunch({
++          execPath: process.execPath,
++          serverPath: options.serverPath,
++          sea: options.isSea?.() ?? isSeaRuntime(),
++          ...(options.jitless === undefined ? {} : { jitless: options.jitless }),
++        }));
+   const documentationRoots: CellDocumentationRoots = {
+     browser: options.documentationRoots?.browser ?? DEFAULT_BROWSER_DOCUMENTATION_ROOT,
+     cua: options.documentationRoots?.cua ?? DEFAULT_CUA_DOCUMENTATION_ROOT,
+@@ -115,6 +137,7 @@
+       request,
+       responseMaxBytes,
+       signal: input.signal,
++      ...(sourceSnapshot === undefined ? {} : { stdinSource: sourceSnapshot }),
+     });
+   };
+ }
+--- opening/apps/zcode-cli/packages/node-repl-host/src/subprocess-launch.ts
++++ source/apps/zcode-cli/packages/node-repl-host/src/subprocess-launch.ts
+@@ -4,6 +4,9 @@
+ const CELL_SCRIPT_PATTERN = /\.(?:mjs|cjs|js)$/u;
+ // 只有显式可信 composition 才要求关闭 JIT；普通 node_repl 启动保持原语义。
+ const CELL_JITLESS_FLAG = "--jitless";
++// Node 从 stdin 读取 ESM 源码的固定入口；已核验内容只经私有 stdin，不进入 argv。
++const CELL_STDIN_ENTRY = "-";
++const CELL_STDIN_INPUT_TYPE = "--input-type=module";
+ 
+ // 子进程只继承非凭据、跨平台运行所需的最小变量面；NODE_OPTIONS/NODE_PATH/inspector、
+ // ZCODE_*、Helper/token 和云凭据一律不进入 cell。
+@@ -75,6 +78,18 @@
+   };
+ }
+ 
++/**
++ * 快照 cell 的固定启动形状：execPath --jitless --input-type=module - CELL_RUN_FLAG。
++ *
++ * 源码由父进程写入 stdin；serverPath 不再参与执行，避免校验后按路径重开形成 TOCTOU。
++ */
++export function resolveCellSnapshotLaunch(input: { execPath: string }): CellLaunch {
++  return {
++    command: input.execPath,
++    args: [CELL_JITLESS_FLAG, CELL_STDIN_INPUT_TYPE, CELL_STDIN_ENTRY, CELL_RUN_FLAG],
++  };
++}
++
+ export function buildCellEnvironment(
+   source: NodeJS.ProcessEnv,
+   platform: NodeJS.Platform = process.platform,
+--- /dev/null
++++ source/apps/zcode-cli/packages/node-repl-host/test/cell-snapshot-execution.test.ts
+@@ -0,0 +1,259 @@
++import { createHash } from "node:crypto";
++import { existsSync } from "node:fs";
++import { mkdtemp, readFile, rename, rm, unlink, writeFile } from "node:fs/promises";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { fileURLToPath } from "node:url";
++import type { NodeReplRunResult } from "@zcode/core/repl";
++import { afterAll, beforeAll, describe, expect, it } from "vitest";
++import { buildNodeReplHostBundle } from "../scripts/build.mjs";
++import { CELL_RUN_FLAG } from "../src/cell-protocol.js";
++import { readSealedResourceSnapshot } from "../src/sealed-resource.js";
++import { createSubprocessNodeReplExecutor } from "../src/subprocess-executor.js";
++import { resolveCellSnapshotLaunch } from "../src/subprocess-launch.js";
++
++const packageRoot = fileURLToPath(new URL("..", import.meta.url));
++const buildTimeoutMs = 120_000;
++const requestMeta = { session_id: "snapshot-session", workspace_path: "/workspace" };
++
++function cellModule(marker: string): string {
++  return [
++    'import { createReadStream, createWriteStream } from "node:fs";',
++    'let input = "";',
++    'for await (const chunk of createReadStream("", { fd: 3, encoding: "utf8", autoClose: true })) {',
++    "  input += chunk;",
++    '  if (input.includes("\\n")) break;',
++    "}",
++    'const request = JSON.parse(input.slice(0, input.indexOf("\\n")));',
++    "const writeLine = async (line) => await new Promise((resolve) => {",
++    '  const stream = createWriteStream("", { fd: 4, autoClose: true });',
++    '  stream.once("close", resolve);',
++    "  stream.end(line);",
++    "});",
++    `await writeLine(\`\${JSON.stringify({ version: 1, invocationId: request.invocationId, ok: true, result: { logs: "", result: ${JSON.stringify(marker)} } })}\\n\`);`,
++    "process.exit(0);",
++  ].join("\n");
++}
++
++function resultText(result: NodeReplRunResult): string {
++  if (result.error) {
++    throw new Error(`cell error: ${result.error.name}: ${result.error.message}`);
++  }
++  if (result.result === undefined) {
++    throw new Error(`cell returned no result: ${JSON.stringify(result)}`);
++  }
++  return result.result;
++}
++
++async function waitForFile(path: string, timeoutMs = 5000): Promise<number> {
++  const deadline = Date.now() + timeoutMs;
++  while (Date.now() < deadline) {
++    if (existsSync(path)) {
++      const value = Number((await readFile(path, "utf8")).trim());
++      if (Number.isInteger(value) && value > 0) return value;
++    }
++    await new Promise((resolve) => setTimeout(resolve, 20));
++  }
++  throw new Error(`timed out waiting for ${path}`);
++}
++
++async function waitForDead(pid: number, timeoutMs = 3000): Promise<void> {
++  const deadline = Date.now() + timeoutMs;
++  while (Date.now() < deadline) {
++    try {
++      process.kill(pid, 0);
++    } catch {
++      return;
++    }
++    await new Promise((resolve) => setTimeout(resolve, 20));
++  }
++  throw new Error(`process ${pid} is still alive`);
++}
++
++function executeSnapshot(input: {
++  serverPath: string;
++  sourceSnapshot: string;
++  code?: string;
++  signal?: AbortSignal;
++  env?: NodeJS.ProcessEnv;
++}) {
++  return createSubprocessNodeReplExecutor({
++    serverPath: input.serverPath,
++    sourceSnapshot: input.sourceSnapshot,
++    cwd: packageRoot,
++    abortGraceMs: 100,
++    requestMaxBytes: 2 * 1024 * 1024,
++    responseMaxBytes: 32 * 1024 * 1024,
++    ...(input.env ? { env: input.env } : {}),
++  })({
++    code: input.code ?? "1 + 1",
++    requestMeta,
++    signal: input.signal ?? AbortSignal.timeout(30_000),
++    syncTimeoutMs: 20_000,
++  });
++}
++
++describe.skipIf(process.platform === "win32")("sealed cell source snapshot execution", () => {
++  let directory = "";
++  let bundlePath = "";
++  let bundleSource = "";
++
++  beforeAll(async () => {
++    directory = await mkdtemp(join(tmpdir(), "zcode-cell-snapshot-"));
++    bundlePath = join(directory, "server.mjs");
++    await buildNodeReplHostBundle({ outfile: bundlePath, cuaHelperBuildId: "" });
++    bundleSource = await readFile(bundlePath, "utf8");
++  }, buildTimeoutMs);
++
++  afterAll(async () => {
++    if (directory) await rm(directory, { force: true, recursive: true });
++  });
++
++  it("uses the fixed Node stdin ESM launch shape", () => {
++    expect(resolveCellSnapshotLaunch({ execPath: "/signed/node" })).toEqual({
++      command: "/signed/node",
++      args: ["--jitless", "--input-type=module", "-", CELL_RUN_FLAG],
++    });
++  });
++
++  it("runs the current real bundle from stdin with jitless and without source in argv/env", async () => {
++    const marker = "CUA_SNAPSHOT_MARKER_7f3d";
++    const sourceWithMarker = `${bundleSource}\n// ${marker}\n`;
++    const result = await executeSnapshot({
++      serverPath: bundlePath,
++      sourceSnapshot: sourceWithMarker,
++      code: "JSON.stringify({ argv: process.argv, execArgv: process.execArgv, env: process.env })",
++      env: {
++        PATH: process.env.PATH,
++        HOME: process.env.HOME,
++        TMPDIR: process.env.TMPDIR,
++        ZCODE_CUA_PERMISSION_BROKER_TOKEN: "synthetic-token",
++        NODE_OPTIONS: "--inspect=127.0.0.1:65531",
++      },
++    });
++    const value = JSON.parse(resultText(result)) as {
++      argv: string[];
++      execArgv: string[];
++      env: Record<string, string>;
++    };
++
++    expect(value.argv).toEqual([process.execPath, "-", CELL_RUN_FLAG]);
++    expect(value.execArgv).toEqual(["--jitless", "--input-type=module"]);
++    expect(Object.keys(value.env).filter((key) => key.startsWith("ZCODE_"))).toEqual([]);
++    expect(value.env.NODE_OPTIONS).toBeUndefined();
++    expect(JSON.stringify(value)).not.toContain(marker);
++  }, 60_000);
++
++  it("aborts a real stdin snapshot cell that never returns", async () => {
++    const pidFile = join(directory, "snapshot-abort.pid");
++    const controller = new AbortController();
++    const execution = executeSnapshot({
++      serverPath: bundlePath,
++      sourceSnapshot: bundleSource,
++      code: [
++        'const fs = await import("node:fs");',
++        `fs.writeFileSync(${JSON.stringify(pidFile)}, String(process.pid));`,
++        "await new Promise((resolve) => setTimeout(resolve, 60000));",
++      ].join("\n"),
++      signal: controller.signal,
++    });
++    const outcome = execution.then(
++      () => undefined,
++      (error: unknown) => error,
++    );
++    const pid = await waitForFile(pidFile);
++    controller.abort(new Error("snapshot abort"));
++    await expect(outcome).resolves.toMatchObject({ message: "snapshot abort" });
++    await waitForDead(pid);
++  }, 15_000);
++
++  it("demonstrates the opening path launch executing replaced bytes after verification", async () => {
++    const path = join(directory, "path-launch.mjs");
++    await writeFile(path, cellModule("ORIGINAL"), "utf8");
++    const verified = await readSealedResourceSnapshot({
++      path,
++      expectedSha256: createHash("sha256").update(cellModule("ORIGINAL")).digest("hex"),
++      maxBytes: 64 * 1024,
++      expectedUid: process.getuid?.(),
++    });
++    expect(verified.source).toContain("ORIGINAL");
++    await writeFile(path, cellModule("MUTATED"), "utf8");
++
++    const pathExecutor = createSubprocessNodeReplExecutor({
++      serverPath: path,
++      cwd: packageRoot,
++      abortGraceMs: 100,
++    });
++    const result = await pathExecutor({
++      code: "ignored by fixture",
++      requestMeta,
++      signal: AbortSignal.timeout(10_000),
++      syncTimeoutMs: 5_000,
++    });
++    expect(resultText(result)).toBe("MUTATED");
++  });
++
++  it("keeps executing verified bytes after the source is replaced in place", async () => {
++    const path = join(directory, "overwrite.mjs");
++    await writeFile(path, cellModule("ORIGINAL"), "utf8");
++    const snapshot = await readSealedResourceSnapshot({
++      path,
++      expectedSha256: createHash("sha256").update(cellModule("ORIGINAL")).digest("hex"),
++      maxBytes: 64 * 1024,
++      expectedUid: process.getuid?.(),
++    });
++    await writeFile(path, cellModule("MUTATED"), "utf8");
++
++    const result = await executeSnapshot({
++      serverPath: path,
++      sourceSnapshot: snapshot.source,
++    });
++    expect(resultText(result)).toBe("ORIGINAL");
++  });
++
++  it("keeps executing verified bytes after the source is renamed away", async () => {
++    const path = join(directory, "rename.mjs");
++    await writeFile(path, cellModule("ORIGINAL"), "utf8");
++    const snapshot = await readSealedResourceSnapshot({
++      path,
++      expectedSha256: createHash("sha256").update(cellModule("ORIGINAL")).digest("hex"),
++      maxBytes: 64 * 1024,
++      expectedUid: process.getuid?.(),
++    });
++    await rename(path, `${path}.moved`);
++
++    const result = await executeSnapshot({
++      serverPath: path,
++      sourceSnapshot: snapshot.source,
++    });
++    expect(resultText(result)).toBe("ORIGINAL");
++  });
++
++  it("keeps executing verified bytes after the source is unlinked", async () => {
++    const path = join(directory, "unlink.mjs");
++    await writeFile(path, cellModule("ORIGINAL"), "utf8");
++    const snapshot = await readSealedResourceSnapshot({
++      path,
++      expectedSha256: createHash("sha256").update(cellModule("ORIGINAL")).digest("hex"),
++      maxBytes: 64 * 1024,
++      expectedUid: process.getuid?.(),
++    });
++    await unlink(path);
++
++    const result = await executeSnapshot({
++      serverPath: path,
++      sourceSnapshot: snapshot.source,
++    });
++    expect(resultText(result)).toBe("ORIGINAL");
++  });
++
++  it("refuses to combine a verified snapshot with a launch override", () => {
++    expect(() =>
++      createSubprocessNodeReplExecutor({
++        serverPath: bundlePath,
++        sourceSnapshot: bundleSource,
++        launch: { command: "/signed/node", args: ["/other/server.mjs"] },
++      }),
++    ).toThrow(/launch override/u);
++  });
++});
+--- /dev/null
++++ source/apps/zcode-cli/packages/node-repl-host/test/cell-source-writer.test.ts
+@@ -0,0 +1,99 @@
++import { once } from "node:events";
++import { Writable } from "node:stream";
++import { describe, expect, it } from "vitest";
++import { writeCellSource } from "../src/cell-child-transport.js";
++
++class ControlledWritable extends Writable {
++  readonly chunks: string[] = [];
++  private readonly callbacks: Array<(error?: Error | null) => void> = [];
++
++  constructor() {
++    super({ highWaterMark: 1 });
++  }
++
++  override _write(
++    chunk: Buffer,
++    _encoding: BufferEncoding,
++    callback: (error?: Error | null) => void,
++  ): void {
++    this.chunks.push(chunk.toString("utf8"));
++    this.callbacks.push(callback);
++  }
++
++  release(): void {
++    const callback = this.callbacks.shift();
++    if (!callback) throw new Error("controlled writable has no pending write");
++    callback();
++  }
++
++  fail(error: Error): void {
++    const callback = this.callbacks.shift();
++    if (!callback) throw new Error("controlled writable has no pending write");
++    callback(error);
++  }
++}
++
++describe("cell source stdin writer", () => {
++  it("waits for drain before ending a backpressured source write", async () => {
++    const stream = new ControlledWritable();
++    const errors: unknown[] = [];
++    const finished = once(stream, "finish");
++
++    writeCellSource({
++      stream,
++      source: "snapshot-source",
++      isUnavailable: () => false,
++      onError: (error) => errors.push(error),
++    });
++
++    expect(stream.chunks).toEqual(["snapshot-source"]);
++    expect(stream.writableEnded).toBe(false);
++    expect(errors).toEqual([]);
++
++    stream.release();
++    await finished;
++
++    expect(stream.writableEnded).toBe(true);
++    expect(errors).toEqual([]);
++  });
++
++  it("settles exactly once when the stdin pipe reports EPIPE", async () => {
++    const stream = new ControlledWritable();
++    const errors: unknown[] = [];
++    const errorEvent = once(stream, "error");
++    const closeEvent = new Promise<void>((resolve) => {
++      stream.once("close", () => resolve());
++    });
++
++    writeCellSource({
++      stream,
++      source: "snapshot-source",
++      isUnavailable: () => false,
++      onError: (error) => errors.push(error),
++    });
++    stream.fail(new Error("EPIPE"));
++
++    const [error] = await errorEvent;
++    expect(error).toMatchObject({ message: "EPIPE" });
++    await closeEvent;
++    expect(errors).toHaveLength(1);
++    expect(errors[0]).toMatchObject({ message: "EPIPE" });
++  });
++
++  it("settles when stdin closes before the source is ended", async () => {
++    const stream = new ControlledWritable();
++    const errors: unknown[] = [];
++    const closed = once(stream, "close");
++
++    writeCellSource({
++      stream,
++      source: "snapshot-source",
++      isUnavailable: () => false,
++      onError: (error) => errors.push(error),
++    });
++    stream.destroy();
++
++    await closed;
++    expect(errors).toHaveLength(1);
++  });
++});
+--- opening/apps/zcode-cli/packages/node-repl-host/test/cua-node-repl-mcp-port.test.ts
++++ source/apps/zcode-cli/packages/node-repl-host/test/cua-node-repl-mcp-port.test.ts
+@@ -1,5 +1,8 @@
+-import { resolve } from "node:path";
+-import { describe, expect, it } from "vitest";
++import { mkdtemp, readFile, rm } from "node:fs/promises";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { afterAll, beforeAll, describe, expect, it } from "vitest";
++import { buildNodeReplHostBundle } from "../scripts/build.mjs";
+ import type {
+   McpCallToolRequest,
+   McpConnectionSnapshot,
+@@ -14,7 +17,29 @@
+ 
+ const IMAGE_BASE64 =
+   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lY1J3QAAAABJRU5ErkJggg==";
+-const SERVER_PATH = resolve(import.meta.dirname, "../dist/mcp/server.js");
++let directory = "";
++let serverPath = "";
++let serverSnapshot = "";
++
++beforeAll(async () => {
++  directory = await mkdtemp(join(tmpdir(), "zcode-cua-node-repl-port-"));
++  serverPath = join(directory, "server.mjs");
++  await buildNodeReplHostBundle({ outfile: serverPath, cuaHelperBuildId: "" });
++  serverSnapshot = await readFile(serverPath, "utf8");
++}, 120_000);
++
++afterAll(async () => {
++  if (directory) await rm(directory, { recursive: true, force: true });
++});
++
++async function executeJs(port: McpPort, code = "1 + 1"): Promise<McpToolCallResult> {
++  await port.connectConfiguredServers({ node_repl: { type: "stdio" } as never });
++  return await port.callTool({
++    serverName: "node_repl",
++    toolName: "js",
++    arguments: { code, title: "snapshot capture" },
++  });
++}
+ const REQUEST: McpCallToolRequest = {
+   serverName: "node_repl",
+   toolName: "js",
+@@ -89,7 +114,8 @@
+     const port = createCuaNodeReplMcpPort({
+       port: base.port,
+       closePort: true,
+-      serverPath: SERVER_PATH,
++      serverPath,
++      sourceSnapshot: serverSnapshot,
+       captureOnce: async (target, options) => {
+         captures.push({ target, expected: options.expected });
+         return { content: [{ type: "image", data: IMAGE_BASE64, mimeType: "image/png" }] };
+@@ -131,7 +157,8 @@
+     const port = createCuaNodeReplMcpPort({
+       port: base.port,
+       closePort: false,
+-      serverPath: SERVER_PATH,
++      serverPath,
++      sourceSnapshot: serverSnapshot,
+       captureOnce: async () => {
+         throw new Error("capture should not run");
+       },
+@@ -154,7 +181,8 @@
+     const port = createCuaNodeReplMcpPort({
+       port: base.port,
+       closePort: false,
+-      serverPath: SERVER_PATH,
++      serverPath,
++      sourceSnapshot: serverSnapshot,
+       captureOnce: async () => ({ content: [] }),
+     });
+     try {
+@@ -178,7 +206,8 @@
+     const port = createCuaNodeReplMcpPort({
+       port: base.port,
+       closePort: false,
+-      serverPath: SERVER_PATH,
++      serverPath,
++      sourceSnapshot: serverSnapshot,
+       captureOnce: async () => ({ content: [] }),
+     });
+     await port.connectConfiguredServers({ node_repl: { type: "stdio" } as never });
+@@ -200,7 +229,8 @@
+     const port = createCuaNodeReplMcpPort({
+       port: base.port,
+       closePort: false,
+-      serverPath: SERVER_PATH,
++      serverPath,
++      sourceSnapshot: serverSnapshot,
+       captureOnce: async () => ({ content: [] }),
+     });
+     await port.connectConfiguredServers({ node_repl: { type: "stdio" } as never });
+@@ -219,7 +249,8 @@
+     const port = createCuaNodeReplMcpPort({
+       port: base.port,
+       closePort: true,
+-      serverPath: SERVER_PATH,
++      serverPath,
++      sourceSnapshot: serverSnapshot,
+       captureOnce: async () => ({ content: [] }),
+     });
+     const connecting = port.connectServer("node_repl", { type: "stdio" } as never);
+@@ -234,7 +265,8 @@
+   it("binds serverPath through the public native factory helper", async () => {
+     const base = fakeBasePort();
+     const factory = createCuaNodeReplMcpPortFactory({
+-      serverPath: SERVER_PATH,
++      serverPath,
++      sourceSnapshot: serverSnapshot,
+     });
+     const port = factory({
+       port: base.port,
+@@ -244,4 +276,88 @@
+     await expect(port.listTools()).resolves.toEqual([]);
+     await port.close();
+   });
++
++  it("requires a verified source snapshot and never falls back to the path", () => {
++    expect(() => createCuaNodeReplMcpPortFactory({ serverPath } as never)).toThrow(
++      /source_snapshot_required/u,
++    );
++    const base = fakeBasePort();
++    expect(() =>
++      createCuaNodeReplMcpPort({
++        port: base.port,
++        closePort: false,
++        serverPath,
++        captureOnce: async () => ({ content: [] }),
++      } as never),
++    ).toThrow(/source_snapshot_required/u);
++  });
++
++  it("rejects subprocess overrides that could replace the snapshot", () => {
++    const base = fakeBasePort();
++    expect(() =>
++      createCuaNodeReplMcpPort({
++        port: base.port,
++        closePort: false,
++        serverPath,
++        sourceSnapshot: serverSnapshot,
++        captureOnce: async () => ({ content: [] }),
++        subprocess: { sourceSnapshot: "synthetic-replacement" } as never,
++      }),
++    ).toThrow(/override_forbidden:sourceSnapshot/u);
++    expect(() =>
++      createCuaNodeReplMcpPort({
++        port: base.port,
++        closePort: false,
++        serverPath,
++        sourceSnapshot: serverSnapshot,
++        captureOnce: async () => ({ content: [] }),
++        subprocess: { launch: { command: process.execPath, args: [] } } as never,
++      }),
++    ).toThrow(/override_forbidden:launch/u);
++  });
++
++  it("captures the factory snapshot before mutable options change", async () => {
++    const base = fakeBasePort();
++    const options = { serverPath, sourceSnapshot: serverSnapshot };
++    const factory = createCuaNodeReplMcpPortFactory(options);
++    options.sourceSnapshot = "";
++
++    const port = factory({
++      port: base.port,
++      closePort: false,
++      captureOnce: async () => ({ content: [] }),
++    });
++    try {
++      const result = await executeJs(port);
++      expect(result.isError).not.toBe(true);
++      expect(result.content).toContainEqual(
++        expect.objectContaining({ type: "text", text: "=> 2" }),
++      );
++    } finally {
++      await port.close();
++    }
++  }, 30_000);
++
++  it("captures the port snapshot before mutable input changes", async () => {
++    const base = fakeBasePort();
++    const options = {
++      port: base.port,
++      closePort: false,
++      serverPath,
++      sourceSnapshot: serverSnapshot,
++      captureOnce: async () => ({ content: [] }),
++    };
++    const port = createCuaNodeReplMcpPort(options);
++    options.sourceSnapshot = "";
++
++    try {
++      const result = await executeJs(port);
++      expect(result.isError).not.toBe(true);
++      expect(result.content).toContainEqual(
++        expect.objectContaining({ type: "text", text: "=> 2" }),
++      );
++    } finally {
++      await port.close();
++    }
++  }, 30_000);
+ });
+--- /dev/null
++++ source/apps/zcode-cli/packages/node-repl-host/test/sealed-resource.test.ts
+@@ -0,0 +1,189 @@
++import { createHash } from "node:crypto";
++import { execFile } from "node:child_process";
++import { chmod, mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { promisify } from "node:util";
++import { afterEach, beforeEach, describe, expect, it } from "vitest";
++import {
++  decodeUtf8Lossless,
++  readBoundedBytes,
++  readSealedResourceSnapshot,
++} from "../src/sealed-resource.js";
++
++const execFileAsync = promisify(execFile);
++const SOURCE = "export const marker = 'ORIGINAL';\n";
++const SHA = createHash("sha256").update(SOURCE).digest("hex");
++
++describe.skipIf(process.platform === "win32")("sealed node-repl resource snapshot", () => {
++  let directory = "";
++
++  beforeEach(async () => {
++    directory = await mkdtemp(join(tmpdir(), "zcode-sealed-resource-"));
++  });
++
++  afterEach(async () => {
++    if (directory) await rm(directory, { recursive: true, force: true });
++  });
++
++  it("reads the same bytes into an immutable UTF-8 snapshot", async () => {
++    const path = join(directory, "server.mjs");
++    await writeFile(path, SOURCE, "utf8");
++
++    const snapshot = await readSealedResourceSnapshot({
++      path,
++      expectedSha256: SHA,
++      maxBytes: 1024,
++      expectedUid: process.getuid?.(),
++    });
++
++    expect(snapshot.source).toBe(SOURCE);
++    expect(snapshot.sha256).toBe(SHA);
++    expect(snapshot.size).toBe(Buffer.byteLength(SOURCE));
++    expect(Object.isFrozen(snapshot)).toBe(true);
++  });
++
++  it("rejects a hash mismatch after reading the same handle", async () => {
++    const path = join(directory, "server.mjs");
++    await writeFile(path, SOURCE, "utf8");
++    await expect(
++      readSealedResourceSnapshot({
++        path,
++        expectedSha256: "0".repeat(64),
++        maxBytes: 1024,
++        expectedUid: process.getuid?.(),
++      }),
++    ).rejects.toThrow(/sha_mismatch/u);
++  });
++
++  it("rejects a symlink with O_NOFOLLOW", async () => {
++    const target = join(directory, "target.mjs");
++    const link = join(directory, "server.mjs");
++    await writeFile(target, SOURCE, "utf8");
++    await symlink(target, link);
++    await expect(
++      readSealedResourceSnapshot({
++        path: link,
++        expectedSha256: SHA,
++        maxBytes: 1024,
++        expectedUid: process.getuid?.(),
++      }),
++    ).rejects.toThrow(/open_failed/u);
++  });
++
++  it("rejects group/other writable resources", async () => {
++    const path = join(directory, "server.mjs");
++    await writeFile(path, SOURCE, "utf8");
++    await chmod(path, 0o664);
++    await expect(
++      readSealedResourceSnapshot({
++        path,
++        expectedSha256: SHA,
++        maxBytes: 1024,
++        expectedUid: process.getuid?.(),
++      }),
++    ).rejects.toThrow(/writable/u);
++  });
++
++  it("rejects empty and oversized resources", async () => {
++    const empty = join(directory, "empty.mjs");
++    await writeFile(empty, "", "utf8");
++    await expect(
++      readSealedResourceSnapshot({
++        path: empty,
++        expectedSha256: SHA,
++        maxBytes: 1024,
++        expectedUid: process.getuid?.(),
++      }),
++    ).rejects.toThrow(/size_out_of_bounds/u);
++
++    const oversized = join(directory, "oversized.mjs");
++    await writeFile(oversized, "x".repeat(17), "utf8");
++    await expect(
++      readSealedResourceSnapshot({
++        path: oversized,
++        expectedSha256: SHA,
++        maxBytes: 16,
++        expectedUid: process.getuid?.(),
++      }),
++    ).rejects.toThrow(/size_out_of_bounds/u);
++  });
++
++  it.skipIf(process.getuid === undefined)("rejects a mismatched owner uid", async () => {
++    const path = join(directory, "server.mjs");
++    await writeFile(path, SOURCE, "utf8");
++    await expect(
++      readSealedResourceSnapshot({
++        path,
++        expectedSha256: SHA,
++        maxBytes: 1024,
++        expectedUid: (process.getuid?.() ?? 0) + 1,
++      }),
++    ).rejects.toThrow(/owner_mismatch/u);
++  });
++
++  it("rejects a non-regular file", async () => {
++    const path = join(directory, "server.mjs");
++    await mkdir(path);
++    await expect(
++      readSealedResourceSnapshot({
++        path,
++        expectedSha256: SHA,
++        maxBytes: 1024,
++        expectedUid: process.getuid?.(),
++      }),
++    ).rejects.toThrow(/not_regular/u);
++  });
++
++  it.skipIf(process.platform === "win32")(
++    "rejects a FIFO without blocking the open",
++    async () => {
++      const path = join(directory, "server.fifo");
++      await execFileAsync("mkfifo", [path]);
++      const outcome = await Promise.race([
++        readSealedResourceSnapshot({
++          path,
++          expectedSha256: SHA,
++          maxBytes: 1024,
++          expectedUid: process.getuid?.(),
++        }).then(
++          () => ({ kind: "resolved" as const }),
++          (error: unknown) => ({ kind: "rejected" as const, error }),
++        ),
++        new Promise<{ kind: "timeout" }>((resolve) =>
++          setTimeout(() => resolve({ kind: "timeout" }), 2000),
++        ),
++      ]);
++      expect(outcome.kind).toBe("rejected");
++      if (outcome.kind === "rejected") {
++        expect(outcome.error).toBeInstanceOf(Error);
++        expect((outcome.error as Error).message).toMatch(/not_regular/u);
++      }
++    },
++    5000,
++  );
++
++  it("bounds growth while reading and never exceeds maxBytes", async () => {
++    const total = Buffer.from("x".repeat(40));
++    let offset = 0;
++    await expect(
++      readBoundedBytes(
++        async (buffer) => {
++          const remaining = total.length - offset;
++          if (remaining <= 0) return 0;
++          const length = Math.min(buffer.length, remaining, 8);
++          total.copy(buffer, 0, offset, offset + length);
++          offset += length;
++          return length;
++        },
++        16,
++        8,
++      ),
++    ).rejects.toThrow(/size_out_of_bounds/u);
++  });
++
++  it("rejects invalid UTF-8 instead of substituting U+FFFD", async () => {
++    const invalid = Buffer.from([0xff, 0xfe, 0x00]);
++    await expect(async () => decodeUtf8Lossless(invalid)).rejects.toThrow(/utf8_invalid/u);
++  });
++});
+--- opening/apps/zcode-cli/packages/node-repl-host/test/subprocess-launch.test.ts
++++ source/apps/zcode-cli/packages/node-repl-host/test/subprocess-launch.test.ts
+@@ -1,5 +1,9 @@
+ import { describe, expect, it } from "vitest";
+-import { buildCellEnvironment, resolveCellLaunch } from "../src/subprocess-launch.js";
++import {
++  buildCellEnvironment,
++  resolveCellLaunch,
++  resolveCellSnapshotLaunch,
++} from "../src/subprocess-launch.js";
+ import { CELL_RUN_FLAG } from "../src/cell-protocol.js";
+ 
+ describe("subprocess cell launch", () => {
+@@ -25,6 +29,13 @@
+     ).toEqual({
+       command: "/signed/node",
+       args: ["--jitless", "/sealed/server.mjs", CELL_RUN_FLAG],
++    });
++  });
++
++  it("uses the fixed stdin ESM snapshot launch regardless of server path", () => {
++    expect(resolveCellSnapshotLaunch({ execPath: "/signed/node" })).toEqual({
++      command: "/signed/node",
++      args: ["--jitless", "--input-type=module", "-", CELL_RUN_FLAG],
+     });
+   });
+ 
+--- /dev/null
++++ source/docs/plans/computer-use-macos-phase1-closeout.md
+@@ -0,0 +1,35 @@
++# macOS Computer Use Phase 1：正式装配与 cell 资源收尾
++
++2026-10-30。基线：launchservices 源清单摘要 `11d49f9ff4303e3e1c7ed2dbcc9b5879227591f17be38201abd9451450c4d0eb`，76 文件与开工工作区完全一致。Node 24.14.0 freshness、architecture 基线通过。旧材料只读；输出 `output/cua-phase1-closeout/`，独立验收目录 `reports/2026-10-30-closeout/`。
++
++## 调查与实现边界
++
++A：调查正常 desktop `bundle`/electron-builder 的构建、资源、签名路径；顶层 `build:zody` 是另外的 CLI/server 发行入口，不能凭名称误接。普通 Host 保持现有完整能力，不能套用 candidate throw-only PTY/SSH shim。已确认先做独立 cua-narrow 槽位的签名资源装配、默认不激活；不触碰普通 Host 路由。普通 Host 实际截图需新增启动协议，已向用户列明差异，等待范围对齐；与此无关的资源准备及 B 继续。
++
++B：已确认 `entries/cli-entry.ts` 校验句柄的 bytes 后仅返回 path，`subprocess-launch.ts` 随后让 Node 再开 path，存在替换竞态。先更新规格/验收，再交 DeepSeek 修改 CLI composition 与 node-repl-host，测试先于实现。修复使用同份校验内容的 stdin ESM 快照，fd3/4 与原 owner/capability 保持，不扩 D06。
++
++调查 worker 与后续实现 worker ID 均写 `output/cua-phase1-closeout/workers.json`。普通开发不授 UI。并发 writers 文件范围互斥；controller 不修改 worker 所属实现文件。
++
++## 必要验证
++
++controller 审查相对本轮 opening snapshot 的差分，独立执行根 typecheck/lint/architecture、受影响资源/构建和 subprocess/CUA 端口测试；用固定工具链独立构建签名 Helper，并执行真实 server 快照子进程探针及与装配变化有关的单窗口截图。编译链接、模拟测试、真实原生调用、产品验收分别记账，保持默认禁用与 placeholder。
++
++完整 D06、输入 native Fenced、后代全退出、六项 JS 许可 missing、Intel/最低 OS/升级身份 TCC 均继续未验收；不扩大矩阵。保留所有前轮及其他任务未提交改动，源码/差分/构建和实测证据归档到本轮新目录。
++
++## 当前独立验收进度
++
++B 实现已由 DeepSeek 完成并冻结，controller 对 opening旧executor/新真实bundle和固定签名Node做red/green：旧路径执行替换字节；新快照在rename/原位改写/unlink后均执行原bundle。6组55项与追加writer/snapshot两组11项通过（去重7文件59项），根typecheck和node-repl包typecheck通过。
++
++新helper独立编译链接、固定证书签名与包内strict verify通过，3744个entry构建输入摘要与当前源码一致。新候选经系统入口启动，实际截图2400×1600成功，原生PNG摘要 `a21627c4503c7b30bb71c30b29d6b0cfd8de24749875dd63dbabfc5b42716ec4`，资源和machine lease交付前释放；OS TCC subject为包内同Helper。截图后的30s等待自然完成，未算Stop通过。随后不再截图的独立UI Stop回归owner撤销到TOOL_CANCELLED=13ms；与截图不同lineage，不能写成新二进制同lineage截图→Stop或native Fenced。
++
++A收敛过程中补齐独立签名槽、身份/内容复核、可搬迁stage、sourcemap后处理保护。初次根lint因新增实现和测试超过400行出现2errors/302warnings；DeepSeek随后拆分，controller最终重跑通过。首次失败保留。
++
++正式electron-builder第一次实际打包已通过新cua-narrow复制及签名/摘要复核，之后被原有Koffi校验阻断。`docs/desktop/computer-use-producer-detection.md` 已规定仅真实producer才执行专属资源检查；当前placeholder仍要求已删除`zcode-cua-plugin`的koffi，属于既有规则回归。本轮允许最小恢复同一producer gate，先补placeholder跳过/real缺资源失败回归，不恢复插件、不增加fallback，controller重跑正式装配。首次失败留档。
++
++## 最终结果
++
++A 资源装配与 B JS 内容 TOCTOU 已关闭。正式desktop bundle/electron-builder支持显式可搬迁manifest，独立cua-narrow槽在afterPack/afterSign复核，普通Host路由、PTY/SSH及placeholder不变。Koffi检查按现行producer规则恢复gate，真实producer缺资源仍失败。第二次electron-builder --dir在当前Preview flavor下成功；复用现有正常JS out，未执行DMG/ZIP发布和普通Host截图激活。第一轮失败日志仍保留。
++
++controller最终根typecheck、lint（301warnings/0errors）、architecture均通过；node-repl包typecheck通过。7文件59项CLI相关测试（55与追加11的去重值），4文件12项打包回归，4文件33项资源装配回归通过。编译链接、已签名Helper真实截图及独立UIStop均分别记录；原生6组未因未改native源码重复运行，前轮结果不冒充本轮新执行。entry许可集合与launchservices完全一致，6项missing保留。
++
++最终报告及源码/patch/构建/实测证据见[本轮验收](../../packages/desktop/native/macos-cua-driver-closure/reports/2026-10-30-closeout/ACCEPTANCE.md)。普通Host实际截图需要后续进程/协议对齐，当前不改变该结构；固定cell Node仍按路径spawn，无cell loaded-code新保证；完整D06、native Fenced、后代全退出、Intel/最低OS/升级身份TCC、法律采用均未验收。
+--- opening/packages/desktop/electron-builder.config.js
++++ source/packages/desktop/electron-builder.config.js
+@@ -16,6 +16,14 @@
+   restoreTargetNodePtyPrebuild,
+ } from "./scripts/node-pty-package-assets.mjs";
+ import { cleanupPackagedSourcemaps } from "./scripts/packaged-sourcemap-cleanup.mjs";
++import {
++  NARROW_MANIFEST_ENV,
++  assertPackagedNarrowResource,
++  buildNarrowExtraResource,
++  getNarrowSignIgnorePatterns,
++  validateNarrowManifest,
++  writeNarrowBuildAudit,
++} from "./scripts/macos-cua-narrow-resources.mjs";
+ import { getTargetPlatform } from "./scripts/target-platform.mjs";
+ import {
+   resolveDesktopArtifactSuffix,
+@@ -58,6 +66,17 @@
+   platform: targetPlatform.os,
+   arch: targetPlatform.arch,
+ });
++// cua-narrow 只接受显式构建输入；该 env 只进入本次 electron-builder，
++// 不会写进应用或成为 runtime 激活开关。默认无输入时下面的分支完全不执行。
++const narrowManifestPath = process.env[NARROW_MANIFEST_ENV]?.trim() || null;
++const narrowValidated = narrowManifestPath
++  ? await validateNarrowManifest({
++      manifestPath: narrowManifestPath,
++      targetPlatform,
++      env: process.env,
++    })
++  : null;
++const narrowExtraResource = buildNarrowExtraResource(narrowValidated);
+ const rawMacSigningIdentity = process.env.APPLE_SIGNING_IDENTITY || process.env.CSC_NAME;
+ const macSigningIdentity =
+   rawMacSigningIdentity?.replace(/^Developer ID Application:\s*/, "") ?? null;
+@@ -486,8 +505,15 @@
+   }
+ }
+ 
+-function assertPackagedCuaKoffi(context) {
+-  const problems = verifyStagedKoffi({
++// 修复原因：开源占位树已删除旧 producer 插件的 koffi 资源。依据现行
++// docs/desktop/computer-use-producer-detection.md，producer 专属步骤必须先检测真实 producer；
++// 因此与 Helper/Sharp 一样以 isRealComputerUseProducerInstalled 为门，真实 producer 仍严格校验。
++export function assertPackagedCuaKoffi(
++  context,
++  { isRealProducer = shouldPackageComputerUseHelper, verifyKoffi = verifyStagedKoffi } = {},
++) {
++  if (!isRealProducer) return;
++  const problems = verifyKoffi({
+     resourcesDir: resolvePackagedResourcesDir(context),
+     targetPlatform,
+   });
+@@ -668,6 +694,20 @@
+     await runTimedAsync("afterPack:stripPackagedSourcemapReferences", () =>
+       stripPackagedSourcemapReferences(context),
+     );
++    if (narrowValidated) {
++      await runTimedAsync("afterPack:assertPackagedCuaNarrowResource", async () => {
++        const validated = await assertPackagedNarrowResource({
++          resourcesDir: resolvePackagedResourcesDir(context),
++          manifestPath: narrowValidated.manifestPath,
++          env: process.env,
++        });
++        await writeNarrowBuildAudit({
++          appOutDir: context.appOutDir,
++          validated,
++          packagedAppPath: validated.packagedAppPath,
++        });
++      });
++    }
+     runTimedSync("afterPack:assertPackagedNativeResourcePolicy", () =>
+       assertPackagedNativeResourcePolicy(context),
+     );
+@@ -695,12 +735,23 @@
+       );
+     }
+   },
+-  ...(shouldPackageWindowsBrowserImportHelper
++  ...(shouldPackageWindowsBrowserImportHelper || narrowValidated
+     ? {
+         afterSign: async (context) => {
+-          runTimedSync("afterSign:assertSignedWindowsBrowserImportHelper", () =>
+-            assertSignedWindowsBrowserImportHelper(context),
+-          );
++          if (shouldPackageWindowsBrowserImportHelper) {
++            runTimedSync("afterSign:assertSignedWindowsBrowserImportHelper", () =>
++              assertSignedWindowsBrowserImportHelper(context),
++            );
++          }
++          if (narrowValidated) {
++            await runTimedAsync("afterSign:assertPackagedCuaNarrowResource", () =>
++              assertPackagedNarrowResource({
++                resourcesDir: resolvePackagedResourcesDir(context),
++                manifestPath: narrowValidated.manifestPath,
++                env: process.env,
++              }),
++            );
++          }
+         },
+       }
+     : {}),
+@@ -717,6 +768,7 @@
+                 },
+               ]
+             : []),
++          ...(narrowExtraResource ? [narrowExtraResource] : []),
+           {
+             // CUA 权限浮窗的吸附数据源（CGWindowListCopyWindowInfo，不需要任何 TCC 权限）。
+             // 主进程按 process.resourcesPath 解析；缺失时 watcher fail-open，浮窗仍可用
+@@ -851,6 +903,8 @@
+     // electron-builder 若再次签名嵌套 Helper 会改变 CDHash，使最终用户包中的 staple 失效。
+     signIgnore: [
+       "[/\\\\]Contents[/\\\\]Resources[/\\\\]cua-helper([/\\\\]|$)",
++      // cua-narrow 是独立预签名槽位，禁止 electron-builder 再次签名改变 CDHash。
++      ...getNarrowSignIgnorePatterns(),
+       "[/\\\\]Contents[/\\\\]Resources[/\\\\]glm([/\\\\]|$)",
+       "[/\\\\]Contents[/\\\\]Resources[/\\\\]tools([/\\\\]|$)",
+     ],
+--- opening/packages/desktop/native/macos-cua-desktop-session/entries/cli-entry.ts
++++ source/packages/desktop/native/macos-cua-desktop-session/entries/cli-entry.ts
+@@ -1,9 +1,10 @@
+ // sealed cli-entry.mjs：fd3 控制/ready，fd6 app-server input，fd7 output。
+-import { createHash } from "node:crypto";
+-import { constants as fsConstants, createReadStream, createWriteStream } from "node:fs";
+-import { open } from "node:fs/promises";
++import { createReadStream, createWriteStream } from "node:fs";
+ import { dirname, join } from "node:path";
+-import { createCuaNodeReplMcpPortFactory } from "@zcode/node-repl-host/cua-node-repl-mcp-port";
++import {
++  createCuaNodeReplMcpPortFactory,
++  readSealedResourceSnapshot,
++} from "@zcode/node-repl-host/cua-node-repl-mcp-port";
+ import { runCuaLaunchSession } from "../../../../../apps/zcode-cli/packages/cli/src/cua-launch-session.js";
+ import { installCandidateFetch } from "../runtime/candidate-fetch.js";
+ import { installFatalReporting } from "./entry-fatal.js";
+@@ -15,32 +16,11 @@
+ 
+ const NODE_REPL_SERVER_NAME = "node-repl-server.mjs";
+ 
+-// 边界：serverPath 在 hash 校验后按路径交给 cell 子进程，校验与 exec 之间存在
+-// TOCTOU 窗口；cell 本身不受信且不继承 authority fd，只拥有 per-call broker
+-// capability。本轮不新增隔离机制，也不宣称完整 D06 隔离。
+-
+-async function verifyNodeReplServer(): Promise<string> {
+-  const path = join(dirname(process.execPath), NODE_REPL_SERVER_NAME);
+-  const handle = await open(path, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW);
+-  try {
+-    const info = await handle.stat();
+-    if (!info.isFile()) throw new Error("cua_node_repl_server_not_regular");
+-    if (info.uid !== process.getuid()) throw new Error("cua_node_repl_server_owner_mismatch");
+-    if ((info.mode & 0o022) !== 0) throw new Error("cua_node_repl_server_writable");
+-    if (info.size <= 0 || info.size > __CUA_NODE_REPL_SERVER_MAX_BYTES__) {
+-      throw new Error("cua_node_repl_server_size_out_of_bounds");
+-    }
+-    const bytes = await handle.readFile();
+-    const sha256 = createHash("sha256").update(bytes).digest("hex");
+-    if (sha256 !== __CUA_NODE_REPL_SERVER_SHA256__) {
+-      throw new Error("cua_node_repl_server_sha_mismatch");
+-    }
+-  } finally {
+-    await handle.close();
+-  }
+-  return path;
+-}
+-
++// Bug 原因：旧实现只校验 path 的 bytes 后返回 path，subprocess-launch 再按 path 打开，
++// 校验与执行之间存在 rename/原位改写/unlink 替换窗口。修复依据：在同一 O_NOFOLLOW
++// 句柄上有界读取、核验摘要并把同一份 UTF-8 内容冻结为私有快照；cell 只从 stdin 执行
++// 该快照，不再重新打开 serverPath。cell 本身不受信且不继承 authority fd，只拥有
++// per-call broker capability；本轮不宣称完整 D06 隔离，固定 Node 二进制仍按路径启动。
+ installFatalReporting();
+ // candidate CLI 在 app-server composition 前安装真实 node-fetch 适配。
+ installCandidateFetch();
+@@ -48,12 +28,21 @@
+ const control = createReadStream(null, { fd: 3, autoClose: false });
+ const input = createReadStream(null, { fd: 6, autoClose: false });
+ const output = createWriteStream(null, { fd: 7, autoClose: false });
+-const serverPath = await verifyNodeReplServer();
++const serverPath = join(dirname(process.execPath), NODE_REPL_SERVER_NAME);
++const snapshot = await readSealedResourceSnapshot({
++  path: serverPath,
++  expectedSha256: __CUA_NODE_REPL_SERVER_SHA256__,
++  maxBytes: __CUA_NODE_REPL_SERVER_MAX_BYTES__,
++  expectedUid: process.getuid?.(),
++});
+ 
+ await runCuaLaunchSession({
+   entryName: "cli-entry.mjs",
+   control,
+   input,
+   output,
+-  cuaNodeReplMcpPortFactory: createCuaNodeReplMcpPortFactory({ serverPath }),
++  cuaNodeReplMcpPortFactory: createCuaNodeReplMcpPortFactory({
++    serverPath,
++    sourceSnapshot: snapshot.source,
++  }),
+ });
+--- opening/packages/desktop/package.json
++++ source/packages/desktop/package.json
+@@ -19,6 +19,8 @@
+     "prepare:agent-bundle": "node scripts/prepare-agent-node-bundle.mjs",
+     "prepare:windows-cua-helper": "node scripts/prepare-windows-cua-helper.mjs",
+     "build:macos-cua-helper-diagnostic": "node scripts/build-macos-cua-helper-diagnostic.mjs",
++    "prepare:macos-cua-narrow-resources": "node scripts/macos-cua-narrow-resources-prepare.mjs",
++    "test:macos-cua-narrow-resources": "node --test scripts/macos-cua-narrow-resources-*.test.mjs",
+     "test:macos-cua-helper-diagnostic": "node scripts/test-macos-cua-helper-diagnostic.mjs",
+     "audit:macos-cua-driver-closure": "node scripts/audit-macos-cua-driver-closure.mjs",
+     "prepare:native-search": "node ../../scripts/prepare-native-search-tools.mjs",
+--- opening/packages/desktop/scripts/bundle.mjs
++++ source/packages/desktop/scripts/bundle.mjs
+@@ -23,6 +23,13 @@
+   runCommandAndReadStdout,
+ } from "../../../scripts/spawn-command.mjs";
+ import { resolveIntranetDepsBaseUrl } from "../../../scripts/intranetDefaults.mjs";
++import {
++  NARROW_MANIFEST_ENV,
++  assertPackagedNarrowResource,
++  createNarrowBuildEnv,
++  resolveNarrowBuildRequest,
++  validateNarrowManifest,
++} from "./macos-cua-narrow-resources.mjs";
+ 
+ const desktopRoot = resolve(import.meta.dirname, "..");
+ const workspaceRoot = resolve(desktopRoot, "../..");
+@@ -257,12 +264,14 @@
+   --arch, -a <x64|arm64>       目标 CPU 架构，默认 arm64
+   --skip-prepare               跳过 prepare:runtime-assets
+   --skip-build                 跳过 pnpm build
++  --cua-narrow-manifest <path> 显式装配已签名 desktop-session Helper（仅 darwin arm64）
+   --dry-run                    只打印最终命令，不执行打包
+   -h, --help                   查看帮助
+ 
+ 环境变量:
+   ZCODE_TARGET_OS              与 --os 等价
+   ZCODE_TARGET_ARCH            与 --arch 等价
++  ${NARROW_MANIFEST_ENV}       与 --cua-narrow-manifest 等价
+ `);
+ }
+ 
+@@ -282,12 +291,13 @@
+   return normalizedArch;
+ }
+ 
+-function parseArgs(argv) {
++export function parseArgs(argv) {
+   const options = {
+     os: process.env.ZCODE_TARGET_OS ?? null,
+     arch: process.env.ZCODE_TARGET_ARCH ?? null,
+     skipPrepare: process.env.ZCODE_SKIP_PREPARE === "1",
+     skipBuild: process.env.ZCODE_SKIP_BUILD === "1",
++    cuaNarrowManifest: null,
+     dryRun: false,
+     positionals: [],
+   };
+@@ -319,6 +329,25 @@
+       continue;
+     }
+ 
++    if (arg === "--cua-narrow-manifest") {
++      const value = argv[index + 1];
++      if (value === undefined || value.trim() === "" || value.startsWith("--")) {
++        throw new Error("--cua-narrow-manifest requires an absolute manifest path");
++      }
++      options.cuaNarrowManifest = value;
++      index += 1;
++      continue;
++    }
++
++    if (arg.startsWith("--cua-narrow-manifest=")) {
++      const value = arg.slice("--cua-narrow-manifest=".length);
++      if (value.trim() === "") {
++        throw new Error("--cua-narrow-manifest requires an absolute manifest path");
++      }
++      options.cuaNarrowManifest = value;
++      continue;
++    }
++
+     if (arg === "-o" || arg === "--os") {
+       options.os = argv[index + 1] ?? null;
+       index += 1;
+@@ -357,12 +386,19 @@
+ 
+   const resolvedOs = normalizeOs(options.os ?? positionalOs ?? DEFAULT_TARGET_OS);
+   const resolvedArch = normalizeArch(options.arch ?? positionalArch ?? DEFAULT_TARGET_ARCH);
++  const narrowRequest = resolveNarrowBuildRequest({
++    cliManifestPath: options.cuaNarrowManifest,
++    env: process.env,
++    targetOs: resolvedOs,
++    targetArch: resolvedArch,
++  });
+ 
+   return {
+     os: resolvedOs,
+     arch: resolvedArch,
+     skipPrepare: options.skipPrepare,
+     skipBuild: options.skipBuild,
++    narrowRequest,
+     dryRun: options.dryRun,
+   };
+ }
+@@ -703,7 +739,9 @@
+ }
+ 
+ async function main() {
+-  const { os, arch, skipPrepare, skipBuild, dryRun } = parseArgs(process.argv.slice(2));
++  const { os, arch, skipPrepare, skipBuild, narrowRequest, dryRun } = parseArgs(
++    process.argv.slice(2),
++  );
+   const buildArgs = [
+     "exec",
+     "electron-builder",
+@@ -715,12 +753,22 @@
+ 
+   console.log(`[bundle] target=${os}/${arch}`);
+   console.log(`[bundle] skipPrepare=${skipPrepare} skipBuild=${skipBuild}`);
++  if (narrowRequest) {
++    console.log(`[bundle] cuaNarrowManifest=${narrowRequest.manifestPath}`);
++    // 先验证受控 stage；构建 env 只进入本次 electron-builder，不写成 runtime 激活开关。
++    await validateNarrowManifest({
++      manifestPath: narrowRequest.manifestPath,
++      targetPlatform: { os: "darwin", arch: "arm64" },
++      env: process.env,
++    });
++  }
+ 
+   const buildEnv = {
+     ZCODE_TARGET_OS: os,
+     ZCODE_TARGET_ARCH: arch,
+     ...createElectronRuntimeMirrorEnv(resolveElectronMirror()),
+     ...createElectronBuilderBinariesMirrorEnv(resolveElectronBuilderBinariesMirror()),
++    ...createNarrowBuildEnv(narrowRequest),
+   };
+ 
+   if (dryRun) {
+@@ -739,6 +787,16 @@
+   await runTimedAsync("bundle:electron-builder", () =>
+     runElectronBuilderWithRetry(buildArgs, buildEnv),
+   );
++
++  if (narrowRequest) {
++    await runTimedAsync("bundle:verify-cua-narrow-resources", () =>
++      assertPackagedNarrowResource({
++        resourcesDir: dirname(resolveAppAsarPath(os, arch)),
++        manifestPath: narrowRequest.manifestPath,
++        env: process.env,
++      }),
++    );
++  }
+ 
+   runTimedSync("bundle:verify-runtime-dependencies", () =>
+     verifyPackagedRuntimeDependencies(os, arch),
+--- opening/packages/desktop/scripts/lib/cua-desktop-session-manifest.mjs
++++ source/packages/desktop/scripts/lib/cua-desktop-session-manifest.mjs
+@@ -140,7 +140,8 @@
+       nodeReplCell: {
+         serverPathSource:
+           "process.execPath sibling node-repl-server.mjs, sha256 verified by cli-entry",
+-        toctou: "hash verification and cell exec are separate path operations; not closed this round",
++        toctou:
++          "hash-verified source is sealed into stdin ESM before cell exec; exec does not re-open the path",
+         authorityFd: "cell does not inherit the authority fd; per-call broker capability only",
+         claim: "not full D06 isolation",
+       },
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-base.mjs
+@@ -0,0 +1,28 @@
++// 窄 CUA 资源装配的公共错误与摘要工具。
++import { createHash } from "node:crypto";
++import { readFile } from "node:fs/promises";
++
++export class NarrowResourceError extends Error {
++  constructor(code, message, details) {
++    super(message);
++    this.name = "NarrowResourceError";
++    this.code = code;
++    this.details = details;
++  }
++}
++
++export function sha256Bytes(bytes) {
++  return createHash("sha256").update(bytes).digest("hex");
++}
++
++export function sha1Bytes(bytes) {
++  return createHash("sha1").update(bytes).digest("hex");
++}
++
++export function sha256Text(text) {
++  return sha256Bytes(Buffer.from(text, "utf8"));
++}
++
++export async function sha256File(path) {
++  return sha256Bytes(await readFile(path));
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-build.test.mjs
+@@ -0,0 +1,140 @@
++import assert from "node:assert/strict";
++import test from "node:test";
++
++import {
++  CANDIDATE_HOST_LAUNCH_ENV,
++  NARROW_APP_NAME,
++  NARROW_MANIFEST_ENV,
++  NARROW_SLOT,
++  assertNoCandidateHostLaunchSeam,
++  buildNarrowExtraResource,
++  createNarrowBuildEnv,
++  getNarrowSignIgnorePatterns,
++  resolveNarrowBuildRequest,
++} from "./macos-cua-narrow-resources.mjs";
++
++test("default build has no narrow request and no extra resource", async () => {
++  assert.equal(
++    resolveNarrowBuildRequest({
++      cliManifestPath: null,
++      env: {},
++      targetOs: "darwin",
++      targetArch: "arm64",
++    }),
++    null,
++  );
++  assert.deepEqual(createNarrowBuildEnv(null), {});
++  assert.equal(buildNarrowExtraResource(null), null);
++});
++
++test("explicit narrow manifest is absolute, arm64-only and exported to builder env", async () => {
++  const request = resolveNarrowBuildRequest({
++    cliManifestPath: "/tmp/cua-narrow/manifest.json",
++    env: {},
++    targetOs: "darwin",
++    targetArch: "arm64",
++  });
++  assert.deepEqual(request, { manifestPath: "/tmp/cua-narrow/manifest.json" });
++  assert.deepEqual(createNarrowBuildEnv(request), {
++    [NARROW_MANIFEST_ENV]: "/tmp/cua-narrow/manifest.json",
++  });
++
++  assert.throws(
++    () =>
++      resolveNarrowBuildRequest({
++        cliManifestPath: "relative/manifest.json",
++        env: {},
++        targetOs: "darwin",
++        targetArch: "arm64",
++      }),
++    (error) => error.code === "narrow-manifest-required-absolute",
++  );
++});
++
++test("CLI and env manifests must agree", async () => {
++  assert.throws(
++    () =>
++      resolveNarrowBuildRequest({
++        cliManifestPath: "/tmp/a/manifest.json",
++        env: { [NARROW_MANIFEST_ENV]: "/tmp/b/manifest.json" },
++        targetOs: "darwin",
++        targetArch: "arm64",
++      }),
++    (error) => error.code === "narrow-manifest-conflict",
++  );
++});
++
++test("explicit narrow manifest rejects non-darwin or non-arm64 targets", async () => {
++  for (const [targetOs, targetArch] of [
++    ["darwin", "x64"],
++    ["linux", "arm64"],
++    ["win32", "arm64"],
++  ]) {
++    assert.throws(
++      () =>
++        resolveNarrowBuildRequest({
++          cliManifestPath: "/tmp/cua-narrow/manifest.json",
++          env: {},
++          targetOs,
++          targetArch,
++        }),
++      (error) => error.code === "narrow-target-unsupported",
++    );
++  }
++});
++
++test("explicit narrow assembly rejects the candidate Host launch seam", async () => {
++  assert.throws(
++    () => assertNoCandidateHostLaunchSeam({ [CANDIDATE_HOST_LAUNCH_ENV]: "{}" }),
++    (error) => error.code === "candidate-host-launch-forbidden",
++  );
++  assert.doesNotThrow(() => assertNoCandidateHostLaunchSeam({ [CANDIDATE_HOST_LAUNCH_ENV]: "" }));
++  assert.doesNotThrow(() => assertNoCandidateHostLaunchSeam({}));
++
++  assert.throws(
++    () =>
++      resolveNarrowBuildRequest({
++        cliManifestPath: "/tmp/cua-narrow/manifest.json",
++        env: { [CANDIDATE_HOST_LAUNCH_ENV]: "{}" },
++        targetOs: "darwin",
++        targetArch: "arm64",
++      }),
++    (error) => error.code === "candidate-host-launch-forbidden",
++  );
++});
++
++test("narrow extra resource uses validated stageAppPath and the independent slot", async () => {
++  const resource = buildNarrowExtraResource({
++    stageAppPath: `/tmp/stage/${NARROW_APP_NAME}`,
++  });
++  assert.deepEqual(resource, {
++    from: `/tmp/stage/${NARROW_APP_NAME}`,
++    to: `${NARROW_SLOT}/${NARROW_APP_NAME}`,
++  });
++  assert.equal(resource.to.includes("cua-helper"), false);
++  assert.throws(
++    () => buildNarrowExtraResource({ stageAppPath: "relative/app" }),
++    (error) => error.code === "narrow-manifest-stage",
++  );
++});
++
++test("signIgnore covers the cua-narrow slot without changing cua-helper", async () => {
++  const patterns = getNarrowSignIgnorePatterns();
++  assert.equal(patterns.length, 1);
++  const pattern = new RegExp(patterns[0]);
++  assert.match(`/tmp/Zody.app/Contents/Resources/cua-narrow/${NARROW_APP_NAME}`, pattern);
++  assert.doesNotMatch("/tmp/Zody.app/Contents/Resources/cua-helper/Zody.app", pattern);
++});
++
++test("explicit empty CLI manifest never degrades to an unrequested build", async () => {
++  assert.throws(
++    () =>
++      resolveNarrowBuildRequest({
++        cliManifestPath: "",
++        env: {},
++        targetOs: "darwin",
++        targetArch: "arm64",
++      }),
++    (error) => error.code === "narrow-manifest-required-absolute",
++  );
++});
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-bundle-args.test.mjs
+@@ -0,0 +1,29 @@
++import assert from "node:assert/strict";
++import test from "node:test";
++
++import { parseArgs } from "./bundle.mjs";
++
++test("explicit --cua-narrow-manifest without a path is rejected", async () => {
++  for (const argv of [
++    ["--os", "mac", "--arch", "arm64", "--cua-narrow-manifest"],
++    ["--os", "mac", "--arch", "arm64", "--cua-narrow-manifest="],
++    ["--os", "mac", "--arch", "arm64", "--cua-narrow-manifest", "--dry-run"],
++  ]) {
++    assert.throws(
++      () => parseArgs(argv),
++      /--cua-narrow-manifest requires an absolute manifest path/,
++    );
++  }
++});
++
++test("explicit --cua-narrow-manifest with a path still creates a narrow request", async () => {
++  const parsed = parseArgs([
++    "--os",
++    "mac",
++    "--arch",
++    "arm64",
++    "--cua-narrow-manifest",
++    "/tmp/cua-narrow/manifest.json",
++  ]);
++  assert.deepEqual(parsed.narrowRequest, { manifestPath: "/tmp/cua-narrow/manifest.json" });
++});
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-constants.mjs
+@@ -0,0 +1,52 @@
++// 窄 CUA 资源装配的固定常量。只描述本轮 desktop-session Helper 资源槽位，
++// 不包含任何 runtime 激活、Host 路由或签名信任逻辑。
++import { dirname, join, resolve } from "node:path";
++import { fileURLToPath } from "node:url";
++
++export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
++export const NARROW_MANIFEST_ENV = "ZCODE_CUA_NARROW_MANIFEST";
++export const CANDIDATE_HOST_LAUNCH_ENV = "ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON";
++export const NARROW_SLOT = "cua-narrow";
++export const NARROW_APP_NAME = "Zody CUA Desktop Session.app";
++export const NARROW_EXECUTABLE_NAME = "macos-cua-desktop-session";
++export const NARROW_EXECUTABLE_RELATIVE_PATH = `Contents/MacOS/${NARROW_EXECUTABLE_NAME}`;
++export const NARROW_NODE_RELATIVE_PATH = "Contents/Resources/node";
++export const NARROW_NATIVE_MANIFEST_KIND = "zody-cua-desktop-session-native-candidate";
++export const NARROW_MANIFEST_KIND = "zody-cua-narrow-resource-manifest";
++export const NARROW_ENTRY_NAMES = Object.freeze([
++  "host-entry.mjs",
++  "cli-entry.mjs",
++  "session-entry.mjs",
++]);
++export const NARROW_AUXILIARY_NAMES = Object.freeze(["node-repl-server.mjs"]);
++export const NARROW_TARGET = Object.freeze({
++  os: "darwin",
++  arch: "arm64",
++  minimumMacOSVersion: "14.2",
++});
++
++// 唯一信任根：固定 local-self-signed 证书 leaf 与对应 designated requirement。
++export const PINNED_HELPER_IDENTIFIER = "io.github.zclaudia.zody.cua-helper";
++export const PINNED_NODE_IDENTIFIER = "io.github.zclaudia.zody.cua-helper.node";
++export const PINNED_LEAF_SHA256 =
++  "a7f7afa6a507b71c996f4a9bfbf6eef908d67054acdca93833bcd4c94c13ef0b";
++export const PINNED_LEAF_SHA1 = "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732";
++export const PINNED_DESIGNATED_REQUIREMENT =
++  'identifier "io.github.zclaudia.zody.cua-helper" and certificate leaf = H"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732"';
++export const PINNED_NODE_DESIGNATED_REQUIREMENT =
++  'identifier "io.github.zclaudia.zody.cua-helper.node" and certificate leaf = H"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732"';
++export const PINNED_NODE_CDHASH = "3c57a9bb9f4e8b748ac80d60bc78cdde14767218";
++export const DEFAULT_IDENTITY_PINS_PATH = join(
++  REPO_ROOT,
++  "output",
++  "cua-helper-round11",
++  "controller-signed",
++  "identity-pins.json",
++);
++export const DEFAULT_OUTPUT_ROOT = join(
++  REPO_ROOT,
++  "output",
++  "cua-phase1-closeout",
++  "a-worker",
++  "narrow-resources",
++);
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-identity.mjs
+@@ -0,0 +1,286 @@
++// 窄 CUA 资源身份验证：只用系统 tools 读取 Info.plist、Mach-O 架构和 codesign 输出。
++// 不自行解析 Mach-O/CMS；证书 leaf 由 codesign 提取后直接做摘要。
++import { execFile } from "node:child_process";
++import { mkdtemp, readFile, rm } from "node:fs/promises";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import process from "node:process";
++import { promisify } from "node:util";
++
++import {
++  CANDIDATE_HOST_LAUNCH_ENV,
++  REPO_ROOT,
++} from "./macos-cua-narrow-resources-constants.mjs";
++import { NarrowResourceError, sha1Bytes, sha256Bytes } from "./macos-cua-narrow-resources-base.mjs";
++
++const execFileAsync = promisify(execFile);
++
++async function defaultRun(command, args, options = {}) {
++  try {
++    const result = await execFileAsync(command, args, {
++      cwd: options.cwd ?? REPO_ROOT,
++      encoding: null,
++      timeout: options.timeoutMs ?? 180_000,
++      maxBuffer: 64 * 1024 * 1024,
++      env: options.env ?? process.env,
++    });
++    return {
++      code: 0,
++      stdout: result.stdout.toString("utf8"),
++      stderr: result.stderr.toString("utf8"),
++    };
++  } catch (error) {
++    return {
++      code: typeof error.code === "number" ? error.code : 1,
++      stdout: error.stdout?.toString("utf8") ?? "",
++      stderr: error.stderr?.toString("utf8") ?? "",
++    };
++  }
++}
++
++export function assertNoCandidateHostLaunchSeam(env = process.env) {
++  const value = env[CANDIDATE_HOST_LAUNCH_ENV];
++  if (typeof value === "string" && value.trim()) {
++    throw new NarrowResourceError(
++      "candidate-host-launch-forbidden",
++      `${CANDIDATE_HOST_LAUNCH_ENV} is a candidate Host compile/launch seam and must not be set for cua-narrow resource assembly`,
++    );
++  }
++}
++
++function parseCodesignDisplay(output) {
++  const line = (pattern) => output.match(pattern)?.[1]?.trim();
++  const flagsMatch = output.match(/flags=0x([0-9a-f]+)(?:\(([^)]*)\))?/i);
++  const flags = flagsMatch ? Number.parseInt(flagsMatch[1], 16) : null;
++  return {
++    identifier: line(/^Identifier=(.+)$/m),
++    cdhash: line(/^CDHash=(.+)$/m),
++    authority: line(/^Authority=(.+)$/m),
++    signature: line(/^Signature=(.+)$/m),
++    flags,
++    hardenedRuntime: Boolean(flags && flags & 0x10000),
++    adhoc: /Signature=adhoc|flags=.*\badhoc\b/i.test(output),
++  };
++}
++
++// `codesign -d -r-` 单独输出 designated requirement；`-d --verbose=4` 不包含 DR。
++function parseDesignatedRequirement(output) {
++  return output.match(/^\s*designated\s*=>\s*(.+)$/m)?.[1]?.trim() ?? null;
++}
++
++function hasEntitlementKeys(output) {
++  return /<key>\s*[^<]+\s*<\/key>/.test(output);
++}
++
++export async function readLeafCertificateDer(path, deps = {}) {
++  if (deps.readLeafCertificateDer) return deps.readLeafCertificateDer(path);
++  const run = deps.run ?? defaultRun;
++  const directory = await mkdtemp(join(tmpdir(), "zody-cua-narrow-cert-"));
++  try {
++    const prefix = join(directory, "leaf");
++    const result = await run("/usr/bin/codesign", [
++      "-d",
++      `--extract-certificates=${prefix}`,
++      path,
++    ]);
++    if (result.code !== 0) {
++      throw new NarrowResourceError(
++        "narrow-signature-invalid",
++        `cannot extract certificates for ${path}`,
++        { code: result.code, stderr: result.stderr.slice(-2_000) },
++      );
++    }
++    let der;
++    try {
++      der = await readFile(`${prefix}0`);
++    } catch {
++      throw new NarrowResourceError(
++        "narrow-signature-invalid",
++        `codesign did not write the leaf certificate for ${path}`,
++      );
++    }
++    if (der.length === 0) {
++      throw new NarrowResourceError(
++        "narrow-signature-invalid",
++        `codesign wrote an empty leaf certificate for ${path}`,
++      );
++    }
++    return { der, sha256: sha256Bytes(der), sha1: sha1Bytes(der) };
++  } finally {
++    await rm(directory, { recursive: true, force: true });
++  }
++}
++
++export async function verifyCodeIdentity({
++  path,
++  label,
++  expectedIdentifier,
++  expectedDesignatedRequirement,
++  expectedLeafSha256,
++  expectedLeafSha1,
++  expectedCdhash,
++  deps = {},
++}) {
++  const run = deps.run ?? defaultRun;
++  const readLeaf = deps.readLeafCertificateDer ?? readLeafCertificateDer;
++  const displayResult = await run("/usr/bin/codesign", ["-d", "--verbose=4", path]);
++  if (displayResult.code !== 0) {
++    throw new NarrowResourceError(
++      "narrow-signature-invalid",
++      `${label} cannot be inspected by codesign`,
++      { code: displayResult.code, stderr: displayResult.stderr.slice(-2_000) },
++    );
++  }
++  const display = parseCodesignDisplay(`${displayResult.stdout}${displayResult.stderr}`);
++  if (display.identifier !== expectedIdentifier) {
++    throw new NarrowResourceError(
++      "narrow-identity-mismatch",
++      `${label} identifier mismatch`,
++      { actual: display.identifier, expected: expectedIdentifier },
++    );
++  }
++
++  const requirementResult = await run("/usr/bin/codesign", ["-d", "-r-", path]);
++  if (requirementResult.code !== 0) {
++    throw new NarrowResourceError(
++      "narrow-signature-invalid",
++      `${label} designated requirement cannot be inspected`,
++      { code: requirementResult.code, stderr: requirementResult.stderr.slice(-2_000) },
++    );
++  }
++  const designatedRequirement = parseDesignatedRequirement(
++    `${requirementResult.stdout}${requirementResult.stderr}`,
++  );
++  if (designatedRequirement !== expectedDesignatedRequirement) {
++    throw new NarrowResourceError(
++      "narrow-designated-requirement-mismatch",
++      `${label} designated requirement mismatch`,
++      { actual: designatedRequirement, expected: expectedDesignatedRequirement },
++    );
++  }
++  if (display.adhoc) {
++    throw new NarrowResourceError("narrow-signature-invalid", `${label} is ad-hoc signed`);
++  }
++  if (!display.hardenedRuntime) {
++    throw new NarrowResourceError(
++      "narrow-signature-invalid",
++      `${label} is missing hardened runtime`,
++    );
++  }
++  if (expectedCdhash && display.cdhash !== expectedCdhash) {
++    throw new NarrowResourceError(
++      "narrow-identity-mismatch",
++      `${label} CDHash mismatch`,
++      { actual: display.cdhash, expected: expectedCdhash },
++    );
++  }
++
++  const verifyResult = await run("/usr/bin/codesign", [
++    "--verify",
++    "--strict",
++    `-R=${expectedDesignatedRequirement}`,
++    path,
++  ]);
++  if (verifyResult.code !== 0) {
++    throw new NarrowResourceError(
++      "narrow-signature-invalid",
++      `${label} does not satisfy strict signature verification`,
++      { code: verifyResult.code, stderr: verifyResult.stderr.slice(-2_000) },
++    );
++  }
++
++  const entitlementResult = await run("/usr/bin/codesign", [
++    "-d",
++    "--entitlements",
++    ":-",
++    path,
++  ]);
++  if (entitlementResult.code !== 0) {
++    throw new NarrowResourceError(
++      "narrow-signature-invalid",
++      `${label} entitlements cannot be inspected`,
++    );
++  }
++  if (hasEntitlementKeys(entitlementResult.stdout)) {
++    throw new NarrowResourceError(
++      "narrow-entitlements",
++      `${label} carries entitlements; cua-narrow only accepts the fixed empty-entitlement identity`,
++    );
++  }
++
++  const leaf = await readLeaf(path, deps);
++  if (leaf.sha256 !== expectedLeafSha256 || leaf.sha1 !== expectedLeafSha1) {
++    throw new NarrowResourceError(
++      "narrow-identity-mismatch",
++      `${label} leaf certificate does not match the fixed local-self-signed certificate`,
++      { actualSha256: leaf.sha256, expectedSha256: expectedLeafSha256 },
++    );
++  }
++
++  return {
++    identifier: display.identifier,
++    designatedRequirement,
++    cdhash: display.cdhash,
++    leafSha256: leaf.sha256,
++    leafSha1: leaf.sha1,
++    hardenedRuntime: true,
++    entitlementsEmpty: true,
++  };
++}
++
++export async function readInfoPlist(appPath, deps = {}) {
++  if (deps.readInfoPlist) return deps.readInfoPlist(appPath);
++  const run = deps.run ?? defaultRun;
++  const result = await run("/usr/bin/plutil", [
++    "-convert",
++    "json",
++    "-o",
++    "-",
++    join(appPath, "Contents", "Info.plist"),
++  ]);
++  if (result.code !== 0) {
++    throw new NarrowResourceError(
++      "narrow-helper-mismatch",
++      `cannot read Helper Info.plist: ${result.stderr.trim()}`,
++    );
++  }
++  return JSON.parse(result.stdout);
++}
++
++export async function verifyMachO(path, { label, requireMinimumMacOS, deps = {} }) {
++  const run = deps.run ?? defaultRun;
++  const lipo = await run("/usr/bin/lipo", ["-archs", path]);
++  if (lipo.code !== 0) {
++    throw new NarrowResourceError(
++      "narrow-target-unsupported",
++      `${label} cannot be inspected by lipo`,
++      { code: lipo.code, stderr: lipo.stderr.slice(-2_000) },
++    );
++  }
++  // 只接受 thin arm64；universal 不能在 manifest 里被谎报成 arm64。
++  const architectures = lipo.stdout.trim().split(/\s+/).filter(Boolean);
++  if (architectures.length !== 1 || architectures[0] !== "arm64") {
++    throw new NarrowResourceError(
++      "narrow-target-unsupported",
++      `${label} is not a thin arm64 binary`,
++      { architectures },
++    );
++  }
++  const otool = await run("/usr/bin/otool", ["-l", path]);
++  if (otool.code !== 0) {
++    throw new NarrowResourceError(
++      "narrow-target-unsupported",
++      `${label} cannot be inspected by otool`,
++      { code: otool.code, stderr: otool.stderr.slice(-2_000) },
++    );
++  }
++  const minos = [...otool.stdout.matchAll(/^\s*minos\s+([0-9.]+)\s*$/gm)].map((match) => match[1]);
++  if (requireMinimumMacOS && (minos.length === 0 || minos.some((value) => value !== "14.2"))) {
++    throw new NarrowResourceError(
++      "narrow-target-unsupported",
++      `${label} minimum macOS is not 14.2`,
++      { minos },
++    );
++  }
++  return { architectures, minos };
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-identity.test.mjs
+@@ -0,0 +1,345 @@
++import assert from "node:assert/strict";
++import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
++import { join } from "node:path";
++import test from "node:test";
++
++import {
++  DEFAULT_IDENTITY_PINS_PATH,
++  PINNED_DESIGNATED_REQUIREMENT,
++  PINNED_HELPER_IDENTIFIER,
++  PINNED_LEAF_SHA1,
++  PINNED_LEAF_SHA256,
++  PINNED_NODE_CDHASH,
++  PINNED_NODE_DESIGNATED_REQUIREMENT,
++  PINNED_NODE_IDENTIFIER,
++  REPO_ROOT,
++  loadIdentityPins,
++  sha1Bytes,
++  sha256Bytes,
++  verifyCodeIdentity,
++  verifyMachO,
++} from "./macos-cua-narrow-resources.mjs";
++import { TEST_ROOT, expectedPins } from "./macos-cua-narrow-resources-test-fixtures.mjs";
++
++function codesignDisplay(overrides = {}) {
++  return [
++    "Executable=/tmp/helper",
++    `Identifier=${overrides.identifier ?? PINNED_HELPER_IDENTIFIER}`,
++    "Format=app bundle with Mach-O thin (arm64)",
++    `CodeDirectory v=20500 size=1 flags=${overrides.flags ?? "0x10000(runtime)"} hashes=1+1`,
++    `CDHash=${overrides.cdhash ?? "d476586ca3d6d27c528458021d4dcc1727496a2d"}`,
++    "Authority=Zody Local Computer Use",
++    "Signature size=2103",
++    ...(overrides.signature ? [overrides.signature] : []),
++  ].join("\n");
++}
++
++function fakeCodesignRun({
++  display,
++  requirement = PINNED_DESIGNATED_REQUIREMENT,
++  verify = { code: 0, stdout: "", stderr: "valid on disk" },
++  entitlements = "",
++}) {
++  return async (_command, args) => {
++    if (args.includes("--verify")) return verify;
++    if (args.includes("--entitlements")) return { code: 0, stdout: entitlements, stderr: "" };
++    if (args[1] === "-r-") {
++      return {
++        code: 0,
++        stdout: `Executable=/tmp/helper\ndesignated => ${requirement}`,
++        stderr: "",
++      };
++    }
++    if (args.includes("--verbose=4")) return { code: 0, stdout: display, stderr: "" };
++    return { code: 1, stdout: "", stderr: `unexpected args: ${args.join(" ")}` };
++  };
++}
++
++function fakeLeaf(overrides = {}) {
++  return {
++    sha256: overrides.sha256 ?? PINNED_LEAF_SHA256,
++    sha1: overrides.sha1 ?? PINNED_LEAF_SHA1,
++  };
++}
++
++function verifyIdentityOptions(overrides = {}) {
++  return {
++    path: "/tmp/helper",
++    label: "fixture helper",
++    expectedIdentifier: PINNED_HELPER_IDENTIFIER,
++    expectedDesignatedRequirement: PINNED_DESIGNATED_REQUIREMENT,
++    expectedLeafSha256: PINNED_LEAF_SHA256,
++    expectedLeafSha1: PINNED_LEAF_SHA1,
++    deps: {
++      run: fakeCodesignRun({
++        display: codesignDisplay(overrides.display),
++        requirement: overrides.requirement,
++      }),
++      readLeafCertificateDer: async () => fakeLeaf(overrides.leaf),
++      ...overrides.deps,
++    },
++    ...overrides.options,
++  };
++}
++
++test("identity pins are read only from the fixed path and must match fixed hashes", async () => {
++  await mkdir(TEST_ROOT, { recursive: true });
++  const root = await mkdtemp(join(TEST_ROOT, "pins-"));
++  try {
++    const goodPinsPath = join(root, "identity-pins.json");
++    await writeFile(goodPinsPath, `${JSON.stringify(expectedPins(), null, 2)}\n`);
++    const pins = await loadIdentityPins({ path: goodPinsPath });
++    assert.equal(pins.leafSha256, PINNED_LEAF_SHA256);
++    assert.equal(pins.nodeLeafSha256, PINNED_LEAF_SHA256);
++
++    const badPinsPath = join(root, "bad-identity-pins.json");
++    await writeFile(
++      badPinsPath,
++      `${JSON.stringify({ ...expectedPins(), leafSha256: "0".repeat(64) }, null, 2)}\n`,
++    );
++    await assert.rejects(() => loadIdentityPins({ path: badPinsPath }), (error) => {
++      assert.equal(error.code, "narrow-pins-mismatch");
++      return true;
++    });
++  } finally {
++    await rm(root, { recursive: true, force: true });
++  }
++});
++
++test("codesign identity, DR, runtime flag, strict signature and empty entitlements are enforced", async () => {
++  await assert.doesNotReject(() => verifyCodeIdentity(verifyIdentityOptions()));
++
++  await assert.rejects(
++    () =>
++      verifyCodeIdentity(
++        verifyIdentityOptions({
++          display: { identifier: "io.github.zclaudia.zody.some-other-helper" },
++        }),
++      ),
++    (error) => error.code === "narrow-identity-mismatch",
++  );
++
++  await assert.rejects(
++    () =>
++      verifyCodeIdentity(
++        verifyIdentityOptions({
++          requirement:
++            'identifier "io.github.zclaudia.zody.cua-helper" and certificate leaf = H"0000000000000000000000000000000000000000"',
++        }),
++      ),
++    (error) => error.code === "narrow-designated-requirement-mismatch",
++  );
++
++  await assert.rejects(
++    () => verifyCodeIdentity(verifyIdentityOptions({ display: { flags: "0x0" } })),
++    (error) => error.code === "narrow-signature-invalid",
++  );
++
++  await assert.rejects(
++    () => verifyCodeIdentity(verifyIdentityOptions({ display: { signature: "Signature=adhoc" } })),
++    (error) => error.code === "narrow-signature-invalid",
++  );
++
++  await assert.rejects(
++    () =>
++      verifyCodeIdentity(
++        verifyIdentityOptions({
++          deps: {
++            run: fakeCodesignRun({
++              display: codesignDisplay(),
++              verify: { code: 1, stdout: "", stderr: "CSSMERR_TP_NOT_TRUSTED" },
++            }),
++          },
++        }),
++      ),
++    (error) => error.code === "narrow-signature-invalid",
++  );
++
++  await assert.rejects(
++    () =>
++      verifyCodeIdentity(
++        verifyIdentityOptions({
++          deps: {
++            run: fakeCodesignRun({
++              display: codesignDisplay(),
++              entitlements:
++                '<?xml version="1.0"?><plist version="1.0"><dict><key>com.apple.security.cs.disable-library-validation</key><true/></dict></plist>',
++            }),
++          },
++        }),
++      ),
++    (error) => error.code === "narrow-entitlements",
++  );
++
++  await assert.rejects(
++    () => verifyCodeIdentity(verifyIdentityOptions({ leaf: { sha256: "0".repeat(64) } })),
++    (error) => error.code === "narrow-identity-mismatch",
++  );
++});
++
++test("DR is read from codesign -d -r- and strict verify uses the fixed -R requirement", async () => {
++  const calls = [];
++  const run = async (_command, args) => {
++    calls.push(args);
++    if (args[1] === "-r-") {
++      return {
++        code: 0,
++        stdout: `Executable=/tmp/helper\ndesignated => ${PINNED_DESIGNATED_REQUIREMENT}`,
++        stderr: "",
++      };
++    }
++    if (args.includes("--verbose=4")) return { code: 0, stdout: codesignDisplay(), stderr: "" };
++    if (args.includes("--entitlements")) return { code: 0, stdout: "", stderr: "" };
++    if (args.includes("--verify")) return { code: 0, stdout: "", stderr: "" };
++    return { code: 1, stdout: "", stderr: `unexpected args: ${args.join(" ")}` };
++  };
++  await verifyCodeIdentity({
++    path: "/tmp/helper",
++    label: "fixture helper",
++    expectedIdentifier: PINNED_HELPER_IDENTIFIER,
++    expectedDesignatedRequirement: PINNED_DESIGNATED_REQUIREMENT,
++    expectedLeafSha256: PINNED_LEAF_SHA256,
++    expectedLeafSha1: PINNED_LEAF_SHA1,
++    deps: { run, readLeafCertificateDer: async () => fakeLeaf() },
++  });
++  assert.ok(calls.some((args) => args[1] === "-r-"));
++  assert.ok(
++    calls.some(
++      (args) =>
++        args.includes("--strict") &&
++        args.includes(`-R=${PINNED_DESIGNATED_REQUIREMENT}`),
++    ),
++  );
++});
++
++test("default leaf extraction uses codesign --extract-certificates=<prefix> and hashes leaf0", async () => {
++  const der = Buffer.from("fixture leaf der");
++  const calls = [];
++  const run = async (_command, args) => {
++    calls.push(args);
++    if (args[1] === "-r-") {
++      return {
++        code: 0,
++        stdout: `Executable=/tmp/helper\ndesignated => ${PINNED_DESIGNATED_REQUIREMENT}`,
++        stderr: "",
++      };
++    }
++    if (args.includes("--verbose=4")) return { code: 0, stdout: codesignDisplay(), stderr: "" };
++    if (args.includes("--entitlements")) return { code: 0, stdout: "", stderr: "" };
++    if (args.includes("--verify")) return { code: 0, stdout: "", stderr: "" };
++    const extract = args.find((arg) => arg.startsWith("--extract-certificates="));
++    if (extract) {
++      const prefix = extract.slice("--extract-certificates=".length);
++      await writeFile(`${prefix}0`, der);
++      return { code: 0, stdout: "", stderr: "" };
++    }
++    return { code: 1, stdout: "", stderr: `unexpected args: ${args.join(" ")}` };
++  };
++  const result = await verifyCodeIdentity({
++    path: "/tmp/helper",
++    label: "fixture helper",
++    expectedIdentifier: PINNED_HELPER_IDENTIFIER,
++    expectedDesignatedRequirement: PINNED_DESIGNATED_REQUIREMENT,
++    expectedLeafSha256: sha256Bytes(der),
++    expectedLeafSha1: sha1Bytes(der),
++    deps: { run },
++  });
++  assert.equal(result.leafSha256, sha256Bytes(der));
++  assert.ok(calls.some((args) => args.some((arg) => arg.startsWith("--extract-certificates="))));
++});
++
++test("leaf extraction fails when codesign does not write leaf0", async () => {
++  const run = async (_command, args) => {
++    if (args[1] === "-r-") {
++      return {
++        code: 0,
++        stdout: `Executable=/tmp/helper\ndesignated => ${PINNED_DESIGNATED_REQUIREMENT}`,
++        stderr: "",
++      };
++    }
++    if (args.includes("--verbose=4")) return { code: 0, stdout: codesignDisplay(), stderr: "" };
++    if (args.includes("--entitlements")) return { code: 0, stdout: "", stderr: "" };
++    if (args.includes("--verify")) return { code: 0, stdout: "", stderr: "" };
++    return { code: 0, stdout: "", stderr: "" };
++  };
++  await assert.rejects(
++    () =>
++      verifyCodeIdentity({
++        path: "/tmp/helper",
++        label: "fixture helper",
++        expectedIdentifier: PINNED_HELPER_IDENTIFIER,
++        expectedDesignatedRequirement: PINNED_DESIGNATED_REQUIREMENT,
++        expectedLeafSha256: PINNED_LEAF_SHA256,
++        expectedLeafSha1: PINNED_LEAF_SHA1,
++        deps: { run },
++      }),
++    (error) => error.code === "narrow-signature-invalid",
++  );
++});
++
++test("verifyMachO returns real architectures and rejects universal or failed tools", async () => {
++  const runFor = ({ lipo = "arm64\n", lipoCode = 0, otool = "  minos 14.2\n", otoolCode = 0 }) =>
++    async (_command, args) => {
++      if (args[0] === "-archs") {
++        return { code: lipoCode, stdout: lipo, stderr: lipoCode ? "lipo failed" : "" };
++      }
++      return { code: otoolCode, stdout: otool, stderr: otoolCode ? "otool failed" : "" };
++    };
++
++  const result = await verifyMachO("/tmp/helper", {
++    label: "fixture",
++    requireMinimumMacOS: true,
++    deps: { run: runFor({}) },
++  });
++  assert.deepEqual(result.architectures, ["arm64"]);
++  assert.deepEqual(result.minos, ["14.2"]);
++
++  await assert.rejects(
++    () =>
++      verifyMachO("/tmp/helper", {
++        label: "fixture",
++        requireMinimumMacOS: true,
++        deps: { run: runFor({ lipo: "x86_64 arm64\n" }) },
++      }),
++    (error) => error.code === "narrow-target-unsupported",
++  );
++  await assert.rejects(
++    () =>
++      verifyMachO("/tmp/helper", {
++        label: "fixture",
++        requireMinimumMacOS: true,
++        deps: { run: runFor({ lipoCode: 1 }) },
++      }),
++    (error) => error.code === "narrow-target-unsupported",
++  );
++  await assert.rejects(
++    () =>
++      verifyMachO("/tmp/helper", {
++        label: "fixture",
++        requireMinimumMacOS: true,
++        deps: { run: runFor({ otoolCode: 1 }) },
++      }),
++    (error) => error.code === "narrow-target-unsupported",
++  );
++
++  const node = await verifyMachO("/tmp/node", {
++    label: "node",
++    requireMinimumMacOS: false,
++    deps: { run: runFor({ otool: "  minos 13.5\n" }) },
++  });
++  assert.deepEqual(node.minos, ["13.5"]);
++});
++
++test("fixed pin constants stay aligned with the read-only identity pins file", async () => {
++  const raw = JSON.parse(await readFile(DEFAULT_IDENTITY_PINS_PATH, "utf8"));
++  assert.equal(raw.leafSha256, PINNED_LEAF_SHA256);
++  assert.equal(raw.nodeLeafSha256, PINNED_LEAF_SHA256);
++  assert.equal(raw.designatedRequirement, PINNED_DESIGNATED_REQUIREMENT);
++  assert.equal(raw.nodeDesignatedRequirement, PINNED_NODE_DESIGNATED_REQUIREMENT);
++  assert.equal(raw.nodeIdentifier, PINNED_NODE_IDENTIFIER);
++  assert.equal(raw.nodeCdhash, PINNED_NODE_CDHASH);
++});
++
++test("test root stays under the authorized output directory", async () => {
++  assert.match(TEST_ROOT, new RegExp(`${REPO_ROOT.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
++});
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-manifest.mjs
+@@ -0,0 +1,8 @@
++// 窄 CUA manifest 相关 API 的稳定入口；实现按准备/校验/身份拆在有限文件中。
++export { verifyNarrowApp } from "./macos-cua-narrow-resources-verify-app.mjs";
++export { createNarrowManifest } from "./macos-cua-narrow-resources-prepare-core.mjs";
++export {
++  assertPackagedNarrowResource,
++  validateNarrowManifest,
++  writeNarrowBuildAudit,
++} from "./macos-cua-narrow-resources-validate.mjs";
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-manifest.test.mjs
+@@ -0,0 +1,332 @@
++import assert from "node:assert/strict";
++import { cp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
++import { join } from "node:path";
++import test from "node:test";
++
++import {
++  NARROW_APP_NAME,
++  NARROW_EXECUTABLE_NAME,
++  assertPackagedNarrowResource,
++  inspectNarrowTree,
++  sha256File,
++  validateNarrowManifest,
++  buildNarrowExtraResource,
++  createNarrowManifest,
++} from "./macos-cua-narrow-resources.mjs";
++import {
++  fixtureIdentity,
++  makeFixtureApp,
++  makeFixtureRoot,
++  makeNativeBuildManifest,
++  makePreparedLayout,
++  writeFixturePins,
++} from "./macos-cua-narrow-resources-test-fixtures.mjs";
++
++function validateOptions(manifestPath, extra = {}) {
++  const { deps, ...rest } = extra;
++  return {
++    manifestPath,
++    targetPlatform: { os: "darwin", arch: "arm64" },
++    env: {},
++    ...rest,
++    deps: { verifyNarrowApp: async () => fixtureIdentity(), ...deps },
++  };
++}
++
++async function withLayout(run) {
++  const root = await makeFixtureRoot();
++  try {
++    const { appPath } = await makeFixtureApp(root);
++    const pinsPath = await writeFixturePins(root);
++    const nativeBuildManifestPath = await makeNativeBuildManifest(root, appPath);
++    const layout = await makePreparedLayout({
++      root,
++      appPath,
++      nativeBuildManifestPath,
++      pinsPath,
++    });
++    await run({ root, appPath, pinsPath, nativeBuildManifestPath, layout });
++  } finally {
++    await rm(root, { recursive: true, force: true });
++  }
++}
++
++test("manifest tree digest mismatch is rejected", async () => {
++  await withLayout(async ({ layout }) => {
++    const manifest = { ...layout.manifest, tree: { ...layout.tree, treeSha256: "0".repeat(64) } };
++    await writeFile(layout.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
++    await assert.rejects(() => validateNarrowManifest(validateOptions(layout.manifestPath)), (error) => {
++      assert.equal(error.code, "narrow-content-mismatch");
++      return true;
++    });
++  });
++});
++
++test("absolute or escaping controlled paths are rejected", async () => {
++  await withLayout(async ({ layout }) => {
++    for (const stageAppPath of ["/tmp/other.app", "../escape.app"]) {
++      const manifest = { ...layout.manifest, stage: { ...layout.manifest.stage, appPath: stageAppPath } };
++      await writeFile(layout.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
++      await assert.rejects(
++        () => validateNarrowManifest(validateOptions(layout.manifestPath)),
++        (error) => error.code === "narrow-manifest-path",
++      );
++    }
++  });
++});
++
++test("tampered staged resource is rejected by file manifest", async () => {
++  await withLayout(async ({ layout }) => {
++    await writeFile(join(layout.stageAppPath, "Contents", "Resources", "node"), "tampered node\n");
++    await assert.rejects(() => validateNarrowManifest(validateOptions(layout.manifestPath)), (error) => {
++      assert.equal(error.code, "narrow-content-mismatch");
++      return true;
++    });
++  });
++});
++
++test("desktop-session entry manifest hashes must match the signed app resources", async () => {
++  const root = await makeFixtureRoot();
++  try {
++    const { appPath } = await makeFixtureApp(root);
++    const pinsPath = await writeFixturePins(root);
++    const nativeBuildManifestPath = await makeNativeBuildManifest(root, appPath);
++    const nativeManifest = JSON.parse(await readFile(nativeBuildManifestPath, "utf8"));
++    nativeManifest.entries = nativeManifest.entries.map((entry) =>
++      entry.name === "cli-entry.mjs" ? { ...entry, sha256: "0".repeat(64) } : entry,
++    );
++    await writeFile(nativeBuildManifestPath, `${JSON.stringify(nativeManifest, null, 2)}\n`);
++    const layout = await makePreparedLayout({ root, appPath, nativeBuildManifestPath, pinsPath });
++    await assert.rejects(() => validateNarrowManifest(validateOptions(layout.manifestPath)), (error) => {
++      assert.equal(error.code, "narrow-entry-mismatch");
++      return true;
++    });
++  } finally {
++    await rm(root, { recursive: true, force: true });
++  }
++});
++
++test("round11 helper manifest is not accepted as the desktop-session assembly source", async () => {
++  const root = await makeFixtureRoot();
++  try {
++    const { appPath } = await makeFixtureApp(root);
++    const pinsPath = await writeFixturePins(root);
++    const nativeBuildManifestPath = await makeNativeBuildManifest(root, appPath);
++    const nativeManifest = JSON.parse(await readFile(nativeBuildManifestPath, "utf8"));
++    nativeManifest.kind = "zody-cua-helper-round11-final-build";
++    await writeFile(nativeBuildManifestPath, `${JSON.stringify(nativeManifest, null, 2)}\n`);
++    const layout = await makePreparedLayout({ root, appPath, nativeBuildManifestPath, pinsPath });
++    await assert.rejects(() => validateNarrowManifest(validateOptions(layout.manifestPath)), (error) => {
++      assert.equal(error.code, "narrow-native-manifest-mismatch");
++      return true;
++    });
++  } finally {
++    await rm(root, { recursive: true, force: true });
++  }
++});
++
++test("missing node-repl-server resource is rejected even with a matching tree manifest", async () => {
++  await withLayout(async ({ layout }) => {
++    await rm(join(layout.stageAppPath, "Contents", "Resources", "node-repl-server.mjs"));
++    await assert.rejects(() => validateNarrowManifest(validateOptions(layout.manifestPath)), (error) => {
++      assert.equal(error.code, "narrow-content-mismatch");
++      return true;
++    });
++  });
++});
++
++test("live identity mismatch is rejected even when the manifest self-reports the fixed pin", async () => {
++  await withLayout(async ({ layout }) => {
++    await assert.rejects(
++      () =>
++        validateNarrowManifest(
++          validateOptions(layout.manifestPath, {
++            deps: { verifyNarrowApp: async () => fixtureIdentity({ leafSha256: "f".repeat(64) }) },
++          }),
++        ),
++      (error) => error.code === "narrow-identity-mismatch",
++    );
++  });
++});
++
++test("symlink resources are rejected", async () => {
++  const root = await makeFixtureRoot();
++  try {
++    const { appPath } = await makeFixtureApp(root);
++    await symlink(
++      join(appPath, "Contents", "Resources", "node"),
++      join(appPath, "Contents", "Resources", "node-link"),
++    );
++    await assert.rejects(() => inspectNarrowTree(appPath), (error) => error.code === "narrow-symlink");
++  } finally {
++    await rm(root, { recursive: true, force: true });
++  }
++});
++
++test("native build manifest hash mismatch is rejected", async () => {
++  await withLayout(async ({ layout }) => {
++    const manifest = {
++      ...layout.manifest,
++      nativeBuildManifest: { ...layout.manifest.nativeBuildManifest, sha256: "0".repeat(64) },
++    };
++    await writeFile(layout.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
++    await assert.rejects(() => validateNarrowManifest(validateOptions(layout.manifestPath)), (error) => {
++      assert.equal(error.code, "narrow-native-manifest-mismatch");
++      return true;
++    });
++  });
++});
++
++test("prepare copies the desktop-session helper and records signed vs unsigned hashes", async () => {
++  const root = await makeFixtureRoot();
++  try {
++    const { appPath } = await makeFixtureApp(root);
++    const pinsPath = await writeFixturePins(root);
++    const nativeBuildManifestPath = await makeNativeBuildManifest(root, appPath);
++    const outputRoot = join(root, "narrow-output");
++    const prepared = await createNarrowManifest({
++      appPath,
++      nativeBuildManifestPath,
++      outputRoot,
++      pinsPath,
++      replace: false,
++      deps: { verifyNarrowApp: async () => fixtureIdentity() },
++    });
++    assert.equal(prepared.manifest.slot.appName, NARROW_APP_NAME);
++    assert.equal(prepared.manifest.path, "manifest.json");
++    assert.equal(prepared.manifest.stage.appPath, `stage/${NARROW_APP_NAME}`);
++    assert.equal(prepared.stageAppPath, join(outputRoot, "stage", NARROW_APP_NAME));
++    assert.equal(prepared.manifest.source.treeSha256, prepared.manifest.stage.treeSha256);
++    assert.equal(
++      prepared.manifest.identity.signedBinarySha256,
++      await sha256File(join(outputRoot, "stage", NARROW_APP_NAME, "Contents", "MacOS", NARROW_EXECUTABLE_NAME)),
++    );
++    assert.equal(prepared.manifest.identity.nativeUnsignedBinarySha256, "1".repeat(64));
++    assert.notEqual(
++      prepared.manifest.identity.signedBinarySha256,
++      prepared.manifest.identity.nativeUnsignedBinarySha256,
++    );
++    assert.equal(await sha256File(join(outputRoot, "stage", "identity-pins.json")), prepared.manifest.identity.pinsSha256);
++    assert.equal(await sha256File(join(outputRoot, "stage", "native-build-manifest.json")), prepared.manifest.nativeBuildManifest.sha256);
++  } finally {
++    await rm(root, { recursive: true, force: true });
++  }
++});
++
++test("prepared output remains buildable and verifiable after moving the whole directory", async () => {
++  const root = await makeFixtureRoot();
++  try {
++    const { appPath } = await makeFixtureApp(root);
++    const pinsPath = await writeFixturePins(root);
++    const nativeBuildManifestPath = await makeNativeBuildManifest(root, appPath);
++    const outputRoot = join(root, "narrow-output");
++    await createNarrowManifest({
++      appPath,
++      nativeBuildManifestPath,
++      outputRoot,
++      pinsPath,
++      deps: { verifyNarrowApp: async () => fixtureIdentity() },
++    });
++
++    const movedRoot = join(root, "moved-output");
++    await cp(outputRoot, movedRoot, { recursive: true });
++    await rm(outputRoot, { recursive: true, force: true });
++
++    const validated = await validateNarrowManifest(
++      validateOptions(join(movedRoot, "manifest.json")),
++    );
++    assert.equal(validated.stageAppPath, join(movedRoot, "stage", NARROW_APP_NAME));
++    assert.deepEqual(buildNarrowExtraResource(validated), {
++      from: join(movedRoot, "stage", NARROW_APP_NAME),
++      to: `cua-narrow/${NARROW_APP_NAME}`,
++    });
++  } finally {
++    await rm(root, { recursive: true, force: true });
++  }
++});
++
++test("prepare refuses to overwrite an existing stage without --replace", async () => {
++  const root = await makeFixtureRoot();
++  try {
++    const { appPath } = await makeFixtureApp(root);
++    const pinsPath = await writeFixturePins(root);
++    const nativeBuildManifestPath = await makeNativeBuildManifest(root, appPath);
++    const outputRoot = join(root, "narrow-output");
++    await createNarrowManifest({
++      appPath,
++      nativeBuildManifestPath,
++      outputRoot,
++      pinsPath,
++      deps: { verifyNarrowApp: async () => fixtureIdentity() },
++    });
++    await assert.rejects(
++      () =>
++        createNarrowManifest({
++          appPath,
++          nativeBuildManifestPath,
++          outputRoot,
++          pinsPath,
++          deps: { verifyNarrowApp: async () => fixtureIdentity() },
++        }),
++      (error) => error.code === "narrow-stage-exists",
++    );
++  } finally {
++    await rm(root, { recursive: true, force: true });
++  }
++});
++
++test("missing fixture pins are rejected before copying", async () => {
++  const root = await makeFixtureRoot();
++  try {
++    const { appPath } = await makeFixtureApp(root);
++    const nativeBuildManifestPath = await makeNativeBuildManifest(root, appPath);
++    await assert.rejects(
++      () =>
++        createNarrowManifest({
++          appPath,
++          nativeBuildManifestPath,
++          outputRoot: join(root, "output"),
++          pinsPath: join(root, "missing-pins.json"),
++          deps: { verifyNarrowApp: async () => fixtureIdentity() },
++        }),
++      (error) => error.code === "ENOENT" || error.code === "narrow-pins-mismatch",
++    );
++  } finally {
++    await rm(root, { recursive: true, force: true });
++  }
++});
++
++test("packaged cua-narrow resources are revalidated after copy", async () => {
++  await withLayout(async ({ layout }) => {
++    const resourcesDir = join(layout.outputRoot, "packaged-resources");
++    const packagedAppPath = join(resourcesDir, "cua-narrow", NARROW_APP_NAME);
++    await mkdir(join(resourcesDir, "cua-narrow"), { recursive: true });
++    await cp(layout.stageAppPath, packagedAppPath, { recursive: true, preserveTimestamps: true });
++    const validated = await assertPackagedNarrowResource({
++      resourcesDir,
++      manifestPath: layout.manifestPath,
++      deps: { verifyNarrowApp: async () => fixtureIdentity() },
++    });
++    assert.equal(validated.packagedAppPath, packagedAppPath);
++    assert.equal(validated.packagedTree.treeSha256, layout.tree.treeSha256);
++  });
++});
++
++test("tampered packaged cua-narrow resources are rejected", async () => {
++  await withLayout(async ({ layout }) => {
++    const resourcesDir = join(layout.outputRoot, "packaged-resources");
++    const packagedAppPath = join(resourcesDir, "cua-narrow", NARROW_APP_NAME);
++    await mkdir(join(resourcesDir, "cua-narrow"), { recursive: true });
++    await cp(layout.stageAppPath, packagedAppPath, { recursive: true, preserveTimestamps: true });
++    await writeFile(join(packagedAppPath, "Contents", "Resources", "host-entry.mjs"), "tampered\n");
++    await assert.rejects(
++      () =>
++        assertPackagedNarrowResource({
++          resourcesDir,
++          manifestPath: layout.manifestPath,
++          deps: { verifyNarrowApp: async () => fixtureIdentity() },
++        }),
++      (error) => error.code === "narrow-content-mismatch",
++    );
++  });
++});
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-native.mjs
+@@ -0,0 +1,158 @@
++// 本轮 desktop-session native build manifest 的校验：只接受固定 kind/entry 集合，
++// 并区分 unsigned Mach-O 摘要与签名后实际摘要。
++import { lstat, readFile } from "node:fs/promises";
++import { join } from "node:path";
++
++import {
++  NARROW_APP_NAME,
++  NARROW_AUXILIARY_NAMES,
++  NARROW_ENTRY_NAMES,
++  NARROW_EXECUTABLE_RELATIVE_PATH,
++  NARROW_NATIVE_MANIFEST_KIND,
++  NARROW_NODE_RELATIVE_PATH,
++  PINNED_HELPER_IDENTIFIER,
++} from "./macos-cua-narrow-resources-constants.mjs";
++import {
++  NarrowResourceError,
++  sha256Bytes,
++  sha256File,
++} from "./macos-cua-narrow-resources-base.mjs";
++
++function assertPinValues(rawValues, pins) {
++  if (!rawValues || typeof rawValues !== "object") {
++    throw new NarrowResourceError(
++      "narrow-native-manifest-mismatch",
++      "desktop-session native build manifest is missing identityPins.values",
++    );
++  }
++  for (const field of [
++    "leafSha256",
++    "nodeLeafSha256",
++    "designatedRequirement",
++    "nodeDesignatedRequirement",
++    "nodeIdentifier",
++    "nodeCdhash",
++  ]) {
++    if (rawValues[field] !== pins[field]) {
++      throw new NarrowResourceError(
++        "narrow-native-manifest-mismatch",
++        `desktop-session native build manifest identity pin ${field} changed`,
++      );
++    }
++  }
++}
++
++async function assertExpectedResources({ appPath, descriptors, expectedNames, kind }) {
++  if (!Array.isArray(descriptors)) {
++    throw new NarrowResourceError(
++      "narrow-entry-mismatch",
++      `desktop-session native build manifest is missing ${kind}`,
++    );
++  }
++  const byName = new Map(descriptors.map((entry) => [entry.name, entry]));
++  if (byName.size !== expectedNames.length || expectedNames.some((name) => !byName.has(name))) {
++    throw new NarrowResourceError(
++      "narrow-entry-mismatch",
++      `desktop-session native build manifest ${kind} is not the expected entry set`,
++      { actual: [...byName.keys()], expected: expectedNames },
++    );
++  }
++  for (const name of expectedNames) {
++    const descriptor = byName.get(name);
++    if (descriptor.path !== `Contents/Resources/${name}`) {
++      throw new NarrowResourceError(
++        "narrow-entry-mismatch",
++        `${kind} ${name} is not at its fixed resource path`,
++      );
++    }
++    const absolutePath = join(appPath, descriptor.path);
++    const info = await lstat(absolutePath);
++    if (!info.isFile() || info.isSymbolicLink()) {
++      throw new NarrowResourceError(
++        "narrow-entry-mismatch",
++        `${kind} ${name} is missing from the signed Helper`,
++      );
++    }
++    const bytes = await readFile(absolutePath);
++    if (descriptor.sha256 !== sha256Bytes(bytes) || descriptor.bytes !== bytes.length) {
++      throw new NarrowResourceError(
++        "narrow-entry-mismatch",
++        `${kind} ${name} does not match the native build manifest`,
++      );
++    }
++  }
++}
++
++export async function validateNativeBuildManifest({
++  appPath,
++  nativeBuildManifestPath,
++  pins,
++  deps = {},
++}) {
++  const read = deps.readFile ?? readFile;
++  const bytes = await read(nativeBuildManifestPath);
++  let nativeManifest;
++  try {
++    nativeManifest = JSON.parse(bytes.toString("utf8"));
++  } catch {
++    throw new NarrowResourceError(
++      "narrow-native-manifest-mismatch",
++      `desktop-session native build manifest is not valid JSON: ${nativeBuildManifestPath}`,
++    );
++  }
++  if (
++    nativeManifest.kind !== NARROW_NATIVE_MANIFEST_KIND ||
++    nativeManifest.status !== "pass" ||
++    nativeManifest.app?.name !== NARROW_APP_NAME ||
++    nativeManifest.app?.path !== `helper/${NARROW_APP_NAME}` ||
++    nativeManifest.app?.bundleIdentifier !== PINNED_HELPER_IDENTIFIER
++  ) {
++    throw new NarrowResourceError(
++      "narrow-native-manifest-mismatch",
++      "native build manifest is not the verified desktop-session Helper",
++    );
++  }
++  assertPinValues(nativeManifest.identityPins?.values, pins);
++  await assertExpectedResources({
++    appPath,
++    descriptors: nativeManifest.entries,
++    expectedNames: NARROW_ENTRY_NAMES,
++    kind: "entries",
++  });
++  await assertExpectedResources({
++    appPath,
++    descriptors: nativeManifest.auxiliaryResources,
++    expectedNames: NARROW_AUXILIARY_NAMES,
++    kind: "auxiliaryResources",
++  });
++
++  const nodePath = join(appPath, NARROW_NODE_RELATIVE_PATH);
++  const nodeSha256 = await sha256File(nodePath);
++  if (nativeManifest.node?.sha256 !== nodeSha256) {
++    throw new NarrowResourceError(
++      "narrow-entry-mismatch",
++      "cua-narrow Helper Node does not match the native build manifest",
++      { actual: nodeSha256, expected: nativeManifest.node?.sha256 },
++    );
++  }
++  if (
++    nativeManifest.artifact?.path !==
++      `helper/${NARROW_APP_NAME}/${NARROW_EXECUTABLE_RELATIVE_PATH}` ||
++    typeof nativeManifest.artifact?.sha256 !== "string"
++  ) {
++    throw new NarrowResourceError(
++      "narrow-native-manifest-mismatch",
++      "native build manifest artifact path is not the fixed desktop-session executable",
++    );
++  }
++  return {
++    path: nativeBuildManifestPath,
++    sha256: sha256Bytes(bytes),
++    kind: nativeManifest.kind,
++    status: nativeManifest.status,
++    nativeUnsignedBinarySha256: nativeManifest.artifact.sha256,
++    nodeSha256,
++    entries: nativeManifest.entries,
++    auxiliaryResources: nativeManifest.auxiliaryResources,
++  };
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-pins.mjs
+@@ -0,0 +1,74 @@
++// 固定 identity pins 的读取与受控文件检查。pins 只提供来源证据，
++// 实际信任根始终是模块内的固定证书 leaf / DR 常量。
++import { lstat, readFile } from "node:fs/promises";
++
++import {
++  PINNED_DESIGNATED_REQUIREMENT,
++  PINNED_HELPER_IDENTIFIER,
++  PINNED_LEAF_SHA1,
++  PINNED_LEAF_SHA256,
++  PINNED_NODE_CDHASH,
++  PINNED_NODE_DESIGNATED_REQUIREMENT,
++  PINNED_NODE_IDENTIFIER,
++} from "./macos-cua-narrow-resources-constants.mjs";
++import { NarrowResourceError, sha256Bytes } from "./macos-cua-narrow-resources-base.mjs";
++
++function assertFixedPin(actual, expected, field) {
++  if (actual !== expected) {
++    throw new NarrowResourceError(
++      "narrow-pins-mismatch",
++      `identity pins ${field} does not match the fixed local-self-signed pin`,
++      { field, actual, expected },
++    );
++  }
++}
++
++export async function loadIdentityPins({ path, deps = {} }) {
++  const read = deps.readFile ?? readFile;
++  const bytes = await read(path);
++  let raw;
++  try {
++    raw = JSON.parse(bytes.toString("utf8"));
++  } catch {
++    throw new NarrowResourceError("narrow-pins-mismatch", `identity pins are not valid JSON: ${path}`);
++  }
++  assertFixedPin(raw.leafSha256, PINNED_LEAF_SHA256, "leafSha256");
++  assertFixedPin(raw.nodeLeafSha256, PINNED_LEAF_SHA256, "nodeLeafSha256");
++  assertFixedPin(raw.designatedRequirement, PINNED_DESIGNATED_REQUIREMENT, "designatedRequirement");
++  assertFixedPin(
++    raw.nodeDesignatedRequirement,
++    PINNED_NODE_DESIGNATED_REQUIREMENT,
++    "nodeDesignatedRequirement",
++  );
++  assertFixedPin(raw.nodeIdentifier, PINNED_NODE_IDENTIFIER, "nodeIdentifier");
++  assertFixedPin(raw.nodeCdhash, PINNED_NODE_CDHASH, "nodeCdhash");
++  return {
++    path,
++    sha256: sha256Bytes(bytes),
++    helperIdentifier: PINNED_HELPER_IDENTIFIER,
++    leafSha256: PINNED_LEAF_SHA256,
++    leafSha1: PINNED_LEAF_SHA1,
++    designatedRequirement: PINNED_DESIGNATED_REQUIREMENT,
++    nodeIdentifier: PINNED_NODE_IDENTIFIER,
++    nodeLeafSha256: PINNED_LEAF_SHA256,
++    nodeLeafSha1: PINNED_LEAF_SHA1,
++    nodeDesignatedRequirement: PINNED_NODE_DESIGNATED_REQUIREMENT,
++    nodeCdhash: PINNED_NODE_CDHASH,
++  };
++}
++
++export async function assertControlledFile(path, label, deps = {}) {
++  const info = await (deps.lstat ?? lstat)(path);
++  if (info.isSymbolicLink() || !info.isFile()) {
++    throw new NarrowResourceError(
++      "narrow-non-regular",
++      `${label} must be a regular file: ${path}`,
++    );
++  }
++  if (info.nlink > 1) {
++    throw new NarrowResourceError(
++      "narrow-hardlink",
++      `${label} may not be a hardlink: ${path}`,
++    );
++  }
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-policy.mjs
+@@ -0,0 +1,74 @@
++// 窄 CUA 资源的身份对照策略：manifest/pins 只能描述固定身份，不能自报新身份。
++import {
++  NARROW_EXECUTABLE_RELATIVE_PATH,
++  NARROW_NODE_RELATIVE_PATH,
++  NARROW_TARGET,
++  PINNED_HELPER_IDENTIFIER,
++  PINNED_LEAF_SHA1,
++} from "./macos-cua-narrow-resources-constants.mjs";
++import { NarrowResourceError } from "./macos-cua-narrow-resources-base.mjs";
++
++function assertIdentityField(actual, expected, field) {
++  if (expected !== undefined && actual !== expected) {
++    throw new NarrowResourceError(
++      "narrow-identity-mismatch",
++      `cua-narrow identity ${field} mismatch`,
++      { actual, expected },
++    );
++  }
++}
++
++export function expectedIdentityFromPins(pins) {
++  return {
++    helperIdentifier: PINNED_HELPER_IDENTIFIER,
++    nodeIdentifier: pins.nodeIdentifier,
++    leafSha256: pins.leafSha256,
++    leafSha1: pins.leafSha1 ?? PINNED_LEAF_SHA1,
++    nodeLeafSha256: pins.nodeLeafSha256,
++    nodeLeafSha1: pins.nodeLeafSha1 ?? PINNED_LEAF_SHA1,
++    designatedRequirement: pins.designatedRequirement,
++    nodeDesignatedRequirement: pins.nodeDesignatedRequirement,
++    nodeCdhash: pins.nodeCdhash,
++    hardenedRuntime: true,
++    entitlementsEmpty: true,
++    executableRelativePath: NARROW_EXECUTABLE_RELATIVE_PATH,
++    nodeRelativePath: NARROW_NODE_RELATIVE_PATH,
++    minimumMacOSVersion: NARROW_TARGET.minimumMacOSVersion,
++  };
++}
++
++export function assertIdentityAgainstPins(identity, pins) {
++  const expected = expectedIdentityFromPins(pins);
++  for (const [field, value] of Object.entries(expected)) {
++    assertIdentityField(identity[field], value, field);
++  }
++  if (!Array.isArray(identity.architectures) || !identity.architectures.includes("arm64")) {
++    throw new NarrowResourceError(
++      "narrow-target-unsupported",
++      "cua-narrow Helper architecture is not arm64",
++    );
++  }
++}
++
++export function assertIdentityMatches(actual, expected) {
++  for (const field of [
++    "helperIdentifier",
++    "nodeIdentifier",
++    "leafSha256",
++    "leafSha1",
++    "nodeLeafSha256",
++    "nodeLeafSha1",
++    "designatedRequirement",
++    "nodeDesignatedRequirement",
++    "nodeCdhash",
++    "hardenedRuntime",
++    "entitlementsEmpty",
++    "executableRelativePath",
++    "nodeRelativePath",
++    "minimumMacOSVersion",
++    "signedBinarySha256",
++    "nativeUnsignedBinarySha256",
++  ]) {
++    assertIdentityField(actual[field], expected[field], field);
++  }
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-prepare-core.mjs
+@@ -0,0 +1,200 @@
++// 从已验证的 signed desktop-session app 生成可搬迁 stage + manifest。
++// 只复制受控 app/pins/native manifest，不签名、不安装证书、不请求 TCC。
++import { cp, mkdir, rm, stat, writeFile } from "node:fs/promises";
++import { isAbsolute, join, resolve } from "node:path";
++
++import {
++  NARROW_APP_NAME,
++  NARROW_EXECUTABLE_RELATIVE_PATH,
++  NARROW_MANIFEST_KIND,
++  NARROW_NODE_RELATIVE_PATH,
++  NARROW_SLOT,
++  NARROW_TARGET,
++} from "./macos-cua-narrow-resources-constants.mjs";
++import { NarrowResourceError, sha256File } from "./macos-cua-narrow-resources-base.mjs";
++import {
++  assertIdentityAgainstPins,
++  assertIdentityMatches,
++} from "./macos-cua-narrow-resources-policy.mjs";
++import { loadIdentityPins } from "./macos-cua-narrow-resources-pins.mjs";
++import { assertTreeMatches, inspectNarrowTree } from "./macos-cua-narrow-resources-tree.mjs";
++import { validateNativeBuildManifest } from "./macos-cua-narrow-resources-native.mjs";
++import { verifyNarrowApp } from "./macos-cua-narrow-resources-verify-app.mjs";
++
++function requireAbsolute(label, value) {
++  if (typeof value !== "string" || !isAbsolute(value)) {
++    throw new NarrowResourceError(
++      "narrow-manifest-required-absolute",
++      `cua-narrow ${label} must be an absolute path`,
++    );
++  }
++}
++
++async function pathExists(path) {
++  return stat(path).then(() => true).catch(() => false);
++}
++
++function comparePreparedIdentity(sourceIdentity, stageIdentity, nativeInfo, pins) {
++  assertIdentityAgainstPins(sourceIdentity, pins);
++  assertIdentityAgainstPins(stageIdentity, pins);
++  assertIdentityMatches(stageIdentity, sourceIdentity);
++  if (sourceIdentity.nativeUnsignedBinarySha256 !== nativeInfo.nativeUnsignedBinarySha256) {
++    throw new NarrowResourceError(
++      "narrow-native-manifest-mismatch",
++      "signed Helper native manifest unsigned artifact hash mismatch",
++    );
++  }
++  if (stageIdentity.signedBinarySha256 === stageIdentity.nativeUnsignedBinarySha256) {
++    throw new NarrowResourceError(
++      "narrow-signature-invalid",
++      "signed Helper binary hash still equals the native unsigned artifact hash",
++    );
++  }
++}
++
++export async function createNarrowManifest({
++  appPath,
++  nativeBuildManifestPath,
++  outputRoot,
++  pinsPath,
++  replace = false,
++  deps = {},
++}) {
++  for (const [label, value] of [
++    ["app", appPath],
++    ["native-build-manifest", nativeBuildManifestPath],
++    ["output", outputRoot],
++    ["identity pins", pinsPath],
++  ]) {
++    requireAbsolute(label, value);
++  }
++  if (appPath.split(/[\\/]/).at(-1) !== NARROW_APP_NAME) {
++    throw new NarrowResourceError(
++      "narrow-helper-mismatch",
++      `cua-narrow prepare only accepts ${NARROW_APP_NAME}, got ${appPath}`,
++    );
++  }
++  const resolvedPinsPath = resolve(pinsPath);
++  const pins = await loadIdentityPins({ path: resolvedPinsPath, deps });
++  const verifyApp = deps.verifyNarrowApp ?? verifyNarrowApp;
++  const sourceIdentity = await verifyApp({ appPath, pins, deps });
++  const sourceNativeInfo = await validateNativeBuildManifest({
++    appPath,
++    nativeBuildManifestPath,
++    pins,
++    deps,
++  });
++  sourceIdentity.signedBinarySha256 = await sha256File(
++    join(appPath, NARROW_EXECUTABLE_RELATIVE_PATH),
++  );
++  sourceIdentity.nativeUnsignedBinarySha256 = sourceNativeInfo.nativeUnsignedBinarySha256;
++
++  const stageRoot = join(outputRoot, "stage");
++  const stageAppPath = join(stageRoot, NARROW_APP_NAME);
++  if (await pathExists(stageRoot)) {
++    if (!replace) {
++      throw new NarrowResourceError(
++        "narrow-stage-exists",
++        `cua-narrow stage already exists: ${stageAppPath}; pass --replace to rebuild it`,
++      );
++    }
++    await rm(stageRoot, { recursive: true, force: true });
++  }
++  await mkdir(stageRoot, { recursive: true });
++  await cp(appPath, stageAppPath, {
++    recursive: true,
++    preserveTimestamps: true,
++    verbatimSymlinks: true,
++    errorOnExist: true,
++  });
++  const stagePinsPath = join(stageRoot, "identity-pins.json");
++  const stageNativePath = join(stageRoot, "native-build-manifest.json");
++  await cp(resolvedPinsPath, stagePinsPath);
++  await cp(nativeBuildManifestPath, stageNativePath);
++
++  const stagePins = await loadIdentityPins({ path: stagePinsPath, deps });
++  const stageIdentity = await verifyApp({ appPath: stageAppPath, pins: stagePins, deps });
++  const stageNativeInfo = await validateNativeBuildManifest({
++    appPath: stageAppPath,
++    nativeBuildManifestPath: stageNativePath,
++    pins: stagePins,
++    deps,
++  });
++  stageIdentity.signedBinarySha256 = await sha256File(
++    join(stageAppPath, NARROW_EXECUTABLE_RELATIVE_PATH),
++  );
++  stageIdentity.nativeUnsignedBinarySha256 = stageNativeInfo.nativeUnsignedBinarySha256;
++  comparePreparedIdentity(sourceIdentity, stageIdentity, stageNativeInfo, stagePins);
++
++  const sourceTree = await inspectNarrowTree(appPath, deps);
++  const stageTree = await inspectNarrowTree(stageAppPath, deps);
++  assertTreeMatches(stageTree, sourceTree, "prepared cua-narrow stage");
++
++  const manifestPath = join(outputRoot, "manifest.json");
++  const manifest = {
++    schemaVersion: 1,
++    kind: NARROW_MANIFEST_KIND,
++    status: "pass",
++    generatedAt: new Date().toISOString(),
++    target: { ...NARROW_TARGET },
++    slot: { resourcesRelativePath: NARROW_SLOT, appName: NARROW_APP_NAME },
++    path: "manifest.json",
++    source: {
++      // 仅来源证据；validate 不读取这个绝对路径。
++      appPath,
++      treeSha256: sourceTree.treeSha256,
++      signedBinarySha256: sourceIdentity.signedBinarySha256,
++      executableRelativePath: NARROW_EXECUTABLE_RELATIVE_PATH,
++      nodeRelativePath: NARROW_NODE_RELATIVE_PATH,
++    },
++    stage: {
++      appPath: `stage/${NARROW_APP_NAME}`,
++      treeSha256: stageTree.treeSha256,
++    },
++    nativeBuildManifest: {
++      path: "stage/native-build-manifest.json",
++      sha256: stageNativeInfo.sha256,
++      kind: stageNativeInfo.kind,
++      status: stageNativeInfo.status,
++      nativeUnsignedBinarySha256: stageNativeInfo.nativeUnsignedBinarySha256,
++    },
++    identity: {
++      ...stageIdentity,
++      pinsPath: "stage/identity-pins.json",
++      pinsSha256: stagePins.sha256,
++    },
++    tree: { treeSha256: stageTree.treeSha256, entries: stageTree.entries },
++    audit: {
++      symlinks: [],
++      hardlinks: [],
++      externalLinks: [],
++      licenses: stageTree.licenses,
++      entries: stageNativeInfo.entries.map((entry) => ({
++        name: entry.name,
++        path: entry.path,
++        sha256: entry.sha256,
++        bytes: entry.bytes,
++      })),
++      auxiliaryResources: stageNativeInfo.auxiliaryResources.map((entry) => ({
++        name: entry.name,
++        path: entry.path,
++        sha256: entry.sha256,
++        bytes: entry.bytes,
++      })),
++      nativeUnsignedBinarySha256: stageNativeInfo.nativeUnsignedBinarySha256,
++      signedBinarySha256: stageIdentity.signedBinarySha256,
++    },
++    restrictions: {
++      defaultDisabled: true,
++      placeholderDefault: true,
++      hostActivation: false,
++      cuaHelperSlotReused: false,
++      reSign: false,
++      installCertificate: false,
++      requestTcc: false,
++    },
++  };
++  await mkdir(outputRoot, { recursive: true });
++  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { mode: 0o600 });
++  return { manifest, manifestPath, stageAppPath };
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-prepare.mjs
+@@ -0,0 +1,104 @@
++#!/usr/bin/env node
++// 从已验证的 desktop-session signed app 生成 cua-narrow 内容清单，并复制受控 stage。
++// 只读固定 identity pins；不签名、不安装证书、不请求 TCC、不激活 Host。
++import { isAbsolute, resolve } from "node:path";
++import process from "node:process";
++import { pathToFileURL } from "node:url";
++
++import {
++  DEFAULT_IDENTITY_PINS_PATH,
++  DEFAULT_OUTPUT_ROOT,
++  NARROW_MANIFEST_KIND,
++  NARROW_TARGET,
++} from "./macos-cua-narrow-resources-constants.mjs";
++import { createNarrowManifest } from "./macos-cua-narrow-resources.mjs";
++
++export function usage() {
++  return `Usage: node packages/desktop/scripts/macos-cua-narrow-resources-prepare.mjs \\
++  --app <absolute signed Zody CUA Desktop Session.app> \\
++  --native-build-manifest <absolute desktop-session build-manifest.json> \\
++  [--output <absolute output root>] [--replace]
++
++Identity pins are always read from output/cua-helper-round11/controller-signed/identity-pins.json.`;
++}
++
++export function parsePrepareArgs(argv) {
++  const values = new Map();
++  let replace = false;
++  for (let index = 0; index < argv.length; index += 1) {
++    const name = argv[index];
++    if (name === "--replace") {
++      replace = true;
++      continue;
++    }
++    if (name === "--help" || name === "-h") return { help: true };
++    if (!name.startsWith("--")) throw new Error(`Unknown argument: ${name}`);
++    const value = argv[index + 1];
++    if (!value || value.startsWith("--")) throw new Error(`${name} requires a value`);
++    values.set(name, value);
++    index += 1;
++  }
++  const absolute = (name, fallback) => {
++    const value = values.get(name)?.trim() ?? fallback;
++    if (!value) throw new Error(`${name} is required`);
++    if (!isAbsolute(value)) throw new Error(`${name} must be an absolute path`);
++    return resolve(value);
++  };
++  return {
++    help: false,
++    appPath: absolute("--app"),
++    nativeBuildManifestPath: absolute("--native-build-manifest"),
++    outputRoot: absolute("--output", DEFAULT_OUTPUT_ROOT),
++    pinsPath: DEFAULT_IDENTITY_PINS_PATH,
++    replace,
++  };
++}
++
++function summarize(prepared) {
++  const { manifest } = prepared;
++  return {
++    status: manifest.status,
++    kind: NARROW_MANIFEST_KIND,
++    manifestPath: prepared.manifestPath,
++    stageAppPath: prepared.stageAppPath,
++    target: NARROW_TARGET,
++    sourceAppPath: manifest.source.appPath,
++    treeSha256: manifest.tree.treeSha256,
++    signedBinarySha256: manifest.identity.signedBinarySha256,
++    nativeUnsignedBinarySha256: manifest.identity.nativeUnsignedBinarySha256,
++    identity: {
++      helperIdentifier: manifest.identity.helperIdentifier,
++      nodeIdentifier: manifest.identity.nodeIdentifier,
++      leafSha256: manifest.identity.leafSha256,
++      leafSha1: manifest.identity.leafSha1,
++      designatedRequirement: manifest.identity.designatedRequirement,
++      nodeDesignatedRequirement: manifest.identity.nodeDesignatedRequirement,
++      nodeCdhash: manifest.identity.nodeCdhash,
++    },
++    resources: {
++      entries: manifest.audit.entries,
++      auxiliaryResources: manifest.audit.auxiliaryResources,
++      licenses: manifest.audit.licenses,
++    },
++    restrictions: manifest.restrictions,
++  };
++}
++
++async function main() {
++  const options = parsePrepareArgs(process.argv.slice(2));
++  if (options.help) {
++    console.log(usage());
++    return;
++  }
++  const prepared = await createNarrowManifest(options);
++  console.log(JSON.stringify(summarize(prepared), null, 2));
++}
++
++const entryHref = process.argv[1] ? pathToFileURL(process.argv[1]).href : null;
++if (entryHref === import.meta.url) {
++  main().catch((error) => {
++    console.error(`[macos-cua-narrow-resources] ${error instanceof Error ? error.message : error}`);
++    if (error?.code) console.error(`[macos-cua-narrow-resources] code=${error.code}`);
++    process.exit(1);
++  });
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-test-fixtures.mjs
+@@ -0,0 +1,222 @@
++// 窄 CUA 资源测试的共享 fixture：模拟 prepared output（stage app + 受控 pins/native manifest）。
++import { cp, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
++import { join } from "node:path";
++
++import {
++  DEFAULT_IDENTITY_PINS_PATH,
++  NARROW_APP_NAME,
++  NARROW_AUXILIARY_NAMES,
++  NARROW_ENTRY_NAMES,
++  NARROW_EXECUTABLE_NAME,
++  NARROW_EXECUTABLE_RELATIVE_PATH,
++  NARROW_MANIFEST_KIND,
++  NARROW_NATIVE_MANIFEST_KIND,
++  NARROW_SLOT,
++  NARROW_TARGET,
++  PINNED_DESIGNATED_REQUIREMENT,
++  PINNED_HELPER_IDENTIFIER,
++  PINNED_LEAF_SHA1,
++  PINNED_LEAF_SHA256,
++  PINNED_NODE_CDHASH,
++  PINNED_NODE_DESIGNATED_REQUIREMENT,
++  PINNED_NODE_IDENTIFIER,
++  REPO_ROOT,
++  inspectNarrowTree,
++  sha256File,
++} from "./macos-cua-narrow-resources.mjs";
++
++export const TEST_ROOT = join(
++  REPO_ROOT,
++  "output",
++  "cua-phase1-closeout",
++  "a-worker",
++  "tests",
++);
++
++export function fixtureIdentity(overrides = {}) {
++  return {
++    helperIdentifier: PINNED_HELPER_IDENTIFIER,
++    nodeIdentifier: PINNED_NODE_IDENTIFIER,
++    leafSha256: PINNED_LEAF_SHA256,
++    leafSha1: PINNED_LEAF_SHA1,
++    nodeLeafSha256: PINNED_LEAF_SHA256,
++    nodeLeafSha1: PINNED_LEAF_SHA1,
++    designatedRequirement: PINNED_DESIGNATED_REQUIREMENT,
++    nodeDesignatedRequirement: PINNED_NODE_DESIGNATED_REQUIREMENT,
++    nodeCdhash: PINNED_NODE_CDHASH,
++    hardenedRuntime: true,
++    entitlementsEmpty: true,
++    architectures: ["arm64"],
++    minimumMacOSVersion: "14.2",
++    executableRelativePath: NARROW_EXECUTABLE_RELATIVE_PATH,
++    nodeRelativePath: "Contents/Resources/node",
++    ...overrides,
++  };
++}
++
++export function expectedPins() {
++  return {
++    leafSha256: PINNED_LEAF_SHA256,
++    leafSha1: PINNED_LEAF_SHA1,
++    designatedRequirement: PINNED_DESIGNATED_REQUIREMENT,
++    nodeIdentifier: PINNED_NODE_IDENTIFIER,
++    nodeLeafSha256: PINNED_LEAF_SHA256,
++    nodeDesignatedRequirement: PINNED_NODE_DESIGNATED_REQUIREMENT,
++    nodeCdhash: PINNED_NODE_CDHASH,
++  };
++}
++
++export async function makeFixtureRoot() {
++  await mkdir(TEST_ROOT, { recursive: true });
++  return mkdtemp(join(TEST_ROOT, "fixture-"));
++}
++
++export async function writeFixturePins(root) {
++  const path = join(root, "source", "identity-pins.json");
++  await mkdir(join(root, "source"), { recursive: true });
++  await writeFile(path, `${JSON.stringify(expectedPins(), null, 2)}\n`);
++  return path;
++}
++
++export async function makeFixtureApp(root) {
++  const appPath = join(root, "source", NARROW_APP_NAME);
++  await mkdir(join(appPath, "Contents", "MacOS"), { recursive: true });
++  await mkdir(join(appPath, "Contents", "Resources", "licenses"), { recursive: true });
++  await writeFile(
++    join(appPath, "Contents", "Info.plist"),
++    `<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0"><dict>
++<key>CFBundleIdentifier</key><string>${PINNED_HELPER_IDENTIFIER}</string>
++<key>CFBundleExecutable</key><string>${NARROW_EXECUTABLE_NAME}</string>
++<key>LSMinimumSystemVersion</key><string>14.2</string>
++</dict></plist>
++`,
++  );
++  await writeFile(join(appPath, "Contents", "MacOS", NARROW_EXECUTABLE_NAME), "fixture helper\n");
++  await writeFile(join(appPath, "Contents", "Resources", "node"), "fixture node\n");
++  for (const name of [...NARROW_ENTRY_NAMES, ...NARROW_AUXILIARY_NAMES]) {
++    await writeFile(join(appPath, "Contents", "Resources", name), `fixture ${name}\n`);
++  }
++  await writeFile(
++    join(appPath, "Contents", "Resources", "licenses", "node-LICENSE.txt"),
++    "fixture license\n",
++  );
++  return { appPath };
++}
++
++export async function makeNativeBuildManifest(root, appPath) {
++  const path = join(root, "source", "build-manifest.json");
++  const describeFile = async (relativePath) => ({
++    path: relativePath,
++    sha256: await sha256File(join(appPath, relativePath)),
++    bytes: (await readFile(join(appPath, relativePath))).byteLength,
++  });
++  await writeFile(
++    path,
++    `${JSON.stringify(
++      {
++        kind: NARROW_NATIVE_MANIFEST_KIND,
++        status: "pass",
++        outputRoot: join(root, "source"),
++        app: {
++          name: NARROW_APP_NAME,
++          path: `helper/${NARROW_APP_NAME}`,
++          bundleIdentifier: PINNED_HELPER_IDENTIFIER,
++        },
++        node: {
++          sha256: await sha256File(join(appPath, "Contents", "Resources", "node")),
++          version: "v24.14.0",
++        },
++        identityPins: { path: DEFAULT_IDENTITY_PINS_PATH, values: expectedPins() },
++        entries: await Promise.all(
++          NARROW_ENTRY_NAMES.map(async (name) => ({
++            name,
++            maxBytes: 64 * 1024 * 1024,
++            ...(await describeFile(`Contents/Resources/${name}`)),
++          })),
++        ),
++        auxiliaryResources: await Promise.all(
++          NARROW_AUXILIARY_NAMES.map(async (name) => ({
++            name,
++            maxBytes: 64 * 1024 * 1024,
++            ...(await describeFile(`Contents/Resources/${name}`)),
++          })),
++        ),
++        artifact: {
++          // native manifest 记录的是 unsigned Mach-O；签名后摘要必须单独计算。
++          path: `helper/${NARROW_APP_NAME}/${NARROW_EXECUTABLE_RELATIVE_PATH}`,
++          sha256: "1".repeat(64),
++        },
++      },
++      null,
++      2,
++    )}\n`,
++  );
++  return path;
++}
++
++export async function makePreparedLayout({
++  root,
++  appPath,
++  nativeBuildManifestPath,
++  pinsPath,
++  overrides = {},
++}) {
++  const outputRoot = join(root, "output");
++  const stageRoot = join(outputRoot, "stage");
++  const stageAppPath = join(stageRoot, NARROW_APP_NAME);
++  await mkdir(stageRoot, { recursive: true });
++  await cp(appPath, stageAppPath, { recursive: true, preserveTimestamps: true });
++  const stagePinsPath = join(stageRoot, "identity-pins.json");
++  const stageNativePath = join(stageRoot, "native-build-manifest.json");
++  await cp(pinsPath, stagePinsPath);
++  await cp(nativeBuildManifestPath, stageNativePath);
++  const tree = await inspectNarrowTree(stageAppPath);
++  const manifest = {
++    schemaVersion: 1,
++    kind: NARROW_MANIFEST_KIND,
++    status: "pass",
++    generatedAt: "2026-10-30T00:00:00.000Z",
++    target: { ...NARROW_TARGET },
++    slot: { resourcesRelativePath: NARROW_SLOT, appName: NARROW_APP_NAME },
++    path: "manifest.json",
++    source: {
++      appPath,
++      treeSha256: tree.treeSha256,
++      signedBinarySha256: await sha256File(join(stageAppPath, NARROW_EXECUTABLE_RELATIVE_PATH)),
++      executableRelativePath: NARROW_EXECUTABLE_RELATIVE_PATH,
++      nodeRelativePath: "Contents/Resources/node",
++    },
++    stage: { appPath: `stage/${NARROW_APP_NAME}`, treeSha256: tree.treeSha256 },
++    nativeBuildManifest: {
++      path: "stage/native-build-manifest.json",
++      sha256: await sha256File(stageNativePath),
++      kind: NARROW_NATIVE_MANIFEST_KIND,
++      status: "pass",
++      nativeUnsignedBinarySha256: "1".repeat(64),
++    },
++    identity: {
++      ...fixtureIdentity(),
++      signedBinarySha256: await sha256File(join(stageAppPath, NARROW_EXECUTABLE_RELATIVE_PATH)),
++      nativeUnsignedBinarySha256: "1".repeat(64),
++      pinsPath: "stage/identity-pins.json",
++      pinsSha256: await sha256File(stagePinsPath),
++    },
++    tree,
++    audit: { symlinks: [], hardlinks: [], externalLinks: [], licenses: tree.licenses },
++    restrictions: {
++      defaultDisabled: true,
++      placeholderDefault: true,
++      hostActivation: false,
++      cuaHelperSlotReused: false,
++      reSign: false,
++      installCertificate: false,
++      requestTcc: false,
++    },
++    ...overrides,
++  };
++  const manifestPath = join(outputRoot, "manifest.json");
++  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
++  return { outputRoot, manifestPath, stageAppPath, manifest, tree };
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-tree.mjs
+@@ -0,0 +1,132 @@
++// 窄 CUA 资源树清点：拒绝 symlink/hardlink/特殊文件，生成可复核内容摘要。
++import { lstat, readFile, readdir } from "node:fs/promises";
++import { join } from "node:path";
++
++import { NARROW_NODE_RELATIVE_PATH } from "./macos-cua-narrow-resources-constants.mjs";
++import { NarrowResourceError, sha256Bytes, sha256Text } from "./macos-cua-narrow-resources-base.mjs";
++
++function licenseAssociation(relativePath) {
++  if (/^Contents\/Resources\/licenses\/node-LICENSE(?:\.[^.]+)?$/.test(relativePath)) {
++    return NARROW_NODE_RELATIVE_PATH;
++  }
++  const match = relativePath.match(/^Contents\/Resources\/licenses\/([^/]+)\//);
++  return match ? `package:${match[1]}` : "bundle";
++}
++
++function canonicalEntries(entries) {
++  return entries.map((entry) =>
++    entry.type === "file"
++      ? {
++          type: entry.type,
++          path: entry.path,
++          sha256: entry.sha256,
++          bytes: entry.bytes,
++          executable: entry.executable,
++        }
++      : { type: entry.type, path: entry.path },
++  );
++}
++
++export async function inspectNarrowTree(appPath, deps = {}) {
++  const lstatFn = deps.lstat ?? lstat;
++  const readFileFn = deps.readFile ?? readFile;
++  const readdirFn = deps.readdir ?? readdir;
++  const rootInfo = await lstatFn(appPath);
++  if (!rootInfo.isDirectory()) {
++    throw new NarrowResourceError(
++      "narrow-non-regular",
++      `cua-narrow app is not a directory: ${appPath}`,
++    );
++  }
++
++  const entries = [];
++  const visit = async (directory, relativeDirectory) => {
++    const names = (await readdirFn(directory)).sort();
++    for (const name of names) {
++      const absolutePath = join(directory, name);
++      const relativePath = relativeDirectory ? `${relativeDirectory}/${name}` : name;
++      const info = await lstatFn(absolutePath);
++      if (info.isSymbolicLink()) {
++        throw new NarrowResourceError(
++          "narrow-symlink",
++          `cua-narrow resources may not contain symlinks: ${relativePath}`,
++        );
++      }
++      if (info.isDirectory()) {
++        entries.push({ type: "directory", path: relativePath, mode: info.mode & 0o777 });
++        await visit(absolutePath, relativePath);
++        continue;
++      }
++      if (!info.isFile()) {
++        throw new NarrowResourceError(
++          "narrow-non-regular",
++          `cua-narrow resources may only contain regular files and directories: ${relativePath}`,
++        );
++      }
++      if (info.nlink > 1) {
++        throw new NarrowResourceError(
++          "narrow-hardlink",
++          `cua-narrow resources may not contain hardlinks: ${relativePath}`,
++        );
++      }
++      const bytes = await readFileFn(absolutePath);
++      entries.push({
++        type: "file",
++        path: relativePath,
++        sha256: sha256Bytes(bytes),
++        bytes: bytes.length,
++        mode: info.mode & 0o777,
++        executable: Boolean(info.mode & 0o111),
++      });
++    }
++  };
++  await visit(appPath, "");
++  entries.sort((left, right) => left.path.localeCompare(right.path));
++  const files = entries.filter((entry) => entry.type === "file");
++  const licenses = files
++    .filter((entry) => entry.path.startsWith("Contents/Resources/licenses/"))
++    .map((entry) => ({
++      path: entry.path,
++      sha256: entry.sha256,
++      bytes: entry.bytes,
++      associatedResource: licenseAssociation(entry.path),
++    }));
++  return {
++    appPath,
++    treeSha256: sha256Text(JSON.stringify(canonicalEntries(entries))),
++    entries,
++    files,
++    licenses,
++  };
++}
++
++function compareTreeEntries(actualEntries, expectedEntries, label) {
++  if (!Array.isArray(expectedEntries)) {
++    throw new NarrowResourceError(
++      "narrow-content-mismatch",
++      `${label} entries are missing from the cua-narrow manifest`,
++    );
++  }
++  const actual = JSON.stringify(canonicalEntries(actualEntries));
++  const expected = JSON.stringify(canonicalEntries(expectedEntries));
++  if (actual !== expected) {
++    throw new NarrowResourceError(
++      "narrow-content-mismatch",
++      `${label} content does not match the cua-narrow manifest`,
++    );
++  }
++}
++
++export function assertTreeMatches(actualTree, expectedTree, label = "cua-narrow app") {
++  if (!expectedTree || typeof expectedTree !== "object") {
++    throw new NarrowResourceError("narrow-content-mismatch", `${label} tree is missing`);
++  }
++  if (actualTree.treeSha256 !== expectedTree.treeSha256) {
++    throw new NarrowResourceError(
++      "narrow-content-mismatch",
++      `${label} tree digest mismatch`,
++      { actual: actualTree.treeSha256, expected: expectedTree.treeSha256 },
++    );
++  }
++  compareTreeEntries(actualTree.entries, expectedTree.entries, label);
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-validate.mjs
+@@ -0,0 +1,265 @@
++// 窄 CUA manifest 的可搬迁校验与打包后复核。固定代码 pins 是信任根；
++// manifest 自报内容只用于一致性比对，不能建立新身份。
++import { readFile, writeFile } from "node:fs/promises";
++import { dirname, isAbsolute, join, resolve, sep } from "node:path";
++import process from "node:process";
++
++import {
++  NARROW_APP_NAME,
++  NARROW_EXECUTABLE_RELATIVE_PATH,
++  NARROW_MANIFEST_KIND,
++  NARROW_SLOT,
++  NARROW_TARGET,
++} from "./macos-cua-narrow-resources-constants.mjs";
++import {
++  NarrowResourceError,
++  sha256Bytes,
++  sha256File,
++} from "./macos-cua-narrow-resources-base.mjs";
++import { assertNoCandidateHostLaunchSeam } from "./macos-cua-narrow-resources-identity.mjs";
++import {
++  assertControlledFile,
++  loadIdentityPins,
++} from "./macos-cua-narrow-resources-pins.mjs";
++import {
++  assertIdentityAgainstPins,
++  assertIdentityMatches,
++} from "./macos-cua-narrow-resources-policy.mjs";
++import { assertTreeMatches, inspectNarrowTree } from "./macos-cua-narrow-resources-tree.mjs";
++import { validateNativeBuildManifest } from "./macos-cua-narrow-resources-native.mjs";
++import { verifyNarrowApp } from "./macos-cua-narrow-resources-verify-app.mjs";
++
++function resolveControlledPath(manifestDir, relativePath, label) {
++  if (typeof relativePath !== "string" || !relativePath.trim() || isAbsolute(relativePath)) {
++    throw new NarrowResourceError(
++      "narrow-manifest-path",
++      `cua-narrow manifest ${label} must be a relative controlled path`,
++    );
++  }
++  const root = resolve(manifestDir);
++  const resolvedPath = resolve(root, relativePath);
++  if (resolvedPath !== root && !resolvedPath.startsWith(`${root}${sep}`)) {
++    throw new NarrowResourceError(
++      "narrow-manifest-path",
++      `cua-narrow manifest ${label} escapes the manifest directory`,
++    );
++  }
++  return resolvedPath;
++}
++
++export async function validateNarrowManifest({
++  manifestPath,
++  targetPlatform,
++  env = process.env,
++  deps = {},
++}) {
++  assertNoCandidateHostLaunchSeam(env);
++  if (typeof manifestPath !== "string" || !isAbsolute(manifestPath)) {
++    throw new NarrowResourceError(
++      "narrow-manifest-required-absolute",
++      `cua-narrow manifest must be an absolute path: ${manifestPath}`,
++    );
++  }
++  if (targetPlatform?.os !== NARROW_TARGET.os || targetPlatform?.arch !== NARROW_TARGET.arch) {
++    throw new NarrowResourceError(
++      "narrow-target-unsupported",
++      `cua-narrow resources require ${NARROW_TARGET.os}/${NARROW_TARGET.arch}`,
++    );
++  }
++  const read = deps.readFile ?? readFile;
++  const bytes = await read(manifestPath);
++  let manifest;
++  try {
++    manifest = JSON.parse(bytes.toString("utf8"));
++  } catch {
++    throw new NarrowResourceError("narrow-manifest-kind", "cua-narrow manifest is invalid JSON");
++  }
++  if (
++    manifest.kind !== NARROW_MANIFEST_KIND ||
++    manifest.status !== "pass" ||
++    manifest.schemaVersion !== 1
++  ) {
++    throw new NarrowResourceError(
++      "narrow-manifest-kind",
++      "cua-narrow manifest kind/status/schema is not accepted",
++    );
++  }
++  if (
++    manifest.target?.os !== NARROW_TARGET.os ||
++    manifest.target?.arch !== NARROW_TARGET.arch ||
++    manifest.target?.minimumMacOSVersion !== NARROW_TARGET.minimumMacOSVersion
++  ) {
++    throw new NarrowResourceError(
++      "narrow-manifest-target",
++      "cua-narrow manifest target is not darwin/arm64/14.2",
++    );
++  }
++  if (
++    manifest.slot?.resourcesRelativePath !== NARROW_SLOT ||
++    manifest.slot?.appName !== NARROW_APP_NAME
++  ) {
++    throw new NarrowResourceError(
++      "narrow-manifest-slot",
++      "cua-narrow manifest slot is not the independent cua-narrow slot",
++    );
++  }
++
++  const manifestDir = dirname(resolve(manifestPath));
++  const stageAppPath = resolveControlledPath(manifestDir, manifest.stage?.appPath, "stage.appPath");
++  const nativeBuildManifestPath = resolveControlledPath(
++    manifestDir,
++    manifest.nativeBuildManifest?.path,
++    "nativeBuildManifest.path",
++  );
++  const pinsPath = resolveControlledPath(
++    manifestDir,
++    manifest.identity?.pinsPath,
++    "identity.pinsPath",
++  );
++  await assertControlledFile(pinsPath, "cua-narrow identity pins", deps);
++  await assertControlledFile(nativeBuildManifestPath, "cua-narrow native build manifest", deps);
++
++  const pins = await loadIdentityPins({ path: pinsPath, deps });
++  const verifyApp = deps.verifyNarrowApp ?? verifyNarrowApp;
++  const liveIdentity = await verifyApp({ appPath: stageAppPath, pins, deps });
++  const tree = await inspectNarrowTree(stageAppPath, deps);
++  if (manifest.stage?.treeSha256 !== tree.treeSha256) {
++    throw new NarrowResourceError(
++      "narrow-content-mismatch",
++      "cua-narrow stage tree digest does not match the manifest",
++    );
++  }
++  assertTreeMatches(tree, manifest.tree, "cua-narrow stage");
++  const nativeInfo = await validateNativeBuildManifest({
++    appPath: stageAppPath,
++    nativeBuildManifestPath,
++    pins,
++    deps,
++  });
++  if (
++    nativeInfo.sha256 !== manifest.nativeBuildManifest?.sha256 ||
++    nativeInfo.kind !== manifest.nativeBuildManifest?.kind ||
++    nativeInfo.status !== manifest.nativeBuildManifest?.status
++  ) {
++    throw new NarrowResourceError(
++      "narrow-native-manifest-mismatch",
++      "cua-narrow manifest native build manifest record changed",
++    );
++  }
++
++  liveIdentity.signedBinarySha256 = await sha256File(
++    join(stageAppPath, NARROW_EXECUTABLE_RELATIVE_PATH),
++  );
++  liveIdentity.nativeUnsignedBinarySha256 = nativeInfo.nativeUnsignedBinarySha256;
++  assertIdentityAgainstPins(liveIdentity, pins);
++  assertIdentityMatches(manifest.identity, liveIdentity);
++  if (manifest.identity?.pinsSha256 !== pins.sha256) {
++    throw new NarrowResourceError(
++      "narrow-pins-mismatch",
++      "cua-narrow manifest was not prepared from the fixed identity pins file",
++    );
++  }
++  if (manifest.identity?.nativeUnsignedBinarySha256 !== nativeInfo.nativeUnsignedBinarySha256) {
++    throw new NarrowResourceError(
++      "narrow-native-manifest-mismatch",
++      "native unsigned binary hash record does not match the source native build manifest",
++    );
++  }
++  if (manifest.source?.treeSha256 !== tree.treeSha256) {
++    throw new NarrowResourceError(
++      "narrow-content-mismatch",
++      "cua-narrow source and stage tree digests differ",
++    );
++  }
++  return {
++    manifest,
++    manifestPath: resolve(manifestPath),
++    manifestSha256: sha256Bytes(bytes),
++    stageAppPath,
++    tree,
++    identity: liveIdentity,
++    nativeBuildManifest: nativeInfo,
++    nativeBuildManifestPath,
++    pins,
++    pinsPath,
++  };
++}
++
++export async function assertPackagedNarrowResource({
++  resourcesDir,
++  manifestPath,
++  env = process.env,
++  deps = {},
++}) {
++  const validated = await validateNarrowManifest({
++    manifestPath,
++    targetPlatform: { os: NARROW_TARGET.os, arch: NARROW_TARGET.arch },
++    env,
++    deps,
++  });
++  const packagedAppPath = join(resourcesDir, NARROW_SLOT, NARROW_APP_NAME);
++  const tree = await inspectNarrowTree(packagedAppPath, deps);
++  assertTreeMatches(tree, validated.manifest.tree, "packaged cua-narrow app");
++  if (tree.treeSha256 !== validated.manifest.stage?.treeSha256) {
++    throw new NarrowResourceError(
++      "narrow-content-mismatch",
++      "packaged cua-narrow app differs from the prepared stage",
++    );
++  }
++  const verifyApp = deps.verifyNarrowApp ?? verifyNarrowApp;
++  const identity = await verifyApp({ appPath: packagedAppPath, pins: validated.pins, deps });
++  identity.signedBinarySha256 = await sha256File(
++    join(packagedAppPath, NARROW_EXECUTABLE_RELATIVE_PATH),
++  );
++  identity.nativeUnsignedBinarySha256 =
++    validated.nativeBuildManifest.nativeUnsignedBinarySha256;
++  assertIdentityAgainstPins(identity, validated.pins);
++  assertIdentityMatches(identity, validated.manifest.identity);
++  return { ...validated, packagedAppPath, packagedTree: tree, packagedIdentity: identity };
++}
++
++export async function writeNarrowBuildAudit({
++  appOutDir,
++  validated,
++  packagedAppPath,
++  outputPath = join(appOutDir, "cua-narrow-build-audit.json"),
++}) {
++  const audit = {
++    kind: "zody-cua-narrow-build-audit",
++    generatedAt: new Date().toISOString(),
++    manifestPath: validated.manifestPath,
++    manifestSha256: validated.manifestSha256,
++    packagedAppPath,
++    slot: `${NARROW_SLOT}/${NARROW_APP_NAME}`,
++    target: { ...NARROW_TARGET },
++    treeSha256: validated.tree.treeSha256,
++    signedBinarySha256: validated.identity.signedBinarySha256,
++    nativeUnsignedBinarySha256: validated.identity.nativeUnsignedBinarySha256,
++    identity: {
++      helperIdentifier: validated.identity.helperIdentifier,
++      nodeIdentifier: validated.identity.nodeIdentifier,
++      leafSha256: validated.identity.leafSha256,
++      leafSha1: validated.identity.leafSha1,
++      designatedRequirement: validated.identity.designatedRequirement,
++      nodeDesignatedRequirement: validated.identity.nodeDesignatedRequirement,
++      nodeCdhash: validated.identity.nodeCdhash,
++      hardenedRuntime: validated.identity.hardenedRuntime,
++      entitlementsEmpty: validated.identity.entitlementsEmpty,
++    },
++    licenses: validated.manifest.audit?.licenses ?? [],
++    restrictions: validated.manifest.restrictions,
++    verification: {
++      source: "fixed identity pins plus live codesign; manifest is not a trust root",
++      strictSignature: true,
++      hardenedRuntime: true,
++      emptyEntitlements: true,
++      noSymlinksOrHardlinks: true,
++      contentManifestMatched: true,
++      reSigned: false,
++      installedCertificate: false,
++      requestedTcc: false,
++    },
++  };
++  await writeFile(outputPath, `${JSON.stringify(audit, null, 2)}\n`, { mode: 0o600 });
++  return { path: outputPath, audit };
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources-verify-app.mjs
+@@ -0,0 +1,117 @@
++// 对 signed desktop-session Helper.app 做完整身份与资源入口检查。
++import { lstat } from "node:fs/promises";
++import { join } from "node:path";
++
++import {
++  NARROW_APP_NAME,
++  NARROW_AUXILIARY_NAMES,
++  NARROW_ENTRY_NAMES,
++  NARROW_EXECUTABLE_NAME,
++  NARROW_EXECUTABLE_RELATIVE_PATH,
++  NARROW_NODE_RELATIVE_PATH,
++  NARROW_TARGET,
++  PINNED_HELPER_IDENTIFIER,
++} from "./macos-cua-narrow-resources-constants.mjs";
++import { NarrowResourceError, sha256File } from "./macos-cua-narrow-resources-base.mjs";
++import {
++  readInfoPlist,
++  verifyCodeIdentity,
++  verifyMachO,
++} from "./macos-cua-narrow-resources-identity.mjs";
++
++export async function verifyNarrowApp({ appPath, pins, deps = {} }) {
++  if (appPath.split(/[\\/]/).at(-1) !== NARROW_APP_NAME) {
++    throw new NarrowResourceError(
++      "narrow-helper-mismatch",
++      `cua-narrow only accepts ${NARROW_APP_NAME}, got ${appPath}`,
++    );
++  }
++  const info = await readInfoPlist(appPath, deps);
++  if (
++    info.CFBundleIdentifier !== PINNED_HELPER_IDENTIFIER ||
++    info.CFBundleExecutable !== NARROW_EXECUTABLE_NAME ||
++    info.LSMinimumSystemVersion !== NARROW_TARGET.minimumMacOSVersion
++  ) {
++    throw new NarrowResourceError(
++      "narrow-helper-mismatch",
++      "cua-narrow Helper Info.plist is not the fixed desktop-session assembly",
++      {
++        bundleIdentifier: info.CFBundleIdentifier,
++        executable: info.CFBundleExecutable,
++        minimumMacOSVersion: info.LSMinimumSystemVersion,
++      },
++    );
++  }
++
++  const executablePath = join(appPath, NARROW_EXECUTABLE_RELATIVE_PATH);
++  const nodePath = join(appPath, NARROW_NODE_RELATIVE_PATH);
++  const helper = await verifyCodeIdentity({
++    path: executablePath,
++    label: "cua-narrow Helper executable",
++    expectedIdentifier: PINNED_HELPER_IDENTIFIER,
++    expectedDesignatedRequirement: pins.designatedRequirement,
++    expectedLeafSha256: pins.leafSha256,
++    expectedLeafSha1: pins.leafSha1,
++    deps,
++  });
++  const node = await verifyCodeIdentity({
++    path: nodePath,
++    label: "cua-narrow Helper Node",
++    expectedIdentifier: pins.nodeIdentifier,
++    expectedDesignatedRequirement: pins.nodeDesignatedRequirement,
++    expectedLeafSha256: pins.nodeLeafSha256,
++    expectedLeafSha1: pins.nodeLeafSha1,
++    expectedCdhash: pins.nodeCdhash,
++    deps,
++  });
++  const helperMachO = await verifyMachO(executablePath, {
++    label: "cua-narrow Helper executable",
++    requireMinimumMacOS: true,
++    deps,
++  });
++  // Node 的真实 minOS 是 13.5/sdk15；这里只要求 arm64，不误套 Helper 的 14.2。
++  const nodeMachO = await verifyMachO(nodePath, {
++    label: "cua-narrow Helper Node",
++    requireMinimumMacOS: false,
++    deps,
++  });
++
++  const resources = {};
++  for (const name of [...NARROW_ENTRY_NAMES, ...NARROW_AUXILIARY_NAMES]) {
++    const path = join(appPath, "Contents", "Resources", name);
++    const fileInfo = await (deps.lstat ?? lstat)(path);
++    if (!fileInfo.isFile() || fileInfo.isSymbolicLink()) {
++      throw new NarrowResourceError(
++        "narrow-entry-mismatch",
++        `cua-narrow Helper is missing regular entry resource ${name}`,
++      );
++    }
++    resources[name] = {
++      path: `Contents/Resources/${name}`,
++      sha256: await sha256File(path),
++      bytes: fileInfo.size,
++    };
++  }
++
++  return {
++    helperIdentifier: helper.identifier,
++    nodeIdentifier: node.identifier,
++    leafSha256: helper.leafSha256,
++    leafSha1: helper.leafSha1,
++    nodeLeafSha256: node.leafSha256,
++    nodeLeafSha1: node.leafSha1,
++    designatedRequirement: helper.designatedRequirement,
++    nodeDesignatedRequirement: node.designatedRequirement,
++    nodeCdhash: node.cdhash,
++    hardenedRuntime: helper.hardenedRuntime && node.hardenedRuntime,
++    entitlementsEmpty: helper.entitlementsEmpty && node.entitlementsEmpty,
++    architectures: helperMachO.architectures,
++    minimumMacOSVersion: helperMachO.minos[0],
++    nodeMinimumMacOSVersion: nodeMachO.minos[0],
++    executableRelativePath: NARROW_EXECUTABLE_RELATIVE_PATH,
++    nodeRelativePath: NARROW_NODE_RELATIVE_PATH,
++    signedBinarySha256: await sha256File(executablePath),
++    nodeSha256: await sha256File(nodePath),
++    resources,
++  };
++}
+--- /dev/null
++++ source/packages/desktop/scripts/macos-cua-narrow-resources.mjs
+@@ -0,0 +1,119 @@
++// 窄 CUA 资源装配的稳定 API：只负责构建请求、独立槽位和再导出。
++// 默认无显式 manifest 时完全不改变正常 desktop bundle 行为。
++import { isAbsolute, resolve } from "node:path";
++import process from "node:process";
++
++import {
++  NARROW_APP_NAME,
++  NARROW_MANIFEST_ENV,
++  NARROW_SLOT,
++  NARROW_TARGET,
++} from "./macos-cua-narrow-resources-constants.mjs";
++import { NarrowResourceError } from "./macos-cua-narrow-resources-base.mjs";
++import { assertNoCandidateHostLaunchSeam } from "./macos-cua-narrow-resources-identity.mjs";
++import { validateNarrowManifest } from "./macos-cua-narrow-resources-validate.mjs";
++
++export * from "./macos-cua-narrow-resources-constants.mjs";
++export {
++  NarrowResourceError,
++  sha1Bytes,
++  sha256Bytes,
++  sha256File,
++  sha256Text,
++} from "./macos-cua-narrow-resources-base.mjs";
++export {
++  assertNoCandidateHostLaunchSeam,
++  readInfoPlist,
++  readLeafCertificateDer,
++  verifyCodeIdentity,
++  verifyMachO,
++} from "./macos-cua-narrow-resources-identity.mjs";
++export {
++  assertControlledFile,
++  loadIdentityPins,
++} from "./macos-cua-narrow-resources-pins.mjs";
++export {
++  assertIdentityAgainstPins,
++  assertIdentityMatches,
++  expectedIdentityFromPins,
++} from "./macos-cua-narrow-resources-policy.mjs";
++export { assertTreeMatches, inspectNarrowTree } from "./macos-cua-narrow-resources-tree.mjs";
++export { validateNativeBuildManifest } from "./macos-cua-narrow-resources-native.mjs";
++export {
++  assertPackagedNarrowResource,
++  createNarrowManifest,
++  validateNarrowManifest,
++  verifyNarrowApp,
++  writeNarrowBuildAudit,
++} from "./macos-cua-narrow-resources-manifest.mjs";
++
++function normalizeTargetOs(value) {
++  const normalized = String(value ?? "").toLowerCase();
++  return normalized === "mac" || normalized === "macos" || normalized === "osx"
++    ? "darwin"
++    : normalized;
++}
++
++export function resolveNarrowBuildRequest({
++  cliManifestPath = null,
++  env = process.env,
++  targetOs,
++  targetArch,
++}) {
++  // 显式传入空 CLI 值不能退化成“未请求”，否则会静默漏装资源。
++  const cliProvided = cliManifestPath !== undefined && cliManifestPath !== null;
++  const cliPath = typeof cliManifestPath === "string" ? cliManifestPath.trim() : null;
++  if (cliProvided && !cliPath) {
++    throw new NarrowResourceError(
++      "narrow-manifest-required-absolute",
++      "cua-narrow manifest path must not be empty",
++    );
++  }
++  const envPath = env[NARROW_MANIFEST_ENV]?.trim() || null;
++  if (cliPath && envPath && resolve(cliPath) !== resolve(envPath)) {
++    throw new NarrowResourceError(
++      "narrow-manifest-conflict",
++      `conflicting cua-narrow manifests: CLI=${cliPath} env=${envPath}`,
++    );
++  }
++  const manifestPath = cliPath ?? envPath;
++  if (!manifestPath) return null;
++  assertNoCandidateHostLaunchSeam(env);
++  if (!isAbsolute(manifestPath)) {
++    throw new NarrowResourceError(
++      "narrow-manifest-required-absolute",
++      `cua-narrow manifest must be an absolute path: ${manifestPath}`,
++    );
++  }
++  if (normalizeTargetOs(targetOs) !== NARROW_TARGET.os || targetArch !== NARROW_TARGET.arch) {
++    throw new NarrowResourceError(
++      "narrow-target-unsupported",
++      `cua-narrow resources require ${NARROW_TARGET.os}/${NARROW_TARGET.arch}, got ${targetOs}/${targetArch}`,
++    );
++  }
++  return { manifestPath: resolve(manifestPath) };
++}
++
++export function createNarrowBuildEnv(request) {
++  return request ? { [NARROW_MANIFEST_ENV]: request.manifestPath } : {};
++}
++
++export function getNarrowSignIgnorePatterns() {
++  return ["[/\\\\]Contents[/\\\\]Resources[/\\\\]cua-narrow([/\\\\]|$)"];
++}
++
++export function buildNarrowExtraResource(validated) {
++  if (!validated) return null;
++  const appPath = validated.stageAppPath;
++  if (typeof appPath !== "string" || !isAbsolute(appPath)) {
++    throw new NarrowResourceError(
++      "narrow-manifest-stage",
++      "validated cua-narrow stageAppPath must be an absolute path",
++    );
++  }
++  return { from: appPath, to: `${NARROW_SLOT}/${NARROW_APP_NAME}` };
++}
++
++export async function loadNarrowManifestForBuild({ manifestPath, targetPlatform, env, deps }) {
++  return validateNarrowManifest({ manifestPath, targetPlatform, env, deps });
++}
+--- opening/packages/desktop/scripts/packaged-sourcemap-cleanup.mjs
++++ source/packages/desktop/scripts/packaged-sourcemap-cleanup.mjs
+@@ -24,6 +24,22 @@
+   return source.replace(SOURCE_MAPPING_URL_LINE_RE, "").replace(SOURCE_MAPPING_URL_BLOCK_RE, "");
+ }
+ 
++// cua-narrow 槽内是已签名 Helper，通用 sourcemap 后处理不得写入或删除其中任何文件，
++// 否则会破坏代码签名。普通资源与旧 cua-helper 策略保持不变。
++function isSignedCuaNarrowResourcePath(filePath) {
++  const parts = filePath.split(/[\\/]/);
++  for (let index = 0; index + 2 < parts.length; index += 1) {
++    if (
++      parts[index] === "cua-narrow" &&
++      parts[index + 1].endsWith(".app") &&
++      parts[index + 2] === "Contents"
++    ) {
++      return true;
++    }
++  }
++  return false;
++}
++
+ function walkFiles(rootDir, visitor) {
+   if (!existsSync(rootDir)) {
+     return;
+@@ -31,6 +47,9 @@
+ 
+   for (const entry of readdirSync(rootDir)) {
+     const entryPath = resolve(rootDir, entry);
++    if (isSignedCuaNarrowResourcePath(entryPath)) {
++      continue;
++    }
+     const stat = statSync(entryPath);
+     if (stat.isDirectory()) {
+       walkFiles(entryPath, visitor);
+--- /dev/null
++++ source/packages/desktop/test/electronBuilderCuaProducer.test.ts
+@@ -0,0 +1,61 @@
++import { mkdir, mkdtemp, rm } from "node:fs/promises";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { afterEach, describe, expect, it, vi } from "vitest";
++
++const roots: string[] = [];
++
++async function createContext() {
++  const appOutDir = await mkdtemp(join(tmpdir(), "zcode-cua-koffi-"));
++  roots.push(appOutDir);
++  await mkdir(join(appOutDir, "resources"), { recursive: true });
++  return {
++    appOutDir,
++    electronPlatformName: "linux",
++    packager: { appInfo: { productFilename: "Zody" } },
++  };
++}
++
++afterEach(async () => {
++  vi.unstubAllEnvs();
++  vi.resetModules();
++  await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
++});
++
++describe("electron-builder CUA koffi producer gate", () => {
++  it("开源占位包不要求已删除 producer 插件的 koffi 资源", async () => {
++    vi.stubEnv("ZCODE_TARGET_OS", "linux");
++    vi.stubEnv("ZCODE_TARGET_ARCH", "x64");
++    const { assertPackagedCuaKoffi } = await import("../electron-builder.config.js");
++    const { verifyStagedKoffi } = await import("../scripts/koffi-package-assets.mjs");
++    let verificationCalls = 0;
++    const verifyKoffi = (...args: Parameters<typeof verifyStagedKoffi>) => {
++      verificationCalls += 1;
++      return verifyStagedKoffi(...args);
++    };
++    const context = await createContext();
++
++    expect(() =>
++      assertPackagedCuaKoffi(context, { isRealProducer: false, verifyKoffi }),
++    ).not.toThrow();
++    expect(verificationCalls).toBe(0);
++  });
++
++  it("真实 producer 缺少 koffi 资源时仍然严格失败", async () => {
++    vi.stubEnv("ZCODE_TARGET_OS", "linux");
++    vi.stubEnv("ZCODE_TARGET_ARCH", "x64");
++    const { assertPackagedCuaKoffi } = await import("../electron-builder.config.js");
++    const { verifyStagedKoffi } = await import("../scripts/koffi-package-assets.mjs");
++    let verificationCalls = 0;
++    const verifyKoffi = (...args: Parameters<typeof verifyStagedKoffi>) => {
++      verificationCalls += 1;
++      return verifyStagedKoffi(...args);
++    };
++    const context = await createContext();
++
++    expect(() => assertPackagedCuaKoffi(context, { isRealProducer: true, verifyKoffi })).toThrow(
++      /CUA plugin koffi runtime is incomplete in the packaged app/,
++    );
++    expect(verificationCalls).toBe(1);
++  });
++});
+--- opening/packages/desktop/test/packagedSourcemapCleanup.test.ts
++++ source/packages/desktop/test/packagedSourcemapCleanup.test.ts
+@@ -3,6 +3,7 @@
+ import { resolve } from "node:path";
+ import { describe, expect, it } from "vitest";
+ import {
++  cleanupPackagedSourcemaps,
+   removeSourceMapFilesInDirectory,
+   stripSourceMappingUrlComments,
+   stripSourceMappingUrlCommentsInDirectory,
+@@ -51,4 +52,47 @@
+       rmSync(rootDir, { force: true, recursive: true });
+     }
+   });
++
++  it("不得改动 signed cua-narrow 槽内的 sourceMappingURL 和 map 文件", async () => {
++    const rootDir = mkdtempSync(resolve(tmpdir(), "zcode-sourcemap-cleanup-signed-slot-"));
++    try {
++      const signedResources = resolve(
++        rootDir,
++        "cua-narrow",
++        "Zody CUA Desktop Session.app",
++        "Contents",
++        "Resources",
++      );
++      const normalResources = resolve(rootDir, "remote-runtime");
++      mkdirSync(signedResources, { recursive: true });
++      mkdirSync(normalResources, { recursive: true });
++
++      const signedEntry = resolve(signedResources, "host-entry.mjs");
++      const signedMap = resolve(signedResources, "host-entry.mjs.map");
++      const normalEntry = resolve(normalResources, "index.js");
++      const normalMap = resolve(normalResources, "index.js.map");
++      const signedSource = "export const signed = true;\n//# sourceMappingURL=host-entry.mjs.map\n";
++      writeFileSync(signedEntry, signedSource);
++      writeFileSync(signedMap, '{"signed":true}');
++      writeFileSync(normalEntry, "console.log('ok');\n//# sourceMappingURL=index.js.map\n");
++      writeFileSync(normalMap, "{}");
++
++      await cleanupPackagedSourcemaps({
++        appAsarPath: resolve(rootDir, "missing.asar"),
++        resourcesDir: rootDir,
++        runAsarCommand: () => undefined,
++        runTimedSync: (_label, run) => run(),
++        runTimedAsync: async (_label, run) => run(),
++        replaceAppAsarFromStaging: async () => undefined,
++        logger: { log: () => undefined },
++      });
++
++      expect(readFileSync(signedEntry, "utf8")).toBe(signedSource);
++      expect(readFileSync(signedMap, "utf8")).toBe('{"signed":true}');
++      expect(readFileSync(normalEntry, "utf8")).toBe("console.log('ok');\n");
++      expect(existsSync(normalMap)).toBe(false);
++    } finally {
++      rmSync(rootDir, { force: true, recursive: true });
++    }
++  });
+ });
+--- opening/specs/computer-use-macos-phase1.md
++++ source/specs/computer-use-macos-phase1.md
+@@ -17,6 +17,41 @@
+ 第二轮 runtime 接线仅处理 candidate/revoked 生命周期：`CuaSubmissionAuthority` 仍为唯一状态 owner，协调器只持当前引用和输入关联，不复制授权状态。通过 AgentRuntime 的显式可信依赖注入固定身份；没有完整身份不构造候选，不能由 bootstrap 随意生成假 Host 标识补缺。Host 现有 `intent.inputOrigin` 可表达来源，但持久化 intent 本身不证明 live admission；建立新 candidate 还须有实例内、不可序列化的可信 live 提交凭证，绑定 source/queue 与当前 owner。凭证由受信调用方显式登记，经现有 admission/队列携带关联，不写 transcript、trace、模型参数或公开协议。恢复、重放、直接执行与自动续跑不能只凭旧 intent 建立资格；可信队列项提升最多消费一次凭证，不建立第二条输入队列。
+ 
+ runtime 在实际 admission、steer/queue、用户 stop 与 shutdown 路径调用协调器；手机/unknown 对活动 lineage 的影响先锁存撤销，stop 先撤销再 abort，shutdown 幂等封闭并撤销。新输入不能残留旧当前引用；去重或已撤销输入不得复活。自动续跑仅沿用原 lineage，无新凭证则不能重授予。来源/身份/容量不足只拒绝 CUA candidate，不影响普通聊天。尚无原生 Helper 时不实现假的 Fenced 屏障；本轮不得向 producer 签发可执行资格，真实手机投递屏障、Host 注册 live 凭证与产品启动身份仍是激活前置项。
++
++### 正式构建收尾与 cell 资源快照（2026-10-30）
++
++本轮输出 `output/cua-phase1-closeout/`，验收另存 `packages/desktop/native/macos-cua-driver-closure/reports/2026-10-30-closeout/`；既有 launchservices/desktop-session 报告、冻结源和候选只读。继续 local-self-signed，功能默认禁用，`zcodeCuaPlaceholder:true`。完整 D06、native Fenced、所有后代退出、JS 六项许可缺失、Intel/最低 OS/升级 TCC 稳定性均不因本轮关闭。
++
++**cell 代码资源合同。** 固定签名 CLI 从已封装 Node 的固定同级资源名打开 node-repl server，拒绝符号链接、非普通文件、错误 owner、group/other 可写及超限内容。在同一个打开句柄上有界读取（读取期间增长也不能突破上限）、对所得原始字节核验封装钉住的 SHA-256，保留同一份可执行 UTF-8 内容的私有不可变快照。校验失败或非可无损执行的 UTF-8 必须拒绝。之后即使资源被 rename、unlink、原位改写或替换为 symlink，每次 cell 都只执行该快照；不得关闭句柄丢弃内容后再按 serverPath 打开，不得以重复 hash/重试缩小竞态冒充消除。
++
++快照通过子进程私有 stdin 传入固定 Node 的 ESM stdin 入口，模型请求/结果继续使用 fd3/fd4，且 authority/control FD 不继承。stdin 写入必须处理 backpressure、错误、abort 和直接子进程退出；取消/失败不得留下 pending Promise。源码不能进入命令行、环境、日志或模型参数。CUA composition 必须提供校验快照，缺失直接失败；普通 MCP/SEA/Worker 的现有路径启动语义不改变。启动 descriptor 的固定资源名仅作诊断，不作为再打开执行的路径。不为快照增加授权状态；原 CuaSubmissionAuthority、turn scope、per-call capability、机器 lease、frame owner 仍是唯一所有者。
++
++```mermaid
++sequenceDiagram
++ participant C as 可信 CLI composition
++ participant F as 固定封装资源的打开句柄
++ participant E as 既有 subprocess executor
++ participant P as 独立不受信 cell
++ participant A as 原 authority / per-call broker
++ C->>F: O_NOFOLLOW / 元数据 / 有界读取
++ F-->>C: 同一份 bytes → SHA-256 → 私有快照
++ C->>E: 不可变内容（不再依赖路径）
++ E->>P: 固定 Node / ESM stdin 快照
++ E->>P: fd3 模型请求 + 原 per-call capability
++ P->>A: 既有 owner/turn/lease 检查
++ P-->>E: fd4 结果 + 直接进程退出
++ A-->>E: 原 stop/abort → 拒绝迟到结果
++```
++
++最小验收：① 真正子进程执行已核验快照，校验后替换/原位改写/删除原文件均不执行新字节；② 错摘要、symlink、可写/超限/读取增长和无快照 CUA composition 拒绝；③ fd3/fd4、jitless、环境过滤及 abort/失败结算保留；④ 以本次构建产出的真实 server bundle 与固定签名 Node 独立验证快照执行，再按需要验证最终封装的一次单窗口截图。不把以上结果扩大为 OS 沙箱/完整 D06 或 native Fenced。cell 的 Node 可执行文件仍按固定路径 spawn，本切片未增加该 cell PID 的 loaded-code 校验或消除二进制替换窗口；这与已关闭的 JS 内容重开竞态分别记账。
++
++正式构建集成须先核对发行入口；不能把缺 node-pty/SSH 的候选 Host 静默替换普通 Host。装配与激活分别记账；若将截图入口接入普通应用需要改变批准的进程结构或用户交互，先列具体差异与用户对齐，不能用仅复制资源宣称普通产品截图已可用。
++
++**正式发行资源装配合同（不激活）。** 正常桌面 `bundle` / electron-builder 允许显式构建输入把本轮已签名窄 Helper 放入独立 `Resources/cua-narrow/` 槽位；默认构建无此输入时行为不变。该输入只属于构建机，不能由 runtime env/argv/UI 改变进程路由。原有 `cua-helper` 槽位、producer 检测和 installer 不复用，不设置 candidate Host compile seam。窄资源不得改变普通 Host/Agent/PTY/SSH/remote 的启动和依赖；`zcodeCuaPlaceholder:true` 保持不变。仅 arm64/macOS14.2 固定来源可装配，其他目标的显式请求必须报错而不是携带错误架构。
++
++构建在输入和最终复制位置分别验证完整资源内容摘要、固定 Helper/Node identifier、现有 local-self-signed 证书/DR、strict signature、hardened runtime 和严格 library validation；不接纳 ad-hoc、额外 entitlement 或 unsigned 替身，不重签可信 Helper/Node。封装不得留向仓库/缓存的符号链接，源/复制后清单不一致即失败；外层 Electron 继续不受信 UI。签名资源与源码/审计摘要、默认禁用/限制说明随构建记录归档。不得将此项记为普通应用已能调用截图；普通 Host 的功能接入需要另行对齐进程/协议方案。
++
++验收仅检查：默认装配未切换 Host；显式 arm64 资源经实际 electron-builder 配置进入正确槽位、复制前后签名与内容一致；错误签名/摘要/目标明确拒绝；本轮新 Helper 的实际一次截图单列。无需重测普通 Host 完整功能矩阵。
+ 
+ ### 真实桌面会话的可信 Node 与原生确认（2026-10-30，用户已批准实施）
+ 

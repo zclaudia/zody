@@ -1,0 +1,10 @@
+70018     1 Zody CUA Launchservices Candidate
+70471 70018 /Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Frameworks/Zody CUA Launchservices Candidate Helper.app/Contents/MacOS/Zody CUA Launchservices Candidate Helper
+70472 70018 /Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Frameworks/Zody CUA Launchservices Candidate Helper.app/Contents/MacOS/Zody CUA Launchservices Candidate Helper
+70610 70018 /Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Frameworks/Zody CUA Launchservices Candidate Helper (Renderer).app/Contents/MacOS/Zody CUA Launchservices Candidate Helper (Renderer)
+70851 70018 /Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session
+70858     1 /Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session
+70983 70018 /Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Frameworks/Zody CUA Launchservices Candidate Helper.app/Contents/MacOS/Zody CUA Launchservices Candidate Helper
+70984 70876 /Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session
+70999     1 /Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session
+71019 70999 /Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/Resources/node

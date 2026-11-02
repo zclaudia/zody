@@ -1,0 +1,25 @@
+
+ RUN  v4.1.7 /Users/zhvala/SourceCode/zody/apps/zcode-cli
+
+···························································································································
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/core/tests/cua-submission-control-binding.test.ts [ packages/core/tests/cua-submission-control-binding.test.ts ]
+Error: Cannot find package '@zcode/adapters/mcp' imported from /Users/zhvala/SourceCode/zody/apps/zcode-cli/packages/core/tests/cua-submission-control-binding.test.ts
+ ❯ packages/core/tests/cua-submission-control-binding.test.ts:7:1
+      5| import { afterAll, beforeAll, describe, expect, it } from "vitest";
+      6| import type { CuaSubmissionRef } from "@zcode/contracts";
+      7| import {
+       | ^
+      8|   createCuaSubmissionControlSession,
+      9|   resolveOfficialControlOnlyLauncher,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 14 passed (15)
+      Tests  123 passed (123)
+   Start at  11:52:45
+   Duration  13.51s (transform 9.50s, setup 0ms, import 13.12s, tests 9.57s, environment 1ms)
+

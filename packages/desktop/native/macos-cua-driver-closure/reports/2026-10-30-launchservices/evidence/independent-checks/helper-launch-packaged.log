@@ -1,0 +1,37 @@
+Timestamp               Ty Process[PID:TID]
+2026-10-30 20:21:18.684 A  macos-cua-desktop-session[71247:99c0dc3] (libsystem_info.dylib) Membership API: translate identifier
+2026-10-30 20:21:18.697 E  macos-cua-desktop-session[71247:99c0dc3] [com.apple.libsqlite3:logging-persist] cannot open file at line 51044 of [f0ca7bba1c]
+2026-10-30 20:21:18.697 E  macos-cua-desktop-session[71247:99c0dc3] [com.apple.libsqlite3:logging-persist] os_unix.c:51044: (2) open(/private/var/db/DetachedSignatures) - No such file or directory
+2026-10-30 20:21:18.698 A  macos-cua-desktop-session[71247:99c0dc3] (Security) SecKeyVerifySignature
+2026-10-30 20:21:18.699 Df macos-cua-desktop-session[71247:99c0dc3] [com.apple.xpc:connection] [0x1038082c0] activating connection: mach=true listener=false peer=false name=com.apple.analyticsd
+2026-10-30 20:21:18.699 A  macos-cua-desktop-session[71247:99c0dc3] (Security) SecTrustEvaluateIfNecessary
+2026-10-30 20:21:18.699 Df macos-cua-desktop-session[71247:99c0dc3] [com.apple.securityd:keychain] Enabling System Keychain Always due to platform
+2026-10-30 20:21:18.699 Df macos-cua-desktop-session[71247:99c0dc3] [com.apple.xpc:connection] [0x10380a3b0] activating connection: mach=true listener=false peer=false name=com.apple.trustd.agent
+2026-10-30 20:21:18.700 Df macos-cua-desktop-session[71247:99c0ddd] [com.apple.xpc:connection] [0x10380c690] activating connection: mach=true listener=false peer=false name=com.apple.lsd.mapdb
+2026-10-30 20:21:18.701 Df macos-cua-desktop-session[71247:99c0dde] [com.apple.CoreAnalytics:client] Received configuration update from daemon (initial)
+2026-10-30 20:21:18.706 F  macos-cua-desktop-session[71247:99c0ddd] [com.apple.runtime-issues:Security] __delegate_identifier__:Performance Diagnostics__:::____message__:This method should not be called on the main thread as it may lead to UI unresponsiveness.
+2026-10-30 20:21:18.706 A  macos-cua-desktop-session[71247:99c0ddd] (libsystem_trace.dylib) Activity for state dumps
+2026-10-30 20:21:18.706 F  macos-cua-desktop-session[71247:99c0ddd] [com.apple.runtime-issues:Security] __delegate_identifier__:Performance Diagnostics__:::____message__:This method should not be called on the main thread as it may lead to UI unresponsiveness.
+2026-10-30 20:21:18.706 A  macos-cua-desktop-session[71247:99c0ddd] (libsystem_trace.dylib) Activity for state dumps
+2026-10-30 20:21:18.709 Df macos-cua-desktop-session[71247:99c0ddc] [com.apple.xpc:connection] [0x1038164b0] activating connection: mach=true listener=false peer=false name=com.apple.cfprefsd.daemon
+2026-10-30 20:21:18.709 A  macos-cua-desktop-session[71247:99c0ddc] (CoreFoundation) Loading Preferences From System CFPrefsD
+2026-10-30 20:21:18.714 A  macos-cua-desktop-session[71247:99c0ddc] (CoreServicesInternal) CFURLCreateBookmarkData
+2026-10-30 20:21:18.715 A  macos-cua-desktop-session[71247:99c0ddc] (libsystem_info.dylib) Retrieve User by ID
+2026-10-30 20:21:18.716 Df macos-cua-desktop-session[71247:99c0ddc] [com.apple.xpc:connection] [0x8cd09c140] activating connection: mach=true listener=false peer=false name=com.apple.lsd.modifydb
+2026-10-30 20:21:18.728 Df macos-cua-desktop-session[71247:99c0de1] [com.apple.launchservices:db] NotifyToken::RegisterDispatch(user.uid.501.com.apple.LaunchServices.database) fired for session key <private>
+2026-10-30 20:21:18.728 E  macos-cua-desktop-session[71247:99c0ddc] [com.apple.launchservices:registration] Failed to get unit 12324 from store <private>
+2026-10-30 20:21:18.771 A  macos-cua-desktop-session[71247:99c0dc3] (Security) SecTrustCopyAppleTrustAnchors
+2026-10-30 20:21:18.772 A  macos-cua-desktop-session[71247:99c0dc3] (Security) SecTrustCopyAppleTrustAnchors
+2026-10-30 20:21:18.774 Df macos-cua-desktop-session[71247:99c0de4] [com.apple.xpc:connection] [0x8cd09c000] activating connection: mach=true listener=false peer=false name=com.apple.coreservices.quarantine-resolver
+2026-10-30 20:21:18.775 A  macos-cua-desktop-session[71247:99c0de4] (LaunchServices) LaunchServices.launchViaCSUA
+2026-10-30 20:21:18.775 Df macos-cua-desktop-session[71247:99c0de4] [com.apple.launchservices:open] LAUNCH: Asking CSUI to launch 0 items
+2026-10-30 20:21:18.806 Df macos-cua-desktop-session[71247:99c0ddc] [com.apple.launchservices:db] NotifyToken::RegisterDispatch(user.uid.501.com.apple.LaunchServices.database) fired for session key <private>
+2026-10-30 20:21:23.936 Df launchd[1:99c004d] [gui/501 [100018]:] service inactive: application.io.github.zclaudia.zody.cua-helper.150936605.150936610.2359C528-1380-4D53-BEF5-5EC31266F45D
+2026-10-30 20:21:23.937 Df launchd[1:99c0a02] [gui/501 [100018]:] removing service: application.io.github.zclaudia.zody.cua-helper.150936605.150936610.2359C528-1380-4D53-BEF5-5EC31266F45D
+2026-10-30 20:21:23.941 Df launchservicesd[581:99c0c46] [com.apple.runningboard:process] Hit the server for a process handle 1395123400011654 that resolved to: [app<application.io.github.zclaudia.zody.cua-helper.150936605.150936610.2359C528-1380-4D53-BEF5-5EC31266F45D(501)>:71252]
+2026-10-30 20:21:23.942 Df macos-cua-desktop-session[71247:99c0dc3] [com.apple.xpc:connection] [0x8cd09c280] activating connection: mach=true listener=false peer=false name=com.apple.coreservices.launchservicesd
+2026-10-30 20:21:23.944 Df macos-cua-desktop-session[71247:99c0dc3] [com.apple.CoreAnalytics:client] Entering exit handler.
+2026-10-30 20:21:23.944 Df macos-cua-desktop-session[71247:99c0dc3] [com.apple.CoreAnalytics:client] Queueing exit procedure onto XPC queue. Any further messages sent will be discarded. activeSendTransactions=0
+2026-10-30 20:21:23.945 Df macos-cua-desktop-session[71247:99c0de1] [com.apple.CoreAnalytics:client] Cancelling XPC connection. Any further reply handler invocations will not retry messages
+2026-10-30 20:21:23.945 Df macos-cua-desktop-session[71247:99c0de1] [com.apple.xpc:connection] [0x1038082c0] invalidated because the current process cancelled the connection by calling xpc_connection_cancel()
+2026-10-30 20:21:23.945 Df macos-cua-desktop-session[71247:99c0dc3] [com.apple.CoreAnalytics:client] Exiting exit handler.

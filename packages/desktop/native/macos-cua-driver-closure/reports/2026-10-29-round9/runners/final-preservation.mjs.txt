@@ -1,0 +1,24 @@
+import {readFile,writeFile,copyFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {scanTree,verifyTreeAgainstManifest} from '../../packages/desktop/scripts/lib/cua-driver-round7-prepare-source.mjs';
+const root=process.cwd(),out=root+'/output/cua-driver-round9',archive=root+'/packages/desktop/native/macos-cua-driver-closure/reports/2026-10-29-round9';
+const allowed=new Set(['specs/computer-use-macos-phase1.md','docs/design/computer-use-macos-phase1.md','docs/plans/computer-use-macos-phase1-implementation.md']);
+const result={};
+for(const name of ['files.json','registry-sources.json']){
+ const old=JSON.parse(await readFile(out+'/controller-baseline/'+name));const changed=[],missing=[];
+ for(const [p,sha] of Object.entries(old)){
+  try{const now=createHash('sha256').update(await readFile(root+'/'+p)).digest('hex');if(now!==sha)changed.push(p);}catch(e){if(e.code==='ENOENT')missing.push(p);else throw e;}
+ }
+ result[name]={count:Object.keys(old).length,changed,missing,unexpectedChanges:changed.filter(x=>!allowed.has(x))};
+ if(missing.length||result[name].unexpectedChanges.length)throw new Error('unapproved preservation delta');
+}
+for(const [round,source] of [['round8','controller-accepted'],['round9','controller-final']]){
+ const manifest=JSON.parse(await readFile(root+'/packages/desktop/native/macos-cua-driver-closure/'+round+'/source-manifest.json'));
+ result[round]=await verifyTreeAgainstManifest({scanned:await scanTree(root+'/output/cua-driver-'+round+'/candidate-work/'+source+'/full-source'),manifest});
+}
+const placeholder=JSON.parse(await readFile(root+'/packages/zcode-cua/package.json')).zcodeCuaPlaceholder;
+if(placeholder!==true)throw new Error('placeholder changed');result.zcodeCuaPlaceholder=placeholder;
+const text=JSON.stringify(result,null,2)+'\n';await writeFile(out+'/controller-checks/preservation.json',text);await writeFile(archive+'/checks/preservation.json',text);
+for(const name of ['format-docs.log','diff-check.log'])await copyFile(out+'/controller-checks/'+name,archive+'/checks/'+name);
+await copyFile(out+'/final-preservation.mjs',archive+'/runners/final-preservation.mjs.txt');
+console.log(text);

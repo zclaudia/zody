@@ -1,0 +1,17 @@
+# designated => cdhash H"35d594ff563992e91b0cf727f1aa77bd5fb1e7f9"
+Executable=/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/MacOS/ZodyCUACandidate
+Identifier=Electron
+Format=app bundle with Mach-O thin (arm64)
+CodeDirectory v=20400 size=392 flags=0x20002(adhoc,linker-signed) hashes=9+0 location=embedded
+Hash type=sha256 size=32
+CandidateCDHash sha256=35d594ff563992e91b0cf727f1aa77bd5fb1e7f9
+CandidateCDHashFull sha256=35d594ff563992e91b0cf727f1aa77bd5fb1e7f9df31c796f0d08545393b70ba
+Hash choices=sha256
+CMSDigest=35d594ff563992e91b0cf727f1aa77bd5fb1e7f9df31c796f0d08545393b70ba
+CMSDigestType=2
+CDHash=35d594ff563992e91b0cf727f1aa77bd5fb1e7f9
+Signature=adhoc
+Info.plist=not bound
+TeamIdentifier=not set
+Sealed Resources=none
+warning: Specifying ':' in the path is deprecated and will not work in a future release

@@ -35,8 +35,13 @@ describe("toast", () => {
   });
 
   it("uses real viewport insets for every stack and never translates a bottom stack outside", () => {
-    expect(resolveToastStackClassName("top-center")).toContain("top-16");
-    expect(resolveToastStackClassName("top-right")).toContain("top-16");
+    // dialogs-7: 顶部堆叠消费顶部安全区（桌面 env=0 时计算值仍为 4rem）。
+    expect(resolveToastStackClassName("top-center")).toContain(
+      "top-[calc(4rem+env(safe-area-inset-top))]",
+    );
+    expect(resolveToastStackClassName("top-right")).toContain(
+      "top-[calc(4rem+env(safe-area-inset-top))]",
+    );
     expect(resolveToastStackClassName("bottom-left")).toContain("bottom-");
     expect(resolveToastStackClassName("bottom-center")).toContain("bottom-");
     expect(resolveToastStackClassName("bottom-left")).not.toContain("translate-y");
@@ -94,6 +99,26 @@ describe("toast", () => {
     expect(html).toContain("w-[min(300px,calc(100vw-1rem))]");
     expect(html).toContain("grid-cols-[auto_minmax(0,1fr)_auto]");
     expect(html).toContain("max-w-14");
+  });
+
+  it("caps default toasts to the viewport so long single lines stay readable (dialogs-6)", () => {
+    const html = renderToStaticMarkup(
+      createElement(ToastMessageView, {
+        item: {
+          id: 6,
+          message: "很长的一条单行消息-很长的一条单行消息-很长的一条单行消息-很长的一条单行消息",
+          durationMs: 3000,
+          position: "top-center",
+        },
+        visible: true,
+      }),
+    );
+
+    // default 变体补上与 isNotice 同款的 min(100vw-…) 宽度防护；
+    // 用 max-w 而非 w，短消息桌面仍按内容收缩。
+    expect(html).toContain("max-w-[min(536px,calc(100vw-2rem))]");
+    expect(html).toContain("px-4 py-3");
+    expect(html).toContain("whitespace-pre-line");
   });
 
   it("renders a dismissible actionable info toast for subscription guidance", () => {

@@ -25,6 +25,12 @@ export interface WebRemoteControlMobileSearchProps {
   onBack: () => void;
 }
 
+/**
+ * 触屏态命中区下限 44×44px 的 media 前缀（docs/web-remote-control/mobile-viewport-input-and-touch.md D1），
+ * 与 lib/mobileTextInput.ts:3 同一 media 内核；不带该前缀的样式保持桌面基线不变。
+ */
+const TOUCH_TARGET_MEDIA = "[@media(hover:none)_and_(pointer:coarse)]";
+
 function highlight(text: string, query: string) {
   const normalized = query.toLocaleLowerCase();
   const index = text.toLocaleLowerCase().indexOf(normalized);
@@ -32,7 +38,11 @@ function highlight(text: string, query: string) {
   return (
     <>
       {text.slice(0, index)}
-      <mark>{text.slice(index, index + query.length)}</mark>
+      {/* searchfile-10：裸 <mark> 落到浏览器默认亮黄底黑字，Zai Dark 下非常刺眼；
+          改用设计系统预留的 find-highlight 语义 token（styles.css --color-find-highlight，随主题切换）。 */}
+      <mark className="bg-find-highlight text-foreground">
+        {text.slice(index, index + query.length)}
+      </mark>
       {text.slice(index + query.length)}
     </>
   );
@@ -68,9 +78,11 @@ export function WebRemoteControlMobileSearch({
       data-mobile-page="search"
     >
       <header className="flex shrink-0 items-center gap-3 border-b px-4 py-3">
+        {/* touch-8：返回按钮原默认 h-7（28px）低于触屏命中区下限，触屏态抬到 ≥44px。 */}
         <Button
           type="button"
           variant="ghost"
+          className={`${TOUCH_TARGET_MEDIA}:h-11 ${TOUCH_TARGET_MEDIA}:min-w-11`}
           onClick={onBack}
           aria-label={intl.formatMessage({ id: "mobileSearch.back" })}
         >
@@ -94,8 +106,15 @@ export function WebRemoteControlMobileSearch({
           onChange={(event) => search.setQuery(event.currentTarget.value)}
           placeholder={intl.formatMessage({ id: "mobileSearch.placeholder" })}
           aria-label={intl.formatMessage({ id: "mobileSearch.placeholder" })}
+          // keyboard-5：声明搜索型输入，手机键盘动作键显示「搜索」而非通用「换行」。
+          inputMode="search"
+          enterKeyHint="search"
         />
-        <Button type="submit" disabled={search.isSearching || search.query.trim().length === 0}>
+        <Button
+          type="submit"
+          className={`${TOUCH_TARGET_MEDIA}:h-11`}
+          disabled={search.isSearching || search.query.trim().length === 0}
+        >
           <span className="text-ui-base">{intl.formatMessage({ id: "mobileSearch.search" })}</span>
         </Button>
       </form>
@@ -104,7 +123,8 @@ export function WebRemoteControlMobileSearch({
           {intl.formatMessage({ id: "mobileSearch.queryTooLong" })}
         </p>
       ) : null}
-      <label className="flex shrink-0 items-center gap-2 px-4 pb-3 text-ui-base">
+      {/* 整行 label 即点击目标；触屏态补足上下 padding 使命中区 ≥44px，桌面保持原密度。 */}
+      <label className="flex shrink-0 items-center gap-2 px-4 pb-3 text-ui-base [@media(hover:none)_and_(pointer:coarse)]:pt-3">
         <input
           type="checkbox"
           checked={search.includeArchived}
@@ -142,6 +162,7 @@ export function WebRemoteControlMobileSearch({
                     size="sm"
                     variant="ghost"
                     type="button"
+                    className={`${TOUCH_TARGET_MEDIA}:min-h-11`}
                     disabled={
                       search.isSearching ||
                       search.retryingScopes.includes(outcome.context.workspaceKey)
@@ -176,12 +197,14 @@ export function WebRemoteControlMobileSearch({
               })
             }
           >
-            <span className="block text-ui-base font-medium">
+            {/* viewport-5：搜索命中内容里长无空格 token（URL、commit hash、代码片段）很常见，
+                break-all 保证标题与 snippet 在结果列表内折行，不产生横向滚动/裁剪。 */}
+            <span className="block break-all text-ui-base font-medium">
               {highlight(item.task.title, search.submittedQuery)}
             </span>
             {item.snippets.map((snippet, index) => (
               <span
-                className="mt-1 block text-ui-sm text-muted-foreground"
+                className="mt-1 block break-all text-ui-sm text-muted-foreground"
                 key={`${index}:${snippet}`}
               >
                 {highlight(snippet, search.submittedQuery)}
@@ -199,7 +222,7 @@ export function WebRemoteControlMobileSearch({
         ) : null}
         {search.canShowMore ? (
           <Button
-            className="mt-3 w-full"
+            className={`mt-3 w-full ${TOUCH_TARGET_MEDIA}:h-11`}
             type="button"
             variant="outline"
             onClick={search.showMore}

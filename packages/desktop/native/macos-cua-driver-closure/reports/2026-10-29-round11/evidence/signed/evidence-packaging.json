@@ -1,0 +1,7 @@
+{
+  "oldPath": "packages/desktop/native/macos-cua-driver-closure/reports/2026-10-29-round11/evidence/authority-bundle.mjs",
+  "newPath": "packages/desktop/native/macos-cua-driver-closure/reports/2026-10-29-round11/evidence/authority-bundle.mjs.txt",
+  "sha256": "e0bb13d090179121b7a89bf85009e3a749647beb9c2611b0219d5d72cdf2ae62",
+  "bytesUnchanged": true,
+  "reason": "Generated frozen JS is a text evidence artifact, not another source entry; root lint otherwise treats bundle as 692-line source."
+}

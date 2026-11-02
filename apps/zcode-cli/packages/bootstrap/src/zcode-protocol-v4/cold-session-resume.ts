@@ -13,8 +13,19 @@ import type { MessageWithParts } from "@zcode/contracts";
 import type { ZCodeWorkspaceRef } from "@zcode/shared";
 
 export type ColdSessionResumeOutcome =
-  | { status: "resumed"; persistedMessages?: MessageWithParts[] }
+  | {
+      status: "resumed";
+      persistedMessages?: MessageWithParts[];
+      /** resume 修补了中断 compact timeline：READY 必须用刷新后的 M1 重新水化。 */
+      messagesReloadRequired?: boolean;
+    }
   | { status: "notFound" };
+
+/** activation 的完整结果：既有调用方只关心 messages，READY 还需要 M1 收敛信号。 */
+export interface ColdSessionResumeResult {
+  persistedMessages?: MessageWithParts[];
+  messagesReloadRequired?: boolean;
+}
 
 /** 协调器需要的宿主能力窄面（与 V4GatewayHost 同形，避免循环 import）。 */
 export interface ColdSessionResumeHost {
@@ -42,7 +53,7 @@ export class V4SubscribeSessionUnavailableError extends Error {
 
 export class ColdSessionResumeCoordinator {
   /** sessionId → 进行中的 runtime activation；settle 后立即释放。 */
-  private readonly flights = new Map<string, Promise<MessageWithParts[] | undefined>>();
+  private readonly flights = new Map<string, Promise<ColdSessionResumeResult>>();
 
   constructor(private readonly host: ColdSessionResumeHost) {}
 
@@ -50,7 +61,7 @@ export class ColdSessionResumeCoordinator {
     sessionId: string,
     resumeThoughtLevel?: string,
     workspace?: ZCodeWorkspaceRef,
-  ): Promise<MessageWithParts[] | undefined> {
+  ): Promise<ColdSessionResumeResult> {
     const inFlight = this.flights.get(sessionId);
     if (inFlight) {
       this.host.onDebug?.(`cold resume joined existing flight session=${sessionId}`);
@@ -73,7 +84,7 @@ export class ColdSessionResumeCoordinator {
     sessionId: string,
     resumeThoughtLevel?: string,
     workspace?: ZCodeWorkspaceRef,
-  ): Promise<MessageWithParts[] | undefined> {
+  ): Promise<ColdSessionResumeResult> {
     const resume = this.host.resumePersistedSession;
     if (!resume) {
       throw new V4SubscribeSessionUnavailableError(
@@ -108,6 +119,11 @@ export class ColdSessionResumeCoordinator {
         `Session is not active and not persisted: ${sessionId}`,
       );
     }
-    return outcome.persistedMessages;
+    return {
+      ...(outcome.persistedMessages !== undefined
+        ? { persistedMessages: outcome.persistedMessages }
+        : {}),
+      ...(outcome.messagesReloadRequired === true ? { messagesReloadRequired: true } : {}),
+    };
   }
 }

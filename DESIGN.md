@@ -434,6 +434,13 @@ Control size and primary/secondary action emphasis do not independently change r
 - Page roots use `h-full` or `min-h-screen`. Nested scroll and preview containers need `min-h-0` and `min-w-0` as appropriate; `overflow-auto` alone does not establish a shrinkable flex region.
 - Prefer `max-h-*` to a fixed height for scrollable content. Do not combine `size-*` with conflicting `w-*` / `h-*` unless a non-square shape is deliberate.
 
+### Mobile touch targets and dynamic viewport height
+
+Mobile Web (remote control) adds two floors on top of the baselines above; full rules and acceptance scenarios live in the [mobile viewport, input and touch spec](docs/web-remote-control/mobile-viewport-input-and-touch.md).
+
+- On touch surfaces — scoped by `(hover: none)` and `(pointer: coarse)` — every clickable element must expose a hit area of at least 44×44px. Visual sizes may stay at desktop scale; menu and option rows must reach at least 44px in their touch presentation. Desktop density is unchanged.
+- Mobile full-screen pages use dynamic viewport units (`h-dvh` / `min-h-dvh`). Do not introduce new `min-h-screen` on mobile entries; desktop page roots keep `h-full` / `min-h-screen`.
+
 ## Components
 
 ### Buttons
@@ -574,6 +581,8 @@ Rules:
 - Do not change the semantic meaning of components across breakpoints.
 - Prefer changing `max-width`, `grid`, `flex`, and visibility over changing component identity.
 - Preserve primary actions at all breakpoints; do not hide core workflows behind desktop-only affordances.
+- Scope mobile-only interaction floors (touch hit areas ≥44px) with `(hover: none)` / `(pointer: coarse)` media queries rather than width breakpoints, so desktop density is untouched (spec: `docs/web-remote-control/mobile-viewport-input-and-touch.md`).
+- Use `100dvh` / `min-h-dvh` for mobile full-screen roots so browser chrome and the on-screen keyboard resize the layout predictably; keyboard avoidance is owned by the mobile keyboard inset tracker, not per-component workarounds (spec: `docs/web-remote-control/mobile-viewport-input-and-touch.md`).
 
 ### Breakpoint roles
 

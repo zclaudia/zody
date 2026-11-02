@@ -1,0 +1,2285 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-helper-product-wiring-native-candidate",
+  "status": "pass",
+  "generatedAt": "2026-10-30T04:15:56.191Z",
+  "unsigned": true,
+  "signing": {
+    "performed": false,
+    "acceptance": "blocked",
+    "reason": "builder does not sign; controller signs and runs the real once-capture"
+  },
+  "captureEntry": false,
+  "productHook": false,
+  "nativeCompositionCandidate": true,
+  "outputRoot": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic",
+  "visualRoot": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final",
+  "sourceRoot": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11",
+  "fixture": {
+    "entry": "/Users/zhvala/SourceCode/zody/apps/zcode-cli/packages/bootstrap/tests/fixtures/cua-native-owner-entry.ts",
+    "root": "apps/zcode-cli/packages/bootstrap/tests/fixtures",
+    "synthetic": true,
+    "installedUi": false,
+    "note": "真实 createZCodeApp + CommandInbox/sendText + held model 的测试构建入口；Host 身份/模型显式 synthetic，不声称安装版 UI、完整产品启动或截图证据",
+    "realFactory": "createRegistryBackedTestApp -> createZCodeApp (no vitest)",
+    "identityFrom": "app.runtime.createCuaSubmissionTurnScope() (真实 ref/trace/run/turn)",
+    "producerIncarnation": "本次 launcher 唯一 nonce"
+  },
+  "platformTrim": {
+    "koffi": {
+      "module": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/koffi-unavailable-darwin.mjs",
+      "behavior": "throw-only darwin 平台裁剪，不是 koffi 可用实现",
+      "evidence": [
+        "apps/zcode-cli/packages/adapters/src/mcp/windows-job-object.ts:31",
+        "apps/zcode-cli/packages/adapters/src/mcp/stdio-transport.ts:96"
+      ],
+      "installUiEquivalence": false
+    },
+    "entryPlatformGuard": "darwin arm64 only"
+  },
+  "wireFrameLimitBytes": 16384,
+  "bundleBound": {
+    "previousBytes": 8388608,
+    "currentBytes": 33554432,
+    "actualBytes": 27760098,
+    "justification": "真实 create-app/CommandInbox sealed ESM 约 26.5MiB，有界提升到 32MiB",
+    "frameLimitUnchanged": true
+  },
+  "identityPins": {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/identity-pins.json",
+    "values": {
+      "leafSha256": "a7f7afa6a507b71c996f4a9bfbf6eef908d67054acdca93833bcd4c94c13ef0b",
+      "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+      "nodeIdentifier": "io.github.zclaudia.zody.cua-helper.node",
+      "nodeLeafSha256": "a7f7afa6a507b71c996f4a9bfbf6eef908d67054acdca93833bcd4c94c13ef0b",
+      "nodeDesignatedRequirement": "identifier \"io.github.zclaudia.zody.cua-helper.node\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+      "nodeCdhash": "3c57a9bb9f4e8b748ac80d60bc78cdde14767218"
+    }
+  },
+  "sourceStage": {
+    "stageRoot": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv",
+    "baselinePath": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/source-baseline.json",
+    "baselineProvenance": {
+      "manifest": "output/cua-helper-round11/controller-signed/candidate/build/build-manifest.json",
+      "manifestSha256": "7c273c65bc523423a839ebbf6b45db804cd5eeb45a5016659ad77898781b07fc",
+      "manifestKind": "zody-cua-helper-round11-final-build",
+      "manifestStatus": "pass",
+      "note": "固定 R11 controller-signed frozen source hashes；派生 stage 必须逐一匹配，patch 以 --fuzz=0 应用。",
+      "mmKeyPrefixNote": "冻结 manifest 的 .mm 以裸文件名记录；本 baseline 为 stage 映射统一加 round11/src/ 与 r10/src/ 前缀，hash 值未改。"
+    },
+    "r11SourceCount": 19,
+    "r10SourceCount": 15,
+    "r11Sources": [
+      "authority_client.mm",
+      "bundle_paths.mm",
+      "capture_owner.mm",
+      "machine_lease.mm",
+      "main.mm",
+      "node_process.mm",
+      "orchestrator.mm",
+      "peer_auth.mm",
+      "r11_pins.mm",
+      "r11_self_identity.mm"
+    ],
+    "r10Sources": [
+      "peer_socket.mm",
+      "peer_frame.mm",
+      "security_identity.mm",
+      "profile.mm"
+    ],
+    "verifiedCount": 34,
+    "verified": [
+      {
+        "key": "round11/src/authority_client.h",
+        "sha256": "69544e503b4652804fcd6a1c729dd7fe35a1f6a94101b6a4f4a4227ecc275e93"
+      },
+      {
+        "key": "round11/src/authority_client.mm",
+        "sha256": "7274d1b2f79fcaa71e263a1b6a3211cf60f4c05ba4682cf0b581c47bfd84e075"
+      },
+      {
+        "key": "round11/src/bundle_paths.h",
+        "sha256": "62d6c52441f5da4a3991a52a35e4ded189bbd47f41e98e08fc24fe0c9a3fc5c9"
+      },
+      {
+        "key": "round11/src/bundle_paths.mm",
+        "sha256": "276d43b9c769884c401543e316bad05c06088903c84dfac6ed28a275d646c966"
+      },
+      {
+        "key": "round11/src/capture_owner.h",
+        "sha256": "a7f6f89a26e2e64a215f2441c68d354460a4d6617959cff8d219a7b38382f14f"
+      },
+      {
+        "key": "round11/src/capture_owner.mm",
+        "sha256": "ccb3e5a3e9ffc375b96ea45b386cbb1b9430d8ab979113646e26661a5174516c"
+      },
+      {
+        "key": "round11/src/machine_lease.h",
+        "sha256": "8df297f234a41678c8d052344bb2383eb914a725d7e0af644719aa5cf85cb0f9"
+      },
+      {
+        "key": "round11/src/machine_lease.mm",
+        "sha256": "5c16cda5d41837dcb220fc3513c1f722efedbd89c908122be72cbf4b5baf8c1b"
+      },
+      {
+        "key": "round11/src/main.mm",
+        "sha256": "085542973ea23b5195f5d56a49acbd5d4e418386c25cd9bb3d159daa613ea2dd"
+      },
+      {
+        "key": "round11/src/node_process.h",
+        "sha256": "fefb26ab207fb41a2f3618ace4d07fda00161d98379c1bb04ccfdfc4cbf7220f"
+      },
+      {
+        "key": "round11/src/node_process.mm",
+        "sha256": "59e15644f01b5bbcf4816b0e712c999346258ed791f8390f03d7039bf2f9d021"
+      },
+      {
+        "key": "round11/src/orchestrator.h",
+        "sha256": "a62d0510d8dce7a13a396638a5565ac3265b6e32b87390ce3cdf96a7a87d30cd"
+      },
+      {
+        "key": "round11/src/orchestrator.mm",
+        "sha256": "e6230a10c58868000d5f4aace8bcb6a53efee657625854ee5c9308f4dcf6089d"
+      },
+      {
+        "key": "round11/src/peer_auth.h",
+        "sha256": "636f3f31af2e657bb4ddeaf50bea3db20b2e92da69fbc467c55f646015e46d23"
+      },
+      {
+        "key": "round11/src/peer_auth.mm",
+        "sha256": "f8947693701056e544500aebafddc86307279540834a6fe0f7551a92f7b61142"
+      },
+      {
+        "key": "round11/src/r11_pins.h",
+        "sha256": "1be71f6983b4d9e5269df148fe01ac3dab8e63cde9d261405771591510b460b6"
+      },
+      {
+        "key": "round11/src/r11_pins.mm",
+        "sha256": "af44e539958d377841ed1f6927e612eeca5523abb0d2737f6d540e4bd9fbcca1"
+      },
+      {
+        "key": "round11/src/r11_self_identity.h",
+        "sha256": "f653fd96e7290353670e871295d6b65fce2deacda1bdb8801abc1eea352e1e71"
+      },
+      {
+        "key": "round11/src/r11_self_identity.mm",
+        "sha256": "50889c42a208134320ab94eca0998e3def05b362a1fba04cbdb4cd860e83f20f"
+      },
+      {
+        "key": "r10/src/calibration_profile.h",
+        "sha256": "8cd9da272de90dba45b807425d164d93d53e04ac2eacc73fd29649b0bb87d80d"
+      },
+      {
+        "key": "r10/src/cli_common.h",
+        "sha256": "bb4d4545b0b1a3d5da39222b7cfda0a3fddabde463fd73ad0a98cca5b0b4beff"
+      },
+      {
+        "key": "r10/src/macho_artifact.h",
+        "sha256": "85984a0e25d91ee922278ceeddb0e729479ff0b80de19984631f4026314bd833"
+      },
+      {
+        "key": "r10/src/peer_frame.mm",
+        "sha256": "263574f244177c3d0c0ae36167ed9ae3d7db8a30a2afc1bcc6eca74fea2b9e2b"
+      },
+      {
+        "key": "r10/src/peer_internal.h",
+        "sha256": "aa93a3576ced5d7a5332350cd01e3f4a630da0793ed03ad9d01a5e8cff3220f3"
+      },
+      {
+        "key": "r10/src/peer_socket.h",
+        "sha256": "ef29202676e6484ce9cff0c4a32ff109ffb9a139884440bb963d170cb87855f6"
+      },
+      {
+        "key": "r10/src/peer_socket.mm",
+        "sha256": "a6e274faf1a6994e67e80bc3855b9b071555b4a8cb7dd216a2ad591237845856"
+      },
+      {
+        "key": "r10/src/policy.h",
+        "sha256": "b4bd22644ab26f8ceaf075ca4497f376e7246fb9d529a7d1c381421a6e402d07"
+      },
+      {
+        "key": "r10/src/profile.h",
+        "sha256": "143b23a93be081441345bc358bf89cac48743b0d1b68502283bc7c652e6db6f3"
+      },
+      {
+        "key": "r10/src/profile.mm",
+        "sha256": "124befc37b4c24eb85abf94cbe28a6241b13240448eadef7199a4dc33ab42c4e"
+      },
+      {
+        "key": "r10/src/pure_policy.h",
+        "sha256": "8b2a10e88733dcef61c152e4fd9c49952cc1fa1a1d849babc4a65937bf31a7f0"
+      },
+      {
+        "key": "r10/src/report.h",
+        "sha256": "7e0e1227ddb4614b7e4ced8bdfd978c59798cbe080a58544e3172a32d0658b58"
+      },
+      {
+        "key": "r10/src/security_identity.h",
+        "sha256": "078e5129ceb343519db24f47b270378d87430713db661636637b3b54a2f2ec4a"
+      },
+      {
+        "key": "r10/src/security_identity.mm",
+        "sha256": "fd1f5e62d1bdef5488016a656ffc61c3616b6069eda1ea0a9792c985771b29b2"
+      },
+      {
+        "key": "r10/src/static_artifact.h",
+        "sha256": "e148e1e93d622cc664040df46277bab2edb77886e9d9fd7b7cbe3acb063416ad"
+      }
+    ],
+    "patches": [
+      {
+        "id": "orchestrator-empty-bootstrap",
+        "file": "src/orchestrator.mm",
+        "patchPath": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/patches/orchestrator-empty-bootstrap.patch",
+        "patchSha256": "b729d8dac9dcdf8b12097eaff0ce7cdfdbb02e25478948e965a1504b4886c792",
+        "fuzz": 0,
+        "beforeSha256": "e6230a10c58868000d5f4aace8bcb6a53efee657625854ee5c9308f4dcf6089d",
+        "afterSha256": "1bc70a4c308a10a568ea86195b391ffabff791f8f7e0d467e0bb3248cbbc1b77"
+      },
+      {
+        "id": "orchestrator-helper-result-reason",
+        "file": "src/orchestrator.mm",
+        "patchPath": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/patches/orchestrator-helper-result-reason.patch",
+        "patchSha256": "b5845a60273058f10df48461739d4149cb75b66acbbba5c74422e6cc52cc96d8",
+        "fuzz": 0,
+        "beforeSha256": "1bc70a4c308a10a568ea86195b391ffabff791f8f7e0d467e0bb3248cbbc1b77",
+        "afterSha256": "3d75fd48ab1244560782dc19fa23cdbbabb2447ca803d708cb0d190c431b03ec"
+      },
+      {
+        "id": "node-stderr-observability",
+        "file": "src/node_process.mm",
+        "patchPath": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/patches/node-stderr-observability.patch",
+        "patchSha256": "3a904322b945df0e09ab202dd75e09449f5e0f7b6f48a305386f8c1db22dd242",
+        "fuzz": 0,
+        "beforeSha256": "59e15644f01b5bbcf4816b0e712c999346258ed791f8390f03d7039bf2f9d021",
+        "afterSha256": "8bee72852318fdf64b61114b239a5428c111f46df29766d05aae37048e0aa4cc"
+      }
+    ],
+    "sourceHashes": {
+      "round11/src/authority_client.h": "69544e503b4652804fcd6a1c729dd7fe35a1f6a94101b6a4f4a4227ecc275e93",
+      "round11/src/authority_client.mm": "7274d1b2f79fcaa71e263a1b6a3211cf60f4c05ba4682cf0b581c47bfd84e075",
+      "round11/src/bundle_paths.h": "62d6c52441f5da4a3991a52a35e4ded189bbd47f41e98e08fc24fe0c9a3fc5c9",
+      "round11/src/bundle_paths.mm": "276d43b9c769884c401543e316bad05c06088903c84dfac6ed28a275d646c966",
+      "round11/src/capture_owner.h": "a7f6f89a26e2e64a215f2441c68d354460a4d6617959cff8d219a7b38382f14f",
+      "round11/src/capture_owner.mm": "ccb3e5a3e9ffc375b96ea45b386cbb1b9430d8ab979113646e26661a5174516c",
+      "round11/src/machine_lease.h": "8df297f234a41678c8d052344bb2383eb914a725d7e0af644719aa5cf85cb0f9",
+      "round11/src/machine_lease.mm": "5c16cda5d41837dcb220fc3513c1f722efedbd89c908122be72cbf4b5baf8c1b",
+      "round11/src/main.mm": "085542973ea23b5195f5d56a49acbd5d4e418386c25cd9bb3d159daa613ea2dd",
+      "round11/src/node_process.h": "fefb26ab207fb41a2f3618ace4d07fda00161d98379c1bb04ccfdfc4cbf7220f",
+      "round11/src/node_process.mm": "8bee72852318fdf64b61114b239a5428c111f46df29766d05aae37048e0aa4cc",
+      "round11/src/orchestrator.h": "a62d0510d8dce7a13a396638a5565ac3265b6e32b87390ce3cdf96a7a87d30cd",
+      "round11/src/orchestrator.mm": "3d75fd48ab1244560782dc19fa23cdbbabb2447ca803d708cb0d190c431b03ec",
+      "round11/src/peer_auth.h": "636f3f31af2e657bb4ddeaf50bea3db20b2e92da69fbc467c55f646015e46d23",
+      "round11/src/peer_auth.mm": "f8947693701056e544500aebafddc86307279540834a6fe0f7551a92f7b61142",
+      "round11/src/r11_pins.h": "1be71f6983b4d9e5269df148fe01ac3dab8e63cde9d261405771591510b460b6",
+      "round11/src/r11_pins.mm": "af44e539958d377841ed1f6927e612eeca5523abb0d2737f6d540e4bd9fbcca1",
+      "round11/src/r11_self_identity.h": "f653fd96e7290353670e871295d6b65fce2deacda1bdb8801abc1eea352e1e71",
+      "round11/src/r11_self_identity.mm": "50889c42a208134320ab94eca0998e3def05b362a1fba04cbdb4cd860e83f20f",
+      "r10/src/calibration_profile.h": "8cd9da272de90dba45b807425d164d93d53e04ac2eacc73fd29649b0bb87d80d",
+      "r10/src/cli_common.h": "bb4d4545b0b1a3d5da39222b7cfda0a3fddabde463fd73ad0a98cca5b0b4beff",
+      "r10/src/macho_artifact.h": "85984a0e25d91ee922278ceeddb0e729479ff0b80de19984631f4026314bd833",
+      "r10/src/peer_frame.mm": "263574f244177c3d0c0ae36167ed9ae3d7db8a30a2afc1bcc6eca74fea2b9e2b",
+      "r10/src/peer_internal.h": "aa93a3576ced5d7a5332350cd01e3f4a630da0793ed03ad9d01a5e8cff3220f3",
+      "r10/src/peer_socket.h": "ef29202676e6484ce9cff0c4a32ff109ffb9a139884440bb963d170cb87855f6",
+      "r10/src/peer_socket.mm": "a6e274faf1a6994e67e80bc3855b9b071555b4a8cb7dd216a2ad591237845856",
+      "r10/src/policy.h": "b4bd22644ab26f8ceaf075ca4497f376e7246fb9d529a7d1c381421a6e402d07",
+      "r10/src/profile.h": "143b23a93be081441345bc358bf89cac48743b0d1b68502283bc7c652e6db6f3",
+      "r10/src/profile.mm": "124befc37b4c24eb85abf94cbe28a6241b13240448eadef7199a4dc33ab42c4e",
+      "r10/src/pure_policy.h": "8b2a10e88733dcef61c152e4fd9c49952cc1fa1a1d849babc4a65937bf31a7f0",
+      "r10/src/report.h": "7e0e1227ddb4614b7e4ced8bdfd978c59798cbe080a58544e3172a32d0658b58",
+      "r10/src/security_identity.h": "078e5129ceb343519db24f47b270378d87430713db661636637b3b54a2f2ec4a",
+      "r10/src/security_identity.mm": "fd1f5e62d1bdef5488016a656ffc61c3616b6069eda1ea0a9792c985771b29b2",
+      "r10/src/static_artifact.h": "e148e1e93d622cc664040df46277bab2edb77886e9d9fd7b7cbe3acb063416ad"
+    }
+  },
+  "toolchain": {
+    "sdk": {
+      "requested": "macosx27.0",
+      "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "version": "27.0"
+    },
+    "compiler": {
+      "path": "/Library/Developer/CommandLineTools/usr/bin/clang++",
+      "versionFirstLine": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
+    }
+  },
+  "node": {
+    "sha256": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+    "bytes": 118439728,
+    "originalPath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/Resources/node",
+    "originalSha256": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+    "version": "v24.14.0",
+    "license": {
+      "present": true,
+      "originalPath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/Resources/licenses/node-LICENSE.txt",
+      "sha256": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18"
+    }
+  },
+  "authority": {
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/staging-3b8Wnb/app/Contents/Resources/authority-entry.mjs",
+    "sha256": "b8a4d730c7a174340bf6b9712633f507f31b6f1058f61d9656b207fb2080d721",
+    "bytes": 27760098,
+    "maxBytes": 33554432,
+    "metafilePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/authority-esbuild-metafile.json",
+    "metafileSha256": "6754cab31dc591ee3602bb64a243bbaba81004dcb13bf5b59c110eadb28ef312",
+    "entry": "/Users/zhvala/SourceCode/zody/apps/zcode-cli/packages/bootstrap/tests/fixtures/cua-native-owner-entry.ts",
+    "staticImports": [
+      "node:module",
+      "node:async_hooks",
+      "net",
+      "http",
+      "https",
+      "tls",
+      "events",
+      "url",
+      "assert",
+      "dns",
+      "stream",
+      "crypto",
+      "fs",
+      "path",
+      "util",
+      "os",
+      "node:fs/promises",
+      "node:stream/web",
+      "node:stream",
+      "node:fs",
+      "node:crypto",
+      "node:net",
+      "node:os",
+      "node:path",
+      "async_hooks",
+      "node:buffer",
+      "node:http",
+      "node:https",
+      "node:sqlite",
+      "node:child_process",
+      "node:util",
+      "node:timers/promises",
+      "node:string_decoder",
+      "node:worker_threads",
+      "node:dns/promises",
+      "node:process",
+      "node:diagnostics_channel",
+      "node:stream/promises",
+      "node:vm",
+      "node:util/types",
+      "node:sea",
+      "node:perf_hooks",
+      "node:readline",
+      "node:url",
+      "node:console",
+      "node:v8"
+    ],
+    "nonBuiltinStaticImports": [],
+    "outputExternalImports": [
+      "assert",
+      "async_hooks",
+      "buffer",
+      "child_process",
+      "crypto",
+      "dns",
+      "events",
+      "fs",
+      "http",
+      "https",
+      "inspector",
+      "net",
+      "node:async_hooks",
+      "node:buffer",
+      "node:child_process",
+      "node:crypto",
+      "node:diagnostics_channel",
+      "node:dns/promises",
+      "node:fs",
+      "node:fs/promises",
+      "node:http",
+      "node:https",
+      "node:module",
+      "node:net",
+      "node:os",
+      "node:path",
+      "node:perf_hooks",
+      "node:process",
+      "node:readline",
+      "node:sea",
+      "node:sqlite",
+      "node:stream",
+      "node:stream/promises",
+      "node:stream/web",
+      "node:string_decoder",
+      "node:timers/promises",
+      "node:url",
+      "node:util",
+      "node:util/types",
+      "node:vm",
+      "node:worker_threads",
+      "os",
+      "path",
+      "perf_hooks",
+      "process",
+      "stream",
+      "string_decoder",
+      "timers",
+      "tls",
+      "tty",
+      "url",
+      "util",
+      "zlib"
+    ],
+    "nonBuiltinOutputExternals": [],
+    "metafileInputExternals": [
+      "../startup-logging.js",
+      "<runtime>",
+      "@zcode/contracts",
+      "@zcode/provider",
+      "@zcode/shared",
+      "assert",
+      "async_hooks",
+      "buffer",
+      "bufferutil",
+      "child_process",
+      "constants",
+      "crypto",
+      "dns",
+      "events",
+      "fs",
+      "http",
+      "http2",
+      "https",
+      "inspector",
+      "net",
+      "node:async_hooks",
+      "node:buffer",
+      "node:child_process",
+      "node:crypto",
+      "node:diagnostics_channel",
+      "node:dns/promises",
+      "node:events",
+      "node:fs",
+      "node:fs/promises",
+      "node:http",
+      "node:https",
+      "node:module",
+      "node:net",
+      "node:os",
+      "node:path",
+      "node:perf_hooks",
+      "node:process",
+      "node:readline",
+      "node:sea",
+      "node:sqlite",
+      "node:stream",
+      "node:stream/promises",
+      "node:stream/web",
+      "node:string_decoder",
+      "node:timers/promises",
+      "node:url",
+      "node:util",
+      "node:util/types",
+      "node:vm",
+      "node:worker_threads",
+      "os",
+      "path",
+      "perf_hooks",
+      "process",
+      "readline",
+      "stream",
+      "string_decoder",
+      "timers",
+      "tls",
+      "tty",
+      "url",
+      "utf-8-validate",
+      "util",
+      "zlib"
+    ],
+    "dormantRuntimeExternals": [
+      {
+        "name": "ripgrep",
+        "reason": "fs adapter 的 worker 源码字符串内 lazy import；held-model fixture 不执行搜索工具，非 bundle 静态依赖",
+        "evidence": "apps/zcode-cli/packages/adapters/src/fs/index.ts"
+      }
+    ],
+    "inputCount": 3031,
+    "licenses": {
+      "packageCount": 169,
+      "saved": [
+        {
+          "name": "agent-base",
+          "version": "9.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "data-uri-to-buffer",
+          "version": "8.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "degenerator",
+          "version": "7.0.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "get-uri",
+          "version": "8.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "http-proxy-agent",
+          "version": "9.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "https-proxy-agent",
+          "version": "9.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "iconv-lite",
+          "version": "0.7.2",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "lru-cache",
+          "version": "7.18.3",
+          "license": "ISC",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "pac-proxy-agent",
+          "version": "9.0.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "pac-resolver",
+          "version": "9.0.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "proxy-agent",
+          "version": "8.0.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "proxy-from-env",
+          "version": "2.1.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "socks-proxy-agent",
+          "version": "10.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "unbash",
+          "version": "4.0.1",
+          "license": "ISC",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "typescript",
+          "version": "5.9.3",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.txt"
+          ]
+        },
+        {
+          "name": "@ai-sdk/anthropic",
+          "version": "3.0.81",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@ai-sdk/gateway",
+          "version": "3.0.121",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@ai-sdk/openai",
+          "version": "3.0.65",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@ai-sdk/openai-compatible",
+          "version": "2.0.60",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@ai-sdk/provider",
+          "version": "3.0.14",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@ai-sdk/provider",
+          "version": "3.0.10",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@borewit/text-codec",
+          "version": "0.2.2",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.txt"
+          ]
+        },
+        {
+          "name": "@jimp/core",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/diff",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/file-ops",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/js-bmp",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/js-gif",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/js-jpeg",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/js-png",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "pngjs",
+          "version": "7.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/js-tiff",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-blit",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-blur",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-circle",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-color",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-contain",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-cover",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-crop",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-displace",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-dither",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-fisheye",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-flip",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-hash",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-mask",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-print",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-quantize",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-resize",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-rotate",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/plugin-threshold",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/types",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@jimp/utils",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@modelcontextprotocol/client",
+          "version": "2.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@modelcontextprotocol/core",
+          "version": "2.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/api",
+          "version": "1.9.1",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/context-async-hooks",
+          "version": "2.6.1",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/core",
+          "version": "2.6.1",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/exporter-metrics-otlp-http",
+          "version": "0.214.0",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/exporter-metrics-otlp-proto",
+          "version": "0.214.0",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/exporter-trace-otlp-proto",
+          "version": "0.214.0",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/otlp-exporter-base",
+          "version": "0.214.0",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/otlp-transformer",
+          "version": "0.214.0",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/resources",
+          "version": "2.6.1",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/sdk-metrics",
+          "version": "2.6.1",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/sdk-trace-base",
+          "version": "2.6.1",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/semantic-conventions",
+          "version": "1.43.0",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@protobufjs/aspromise",
+          "version": "1.1.2",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@protobufjs/base64",
+          "version": "1.1.2",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@protobufjs/eventemitter",
+          "version": "1.1.0",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@protobufjs/float",
+          "version": "1.0.2",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@protobufjs/inquire",
+          "version": "1.1.0",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@protobufjs/pool",
+          "version": "1.1.0",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@protobufjs/utf8",
+          "version": "1.1.0",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@tokenizer/inflate",
+          "version": "0.4.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@vercel/oidc",
+          "version": "3.2.0",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "ai",
+          "version": "6.0.193",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "@opentelemetry/api",
+          "version": "1.9.0",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "any-base",
+          "version": "1.1.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "ast-types",
+          "version": "0.13.4",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "await-to-js",
+          "version": "3.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "basic-ftp",
+          "version": "5.2.2",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.txt"
+          ]
+        },
+        {
+          "name": "bmp-ts",
+          "version": "1.0.9",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "buffer-crc32",
+          "version": "0.2.13",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "buffer-from",
+          "version": "1.1.2",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "chromium-bidi",
+          "version": "0.6.3",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "urlpattern-polyfill",
+          "version": "10.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "cross-spawn",
+          "version": "7.0.6",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "debug",
+          "version": "4.4.3",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "diff",
+          "version": "9.0.0",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "electron",
+          "version": "41.0.3",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "escodegen",
+          "version": "2.1.0",
+          "license": "BSD-2-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.BSD"
+          ]
+        },
+        {
+          "name": "esprima",
+          "version": "4.0.1",
+          "license": "BSD-2-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.BSD"
+          ]
+        },
+        {
+          "name": "estraverse",
+          "version": "5.3.0",
+          "license": "BSD-2-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.BSD"
+          ]
+        },
+        {
+          "name": "esutils",
+          "version": "2.0.3",
+          "license": "BSD-2-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.BSD"
+          ]
+        },
+        {
+          "name": "eventsource",
+          "version": "3.0.7",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "eventsource-parser",
+          "version": "3.1.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "exif-parser",
+          "version": "0.1.12",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.md"
+          ]
+        },
+        {
+          "name": "file-type",
+          "version": "21.3.4",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "license"
+          ]
+        },
+        {
+          "name": "gifwrap",
+          "version": "0.10.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "has-flag",
+          "version": "4.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "license"
+          ]
+        },
+        {
+          "name": "ieee754",
+          "version": "1.2.1",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "image-q",
+          "version": "4.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "ip-address",
+          "version": "10.1.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "ipaddr.js",
+          "version": "1.9.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "jimp",
+          "version": "1.6.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "jose",
+          "version": "6.2.2",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.md"
+          ]
+        },
+        {
+          "name": "jpeg-js",
+          "version": "0.4.4",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "marked",
+          "version": "16.4.2",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.md"
+          ]
+        },
+        {
+          "name": "meriyah",
+          "version": "7.1.2",
+          "license": "ISC",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.md"
+          ]
+        },
+        {
+          "name": "mime",
+          "version": "3.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "mitt",
+          "version": "3.0.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "ms",
+          "version": "2.1.3",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "license.md"
+          ]
+        },
+        {
+          "name": "netmask",
+          "version": "2.1.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.md"
+          ]
+        },
+        {
+          "name": "pako",
+          "version": "1.0.11",
+          "license": "(MIT AND Zlib)",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "parse-bmfont-binary",
+          "version": "1.0.6",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.md"
+          ]
+        },
+        {
+          "name": "parse-bmfont-xml",
+          "version": "1.1.6",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.md"
+          ]
+        },
+        {
+          "name": "path-key",
+          "version": "3.1.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "license"
+          ]
+        },
+        {
+          "name": "pend",
+          "version": "1.2.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "pixelmatch",
+          "version": "5.3.0",
+          "license": "ISC",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "pkce-challenge",
+          "version": "5.0.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "playwright-core",
+          "version": "1.59.1",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE",
+            "NOTICE"
+          ]
+        },
+        {
+          "name": "protobufjs",
+          "version": "7.5.5",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "safer-buffer",
+          "version": "2.1.2",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "sax",
+          "version": "1.6.0",
+          "license": "BlueOak-1.0.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.md"
+          ]
+        },
+        {
+          "name": "semver",
+          "version": "7.7.4",
+          "license": "ISC",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "shebang-command",
+          "version": "2.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "license"
+          ]
+        },
+        {
+          "name": "shebang-regex",
+          "version": "3.0.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "license"
+          ]
+        },
+        {
+          "name": "simple-xml-to-json",
+          "version": "1.2.7",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "license"
+          ]
+        },
+        {
+          "name": "smart-buffer",
+          "version": "4.2.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "socks",
+          "version": "2.8.7",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "source-map",
+          "version": "0.6.1",
+          "license": "BSD-3-Clause",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "source-map-support",
+          "version": "0.5.21",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.md"
+          ]
+        },
+        {
+          "name": "strtok3",
+          "version": "10.3.5",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.txt"
+          ]
+        },
+        {
+          "name": "supports-color",
+          "version": "8.1.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "license"
+          ]
+        },
+        {
+          "name": "tinycolor2",
+          "version": "1.6.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "token-types",
+          "version": "6.1.2",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.txt"
+          ]
+        },
+        {
+          "name": "tslib",
+          "version": "2.8.1",
+          "license": "0BSD",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE.txt"
+          ]
+        },
+        {
+          "name": "uint8array-extras",
+          "version": "1.5.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "license"
+          ]
+        },
+        {
+          "name": "utif2",
+          "version": "4.1.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "which",
+          "version": "2.0.2",
+          "license": "ISC",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "isexe",
+          "version": "2.0.0",
+          "license": "ISC",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "xml2js",
+          "version": "0.5.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "xmlbuilder",
+          "version": "11.0.1",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "yaml",
+          "version": "2.9.0",
+          "license": "ISC",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "yauzl",
+          "version": "3.3.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "4.6.5",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod-to-json-schema",
+          "version": "3.25.2",
+          "license": "ISC",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        },
+        {
+          "name": "zod",
+          "version": "3.25.76",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json",
+            "LICENSE"
+          ]
+        }
+      ],
+      "missing": [
+        {
+          "name": "@ai-sdk/provider-utils",
+          "version": "4.0.39",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json"
+          ],
+          "missingLicense": true
+        },
+        {
+          "name": "@ai-sdk/provider-utils",
+          "version": "4.0.27",
+          "license": "Apache-2.0",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json"
+          ],
+          "missingLicense": true
+        },
+        {
+          "name": "omggif",
+          "version": "1.0.10",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json"
+          ],
+          "missingLicense": true
+        },
+        {
+          "name": "parse-bmfont-ascii",
+          "version": "1.0.6",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json"
+          ],
+          "missingLicense": true
+        },
+        {
+          "name": "quickjs-wasi",
+          "version": "2.2.0",
+          "license": "MIT",
+          "packageJsonPresent": true,
+          "files": [
+            "package.json"
+          ],
+          "missingLicense": true
+        }
+      ]
+    },
+    "esbuildCommand": [
+      "/Users/zhvala/SourceCode/zody/apps/zcode-cli/packages/bootstrap/tests/fixtures/cua-native-owner-entry.ts",
+      "--bundle",
+      "--platform=node",
+      "--format=esm",
+      "--target=node24",
+      "--legal-comments=eof",
+      "--external:node:*",
+      "--alias:koffi=/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-product-wiring/koffi-unavailable-darwin.mjs",
+      "--banner:js=import { createRequire as __cuaCreateRequire } from \"node:module\"; import { fileURLToPath as __cuaFileURLToPath } from \"node:url\"; import { dirname as __cuaDirname } from \"node:path\"; const require = __cuaCreateRequire(import.meta.url); const __filename = __cuaFileURLToPath(import.meta.url); const __dirname = __cuaDirname(__filename);",
+      "--metafile=/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/authority-esbuild-metafile.json",
+      "--outfile=/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/staging-3b8Wnb/app/Contents/Resources/authority-entry.mjs"
+    ]
+  },
+  "resources": {
+    "staticlib": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib/libcua_macos_visual_round11.a",
+      "sha256": "d29c63e84c43c7e7b9495ffeea37f08f2a0e5bc6015243b4a368f17060bb459e"
+    },
+    "visualHeader": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib/cua_r11_visual.h",
+      "sha256": "7b0a4f85815190272cec8ef04baa9b85a5c4b661fc3c7e2bb84725d58498f0b2"
+    },
+    "infoPlist": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/helper/Zody CUA Helper Round11.app/Contents/Info.plist",
+      "sha256": "a11ef13ef71076145c7e1bf5711b01c4cb023fa15da4ddcc7cdf9fb852c3d15c"
+    },
+    "pins": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/cua_round11_pins.h",
+      "sha256": "8aae64b7821a2c13b35e80ea216b8db4486cf42c51b92ca5df1a71788471b909",
+      "note": "buildRoot 中的生成头；编译时作为 -I 输入，不随 app 分发"
+    }
+  },
+  "build": {
+    "command": "/Library/Developer/CommandLineTools/usr/bin/clang++ -std=c++17 -x objective-c++ -fobjc-arc -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mmacosx-version-min=14.2 -O2 -Wall -Wextra -Werror -DCUA_R11_HAVE_VISUAL -I /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src -I /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/r10/src -I /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build -I /Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src/authority_client.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src/bundle_paths.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src/capture_owner.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src/machine_lease.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src/main.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src/node_process.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src/orchestrator.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src/peer_auth.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src/r11_pins.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/src/r11_self_identity.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/r10/src/peer_socket.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/r10/src/peer_frame.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/r10/src/security_identity.mm /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/source-stage-zLuiuv/r10/src/profile.mm -x none /Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib/libcua_macos_visual_round11.a -L /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift -Wl,-rpath,/usr/lib/swift -liconv -framework Foundation -framework Security -framework CoreFoundation -framework CoreGraphics -framework ScreenCaptureKit -framework AppKit -lbsm -o /Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/staging-3b8Wnb/app/Contents/MacOS/macos-cua-helper-round11",
+    "compileArgsPath": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/app-compile-command.txt",
+    "compiler": {
+      "path": "/Library/Developer/CommandLineTools/usr/bin/clang++",
+      "versionFirstLine": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
+    },
+    "sdk": {
+      "requested": "macosx27.0",
+      "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "version": "27.0"
+    },
+    "target": {
+      "architecture": "arm64",
+      "minimumMacOSVersion": "14.2"
+    },
+    "linker": {
+      "swiftSearch": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift",
+      "rpath": "/usr/lib/swift",
+      "bsm": true
+    },
+    "warnings": ""
+  },
+  "bundle": {
+    "path": "helper/Zody CUA Helper Round11.app",
+    "bundleIdentifier": "io.github.zclaudia.zody.cua-helper",
+    "minimumMacOSVersion": "14.2"
+  },
+  "artifact": {
+    "path": "helper/Zody CUA Helper Round11.app/Contents/MacOS/macos-cua-helper-round11",
+    "absolutePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/helper/Zody CUA Helper Round11.app/Contents/MacOS/macos-cua-helper-round11",
+    "sha256": "433455d49d1e91bde0205fbb1766fd9471ae973b05683bf1eb07f23a7d99bf97",
+    "sizeBytes": 5279624,
+    "architectures": [
+      "arm64"
+    ],
+    "minosValues": [
+      "14.2"
+    ],
+    "rpaths": [
+      "/usr/lib/swift"
+    ],
+    "linked": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/staging-3b8Wnb/app/Contents/MacOS/macos-cua-helper-round11:\n\t/usr/lib/libiconv.2.dylib (compatibility version 7.0.0, current version 7.0.0)\n\t/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 5027.0.69)\n\t/System/Library/Frameworks/Security.framework/Versions/A/Security (compatibility version 1.0.0, current version 62460.1.2)\n\t/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 5027.0.69)\n\t/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics (compatibility version 64.0.0, current version 2050.0.0)\n\t/System/Library/Frameworks/ScreenCaptureKit.framework/Versions/A/ScreenCaptureKit (compatibility version 1.0.0, current version 1.0.0)\n\t/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit (compatibility version 45.0.0, current version 2775.10.103)\n\t/usr/lib/libbsm.0.dylib (compatibility version 1.0.0, current version 1.0.0)\n\t/usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0)\n\t/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 2200.27.0)\n\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1359.0.0)\n\t/usr/lib/swift/libswiftAVFoundation.dylib (compatibility version 1.0.0, current version 2450.77.5, weak)\n\t/usr/lib/swift/libswiftCore.dylib (compatibility version 0.0.0, current version 0.0.0)\n\t/usr/lib/swift/libswiftCoreAudio.dylib (compatibility version 1.0.0, current version 482.102.10, weak)\n\t/usr/lib/swift/libswiftCoreFoundation.dylib (compatibility version 1.0.0, current version 120.100.0, weak)\n\t/usr/lib/swift/libswiftCoreImage.dylib (compatibility version 1.0.0, current version 3.0.0, weak)\n\t/usr/lib/swift/libswiftCoreMIDI.dylib (compatibility version 1.0.0, current version 6.0.0, weak)\n\t/usr/lib/swift/libswiftDarwin.dylib (compatibility version 1.0.0, current version 428.0.10, weak)\n\t/usr/lib/swift/libswiftDispatch.dylib (compatibility version 1.0.0, current version 1605.0.2, weak)\n\t/usr/lib/swift/libswiftIOKit.dylib (compatibility version 1.0.0, current version 1.0.0, weak)\n\t/usr/lib/swift/libswiftMetal.dylib (compatibility version 1.0.0, current version 382.5.3, weak)\n\t/usr/lib/swift/libswiftOSLog.dylib (compatibility version 1.0.0, current version 10.0.0, weak)\n\t/usr/lib/swift/libswiftObjectiveC.dylib (compatibility version 1.0.0, current version 973.1.0, weak)\n\t/usr/lib/swift/libswiftQuartzCore.dylib (compatibility version 1.0.0, current version 5.0.0, weak)\n\t/usr/lib/swift/libswiftSpatial.dylib (compatibility version 1.0.0, current version 1.0.0, weak)\n\t/usr/lib/swift/libswiftUniformTypeIdentifiers.dylib (compatibility version 1.0.0, current version 917.0.1, weak)\n\t/usr/lib/swift/libswiftXPC.dylib (compatibility version 1.0.0, current version 167.0.2, weak)\n\t/usr/lib/swift/libswiftos.dylib (compatibility version 1.0.0, current version 1090.0.0, weak)\n\t/usr/lib/swift/libswiftsimd.dylib (compatibility version 1.0.0, current version 25.0.0, weak)\n\t/usr/lib/swift/libswiftCoreGraphics.dylib (compatibility version 1.0.0, current version 1.0.0)\n",
+    "minimumMacOSVersion": "14.2",
+    "codesign": {
+      "inspected": true,
+      "adhocOrUnsignedIsNotAcceptance": true,
+      "output": "Executable=/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/build/staging-3b8Wnb/app/Contents/MacOS/macos-cua-helper-round11\nIdentifier=macos-cua-helper-round11\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20400 size=41041 flags=0x20002(adhoc,linker-signed) hashes=1279+0 location=embedded\nVersionPlatform=1\nVersionMin=918016\nVersionSDK=1769472\nHash type=sha256 size=32\nCandidateCDHash sha256=11fb0b0517d7a53a8bf39eb777c15d20537b5c36\nCandidateCDHashFull sha256=11fb0b0517d7a53a8bf39eb777c15d20537b5c3600e24507b398942ab2b2377e\nHash choices=sha256\nCMSDigest=11fb0b0517d7a53a8bf39eb777c15d20537b5c3600e24507b398942ab2b2377e\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=2660264\nExecutable Segment flags=0x1\nPage size=4096\nCDHash=11fb0b0517d7a53a8bf39eb777c15d20537b5c36\nSignature=adhoc\nInfo.plist=not bound\nTeamIdentifier=not set\nSealed Resources=none\nInternal requirements=none\n"
+    }
+  }
+}

@@ -1,0 +1,1237 @@
+Timestamp               Ty Process[PID:TID]
+2026-10-30 20:12:48.486 Df launchd[1:99ba85c] [gui/501/application.io.github.zclaudia.zody.cua-launchservices-candidate.150908785.150908788 [64856]:] xpcproxy spawned with pid 64856
+2026-10-30 20:12:48.494 A  xpcproxy[64856:99bb75f] (libsystem_info.dylib) Retrieve User by ID
+2026-10-30 20:12:48.495 A  xpcproxy[64856:99bb75f] (libsystem_info.dylib) Resolve user group list
+2026-10-30 20:12:48.495 A  xpcproxy[64856:99bb75f] (libsystem_info.dylib) Membership API: translate identifier
+2026-10-30 20:12:48.498 Df launchd[1:99ba648] [gui/501/application.io.github.zclaudia.zody.cua-launchservices-candidate.150908785.150908788 [64856]:] Successfully spawned Electron[64856] because launch job demand
+2026-10-30 20:12:51.037 A  ZCode[64856:99bb764] (libsystem_info.dylib) Retrieve User by ID
+2026-10-30 20:12:51.038 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160640] activating connection: mach=true listener=false peer=false name=com.apple.cfprefsd.daemon
+2026-10-30 20:12:51.038 Df ZCode[64856:99bb805] [com.apple.xpc:connection] [0x10800160780] activating connection: mach=true listener=false peer=false name=com.apple.cfprefsd.agent
+2026-10-30 20:12:51.063 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x108001608c0] activating connection: mach=true listener=false peer=false name=com.apple.coreservices.launchservicesd
+2026-10-30 20:12:51.063 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160a00] activating connection: mach=true listener=false peer=false name=com.apple.pasteboard.1
+2026-10-30 20:12:51.064 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160b40] activating connection: mach=true listener=false peer=false name=com.apple.distributed_notifications@Uv3
+2026-10-30 20:12:51.066 Df ZCode[64856:99bb764] [com.apple.AppKit:AutomaticTermination] void _NSDisableAutomaticTerminationAndLog(NSString *) No windows open yet
+2026-10-30 20:12:51.066 A  ZCode[64856:99bb764] (TCC) TCCAccessRequest() IPC
+2026-10-30 20:12:51.066 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160c80] activating connection: mach=true listener=false peer=false name=com.apple.tccd.system
+2026-10-30 20:12:51.068 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160c80] invalidated after the last release of the connection object
+2026-10-30 20:12:51.070 Df ZCode[64856:99bb764] [com.apple.SkyLight:default] server port 0x0000390f, session port 0x0000390f
+2026-10-30 20:12:51.074 Df ZCode[64856:99bb764] [com.apple.SkyLight:default] New connection 0x150ca3 main
+2026-10-30 20:12:51.075 Df ZCode[64856:99bb764] [com.apple.processmanager:front-35286506] CHECKIN: pid=64856
+2026-10-30 20:12:51.078 Df ZCode[64856:99bb764] [com.apple.processmanager:front-35286506] CHECKEDIN: pid=64856 asn=0x0-0x91fb1f2 foreground=1
+2026-10-30 20:12:51.078 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160dc0] activating connection: mach=false listener=true peer=false name=(anonymous)
+2026-10-30 20:12:51.078 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160dc0] Connection returned listener port: 0x4f03
+2026-10-30 20:12:51.078 Df ZCode[64856:99bb806] [com.apple.xpc:connection] [0x10800101800] activating connection: mach=false listener=false peer=true name=com.apple.xpc.anonymous.0x10800160dc0.peer[581].0x10800101800
+2026-10-30 20:12:51.079 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.079 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.079 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.079 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.079 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.079 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.079 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.079 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.079 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.079 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.079 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.079 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.081 Df ZCode[64856:99bb764] [com.apple.processmanager:front-35286506] FRONTLOGGING: version 1
+2026-10-30 20:12:51.081 Df ZCode[64856:99bb764] [com.apple.processmanager:front-35286506] Registered, pid=64856 ASN=0x0,0x91fb1f2
+2026-10-30 20:12:51.081 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800161540] activating connection: mach=true listener=false peer=false name=com.apple.analyticsd
+2026-10-30 20:12:51.081 Df ZCode[64856:99bb806] [com.apple.xpc:connection] [0x10800161680] activating connection: mach=true listener=false peer=false name=com.apple.lsd.mapdb
+2026-10-30 20:12:51.082 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160dc0] Connection returned listener port: 0x4f03
+2026-10-30 20:12:51.082 Df ZCode[64856:99bb764] [com.apple.processmanager:front-35286506] BringForward: pid=64856 asn=0x0-0x91fb1f2 bringForward=1 foreground=1 uiElement=0 launchedByLS=1 modifiersCount=1 allDisabled=0
+2026-10-30 20:12:51.082 Df ZCode[64856:99bb764] [com.apple.processmanager:front-35286506] BringFrontModifier: pid=64856 asn=0x0-0x91fb1f2 Modifier 0 hideAfter=0 hideOthers=0 dontMakeFrontmost=1 mouseDown=0/0 seed=0/0
+2026-10-30 20:12:51.083 Df ZCode[64856:99bb764] [com.apple.AppKit:Appearance] Current system appearance, (HLTB: 1), (SLS: 0)
+2026-10-30 20:12:51.084 Df ZCode[64856:99bb764] (libMobileGestalt.dylib) No persisted cache on this platform.
+2026-10-30 20:12:51.085 Df ZCode[64856:99bb806] [com.apple.CoreAnalytics:client] Received configuration update from daemon (initial)
+2026-10-30 20:12:51.086 Df ZCode[64856:99bb764] (libMobileGestalt.dylib) Could not get size of EAN data (IOConnectCallScalarMethod kAppleNVMeEANGetSize returned 0xE00002E2)
+2026-10-30 20:12:51.086 Df ZCode[64856:99bb764] (libMobileGestalt.dylib) Failed to copy 'aptk' from EAN
+2026-10-30 20:12:51.086 Df ZCode[64856:99bb764] (libMobileGestalt.dylib) Failed to copy APTicket properties. Falling back to default policy.
+2026-10-30 20:12:51.086 Df ZCode[64856:99bb764] (libMobileGestalt.dylib) Creating default MGSysConfigPolicy
+2026-10-30 20:12:51.086 Df ZCode[64856:99bb764] (libMobileGestalt.dylib) syscfg is not initialized!
+2026-10-30 20:12:51.086 Df ZCode[64856:99bb764] (libMobileGestalt.dylib) CFDictionaryRef copySyscfgDictionary(void) enumeration of <private> failed.
+2026-10-30 20:12:51.086 Df ZCode[64856:99bb764] (libMobileGestalt.dylib) Failed to find key <private>
+2026-10-30 20:12:51.087 Df ZCode[64856:99bb764] [com.apple.AppKit:Appearance] Current system appearance, (HLTB: 1), (SLS: 0)
+2026-10-30 20:12:51.087 Df ZCode[64856:99bb764] [com.apple.AppKit:Appearance] Post-registration system appearance: (HLTB: 1)
+2026-10-30 20:12:51.088 Df ZCode[64856:99bb764] [com.apple.FrontBoard:Common] FBSWorkspace: endpoint monitoring is disabled.
+2026-10-30 20:12:51.088 Df ZCode[64856:99bb764] [com.apple.FrontBoard:Common] FBSWorkspace: default shell endpoint is disabled.
+2026-10-30 20:12:51.088 Df ZCode[64856:99bb764] [com.apple.runningboard:connection] Initializing connection
+2026-10-30 20:12:51.088 Df ZCode[64856:99bb764] [com.apple.runningboard:process] Removing all cached process handles
+2026-10-30 20:12:51.088 Df ZCode[64856:99bb805] [com.apple.runningboard:connection] Sending handshake request attempt #1 to server
+2026-10-30 20:12:51.088 Df ZCode[64856:99bb805] [com.apple.runningboard:connection] Creating connection to com.apple.runningboard
+2026-10-30 20:12:51.088 Df ZCode[64856:99bb805] [com.apple.xpc:connection] [0x10800162e40] activating connection: mach=true listener=false peer=false name=com.apple.runningboard
+2026-10-30 20:12:51.088 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160dc0] Connection returned listener port: 0x4f03
+2026-10-30 20:12:51.088 A  ZCode[64856:99bb80b] (RunningBoardServices) didChangeInheritances
+2026-10-30 20:12:51.089 Df ZCode[64856:99bb805] [com.apple.runningboard:connection] Handshake succeeded
+2026-10-30 20:12:51.089 Df ZCode[64856:99bb805] [com.apple.runningboard:connection] Identity resolved as app<application.io.github.zclaudia.zody.cua-launchservices-candidate.150908785.150908788(501)>
+2026-10-30 20:12:51.093 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160dc0] Connection returned listener port: 0x4f03
+2026-10-30 20:12:51.093 A  ZCode[64856:99bb806] (AppIntents) appintents:register process
+2026-10-30 20:12:51.094 Df ZCode[64856:99bb806] [com.apple.appintents:Connection] Created a new Process Instance Registry XPC connection (inactive)
+2026-10-30 20:12:51.094 Df ZCode[64856:99bb806] [com.apple.xpc:connection] [0x10800163c00] activating connection: mach=true listener=false peer=false name=com.apple.linkd.autoShortcut
+2026-10-30 20:12:51.094 Df ZCode[64856:99bb806] [com.apple.appintents:Connection] Activated connection to linkd (ApplicationService)
+2026-10-30 20:12:51.094 Df ZCode[64856:99bb806] [com.apple.xpc:connection] [0x10800163e80] activating connection: mach=false listener=true peer=false name=(anonymous)
+2026-10-30 20:12:51.094 Df ZCode[64856:99bb806] [com.apple.xpc:connection] [0x10800163e80] Connection returned listener port: 0x6603
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb80b] [com.apple.xpc:connection] [0x10800163c00] Re-initialization successful; calling out to event handler with XPC_ERROR_CONNECTION_INTERRUPTED
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb80b] [com.apple.appintents:Connection] Process Instance Registry XPC connection has been interrupted
+2026-10-30 20:12:51.095 E  ZCode[64856:99bb806] [com.apple.appintents:Connection] Unable to get synchronousRemoteObjectProxy, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-10-30 20:12:51.095 E  ZCode[64856:99bb806] [com.apple.AppKit:Application] Error registering app with intents framework: Error Domain=NSCocoaErrorDomain Code=4097 UserInfo={NSDebugDescription=<private>}
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb805] [com.apple.appintents:Connection] Created a new Process Instance Registry XPC connection (inactive)
+2026-10-30 20:12:51.095 A  ZCode[64856:99bb805] (AppIntents) appintents:register process
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb805] [com.apple.appintents:Connection] Created a new Process Instance Registry XPC connection (inactive)
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb805] [com.apple.xpc:connection] [0x10800163fc0] activating connection: mach=true listener=false peer=false name=com.apple.linkd.autoShortcut
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb805] [com.apple.appintents:Connection] Activated connection to linkd (ApplicationService)
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb805] [com.apple.xpc:connection] [0x10800163e80] Connection returned listener port: 0x6603
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb806] [com.apple.xpc:connection] [0x10800163fc0] Re-initialization successful; calling out to event handler with XPC_ERROR_CONNECTION_INTERRUPTED
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb806] [com.apple.appintents:Connection] Process Instance Registry XPC connection has been interrupted
+2026-10-30 20:12:51.095 E  ZCode[64856:99bb805] [com.apple.appintents:Connection] Unable to get synchronousRemoteObjectProxy, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-10-30 20:12:51.095 E  ZCode[64856:99bb805] [com.apple.appintents:Connection] Unable to re-register with Process Instance Registry, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb80b] [com.apple.appintents:Connection] Created a new Process Instance Registry XPC connection (inactive)
+2026-10-30 20:12:51.095 A  ZCode[64856:99bb80b] (AppIntents) appintents:register process
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb80b] [com.apple.appintents:Connection] Created a new Process Instance Registry XPC connection (inactive)
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb80b] [com.apple.xpc:connection] [0x10800164240] activating connection: mach=true listener=false peer=false name=com.apple.linkd.autoShortcut
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb80b] [com.apple.appintents:Connection] Activated connection to linkd (ApplicationService)
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb80b] [com.apple.xpc:connection] [0x10800163e80] Connection returned listener port: 0x6603
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb805] [com.apple.xpc:connection] [0x10800164240] Re-initialization successful; calling out to event handler with XPC_ERROR_CONNECTION_INTERRUPTED
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb805] [com.apple.appintents:Connection] Process Instance Registry XPC connection has been interrupted
+2026-10-30 20:12:51.095 E  ZCode[64856:99bb80b] [com.apple.appintents:Connection] Unable to get synchronousRemoteObjectProxy, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-10-30 20:12:51.095 E  ZCode[64856:99bb80b] [com.apple.appintents:Connection] Unable to re-register with Process Instance Registry, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb806] [com.apple.appintents:Connection] Created a new Process Instance Registry XPC connection (inactive)
+2026-10-30 20:12:51.095 A  ZCode[64856:99bb806] (AppIntents) appintents:register process
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb806] [com.apple.appintents:Connection] Created a new Process Instance Registry XPC connection (inactive)
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb806] [com.apple.xpc:connection] [0x108001644c0] activating connection: mach=true listener=false peer=false name=com.apple.linkd.autoShortcut
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb806] [com.apple.appintents:Connection] Activated connection to linkd (ApplicationService)
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb806] [com.apple.xpc:connection] [0x10800163e80] Connection returned listener port: 0x6603
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb80b] [com.apple.xpc:connection] [0x108001644c0] Re-initialization successful; calling out to event handler with XPC_ERROR_CONNECTION_INTERRUPTED
+2026-10-30 20:12:51.095 Df ZCode[64856:99bb80b] [com.apple.appintents:Connection] Process Instance Registry XPC connection has been interrupted
+2026-10-30 20:12:51.095 E  ZCode[64856:99bb80b] [com.apple.appintents:Connection] Will NOT re-try to establish the connection
+2026-10-30 20:12:51.095 E  ZCode[64856:99bb806] [com.apple.appintents:Connection] Unable to get synchronousRemoteObjectProxy, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-10-30 20:12:51.096 E  ZCode[64856:99bb806] [com.apple.appintents:Connection] Unable to re-register with Process Instance Registry, error: Error Domain=NSCocoaErrorDomain Code=4097 "connection to service named com.apple.linkd.autoShortcut" UserInfo={NSDebugDescription=connection to service named com.apple.linkd.autoShortcut}
+2026-10-30 20:12:51.128 A  ZCode[64856:99bb764] (CoreFoundation) Loading Preferences From User CFPrefsD
+2026-10-30 20:12:51.130 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.130 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.130 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.130 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.130 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.130 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.130 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.130 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.130 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.167 A  ZCode[64856:99bb806] (RunningBoardServices) didChangeInheritances
+2026-10-30 20:12:51.182 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.182 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.182 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.182 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.182 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.182 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.182 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.182 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.182 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.235 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.235 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.235 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.235 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.235 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.235 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.235 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.235 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.235 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.288 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.288 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.288 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.288 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.288 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.288 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.288 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.289 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.289 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.342 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.342 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.342 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.342 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.342 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.342 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.342 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.342 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.342 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.392 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.392 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.392 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.393 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.393 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.393 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.393 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.393 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.393 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.400 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c00243600] activating connection: mach=true listener=false peer=false name=com.apple.SystemConfiguration.DNSConfiguration
+2026-10-30 20:12:51.400 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c00243600] invalidated after the last release of the connection object
+2026-10-30 20:12:51.443 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.443 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.443 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.443 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.443 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.443 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.443 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.443 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.443 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.477 Df ZCode[64856:99bb764] [com.apple.storekit:Default] [SKPaymentQueue] Adding storefront listener
+2026-10-30 20:12:51.477 A  ZCode[64856:99bb764] (StoreKit) StoreKit/QueueCheck
+2026-10-30 20:12:51.478 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c00191680] activating connection: mach=true listener=false peer=false name=com.apple.storekitagent
+2026-10-30 20:12:51.478 Df ZCode[64856:99bb764] [com.apple.storekit:Default] [<SKPaymentQueue: 0x10c040132a0>] Adding transaction update listener
+2026-10-30 20:12:51.478 Df ZCode[64856:99bb764] [com.apple.storekit:Default] [<SKPaymentQueue: 0x10c040132a0>] Adding purchase intent listener
+2026-10-30 20:12:51.479 Df ZCode[64856:99bb80b] [com.apple.xpc:connection] [0x10c00192800] activating connection: mach=true listener=false peer=false name=com.apple.storekitagent
+2026-10-30 20:12:51.479 Df ZCode[64856:99bb806] [com.apple.storekit:Default] [e66fc122_SK1] currentStorefront needs update
+2026-10-30 20:12:51.479 Df ZCode[64856:99bb806] [com.apple.storekit:Default] [e66fc122_SK1] Starting new storefront update task
+2026-10-30 20:12:51.480 Df ZCode[64856:99bb805] [com.apple.xpc:connection] [0x10c00081080] activating connection: mach=true listener=false peer=false name=com.apple.lsd.advertisingidentifiers
+2026-10-30 20:12:51.480 Df ZCode[64856:99bb764] [com.apple.AppKit:Appearance] NSApp cache appearance:
+-NSRequiresAquaSystemAppearance: 0
+-appearance: (null)
+-effectiveAppearance: <NSCompositeAppearance: 0x10800091950
+ (
+    "<NSAquaAppearance: 0x10800091a70>",
+    "<NSSystemAppearance: 0x108000917a0>"
+)>
+2026-10-30 20:12:51.480 Df ZCode[64856:99bb842] [com.apple.storekit:Default] Registering for 'storefrontchanged' daemon notification
+2026-10-30 20:12:51.481 Df ZCode[64856:99bb805] [com.apple.storekit:Default] Registering for 'legacyunfinishedtransactions' daemon notification
+2026-10-30 20:12:51.481 A  ZCode[64856:99bb810] (StoreKit) StoreKit/PurchaseIntentCheck
+2026-10-30 20:12:51.482 Df ZCode[64856:99bb810] [com.apple.storekit:Default] Requesting purchase intents after 2026-10-30 12:12:51 +0000
+2026-10-30 20:12:51.496 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.496 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.496 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.496 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.496 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.496 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.496 Df launchd[1:99bb605] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.496 Df launchd[1:99bb605] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.496 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.546 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.546 Df launchd[1:99ba85c] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.546 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.547 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.547 Df launchd[1:99ba85c] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.547 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.547 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.547 Df launchd[1:99ba85c] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.547 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.600 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.600 Df launchd[1:99ba85c] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.600 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.600 A  ZCode[64856:99bb764] (libsystem_info.dylib) Membership API: translate identifier
+2026-10-30 20:12:51.601 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.601 Df launchd[1:99ba85c] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.601 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.601 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.601 Df launchd[1:99ba85c] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.601 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.620 Df ZCode[64856:99bb764] [com.apple.processmanager:front-35286506] CHECKIN: pid=64856
+2026-10-30 20:12:51.622 Df ZCode[64856:99bb764] [com.apple.processmanager:front-35286506] CHECKEDIN: pid=64856 asn=0x0-0x91fb1f2 foreground=1
+2026-10-30 20:12:51.631 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c00193700] activating connection: mach=true listener=false peer=false name=com.apple.lsd.modifydb
+2026-10-30 20:12:51.632 Df ZCode[64856:99bb80b] [com.apple.launchservices:db] NotifyToken::RegisterDispatch(user.uid.501.com.apple.LaunchServices.database) fired for session key <private>
+2026-10-30 20:12:51.651 A  ZCode[64856:99bb764] (CoreLocation) CL: CLLocationManager
+2026-10-30 20:12:51.651 Df ZCode[64856:99bb764] [com.apple.locationd.Core:Client] {"msg":"CLLocationManager", "event":"activity", "_cmd":"initWithEffectiveBundleIdentifier:bundlePath:delegate:silo:", "self":"0x10c044852b0", "identifier":"", "bundlePath":""}
+2026-10-30 20:12:51.651 Df ZCode[64856:99bb764] [com.apple.locationd.Core:Client] {"msg":"client allocated", "client":"0x10c002b24c0"}
+2026-10-30 20:12:51.651 A  ZCode[64856:99bb764] (CoreLocation) CL: _CLClientCreateConnection
+2026-10-30 20:12:51.651 Df ZCode[64856:99bb764] [com.apple.locationd.Core:Client] {"msg":"_CLClientCreateConnection", "event":"activity", "client":"0x10c002b24c0"}
+2026-10-30 20:12:51.652 A  ZCode[64856:99bb80b] (LocationSupport) CL: Sending cached messages to daemon
+2026-10-30 20:12:51.652 Df ZCode[64856:99bb80b] [com.apple.LocationSupport:Connection] {"msg":"Sending cached messages to daemon", "event":"activity"}
+2026-10-30 20:12:51.652 Df ZCode[64856:99bb80b] [com.apple.xpc:connection] [0x10c00084d00] activating connection: mach=true listener=false peer=false name=com.apple.locationd.desktop.registration
+2026-10-30 20:12:51.652 Df ZCode[64856:99bb764] [com.apple.locationd.Core:Client] {"msg":"Requesting registration verification from CLAgent", "UUID":"349DBFA2-0133-4CDB-9AC7-892C240BBF50"}
+2026-10-30 20:12:51.652 A  ZCode[64856:99bb764] (LocationSupport) CL: CLConnectionClient::sendMessage(cache)
+2026-10-30 20:12:51.652 A  ZCode[64856:99bb80b] (LocationSupport) CL: CLConnection::sendMessage
+2026-10-30 20:12:51.652 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c03fac3c0] activating connection: mach=true listener=true peer=false name=com.apple.locationd-events
+2026-10-30 20:12:51.652 A  ZCode[64856:99bb764] (CoreLocation) CL: CLLocationManager
+2026-10-30 20:12:51.652 Df ZCode[64856:99bb764] [com.apple.locationd.Core:Client] {"msg":"CLLocationManager", "event":"activity", "_cmd":"setDelegate:", "self":"0x10c044852b0", "delegate":"0x10c0448ad70"}
+2026-10-30 20:12:51.652 Df launchd[1:99ba648] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.652 Df launchd[1:99ba648] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.653 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.653 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.653 Df launchd[1:99ba85c] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.653 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.653 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.653 Df launchd[1:99ba85c] [system:] could not find endpoint in pid namespace: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:51.653 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:51.655 Df ZCode[64856:99bb870] [com.apple.network:] networkd_settings_read_from_file_locked initialized networkd settings by reading plist directly
+2026-10-30 20:12:51.656 Df ZCode[64856:99bb870] [com.apple.network:] networkd_settings_read_from_file_locked initialized networkd settings by reading plist directly
+2026-10-30 20:12:51.667 Df ZCode[64856:99bb817] [com.apple.xpc:connection] [0x10c03fad140] activating connection: mach=true listener=false peer=false name=com.apple.SystemConfiguration.DNSConfiguration
+2026-10-30 20:12:51.667 Df ZCode[64856:99bb817] [com.apple.xpc:connection] [0x10c03fad140] invalidated after the last release of the connection object
+2026-10-30 20:12:51.668 Df ZCode[64856:99bb817] [com.apple.xpc:connection] [0x10c03fad020] activating connection: mach=true listener=false peer=false name=com.apple.SystemConfiguration.DNSConfiguration
+2026-10-30 20:12:51.668 Df ZCode[64856:99bb817] [com.apple.xpc:connection] [0x10c03fad020] invalidated after the last release of the connection object
+2026-10-30 20:12:51.670 A  ZCode[64856:99bb810] (CoreLocation) CL: CLClientDefaultMessageHandler
+2026-10-30 20:12:51.670 Df ZCode[64856:99bb810] [com.apple.locationd.Core:Client] {"msg":"CLClientDefaultMessageHandler", "event":"activity", "client":"0x10c002b24c0"}
+2026-10-30 20:12:51.670 A  ZCode[64856:99bb810] (CoreLocation) CL: CLClientMessageRegistrationtHandler
+2026-10-30 20:12:51.670 Df ZCode[64856:99bb810] [com.apple.locationd.Core:Client] {"msg":"CLClientMessageRegistrationtHandler", "event":"activity", "client":"0x10c002b24c0"}
+2026-10-30 20:12:51.670 Df ZCode[64856:99bb810] [com.apple.locationd.Core:Client] {"msg":"Sending queued messages", "count":0}
+2026-10-30 20:12:51.670 A  ZCode[64856:99bb810] (LocationSupport) CL: Sending cached messages to daemon
+2026-10-30 20:12:51.670 Df ZCode[64856:99bb810] [com.apple.LocationSupport:Connection] {"msg":"Sending cached messages to daemon", "event":"activity"}
+2026-10-30 20:12:51.670 A  ZCode[64856:99bb810] (CoreLocation) CL: CLClientDefaultMessageHandler
+2026-10-30 20:12:51.670 Df ZCode[64856:99bb810] [com.apple.locationd.Core:Client] {"msg":"CLClientDefaultMessageHandler", "event":"activity", "client":"0x10c002b24c0"}
+2026-10-30 20:12:51.700 A  ZCode[64856:99bb889] (Security) SecKeychainAddCallback
+2026-10-30 20:12:51.701 Df ZCode[64856:99bb80b] [com.apple.storekit:Default] No purchase intents
+2026-10-30 20:12:51.701 Df ZCode[64856:99bb80b] [com.apple.storekit:Default] Registering for 'receivedpurchaseintents' daemon notification
+2026-10-30 20:12:51.703 Df ZCode[64856:99bb80b] [com.apple.storekit:Default] [e66fc122_SK1] Storefront updated to Optional(StoreKit.StorefrontInternal(id: "143441-1,13", countryCode: "USA", locale: en_US@currency=usd (fixed en_US@currency=usd)))
+2026-10-30 20:12:51.703 Df ZCode[64856:99bb80b] [com.apple.xpc:connection] [0x10c00192800] invalidated because the current process cancelled the connection by calling xpc_connection_cancel()
+2026-10-30 20:12:51.703 E  ZCode[64856:99bb80b] (StoreKit) <SKPaymentQueue: 0x10c040132a0>: Error in remote proxy while checking server queue: Error Domain=SKInternalErrorDomain Code=12 "(null)" UserInfo={storefront-country-code=USA, client-environment-type=Sandbox}
+2026-10-30 20:12:51.704 Df ZCode[64856:99bb810] [com.apple.storekit:Default] AAFService connection invalidated
+2026-10-30 20:12:51.704 Df ZCode[64856:99bb764] [com.apple.dt.xctest:Default] Registering for test daemon availability notify post.
+2026-10-30 20:12:51.705 Df ZCode[64856:99bb764] [com.apple.dt.xctest:Default] notify_get_state check indicated test daemon not ready.
+2026-10-30 20:12:51.705 Df ZCode[64856:99bb764] [com.apple.dt.xctest:Default] notify_get_state check indicated test daemon not ready.
+2026-10-30 20:12:51.705 Df ZCode[64856:99bb764] [com.apple.dt.xctest:Default] notify_get_state check indicated test daemon not ready.
+2026-10-30 20:12:51.713 A  ZCode[64856:99bb764] (CoreFoundation) Loading Preferences From System CFPrefsD
+2026-10-30 20:12:51.713 Df ZCode[64856:99bb764] (libMobileGestalt.dylib) couldn't load support library
+2026-10-30 20:12:51.713 Df ZCode[64856:99bb764] (libMobileGestalt.dylib) called dummy function!
+2026-10-30 20:12:51.714 Df ZCode[64856:99bb764] [com.apple.GenerativeModels:availability] registering darwin observer for name: com.apple.gms.availability.notification
+2026-10-30 20:12:51.714 Df ZCode[64856:99bb764] [com.apple.GenerativeModels:availability] registering darwin observer for name: com.apple.os-eligibility-domain.change.greymatter
+2026-10-30 20:12:51.714 Df ZCode[64856:99bb764] [com.apple.GenerativeModels:availability] registering darwin observer for name: com.apple.language.changed
+2026-10-30 20:12:51.714 Df ZCode[64856:99bb764] [com.apple.WritingTools:Default] isAvailable value changed: isMDMAllowed = true, gmAvailable (current) = false
+2026-10-30 20:12:51.715 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c000877a0] activating connection: mach=true listener=false peer=false name=com.apple.appkit.restoration_storage
+2026-10-30 20:12:51.716 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c04683ba0] activating connection: mach=true listener=false peer=false name=com.apple.coreservices.appleevents
+2026-10-30 20:12:51.716 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10800160dc0] Connection returned listener port: 0x4f03
+2026-10-30 20:12:51.717 Df ZCode[64856:99bb764] [com.apple.processmanager:front-35286506] SignalReady: pid=64856 asn=0x0-0x91fb1f2
+2026-10-30 20:12:51.717 Df ZCode[64856:99bb764] [com.apple.processmanager:front-35286506] SIGNAL: pid=64856 asn=0x0x-0x91fb1f2
+2026-10-30 20:12:51.719 A  ZCode[64856:99bb764] (CoreFoundation) Loading Preferences From User CFPrefsD
+2026-10-30 20:12:51.720 A  ZCode[64856:99bb764] (CoreFoundation) Loading Preferences From System CFPrefsD
+2026-10-30 20:12:51.733 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c046846e0] activating connection: mach=false listener=false peer=false name=com.apple.ViewBridgeAuxiliary
+2026-10-30 20:12:51.742 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c000891c0] activating connection: mach=false listener=false peer=false name=(anonymous)
+2026-10-30 20:12:51.742 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c00089060] activating connection: mach=false listener=true peer=false name=(anonymous)
+2026-10-30 20:12:51.742 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c00089060] Connection returned listener port: 0x14403
+2026-10-30 20:12:51.743 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c046846e0] invalidated after the last release of the connection object
+2026-10-30 20:12:51.743 Df ZCode[64856:99bb764] [com.apple.locationd.Core:Client] {"msg":"#CLLocationManager invoking #delegate", "self":"0x10c044852b0", "delegate":"0x10c0448ad70", "selector":"locationManager:didChangeAuthorizationStatus:", "authorizationStatus":"NotDetermined", "limitsPrecision":0, "isAuthorizedForWidgetUpdates":0}
+2026-10-30 20:12:51.743 A  ZCode[64856:99bb764] (CoreLocation) CL: CLLocationManager
+2026-10-30 20:12:51.743 Df ZCode[64856:99bb764] [com.apple.locationd.Core:Client] {"msg":"CLLocationManager", "event":"activity", "_cmd":"onClientEventRegistration:", "self":"0x10c044852b0", "clientKey":"2FC0D7FF-CC14-4F0B-8364-7D57D45AC1AA:iio.github.zclaudia.zody.cua-launchservices-candidate:"}
+2026-10-30 20:12:51.744 Df ZCode[64856:99bb764] [com.apple.AppKit:AutomaticTermination] void _NSDisableAutomaticTerminationAndLog(NSString *) Restoring windows
+2026-10-30 20:12:51.746 Df ZCode[64856:99bb764] [com.apple.AppKit:StateRestoration] -[NSApplication _reopenWindowsAsNecessaryIncludingRestorableState:withFullFidelity:completionHandler:] shouldRestoreState=1 hasPersistentStateToRestore=1 shouldStillRestoreStateAfterPrompting=1
+2026-10-30 20:12:51.749 Df ZCode[64856:99bb764] [com.apple.AppKit:StateRestoration] -[NSApplication(NSPersistentUIRestorationSupport) _restoreWindowWithRestoration:completionHandler:] restoration=<NSPersistentUIWindowRestoration: 0x10c044de220> savedIdentifier=(null)
+2026-10-30 20:12:51.749 Df ZCode[64856:99bb764] [com.apple.AppKit:StateRestoration] -[NSApplication(NSWindowRestoration) restoreWindowWithIdentifier:state:completionHandler:] identifier=(null) className=(null)
+2026-10-30 20:12:51.749 E  ZCode[64856:99bb764] [com.apple.AppKit:StateRestoration] -[NSApplication(NSWindowRestoration) restoreWindowWithIdentifier:state:completionHandler:] Unable to find className=(null)
+2026-10-30 20:12:51.749 Df ZCode[64856:99bb764] [com.apple.AppKit:StateRestoration] -[NSApplication(NSPersistentUIRestorationSupport) _restoreWindowWithRestoration:completionHandler:] restoration=<NSPersistentUIWindowRestoration: 0x10c044de220> savedIdentifier=(null) heuristicsWindow=0x0
+2026-10-30 20:12:51.749 Df ZCode[64856:99bb764] [com.apple.AppKit:StateRestoration] -[NSApplication(NSPersistentUIRestorationSupport) _restoreWindowWithRestoration:completionHandler:] restoration=<NSPersistentUIWindowRestoration: 0x10c044de220> savedIdentifier=(null) isHandlingOdocEvent=0
+2026-10-30 20:12:51.768 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c046872c0] activating connection: mach=true listener=false peer=false name=com.apple.pbs.fetch_services
+2026-10-30 20:12:51.769 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c046872c0] invalidated after the last release of the connection object
+2026-10-30 20:12:51.769 A  ZCode[64856:99bb764] (CoreFoundation) Loading Preferences From User CFPrefsD
+2026-10-30 20:12:51.783 A  ZCode[64856:99bb764] (CoreFoundation) Updating Key-Value Observers Of Preferences
+2026-10-30 20:12:51.790 Df ZCode[64856:99bb764] [com.apple.AppKit:StateRestoration] -[NSApplication(NSPersistentUIRestorationSupport) _restoreWindowWithRestoration:completionHandler:]_block_invoke restoration=<NSPersistentUIWindowRestoration: 0x10c044de220> savedIdentifier=(null) heuristicsWindow=0x0
+2026-10-30 20:12:51.790 Df ZCode[64856:99bb764] [com.apple.AppKit:StateRestoration] -[NSApplication(NSPersistentUIRestorationSupport) _restoreWindowWithRestoration:completionHandler:]_block_invoke restoration=<NSPersistentUIWindowRestoration: 0x10c044de220> window=0x0 savedIdentifier=(null) error=(null)
+2026-10-30 20:12:51.791 A  ZCode[64856:99bb764] (SharedFileList) #SFLAPI LSSharedFileListCreate
+2026-10-30 20:12:51.791 A  ZCode[64856:99bb80b] (SharedFileList) #SFLAPI LSSharedFileListCopySnapshot
+2026-10-30 20:12:51.791 Df ZCode[64856:99bb810] [com.apple.xpc:connection] [0x10c000811e0] activating connection: mach=true listener=false peer=false name=com.apple.coreservices.sharedfilelistd.xpc
+2026-10-30 20:12:51.792 Df ZCode[64856:99bb764] [com.apple.AppKit:AutomaticTermination] void _NSEnableAutomaticTerminationAndLog(NSString *) Restoring windows
+2026-10-30 20:12:51.793 A  ZCode[64856:99bb764] (TCC) TCCAccessRequest() IPC
+2026-10-30 20:12:51.793 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c0468b640] activating connection: mach=true listener=false peer=false name=com.apple.tccd.system
+2026-10-30 20:12:51.793 Df ZCode[64856:99bb844] [com.apple.BoardServices:XPCErrors] [C:1] Alloc <private>
+2026-10-30 20:12:51.793 Df ZCode[64856:99bb844] [com.apple.xpc:connection] [0x10c0008e180] activating connection: mach=false listener=false peer=false name=(anonymous)
+2026-10-30 20:12:51.798 Df ZCode[64856:99bb764] [com.apple.xpc:connection] [0x10c0468b640] invalidated after the last release of the connection object
+2026-10-30 20:12:51.799 Df ZCode[64856:99bb764] [com.apple.AppKit:AutomaticTermination] void _NSDisableAutomaticTerminationAndLog(NSString *) NSAccessibility Request Received
+2026-10-30 20:12:51.811 A  ZCode[64856:99bb889] (Security) SecKeychainAddCallback
+2026-10-30 20:12:51.811 A  ZCode[64856:99bb889] (Security) SecKeychainAddCallback
+2026-10-30 20:12:52.044 Df launchd[1:99ba85c] [gui/501/application.io.github.zclaudia.zody.cua-launchservices-candidate.150908785.150908788 [64856]:] exited due to SIGTRAP | sent by exc handler[64856], ran for 3547ms
+2026-10-30 20:12:52.044 Df launchd[1:99ba85c] [system:] removing child: pid/64856
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.072 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.126 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.126 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.126 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.126 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.126 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.126 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.126 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.126 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.126 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.126 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.126 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.126 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.179 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.179 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.179 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.179 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.180 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.180 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.180 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.180 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.180 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.180 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.180 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.180 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.233 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.287 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.340 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.340 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.340 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.340 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.340 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.340 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.340 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.340 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.340 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.340 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.340 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.340 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.392 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.392 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.392 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.392 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.392 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.392 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.392 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.392 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.392 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.392 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.392 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.392 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.446 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.499 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.552 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.606 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.606 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.606 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.606 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.606 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.606 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.606 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.606 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.606 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.606 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.606 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.606 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.659 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.712 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.766 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.819 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.819 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.819 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.819 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.819 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.819 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.819 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.819 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.820 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.820 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.820 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.820 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.872 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.872 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.872 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.872 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.872 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.872 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.872 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.872 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.872 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.872 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.872 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.872 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.926 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.979 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.979 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.979 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.979 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.979 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.979 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.979 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.979 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:52.980 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.980 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.980 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:52.980 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.032 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.084 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.084 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.084 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.084 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.085 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.085 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.085 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.085 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.085 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.085 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.085 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.085 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.137 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.190 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.244 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.244 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.244 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.244 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.244 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.244 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.244 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.244 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.244 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.244 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.244 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.244 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.296 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.348 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.402 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.453 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.453 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.453 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.453 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.453 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.453 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.453 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.453 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.454 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.454 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.454 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.454 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.504 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.557 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.557 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.557 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.557 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.557 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.558 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.558 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.558 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.558 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.558 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.558 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.558 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.608 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.608 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.608 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.608 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.609 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.609 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.609 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.609 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.609 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.609 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.609 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.609 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.662 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.716 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.768 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.822 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.875 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.928 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.981 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.981 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.981 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.981 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.981 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.981 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.981 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.981 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:53.982 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.982 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.982 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:53.982 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.035 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.088 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.141 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.141 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.141 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.141 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.141 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.141 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.141 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.141 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.142 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.142 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.142 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.142 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.194 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.194 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.194 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.194 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.195 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.195 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.195 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.195 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.195 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.195 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.195 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.195 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.248 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.301 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.354 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.354 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.354 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.354 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.355 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.355 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.355 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.355 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.355 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.355 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.355 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.355 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.407 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.407 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.407 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.407 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.408 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.408 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.408 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.408 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.408 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.408 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.408 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.408 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.461 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.514 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.567 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.623 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.624 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.624 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.624 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.624 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.624 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.624 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.624 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.624 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.624 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.624 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.624 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.676 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.730 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.730 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.730 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.730 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.730 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.730 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.730 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.730 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.730 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.730 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.730 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.730 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.782 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.836 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.836 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.836 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.836 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.836 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.836 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.836 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.836 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.836 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.836 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.836 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.836 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.888 Df launchd[1:99bb605] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.888 Df launchd[1:99bb605] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.888 Df launchd[1:99bb605] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.888 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.888 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.888 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.888 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.888 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.888 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.888 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.888 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.888 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.942 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.992 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.992 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.992 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.992 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.993 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.993 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.993 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.993 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:54.993 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.993 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.993 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:54.993 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.046 Df launchd[1:99bb605] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.046 Df launchd[1:99bb605] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.046 Df launchd[1:99bb605] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.046 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.046 Df launchd[1:99bb605] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.046 Df launchd[1:99bb605] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.046 Df launchd[1:99bb605] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.046 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.047 Df launchd[1:99bb605] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.047 Df launchd[1:99bb605] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.047 Df launchd[1:99bb605] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.047 Df launchd[1:99bb605] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.100 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.154 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.207 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.258 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.312 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.366 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.417 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.471 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.524 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.576 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.576 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.576 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.576 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.576 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.576 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.576 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.576 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.576 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.576 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.576 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.576 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.627 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.627 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.627 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.627 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.627 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.627 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.627 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.627 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.627 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.627 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.627 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.627 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.680 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.733 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.787 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.840 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.840 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.840 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.840 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.841 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.841 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.841 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.841 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.841 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.841 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.841 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.841 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.894 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.894 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.894 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.894 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.894 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.894 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.894 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.894 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.894 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.894 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.894 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.894 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:55.948 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.002 Df launchd[1:99ba648] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [gui/501 [100018]:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [user/501:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [system:] could not find active service for lookup: pid = 64856, name = com.apple.axserver
+2026-10-30 20:12:56.055 Df launchd[1:99ba85c] [gui/501 [100018]:] failed lookup: name = com.apple.axserver, handle = 64856, flags = 0x3, requestor = SkyComputerUseS[9403], error = 3: No such process

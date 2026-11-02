@@ -1,0 +1,28 @@
+{
+  "files.json": {
+    "count": 3208,
+    "changed": [
+      "specs/computer-use-macos-phase1.md",
+      "docs/design/computer-use-macos-phase1.md",
+      "docs/plans/computer-use-macos-phase1-implementation.md"
+    ],
+    "missing": [],
+    "unexpectedChanges": []
+  },
+  "registry-sources.json": {
+    "count": 201,
+    "changed": [],
+    "missing": [],
+    "unexpectedChanges": []
+  },
+  "round8": {
+    "fileCount": 767,
+    "treeSha256": "4cbad8776947504f9883bf5370d6802177090d7a01075c5640b64a730950d9de"
+  },
+  "round9": {
+    "fileCount": 776,
+    "treeSha256": "421530ae2c2cab7b537226e459905916c849c1cf76095db0a45f574f9c49e02e"
+  },
+  "zcodeCuaPlaceholder": true
+}
+

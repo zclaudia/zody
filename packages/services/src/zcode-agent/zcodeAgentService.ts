@@ -1026,7 +1026,12 @@ function applyTrustedCuaInputOrigin(
 export function createZCodeAgentService(
   options?: CreateZCodeAgentServiceOptions,
 ): IZCodeAgentService & { disposeAllAndWait(): Promise<void> } {
-  const processManager = new ZCodeAgentProcessManager(options);
+  // Only the chat/main manager forwards the selective startup-profile resolver; the
+  // plugin and mcp-status managers below intentionally omit it.
+  const processManager = new ZCodeAgentProcessManager({
+    ...options,
+    nativeRuntimeResolver: options?.nativeRuntimeResolver,
+  });
   // Windows indicator 与 macOS producer lifecycle client 共用已校验、去重的 sideband facts。
   const cuaOperationTurnTracker =
     options?.cuaOperationStateReporter || options?.onCuaPipSessionLifecycle
@@ -1050,6 +1055,7 @@ export function createZCodeAgentService(
   const automationTaskIndexRepo = new TaskIndexRepo();
   const pluginProcessManager = new ZCodeAgentProcessManager({
     commandResolver: options?.commandResolver,
+    nativeRuntime: options?.nativeRuntime,
     presentationSurface: options?.presentationSurface,
     requestTimeoutMs: options?.requestTimeoutMs,
     resolveSpawnEnv: options?.resolveSpawnEnv,
@@ -1059,6 +1065,7 @@ export function createZCodeAgentService(
   // 恢复专用控制面进程及空闲回收；共享 workspace 路径，不共享请求队列或 watchdog。
   const mcpStatusProcessManager = new ZCodeAgentProcessManager({
     commandResolver: options?.commandResolver,
+    nativeRuntime: options?.nativeRuntime,
     presentationSurface: options?.presentationSurface,
     processLifecycleReporter: options?.processLifecycleReporter,
     requestTimeoutMs: options?.requestTimeoutMs,

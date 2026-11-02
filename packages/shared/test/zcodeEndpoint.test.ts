@@ -146,12 +146,12 @@ describe("zcodeEndpoint", () => {
 
   it("persists optional endpoint override in app settings", () => {
     expect(
-      appSettingsSchema.parse({ zcodeEndpointOrigin: "https://zcode.example.test/path" })
-        .zcodeEndpointOrigin,
+      appSettingsSchema.parse({ zodyEndpointOrigin: "https://zcode.example.test/path" })
+        .zodyEndpointOrigin,
     ).toBe("https://zcode.example.test");
     expect(
-      appSettingsPatchSchema.parse({ zcodeEndpointOrigin: "http://localhost:3030/foo" })
-        .zcodeEndpointOrigin,
+      appSettingsPatchSchema.parse({ zodyEndpointOrigin: "http://localhost:3030/foo" })
+        .zodyEndpointOrigin,
     ).toBe("http://localhost:3030");
   });
 });

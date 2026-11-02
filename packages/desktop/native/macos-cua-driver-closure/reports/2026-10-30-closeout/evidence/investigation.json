@@ -1,0 +1,20 @@
+{
+  "baselineManifestSha256": "11d49f9ff4303e3e1c7ed2dbcc9b5879227591f17be38201abd9451450c4d0eb",
+  "baselineMatchedFiles": 76,
+  "A": {
+    "releaseEntry": ".github/workflows/zody-release.yml -> packages/desktop/scripts/bundle.mjs -> electron-builder.config.js",
+    "normalHost": "electron utilityProcess; preserve node-pty/SSH",
+    "candidate": "Helper launches pinned Node sealed host-entry/cli-entry, not independent capture RPC",
+    "confirmedBoundary": "resource assembly only needs packaging changes; normal Host capture would need process/protocol design alignment",
+    "userQuestionPending": true
+  },
+  "B": {
+    "chain": [
+      "native auxiliary resource preflight closes fd",
+      "cli-entry verifies bytes then discards bytes and returns path",
+      "cua port -> subprocess executor -> spawn Node path reopens serverPath"
+    ],
+    "fix": "retain bounded hash-verified UTF8 contents and execute same immutable snapshot via ESM stdin; fd3/fd4 unchanged",
+    "residual": "cell Node executable still spawned by path; full D06, OS sandbox and descendant guarantee unaccepted"
+  }
+}

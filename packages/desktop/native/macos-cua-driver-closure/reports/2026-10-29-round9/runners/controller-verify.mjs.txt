@@ -1,0 +1,62 @@
+import { mkdir, readFile, writeFile, readdir, stat } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { prepareReconstructedCache } from '../../packages/desktop/scripts/lib/cua-driver-closure-cache-rebuild.mjs';
+import { readTomlJson } from '../../packages/desktop/scripts/lib/cua-driver-closure-dependencies.mjs';
+import { baseClosureEnvironment, runClosureCommand } from '../../packages/desktop/scripts/lib/cua-driver-closure-command.mjs';
+import { scanTree, verifyTreeAgainstManifest } from '../../packages/desktop/scripts/lib/cua-driver-round7-prepare-source.mjs';
+
+const root=resolve(import.meta.dirname,'../..');
+const source=resolve(process.argv[2]);
+const out=resolve(process.argv[3]);
+await mkdir(out);
+const manifest=JSON.parse(await readFile(join(root,'packages/desktop/native/macos-cua-driver-closure/round9/source-manifest.json'),'utf8'));
+const before=await verifyTreeAgainstManifest({scanned:await scanTree(source),manifest});
+const tc=join(root,'output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin');
+const lock=await readTomlJson(join(source,'Cargo.lock'));
+const cache=await prepareReconstructedCache({cargoHome:'/Users/zhvala/SourceCode/scripts/experiments/zody-cua-p0-g2-stop-retire-reservation/build/cargo-home',lockPackages:lock.package,candidateRoot:source,stagingRoot:join(out,'cache')});
+await writeFile(join(out,'cache.json'),JSON.stringify(cache,null,2)+'\n');
+if(cache.status!=='pass') throw new Error('cache blocked');
+await Promise.all(['home','tmp','target'].map(x=>mkdir(join(out,x))));
+const env={...baseClosureEnvironment(),PATH:tc+'/bin:/usr/bin:/bin:/usr/sbin:/sbin',HOME:out+'/home',TMPDIR:out+'/tmp',CARGO_HOME:cache.cargoHome,CARGO_TARGET_DIR:out+'/target',CARGO_NET_OFFLINE:'true',CARGO_INCREMENTAL:'0',RUSTC:tc+'/bin/rustc',RUSTUP_AUTO_INSTALL:'0',MACOSX_DEPLOYMENT_TARGET:'14.2'};
+const results=[];
+async function run(label,command,args,cwd=source){
+ const r=await runClosureCommand(command,args,{cwd,env,timeoutMs:300000,maxOutputBytes:16*1024*1024,allowFailure:true});
+ await writeFile(join(out,label+'.stdout.log'),r.stdout);
+ await writeFile(join(out,label+'.stderr.log'),r.stderr);
+ results.push({label,command,args,cwd,code:r.code});
+ await writeFile(join(out,'commands.json'),JSON.stringify({source,before,environment:env,commands:results,scope:'Pure Rust tests and no-native-call final consumer; no window enumeration, TCC, screenshot or input.'},null,2)+'\n');
+ console.log(label+': '+r.code);
+ if(r.code!==0) throw new Error(label+' failed');
+ return r;
+}
+await run('pure-tests',tc+'/bin/cargo',['test','--locked','--offline','--target','aarch64-apple-darwin','--package','cua-macos-visual','--lib','--test','pure_visual','--','--test-threads=1']);
+await run('consumer-build',tc+'/bin/cargo',['build','--locked','--offline','--target','aarch64-apple-darwin','--package','cua-macos-visual-link-probe','--message-format=json-render-diagnostics']);
+const binary=join(out,'target/aarch64-apple-darwin/debug/cua-macos-visual-link-probe');
+await run('consumer-run',binary,[]);
+await run('consumer-libraries','/usr/bin/otool',['-L',binary]);
+await run('consumer-load-commands','/usr/bin/otool',['-l',binary]);
+await run('consumer-symbols','/usr/bin/nm',['-g',binary]);
+await run('consumer-undefined','/usr/bin/nm',['-u',binary]);
+await run('consumer-signature','/usr/bin/codesign',['-dvv',binary]);
+const artifacts=[];
+async function walk(dir){
+ for(const e of await readdir(dir,{withFileTypes:true})){
+  const p=join(dir,e.name);
+  if(e.isDirectory()) await walk(p);
+  else if(e.isFile()&&(/\.swift$|\.o$|\.a$|autolink|swift.*json|link.*json/.test(e.name))) artifacts.push(p);
+ }
+}
+await walk(join(out,'target/aarch64-apple-darwin/debug/build'));
+for(let i=0;i<artifacts.length;i++){
+ const p=artifacts[i];
+ if(!p.includes('cua-macos-visual')) continue;
+ if(p.endsWith('.o')){
+  await run('object-'+i+'-load','/usr/bin/otool',['-l',p]);
+  await run('object-'+i+'-symbols','/usr/bin/nm',['-g',p]);
+ }
+}
+const bytes=await readFile(binary);
+await writeFile(join(out,'artifacts.json'),JSON.stringify({binary,bytes:(await stat(binary)).size,sha256:createHash('sha256').update(bytes).digest('hex'),nativeBuildArtifacts:artifacts},null,2)+'\n');
+const after=await verifyTreeAgainstManifest({scanned:await scanTree(source),manifest});
+await writeFile(join(out,'source-after.json'),JSON.stringify(after,null,2)+'\n');

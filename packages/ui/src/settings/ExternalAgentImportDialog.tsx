@@ -595,7 +595,10 @@ function ExternalAgentImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[min(84vh,640px)] max-h-[calc(100vh-2rem)] max-w-2xl overflow-hidden rounded-2xl p-0">
+      <DialogContent
+        className="h-[min(84dvh,640px)] max-h-[calc(100dvh-2rem)] max-w-2xl overflow-hidden rounded-2xl p-0"
+        data-settings-dialog="true"
+      >
         <div className="flex h-full min-h-0 min-w-0 flex-col">
           <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-5">
             <DialogHeader className="shrink-0 sm:-mt-1">

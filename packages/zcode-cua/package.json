@@ -1,7 +1,6 @@
 {
   "name": "@zcode/zcode-cua",
   "version": "0.6.3",
-  "zcodeCuaPlaceholder": true,
   "private": true,
   "description": "API-compatible placeholder package for Computer Use. This build ships without Computer Use: every runtime surface reports unavailable and fails closed.",
   "license": "Apache-2.0",
@@ -54,6 +53,19 @@
     "./broker/helperHealth": {
       "types": "./broker-helper-health.d.ts",
       "import": "./broker-helper-health.js"
+    },
+    "./control-protocol": {
+      "types": "./control-protocol.d.ts",
+      "import": "./control-protocol.js"
+    },
+    "./control-channel": {
+      "types": "./control-channel.d.ts",
+      "import": "./control-channel.js"
+    },
+    "./producer-control": {
+      "types": "./producer-control.d.ts",
+      "import": "./producer-control.js"
     }
-  }
+  },
+  "zcodeCuaPlaceholder": true
 }

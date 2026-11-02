@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "profile": "local-self-signed",
+  "bundleId": "io.github.zclaudia.zody.cua-peer-diagnostic-test",
+  "executableName": "macos-cua-peer-diagnostic",
+  "bundleShortVersion": "0.1.0",
+  "bundleVersion": "1",
+  "architectures": ["arm64"],
+  "minimumMacOSVersion": "14.2",
+  "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\"",
+  "executableSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "entitlements": {}
+}

@@ -1,0 +1,19 @@
+ld: warning: Could not find or use auto-linked framework 'CoreAudioTypes': framework 'CoreAudioTypes' not found
+ld: warning: Could not parse or use implicit file '/Library/Developer/CommandLineTools/SDKs/MacOSX27.0.sdk/System/Library/Frameworks/SwiftUICore.framework/Versions/A/SwiftUICore.tbd': cannot link directly with 'SwiftUICore' because product being built is not an allowed client of it
+Undefined symbols for architecture arm64:
+  "_audit_token_to_asid", referenced from:
+      read_peer_token(int, PeerToken&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>&) in peer_frame-8aaa0e.o
+  "_audit_token_to_auid", referenced from:
+      read_peer_token(int, PeerToken&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>&) in peer_frame-8aaa0e.o
+  "_audit_token_to_euid", referenced from:
+      read_peer_token(int, PeerToken&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>&) in peer_frame-8aaa0e.o
+  "_audit_token_to_pid", referenced from:
+      read_peer_token(int, PeerToken&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>&) in peer_frame-8aaa0e.o
+  "_audit_token_to_pidversion", referenced from:
+      read_peer_token(int, PeerToken&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>&) in peer_frame-8aaa0e.o
+  "_audit_token_to_rgid", referenced from:
+      read_peer_token(int, PeerToken&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>&) in peer_frame-8aaa0e.o
+  "_audit_token_to_ruid", referenced from:
+      read_peer_token(int, PeerToken&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>&) in peer_frame-8aaa0e.o
+ld: symbol(s) not found for architecture arm64
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)

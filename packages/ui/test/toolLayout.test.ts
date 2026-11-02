@@ -1,9 +1,110 @@
+// @vitest-environment jsdom
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { ToolLayout } from "../src/ToolCallBlocks/ToolLayout.js";
 import { handleToolSummaryActionKeyDown } from "../src/ToolCallBlocks/ToolSummaryRow.js";
+
+type LayoutReadKind = "getBoundingClientRect" | "getClientRects" | "offsetWidth" | "offsetHeight";
+
+interface MeasurementRecord {
+  kind: LayoutReadKind;
+  element: Element;
+  hidden: boolean;
+  width: number;
+  height: number;
+}
+
+// 浏览器夹具：记录每次布局读取的调用元素、当时的 hidden 状态与返回几何。
+// 除 getBoundingClientRect 外，还覆盖 contract 第 1 条列出的等价读取
+// （getClientRects / offsetWidth / offsetHeight），隐藏节点上四类读取都应为 0。
+// 隐藏节点按真实排版返回 0×0，用于断言批量隐藏卡片不触发几何读取；不代表真实排版耗时。
+function installMeasurementProbe(size: { width: number; height: number }) {
+  const records: MeasurementRecord[] = [];
+  const geometryFor = (element: Element) => {
+    const hidden = element instanceof HTMLElement ? element.hidden : false;
+    return hidden ? { width: 0, height: 0 } : { width: size.width, height: size.height };
+  };
+  const record = (kind: LayoutReadKind, element: Element, width: number, height: number) => {
+    records.push({
+      kind,
+      element,
+      hidden: element instanceof HTMLElement ? element.hidden : false,
+      width,
+      height,
+    });
+  };
+
+  const rectSpy = vi
+    .spyOn(Element.prototype, "getBoundingClientRect")
+    .mockImplementation(function (this: Element) {
+      const { width, height } = geometryFor(this);
+      record("getBoundingClientRect", this, width, height);
+      return new DOMRect(0, 0, width, height);
+    });
+  const clientRectsSpy = vi
+    .spyOn(Element.prototype, "getClientRects")
+    .mockImplementation(function (this: Element) {
+      const { width, height } = geometryFor(this);
+      record("getClientRects", this, width, height);
+      return [new DOMRect(0, 0, width, height)] as unknown as DOMRectList;
+    });
+  const offsetWidthSpy = vi
+    .spyOn(HTMLElement.prototype, "offsetWidth", "get")
+    .mockImplementation(function (this: HTMLElement) {
+      const { width } = geometryFor(this);
+      record("offsetWidth", this, width, 0);
+      return width;
+    });
+  const offsetHeightSpy = vi
+    .spyOn(HTMLElement.prototype, "offsetHeight", "get")
+    .mockImplementation(function (this: HTMLElement) {
+      const { height } = geometryFor(this);
+      record("offsetHeight", this, 0, height);
+      return height;
+    });
+
+  return {
+    records,
+    restore: () => {
+      rectSpy.mockRestore();
+      clientRectsSpy.mockRestore();
+      offsetWidthSpy.mockRestore();
+      offsetHeightSpy.mockRestore();
+    },
+  };
+}
+
+function collapsibleContentNodes(): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>('[data-slot="collapsible-content"]'));
+}
+
+// 正对照：显式在可见节点上触发三类等价布局读取，证明夹具会记录它们；
+// 否则隐藏节点上的 0 记录只是「Radix 本来就没调用」的空断言。
+function readEquivalentGeometry(element: HTMLElement) {
+  element.getClientRects();
+  void element.offsetWidth;
+  void element.offsetHeight;
+}
+
+function expectProbeRecordsEquivalentReads(
+  probe: { records: MeasurementRecord[] },
+  element: Element,
+) {
+  const kinds = probe.records
+    .filter((record) => record.element === element && !record.hidden)
+    .map((record) => record.kind);
+  expect(kinds).toEqual(
+    expect.arrayContaining(["getClientRects", "offsetWidth", "offsetHeight"] as LayoutReadKind[]),
+  );
+}
+
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe("ToolLayout", () => {
   it("keeps collapsible detail spacing inside the animated content body", () => {
@@ -165,5 +266,156 @@ describe("ToolLayout", () => {
     );
     expect(onActivate).toHaveBeenCalledTimes(2);
     expect(preventDefault).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("ToolLayout hidden measurement", () => {
+  it("does not read geometry for hidden detail bodies in a batch of collapsed tools", () => {
+    const probe = installMeasurementProbe({ width: 900, height: 180 });
+
+    render(
+      createElement(
+        ZCodeIntlProvider,
+        { initialLocale: "zh-CN" },
+        createElement(
+          "div",
+          null,
+          Array.from({ length: 30 }, (_, index) =>
+            createElement(ToolLayout, {
+              key: index,
+              toolId: `tool-layout-hidden-batch-${index}`,
+              icon: createElement("span", { "aria-hidden": true }, "icon"),
+              kindLabel: "读取",
+              primaryText: `file-${index}.ts`,
+              renderContent: () =>
+                createElement("div", { className: "tool-detail" }, `detail-${index}`),
+            }),
+          ),
+        ),
+      ),
+    );
+
+    const contents = collapsibleContentNodes();
+    expect(contents).toHaveLength(30);
+    expect(contents.every((content) => content.hidden)).toBe(true);
+    const contentNodes = new Set<Element>(contents);
+    const hiddenReads = probe.records.filter(
+      (record) => record.hidden && contentNodes.has(record.element),
+    );
+    expect(hiddenReads).toHaveLength(0);
+  });
+
+  it("measures only the expanded card in a hidden batch and stops reading after it collapses", () => {
+    const probe = installMeasurementProbe({ width: 900, height: 180 });
+
+    render(
+      createElement(
+        ZCodeIntlProvider,
+        { initialLocale: "zh-CN" },
+        createElement(
+          "div",
+          null,
+          Array.from({ length: 30 }, (_, index) =>
+            createElement(ToolLayout, {
+              key: index,
+              toolId: `tool-layout-batch-toggle-${index}`,
+              icon: createElement("span", { "aria-hidden": true }, "icon"),
+              kindLabel: "读取",
+              primaryText: `file-${index}.ts`,
+              renderContent: () =>
+                createElement("div", { className: "tool-detail" }, `detail-${index}`),
+            }),
+          ),
+        ),
+      ),
+    );
+
+    const contents = collapsibleContentNodes();
+    expect(contents).toHaveLength(30);
+    expect(contents.every((content) => content.hidden)).toBe(true);
+
+    const trigger = screen.getByTestId("tool-summary-trigger-tool-layout-batch-toggle-7");
+    fireEvent.click(trigger);
+
+    const opened = contents[7];
+    if (opened === undefined) {
+      throw new Error("opened collapsible content is not mounted");
+    }
+    expect(opened.hidden).toBe(false);
+    // 正对照：夹具确实能观察到可见卡片的测量，避免「0 读取」因探针失效而空过。
+    const visibleReads = probe.records.filter(
+      (record) =>
+        record.kind === "getBoundingClientRect" && record.element === opened && !record.hidden,
+    );
+    expect(visibleReads.length).toBeGreaterThan(0);
+    readEquivalentGeometry(opened);
+    expectProbeRecordsEquivalentReads(probe, opened);
+    // 其余 29 张仍是 hidden，不得出现任何布局读取。
+    expect(
+      probe.records.filter((record) => record.hidden && record.element !== opened),
+    ).toHaveLength(0);
+    const measuredHeight = opened.style.getPropertyValue("--radix-collapsible-content-height");
+    expect(measuredHeight).toBe("180px");
+
+    // 收起后不再补测的作用类似：present 变 false 不重跑测量 effect；
+    // guard 的存在性由初始 hidden 批量用例与 CJS/ESM 产物守卫证明。
+    fireEvent.click(trigger);
+    expect(opened.hidden).toBe(true);
+    expect(
+      probe.records.filter((record) => record.hidden && record.element === opened),
+    ).toHaveLength(0);
+    expect(opened.style.getPropertyValue("--radix-collapsible-content-height")).toBe(
+      measuredHeight,
+    );
+  });
+
+  it("measures a detail body only while visible and keeps the last visible size after collapse", () => {
+    const probe = installMeasurementProbe({ width: 900, height: 180 });
+
+    render(
+      createElement(
+        ZCodeIntlProvider,
+        { initialLocale: "zh-CN" },
+        createElement(ToolLayout, {
+          toolId: "tool-layout-measure-toggle",
+          icon: createElement("span", { "aria-hidden": true }, "icon"),
+          kindLabel: "读取",
+          primaryText: "mod.rs",
+          renderContent: () => createElement("div", { className: "tool-detail" }, "detail"),
+        }),
+      ),
+    );
+
+    const content = collapsibleContentNodes()[0];
+    if (content === undefined) {
+      throw new Error("collapsible content is not mounted");
+    }
+    expect(content.hidden).toBe(true);
+
+    const trigger = screen.getByTestId("tool-summary-trigger-tool-layout-measure-toggle");
+    fireEvent.click(trigger);
+    expect(content.hidden).toBe(false);
+    expect(
+      probe.records.filter(
+        (record) =>
+          record.kind === "getBoundingClientRect" && record.element === content && !record.hidden,
+      ).length,
+    ).toBeGreaterThan(0);
+    readEquivalentGeometry(content);
+    expectProbeRecordsEquivalentReads(probe, content);
+    const measuredHeight = content.style.getPropertyValue("--radix-collapsible-content-height");
+    expect(measuredHeight).toBe("180px");
+
+    // 关闭后 hidden 读取为 0 还因为 Radix 的 useLayoutEffect 依赖是 [context.open, present]：
+    // 收起先以可见帧测量，随后 present=false 不重跑该 effect。本断言证明「hidden 后不再补测
+    // 并保留最近可见尺寸」；补丁存在性由初始 hidden、批量与 Accordion 用例守卫。
+    fireEvent.click(trigger);
+    expect(content.hidden).toBe(true);
+    expect(
+      probe.records.filter((record) => record.element === content && record.hidden),
+    ).toHaveLength(0);
+    expect(content.style.getPropertyValue("--radix-collapsible-content-height")).toBe(
+      measuredHeight,
+    );
   });
 });

@@ -1,0 +1,2026 @@
+{
+  "status": "pass",
+  "gateMeaning": "license-expression-and-material-inventory-only",
+  "legalConclusion": "not-made",
+  "productAdoption": "blocked",
+  "productAdoptionReason": "this summary records expressions, files, hashes and open materials; it is not a legal or product adoption decision",
+  "packageCount": 20,
+  "entries": [
+    {
+      "package": "adler2@2.0.1",
+      "expression": "0BSD OR MIT OR Apache-2.0",
+      "classification": {
+        "expression": "0BSD OR MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "0BSD",
+          "OR",
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/adler2-2.0.1/LICENSE-0BSD",
+          "sha256": "861399f8c21c042b110517e76dc6b63a2b334276c8cf17412fc3c8908ca8dc17",
+          "bytes": 665,
+          "licenseIdentifiers": [
+            "0BSD"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/adler2-2.0.1/LICENSE-0BSD"
+        },
+        {
+          "path": "registry/adler2-2.0.1/LICENSE-APACHE",
+          "sha256": "8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb",
+          "bytes": 10860,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/adler2-2.0.1/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/adler2-2.0.1/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/adler2-2.0.1/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 3,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 3,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "0BSD",
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "0BSD",
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "0BSD",
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "autocfg@1.5.0",
+      "expression": "Apache-2.0 OR MIT",
+      "classification": {
+        "expression": "Apache-2.0 OR MIT",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "Apache-2.0",
+          "OR",
+          "MIT"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/autocfg-1.5.0/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/autocfg-1.5.0/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/autocfg-1.5.0/LICENSE-MIT",
+          "sha256": "27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac",
+          "bytes": 1054,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/autocfg-1.5.0/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "coveredTokens": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "bitflags@2.11.1",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/bitflags-2.11.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/bitflags-2.11.1/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/bitflags-2.11.1/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/bitflags-2.11.1/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "bytemuck@1.25.0",
+      "expression": "Zlib OR Apache-2.0 OR MIT",
+      "classification": {
+        "expression": "Zlib OR Apache-2.0 OR MIT",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "Zlib",
+          "OR",
+          "Apache-2.0",
+          "OR",
+          "MIT"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/bytemuck-1.25.0/LICENSE-APACHE",
+          "sha256": "e3ba223bb1423f0aad8c3dfce0fe3148db48926d41e6fbc3afbbf5ff9e1c89cb",
+          "bytes": 10398,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/bytemuck-1.25.0/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/bytemuck-1.25.0/LICENSE-MIT",
+          "sha256": "9df9ba60a11af705f2e451b53762686e615d86f76b169cf075c3237730dbd7e2",
+          "bytes": 1110,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/bytemuck-1.25.0/LICENSE-MIT"
+        },
+        {
+          "path": "registry/bytemuck-1.25.0/LICENSE-ZLIB",
+          "sha256": "84b34dd7608f7fb9b17bd588a6bf392bf7de504e2716f024a77d89f1b145a151",
+          "bytes": 851,
+          "licenseIdentifiers": [
+            "Zlib"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/bytemuck-1.25.0/LICENSE-ZLIB"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 3,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 3,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT",
+          "Zlib"
+        ],
+        "expressionTokens": [
+          "Zlib",
+          "Apache-2.0",
+          "MIT"
+        ],
+        "coveredTokens": [
+          "Zlib",
+          "Apache-2.0",
+          "MIT"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "byteorder-lite@0.1.0",
+      "expression": "Unlicense OR MIT",
+      "classification": {
+        "expression": "Unlicense OR MIT",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "Unlicense",
+          "OR",
+          "MIT"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/byteorder-lite-0.1.0/LICENSE-MIT",
+          "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+          "bytes": 1081,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/byteorder-lite-0.1.0/LICENSE-MIT"
+        },
+        {
+          "path": "registry/byteorder-lite-0.1.0/UNLICENSE",
+          "sha256": "7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c",
+          "bytes": 1211,
+          "licenseIdentifiers": [
+            "Unlicense"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/byteorder-lite-0.1.0/UNLICENSE"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "MIT",
+          "Unlicense"
+        ],
+        "expressionTokens": [
+          "Unlicense",
+          "MIT"
+        ],
+        "coveredTokens": [
+          "Unlicense",
+          "MIT"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "cfg-if@1.0.4",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/cfg-if-1.0.4/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/cfg-if-1.0.4/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/cfg-if-1.0.4/LICENSE-MIT",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/cfg-if-1.0.4/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "core-foundation-sys@0.8.7",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/core-foundation-sys-0.8.7/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/core-foundation-sys-0.8.7/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/core-foundation-sys-0.8.7/LICENSE-MIT",
+          "sha256": "62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3",
+          "bytes": 1067,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/core-foundation-sys-0.8.7/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "core-foundation@0.10.1",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/core-foundation-0.10.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/core-foundation-0.10.1/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/core-foundation-0.10.1/LICENSE-MIT",
+          "sha256": "62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3",
+          "bytes": 1067,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/core-foundation-0.10.1/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "crc32fast@1.5.0",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/crc32fast-1.5.0/LICENSE-APACHE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/crc32fast-1.5.0/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/crc32fast-1.5.0/LICENSE-MIT",
+          "sha256": "61d383b05b87d78f94d2937e2580cce47226d17823c0430fbcad09596537efcf",
+          "bytes": 1097,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/crc32fast-1.5.0/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "cua-macos-visual@0.37.0",
+      "expression": "MIT",
+      "classification": {
+        "expression": "MIT",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT"
+        ]
+      },
+      "files": [
+        {
+          "path": "source/crates/cua-macos-visual/LICENSE-MIT",
+          "sha256": "c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9",
+          "bytes": 1069,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/source/crates/cua-macos-visual/LICENSE-MIT"
+        },
+        {
+          "path": "source/crates/cua-macos-visual/native/licenses/LICENSE-APACHE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "bytes": 11358,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/source/crates/cua-macos-visual/native/licenses/LICENSE-APACHE"
+        },
+        {
+          "path": "source/crates/cua-macos-visual/native/licenses/LICENSE-MIT",
+          "sha256": "5464a5ed6a2143a9d31e5516c7336a312c3c067cdc6ad15323f18fdf8d9755ae",
+          "bytes": 1091,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/source/crates/cua-macos-visual/native/licenses/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": true,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 3,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 3,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT"
+        ],
+        "coveredTokens": [
+          "MIT"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "fdeflate@0.3.7",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/fdeflate-0.3.7/LICENSE-APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "bytes": 10174,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/fdeflate-0.3.7/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/fdeflate-0.3.7/LICENSE-MIT",
+          "sha256": "c77a4cf9da729987d0fe7ccd811e3bd27393914ddf3d23467c18cc22954513b3",
+          "bytes": 1036,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/fdeflate-0.3.7/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "flate2@1.1.9",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/flate2-1.1.9/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/flate2-1.1.9/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/flate2-1.1.9/LICENSE-MIT",
+          "sha256": "025436edff4cfcdde17a5811fdea78892d8482efd1abdec5a17872d07a4f2112",
+          "bytes": 1062,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/flate2-1.1.9/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "image@0.25.10",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/image-0.25.10/LICENSE-APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "bytes": 10174,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/image-0.25.10/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/image-0.25.10/LICENSE-MIT",
+          "sha256": "c77a4cf9da729987d0fe7ccd811e3bd27393914ddf3d23467c18cc22954513b3",
+          "bytes": 1036,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/image-0.25.10/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "libc@0.2.186",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/libc-0.2.186/LICENSE-APACHE",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/libc-0.2.186/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/libc-0.2.186/LICENSE-MIT",
+          "sha256": "123a331b5dbf04c30097fa43b8f858bc85df671fe776de498d01f3d6b7c1f69e",
+          "bytes": 1066,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/libc-0.2.186/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "miniz_oxide@0.8.9",
+      "expression": "MIT OR Zlib OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Zlib OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Zlib",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/miniz_oxide-0.8.9/LICENSE",
+          "sha256": "4108245a1f2df9d4e94df8abed5b4ba0759bb2f9b40a6b939f1be141077ae50b",
+          "bytes": 1213,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/miniz_oxide-0.8.9/LICENSE"
+        },
+        {
+          "path": "registry/miniz_oxide-0.8.9/LICENSE-APACHE.md",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "bytes": 10174,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/miniz_oxide-0.8.9/LICENSE-APACHE.md"
+        },
+        {
+          "path": "registry/miniz_oxide-0.8.9/LICENSE-MIT.md",
+          "sha256": "799e9ca9d179295ef372f25d3769cdda7d25bb2668add6a6a1e22d1e4c678b8d",
+          "bytes": 1212,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/miniz_oxide-0.8.9/LICENSE-MIT.md"
+        },
+        {
+          "path": "registry/miniz_oxide-0.8.9/LICENSE-ZLIB.md",
+          "sha256": "0a54e647fe54104658b5e563c04c6f9edf251710e47bce692e0bd990a4ddaa39",
+          "bytes": 984,
+          "licenseIdentifiers": [
+            "Zlib"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/miniz_oxide-0.8.9/LICENSE-ZLIB.md"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 4,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 4,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT",
+          "Zlib"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Zlib",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Zlib",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "moxcms@0.8.1",
+      "expression": "BSD-3-Clause OR Apache-2.0",
+      "classification": {
+        "expression": "BSD-3-Clause OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "BSD-3-Clause",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/moxcms-0.8.1/LICENSE-APACHE.md",
+          "sha256": "90bf2d659c43045111b65c733ab2a6d4cbcb422a098368c8c58a9ba3db4ed0c5",
+          "bytes": 11348,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/moxcms-0.8.1/LICENSE-APACHE.md"
+        },
+        {
+          "path": "registry/moxcms-0.8.1/LICENSE.md",
+          "sha256": "2aa92cada6431e75615e3fe6cb1a9082c98f777d48ae1c087c0da0e37f7b8bff",
+          "bytes": 1506,
+          "licenseIdentifiers": [
+            "BSD-3-Clause"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/moxcms-0.8.1/LICENSE.md"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "BSD-3-Clause"
+        ],
+        "expressionTokens": [
+          "BSD-3-Clause",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "BSD-3-Clause",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "num-traits@0.2.19",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/num-traits-0.2.19/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/num-traits-0.2.19/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/num-traits-0.2.19/LICENSE-MIT",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/num-traits-0.2.19/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "png@0.18.1",
+      "expression": "MIT OR Apache-2.0",
+      "classification": {
+        "expression": "MIT OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/png-0.18.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/png-0.18.1/LICENSE-APACHE"
+        },
+        {
+          "path": "registry/png-0.18.1/LICENSE-MIT",
+          "sha256": "eaf40297c75da471f7cda1f3458e8d91b4b2ec866e609527a13acfa93b638652",
+          "bytes": 1048,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/png-0.18.1/LICENSE-MIT"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "pxfm@0.1.29",
+      "expression": "BSD-3-Clause OR Apache-2.0",
+      "classification": {
+        "expression": "BSD-3-Clause OR Apache-2.0",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "BSD-3-Clause",
+          "OR",
+          "Apache-2.0"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/pxfm-0.1.29/LICENSE-APACHE.md",
+          "sha256": "90bf2d659c43045111b65c733ab2a6d4cbcb422a098368c8c58a9ba3db4ed0c5",
+          "bytes": 11348,
+          "licenseIdentifiers": [
+            "Apache-2.0"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/pxfm-0.1.29/LICENSE-APACHE.md"
+        },
+        {
+          "path": "registry/pxfm-0.1.29/LICENSE.md",
+          "sha256": "2aa92cada6431e75615e3fe6cb1a9082c98f777d48ae1c087c0da0e37f7b8bff",
+          "bytes": 1506,
+          "licenseIdentifiers": [
+            "BSD-3-Clause"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/pxfm-0.1.29/LICENSE.md"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "BSD-3-Clause"
+        ],
+        "expressionTokens": [
+          "BSD-3-Clause",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "BSD-3-Clause",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    },
+    {
+      "package": "simd-adler32@0.3.9",
+      "expression": "MIT",
+      "classification": {
+        "expression": "MIT",
+        "policy": "recorded",
+        "requiresReview": false,
+        "reason": "recognized license expression recorded as evidence",
+        "tokens": [
+          "MIT"
+        ]
+      },
+      "files": [
+        {
+          "path": "registry/simd-adler32-0.3.9/LICENSE.md",
+          "sha256": "42a35170233e83e18856792e748de4c1ce4a63b2afce9a370c89ef3fe23f9f2d",
+          "bytes": 1078,
+          "licenseIdentifiers": [
+            "MIT"
+          ],
+          "materialKind": "license",
+          "sourceKind": "package",
+          "archivePath": "licenses/registry/simd-adler32-0.3.9/LICENSE.md"
+        }
+      ],
+      "missingMaterials": false,
+      "missingReason": null,
+      "workspaceRootLicenseApplicable": false,
+      "materialCoverage": {
+        "textPresent": true,
+        "actualFileCount": 1,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 1,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT"
+        ],
+        "coveredTokens": [
+          "MIT"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      "reviewRequired": false,
+      "incompleteCoverage": false,
+      "status": "recorded"
+    }
+  ],
+  "missingMaterials": [],
+  "missingMaterialDetails": [],
+  "reviewRequired": [],
+  "mplPackages": [],
+  "incompleteCoverage": [],
+  "materialCoverage": {
+    "packageCount": 20,
+    "packagesWithText": 20,
+    "packagesWithLicenseBody": 20,
+    "packagesMissingText": 0,
+    "actualFileCount": 44,
+    "supplementalFileCount": 0,
+    "packages": [
+      {
+        "package": "adler2@2.0.1",
+        "expression": "0BSD OR MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 3,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 3,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "0BSD",
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "0BSD",
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "0BSD",
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "autocfg@1.5.0",
+        "expression": "Apache-2.0 OR MIT",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "coveredTokens": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "bitflags@2.11.1",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "bytemuck@1.25.0",
+        "expression": "Zlib OR Apache-2.0 OR MIT",
+        "textPresent": true,
+        "actualFileCount": 3,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 3,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT",
+          "Zlib"
+        ],
+        "expressionTokens": [
+          "Zlib",
+          "Apache-2.0",
+          "MIT"
+        ],
+        "coveredTokens": [
+          "Zlib",
+          "Apache-2.0",
+          "MIT"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "byteorder-lite@0.1.0",
+        "expression": "Unlicense OR MIT",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "MIT",
+          "Unlicense"
+        ],
+        "expressionTokens": [
+          "Unlicense",
+          "MIT"
+        ],
+        "coveredTokens": [
+          "Unlicense",
+          "MIT"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "cfg-if@1.0.4",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "core-foundation-sys@0.8.7",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "core-foundation@0.10.1",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "crc32fast@1.5.0",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "cua-macos-visual@0.37.0",
+        "expression": "MIT",
+        "textPresent": true,
+        "actualFileCount": 3,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 3,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT"
+        ],
+        "coveredTokens": [
+          "MIT"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "fdeflate@0.3.7",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "flate2@1.1.9",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "image@0.25.10",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "libc@0.2.186",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "miniz_oxide@0.8.9",
+        "expression": "MIT OR Zlib OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 4,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 4,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT",
+          "Zlib"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Zlib",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Zlib",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "moxcms@0.8.1",
+        "expression": "BSD-3-Clause OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "BSD-3-Clause"
+        ],
+        "expressionTokens": [
+          "BSD-3-Clause",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "BSD-3-Clause",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "num-traits@0.2.19",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "png@0.18.1",
+        "expression": "MIT OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "MIT",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "pxfm@0.1.29",
+        "expression": "BSD-3-Clause OR Apache-2.0",
+        "textPresent": true,
+        "actualFileCount": 2,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 2,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "Apache-2.0",
+          "BSD-3-Clause"
+        ],
+        "expressionTokens": [
+          "BSD-3-Clause",
+          "Apache-2.0"
+        ],
+        "coveredTokens": [
+          "BSD-3-Clause",
+          "Apache-2.0"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      },
+      {
+        "package": "simd-adler32@0.3.9",
+        "expression": "MIT",
+        "textPresent": true,
+        "actualFileCount": 1,
+        "supplementalFileCount": 0,
+        "licenseBodyFileCount": 1,
+        "contentAudited": true,
+        "legacyUnknown": false,
+        "sourceKinds": [
+          "package"
+        ],
+        "licenseIdentifiers": [
+          "MIT"
+        ],
+        "expressionTokens": [
+          "MIT"
+        ],
+        "coveredTokens": [
+          "MIT"
+        ],
+        "uncoveredTokens": [],
+        "coverage": "full"
+      }
+    ]
+  },
+  "upstreamLicense": {
+    "path": "LICENSE.md",
+    "sha256": "c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9",
+    "observedFirstLine": "MIT License",
+    "archivePath": "licenses/upstream/LICENSE.md"
+  },
+  "policyDecisionMade": false
+}

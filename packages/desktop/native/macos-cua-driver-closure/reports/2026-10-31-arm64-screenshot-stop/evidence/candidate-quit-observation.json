@@ -1,0 +1,13 @@
+{
+  "observedAt": "2026-10-31T04:58:35.945308+00:00",
+  "action": "CUA Quit dedicated diagnostic candidate AFTER in-flight Stop and lease probe",
+  "observedRolePids": [
+    99745,
+    264,
+    306,
+    350,
+    360
+  ],
+  "remainingRoleRows": "",
+  "allDescendantsGuarantee": false
+}

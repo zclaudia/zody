@@ -13,7 +13,9 @@ export function showMobileNotificationActionResult(
   const zh = resolveWebRemoteControlScreenLocale(navigator.language) === "zh-CN";
   const container = document.createElement("div");
   container.className =
-    "pointer-events-none fixed inset-x-0 top-3 z-[70] flex justify-center px-3";
+    // 走查 dialogs-2：top-3 在刘海/灵动岛机型落进状态栏，加 zcode-safe-area-top（styles.css 纯 CSS 类，
+    // web 包可用）用 padding 把内容压到安全区之下，与 Shell 重连提示条同一处理。
+    "zcode-safe-area-top pointer-events-none fixed inset-x-0 top-3 z-[70] flex justify-center px-3";
   container.setAttribute("data-mobile-notification-action-result", kind);
   container.setAttribute("role", "status");
   document.body.append(container);

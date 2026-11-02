@@ -951,7 +951,9 @@ function ElicitationDialogContent({
         aria-label={stopCountdownLabel}
         title={stopCountdownLabel}
         onClick={() => reportFirstInteraction("countdown")}
-        className="min-w-10 px-1.5 tabular-nums text-foreground-subtle"
+        // Bugfix(dialogs-3): 倒计时按钮是错过自动代答前的唯一拦截入口，触屏态命中区必须 ≥44×44px
+        // （spec D1，(hover:none)/(pointer:coarse) 作用域）；桌面保持 xs 密度不变。
+        className="min-w-10 px-1.5 tabular-nums text-foreground-subtle [@media(hover:none)_and_(pointer:coarse)]:min-h-11 [@media(hover:none)_and_(pointer:coarse)]:min-w-11"
       >
         {intl.formatMessage(
           { id: "chat.elicitation.countdownSeconds" },
@@ -1011,7 +1013,8 @@ function ElicitationDialogContent({
                     aria-label={questionCollapseLabel}
                     title={questionCollapseLabel}
                     onClick={() => setIsQuestionExpanded((expanded) => !expanded)}
-                    className="mt-2 hidden max-md:inline-flex"
+                    // dialogs-3: 折叠按钮触屏态命中区 ≥44px（spec D1）。
+                    className="mt-2 hidden max-md:inline-flex [@media(hover:none)_and_(pointer:coarse)]:min-h-11"
                   >
                     {isQuestionExpanded ? (
                       <ChevronUp className="size-3" />
@@ -1032,7 +1035,8 @@ function ElicitationDialogContent({
                   aria-label={dialogCollapseLabel}
                   title={dialogCollapseLabel}
                   onClick={() => setIsDialogExpanded((expanded) => !expanded)}
-                  className="hidden max-md:inline-flex"
+                  // dialogs-3: 弹窗折叠/翻题图标按钮只有 20×20px，触屏态以 44×44 命中区抬升（spec D1）。
+                  className="hidden max-md:inline-flex [@media(hover:none)_and_(pointer:coarse)]:size-11"
                 >
                   {isDialogExpanded ? (
                     <ChevronDown className="size-3" />
@@ -1052,6 +1056,7 @@ function ElicitationDialogContent({
                     id: "chat.elicitation.previousQuestion",
                   })}
                   onClick={goPreviousPage}
+                  className="[@media(hover:none)_and_(pointer:coarse)]:size-11"
                 >
                   <ChevronLeft className="size-3" />
                 </Button>
@@ -1070,6 +1075,7 @@ function ElicitationDialogContent({
                     id: "chat.elicitation.nextQuestion",
                   })}
                   onClick={goNextPage}
+                  className="[@media(hover:none)_and_(pointer:coarse)]:size-11"
                 >
                   <ChevronRight className="size-3" />
                 </Button>
@@ -1101,7 +1107,8 @@ function ElicitationDialogContent({
               <button
                 type="button"
                 onClick={() => setIsDialogExpanded(true)}
-                className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-0.5 text-left text-ui-base font-medium text-foreground hover:bg-hover"
+                // dialogs-3: 折叠态行主体也是触屏点击目标，命中区 ≥44px（spec D1）。
+                className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-0.5 text-left text-ui-base font-medium text-foreground hover:bg-hover [@media(hover:none)_and_(pointer:coarse)]:min-h-11"
               >
                 {titleHeader ? (
                   <Badge
@@ -1125,6 +1132,8 @@ function ElicitationDialogContent({
                 aria-label={dialogCollapseLabel}
                 title={dialogCollapseLabel}
                 onClick={() => setIsDialogExpanded(true)}
+                // dialogs-3: 折叠态行内的展开按钮同样需要触屏 44×44 命中区（spec D1）。
+                className="[@media(hover:none)_and_(pointer:coarse)]:size-11"
               >
                 <ChevronUp className="size-3" />
               </Button>
@@ -1138,7 +1147,9 @@ function ElicitationDialogContent({
               !isDialogExpanded ? "max-md:hidden" : undefined,
             )}
           >
-            <p className="flex min-w-0 flex-1 items-center gap-2 text-ui-base text-foreground-subtle max-sm:basis-full">
+            {/* dialogs-5: 纯触屏下隐藏「Tab / 上下键」桌面键盘提示，主按钮不再被挤到第二行；
+                仅 (hover:none) 触屏态隐藏，桌面渲染不变。 */}
+            <p className="flex min-w-0 flex-1 items-center gap-2 text-ui-base text-foreground-subtle max-sm:basis-full [@media(hover:none)_and_(pointer:coarse)]:hidden">
               <Info className="size-4 shrink-0 text-foreground" />
               <span className="min-w-0">
                 {intl.formatMessage({ id: "chat.elicitation.keyboardHint" })}

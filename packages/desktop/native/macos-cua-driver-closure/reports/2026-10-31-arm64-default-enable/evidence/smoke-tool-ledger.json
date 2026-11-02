@@ -1,0 +1,12 @@
+[
+  {
+    "session_id": "sess_26839880-a60b-424b-ad0d-585e6aa53432",
+    "turn_id": "turn_ff808ade-11c9-49e2-bf8d-cc3697330814",
+    "tool_call_id": "call_00_x4J8jp34UClWXdpjNk2u4221",
+    "status": "error",
+    "cancelled_by_user": 1,
+    "error_code": "TOOL_CANCELLED",
+    "error_message": "MCP tool mcp__node_repl__js was cancelled",
+    "started_at": 1793425560339
+  }
+]

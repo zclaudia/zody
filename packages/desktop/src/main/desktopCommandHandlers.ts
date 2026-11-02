@@ -250,13 +250,13 @@ function buildZCodeEndpointPromptHtml(currentValue: string): string {
     </form>
     <script>
       const input = document.getElementById("endpoint");
-      const submit = (value) => { document.title = "zcode-endpoint-submit:" + encodeURIComponent(value); };
+      const submit = (value) => { document.title = "zody-endpoint-submit:" + encodeURIComponent(value); };
       document.getElementById("form").addEventListener("submit", (event) => {
         event.preventDefault();
         submit(input.value);
       });
       document.getElementById("cancel").addEventListener("click", () => {
-        document.title = "zcode-endpoint-cancel";
+        document.title = "zody-endpoint-cancel";
       });
       input.focus();
       input.select();
@@ -300,16 +300,16 @@ function showZCodeEndpointPromptWindow(options: {
 
     promptWindow.on("closed", () => finish(undefined));
     promptWindow.on("page-title-updated", (event, title) => {
-      if (title === "zcode-endpoint-cancel") {
+      if (title === "zody-endpoint-cancel") {
         event.preventDefault();
         finish(undefined);
         return;
       }
-      if (!title.startsWith("zcode-endpoint-submit:")) {
+      if (!title.startsWith("zody-endpoint-submit:")) {
         return;
       }
       event.preventDefault();
-      finish(decodeURIComponent(title.slice("zcode-endpoint-submit:".length)));
+      finish(decodeURIComponent(title.slice("zody-endpoint-submit:".length)));
     });
 
     // Electron 菜单命令在主进程触发，调用 renderer 的 window.prompt 可能被禁用或没有焦点，表现为点击无反应。
@@ -324,7 +324,7 @@ function showZCodeEndpointPromptWindow(options: {
 
 async function setZCodeEndpointOverride(options: {
   value: string | undefined;
-  settingService: { update(patch: { zcodeEndpointOrigin?: string | undefined }): Promise<void> };
+  settingService: { update(patch: { zodyEndpointOrigin?: string | undefined }): Promise<void> };
   onZCodeEndpointChanged: () => Promise<void> | void;
   logger: { warn: (...args: unknown[]) => void };
 }) {
@@ -332,7 +332,7 @@ async function setZCodeEndpointOverride(options: {
     return;
   }
   const normalized = options.value ? normalizeZCodeEndpointOrigin(options.value) : undefined;
-  await options.settingService.update({ zcodeEndpointOrigin: normalized });
+  await options.settingService.update({ zodyEndpointOrigin: normalized });
   await options.onZCodeEndpointChanged();
 }
 
@@ -391,15 +391,15 @@ export async function openChangelog(
   await shell.openExternal(url);
 }
 
-async function resolveCurrentZCodeEndpointOrigin(settingService: {
-  get(): Promise<{ zcodeEndpointOrigin?: string }>;
+async function resolveCurrentZodyEndpointOrigin(settingService: {
+  get(): Promise<{ zodyEndpointOrigin?: string }>;
   envBaseOrigin?: string | null;
 }): Promise<string> {
   const settings = await settingService.get();
   return resolveZCodeEndpointOrigin({
     env: ZCODE_ENV,
     envBaseOrigin: settingService.envBaseOrigin,
-    overrideOrigin: settings.zcodeEndpointOrigin,
+    overrideOrigin: settings.zodyEndpointOrigin,
   });
 }
 
@@ -418,9 +418,9 @@ export async function executeDesktopCommand(options: {
   onZCodeEndpointChanged: () => Promise<void> | void;
   onRelaunchApp: () => Promise<void>;
   settingService: {
-    get(): Promise<Pick<AppSettings, "zcodeEndpointOrigin" | "desktopZoomLevel">>;
+    get(): Promise<Pick<AppSettings, "zodyEndpointOrigin" | "desktopZoomLevel">>;
     update(
-      patch: Partial<Pick<AppSettings, "zcodeEndpointOrigin" | "desktopZoomLevel">>,
+      patch: Partial<Pick<AppSettings, "zodyEndpointOrigin" | "desktopZoomLevel">>,
     ): Promise<void>;
   };
   zcodeEndpointEnvBaseOrigin?: string | null;
@@ -512,7 +512,7 @@ export async function executeDesktopCommand(options: {
     case DesktopCommandIds.OpenChangelog:
       await openChangelog(
         options.currentApplicationLocale,
-        await resolveCurrentZCodeEndpointOrigin({
+        await resolveCurrentZodyEndpointOrigin({
           ...options.settingService,
           envBaseOrigin: options.zcodeEndpointEnvBaseOrigin,
         }),
@@ -570,7 +570,7 @@ export async function executeDesktopCommand(options: {
       return;
     case DesktopCommandIds.SetZCodeEndpointCustom: {
       const current =
-        (await options.settingService.get()).zcodeEndpointOrigin ?? DEFAULT_ZCODE_ENDPOINT_ORIGIN;
+        (await options.settingService.get()).zodyEndpointOrigin ?? DEFAULT_ZCODE_ENDPOINT_ORIGIN;
       const value = await promptCustomZCodeEndpoint(targetWindow, current);
       if (!value) {
         return;

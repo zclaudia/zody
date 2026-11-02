@@ -1,0 +1,23 @@
+{
+  "scope": "final incremental patch + high-risk owner/authority/lease, loaded-code-before-resume, source snapshot, peer/proof, ordinary Host selector, formal manifest copy and in-flight Stop lifecycle",
+  "sourceManifestSha256": "27ec8b1a846f2730e01cc9ed13bf137a47dd67a1edf4d55c21e62d7844f6b7df",
+  "diffCheckExitCode": 0,
+  "reviewer": "OpenAI controller; DeepSeek implementation reports not treated as verification",
+  "productionDiagnosticBundleDifferences": "input maps identical; byte output differs in emitted use strict directives, and host embeds that independently hashed entry. Each signed artifact separately pinned; no claim of byte identical bundles.",
+  "remainingRequiredActualValidation": [
+    "normal utility Host startup snapshot and matching opt-in profile",
+    "production Helper cell actual invocation/identity/reap",
+    "new single-window screenshot after user native confirmation",
+    "same lineage UI Stop while real native completion held; callback/image and OS lease release"
+  ],
+  "productAcceptance": "not passed",
+  "environmentBlockers": [
+    "Mac locked; manual unlock required",
+    "normal Host candidate copy failed ENOSPC; user requested at least4GB free"
+  ],
+  "oldLaunchservicesSourceManifestSha256": "11d49f9ff4303e3e1c7ed2dbcc9b5879227591f17be38201abd9451450c4d0eb",
+  "finalFreeze": "frozen-arm64-screenshot-final",
+  "normalHostSourceCompileAndEvidence": "pass;915 repo source files match;3 virtual defines classified and pinned; no UI launch",
+  "postEvidenceFixChecks": "typecheck/lint301warnings0errors/architecture0/28relatedtests passed",
+  "supersededSourceManifest": "fe019fc617d4980edf1480e0c4a360b99fbfcb2f4d5fb9ab1fba99d917b02e10"
+}

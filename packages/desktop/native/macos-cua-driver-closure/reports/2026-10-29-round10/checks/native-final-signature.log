@@ -1,0 +1,9 @@
+Executable=/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic
+Identifier=macos-cua-peer-diagnostic
+Format=Mach-O thin (arm64)
+CodeDirectory v=20400 size=2450 flags=0x20002(adhoc,linker-signed) hashes=73+0 location=embedded
+Signature=adhoc
+Info.plist=not bound
+TeamIdentifier=not set
+Sealed Resources=none
+Internal requirements=none

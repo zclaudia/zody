@@ -1,0 +1,62 @@
+[
+  {
+    "commit": "b4167b582b2f75f9a1be75495c41b765344fd03c",
+    "url": "https://codeload.github.com/madsmtm/objc2/tar.gz/b4167b582b2f75f9a1be75495c41b765344fd03c",
+    "sha256": "5a1d3a8562cc03f3675b6a27234eb70dbd2189bd307af218e23b4023f0e01c46",
+    "archiveBytes": 1209698,
+    "licensePaths": [
+      {
+        "path": "objc2-b4167b582b2f75f9a1be75495c41b765344fd03c/LICENSE.md",
+        "bytes": 1339
+      },
+      {
+        "path": "objc2-b4167b582b2f75f9a1be75495c41b765344fd03c/framework-crates/objc2-foundation/src/copying.rs",
+        "bytes": 8610
+      },
+      {
+        "path": "objc2-b4167b582b2f75f9a1be75495c41b765344fd03c/framework-crates/objc2-foundation/src/tests/copying.rs",
+        "bytes": 618
+      }
+    ]
+  },
+  {
+    "commit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+    "url": "https://codeload.github.com/madsmtm/objc2/tar.gz/8852b424193ca41602281b3d7540d7c8ed51e49a",
+    "sha256": "e26253acf0639ce1986f79690fbc3ae9fa29b082ddc1e8661b9b53ac8d4925b3",
+    "archiveBytes": 1213142,
+    "licensePaths": [
+      {
+        "path": "objc2-8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
+        "bytes": 1339
+      },
+      {
+        "path": "objc2-8852b424193ca41602281b3d7540d7c8ed51e49a/framework-crates/objc2-foundation/src/copying.rs",
+        "bytes": 8610
+      },
+      {
+        "path": "objc2-8852b424193ca41602281b3d7540d7c8ed51e49a/framework-crates/objc2-foundation/src/tests/copying.rs",
+        "bytes": 618
+      }
+    ]
+  },
+  {
+    "commit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+    "url": "https://codeload.github.com/madsmtm/objc2/tar.gz/8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+    "sha256": "c58f920fbc97c7f21b3af0f89d713188384ff012fd4cdfa2b6242e2952bf1a7d",
+    "archiveBytes": 1058350,
+    "licensePaths": [
+      {
+        "path": "objc2-8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
+        "bytes": 1339
+      },
+      {
+        "path": "objc2-8d214f5477365ffcbcbb7de058c86ed9a518efb7/framework-crates/objc2-foundation/src/copying.rs",
+        "bytes": 8651
+      },
+      {
+        "path": "objc2-8d214f5477365ffcbcbb7de058c86ed9a518efb7/framework-crates/objc2-foundation/src/tests/copying.rs",
+        "bytes": 618
+      }
+    ]
+  }
+]

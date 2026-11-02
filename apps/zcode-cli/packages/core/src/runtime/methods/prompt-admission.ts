@@ -3,6 +3,7 @@ import type { QueryId, TurnInputIntentMetadata } from "../deps.js";
 import type { PromptRuntimeCommand } from "../command-queue.js";
 import { createRuntimeCommandId } from "../command-queue.js";
 import type { AgentRuntimeInternal } from "../internal.js";
+import { cuaAssociationFromAdmission } from "../cua/cua-submission-coordinator.js";
 import { enqueueCancellableRuntimeCommand } from "./runtime-command-submit.js";
 import type {
   ActiveTurnStartReservation,
@@ -23,6 +24,7 @@ export async function admitPrompt(
   attachments?: Parameters<AgentRuntimeInternal["executeTurn"]>[1],
   options?: PromptAdmissionOptions,
 ): Promise<PromptAdmissionReceipt> {
+  const cuaAssociation = cuaAssociationFromAdmission(options?.intent, options?.inputId);
   if (options?.requireQueue === true) {
     // requireQueue 的输入只能在独立 turn 的提升边界处理（fork 注：原为加速临时 provider
     // 设计，F4.2 删加速卡后机制保留）。如果仅依据 Bootstrap 的 busy 快照决定是否排队，
@@ -113,6 +115,8 @@ export async function admitPrompt(
     turnId,
   };
   this.reserveTurnStart(turnId, turnTraceContext, "regular");
+  // 独立 turn（含既有 queue promotion）在此消费一次 live 凭证；没有凭证只影响 CUA。
+  this.cuaSubmissionCoordinator?.onTurnStarting(cuaAssociation);
 
   const executeOptions = options as ExecuteTurnOptions | undefined;
   const completion = enqueueCancellableRuntimeCommand<TurnResult, PromptRuntimeCommand>(this, {

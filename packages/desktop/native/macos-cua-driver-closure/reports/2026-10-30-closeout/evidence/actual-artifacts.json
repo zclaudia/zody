@@ -1,0 +1,20 @@
+[
+  {
+    "role": "testedHelper",
+    "path": "output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session",
+    "sha256": "a9fc07d84017a5b60c02a66cfd8e0a173bc01dbdc8270e345014e2548a53682e",
+    "bytes": 5424032
+  },
+  {
+    "role": "packagedHelper",
+    "path": "output/cua-phase1-closeout/normal-app/mac-arm64/Zody Preview.app/Contents/Resources/cua-narrow/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session",
+    "sha256": "a9fc07d84017a5b60c02a66cfd8e0a173bc01dbdc8270e345014e2548a53682e",
+    "bytes": 5424032
+  },
+  {
+    "role": "node",
+    "path": "output/cua-phase1-closeout/controller-signed/Zody CUA Desktop Session.app/Contents/Resources/node",
+    "sha256": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+    "bytes": 118439728
+  }
+]

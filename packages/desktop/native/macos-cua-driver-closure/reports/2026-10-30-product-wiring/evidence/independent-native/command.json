@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "/usr/bin/open",
+    "-n",
+    "-W",
+    "-g",
+    "--stdout",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-native/app.stdout",
+    "--stderr",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-native/app.stderr",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native/helper/Zody CUA Helper Round11.app",
+    "--args",
+    "--run-once",
+    "--window-id",
+    "85709",
+    "--pid",
+    "64169",
+    "--layer",
+    "0",
+    "--x",
+    "680",
+    "--y",
+    "76",
+    "--width",
+    "1200",
+    "--height",
+    "800",
+    "--output",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-native/zody.png"
+  ],
+  "userApproval": "same approved Helper screen-recording scope; same cert/DR; synthetic Host/model, real runtime owner"
+}

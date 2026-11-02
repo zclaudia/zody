@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-28",
+  "scope": "round7 dependency-trimming candidate; no native adoption",
+  "graph": {
+    "baseline": 298,
+    "candidate": 259,
+    "baselineRegistry": 290,
+    "candidateRegistry": 251,
+    "path": 8,
+    "removed": 39,
+    "added": 0
+  },
+  "licenseGaps": {
+    "baselineMissing": 14,
+    "candidateMissing": 13,
+    "baselinePartial": 2,
+    "candidatePartial": 1,
+    "baselineMpl": 6,
+    "candidateMpl": 0,
+    "missing": [
+      "block2@0.6.2",
+      "objc2-app-kit@0.3.2",
+      "objc2-cloud-kit@0.3.2",
+      "objc2-core-data@0.3.2",
+      "objc2-core-foundation@0.3.2",
+      "objc2-core-graphics@0.3.2",
+      "objc2-core-image@0.3.2",
+      "objc2-core-text@0.3.2",
+      "objc2-core-video@0.3.2",
+      "objc2-encode@4.1.0",
+      "objc2-foundation@0.3.2",
+      "objc2-quartz-core@0.3.2",
+      "objc2@0.6.4"
+    ],
+    "partial": [
+      {
+        "package": "shlex@1.3.0",
+        "expression": "MIT OR Apache-2.0",
+        "coverage": "partial",
+        "coveredTokens": [
+          "MIT"
+        ],
+        "uncoveredTokens": [
+          "Apache-2.0"
+        ],
+        "legacyUnknown": false
+      }
+    ]
+  },
+  "licenseMaterials": {
+    "indexedFiles": 431,
+    "upstreamRootFiles": 1,
+    "verified": true,
+    "supplementEntries": 15
+  },
+  "build": {
+    "status": "pass",
+    "target": "aarch64-apple-darwin",
+    "package": "cua-driver-sdk",
+    "packageVersion": "0.37.0",
+    "buildScriptCount": 37,
+    "compiledProcMacroCount": 16,
+    "artifactCount": 261,
+    "preservedArtifacts": [
+      {
+        "path": "build-artifacts/libcua_driver_sdk.dylib",
+        "sha256": "128742959b2ce979c9ff2ec4ba6ccd35ea7c4877593a904b95c67bfb3b3f1185",
+        "bytes": 34986104
+      },
+      {
+        "path": "build-artifacts/libcua_driver_sdk.rlib",
+        "sha256": "24ca20ca609bfbd46cb1204ccbf7521e7b3f887cd37b4590cdc0a32add09641c",
+        "bytes": 36046752
+      }
+    ],
+    "isolation": {
+      "home": "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-driver-closure-audit-1bZxxt/driver-build/home",
+      "cargoHome": "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-driver-closure-audit-1bZxxt/cargo-home",
+      "targetRoot": "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-driver-closure-audit-1bZxxt/driver-build/target",
+      "osSandbox": false,
+      "note": "HOME/CARGO_HOME/target are private staging paths; this is not an OS sandbox"
+    },
+    "platform": {
+      "sdkPath": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "sdkVersion": "27.0",
+      "sdkStatus": "pass",
+      "clangPath": "/usr/bin/clang",
+      "clangVersion": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+      "clangStatus": "pass",
+      "errors": [],
+      "deploymentTarget": null,
+      "deploymentTargetSource": "forced unset in the isolated build environment; rustc/build default applies"
+    }
+  },
+  "tests": {
+    "vitestFiles": 11,
+    "vitestTests": 125,
+    "pureRustTests": 3,
+    "typecheck": "pass",
+    "lint": {
+      "warnings": 301,
+      "errors": 0
+    },
+    "architecture": {
+      "violations": 0,
+      "new": 0
+    },
+    "targetLint": "pass",
+    "targetFormat": "pass"
+  },
+  "lock": {
+    "bytesIdenticalToRound6": true,
+    "entries": 569,
+    "registryEntries": 558,
+    "sha256": "5c60d9852c60eb69f4ca74d323e89490ffd2b98954f2f450d0a69a17de8e9940"
+  },
+  "source": {
+    "candidateFiles": 753,
+    "changedFromHistoricalCandidate": 21,
+    "addedTests": 1,
+    "incrementalPatchSha256": "2798b890e4293147652b9994579404383b3aa70e8d434287ddd11e8524c7e64f",
+    "upstreamPatchSha256": "78618010631ffb93d34ebf984b770d392c6b595ae0dc3e415b4587dfbcf08947",
+    "sourceManifestSha256": "53fc08d9835f27c07ae756f93a345b9d0a0cf6d9197aa01db03796fc605f5267",
+    "finalReviewConfigSha256": "73171d6112f54c2541f2905f96310e04c3d5b15e49c313d5484b354ecf359ac0",
+    "buildReviewConfigSha256": "108cfa35e2781d77e5d5cd1ac0e38d82efe38d7d044d661e65183e2e4b1a5d1a",
+    "configDifference": "baseSourceManifest descriptive relative path corrected; source tree/manifest and patch unchanged"
+  },
+  "productAdoption": "blocked",
+  "defaultEnabled": false,
+  "nativeRuntimeExecuted": false,
+  "certificateOrPermissionChanges": false
+}

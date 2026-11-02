@@ -50,6 +50,7 @@ import {
   type RuntimeMessageEntry,
 } from "../../agent/message-history.js";
 import type { AgentRuntimeInternal } from "../internal.js";
+import { cuaAssociationFromAdmission } from "../cua/cua-submission-coordinator.js";
 
 function hasSteerInput(request: Pick<TurnSteerInput, "attachments" | "input" | "intent">): boolean {
   return (
@@ -117,6 +118,12 @@ export async function steerTurn(
       traceContext: request.traceContext,
     });
   }
+
+  // 直接调用方不经过 admitPrompt；只在目标与 expectedTurnId 校验通过、写入 pending 前
+  // 锁存来源观察，避免被拒绝的 wrong-target steer 撤销无关 lineage。
+  this.cuaSubmissionCoordinator?.observeSteer(
+    cuaAssociationFromAdmission(request.intent, request.inputId),
+  );
 
   const queryId = request.queryId ?? (request.inputId as QueryId | undefined) ?? createQueryId();
   const commandKind = request.commandKind;
@@ -227,6 +234,12 @@ export async function enqueueDeferredInput(
       traceContext,
     });
   }
+
+  // enqueueDeferredInput 同样是直接入口：desktop 保留待提升凭证，mobile/unknown 在写
+  // pending 前撤销当前 lineage；本方法只排队，不建立 candidate。
+  this.cuaSubmissionCoordinator?.observeAdmission(
+    cuaAssociationFromAdmission(request.intent, request.inputId),
+  );
 
   const targetTurnId =
     this.activeTurn?.turnId ??
@@ -359,6 +372,8 @@ export function finishActiveTurn(
 ): void {
   if (activeTurn !== undefined && this.activeTurn === activeTurn) {
     this.activeTurn = undefined;
+    // 正常 turn 结束只释放本 turn 的 CUA binding，撤销仍有效的 lineage 必须走 owner revoke。
+    this.invalidateCuaSubmissionTurnScopeForTurn(activeTurn, "scope-closed");
   }
 }
 
@@ -709,6 +724,9 @@ export async function removePendingInputById(
   }
   await settleRemovedSessionInput(this, options.pendingInputId, options.reason);
   activeTurn.pendingInputs.splice(index, 1);
+  if (options.reason === "user_removed") {
+    this.cuaSubmissionCoordinator?.dropPendingLiveSubmissionByQueueItem(options.pendingInputId);
+  }
   const event = createSessionEvent(
     SessionEventType.TurnSteerDiscarded,
     this.sessionId,
@@ -753,6 +771,9 @@ export async function discardHeldPendingInputById(
   const held = projection.pendingSteerInputs.find((item) => item.pendingInputId === pendingInputId);
   if (!held) return false;
   await settleRemovedSessionInput(this, pendingInputId, reason);
+  if (reason === "user_removed") {
+    this.cuaSubmissionCoordinator?.dropPendingLiveSubmissionByQueueItem(pendingInputId);
+  }
   const event = createSessionEvent(
     SessionEventType.TurnSteerDiscarded,
     this.sessionId,
@@ -795,6 +816,9 @@ export async function clearAllPendingInputs(
       await settleRemovedSessionInput(this, item.id, "user_removed");
     }
     const removed = activeTurn.pendingInputs.splice(0);
+    for (const item of removed) {
+      this.cuaSubmissionCoordinator?.dropPendingLiveSubmissionByQueueItem(item.id);
+    }
     cleared += removed.length;
     const event = createSessionEvent(
       SessionEventType.TurnSteerDiscarded,
@@ -821,6 +845,7 @@ export async function clearAllPendingInputs(
   for (const [targetTurnId, group] of heldByTurn) {
     for (const item of group) {
       await settleRemovedSessionInput(this, item.pendingInputId, "user_removed");
+      this.cuaSubmissionCoordinator?.dropPendingLiveSubmissionByQueueItem(item.pendingInputId);
     }
     cleared += group.length;
     const event = createSessionEvent(
@@ -1311,6 +1336,9 @@ export async function discardPendingInput(
   const pendingInputs = options.activeTurn.pendingInputs.splice(0);
   if (pendingInputs.length === 0) return;
   const pendingInputIds = pendingInputs.map((pendingInput) => pendingInput.id);
+  for (const pendingInputId of pendingInputIds) {
+    this.cuaSubmissionCoordinator?.dropPendingLiveSubmissionByQueueItem(pendingInputId);
+  }
 
   const event = createSessionEvent(
     SessionEventType.TurnSteerDiscarded,

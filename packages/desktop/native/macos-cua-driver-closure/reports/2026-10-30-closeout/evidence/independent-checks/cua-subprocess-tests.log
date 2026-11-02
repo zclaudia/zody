@@ -1,0 +1,11 @@
+
+ RUN  v4.1.7 /Users/zhvala/SourceCode/zody/apps/zcode-cli
+
+(node:66469) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  6 passed (6)
+      Tests  55 passed (55)
+   Start at  22:22:28
+   Duration  8.15s (transform 5.23s, setup 0ms, import 7.90s, tests 6.59s, environment 0ms)
+

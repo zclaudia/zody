@@ -9,6 +9,7 @@ import {
   setStreamClientId,
   setWebRemoteControlTerminalTransportState,
   type WebRemoteControlTerminalTransportState as UiWebRemoteControlTerminalTransportState,
+  type WebRemoteControlMobileSettingsDraft,
 } from "@zcode/ui";
 import {
   connectViaProtocol,
@@ -101,6 +102,7 @@ import {
   createMobileRemoteSecureStore,
   resolveMobileRemoteNativeBridge,
 } from "./mobileRemoteSecureStore.js";
+import { saveMobileRemoteSettingsDraft } from "./mobileRemoteSettingsDraft.js";
 import { installMobileRemoteNativeHost } from "./mobileRemoteNativeHost.js";
 import {
   createMobileRemoteFileCapabilities,
@@ -127,6 +129,8 @@ export interface BootstrapGatewayWebRemoteControlOptions {
 type GatewaySessionContext = {
   platform: IPlatformService;
   configStore: MobileRemoteConfigStore;
+  /** 已连接会话内的连接分区与首次设置共用同一套校验（release 禁止 http）。 */
+  allowInsecureTransport: boolean;
   reopenConnection(
     mode: MobileRemoteSetupMode,
   ): Promise<MobileRemoteConnectionConfig | null>;
@@ -311,6 +315,7 @@ export async function bootstrapGatewayWebRemoteControl(
   const context: GatewaySessionContext = {
     platform,
     configStore,
+    allowInsecureTransport,
     reopenConnection: (mode) =>
       resolveMobileRemoteConnection(null, setupOptions, {
         mode,
@@ -563,6 +568,33 @@ async function startGatewaySession(
   let disposeSession = (): void => {};
   let reopenSetup = (_mode: MobileRemoteSetupMode): void => {};
 
+  const reopenAfterConnectionChange = (): void => reopenSetup("auto");
+
+  /**
+   * 已连接会话内的连接设置统一进入 SettingsPage 的“连接”分区。
+   * 这里只注入连接配置、唯一保存 helper 和重连动作；UI 不 import web 的 store。
+   * 首次配置、失败页、backend picker 与 Root 外 StartPage 仍走原有独立 setup 流程。
+   */
+  const mobileConnectionSettings = {
+    initial: {
+      ...(gatewayConfig.gatewayUrl ? { gatewayUrl: gatewayConfig.gatewayUrl } : {}),
+      ...(gatewayConfig.namespace ? { namespace: gatewayConfig.namespace } : {}),
+      // 凭证不回显：只告诉表单是否已保存，草稿中的新凭证仅在本次提交内使用。
+      credentialConfigured: Boolean(gatewayConfig.credential),
+    },
+    allowInsecureTransport: context.allowInsecureTransport,
+    save: async (draft: WebRemoteControlMobileSettingsDraft) => {
+      const result = await saveMobileRemoteSettingsDraft({
+        store: context.configStore,
+        initial: gatewayConfig,
+        draft,
+        allowInsecureTransport: context.allowInsecureTransport,
+      });
+      return { scopeChanged: result.scopeChanged };
+    },
+    reconnect: reopenAfterConnectionChange,
+  };
+
   const renderBootstrapFailure = (
     failure: WebRemoteControlFailure,
     behavior: { recoverable?: boolean } = {},
@@ -585,6 +617,7 @@ async function startGatewaySession(
     }
     disposeSession();
     renderWebRemoteControlFailure(failure, {
+      // 失败页使用独立连接设置流程，不经过已连接会话内的 SettingsPage 分区。
       onOpenSettings: () => reopenSetup("settings"),
       onChooseBackend: () => reopenSetup("backend"),
       onRetry: () => window.location.reload(),
@@ -1288,6 +1321,20 @@ async function startGatewaySession(
     if (!isCurrentTarget()) throw new Error("stale-notification");
     try {
       await validateMobileNotificationTask(result.services, notification.target);
+    } catch (error) {
+      // notify-4：任务已删除/不可达时结果条「请打开任务后重试」不成立。与 openNotification 的
+      // 校验失败分支保持一致：回退任务首页（不带 initialTaskId）并 rethrow，交给 onError 弹
+      // notice（自带重试按钮这个明确入口），不再展示误导性的 rejected 结果条。
+      if (!isCurrentTarget()) throw new Error("stale-notification");
+      // 旧 owner 的 RPC reject 不能冒充任务已删除并覆盖新 Root。
+      if (navigationOwner.isCurrent(navigation.id))
+        renderExternalRelayRoot(result.services, {
+          ...result.bridge,
+          initialTaskId: undefined,
+        });
+      throw error;
+    }
+    try {
       await result.services.zcodeTaskService.respondPermission({
         taskId: notification.target.taskId,
         requestId: notification.interactionId,
@@ -1305,7 +1352,13 @@ async function startGatewaySession(
       });
     } catch (error) {
       if (!isCurrentTarget()) throw new Error("stale-notification");
-      // 定位成功但提交被拒（stale/rejected）：页面停在目标任务，结果条提示；不自动重试。
+      // notify-4 修复：openWorkspaceBridge 已同步 dispose 旧 bridge 并切走路由（见其
+      // previousClientDispose 注释），此处若不渲染，用户会停留在 bridge 已失效的旧界面，
+      // 结果条「请打开任务后重试」也没有任何到目标任务的入口。提交被拒但目标仍当前：
+      // 先渲染目标任务页给用户可达的目的地再弹结果条；不自动重试，通知保持未读，
+      // 用户可在任务内直接操作或再次点击系统卡片。
+      if (navigationOwner.isCurrent(navigation.id))
+        renderExternalRelayRoot(result.services, result.bridge, "chat");
       disposeNotificationActionResult?.();
       disposeNotificationActionResult = showMobileNotificationActionResult("rejected");
       if (!import.meta.env.PROD) {
@@ -1472,7 +1525,6 @@ async function startGatewaySession(
     canOpenArbitraryWorkspace: () => (negotiatedAppProtocol ?? 1) >= 4,
     listMobileDirectory: mobileDirectoryList,
     openWorkspacePath: requestOpenWorkspacePath,
-    onOpenSettings: () => reopenSetup("settings"),
   };
 
   const openWorkspaceBridge = async (
@@ -1650,6 +1702,7 @@ async function startGatewaySession(
               initialNavigationIntent
             }
             webRemoteControlTerminalTransportState={terminalTransportState}
+            webRemoteControlMobileConnectionSettings={mobileConnectionSettings}
             initialWorkspaceLoadingFallback={
               <WebRemoteControlLoadingScreen state="paired" />
             }
@@ -1760,6 +1813,7 @@ async function startGatewaySession(
             initialTaskId={taskId}
             initialWebRemoteControlMobileNavigationIntent={undefined}
             webRemoteControlTerminalTransportState={terminalTransportState}
+            webRemoteControlMobileConnectionSettings={mobileConnectionSettings}
             initialWorkspaceLoadingFallback={
               <WebRemoteControlLoadingScreen state="paired" />
             }

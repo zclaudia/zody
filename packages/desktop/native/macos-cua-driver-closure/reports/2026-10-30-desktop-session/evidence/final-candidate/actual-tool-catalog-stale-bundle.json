@@ -1,0 +1,35 @@
+{
+  "sourceSha256": "92e232d228a2f981602f4521d266d274bf1672aa71c0c464d831ca00414016fe",
+  "scope": "only test-session tool-name projection; prompts, provider endpoints and credentials excluded",
+  "modelRequests": [
+    {
+      "sessionId": "sess_2b5a0e44-d223-4cfa-be39-b7e3038413fd",
+      "turnId": "turn_343b1b14-4c98-4861-ab83-065e370b03be",
+      "startedAt": "2026-10-30T08:31:26.259Z",
+      "toolNames": [
+        "Agent",
+        "AskUserQuestion",
+        "Bash",
+        "CronCreate",
+        "CronDelete",
+        "CronList",
+        "CronUpdate",
+        "Edit",
+        "EnterPlanMode",
+        "ExitPlanMode",
+        "Read",
+        "Skill",
+        "TaskOutput",
+        "TaskStop",
+        "TodoRead",
+        "TodoWrite",
+        "WebFetch",
+        "WebSearch",
+        "Write",
+        "SendMessage",
+        "ReadSessionContext"
+      ]
+    }
+  ],
+  "rootCause": "sealed CLI inputs contained stale bootstrap/dist create-app and protocol entrypoint; source-only tests did not prove bundled runtime"
+}

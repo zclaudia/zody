@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "/usr/bin/open",
+    "-n",
+    "-W",
+    "-g",
+    "--stdout",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-permission/app.stdout",
+    "--stderr",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-permission/app.stderr",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app",
+    "--args",
+    "--run-once",
+    "--window-id",
+    "85709",
+    "--pid",
+    "64169",
+    "--layer",
+    "0",
+    "--x",
+    "680",
+    "--y",
+    "76",
+    "--width",
+    "1200",
+    "--height",
+    "800",
+    "--output",
+    "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/independent-permission/zody.png"
+  ],
+  "userApproval": "2026-10-30 explicit screen-recording grant; user completed local password authentication",
+  "uiObserved": "Zody CUA Helper Round11_Toggle on"
+}

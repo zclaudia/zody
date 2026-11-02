@@ -4,7 +4,6 @@ import {
   WebRemoteControlMobileSettingsScreen,
   type WebRemoteControlMobileSettingsDraft,
 } from "@zcode/ui";
-import { DEFAULT_REMOTE_ACCESS_NAMESPACE } from "@zcode/shared";
 import {
   startMobileRemoteBackendDiscovery,
   type MobileRemoteBackendDiscoverySnapshot,
@@ -14,6 +13,7 @@ import {
   validateMobileRemoteGatewayConfig,
   type MobileRemoteGatewayConfig,
 } from "./mobileRemoteConfigStore.js";
+import { saveMobileRemoteSettingsDraft } from "./mobileRemoteSettingsDraft.js";
 import { resolveWebRemoteControlGatewayBootstrapConfig } from "./gatewayBootstrapConfig.js";
 import { webEntryRoot } from "../webEntryRoot.js";
 
@@ -49,8 +49,6 @@ function renderSettingsPage(
   options: ResolveMobileRemoteConnectionOptions,
 ): Promise<MobileRemoteGatewayConfig> {
   return new Promise((resolve) => {
-    const initialGatewayUrl = initial?.gatewayUrl?.trim();
-    const initialNamespace = initial?.namespace;
     webEntryRoot.render(
       <ZCodeIntlProvider>
         <WebRemoteControlMobileSettingsScreen
@@ -61,24 +59,14 @@ function renderSettingsPage(
           }}
           allowInsecureTransport={options.allowInsecureTransport}
           onSubmit={async (draft: WebRemoteControlMobileSettingsDraft) => {
-            // 换 gateway/namespace 或重新输入凭证后，原来选中的电脑可能已不在范围内；
-            // 保留 backendId 只在「仅修改无关字段」时成立，避免带错误目标去建连。
-            const scopeChanged =
-              Boolean(draft.credential) ||
-              draft.gatewayUrl.trim().replace(/\/+$/, "") !==
-                (initialGatewayUrl ?? "").replace(/\/+$/, "") ||
-              (draft.namespace.trim() || DEFAULT_REMOTE_ACCESS_NAMESPACE) !==
-                (initialNamespace ?? DEFAULT_REMOTE_ACCESS_NAMESPACE);
-            const next = validateMobileRemoteGatewayConfig(
-              {
-                gatewayUrl: draft.gatewayUrl,
-                namespace: draft.namespace,
-                credential: draft.credential || initial?.credential,
-                ...(scopeChanged ? {} : initial?.backendId ? { backendId: initial.backendId } : {}),
-              },
-              { allowInsecureTransport: options.allowInsecureTransport },
-            );
-            await options.store.save(next);
+            // 与已连接会话内浮层共用同一份校验/scopeChanged/store.save 实现；
+            // 这里只负责把首次配置解析出的配置交回启动流程。
+            const { config: next } = await saveMobileRemoteSettingsDraft({
+              store: options.store,
+              initial,
+              draft,
+              allowInsecureTransport: options.allowInsecureTransport,
+            });
             resolve(next);
           }}
         />

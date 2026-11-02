@@ -1,0 +1,18 @@
+{
+  "name": "packaging-tests",
+  "argv": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "packages/desktop/test/packagedSourcemapCleanup.test.ts",
+    "packages/desktop/test/electronBuilderCuaProducer.test.ts",
+    "packages/desktop/test/electronBuilderSecurity.test.ts",
+    "packages/desktop/test/placeholderProducerDetection.test.ts"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:49:34.804654+00:00",
+  "seconds": 1.86,
+  "exitCode": 0,
+  "log": "packaging-tests.log"
+}

@@ -1,0 +1,2371 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-peer-diagnostic-test",
+  "generatedAt": "2026-10-29T03:45:27.951Z",
+  "diagnosticOnly": true,
+  "grant": false,
+  "nativeCapabilityProven": false,
+  "runtimeConsumable": false,
+  "productHook": false,
+  "status": "pass",
+  "build": {
+    "command": "/Library/Developer/CommandLineTools/usr/bin/clang++ -std=c++17 -x objective-c++ -fobjc-arc -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mmacosx-version-min=14.2 -O2 -Wall -Wextra -Werror -I /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic -I /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/main.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/cli_common.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/serve_mode.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/client_modes.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/pure_mode.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_socket.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_frame.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/profile.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/calibration_profile.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/policy.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/pure_policy.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/security_identity.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/macho_artifact.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/static_artifact.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/report.mm -framework Foundation -framework Security -lbsm -o /Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/build/staging-GmCw2f/macos-cua-peer-diagnostic",
+    "artifactPath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+    "artifactSha256": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+    "sdk": {
+      "requested": "macosx27.0",
+      "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "version": "27.0"
+    },
+    "compiler": {
+      "path": "/Library/Developer/CommandLineTools/usr/bin/clang++",
+      "versionFirstLine": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
+    },
+    "target": {
+      "architecture": "arm64",
+      "minimumMacOSVersion": "14.2"
+    },
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "005aaefeb44f6edb398d205ecedc09c50725d599efce4c65e8bf6e8c908ccca0"
+      },
+      {
+        "path": "PROVENANCE.md",
+        "sha256": "e5528d70acf38b541ac925630d8ff1a260f7a2a6232309073f2c4c0a750189e5"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "606c36baf38b973227273df12a74930e4b4137280eea835c5cd623aa4553c13b"
+      },
+      {
+        "path": "src/main.mm",
+        "sha256": "bf9ed210cb18a04c50f78a5d19ebdb139cf4b509ad5bd3f46e363e7e7523a4f4"
+      },
+      {
+        "path": "src/cli_common.h",
+        "sha256": "bb4d4545b0b1a3d5da39222b7cfda0a3fddabde463fd73ad0a98cca5b0b4beff"
+      },
+      {
+        "path": "src/cli_common.mm",
+        "sha256": "97ab1e94138eeab69832517f09e007c164ac706d4db079422f51de694efb85e5"
+      },
+      {
+        "path": "src/serve_mode.mm",
+        "sha256": "8c6623319db34e6cbdc619ba436383a61f6329d6efebdc362d04300fa7076ff1"
+      },
+      {
+        "path": "src/client_modes.mm",
+        "sha256": "516e2155619deaf1d31138d987b42774aeb300fd2f936147725d9bb180eddc58"
+      },
+      {
+        "path": "src/pure_mode.mm",
+        "sha256": "6bdefa136ea108a4ac0e19baf4b460aebae20e40c1a68d158a3ec3006434c550"
+      },
+      {
+        "path": "src/peer_socket.h",
+        "sha256": "ef29202676e6484ce9cff0c4a32ff109ffb9a139884440bb963d170cb87855f6"
+      },
+      {
+        "path": "src/peer_socket.mm",
+        "sha256": "a6e274faf1a6994e67e80bc3855b9b071555b4a8cb7dd216a2ad591237845856"
+      },
+      {
+        "path": "src/peer_internal.h",
+        "sha256": "aa93a3576ced5d7a5332350cd01e3f4a630da0793ed03ad9d01a5e8cff3220f3"
+      },
+      {
+        "path": "src/peer_frame.mm",
+        "sha256": "263574f244177c3d0c0ae36167ed9ae3d7db8a30a2afc1bcc6eca74fea2b9e2b"
+      },
+      {
+        "path": "src/profile.h",
+        "sha256": "143b23a93be081441345bc358bf89cac48743b0d1b68502283bc7c652e6db6f3"
+      },
+      {
+        "path": "src/profile.mm",
+        "sha256": "124befc37b4c24eb85abf94cbe28a6241b13240448eadef7199a4dc33ab42c4e"
+      },
+      {
+        "path": "src/calibration_profile.h",
+        "sha256": "8cd9da272de90dba45b807425d164d93d53e04ac2eacc73fd29649b0bb87d80d"
+      },
+      {
+        "path": "src/calibration_profile.mm",
+        "sha256": "317251ab1051c1ce85227aaf5b927b634751364cc995fe67290e538e6bbca0c1"
+      },
+      {
+        "path": "src/policy.h",
+        "sha256": "b4bd22644ab26f8ceaf075ca4497f376e7246fb9d529a7d1c381421a6e402d07"
+      },
+      {
+        "path": "src/policy.mm",
+        "sha256": "c7fe0b30484917e6967dddbade36eda91ae7b855f78f7cb72e2d933f4a7b5689"
+      },
+      {
+        "path": "src/pure_policy.h",
+        "sha256": "8b2a10e88733dcef61c152e4fd9c49952cc1fa1a1d849babc4a65937bf31a7f0"
+      },
+      {
+        "path": "src/pure_policy.mm",
+        "sha256": "9acf6ea19827d289e53b081e66aa52bc79b894b0e7d53aee38edfd540c0553e9"
+      },
+      {
+        "path": "src/security_identity.h",
+        "sha256": "078e5129ceb343519db24f47b270378d87430713db661636637b3b54a2f2ec4a"
+      },
+      {
+        "path": "src/security_identity.mm",
+        "sha256": "fd1f5e62d1bdef5488016a656ffc61c3616b6069eda1ea0a9792c985771b29b2"
+      },
+      {
+        "path": "src/macho_artifact.h",
+        "sha256": "85984a0e25d91ee922278ceeddb0e729479ff0b80de19984631f4026314bd833"
+      },
+      {
+        "path": "src/macho_artifact.mm",
+        "sha256": "68de8ae6e85c1d275ec984215215d3605d6521db87ddafbea072984182c84df5"
+      },
+      {
+        "path": "src/static_artifact.h",
+        "sha256": "e148e1e93d622cc664040df46277bab2edb77886e9d9fd7b7cbe3acb063416ad"
+      },
+      {
+        "path": "src/static_artifact.mm",
+        "sha256": "0c54bd095d168a167890cfaa04a741bd0d328f5abf9188a81a5d8f0fd478fdd8"
+      },
+      {
+        "path": "src/report.h",
+        "sha256": "7e0e1227ddb4614b7e4ced8bdfd978c59798cbe080a58544e3172a32d0658b58"
+      },
+      {
+        "path": "src/report.mm",
+        "sha256": "be3e331c8dcec97b698a0941daccaa5da901eadf06ec46367734d7e99b0d6354"
+      }
+    ],
+    "linkerAdhocProbeOnly": true,
+    "signedForAcceptance": false
+  },
+  "profile": {
+    "sha256": "60615ed58db6a66778f32e0558980492ea9781ffe35f81b17d1415ebd65b1c9f",
+    "syntheticShapeOnly": true,
+    "executableSha256PinnedToBuiltProbe": true
+  },
+  "scenarios": [
+    {
+      "id": "real-peer-adhoc-rejected",
+      "kind": "real-native",
+      "command": [
+        "serve",
+        "--workdir",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-s8t86t",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--expect-pid",
+        "85639",
+        "--expect-uid",
+        "501",
+        "--timeout-ms",
+        "20000"
+      ],
+      "expected": {
+        "pid": 85639,
+        "uid": 501
+      },
+      "actual": {
+        "pid": 85639,
+        "uid": 501
+      },
+      "exitCode": 0,
+      "clientExitCode": 0,
+      "clientTimedOut": false,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": false,
+          "reason": "ad-hoc-signature"
+        },
+        "helperAuthorization": "blocked",
+        "checkedScope": [
+          "AF_UNIX LOCAL_PEERTOKEN full audit token",
+          "SecCodeCopyGuestWithAttributes(kSecGuestAttributeAudit)",
+          "SecCodeCheckValidity and signing information",
+          "leaf DER SHA-256, identifier and narrow designated requirement",
+          "actual static executable SHA-256, entitlements, architecture and minimum macOS"
+        ],
+        "profileValidationScope": "12-field schema plus identity policy only; bundle metadata and a full static doctor are not performed",
+        "nativeCapabilityProven": false,
+        "notPerformed": [
+          "TCC authorization",
+          "machine lease",
+          "native input or screenshots",
+          "product runtime consumption",
+          "positive local-self-signed Helper",
+          "bundle ShortVersion/Version/executableName against the actual bundle",
+          "full 12-field static doctor"
+        ],
+        "staticArtifact": {
+          "matched": true,
+          "executableSha256": {
+            "expected": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+            "actual": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+            "matched": true
+          },
+          "errors": [],
+          "architectures": {
+            "expected": [
+              "arm64"
+            ],
+            "actual": [
+              "arm64"
+            ],
+            "matched": true
+          },
+          "allPerformed": true,
+          "entitlements": {
+            "matched": true,
+            "expectedJson": "{}",
+            "actualJson": "{}"
+          },
+          "executablePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+          "minimumMacOS": {
+            "expected": "14.2",
+            "actual": "14.2",
+            "matched": true
+          }
+        },
+        "mode": "serve",
+        "productHook": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "peer": {
+          "pidVersionExpected": null,
+          "pidVersionMatchMode": "not-pinned",
+          "asidObserved": 100018,
+          "asidExpected": null,
+          "usesPidFallback": false,
+          "pidVersionMatched": "not-pinned",
+          "pidVersionObserved": 64734488,
+          "peerTokenSource": "getsockopt(LOCAL_PEERTOKEN)",
+          "pidExpected": 85639,
+          "auidObserved": 501,
+          "rgidObserved": 20,
+          "transport": "af_unix",
+          "pidMatched": true,
+          "pidObserved": 85639,
+          "asidMatchMode": "not-pinned",
+          "auditTokenCaptured": true,
+          "euidObserved": 501,
+          "euidExpected": 501,
+          "asidMatched": "not-pinned",
+          "loginSessionInferred": false,
+          "ruidObserved": 501,
+          "euidMatched": true,
+          "parentRelationshipInferred": false,
+          "uidEqualityIsNotSessionProof": true,
+          "auditTokenFields": [
+            "pid",
+            "euid",
+            "auid",
+            "ruid",
+            "rgid",
+            "asid",
+            "pidversion"
+          ]
+        },
+        "status": "reject",
+        "security": {
+          "requirementStatus": 0,
+          "guestCreated": true,
+          "guestStatus": 0,
+          "leafCertificateSha1": "",
+          "usesPidFallback": false,
+          "certificatePresent": false,
+          "leafCertificateSha256": "",
+          "storedDrStrictPolicyMatched": false,
+          "guestAttribute": "kSecGuestAttributeAudit",
+          "guestApi": "SecCodeCopyGuestWithAttributes",
+          "entitlementsJson": "",
+          "checkValidityFlags": "kSecCSDefaultFlags",
+          "validityStatus": 0,
+          "executablePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+          "executed": true,
+          "certificateCount": 0,
+          "flags": 131074,
+          "designatedRequirement": "cdhash H\"695456ef9c99a1d54c3b66073d019a70e6ea0945\"",
+          "staticCodeStatus": 0,
+          "identifier": "macos-cua-peer-diagnostic",
+          "signingInfoAvailable": true,
+          "requirementMatched": false,
+          "signingStatus": 0,
+          "adhoc": true,
+          "entitlementsPresent": false,
+          "codeValid": true,
+          "staticCodeCreated": true
+        }
+      },
+      "checks": [
+        {
+          "name": "real server exit 0",
+          "ok": true
+        },
+        {
+          "name": "client exit 0",
+          "ok": true
+        },
+        {
+          "name": "audit token captured",
+          "ok": true
+        },
+        {
+          "name": "no PID fallback",
+          "ok": true
+        },
+        {
+          "name": "observed PID equals spawned client PID",
+          "ok": true,
+          "details": {
+            "observed": 85639,
+            "actual": 85639
+          }
+        },
+        {
+          "name": "observed euid equals actual euid",
+          "ok": true
+        },
+        {
+          "name": "asid observed",
+          "ok": true
+        },
+        {
+          "name": "pidversion observed positive",
+          "ok": true
+        },
+        {
+          "name": "asid not-pinned",
+          "ok": true
+        },
+        {
+          "name": "pidversion not-pinned",
+          "ok": true
+        },
+        {
+          "name": "no login-session inference",
+          "ok": true
+        },
+        {
+          "name": "no parent-relationship inference",
+          "ok": true
+        },
+        {
+          "name": "Security guest from full audit token",
+          "ok": true
+        },
+        {
+          "name": "ad-hoc signature observed",
+          "ok": true
+        },
+        {
+          "name": "no leaf certificate",
+          "ok": true
+        },
+        {
+          "name": "Security rejects identity",
+          "ok": true
+        },
+        {
+          "name": "static artifact pin matched",
+          "ok": true
+        },
+        {
+          "name": "helper authorization remains blocked",
+          "ok": true
+        },
+        {
+          "name": "profile scope is not a full doctor",
+          "ok": true
+        },
+        {
+          "name": "no diagnostic capability",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "wrong-pid",
+      "kind": "real-native",
+      "command": [
+        "serve",
+        "--workdir",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-vhbr8z",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--expect-pid",
+        "85671",
+        "--expect-uid",
+        "501",
+        "--timeout-ms",
+        "20000"
+      ],
+      "expected": {
+        "pid": 85671,
+        "uid": 501
+      },
+      "actual": {
+        "pid": 85670,
+        "uid": 501
+      },
+      "exitCode": 0,
+      "clientExitCode": 0,
+      "clientTimedOut": false,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": false,
+          "reason": "peer-pid-mismatch"
+        },
+        "helperAuthorization": "blocked",
+        "checkedScope": [
+          "AF_UNIX LOCAL_PEERTOKEN full audit token",
+          "SecCodeCopyGuestWithAttributes(kSecGuestAttributeAudit)",
+          "SecCodeCheckValidity and signing information",
+          "leaf DER SHA-256, identifier and narrow designated requirement",
+          "actual static executable SHA-256, entitlements, architecture and minimum macOS"
+        ],
+        "profileValidationScope": "12-field schema plus identity policy only; bundle metadata and a full static doctor are not performed",
+        "nativeCapabilityProven": false,
+        "notPerformed": [
+          "TCC authorization",
+          "machine lease",
+          "native input or screenshots",
+          "product runtime consumption",
+          "positive local-self-signed Helper",
+          "bundle ShortVersion/Version/executableName against the actual bundle",
+          "full 12-field static doctor"
+        ],
+        "staticArtifact": {
+          "matched": true,
+          "executableSha256": {
+            "expected": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+            "actual": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+            "matched": true
+          },
+          "errors": [],
+          "architectures": {
+            "expected": [
+              "arm64"
+            ],
+            "actual": [
+              "arm64"
+            ],
+            "matched": true
+          },
+          "allPerformed": true,
+          "entitlements": {
+            "matched": true,
+            "expectedJson": "{}",
+            "actualJson": "{}"
+          },
+          "executablePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+          "minimumMacOS": {
+            "expected": "14.2",
+            "actual": "14.2",
+            "matched": true
+          }
+        },
+        "mode": "serve",
+        "productHook": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "peer": {
+          "pidVersionExpected": null,
+          "pidVersionMatchMode": "not-pinned",
+          "asidObserved": 100018,
+          "asidExpected": null,
+          "usesPidFallback": false,
+          "pidVersionMatched": "not-pinned",
+          "pidVersionObserved": 64734524,
+          "peerTokenSource": "getsockopt(LOCAL_PEERTOKEN)",
+          "pidExpected": 85671,
+          "auidObserved": 501,
+          "rgidObserved": 20,
+          "transport": "af_unix",
+          "pidMatched": false,
+          "pidObserved": 85670,
+          "asidMatchMode": "not-pinned",
+          "auditTokenCaptured": true,
+          "euidObserved": 501,
+          "euidExpected": 501,
+          "asidMatched": "not-pinned",
+          "loginSessionInferred": false,
+          "ruidObserved": 501,
+          "euidMatched": true,
+          "parentRelationshipInferred": false,
+          "uidEqualityIsNotSessionProof": true,
+          "auditTokenFields": [
+            "pid",
+            "euid",
+            "auid",
+            "ruid",
+            "rgid",
+            "asid",
+            "pidversion"
+          ]
+        },
+        "status": "reject",
+        "security": {
+          "requirementStatus": 0,
+          "guestCreated": true,
+          "guestStatus": 0,
+          "leafCertificateSha1": "",
+          "usesPidFallback": false,
+          "certificatePresent": false,
+          "leafCertificateSha256": "",
+          "storedDrStrictPolicyMatched": false,
+          "guestAttribute": "kSecGuestAttributeAudit",
+          "guestApi": "SecCodeCopyGuestWithAttributes",
+          "entitlementsJson": "",
+          "checkValidityFlags": "kSecCSDefaultFlags",
+          "validityStatus": 0,
+          "executablePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+          "executed": true,
+          "certificateCount": 0,
+          "flags": 131074,
+          "designatedRequirement": "cdhash H\"695456ef9c99a1d54c3b66073d019a70e6ea0945\"",
+          "staticCodeStatus": 0,
+          "identifier": "macos-cua-peer-diagnostic",
+          "signingInfoAvailable": true,
+          "requirementMatched": false,
+          "signingStatus": 0,
+          "adhoc": true,
+          "entitlementsPresent": false,
+          "codeValid": true,
+          "staticCodeCreated": true
+        }
+      },
+      "checks": [
+        {
+          "name": "PID mismatch rejected",
+          "ok": true
+        },
+        {
+          "name": "wrong PID keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "wrong-uid",
+      "kind": "real-native",
+      "command": [
+        "serve",
+        "--workdir",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-5wvCTQ",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--expect-pid",
+        "85674",
+        "--expect-uid",
+        "502",
+        "--timeout-ms",
+        "20000"
+      ],
+      "expected": {
+        "pid": 85674,
+        "uid": 502
+      },
+      "actual": {
+        "pid": 85674,
+        "uid": 501
+      },
+      "exitCode": 0,
+      "clientExitCode": 0,
+      "clientTimedOut": false,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": false,
+          "reason": "peer-uid-mismatch"
+        },
+        "helperAuthorization": "blocked",
+        "checkedScope": [
+          "AF_UNIX LOCAL_PEERTOKEN full audit token",
+          "SecCodeCopyGuestWithAttributes(kSecGuestAttributeAudit)",
+          "SecCodeCheckValidity and signing information",
+          "leaf DER SHA-256, identifier and narrow designated requirement",
+          "actual static executable SHA-256, entitlements, architecture and minimum macOS"
+        ],
+        "profileValidationScope": "12-field schema plus identity policy only; bundle metadata and a full static doctor are not performed",
+        "nativeCapabilityProven": false,
+        "notPerformed": [
+          "TCC authorization",
+          "machine lease",
+          "native input or screenshots",
+          "product runtime consumption",
+          "positive local-self-signed Helper",
+          "bundle ShortVersion/Version/executableName against the actual bundle",
+          "full 12-field static doctor"
+        ],
+        "staticArtifact": {
+          "matched": true,
+          "executableSha256": {
+            "expected": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+            "actual": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+            "matched": true
+          },
+          "errors": [],
+          "architectures": {
+            "expected": [
+              "arm64"
+            ],
+            "actual": [
+              "arm64"
+            ],
+            "matched": true
+          },
+          "allPerformed": true,
+          "entitlements": {
+            "matched": true,
+            "expectedJson": "{}",
+            "actualJson": "{}"
+          },
+          "executablePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+          "minimumMacOS": {
+            "expected": "14.2",
+            "actual": "14.2",
+            "matched": true
+          }
+        },
+        "mode": "serve",
+        "productHook": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "peer": {
+          "pidVersionExpected": null,
+          "pidVersionMatchMode": "not-pinned",
+          "asidObserved": 100018,
+          "asidExpected": null,
+          "usesPidFallback": false,
+          "pidVersionMatched": "not-pinned",
+          "pidVersionObserved": 64734531,
+          "peerTokenSource": "getsockopt(LOCAL_PEERTOKEN)",
+          "pidExpected": 85674,
+          "auidObserved": 501,
+          "rgidObserved": 20,
+          "transport": "af_unix",
+          "pidMatched": true,
+          "pidObserved": 85674,
+          "asidMatchMode": "not-pinned",
+          "auditTokenCaptured": true,
+          "euidObserved": 501,
+          "euidExpected": 502,
+          "asidMatched": "not-pinned",
+          "loginSessionInferred": false,
+          "ruidObserved": 501,
+          "euidMatched": false,
+          "parentRelationshipInferred": false,
+          "uidEqualityIsNotSessionProof": true,
+          "auditTokenFields": [
+            "pid",
+            "euid",
+            "auid",
+            "ruid",
+            "rgid",
+            "asid",
+            "pidversion"
+          ]
+        },
+        "status": "reject",
+        "security": {
+          "requirementStatus": 0,
+          "guestCreated": true,
+          "guestStatus": 0,
+          "leafCertificateSha1": "",
+          "usesPidFallback": false,
+          "certificatePresent": false,
+          "leafCertificateSha256": "",
+          "storedDrStrictPolicyMatched": false,
+          "guestAttribute": "kSecGuestAttributeAudit",
+          "guestApi": "SecCodeCopyGuestWithAttributes",
+          "entitlementsJson": "",
+          "checkValidityFlags": "kSecCSDefaultFlags",
+          "validityStatus": 0,
+          "executablePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+          "executed": true,
+          "certificateCount": 0,
+          "flags": 131074,
+          "designatedRequirement": "cdhash H\"695456ef9c99a1d54c3b66073d019a70e6ea0945\"",
+          "staticCodeStatus": 0,
+          "identifier": "macos-cua-peer-diagnostic",
+          "signingInfoAvailable": true,
+          "requirementMatched": false,
+          "signingStatus": 0,
+          "adhoc": true,
+          "entitlementsPresent": false,
+          "codeValid": true,
+          "staticCodeCreated": true
+        }
+      },
+      "checks": [
+        {
+          "name": "UID mismatch rejected",
+          "ok": true
+        },
+        {
+          "name": "wrong UID keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "default-blocked",
+      "kind": "blocked-precondition",
+      "command": [
+        "serve",
+        "--workdir",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-tSNzXp",
+        "--expect-pid",
+        "85468",
+        "--expect-uid",
+        "501"
+      ],
+      "exitCode": 2,
+      "response": {
+        "schemaVersion": 1,
+        "helperAuthorization": "blocked",
+        "nativeCapabilityProven": false,
+        "mode": "serve",
+        "productHook": false,
+        "reason": "profile-missing",
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "blocked",
+        "errors": [
+          "no pinned local-self-signed profile or calibration profile was supplied"
+        ]
+      },
+      "checks": [
+        {
+          "name": "default profile blocked",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-policy-positive",
+      "kind": "synthetic-policy-only",
+      "command": [
+        "pure-policy-check",
+        "--pure-test-only",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--facts",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/facts.synthetic-positive.json"
+      ],
+      "exitCode": 0,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": true,
+          "reason": "synthetic-policy-accepted"
+        },
+        "peerFrameReachable": false,
+        "helperAuthorization": "blocked",
+        "nativeSecurityExecuted": false,
+        "nativeCapabilityProven": false,
+        "facts": {
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "leafCertificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "adhoc": false,
+          "codeValid": true,
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "certificatePresent": true
+        },
+        "expected": {
+          "certificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test"
+        },
+        "mode": "pure-policy-check",
+        "productHook": false,
+        "productionInputReachable": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "pureTestOnly": true,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "synthetic-policy-pass",
+        "syntheticFacts": true
+      },
+      "checks": [
+        {
+          "name": "synthetic positive is policy-only",
+          "ok": true
+        },
+        {
+          "name": "synthetic positive accepted by policy",
+          "ok": true
+        },
+        {
+          "name": "synthetic positive never grants",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-wrong-bundle",
+      "kind": "synthetic-policy-only",
+      "command": [
+        "pure-policy-check",
+        "--pure-test-only",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--facts",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/facts.wrong-bundle.json"
+      ],
+      "exitCode": 0,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": false,
+          "reason": "identifier-mismatch"
+        },
+        "peerFrameReachable": false,
+        "helperAuthorization": "blocked",
+        "nativeSecurityExecuted": false,
+        "nativeCapabilityProven": false,
+        "facts": {
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "leafCertificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "adhoc": false,
+          "codeValid": true,
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-wrong",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "certificatePresent": true
+        },
+        "expected": {
+          "certificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test"
+        },
+        "mode": "pure-policy-check",
+        "productHook": false,
+        "productionInputReachable": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "pureTestOnly": true,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "reject",
+        "syntheticFacts": true
+      },
+      "checks": [
+        {
+          "name": "synthetic-wrong-bundle rejected",
+          "ok": true,
+          "details": {
+            "expected": "identifier-mismatch",
+            "actual": "identifier-mismatch"
+          }
+        },
+        {
+          "name": "synthetic-wrong-bundle keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-wrong-leaf",
+      "kind": "synthetic-policy-only",
+      "command": [
+        "pure-policy-check",
+        "--pure-test-only",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--facts",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/facts.wrong-leaf.json"
+      ],
+      "exitCode": 0,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": false,
+          "reason": "leaf-sha256-mismatch"
+        },
+        "peerFrameReachable": false,
+        "helperAuthorization": "blocked",
+        "nativeSecurityExecuted": false,
+        "nativeCapabilityProven": false,
+        "facts": {
+          "leafCertificateSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "leafCertificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "adhoc": false,
+          "codeValid": true,
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "certificatePresent": true
+        },
+        "expected": {
+          "certificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test"
+        },
+        "mode": "pure-policy-check",
+        "productHook": false,
+        "productionInputReachable": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "pureTestOnly": true,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "reject",
+        "syntheticFacts": true
+      },
+      "checks": [
+        {
+          "name": "synthetic-wrong-leaf rejected",
+          "ok": true,
+          "details": {
+            "expected": "leaf-sha256-mismatch",
+            "actual": "leaf-sha256-mismatch"
+          }
+        },
+        {
+          "name": "synthetic-wrong-leaf keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-wrong-dr",
+      "kind": "synthetic-policy-only",
+      "command": [
+        "pure-policy-check",
+        "--pure-test-only",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--facts",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/facts.wrong-dr.json"
+      ],
+      "exitCode": 0,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": false,
+          "reason": "designated-requirement-mismatch"
+        },
+        "peerFrameReachable": false,
+        "helperAuthorization": "blocked",
+        "nativeSecurityExecuted": false,
+        "nativeCapabilityProven": false,
+        "facts": {
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "leafCertificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "adhoc": false,
+          "codeValid": true,
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"ffffffffffffffffffffffffffffffffffffffff\"",
+          "certificatePresent": true
+        },
+        "expected": {
+          "certificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test"
+        },
+        "mode": "pure-policy-check",
+        "productHook": false,
+        "productionInputReachable": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "pureTestOnly": true,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "reject",
+        "syntheticFacts": true
+      },
+      "checks": [
+        {
+          "name": "synthetic-wrong-dr rejected",
+          "ok": true,
+          "details": {
+            "expected": "designated-requirement-mismatch",
+            "actual": "designated-requirement-mismatch"
+          }
+        },
+        {
+          "name": "synthetic-wrong-dr keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-requirement-failed",
+      "kind": "synthetic-policy-only",
+      "command": [
+        "pure-policy-check",
+        "--pure-test-only",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--facts",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/facts.requirement-failed.json"
+      ],
+      "exitCode": 0,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": false,
+          "reason": "code-requirement-not-matched"
+        },
+        "peerFrameReachable": false,
+        "helperAuthorization": "blocked",
+        "nativeSecurityExecuted": false,
+        "nativeCapabilityProven": false,
+        "facts": {
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "leafCertificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "adhoc": false,
+          "codeValid": true,
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "certificatePresent": true
+        },
+        "expected": {
+          "certificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test"
+        },
+        "mode": "pure-policy-check",
+        "productHook": false,
+        "productionInputReachable": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "pureTestOnly": true,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "reject",
+        "syntheticFacts": true
+      },
+      "checks": [
+        {
+          "name": "synthetic-requirement-failed rejected",
+          "ok": true,
+          "details": {
+            "expected": "code-requirement-not-matched",
+            "actual": "code-requirement-not-matched"
+          }
+        },
+        {
+          "name": "synthetic-requirement-failed keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-adhoc",
+      "kind": "synthetic-policy-only",
+      "command": [
+        "pure-policy-check",
+        "--pure-test-only",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--facts",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/facts.adhoc.json"
+      ],
+      "exitCode": 0,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": false,
+          "reason": "ad-hoc-signature"
+        },
+        "peerFrameReachable": false,
+        "helperAuthorization": "blocked",
+        "nativeSecurityExecuted": false,
+        "nativeCapabilityProven": false,
+        "facts": {
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "leafCertificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "adhoc": true,
+          "codeValid": true,
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "certificatePresent": true
+        },
+        "expected": {
+          "certificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test"
+        },
+        "mode": "pure-policy-check",
+        "productHook": false,
+        "productionInputReachable": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "pureTestOnly": true,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "reject",
+        "syntheticFacts": true
+      },
+      "checks": [
+        {
+          "name": "synthetic-adhoc rejected",
+          "ok": true,
+          "details": {
+            "expected": "ad-hoc-signature",
+            "actual": "ad-hoc-signature"
+          }
+        },
+        {
+          "name": "synthetic-adhoc keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "synthetic-missing-cert",
+      "kind": "synthetic-policy-only",
+      "command": [
+        "pure-policy-check",
+        "--pure-test-only",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--facts",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/facts.missing-cert.json"
+      ],
+      "exitCode": 0,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": false,
+          "reason": "missing-certificate"
+        },
+        "peerFrameReachable": false,
+        "helperAuthorization": "blocked",
+        "nativeSecurityExecuted": false,
+        "nativeCapabilityProven": false,
+        "facts": {
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "leafCertificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "adhoc": false,
+          "codeValid": true,
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "certificatePresent": false
+        },
+        "expected": {
+          "certificateSha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-peer-diagnostic-test\" and certificate leaf = H\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"",
+          "leafCertificateSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "identifier": "io.github.zclaudia.zody.cua-peer-diagnostic-test"
+        },
+        "mode": "pure-policy-check",
+        "productHook": false,
+        "productionInputReachable": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "pureTestOnly": true,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "reject",
+        "syntheticFacts": true
+      },
+      "checks": [
+        {
+          "name": "synthetic-missing-cert rejected",
+          "ok": true,
+          "details": {
+            "expected": "missing-certificate",
+            "actual": "missing-certificate"
+          }
+        },
+        {
+          "name": "synthetic-missing-cert keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "profile-world-writable",
+      "kind": "synthetic-policy-only",
+      "command": [
+        "pure-policy-check",
+        "--pure-test-only",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.world-writable.json",
+        "--facts",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/facts.synthetic-positive.json"
+      ],
+      "exitCode": 2,
+      "response": {
+        "schemaVersion": 1,
+        "helperAuthorization": "blocked",
+        "nativeCapabilityProven": false,
+        "mode": "pure-policy-check",
+        "productHook": false,
+        "reason": "pure-policy-input-invalid",
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "blocked",
+        "errors": [
+          "pinned profile must not be group- or world-writable"
+        ]
+      },
+      "checks": [
+        {
+          "name": "profile-world-writable rejected by the native profile loader",
+          "ok": true,
+          "details": {
+            "expectedError": "writable",
+            "errors": [
+              "pinned profile must not be group- or world-writable"
+            ]
+          }
+        },
+        {
+          "name": "profile-world-writable keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "profile-schema-boolean",
+      "kind": "synthetic-policy-only",
+      "command": [
+        "pure-policy-check",
+        "--pure-test-only",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.schema-boolean.json",
+        "--facts",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/facts.synthetic-positive.json"
+      ],
+      "exitCode": 2,
+      "response": {
+        "schemaVersion": 1,
+        "helperAuthorization": "blocked",
+        "nativeCapabilityProven": false,
+        "mode": "pure-policy-check",
+        "productHook": false,
+        "reason": "pure-policy-input-invalid",
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "blocked",
+        "errors": [
+          "schemaVersion must be 1"
+        ]
+      },
+      "checks": [
+        {
+          "name": "profile-schema-boolean rejected by the native profile loader",
+          "ok": true,
+          "details": {
+            "expectedError": "schemaVersion",
+            "errors": [
+              "schemaVersion must be 1"
+            ]
+          }
+        },
+        {
+          "name": "profile-schema-boolean keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "profile-schema-fractional",
+      "kind": "synthetic-policy-only",
+      "command": [
+        "pure-policy-check",
+        "--pure-test-only",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.schema-fractional.json",
+        "--facts",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/facts.synthetic-positive.json"
+      ],
+      "exitCode": 2,
+      "response": {
+        "schemaVersion": 1,
+        "helperAuthorization": "blocked",
+        "nativeCapabilityProven": false,
+        "mode": "pure-policy-check",
+        "productHook": false,
+        "reason": "pure-policy-input-invalid",
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "blocked",
+        "errors": [
+          "schemaVersion must be 1"
+        ]
+      },
+      "checks": [
+        {
+          "name": "profile-schema-fractional rejected by the native profile loader",
+          "ok": true,
+          "details": {
+            "expectedError": "schemaVersion",
+            "errors": [
+              "schemaVersion must be 1"
+            ]
+          }
+        },
+        {
+          "name": "profile-schema-fractional keeps capability off",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "existing-socket-retained",
+      "kind": "real-native-socket",
+      "command": [
+        "serve",
+        "--workdir",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-KmDqlZ",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--expect-pid",
+        "85468",
+        "--expect-uid",
+        "501",
+        "--timeout-ms",
+        "2000"
+      ],
+      "exitCode": 1,
+      "before": {
+        "inode": 149588920,
+        "device": 16777233
+      },
+      "after": {
+        "inode": 149588920,
+        "device": 16777233
+      },
+      "retained": true,
+      "response": {
+        "schemaVersion": 1,
+        "errorNumber": 0,
+        "nativeCapabilityProven": false,
+        "mode": "serve",
+        "productHook": false,
+        "reason": "listener-unavailable: socket path already exists; refusing to reuse it",
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "error",
+        "helperAuthorization": "blocked"
+      },
+      "checks": [
+        {
+          "name": "existing socket retained",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "replaced-socket-retained",
+      "kind": "real-native-socket",
+      "command": [
+        "serve",
+        "--workdir",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-cWu2TK",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--expect-pid",
+        "85691",
+        "--expect-uid",
+        "501",
+        "--timeout-ms",
+        "5000"
+      ],
+      "exitCode": 0,
+      "clientExitCode": 0,
+      "replacement": {
+        "inode": 149588924,
+        "device": 16777233
+      },
+      "retained": true,
+      "clientCleanedReplacement": true,
+      "response": {
+        "schemaVersion": 1,
+        "decision": {
+          "accepted": false,
+          "reason": "ad-hoc-signature"
+        },
+        "helperAuthorization": "blocked",
+        "checkedScope": [
+          "AF_UNIX LOCAL_PEERTOKEN full audit token",
+          "SecCodeCopyGuestWithAttributes(kSecGuestAttributeAudit)",
+          "SecCodeCheckValidity and signing information",
+          "leaf DER SHA-256, identifier and narrow designated requirement",
+          "actual static executable SHA-256, entitlements, architecture and minimum macOS"
+        ],
+        "profileValidationScope": "12-field schema plus identity policy only; bundle metadata and a full static doctor are not performed",
+        "nativeCapabilityProven": false,
+        "notPerformed": [
+          "TCC authorization",
+          "machine lease",
+          "native input or screenshots",
+          "product runtime consumption",
+          "positive local-self-signed Helper",
+          "bundle ShortVersion/Version/executableName against the actual bundle",
+          "full 12-field static doctor"
+        ],
+        "staticArtifact": {
+          "matched": true,
+          "executableSha256": {
+            "expected": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+            "actual": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+            "matched": true
+          },
+          "errors": [],
+          "architectures": {
+            "expected": [
+              "arm64"
+            ],
+            "actual": [
+              "arm64"
+            ],
+            "matched": true
+          },
+          "allPerformed": true,
+          "entitlements": {
+            "matched": true,
+            "expectedJson": "{}",
+            "actualJson": "{}"
+          },
+          "executablePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+          "minimumMacOS": {
+            "expected": "14.2",
+            "actual": "14.2",
+            "matched": true
+          }
+        },
+        "mode": "serve",
+        "productHook": false,
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "peer": {
+          "pidVersionExpected": null,
+          "pidVersionMatchMode": "not-pinned",
+          "asidObserved": 100018,
+          "asidExpected": null,
+          "usesPidFallback": false,
+          "pidVersionMatched": "not-pinned",
+          "pidVersionObserved": 64734565,
+          "peerTokenSource": "getsockopt(LOCAL_PEERTOKEN)",
+          "pidExpected": 85691,
+          "auidObserved": 501,
+          "rgidObserved": 20,
+          "transport": "af_unix",
+          "pidMatched": true,
+          "pidObserved": 85691,
+          "asidMatchMode": "not-pinned",
+          "auditTokenCaptured": true,
+          "euidObserved": 501,
+          "euidExpected": 501,
+          "asidMatched": "not-pinned",
+          "loginSessionInferred": false,
+          "ruidObserved": 501,
+          "euidMatched": true,
+          "parentRelationshipInferred": false,
+          "uidEqualityIsNotSessionProof": true,
+          "auditTokenFields": [
+            "pid",
+            "euid",
+            "auid",
+            "ruid",
+            "rgid",
+            "asid",
+            "pidversion"
+          ]
+        },
+        "status": "reject",
+        "security": {
+          "requirementStatus": 0,
+          "guestCreated": true,
+          "guestStatus": 0,
+          "leafCertificateSha1": "",
+          "usesPidFallback": false,
+          "certificatePresent": false,
+          "leafCertificateSha256": "",
+          "storedDrStrictPolicyMatched": false,
+          "guestAttribute": "kSecGuestAttributeAudit",
+          "guestApi": "SecCodeCopyGuestWithAttributes",
+          "entitlementsJson": "",
+          "checkValidityFlags": "kSecCSDefaultFlags",
+          "validityStatus": 0,
+          "executablePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/bin/macos-cua-peer-diagnostic",
+          "executed": true,
+          "certificateCount": 0,
+          "flags": 131074,
+          "designatedRequirement": "cdhash H\"695456ef9c99a1d54c3b66073d019a70e6ea0945\"",
+          "staticCodeStatus": 0,
+          "identifier": "macos-cua-peer-diagnostic",
+          "signingInfoAvailable": true,
+          "requirementMatched": false,
+          "signingStatus": 0,
+          "adhoc": true,
+          "entitlementsPresent": false,
+          "codeValid": true,
+          "staticCodeCreated": true
+        }
+      },
+      "checks": [
+        {
+          "name": "replacement socket retained",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "partial-frame-timeout",
+      "kind": "real-native-socket",
+      "command": [
+        "serve",
+        "--workdir",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-q135Qc",
+        "--profile",
+        "/var/folders/5z/0dgzyc2j7hq0v4gnbx8pp1n80000gn/T/zody-cua-peer-r10-run-IWIwav/profile.synthetic.json",
+        "--expect-pid",
+        "85752",
+        "--expect-uid",
+        "501",
+        "--timeout-ms",
+        "500"
+      ],
+      "exitCode": 1,
+      "clientExitCode": 0,
+      "response": {
+        "schemaVersion": 1,
+        "errorNumber": 35,
+        "nativeCapabilityProven": false,
+        "mode": "serve",
+        "productHook": false,
+        "reason": "frame-read-failed: deadline exceeded",
+        "runtimeConsumable": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "status": "error",
+        "helperAuthorization": "blocked"
+      },
+      "checks": [
+        {
+          "name": "partial frame deadline fails closed",
+          "ok": true
+        }
+      ],
+      "status": "pass"
+    },
+    {
+      "id": "invalid-profile",
+      "kind": "js-preflight",
+      "status": "pass",
+      "response": {
+        "status": "blocked",
+        "code": "profile-invalid",
+        "policyErrors": [
+          "designatedRequirement must be exactly identifier \"<bundleId>\" and certificate leaf = H\"<40-hex SHA-1>\""
+        ],
+        "diagnosticOnly": true,
+        "grant": false,
+        "nativeCapabilityProven": false,
+        "runtimeConsumable": false,
+        "productHook": false
+      }
+    },
+    {
+      "id": "positive-signed-helper-blocked",
+      "kind": "blocked-not-tested",
+      "status": "pass",
+      "response": {
+        "status": "blocked",
+        "reason": "no certificate-backed local-self-signed Helper fixture is provided; no signing or keychain action was performed",
+        "tested": false,
+        "diagnosticOnly": true,
+        "grant": false,
+        "nativeCapabilityProven": false,
+        "runtimeConsumable": false,
+        "productHook": false
+      }
+    }
+  ],
+  "calibration": {
+    "status": "pass",
+    "reason": null,
+    "nodePath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+    "nodeExecutableSha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+    "leafCertificateSha256": "1236da9cb10f5b315b41c625401c6a11dddce90a32456dbab3729f18d88c9058",
+    "leafCertificateSha1": "a6862ab37a3b732d86865a4fee8d8f74554034bd",
+    "codesignVerify": {
+      "status": "pass",
+      "command": "/usr/bin/codesign",
+      "args": [
+        "--verify",
+        "--strict",
+        "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "timedOut": false,
+      "bufferOverflow": false,
+      "error": null,
+      "stdout": "",
+      "stderr": ""
+    },
+    "mechanism": "node-signature-lower-layer-control-not-local-self-signed-helper",
+    "attestsLoadedJs": false,
+    "scenarios": [
+      {
+        "id": "node-signature-lower-layer-positive",
+        "kind": "calibration-only-real-security",
+        "status": "pass",
+        "diagnostics": {
+          "lowerLayerPositive": true,
+          "positiveRejected": true,
+          "helperPolicyRejected": true,
+          "decision": {
+            "accepted": false,
+            "reason": "designated-requirement-mismatch"
+          },
+          "strictLocalSelfSignedDr": {
+            "expected": "identifier \"node\" and certificate leaf = H\"a6862ab37a3b732d86865a4fee8d8f74554034bd\"",
+            "stored": "identifier node and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = HX7739G8FX",
+            "storedStrictlyMatched": false
+          }
+        },
+        "expected": {
+          "pid": 85786,
+          "uid": 501
+        },
+        "response": {
+          "strictLocalSelfSignedDr": {
+            "expected": "identifier \"node\" and certificate leaf = H\"a6862ab37a3b732d86865a4fee8d8f74554034bd\"",
+            "stored": "identifier node and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = HX7739G8FX",
+            "storedStrictlyMatched": false
+          },
+          "staticArtifact": {
+            "matched": false,
+            "executableSha256": {
+              "expected": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+              "actual": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+              "matched": true
+            },
+            "errors": [
+              "entitlements differ from pinned profile"
+            ],
+            "architectures": {
+              "expected": [
+                "arm64"
+              ],
+              "actual": [
+                "arm64"
+              ],
+              "matched": true
+            },
+            "allPerformed": true,
+            "entitlements": {
+              "matched": false,
+              "expectedJson": "{}",
+              "actualJson": "{\"com.apple.security.cs.allow-dyld-environment-variables\":true,\"com.apple.security.cs.allow-jit\":true,\"com.apple.security.cs.allow-unsigned-executable-memory\":true,\"com.apple.security.cs.disable-executable-page-protection\":true,\"com.apple.security.cs.disable-library-validation\":true,\"com.apple.security.get-task-allow\":true}"
+            },
+            "executablePath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+            "minimumMacOS": {
+              "expected": "13.5",
+              "actual": "13.5",
+              "matched": true
+            }
+          },
+          "status": "reject",
+          "checkedScope": [
+            "AF_UNIX LOCAL_PEERTOKEN full audit token",
+            "SecCodeCopyGuestWithAttributes(kSecGuestAttributeAudit)",
+            "SecCodeCheckValidity and signing information",
+            "leaf DER SHA-256, identifier and narrow designated requirement",
+            "actual static executable SHA-256, entitlements, architecture and minimum macOS"
+          ],
+          "calibrationOnly": true,
+          "attestsLoadedJs": false,
+          "grant": false,
+          "runtimeConsumable": false,
+          "kind": "zody-cua-peer-diagnostic-report",
+          "helperAuthorization": "blocked",
+          "profileValidationScope": "12-field schema plus identity policy only; bundle metadata and a full static doctor are not performed",
+          "calibrationNote": "Node signature mechanism control only; not Zody Helper acceptance and not attestation of loaded JavaScript.",
+          "productHook": false,
+          "lowerLayerSecurityControl": {
+            "leafRequirementMatched": true,
+            "leafSha256Matched": true,
+            "leafSha1Matched": true,
+            "leafCertificatePresent": true,
+            "guestCreated": true,
+            "codeValid": true
+          },
+          "schemaVersion": 1,
+          "nodeSignatureMechanismControl": true,
+          "nativeCapabilityProven": false,
+          "decision": {
+            "accepted": false,
+            "reason": "designated-requirement-mismatch"
+          },
+          "diagnosticOnly": true,
+          "notPerformed": [
+            "TCC authorization",
+            "machine lease",
+            "native input or screenshots",
+            "product runtime consumption",
+            "positive local-self-signed Helper",
+            "bundle ShortVersion/Version/executableName against the actual bundle",
+            "full 12-field static doctor"
+          ],
+          "localSelfSignedHelperAcceptance": false,
+          "peer": {
+            "pidVersionExpected": null,
+            "pidVersionMatchMode": "not-pinned",
+            "asidObserved": 100018,
+            "asidExpected": null,
+            "usesPidFallback": false,
+            "pidVersionMatched": "not-pinned",
+            "pidVersionObserved": 64734746,
+            "peerTokenSource": "getsockopt(LOCAL_PEERTOKEN)",
+            "pidExpected": 85786,
+            "auidObserved": 501,
+            "rgidObserved": 20,
+            "transport": "af_unix",
+            "pidMatched": true,
+            "pidObserved": 85786,
+            "asidMatchMode": "not-pinned",
+            "auditTokenCaptured": true,
+            "euidObserved": 501,
+            "euidExpected": 501,
+            "asidMatched": "not-pinned",
+            "loginSessionInferred": false,
+            "ruidObserved": 501,
+            "euidMatched": true,
+            "parentRelationshipInferred": false,
+            "uidEqualityIsNotSessionProof": true,
+            "auditTokenFields": [
+              "pid",
+              "euid",
+              "auid",
+              "ruid",
+              "rgid",
+              "asid",
+              "pidversion"
+            ]
+          },
+          "mode": "calibration-serve",
+          "security": {
+            "requirementStatus": 0,
+            "guestCreated": true,
+            "guestStatus": 0,
+            "leafCertificateSha1": "a6862ab37a3b732d86865a4fee8d8f74554034bd",
+            "usesPidFallback": false,
+            "certificatePresent": true,
+            "leafCertificateSha256": "1236da9cb10f5b315b41c625401c6a11dddce90a32456dbab3729f18d88c9058",
+            "storedDrStrictPolicyMatched": false,
+            "guestAttribute": "kSecGuestAttributeAudit",
+            "guestApi": "SecCodeCopyGuestWithAttributes",
+            "entitlementsJson": "{\"com.apple.security.cs.allow-dyld-environment-variables\":true,\"com.apple.security.cs.allow-jit\":true,\"com.apple.security.cs.allow-unsigned-executable-memory\":true,\"com.apple.security.cs.disable-executable-page-protection\":true,\"com.apple.security.cs.disable-library-validation\":true,\"com.apple.security.get-task-allow\":true}",
+            "checkValidityFlags": "kSecCSDefaultFlags",
+            "validityStatus": 0,
+            "executablePath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+            "executed": true,
+            "certificateCount": 3,
+            "flags": 65536,
+            "designatedRequirement": "identifier node and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = HX7739G8FX",
+            "staticCodeStatus": 0,
+            "identifier": "node",
+            "signingInfoAvailable": true,
+            "requirementMatched": true,
+            "signingStatus": 0,
+            "adhoc": false,
+            "entitlementsPresent": true,
+            "codeValid": true,
+            "staticCodeCreated": true
+          }
+        },
+        "leafSha256": "1236da9cb10f5b315b41c625401c6a11dddce90a32456dbab3729f18d88c9058",
+        "leafSha1": "a6862ab37a3b732d86865a4fee8d8f74554034bd"
+      },
+      {
+        "id": "node-signature-wrong-pin-negative",
+        "kind": "calibration-only-real-security",
+        "status": "pass",
+        "diagnostics": {
+          "negativeRejected": true,
+          "decision": {
+            "accepted": false,
+            "reason": "leaf-sha256-mismatch"
+          }
+        },
+        "expected": {
+          "pid": 85792,
+          "uid": 501
+        },
+        "response": {
+          "strictLocalSelfSignedDr": {
+            "expected": "identifier \"node\" and certificate leaf = H\"a6862ab37a3b732d86865a4fee8d8f74554034bd\"",
+            "stored": "identifier node and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = HX7739G8FX",
+            "storedStrictlyMatched": false
+          },
+          "staticArtifact": {
+            "matched": false,
+            "executableSha256": {
+              "expected": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+              "actual": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+              "matched": true
+            },
+            "errors": [
+              "entitlements differ from pinned profile"
+            ],
+            "architectures": {
+              "expected": [
+                "arm64"
+              ],
+              "actual": [
+                "arm64"
+              ],
+              "matched": true
+            },
+            "allPerformed": true,
+            "entitlements": {
+              "matched": false,
+              "expectedJson": "{}",
+              "actualJson": "{\"com.apple.security.cs.allow-dyld-environment-variables\":true,\"com.apple.security.cs.allow-jit\":true,\"com.apple.security.cs.allow-unsigned-executable-memory\":true,\"com.apple.security.cs.disable-executable-page-protection\":true,\"com.apple.security.cs.disable-library-validation\":true,\"com.apple.security.get-task-allow\":true}"
+            },
+            "executablePath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+            "minimumMacOS": {
+              "expected": "13.5",
+              "actual": "13.5",
+              "matched": true
+            }
+          },
+          "status": "reject",
+          "checkedScope": [
+            "AF_UNIX LOCAL_PEERTOKEN full audit token",
+            "SecCodeCopyGuestWithAttributes(kSecGuestAttributeAudit)",
+            "SecCodeCheckValidity and signing information",
+            "leaf DER SHA-256, identifier and narrow designated requirement",
+            "actual static executable SHA-256, entitlements, architecture and minimum macOS"
+          ],
+          "calibrationOnly": true,
+          "attestsLoadedJs": false,
+          "grant": false,
+          "runtimeConsumable": false,
+          "kind": "zody-cua-peer-diagnostic-report",
+          "helperAuthorization": "blocked",
+          "profileValidationScope": "12-field schema plus identity policy only; bundle metadata and a full static doctor are not performed",
+          "calibrationNote": "Node signature mechanism control only; not Zody Helper acceptance and not attestation of loaded JavaScript.",
+          "productHook": false,
+          "lowerLayerSecurityControl": {
+            "leafRequirementMatched": true,
+            "leafSha256Matched": false,
+            "leafSha1Matched": true,
+            "leafCertificatePresent": true,
+            "guestCreated": true,
+            "codeValid": true
+          },
+          "schemaVersion": 1,
+          "nodeSignatureMechanismControl": true,
+          "nativeCapabilityProven": false,
+          "decision": {
+            "accepted": false,
+            "reason": "leaf-sha256-mismatch"
+          },
+          "diagnosticOnly": true,
+          "notPerformed": [
+            "TCC authorization",
+            "machine lease",
+            "native input or screenshots",
+            "product runtime consumption",
+            "positive local-self-signed Helper",
+            "bundle ShortVersion/Version/executableName against the actual bundle",
+            "full 12-field static doctor"
+          ],
+          "localSelfSignedHelperAcceptance": false,
+          "peer": {
+            "pidVersionExpected": null,
+            "pidVersionMatchMode": "not-pinned",
+            "asidObserved": 100018,
+            "asidExpected": null,
+            "usesPidFallback": false,
+            "pidVersionMatched": "not-pinned",
+            "pidVersionObserved": 64734758,
+            "peerTokenSource": "getsockopt(LOCAL_PEERTOKEN)",
+            "pidExpected": 85792,
+            "auidObserved": 501,
+            "rgidObserved": 20,
+            "transport": "af_unix",
+            "pidMatched": true,
+            "pidObserved": 85792,
+            "asidMatchMode": "not-pinned",
+            "auditTokenCaptured": true,
+            "euidObserved": 501,
+            "euidExpected": 501,
+            "asidMatched": "not-pinned",
+            "loginSessionInferred": false,
+            "ruidObserved": 501,
+            "euidMatched": true,
+            "parentRelationshipInferred": false,
+            "uidEqualityIsNotSessionProof": true,
+            "auditTokenFields": [
+              "pid",
+              "euid",
+              "auid",
+              "ruid",
+              "rgid",
+              "asid",
+              "pidversion"
+            ]
+          },
+          "mode": "calibration-serve",
+          "security": {
+            "requirementStatus": 0,
+            "guestCreated": true,
+            "guestStatus": 0,
+            "leafCertificateSha1": "a6862ab37a3b732d86865a4fee8d8f74554034bd",
+            "usesPidFallback": false,
+            "certificatePresent": true,
+            "leafCertificateSha256": "1236da9cb10f5b315b41c625401c6a11dddce90a32456dbab3729f18d88c9058",
+            "storedDrStrictPolicyMatched": false,
+            "guestAttribute": "kSecGuestAttributeAudit",
+            "guestApi": "SecCodeCopyGuestWithAttributes",
+            "entitlementsJson": "{\"com.apple.security.cs.allow-dyld-environment-variables\":true,\"com.apple.security.cs.allow-jit\":true,\"com.apple.security.cs.allow-unsigned-executable-memory\":true,\"com.apple.security.cs.disable-executable-page-protection\":true,\"com.apple.security.cs.disable-library-validation\":true,\"com.apple.security.get-task-allow\":true}",
+            "checkValidityFlags": "kSecCSDefaultFlags",
+            "validityStatus": 0,
+            "executablePath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+            "executed": true,
+            "certificateCount": 3,
+            "flags": 65536,
+            "designatedRequirement": "identifier node and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = HX7739G8FX",
+            "staticCodeStatus": 0,
+            "identifier": "node",
+            "signingInfoAvailable": true,
+            "requirementMatched": true,
+            "signingStatus": 0,
+            "adhoc": false,
+            "entitlementsPresent": true,
+            "codeValid": true,
+            "staticCodeCreated": true
+          }
+        },
+        "wrongLeafSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ]
+  },
+  "calibrationScenarios": [
+    {
+      "id": "node-signature-lower-layer-positive",
+      "kind": "calibration-only-real-security",
+      "status": "pass",
+      "diagnostics": {
+        "lowerLayerPositive": true,
+        "positiveRejected": true,
+        "helperPolicyRejected": true,
+        "decision": {
+          "accepted": false,
+          "reason": "designated-requirement-mismatch"
+        },
+        "strictLocalSelfSignedDr": {
+          "expected": "identifier \"node\" and certificate leaf = H\"a6862ab37a3b732d86865a4fee8d8f74554034bd\"",
+          "stored": "identifier node and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = HX7739G8FX",
+          "storedStrictlyMatched": false
+        }
+      },
+      "expected": {
+        "pid": 85786,
+        "uid": 501
+      },
+      "response": {
+        "strictLocalSelfSignedDr": {
+          "expected": "identifier \"node\" and certificate leaf = H\"a6862ab37a3b732d86865a4fee8d8f74554034bd\"",
+          "stored": "identifier node and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = HX7739G8FX",
+          "storedStrictlyMatched": false
+        },
+        "staticArtifact": {
+          "matched": false,
+          "executableSha256": {
+            "expected": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+            "actual": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+            "matched": true
+          },
+          "errors": [
+            "entitlements differ from pinned profile"
+          ],
+          "architectures": {
+            "expected": [
+              "arm64"
+            ],
+            "actual": [
+              "arm64"
+            ],
+            "matched": true
+          },
+          "allPerformed": true,
+          "entitlements": {
+            "matched": false,
+            "expectedJson": "{}",
+            "actualJson": "{\"com.apple.security.cs.allow-dyld-environment-variables\":true,\"com.apple.security.cs.allow-jit\":true,\"com.apple.security.cs.allow-unsigned-executable-memory\":true,\"com.apple.security.cs.disable-executable-page-protection\":true,\"com.apple.security.cs.disable-library-validation\":true,\"com.apple.security.get-task-allow\":true}"
+          },
+          "executablePath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+          "minimumMacOS": {
+            "expected": "13.5",
+            "actual": "13.5",
+            "matched": true
+          }
+        },
+        "status": "reject",
+        "checkedScope": [
+          "AF_UNIX LOCAL_PEERTOKEN full audit token",
+          "SecCodeCopyGuestWithAttributes(kSecGuestAttributeAudit)",
+          "SecCodeCheckValidity and signing information",
+          "leaf DER SHA-256, identifier and narrow designated requirement",
+          "actual static executable SHA-256, entitlements, architecture and minimum macOS"
+        ],
+        "calibrationOnly": true,
+        "attestsLoadedJs": false,
+        "grant": false,
+        "runtimeConsumable": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "helperAuthorization": "blocked",
+        "profileValidationScope": "12-field schema plus identity policy only; bundle metadata and a full static doctor are not performed",
+        "calibrationNote": "Node signature mechanism control only; not Zody Helper acceptance and not attestation of loaded JavaScript.",
+        "productHook": false,
+        "lowerLayerSecurityControl": {
+          "leafRequirementMatched": true,
+          "leafSha256Matched": true,
+          "leafSha1Matched": true,
+          "leafCertificatePresent": true,
+          "guestCreated": true,
+          "codeValid": true
+        },
+        "schemaVersion": 1,
+        "nodeSignatureMechanismControl": true,
+        "nativeCapabilityProven": false,
+        "decision": {
+          "accepted": false,
+          "reason": "designated-requirement-mismatch"
+        },
+        "diagnosticOnly": true,
+        "notPerformed": [
+          "TCC authorization",
+          "machine lease",
+          "native input or screenshots",
+          "product runtime consumption",
+          "positive local-self-signed Helper",
+          "bundle ShortVersion/Version/executableName against the actual bundle",
+          "full 12-field static doctor"
+        ],
+        "localSelfSignedHelperAcceptance": false,
+        "peer": {
+          "pidVersionExpected": null,
+          "pidVersionMatchMode": "not-pinned",
+          "asidObserved": 100018,
+          "asidExpected": null,
+          "usesPidFallback": false,
+          "pidVersionMatched": "not-pinned",
+          "pidVersionObserved": 64734746,
+          "peerTokenSource": "getsockopt(LOCAL_PEERTOKEN)",
+          "pidExpected": 85786,
+          "auidObserved": 501,
+          "rgidObserved": 20,
+          "transport": "af_unix",
+          "pidMatched": true,
+          "pidObserved": 85786,
+          "asidMatchMode": "not-pinned",
+          "auditTokenCaptured": true,
+          "euidObserved": 501,
+          "euidExpected": 501,
+          "asidMatched": "not-pinned",
+          "loginSessionInferred": false,
+          "ruidObserved": 501,
+          "euidMatched": true,
+          "parentRelationshipInferred": false,
+          "uidEqualityIsNotSessionProof": true,
+          "auditTokenFields": [
+            "pid",
+            "euid",
+            "auid",
+            "ruid",
+            "rgid",
+            "asid",
+            "pidversion"
+          ]
+        },
+        "mode": "calibration-serve",
+        "security": {
+          "requirementStatus": 0,
+          "guestCreated": true,
+          "guestStatus": 0,
+          "leafCertificateSha1": "a6862ab37a3b732d86865a4fee8d8f74554034bd",
+          "usesPidFallback": false,
+          "certificatePresent": true,
+          "leafCertificateSha256": "1236da9cb10f5b315b41c625401c6a11dddce90a32456dbab3729f18d88c9058",
+          "storedDrStrictPolicyMatched": false,
+          "guestAttribute": "kSecGuestAttributeAudit",
+          "guestApi": "SecCodeCopyGuestWithAttributes",
+          "entitlementsJson": "{\"com.apple.security.cs.allow-dyld-environment-variables\":true,\"com.apple.security.cs.allow-jit\":true,\"com.apple.security.cs.allow-unsigned-executable-memory\":true,\"com.apple.security.cs.disable-executable-page-protection\":true,\"com.apple.security.cs.disable-library-validation\":true,\"com.apple.security.get-task-allow\":true}",
+          "checkValidityFlags": "kSecCSDefaultFlags",
+          "validityStatus": 0,
+          "executablePath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+          "executed": true,
+          "certificateCount": 3,
+          "flags": 65536,
+          "designatedRequirement": "identifier node and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = HX7739G8FX",
+          "staticCodeStatus": 0,
+          "identifier": "node",
+          "signingInfoAvailable": true,
+          "requirementMatched": true,
+          "signingStatus": 0,
+          "adhoc": false,
+          "entitlementsPresent": true,
+          "codeValid": true,
+          "staticCodeCreated": true
+        }
+      },
+      "leafSha256": "1236da9cb10f5b315b41c625401c6a11dddce90a32456dbab3729f18d88c9058",
+      "leafSha1": "a6862ab37a3b732d86865a4fee8d8f74554034bd"
+    },
+    {
+      "id": "node-signature-wrong-pin-negative",
+      "kind": "calibration-only-real-security",
+      "status": "pass",
+      "diagnostics": {
+        "negativeRejected": true,
+        "decision": {
+          "accepted": false,
+          "reason": "leaf-sha256-mismatch"
+        }
+      },
+      "expected": {
+        "pid": 85792,
+        "uid": 501
+      },
+      "response": {
+        "strictLocalSelfSignedDr": {
+          "expected": "identifier \"node\" and certificate leaf = H\"a6862ab37a3b732d86865a4fee8d8f74554034bd\"",
+          "stored": "identifier node and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = HX7739G8FX",
+          "storedStrictlyMatched": false
+        },
+        "staticArtifact": {
+          "matched": false,
+          "executableSha256": {
+            "expected": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+            "actual": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+            "matched": true
+          },
+          "errors": [
+            "entitlements differ from pinned profile"
+          ],
+          "architectures": {
+            "expected": [
+              "arm64"
+            ],
+            "actual": [
+              "arm64"
+            ],
+            "matched": true
+          },
+          "allPerformed": true,
+          "entitlements": {
+            "matched": false,
+            "expectedJson": "{}",
+            "actualJson": "{\"com.apple.security.cs.allow-dyld-environment-variables\":true,\"com.apple.security.cs.allow-jit\":true,\"com.apple.security.cs.allow-unsigned-executable-memory\":true,\"com.apple.security.cs.disable-executable-page-protection\":true,\"com.apple.security.cs.disable-library-validation\":true,\"com.apple.security.get-task-allow\":true}"
+          },
+          "executablePath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+          "minimumMacOS": {
+            "expected": "13.5",
+            "actual": "13.5",
+            "matched": true
+          }
+        },
+        "status": "reject",
+        "checkedScope": [
+          "AF_UNIX LOCAL_PEERTOKEN full audit token",
+          "SecCodeCopyGuestWithAttributes(kSecGuestAttributeAudit)",
+          "SecCodeCheckValidity and signing information",
+          "leaf DER SHA-256, identifier and narrow designated requirement",
+          "actual static executable SHA-256, entitlements, architecture and minimum macOS"
+        ],
+        "calibrationOnly": true,
+        "attestsLoadedJs": false,
+        "grant": false,
+        "runtimeConsumable": false,
+        "kind": "zody-cua-peer-diagnostic-report",
+        "helperAuthorization": "blocked",
+        "profileValidationScope": "12-field schema plus identity policy only; bundle metadata and a full static doctor are not performed",
+        "calibrationNote": "Node signature mechanism control only; not Zody Helper acceptance and not attestation of loaded JavaScript.",
+        "productHook": false,
+        "lowerLayerSecurityControl": {
+          "leafRequirementMatched": true,
+          "leafSha256Matched": false,
+          "leafSha1Matched": true,
+          "leafCertificatePresent": true,
+          "guestCreated": true,
+          "codeValid": true
+        },
+        "schemaVersion": 1,
+        "nodeSignatureMechanismControl": true,
+        "nativeCapabilityProven": false,
+        "decision": {
+          "accepted": false,
+          "reason": "leaf-sha256-mismatch"
+        },
+        "diagnosticOnly": true,
+        "notPerformed": [
+          "TCC authorization",
+          "machine lease",
+          "native input or screenshots",
+          "product runtime consumption",
+          "positive local-self-signed Helper",
+          "bundle ShortVersion/Version/executableName against the actual bundle",
+          "full 12-field static doctor"
+        ],
+        "localSelfSignedHelperAcceptance": false,
+        "peer": {
+          "pidVersionExpected": null,
+          "pidVersionMatchMode": "not-pinned",
+          "asidObserved": 100018,
+          "asidExpected": null,
+          "usesPidFallback": false,
+          "pidVersionMatched": "not-pinned",
+          "pidVersionObserved": 64734758,
+          "peerTokenSource": "getsockopt(LOCAL_PEERTOKEN)",
+          "pidExpected": 85792,
+          "auidObserved": 501,
+          "rgidObserved": 20,
+          "transport": "af_unix",
+          "pidMatched": true,
+          "pidObserved": 85792,
+          "asidMatchMode": "not-pinned",
+          "auditTokenCaptured": true,
+          "euidObserved": 501,
+          "euidExpected": 501,
+          "asidMatched": "not-pinned",
+          "loginSessionInferred": false,
+          "ruidObserved": 501,
+          "euidMatched": true,
+          "parentRelationshipInferred": false,
+          "uidEqualityIsNotSessionProof": true,
+          "auditTokenFields": [
+            "pid",
+            "euid",
+            "auid",
+            "ruid",
+            "rgid",
+            "asid",
+            "pidversion"
+          ]
+        },
+        "mode": "calibration-serve",
+        "security": {
+          "requirementStatus": 0,
+          "guestCreated": true,
+          "guestStatus": 0,
+          "leafCertificateSha1": "a6862ab37a3b732d86865a4fee8d8f74554034bd",
+          "usesPidFallback": false,
+          "certificatePresent": true,
+          "leafCertificateSha256": "1236da9cb10f5b315b41c625401c6a11dddce90a32456dbab3729f18d88c9058",
+          "storedDrStrictPolicyMatched": false,
+          "guestAttribute": "kSecGuestAttributeAudit",
+          "guestApi": "SecCodeCopyGuestWithAttributes",
+          "entitlementsJson": "{\"com.apple.security.cs.allow-dyld-environment-variables\":true,\"com.apple.security.cs.allow-jit\":true,\"com.apple.security.cs.allow-unsigned-executable-memory\":true,\"com.apple.security.cs.disable-executable-page-protection\":true,\"com.apple.security.cs.disable-library-validation\":true,\"com.apple.security.get-task-allow\":true}",
+          "checkValidityFlags": "kSecCSDefaultFlags",
+          "validityStatus": 0,
+          "executablePath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+          "executed": true,
+          "certificateCount": 3,
+          "flags": 65536,
+          "designatedRequirement": "identifier node and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = HX7739G8FX",
+          "staticCodeStatus": 0,
+          "identifier": "node",
+          "signingInfoAvailable": true,
+          "requirementMatched": true,
+          "signingStatus": 0,
+          "adhoc": false,
+          "entitlementsPresent": true,
+          "codeValid": true,
+          "staticCodeCreated": true
+        }
+      },
+      "wrongLeafSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "evidence": {
+    "trueUnixPeerCapture": true,
+    "realSecurityRejection": true,
+    "syntheticPolicyPositive": true,
+    "positiveSignedHelper": "blocked",
+    "staticArtifactChecks": "performed",
+    "socketRetention": true,
+    "partialFrameDeadline": true,
+    "asidPinned": false,
+    "pidVersionPinned": false,
+    "loginSessionInferred": false,
+    "parentRelationshipInferred": false,
+    "nodeSignatureControl": "pass",
+    "nodeLoadedJsAttested": false
+  },
+  "checkedScope": [
+    "own AF_UNIX listener and own test client",
+    "getsockopt(LOCAL_PEERTOKEN) full audit token, including asid and pidversion",
+    "SecCodeCopyGuestWithAttributes(kSecGuestAttributeAudit), no PID fallback",
+    "SecCodeCheckValidity plus explicit narrow requirement success",
+    "leaf DER SHA-256, signing identifier and strict designated requirement",
+    "actual static executable SHA-256, entitlements, architecture and minimum macOS",
+    "owned inode/device socket cleanup and bounded partial-frame deadline",
+    "Node signature mechanism as a calibration-only lower-layer control"
+  ],
+  "notPerformed": [
+    "positive local-self-signed Helper",
+    "TCC authorization",
+    "machine lease",
+    "native input or screenshots",
+    "product runtime consumption of diagnostic JSON",
+    "bundle ShortVersion/Version/executableName cross-checks",
+    "full 12-field static doctor",
+    "Node loaded-JavaScript attestation"
+  ],
+  "failingScenarios": [],
+  "reportPath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-final/reports/test-report.json"
+}

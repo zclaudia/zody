@@ -1,0 +1,29 @@
+{
+  "nodeUnchanged": true,
+  "visualStaticlibUnchanged": true,
+  "entries": [
+    {
+      "name": "host-entry.mjs",
+      "unchanged": false,
+      "sha256": "3500acf53dfde738c6f89ec367eca4f0af39087f0b035a3b40d3d1df33495122"
+    },
+    {
+      "name": "cli-entry.mjs",
+      "unchanged": false,
+      "sha256": "96f7a3472f7a4cfee75c325cf2fd8c0005de91a92e51f6c20caf689b37d4757a"
+    },
+    {
+      "name": "session-entry.mjs",
+      "unchanged": false,
+      "sha256": "0976aa7d29b763729140dfca4501ec4a300b21d0830e7a5bb9ff517743179bb6"
+    }
+  ],
+  "tests": [
+    "session-binding-confirmation:pass",
+    "session-control:pass",
+    "session-capture-file:pass",
+    "session-authority-fd:pass",
+    "session-exit-policy:pass",
+    "session-workspace-handoff:pass"
+  ]
+}

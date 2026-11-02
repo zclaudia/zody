@@ -1,0 +1,84 @@
+[
+  {
+    "argv": [
+      "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+      "packages/desktop/scripts/build-cua-desktop-session.mjs",
+      "--output-root",
+      "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-build-appkit"
+    ],
+    "exitCode": 0,
+    "log": "build-appkit.log"
+  },
+  {
+    "argv": [
+      "codesign",
+      "--force",
+      "--sign",
+      "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+      "--options",
+      "runtime",
+      "--timestamp=none",
+      "--requirements",
+      "=designated => identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+      "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-signed-appkit/Zody CUA Desktop Session.app"
+    ],
+    "exitCode": 0,
+    "log": "sign-appkit.log"
+  },
+  {
+    "argv": [
+      "codesign",
+      "--verify",
+      "--strict",
+      "--verbose=2",
+      "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-signed-appkit/Zody CUA Desktop Session.app"
+    ],
+    "exitCode": 0,
+    "log": "verify-helper-appkit.log"
+  },
+  {
+    "argv": [
+      "codesign",
+      "--verify",
+      "--strict",
+      "--verbose=2",
+      "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-signed-appkit/Zody CUA Desktop Session.app/Contents/Resources/node"
+    ],
+    "exitCode": 0,
+    "log": "verify-node-appkit.log"
+  },
+  {
+    "argv": [
+      "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+      "packages/desktop/scripts/build-cua-desktop-candidate-app.mjs",
+      "--helper-app",
+      "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-signed-appkit/Zody CUA Desktop Session.app",
+      "--output",
+      "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit"
+    ],
+    "exitCode": 0,
+    "log": "ui-build-appkit.log"
+  },
+  {
+    "argv": [
+      "codesign",
+      "--verify",
+      "--strict",
+      "--verbose=2",
+      "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app"
+    ],
+    "exitCode": 0,
+    "log": "verify-packaged-helper-appkit.log"
+  },
+  {
+    "argv": [
+      "codesign",
+      "--verify",
+      "--strict",
+      "--verbose=2",
+      "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/Resources/node"
+    ],
+    "exitCode": 0,
+    "log": "verify-packaged-node-appkit.log"
+  }
+]

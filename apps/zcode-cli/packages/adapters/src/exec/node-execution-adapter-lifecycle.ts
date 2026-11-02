@@ -9,6 +9,7 @@ import {
 import type {
   BashBackgroundLifecycleMode,
   BashBackgroundLifecycleResult,
+  ExecutionOutputPaths,
   InternalExecutionRunOptions,
 } from "./execution-adapter-types.js";
 import type {
@@ -31,15 +32,43 @@ export class NodeExecutionAdapterLifecycle extends NodeExecutionAdapterRun {
     const taskId = `exec_${crypto.randomUUID()}`;
     const controller = new AbortController();
     const startedAt = new Date();
-    const outputPaths = this.outputPathsForRequest(request);
     const runRequest =
       request.captureCwdAfterSuccess === true
         ? { ...request, captureCwdAfterSuccess: undefined }
         : request;
-    if (runRequest !== request) {
-      this.outputPathsByRequest.set(runRequest, outputPaths);
+    // I16：后台记录必须复用实际选中的输出根（配置根不可写时可能已回落）。
+    let outputPaths: ExecutionOutputPaths;
+    try {
+      outputPaths = await this.trackOutputPreparation(
+        (async () => {
+          const prepared = await this.prepareOutputPaths(request);
+          if (runRequest !== request) this.shareOutputPaths(request, runRequest);
+          if (!isBashMergedOutputRequest(runRequest)) {
+            await this.ensureBackgroundOutputFiles(prepared, runRequest);
+          }
+          return prepared;
+        })(),
+      );
+    } catch (error) {
+      // 三层输出根都不可用时登记一条已结算的 spawn_error 后台记录，调用方从任务快照拿到失败，
+      // 与 run()/runBashWithBackgroundLifecycle() 的结算语义保持一致。
+      const failure = this.toFailure("spawn_error", error);
+      const record = this.createBackgroundTaskRecord({
+        controller,
+        outputPaths: {},
+        startedAt,
+        taskId,
+        request,
+      });
+      this.backgroundTasks.set(taskId, record);
+      this.finalizeBackgroundTaskRecord(
+        record,
+        this.createStoppedResult(startedAt, "spawn_error", failure.message),
+      );
+      return { taskId, status: "running", startedAt };
     }
-    if (!isBashMergedOutputRequest(runRequest)) await this.ensureBackgroundOutputFiles(outputPaths);
+    // I16：准备期间可能已经开始 close()；此时不再启动新执行，临时根由 shutdown 统一删除。
+    if (this.closePromise) throw new Error("Execution adapter is shutting down");
     const record = this.createBackgroundTaskRecord({
       controller,
       outputPaths,
@@ -104,6 +133,17 @@ export class NodeExecutionAdapterLifecycle extends NodeExecutionAdapterRun {
     lifecycle: { mode: BashBackgroundLifecycleMode },
     options: ExecutionRunOptions = {},
   ): Promise<BashBackgroundLifecycleResult> {
+    // I16：与 run()/start() 一致，adapter 已在关闭时不再启动新执行。
+    if (this.closePromise) {
+      return {
+        kind: "foreground",
+        result: this.createStoppedResult(
+          new Date(),
+          "cancelled",
+          "Execution adapter is shutting down",
+        ),
+      };
+    }
     const useBashFile = isBashMergedOutputRequest(request);
     const timeoutMs = request.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     if (lifecycle.mode === "auto_on_timeout" && timeoutMs <= 0) {
@@ -130,9 +170,35 @@ export class NodeExecutionAdapterLifecycle extends NodeExecutionAdapterRun {
         persistOutput: "always",
       },
     };
-    const outputPaths = this.outputPathsForRequest(runRequest);
-    if (!isBashMergedOutputRequest(runRequest)) {
-      await this.ensureBackgroundOutputFiles(outputPaths);
+    let outputPaths: ExecutionOutputPaths;
+    try {
+      outputPaths = await this.trackOutputPreparation(
+        (async () => {
+          const prepared = await this.prepareOutputPaths(runRequest);
+          if (!isBashMergedOutputRequest(runRequest)) {
+            await this.ensureBackgroundOutputFiles(prepared, runRequest);
+          }
+          return prepared;
+        })(),
+      );
+    } catch (error) {
+      // I16：三层输出根都不可用时按 spawn_error 结算，不退化成 rejected promise。
+      const failure = this.toFailure("spawn_error", error);
+      return {
+        kind: "foreground",
+        result: this.createStoppedResult(startedAt, "spawn_error", failure.message),
+      };
+    }
+    // I16：准备期间可能已经开始 close()；直接按取消结算，临时根由 shutdown 删除。
+    if (this.closePromise) {
+      return {
+        kind: "foreground",
+        result: this.createStoppedResult(
+          startedAt,
+          "cancelled",
+          "Execution adapter is shutting down",
+        ),
+      };
     }
     const record = this.createBackgroundTaskRecord({
       controller,

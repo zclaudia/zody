@@ -1,0 +1,19 @@
+✔ entry pins stay bound to their own name and hash (1.038125ms)
+✔ unsupported native shim must match its fixed hash (4.101833ms)
+✔ workspace dist inputs map to current source behind workspace exports (0.487542ms)
+✔ workspace source resolver restores caller pluginData (0.592417ms)
+✔ sealed entry audit rejects runtime package resolution and records wasm references (2.309167ms)
+✔ sealed entry audit rejects stale workspace dist inputs (2.212167ms)
+✔ webassembly scan reports the import-time line (0.107292ms)
+✔ embedded bundle import.meta.url is pinned to a fixed file URL (219.9875ms)
+✔ fixture helper keeps hashing through the fixed toolchain module (1.45925ms)
+✔ candidate fetch performs real localhost requests through node-fetch (72.146458ms)
+✔ candidate fetch rejects proxy/CA and real node-fetch handles data URIs (19.557833ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 286.087583

@@ -244,14 +244,39 @@ describe.each(["desktop-continuous", "web-remote-replayable"] as const)(
         if (wire.kind !== "complete") throw new Error("Expected a complete frame");
         const frame = conversationTopicFrameSchema.parse(wire.frame);
         if (frame.payload.kind !== "snapshot") throw new Error("Expected snapshot");
+        // I19：history 首帧先交付 durable 正文；config/legacy provider 解析属于 READY。
+        expect(JSON.stringify(frame.payload.snapshot)).toContain("Existing history");
+
+        const ready = await server.handleMessage({
+          id: "subscribe-ready",
+          method: V4_METHODS.conversationRowsRange,
+          params: { sessionId: sessionID, limit: 1 },
+        });
+        expect(ready).toHaveProperty("result");
+        const resubscribed = await server.handleMessage({
+          id: "subscribe-after-ready",
+          method: V4_METHODS.conversationSubscribe,
+          params: {
+            topic: conversationTopic(sessionID),
+            connectionId: "test-ready",
+            clientMode,
+            resumeThoughtLevel: "high",
+          },
+        });
+        expect(resubscribed).toHaveProperty("result");
+        const readyMessages = server.takePostResponseMessages("subscribe-after-ready");
+        const readyWire = routedTopicWireFrameSchema.parse(readyMessages[0]?.params);
+        if (readyWire.kind !== "complete") throw new Error("Expected a complete frame");
+        const readyFrame = conversationTopicFrameSchema.parse(readyWire.frame);
+        if (readyFrame.payload.kind !== "snapshot") throw new Error("Expected snapshot");
         // Snapshot 搬运保存意图供公共 View 解析；不可用档位/模型不能在到达 UI 前丢失。
-        expect(frame.payload.snapshot.config).toMatchObject({
+        expect(readyFrame.payload.snapshot.config).toMatchObject({
           provider,
           model,
           thought: "options" in stored ? (stored.options?.reasoningLevel ?? "") : "",
         });
         expect(legacyProviderResolveRequests).toHaveLength(0);
-        expect(JSON.stringify(frame.payload.snapshot)).toContain("Existing history");
+        expect(JSON.stringify(readyFrame.payload.snapshot)).toContain("Existing history");
         expect(apps[0]?.runtime.getSessionModelSelection()).toBeUndefined();
         // 订阅成功不代表其他读取入口安全：未绑定会话还必须能生成严格协议快照。
         const read = await server.handleMessage({

@@ -2,11 +2,11 @@ import { localRuntimeNetworkCapture } from "#src/zcode-agent/localRuntimeNetwork
 import { resolveZCodeAgentSpawnCwd } from "#src/zcode-agent/zcodeAgentSpawnCwd.js";
 import type { ZCodeAgentStorageStartupSnapshot } from "#src/zcode-agent/zcodeAgent.js";
 /* eslint-disable max-lines -- zcodeAgentProcessManager 集中维护 agent 子进程启动、复用、超时回收和 runtime identity，拆分会扩大进程生命周期状态同步面 */
-import { spawn } from "node:child_process";
-import type { ChildProcessWithoutNullStreams } from "node:child_process";
+import { spawn, type ChildProcess, type StdioOptions } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
+import { Readable, Writable } from "node:stream";
 import { Emitter } from "@zcode/rpc";
 import { GEN_UI_OUTPUT_DIRECTORY, GEN_UI_OUTPUT_ROOT_ENV } from "@zcode/shared/node";
 import { getAppConfigDir } from "../paths.js";
@@ -27,6 +27,7 @@ import {
   zcodeProtocolMethods,
   zcodeRuntimeIdentityInitializeResultSchema,
 } from "@zcode/shared";
+import type { ModelSelection } from "@zcode/shared";
 import {
   findZCodeAgentRuntimeBinary,
   findZCodeAgentRuntimeNodeBundle,
@@ -34,8 +35,9 @@ import {
 import { isEffectiveDevelopmentNodeEnv } from "#src/runtime-tools/nodeEnv.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { ZCodeProtocolClient } from "./zcodeProtocolClient.js";
-import { ZCodeStdioTransport } from "./zcodeStdioTransport.js";
+import { ZCodeStdioTransport, type ZCodeStdioChildLike } from "./zcodeStdioTransport.js";
 import { readZCodeStdioTapDevState } from "./zcodeStdioTapDevConfig.js";
+import { parseCuaNativeAuditLine } from "./cuaNativeAuditLog.js";
 import type { ZCodeAgentPresentationSurface } from "./zcodeAgentPresentationSurface.js";
 import { shouldSpawnInDetachedProcessGroup } from "../process/processTreeTerminator.js";
 import type { RuntimeProcessLifecycleReporter } from "../process/runtimeProcessLifecycle.js";
@@ -50,6 +52,29 @@ export interface ZCodeAgentCommand {
   args?: string[];
   cwd?: string;
   env?: Record<string, string>;
+  /** Native CLI launcher supplies its protocol on dedicated fds instead of stdio 0/1. */
+  stdio?: StdioOptions;
+  stdioIndexes?: { stdin: number; stdout: number; stderr?: number };
+  /** Explicit native launcher commands must never be wrapped by the dev Node proxy. */
+  nativeLauncher?: boolean;
+}
+
+/**
+ * Fixed native CLI launcher configuration supplied by trusted composition.
+ *
+ * This is wiring, not an OS trust proof. The native launcher verifies the signed CLI
+ * entry and audit token; this object only tells the Host how to invoke it.
+ */
+export interface ZCodeAgentNativeRuntimeConfig {
+  /** Absolute path of the native launcher that verifies signed resources. */
+  readonly launcherPath: string;
+  readonly entryName?: "cli-entry.mjs";
+  /** Native protocol fds; defaults 6/7. */
+  readonly cliInFd?: number;
+  readonly cliOutFd?: number;
+  /** Default direct keeps the existing argv; workspace-relay adds the fixed launcher flag. */
+  readonly launchMode?: "direct" | "workspace-relay";
+  readonly env?: Readonly<Record<string, string>>;
 }
 
 export interface ZCodeAgentCommandResolverContext {
@@ -63,8 +88,46 @@ export type ZCodeAgentCommandResolver = (
   context: ZCodeAgentCommandResolverContext,
 ) => Promise<ZCodeAgentCommand | null> | ZCodeAgentCommand | null;
 
+/**
+ * Host-owned startup facts read from the existing provider/model/settings services.
+ * Provider/network values are normalized summaries, not credentials or task-time overrides.
+ */
+export interface ZCodeAgentNativeRuntimeStartupContext {
+  readonly providerRevisionSha256: string;
+  readonly selection: ModelSelection | null;
+  readonly network: {
+    readonly httpProxy?: string | null;
+    readonly noProxy?: string | null;
+    readonly caCertPath?: string | null;
+  };
+}
+
+export interface ZCodeAgentNativeRuntimeResolverContext {
+  /** Called for every new Agent spawn; the Host must re-read current service facts. */
+  readonly readStartupContext: () => Promise<ZCodeAgentNativeRuntimeStartupContext>;
+}
+
+/**
+ * Selects the native CLI launcher for a specific spawn context.
+ *
+ * Returning `null` is the normal fallback: the manager keeps its original command
+ * resolver, so non-eligible local/remote workspaces never enter the native path.
+ * This is routing, not an authorization or trust proof.
+ */
+export type ZCodeAgentNativeRuntimeResolver = (
+  context: ZCodeAgentCommandResolverContext,
+  runtimeContext?: ZCodeAgentNativeRuntimeResolverContext,
+) => Promise<ZCodeAgentNativeRuntimeConfig | null> | ZCodeAgentNativeRuntimeConfig | null;
+
 export interface ZCodeAgentProcessManagerOptions {
   commandResolver?: ZCodeAgentCommandResolver;
+  /** Trusted composition injects this to bypass PATH/env command discovery. */
+  nativeRuntime?: ZCodeAgentNativeRuntimeConfig;
+  /**
+   * Optional per-workspace native-runtime selector. Only a non-null result overrides
+   * the original resolver; otherwise the existing command resolution is preserved.
+   */
+  nativeRuntimeResolver?: ZCodeAgentNativeRuntimeResolver;
   presentationSurface?: ZCodeAgentPresentationSurface;
   requestTimeoutMs?: number;
   processLifecycleReporter?: RuntimeProcessLifecycleReporter;
@@ -123,7 +186,7 @@ export interface ZCodeAgentProcessManagerOptions {
 
 interface ManagedZCodeAgentProcess {
   client: ZCodeProtocolClient;
-  child: ChildProcessWithoutNullStreams;
+  child: ChildProcess;
   cleanupPromise?: Promise<void>;
   exited: boolean;
   firstCleanupReason?: AgentProcessCleanupReason;
@@ -467,9 +530,106 @@ function resolveElectronRuntimeZCodeAgentCommand(
   };
 }
 
+function assertAbsoluteNativeRuntimePath(path: string, field: string): void {
+  if (!isAbsolute(path)) {
+    throw new Error(`ZCode Agent native runtime ${field} must be an absolute path: ${path}`);
+  }
+}
+
+function assertNativeRuntimeEnv(
+  env: Readonly<Record<string, string>> | undefined,
+  context: string,
+): void {
+  if (env && Object.prototype.hasOwnProperty.call(env, "ELECTRON_RUN_AS_NODE")) {
+    throw new Error(`${context} must not set ELECTRON_RUN_AS_NODE`);
+  }
+}
+
+function assertNativeCliFd(fd: number, field: string): void {
+  if (!Number.isInteger(fd) || fd < 3 || fd > 1_024) {
+    throw new Error(`ZCode Agent native runtime ${field} must be an fd between 3 and 1024`);
+  }
+}
+
+/** Validate a trusted native launcher config before it reaches spawn. */
+export function validateZCodeAgentNativeRuntimeConfig(
+  config: ZCodeAgentNativeRuntimeConfig,
+): ZCodeAgentNativeRuntimeConfig {
+  assertAbsoluteNativeRuntimePath(config.launcherPath, "launcherPath");
+  if (config.entryName !== undefined && config.entryName !== "cli-entry.mjs") {
+    throw new Error(`Unsupported ZCode Agent native entry: ${config.entryName}`);
+  }
+  const cliInFd = config.cliInFd ?? 6;
+  const cliOutFd = config.cliOutFd ?? 7;
+  assertNativeCliFd(cliInFd, "cliInFd");
+  assertNativeCliFd(cliOutFd, "cliOutFd");
+  if (cliInFd === cliOutFd) {
+    throw new Error("ZCode Agent native runtime cliInFd and cliOutFd must differ");
+  }
+  if (
+    config.launchMode !== undefined &&
+    config.launchMode !== "direct" &&
+    config.launchMode !== "workspace-relay"
+  ) {
+    throw new Error(`Unsupported ZCode Agent native launchMode: ${config.launchMode}`);
+  }
+  assertNativeRuntimeEnv(config.env, "ZCode Agent native runtime env");
+  return config;
+}
+
+function buildNativeCliStdio(cliInFd: number, cliOutFd: number): StdioOptions {
+  const lastFd = Math.max(cliInFd, cliOutFd, 2);
+  return Array.from({ length: lastFd + 1 }, (_, fd) => {
+    // 根因：native 协议输出只读 cliOutFd（默认 7），原实现把 fd1 也建成 pipe；
+    // 该 pipe 没有任何消费者，native/子进程日志写满 pipe 缓冲后会阻塞。
+    // fd1 不是协议通道，直接忽略，仅保留 stderr 与显式协议 fd。
+    if (fd === 2 || fd === cliInFd || fd === cliOutFd) return "pipe";
+    return "ignore";
+  });
+}
+
+/** Build the Agent command from the trusted native launcher config. */
+export function resolveZCodeAgentNativeRuntimeCommand(
+  config: ZCodeAgentNativeRuntimeConfig,
+  context: ZCodeAgentCommandResolverContext,
+): ZCodeAgentCommand {
+  validateZCodeAgentNativeRuntimeConfig(config);
+  const cliInFd = config.cliInFd ?? 6;
+  const cliOutFd = config.cliOutFd ?? 7;
+  const args = [
+    "--launch-session",
+    "--entry-name",
+    "cli-entry.mjs",
+    "--cli-in-fd",
+    String(cliInFd),
+    "--cli-out-fd",
+    String(cliOutFd),
+  ];
+  if (config.launchMode === "workspace-relay") {
+    args.push("--launch-via-workspace");
+  }
+  return {
+    command: config.launcherPath,
+    args,
+    cwd: context.workspacePath,
+    // Native entry has no separate storage worker path. Requiring storage startup without
+    // one would silently fall back to a non-native CLI spawn.
+    supportsStorageStartup: false,
+    nativeLauncher: true,
+    stdio: buildNativeCliStdio(cliInFd, cliOutFd),
+    stdioIndexes: { stdin: cliInFd, stdout: cliOutFd, stderr: 2 },
+    ...(config.env ? { env: { ...config.env } } : {}),
+  };
+}
+
 export function resolveDefaultZCodeAgentCommand(
   context: ZCodeAgentCommandResolverContext,
+  options?: { nativeRuntime?: ZCodeAgentNativeRuntimeConfig | null },
 ): ZCodeAgentCommand | null {
+  // 可信组合注入优先于任何 PATH/env 发现；环境变量不能改写固定 native 启动。
+  if (options?.nativeRuntime) {
+    return resolveZCodeAgentNativeRuntimeCommand(options.nativeRuntime, context);
+  }
   const command = process.env.ZCODE_AGENT_SERVER_COMMAND?.trim();
   if (command) {
     return applyPresentationSurfaceToCommand(
@@ -533,6 +693,11 @@ export function wrapZCodeAgentCommandWithStdioTapDevProxy(
   command: ZCodeAgentCommand,
   workspaceKey: string,
 ): ZCodeAgentCommand {
+  // Native launcher verification is bound to its exact argv/fds; wrapping it with a Node
+  // dev proxy would both break the protocol and bypass the native entry contract.
+  if (command.nativeLauncher) {
+    return command;
+  }
   const tapState = readZCodeStdioTapDevState();
   if (!tapState.enabled) {
     return command;
@@ -564,6 +729,72 @@ export function wrapZCodeAgentCommandWithStdioTapDevProxy(
       ...command.env,
       ELECTRON_RUN_AS_NODE: "1",
     },
+  };
+}
+
+/**
+ * Builds the manager's command resolver without losing the existing resolution path.
+ *
+ * Priority: an explicit `nativeRuntime` composition wins (sealed candidate Host),
+ * then the selective resolver for eligible workspaces, then the original resolver.
+ * A selective resolver that returns `null` must not change local/remote behavior.
+ */
+export function createZCodeAgentCommandResolver(
+  options?: ZCodeAgentProcessManagerOptions,
+): ZCodeAgentCommandResolver {
+  const fallbackResolver = options?.commandResolver ?? resolveDefaultZCodeAgentCommand;
+  const nativeRuntime = options?.nativeRuntime;
+  if (nativeRuntime) {
+    return (context) => resolveZCodeAgentNativeRuntimeCommand(nativeRuntime, context);
+  }
+  // Selective startup-profile routing belongs to the chat/main lane only. Control-plane,
+  // plugin, and background managers keep their original command resolver even when the
+  // shared service options contain a native resolver.
+  const nativeRuntimeResolver = options?.lane?.trim() ? undefined : options?.nativeRuntimeResolver;
+  if (!nativeRuntimeResolver) {
+    return fallbackResolver;
+  }
+  return async (context) => {
+    const selected = await nativeRuntimeResolver(context);
+    if (!selected) return fallbackResolver(context);
+    return resolveZCodeAgentNativeRuntimeCommand(selected, context);
+  };
+}
+
+function createZCodeStdioChildView(
+  child: ChildProcess,
+  command: ZCodeAgentCommand,
+): ZCodeStdioChildLike {
+  const indexes = command.stdioIndexes;
+  const stdin = indexes ? child.stdio[indexes.stdin] : child.stdin;
+  const stdout = indexes ? child.stdio[indexes.stdout] : child.stdout;
+  const stderr = indexes ? child.stdio[indexes.stderr ?? 2] : child.stderr;
+  if (
+    !(stdin instanceof Writable) ||
+    !(stdout instanceof Readable) ||
+    !(stderr instanceof Readable)
+  ) {
+    throw new Error("ZCode Agent spawn did not expose the configured protocol stdio streams");
+  }
+  return {
+    get pid() {
+      return child.pid;
+    },
+    get killed() {
+      return child.killed;
+    },
+    get exitCode() {
+      return child.exitCode;
+    },
+    get signalCode() {
+      return child.signalCode;
+    },
+    stdin,
+    stdout,
+    stderr,
+    processTreeChild: child,
+    once: child.once.bind(child),
+    off: child.off.bind(child),
   };
 }
 
@@ -628,7 +859,7 @@ export class ZCodeAgentProcessManager {
   readonly onRuntimeLifecycle = this.runtimeLifecycleEmitter.event;
 
   constructor(options?: ZCodeAgentProcessManagerOptions) {
-    this.commandResolver = options?.commandResolver ?? resolveDefaultZCodeAgentCommand;
+    this.commandResolver = createZCodeAgentCommandResolver(options);
     this.presentationSurface = options?.presentationSurface;
     this.requestTimeoutMs = options?.requestTimeoutMs;
     this.processLifecycleReporter = options?.processLifecycleReporter;
@@ -1175,11 +1406,18 @@ export class ZCodeAgentProcessManager {
         ...buildAgentWorkspaceIdentityEnv(params.workspaceIdentity),
         ...buildE2EAgentCoverageEnv(),
       },
-      stdio: ["pipe", "pipe", "pipe"],
+      stdio: effectiveCommand.stdio ?? ["pipe", "pipe", "pipe"],
     });
     const startedAt = Date.now();
     const stderrTail = createAgentStderrTail();
-    const transport = new ZCodeStdioTransport(child, {
+    let transportChild: ZCodeStdioChildLike;
+    try {
+      transportChild = createZCodeStdioChildView(child, effectiveCommand);
+    } catch (error) {
+      child.kill();
+      throw error;
+    }
+    const transport = new ZCodeStdioTransport(transportChild, {
       onStderrLine: (line) => {
         const diagnostic = parseZCodeProcessDiagnostic(line);
         if (diagnostic && typeof child.pid === "number") {
@@ -1218,6 +1456,16 @@ export class ZCodeAgentProcessManager {
           return;
         }
         stderrTail.append(line);
+        if (effectiveCommand.nativeLauncher) {
+          // 根因：fixed native launcher 的审计 marker 过去只进 debug/退出 tail，正式包
+          // 看不到存活 cell 的验证与 diagnostic gate；这里只提升严格解析后的固定行，
+          // 不转发普通 CLI stderr，也不把该自报日志当作身份或授权事实。
+          const normalizedAuditLine = parseCuaNativeAuditLine(line);
+          if (normalizedAuditLine) {
+            log("CUA native audit", normalizedAuditLine);
+            return;
+          }
+        }
         debugLog(line);
       },
       ownedProcessStartedAtMs: spawnRequestedAt,

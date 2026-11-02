@@ -32,8 +32,10 @@ import {
 } from "@zcode/services/node";
 import { type ResolveRemoteCdnOptions } from "./remoteCdn.js";
 import { getElectronAppPath, isElectronAppPackaged } from "./desktopElectronApp.js";
+import { resolveCandidateApplicationName } from "./candidateNativeHostLaunch.js";
 
 declare const __ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__: Readonly<Record<string, string>> | undefined;
+declare const __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__: string | undefined;
 
 const isLocalDevelopmentRuntime = !isElectronAppPackaged();
 export const desktopRuntimeEnv: ZCodeRuntimeEnv = isLocalDevelopmentRuntime
@@ -56,7 +58,11 @@ function isTruthyRuntimeEnvOverride(name: string): boolean {
 // e2e 运行的是生产构建，默认会和本机正式版 Zody 共用 app name / userData，
 // 触发 Electron 单实例锁后只激活已有窗口，Chromedriver 无法接管测试进程。
 // 这里允许测试显式隔离运行时身份，正常桌面/远控路径保持原来的默认值。
+const candidateApplicationName = !isLocalDevelopmentRuntime
+  ? (resolveNormalCuaCandidateUiName() ?? resolveCandidateApplicationName())
+  : undefined;
 export const runtimeApplicationName =
+  candidateApplicationName ??
   readRuntimeEnvOverride("ZCODE_DESKTOP_APPLICATION_NAME") ??
   (isLocalDevelopmentRuntime ? "Zody Dev" : isPreviewPackagedRuntime ? "Zody Preview" : "Zody");
 // Electron 的 app.getPath("home") 不一定跟随测试进程里的 HOME 覆盖。
@@ -66,12 +72,37 @@ export const runtimeHomePath = readRuntimeEnvOverride("ZCODE_DESKTOP_HOME_DIR");
 export const shouldUseElectronDefaultUserDataPath = isTruthyRuntimeEnvOverride(
   "ZCODE_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA",
 );
+// Candidate builds use a separate fixed Electron UI profile. This does not replace the
+// native Host launch seam or the shared CLI session store used by real sessions.
+/** Normal CUA candidate UI identity is fixed at build time and never selected by runtime input. */
+export function resolveNormalCuaCandidateUiName(
+  configured: string | undefined = typeof __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__ === "undefined"
+    ? undefined
+    : __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__,
+): string | undefined {
+  if (configured === undefined) return undefined;
+  if (typeof configured !== "string") {
+    throw new Error("normal CUA candidate UI name must be a string");
+  }
+  const trimmed = configured.trim();
+  if (!trimmed) {
+    throw new Error("normal CUA candidate UI name must not be empty");
+  }
+  return trimmed;
+}
+
+const candidateProfileRoot =
+  candidateApplicationName !== undefined
+    ? join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME, "desktop", candidateApplicationName)
+    : undefined;
 export const runtimeUserDataPath =
+  (candidateProfileRoot ? join(candidateProfileRoot, "user-data") : undefined) ??
   readRuntimeEnvOverride("ZCODE_DESKTOP_USER_DATA_DIR") ??
   (shouldUseElectronDefaultUserDataPath
     ? undefined
     : join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME, "desktop", runtimeApplicationName));
 export const runtimeSessionDataPath =
+  (candidateProfileRoot ? join(candidateProfileRoot, "session-data") : undefined) ??
   readRuntimeEnvOverride("ZCODE_DESKTOP_SESSION_DATA_DIR") ??
   (runtimeUserDataPath ? join(runtimeUserDataPath, "session") : undefined);
 // Chromedriver 会注入临时 --user-data-dir，并在该目录等待 DevToolsActivePort。

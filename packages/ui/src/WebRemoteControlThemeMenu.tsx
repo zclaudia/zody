@@ -17,7 +17,7 @@ const MOBILE_THEME_OPTIONS: Theme[] = [
   "zai-light",
 ];
 
-export function WebRemoteControlThemeMenu() {
+export function WebRemoteControlThemeMenu({ className }: { className?: string }) {
   const { intl } = useZCodeIntl();
   const theme = useZCodeStore((state) => state.theme);
   const setTheme = useZCodeStore((state) => state.setTheme);
@@ -25,10 +25,14 @@ export function WebRemoteControlThemeMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
+        {/* home-6/settings-2：触发器内部尺寸（icon-sm，24px 视觉）保持不变，
+          由调用方透传命中区类（如 size-11）扩到 ≥44px，适配所在页面的按钮排布。
+          本组件只在手机远控壳（StartPage / 任务首页 / 聊天页顶栏）渲染。 */}
         <Button
           type="button"
           variant="ghost"
           size="icon-sm"
+          className={className}
           aria-label={intl.formatMessage({ id: "webRemoteControl.themeMenu.trigger" })}
         >
           <Palette className="size-4" />
@@ -43,8 +47,10 @@ export function WebRemoteControlThemeMenu() {
             }
           }}
         >
+          {/* settings-2：纯触屏下菜单行原先仅 min-h-7（28px）；本组件是手机专属入口，
+            选项行直接抬到 44px 触屏高度，避免与相邻 24px 图标按钮之间误触。 */}
           {MOBILE_THEME_OPTIONS.map((option) => (
-            <DropdownMenuRadioItem key={option} value={option}>
+            <DropdownMenuRadioItem key={option} value={option} className="min-h-11">
               {option === "system"
                 ? intl.formatMessage({ id: "sidebar.settings.systemDefault" })
                 : intl.formatMessage({ id: `sidebar.settings.theme.${option}` })}

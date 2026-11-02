@@ -1,0 +1,15 @@
+{
+  "name": "verify-packaged-helper",
+  "argv": [
+    "/usr/bin/codesign",
+    "--verify",
+    "--strict",
+    "--verbose=2",
+    "output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:25:56.607754+00:00",
+  "seconds": 0.17,
+  "exitCode": 0,
+  "log": "verify-packaged-helper.log"
+}

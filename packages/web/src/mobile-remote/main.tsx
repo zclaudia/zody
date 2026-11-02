@@ -1,6 +1,7 @@
 import {
   generateMobileDeviceFingerprint,
   installDocumentHiddenMotionPause,
+  installMobileKeyboardInsetTracker,
   setStreamClientId,
 } from "@zcode/ui";
 import "@zcode/ui/styles.css";
@@ -15,6 +16,11 @@ import { bootstrapGatewayWebRemoteControl } from "./bootstrap.js";
  */
 
 installDocumentHiddenMotionPause();
+// 键盘避让基座（spec docs/web-remote-control/mobile-viewport-input-and-touch.md §2.2，D2 本轮实施）：
+// 安装 --zcode-keyboard-inset 的唯一所有者，覆盖 iOS Safari 侧软键盘避让（Android 侧由 mobile.html
+// viewport 的 interactive-widget=resizes-content 承担）。变量生命周期等于页面，与组件挂载无关，
+// 故与 installDocumentHiddenMotionPause 同样丢弃卸载函数；无 visualViewport 的环境安装为安全无操作。
+installMobileKeyboardInsetTracker();
 applyWebThemePreference();
 // 初始化流式 clientId，确保所有 hook 在首次渲染前就使用稳定 ID；
 // 建连前 seedStableWebRemoteControlClientId 会按 clientInstanceId 覆盖成持久 ID。

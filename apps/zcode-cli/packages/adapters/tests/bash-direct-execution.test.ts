@@ -77,7 +77,7 @@ async function fixture(shell: ExecutionShellSelection, code: string) {
       attributes: { toolCallId: "direct" },
     } as ExecutionRequest["trace"],
   };
-  return { adapter, request, release, path: join(root, "probe", "direct-stdout.log") };
+  return { adapter, request, release, path: join(root, "probe", "direct", "stdout.log") };
 }
 
 const gatedWriter = `const fs = require('node:fs');

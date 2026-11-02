@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 2,
+  "kind": "zody-cua-helper-product-wiring-source-baseline",
+  "provenance": {
+    "manifest": "output/cua-helper-round11/controller-signed/candidate/build/build-manifest.json",
+    "manifestSha256": "7c273c65bc523423a839ebbf6b45db804cd5eeb45a5016659ad77898781b07fc",
+    "manifestKind": "zody-cua-helper-round11-final-build",
+    "manifestStatus": "pass",
+    "note": "\u56fa\u5b9a R11 controller-signed frozen source hashes\uff1b\u6d3e\u751f stage \u5fc5\u987b\u9010\u4e00\u5339\u914d\uff0cpatch \u4ee5 --fuzz=0 \u5e94\u7528\u3002",
+    "mmKeyPrefixNote": "\u51bb\u7ed3 manifest \u7684 .mm \u4ee5\u88f8\u6587\u4ef6\u540d\u8bb0\u5f55\uff1b\u672c baseline \u4e3a stage \u6620\u5c04\u7edf\u4e00\u52a0 round11/src/ \u4e0e r10/src/ \u524d\u7f00\uff0chash \u503c\u672a\u6539\u3002"
+  },
+  "sources": {
+    "r10/src/calibration_profile.h": "8cd9da272de90dba45b807425d164d93d53e04ac2eacc73fd29649b0bb87d80d",
+    "r10/src/cli_common.h": "bb4d4545b0b1a3d5da39222b7cfda0a3fddabde463fd73ad0a98cca5b0b4beff",
+    "r10/src/macho_artifact.h": "85984a0e25d91ee922278ceeddb0e729479ff0b80de19984631f4026314bd833",
+    "r10/src/peer_frame.mm": "263574f244177c3d0c0ae36167ed9ae3d7db8a30a2afc1bcc6eca74fea2b9e2b",
+    "r10/src/peer_internal.h": "aa93a3576ced5d7a5332350cd01e3f4a630da0793ed03ad9d01a5e8cff3220f3",
+    "r10/src/peer_socket.h": "ef29202676e6484ce9cff0c4a32ff109ffb9a139884440bb963d170cb87855f6",
+    "r10/src/peer_socket.mm": "a6e274faf1a6994e67e80bc3855b9b071555b4a8cb7dd216a2ad591237845856",
+    "r10/src/policy.h": "b4bd22644ab26f8ceaf075ca4497f376e7246fb9d529a7d1c381421a6e402d07",
+    "r10/src/profile.h": "143b23a93be081441345bc358bf89cac48743b0d1b68502283bc7c652e6db6f3",
+    "r10/src/profile.mm": "124befc37b4c24eb85abf94cbe28a6241b13240448eadef7199a4dc33ab42c4e",
+    "r10/src/pure_policy.h": "8b2a10e88733dcef61c152e4fd9c49952cc1fa1a1d849babc4a65937bf31a7f0",
+    "r10/src/report.h": "7e0e1227ddb4614b7e4ced8bdfd978c59798cbe080a58544e3172a32d0658b58",
+    "r10/src/security_identity.h": "078e5129ceb343519db24f47b270378d87430713db661636637b3b54a2f2ec4a",
+    "r10/src/security_identity.mm": "fd1f5e62d1bdef5488016a656ffc61c3616b6069eda1ea0a9792c985771b29b2",
+    "r10/src/static_artifact.h": "e148e1e93d622cc664040df46277bab2edb77886e9d9fd7b7cbe3acb063416ad",
+    "round11/src/authority_client.h": "69544e503b4652804fcd6a1c729dd7fe35a1f6a94101b6a4f4a4227ecc275e93",
+    "round11/src/authority_client.mm": "7274d1b2f79fcaa71e263a1b6a3211cf60f4c05ba4682cf0b581c47bfd84e075",
+    "round11/src/bundle_paths.h": "62d6c52441f5da4a3991a52a35e4ded189bbd47f41e98e08fc24fe0c9a3fc5c9",
+    "round11/src/bundle_paths.mm": "276d43b9c769884c401543e316bad05c06088903c84dfac6ed28a275d646c966",
+    "round11/src/capture_owner.h": "a7f6f89a26e2e64a215f2441c68d354460a4d6617959cff8d219a7b38382f14f",
+    "round11/src/capture_owner.mm": "ccb3e5a3e9ffc375b96ea45b386cbb1b9430d8ab979113646e26661a5174516c",
+    "round11/src/machine_lease.h": "8df297f234a41678c8d052344bb2383eb914a725d7e0af644719aa5cf85cb0f9",
+    "round11/src/machine_lease.mm": "5c16cda5d41837dcb220fc3513c1f722efedbd89c908122be72cbf4b5baf8c1b",
+    "round11/src/main.mm": "085542973ea23b5195f5d56a49acbd5d4e418386c25cd9bb3d159daa613ea2dd",
+    "round11/src/node_process.h": "fefb26ab207fb41a2f3618ace4d07fda00161d98379c1bb04ccfdfc4cbf7220f",
+    "round11/src/node_process.mm": "59e15644f01b5bbcf4816b0e712c999346258ed791f8390f03d7039bf2f9d021",
+    "round11/src/orchestrator.h": "a62d0510d8dce7a13a396638a5565ac3265b6e32b87390ce3cdf96a7a87d30cd",
+    "round11/src/orchestrator.mm": "e6230a10c58868000d5f4aace8bcb6a53efee657625854ee5c9308f4dcf6089d",
+    "round11/src/peer_auth.h": "636f3f31af2e657bb4ddeaf50bea3db20b2e92da69fbc467c55f646015e46d23",
+    "round11/src/peer_auth.mm": "f8947693701056e544500aebafddc86307279540834a6fe0f7551a92f7b61142",
+    "round11/src/r11_pins.h": "1be71f6983b4d9e5269df148fe01ac3dab8e63cde9d261405771591510b460b6",
+    "round11/src/r11_pins.mm": "af44e539958d377841ed1f6927e612eeca5523abb0d2737f6d540e4bd9fbcca1",
+    "round11/src/r11_self_identity.h": "f653fd96e7290353670e871295d6b65fce2deacda1bdb8801abc1eea352e1e71",
+    "round11/src/r11_self_identity.mm": "50889c42a208134320ab94eca0998e3def05b362a1fba04cbdb4cd860e83f20f"
+  },
+  "patches": [
+    {
+      "id": "orchestrator-empty-bootstrap",
+      "file": "src/orchestrator.mm",
+      "path": "patches/orchestrator-empty-bootstrap.patch",
+      "sha256": "b729d8dac9dcdf8b12097eaff0ce7cdfdbb02e25478948e965a1504b4886c792",
+      "beforeSha256": "e6230a10c58868000d5f4aace8bcb6a53efee657625854ee5c9308f4dcf6089d",
+      "afterSha256": "1bc70a4c308a10a568ea86195b391ffabff791f8f7e0d467e0bb3248cbbc1b77"
+    },
+    {
+      "id": "orchestrator-helper-result-reason",
+      "file": "src/orchestrator.mm",
+      "path": "patches/orchestrator-helper-result-reason.patch",
+      "sha256": "b5845a60273058f10df48461739d4149cb75b66acbbba5c74422e6cc52cc96d8",
+      "beforeSha256": "1bc70a4c308a10a568ea86195b391ffabff791f8f7e0d467e0bb3248cbbc1b77",
+      "afterSha256": "3d75fd48ab1244560782dc19fa23cdbbabb2447ca803d708cb0d190c431b03ec"
+    },
+    {
+      "id": "node-stderr-observability",
+      "file": "src/node_process.mm",
+      "path": "patches/node-stderr-observability.patch",
+      "sha256": "3a904322b945df0e09ab202dd75e09449f5e0f7b6f48a305386f8c1db22dd242",
+      "beforeSha256": "59e15644f01b5bbcf4816b0e712c999346258ed791f8390f03d7039bf2f9d021",
+      "afterSha256": "8bee72852318fdf64b61114b239a5428c111f46df29766d05aae37048e0aa4cc"
+    }
+  ]
+}

@@ -16,6 +16,14 @@ import {
   restoreTargetNodePtyPrebuild,
 } from "./scripts/node-pty-package-assets.mjs";
 import { cleanupPackagedSourcemaps } from "./scripts/packaged-sourcemap-cleanup.mjs";
+import { refreshMacosAsarIntegrity } from "./scripts/macos-asar-integrity.mjs";
+import {
+  assertPackagedNarrowResource,
+  buildNarrowExtraResource,
+  getNarrowSignIgnorePatterns,
+  writeNarrowBuildAudit,
+} from "./scripts/macos-cua-narrow-resources.mjs";
+import { resolveMacosCuaDemoBuildSelection } from "./scripts/macos-cua-demo-defaults.mjs";
 import { getTargetPlatform } from "./scripts/target-platform.mjs";
 import {
   resolveDesktopArtifactSuffix,
@@ -58,6 +66,15 @@ const nativeSearchReleasePlan = resolveNativeSearchReleasePlan({
   platform: targetPlatform.os,
   arch: targetPlatform.arch,
 });
+// darwin/arm64 普通构建默认选择已实测 manifest/profile；显式 manifest/profile 仍优先。
+// 选择结果只进入本次 electron-builder，不会写进应用或成为 runtime 激活开关。
+const narrowSelection = await resolveMacosCuaDemoBuildSelection({
+  targetOs: targetPlatform.os,
+  targetArch: targetPlatform.arch,
+  env: process.env,
+});
+const narrowValidated = narrowSelection?.validated ?? null;
+const narrowExtraResources = buildNarrowExtraResource(narrowValidated);
 const rawMacSigningIdentity = process.env.APPLE_SIGNING_IDENTITY || process.env.CSC_NAME;
 const macSigningIdentity =
   rawMacSigningIdentity?.replace(/^Developer ID Application:\s*/, "") ?? null;
@@ -435,6 +452,21 @@ async function stripPackagedSourcemapReferences(context) {
   });
 }
 
+async function refreshPackagedDarwinAsarIntegrity(context) {
+  if (context.electronPlatformName !== "darwin") return null;
+  const appName = `${context.packager?.appInfo?.productFilename ?? "Zody"}.app`;
+  const integrity = await refreshMacosAsarIntegrity({
+    appAsarPath: resolveAppAsarPath(context),
+    infoPlistPath: resolve(context.appOutDir, appName, "Contents", "Info.plist"),
+  });
+  // 修复依据：afterPack 可能重写 app.asar，electron-builder 早先写入的 header hash 会过期；
+  // 必须在最后一次 rewrite 后、签名前按 raw header 刷新，archive full SHA 仅单独记账。
+  console.log(
+    `[afterPack] app.asar integrity refreshed header_sha256=${integrity.headerSha256} header_bytes=${integrity.headerBytes} archive_sha256=${integrity.archiveSha256} archive_bytes=${integrity.archiveBytes}`,
+  );
+  return integrity;
+}
+
 function assertPackagedNativeResourcePolicy(context) {
   const appAsarPath = resolveAppAsarPath(context);
   const entries = parseAsarListWithPackState(
@@ -486,8 +518,15 @@ function assertPackagedCuaSharp(context) {
   }
 }
 
-function assertPackagedCuaKoffi(context) {
-  const problems = verifyStagedKoffi({
+// 修复原因：开源占位树已删除旧 producer 插件的 koffi 资源。依据现行
+// docs/desktop/computer-use-producer-detection.md，producer 专属步骤必须先检测真实 producer；
+// 因此与 Helper/Sharp 一样以 isRealComputerUseProducerInstalled 为门，真实 producer 仍严格校验。
+export function assertPackagedCuaKoffi(
+  context,
+  { isRealProducer = shouldPackageComputerUseHelper, verifyKoffi = verifyStagedKoffi } = {},
+) {
+  if (!isRealProducer) return;
+  const problems = verifyKoffi({
     resourcesDir: resolvePackagedResourcesDir(context),
     targetPlatform,
   });
@@ -668,6 +707,23 @@ export default {
     await runTimedAsync("afterPack:stripPackagedSourcemapReferences", () =>
       stripPackagedSourcemapReferences(context),
     );
+    await runTimedAsync("afterPack:refreshDarwinAsarIntegrity", () =>
+      refreshPackagedDarwinAsarIntegrity(context),
+    );
+    if (narrowValidated) {
+      await runTimedAsync("afterPack:assertPackagedCuaNarrowResource", async () => {
+        const validated = await assertPackagedNarrowResource({
+          resourcesDir: resolvePackagedResourcesDir(context),
+          manifestPath: narrowValidated.manifestPath,
+          env: process.env,
+        });
+        await writeNarrowBuildAudit({
+          appOutDir: context.appOutDir,
+          validated,
+          packagedAppPath: validated.packagedAppPath,
+        });
+      });
+    }
     runTimedSync("afterPack:assertPackagedNativeResourcePolicy", () =>
       assertPackagedNativeResourcePolicy(context),
     );
@@ -739,6 +795,7 @@ export default {
                 },
               ]
             : []),
+          ...(narrowExtraResources ?? []),
           {
             // CUA 权限浮窗的吸附数据源（CGWindowListCopyWindowInfo，不需要任何 TCC 权限）。
             // 主进程按 process.resourcesPath 解析；缺失时 watcher fail-open，浮窗仍可用
@@ -873,6 +930,8 @@ export default {
     // electron-builder 若再次签名嵌套 Helper 会改变 CDHash，使最终用户包中的 staple 失效。
     signIgnore: [
       "[/\\\\]Contents[/\\\\]Resources[/\\\\]cua-helper([/\\\\]|$)",
+      // cua-narrow 是独立预签名槽位，禁止 electron-builder 再次签名改变 CDHash。
+      ...getNarrowSignIgnorePatterns(),
       "[/\\\\]Contents[/\\\\]Resources[/\\\\]glm([/\\\\]|$)",
       "[/\\\\]Contents[/\\\\]Resources[/\\\\]tools([/\\\\]|$)",
     ],

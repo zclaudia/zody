@@ -1,0 +1,20 @@
+{
+  "name": "sign-helper",
+  "argv": [
+    "/usr/bin/codesign",
+    "--force",
+    "--sign",
+    "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+    "--options",
+    "runtime",
+    "--timestamp=none",
+    "--requirements",
+    "=designated => identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+    "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-signed/Zody CUA Desktop Session.app"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:24:17.071043+00:00",
+  "seconds": 0.287,
+  "exitCode": 0,
+  "log": "sign-helper.log"
+}

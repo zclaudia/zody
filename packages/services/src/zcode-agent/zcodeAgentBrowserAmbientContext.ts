@@ -33,6 +33,18 @@ export interface BrowserAmbientContextExecutor {
     sessionContext: "live" | "cached";
     command: BrowserCommand;
   }): Promise<{ ok: boolean; [key: string]: unknown }>;
+  /** 用户显式配置的默认 backend browserId；缺省时 CLI 保持 IAB 默认。 */
+  getDefaultBrowserId?(input: {
+    requestId: string;
+    sessionId: string;
+    turnId?: string;
+    workspaceKey: string;
+    workspacePath: string;
+    workspaceIdentity?: string;
+    remoteSessionId?: string;
+    clientMode: BrowserClientMode;
+    sessionContext: "live" | "cached";
+  }): Promise<string | undefined>;
 }
 
 interface BrowserAmbientContextTarget {

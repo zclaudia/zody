@@ -6,8 +6,6 @@ import { createPortal } from "react-dom";
 import { PaletteIcon, WandSparkles } from "lucide-react";
 import {
   $createTextNode,
-  $getSelection,
-  $isRangeSelection,
   BLUR_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
   COMMAND_PRIORITY_LOW,
@@ -134,6 +132,20 @@ export function shouldFreezeMentionRecalcWhileComposing(
   userAgent: string,
 ): boolean {
   return isComposing && !/Android/i.test(userAgent);
+}
+
+/**
+ * 输入法组合期（拼音/假名未上屏）的 Enter 是「确认候选词」，不能被当成选中面板建议。
+ * 修复依据（手机远控走查 composer-2）：@ / $ / # 面板打开时用中文输入法搜索，
+ * CRITICAL 优先级的 Enter 处理器会把确认组合的 Enter 拦截为「选中高亮项」，
+ * 组合中的拼音被替换成 mention token。keyCode 229 兜底覆盖旧 WebView/Chromium
+ * 在 composition keydown 上不置 isComposing 的情况（Slack/React 通行判定）。
+ * SlashCommandPlugin 的 / 面板 Enter 处理器复用同一判定，保证两个触发器行为一致。
+ */
+export function isImeCompositionEnterEvent(
+  event: Pick<KeyboardEvent, "isComposing" | "keyCode"> | null | undefined,
+): boolean {
+  return event?.isComposing === true || event?.keyCode === 229;
 }
 
 export function MentionPlugin({
@@ -634,6 +646,10 @@ export function MentionPlugin({
     const unregisterEnter = editor.registerCommand(
       KEY_ENTER_COMMAND,
       (event) => {
+        // IME 组合期的 Enter 用于确认候选词，放行给 Lexical 默认行为，不拦截为面板选中（走查 composer-2）。
+        if (isImeCompositionEnterEvent(event)) {
+          return false;
+        }
         if (!selectOption(selectedIndex)) {
           return false;
         }

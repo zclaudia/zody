@@ -1,0 +1,32 @@
+
+ RUN  v4.1.4 /Users/zhvala/SourceCode/zody
+
+·········x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| packages/desktop/test/macosCuaPeerDiagnosticNative.test.ts > macOS CUA R10 native peer diagnostic > captures a real AF_UNIX audit token and rejects the ad-hoc peer via Security.framework
+AssertionError: expected 501 to be undefined // Object.is equality
+
+- Expected:
+undefined
+
++ Received:
+501
+
+ ❯ packages/desktop/test/macosCuaPeerDiagnosticNative.test.ts:59:45
+     57|     expect(real.response.peer.usesPidFallback).toBe(false);
+     58|     expect(real.response.peer.pidObserved).toBe(real.expected.pid);
+     59|     expect(real.response.peer.euidObserved).toBe(real.expected.euid);
+       |                                             ^
+     60|     expect(typeof real.response.peer.asidObserved).toBe("number");
+     61|     expect(typeof real.response.peer.pidVersionObserved).toBe("number"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 9 passed (10)
+   Start at  11:45:16
+   Duration  12.25s (transform 126ms, setup 94ms, import 84ms, tests 12.16s, environment 0ms)
+

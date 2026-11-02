@@ -1,0 +1,23 @@
+
+ RUN  v4.1.4 /Users/zhvala/SourceCode/zody
+
+ ❯ |unit| packages/desktop/test/tsupChunkIsolation.test.ts (0 test)
+ ❯ |unit| packages/desktop/test/devStartupReadyState.test.ts (0 test)
+(node:53500) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| packages/desktop/test/devStartupReadyState.test.ts [ packages/desktop/test/devStartupReadyState.test.ts ]
+ FAIL  |unit| packages/desktop/test/tsupChunkIsolation.test.ts [ packages/desktop/test/tsupChunkIsolation.test.ts ]
+Error: Cannot find module '/Users/zhvala/SourceCode/zody/node_modules/bundle-require/node_modules/esbuild/lib/main.js'. Please verify that the package.json has a valid "main" entry
+ ❯ Object.<anonymous> node_modules/bundle-require/dist/index.cjs:42:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  2 failed | 3 passed (5)
+      Tests  17 passed (17)
+   Start at  13:38:07
+   Duration  5.81s (transform 4.95s, setup 369ms, import 5.61s, tests 1.40s, environment 0ms)
+

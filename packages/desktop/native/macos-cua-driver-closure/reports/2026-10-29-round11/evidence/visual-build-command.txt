@@ -1,0 +1,1 @@
+/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin/cargo build --manifest-path /Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/source/Cargo.toml -p cua-macos-visual --release --locked --offline --target aarch64-apple-darwin

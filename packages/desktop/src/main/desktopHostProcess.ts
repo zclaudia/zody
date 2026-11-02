@@ -27,7 +27,7 @@ import type {
   PluginSandboxRegisterRequestPayload,
   PluginSandboxRegisterResultPayload,
 } from "@zcode/shared/mcp-apps";
-import type { UtilityProcess as ElectronUtilityProcess, MessagePortMain } from "electron";
+import type { MessagePortMain } from "electron";
 import {
   app,
   BrowserWindow,
@@ -36,6 +36,12 @@ import {
 } from "electron";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
+import {
+  spawnNativeHostProcess,
+  type NativeHostLaunchConfig,
+  type NodeHostProcess,
+} from "./nodeHostProcess.js";
 import { BroadcastHub } from "./broadcastHub.js";
 import { bindDatabaseStartupRelay } from "./databaseStartupRelay.js";
 import { getMainLaunchPartialMarks } from "./desktopLaunchMarks.js";
@@ -103,10 +109,10 @@ export interface SpawnHostProcessOptions {
   attachInitialServicePort?: boolean;
 }
 
-const exitedHostProcesses = new WeakSet<ElectronUtilityProcess>();
-const disposingHostProcesses = new Set<ElectronUtilityProcess>();
+const exitedHostProcesses = new WeakSet<HostProcessHandle>();
+const disposingHostProcesses = new Set<HostProcessHandle>();
 
-export function listDisposingHostProcesses(): ElectronUtilityProcess[] {
+export function listDisposingHostProcesses(): HostProcessHandle[] {
   return Array.from(disposingHostProcesses);
 }
 
@@ -168,10 +174,16 @@ export function spawnHostProcess(
     };
     broadcastHub: BroadcastHub;
     taskRealtimeBus?: TaskRealtimeBus;
-    windowHostProcessMap: Map<number, ElectronUtilityProcess>;
-    hostRunningTaskCountMap: Map<ElectronUtilityProcess, number>;
+    windowHostProcessMap: Map<number, HostProcessHandle>;
+    hostRunningTaskCountMap: Map<HostProcessHandle, number>;
+    /**
+     * Compile-time candidate composition. Undefined keeps the default Electron
+     * utilityProcess path. The native launcher verifies signatures/resources itself;
+     * Main only selects the transport.
+     */
+    nativeHostLaunch?: NativeHostLaunchConfig;
     onWorkspaceRunningTaskCountChanged?: (
-      child: ElectronUtilityProcess,
+      child: HostProcessHandle,
       event: {
         workspacePath: string;
         workspaceIdentity?: string;
@@ -186,10 +198,10 @@ export function spawnHostProcess(
     onMcpTelemetry?: (event: HostMcpTelemetryResponse) => void;
     onSessionCreateTelemetry?: (event: HostSessionCreateTelemetryResponse) => void;
     onCuaOperationStateChanged?: (
-      source: ElectronUtilityProcess,
+      source: HostProcessHandle,
       event: HostCuaOperationStateResponse,
     ) => void;
-    onCuaOperationStateSourceExited?: (source: ElectronUtilityProcess) => void;
+    onCuaOperationStateSourceExited?: (source: HostProcessHandle) => void;
     // fork（bot channels 移除，specs/bot-channels-removal.md）：三个
     // handleBotRemoteWorkspace* 依赖注入槽位随第三方 IM bot 远端 workspace 链删除。
     /** host → main：定时任务派发结果，转交给 cron scheduler 结算调度状态机。 */
@@ -247,38 +259,63 @@ export function spawnHostProcess(
     ) => PluginSandboxHandle | Promise<PluginSandboxHandle>;
   },
   options?: SpawnHostProcessOptions,
-): ElectronUtilityProcess {
-  const hostId = randomUUID();
+): HostProcessHandle {
+  const utilityHostId = randomUUID();
   const glmBinaryPath = resolveBundledGlmBinaryPath();
   const execArgv = [
     ...(RUNTIME_ZCODE_DEBUG ? [`--inspect-brk=${RUNTIME_ZCODE_DEBUG}`] : []),
     "--no-warnings",
   ];
-  const child = electronUtilityProcess.fork(hostModulePath, [], {
-    serviceName: formatZCodeHostProcessName(label),
-    execArgv,
-    env: {
-      ...buildHostProcessEnv(dependencies.hostProcessLocalEnv),
-      ...buildHostE2ECoverageEnv(),
-      ZCODE_PROCESS_LABEL: label,
-      // macOS-only: the Computer Use Helper launcher runs inside this forked host utilityProcess, whose
-      // code-signing identity is a nested Electron helper (NOT dev.zcode.app). Publish THIS (main
-      // Electron) process's pid — which IS dev.zcode.app — so helperLauncher passes it as
-      // `--launcher-pid` and the Helper's signature/peer verification succeeds instead of
-      // health-timing out. Env-name mirror of services' LAUNCHER_PID_ENV. Not set on
-      // Windows/Linux (CUA is macOS-only; nothing reads it there) to keep the host env pristine.
-      ...(process.platform === "darwin" ? { ZCODE_CUA_LAUNCHER_PID: String(process.pid) } : {}),
-      // fork（F2.6a，spec D1b）：桌面上下文提示固定开启，不再由 Main 读取远端灰度后
-      // 经依赖注入决定；Host env 恒为 1，下游 services/node.ts 的三态解析（"1"/"0"/缺省）
-      // 保持不变，Host/Agent 侧语义不受影响。
-      [ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]: "1",
-    },
-  });
+  const nativeHost: NodeHostProcess | undefined = dependencies.nativeHostLaunch
+    ? spawnNativeHostProcess({
+        config: {
+          ...dependencies.nativeHostLaunch,
+          env: {
+            ...buildHostProcessEnv(dependencies.hostProcessLocalEnv),
+            ...buildHostE2ECoverageEnv(),
+            ...dependencies.nativeHostLaunch.env,
+          },
+        },
+        label,
+        logger: {
+          info: (...args: unknown[]) => dependencies.logger.info(...args),
+          warn: (...args: unknown[]) => dependencies.logger.warn(...args),
+          error: (...args: unknown[]) => dependencies.logger.warn(...args),
+        },
+      })
+    : undefined;
+  const child: HostProcessHandle =
+    nativeHost ??
+    electronUtilityProcess.fork(hostModulePath, [], {
+      serviceName: formatZCodeHostProcessName(label),
+      execArgv,
+      env: {
+        ...buildHostProcessEnv(dependencies.hostProcessLocalEnv),
+        ...buildHostE2ECoverageEnv(),
+        ZCODE_PROCESS_LABEL: label,
+        // macOS-only: the Computer Use Helper launcher runs inside this forked host utilityProcess, whose
+        // code-signing identity is a nested Electron helper (NOT dev.zcode.app). Publish THIS (main
+        // Electron) process's pid — which IS dev.zcode.app — so helperLauncher passes it as
+        // `--launcher-pid` and the Helper's signature/peer verification succeeds instead of
+        // health-timing out. Env-name mirror of services' LAUNCHER_PID_ENV. Not set on
+        // Windows/Linux (CUA is macOS-only; nothing reads it there) to keep the host env pristine.
+        ...(process.platform === "darwin" ? { ZCODE_CUA_LAUNCHER_PID: String(process.pid) } : {}),
+        // fork（F2.6a，spec D1b）：桌面上下文提示固定开启，不再由 Main 读取远端灰度后
+        // 经依赖注入决定；Host env 恒为 1，下游 services/node.ts 的三态解析（"1"/"0"/缺省）
+        // 保持不变，Host/Agent 侧语义不受影响。
+        [ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]: "1",
+      },
+    });
 
+  dependencies.onExtensionHostReady?.(win, child);
   dependencies.logger.info(
-    `[spawnHostProcess] forked host process for (${label}), pid=${child.pid}`,
+    `[spawnHostProcess] started ${nativeHost ? "native candidate" : "utility"} host process for (${label}), pid=${child.pid}`,
   );
-  dependencies.logger.info(`[spawnHostProcess] host module path: ${hostModulePath}`);
+  dependencies.logger.info(
+    nativeHost
+      ? `[spawnHostProcess] native launcher path: ${dependencies.nativeHostLaunch?.launcherPath}`
+      : `[spawnHostProcess] host module path: ${hostModulePath}`,
+  );
   dependencies.logger.info(`[spawnHostProcess] glm binary path: ${glmBinaryPath ?? "<not found>"}`);
   dependencies.logger.info(
     `[spawnHostProcess] BIGMODEL_OAUTH_APP_SECRET source: ${process.env.BIGMODEL_OAUTH_APP_SECRET ? "process" : dependencies.hostProcessLocalEnv.BIGMODEL_OAUTH_APP_SECRET ? "dotenv" : "fallback"}`,
@@ -298,7 +335,8 @@ export function spawnHostProcess(
     hostLogRelay.onStdout(data.toString());
   });
 
-  const databaseStartupRelay = bindDatabaseStartupRelay(win, child, hostId);
+  const databaseStartupId = nativeHost ? randomUUID() : utilityHostId;
+  const databaseStartupRelay = bindDatabaseStartupRelay(win, child, databaseStartupId);
   child.on("message", (message: unknown) => {
     const result = hostResponseMessageSchema.safeParse(message);
     if (!result.success) {
@@ -638,21 +676,25 @@ export function spawnHostProcess(
       ...(dependencies.getMobileNotificationContext?.() ?? { enabled: false }),
     });
   const shouldAttachRealtimeHost = options?.taskRealtime != null;
-  // Host 实例身份属于整个 UtilityProcess 生命周期，不是 taskRealtime 的附属能力。
-  // Local services / Agent 启动身份必须始终拿到同一个真实 hostId。
-  const hostInitMessage: HostInitMessage = {
-    ...initMessage,
-    databaseStartupId: databaseStartupRelay.startupId,
-    hostId,
-    ...(shouldAttachRealtimeHost && options?.taskRealtime?.deliveryKind
-      ? { deliveryKind: options.taskRealtime.deliveryKind }
-      : {}),
-  };
+  // Host 实例身份属于整个 Host 进程生命周期，不是 taskRealtime 的附属能力。
+  // Local services / Agent 启动身份必须始终拿到同一个真实 hostId。Native Host 的
+  // hostId 只来自桥接 hello，Main 不能用自己生成的 id 替代或改写给业务初始化。
+  const sendHostInit = (hostId: string) => {
+    const hostInitMessage: HostInitMessage = {
+      ...initMessage,
+      databaseStartupId: databaseStartupRelay.startupId,
+      hostId,
+      ...(shouldAttachRealtimeHost && options?.taskRealtime?.deliveryKind
+        ? { deliveryKind: options.taskRealtime.deliveryKind }
+        : {}),
+    };
 
-  if (options?.attachInitialServicePort === false) {
-    child.postMessage(hostInitMessage);
-    publishNotificationContext();
-  } else {
+    if (options?.attachInitialServicePort === false) {
+      child.postMessage(hostInitMessage);
+      publishNotificationContext();
+      return;
+    }
+
     const { port1, port2 } = new MessageChannelMain();
     child.postMessage(hostInitMessage, [port2]);
     publishNotificationContext();
@@ -668,53 +710,87 @@ export function spawnHostProcess(
         [port1],
       );
     }
-  }
+  };
+
+  const attachRealtimeHost = (hostId: string) => {
+    if (shouldAttachRealtimeHost && dependencies.taskRealtimeBus && options?.taskRealtime) {
+      dependencies.taskRealtimeBus.registerHost({
+        hostId,
+        windowId: win.id,
+        child,
+        workspaceKeys: options.taskRealtime.workspaceKeys,
+        deliveryKind: options.taskRealtime.deliveryKind,
+      });
+      options.taskRealtime.onHostId?.(hostId);
+    }
+  };
 
   const windowId = win.webContents.id;
   const shouldRegisterBroadcast = options?.registerBroadcast ?? true;
-  if (shouldRegisterBroadcast) {
-    dependencies.broadcastHub.register(windowId, child);
-  }
-
-  if (shouldAttachRealtimeHost && dependencies.taskRealtimeBus && options?.taskRealtime) {
-    dependencies.taskRealtimeBus.registerHost({
-      hostId,
-      windowId: win.id,
-      child,
-      workspaceKeys: options.taskRealtime.workspaceKeys,
-      deliveryKind: options.taskRealtime.deliveryKind,
-    });
-    options.taskRealtime.onHostId?.(hostId);
-  }
-
-  registerHostProcess(label, child);
-
-  child.on("exit", (code) => {
-    exitedHostProcesses.add(child);
-    // Host exit 是 fail-hidden 权威边界；不能依赖即将退出的 Host 再补发 inactive。
-    dependencies.onCuaOperationStateSourceExited?.(child);
-    hostLogRelay.flushRawLogs();
-    dependencies.logger.info(`[spawnHostProcess] host process (${label}) exited with code ${code}`);
-    dependencies.hostRunningTaskCountMap.delete(child);
+  const registerBroadcast = () => {
     if (shouldRegisterBroadcast) {
-      dependencies.broadcastHub.unregister(windowId);
+      dependencies.broadcastHub.register(windowId, child);
     }
-    unregisterHostProcess(label);
-    for (const [wcId, process] of dependencies.windowHostProcessMap) {
-      if (process === child) {
-        dependencies.windowHostProcessMap.delete(wcId);
-        break;
+  };
+
+  const attachExitHandler = () => {
+    child.on("exit", (code) => {
+      exitedHostProcesses.add(child);
+      // Host exit 是 fail-hidden 权威边界；不能依赖即将退出的 Host 再补发 inactive。
+      dependencies.onCuaOperationStateSourceExited?.(child);
+      hostLogRelay.flushRawLogs();
+      dependencies.onExtensionHostExited?.(win, child);
+      dependencies.logger.info(
+        `[spawnHostProcess] host process (${label}) exited with code ${code}`,
+      );
+      dependencies.hostRunningTaskCountMap.delete(child);
+      if (shouldRegisterBroadcast) {
+        dependencies.broadcastHub.unregister(windowId);
       }
-    }
-  });
+      unregisterHostProcess(label);
+      for (const [wcId, process] of dependencies.windowHostProcessMap) {
+        if (process === child) {
+          dependencies.windowHostProcessMap.delete(wcId);
+          break;
+        }
+      }
+    });
+  };
+
+  if (nativeHost) {
+    // Native Host 先连桥并宣告 hostId；窗口路由/监听先登记，避免初始化期间的
+    // 早期广播丢失。InitLocal 必须等真实 hello 后再发。
+    registerBroadcast();
+    registerHostProcess(label, child);
+    attachExitHandler();
+    void nativeHost
+      .waitForHostId()
+      .then((hostId) => {
+        sendHostInit(hostId);
+        attachRealtimeHost(hostId);
+      })
+      .catch((error: unknown) => {
+        dependencies.logger.warn(
+          `[spawnHostProcess] native host (${label}) did not announce hostId`,
+          error,
+        );
+      });
+  } else {
+    // 默认 utilityProcess 路径保持原有同步顺序。
+    sendHostInit(utilityHostId);
+    registerBroadcast();
+    attachRealtimeHost(utilityHostId);
+    registerHostProcess(label, child);
+    attachExitHandler();
+  }
 
   return child;
 }
 
 export function disposeHostProcess(
-  child: ElectronUtilityProcess,
+  child: HostProcessHandle,
   label: string,
-  disposingHostProcessTimers: WeakMap<ElectronUtilityProcess, ReturnType<typeof setTimeout>>,
+  disposingHostProcessTimers: WeakMap<HostProcessHandle, ReturnType<typeof setTimeout>>,
   logger: {
     info: (...args: unknown[]) => void;
     warn: (...args: unknown[]) => void;
@@ -757,9 +833,9 @@ export function disposeHostProcess(
   });
 }
 export function disposeHostProcessAndWait(
-  child: ElectronUtilityProcess,
+  child: HostProcessHandle,
   label: string,
-  disposingHostProcessTimers: WeakMap<ElectronUtilityProcess, ReturnType<typeof setTimeout>>,
+  disposingHostProcessTimers: WeakMap<HostProcessHandle, ReturnType<typeof setTimeout>>,
   logger: {
     info: (...args: unknown[]) => void;
     warn: (...args: unknown[]) => void;

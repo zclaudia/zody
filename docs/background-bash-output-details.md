@@ -64,16 +64,74 @@ Desktop Host 的成功轮询 RPC 日志走现有 debug logger，普通运行不�
 Desktop continuous 与 mobile replayable 仍由 attachment 决定；查询不创建 topic/replay 事件。
 共享 Side Pane 在手机使用已有 overlay。TUI 不变；通用文件服务不扩展。
 
+## 输出文件路径与保留（I16，2026-10-24）
+
+本节先原样记录 I16 之前已经生效的查询/历史/冷恢复合同，再列出 I16 的差异。上文与本节的原文均不因路径形态变化而改写语义。
+
+### 现行合同（原文）
+
+- 标签页只在内存中存在，不恢复到新 runtime。
+- 终态从活动列表消失后已有 execution/runtime 记录仍可查询；记录不可用明确报错。
+- 文件空与读取失败严格区分；失败保留最后成功内容，停止轮询并提供重试。
+- 查询本身不得 cold resume。
+- 执行记录冻结启动时的 sessionId，查询必须同时匹配 workId、原始 sessionId 和后台 Bash 类型。
+- 已有 TaskOutput、前台 progress、平台 flags、5 GiB/5 秒 watchdog、主动 Stop/close 杀树及自然退出合同不变。
+
+### I16 差异
+
+I16 改变输出文件的路径形态、保留时限与 Side Pane 展示标题；查询、历史、冷恢复的语义以上原文为准，不缩水。
+
+- 路径：由 `{outputRoot}/<sessionId>/<toolCallId>-stdout.log` 改为 `{outputRoot}/<sessionId>/<toolCallId>/stdout.log`（通用 pipe 执行另有同目录 `stderr.log`）。目录、回落与清理规则见 [TMPDIR 写入收口规范](tmpdir-storage-paths-spec.md#bash-执行输出隔离目录2026-10-24--i16)。
+- 展示标题：Side Pane「完整文件」打开代码查看器时，标题不再取 basename，而由 `backgroundBashOutputTitle()` 保留 `outputPath` 最后两段（`<toolCallId>/stdout.log`，Windows/POSIX 分隔符均支持）；否则同一会话的并发任务会全部显示为 `stdout.log`。该标题只用于 UI 标签，路径事实仍以 `outputPath` 为准。
+- `outputPath` 仍是输出文件的绝对路径；Bash tool result 的 `artifactPath` / `persistedOutputPath` 与它指向同一个文件。消费者把它当作不透明路径，不按旧的扁平命名重新拼接。
+- 同一 session 的并发 Bash 必须落在不同 toolCall 目录；一个任务的输出文件不得包含另一个任务的输出。
+- 查询继续由 execution adapter 按记录 `outputPath` 尾读 8192 bytes，不从 workId/sessionId 重新推导路径；临时回落根使用同一记录路径。
+- 冷恢复不新增历史后台任务目录。重启后的新 adapter 没有旧 workId 记录，仍返回 `unavailable`，不 cold resume；历史 tool result 中的完整文件路径在文件存在时继续可打开。
+- 删除语义按根区分：持久根（配置根、第二层默认数据根）中已产生的输出在取消、Stop、自然结束与 `close()` 后保留；第三层进程临时根是临时降级，随 `close()` 删除（删除前查询仍按记录路径尾读）。30 天按龄清理是唯一新增的**按龄**自动删除策略；本次新增的即时清理只处理“本次执行创建且未保留”的文件——spawn 前取消/spawn 失败删除 `discard()` 创建的文件（Bash merged）或后台预创建且从未写入的空 `stdout.log`/`stderr.log`（通用 pipe），前台未保留 artifact 时结算删除输出文件，以上情况都在目录因此变空时删除该 toolCall 目录。文件被清理或临时根随 `close()` 删除后，查询仍按 `unavailable` / `read_failed` 明确报错，不回退到其它路径。
+- 前台未保留 artifact（`persistOutput` 为 `none` / `on_truncate` 且未触发保留）时，结算删除输出文件并清理变空的 toolCall 目录，避免留下空目录。
+
+### 验收锚点（UP316-I16）
+
+| ID     | 场景                                                  | 断言                                                                                                          |
+| ------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| I16-A  | 同 session 并发两个 Bash，不同 toolCallId             | 两个 toolCall 目录互异，文件内容不串；后台查询各自命中                                                        |
+| I16-B  | 配置根不可写（文件占位/只读）                         | 回落到可写根完成执行；`artifactPath` 指向真实文件且结构一致                                                   |
+| I16-C  | spawn 前取消、spawn 失败                              | 本次创建且未写入的输出文件与空 toolCall 目录清理；持久根中已产生的输出不被删除                                |
+| I16-C2 | 前台结算未保留 artifact                               | 删除本次输出文件并清理因此变空的 toolCall 目录                                                                |
+| I16-D  | adapter 启动时存在 31 天前与近期输出                  | 超龄文件与空目录删除，近期文件保留，符号链接跳过；默认数据根被选中时同样扫描                                  |
+| I16-E  | `close()` 后同进程查询、重启/新 adapter 查询旧 workId | 持久根中已产生输出仍可读；临时根在 close 前可读、close 后明确报错；旧 workId 返回 unavailable，不 cold resume |
+
+### 既有断言迁移（已完成）
+
+以下测试原先钉住旧的扁平路径，已随 I16 实现同步改为新目录合同，断言未删除：
+
+- `apps/zcode-cli/packages/adapters/tests/exec.test.ts`（git-bash/bash merged、cleanup/preserve、lost-output 诊断目录、empty artifact、open/write failure、symlink、bash-cap、storage-root、background start）。
+- `apps/zcode-cli/packages/adapters/tests/bash-direct-execution.test.ts` 与 `tests/fixtures/bash-direct-probe.cjs`（fixture 与 `outputPath`）。
+- `packages/desktop/test/e2e/conversation-session/conversation-session-bash-direct-output.test.ts`、`conversation-session-background-bash-output.test.ts`（按新目录拼接校验路径）。
+- `apps/zcode-cli/e2e/compact-microcompact/case-background-bash.mjs`（后台完成事件的 `outputPath` 由 `endsWith("-stdout.log")` 改为按 `<toolCallId>/stdout.log` 后缀校验，兼容 Windows/POSIX 分隔符）。
+- `packages/ui/src/app-shell/BackgroundBashOutputSidePane.tsx`、`packages/ui/src/lib/backgroundBashOutputTitle.ts`、`packages/ui/test/backgroundBashOutputTitle.test.ts`（Code Viewer 标题由 basename 改为保留 `<toolCallId>/stdout.log`，覆盖 POSIX/Windows 分隔符与退化输入）。
+- `apps/zcode-cli/packages/adapters/tests/bash-output-preview.test.ts`、`bash-progress-poller.test.ts` 只消费内容，不钉路径，无需改动。
+
+### I16 新增反例测试（已完成）
+
+路径、回落与清理合同由以下新增/扩写用例覆盖，与上方验收锚点逐项对应（复审续作用例按先复现失败路径再修复的方式补齐；未逐条保留红灯运行记录）：
+
+- `apps/zcode-cli/packages/adapters/tests/bash-resource-lifecycle.test.ts`「Bash 隔离输出根（I16）」：并发隔离（I16-A，前台与后台各自命中 toolCall 目录）、配置根不可写回落默认数据根、默认数据根被选中时同样 30 天清理输出与 shell 启动快照、两层不可写回落进程临时根与 `close()` 删除、三层失败按 `spawn_error` 结算、spawn 失败/准备完成后取消不残留（含通用 pipe 后台预创建文件的清理）、`close()` 等待 start/lifecycle 的输出准备、前台未保留清理（I16-C2）、构造时 30 天清理且符号链接跳过（I16-D）、后台查询与并发后台查询（I16-A）、`close()` 后同进程可读且新 adapter 返回 unavailable（I16-E）、临时回落根 close 前可查询/close 后 `read_failed`（I16-E）、`.`/`..` 不逃出输出根。win32 回落用例使用 Git Bash 方言并在缺失时显式跳过，不退回 `cmd` 口径。
+- `apps/zcode-cli/packages/adapters/tests/bash-output-cancel-cleanup.test.ts`：取消发生在 `BashFileOutput.prepare()` 打开 `stdout.log` 之后、spawn 之前，断言命令未启动、`discard()` 删除输出文件并清理空 toolCall 目录（I16-C）。
+- `apps/zcode-cli/packages/adapters/tests/bash-file-output.test.ts`：`discard()` 清理空执行目录但保留同目录其它产物；mkdir 后 open 失败（`created=false`）同样清理空目录（I16-C）。
+- `apps/zcode-cli/packages/adapters/tests/bash-shutdown.test.ts`：独立 Node 进程中 spawn 失败的 toolCall 目录被清理，已产生输出的 toolCall 目录跨 shutdown 保留（I16-C）。
+- `apps/zcode-cli/packages/core/tests/runtime-background-bash-output.test.ts`：runtime 原样透传 adapter 的 `outputPath`，`read_failed` / `unavailable` 原样返回，不为查询改路径或冷恢复（I16-E）。
+
 ## 验收
 
-| ID | 场景 | 断言 |
-| --- | --- | --- |
-| BGV01 | 显式后台、分两段 barrier 输出 | 退出前看到两段；重复点击复用 tab；无新增模型查询；普通运行不记录成功轮询日志 |
-| BGV02 | 超时转后台、超过 8 KiB、多行输出 | 新尾部可见，旧头部淘汰，完整文件不截断 |
-| BGV03 | 向上滚动、隐藏/激活、任务完成 | 暂停不跳动，回到最新恢复；隐藏无查询；终态保留并停止刷新 |
-| BGV04 | 多 session/workspace、子会话与远程 scope | 请求始终命中冻结 scope，不串输出；外来任务/路径拒绝 |
-| BGV05 | 文件丢失、慢响应、关闭、runtime 退出 | 明确错误且保留上次内容，无重叠/迟到更新，不启动 runtime |
-| BGV06 | 原条目 Stop 后观察详情 | 详情无 Stop；原入口取消后保留终态输出，进程退出 |
+| ID    | 场景                                     | 断言                                                                         |
+| ----- | ---------------------------------------- | ---------------------------------------------------------------------------- |
+| BGV01 | 显式后台、分两段 barrier 输出            | 退出前看到两段；重复点击复用 tab；无新增模型查询；普通运行不记录成功轮询日志 |
+| BGV02 | 超时转后台、超过 8 KiB、多行输出         | 新尾部可见，旧头部淘汰，完整文件不截断                                       |
+| BGV03 | 向上滚动、隐藏/激活、任务完成            | 暂停不跳动，回到最新恢复；隐藏无查询；终态保留并停止刷新                     |
+| BGV04 | 多 session/workspace、子会话与远程 scope | 请求始终命中冻结 scope，不串输出；外来任务/路径拒绝                          |
+| BGV05 | 文件丢失、慢响应、关闭、runtime 退出     | 明确错误且保留上次内容，无重叠/迟到更新，不启动 runtime                      |
+| BGV06 | 原条目 Stop 后观察详情                   | 详情无 Stop；原入口取消后保留终态输出，进程退出                              |
 
 单测覆盖 schema、runtime 授权、adapter 真文件尾读与编码、标签页隔离以及 hook 时序。
 Desktop E2E 使用 case-local provider/file fixtures 与 barrier；2026-09-10 用户确认实时演示后按 promotion 流程转正。
@@ -123,16 +181,16 @@ child query -> live child adapter -> unavailable -> existing ancestor adapter ->
 
 本地报告保存在 `packages/desktop/.e2e-artifacts/`；fixture 用例固定 provider 工具调用，Bash、文件、barrier、进程和 UI 为真实运行。
 
-| 验证 | 结果 / 报告目录 |
-| --- | --- |
-| 新增只读详情，纯输出 UI | 7/7，`desktop-e2e-20260909-121113-619`（含 `background-bash-live.png`） |
-| 运行中提示移至底部 | BGV01 1/1，`desktop-e2e-20260909-122021-611`；断言位于输出区域下方、紧邻截断提示之前，终态后消失 |
-| Bash 直写 / 前台刷新 / TaskOutput | 8/8，`desktop-e2e-20260909-120207-834` |
-| Bash 生命周期筛选回归 | 8/8，`desktop-e2e-20260909-120412-010` |
-| V4 既有后台停止 | 1/1，`desktop-e2e-20260909-120552-318` |
-| 真实 5 GiB | 前后台分别实写：5 GiB 等待 5.5 秒仍存活；追加 1 byte 后 watchdog 终止，进程退出、诊断与单次通知通过 |
-| 跨平台真实查询 | macOS/Linux Node 24.14.0 各 2/2；Windows Git Bash/CMD × 显式/超时后台，Node 24.14.0 与 25.9.0 各 4/4；尾窗淘汰、中文/CRLF/无换行、终态、文件删除通过 |
-| 单测与检查 | adapter/runtime/gateway/service/schema/hook/tab 定向单测通过；typecheck、CLI build、architecture（0 violations）、lint（0 errors，46 条既有 warnings）通过 |
+| 验证                              | 结果 / 报告目录                                                                                                                                            |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 新增只读详情，纯输出 UI           | 7/7，`desktop-e2e-20260909-121113-619`（含 `background-bash-live.png`）                                                                                    |
+| 运行中提示移至底部                | BGV01 1/1，`desktop-e2e-20260909-122021-611`；断言位于输出区域下方、紧邻截断提示之前，终态后消失                                                           |
+| Bash 直写 / 前台刷新 / TaskOutput | 8/8，`desktop-e2e-20260909-120207-834`                                                                                                                     |
+| Bash 生命周期筛选回归             | 8/8，`desktop-e2e-20260909-120412-010`                                                                                                                     |
+| V4 既有后台停止                   | 1/1，`desktop-e2e-20260909-120552-318`                                                                                                                     |
+| 真实 5 GiB                        | 前后台分别实写：5 GiB 等待 5.5 秒仍存活；追加 1 byte 后 watchdog 终止，进程退出、诊断与单次通知通过                                                        |
+| 跨平台真实查询                    | macOS/Linux Node 24.14.0 各 2/2；Windows Git Bash/CMD × 显式/超时后台，Node 24.14.0 与 25.9.0 各 4/4；尾窗淘汰、中文/CRLF/无换行、终态、文件删除通过       |
+| 单测与检查                        | adapter/runtime/gateway/service/schema/hook/tab 定向单测通过；typecheck、CLI build、architecture（0 violations）、lint（0 errors，46 条既有 warnings）通过 |
 
 Windows 使用测试目录内独立 Node 24.14.0，不切换默认 Node 25；原始平台 JSON 报告在 `.tmp/background-output-{macos,linux,windows24,windows25}.json`。子会话只读查询沿已有 parentID 找现存 owner，不修改 CommandInbox 或停止流程。
 

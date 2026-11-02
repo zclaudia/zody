@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-narrow-resource-manifest",
+  "status": "pass",
+  "generatedAt": "2026-10-30T17:28:43.231Z",
+  "target": {
+    "os": "darwin",
+    "arch": "arm64",
+    "minimumMacOSVersion": "14.2"
+  },
+  "slot": {
+    "resourcesRelativePath": "cua-narrow",
+    "appName": "Zody CUA Desktop Session.app"
+  },
+  "path": "manifest.json",
+  "source": {
+    "appPath": "/Users/zhvala/SourceCode/zody/output/cua-arm64-screenshot/controller-signed-production/Zody CUA Desktop Session.app",
+    "treeSha256": "53dddb1ce5c65617ad725a6b1e67db6dffd6ab9e24f721121a76d9fcb27756ae",
+    "signedBinarySha256": "8cedd3d4ce79deea8449cd838f70068eba4bc924580749619c9cb72050c94515",
+    "executableRelativePath": "Contents/MacOS/macos-cua-desktop-session",
+    "nodeRelativePath": "Contents/Resources/node"
+  },
+  "stage": {
+    "appPath": "stage/Zody CUA Desktop Session.app",
+    "treeSha256": "53dddb1ce5c65617ad725a6b1e67db6dffd6ab9e24f721121a76d9fcb27756ae"
+  },
+  "nativeBuildManifest": {
+    "path": "stage/native-build-manifest.json",
+    "sha256": "e2e28116bd008b6d731bdcb3a929ccfe2b19e30b4bf77bdebc038b843e125d0b",
+    "kind": "zody-cua-desktop-session-native-candidate",
+    "status": "pass",
+    "nativeUnsignedBinarySha256": "bd6cd92b2f548a2aae92e71cf328c5352b80acad71a3da6ca312b51380e0b4eb"
+  },
+  "identity": {
+    "helperIdentifier": "io.github.zclaudia.zody.cua-helper",
+    "nodeIdentifier": "io.github.zclaudia.zody.cua-helper.node",
+    "leafSha256": "a7f7afa6a507b71c996f4a9bfbf6eef908d67054acdca93833bcd4c94c13ef0b",
+    "leafSha1": "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+    "nodeLeafSha256": "a7f7afa6a507b71c996f4a9bfbf6eef908d67054acdca93833bcd4c94c13ef0b",
+    "nodeLeafSha1": "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+    "designatedRequirement": "identifier \"io.github.zclaudia.zody.cua-helper\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+    "nodeDesignatedRequirement": "identifier \"io.github.zclaudia.zody.cua-helper.node\" and certificate leaf = H\"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732\"",
+    "nodeCdhash": "3c57a9bb9f4e8b748ac80d60bc78cdde14767218",
+    "hardenedRuntime": true,
+    "entitlementsEmpty": true,
+    "architectures": [
+      "arm64"
+    ],
+    "minimumMacOSVersion": "14.2",
+    "nodeMinimumMacOSVersion": "13.5",
+    "executableRelativePath": "Contents/MacOS/macos-cua-desktop-session",
+    "nodeRelativePath": "Contents/Resources/node",
+    "signedBinarySha256": "8cedd3d4ce79deea8449cd838f70068eba4bc924580749619c9cb72050c94515",
+    "nodeSha256": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+    "resources": {
+      "host-entry.mjs": {
+        "path": "Contents/Resources/host-entry.mjs",
+        "sha256": "ec744eacab5d893da63f09aaf5703fda9d8e105be4c6e77af294a811ca980379",
+        "bytes": 40197450
+      },
+      "cli-entry.mjs": {
+        "path": "Contents/Resources/cli-entry.mjs",
+        "sha256": "58f470b8a1148bd4a4bf7b88a94955a97168ca70890802aced70d0ef966b00d5",
+        "bytes": 32877955
+      },
+      "session-entry.mjs": {
+        "path": "Contents/Resources/session-entry.mjs",
+        "sha256": "55176b58ea2a0728a1ed471ab943723c185d62b3e892d8d0a69922167ad3dc6e",
+        "bytes": 32019954
+      },
+      "node-repl-server.mjs": {
+        "path": "Contents/Resources/node-repl-server.mjs",
+        "sha256": "1473a396a799eeea718112316e57f83cb41718827dc5ff2ee7079dee69f0097b",
+        "bytes": 3575522
+      }
+    },
+    "nativeUnsignedBinarySha256": "bd6cd92b2f548a2aae92e71cf328c5352b80acad71a3da6ca312b51380e0b4eb",
+    "pinsPath": "stage/identity-pins.json",
+    "pinsSha256": "273fae435a26ed078d0dc9f7a4255df95ce4314301f362d856aa067644167de7"
+  },
+  "tree": {
+    "treeSha256": "53dddb1ce5c65617ad725a6b1e67db6dffd6ab9e24f721121a76d9fcb27756ae",
+    "entries": [
+      {
+        "type": "directory",
+        "path": "Contents",
+        "mode": 448
+      },
+      {
+        "type": "directory",
+        "path": "Contents/_CodeSignature",
+        "mode": 448
+      },
+      {
+        "type": "file",
+        "path": "Contents/_CodeSignature/CodeResources",
+        "sha256": "b855ec8c66b761c53e5bf67df7fef373f498d9429f1fd3bcbfe53ada09935a98",
+        "bytes": 3638,
+        "mode": 420,
+        "executable": false
+      },
+      {
+        "type": "file",
+        "path": "Contents/Info.plist",
+        "sha256": "2e2720b0211f06e588438f3172ae83a028f30ad4bd01ca9291e2096b68ab5cc6",
+        "bytes": 753,
+        "mode": 420,
+        "executable": false
+      },
+      {
+        "type": "directory",
+        "path": "Contents/MacOS",
+        "mode": 448
+      },
+      {
+        "type": "file",
+        "path": "Contents/MacOS/macos-cua-desktop-session",
+        "sha256": "8cedd3d4ce79deea8449cd838f70068eba4bc924580749619c9cb72050c94515",
+        "bytes": 5511024,
+        "mode": 493,
+        "executable": true
+      },
+      {
+        "type": "directory",
+        "path": "Contents/Resources",
+        "mode": 448
+      },
+      {
+        "type": "file",
+        "path": "Contents/Resources/cli-entry.mjs",
+        "sha256": "58f470b8a1148bd4a4bf7b88a94955a97168ca70890802aced70d0ef966b00d5",
+        "bytes": 32877955,
+        "mode": 420,
+        "executable": false
+      },
+      {
+        "type": "file",
+        "path": "Contents/Resources/host-entry.mjs",
+        "sha256": "ec744eacab5d893da63f09aaf5703fda9d8e105be4c6e77af294a811ca980379",
+        "bytes": 40197450,
+        "mode": 420,
+        "executable": false
+      },
+      {
+        "type": "directory",
+        "path": "Contents/Resources/licenses",
+        "mode": 448
+      },
+      {
+        "type": "file",
+        "path": "Contents/Resources/licenses/node-LICENSE.txt",
+        "sha256": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18",
+        "bytes": 156926,
+        "mode": 420,
+        "executable": false
+      },
+      {
+        "type": "file",
+        "path": "Contents/Resources/node",
+        "sha256": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+        "bytes": 118439728,
+        "mode": 493,
+        "executable": true
+      },
+      {
+        "type": "file",
+        "path": "Contents/Resources/node-repl-server.mjs",
+        "sha256": "1473a396a799eeea718112316e57f83cb41718827dc5ff2ee7079dee69f0097b",
+        "bytes": 3575522,
+        "mode": 420,
+        "executable": false
+      },
+      {
+        "type": "file",
+        "path": "Contents/Resources/session-entry.mjs",
+        "sha256": "55176b58ea2a0728a1ed471ab943723c185d62b3e892d8d0a69922167ad3dc6e",
+        "bytes": 32019954,
+        "mode": 420,
+        "executable": false
+      }
+    ]
+  },
+  "audit": {
+    "symlinks": [],
+    "hardlinks": [],
+    "externalLinks": [],
+    "licenses": [
+      {
+        "path": "Contents/Resources/licenses/node-LICENSE.txt",
+        "sha256": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18",
+        "bytes": 156926,
+        "associatedResource": "Contents/Resources/node"
+      }
+    ],
+    "entries": [
+      {
+        "name": "host-entry.mjs",
+        "path": "Contents/Resources/host-entry.mjs",
+        "sha256": "ec744eacab5d893da63f09aaf5703fda9d8e105be4c6e77af294a811ca980379",
+        "bytes": 40197450
+      },
+      {
+        "name": "cli-entry.mjs",
+        "path": "Contents/Resources/cli-entry.mjs",
+        "sha256": "58f470b8a1148bd4a4bf7b88a94955a97168ca70890802aced70d0ef966b00d5",
+        "bytes": 32877955
+      },
+      {
+        "name": "session-entry.mjs",
+        "path": "Contents/Resources/session-entry.mjs",
+        "sha256": "55176b58ea2a0728a1ed471ab943723c185d62b3e892d8d0a69922167ad3dc6e",
+        "bytes": 32019954
+      }
+    ],
+    "auxiliaryResources": [
+      {
+        "name": "node-repl-server.mjs",
+        "path": "Contents/Resources/node-repl-server.mjs",
+        "sha256": "1473a396a799eeea718112316e57f83cb41718827dc5ff2ee7079dee69f0097b",
+        "bytes": 3575522
+      }
+    ],
+    "nativeUnsignedBinarySha256": "bd6cd92b2f548a2aae92e71cf328c5352b80acad71a3da6ca312b51380e0b4eb",
+    "signedBinarySha256": "8cedd3d4ce79deea8449cd838f70068eba4bc924580749619c9cb72050c94515"
+  },
+  "restrictions": {
+    "defaultDisabled": true,
+    "placeholderDefault": true,
+    "hostActivation": false,
+    "cuaHelperSlotReused": false,
+    "reSign": false,
+    "installCertificate": false,
+    "requestTcc": false
+  }
+}

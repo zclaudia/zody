@@ -6,8 +6,12 @@ import zhCN from "../src/i18n/locales/zh-CN.js";
 import {
   buildVirtualRows,
   MentionPanel,
+  OPTION_ROW_CLASS_NAME,
   SECTION_HEADER_CLASS_NAME,
   SECTION_HEADER_ROW_HEIGHT,
+  STATUS_ROW_EMPTY_CLASS_NAME,
+  STATUS_ROW_ERROR_CLASS_NAME,
+  STATUS_ROW_LOADING_CLASS_NAME,
   type MentionPanelSection,
 } from "../src/mentions/components/MentionPanel.js";
 import { resolveVerticalScrollMaskState } from "../src/mentions/components/scrollMask.js";
@@ -146,6 +150,52 @@ describe("buildVirtualRows", () => {
     expect(html.indexOf('role="listbox"')).toBeLessThan(
       html.indexOf("Type to search"),
     );
+  });
+});
+
+// 走查 composer-6：DESIGN.md「Menus and selection overlays」规定 @ / / 建议面板属菜单类
+// 浮层——壳 rounded-lg、选项行 rounded-md，不再继承主输入的 rounded-2xl 例外。
+// 选项/状态行走虚拟列表，静态渲染不产出 DOM，圆角契约通过导出常量断言（壳用真实渲染验证）。
+describe("mention panel overlay radius", () => {
+  function renderPanelShell() {
+    return renderToStaticMarkup(
+      createElement(MentionPanel, {
+        title: "Mentions",
+        description: "",
+        trigger: "@",
+        sections: [
+          {
+            id: "files",
+            title: "Files",
+            options: makeOptions(1),
+            emptyText: "No files",
+          },
+        ],
+        emptyText: "",
+        selectedIndex: 0,
+        hasActiveQuery: true,
+        onSelect: () => undefined,
+      }),
+    );
+  }
+
+  it("面板壳使用 rounded-lg，不再使用 rounded-2xl", () => {
+    const html = renderPanelShell();
+
+    expect(html).toContain('data-testid="prompt-suggestion-panel"');
+    expect(html).toContain("rounded-lg");
+    expect(html).not.toContain("rounded-2xl");
+  });
+
+  it("选项行与状态行常量使用 rounded-md，不再使用 rounded-xl", () => {
+    expect(OPTION_ROW_CLASS_NAME).toContain("rounded-md");
+    expect(OPTION_ROW_CLASS_NAME).not.toContain("rounded-xl");
+    expect(STATUS_ROW_LOADING_CLASS_NAME).toContain("rounded-md");
+    expect(STATUS_ROW_LOADING_CLASS_NAME).not.toContain("rounded-xl");
+    expect(STATUS_ROW_ERROR_CLASS_NAME).toContain("rounded-md");
+    expect(STATUS_ROW_ERROR_CLASS_NAME).not.toContain("rounded-xl");
+    expect(STATUS_ROW_EMPTY_CLASS_NAME).toContain("rounded-md");
+    expect(STATUS_ROW_EMPTY_CLASS_NAME).not.toContain("rounded-xl");
   });
 });
 

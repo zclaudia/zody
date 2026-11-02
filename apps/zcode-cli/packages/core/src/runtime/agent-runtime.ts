@@ -74,6 +74,10 @@ import type {
 import { installAgentRuntimeMethods } from "./methods/index.js";
 import type { StartSavedWorkflowRunResult } from "./methods/dynamic-workflow-run-start.js";
 import type {
+  CuaNativeCaptureConfirmationInput,
+  CuaNativeCaptureConfirmationResult,
+} from "./methods/cua-submission.js";
+import type {
   AmendWorkflowRunSettingsInput,
   AmendWorkflowRunSettingsResult,
 } from "./methods/dynamic-workflow-run-settings.js";
@@ -140,6 +144,17 @@ import { RuntimeTelemetryFacade } from "../telemetry/runtime-telemetry.js";
 import type { WorkspaceHookRuntimeAdmissionPort } from "../hooks/workspace-hook-runtime-admission.js";
 import { disposeNodeReplSession } from "../tool/handlers/node-repl.js";
 import { cloneModelSelection } from "./model-selection.js";
+import {
+  createCuaSubmissionCoordinator,
+  type CuaSubmissionCoordinator,
+  type CuaLiveSubmissionRegistrar,
+} from "./cua/index.js";
+import type {
+  CuaSubmissionProducerPort,
+  CuaSubmissionProjection,
+  CuaSubmissionRef,
+  CuaSubmissionTurnScope,
+} from "@zcode/contracts";
 
 // oxlint-disable typescript-eslint/no-unsafe-declaration-merging
 export class AgentRuntime {
@@ -251,11 +266,13 @@ export class AgentRuntime {
   private sessionStartHookRan = false;
   private sessionTitleGenerationAttempted = false;
   private agentTelemetry: RuntimeTelemetryFacade;
+  private cuaSubmissionCoordinator?: CuaSubmissionCoordinator;
 
   constructor(sessionId: SessionId, config: AgentRuntimeConfig, deps: AgentRuntimeDeps) {
     const runtime = this as unknown as AgentRuntimeInternal;
     this.sessionId = sessionId;
     this.turnNumber = 0;
+    this.cuaSubmissionCoordinator = this.configureCuaSubmissionCoordinator(config, deps);
     // 3.12.2：兼容旧 Host/内部调用传入 legacy，但本版本 Runtime、日志和子 Agent 只使用 preflight。
     this.config = projectPersistentAgentMemoryTools({
       ...config,
@@ -346,6 +363,17 @@ export class AgentRuntime {
     runtime.startMcpStartup(this.rootTraceContext);
   }
 
+  private configureCuaSubmissionCoordinator(
+    config: AgentRuntimeConfig,
+    deps: AgentRuntimeDeps,
+  ): CuaSubmissionCoordinator | undefined {
+    const options = deps.cuaSubmission;
+    if (!options || config.parentSessionId !== undefined) return undefined;
+    // 身份快照必须和本 runtime 的 session 一致；不在这里改 SessionId 或补 Host 标识。
+    if (options.sessionId !== String(this.sessionId)) return undefined;
+    return createCuaSubmissionCoordinator(options);
+  }
+
   async closeBrowserSession(): Promise<void> {
     this.beginShutdown();
     disposeNodeReplSession(this.sessionId);
@@ -364,6 +392,11 @@ export class AgentRuntime {
   }
 
   beginShutdown(): void {
+    // 必须先让 coordinator 提交真实 runtime-dispose 撤销并同步回调 scope；否则 scope listener
+    // 会在 authority 仍是 candidate 时收到 owner-revoked，甚至提前发 control-lost 幂等 revoke。
+    this.cuaSubmissionCoordinator?.dispose();
+    // coordinator 已覆盖其活动 scope；这里只兜底清理任何遗留 handle，重复失效保持幂等。
+    (this as unknown as AgentRuntimeInternal).invalidateCuaSubmissionTurnScopeOnDispose();
     // ExecutionPort.close() 会把后台 Bash 收口为 cancelled；若允许
     // teardown terminal event 再唤醒模型，并与随后关闭的 session store 竞态。
     this.shuttingDown = true;
@@ -424,6 +457,19 @@ export interface AgentRuntime {
     toModelLabel: string;
   }): void;
   getActiveTurnInfo(): ActiveTurnInfo | undefined;
+  getCuaSubmissionProjection(): CuaSubmissionProjection;
+  getCuaSubmissionRegistrar(): CuaLiveSubmissionRegistrar | undefined;
+  getCuaSubmissionProducerPort(): CuaSubmissionProducerPort | undefined;
+  getCurrentCuaSubmissionRef(): CuaSubmissionRef | undefined;
+  /** 仅可信 composition 在真实 regular turn 内调用；身份由 runtime 捕获，调用方不可传入。 */
+  createCuaSubmissionTurnScope(): CuaSubmissionTurnScope | undefined;
+  /**
+   * App 内确认弹窗（替代 Helper 原生 NSAlert）：经既有 permissionBroker 以 user-once
+   * 两选项形态发起一次截图确认；turn/run 不匹配 fail-closed，abort 原样上抛。
+   */
+  requestCuaNativeCaptureConfirmation(
+    input: CuaNativeCaptureConfirmationInput,
+  ): Promise<CuaNativeCaptureConfirmationResult>;
   admitPrompt(
     input: string,
     attachments?: TurnState["attachments"],

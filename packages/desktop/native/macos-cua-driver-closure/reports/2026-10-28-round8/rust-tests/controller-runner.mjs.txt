@@ -1,0 +1,18 @@
+import {mkdir,writeFile} from 'node:fs/promises';
+import {prepareReconstructedCache} from '/Users/zhvala/SourceCode/zody/packages/desktop/scripts/lib/cua-driver-closure-cache-rebuild.mjs';
+import {readTomlJson} from '/Users/zhvala/SourceCode/zody/packages/desktop/scripts/lib/cua-driver-closure-dependencies.mjs';
+import {baseClosureEnvironment,runClosureCommand} from '/Users/zhvala/SourceCode/zody/packages/desktop/scripts/lib/cua-driver-closure-command.mjs';
+const root='/Users/zhvala/SourceCode/zody';
+const source=root+'/output/cua-driver-round8/candidate-work/controller-accepted/full-source';
+const out=root+'/output/cua-driver-round8/controller-accepted-pure-tests';
+const tc=root+'/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin';
+const lock=await readTomlJson(source+'/Cargo.lock');
+const cache=await prepareReconstructedCache({cargoHome:'/Users/zhvala/SourceCode/scripts/experiments/zody-cua-p0-g2-stop-retire-reservation/build/cargo-home',lockPackages:lock.package,candidateRoot:source,stagingRoot:out+'/cache'});
+if(cache.status!=='pass') throw new Error('cache blocked');
+await Promise.all(['home','tmp','target'].map(x=>mkdir(out+'/'+x,{recursive:true})));
+const env={...baseClosureEnvironment(),PATH:tc+'/bin:/usr/bin:/bin:/usr/sbin:/sbin',HOME:out+'/home',TMPDIR:out+'/tmp',CARGO_HOME:cache.cargoHome,CARGO_TARGET_DIR:out+'/target',CARGO_NET_OFFLINE:'true',CARGO_INCREMENTAL:'0',RUSTC:tc+'/bin/rustc',RUSTUP_AUTO_INSTALL:'0'};
+const args=['test','--locked','--offline','--target','aarch64-apple-darwin','--package','cua-macos-visual','--lib','--test','pure_visual','--','--test-threads=1'];
+const result=await runClosureCommand(tc+'/bin/cargo',args,{cwd:source,env,timeoutMs:300000,maxOutputBytes:8*1024*1024,allowFailure:true});
+await writeFile(out+'/stdout.log',result.stdout);await writeFile(out+'/stderr.log',result.stderr);
+await writeFile(out+'/result.json',JSON.stringify({command:[tc+'/bin/cargo',...args],code:result.code,source,cacheStatus:cache.status,archives:cache.reconstructedCache.packageCount,scope:'reviewed visual crate pure Rust unit and integration tests; no native API invocation'},null,2));
+console.log(JSON.stringify({code:result.code,stdout:result.stdout,stderrTail:result.stderr.slice(-1000)}));process.exitCode=result.code;

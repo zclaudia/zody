@@ -15,6 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { cn } from "@/components/lib/utils.js";
+import {
+  SETTINGS_TOUCH_MIN_H_11_CLASS,
+  SETTINGS_TOUCH_MIN_SIZE_11_CLASS,
+} from "@/settings/settingsMobileClasses.js";
 
 interface SettingsResourceHeaderActionsProps {
   onRefresh?: () => void;
@@ -72,7 +77,13 @@ export function SettingsResourceHeaderActions({
       {hasOverflowActions ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button type="button" variant="outline" size="icon-md" aria-label={moreActionsLabel}>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-md"
+              className={SETTINGS_TOUCH_MIN_SIZE_11_CLASS}
+              aria-label={moreActionsLabel}
+            >
               <MoreHorizontal aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
@@ -106,6 +117,7 @@ export function SettingsResourceHeaderActions({
             type="button"
             variant="outline"
             size="icon-md"
+            className={SETTINGS_TOUCH_MIN_SIZE_11_CLASS}
             aria-label={resolvedRefreshLabel}
             data-testid={refreshTestId}
             disabled={refreshDisabled || refreshing}
@@ -124,7 +136,7 @@ export function SettingsResourceHeaderActions({
           type="button"
           variant="default"
           size="default"
-          className="rounded-lg"
+          className={cn("rounded-lg", SETTINGS_TOUCH_MIN_H_11_CLASS)}
           data-settings-create-action={newActionId}
           aria-label={newLabel}
           data-testid={newTestId}

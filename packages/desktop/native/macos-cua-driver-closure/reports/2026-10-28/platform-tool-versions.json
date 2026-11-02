@@ -1,0 +1,30 @@
+{
+  "kind": "controller-read-only-platform-tool-evidence",
+  "records": [
+    {
+      "argv": ["/usr/bin/swift", "--version"],
+      "exitCode": 0,
+      "stdout": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx26.0\n",
+      "stderr": "swift-driver version: 1.168.6 "
+    },
+    {
+      "argv": ["/usr/bin/xcrun", "--find", "swift"],
+      "exitCode": 0,
+      "stdout": "/Library/Developer/CommandLineTools/usr/bin/swift\n",
+      "stderr": ""
+    },
+    {
+      "argv": ["/usr/bin/xcodebuild", "-version"],
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instance\n"
+    },
+    {
+      "argv": ["/usr/bin/sw_vers"],
+      "exitCode": 0,
+      "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.2\nBuildVersion:\t\t25G83\n",
+      "stderr": ""
+    }
+  ],
+  "note": "System CLT/Swift observed, not pinned portable toolchains; full Xcode unavailable. Actual candidate library build passed with CLT."
+}

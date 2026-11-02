@@ -1,0 +1,22 @@
+{
+  "name": "ordinary-build",
+  "argv": [
+    "/usr/bin/env",
+    "-u",
+    "ZCODE_CUA_NARROW_MANIFEST",
+    "-u",
+    "ZCODE_CUA_NARROW_AGENT_JSON",
+    "-u",
+    "ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON",
+    "ZCODE_PREVIEW_IDENTITY=1",
+    "pnpm",
+    "--dir",
+    "packages/desktop",
+    "build:no-runtime-assets"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-31T05:38:06.083775+00:00",
+  "seconds": 6.23,
+  "exitCode": 1,
+  "log": "ordinary-build.log"
+}

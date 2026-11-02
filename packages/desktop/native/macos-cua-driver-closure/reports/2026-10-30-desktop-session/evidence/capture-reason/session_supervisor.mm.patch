@@ -1,0 +1,38 @@
+--- a/packages/desktop/native/macos-cua-desktop-session/src/session_supervisor.mm
++++ b/packages/desktop/native/macos-cua-desktop-session/src/session_supervisor.mm
+@@ -458,10 +458,31 @@
+   if (starts("final-check:")) return "final-owner-check-failed";
+   if (starts("post-confirm-check")) return "post-confirm-check-failed";
+   if (error == "authority-reader-buffer-not-empty") return "authority-buffer-not-empty";
+-  if (starts("capture-failed") || starts("visual-") || starts("tcc-") ||
+-      starts("capture-context") || starts("machine-lease-not-held") ||
+-      starts("authority-revoke") || starts("write-"))
+-    return "capture-failed";
++  // 中文原因：capture_once 的失败 reason 本身已是固定枚举；折叠成 capture-failed
++  // 会丢失 TCC/visual/context 等真实阶段，无法定位失败。这里只保留已知固定值，
++  // 动态 write 错误按阶段归类，未知值仍落到有界泛化 reason。
++  if (error == "machine-lease-not-held") return "machine-lease-not-held";
++  if (error == "capture-context-incomplete") return "capture-context-incomplete";
++  if (error == "tcc-not-authorized") return "tcc-not-authorized";
++  if (error == "visual-start-denied") return "visual-start-denied";
++  if (error == "visual-take-png-failed") return "visual-take-png-failed";
++  if (error == "visual-png-invalid") return "visual-png-invalid";
++  if (error == "visual-wait-failed") return "visual-wait-failed";
++  if (error == "visual-resources-not-released") return "visual-resources-not-released";
++  if (error == "visual-destroy-pending") return "visual-destroy-pending";
++  if (error == "visual-staticlib-missing") return "visual-staticlib-missing";
++  if (error == "capture-facts-missing") return "capture-facts-missing";
++  if (error == "authority-revoke-failed") return "authority-revoke-failed";
++  if (error == "authority-revoke-not-confirmed") return "authority-revoke-not-confirmed";
++  if (starts("cannot create PNG:")) return "capture-create-failed";
++  if (starts("cannot write PNG:")) return "capture-write-failed";
++  if (starts("cannot fsync PNG:")) return "capture-fsync-failed";
++  if (starts("capture-failed")) return "capture-failed";
++  if (starts("visual-")) return "visual-failed";
++  if (starts("tcc-")) return "tcc-failed";
++  if (starts("capture-context")) return "capture-context-failed";
++  if (starts("authority-revoke")) return "authority-revoke-failed";
++  if (starts("write-")) return "capture-write-failed";
+   if (starts("peer-")) return "peer-rejected";
+   if (starts("control-")) return "control-failed";
+   if (starts("transport-")) return "transport-closed";

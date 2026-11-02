@@ -1,0 +1,17 @@
+{
+  "baselineFiles": 3986,
+  "changed": [
+    "apps/zcode-cli/packages/adapters/src/mcp/control-only-lifecycle.ts",
+    "apps/zcode-cli/packages/adapters/src/mcp/control-only-contract.ts",
+    "apps/zcode-cli/packages/adapters/src/mcp/index.ts",
+    "apps/zcode-cli/packages/adapters/src/mcp/control-only-launcher.ts",
+    "apps/zcode-cli/packages/adapters/tests/control-only-launcher.test.ts",
+    "specs/computer-use-macos-phase1.md",
+    "docs/design/computer-use-macos-phase1.md",
+    "docs/plans/computer-use-macos-phase1-implementation.md",
+    "apps/zcode-cli/docs/design/v2/tool/00-tool-change-chain.md"
+  ],
+  "missing": [],
+  "unexpected": [],
+  "scope": "opening baseline paths, not all workspace files"
+}

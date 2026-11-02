@@ -687,8 +687,8 @@ describe("NodeExecutionAdapter", () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-exec-auto-background-cleanup-"));
     const adapter = new NodeExecutionAdapter({ outputRootDir: root });
     const capable = adapter as BashBackgroundLifecycleCapableAdapter;
-    const stdoutPath = join(root, "cleanup-session", "cleanup-tool-stdout.log");
-    const stderrPath = join(root, "cleanup-session", "cleanup-tool-stderr.log");
+    const stdoutPath = join(root, "cleanup-session", "cleanup-tool", "stdout.log");
+    const stderrPath = join(root, "cleanup-session", "cleanup-tool", "stderr.log");
 
     try {
       const result = await capable.runBashWithBackgroundLifecycle!(
@@ -728,7 +728,7 @@ describe("NodeExecutionAdapter", () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-exec-foreground-cleanup-failure-"));
     const adapter = new NodeExecutionAdapter({ outputRootDir: root });
     const capable = adapter as BashBackgroundLifecycleCapableAdapter;
-    const stdoutPath = join(root, "cleanup-failure-session", "cleanup-failure-tool-stdout.log");
+    const stdoutPath = join(root, "cleanup-failure-session", "cleanup-failure-tool", "stdout.log");
     const retainedFile = join(stdoutPath, "retained.log");
 
     vi.spyOn(adapter, "run").mockImplementation(async (_request, options) => {
@@ -787,7 +787,12 @@ describe("NodeExecutionAdapter", () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-exec-foreground-truncate-failure-"));
     const adapter = new NodeExecutionAdapter({ outputRootDir: root });
     const capable = adapter as BashBackgroundLifecycleCapableAdapter;
-    const stdoutPath = join(root, "truncate-failure-session", "truncate-failure-tool-stdout.log");
+    const stdoutPath = join(
+      root,
+      "truncate-failure-session",
+      "truncate-failure-tool",
+      "stdout.log",
+    );
     const retainedFile = join(stdoutPath, "retained.log");
 
     vi.spyOn(adapter, "run").mockImplementation(async (_request, options) => {
@@ -853,8 +858,8 @@ describe("NodeExecutionAdapter", () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-exec-auto-background-preserve-"));
     const adapter = new NodeExecutionAdapter({ outputRootDir: root });
     const capable = adapter as BashBackgroundLifecycleCapableAdapter;
-    const stdoutPath = join(root, "preserve-session", "preserve-tool-stdout.log");
-    const stderrPath = join(root, "preserve-session", "preserve-tool-stderr.log");
+    const stdoutPath = join(root, "preserve-session", "preserve-tool", "stdout.log");
+    const stderrPath = join(root, "preserve-session", "preserve-tool", "stderr.log");
 
     try {
       const result = await capable.runBashWithBackgroundLifecycle!(
@@ -2193,7 +2198,8 @@ describe("NodeExecutionAdapter", () => {
         const outputPath = join(
           outputRootDir,
           "git-bash-merged-session",
-          "git-bash-merged-tool-stdout.log",
+          "git-bash-merged-tool",
+          "stdout.log",
         );
         expect(result.status).toBe("completed");
         expect(result.stdout.text).toBe("stdout-1\nstderr-1\nstdout-2\n");
@@ -2201,7 +2207,9 @@ describe("NodeExecutionAdapter", () => {
         expect(result.stdout.artifactPath).toBe(outputPath);
         await expect(readFile(outputPath, "utf8")).resolves.toBe(result.stdout.text);
         await expect(
-          stat(join(outputRootDir, "git-bash-merged-session", "git-bash-merged-tool-stderr.log")),
+          stat(
+            join(outputRootDir, "git-bash-merged-session", "git-bash-merged-tool", "stderr.log"),
+          ),
         ).rejects.toMatchObject({ code: "ENOENT" });
       } finally {
         await adapter.close();
@@ -3764,7 +3772,7 @@ describe("NodeExecutionAdapter", () => {
         expect(result.result.status).toBe("cancelled");
         await expect(
           stat(
-            join(root, "bash-pre-spawn-cancel-session", "bash-pre-spawn-cancel-tool-stdout.log"),
+            join(root, "bash-pre-spawn-cancel-session", "bash-pre-spawn-cancel-tool", "stdout.log"),
           ),
         ).rejects.toMatchObject({ code: "ENOENT" });
       } finally {
@@ -3816,7 +3824,8 @@ describe("NodeExecutionAdapter", () => {
         const outputPath = join(
           outputRootDir,
           "bash-merged-session",
-          "bash-merged-tool-stdout.log",
+          "bash-merged-tool",
+          "stdout.log",
         );
         expect(result.status).toBe("completed");
         expect(result.stdout.text).toBe("stdout-1\nstderr-1\nstdout-2\n");
@@ -3825,7 +3834,7 @@ describe("NodeExecutionAdapter", () => {
         await expect(readFile(outputPath, "utf8")).resolves.toBe(result.stdout.text);
         expect((await stat(outputPath)).mode & 0o777).toBe(0o600);
         await expect(
-          stat(join(outputRootDir, "bash-merged-session", "bash-merged-tool-stderr.log")),
+          stat(join(outputRootDir, "bash-merged-session", "bash-merged-tool", "stderr.log")),
         ).rejects.toMatchObject({ code: "ENOENT" });
 
         const failed = await adapter.run({
@@ -3935,7 +3944,11 @@ describe("NodeExecutionAdapter", () => {
             { mode: "auto_on_timeout" },
           );
 
-          const outputDirectory = join(outputRootDir, `bash-${testCase.id}-session`);
+          const outputDirectory = join(
+            outputRootDir,
+            `bash-${testCase.id}-session`,
+            `bash-${testCase.id}-tool`,
+          );
           expect(result.kind).toBe("foreground");
           expect(result.result).toMatchObject({
             status: "failed",
@@ -3991,7 +4004,8 @@ describe("NodeExecutionAdapter", () => {
         const outputPath = join(
           outputRootDir,
           "bash-empty-artifact-session",
-          "bash-empty-artifact-tool-stdout.log",
+          "bash-empty-artifact-tool",
+          "stdout.log",
         );
         expect(result).toMatchObject({
           status: "completed",
@@ -4068,7 +4082,12 @@ describe("NodeExecutionAdapter", () => {
 
   it.skipIf(!POSIX_BASH_PATH)("settles a Bash artifact open failure before spawning", async () => {
     const outputRootDir = await mkdtemp(join(tmpdir(), "zcode-exec-bash-output-open-"));
-    const outputPath = join(outputRootDir, "open-failure-session", "open-failure-tool-stdout.log");
+    const outputPath = join(
+      outputRootDir,
+      "open-failure-session",
+      "open-failure-tool",
+      "stdout.log",
+    );
     await mkdir(outputPath, { recursive: true });
     const adapter = new NodeExecutionAdapter({ outputRootDir });
 
@@ -4099,7 +4118,7 @@ describe("NodeExecutionAdapter", () => {
       expect(result.status).toBe("spawn_error");
       expect(result.stdout.artifactPath).toBeUndefined();
       expect(result.stdout.bytes).toBe(0);
-      expect(result.error?.message).toContain("open-failure-tool-stdout.log");
+      expect(result.error?.message).toContain(outputPath);
     } finally {
       await adapter.close();
       await rm(outputRootDir, { force: true, recursive: true });
@@ -4111,7 +4130,8 @@ describe("NodeExecutionAdapter", () => {
     const outputPath = join(
       outputRootDir,
       "write-failure-session",
-      "write-failure-tool-stdout.log",
+      "write-failure-tool",
+      "stdout.log",
     );
     const probePath = join(outputRootDir, "file-handle-probe");
     const probeHandle = await open(probePath, "w");
@@ -4178,8 +4198,8 @@ describe("NodeExecutionAdapter", () => {
       const outputRootDir = await mkdtemp(join(tmpdir(), "zcode-exec-bash-output-symlink-"));
       const sessionDir = join(outputRootDir, "symlink-session");
       const targetPath = join(outputRootDir, "target.log");
-      const outputPath = join(sessionDir, "symlink-tool-stdout.log");
-      await mkdir(sessionDir, { recursive: true });
+      const outputPath = join(sessionDir, "symlink-tool", "stdout.log");
+      await mkdir(join(sessionDir, "symlink-tool"), { recursive: true });
       await writeFile(targetPath, "preserved");
       await symlink(targetPath, outputPath);
       const adapter = new NodeExecutionAdapter({ outputRootDir });
@@ -4364,7 +4384,7 @@ describe("NodeExecutionAdapter", () => {
             attributes: { toolCallId: "bash-small-tool" },
           } as any,
         });
-        const smallPath = join(outputRootDir, "bash-cap-session", "bash-small-tool-stdout.log");
+        const smallPath = join(outputRootDir, "bash-cap-session", "bash-small-tool", "stdout.log");
         expect(smallResult.stdout).toMatchObject({
           text: "ok",
           bytes: 2,
@@ -4655,7 +4675,7 @@ describe("NodeExecutionAdapter", () => {
       });
 
       expect(result.stdout.artifactPath).toBe(
-        join(storageRoot, "cli", "exec", "session-storage-root", "tool-storage-root-stdout.log"),
+        join(storageRoot, "cli", "exec", "session-storage-root", "tool-storage-root", "stdout.log"),
       );
       await expect(readFile(result.stdout.artifactPath!, "utf8")).resolves.toBe("abcdef");
     } finally {
@@ -4790,10 +4810,10 @@ describe("NodeExecutionAdapter", () => {
       });
 
       expect(started.status).toBe("running");
-      expect(started.outputPath).toBe(join(outputRootDir, "session-bg", "tool-bg-stdout.log"));
+      expect(started.outputPath).toBe(join(outputRootDir, "session-bg", "tool-bg", "stdout.log"));
       expect(started.stdoutPersistedOutputPath).toBe(started.outputPath);
       expect(started.stderrPersistedOutputPath).toBe(
-        join(outputRootDir, "session-bg", "tool-bg-stderr.log"),
+        join(outputRootDir, "session-bg", "tool-bg", "stderr.log"),
       );
       await expect(readFile(started.stdoutPersistedOutputPath!, "utf8")).resolves.toBe("");
       await expect(readFile(started.stderrPersistedOutputPath!, "utf8")).resolves.toBe("");

@@ -1,0 +1,16 @@
+{
+  "openExitCode": 0,
+  "elapsedSeconds": 1.339,
+  "openStderr": "",
+  "appStdout": "{\"status\":\"pass\",\"reason\":\"captured-and-revoked\",\"captureEntry\":true}\n",
+  "appStderr": "",
+  "pngExists": true,
+  "png": {
+    "sha256": "0eeb531bbd146014010ab4fb92eb49dad09ab320c612390f4e8cccf198ff4692",
+    "bytes": 226542,
+    "dimensions": [
+      2400,
+      1600
+    ]
+  }
+}

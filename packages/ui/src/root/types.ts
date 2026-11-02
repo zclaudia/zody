@@ -11,6 +11,7 @@ import type {
 import type { IServiceAccessor } from "@zcode/services";
 import type { ReactNode } from "react";
 import type { CreateTaskRequest } from "@/app-shell/types.js";
+import type { WebRemoteControlMobileConnectionSettingsApi } from "@/settings/WebRemoteControlMobileConnectionSettingsSection.js";
 
 export type WebRemoteControlTerminalTransportState =
   | "idle"
@@ -72,8 +73,6 @@ export interface WebRemoteControlWorkspaceSwitcherApi {
   listMobileDirectory?(path?: string): Promise<WebRemoteControlMobileDirectoryListResult>;
   /** 请求桌面打开任意已存在本地目录；成功返回 workspaceKey。 */
   openWorkspacePath?(workspacePath: string): Promise<string>;
-  /** 从首页回到 phone 设置页。 */
-  onOpenSettings?(): void;
 }
 
 export interface RootProps {
@@ -115,6 +114,11 @@ export interface RootProps {
   initialWebRemoteControlWorkspaceList?: WebRemoteControlWorkspaceListResult;
   /** Web 远控手机端 relay terminal transport 状态，用于已进入页面后的轻量恢复提示 */
   webRemoteControlTerminalTransportState?: WebRemoteControlTerminalTransportState;
+  /**
+   * 手机 Web 远控已连接会话内的连接设置能力（配置、唯一保存入口与重连动作）。
+   * 只由 mobile bootstrap 注入；桌面与普通 Web 不传，因此不出现“连接”分区。
+   */
+  webRemoteControlMobileConnectionSettings?: WebRemoteControlMobileConnectionSettingsApi;
   /** 手机 Web 远控初始 workspace 注入前继续展示的入口 loading，桌面端不使用 */
   initialWorkspaceLoadingFallback?: ReactNode;
   /** Web 远程控制入口能力开关；默认只在 development 启用 */
@@ -129,6 +133,7 @@ export interface WorkspaceSettingsLayerProps {
   isMacDesktop?: boolean;
   isWindowsDesktop?: boolean;
   isWebRemoteControl?: boolean;
+  mobileConnectionSettings?: WebRemoteControlMobileConnectionSettingsApi;
   windowsWindowControlsRightPaddingPx?: number;
   captionWorkspacePath?: string | null;
   onBack?: () => void;

@@ -1,0 +1,18 @@
+{
+  "packages/desktop/scripts/compare-macos-cua-driver-closure.mjs": "ac34d1a14d21d5fe37a8fd75e3555eee7703fadca2cc87e875e4f0cd76c77cf8",
+  "packages/desktop/scripts/lib/cua-driver-closure-comparison-core.mjs": "2196ab459d0916ed9f0357ad4dd27a302a30313609658ec3e475558bdb4b474f",
+  "packages/desktop/scripts/lib/cua-driver-closure-comparison-graph.mjs": "67f54f756490dc2165032c6f2067b00bf0408d2996c00f8df434869eed1aaebc",
+  "packages/desktop/scripts/lib/cua-driver-closure-comparison-output.mjs": "c727eb0b092008604c858e1c0ae5600dac5d5b68c2ddee1e14967339df504760",
+  "packages/desktop/scripts/lib/cua-driver-closure-comparison-report.mjs": "0da2a9ea108b8c4a209e87a5b67ac31cd9f22d49a63cf40b1db7f7627669e6c3",
+  "packages/desktop/scripts/lib/cua-driver-closure-comparison-supplements.mjs": "408da1ccfe04dd48e732b69321696351ac79ead83f774b81ee1bc22fac1f0da3",
+  "packages/desktop/scripts/lib/cua-driver-closure-dependencies.mjs": "fe784b6154fbc476c894ee179302d5036bcfcf947b1bd815f0f6ed049e31ae87",
+  "packages/desktop/scripts/lib/cua-driver-closure-report.mjs": "9550614dd4247d5dff05248822f3a33d892131d729b16b5fd94f4a2509313e54",
+  "packages/desktop/scripts/lib/cua-driver-round7-prepare-config.mjs": "8094214895524fbf8aaa5038b0065d0c7b04528936e41c13f52314a18bb76fc2",
+  "packages/desktop/scripts/lib/cua-driver-round7-prepare-licenses.mjs": "60f77b1b480f0666a1887d419f43caae7325f7922ed30a4a180f333fc4800172",
+  "packages/desktop/scripts/lib/cua-driver-round7-prepare-patch.mjs": "419d675cbe2f87bd973a6068e99e81d4e6f3f2b10cd9f8ef2ea15b60c224ca7f",
+  "packages/desktop/scripts/lib/cua-driver-round7-prepare-source.mjs": "ec4368568f992bfeb927c2e5e69ca526a430292ecd9ea4c8b3168a82470de9de",
+  "packages/desktop/scripts/prepare-macos-cua-driver-round7.mjs": "2a287527812e32ca589c7c41fad3d3fed44fc1153bb696a1b2653c9de5b98ffb",
+  "packages/desktop/test/fixtures/cua-driver-closure-comparison-fixtures.mjs": "a0261533fd4f0e9330ad91b183081b80c63d22567a23adee68fd9b89084cfd4d",
+  "packages/desktop/test/macosCuaDriverRound7Comparison.test.ts": "f35a6c9451cba31d114f9a2edac18e6c621573b68c4a382a99ba9ed571628d56",
+  "packages/desktop/test/macosCuaDriverRound7Prepare.test.ts": "ae3e942bbb3e68fafda5f5bcb09e8757109c426f4c4597d92fa65523a241cbdd"
+}

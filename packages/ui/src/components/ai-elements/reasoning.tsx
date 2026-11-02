@@ -409,7 +409,9 @@ export const ReasoningTrigger = memo(
                 "size-4 shrink-0 text-foreground-subtlest transition-opacity transition-transform",
                 isOpen
                   ? "rotate-90 opacity-100"
-                  : "rotate-0 opacity-0 group-hover/reasoning:opacity-100",
+                  : // Bugfix：触屏（hover:none）没有 hover，思考行折叠态过去没有任何箭头提示，
+                    // 手机上无法发现思考过程可点开。触屏常显箭头，桌面维持 hover 才显示（走查 chat-2）。
+                    "rotate-0 opacity-0 group-hover/reasoning:opacity-100 [@media(hover:none)]:opacity-100",
               )}
             />
           </>

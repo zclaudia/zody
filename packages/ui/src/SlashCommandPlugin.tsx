@@ -39,6 +39,8 @@ import {
   type PromptInputSuggestionItem,
 } from "./lib/promptInputTriggers.js";
 import { MentionPanel } from "./mentions/components/MentionPanel.js";
+// 与 @ 面板共用 IME 组合期 Enter 判定，避免 / 面板确认拼音时被拦截为选中建议（走查 composer-2）。
+import { isImeCompositionEnterEvent } from "./mentions/MentionPlugin.js";
 import {
   buildAppSlashCommandSuggestions,
   buildSkillSuggestions,
@@ -360,6 +362,10 @@ export function SlashCommandPlugin({
     const unregisterEnter = editor.registerCommand(
       KEY_ENTER_COMMAND,
       (event) => {
+        // IME 组合期的 Enter 用于确认候选词，放行给 Lexical 默认行为，不拦截为面板选中（走查 composer-2）。
+        if (isImeCompositionEnterEvent(event)) {
+          return false;
+        }
         if (!selectSuggestion(selectedIndex)) {
           return false;
         }

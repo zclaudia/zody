@@ -1,0 +1,26 @@
+designated => identifier "io.github.zclaudia.zody.cua-helper.node" and certificate leaf = H"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732"
+Executable=/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/Resources/node
+Identifier=io.github.zclaudia.zody.cua-helper.node
+Format=Mach-O thin (arm64)
+CodeDirectory v=20500 size=231048 flags=0x10000(runtime) hashes=7214+2 location=embedded
+VersionPlatform=1
+VersionMin=853248
+VersionSDK=983040
+Hash type=sha256 size=32
+CandidateCDHash sha256=3c57a9bb9f4e8b748ac80d60bc78cdde14767218
+CandidateCDHashFull sha256=3c57a9bb9f4e8b748ac80d60bc78cdde147672187de3702de36a1ef964ad6722
+Hash choices=sha256
+CMSDigest=3c57a9bb9f4e8b748ac80d60bc78cdde147672187de3702de36a1ef964ad6722
+CMSDigestType=2
+Executable Segment base=0
+Executable Segment limit=88866816
+Executable Segment flags=0x1
+Page size=16384
+CDHash=3c57a9bb9f4e8b748ac80d60bc78cdde14767218
+Signature size=2103
+Authority=Zody Local Computer Use
+Signed Time=Oct 29, 2026 at 23:00:08
+Info.plist=not bound
+TeamIdentifier=not set
+Runtime Version=15.0.0
+Sealed Resources=none

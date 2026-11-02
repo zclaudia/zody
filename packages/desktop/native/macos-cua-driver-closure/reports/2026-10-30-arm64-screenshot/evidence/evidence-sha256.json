@@ -1,0 +1,74 @@
+{
+  "archive-verification.json": {
+    "sha256": "e1202f0d7680f92e1946e26c1b67da0b3eece802c226822e1aac9cc4ad267a3a",
+    "bytes": 249
+  },
+  "artifact-ledger.json": {
+    "sha256": "284a0cab83567d7a742a3deb05628e01688bf6ca39764b09bb55729f228aab7a",
+    "bytes": 3400
+  },
+  "baseline-comparison.json": {
+    "sha256": "bea223572716515b54001359ff6b228e99dc89a11c9fe96a0d78117721cd4169",
+    "bytes": 144
+  },
+  "change-index.initial.json": {
+    "sha256": "4758c690dc07abd28b0e88a371690601d06184f6d14455eca2e71fa4b99b926c",
+    "bytes": 27645
+  },
+  "change-index.json": {
+    "sha256": "21b4f727ea1f59ff8bf60f3f14811a7f0830f0bfc8fd45e80a39d9457705d93e",
+    "bytes": 25739
+  },
+  "final-review.json": {
+    "sha256": "4a9c59ca0a3a7f0a46bf5f96e35a79d387906f104e9206912e2b072c36211fbd",
+    "bytes": 1693
+  },
+  "formal-cua-narrow-build-audit.json": {
+    "sha256": "2fc36cd6385226893b261fd02c0651466b9d37ebc7992a1cae33abf061f3c515",
+    "bytes": 2485
+  },
+  "incremental.initial.patch": {
+    "sha256": "4e61ea14af13057b052386eb5a5dc424f7c0ebdd59af5192f3a0f113285a64a4",
+    "bytes": 662741
+  },
+  "incremental.patch": {
+    "sha256": "6c07b430fff9dceb696cf35a1d19a5d8d1895b953053aa678d426a5a5ab9c2fd",
+    "bytes": 640366
+  },
+  "source-and-patch.initial.tar.gz": {
+    "sha256": "9aa4a2c0a1b9357509cbd9d930ae4ceaa15706857a6dea44ad73682c3f9da3c8",
+    "bytes": 18264747
+  },
+  "source-and-patch.tar.gz": {
+    "sha256": "cdaee32531b36f036d9987c2ecb0d52f110e83be0bbe3c744295a45f99d1f819",
+    "bytes": 18841812
+  },
+  "source-sha256.initial.json": {
+    "sha256": "fe019fc617d4980edf1480e0c4a360b99fbfcb2f4d5fb9ab1fba99d917b02e10",
+    "bytes": 587515
+  },
+  "source-sha256.json": {
+    "sha256": "27ec8b1a846f2730e01cc9ed13bf137a47dd67a1edf4d55c21e62d7844f6b7df",
+    "bytes": 616754
+  },
+  "ui-blocker.json": {
+    "sha256": "702c0bf821029a06ad6c0e2aef0f96ccc8fcf739ca375e6f88c602a1aaeeb1f8",
+    "bytes": 373
+  },
+  "validation-and-build.initial.tar.gz": {
+    "sha256": "4520961be8a2e8ef7940ad0f74df1bbfc6e9d78a6639b9960ce514453fd9e13f",
+    "bytes": 5049774
+  },
+  "validation-and-build.tar.gz": {
+    "sha256": "bfcd6f0463ed97a0f8b3ce5fe23072e304e62a21d83ece002e29d15e7249a6bb",
+    "bytes": 8747305
+  },
+  "validation-index.json": {
+    "sha256": "960e30740d7ff341af34ce149d5f0035f242ee3f715272ffd81f6e67de24f525",
+    "bytes": 28209
+  },
+  "workers.json": {
+    "sha256": "f1feec638f2d6c5e10b57347599900bc1ab8fa4064a3ea1f273165e32a6e3e71",
+    "bytes": 2377
+  }
+}

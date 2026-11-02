@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -17,6 +18,7 @@ vi.mock("../src/host/storagePreparationProcesses.js", () => ({
   prepareSessionStorage: fixtures.session,
 }));
 import { createHostDatabaseStartup } from "../src/host/hostDatabaseStartup.js";
+import { validateHostStorageResources } from "../src/host/hostStorageResources.js";
 
 it("prepares actual restored working directories before publishing services, without a fake workspace", async () => {
   const dir = await mkdtemp(join(tmpdir(), "zcode-startup-cwd-"));
@@ -109,6 +111,46 @@ it("only marks the last session database as eligible for global saving/finishing
     const commits = states.filter((state) => state.databasePhase === "committing");
     expect(commits.map((state) => state.finalDatabase)).toEqual([undefined, false, true]);
     expect(states.at(-1)?.phase).toBe("ready");
+  } finally {
+    startup.dispose();
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+it("passes sealed storage resources to both preparation stages", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "zcode-startup-storage-resources-"));
+  fixtures.host.mockResolvedValue(undefined);
+  fixtures.session.mockResolvedValue(undefined);
+  const snapshot = (source: string) => ({
+    sha256: createHash("sha256").update(source).digest("hex"),
+    source,
+  });
+  const storageResources = validateHostStorageResources({
+    tasksStorageWorker: snapshot("export const worker = 'tasks';"),
+    sessionStorageEntry: snapshot("export const worker = 'session';"),
+  });
+  const startup = createHostDatabaseStartup({
+    startupId: "host-storage-resources",
+    cwd: dir,
+    workingDirectories: [dir],
+    storageResources,
+    initializeServices: async () => {},
+    publish: () => {},
+    onFailure: () => {},
+  });
+  try {
+    await startup.coordinator.start();
+    expect(fixtures.host).toHaveBeenLastCalledWith(
+      expect.any(String),
+      expect.any(Function),
+      expect.any(AbortSignal),
+      { workerUrl: storageResources.tasksStorageWorker.workerUrl },
+    );
+    expect(fixtures.session).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        storagePreparationEntryUrl: storageResources.sessionStorageEntry.workerUrl,
+      }),
+    );
   } finally {
     startup.dispose();
     await rm(dir, { recursive: true, force: true });

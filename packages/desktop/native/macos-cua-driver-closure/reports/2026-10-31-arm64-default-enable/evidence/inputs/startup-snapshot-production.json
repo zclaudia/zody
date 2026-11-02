@@ -1,0 +1,15 @@
+{
+  "kind": "narrow-runtime-startup-snapshot",
+  "reason": "read-before-eligibility-compare",
+  "providerRevisionSha256": "b79b01497f84d5de3bb9443b7b0f95b9a998b9b193b778c112a787510b4c7d71",
+  "selection": {
+    "providerId": "deepseek",
+    "modelId": "deepseek-flash",
+    "options": {
+      "reasoningLevel": "max"
+    }
+  },
+  "networkDigestSha256": "b00aea09d9ade210b21d3acefe42819409f10b035a0779f48d550f77ec55d5fa",
+  "snapshotSource": "existing-host-services",
+  "taskTimeProviderGuard": false
+}

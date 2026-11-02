@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import type { IChannel, IChannelClient } from "@zcode/rpc";
-import { IMediaPreviewService, IClientConfigService } from "@zcode/services";
+import {
+  IMediaPreviewService,
+  IClientConfigService,
+  IMobileNotificationReader,
+} from "@zcode/services";
 import { RemoteServiceAccess } from "../src/remoteServiceAccess.js";
 
 describe("RemoteServiceAccess", () => {
@@ -38,5 +42,7 @@ describe("RemoteServiceAccess", () => {
     expect(services.mediaPreviewService).toBeDefined();
     expect(channelNames).toContain(IClientConfigService.channelName);
     expect(services.clientConfigService).toBeDefined();
+    expect(channelNames).toContain(IMobileNotificationReader.channelName);
+    expect(services.mobileNotificationReaderService).toBeDefined();
   });
 });

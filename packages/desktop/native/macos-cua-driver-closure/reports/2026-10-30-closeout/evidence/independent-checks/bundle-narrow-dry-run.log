@@ -1,0 +1,4 @@
+[bundle] target=mac/arm64
+[bundle] skipPrepare=true skipBuild=true
+[bundle] cuaNarrowManifest=/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-narrow-relocated/manifest.json
+[bundle] dry-run: pnpm exec electron-builder --config electron-builder.config.js --mac --arm64

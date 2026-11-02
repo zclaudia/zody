@@ -40,7 +40,8 @@ export function showMobileNotificationNotice(options: {
       <h2 id="mobile-notification-error-title" className="text-ui-lg font-medium">
         {zh ? "暂时无法打开通知" : "Could not open notification"}
       </h2>
-      <p>
+      {/* dialogs-2：弹窗正文从默认字号收敛到 text-ui-sm，弱化次要信息层级（DESIGN.md 字号语义表）。 */}
+      <p className="text-ui-sm">
         {zh
           ? "请确认电脑和项目已连接。任务可能已删除，或通知已过期；通知仍保持未读。"
           : "Check that the computer and project are connected. The task may have been deleted or the notification expired. It remains unread."}

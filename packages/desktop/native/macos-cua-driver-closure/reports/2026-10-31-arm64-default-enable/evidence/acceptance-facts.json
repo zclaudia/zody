@@ -1,0 +1,28 @@
+{
+  "observedAt": "2026-10-31T05:48:55.999023+00:00",
+  "controllerReviewedDiffAndRanIndependentChecks": true,
+  "noOptInFlags": true,
+  "nativeConfirmationObservedInAX": true,
+  "nativeConfirmationTarget": {
+    "pid": 40077,
+    "windowId": 89384,
+    "title": "CUA arm64 acceptance 2026-10-31.rtf"
+  },
+  "nativeAllowClicked": false,
+  "controllerClickedProductUiStop": true,
+  "uiAfterStop": "Stopped; Send disabled",
+  "toolResult": "TOOL_CANCELLED",
+  "cellPid": 60232,
+  "cellReapedConfirmed": true,
+  "confirmationAllowed": false,
+  "imageExpected": false,
+  "captureDeliveredInBoundedNativeEvents": false,
+  "testKind": "confirmation-stage Stop smoke; not a new in-flight OS capture test",
+  "priorCaptureAndCompletionHeldStopReused": "2026-10-31-arm64-screenshot-stop report; unchanged runtime/native source and Helper/Node bytes",
+  "ourObservedRolesAbsentAfterQuit": true,
+  "userNormalZody64169StillRunning": true,
+  "sourceFiles": 4277,
+  "sourceManifestSha256": "52dfd1bc7e9d53ba1c8e2ffe0fed042e4494ee398ac030041e575ce3742c9c7d",
+  "sourceChangesOutsideAssignment": [],
+  "packageAndLockUnchanged": true
+}

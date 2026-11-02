@@ -200,8 +200,12 @@ async function assertBackgroundBashOutcome(input) {
   });
   assertCondition(
     typeof completedPayload?.outputPath === "string" &&
-      completedPayload.outputPath.endsWith("-stdout.log"),
-    "expected stdout output path on background completion",
+      // I16：输出改为 <root>/<sessionId>/<toolCallId>/stdout.log；按 toolCall 段校验，
+      // 同时兼容 Windows 与 POSIX 分隔符。
+      completedPayload.outputPath
+        .replace(/\\/gu, "/")
+        .endsWith(`/${BACKGROUND_TOOL_CALL_ID}/stdout.log`),
+    "expected stdout output path under the toolCall directory on background completion",
     { completedPayload },
   );
   assertCondition(

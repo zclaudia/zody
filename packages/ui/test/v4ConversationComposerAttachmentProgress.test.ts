@@ -194,10 +194,41 @@ describe("ConversationComposer attachment upload progress", () => {
     expect(html).toContain("size-3.5 rounded-full bg-primary");
     expect(html).toContain('data-composer-attachment-kind="image"');
     expect(html).toContain("size-12");
-    expect(html).toContain("size-12 overflow-hidden rounded-lg");
+    // 走查 composer-4/touch-6：圆角裁剪从卡片根节点内移到预览包裹层，
+    // 根节点 overflow-visible 放行 × 的触屏扩展命中区。
+    expect(html).toContain("size-12 overflow-visible rounded-lg");
+    expect(html).toContain("size-full overflow-hidden rounded-lg");
+    expect(html).not.toContain("size-12 overflow-hidden");
     expect(html).toContain('data-composer-image-preview="image.png"');
     expect(html).not.toContain("bg-white");
     expect(html).toContain(`disabled="" data-testid="${TID_V4_COMPOSER_SEND}"`);
+  });
+
+  // 走查 design-6：媒体附件上传进度百分比之前是任意字号 text-[7px]，弱网传大图时不可读。
+  it("媒体附件上传进度使用 text-ui-xs 字号 token，不再使用 text-[7px]", () => {
+    attachmentState.attachments = [
+      {
+        adopted: false,
+        autoRetryCount: 0,
+        filename: "image.png",
+        id: "image-1",
+        localZeroCopy: false,
+        referenceOwnership: "composer",
+        mimeType: "image/png",
+        objectUrl: "blob:image-1",
+        operationId: "operation-image-1",
+        showComplete: false,
+        sizeBytes: 100,
+        staged: false,
+        uploadProgress: 42,
+        uploadStatus: "uploading",
+      },
+    ];
+
+    const html = renderComposer();
+
+    expect(html).toContain("bg-background/85 text-ui-xs");
+    expect(html).not.toContain("text-[7px]");
   });
 
   it("输入框附件按媒体（图片/视频）优先于文件排序，媒体组内保持添加顺序", () => {
@@ -291,10 +322,96 @@ describe("ConversationComposer attachment upload progress", () => {
     expect(html).toContain("group-hover:opacity-100");
     expect(html).toContain("focus-visible:opacity-100");
     expect(html).toContain("[@media(hover:none)]:opacity-100");
+    // 走查 composer-4/touch-6：× 视觉 14px 保持不变，触屏态以伪元素展开 44×44 命中区。
+    // （content-[''] 中的引号会被 renderToStaticMarkup 转义为 &#x27;，这里只断言到 content-[ 前缀。）
+    expect(html).toContain("[@media(hover:none)_and_(pointer:coarse)]:after:size-11");
+    expect(html).toContain("(pointer:coarse)]:after:content-");
     expect(html.match(/top-0\.5/gu)).toHaveLength(3);
     expect(html.match(/right-0\.5/gu)).toHaveLength(3);
-    expect(html).not.toContain("top-1");
-    expect(html).not.toContain("right-1");
+    // 保留原有定位契约：× 仍锚在 0.5 偏移。负向断言排除触屏扩展命中区的伪元素类
+    // （after:top-1/2 合法存在，不能被裸 "top-1" 子串误伤）。
+    expect(html).not.toMatch(/\btop-1(?![/\d])/);
+    expect(html).not.toMatch(/\bright-1(?![/\d])/);
+  });
+
+  // 走查 composer-3/touch-7：发送/停止是手机端最高频操作，触屏态命中区抬升到 44×44。
+  it("发送按钮触屏态命中区抬升到 44px（min-h-11/min-w-11），视觉 icon 尺寸不变", () => {
+    const html = renderComposer();
+
+    expect(html).toContain("[@media(hover:none)_and_(pointer:coarse)]:min-h-11");
+    expect(html).toContain("[@media(hover:none)_and_(pointer:coarse)]:min-w-11");
+    expect(html).toContain(`data-testid="${TID_V4_COMPOSER_SEND}"`);
+    expect(html).toContain("size-4");
+  });
+
+  // 走查 composer-4/touch-6：重试按钮触屏态伪元素向左展开 44×44，且带 z-30
+  // 保证与 × 扩展命中区的重叠带内优先重试、不误删附件。
+  it("失败附件的重试按钮触屏态命中区 44px 并以 z-30 优先于移除按钮", () => {
+    attachmentState.attachments = [
+      {
+        adopted: false,
+        autoRetryCount: 1,
+        filename: "notes.md",
+        id: "file-1",
+        localZeroCopy: false,
+        referenceOwnership: "composer",
+        mimeType: "text/markdown",
+        operationId: "operation-file-1",
+        showComplete: false,
+        uploadError: "network unavailable",
+        uploadProgress: 17,
+        uploadStatus: "failed",
+      },
+    ];
+
+    const html = renderComposer();
+
+    expect(html).toContain("[@media(hover:none)_and_(pointer:coarse)]:after:size-11");
+    expect(html).toContain("[@media(hover:none)_and_(pointer:coarse)]:z-30");
+    expect(html).toContain("[@media(hover:none)_and_(pointer:coarse)]:after:right-[-8px]");
+  });
+
+  // 媒体卡片（grid 变体、block 流）里的重试按钮原本始终溢出 48px 卡片、被根节点
+  // overflow-hidden 裁剪为不可见；根节点放开裁剪后改为显式不渲染，可见行为不变。
+  it("媒体附件失败态不渲染重试按钮（保持既有不可见行为），文件失败态渲染", () => {
+    attachmentState.attachments = [
+      {
+        adopted: false,
+        autoRetryCount: 1,
+        filename: "avatar.png",
+        id: "image-1",
+        localZeroCopy: false,
+        referenceOwnership: "composer",
+        mimeType: "image/png",
+        objectUrl: "blob:image-1",
+        operationId: "operation-image-1",
+        showComplete: false,
+        uploadError: "network unavailable",
+        uploadProgress: 17,
+        uploadStatus: "failed",
+      },
+      {
+        adopted: false,
+        autoRetryCount: 1,
+        filename: "notes.md",
+        id: "file-1",
+        localZeroCopy: false,
+        referenceOwnership: "composer",
+        mimeType: "text/markdown",
+        operationId: "operation-file-1",
+        showComplete: false,
+        uploadError: "network unavailable",
+        uploadProgress: 17,
+        uploadStatus: "failed",
+      },
+    ];
+
+    const html = renderComposer();
+
+    // 只剩文件附件的重试 testid；媒体（image-1）不渲染重试按钮。
+    expect(html.match(/v4-attachment-upload-retry-[^"]+/gu)).toEqual([
+      testId(TID_V4_ATTACHMENT_UPLOAD_RETRY, "file-1"),
+    ]);
   });
 
   it("视频附件与图片同样显示主题 token 上传进度环与 48px 卡片", () => {
@@ -325,7 +442,7 @@ describe("ConversationComposer attachment upload progress", () => {
     expect(html).toContain('stroke-dasharray="42 100"');
     expect(html).toContain('data-composer-attachment-kind="video"');
     expect(html).toContain('data-composer-attachment-url="blob:video-1"');
-    expect(html).toContain("size-12 overflow-hidden rounded-lg");
+    expect(html).toContain("size-12 overflow-visible rounded-lg");
   });
 
   it("非图片失败态提供 alert、错误提示、重试和适配窄屏的行内布局", () => {

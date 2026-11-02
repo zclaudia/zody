@@ -1,5 +1,6 @@
 /* eslint-disable max-lines */
 import {
+  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -26,8 +27,11 @@ import {
   useIsMobileTextInputViewport,
 } from "@/lib/mobileTextInput.js";
 import {
+  getCuaScreenshotConfirmOptionLabelMessageId,
+  getCuaScreenshotConfirmTarget,
   getPermissionOptionDisplayKind,
   getPermissionRequestPreview,
+  isCuaScreenshotConfirmRequest,
   shouldPreferPermissionOptionName,
   sortPermissionOptions,
   type PermissionRequestScope,
@@ -58,7 +62,7 @@ import { isSaveWorkflowToolCall } from "@/lib/workflowToolNames.js";
 import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import { useZCodeIntl } from "./i18n/IntlProvider.js";
-import { Info, LoaderIcon, WrenchIcon } from "lucide-react";
+import { Info, CameraIcon, LoaderIcon, WrenchIcon } from "lucide-react";
 
 const MCP_PERMISSION_TOOL_ICON = <WrenchIcon className="size-4 shrink-0 text-foreground-subtle" />;
 
@@ -70,6 +74,7 @@ type PermissionBlockKind =
   | "skill"
   | "workflow"
   | "saveWorkflow"
+  | "cuaScreenshotConfirm"
   | "fallback";
 
 interface PermissionBlockInteraction {
@@ -285,6 +290,13 @@ function resolvePermissionBlockKind(
     return "saveWorkflow";
   }
 
+  // CUA macOS 截图的 App 内确认弹窗（spec：computer-use-macos-phase1「App 内确认弹窗
+  // 替代 Helper 原生 NSAlert」）：固定 toolName，请求不是普通工具调用（transcript 无
+  // 对应行），fallback 块会把 input raw JSON 摊开；这里分流到专用目标身份展示块。
+  if (isCuaScreenshotConfirmRequest(toolCall)) {
+    return "cuaScreenshotConfirm";
+  }
+
   if (rawFileSummaries.length > 0 || preview.fileChanges.length > 0) {
     return "edit";
   }
@@ -335,10 +347,11 @@ function getPermissionBlockInteraction(blockKind: PermissionBlockKind): Permissi
     case "execute":
     case "workflow":
     case "saveWorkflow":
+    case "cuaScreenshotConfirm":
     case "fallback":
       // 这里是权限弹窗的中间态展示，不提供收起/展开交互，避免用户把关键内容藏起来。
-      // workflow / saveWorkflow 只为穷尽性列在这里：它们由各自的专用块直接渲染，不走通用块，
-      // 块内脚本折叠是 spec 记录的刻意例外（图、名称与落点仍不可折叠）。
+      // workflow / saveWorkflow / cuaScreenshotConfirm 只为穷尽性列在这里：它们由各自的
+      // 专用块直接渲染，不走通用块，块内脚本折叠是 spec 记录的刻意例外（图、名称与落点仍不可折叠）。
       return {
         canToggle: false,
         forceOpen: true,
@@ -439,6 +452,123 @@ function McpPermissionBlock(context: ToolCallBlockRenderContext) {
   );
 }
 
+const CUA_SCREENSHOT_CONFIRM_ICON = (
+  <CameraIcon className="size-4 shrink-0 text-foreground-subtle" />
+);
+
+/**
+ * CUA macOS 截图「App 内确认弹窗」主体（spec：computer-use-macos-phase1
+ * 「2026-10-31 App 内确认弹窗替代 Helper 原生 NSAlert」）：标题「屏幕截图确认」+
+ * 目标窗口身份（应用/窗口/PID/窗口 ID，来自 permission 请求 input.target）。
+ * input 缺失或畸形时回退显示协议 reason 字符串，不崩溃；不渲染原始 JSON。
+ * 选项集与普通工具一致（allow_once 保留「允许本次截图」专用文案，
+ * allow_always/deny 用标准文案），默认拒绝由 PermissionDialog 通用选项区给出。
+ */
+function CuaScreenshotConfirmPermissionBlock({
+  request,
+  fallbackReason,
+}: {
+  request: ZCodePermissionRequest;
+  fallbackReason: string | null;
+}) {
+  const { intl } = useZCodeIntl();
+  const target = useMemo(() => getCuaScreenshotConfirmTarget(request), [request]);
+  const targetRows = useMemo(() => {
+    if (!target) {
+      return [];
+    }
+    const rows: Array<{ labelId: string; value: string; mono: boolean }> = [];
+    if (target.ownerName !== null) {
+      rows.push({
+        labelId: "chat.permission.cua.screenshotConfirm.target.ownerName",
+        value: target.ownerName,
+        mono: false,
+      });
+    }
+    if (target.windowName !== null) {
+      rows.push({
+        labelId: "chat.permission.cua.screenshotConfirm.target.windowName",
+        value: target.windowName,
+        mono: false,
+      });
+    }
+    if (target.pid !== null) {
+      rows.push({
+        labelId: "chat.permission.cua.screenshotConfirm.target.pid",
+        value: String(target.pid),
+        mono: true,
+      });
+    }
+    if (target.windowId !== null) {
+      rows.push({
+        labelId: "chat.permission.cua.screenshotConfirm.target.windowId",
+        value: String(target.windowId),
+        mono: true,
+      });
+    }
+    return rows;
+  }, [target]);
+  // ToolLayout 是 memo 组件，primaryText/content 必须是稳定引用（reactStableReferences 规则）。
+  const primaryText = useMemo(
+    () => (
+      <span className="min-w-0 text-foreground-subtle">
+        {intl.formatMessage({ id: "chat.permission.cua.screenshotConfirm.summary" })}
+      </span>
+    ),
+    [intl],
+  );
+  const content = useMemo(() => {
+    if (target === null) {
+      // input 缺失/畸形：回退显示协议 reason（CLI 的英文目标摘要），不渲染半空结构。
+      return fallbackReason ? (
+        <p
+          className="text-ui-base leading-5 text-foreground"
+          data-cua-screenshot-confirm-reason="true"
+        >
+          {fallbackReason}
+        </p>
+      ) : null;
+    }
+    return (
+      <div
+        className="space-y-1.5 rounded-lg border border-border bg-surface px-2.5 py-2"
+        data-cua-screenshot-confirm-target="true"
+      >
+        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1">
+          {targetRows.map((row) => (
+            <Fragment key={row.labelId}>
+              <dt className="text-ui-sm text-foreground-subtle">
+                {intl.formatMessage({ id: row.labelId })}
+              </dt>
+              <dd
+                className={cn(
+                  "min-w-0 break-words text-foreground",
+                  row.mono ? "font-mono text-ui-sm" : "text-ui-base",
+                )}
+              >
+                {row.value}
+              </dd>
+            </Fragment>
+          ))}
+        </dl>
+      </div>
+    );
+  }, [fallbackReason, intl, target, targetRows]);
+
+  return (
+    <ToolLayout
+      toolId={`permission-cua-screenshot-confirm:${request.requestId}`}
+      icon={CUA_SCREENSHOT_CONFIRM_ICON}
+      showIcon
+      canToggle={false}
+      forceOpen
+      kindLabel={intl.formatMessage({ id: "chat.permission.cua.screenshotConfirm.title" })}
+      primaryText={primaryText}
+      content={content}
+    />
+  );
+}
+
 export function PermissionDialog({
   request,
   onRespond,
@@ -531,6 +661,8 @@ export function PermissionDialog({
   const displayReason = useMemo(() => getPermissionDisplayReason(request), [request]);
   // 工作流确认窗的两项 run 设置（WorkflowPermissionBlock 画，这里只存改过的值与「模型不可用」）。
   const isWorkflowAsk = blockKind === "workflow";
+  // CUA 截图确认窗：专用展示块 + 专用动作文案 + 默认拒绝语义（spec 见块注释）。
+  const isCuaScreenshotConfirm = blockKind === "cuaScreenshotConfirm";
   const workflowSettings = usePermissionWorkflowSettings(request.requestId);
   const workflowSettingsContent = isWorkflowAsk ? workflowSettings.content : undefined;
   const isOptionBlocked = useCallback(
@@ -539,7 +671,6 @@ export function PermissionDialog({
     [isWorkflowAsk, workflowSettings.blocked],
   );
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const [feedback, setFeedback] = useState("");
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const feedbackInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -552,10 +683,17 @@ export function PermissionDialog({
       ),
     [orderedOptions],
   );
+  // CUA 截图确认弹窗的默认动作必须是拒绝（spec：computer-use-macos-phase1
+  // 「App 内确认弹窗」——默认动作与 Esc 均为拒绝）：允许不得作为默认/回车首选，
+  // 初始选中项指向拒绝选项；其余确认窗维持既有的首项默认。
+  const defaultSelectedIndex =
+    isCuaScreenshotConfirm && denyOption ? Math.max(orderedOptions.indexOf(denyOption), 0) : 0;
+  const [selectedIndex, setSelectedIndex] = useState(defaultSelectedIndex);
   // 反馈行的应答目标：工作流确认窗是 Refine（拒绝 + 修改意见升级为真实 user message），
   // 其他确认窗是 Deny（拒绝 + 反馈）。两种确认窗共用同一行输入，只换应答目标与文案，
   // 不再各画一套输入框——同一停靠区里两种反馈输入长得不一样是设计债。
   // 原因：复用 Deny 索引会让拒绝按钮和输入框同时高亮；输入行独立导航，提交才用目标选项。
+  // CUA 截图确认同样遵循通用弹窗行为（2026-10-31 用户修订），不再屏蔽反馈输入。
   const feedbackOption = refineOption ?? (request.freeText === true ? denyOption : undefined);
   const hasFeedbackInput = Boolean(feedbackOption);
   const feedbackIndex = orderedOptions.length;
@@ -563,10 +701,10 @@ export function PermissionDialog({
   const isFeedbackSelected = hasFeedbackInput && selectedIndex === feedbackIndex;
 
   useEffect(() => {
-    setSelectedIndex(0);
+    setSelectedIndex(defaultSelectedIndex);
     // 草稿按 requestId 归零，避免一个请求的反馈（或工作流修改意见）泄漏进下一个确认窗。
     setFeedback("");
-  }, [request.requestId]);
+  }, [defaultSelectedIndex, request.requestId]);
 
   useEffect(() => {
     if (orderedOptions.length === 0) {
@@ -635,6 +773,19 @@ export function PermissionDialog({
     ],
   );
 
+  // CUA 截图确认：Esc = 拒绝（spec「默认动作与 Esc 均为拒绝」），仅对该 toolName 生效，
+  // 其他确认窗维持既有键盘语义。反馈输入框内的 Esc 仍按通用行为先让出焦点。
+  const handleRootKeyDown = useCallback(
+    (event: ReactKeyboardEvent<HTMLDivElement>) => {
+      if (!isCuaScreenshotConfirm || event.key !== "Escape" || responding || !denyOption) {
+        return;
+      }
+      event.preventDefault();
+      respondWithOption(denyOption);
+    },
+    [denyOption, isCuaScreenshotConfirm, respondWithOption, responding],
+  );
+
   const submitFeedback = useCallback(() => {
     // 提交前 trim：CLI broker 对空白 freeText 落普通 deny，不能把纯空白当反馈。
     const trimmedFeedback = feedback.trim();
@@ -670,6 +821,11 @@ export function PermissionDialog({
         return;
       }
       if (event.key === "Enter") {
+        // Bugfix(keyboard-4): 手机触屏视口下软键盘的回车是换行键，不能被无条件提交劫持，
+        // 多行反馈按 Enter 正常换行；提交统一走下方确认按钮。桌面保持 Enter 提交快捷键不变。
+        if (isMobileTextInputViewport) {
+          return;
+        }
         event.preventDefault();
         submitFeedback();
         return;
@@ -679,7 +835,7 @@ export function PermissionDialog({
         feedbackInputRef.current?.blur();
       }
     },
-    [moveSelection, submitFeedback],
+    [isMobileTextInputViewport, moveSelection, submitFeedback],
   );
 
   const handleOptionKeyDown = useCallback(
@@ -776,7 +932,7 @@ export function PermissionDialog({
   // 保存确认窗同理，但问句、内容与选项都不同：没有图、没有 Refine，主体是落点 + 元数据 + 脚本。
   const shouldUseSaveWorkflowBlock = blockKind === "saveWorkflow";
   return (
-    <div ref={rootRef} className="w-full shrink-0 relative z-1">
+    <div ref={rootRef} className="w-full shrink-0 relative z-1" onKeyDown={handleRootKeyDown}>
       <div className="w-full overflow-hidden rounded-2xl border border-border bg-popover shadow-xs">
         <div className="flex flex-col gap-3 p-3">
           <div className="space-y-4">
@@ -789,6 +945,7 @@ export function PermissionDialog({
             {!shouldUseSwitchModePlaceholder &&
             !shouldUseWorkflowBlock &&
             !shouldUseSaveWorkflowBlock &&
+            !isCuaScreenshotConfirm &&
             displayReason ? (
               <p className="text-ui-base leading-5 text-foreground">{displayReason}</p>
             ) : null}
@@ -819,6 +976,13 @@ export function PermissionDialog({
             ) : shouldUseSaveWorkflowBlock ? (
               // 同上：保存 gate 的问句（保存 / 覆盖两句）由块自己给出，不复用协议 reason。
               <SaveWorkflowPermissionBlock request={request} />
+            ) : isCuaScreenshotConfirm ? (
+              // CUA 截图确认：结构化目标身份由专用块给出；input 缺失/畸形时块内回退 reason，
+              // 因此这里也不渲染顶部 displayReason，避免同一句摘要出现两份。
+              <CuaScreenshotConfirmPermissionBlock
+                request={request}
+                fallbackReason={displayReason}
+              />
             ) : (
               <PermissionBlock {...blockContext} />
             )}
@@ -864,13 +1028,21 @@ export function PermissionDialog({
                 // 之前这里一律按 kind 本地化，像 switch_mode 这类不同语义但同属 allow_always 的选项，
                 // 会被错误压成两条一模一样的“始终允许”。
                 const preferOptionName = shouldPreferPermissionOptionName(option);
-                const label =
-                  (labelMessageId === "chat.permission.allowCommand"
-                    ? fallbackLabel
-                    : knownNameLabel) ??
-                  (preferOptionName ? option.name : (fallbackLabel ?? option.name));
+                // CUA 截图确认的两个动作按 optionId 映射专用文案（仅对该 toolName 生效，
+                // 其他工具的 "Allow once" / "Deny" 展示不受影响），且不附带通用描述。
+                const cuaConfirmLabelMessageId = isCuaScreenshotConfirm
+                  ? getCuaScreenshotConfirmOptionLabelMessageId(option.optionId)
+                  : null;
+                const label = cuaConfirmLabelMessageId
+                  ? intl.formatMessage({ id: cuaConfirmLabelMessageId })
+                  : ((labelMessageId === "chat.permission.allowCommand"
+                      ? fallbackLabel
+                      : knownNameLabel) ??
+                    (preferOptionName ? option.name : (fallbackLabel ?? option.name)));
                 const description =
-                  (preferOptionName && !knownNameLabel) || !descriptionMessageId
+                  cuaConfirmLabelMessageId ||
+                  (preferOptionName && !knownNameLabel) ||
+                  !descriptionMessageId
                     ? null
                     : intl.formatMessage({ id: descriptionMessageId });
                 const ruleScopes =
@@ -1006,7 +1178,9 @@ export function PermissionDialog({
             </p>
           ) : null}
           <div className="flex items-center justify-between gap-2 px-1">
-            <p className="flex gap-2 text-ui-base items-center text-foreground-subtle">
+            {/* dialogs-5: 纯触屏设备没有物理键盘，「Tab / 上下键」桌面键盘提示既误导又挤占底部空间；
+                仅在 (hover:none) 触屏态隐藏，桌面渲染不变。 */}
+            <p className="flex gap-2 text-ui-base items-center text-foreground-subtle [@media(hover:none)_and_(pointer:coarse)]:hidden">
               <Info className="text-foreground size-4 shrink-0" />
               {intl.formatMessage({ id: "chat.permission.keyboardHint" })}
             </p>

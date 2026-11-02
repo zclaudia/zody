@@ -1,0 +1,29 @@
+{
+  "route": "deepseek-flash",
+  "provider": "magpie",
+  "model": "commandcode-plan/deepseek/deepseek-v4.1-flash",
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "computerUseGrant": false,
+  "paidDevelopmentAuthorized": true,
+  "workers": [
+    {
+      "role": "R",
+      "id": "broker:deepseek-flash-ro-989625ff4f43c3ef:01a18588-5494-7133-9b14-86364715b91b",
+      "access": "read-only",
+      "scope": "investigation/review"
+    },
+    {
+      "role": "N",
+      "id": "broker:deepseek-flash-rw-c2d541bc0c4e8861:01a18592-53bb-77b2-81f4-065f66c4f037",
+      "access": "workspace-write",
+      "scope": "new native peer diagnostic/scripts/tests only"
+    },
+    {
+      "role": "L",
+      "id": "broker:deepseek-flash-rw-c2d541bc0c4e8861:01a18592-5417-72f2-9b76-5ada47e28f4b",
+      "access": "workspace-write",
+      "scope": "existing control-only launcher/new submission binding/owned tests"
+    }
+  ],
+  "controllerVerificationRequired": true
+}

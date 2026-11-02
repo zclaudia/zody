@@ -89,8 +89,11 @@ export function WebRemoteControlMobileBackendPicker({
         : failure?.message;
 
   return (
+    // min-h-dvh（spec D3）：#root 固定 100dvh + overflow:hidden，min-h-screen(100vh) 在 iOS Safari
+    // 工具栏展开时底部 footer（唯二主动作「连接/返回设置」）整段落工具栏之下，需先滚动收起工具栏
+    // 才能点到（走查 settings-1/home-10）。
     <section
-      className="flex min-h-screen flex-col bg-background text-foreground"
+      className="flex min-h-dvh flex-col bg-background text-foreground"
       data-mobile-remote-page="backend-picker"
     >
       <header className="shrink-0 border-b border-border bg-header px-4 py-4">
@@ -220,8 +223,11 @@ export function WebRemoteControlMobileBackendPicker({
         ) : null}
       </div>
 
+      {/* spec §2.5：本页无输入、纯安全区场景用 .zcode-safe-area-bottom；垫在内层 div 上避免与
+          footer 自身 py-3 在同一属性上冲突（同层叠加两个底部类视为缺陷）。viewport-fit=cover 下
+          iPhone home 指示条区域会压住 footer 底缘，垫高后「连接/返回设置」可完整点按。 */}
       <footer className="shrink-0 border-t border-border bg-background px-4 py-3">
-        <div className="flex gap-2">
+        <div className="zcode-safe-area-bottom flex gap-2">
           <Button
             type="button"
             variant="outline"

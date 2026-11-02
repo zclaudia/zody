@@ -1,0 +1,68 @@
+{
+  "node": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/Resources/node",
+  "nodeVersion": "v24.14.0",
+  "sourceSha256": "6760e63ffa637f0e6c517b4cdd626de8228e94ad8908c767f62dd13808197fc2",
+  "sourceBytes": 3557235,
+  "outcomes": [
+    {
+      "mode": "opening-path",
+      "replacement": "rename",
+      "observed": "unverified replacement executed (regression red)"
+    },
+    {
+      "mode": "fixed-snapshot",
+      "replacement": "rename",
+      "observed": "original verified server executed",
+      "value": {
+        "answer": 42,
+        "pid": 61761,
+        "argv": [
+          "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/Resources/node",
+          "-",
+          "--zcode-node-repl-cell"
+        ],
+        "execArgv": [
+          "--jitless",
+          "--input-type=module"
+        ]
+      }
+    },
+    {
+      "mode": "fixed-snapshot",
+      "replacement": "in-place",
+      "observed": "original verified server executed",
+      "value": {
+        "answer": 42,
+        "pid": 61762,
+        "argv": [
+          "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/Resources/node",
+          "-",
+          "--zcode-node-repl-cell"
+        ],
+        "execArgv": [
+          "--jitless",
+          "--input-type=module"
+        ]
+      }
+    },
+    {
+      "mode": "fixed-snapshot",
+      "replacement": "unlink",
+      "observed": "original verified server executed",
+      "value": {
+        "answer": 42,
+        "pid": 61763,
+        "argv": [
+          "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/Resources/node",
+          "-",
+          "--zcode-node-repl-cell"
+        ],
+        "execArgv": [
+          "--jitless",
+          "--input-type=module"
+        ]
+      }
+    }
+  ],
+  "claim": "real bundled server + signed Node cell execution; no native capture/authority or full D06 claim"
+}

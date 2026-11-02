@@ -1,0 +1,711 @@
+// packages/desktop/native/macos-cua-helper-round11/authority-entry.mjs
+import { Socket } from "node:net";
+
+// apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-authority.js
+import { randomUUID } from "node:crypto";
+
+// apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-helpers.js
+function isNonEmpty(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+function isSubmissionOrigin(value) {
+  return value === "desktop" || value === "mobile" || value === "unknown";
+}
+function isSubmissionInputKind(value) {
+  return value === "new-submission" || value === "steer" || value === "continuation" || value === "retry" || value === "replay" || value === "recovery";
+}
+function isRevokeReason(value) {
+  return value === "user-stop" || value === "mobile-steer" || value === "unknown-input" || value === "producer-lost" || value === "control-lost" || value === "runtime-dispose";
+}
+function isValidRef(ref) {
+  return isNonEmpty(ref.submissionLineageId) && Number.isSafeInteger(ref.authorizationRevision) && ref.authorizationRevision > 0 && isNonEmpty(ref.appIncarnation) && isNonEmpty(ref.hostInstanceId) && isNonEmpty(ref.runtimeInstanceId) && isNonEmpty(ref.sessionId) && isNonEmpty(ref.workspaceKey);
+}
+function sameIdentity(left, right) {
+  return left.submissionLineageId === right.submissionLineageId && left.appIncarnation === right.appIncarnation && left.hostInstanceId === right.hostInstanceId && left.runtimeInstanceId === right.runtimeInstanceId && left.sessionId === right.sessionId && left.workspaceKey === right.workspaceKey;
+}
+function submissionDedupKeys(sourceCommandId, queueItemId) {
+  const keys = [`command:${sourceCommandId}`];
+  if (queueItemId !== void 0)
+    keys.push(`queue:${queueItemId}`);
+  return keys;
+}
+function turnBindingKey(runId, turnId) {
+  return `${runId.length}:${runId}:${turnId.length}:${turnId}`;
+}
+function readCapacity(value, fallback, name) {
+  const resolved = value ?? fallback;
+  if (!Number.isSafeInteger(resolved) || resolved <= 0) {
+    throw new Error(`CuaSubmissionAuthority requires positive safe integer ${name}`);
+  }
+  return resolved;
+}
+function unknownProjection() {
+  return Object.freeze({
+    status: "unknown",
+    nativeFence: "unknown",
+    mobileDelivery: "unknown"
+  });
+}
+function unknownRevocation() {
+  return { status: "unknown", projection: unknownProjection() };
+}
+function candidateProjection(ref) {
+  return Object.freeze({
+    status: "candidate",
+    ref: copyRef(ref),
+    nativeFence: "unknown",
+    mobileDelivery: "unknown"
+  });
+}
+function revokedProjection(record, revocationReason) {
+  return Object.freeze({
+    status: "revoked",
+    ref: copyRef(record.ref),
+    revocationReason,
+    nativeFence: "unknown",
+    mobileDelivery: "unknown"
+  });
+}
+function copyRef(ref) {
+  return Object.freeze({ ...ref });
+}
+
+// apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-types.js
+var DEFAULT_MAX_LINEAGES = 256;
+var DEFAULT_MAX_ACTIVE_TURNS_PER_LINEAGE = 32;
+var DEFAULT_MAX_DEAD_PRODUCER_INCARNATIONS = 256;
+
+// apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-authority.js
+var CuaSubmissionAuthority = class {
+  identity;
+  maxLineages;
+  maxActiveTurnsPerLineage;
+  maxDeadProducerIncarnations;
+  onRevocation;
+  lineages = /* @__PURE__ */ new Map();
+  dedupKeys = /* @__PURE__ */ new Map();
+  deadProducerIncarnations = /* @__PURE__ */ new Set();
+  producerRegistryExhausted = false;
+  disposed = false;
+  constructor(options) {
+    for (const [field, value] of Object.entries({
+      appIncarnation: options.appIncarnation,
+      hostInstanceId: options.hostInstanceId,
+      runtimeInstanceId: options.runtimeInstanceId,
+      sessionId: options.sessionId,
+      workspaceKey: options.workspaceKey
+    })) {
+      if (!isNonEmpty(value))
+        throw new Error(`CuaSubmissionAuthority requires ${field}`);
+    }
+    this.identity = {
+      appIncarnation: options.appIncarnation,
+      hostInstanceId: options.hostInstanceId,
+      runtimeInstanceId: options.runtimeInstanceId,
+      sessionId: options.sessionId,
+      workspaceKey: options.workspaceKey
+    };
+    this.maxLineages = readCapacity(options.maxLineages, DEFAULT_MAX_LINEAGES, "maxLineages");
+    this.maxActiveTurnsPerLineage = readCapacity(options.maxActiveTurnsPerLineage, DEFAULT_MAX_ACTIVE_TURNS_PER_LINEAGE, "maxActiveTurnsPerLineage");
+    this.maxDeadProducerIncarnations = readCapacity(options.maxDeadProducerIncarnations, DEFAULT_MAX_DEAD_PRODUCER_INCARNATIONS, "maxDeadProducerIncarnations");
+    this.onRevocation = options.onRevocation;
+  }
+  /**
+   * 只由可信 Host/runtime admission 边界调用。source/queue id 不生成权限，只用于拒绝重送。
+   */
+  admitLive(request) {
+    if (this.disposed)
+      return { accepted: false, reason: "disposed" };
+    if (!isSubmissionOrigin(request.origin))
+      return { accepted: false, reason: "invalid_input" };
+    if (request.origin !== "desktop")
+      return { accepted: false, reason: "ineligible_origin" };
+    if (!isSubmissionInputKind(request.inputKind)) {
+      return { accepted: false, reason: "invalid_input" };
+    }
+    if (request.inputKind !== "new-submission") {
+      return { accepted: false, reason: "ineligible_input_kind" };
+    }
+    if (!isNonEmpty(request.sourceCommandId))
+      return { accepted: false, reason: "invalid_input" };
+    if (request.queueItemId !== void 0 && !isNonEmpty(request.queueItemId)) {
+      return { accepted: false, reason: "invalid_input" };
+    }
+    const dedupKeys = submissionDedupKeys(request.sourceCommandId, request.queueItemId);
+    const existing = this.findByDedupKeys(dedupKeys);
+    if (existing) {
+      return { accepted: false, reason: "duplicate", existingRef: copyRef(existing.ref) };
+    }
+    if (this.lineages.size >= this.maxLineages)
+      return { accepted: false, reason: "capacity" };
+    const submissionLineageId = this.createLineageId();
+    const ref = copyRef({
+      ...this.identity,
+      submissionLineageId,
+      authorizationRevision: 1
+    });
+    this.lineages.set(submissionLineageId, {
+      ref,
+      state: "candidate",
+      sourceCommandId: request.sourceCommandId,
+      queueItemId: request.queueItemId,
+      bindings: /* @__PURE__ */ new Set()
+    });
+    for (const key of dedupKeys)
+      this.dedupKeys.set(key, submissionLineageId);
+    return { accepted: true, ref: copyRef(ref) };
+  }
+  bindTurn(request) {
+    if (this.disposed)
+      return { ok: false, reason: "disposed" };
+    if (!isNonEmpty(request.producerIncarnation) || !isNonEmpty(request.runId) || !isNonEmpty(request.turnId)) {
+      return { ok: false, reason: "invalid_input" };
+    }
+    if (this.producerRegistryExhausted) {
+      return { ok: false, reason: "producer_registry_exhausted" };
+    }
+    if (this.deadProducerIncarnations.has(request.producerIncarnation)) {
+      return { ok: false, reason: "dead_producer" };
+    }
+    const found = this.findRecordForCleanup(request.ref);
+    if (!found.ok)
+      return { ok: false, reason: found.reason };
+    const record = found.record;
+    if (request.ref.authorizationRevision !== record.ref.authorizationRevision) {
+      return { ok: false, reason: "stale_revision" };
+    }
+    if (record.state === "revoked")
+      return { ok: false, reason: "revoked" };
+    if (record.producerIncarnation && record.producerIncarnation !== request.producerIncarnation) {
+      return { ok: false, reason: "producer_mismatch" };
+    }
+    const bindingKey = turnBindingKey(request.runId, request.turnId);
+    if (record.bindings.has(bindingKey)) {
+      return { ok: true, ref: copyRef(record.ref), reusedBinding: true };
+    }
+    if (record.bindings.size >= this.maxActiveTurnsPerLineage) {
+      return { ok: false, reason: "binding_capacity" };
+    }
+    record.producerIncarnation ??= request.producerIncarnation;
+    record.bindings.add(bindingKey);
+    return { ok: true, ref: copyRef(record.ref), reusedBinding: false };
+  }
+  /** 清理路径容忍撤销后 revision 前进，只要求身份匹配且请求 revision 不超前。 */
+  endTurn(request) {
+    if (this.disposed)
+      return { ok: false, reason: "disposed" };
+    if (!isNonEmpty(request.runId) || !isNonEmpty(request.turnId)) {
+      return { ok: false, reason: "invalid_input" };
+    }
+    const found = this.findRecordForCleanup(request.ref);
+    if (!found.ok)
+      return found;
+    const removed = found.record.bindings.delete(turnBindingKey(request.runId, request.turnId));
+    return { ok: true, ref: copyRef(found.record.ref), removed };
+  }
+  steer(request) {
+    if (this.disposed)
+      return { ok: false, reason: "disposed" };
+    if (!isSubmissionOrigin(request.origin))
+      return { ok: false, reason: "invalid_input" };
+    const found = this.findRecordForCleanup(request.ref);
+    if (!found.ok)
+      return found;
+    if (request.origin === "desktop") {
+      return {
+        ok: true,
+        ref: copyRef(found.record.ref),
+        lineageState: found.record.state
+      };
+    }
+    const revocation = this.revokeRecord(found.record, request.origin === "mobile" ? "mobile-steer" : "unknown-input");
+    return {
+      ok: true,
+      ref: copyRef(found.record.ref),
+      lineageState: "revoked",
+      revocation
+    };
+  }
+  producerLost(request) {
+    if (this.disposed || !isNonEmpty(request.producerIncarnation))
+      return [];
+    if (!this.deadProducerIncarnations.has(request.producerIncarnation)) {
+      if (this.deadProducerIncarnations.size >= this.maxDeadProducerIncarnations) {
+        this.producerRegistryExhausted = true;
+      } else {
+        this.deadProducerIncarnations.add(request.producerIncarnation);
+      }
+    }
+    const affected = [...this.lineages.values()].filter((record) => record.state === "candidate" && record.producerIncarnation === request.producerIncarnation);
+    const revoked = [];
+    for (const record of affected) {
+      try {
+        const result = this.revokeRecord(record, request.reason);
+        if (result.status === "revoked")
+          revoked.push(copyRef(result.ref));
+      } catch {
+      }
+    }
+    return revoked;
+  }
+  /** 交给 producer 的窄面只有读取/撤销，不泄露 admit/bind 等可信 owner 方法。 */
+  createProducerPort() {
+    return Object.freeze({
+      resolve: (request) => this.resolve(request),
+      revoke: (request) => this.revoke(request)
+    });
+  }
+  async resolve(request) {
+    return this.projectNow(request);
+  }
+  /** runtime stop/shutdown 等同步边界读取同一 owner 事实，不建立授权。 */
+  projectNow(request) {
+    if (this.disposed)
+      return unknownProjection();
+    const record = this.lineages.get(request.ref.submissionLineageId);
+    if (!record || !sameIdentity(record.ref, request.ref))
+      return unknownProjection();
+    if (record.ref.authorizationRevision !== request.ref.authorizationRevision) {
+      return unknownProjection();
+    }
+    return this.project(record);
+  }
+  async revoke(request) {
+    return this.revokeNow(request);
+  }
+  /** 先提交撤销事实再返回，供同步 stop 在 abort 前调用。 */
+  revokeNow(request) {
+    if (this.disposed || !isRevokeReason(request.reason))
+      return unknownRevocation();
+    const found = this.findRecordForCleanup(request.ref);
+    if (!found.ok)
+      return unknownRevocation();
+    return this.revokeRecord(found.record, request.reason);
+  }
+  dispose() {
+    if (this.disposed)
+      return;
+    this.disposed = true;
+    for (const record of this.lineages.values()) {
+      if (record.state === "candidate")
+        this.revokeRecord(record, "runtime-dispose");
+    }
+    this.lineages.clear();
+    this.dedupKeys.clear();
+    this.deadProducerIncarnations.clear();
+    this.producerRegistryExhausted = false;
+  }
+  revokeRecord(record, reason) {
+    const idempotent = record.state === "revoked";
+    if (!idempotent) {
+      const nextRevision = record.ref.authorizationRevision + 1;
+      record.ref = copyRef({
+        ...record.ref,
+        // 正常路径从 1 递增；达到上限时保持 revision，但状态仍 locked revoked。
+        authorizationRevision: Number.isSafeInteger(nextRevision) ? nextRevision : record.ref.authorizationRevision
+      });
+      record.state = "revoked";
+      record.revocationReason = reason;
+      this.notifyRevocation(record);
+    }
+    if (!record.revocationReason)
+      return unknownRevocation();
+    return {
+      status: "revoked",
+      ref: copyRef(record.ref),
+      revocationReason: record.revocationReason,
+      idempotent,
+      projection: revokedProjection(record, record.revocationReason)
+    };
+  }
+  notifyRevocation(record) {
+    if (!this.onRevocation || !record.revocationReason)
+      return;
+    const projection = revokedProjection(record, record.revocationReason);
+    try {
+      this.onRevocation(projection);
+    } catch {
+    }
+  }
+  project(record) {
+    if (record.state === "candidate") {
+      return candidateProjection(record.ref);
+    }
+    return record.revocationReason ? revokedProjection(record, record.revocationReason) : unknownProjection();
+  }
+  findRecordForCleanup(ref) {
+    if (!isValidRef(ref))
+      return { ok: false, reason: "invalid_input" };
+    const record = this.lineages.get(ref.submissionLineageId);
+    if (!record || !sameIdentity(record.ref, ref))
+      return { ok: false, reason: "unknown_lineage" };
+    if (ref.authorizationRevision > record.ref.authorizationRevision) {
+      return { ok: false, reason: "stale_revision" };
+    }
+    return { ok: true, record };
+  }
+  findByDedupKeys(keys) {
+    for (const key of keys) {
+      const lineageId = this.dedupKeys.get(key);
+      if (!lineageId)
+        continue;
+      const record = this.lineages.get(lineageId);
+      if (record)
+        return record;
+    }
+    return void 0;
+  }
+  createLineageId() {
+    let lineageId = randomUUID();
+    while (this.lineages.has(lineageId))
+      lineageId = randomUUID();
+    return lineageId;
+  }
+};
+
+// packages/desktop/native/macos-cua-helper-round11/authority-entry.mjs
+var AUTHORITY_FD = 3;
+var MAX_FRAME_BYTES = 16 * 1024;
+var MAX_PENDING_OUTPUT_BYTES = 64 * 1024;
+var CLOSE_FLUSH_TIMEOUT_MS = 250;
+var MAX_FIELD_BYTES = 4 * 1024;
+var METHODS = /* @__PURE__ */ new Set(["bootstrap", "check", "revoke", "close"]);
+var REF_STRING_FIELDS = [
+  "submissionLineageId",
+  "appIncarnation",
+  "hostInstanceId",
+  "runtimeInstanceId",
+  "sessionId",
+  "workspaceKey"
+];
+var socket;
+var authority;
+var scope;
+var pendingCandidate;
+var bootstrapStarted = false;
+var invalidated = false;
+var input = "";
+function isObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+function isBoundedString(value) {
+  return typeof value === "string" && value.trim().length > 0 && Buffer.byteLength(value, "utf8") <= MAX_FIELD_BYTES;
+}
+function readBoundedString(payload, field) {
+  const value = payload[field];
+  return isBoundedString(value) ? value : void 0;
+}
+function readRef(value) {
+  if (!isObject(value)) return void 0;
+  const ref = {};
+  for (const field of REF_STRING_FIELDS) {
+    if (!isBoundedString(value[field])) return void 0;
+    ref[field] = value[field];
+  }
+  if (!Number.isSafeInteger(value.authorizationRevision) || value.authorizationRevision <= 0) {
+    return void 0;
+  }
+  ref.authorizationRevision = value.authorizationRevision;
+  return ref;
+}
+function sameRef(left, right) {
+  return REF_STRING_FIELDS.every((field) => left?.[field] === right?.[field]) && left?.authorizationRevision === right?.authorizationRevision;
+}
+function writeFrame(frame) {
+  if (!socket || socket.destroyed || !socket.writable) return false;
+  const line = `${JSON.stringify(frame)}
+`;
+  const frameBytes = Buffer.byteLength(line, "utf8");
+  if (frameBytes > MAX_FRAME_BYTES) return false;
+  if (socket.writableLength + frameBytes > MAX_PENDING_OUTPUT_BYTES) return false;
+  socket.write(line);
+  return true;
+}
+function invalidate(options = {}) {
+  if (invalidated) return false;
+  invalidated = true;
+  input = "";
+  const activeAuthority = authority;
+  const activeScope = scope;
+  const pending = pendingCandidate;
+  authority = void 0;
+  pendingCandidate = void 0;
+  let terminalFrameWritten = options.terminalFrame === void 0;
+  try {
+    if (activeAuthority && activeScope) {
+      activeAuthority.producerLost({
+        producerIncarnation: activeScope.producerIncarnation,
+        reason: options.reason ?? "producer-lost"
+      });
+    } else if (pending) {
+      pending.authority.producerLost({
+        producerIncarnation: pending.producerIncarnation,
+        reason: options.reason ?? "producer-lost"
+      });
+    }
+  } finally {
+    activeAuthority?.dispose();
+    pending?.authority.dispose();
+    scope = void 0;
+    if (options.terminalFrame) terminalFrameWritten = writeFrame(options.terminalFrame);
+    if (options.flush && terminalFrameWritten) {
+      socket?.end();
+      const timer = setTimeout(() => socket?.destroy(), CLOSE_FLUSH_TIMEOUT_MS);
+      timer.unref();
+      socket?.once("close", () => clearTimeout(timer));
+    } else {
+      socket?.destroy();
+    }
+  }
+  return true;
+}
+function respond(requestId, method, result) {
+  if (invalidated) return false;
+  const written = writeFrame({ requestId, method, result });
+  if (!written) invalidate();
+  return written;
+}
+function reject(requestId, method, reason) {
+  respond(requestId, method, { ok: false, reason });
+}
+function parseRequest(line) {
+  let value;
+  try {
+    value = JSON.parse(line);
+  } catch {
+    return { error: "invalid_json" };
+  }
+  if (!isObject(value) || !isBoundedString(value.requestId) || !isObject(value.payload)) {
+    return { error: "invalid_frame", requestId: isObject(value) ? value.requestId : null };
+  }
+  if (!isBoundedString(value.method) || !METHODS.has(value.method)) {
+    return { error: "unknown_method", requestId: value.requestId, method: value.method };
+  }
+  return { request: value };
+}
+async function handleBootstrap(request) {
+  if (bootstrapStarted) {
+    reject(request.requestId, request.method, "duplicate_bootstrap");
+    return;
+  }
+  bootstrapStarted = true;
+  const payload = request.payload;
+  const traceId = readBoundedString(payload, "traceId");
+  const appIncarnation = readBoundedString(payload, "appIncarnation");
+  const hostInstanceId = readBoundedString(payload, "hostInstanceId");
+  const runtimeInstanceId = readBoundedString(payload, "runtimeInstanceId");
+  const sessionId = readBoundedString(payload, "sessionId");
+  const workspaceKey = readBoundedString(payload, "workspaceKey");
+  const sourceCommandId = readBoundedString(payload, "sourceCommandId");
+  const producerIncarnation = readBoundedString(payload, "producerIncarnation");
+  const runId = readBoundedString(payload, "runId");
+  const turnId = readBoundedString(payload, "turnId");
+  const queueItemId = payload.queueItemId === void 0 ? void 0 : readBoundedString(payload, "queueItemId");
+  if (!traceId || !appIncarnation || !hostInstanceId || !runtimeInstanceId || !sessionId || !workspaceKey || !sourceCommandId || !producerIncarnation || !runId || !turnId || payload.queueItemId !== void 0 && !queueItemId) {
+    reject(request.requestId, request.method, "invalid_payload");
+    return;
+  }
+  const candidate = new CuaSubmissionAuthority({
+    appIncarnation,
+    hostInstanceId,
+    runtimeInstanceId,
+    sessionId,
+    workspaceKey,
+    onRevocation: (projection2) => {
+      if (!scope) return;
+      const written = writeFrame({
+        requestId: `revocation:${projection2.ref.submissionLineageId}:${projection2.ref.authorizationRevision}`,
+        method: "revoked",
+        result: { ok: true, traceId: scope.traceId, projection: projection2 }
+      });
+      if (!written) invalidate();
+    }
+  });
+  const admission = candidate.admitLive({
+    origin: "desktop",
+    inputKind: "new-submission",
+    sourceCommandId,
+    ...queueItemId === void 0 ? {} : { queueItemId }
+  });
+  if (!admission.accepted) {
+    candidate.dispose();
+    reject(request.requestId, request.method, admission.reason);
+    return;
+  }
+  const binding = candidate.bindTurn({
+    ref: admission.ref,
+    producerIncarnation,
+    runId,
+    turnId
+  });
+  if (!binding.ok) {
+    candidate.dispose();
+    reject(request.requestId, request.method, binding.reason);
+    return;
+  }
+  pendingCandidate = { authority: candidate, producerIncarnation };
+  const projection = await candidate.resolve({ ref: binding.ref });
+  if (invalidated) {
+    candidate.dispose();
+    if (pendingCandidate?.authority === candidate) pendingCandidate = void 0;
+    return;
+  }
+  if (projection.status !== "candidate") {
+    candidate.dispose();
+    pendingCandidate = void 0;
+    reject(request.requestId, request.method, "not_candidate");
+    return;
+  }
+  authority = candidate;
+  scope = {
+    traceId,
+    ref: projection.ref,
+    producerIncarnation,
+    runId,
+    turnId
+  };
+  pendingCandidate = void 0;
+  respond(request.requestId, request.method, {
+    ok: true,
+    traceId,
+    ref: projection.ref,
+    producerIncarnation,
+    runId,
+    turnId,
+    projection
+  });
+}
+async function handleCheck(request) {
+  if (!authority || !scope) {
+    reject(request.requestId, request.method, "not_bootstrapped");
+    return;
+  }
+  const payload = request.payload;
+  const ref = readRef(payload.ref);
+  if (!ref) {
+    reject(request.requestId, request.method, "invalid_ref");
+    return;
+  }
+  const projection = await authority.resolve({ ref });
+  if (invalidated) return;
+  if (payload.traceId !== scope.traceId) {
+    reject(request.requestId, request.method, "trace_mismatch");
+    return;
+  }
+  if (!sameRef(ref, scope.ref)) {
+    reject(request.requestId, request.method, "ref_mismatch");
+    return;
+  }
+  if (payload.producerIncarnation !== scope.producerIncarnation || payload.runId !== scope.runId || payload.turnId !== scope.turnId) {
+    reject(request.requestId, request.method, "association_mismatch");
+    return;
+  }
+  if (projection.status !== "candidate") {
+    reject(request.requestId, request.method, "not_candidate");
+    return;
+  }
+  respond(request.requestId, request.method, {
+    ok: true,
+    traceId: scope.traceId,
+    ref: projection.ref,
+    producerIncarnation: scope.producerIncarnation,
+    runId: scope.runId,
+    turnId: scope.turnId,
+    projection
+  });
+}
+async function handleRevoke(request) {
+  if (!authority || !scope) {
+    reject(request.requestId, request.method, "not_bootstrapped");
+    return;
+  }
+  const payload = request.payload;
+  const ref = readRef(payload.ref);
+  if (!ref) {
+    reject(request.requestId, request.method, "invalid_ref");
+    return;
+  }
+  if (payload.traceId !== scope.traceId) {
+    reject(request.requestId, request.method, "trace_mismatch");
+    return;
+  }
+  if (!sameRef(ref, scope.ref)) {
+    reject(request.requestId, request.method, "ref_mismatch");
+    return;
+  }
+  const revocation = await authority.revoke({ ref, reason: "user-stop" });
+  if (invalidated) return;
+  if (revocation.status !== "revoked") {
+    reject(request.requestId, request.method, "unknown_ref");
+    return;
+  }
+  respond(request.requestId, request.method, {
+    ok: true,
+    traceId: scope.traceId,
+    revocation
+  });
+}
+function handleClose(request) {
+  invalidate({
+    flush: true,
+    terminalFrame: {
+      requestId: request.requestId,
+      method: request.method,
+      result: { ok: true, closed: true }
+    }
+  });
+}
+async function handleLine(line) {
+  if (invalidated) return;
+  const parsed = parseRequest(line);
+  if (parsed.error) {
+    reject(parsed.requestId ?? null, parsed.method ?? "error", parsed.error);
+    return;
+  }
+  const request = parsed.request;
+  if (request.method === "bootstrap") await handleBootstrap(request);
+  else if (request.method === "check") await handleCheck(request);
+  else if (request.method === "revoke") await handleRevoke(request);
+  else if (request.method === "close") handleClose(request);
+}
+async function drainInput() {
+  let newline = input.indexOf("\n");
+  while (newline >= 0 && !invalidated) {
+    const line = input.slice(0, newline);
+    input = input.slice(newline + 1);
+    if (line.length > 0) await handleLine(line);
+    newline = input.indexOf("\n");
+  }
+}
+function handleDisconnect() {
+  invalidate();
+}
+function rejectOversizeFrame() {
+  invalidate();
+}
+try {
+  socket = new Socket({ fd: AUTHORITY_FD, readable: true, writable: true });
+  socket.setEncoding("utf8");
+  socket.on("data", (chunk) => {
+    if (invalidated) return;
+    input += chunk;
+    if (Buffer.byteLength(input, "utf8") > MAX_FRAME_BYTES) {
+      rejectOversizeFrame();
+      return;
+    }
+    socket.pause();
+    void drainInput().catch(() => invalidate()).finally(() => {
+      if (!invalidated) socket.resume();
+    });
+  });
+  socket.on("end", handleDisconnect);
+  socket.on("error", handleDisconnect);
+  socket.on("close", handleDisconnect);
+  process.once("SIGTERM", handleDisconnect);
+  process.once("SIGINT", handleDisconnect);
+  socket.resume();
+} catch (error) {
+  process.stderr.write(`authority entry failed to open FD${AUTHORITY_FD}: ${String(error)}
+`);
+  process.exitCode = 2;
+}

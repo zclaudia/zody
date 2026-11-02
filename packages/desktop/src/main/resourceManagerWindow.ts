@@ -1,5 +1,6 @@
 import { app, BrowserWindow, webContents as electronWebContents } from "electron";
 import type { UtilityProcess as ElectronUtilityProcess } from "electron";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 import os from "node:os";
 import { join } from "node:path";
 import {
@@ -109,7 +110,7 @@ export function getResourceManagerWindowId(): number | null {
  * 每个 BrowserWindow 只注册一个 window-scoped Host；远程连接不再产生独立 Host PID。
  * key = 窗口 label（如 "local-2"），value = UtilityProcess
  */
-const hostProcesses = new Map<string, ElectronUtilityProcess>();
+const hostProcesses = new Map<string, HostProcessHandle>();
 
 interface RegisteredAgentProcess {
   pid: number;
@@ -159,7 +160,7 @@ export function unregisterSchedulerProcess(child: ElectronUtilityProcess): void 
   schedulerProcesses.delete(child);
 }
 
-function collectUtilityProcessPids(children: Iterable<ElectronUtilityProcess>): Set<number> {
+function collectUtilityProcessPids(children: Iterable<{ readonly pid?: number }>): Set<number> {
   const pids = new Set<number>();
   for (const child of children) {
     if (child.pid != null && child.pid > 0) {
@@ -206,7 +207,7 @@ export function collectChromiumProcessRolePids(): ChromiumProcessRolePids {
   };
 }
 
-export function registerHostProcess(label: string, child: ElectronUtilityProcess): void {
+export function registerHostProcess(label: string, child: HostProcessHandle): void {
   hostProcesses.set(label, child);
   configureNetworkCaptureHost(child);
 }

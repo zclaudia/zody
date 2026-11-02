@@ -1,0 +1,32 @@
+file:///Users/zhvala/SourceCode/zody/packages/desktop/scripts/lib/cua-peer-diagnostic-build.mjs:98
+      throw new PeerDiagnosticFailureError(
+            ^
+
+PeerDiagnosticFailureError: native compile failed
+    at buildNativePeerDiagnostic (file:///Users/zhvala/SourceCode/zody/packages/desktop/scripts/lib/cua-peer-diagnostic-build.mjs:98:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async runNativePeerDiagnosticSuite (file:///Users/zhvala/SourceCode/zody/packages/desktop/scripts/lib/cua-peer-diagnostic-run.mjs:78:13)
+    at async file:///Users/zhvala/SourceCode/zody/[eval1]:2:14 {
+  details: {
+    command: '/Library/Developer/CommandLineTools/usr/bin/clang++ -std=c++17 -x objective-c++ -fobjc-arc -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mmacosx-version-min=14.2 -O2 -Wall -Wextra -Werror -I /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic -I /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/main.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/cli_common.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/serve_mode.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/client_modes.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/pure_mode.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_socket.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_frame.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/profile.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/calibration_profile.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/policy.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/pure_policy.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/security_identity.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/macho_artifact.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/static_artifact.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/report.mm -framework Foundation -framework Security -lbsm -o /Users/zhvala/SourceCode/zody/output/cua-helper-round10/controller-attempt1/build/staging-lzNg2Q/macos-cua-peer-diagnostic',
+    exitCode: 1,
+    timedOut: false,
+    bufferOverflow: false,
+    stdout: '',
+    stderr: "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_frame.mm:32:41: error: use of undeclared identifier 'POLLIN'\n" +
+      '   32 |         if (!peer_internal::wait_fd(fd, POLLIN, deadline, error)) {\n' +
+      '      |                                         ^~~~~~\n' +
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_frame.mm:63:41: error: use of undeclared identifier 'POLLOUT'\n" +
+      '   63 |         if (!peer_internal::wait_fd(fd, POLLOUT, deadline, error)) {\n' +
+      '      |                                         ^~~~~~~\n' +
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_frame.mm:85:29: error: use of undeclared identifier 'SOL_LOCAL'\n" +
+      '   85 |   if (getsockopt(client_fd, SOL_LOCAL, LOCAL_PEERTOKEN, &audit_token, &length) != 0) {\n' +
+      '      |                             ^~~~~~~~~\n' +
+      "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_frame.mm:85:40: error: use of undeclared identifier 'LOCAL_PEERTOKEN'\n" +
+      '   85 |   if (getsockopt(client_fd, SOL_LOCAL, LOCAL_PEERTOKEN, &audit_token, &length) != 0) {\n' +
+      '      |                                        ^~~~~~~~~~~~~~~\n' +
+      '4 errors generated.\n'
+  }
+}
+
+Node.js v24.14.0

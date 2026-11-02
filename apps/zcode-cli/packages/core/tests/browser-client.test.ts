@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import {
   BrowserCommandError,
@@ -12,6 +12,9 @@ import {
   setupBrowserRuntime,
 } from "../src/browser-client/index.js";
 import type { BrowserCommand, BrowserCommandResult } from "@zcode/contracts";
+
+// 相对测试文件解析文档目录，避免从仓库根或 apps/zcode-cli 运行时命中不同 cwd。
+const DOCUMENTATION_ROOT = fileURLToPath(new URL("../../browser-use-plugin/docs", import.meta.url));
 
 const IAB_INFO: BrowserInfo = {
   id: "iab-runtime-1",
@@ -453,7 +456,9 @@ describe("browser-client facade", () => {
     });
 
     it("does not reuse a parent/child-host tab", async () => {
-      const { calls, facade } = reuseFacade([{ tabId: "t-1", url: "https://shop.example.com/cart" }]);
+      const { calls, facade } = reuseFacade([
+        { tabId: "t-1", url: "https://shop.example.com/cart" },
+      ]);
       const tab = await facade.open("https://example.com");
       expect(tab.id).toBe("t-new");
       expect(calls).toEqual([
@@ -492,7 +497,12 @@ describe("browser-client facade", () => {
         if (command.method === "newTab") {
           return {
             ok: true,
-            tab: { tabId: "t-new", url: "about:blank", title: "", viewport: { width: 1280, height: 720 } },
+            tab: {
+              tabId: "t-new",
+              url: "about:blank",
+              title: "",
+              viewport: { width: 1280, height: 720 },
+            },
             elapsedMs: 1,
           } satisfies BrowserCommandResult;
         }
@@ -1173,7 +1183,7 @@ describe("browser-client facade", () => {
   it("browser.documentation() and agent.documentation.get() load plugin docs", async () => {
     const { execute } = fakeExecute();
     const browsers = createFacade(execute, [IAB_INFO], {
-      documentationRoot: resolve(process.cwd(), "../browser-use-plugin/docs"),
+      documentationRoot: DOCUMENTATION_ROOT,
     });
     const doc = await (await browsers.getDefault()).documentation();
     for (const kw of [
@@ -1211,7 +1221,7 @@ describe("browser-client facade", () => {
         list: async () => [IAB_INFO],
         execute: async () => ({ ok: true, elapsedMs: 0 }),
       },
-      documentationRoot: resolve(process.cwd(), "../browser-use-plugin/docs"),
+      documentationRoot: DOCUMENTATION_ROOT,
     });
     const screenshots = await (
       globals.agent as { documentation: { get(name: string): Promise<string> } }
@@ -1234,7 +1244,7 @@ describe("browser-client facade", () => {
     };
     const browsers = createFacade(execute, [IAB_INFO], {
       assertAvailable,
-      documentationRoot: resolve(process.cwd(), "../browser-use-plugin/docs"),
+      documentationRoot: DOCUMENTATION_ROOT,
     });
     const iab = await browsers.get("iab");
 

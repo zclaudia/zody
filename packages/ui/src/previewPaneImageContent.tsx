@@ -74,8 +74,12 @@ export function ImagePreviewContent({
     : "h-auto max-h-full w-auto max-w-full object-contain";
 
   return (
+    // searchfile-7：手机上两侧各 40px 内边距让 390px 宽度下图片可用宽度只剩约 310px；
+    // 触屏态（(hover:none) and (pointer:coarse)，桌面渲染不受影响）把内边距收窄到 8px。
+    // 页面级捏合缩放本就没有 touch-action 限制（spec D5 挂起期不引入任何 touch-action 改动），
+    // 手机可通过系统捏合继续放大图片。
     <div
-      className={`flex h-full min-h-0 items-center justify-center overflow-hidden p-10 ${IMAGE_PREVIEW_CHECKERBOARD_CLASS}`}
+      className={`flex h-full min-h-0 items-center justify-center overflow-hidden p-10 [@media(hover:none)_and_(pointer:coarse)]:p-2 ${IMAGE_PREVIEW_CHECKERBOARD_CLASS}`}
     >
       <img
         alt={title}
@@ -88,13 +92,7 @@ export function ImagePreviewContent({
   );
 }
 
-export function SvgPreviewContent({
-  title,
-  svgContent,
-}: {
-  title: string;
-  svgContent: string;
-}) {
+export function SvgPreviewContent({ title, svgContent }: { title: string; svgContent: string }) {
   return (
     <ImagePreviewContent
       fitToContainer

@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-10-31T05:40:29.955846+00:00",
+  "sameVersion": "0.27.7",
+  "existingFilesOverwritten": false,
+  "restoredMissingFiles": [
+    {
+      "target": "node_modules/bundle-require/node_modules/esbuild/install.js",
+      "source": "node_modules/tsx/node_modules/esbuild/install.js",
+      "bytes": 11160,
+      "sha256": "10f6fa3644d8d23d066ff67b0ae449074e75884503546a9fedb667f1dcb9ade2"
+    },
+    {
+      "target": "node_modules/bundle-require/node_modules/esbuild/lib/main.js",
+      "source": "node_modules/tsx/node_modules/esbuild/lib/main.js",
+      "bytes": 97214,
+      "sha256": "bce772de103e1cbb118f1b7313916caa81f0e85461b3b6e3531607e7ed75ec85"
+    },
+    {
+      "target": "node_modules/tsup/node_modules/esbuild/install.js",
+      "source": "node_modules/tsx/node_modules/esbuild/install.js",
+      "bytes": 11160,
+      "sha256": "10f6fa3644d8d23d066ff67b0ae449074e75884503546a9fedb667f1dcb9ade2"
+    },
+    {
+      "target": "node_modules/tsup/node_modules/esbuild/lib/main.js",
+      "source": "node_modules/tsx/node_modules/esbuild/lib/main.js",
+      "bytes": 97214,
+      "sha256": "bce772de103e1cbb118f1b7313916caa81f0e85461b3b6e3531607e7ed75ec85"
+    }
+  ]
+}

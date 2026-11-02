@@ -1,0 +1,248 @@
+[
+  {
+    "path": "apps/zcode-cli/packages/bootstrap/tests/cua-node-repl-mcp-port-wiring.test.ts",
+    "baseline": "opening snapshot",
+    "openingSha256": "7960cc14e9a5653d29a9102c564003fbc2b71fab4fef7ba417f61939d2e669a5",
+    "finalSha256": "dee05b48e8dbf12356cdf7a120060ef92238d5c3ba088594dd5c09b75a22e1fd"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/package.json",
+    "baseline": "opening snapshot",
+    "openingSha256": "dc39106094c234e41122eaa3eb8d61875c877ecd030b627575c9399ff2534016",
+    "finalSha256": "7acedbb835938320210243f0903abf44013566d906d20dd1c5c48aeb479b0071"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/cell-child-transport.ts",
+    "baseline": "opening snapshot",
+    "openingSha256": "1d6b9fa8b42ef2715519c58f0e08504bf8ed34f794d239d1e181e6c77200fb69",
+    "finalSha256": "23ca6f5cbbba6e3e7b363ceb7354b5e28a47b3b5da23cbbf72e5ee27b816e813"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/cua-node-repl-mcp-port.ts",
+    "baseline": "opening snapshot",
+    "openingSha256": "debf463f1a0869b8bac6b0681f33acbc30c2c6b1c73a1389ce68bf268f47c009",
+    "finalSha256": "a442df02fd33b8c47863e7f0efc7de361c9307a91fc7edb2ad2c504c16133812"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/sealed-resource.ts",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "a44e2d3862cfc0666afcc34330fbcc2b8ebee9da6c2ea92e10ceafcb8ddd4cf0"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/server.ts",
+    "baseline": "opening snapshot",
+    "openingSha256": "4fa31afc8d3545e5126818e2858ef8fc370ac1080840ec3e6c4299981e8953bc",
+    "finalSha256": "cedbc0b27289b6854b0abd982e6b2c6b836110e8197db6bdbad607a83589300b"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/subprocess-executor.ts",
+    "baseline": "opening snapshot",
+    "openingSha256": "fa639f2742f2d255a60a110195d456a6665847037b464af02bbb33f9e89cabd3",
+    "finalSha256": "ac65b7ba34b41d0a7f14b2cef550d3f1fa2143e48246e6958dce9f753d8bfb4e"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/src/subprocess-launch.ts",
+    "baseline": "opening snapshot",
+    "openingSha256": "8c419fa286993d5e2acc5da7246f5a63ba576575e497ca2918e28f74ef7f7cd5",
+    "finalSha256": "de3e16da254879021a6ee2783048af9fb61eea8d4458d69a3c6bdcaf9c6de3c1"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/test/cell-snapshot-execution.test.ts",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "327219acdea34468a5ac99c5593e39cc5ca50312c49fdf1f9d4f1fbd2caf8fb6"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/test/cell-source-writer.test.ts",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "078c3c9162663ea4ea977b94c8a3af052787babb683f7392f63fe87a5e5b5e60"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/test/cua-node-repl-mcp-port.test.ts",
+    "baseline": "opening snapshot",
+    "openingSha256": "4d3f93a7e03f038d4ef88cb5ba28d2a9c49d66ec931681415a091e614a40ea92",
+    "finalSha256": "11d83388f82e3184ade49994e695b14d93ae32edd1ae4b33bf9c0d9fc7309e03"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/test/sealed-resource.test.ts",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "f84cce5c2f99a7ed79e5fc4d56616b92110c7b838865895e2374b607a4fc26ba"
+  },
+  {
+    "path": "apps/zcode-cli/packages/node-repl-host/test/subprocess-launch.test.ts",
+    "baseline": "opening snapshot",
+    "openingSha256": "689457970e4f820f26a2f04a468cb19de7ec7d34f5d378a6f53ce47902750593",
+    "finalSha256": "be09d3d9990fbb7c6b865ec19511103ba46785cf2658fad2e4ce84b792af9564"
+  },
+  {
+    "path": "docs/plans/computer-use-macos-phase1-closeout.md",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "683d8ac3b2b02104eb9a3ffc12982ba1b9b2c8da1e3124c58545b9c12bcd87cf"
+  },
+  {
+    "path": "packages/desktop/electron-builder.config.js",
+    "baseline": "opening snapshot",
+    "openingSha256": "a970d42b62771d4008267612d14055cb54795f135be19ba600ac23c6a42c5b8a",
+    "finalSha256": "cc1be0a3922aca2e8abcf24dea08bf526862e37bda84945a7d145e3c6fde4df1"
+  },
+  {
+    "path": "packages/desktop/native/macos-cua-desktop-session/entries/cli-entry.ts",
+    "baseline": "opening snapshot",
+    "openingSha256": "20252a6cf2d9b938c9b27afffd565fc63d042d618e23d12ae365023f8122c15b",
+    "finalSha256": "ec9abbc5c52a53bab02783a92794ca2b44600e34c3927efecbca5656e54af174"
+  },
+  {
+    "path": "packages/desktop/package.json",
+    "baseline": "opening snapshot",
+    "openingSha256": "e887d8d8d78a9979c9eb64522fe6541aa86f790224de998fca61c6525223be9f",
+    "finalSha256": "fc6785ba9138de25d98e06c0dbe61b851d68b6a2507deb07e38a85ac7ae857d1"
+  },
+  {
+    "path": "packages/desktop/scripts/bundle.mjs",
+    "baseline": "opening snapshot",
+    "openingSha256": "eed626ea2a7e549a6b3f28c543089a3f4ab4cedd5692ce4c76f8c75be92bcb1c",
+    "finalSha256": "e9b8a8a2ef8941404bbf06d970cff2af1837bffa2dfb2ffc9f33a6197cac44a7"
+  },
+  {
+    "path": "packages/desktop/scripts/lib/cua-desktop-session-manifest.mjs",
+    "baseline": "opening snapshot",
+    "openingSha256": "1065c4932f4b1e247f06914c48b93de79b9c71605ea0da8819e95ee86cd16e10",
+    "finalSha256": "6aa718a58202abbf62d2ed3013bf14fc2ffecc3edd258aa002d8f963e7bac602"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-base.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "b8b0e845430faa8ef5866daaf85573a147d93c4bc7244b176342678b5687d315"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-build.test.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "e76e21efa97f3a9dc983a28303497739042b2279af629795a2bbf0656b27802e"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-bundle-args.test.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "bc7ac64fc026c230f5e8d1f5fd193d5d634f72944140a07616805476be392120"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-constants.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "7b20b9a9312fbfd06877e583f50259a2ffef8a7aa23c1a7194ef11e16f1495d7"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-identity.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "5aaa8c590b0ebe966c7f4eab1184f4d9fcf9a3640cc9ca71038ca7fa917064e2"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-identity.test.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "277c1672fa5cd3ed735e61ee1a67f0c3dd2ab4a071d0483baa9ec1e4ced5d1f8"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-manifest.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "dc8059f7815d60bdcb28928dca9c9893f157fb14a20e350042efde8e25598bb5"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-manifest.test.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "4139573c6e04d7a5c9e556d79fe9ab7674a932c5444a20b2477efe81c581daa6"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-native.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "f723c1f5d8947c0b8423e2862665d0ea88ac07ac5f47a39ff1009dc3d2627c81"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-pins.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "75b2c2545b4ddf438ffd45dd38baa7ced3b4a114bb64620e88f37313c275f40d"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-policy.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "9eb65c1ee10b3bd9ea58c5e11c909e90ab84db68c0118d9ff5646a2b6c1d54a8"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-prepare-core.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "667554d984bf1d34ece8aa85d715e790934392e42fb54c54dfc94a4f491c8e3f"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-prepare.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "e166654599012b9c29fc7324c7857cac7141e8b3cc68371a9947fdb555003c59"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-test-fixtures.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "ae9a46e2a0170202f00461ffc2864a23e120fb1d6c6e4d67ead39494ac524410"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-tree.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "01b6df4fd06c830ecb82943411764f7043786c1884241a1bea95306b557a9095"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-validate.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "51be42230419c7a3eb7b2bc96801c5db60c571278c76b041f3efdcc5511b0a69"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources-verify-app.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "a880131217b9512c91594c7a9635ecc8d5cf49dbf42f0c00c231718348b9a78f"
+  },
+  {
+    "path": "packages/desktop/scripts/macos-cua-narrow-resources.mjs",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "265290752e038279f5ae15dd4c958f3750a49b7988c2b7ab4f547952b08975c9"
+  },
+  {
+    "path": "packages/desktop/scripts/packaged-sourcemap-cleanup.mjs",
+    "baseline": "opening snapshot",
+    "openingSha256": "ab9226899917c05299456549fe21388ac2b0975598df0cf8b7893f7120acf490",
+    "finalSha256": "5e4d155ec0832a532a4b4b9b2c835e8e7f9b3b50505cc1438fba3e891d010d89"
+  },
+  {
+    "path": "packages/desktop/test/electronBuilderCuaProducer.test.ts",
+    "baseline": "new this turn",
+    "openingSha256": null,
+    "finalSha256": "d78b6a3ebf819d8160b6167e43ec316a02b472b11f43b50bd5fb1c4aa2d15d75"
+  },
+  {
+    "path": "packages/desktop/test/packagedSourcemapCleanup.test.ts",
+    "baseline": "opening snapshot",
+    "openingSha256": "d699bcb327a9168855c234498f7ce1b6416219a784161a390fb95c73fa98f2b4",
+    "finalSha256": "d4d09f869ac15d4a310b1455e62716546cc28daa4f38068be2461f1b687fe02d"
+  },
+  {
+    "path": "specs/computer-use-macos-phase1.md",
+    "baseline": "opening snapshot",
+    "openingSha256": "c25dfdedeb4cf4bb87bcfc3f8d9adb3beff8e56703a2e3f1eeeb1e8148f9bb33",
+    "finalSha256": "eff33e81e1ea0850a9960a8d3afbe822e0b4f7814f94af0908940b99e94cceca"
+  }
+]

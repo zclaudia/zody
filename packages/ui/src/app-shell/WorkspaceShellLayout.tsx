@@ -105,10 +105,10 @@ import {
 } from "@/workspace-file-tree/model.js";
 import type { WorkspaceShellLayoutProps } from "@/app-shell/types.js";
 import { useTabStoreApi } from "@/store/TabStoreProvider.js";
+import { useWebRemoteControlMobileViewport } from "@/hooks/useWebRemoteControlMobileViewport.js";
 import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
 import type { ComposerMentionPrefill } from "@/store/zcodeSessionStoreTypes.js";
 
-const WEB_REMOTE_CONTROL_MOBILE_QUERY = "(max-width: 767px)";
 const WEB_REMOTE_CONTROL_COLLAPSE_ONCE_SESSION_KEY =
   "zody:web-remote-control:collapse-navigation-once";
 const WEB_REMOTE_CONTROL_VIEWPORT_HEIGHT_FALLBACK_PX = 800;
@@ -217,14 +217,6 @@ function getWebRemoteControlViewportHeight() {
   }
 
   return window.innerHeight || WEB_REMOTE_CONTROL_VIEWPORT_HEIGHT_FALLBACK_PX;
-}
-
-function getIsWebRemoteControlMobileViewport() {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia(WEB_REMOTE_CONTROL_MOBILE_QUERY).matches
-  );
 }
 
 function consumeWebRemoteControlCollapseIntent(): boolean {
@@ -449,8 +441,8 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
     null,
   );
   const [isSidebarFileTreeOpen, setIsSidebarFileTreeOpen] = useState(false);
-  const [isWebRemoteControlMobileViewport, setIsWebRemoteControlMobileViewport] = useState(
-    getIsWebRemoteControlMobileViewport,
+  const isWebRemoteControlMobileViewport = useWebRemoteControlMobileViewport(
+    isWebRemoteControlShell,
   );
   const [isWebRemoteControlNavigationDragging, setIsWebRemoteControlNavigationDragging] =
     useState(false);
@@ -826,34 +818,6 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
     webRemoteControlNavigationHeightRef.current = webRemoteControlNavigationHeightPx;
     webRemoteControlNavigationCollapsedRef.current = isWebRemoteControlNavigationCollapsed;
   }, [isWebRemoteControlNavigationCollapsed, webRemoteControlNavigationHeightPx]);
-  useEffect(() => {
-    if (
-      !isWebRemoteControlShell ||
-      typeof window === "undefined" ||
-      typeof window.matchMedia !== "function"
-    ) {
-      return;
-    }
-
-    const mediaQueryList = window.matchMedia(WEB_REMOTE_CONTROL_MOBILE_QUERY);
-    const syncMobileViewport = () => {
-      setIsWebRemoteControlMobileViewport(mediaQueryList.matches);
-    };
-
-    syncMobileViewport();
-    if (typeof mediaQueryList.addEventListener === "function") {
-      mediaQueryList.addEventListener("change", syncMobileViewport);
-      return () => {
-        mediaQueryList.removeEventListener("change", syncMobileViewport);
-      };
-    }
-
-    mediaQueryList.addListener(syncMobileViewport);
-    return () => {
-      mediaQueryList.removeListener(syncMobileViewport);
-    };
-  }, [isWebRemoteControlShell]);
-
   useEffect(() => {
     if (!isWebRemoteControlShell || typeof window === "undefined") {
       return;
@@ -1865,6 +1829,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
           webRemoteControlTerminalTransportState={webRemoteControlTerminalTransportState}
           isSidePaneOpen={isSidePaneOpen}
           onCloseSidePane={isSidePaneOpen ? handleToggleSidePane : undefined}
+          onOpenAppSettings={() => tabStoreApi.getState().openSettingsTab()}
           onSelectTask={handleSelectTaskInChat}
           onStartDraftInWorkspace={handleCreateProjectDraft}
           switcher={webRemoteControlWorkspaceSwitcher}

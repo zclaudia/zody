@@ -1,4 +1,5 @@
 import { subagentProfilesFromSnapshot } from "../subagent-runtime-config.js";
+import { randomUUID } from "node:crypto";
 import { isAbsolute, join, resolve } from "node:path";
 import {
   createInMemorySessionEventStore,
@@ -34,6 +35,7 @@ import {
   type TraceContext,
   createSessionId,
   createSessionEvent,
+  type CuaSubmissionProjection,
   type ExecutionShellSelection,
   type MessageId,
 } from "@zcode/contracts";
@@ -72,6 +74,9 @@ import {
 } from "./session-store.js";
 import { createWorkflowFacade } from "./workflow-facade.js";
 import { createInputFacade } from "./input-facade.js";
+import { createCuaRuntimeControlSession } from "./cua-runtime-control.js";
+import { createCuaRuntimeNativeAuthoritySession } from "./cua-runtime-native-authority.js";
+import { captureCuaRuntimeOnce } from "./cua-runtime-native-capture.js";
 import { createPluginFacadeForApp } from "./plugin-facade.js";
 import { resolvePluginRuntimeFeatures } from "./plugin-runtime-features.js";
 import { createSessionFacade } from "./session-facade.js";
@@ -169,6 +174,9 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
   const startupStartedAt = startupNow();
   const appVersion = options.version ?? "0.0.0";
   const sessionId = options.sessionId ?? createSessionId();
+  // app 代际只在本次 createZCodeApp 固定；cold unload/resume 会重建 app 并自然换代。
+  // 旧 app 的 close/coordinator 只作用于旧实例，不能把 Main 全局值冒充 app 生命周期。
+  const cuaAppIncarnation = randomUUID();
   const traceContext = options.traceContext ?? createRootTraceContext({ sessionId });
   const workingDirectory = resolve(options.runtimeConfig?.workingDirectory ?? process.cwd());
   const configResult = resolveEffectiveConfigResult(
@@ -406,7 +414,27 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
       startupTimer,
       storageRoot,
     });
-    const mcpPort =
+    const getRuntime = (): AgentRuntime => {
+      if (!runtime) throw new Error("Zody runtime is not initialized yet.");
+      return runtime;
+    };
+    // 真实截图闭包固定绑定本 app 的 runtime；只有显式 cuaNativeCapture 才存在。
+    // 它既供 app.captureCuaOnce 使用，也供显式注入的 node_repl 候选端口复用。
+    const captureCuaOnce = options.cuaNativeCapture
+      ? (
+          target: Parameters<NonNullable<ZCodeApp["captureCuaOnce"]>>[0],
+          captureOptions?: Parameters<NonNullable<ZCodeApp["captureCuaOnce"]>>[1],
+        ) =>
+          captureCuaRuntimeOnce(getRuntime(), {
+            ...options.cuaNativeCapture!,
+            logger,
+            target,
+            ...(imageProcessorPort ? { imageProcessorPort } : {}),
+            ...(captureOptions?.signal ? { signal: captureOptions.signal } : {}),
+            ...(captureOptions?.expected ? { expected: captureOptions.expected } : {}),
+          })
+      : undefined;
+    const baseMcpPort =
       options.mcpPort ??
       (runtimeConfig.mcp?.enabled === false
         ? undefined
@@ -422,7 +450,51 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
             },
             workingDirectory,
           })));
-    const ownsMcpPort = options.mcpPort === undefined && mcpPort !== undefined;
+    const ownsBaseMcpPort = options.mcpPort === undefined && baseMcpPort !== undefined;
+    // 只有显式可信 composition 同时提供 native capture 与 node_repl 工厂时才包装；
+    // 普通 CLI/server/placeholder 保持原端口，不自动激活真实 node_repl。
+    const mcpPort =
+      baseMcpPort && captureCuaOnce && options.cuaNodeReplMcpPortFactory
+        ? options.cuaNodeReplMcpPortFactory({
+            port: baseMcpPort,
+            captureOnce: captureCuaOnce,
+            closePort: ownsBaseMcpPort,
+            ...(nodeReplBrowserBroker
+              ? {
+                  browserBroker: {
+                    socketPath: nodeReplBrowserBroker.socketPath,
+                    token: nodeReplBrowserBroker.token,
+                  },
+                }
+              : {}),
+          })
+        : baseMcpPort;
+    // 根因：候选 native capture 关闭官方插件后 resolveBuiltInNodeReplMcpServers 返回空，
+    // core 看到 0 个 configured server 就只做 delegated discovery，wrapper 的
+    // nodeReplEnabled 永远打不开。只有显式 cuaNativeCapture 同时存在、factory 提供本地
+    // 配置、且 wrapper 确实接管了 base 端口时才注入 runtime MCP 面；不写入
+    // configuredMcpServers/插件/用户设置，避免普通启动或仅给 factory 时由 base 端口
+    // 自行 spawn 真实 server。显式 MCP disabled 保持不注册。
+    const cuaLocalNodeReplServerConfig =
+      options.cuaNativeCapture && options.cuaNodeReplMcpPortFactory
+        ? options.cuaNodeReplMcpPortFactory.localServerConfig
+        : undefined;
+    if (
+      cuaLocalNodeReplServerConfig &&
+      baseMcpPort !== undefined &&
+      mcpPort !== baseMcpPort &&
+      runtimeConfig.mcp?.enabled !== false
+    ) {
+      runtimeConfig.mcp = {
+        ...runtimeConfig.mcp,
+        servers: {
+          ...runtimeConfig.mcp?.servers,
+          node_repl: cuaLocalNodeReplServerConfig,
+        },
+      };
+    }
+    // wrapper 的资源由 app 自己关闭；base 端口是否一并关闭由 closePort 决定。
+    const ownsMcpPort = mcpPort !== undefined && (mcpPort !== baseMcpPort || ownsBaseMcpPort);
     const executionPort =
       options.executionPort ??
       createNodeExecutionAdapter({
@@ -461,10 +533,6 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
       logger,
       runtimeConfig,
     });
-    const getRuntime = (): AgentRuntime => {
-      if (!runtime) throw new Error("Zody runtime is not initialized yet.");
-      return runtime;
-    };
     let resumePrepared = false;
     const resolveDefaultShellSelection = (): ExecutionShellSelection =>
       resolveEffectiveBashShellSelection({
@@ -793,6 +861,38 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
       currentSelection: () => getRuntime().getSessionModelSelection(),
     });
     runtime = new AgentRuntime(sessionId, runtimeConfig, {
+      ...(options.cuaLaunchIdentity && runtimeConfig.parentSessionId === undefined
+        ? {
+            cuaSubmission: {
+              appIncarnation: cuaAppIncarnation,
+              hostInstanceId: options.cuaLaunchIdentity.hostInstanceId,
+              runtimeInstanceId: options.cuaLaunchIdentity.runtimeInstanceId,
+              sessionId: String(sessionId),
+              workspaceKey: options.cuaLaunchIdentity.workspaceKey,
+              ...(options.cuaNativeCapture
+                ? {
+                    onRevocation: (
+                      projection: Extract<CuaSubmissionProjection, { status: "revoked" }>,
+                    ) => {
+                      try {
+                        // 只记录 authority 已提交的撤销事实，不读取或复制授权状态；
+                        // 观测失败不能影响 owner 的撤销/停止链。
+                        logger.info("CUA submission owner revoked", {
+                          event: "cua.submission.owner_revoked",
+                          projectionStatus: projection.status,
+                          reason: projection.revocationReason,
+                          revision: projection.ref.authorizationRevision,
+                          lineageId: projection.ref.submissionLineageId,
+                        });
+                      } catch {
+                        // 日志是旁路观测，异常不得回滚已提交的撤销。
+                      }
+                    },
+                  }
+                : {}),
+            },
+          }
+        : {}),
       ...(options.readSubagentRuntimeConfig
         ? {
             loadAgentDefinitions: async (input) => {
@@ -1037,6 +1137,10 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
       sessionId,
       traceId: traceContext.traceId,
       runtime,
+      createCuaControlSession: (input) => createCuaRuntimeControlSession(getRuntime(), input),
+      createCuaNativeAuthoritySession: (input) =>
+        createCuaRuntimeNativeAuthoritySession(getRuntime(), input),
+      ...(captureCuaOnce ? { captureCuaOnce } : {}),
       respondWorkspaceHookReview: (input) =>
         workspaceHookRuntimeSecurity?.respond(
           {

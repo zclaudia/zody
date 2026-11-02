@@ -1,0 +1,18 @@
+
+  ...nchservices Candidate.app/Contents/Resources/app/main/index.js    4.3mb ⚠️
+  ...Candidate.app/Contents/Resources/app/main/storageScanWorker.js  833.6kb
+  ...ndidate.app/Contents/Resources/app/main/browserWebmRecorder.js   12.1kb
+  ...ndidate.app/Contents/Resources/app/main/zcodeDataSizeWorker.js    2.1kb
+
+⚡ Done in 296ms
+
+  ...services Candidate.app/Contents/Resources/app/scheduler/index.js  904.4kb
+
+⚡ Done in 105ms
+{
+  "status": "built",
+  "output": "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit",
+  "app": "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app",
+  "builderSigned": false,
+  "uiTrust": "untrusted"
+}

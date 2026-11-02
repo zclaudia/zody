@@ -76,7 +76,7 @@ export function ModelConfigHelp({ field }: { field: ModelConfigHelpField }) {
         collisionPadding={12}
         onOpenAutoFocus={(event) => event.preventDefault()}
         onCloseAutoFocus={(event) => event.preventDefault()}
-        className="w-80 max-w-[calc(100vw-1.5rem)] max-h-[min(28rem,calc(100vh-2rem))] overflow-y-auto p-3 text-ui-sm leading-relaxed"
+        className="w-80 max-w-[calc(100vw-1.5rem)] max-h-[min(28rem,calc(100dvh-2rem))] overflow-y-auto p-3 text-ui-sm leading-relaxed"
       >
         <div className="space-y-2">
           {copy.split("\n\n").map((paragraph, index) =>

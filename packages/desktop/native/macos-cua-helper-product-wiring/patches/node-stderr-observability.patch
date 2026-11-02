@@ -1,0 +1,15 @@
+--- a/src/node_process.mm
++++ b/src/node_process.mm
+@@ -186,7 +186,12 @@
+     action_status = posix_spawn_file_actions_adddup2(&actions, pipe_read, STDIN_FILENO);
+   if (action_status == 0)
+     action_status = posix_spawn_file_actions_adddup2(&actions, socket_source, 3);
++  // 中文原因：POSIX_SPAWN_CLOEXEC_DEFAULT 会关闭未显式引用的 fd；显式 dup2(2,2)
++  // 保留 sealed Node 的 stderr，用于最小诊断（不改 stdout/权限/授权）。
+   if (action_status == 0)
++    action_status =
++        posix_spawn_file_actions_adddup2(&actions, STDERR_FILENO, STDERR_FILENO);
++  if (action_status == 0)
+     action_status = posix_spawn_file_actions_addclose(&actions, pipe_read);
+   if (action_status == 0)
+     action_status = posix_spawn_file_actions_addclose(&actions, socket_source);

@@ -1,0 +1,26 @@
+{
+  "changed": [
+    "Cargo.toml",
+    "crates/cua-driver-contract/Cargo.toml",
+    "crates/cua-driver-core/Cargo.toml",
+    "crates/cua-driver-sdk/Cargo.toml",
+    "crates/platform-macos/Cargo.toml",
+    "crates/cua-driver-sdk/src/remote_mcp.rs",
+    "crates/cua-driver-sdk/src/lib.rs",
+    "crates/cua-driver-sdk/src/worker.rs",
+    "crates/cua-driver-sdk/src/activity_observer.rs",
+    "crates/cua-driver-sdk/src/embedded.rs",
+    "crates/cua-driver-sdk/src/cursor_motion.rs",
+    "crates/cua-driver-sdk/src/remote_foreign.rs",
+    "crates/cua-driver-sdk/src/authorization_host.rs",
+    "crates/cua-driver-core/tests/round7_dependency_boundaries.rs",
+    "crates/cua-driver-contract/src/verification.rs",
+    "crates/cua-driver-contract/src/lib.rs",
+    "crates/cua-driver-contract/src/outputs.rs",
+    "crates/cua-driver-contract/src/cursor.rs",
+    "crates/cua-driver-contract/src/windows.rs",
+    "crates/cua-driver-contract/src/visual.rs",
+    "crates/cua-driver-contract/src/inputs.rs"
+  ],
+  "rustBodyAnomalies": []
+}

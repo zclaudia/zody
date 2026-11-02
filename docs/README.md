@@ -11,6 +11,9 @@
 
 以下文档按 Zody 当前状态维护：
 
+- macOS Computer Use 首期：[集成 spec（待实现提案）](../specs/computer-use-macos-phase1.md)、[详细设计评审稿](design/computer-use-macos-phase1.md)与[实施计划](plans/computer-use-macos-phase1-implementation.md)；设计完成不关闭 P0，不改变 0.1.0 未签名预览版隐藏系统级 CUA 的发行规则。
+- [上游维护规则：定期审查，按需合入](fork/upstream-sync-policy.md) 与 [审查/移植台账](fork/upstream-review-ledger.md)
+- [上游 v3.16.2：21 项候选补全计划](plans/upstream-v3.16.2-port-plan.md)
 - [从源码构建与发布](fork/build.md)
 - [Android 手机远控](mobile-remote-control-android.md)
 - [Agent 远程部署](remote/zcode-agent-remote-deployment.md)

@@ -1,0 +1,12 @@
+{
+  "name": "typecheck",
+  "argv": [
+    "pnpm",
+    "typecheck"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:25:55.486930+00:00",
+  "seconds": 1.25,
+  "exitCode": 0,
+  "log": "typecheck.log"
+}

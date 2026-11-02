@@ -10,6 +10,8 @@ export interface ActiveCuaNodeReplCall {
 export interface NodeReplCuaBrokerConnection {
     socketPath: string;
     token: string;
+    /** 每次 js 调用唯一；broker 用它拒绝旧 capability，并从 main 侧取绑定 context。 */
+    invocationId: string;
 }
 export interface ComputerUseRuntimeBridge {
     /** 私有 capability 请求；这里不是 MCP tool 调用，MCP 只承载外层 node_repl。 */

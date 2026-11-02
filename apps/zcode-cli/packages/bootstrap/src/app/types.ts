@@ -1,5 +1,11 @@
 import type { AiSdkModelAdapter } from "@zcode/adapters/model";
 import type {
+  CuaNativeAuthorityImageToolResult,
+  CuaNativeAuthoritySession,
+  CuaNativeCaptureTarget,
+  CuaSubmissionControlSession,
+} from "@zcode/adapters/mcp";
+import type {
   AgentTelemetryRuntimeOwner,
   AutomationPort,
   BackgroundTaskCancelResult,
@@ -104,6 +110,13 @@ import type { ModelProviderSourceTitle } from "../model-config.js";
 import type { ZCodeInstalledPluginData } from "../plugins.js";
 import type { SessionTranscriptMessage } from "../session-transcript.js";
 import type { NodeReplBrowserBroker } from "./node-repl-browser-broker.js";
+import type { CuaControlSessionOptions } from "./cua-runtime-control.js";
+import type { CuaNativeAuthorityCompositionOptions } from "./cua-runtime-native-authority.js";
+import type {
+  CuaNativeCaptureOnceOptions,
+  CuaNativeCaptureRuntimeOptions,
+  CuaNodeReplMcpPortFactory,
+} from "./cua-runtime-native-capture.js";
 import type { ProviderRegistryModelSource } from "./provider-registry-model-runtime.js";
 import type { WorkspaceHookReviewCommandResult } from "./workspace-hook-review-controller.js";
 export type { ZCodeModelOption } from "@zcode/shared";
@@ -137,6 +150,15 @@ export interface ZCodeAppOptions {
   version?: string;
   traceContext?: TraceContext;
   runtimeConfig?: ZCodeAppRuntimeConfigInput;
+  /**
+   * 启动期由 Host→Agent 私有 stdio 帧固定的真实实例身份。仅 bootstrap 协议宿主注入；
+   * 不是业务命令/模型参数，缺失时本 app 的 CUA coordinator 不构造。
+   */
+  cuaLaunchIdentity?: {
+    hostInstanceId: string;
+    runtimeInstanceId: string;
+    workspaceKey: string;
+  };
   /**
    * stdio 协议模式的 agent 进程由 Electron host 拉起，模型服务需要看到 electron 来源。
    * 普通 CLI 不传，继续使用 cli 默认值。
@@ -211,6 +233,13 @@ export interface ZCodeAppOptions {
   workspaceHookTrustEnabled?: boolean;
   /** Presence means this owner Host supports the dedicated Workspace Hook review route. */
   workspaceHookReviewHost?: WorkspaceHookReviewHostContext;
+  /** 仅可信 launcher 显式注入；普通 app/CLI 启动不构造该 composition。 */
+  cuaNativeCapture?: CuaNativeCaptureRuntimeOptions;
+  /**
+   * 仅显式可信 composition 注入：用真实 node_repl 候选端口包装本 app 的 base McpPort。
+   * 缺省时保持原端口与 placeholder，不自动启用。
+   */
+  cuaNodeReplMcpPortFactory?: CuaNodeReplMcpPortFactory;
 }
 
 export interface SubmitPromptOptionsBase {
@@ -314,6 +343,31 @@ export interface ZCodeApp {
   readonly sessionId: SessionId;
   readonly traceId: string;
   readonly runtime: AgentRuntime;
+  /**
+   * 显式可信 composition 入口：从本 app.runtime 取真实 turn scope，接既有 control-only
+   * launcher。缺 scope 或缺调用方显式传入的 launch 配置时返回 undefined；不挂公开协议、
+   * 模型工具或环境开关，也不在 app 启动时取 scope/启动子进程。
+   */
+  createCuaControlSession?(
+    options: CuaControlSessionOptions,
+  ): CuaSubmissionControlSession | undefined;
+  /**
+   * 显式可信 composition 入口：从本 app.runtime 取真实 turn scope，接既有 native
+   * authority 窄会话。缺 scope/显式 Duplex 参数时返回 undefined；本入口不认证 peer，
+   * 可信 launcher/peer 验证由装配方负责。不在 app 启动时取 scope 或建立 stream，
+   * 也不改变 native Helper 默认 off 与 placeholder。
+   */
+  createCuaNativeAuthoritySession?(
+    options: CuaNativeAuthorityCompositionOptions,
+  ): CuaNativeAuthoritySession | undefined;
+  /**
+   * 真实截图入口。只有显式 cuaNativeCapture composition 在场时才存在；目标由调用方
+   * 明确给出，内部使用同一 runtime 的 live turn scope 和一次 native authority 连接。
+   */
+  captureCuaOnce?(
+    target: CuaNativeCaptureTarget,
+    options?: CuaNativeCaptureOnceOptions,
+  ): Promise<CuaNativeAuthorityImageToolResult>;
   respondWorkspaceHookReview(
     input: RespondWorkspaceHookReviewInput,
   ): Promise<WorkspaceHookReviewCommandResult>;
@@ -843,6 +897,10 @@ export interface RunZCodeProtocolAgentOptions {
   output?: NodeJS.WritableStream;
   presentationSurface?: PresentationSurface;
   version?: string;
+  /** 由可信 launch composition 显式传入；不读取 env/argv，也不在普通启动自动启用。 */
+  cuaNativeCapture?: CuaNativeCaptureRuntimeOptions;
+  /** 与 cuaNativeCapture 同时由可信 launch composition 显式传入；缺省不装配 node_repl。 */
+  cuaNodeReplMcpPortFactory?: CuaNodeReplMcpPortFactory;
 }
 
 export interface ListZCodeSessionsOptions {

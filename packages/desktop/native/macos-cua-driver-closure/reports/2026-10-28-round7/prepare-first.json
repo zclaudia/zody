@@ -1,0 +1,19 @@
+{
+  "status": "candidate-rebuilt",
+  "output": "/Users/zhvala/SourceCode/zody/output/cua-driver-round7/candidate-work/controller-first/full-source",
+  "base": {
+    "fileCount": 752,
+    "treeSha256": "fbd0452904ac4209eacf7f5d1e845c207a2ab1fdd42c320bfc39f7e9ec448654"
+  },
+  "candidate": {
+    "fileCount": 753,
+    "treeSha256": "f110f6466d06036ff9a028c7e35bd4f3b6fe312b67607c2a3f930f1c250f8d48"
+  },
+  "patch": {
+    "path": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-driver-closure/round7/candidate-source.patch",
+    "sha256": "2798b890e4293147652b9994579404383b3aa70e8d434287ddd11e8524c7e64f",
+    "bytes": 97785
+  },
+  "sourceManifestSha256": "53fc08d9835f27c07ae756f93a345b9d0a0cf6d9197aa01db03796fc605f5267",
+  "reviewConfigSha256": "108cfa35e2781d77e5d5cd1ac0e38d82efe38d7d044d661e65183e2e4b1a5d1a"
+}

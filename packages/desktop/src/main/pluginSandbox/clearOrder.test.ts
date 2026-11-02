@@ -37,8 +37,7 @@ beforeEach(() => {
   state.handlers.clear();
 });
 
-async function fixture() {
-  const { installPluginSandboxHost } = await import("./host.js");
+function makeGuest() {
   const navigation = Promise.withResolvers<void>();
   const entered = Promise.withResolvers<void>();
   const requested = Promise.withResolvers<void>();
@@ -55,23 +54,7 @@ async function fixture() {
       requested.resolve();
     }),
   });
-  const host = installPluginSandboxHost({
-    rendererDir: "/fixture",
-    aliasDir: "/fixture",
-    preloadPath: "/fixture",
-  });
-  const handle = host.registerFromHost({
-    instance: { runtimeId: "fixture", generation: 1, token: "one", appIdentity: "a".repeat(64) },
-    ownerWebContentsId: 1,
-    sessionId: "session",
-    pluginId: "plugin",
-    scopeId: "scope",
-    serverName: "server",
-    html: "<html></html>",
-  });
-  host.attachGuest({ guest: guest as never, hostWebContents: { id: 1 } as never, ...handle });
   return {
-    host,
     guest,
     navigation,
     entered,
@@ -81,6 +64,50 @@ async function fixture() {
       state.order.push("destroyed");
       guest.emit("destroyed");
     },
+  };
+}
+
+async function fixture() {
+  const { installPluginSandboxHost } = await import("./host.js");
+  const host = installPluginSandboxHost({
+    rendererDir: "/fixture",
+    aliasDir: "/fixture",
+    preloadPath: "/fixture",
+  });
+  const base = {
+    instance: { runtimeId: "fixture", generation: 1, token: "one", appIdentity: "a".repeat(64) },
+    ownerWebContentsId: 1,
+    sessionId: "session",
+    pluginId: "plugin",
+    scopeId: "scope",
+    serverName: "server",
+    html: "<html></html>",
+  };
+  const register = (overrides: Partial<typeof base> = {}) =>
+    host.registerFromHost({ ...base, ...overrides });
+  const attach = (
+    guest: ReturnType<typeof makeGuest>["guest"],
+    handle: ReturnType<typeof register>,
+  ) =>
+    host.attachGuest({
+      guest: guest as never,
+      hostWebContents: { id: 1 } as never,
+      ...handle,
+    });
+  const handle = register();
+  const first = makeGuest();
+  attach(first.guest as never, handle);
+  return {
+    host,
+    handle,
+    register,
+    attach,
+    makeGuest,
+    guest: first.guest,
+    navigation: first.navigation,
+    entered: first.entered,
+    requested: first.requested,
+    destroy: first.destroy,
     dispose(initId = handle.initId) {
       return state.handlers.get(PlatformChannels.PluginSandboxDispose)!(
         { sender: { id: 1 } },
@@ -89,6 +116,11 @@ async function fixture() {
       );
     },
   };
+}
+async function flush() {
+  for (let index = 0; index < 10; index++) await Promise.resolve();
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  for (let index = 0; index < 10; index++) await Promise.resolve();
 }
 
 describe("MCP App browser data clearing order", () => {
@@ -171,5 +203,33 @@ describe("MCP App browser data clearing order", () => {
     expect(f.guest.loadURL).not.toHaveBeenCalled();
     expect(f.guest.close).not.toHaveBeenCalled();
     f.destroy();
+  });
+
+  // I20：撤销/清理开始后迟到挂载的 guest 必须停止并纳入清理等待；不能清完存储后仍有页面写入。
+  it("waits for a guest attached after revocation to stop before clearing browser data", async () => {
+    const f = await fixture();
+    const lateHandle = f.register({ serverName: "server-late", scopeId: "scope-late" });
+    const clearing = f.host.clearBrowserData();
+    await f.entered.promise;
+    const late = f.makeGuest();
+    f.attach(late.guest as never, lateHandle);
+    await late.entered.promise;
+    let cleared = false;
+    void clearing.finally(() => {
+      cleared = true;
+    });
+    // 先让撤销开始前已挂载的 guest 完成停止，清理才会继续。
+    f.navigation.resolve();
+    await f.requested.promise;
+    f.destroy();
+    await flush();
+    expect(cleared).toBe(false);
+    expect(state.storage.clearStorageData).not.toHaveBeenCalled();
+    late.navigation.resolve();
+    await late.requested.promise;
+    late.destroy();
+    await clearing;
+    expect(cleared).toBe(true);
+    expect(state.storage.clearStorageData).toHaveBeenCalledOnce();
   });
 });

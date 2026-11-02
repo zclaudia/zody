@@ -435,7 +435,21 @@ export interface V4GatewayHost {
   loadPersistedEvents?(
     sessionId: string,
     persistedMessages?: MessageWithParts[],
+    /**
+     * historyOnly=true 表示这是冷订阅先发布历史投影的只读阶段：
+     * runtime 尚未激活时读不到 record 是正常状态，宿主不应把它记成异常。
+     */
+    options?: { historyOnly?: boolean },
   ): Promise<PersistedEventsLoadResult>;
+  /**
+   * I19 冷历史只读入口：不经 active record 直接从 durable store（sessionStore/transcript）
+   * 读取历史投影。冷会话按定义还不在 `context.sessions`，因此 `loadPersistedEvents`
+   * 在生产接线里读不到它；history 阶段优先使用本钩子。
+   *
+   * 返回的 projection 只含持久事实；实现不得伪造 runtime usage/config 种子。
+   * 缺席时退回 `loadPersistedEvents(..., { historyOnly: true })`（测试/旧宿主）。
+   */
+  loadColdHistory?(sessionId: string): Promise<PersistedEventsLoadResult>;
   /** 仅用于低频生命周期和恢复裁决；高频 event/stream trace 禁止走生产日志。 */
   onDebug?(message: string): void;
   onError?(scope: string, error: unknown, context?: V4GatewayErrorContext): void;
@@ -461,6 +475,28 @@ interface HydrationBuffer {
   cancelled: boolean;
   eventIds: Set<string>;
   rawEvents: SessionEvent[];
+}
+
+/**
+ * I19 冷恢复单一 owner：history → READY 两段水位。
+ *
+ * - history：从持久事实读取一次并发布历史投影；订阅 ACK/初始帧只等这一段；
+ * - ready：runtime activation + 实时种子/水化；登记早于 activation 开始；
+ * - cancelled：删除/去激活/dispose 的取消信号，迟到的 activation/hydration 结果必须丢弃。
+ */
+interface ColdSessionFlight {
+  history: Promise<ConversationTopicPublisher>;
+  ready: Promise<ConversationTopicPublisher>;
+  cancelled: boolean;
+  /** history 阶段读到的持久物化；宿主没有独立 cold loader 时 READY 复用它。 */
+  historyLoad?: PersistedEventsLoadResult;
+  /** history 是否走 `loadColdHistory`（不依赖 active record）。 */
+  historyUsesColdLoader: boolean;
+  /**
+   * 是否有可先行发布的持久历史。空且非合成的历史没有可展示内容，也没有
+   * notFound/resumeFailed 的终态可交付，订阅因此退回既有 READY 语义。
+   */
+  historyPublishable: boolean;
 }
 
 interface RawSequenceState {
@@ -587,6 +623,8 @@ export class ConversationV4Gateway {
   private readonly hydrationInFlight = new Map<string, Promise<ConversationTopicPublisher>>();
   /** cold activation 到 hydration 的 READY 水位；只阻塞本次恢复期间的 command/query。 */
   private readonly readyFlights = new Map<string, Promise<ConversationTopicPublisher>>();
+  /** I19 冷恢复单一 owner（history + READY 两段水位）；与 readyFlights 同生同灭。 */
+  private readonly coldFlights = new Map<string, ColdSessionFlight>();
   /** load await 窗口内的 raw accepted events；重建后按 cursor/eventId 补回。 */
   private readonly hydrationBuffers = new Map<string, HydrationBuffer>();
   /** transcript 合成序列与 runtime raw 序列之间的 per-session 单调映射。 */
@@ -1412,17 +1450,30 @@ export class ConversationV4Gateway {
     //   建了个只含 fork 事件的 cold publisher）→ 用 transcript 合成**重建**。
     // - 有 publisher 且事件日志完整（流式 live）→ 保留，重放会双计且打断流。
     const restoreStartedAt = performance.now();
-    const existingReady = this.readyFlights.get(sessionId);
-    const publisher = existingReady
-      ? await existingReady
-      : !isLiveConversation
-        ? await this.ensureColdReadyPublisher(
-            sessionId,
-            params.resumeThoughtLevel,
-            params.workspace,
-          )
-        : await this.hydratePublisher(sessionId);
-    const cliSessionRestoreMs = !isLiveConversation
+    // I19：冷订阅先发布 durable 历史投影，ACK/初始帧不等待 runtime activation。
+    // 重复订阅加入同一个 cold owner 的 history 水位，不会重启第二个 activation。
+    const coldFlight = this.coldFlights.get(sessionId);
+    // 加入既有 cold owner 的重复订阅即使 record 已入册，也还没有 READY；
+    // ACK 必须继续如实标记 cold，不能因为 sessionExists 提前变成 warm。
+    const coldSubscription = coldFlight !== undefined || !isLiveConversation;
+    let publisher: ConversationTopicPublisher;
+    if (coldFlight) {
+      publisher = await coldFlight.history;
+      // 没有可发布的持久历史时没有先展示的内容，退回既有 READY 终态语义，
+      // 让 notFound/resumeFailed 仍由订阅 RPC 收口。
+      if (!coldFlight.historyPublishable) publisher = await coldFlight.ready;
+    } else if (!isLiveConversation) {
+      const flight = this.ensureColdFlight(
+        sessionId,
+        params.resumeThoughtLevel,
+        params.workspace,
+      );
+      publisher = await flight.history;
+      if (!flight.historyPublishable) publisher = await flight.ready;
+    } else {
+      publisher = await this.hydratePublisher(sessionId);
+    }
+    const cliSessionRestoreMs = coldSubscription
       ? Math.max(0, Math.round(performance.now() - restoreStartedAt))
       : undefined;
     // 旧入口允许 UI 自选 deliveryProfile，桌面调用遗漏时还会默认成
@@ -1459,7 +1510,7 @@ export class ConversationV4Gateway {
             0,
             Math.round(performance.now() - initialFrameEncodeStartedAt),
           ),
-          sessionRuntimeState: isLiveConversation ? "warm" : "cold",
+          sessionRuntimeState: coldSubscription ? "cold" : "warm",
           snapshotRowCount: publisher.getSnapshot().rows.window.length,
         },
       };
@@ -2412,12 +2463,22 @@ export class ConversationV4Gateway {
         control?.canStop === true,
       );
     }
-    // READY 只存在于冷恢复窗口；正常命令直接进入 inbox，避免重复解析信封。
-    if (this.readyFlights.size > 0) {
+    // I19：等待窗口内先按 commandId 做内存幂等去重；settled/in-flight 重试直接回放终态，
+    // 不等待 READY、不触发 session gate 准备。未命中的命令仍等待 READY 后再走一次
+    // 既有分类/CAS/admission。
+    if (this.coldFlights.size > 0) {
       const parsed = parseCommandEnvelope(rawParams);
       const sessionId = parsed.ok ? parsed.envelope.sessionId : null;
-      const ready = sessionId === null ? undefined : this.readyFlights.get(sessionId);
-      if (ready) await ready;
+      const coldFlight = sessionId === null ? undefined : this.coldFlights.get(sessionId);
+      if (coldFlight) {
+        const duplicate = await this.inbox.probe(rawParams);
+        if (duplicate)
+          return {
+            ...duplicate,
+            ...(ttftCapacityRejected ? { ttftExcluded: "capacity" as const } : {}),
+          };
+        await coldFlight.ready;
+      }
     }
 
     const outcome = await this.inbox.handle(rawParams);
@@ -2802,6 +2863,13 @@ export class ConversationV4Gateway {
     if (hydrationBuffer) hydrationBuffer.cancelled = true;
     this.hydrationBuffers.delete(sessionId);
     this.hydrationInFlight.delete(sessionId);
+    // I19：删除/去激活是取消信号。先标记 owner，迟到的 activation/hydration
+    // 就不会重建 publisher、接纳订阅或复活旧 runtime。
+    const coldFlight = this.coldFlights.get(sessionId);
+    if (coldFlight) {
+      coldFlight.cancelled = true;
+      this.coldFlights.delete(sessionId);
+    }
     this.readyFlights.delete(sessionId);
     this.rawSequenceStates.delete(sessionId);
     if (options.clearCommandInbox) this.inbox.clearSession(sessionId);
@@ -2854,6 +2922,8 @@ export class ConversationV4Gateway {
     for (const buffer of this.hydrationBuffers.values()) buffer.cancelled = true;
     this.hydrationBuffers.clear();
     this.hydrationInFlight.clear();
+    for (const flight of this.coldFlights.values()) flight.cancelled = true;
+    this.coldFlights.clear();
     this.readyFlights.clear();
     this.rawSequenceStates.clear();
     this.telemetryEventIds.clear();
@@ -2919,45 +2989,165 @@ export class ConversationV4Gateway {
 
   /**
    * 冷恢复 READY 只在明确需要 activation 的入口创建；hydratePublisher 保持 projection-only。
-   * 注册 promise 早于 activation，避免 record 提前入册后并发 command/query 越过恢复水位。
+   * I19：READY 与 history 同属一个 cold owner；ready 的登记仍早于 activation，
+   * 避免 record 提前入册后并发 command/query 越过恢复水位。
    */
   private ensureColdReadyPublisher(
     sessionId: string,
     resumeThoughtLevel?: string,
     workspace?: ZCodeWorkspaceRef,
   ): Promise<ConversationTopicPublisher> {
-    const existingFlight = this.readyFlights.get(sessionId);
-    if (existingFlight) return existingFlight;
-    // 先登记同一个 READY，再开始所有耗时工作。
-    const operation = Promise.resolve().then(async () => {
-      const persistedMessages = await this.coldResume.ensureResumed(
-        sessionId,
-        resumeThoughtLevel,
-        workspace,
-      );
-      return this.hydratePublisher(sessionId, persistedMessages);
-    });
-    this.readyFlights.set(sessionId, operation);
-    // 成功和失败都由同一清理函数释放；不创建会重复传播 rejection 的派生 promise。
-    const clear = () => {
-      if (this.readyFlights.get(sessionId) === operation) this.readyFlights.delete(sessionId);
+    return this.ensureColdFlight(sessionId, resumeThoughtLevel, workspace).ready;
+  }
+
+  /** 建/取冷恢复唯一 owner；history 与 READY 都由它持有并按会话单飞。 */
+  private ensureColdFlight(
+    sessionId: string,
+    resumeThoughtLevel?: string,
+    workspace?: ZCodeWorkspaceRef,
+  ): ColdSessionFlight {
+    const existing = this.coldFlights.get(sessionId);
+    if (existing) return existing;
+    // 占位 promise 会在返回前被两个真实水位覆盖；调用方只能经 owner 访问。
+    const flight: ColdSessionFlight = {
+      cancelled: false,
+      historyPublishable: false,
+      historyUsesColdLoader: Boolean(this.host.loadColdHistory),
+      history: Promise.resolve(null as unknown as ConversationTopicPublisher),
+      ready: Promise.resolve(null as unknown as ConversationTopicPublisher),
     };
-    void operation.then(clear, clear);
-    return operation;
+    // 先登记 READY（门闩），再启动 activation：注册必须早于任何恢复副作用。
+    let startReady!: () => void;
+    const startGate = new Promise<void>((resolve) => {
+      startReady = resolve;
+    });
+    flight.ready = startGate.then(() =>
+      this.runColdReady(flight, sessionId, resumeThoughtLevel, workspace),
+    );
+    this.coldFlights.set(sessionId, flight);
+    this.readyFlights.set(sessionId, flight.ready);
+    flight.history = this.runColdHistory(flight, sessionId);
+    // 成功和失败都由同一清理函数释放；落后于删除/新建 owner 的迟到结果不得清掉新 entry。
+    const clear = () => {
+      if (this.readyFlights.get(sessionId) === flight.ready) this.readyFlights.delete(sessionId);
+      if (this.coldFlights.get(sessionId) === flight) this.coldFlights.delete(sessionId);
+    };
+    void flight.ready.then(clear, clear);
+    startReady();
+    return flight;
+  }
+
+  /**
+   * history 水位：只读 durable 事实并发布历史投影。
+   * 这一步不写 runtime 种子、不记 hydration 水位，因此不等于 READY 的实时 hydration。
+   */
+  private async runColdHistory(
+    flight: ColdSessionFlight,
+    sessionId: string,
+  ): Promise<ConversationTopicPublisher> {
+    const publisher = await this.hydratePublisher(sessionId, undefined, false, {
+      historyOnly: true,
+      onLoaded: (loaded) => {
+        flight.historyLoad = loaded;
+      },
+    });
+    if (flight.cancelled || this.disposed) {
+      throw new Error(`v4 cold history cancelled for session ${sessionId}`);
+    }
+    const snapshot = publisher.getSnapshot();
+    // synthesized=true 表示宿主已用 durable transcript 物化权威历史（空结果也是权威事实）；
+    // 已有 live 事件（seq>0）或行时同样可以先行发布。
+    flight.historyPublishable =
+      (flight.historyLoad?.events.length ?? 0) > 0 ||
+      flight.historyLoad?.synthesized === true ||
+      snapshot.seq > 0 ||
+      snapshot.rows.window.length > 0;
+    return publisher;
+  }
+
+  /**
+   * READY 水位：runtime activation 后补实时种子与 hydration 水位。
+   * history 已发布时复用那一次持久物化读取；没有可先行历史（读不到 record 的
+   * notFound 窗口）时按既有语义重新水化，避免空投影吞掉恢复数据。
+   */
+  private async runColdReady(
+    flight: ColdSessionFlight,
+    sessionId: string,
+    resumeThoughtLevel?: string,
+    workspace?: ZCodeWorkspaceRef,
+  ): Promise<ConversationTopicPublisher> {
+    try {
+      // activation 与 history 并行推进；只在 hydration 前等 history 的单飞结束。
+      const activationResult = this.coldResume
+        .ensureResumed(sessionId, resumeThoughtLevel, workspace)
+        .then(
+          (value) => ({ ok: true as const, value }),
+          (error: unknown) => ({ ok: false as const, error }),
+        );
+      await flight.history.catch(() => undefined);
+      if (flight.cancelled || this.disposed) {
+        throw new Error(`v4 cold activation cancelled for session ${sessionId}`);
+      }
+      const resumed = await activationResult;
+      if (!resumed.ok) throw resumed.error;
+      if (flight.cancelled || this.disposed) {
+        throw new Error(`v4 cold activation cancelled for session ${sessionId}`);
+      }
+      // READY 的权威水化条件：没有可先行历史、history 走的是不依赖 record 的
+      // `loadColdHistory`（record-only 事实如 artifact 文件摘要/usage 只能在这时补），
+      // 或 resume 修补了中断 compact timeline（M0 → M1）。
+      const requiresAuthoritativeHydration =
+        !flight.historyPublishable ||
+        flight.historyUsesColdLoader ||
+        resumed.value.messagesReloadRequired === true;
+      return await this.hydratePublisher(
+        sessionId,
+        resumed.value.persistedMessages,
+        requiresAuthoritativeHydration,
+        requiresAuthoritativeHydration || !flight.historyLoad
+          ? {}
+          : { reuseLoad: flight.historyLoad },
+      );
+    } catch (error) {
+      // notFound 等失败没有 active record 可承载历史；订阅/查询不会拿到 snapshot，
+      // 因此 history 阶段建出的空 publisher 与 raw seq 状态必须回收。
+      this.discardUnclaimedColdProjection(sessionId);
+      throw error;
+    }
+  }
+
+  /**
+   * READY 失败时回收没有任何订阅者认领的冷投影。
+   * 有 record（resumeFailed 已入册）或已有订阅者时必须保留：spec 要求已发布历史继续可读。
+   */
+  private discardUnclaimedColdProjection(sessionId: string): void {
+    if (this.disposed || this.hasLiveConversation(sessionId)) return;
+    if (this.publishers.get(sessionId)?.hasSubscribers()) return;
+    this.publishers.delete(sessionId);
+    this.hydratedSessions.delete(sessionId);
+    this.rawSequenceStates.delete(sessionId);
   }
 
   /**
    * 首次订阅时的投影重建（hydration）。语义见 subscribe 注释；
    * synthesized 事件按 sequenceNumber 去重（publisher 已 ingest 过的 live 事件不重放）。
+   *
+   * `historyOnly` 只发布 durable 历史投影：不写 runtime 种子、不记 hydration 水位。
    */
   private hydratePublisher(
     sessionId: string,
     persistedMessages?: MessageWithParts[],
     forceRebuild = false,
+    options: {
+      historyOnly?: boolean;
+      reuseLoad?: PersistedEventsLoadResult;
+      onLoaded?: (loaded: PersistedEventsLoadResult) => void;
+    } = {},
   ): Promise<ConversationTopicPublisher> {
     const existing = this.publishers.get(sessionId);
     // 已 hydrate 过的 live publisher：直接复用（避免重复重建 / 双计）。
-    if (existing && this.hydratedSessions.has(sessionId)) return Promise.resolve(existing);
+    if (existing && this.hydratedSessions.has(sessionId) && !options.reuseLoad)
+      return Promise.resolve(existing);
 
     const inFlight = this.hydrationInFlight.get(sessionId);
     if (inFlight) return inFlight;
@@ -2972,6 +3162,7 @@ export class ConversationV4Gateway {
       buffer,
       persistedMessages,
       forceRebuild,
+      options,
     ).finally(() => {
       if (this.hydrationBuffers.get(sessionId) === buffer) {
         this.hydrationBuffers.delete(sessionId);
@@ -2989,6 +3180,11 @@ export class ConversationV4Gateway {
     buffer: HydrationBuffer,
     persistedMessages?: MessageWithParts[],
     forceRebuild = false,
+    options: {
+      historyOnly?: boolean;
+      reuseLoad?: PersistedEventsLoadResult;
+      onLoaded?: (loaded: PersistedEventsLoadResult) => void;
+    } = {},
   ): Promise<ConversationTopicPublisher> {
     const existingAtStart = this.publishers.get(sessionId);
     const liveSessionAtStart = this.host.sessionExists(sessionId);
@@ -2996,21 +3192,40 @@ export class ConversationV4Gateway {
     this.host.onDebug?.(
       `v4 hydrate started session=${sessionId} liveSessionAtStart=${String(liveSessionAtStart)} ` +
         `existingPublisherAtStart=${String(existingAtStart !== undefined)} ` +
-        `persistedMessages=${String(persistedMessages?.length ?? 0)}`,
+        `persistedMessages=${String(persistedMessages?.length ?? 0)} ` +
+        `historyOnly=${String(options.historyOnly === true)}`,
     );
-    const loaded: PersistedEventsLoadResult = this.host.loadPersistedEvents
-      ? await this.host.loadPersistedEvents(sessionId, persistedMessages).catch((error) => {
-          this.host.onError?.("v4.hydrate", error, {
-            durationMs: Math.max(0, Math.round(performance.now() - hydrationStartedAt)),
-            existingPublisherAtStart: existingAtStart !== undefined,
-            liveSessionAtStart,
-            phase: "loadPersistedEvents",
-            persistedMessages: persistedMessages?.length ?? 0,
-            sessionId,
-          });
-          return { events: [] as SessionEvent[], synthesized: false, sourceEventSeq: 0 };
-        })
-      : { events: [] as SessionEvent[], synthesized: false, sourceEventSeq: 0 };
+    let loaded: PersistedEventsLoadResult;
+    if (options.reuseLoad) {
+      loaded = options.reuseLoad;
+    } else {
+      // I19：history 阶段优先走不依赖 active record 的 durable 读取；旧宿主/测试
+      // 没有该钩子时退回 loadPersistedEvents(historyOnly)。
+      const coldHistoryLoader = options.historyOnly ? this.host.loadColdHistory : undefined;
+      const loadPersisted = coldHistoryLoader
+        ? coldHistoryLoader.call(this.host, sessionId)
+        : this.host.loadPersistedEvents
+          ? this.host.loadPersistedEvents(sessionId, persistedMessages, {
+              historyOnly: options.historyOnly === true,
+            })
+          : Promise.resolve({
+              events: [] as SessionEvent[],
+              synthesized: false,
+              sourceEventSeq: 0,
+            });
+      loaded = await loadPersisted.catch((error) => {
+        this.host.onError?.("v4.hydrate", error, {
+          durationMs: Math.max(0, Math.round(performance.now() - hydrationStartedAt)),
+          existingPublisherAtStart: existingAtStart !== undefined,
+          liveSessionAtStart,
+          phase: coldHistoryLoader ? "loadColdHistory" : "loadPersistedEvents",
+          persistedMessages: persistedMessages?.length ?? 0,
+          sessionId,
+        });
+        return { events: [] as SessionEvent[], synthesized: false, sourceEventSeq: 0 };
+      });
+      options.onLoaded?.(loaded);
+    }
 
     this.host.onDebug?.(
       `v4 hydrate loaded session=${sessionId} events=${loaded.events.length} ` +
@@ -3027,6 +3242,26 @@ export class ConversationV4Gateway {
     const latestPublisher = this.publishers.get(sessionId);
     const existingDroppedContent =
       latestPublisher !== undefined && latestPublisher.getDroppedContentStreamEventCount() > 0;
+    // I19：READY 复用 history 已发布的同一批持久物化。历史投影已经在位，
+    // 这里只补 runtime 种子与 hydration 水位，不重放历史、不向已订阅连接多发一帧 revision。
+    if (options.reuseLoad && latestPublisher && !existingDroppedContent) {
+      // 删除/去激活会在 load 之后才到达时把 buffer 标成 cancelled；迟到的
+      // hydration 结果不得继续写水位或发帧。
+      if (this.disposed || buffer.cancelled) {
+        throw new Error(`v4 hydration cancelled for session ${sessionId}`);
+      }
+      this.hydrationBuffers.delete(sessionId);
+      this.seedPublisherConfig(sessionId, latestPublisher);
+      await this.seedPublisherUsage(
+        sessionId,
+        latestPublisher,
+        persistedMessages,
+        loaded.usageSeed,
+      );
+      this.hydratedSessions.add(sessionId);
+      this.publishCurrentSummaryToIndex(sessionId);
+      return latestPublisher;
+    }
     // 事件日志完整（synthesized=false）且已有健康 live publisher（流式）→ 保留，不重放。
     if (
       existingAtStart &&
@@ -3037,18 +3272,21 @@ export class ConversationV4Gateway {
     ) {
       // 创建时种子可能落空（record 尚未入册），首次订阅补一次（幂等、事件优先）。
       this.hydrationBuffers.delete(sessionId);
-      this.seedPublisherConfig(sessionId, latestPublisher);
       if (loaded.sharedContextImport) {
         latestPublisher.seedSharedContextImport(loaded.sharedContextImport);
       }
-      await this.seedPublisherUsage(
-        sessionId,
-        latestPublisher,
-        persistedMessages,
-        loaded.usageSeed,
-      );
-      this.hydratedSessions.add(sessionId);
-      this.publishCurrentSummaryToIndex(sessionId);
+      if (!options.historyOnly) {
+        // history 只读阶段不写 runtime 种子，也不标记 hydration 完成。
+        this.seedPublisherConfig(sessionId, latestPublisher);
+        await this.seedPublisherUsage(
+          sessionId,
+          latestPublisher,
+          persistedMessages,
+          loaded.usageSeed,
+        );
+        this.hydratedSessions.add(sessionId);
+        this.publishCurrentSummaryToIndex(sessionId);
+      }
       return latestPublisher;
     }
 
@@ -3078,7 +3316,8 @@ export class ConversationV4Gateway {
     }
     if (loaded.subagentsSeed) publisher.seedSubagents(loaded.subagentsSeed);
     // 同次恢复的种子先应用，再补 live buffer；较新的使用量和选模事件始终获胜。
-    if (loaded.usageSeed) publisher.seedUsage(loaded.usageSeed);
+    // history 只读阶段不带 runtime 用量种子。
+    if (loaded.usageSeed && !options.historyOnly) publisher.seedUsage(loaded.usageSeed);
     const sourceEventSeq = Math.max(
       0,
       loaded.sourceEventSeq ??
@@ -3153,32 +3392,35 @@ export class ConversationV4Gateway {
     // 冷恢复种子（重放之后）：resume 已把历史会话的上次选型写回 runtime
     // （reconcileResumedRuntimeSettings），而合成/持久化事件里可能没有 ModelSelected——
     // 种子只填事件未触碰的字段，日志有值时以日志为准（冷恢复口径）。
-    this.seedPublisherConfig(sessionId, publisher);
-    if (loaded.usageSeed === undefined) {
-      await this.seedPublisherUsage(sessionId, publisher, persistedMessages);
-    }
-    for (const [routeKey, state] of this.flushStates) {
-      if (state.sessionId !== sessionId) continue;
-      if (!publisher.hasSubscription(state.subscriptionId, state.connectionId)) continue;
-      if (state.timer) {
-        clearTimeout(state.timer);
-        state.timer = null;
+    // history 只读阶段发布的是 durable 历史，不注入 runtime 种子、不标记 hydration 完成。
+    if (!options.historyOnly) {
+      this.seedPublisherConfig(sessionId, publisher);
+      if (loaded.usageSeed === undefined) {
+        await this.seedPublisherUsage(sessionId, publisher, persistedMessages);
       }
-      if (this.pausedConnections.has(state.connectionId)) continue;
-      const reservation = publisher.reserveFlush(state.subscriptionId);
-      if (!reservation) continue;
-      try {
-        this.emitReservation(reservation);
-      } catch (error) {
-        this.host.onError?.("v4.hydrate.subscriptionResync", error, {
-          phase: "subscriptionResync",
-          sessionId,
-        });
-        this.scheduleFlush(routeKey, state, publisher);
+      for (const [routeKey, state] of this.flushStates) {
+        if (state.sessionId !== sessionId) continue;
+        if (!publisher.hasSubscription(state.subscriptionId, state.connectionId)) continue;
+        if (state.timer) {
+          clearTimeout(state.timer);
+          state.timer = null;
+        }
+        if (this.pausedConnections.has(state.connectionId)) continue;
+        const reservation = publisher.reserveFlush(state.subscriptionId);
+        if (!reservation) continue;
+        try {
+          this.emitReservation(reservation);
+        } catch (error) {
+          this.host.onError?.("v4.hydrate.subscriptionResync", error, {
+            phase: "subscriptionResync",
+            sessionId,
+          });
+          this.scheduleFlush(routeKey, state, publisher);
+        }
       }
+      this.hydratedSessions.add(sessionId);
+      this.publishCurrentSummaryToIndex(sessionId);
     }
-    this.hydratedSessions.add(sessionId);
-    this.publishCurrentSummaryToIndex(sessionId);
     return publisher;
   }
 

@@ -1,0 +1,50 @@
+{
+  "name": "tasks-storage-worker.mjs",
+  "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/staging-Wj0nI5/embedded/tasks-storage-worker.mjs",
+  "sha256": "413d0ba493721998d0cf45c79b2a0095d96cdfa4b80c0e3de66eac5a6ecd14f4",
+  "bytes": 1470554,
+  "maxBytes": 67108864,
+  "metafilePath": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-build-capture-delivery/build/audit/tasks-storage-worker.mjs.metafile.json",
+  "metafileSha256": "be273c79ad4f85ac123338203095dbbddee412efe8eaf7655ce2da6f8abec818",
+  "inputCount": 352,
+  "staticImports": [
+    "node:url",
+    "node:module",
+    "node:worker_threads",
+    "node:fs/promises",
+    "node:path",
+    "node:crypto",
+    "node:fs",
+    "node:os",
+    "node:child_process",
+    "node:stream",
+    "node:timers/promises",
+    "node:async_hooks",
+    "node:diagnostics_channel",
+    "node:string_decoder",
+    "node:readline"
+  ],
+  "nonBuiltinStaticImports": [],
+  "runtimeRequires": [],
+  "runtimeExternals": [],
+  "webAssemblyReferences": {
+    "count": 0,
+    "matches": []
+  },
+  "licenses": {
+    "packageCount": 1,
+    "saved": [
+      {
+        "name": "zod",
+        "version": "4.6.5",
+        "license": "MIT",
+        "packageJsonPresent": true,
+        "files": [
+          "package.json",
+          "LICENSE"
+        ]
+      }
+    ],
+    "missing": []
+  }
+}

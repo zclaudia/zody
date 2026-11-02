@@ -1,0 +1,98 @@
+{
+  "inputs": {
+    "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-helpers.js": {
+      "bytes": 2920,
+      "imports": [],
+      "format": "esm"
+    },
+    "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-types.js": {
+      "bytes": 156,
+      "imports": [],
+      "format": "esm"
+    },
+    "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-authority.js": {
+      "bytes": 12927,
+      "imports": [
+        {
+          "path": "node:crypto",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-helpers.js",
+          "kind": "import-statement",
+          "original": "./cua-submission-helpers.js"
+        },
+        {
+          "path": "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-types.js",
+          "kind": "import-statement",
+          "original": "./cua-submission-types.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "apps/zcode-cli/packages/core/dist/cua-submission.js": {
+      "bytes": 184,
+      "imports": [
+        {
+          "path": "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-authority.js",
+          "kind": "import-statement",
+          "original": "./runtime/cua/cua-submission-authority.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "packages/desktop/native/macos-cua-helper-round11/authority-entry.mjs": {
+      "bytes": 11334,
+      "imports": [
+        {
+          "path": "node:net",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "apps/zcode-cli/packages/core/dist/cua-submission.js",
+          "kind": "import-statement",
+          "original": "@zcode/core/cua-submission"
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "output/cua-helper-round11/controller-signed/candidate/build/staging-SKbXfi/app/Contents/Resources/authority-entry.mjs": {
+      "imports": [
+        {
+          "path": "node:net",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:crypto",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "exports": [],
+      "entryPoint": "packages/desktop/native/macos-cua-helper-round11/authority-entry.mjs",
+      "inputs": {
+        "packages/desktop/native/macos-cua-helper-round11/authority-entry.mjs": {
+          "bytesInOutput": 11073
+        },
+        "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-authority.js": {
+          "bytesInOutput": 10850
+        },
+        "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-helpers.js": {
+          "bytesInOutput": 2532
+        },
+        "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-types.js": {
+          "bytesInOutput": 129
+        },
+        "apps/zcode-cli/packages/core/dist/cua-submission.js": {
+          "bytesInOutput": 0
+        }
+      },
+      "bytes": 25035
+    }
+  }
+}

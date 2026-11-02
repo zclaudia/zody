@@ -1,0 +1,22 @@
+{
+  "app": "/Users/zhvala/SourceCode/zody/output/cua-arm64-default-enable/ordinary-app/mac-arm64/Zody Preview.app",
+  "bundleIdentifier": "io.github.zclaudia.zody.preview",
+  "displayName": "Zody Preview",
+  "manifestSha256": "3b059dfb06507bc2ca1966f5bba5476cbae96ec4356e0fe588b3fc892f0b0cfb",
+  "compiledProfileChunk": "out/host/chunk-HR4TGW6Y.js",
+  "profileChunkSha256": "3265ca044385616843c06e9f6af5d0d8797e1a274fe65776764a97470e093883",
+  "profileReachableFromHost": true,
+  "asarHeaderSha256": "b85ac9986215f347884a958e722c5a5883266e5f933c83d99ca861a7def79554",
+  "files": [
+    {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-arm64-default-enable/ordinary-app/mac-arm64/Zody Preview.app/Contents/Resources/cua-narrow/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session",
+      "sha256": "8cedd3d4ce79deea8449cd838f70068eba4bc924580749619c9cb72050c94515",
+      "strictCodesign": true
+    },
+    {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-arm64-default-enable/ordinary-app/mac-arm64/Zody Preview.app/Contents/Resources/cua-narrow/Zody CUA Desktop Session.app/Contents/Resources/node",
+      "sha256": "14931ecd0d332e1e968172964445ec69557fded6969ad31a86ac0a8e0f4d3dcf",
+      "strictCodesign": true
+    }
+  ]
+}

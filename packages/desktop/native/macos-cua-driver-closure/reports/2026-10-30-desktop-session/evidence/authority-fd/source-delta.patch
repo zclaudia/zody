@@ -1,0 +1,359 @@
+--- /dev/null
++++ b/.oxlintrc.json
+@@ -0,0 +1,70 @@
++{
++  "$schema": "./node_modules/oxlint/configuration_schema.json",
++  "plugins": null,
++  "categories": {},
++  "rules": {
++    "max-lines": ["error", { "max": 400, "skipBlankLines": true, "skipComments": true }]
++  },
++  "overrides": [
++    {
++      // 测试文件天然会堆叠大量场景与断言，继续复用生产代码的行数上限会造成误报，
++      // 因此只对 test/spec 文件关闭 max-lines，避免放宽业务代码约束。
++      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
++      "rules": {
++        "max-lines": "off"
++      }
++    },
++    {
++      "files": ["**/i18n/locales/*.ts"],
++      "rules": {
++        "max-lines": "off"
++      }
++    }
++  ],
++  "settings": {
++    "jsx-a11y": {
++      "polymorphicPropName": null,
++      "components": {},
++      "attributes": {}
++    },
++    "next": {
++      "rootDir": []
++    },
++    "react": {
++      "formComponents": [],
++      "linkComponents": [],
++      "version": null,
++      "componentWrapperFunctions": []
++    },
++    "jsdoc": {
++      "ignorePrivate": false,
++      "ignoreInternal": false,
++      "ignoreReplacesDocs": true,
++      "overrideReplacesDocs": true,
++      "augmentsExtendsReplacesDocs": false,
++      "implementsReplacesDocs": false,
++      "exemptDestructuredRootsFromChecks": false,
++      "tagNamePreference": {}
++    },
++    "vitest": {
++      "typecheck": false
++    }
++  },
++  "env": {
++    "builtin": true
++  },
++  "globals": {},
++  "ignorePatterns": [
++    "dist-release",
++    "packages/ui/src/components/ui",
++    "packages/ui/src/components/ai-elements",
++    ".claude/skills",
++    ".agents/skills",
++    "packages/formal-proof",
++    "apps/zcode-cli",
++    "docs/electron",
++    // 冻结报告中的源码副本不再位于原目录，无法继承原始 ignore/overrides；
++    // 仅排除该归档副本，仓库内原始源码仍按原有规则检查。
++    "packages/desktop/native/macos-cua-driver-closure/reports/2026-10-30-desktop-session/frozen-candidate/source/**"
++  ]
++}
+--- a/packages/desktop/native/macos-cua-desktop-session/src/session_supervisor.mm
++++ b/packages/desktop/native/macos-cua-desktop-session/src/session_supervisor.mm
+@@ -25,6 +25,7 @@
+ #include "machine_lease.h"
+ #include "peer_auth.h"
+ #include "peer_socket.h"
++#include "session_authority_fd.h"
+ #include "session_binding.h"
+ #include "session_capture_file.h"
+ #include "session_control.h"
+@@ -458,10 +459,32 @@
+   if (starts("final-check:")) return "final-owner-check-failed";
+   if (starts("post-confirm-check")) return "post-confirm-check-failed";
+   if (error == "authority-reader-buffer-not-empty") return "authority-buffer-not-empty";
+-  if (starts("capture-failed") || starts("visual-") || starts("tcc-") ||
+-      starts("capture-context") || starts("machine-lease-not-held") ||
+-      starts("authority-revoke") || starts("write-"))
+-    return "capture-failed";
++  if (error == "authority-fd-blocking-failed") return "authority-fd-mode-failed";
++  // 中文原因：capture_once 的失败 reason 本身已是固定枚举；折叠成 capture-failed
++  // 会丢失 TCC/visual/context 等真实阶段，无法定位失败。这里只保留已知固定值，
++  // 动态 write 错误按阶段归类，未知值仍落到有界泛化 reason。
++  if (error == "machine-lease-not-held") return "machine-lease-not-held";
++  if (error == "capture-context-incomplete") return "capture-context-incomplete";
++  if (error == "tcc-not-authorized") return "tcc-not-authorized";
++  if (error == "visual-start-denied") return "visual-start-denied";
++  if (error == "visual-take-png-failed") return "visual-take-png-failed";
++  if (error == "visual-png-invalid") return "visual-png-invalid";
++  if (error == "visual-wait-failed") return "visual-wait-failed";
++  if (error == "visual-resources-not-released") return "visual-resources-not-released";
++  if (error == "visual-destroy-pending") return "visual-destroy-pending";
++  if (error == "visual-staticlib-missing") return "visual-staticlib-missing";
++  if (error == "capture-facts-missing") return "capture-facts-missing";
++  if (error == "authority-revoke-failed") return "authority-revoke-failed";
++  if (error == "authority-revoke-not-confirmed") return "authority-revoke-not-confirmed";
++  if (starts("cannot create PNG:")) return "capture-create-failed";
++  if (starts("cannot write PNG:")) return "capture-write-failed";
++  if (starts("cannot fsync PNG:")) return "capture-fsync-failed";
++  if (starts("capture-failed")) return "capture-failed";
++  if (starts("visual-")) return "visual-failed";
++  if (starts("tcc-")) return "tcc-failed";
++  if (starts("capture-context")) return "capture-context-failed";
++  if (starts("authority-revoke")) return "authority-revoke-failed";
++  if (starts("write-")) return "capture-write-failed";
+   if (starts("peer-")) return "peer-rejected";
+   if (starts("control-")) return "control-failed";
+   if (starts("transport-")) return "transport-closed";
+@@ -889,6 +912,17 @@
+   context.y = binding.target.y;
+   context.width = binding.target.width;
+   context.height = binding.target.height;
++
++  std::string handoff_error;
++  if (!make_authority_fd_blocking(connection.get(), handoff_error)) {
++    // 中文原因：R11 AuthorityClient 的 reader_loop 使用阻塞 recv，看到 EAGAIN
++    // 会按读错误关闭；accepted fd 仍是 O_NONBLOCK 时首次 checkpoint 会误失败。
++    lease->release();
++    send_bounded_close(reader);
++    reset_observation();
++    error = "authority-fd-blocking-failed";
++    return false;
++  }
+ 
+   // 中文原因：capture 文件名由 SecRandom 生成且 helper 用 O_EXCL 创建；创建前
+   // unlink 会把“新名字冲突/竞态”变成删除一个本进程尚未持有的路径。
+--- /dev/null
++++ b/packages/desktop/native/macos-cua-desktop-session/src/session_authority_fd.h
+@@ -0,0 +1,11 @@
++#pragma once
++
++#include <string>
++
++namespace zody::cua::desktop_session {
++
++// accepted authority socket 由 peer_socket 设为非阻塞；R11 AuthorityClient 的
++// reader_loop 使用阻塞 recv，因此交接给 R11 前必须只清除 O_NONBLOCK 并保留其余 flags。
++bool make_authority_fd_blocking(int fd, std::string& error);
++
++}  // namespace zody::cua::desktop_session
+--- /dev/null
++++ b/packages/desktop/native/macos-cua-desktop-session/src/session_authority_fd.mm
+@@ -0,0 +1,32 @@
++#include "session_authority_fd.h"
++
++#include <errno.h>
++#include <fcntl.h>
++
++#include <cstring>
++
++namespace zody::cua::desktop_session {
++
++bool make_authority_fd_blocking(int fd, std::string& error) {
++  if (fd < 0) {
++    error = "authority fd unavailable";
++    return false;
++  }
++  const int flags = fcntl(fd, F_GETFL, 0);
++  if (flags < 0) {
++    error = std::string("cannot read authority fd flags: ") + std::strerror(errno);
++    return false;
++  }
++  if ((flags & O_NONBLOCK) == 0) return true;
++  // 中文原因：peer_socket accept 成功后会把 accepted fd 设为 O_NONBLOCK；R11
++  // AuthorityClient 的 reader_loop 用 recv(..., 0) 且把 EAGAIN 当读错误关闭。
++  // 交接前仅清除 O_NONBLOCK，保留其余 file-status flags，不触及 descriptor
++  // flags（如 FD_CLOEXEC），避免首次 checkpoint 在延迟响应到达前误判 closed。
++  if (fcntl(fd, F_SETFL, flags & ~O_NONBLOCK) != 0) {
++    error = std::string("cannot make authority fd blocking: ") + std::strerror(errno);
++    return false;
++  }
++  return true;
++}
++
++}  // namespace zody::cua::desktop_session
+--- /dev/null
++++ b/packages/desktop/native/macos-cua-desktop-session/tests/session_authority_fd_test.mm
+@@ -0,0 +1,145 @@
++#import <Foundation/Foundation.h>
++
++#include <fcntl.h>
++#include <poll.h>
++#include <sys/socket.h>
++#include <unistd.h>
++
++#include <chrono>
++#include <cstdio>
++#include <mutex>
++#include <string>
++#include <thread>
++
++#include "authority_client.h"
++#include "session_authority_fd.h"
++
++namespace {
++
++int failures = 0;
++
++void expect(bool condition, const char* message) {
++  if (condition) return;
++  std::fprintf(stderr, "FAIL: %s\n", message);
++  failures += 1;
++}
++
++bool read_line_with_deadline(int fd, std::string& line) {
++  line.clear();
++  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
++  while (std::chrono::steady_clock::now() < deadline) {
++    pollfd entry{fd, POLLIN, 0};
++    const int ready = poll(&entry, 1, 100);
++    if (ready == 0) continue;
++    if (ready < 0) return false;
++    char chunk[4096];
++    const ssize_t count = read(fd, chunk, sizeof(chunk));
++    if (count <= 0) return false;
++    line.append(chunk, static_cast<size_t>(count));
++    if (line.find('\n') != std::string::npos) return true;
++  }
++  return false;
++}
++
++std::string request_id_from(const std::string& line) {
++  const std::string marker = "\"requestId\":\"";
++  const size_t start = line.find(marker);
++  if (start == std::string::npos) return "";
++  const size_t value_start = start + marker.size();
++  const size_t end = line.find('"', value_start);
++  if (end == std::string::npos) return "";
++  return line.substr(value_start, end - value_start);
++}
++
++void make_nonblocking(int fd) {
++  const int flags = fcntl(fd, F_GETFL, 0);
++  expect(flags >= 0, "F_GETFL failed");
++  if (flags >= 0) expect(fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0, "set O_NONBLOCK failed");
++}
++
++void test_blocking_handoff_delayed_response() {
++  int fds[2] = {-1, -1};
++  expect(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0, "socketpair failed");
++  if (fds[0] < 0) return;
++  make_nonblocking(fds[0]);
++
++  std::string error;
++  expect(zody::cua::desktop_session::make_authority_fd_blocking(fds[0], error),
++         "authority fd blocking handoff failed");
++  const int flags = fcntl(fds[0], F_GETFL, 0);
++  expect(flags >= 0 && (flags & O_NONBLOCK) == 0, "O_NONBLOCK not cleared");
++
++  zody::cua::round11::AuthorityClient client(fds[0]);
++  expect(client.start([](const std::string&) {}, [](const std::string&) {}, error),
++         "authority client start failed");
++  std::thread responder([&] {
++    std::string request;
++    if (!read_line_with_deadline(fds[1], request)) return;
++    const std::string request_id = request_id_from(request);
++    if (request_id.empty()) return;
++    std::this_thread::sleep_for(std::chrono::milliseconds(150));
++    const std::string response = "{\"requestId\":\"" + request_id +
++                                 "\",\"result\":{\"ok\":true,"
++                                 "\"projection\":{\"status\":\"candidate\"}}}\n";
++    (void)send(fds[1], response.data(), response.size(), MSG_NOSIGNAL);
++  });
++
++  NSDictionary* result = nil;
++  const bool ok = client.request(@"check", @{}, &result, error);
++  expect(ok, "delayed authority response was rejected");
++  expect([result[@"ok"] boolValue], "delayed authority result missing ok");
++  expect([result[@"projection"][@"status"] isEqualToString:@"candidate"],
++         "delayed authority result missing candidate projection");
++  client.close();
++  responder.join();
++  close(fds[1]);
++}
++
++void test_interrupt_wakes_blocking_reader() {
++  int fds[2] = {-1, -1};
++  expect(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0, "socketpair failed");
++  if (fds[0] < 0) return;
++  make_nonblocking(fds[0]);
++  std::string error;
++  expect(zody::cua::desktop_session::make_authority_fd_blocking(fds[0], error),
++         "authority fd blocking handoff failed");
++
++  zody::cua::round11::AuthorityClient client(fds[0]);
++  std::mutex close_mutex;
++  std::string close_reason;
++  expect(client.start([](const std::string&) {}, [&](const std::string& reason) {
++           std::lock_guard<std::mutex> lock(close_mutex);
++           close_reason = reason;
++         }, error),
++         "authority client start failed");
++
++  bool request_ok = true;
++  std::string request_error;
++  std::thread requester([&] {
++    NSDictionary* result = nil;
++    request_ok = client.request(@"check", @{}, &result, request_error);
++  });
++  std::string request;
++  expect(read_line_with_deadline(fds[1], request), "request was not sent");
++  client.interrupt();
++  requester.join();
++  expect(!request_ok, "interrupt did not fail pending request");
++  client.close();
++  {
++    std::lock_guard<std::mutex> lock(close_mutex);
++    expect(close_reason == "authority-eof", "interrupt did not close reader with authority-eof");
++  }
++  close(fds[1]);
++}
++
++}  // namespace
++
++int main() {
++  @autoreleasepool {
++    test_blocking_handoff_delayed_response();
++    test_interrupt_wakes_blocking_reader();
++  }
++  if (failures != 0) return 1;
++  std::printf("ok session-authority-fd\n");
++  return 0;
++}
+--- a/packages/desktop/scripts/lib/cua-desktop-session-config.mjs
++++ b/packages/desktop/scripts/lib/cua-desktop-session-config.mjs
+@@ -123,6 +123,7 @@
+   "session_node_process.mm",
+   "session_capture_file.mm",
+   "session_control.mm",
++  "session_authority_fd.mm",
+   "session_launcher.mm",
+   "session_supervisor.mm",
+   "session_main.mm",
+--- a/packages/desktop/scripts/lib/cua-desktop-session-native-tests.mjs
++++ b/packages/desktop/scripts/lib/cua-desktop-session-native-tests.mjs
+@@ -21,6 +21,11 @@
+     name: "session-capture-file",
+     source: "session_capture_file_test.mm",
+     sources: ["session_capture_file.mm"],
++  },
++  {
++    name: "session-authority-fd",
++    source: "session_authority_fd_test.mm",
++    sources: ["session_authority_fd.mm", "authority_client.mm"],
+   },
+   {
+     name: "session-exit-policy",

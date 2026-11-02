@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button.js";
 import { ScrollFadeViewport } from "@/components/ui/scroll-fade-viewport.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useBackgroundBashOutput } from "@/hooks/useBackgroundBashOutput.js";
+import { backgroundBashOutputTitle } from "@/lib/backgroundBashOutputTitle.js";
 import { logger } from "@/logger.js";
 import type { BackgroundBashSidePaneTab } from "@/lib/workspaceSidePane.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
@@ -69,7 +70,8 @@ export const BackgroundBashOutputSidePane = memo(function BackgroundBashOutputSi
               onOpenCodeViewer({
                 type: "file",
                 path: latest.outputPath,
-                title: latest.outputPath.split(/[\\/]/).pop() ?? latest.outputPath,
+                // I16：输出文件统一叫 stdout.log，标题保留 toolCall 段以便区分并发任务。
+                title: backgroundBashOutputTitle(latest.outputPath),
                 workspacePath: tab.workspacePath,
                 workspaceIdentity: tab.workspaceIdentity,
                 workspaceRemoteSessionId: tab.remoteSessionId,

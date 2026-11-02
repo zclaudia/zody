@@ -1,0 +1,53 @@
+[
+  {
+    "name": "typecheck",
+    "argv": [
+      "pnpm",
+      "typecheck"
+    ],
+    "startedAt": "2026-10-30T12:04:44.563379+00:00",
+    "durationSeconds": 6.822,
+    "exitCode": 0,
+    "log": "typecheck.log"
+  },
+  {
+    "name": "lint",
+    "argv": [
+      "pnpm",
+      "lint"
+    ],
+    "startedAt": "2026-10-30T12:04:44.563767+00:00",
+    "durationSeconds": 2.025,
+    "exitCode": 0,
+    "log": "lint.log"
+  },
+  {
+    "name": "architecture",
+    "argv": [
+      "pnpm",
+      "architecture:check",
+      "--changed"
+    ],
+    "startedAt": "2026-10-30T12:04:44.563843+00:00",
+    "durationSeconds": 2.225,
+    "exitCode": 0,
+    "log": "architecture.log"
+  },
+  {
+    "name": "affected-tests",
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "packages/desktop/test/nodeHostBridge.test.ts",
+      "packages/desktop/test/candidateNativeHostLaunch.test.ts",
+      "packages/desktop/test/desktopHostProcess.test.ts",
+      "packages/services/test/zcodeAgentProcessManager.test.ts"
+    ],
+    "startedAt": "2026-10-30T12:04:44.563953+00:00",
+    "durationSeconds": 46.332,
+    "exitCode": 0,
+    "log": "affected-tests.log"
+  }
+]

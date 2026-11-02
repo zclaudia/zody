@@ -1,0 +1,30 @@
+{
+  "resources": [
+    {
+      "name": "node",
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/helper/Zody CUA Helper Round11.app/Contents/Resources/node",
+      "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+    },
+    {
+      "name": "authority",
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/helper/Zody CUA Helper Round11.app/Contents/Resources/authority-entry.mjs",
+      "sha256": "e0bb13d090179121b7a89bf85009e3a749647beb9c2611b0219d5d72cdf2ae62"
+    },
+    {
+      "name": "nodeLicense",
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/helper/Zody CUA Helper Round11.app/Contents/Resources/licenses/node-LICENSE.txt",
+      "sha256": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18"
+    },
+    {
+      "name": "helper",
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/helper/Zody CUA Helper Round11.app/Contents/MacOS/macos-cua-helper-round11",
+      "sha256": "9a7fca3066bfa08a1e62dcdc7823866dcdc141d7f1f2c29c3a27f03dac421418"
+    }
+  ],
+  "originalNodeUnchanged": true,
+  "bundledAuthoritySmokeUsesIdenticalNodeAndJsBytes": true,
+  "nodeArchitecture": "arm64",
+  "nodeMinOS": "13.5",
+  "helperMinOS": "14.2",
+  "realMinimumOSExecution": false
+}

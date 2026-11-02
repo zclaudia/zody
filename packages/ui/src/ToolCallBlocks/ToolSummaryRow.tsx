@@ -214,6 +214,10 @@ export function ToolSummaryRow(props: ToolSummaryRowProps) {
             aria-hidden
             className={cn(
               "size-4 text-foreground-subtlest opacity-0 transition-transform transition-opacity duration-200 ease-out will-change-transform group-hover/tool-summary:opacity-100 shrink-0",
+              // Bugfix：触屏（hover:none）没有 hover，折叠态过去完全看不到展开箭头，
+              // 工具详情入口不可发现。触屏常显 chevron，展开状态仍由旋转方向表达；
+              // 桌面维持 hover 才显示，密度不变（走查 chat-1，D1 触控规格同批）。
+              "[@media(hover:none)]:opacity-100",
               isExpanded ? "rotate-90 opacity-100" : "rotate-0",
               forceOpen && "opacity-100",
             )}

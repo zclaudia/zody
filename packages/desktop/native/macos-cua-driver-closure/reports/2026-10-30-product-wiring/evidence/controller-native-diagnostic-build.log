@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "outputRoot": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic",
+  "artifact": "/Users/zhvala/SourceCode/zody/output/cua-helper-product-integration/controller-native-diagnostic/helper/Zody CUA Helper Round11.app/Contents/MacOS/macos-cua-helper-round11",
+  "artifactSha256": "433455d49d1e91bde0205fbb1766fd9471ae973b05683bf1eb07f23a7d99bf97",
+  "architectures": [
+    "arm64"
+  ],
+  "minimumMacOSVersion": "14.2",
+  "authorityBytes": 27760098,
+  "authoritySha256": "b8a4d730c7a174340bf6b9712633f507f31b6f1058f61d9656b207fb2080d721",
+  "bundleInputCount": 3031,
+  "nonBuiltinStaticImports": [],
+  "signingPerformed": false
+}

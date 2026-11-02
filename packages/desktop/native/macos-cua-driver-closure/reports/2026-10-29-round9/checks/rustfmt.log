@@ -1,0 +1,76 @@
+Diff in /Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/capture.rs:29:
+ const COMPLETION_ADMISSION_REJECTED: i32 = 2;
+ const COMPLETION_WINDOW_NOT_FOUND: i32 = 3;
+ 
+-type AdmissionCallback =
+-    unsafe extern "C" fn(u64, u32, i32, i32, f64, f64, f64, f64) -> i32;
+-type CompletionCallback = unsafe extern "C" fn(
+-    u64,
+-    i32,
+-    u32,
+-    i32,
+-    i32,
+-    f64,
+-    f64,
+-    f64,
+-    f64,
+-    u32,
+-    u32,
+-    *const u8,
+-    usize,
+-);
++type AdmissionCallback = unsafe extern "C" fn(u64, u32, i32, i32, f64, f64, f64, f64) -> i32;
++type CompletionCallback =
++    unsafe extern "C" fn(u64, i32, u32, i32, i32, f64, f64, f64, f64, u32, u32, *const u8, usize);
+ type PayloadReleasedCallback = unsafe extern "C" fn(u64);
+ type CaptureWindowFn = unsafe extern "C" fn(
+     u64,
+Diff in /Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/error.rs:90:
+         match self {
+             Self::HostNotApproved => f.write_str("capture requires a trusted Helper approval"),
+             Self::CaptureCanceled => f.write_str("capture observation closed"),
+-            Self::CaptureAlreadyConsumed => f.write_str("capture observation result already consumed"),
++            Self::CaptureAlreadyConsumed => {
++                f.write_str("capture observation result already consumed")
++            }
+             Self::CaptureCapacityExhausted { limit } => {
+                 write!(f, "capture in-flight capacity {limit} is exhausted")
+             }
+Diff in /Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/capture.rs:29:
+ const COMPLETION_ADMISSION_REJECTED: i32 = 2;
+ const COMPLETION_WINDOW_NOT_FOUND: i32 = 3;
+ 
+-type AdmissionCallback =
+-    unsafe extern "C" fn(u64, u32, i32, i32, f64, f64, f64, f64) -> i32;
+-type CompletionCallback = unsafe extern "C" fn(
+-    u64,
+-    i32,
+-    u32,
+-    i32,
+-    i32,
+-    f64,
+-    f64,
+-    f64,
+-    f64,
+-    u32,
+-    u32,
+-    *const u8,
+-    usize,
+-);
++type AdmissionCallback = unsafe extern "C" fn(u64, u32, i32, i32, f64, f64, f64, f64) -> i32;
++type CompletionCallback =
++    unsafe extern "C" fn(u64, i32, u32, i32, i32, f64, f64, f64, f64, u32, u32, *const u8, usize);
+ type PayloadReleasedCallback = unsafe extern "C" fn(u64);
+ type CaptureWindowFn = unsafe extern "C" fn(
+     u64,
+Diff in /Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source/crates/cua-macos-visual/src/error.rs:90:
+         match self {
+             Self::HostNotApproved => f.write_str("capture requires a trusted Helper approval"),
+             Self::CaptureCanceled => f.write_str("capture observation closed"),
+-            Self::CaptureAlreadyConsumed => f.write_str("capture observation result already consumed"),
++            Self::CaptureAlreadyConsumed => {
++                f.write_str("capture observation result already consumed")
++            }
+             Self::CaptureCapacityExhausted { limit } => {
+                 write!(f, "capture in-flight capacity {limit} is exhausted")
+             }

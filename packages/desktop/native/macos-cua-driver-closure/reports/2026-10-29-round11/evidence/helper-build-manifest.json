@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-helper-round11-final-build",
+  "status": "pass",
+  "generatedAt": "2026-10-29T14:15:26.471Z",
+  "unsigned": true,
+  "signing": {
+    "performed": false,
+    "acceptance": "blocked",
+    "reason": "unsigned; no certificate or signing approval is used"
+  },
+  "captureEntry": false,
+  "productHook": false,
+  "outputRoot": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted",
+  "visualRoot": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final",
+  "sourceRoot": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11",
+  "sources": {
+    "authority_client.mm": "7274d1b2f79fcaa71e263a1b6a3211cf60f4c05ba4682cf0b581c47bfd84e075",
+    "bundle_paths.mm": "276d43b9c769884c401543e316bad05c06088903c84dfac6ed28a275d646c966",
+    "capture_owner.mm": "ccb3e5a3e9ffc375b96ea45b386cbb1b9430d8ab979113646e26661a5174516c",
+    "machine_lease.mm": "5c16cda5d41837dcb220fc3513c1f722efedbd89c908122be72cbf4b5baf8c1b",
+    "main.mm": "085542973ea23b5195f5d56a49acbd5d4e418386c25cd9bb3d159daa613ea2dd",
+    "node_process.mm": "59e15644f01b5bbcf4816b0e712c999346258ed791f8390f03d7039bf2f9d021",
+    "orchestrator.mm": "e6230a10c58868000d5f4aace8bcb6a53efee657625854ee5c9308f4dcf6089d",
+    "peer_auth.mm": "f8947693701056e544500aebafddc86307279540834a6fe0f7551a92f7b61142",
+    "r11_pins.mm": "af44e539958d377841ed1f6927e612eeca5523abb0d2737f6d540e4bd9fbcca1",
+    "r11_self_identity.mm": "50889c42a208134320ab94eca0998e3def05b362a1fba04cbdb4cd860e83f20f",
+    "peer_socket.mm": "a6e274faf1a6994e67e80bc3855b9b071555b4a8cb7dd216a2ad591237845856",
+    "peer_frame.mm": "263574f244177c3d0c0ae36167ed9ae3d7db8a30a2afc1bcc6eca74fea2b9e2b",
+    "security_identity.mm": "fd1f5e62d1bdef5488016a656ffc61c3616b6069eda1ea0a9792c985771b29b2",
+    "profile.mm": "124befc37b4c24eb85abf94cbe28a6241b13240448eadef7199a4dc33ab42c4e",
+    "round11/src/authority_client.h": "69544e503b4652804fcd6a1c729dd7fe35a1f6a94101b6a4f4a4227ecc275e93",
+    "round11/src/bundle_paths.h": "62d6c52441f5da4a3991a52a35e4ded189bbd47f41e98e08fc24fe0c9a3fc5c9",
+    "round11/src/capture_owner.h": "a7f6f89a26e2e64a215f2441c68d354460a4d6617959cff8d219a7b38382f14f",
+    "round11/src/machine_lease.h": "8df297f234a41678c8d052344bb2383eb914a725d7e0af644719aa5cf85cb0f9",
+    "round11/src/node_process.h": "fefb26ab207fb41a2f3618ace4d07fda00161d98379c1bb04ccfdfc4cbf7220f",
+    "round11/src/orchestrator.h": "a62d0510d8dce7a13a396638a5565ac3265b6e32b87390ce3cdf96a7a87d30cd",
+    "round11/src/peer_auth.h": "636f3f31af2e657bb4ddeaf50bea3db20b2e92da69fbc467c55f646015e46d23",
+    "round11/src/r11_pins.h": "1be71f6983b4d9e5269df148fe01ac3dab8e63cde9d261405771591510b460b6",
+    "round11/src/r11_self_identity.h": "f653fd96e7290353670e871295d6b65fce2deacda1bdb8801abc1eea352e1e71",
+    "r10/src/calibration_profile.h": "8cd9da272de90dba45b807425d164d93d53e04ac2eacc73fd29649b0bb87d80d",
+    "r10/src/cli_common.h": "bb4d4545b0b1a3d5da39222b7cfda0a3fddabde463fd73ad0a98cca5b0b4beff",
+    "r10/src/macho_artifact.h": "85984a0e25d91ee922278ceeddb0e729479ff0b80de19984631f4026314bd833",
+    "r10/src/peer_internal.h": "aa93a3576ced5d7a5332350cd01e3f4a630da0793ed03ad9d01a5e8cff3220f3",
+    "r10/src/peer_socket.h": "ef29202676e6484ce9cff0c4a32ff109ffb9a139884440bb963d170cb87855f6",
+    "r10/src/policy.h": "b4bd22644ab26f8ceaf075ca4497f376e7246fb9d529a7d1c381421a6e402d07",
+    "r10/src/profile.h": "143b23a93be081441345bc358bf89cac48743b0d1b68502283bc7c652e6db6f3",
+    "r10/src/pure_policy.h": "8b2a10e88733dcef61c152e4fd9c49952cc1fa1a1d849babc4a65937bf31a7f0",
+    "r10/src/report.h": "7e0e1227ddb4614b7e4ced8bdfd978c59798cbe080a58544e3172a32d0658b58",
+    "r10/src/security_identity.h": "078e5129ceb343519db24f47b270378d87430713db661636637b3b54a2f2ec4a",
+    "r10/src/static_artifact.h": "e148e1e93d622cc664040df46277bab2edb77886e9d9fd7b7cbe3acb063416ad"
+  },
+  "identityPins": {
+    "configured": false,
+    "values": {
+      "leafSha256": "",
+      "designatedRequirement": "",
+      "nodeIdentifier": "",
+      "nodeLeafSha256": "",
+      "nodeDesignatedRequirement": "",
+      "nodeCdhash": ""
+    }
+  },
+  "resources": {
+    "node": {
+      "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+      "bytes": 119133456,
+      "license": {
+        "sha256": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18",
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/helper/Zody CUA Helper Round11.app/Contents/Resources/licenses/node-LICENSE.txt",
+        "originalPath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/LICENSE",
+        "originalSha256": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18"
+      },
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/helper/Zody CUA Helper Round11.app/Contents/Resources/node",
+      "originalPath": "/Users/zhvala/.local/share/fnm/node-versions/v24.14.0/installation/bin/node",
+      "originalSha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+      "version": "v24.14.0"
+    },
+    "authority": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/helper/Zody CUA Helper Round11.app/Contents/Resources/authority-entry.mjs",
+      "sha256": "e0bb13d090179121b7a89bf85009e3a749647beb9c2611b0219d5d72cdf2ae62",
+      "bytes": 25035,
+      "metafilePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/build/authority-esbuild-metafile.json",
+      "metafileSha256": "a6753c821507ecefe68f8cdadb6e3448c3d78dc96558c19b2194dc37ea33e43a",
+      "inputs": {
+        "apps/zcode-cli/packages/core/dist/cua-submission.js": "836f3ffe5fdb1e5c77f246d13a499dd604b406c55b8b95ab18f01c810bedf66c",
+        "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-authority.js": "f831dc48d0406b5535e58a93605ee5e14cc4b4eaa7beb8f44f62ebe70d5861ab",
+        "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-helpers.js": "34ceb33a1781a24424c08411ae03a06feef0b8c5d919cfd72ab5445b5c117646",
+        "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-types.js": "1a615e17e8543bc43ba2880ad0e5de75d5b578edf6d5de23364828d58f2b5331",
+        "packages/desktop/native/macos-cua-helper-round11/authority-entry.mjs": "5d7a8da1f7a4e72d7e313e12f84f6c437ac079e0e8bf900aa910107fed1e8291"
+      },
+      "distEntry": "/Users/zhvala/SourceCode/zody/apps/zcode-cli/packages/core/dist/cua-submission.js",
+      "distSha256": "836f3ffe5fdb1e5c77f246d13a499dd604b406c55b8b95ab18f01c810bedf66c"
+    },
+    "infoPlist": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/helper/Zody CUA Helper Round11.app/Contents/Info.plist",
+      "sha256": "a11ef13ef71076145c7e1bf5711b01c4cb023fa15da4ddcc7cdf9fb852c3d15c"
+    },
+    "pins": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/build/cua_round11_pins.h",
+      "sha256": "feb3f333d641b90f0add0b0e98772e754fd2267f79bea7b1855a9ad80a9b475f"
+    },
+    "staticlib": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib/libcua_macos_visual_round11.a",
+      "sha256": "d29c63e84c43c7e7b9495ffeea37f08f2a0e5bc6015243b4a368f17060bb459e"
+    },
+    "visualHeader": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib/cua_r11_visual.h",
+      "sha256": "7b0a4f85815190272cec8ef04baa9b85a5c4b661fc3c7e2bb84725d58498f0b2"
+    }
+  },
+  "build": {
+    "command": "/Library/Developer/CommandLineTools/usr/bin/clang++ -std=c++17 -x objective-c++ -fobjc-arc -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mmacosx-version-min=14.2 -O2 -Wall -Wextra -Werror -DCUA_R11_HAVE_VISUAL -I /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src -I /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src -I /Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/build -I /Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/authority_client.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/bundle_paths.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/capture_owner.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/machine_lease.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/main.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/node_process.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/orchestrator.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/peer_auth.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/r11_pins.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/r11_self_identity.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_socket.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/peer_frame.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/security_identity.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-peer-diagnostic/src/profile.mm -x none /Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-visual-final/lib/libcua_macos_visual_round11.a -L /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift -Wl,-rpath,/usr/lib/swift -liconv -framework Foundation -framework Security -framework CoreFoundation -framework CoreGraphics -framework ScreenCaptureKit -framework AppKit -lbsm -o /Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/build/staging-XNFkRV/app/Contents/MacOS/macos-cua-helper-round11",
+    "leaseTestCommand": "/Library/Developer/CommandLineTools/usr/bin/clang++ -std=c++17 -x objective-c++ -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mmacosx-version-min=14.2 -O2 -Wall -Wextra -Werror -I /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/lease_test.mm /Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-helper-round11/src/machine_lease.mm -o /Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/build/staging-XNFkRV/cua-helper-round11-lease-test",
+    "compiler": {
+      "path": "/Library/Developer/CommandLineTools/usr/bin/clang++",
+      "versionFirstLine": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
+    },
+    "sdk": {
+      "requested": "macosx27.0",
+      "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "version": "27.0"
+    },
+    "target": {
+      "architecture": "arm64",
+      "minimumMacOSVersion": "14.2"
+    },
+    "linker": {
+      "swiftSearch": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift",
+      "rpath": "/usr/lib/swift",
+      "bsm": true
+    },
+    "warnings": ""
+  },
+  "bundle": {
+    "path": "helper/Zody CUA Helper Round11.app",
+    "bundleIdentifier": "io.github.zclaudia.zody.cua-helper",
+    "minimumMacOSVersion": "14.2"
+  },
+  "artifact": {
+    "path": "helper/Zody CUA Helper Round11.app/Contents/MacOS/macos-cua-helper-round11",
+    "absolutePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/helper/Zody CUA Helper Round11.app/Contents/MacOS/macos-cua-helper-round11",
+    "sha256": "9a7fca3066bfa08a1e62dcdc7823866dcdc141d7f1f2c29c3a27f03dac421418",
+    "sizeBytes": 5279912,
+    "architectures": [
+      "arm64"
+    ],
+    "minos": "14.2",
+    "minosValues": [
+      "14.2"
+    ],
+    "rpaths": [
+      "/usr/lib/swift"
+    ],
+    "linked": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/build/staging-XNFkRV/app/Contents/MacOS/macos-cua-helper-round11:\n\t/usr/lib/libiconv.2.dylib (compatibility version 7.0.0, current version 7.0.0)\n\t/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 5027.0.69)\n\t/System/Library/Frameworks/Security.framework/Versions/A/Security (compatibility version 1.0.0, current version 62460.1.2)\n\t/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 5027.0.69)\n\t/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics (compatibility version 64.0.0, current version 2050.0.0)\n\t/System/Library/Frameworks/ScreenCaptureKit.framework/Versions/A/ScreenCaptureKit (compatibility version 1.0.0, current version 1.0.0)\n\t/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit (compatibility version 45.0.0, current version 2775.10.103)\n\t/usr/lib/libbsm.0.dylib (compatibility version 1.0.0, current version 1.0.0)\n\t/usr/lib/libobjc.A.dylib (compatibility version 1.0.0, current version 228.0.0)\n\t/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 2200.27.0)\n\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1359.0.0)\n\t/usr/lib/swift/libswiftAVFoundation.dylib (compatibility version 1.0.0, current version 2450.77.5, weak)\n\t/usr/lib/swift/libswiftCore.dylib (compatibility version 0.0.0, current version 0.0.0)\n\t/usr/lib/swift/libswiftCoreAudio.dylib (compatibility version 1.0.0, current version 482.102.10, weak)\n\t/usr/lib/swift/libswiftCoreFoundation.dylib (compatibility version 1.0.0, current version 120.100.0, weak)\n\t/usr/lib/swift/libswiftCoreImage.dylib (compatibility version 1.0.0, current version 3.0.0, weak)\n\t/usr/lib/swift/libswiftCoreMIDI.dylib (compatibility version 1.0.0, current version 6.0.0, weak)\n\t/usr/lib/swift/libswiftDarwin.dylib (compatibility version 1.0.0, current version 428.0.10, weak)\n\t/usr/lib/swift/libswiftDispatch.dylib (compatibility version 1.0.0, current version 1605.0.2, weak)\n\t/usr/lib/swift/libswiftIOKit.dylib (compatibility version 1.0.0, current version 1.0.0, weak)\n\t/usr/lib/swift/libswiftMetal.dylib (compatibility version 1.0.0, current version 382.5.3, weak)\n\t/usr/lib/swift/libswiftOSLog.dylib (compatibility version 1.0.0, current version 10.0.0, weak)\n\t/usr/lib/swift/libswiftObjectiveC.dylib (compatibility version 1.0.0, current version 973.1.0, weak)\n\t/usr/lib/swift/libswiftQuartzCore.dylib (compatibility version 1.0.0, current version 5.0.0, weak)\n\t/usr/lib/swift/libswiftSpatial.dylib (compatibility version 1.0.0, current version 1.0.0, weak)\n\t/usr/lib/swift/libswiftUniformTypeIdentifiers.dylib (compatibility version 1.0.0, current version 917.0.1, weak)\n\t/usr/lib/swift/libswiftXPC.dylib (compatibility version 1.0.0, current version 167.0.2, weak)\n\t/usr/lib/swift/libswiftos.dylib (compatibility version 1.0.0, current version 1090.0.0, weak)\n\t/usr/lib/swift/libswiftsimd.dylib (compatibility version 1.0.0, current version 25.0.0, weak)\n\t/usr/lib/swift/libswiftCoreGraphics.dylib (compatibility version 1.0.0, current version 1.0.0)\n",
+    "minimumMacOSVersion": "14.2",
+    "codesign": {
+      "inspected": true,
+      "adhocOrUnsignedIsNotAcceptance": true,
+      "output": "Executable=/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/build/staging-XNFkRV/app/Contents/MacOS/macos-cua-helper-round11\nIdentifier=macos-cua-helper-round11\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20400 size=41073 flags=0x20002(adhoc,linker-signed) hashes=1280+0 location=embedded\nVersionPlatform=1\nVersionMin=918016\nVersionSDK=1769472\nHash type=sha256 size=32\nCandidateCDHash sha256=017d7e5d3c1ad6cea8e3cf267c129c2a9fddf4c5\nCandidateCDHashFull sha256=017d7e5d3c1ad6cea8e3cf267c129c2a9fddf4c54c854fbb3115b1630b3c2c9f\nHash choices=sha256\nCMSDigest=017d7e5d3c1ad6cea8e3cf267c129c2a9fddf4c54c854fbb3115b1630b3c2c9f\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=2661648\nExecutable Segment flags=0x1\nPage size=4096\nCDHash=017d7e5d3c1ad6cea8e3cf267c129c2a9fddf4c5\nSignature=adhoc\nInfo.plist=not bound\nTeamIdentifier=not set\nSealed Resources=none\nInternal requirements=none\n"
+    }
+  },
+  "leaseTest": {
+    "path": "bin/cua-helper-round11-lease-test",
+    "absolutePath": "/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-accepted/bin/cua-helper-round11-lease-test",
+    "sha256": "14979ee1e0059e36b084a69f561128647a631b2a4dc5c203b27caa2d4736c1ff",
+    "sizeBytes": 37520,
+    "architectures": [
+      "arm64"
+    ],
+    "minos": "14.2",
+    "minosValues": [
+      "14.2"
+    ],
+    "productionMain": false
+  }
+}

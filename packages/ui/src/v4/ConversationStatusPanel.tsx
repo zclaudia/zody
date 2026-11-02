@@ -158,6 +158,13 @@ const EMPTY_BACKGROUND_WORKS: readonly BackgroundWorkSummary[] = [];
 const EMPTY_RUNNING_SUBAGENTS: readonly ZCodeSessionRunningSubagent[] = [];
 const EMPTY_WORKFLOW_RUNS: readonly WorkflowRunState[] = [];
 
+/** 胶囊形态的宽度上限：20rem，且不超过 conversation 容器两侧留 1rem（桌面与宽屏 Web 现状）。 */
+const PILL_MINI_MAX_WIDTH_CLASS = "max-w-[min(20rem,calc(100cqw-2rem))]";
+// 走查 chat-4：手机 390px 视口下胶囊可达 20rem（约 82% 屏宽），正文滚动时从其下被遮挡。
+// 手机触屏视口把上限收进容器 60%（沿用既有 100cqw 容器查询单位），摘要文本由 truncate 截断；
+// 桌面与宽屏 Web 维持原上限不变。
+const PILL_MINI_MOBILE_MAX_WIDTH_CLASS = "max-w-[min(60cqw,20rem)]";
+
 function formatDurationUnits(
   totalSeconds: number,
   formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
@@ -271,10 +278,13 @@ function StatusSectionHeader({
           <span className="shrink-0 text-ui-base text-[var(--color-foreground-subtle)]">
             {title}
           </span>
+          {/* Bugfix：触屏（hover:none）没有 hover，分区头无论展开还是收起都看不到箭头，
+              无法从视觉判断可折叠性。触屏常显 chevron，方向仍表达展开状态；
+              桌面维持 hover/focus-visible 才显示（走查 chat-3）。 */}
           {isOpen ? (
-            <ChevronDownIcon className="size-3.5 shrink-0 text-[var(--color-foreground-subtle)] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
+            <ChevronDownIcon className="size-3.5 shrink-0 text-[var(--color-foreground-subtle)] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 [@media(hover:none)]:opacity-100" />
           ) : (
-            <ChevronRightIcon className="size-3.5 shrink-0 text-[var(--color-foreground-subtle)] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
+            <ChevronRightIcon className="size-3.5 shrink-0 text-[var(--color-foreground-subtle)] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 [@media(hover:none)]:opacity-100" />
           )}
         </button>
       </CollapsibleTrigger>
@@ -2038,10 +2048,17 @@ function ConversationStatusPanelImpl({
           // 而 shell 早已不过渡宽度），测量值会比内容晚一次渲染、上限又按窗口宽度（100vw）算——
           // 两者都能让文字落到胶囊外面。
           variant === "mini"
-            ? "inline-flex max-h-8.5 w-max max-w-[min(20rem,calc(100cqw-2rem))] flex-col"
+            ? cn(
+                "inline-flex max-h-8.5 w-max flex-col",
+                isMobileViewport ? PILL_MINI_MOBILE_MAX_WIDTH_CLASS : PILL_MINI_MAX_WIDTH_CLASS,
+              )
             : variant === "panel"
               ? "flex max-h-[min(64dvh,32rem)] w-80 max-w-[calc(100cqw-2rem)] flex-col"
-              : "inline-flex max-h-8.5 w-max max-w-[min(20rem,calc(100cqw-2rem))] flex-col @min-[1280px]/conversation:max-h-[min(64dvh,32rem)] @min-[1280px]/conversation:w-80",
+              : cn(
+                  "inline-flex max-h-8.5 w-max flex-col @min-[1280px]/conversation:max-h-[min(64dvh,32rem)] @min-[1280px]/conversation:w-80",
+                  // auto 在窄容器下同样呈现胶囊形态，手机触屏视口的上限一并生效。
+                  isMobileViewport ? PILL_MINI_MOBILE_MAX_WIDTH_CLASS : PILL_MINI_MAX_WIDTH_CLASS,
+                ),
         )}
       >
         {variant !== "mini" ? (

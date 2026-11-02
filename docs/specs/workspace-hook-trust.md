@@ -504,7 +504,8 @@ session/task 生命周期不会创建或继承授权。
 - 任一经过认证且声明 UI capability 的 attachment 可提交决定；
 - response 经 owner/lease/stale-run 路由到唯一 Runtime，必须携带 workspace identity、remote session、task/session、run、interaction generation 等关联信息；
 - relay 与 desktop main 只透传/路由，不持有 Trust、snapshot 或 pending review 业务状态；
-- 多端并发 decision 只接受当前 generation 的第一次有效提交。
+- 多端并发 decision 只接受当前 generation 的第一次有效提交；
+- 手机从统一应用设置入口进入响应式 Hooks 分区，列表/详情与逐层返回遵循 [手机远控设置规格](../web-remote-control/mobile-settings-ia-navigation.md)，不改变上述 shared Host、owner route 或 replayable 恢复语义。
 
 旧或不支持该 UI 的客户端只能展示兼容提示，不能自动回答；若没有 capable client，request 等待到安全 deadline 后 blocked。
 

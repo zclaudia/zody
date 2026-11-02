@@ -1,0 +1,8 @@
+{
+  "openExitCode": 0,
+  "openStdout": "",
+  "openStderr": "",
+  "appStdout": "{\"status\":\"blocked\",\"reason\":\"helper-exit-not-success\",\"captureEntry\":false}\n",
+  "appStderr": "",
+  "pngExists": false
+}

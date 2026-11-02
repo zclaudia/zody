@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select.js";
 import { cn } from "@/components/lib/utils.js";
+import { useSettingsPresentation } from "@/settings/SettingsPresentationContext.js";
 
 /**
  * Settings 与同级管理页在窗口框架内共享同一内容列。
@@ -119,14 +120,20 @@ export function SettingsRow({
   detail?: ReactNode;
   controlLayout?: "default" | "wide";
 }) {
+  const { isMobile } = useSettingsPresentation();
   return (
-    <div className="border-t border-border px-4 py-3 first:border-t-0">
+    <div
+      className="border-t border-border px-4 py-3 first:border-t-0"
+      data-settings-row-layout={isMobile ? "stacked" : "inline"}
+    >
       <div
         className={cn(
           "grid items-center gap-4",
-          controlLayout === "wide"
-            ? "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_280px]"
-            : "grid-cols-[minmax(0,1fr)_192px]",
+          isMobile
+            ? "grid-cols-1 gap-2"
+            : controlLayout === "wide"
+              ? "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_280px]"
+              : "grid-cols-[minmax(0,1fr)_192px]",
         )}
       >
         <div className="min-w-0">
@@ -135,12 +142,22 @@ export function SettingsRow({
             <div className="mt-1 text-ui-base leading-6 text-foreground-subtle">{description}</div>
           ) : null}
         </div>
-        <div className="flex w-full flex-nowrap items-center justify-end gap-2">
-          {controlLayout === "wide" ? detail : null}
+        <div
+          data-settings-row-control="true"
+          className={cn(
+            "flex w-full items-center gap-2",
+            isMobile
+              ? // 手机行标签在上、控件在下：允许换行，Select 触发器吃满可用宽度；
+                // 输入框保持 iOS 16px 兼容字号，避免聚焦缩放（DESIGN.md）。
+                "min-w-0 flex-wrap justify-start [&_input:not([type=range])]:text-mobile-input-safe [&_textarea]:text-mobile-input-safe [&_[data-slot=select-trigger]]:w-full [&_[data-slot=select-trigger]]:max-w-full [&_[data-slot=select-trigger]]:justify-between"
+              : "flex-nowrap justify-end",
+          )}
+        >
+          {controlLayout === "wide" && !isMobile ? detail : null}
           {control}
         </div>
       </div>
-      {detail && controlLayout !== "wide" ? <div className="mt-3">{detail}</div> : null}
+      {detail && (isMobile || controlLayout !== "wide") ? <div className="mt-3">{detail}</div> : null}
     </div>
   );
 }
@@ -178,8 +195,16 @@ export function SettingsRangeControl({
   valueLabel: ReactNode;
   valueLabelClassName?: string;
 }) {
+  const { isMobile } = useSettingsPresentation();
   return (
-    <div className="flex w-[280px] min-w-0 items-center gap-3">
+    <div
+      className={cn(
+        "flex min-w-0 items-center gap-3",
+        // 手机卡片内可用宽度在 320px 视口只剩 256px，固定 280px 会横向溢出；
+        // 手机改为可收缩全宽，桌面继续沿用原有 280px 密度。
+        isMobile ? "w-full max-w-[280px]" : "w-[280px]",
+      )}
+    >
       <input
         type="range"
         min={min}
@@ -187,7 +212,7 @@ export function SettingsRangeControl({
         step={step}
         value={value}
         onChange={(event) => onChange(Number(event.currentTarget.value))}
-        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
+        className="h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
       />
       <span
         className={cn(

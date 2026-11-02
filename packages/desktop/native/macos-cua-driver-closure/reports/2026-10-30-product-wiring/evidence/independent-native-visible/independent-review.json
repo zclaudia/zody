@@ -1,0 +1,25 @@
+{
+  "helperResult": {
+    "status": "pass",
+    "reason": "captured-and-revoked",
+    "captureEntry": true
+  },
+  "openExitDoesNotProveHelperSuccess": true,
+  "png": {
+    "bytes": 220261,
+    "sha256": "1b91270363b00837ec84191c2dafe12edf77860e844ede84fd4f01c40bec09ee",
+    "width": 2400,
+    "height": 1600
+  },
+  "machineLockReacquired": true,
+  "visualInspection": "controller viewed the actual PNG: nonblank Zody window, Noon break?, normal sidebar and composer",
+  "tccSubject": "io.github.zclaudia.zody.cua-helper",
+  "sameSignedCandidateAsLockedRun": true,
+  "sourceChangesForRerun": false,
+  "freshnessAfterUnlock": {
+    "ahead": 32,
+    "behind": 0
+  },
+  "nativeFence": "not asserted; adapter remains unknown",
+  "installedUiEntry": false
+}

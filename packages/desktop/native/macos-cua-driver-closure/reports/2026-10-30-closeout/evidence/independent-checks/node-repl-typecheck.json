@@ -1,0 +1,14 @@
+{
+  "name": "node-repl-typecheck",
+  "argv": [
+    "pnpm",
+    "--filter",
+    "@zcode/node-repl-host",
+    "typecheck"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:25:55.486943+00:00",
+  "seconds": 4.704,
+  "exitCode": 0,
+  "log": "node-repl-typecheck.log"
+}

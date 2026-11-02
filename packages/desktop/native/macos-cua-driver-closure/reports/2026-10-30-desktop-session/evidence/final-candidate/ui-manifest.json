@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-ui-candidate",
+  "generatedAt": "2026-10-30T09:01:16.226Z",
+  "trusted": false,
+  "signed": false,
+  "defaultDisabled": true,
+  "note": "Build-only candidate. Does not launch UI, request TCC, capture, or modify /Applications.",
+  "buildMetadata": {
+    "appVersion": "0.1.0",
+    "buildCommitId": "4a890e5e",
+    "buildTime": "2026-10-30T03:01:33.016Z",
+    "electronBuilderVersion": "26.8.1"
+  },
+  "nativeHostLaunch": {
+    "launcherPath": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-signed-capture-delivery/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session",
+    "cwd": "/Users/zhvala/SourceCode/zody",
+    "entryName": "host-entry.mjs",
+    "bridgeFd": 5,
+    "launcher": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-signed-capture-delivery/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session",
+      "bytes": 5360256,
+      "sha256": "43d1197052875497f1325f531d4fa29c1296218f5f7db8d5b9a3463155df6d7b"
+    },
+    "compileTimeDefine": "__ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__"
+  },
+  "electron": {
+    "version": "41.0.3",
+    "executable": "/Users/zhvala/SourceCode/zody/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+    "reusedWithoutModification": true
+  },
+  "main": {
+    "source": "/Users/zhvala/SourceCode/zody/packages/desktop/src/main/index.ts",
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/app/main/index.js",
+    "bytes": 4507157,
+    "sha256": "b0c41c46b1b6d3ef2742e5ce0efa4da44ed0c2abd63f4feeba02277d2ad05caa",
+    "entries": [
+      {
+        "name": "main/index",
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/app/main/index.js",
+        "bytes": 4507157,
+        "sha256": "b0c41c46b1b6d3ef2742e5ce0efa4da44ed0c2abd63f4feeba02277d2ad05caa"
+      },
+      {
+        "name": "main/browserWebmRecorder",
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/app/main/browserWebmRecorder.js",
+        "bytes": 12423,
+        "sha256": "050bb253b0d641c7f8606c45c8ae4b8604c01a8cb4d052697c02c066ca3ccfff"
+      },
+      {
+        "name": "main/zcodeDataSizeWorker",
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/app/main/zcodeDataSizeWorker.js",
+        "bytes": 2132,
+        "sha256": "733baddf4d0d4510f342e972678cdc5bc97f061a5afd2958a9f7f2ab1bd3b87d"
+      },
+      {
+        "name": "main/storageScanWorker",
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/app/main/storageScanWorker.js",
+        "bytes": 853603,
+        "sha256": "21ff35ffb2b1f8479d8be6dbb99ce86995646a816adcd236b8a105512a81e546"
+      }
+    ]
+  },
+  "scheduler": {
+    "source": "/Users/zhvala/SourceCode/zody/packages/desktop/src/scheduler/index.ts",
+    "path": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/app/scheduler/index.js",
+    "bytes": 926139,
+    "sha256": "5195a0d4709fd1760209d45ab46c7f1040b27aeb764f39dba6d511e8521cf84a"
+  },
+  "copied": {
+    "renderer": {
+      "source": "/Users/zhvala/SourceCode/zody/packages/desktop/out/renderer",
+      "destination": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/app/renderer",
+      "index": {
+        "path": "/Users/zhvala/SourceCode/zody/packages/desktop/out/renderer/index.html",
+        "bytes": 25648,
+        "sha256": "5fabf43510ad0e9fe8d00f5ea7d766439ffd4c7914e5ec9deeeb52db624a57f9"
+      }
+    },
+    "preload": {
+      "source": "/Users/zhvala/SourceCode/zody/packages/desktop/out/preload",
+      "destination": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/app/preload",
+      "index": {
+        "path": "/Users/zhvala/SourceCode/zody/packages/desktop/out/preload/index.cjs",
+        "bytes": 740519,
+        "sha256": "96d31a579cf5d77ee8de94056fe15141297b7e4902fcb08f3ee6309d41066b9c"
+      }
+    },
+    "pluginSandbox": {
+      "source": "/Users/zhvala/SourceCode/zody/packages/desktop/out/plugin-sandbox",
+      "destination": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/app/plugin-sandbox"
+    }
+  },
+  "runtimeNodeModules": "/Users/zhvala/SourceCode/zody/node_modules",
+  "builtinProviderConfig": {
+    "source": "/Users/zhvala/SourceCode/zody/config/provider/zcode-builtin.json",
+    "destination": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/config/provider/zcode-builtin.json",
+    "bytes": 174914,
+    "sha256": "bba4a742c493667c4b463a9e57ff8027563406391d8f0d671935c5f846052999"
+  },
+  "profile": {
+    "userDataDir": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/profile/user-data",
+    "sessionDataDir": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/profile/session-data"
+  },
+  "runtimeEnv": {
+    "ZCODE_BUILTIN_PROVIDER_CONFIG_FILE": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/config/provider/zcode-builtin.json",
+    "ZCODE_DESKTOP_USER_DATA_DIR": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/profile/user-data",
+    "ZCODE_DESKTOP_SESSION_DATA_DIR": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/profile/session-data",
+    "ZCODE_DISABLE_FIXED_REMOTE_DEBUGGING_PORT": "1"
+  },
+  "run": {
+    "script": "run-ui-candidate.sh",
+    "command": [
+      "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-ui-capture-delivery/run-ui-candidate.sh"
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 import { watch, type FSWatcher } from "node:fs";
 import { createHash } from "node:crypto";
 import { mkdir, readFile } from "node:fs/promises";
-import { basename, dirname, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import type { ProviderConfigLayerSnapshot, ProviderSource } from "@zcode/provider";
 import { atomicWritePrivateTextFile, withFileLock } from "@zcode/shared/node";
 import {
@@ -57,6 +57,8 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
       // Bundled 基线。缓存边界不可用时绕过 Active；Bundled 自身无效仍会在这里抛错。
       release = selectReleaseCandidate(await readReleaseCandidate(this.#bundledFilePath), null);
     }
+    // 首次读取时 Active 可能尚未物化导致武装跳过,物化完成后在此补武装。
+    await this.#ensureWatcher();
     this.#observedSignature ??= signatureOf(release);
     return snapshotFromRelease(release, this.#sourceKey);
   }
@@ -80,6 +82,8 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
       return "updated" as const;
     });
     if (result === "updated" && !this.#disposed) this.#emit("remote-updated");
+    // 写入 Active 后文件必然存在,补一次武装覆盖写入前武装失败(ENOENT)的场景。
+    await this.#ensureWatcher();
     return result;
   }
 
@@ -123,11 +127,38 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
   async #ensureWatcher(): Promise<void> {
     await mkdir(dirname(this.#activeFilePath), { recursive: true });
     if (!this.#watchEnabled || this.#watcher || this.#disposed) return;
-    const target = basename(this.#activeFilePath);
-    this.#watcher = watch(dirname(this.#activeFilePath), (_eventType, fileName) => {
-      if (fileName === null || fileName.toString() === target) this.#scheduleWatchRefresh();
+    this.#armWatcherOrClear();
+  }
+
+  // 中文原因:macOS 26(darwin 25.x)上目录级 fs.watch 对改写/新建/删除/重命名均不
+  // 派发事件(Node 22–26 全系实测),原目录监听在生产等同失效,故改为文件级 watch。
+  // 原子替换(临时文件 rename 覆盖)后文件级 watcher 仍指向旧 inode,必须在 rename 后
+  // 关闭并按路径重建;武装失败(先删后写的空窗、首次读取时 Active 尚未物化)只置空,
+  // 由 #scheduleWatchRefresh 的物化刷新或下一次 read/applyRemoteRelease 重新武装,
+  // 不得让监听失败阻断读取主链。
+  #armWatcherOrClear(): void {
+    try {
+      this.#watcher = this.#armFileWatcher();
+    } catch {
+      this.#watcher = null;
+    }
+  }
+
+  #armFileWatcher(): FSWatcher {
+    const watcher = watch(this.#activeFilePath, (eventType) => {
+      if (eventType === "rename") {
+        watcher.close();
+        if (this.#watcher === watcher) this.#watcher = null;
+        if (!this.#disposed) this.#armWatcherOrClear();
+      }
+      this.#scheduleWatchRefresh();
     });
-    this.#watcher.on("error", () => this.#emit("watch-error"));
+    watcher.on("error", () => {
+      this.#emit("watch-error");
+      watcher.close();
+      if (this.#watcher === watcher) this.#watcher = null;
+    });
+    return watcher;
   }
 
   #scheduleWatchRefresh(): void {
@@ -143,6 +174,11 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
         this.#emit("file-changed");
       } catch {
         this.#emit("watch-error");
+      } finally {
+        // rename/删除空窗导致重建失败时,物化刷新把文件补齐后在此重新武装。
+        if (!this.#disposed && this.#watchEnabled && this.#watcher === null) {
+          this.#armWatcherOrClear();
+        }
       }
     });
   }

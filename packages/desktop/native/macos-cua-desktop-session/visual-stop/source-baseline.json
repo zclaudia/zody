@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-desktop-stop-visual-derived-baseline",
+  "note": "只读验证冻结 R9 视觉源与 R11 visual-overlay，再应用 stop-worker 派生 patch；production/diagnostic 只差 build-time gate feature。",
+  "source": {
+    "root": "output/cua-driver-round9/candidate-work/controller-final/full-source",
+    "treeSha256": "421530ae2c2cab7b537226e459905916c849c1cf76095db0a45f574f9c49e02e",
+    "files": 776
+  },
+  "overlay": {
+    "root": "packages/desktop/native/macos-cua-helper-round11/visual-overlay",
+    "patch": "round11-visual.patch",
+    "patchSha256": "601b6296bd6f48b954fb76acb6265f489203b73ffc82c937af72581a0b804d9a",
+    "helper": "src/helper_bridge.rs",
+    "helperSha256": "5b52f478f357d8e275b6f1db3d2b91ae7bd76f0f774f65f736169420f63e2a8b",
+    "header": "include/cua_r11_visual.h",
+    "headerSha256": "7b0a4f85815190272cec8ef04baa9b85a5c4b661fc3c7e2bb84725d58498f0b2",
+    "postFiles": {
+      "crates/cua-macos-visual/Cargo.toml": "94f3e66cb5229a369574285d8ec712ad7e50bf640cba48ccf7ab7082187acf09",
+      "crates/cua-macos-visual/src/capture.rs": "276a1979694a237f0a3d19096c226d006c59e75ad91435c0b561190ad8d5082f",
+      "crates/cua-macos-visual/src/lib.rs": "c5b0dd42db5bb7a9efc16e18f3c8f14c1f768280fd04df499b597d04beb44e53",
+      "crates/cua-macos-visual/src/session.rs": "8d8cd32749f0c2788372d14cea9fa8eb76295b55847f37fa185da11f9c687d15"
+    }
+  },
+  "headers": [
+    {
+      "id": "cua-r11-stop-visual-header",
+      "file": "lib/cua_r11_visual.h",
+      "path": "include/cua_r11_visual.h",
+      "sha256": "6caaceca21727ca75ae0a24123589b20fed0833dd9e9d45f0a5734ddc9a1c760"
+    }
+  ],
+  "patches": [
+    {
+      "id": "cua-r11-stop-visual",
+      "path": "patches/cua-r11-stop-visual.patch",
+      "sha256": "8fb636b377a269754072027e739dd5417c230c59720c9cf3a864d0c9be342385",
+      "files": [
+        {
+          "file": "crates/cua-macos-visual/Cargo.toml",
+          "beforeSha256": "94f3e66cb5229a369574285d8ec712ad7e50bf640cba48ccf7ab7082187acf09",
+          "afterSha256": "7c225b91f9a7692884296be55b2f5756ae67acaf26d8700572897ff7ff047ea2"
+        },
+        {
+          "file": "crates/cua-macos-visual/build.rs",
+          "beforeSha256": "f63010c4326e628ddfbd1bac06dc6e866150d475c65620454d5f6fe196b18d7e",
+          "afterSha256": "29c82f964f329e5537f0bf39386394426a8d1b15bac848f3bff2954273320eaf"
+        },
+        {
+          "file": "crates/cua-macos-visual/native/CuaVisualCapture.swift",
+          "beforeSha256": "1011f01204896008934ac274b6b7d7e20b6cb89088c498f5adfc56bf7734a3d8",
+          "afterSha256": "a1a8c66d843bab709ab73b6dffe65ff0ff9aeb00e9055b0bcf8157da2b1b6616"
+        },
+        {
+          "file": "crates/cua-macos-visual/src/capture.rs",
+          "beforeSha256": "276a1979694a237f0a3d19096c226d006c59e75ad91435c0b561190ad8d5082f",
+          "afterSha256": "e9da74310c3db1e3c6ab0377c703ad0407793a1f87064d339cbd6b7479953008"
+        },
+        {
+          "file": "crates/cua-macos-visual/src/helper_bridge.rs",
+          "beforeSha256": "5b52f478f357d8e275b6f1db3d2b91ae7bd76f0f774f65f736169420f63e2a8b",
+          "afterSha256": "c145e9c96393a2a0db7e37a6825e7f7d24607e067aae9ecdd5285ff3381b04c9"
+        },
+        {
+          "file": "crates/cua-macos-visual/src/session.rs",
+          "beforeSha256": "8d8cd32749f0c2788372d14cea9fa8eb76295b55847f37fa185da11f9c687d15",
+          "afterSha256": "405879967d09e7d694ad078c46e235a3348da06a784302b90fe629d1f48d8102"
+        }
+      ]
+    }
+  ],
+  "toolchain": {
+    "cargo": "output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin/cargo",
+    "cargoHome": "output/cua-driver-round9/native-work/cargo-home",
+    "target": "aarch64-apple-darwin",
+    "deploymentTarget": "14.2",
+    "offline": true,
+    "locked": true
+  },
+  "profiles": {
+    "production": {
+      "features": [],
+      "gateEnabled": false
+    },
+    "diagnostic": {
+      "features": [
+        "stop-diagnostic"
+      ],
+      "gateEnabled": true
+    }
+  }
+}

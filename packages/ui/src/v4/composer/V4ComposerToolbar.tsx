@@ -510,7 +510,7 @@ function V4ComposerModelControlsImpl({
           triggerLabel={modelTriggerDisplay.fullLabel}
           triggerLabelPrefix={modelTriggerDisplay.providerPrefix}
           triggerLabelValue={modelTriggerDisplay.modelLabel}
-          triggerLabelPrefixClassName="composer-provider-prefix inline group-data-[composer-provider-compact=true]/toolbar:hidden"
+          triggerLabelPrefixClassName="composer-provider-prefix hidden @sm/composer:inline group-data-[composer-provider-compact=true]/toolbar:hidden"
           showManageModelsAction={showManageModelsAction}
           manageModelsLabel={manageModelsLabel}
           onManageModels={handleOpenModelProviderSettings}
@@ -526,10 +526,15 @@ function V4ComposerModelControlsImpl({
           open={activeConfigPicker === "model"}
           onOpenChange={handleModelPickerOpenChange}
           openRequestKey={modelMenuOpenRequestKey}
-          labelVisibilityClassName="hidden @sm/composer:inline-flex"
+          // composer-5：@sm 以下不再整段隐藏模型标签，改显示去掉供应商前缀的模型短名
+          // （64–96px 区间内截断），触屏用户不开菜单就能看到当前模型；≥@sm 桌面渲染不变。
+          // 注意 labelVisibilityClassName 在传入自定义 triggerLabelClassName 时会被
+          // ModelConfigSelect.getModelTriggerLabelClassName 忽略，真正生效的是下行类名。
+          labelVisibilityClassName="inline-flex"
           indicatorClassName="block group-data-[composer-model-icon=true]/toolbar:hidden"
-          triggerLabelClassName="block min-w-0 text-left group-data-[composer-model-icon=true]/toolbar:hidden [&>span]:max-w-full [&>span>span]:block [&>span>span]:truncate"
-          triggerClassName="composer-model-trigger group-data-[composer-model-icon=true]/toolbar:size-7 group-data-[composer-model-icon=true]/toolbar:p-0 group-data-[composer-model-icon=true]/toolbar:gap-0 group-data-[composer-model-icon=true]/toolbar:justify-center"
+          triggerLabelClassName="block min-w-0 text-left @max-sm/composer:max-w-24 @max-sm/composer:min-w-16 group-data-[composer-model-icon=true]/toolbar:hidden [&>span]:max-w-full [&>span>span]:block [&>span>span]:truncate"
+          // 触控目标（走查 composer-3）：模型触发器触屏态命中区高度抬升到 44px（spec D1），桌面不变。
+          triggerClassName="composer-model-trigger group-data-[composer-model-icon=true]/toolbar:size-7 group-data-[composer-model-icon=true]/toolbar:p-0 group-data-[composer-model-icon=true]/toolbar:gap-0 group-data-[composer-model-icon=true]/toolbar:justify-center [@media(hover:none)_and_(pointer:coarse)]:min-h-11"
           triggerIconClassName="hidden group-data-[composer-model-icon=true]/toolbar:inline-flex"
           focusSelectorOnClose={V4_COMPOSER_INPUT_SELECTOR}
           providerSubmenuClassName={providerSubmenuClassName}
@@ -550,6 +555,8 @@ function V4ComposerModelControlsImpl({
           open={activeConfigPicker === "thought"}
           onOpenChange={handleThoughtPickerOpenChange}
           restoreFocusSelector={V4_COMPOSER_INPUT_SELECTOR}
+          // 触控目标（走查 composer-3）：思考深度触发器触屏态命中区高度抬升到 44px（spec D1），桌面不变。
+          triggerClassName="[@media(hover:none)_and_(pointer:coarse)]:min-h-11"
         />
       ) : null}
     </>

@@ -1,0 +1,77 @@
+{
+  "round": 10,
+  "generatedAt": "2026-10-29T04:09:51.619210+00:00",
+  "developmentSlice": "accepted",
+  "productAdoption": "blocked",
+  "defaultDisabled": true,
+  "zcodeCuaPlaceholder": true,
+  "round9TreeSha256": "421530ae2c2cab7b537226e459905916c849c1cf76095db0a45f574f9c49e02e",
+  "nativeArtifactSha256": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+  "sourceManifestSha256": "7f084d0cff00bfe2232fa731d6c3ede09d342ebb2b1d8d435eb3739a901a7117",
+  "sourcePatchSha256": "6069800d14c2243657d1af92f346d34f4c931de051e8b860ee3d7c94f07055b2",
+  "reconstructedContentFiles": 68,
+  "openingSnapshotFiles": 3986,
+  "unexpectedChanges": [],
+  "tests": {
+    "files": 25,
+    "passed": 249,
+    "groups": [
+      {
+        "name": "cli",
+        "log": "checks/cli-tests-accepted.log",
+        "passed": 125,
+        "files": 15
+      },
+      {
+        "name": "protocol",
+        "log": "checks/control-protocol-tests.log",
+        "passed": 67,
+        "files": 5
+      },
+      {
+        "name": "existingHelper",
+        "log": "checks/existing-helper-tests.log",
+        "passed": 47,
+        "files": 2
+      },
+      {
+        "name": "peer",
+        "log": "checks/peer-tests-final.log",
+        "passed": 10,
+        "files": 3
+      }
+    ]
+  },
+  "checks": {
+    "rootTypecheck": "pass",
+    "rootLint": {
+      "errors": 0,
+      "warnings": 301,
+      "baselineWarnings": 301,
+      "addedWarningLocations": []
+    },
+    "cliTypecheckTasks": 30,
+    "cliLintTasks": 14,
+    "architectureViolations": 0,
+    "formattedJsTsFiles": 30
+  },
+  "nativeEvidence": {
+    "realPeerSecurityScenarios": 3,
+    "realSocketScenarios": 3,
+    "realNodeCalibrationScenarios": 2,
+    "syntheticPolicyProfileScenarios": 10,
+    "jsPreflightScenarios": 1,
+    "defaultBlockedAssertion": 1,
+    "positiveLocalSelfSignedHelper": "blocked-not-tested",
+    "screenshots": false,
+    "input": false,
+    "tcc": false,
+    "machineLease": false,
+    "nativeFenced": false,
+    "fullD06": false,
+    "minimumMacOSRuntime": false,
+    "intel": false
+  },
+  "signingPolicy": "local-self-signed",
+  "certificateOrPermissionChanges": false
+}

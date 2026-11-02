@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-launchservices-candidate-app",
+  "generatedAt": "2026-10-30T14:24:31.416Z",
+  "trusted": false,
+  "builderSigned": false,
+  "defaultDisabled": true,
+  "note": "Independent packaged candidate. No UI launch, TCC request, signing, installation, or permission change was performed.",
+  "uiTrust": {
+    "level": "untrusted",
+    "originalElectronSignature": "adhoc linker-signed",
+    "originalInfoPlistBound": false,
+    "originalSealedResources": "none",
+    "machoChanged": false,
+    "candidateInfoPlistMetadataPatched": true,
+    "productSigned": false
+  },
+  "buildMetadata": {
+    "appVersion": "0.1.0",
+    "buildCommitId": "4a890e5e",
+    "buildTime": "2026-10-30T03:01:33.016Z",
+    "electronBuilderVersion": "26.8.1"
+  },
+  "app": {
+    "bundle": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app",
+    "applicationName": "Zody CUA Launchservices Candidate",
+    "displayName": "Zody CUA Launchservices Candidate",
+    "bundleIdentifier": "io.github.zclaudia.zody.cua-launchservices-candidate",
+    "executable": "Contents/MacOS/ZodyCUACandidate",
+    "executableRenamedFrom": "Contents/MacOS/Electron",
+    "executableBytesUnchanged": true,
+    "executableSha256": "51ea98f5b4ff5e5c079a6953a886a10999e5b355a76bcd92ff5dd59cb7167bd9",
+    "packagedLayout": true
+  },
+  "bundleSymlinks": {
+    "checked": 14,
+    "allRelative": true,
+    "allInsideBundle": true
+  },
+  "renamedElectronHelpers": [
+    {
+      "from": "Electron Helper.app",
+      "to": "Zody CUA Launchservices Candidate Helper.app",
+      "executable": {
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Frameworks/Zody CUA Launchservices Candidate Helper.app/Contents/MacOS/Zody CUA Launchservices Candidate Helper",
+        "bytes": 203584,
+        "sha256": "7859e190ead5febf10f07fd03112acf84475732a54f261be3db6b4d5af687b5d"
+      }
+    },
+    {
+      "from": "Electron Helper (GPU).app",
+      "to": "Zody CUA Launchservices Candidate Helper (GPU).app",
+      "executable": {
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Frameworks/Zody CUA Launchservices Candidate Helper (GPU).app/Contents/MacOS/Zody CUA Launchservices Candidate Helper (GPU)",
+        "bytes": 203600,
+        "sha256": "877962b2c72fe450c7fcefb04110968bab26cde5fcbd56fbdb7572ffd69e2d82"
+      }
+    },
+    {
+      "from": "Electron Helper (Renderer).app",
+      "to": "Zody CUA Launchservices Candidate Helper (Renderer).app",
+      "executable": {
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Frameworks/Zody CUA Launchservices Candidate Helper (Renderer).app/Contents/MacOS/Zody CUA Launchservices Candidate Helper (Renderer)",
+        "bytes": 203600,
+        "sha256": "97c5acb599b9e413d57e214d8a9e2d4544081f71a557b739525cc71906e09789"
+      }
+    },
+    {
+      "from": "Electron Helper (Plugin).app",
+      "to": "Zody CUA Launchservices Candidate Helper (Plugin).app",
+      "executable": {
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Frameworks/Zody CUA Launchservices Candidate Helper (Plugin).app/Contents/MacOS/Zody CUA Launchservices Candidate Helper (Plugin)",
+        "bytes": 203600,
+        "sha256": "cd139b9c74dc7a26271a35cf49de15d4f43173f96c23f12effb0dd5de0f629c6"
+      }
+    }
+  ],
+  "electron": {
+    "version": "41.0.3",
+    "sourceApp": "/Users/zhvala/SourceCode/zody/node_modules/electron/dist/Electron.app",
+    "sourceExecutable": "/Users/zhvala/SourceCode/zody/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+    "sourceExecutableSha256": "51ea98f5b4ff5e5c079a6953a886a10999e5b355a76bcd92ff5dd59cb7167bd9",
+    "cacheModified": false
+  },
+  "helper": {
+    "sourceApp": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-signed/Zody CUA Desktop Session.app",
+    "sourceInfoPlist": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-signed/Zody CUA Desktop Session.app/Contents/Info.plist",
+      "bytes": 753,
+      "sha256": "2e2720b0211f06e588438f3172ae83a028f30ad4bd01ca9291e2096b68ab5cc6"
+    },
+    "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app",
+    "launcher": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session",
+      "bytes": 5424032,
+      "sha256": "a9fc07d84017a5b60c02a66cfd8e0a173bc01dbdc8270e345014e2548a53682e"
+    },
+    "sourceTree": {
+      "bytes": 232613243,
+      "entries": 9,
+      "sha256": "9b8466ccbb6912624a3a4d73054fadcbf82fed688e73c476207f2c071145440c"
+    },
+    "destinationTree": {
+      "bytes": 232613243,
+      "entries": 9,
+      "sha256": "9b8466ccbb6912624a3a4d73054fadcbf82fed688e73c476207f2c071145440c"
+    },
+    "copiedUnchanged": true,
+    "existingSignaturePreservedByCopy": true,
+    "signedByBuilder": false,
+    "resigned": false
+  },
+  "nativeHostLaunch": {
+    "descriptor": {
+      "kind": "packaged-resources",
+      "launcherPathRelativeToResources": "cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session",
+      "cwdRelativeToResources": "cua-helper/ZCode Computer Use.app/Contents/MacOS",
+      "entryName": "host-entry.mjs",
+      "bridgeFd": 5,
+      "launchMode": "workspace-relay",
+      "applicationName": "Zody CUA Launchservices Candidate"
+    },
+    "resolvedLauncherRelativeToResources": "cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session",
+    "compileTimeDefine": "__ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__"
+  },
+  "candidateUiProfile": {
+    "isolation": "electron-userData-and-sessionData-only",
+    "root": "<dataBaseDir>/.zody/desktop/Zody CUA Launchservices Candidate",
+    "configurableByShellEnv": false,
+    "sharedCliSessionStoreUnchanged": true
+  },
+  "main": {
+    "source": "/Users/zhvala/SourceCode/zody/packages/desktop/src/main/index.ts",
+    "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/main/index.js",
+    "bytes": 4509207,
+    "sha256": "ccefb6ac0f80fbea59f5c0113130ea6ca409b816358b80dd6870f43a25a8e070"
+  },
+  "scheduler": {
+    "source": "/Users/zhvala/SourceCode/zody/packages/desktop/src/scheduler/index.ts",
+    "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/scheduler/index.js",
+    "bytes": 926139,
+    "sha256": "5195a0d4709fd1760209d45ab46c7f1040b27aeb764f39dba6d511e8521cf84a"
+  },
+  "copiedAssets": {
+    "renderer": {
+      "source": "/Users/zhvala/SourceCode/zody/packages/desktop/out/renderer",
+      "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/renderer",
+      "sha256": "c5337cb1e4b49b3fa241588e5ab5551e19667d69c9ed9fc0ab51c5030a1aeb71"
+    },
+    "preload": {
+      "source": "/Users/zhvala/SourceCode/zody/packages/desktop/out/preload",
+      "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/preload",
+      "sha256": "56b5aed42afeeaf08393109e2812cdf244b4744a67e14e95abe51e7d1e01ea55"
+    },
+    "pluginSandbox": {
+      "source": "/Users/zhvala/SourceCode/zody/packages/desktop/out/plugin-sandbox",
+      "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/plugin-sandbox",
+      "sha256": "4c72284a50f35bdcca36dc30b4d75a0f710a8949ace4fe3853cbcd52a0d761ff"
+    },
+    "rendererIndex": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/renderer/index.html",
+      "bytes": 25648,
+      "sha256": "5fabf43510ad0e9fe8d00f5ea7d766439ffd4c7914e5ec9deeeb52db624a57f9"
+    },
+    "preloadIndex": {
+      "path": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/preload/index.cjs",
+      "bytes": 740519,
+      "sha256": "96d31a579cf5d77ee8de94056fe15141297b7e4902fcb08f3ee6309d41066b9c"
+    }
+  },
+  "providerConfig": {
+    "source": {
+      "path": "/Users/zhvala/SourceCode/zody/config/provider/zcode-builtin.json",
+      "bytes": 174914,
+      "sha256": "bba4a742c493667c4b463a9e57ff8027563406391d8f0d671935c5f846052999"
+    },
+    "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/config/provider/zcode-builtin.json"
+  },
+  "defaultConfig": {
+    "source": {
+      "path": "/Users/zhvala/SourceCode/zody/config/default.json",
+      "bytes": 42,
+      "sha256": "44167e1e4c9e2dee5ed891ec89f2a175564bb421648fe3e4e87cba3bc3460e09"
+    },
+    "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/config/default.json"
+  },
+  "runtimeNodeModules": {
+    "copiedExternalPackages": [
+      "node-pty",
+      "ssh2",
+      "undici",
+      "yaml",
+      "node-forge",
+      "yauzl"
+    ],
+    "observedExternalImports": [
+      "bufferutil",
+      "node-forge",
+      "ssh2",
+      "undici",
+      "utf-8-validate",
+      "yaml"
+    ],
+    "packages": [
+      {
+        "name": "node-pty",
+        "version": "1.1.0",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/node-pty",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/node-pty",
+        "packageJsonSha256": "f8b6a14f7022c14f1cd5d109486f5dacd32bffb63a9a63e38eced37dacb47439"
+      },
+      {
+        "name": "node-addon-api",
+        "version": "7.1.1",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/node-addon-api",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/node-addon-api",
+        "packageJsonSha256": "e4947cf10e432c42459e60a00947ccd1ad2501e16cf1a530b3d39f0c2de5c83f"
+      },
+      {
+        "name": "ssh2",
+        "version": "1.17.0",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/ssh2",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/ssh2",
+        "packageJsonSha256": "e6fd4e4c3e69e4ad185c87cb5ee1df631e3f4cbd43cf89470f83c1e5d1a76dfb"
+      },
+      {
+        "name": "asn1",
+        "version": "0.2.6",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/asn1",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/asn1",
+        "packageJsonSha256": "9931ef8d2e8857b7be3cc1fb13af4c943165046fe66337a8d7fec50fee8a5764"
+      },
+      {
+        "name": "safer-buffer",
+        "version": "2.1.2",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/safer-buffer",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/safer-buffer",
+        "packageJsonSha256": "4247a3a63c45a6a7ced1557fe4dd9d2a163af4915d594b95e5867b69a53edb52"
+      },
+      {
+        "name": "bcrypt-pbkdf",
+        "version": "1.0.2",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/bcrypt-pbkdf",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/bcrypt-pbkdf",
+        "packageJsonSha256": "06fc161a503054580e1e975c384436da3901ee5c6cbd9a29454947c669fe8890"
+      },
+      {
+        "name": "tweetnacl",
+        "version": "0.14.5",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/tweetnacl",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/tweetnacl",
+        "packageJsonSha256": "4d4e7122e483ab7bed48c884bb0de1471d3cb3753e1a334e3aafa3c32c22923e"
+      },
+      {
+        "name": "cpu-features",
+        "version": "0.0.10",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/cpu-features",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/cpu-features",
+        "packageJsonSha256": "c47e0020f5434c5b87b7a108c07fd7042656c2524ca2387c4b132adde52fa985"
+      },
+      {
+        "name": "buildcheck",
+        "version": "0.0.7",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/buildcheck",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/buildcheck",
+        "packageJsonSha256": "8595d74bff1913518d2a2f9205edd42ab9392f51479a195df5a1cd0996d9ac62"
+      },
+      {
+        "name": "nan",
+        "version": "2.26.2",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/nan",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/nan",
+        "packageJsonSha256": "7e90dd26afca387edda26dc82b84fffa927979a5439047a6226ae01a596cc922"
+      },
+      {
+        "name": "undici",
+        "version": "6.24.1",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/undici",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/undici",
+        "packageJsonSha256": "4bc53e0eaaec114da4ecd6a75e033621c115026e6b2eb9245d0892fdbe321e2a"
+      },
+      {
+        "name": "yaml",
+        "version": "2.9.0",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/yaml",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/yaml",
+        "packageJsonSha256": "20b8b197cbd10dad245d45e463dfe58e4c8c25a47e24bc4256ad9ab58bf35683"
+      },
+      {
+        "name": "node-forge",
+        "version": "1.4.0",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/node-forge",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/node-forge",
+        "packageJsonSha256": "a907bca8a62d97478062f2bd8ed5cd47d00b79385d3f08a8cad1c3bd7e3eb5bf"
+      },
+      {
+        "name": "yauzl",
+        "version": "3.3.0",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/yauzl",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/yauzl",
+        "packageJsonSha256": "75ddc9aa9de80848043f8641ee9e2d7ee1e9c31f1cdde2ec41590dfc5d883e82"
+      },
+      {
+        "name": "buffer-crc32",
+        "version": "0.2.13",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/buffer-crc32",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/buffer-crc32",
+        "packageJsonSha256": "f94d0f0c1be8f8714670c5fee03899bdb6485d430236d81726e24012a3696e6e"
+      },
+      {
+        "name": "pend",
+        "version": "1.2.0",
+        "source": "/Users/zhvala/SourceCode/zody/node_modules/pend",
+        "destination": "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-ui/Zody CUA Launchservices Candidate.app/Contents/Resources/app/node_modules/pend",
+        "packageJsonSha256": "1e4f01d39cc13c261f7ab81d0509d36bd98d8eceaf9ed75f2ab274286f3c3920"
+      }
+    ],
+    "symlinks": []
+  }
+}

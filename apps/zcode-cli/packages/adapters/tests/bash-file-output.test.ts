@@ -1,5 +1,5 @@
 import { constants } from "node:fs";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -68,6 +68,44 @@ describe("Bash direct output", () => {
     expect(await readFile(existing.path, "utf8")).toBe(
       process.platform === "win32" ? "" : "preserved",
     );
+  });
+
+  it("removes the empty per-execution directory on discard and keeps non-output siblings", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zcode-bash-file-"));
+    roots.push(root);
+    const executionDir = join(root, "session", "tool-call");
+    await mkdir(executionDir, { recursive: true });
+    const output = new BashFileOutput(join(executionDir, "stdout.log"), process.platform, null);
+    outputs.push(output);
+    await output.prepare();
+    await output.discard();
+    // I16：取消/spawn 失败只清理本次执行目录，空目录不能残留。
+    await expect(stat(executionDir)).rejects.toMatchObject({ code: "ENOENT" });
+
+    const siblingDir = join(root, "session", "tool-call-with-notes");
+    await mkdir(siblingDir, { recursive: true });
+    await writeFile(join(siblingDir, "notes.txt"), "keep");
+    const sibling = new BashFileOutput(join(siblingDir, "stdout.log"), process.platform, null);
+    outputs.push(sibling);
+    await sibling.prepare();
+    await sibling.discard();
+    // 目录里仍有非本次输出文件时必须保留，不能递归删除用户/其它产物。
+    expect(await readFile(join(siblingDir, "notes.txt"), "utf8")).toBe("keep");
+  });
+
+  it("removes the created directory when preparation fails before the file opens", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zcode-bash-file-"));
+    roots.push(root);
+    const executionDir = join(root, "session", "tool-call");
+    const output = new BashFileOutput(join(executionDir, "stdout.log"), process.platform, null);
+    outputs.push(output);
+    openSpy.mockImplementationOnce(async () => {
+      throw Object.assign(new Error("EACCES: permission denied"), { code: "EACCES" });
+    });
+    await expect(output.prepare()).rejects.toMatchObject({ code: "EACCES" });
+    // I16：mkdir 成功后 open 失败时 created 仍为 false，discard 也必须清掉空目录。
+    await output.discard();
+    await expect(stat(executionDir)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("does not let descriptor cleanup failure replace cancellation or settlement", async () => {

@@ -1,0 +1,18 @@
+[package]
+name = "zody-computer-use-diagnostic"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.93.1"
+license = "Apache-2.0"
+publish = false
+
+[[bin]]
+name = "zody-computer-use-diagnostic"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

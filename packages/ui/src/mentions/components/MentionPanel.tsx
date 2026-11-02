@@ -80,6 +80,18 @@ export const SECTION_HEADER_ROW_HEIGHT = 34;
 export const SECTION_HEADER_CLASS_NAME =
   "flex h-8 items-center px-3 text-ui-base font-semibold uppercase tracking-wide text-foreground-subtle";
 
+// 走查 composer-6（DESIGN.md 菜单规范）：壳 rounded-lg 的下一级，选项行与状态行
+// 统一 rounded-md。虚拟行在 SSR/静态渲染下不产出 DOM，圆角契约通过导出常量断言
+// （与 SECTION_HEADER_CLASS_NAME 同一测试模式）。
+export const OPTION_ROW_CLASS_NAME =
+  "flex h-8 w-full items-center gap-3 rounded-md px-3 text-left transition-colors";
+export const STATUS_ROW_LOADING_CLASS_NAME =
+  "flex items-center gap-2 rounded-md px-5 py-2 text-ui-base text-foreground-subtle";
+export const STATUS_ROW_ERROR_CLASS_NAME =
+  "rounded-md bg-destructive px-5 py-2 text-ui-base text-destructive-foreground";
+export const STATUS_ROW_EMPTY_CLASS_NAME =
+  "rounded-md px-5 py-2 text-ui-base text-foreground-subtlest";
+
 export function buildVirtualRows(sections: MentionPanelSection[]): VirtualRow[] {
   const rows: VirtualRow[] = [];
   let flatOptionIndex = 0;
@@ -251,7 +263,9 @@ export function MentionPanel({
 
   return (
     <div
-      className="mb-1 overflow-hidden rounded-2xl border border-border bg-menu shadow-xs"
+      // DESIGN.md「Menus and selection overlays」：@ / / 建议面板属菜单类浮层，
+      // 壳必须用 rounded-lg（不继承主输入 rounded-2xl 的例外），走查 composer-6。
+      className="mb-1 overflow-hidden rounded-lg border border-border bg-menu shadow-xs"
       data-testid={TID_PROMPT_SUGGESTION_PANEL}
       data-trigger={trigger}
     >
@@ -337,7 +351,7 @@ function StatusRow({ row }: { row: Extract<VirtualRow, { kind: "status" }> }) {
   if (row.content === "loading") {
     return (
       <div
-        className="flex items-center gap-2 rounded-xl px-5 py-2 text-ui-base text-foreground-subtle"
+        className={STATUS_ROW_LOADING_CLASS_NAME}
         data-testid={testId(TID_PROMPT_SUGGESTION_STATUS, row.sectionId)}
         data-section-id={row.sectionId}
         data-status="loading"
@@ -351,7 +365,7 @@ function StatusRow({ row }: { row: Extract<VirtualRow, { kind: "status" }> }) {
   if (row.content === "error") {
     return (
       <div
-        className="rounded-xl bg-destructive px-5 py-2 text-ui-base text-destructive-foreground"
+        className={STATUS_ROW_ERROR_CLASS_NAME}
         data-testid={testId(TID_PROMPT_SUGGESTION_STATUS, row.sectionId)}
         data-section-id={row.sectionId}
         data-status="error"
@@ -363,7 +377,7 @@ function StatusRow({ row }: { row: Extract<VirtualRow, { kind: "status" }> }) {
 
   return (
     <div
-      className="rounded-xl px-5 py-2 text-ui-base text-foreground-subtlest"
+      className={STATUS_ROW_EMPTY_CLASS_NAME}
       data-testid={testId(TID_PROMPT_SUGGESTION_STATUS, row.sectionId)}
       data-section-id={row.sectionId}
       data-status="empty"
@@ -404,7 +418,7 @@ function OptionRow({
         data-selected={isSelected ? "true" : "false"}
         data-disabled={isDisabled ? "true" : "false"}
         className={cn(
-          "flex h-8 w-full items-center gap-3 rounded-xl px-3 text-left transition-colors",
+          OPTION_ROW_CLASS_NAME,
           isDisabled
             ? "cursor-not-allowed opacity-50"
             : isSelected

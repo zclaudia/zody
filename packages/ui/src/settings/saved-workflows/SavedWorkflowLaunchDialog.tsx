@@ -160,7 +160,11 @@ export function SavedWorkflowLaunchDialog({
 
   return (
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]" data-testid={TID_WORKFLOW_LAUNCH_DIALOG}>
+      <DialogContent
+        className="sm:max-w-[480px]"
+        data-testid={TID_WORKFLOW_LAUNCH_DIALOG}
+        data-settings-dialog="true"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Workflow className="size-4 shrink-0 text-foreground-subtle" aria-hidden="true" />

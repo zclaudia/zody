@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "round": 6,
+  "date": "2026-10-28",
+  "productAdoption": "blocked",
+  "defaultDisabled": true,
+  "source": {
+    "selected": 710,
+    "candidate": 752,
+    "modified": 23,
+    "added": 42,
+    "unchanged": 687,
+    "removed": 0
+  },
+  "patch": {
+    "path": "candidate-source.patch",
+    "sha256": "a4e1da2751e2449317e906dde99798c73b3ebf826a6e00fecc413ebbc23f93f0",
+    "bytes": 587106,
+    "reconstruction": "pass"
+  },
+  "originalCache": {
+    "status": "blocked",
+    "archives": 317,
+    "missingLockDirectories": 250,
+    "checksumStatus": "pass"
+  },
+  "reconstructedCache": {
+    "status": "pass",
+    "packages": 316
+  },
+  "targetGraph": {
+    "packages": 298,
+    "registryPackages": 290
+  },
+  "toolchain": {
+    "upstreamDeclared": "1.97.1",
+    "auditedVersion": "1.97.1",
+    "auditedCommit": "8bab26f4f68e0e26f0bb7960be334d5b520ea452",
+    "expectedVersion": "1.97.1",
+    "expectedHost": "aarch64-apple-darwin",
+    "rustcSha256": "210df6794001b73ec3d453878707fa1e0bdcb63c427024a6e6574bbe5615a4da",
+    "cargoSha256": "7672ead309d505577c018fff2cafb3433601f073e38cbe87359ac1f7b944bbf5",
+    "noStableFallback": true,
+    "exactMatch": true,
+    "status": "pass",
+    "reason": "explicit driver toolchain matches the fixed upstream declaration, commit, host and binary digests"
+  },
+  "build": {
+    "status": "pass",
+    "exitCode": 0,
+    "buildScriptCount": 43,
+    "compiledProcMacroCount": 18,
+    "artifactCount": 319,
+    "platform": {
+      "sdkPath": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "sdkVersion": "27.0",
+      "sdkStatus": "pass",
+      "clangPath": "/usr/bin/clang",
+      "clangVersion": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+      "clangStatus": "pass",
+      "errors": [],
+      "deploymentTarget": null,
+      "deploymentTargetSource": "forced unset in the isolated build environment; rustc/build default applies"
+    },
+    "preservedArtifacts": [
+      {
+        "path": "build-artifacts/libcua_driver_sdk.dylib",
+        "sha256": "518f0c30a81409c8fc6435bc0329003bde26dd9eec59f057a74d77441981b73d",
+        "bytes": 61262696
+      },
+      {
+        "path": "build-artifacts/libcua_driver_sdk.rlib",
+        "sha256": "7d3adba2efac8d85aaf8d521ebe77351858acc27d979ce337f1586bef81ef1dd",
+        "bytes": 65928096
+      }
+    ]
+  },
+  "licenses": {
+    "status": "blocked",
+    "supplementEntries": 22,
+    "supplementManifestSha256": "6b75bf6283798de5d363835e6db41a0ff92948d3f47dac9034807d5f1e0515c8",
+    "archivedFilesVerified": 488,
+    "missingMaterials": [
+      "block2@0.6.2",
+      "objc2-app-kit@0.3.2",
+      "objc2-cloud-kit@0.3.2",
+      "objc2-core-data@0.3.2",
+      "objc2-core-foundation@0.3.2",
+      "objc2-core-graphics@0.3.2",
+      "objc2-core-image@0.3.2",
+      "objc2-core-text@0.3.2",
+      "objc2-core-video@0.3.2",
+      "objc2-encode@4.1.0",
+      "objc2-foundation@0.3.2",
+      "objc2-quartz-core@0.3.2",
+      "objc2@0.6.4",
+      "siphasher@1.0.2"
+    ],
+    "incompleteCoverage": [
+      {
+        "package": "msvc_spectre_libs@0.1.3",
+        "expression": "MIT OR Apache-2.0",
+        "coverage": "partial",
+        "coveredTokens": ["MIT"],
+        "uncoveredTokens": ["Apache-2.0"],
+        "legacyUnknown": false
+      },
+      {
+        "package": "shlex@1.3.0",
+        "expression": "MIT OR Apache-2.0",
+        "coverage": "partial",
+        "coveredTokens": ["MIT"],
+        "uncoveredTokens": ["Apache-2.0"],
+        "legacyUnknown": false
+      }
+    ],
+    "reviewRequired": [
+      "uniffi_core@0.31.0",
+      "uniffi_internal_macros@0.31.0",
+      "uniffi_macros@0.31.0",
+      "uniffi_meta@0.31.0",
+      "uniffi_pipeline@0.31.0",
+      "uniffi@0.31.0"
+    ],
+    "legalConclusion": "not-made"
+  },
+  "validation": {
+    "typecheck": {
+      "status": "pass"
+    },
+    "lint": {
+      "status": "pass",
+      "warnings": 301,
+      "errors": 0
+    },
+    "targetLint": {
+      "status": "pass",
+      "warnings": 0,
+      "errors": 0
+    },
+    "architecture": {
+      "status": "pass",
+      "violations": 0
+    },
+    "tests": {
+      "status": "pass",
+      "files": 9,
+      "tests": 97
+    },
+    "targetFormat": {
+      "status": "pass"
+    }
+  },
+  "evidence": {
+    "finalAudit": "report.json.gz",
+    "buildAudit": "build-report.json.gz",
+    "buildLog": "build.log.gz",
+    "licenseIndex": "licenses-index.json",
+    "buildArtifactLocation": "/Users/zhvala/SourceCode/zody/output/cua-driver-round6/controller-build-accepted/build-artifacts",
+    "compiledArtifactNote": "Local output only; not a signed product Helper. Each digest independently verified."
+  }
+}

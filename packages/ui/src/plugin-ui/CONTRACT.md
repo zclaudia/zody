@@ -10,7 +10,7 @@ Renderer 模块，层序 `domain → app → adapters → components`；公开�
 - App-provided tools 在 initialized 后发现与登记；认领后用官方 SDK AbortSignal 执行，模型取消沿 live-only delta 到页面。callId 去重，终态结果不可再写入。页面调用 MCP 的目标由宿主固定，复用 Agent 的权限和审批路径，原始结果直接返回。
 - 页面 `availableDisplayModes` 是硬约束；inline/fullscreen 对应内联/侧栏，pip 保持当前模式。高度默认 240px、范围 [80,1200]，hostContext 只回传 width/maxHeight，避免高度回环。布局按帧合并。
 - widgetState 仅接受页面主动提交，唯一内存 store 按逻辑键隔离；重建时在 `hostContext["zcode/widgetState"]` 下发。切位置不复制；手动重试、任务淘汰、来源撤销清除；应用重启为空。
-- 连续离屏 5 分钟回收活页面；侧栏展示或有审批/调用时不回收。Agent 原子确认空闲后才释放。最多 30 个任务和 64 个活页面，容量 admission 串行；无法安全回收时返回错误。任务删除同时取消排队创建。
+- 离屏、停回合、收起卡片和切侧栏只改变锚点可见性，不回收活页面；页面可在无锚点时继续后台执行并复用原 guest。页面/guest 销毁只由显式删除、显式重载、来源失效驱动；`settled` 与离屏定时器不得触发 suspend。最多 30 个任务和 64 个活页面，容量 admission 串行；超限拒绝新页面并返回错误供 UI 提示，不淘汰现有页面。任务删除同时取消排队创建。详见 `docs/plugin-ui-background-execution.md`。
 - 已获准的主动释放先按原 sandboxId 解除导航/崩溃监听，避免 Main 停止页面的 about:blank 导航误报崩溃；真实运行中的导航/崩溃仍进入 error，重试后重建。
 - 释放顺序：失效凭证、取消调用和登记、有界 resource-teardown、关闭端口/guest、释放 feed/lease。迟到 prepare、注销和锚点清理只作用于捕获的原实例。卡片卸载不切断保活页面的订阅。
 - `sendFollowUpMessage` 仍走既有会话动作和手势/可编辑确认；确认完成后验证实例。只读会话不登记动作。`updateModelContext` 只投递到该 workspace/session 的 composer，不是数据库状态。

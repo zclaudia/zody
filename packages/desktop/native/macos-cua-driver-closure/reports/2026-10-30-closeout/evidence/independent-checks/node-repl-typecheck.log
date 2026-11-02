@@ -1,0 +1,4 @@
+
+> @zcode/node-repl-host@0.6.1 typecheck /Users/zhvala/SourceCode/zody/apps/zcode-cli/packages/node-repl-host
+> tsc --noEmit
+

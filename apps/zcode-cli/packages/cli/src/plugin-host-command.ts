@@ -12,6 +12,8 @@ import type { RunContext } from "@zcode/shared-types";
 
 const HOST_USAGE = `${ZCODE_PLUGIN_HOST_COMMAND} <server-path> [-- <server-arg>...]`;
 
+export const ZCODE_NODE_REPL_CONTROL_FLAG = "--zcode-node-repl-control";
+
 type HostedPluginModule = {
   main?: unknown;
 };
@@ -44,8 +46,21 @@ export async function runPluginHostCommand(ctx: RunContext, argv: string[]): Pro
     if (!existsSync(serverPath)) {
       throw new Error("Plugin server file does not exist.");
     }
-    const capturedBrokerCredentials = getCapturedZCodeCuaBrokerCredentials();
-    assertCapturedBrokerLaunchIsAuthorized(capturedBrokerCredentials);
+    const controlOnly = serverArgs.includes(ZCODE_NODE_REPL_CONTROL_FLAG);
+    if (
+      controlOnly &&
+      (serverArgs.length !== 1 || serverArgs[0] !== ZCODE_NODE_REPL_CONTROL_FLAG)
+    ) {
+      // control-only 只允许一个非秘密 mode flag；任何额外参数都不能被解释为脚本、路径或凭据。
+      throw new Error("Control-only plugin host does not accept additional arguments.");
+    }
+    // control-only 路径不消费 broker 凭据，也不恢复任何 CUA env；普通插件宿主仍走完整权威校验。
+    const capturedBrokerCredentials = controlOnly
+      ? { socket: undefined, pluginAuthority: undefined }
+      : getCapturedZCodeCuaBrokerCredentials();
+    if (!controlOnly) {
+      assertCapturedBrokerLaunchIsAuthorized(capturedBrokerCredentials);
+    }
     const module = (await import(pathToFileURL(serverPath).href)) as HostedPluginModule;
     if (typeof module.main !== "function") {
       throw new Error("Plugin server does not export main().");
@@ -56,7 +71,11 @@ export async function runPluginHostCommand(ctx: RunContext, argv: string[]): Pro
     // shared node_repl 把同一凭据组恢复到环境，由 broker bridge 读取；旧的独立 CUA
     // MCP 不再拥有执行入口。
     process.argv = [process.execPath, serverPath, ...serverArgs];
-    if (capturedBrokerCredentials.socket && process.env[ZCODE_CUA_NODE_REPL_HOST_ENV_KEY] === "1") {
+    if (
+      !controlOnly &&
+      capturedBrokerCredentials.socket &&
+      process.env[ZCODE_CUA_NODE_REPL_HOST_ENV_KEY] === "1"
+    ) {
       process.env[ZCODE_CUA_BROKER_SOCKET_ENV_KEY] = capturedBrokerCredentials.socket;
     }
     try {

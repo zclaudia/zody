@@ -33,7 +33,9 @@ export function showWebRemoteControlVersionNotice(
           ? `桌面当前版本为 ${version}。重新加载页面可重新连接；未发送的附件不会保留。`
           : `The desktop is now running ${version}. Reload the page to reconnect; unsent attachments will not be retained.`}
       </p>
-      <Button autoFocus size="lg" className="self-end" onClick={onReload}>
+      {/* settings-5：这是弹窗唯一动作且用户必须执行，改为通栏 h-11（44px）命中区；
+          该弹窗仅由手机远控 bootstrap（mobile-remote/bootstrap.tsx）引用，桌面渲染不受影响。 */}
+      <Button autoFocus className="h-11 w-full" onClick={onReload}>
         {zh ? "重新加载" : "Reload"}
       </Button>
     </div>,

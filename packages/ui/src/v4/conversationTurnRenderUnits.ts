@@ -1,3 +1,4 @@
+/* oxlint-disable eslint(max-lines) -- 行分组 + materialize + perf-1/perf-2 增量复用指纹同属一个构建单元；拆文件会让「复用条件」与「materialize 输入」分离，指纹漂移时无法同步审查。 */
 import type {
   ConversationTurnRenderUnit,
   BuildConversationTurnRenderUnitsOptions,
@@ -6,6 +7,7 @@ export type {
   ConversationTurnRenderUnit,
   BuildConversationTurnRenderUnitsOptions,
 } from "@/v4/conversationTurnRenderUnitTypes.js";
+import type { PluginUiRowPinResolver } from "@/plugin-ui/index.js";
 import type {
   AssistantTextRow,
   ConversationRow,
@@ -15,7 +17,10 @@ import type {
   TurnHeaderRow,
   UserInputRow,
 } from "@zcode/shared/zcode-protocol-v4";
-import type { AssistantWorkRow, ConversationTurnFlowItem } from "@/v4/conversationTurnFlowItems.js";
+import type {
+  AssistantWorkRow,
+  ConversationTurnFlowItem,
+} from "@/v4/conversationTurnFlowItems.js";
 import {
   isWorkflowLaunchUserInputRow,
   resolveWorkflowLaunchMeta,
@@ -26,7 +31,10 @@ import {
   resolveConversationTurnWorkStatus,
 } from "@/v4/conversationTurnWorkSegments.js";
 
-export type { AssistantWorkRow, ConversationTurnFlowItem } from "@/v4/conversationTurnFlowItems.js";
+export type {
+  AssistantWorkRow,
+  ConversationTurnFlowItem,
+} from "@/v4/conversationTurnFlowItems.js";
 export type {
   ConversationTurnWorkSegment,
   ConversationTurnWorkStatus,
@@ -83,7 +91,9 @@ function isVisibleConversationRow(row: ConversationRow): boolean {
 
 // 落位语义（lane）由 CLI 投影裁决下发（UI 不得按 marker type 自行推断）。
 // lane 缺省（不应发生）按 assistantWork 兜底——降级进折叠组，不丢行。
-function isTurnEndingTimelineMarkerRow(row: AssistantWorkRow): row is TimelineMarkerRow {
+function isTurnEndingTimelineMarkerRow(
+  row: AssistantWorkRow,
+): row is TimelineMarkerRow {
   return row.kind === "timelineMarker" && row.lane === "turnTailBoundary";
 }
 
@@ -129,7 +139,9 @@ function isBrowserTurnEndRow(row: AssistantWorkRow): boolean {
   );
 }
 
-function isLightBoundaryMarkerRow(row: AssistantWorkRow): row is TimelineMarkerRow {
+function isLightBoundaryMarkerRow(
+  row: AssistantWorkRow,
+): row is TimelineMarkerRow {
   return row.kind === "timelineMarker" && row.lane === "lightBoundary";
 }
 
@@ -193,14 +205,19 @@ function materializeDraftUnit(
   total: number,
   options: BuildConversationTurnRenderUnitsOptions,
 ): ConversationTurnRenderUnit {
-  const workflowLaunch = resolveWorkflowLaunchMeta(draft.header, draft.userInputs);
+  const workflowLaunch = resolveWorkflowLaunchMeta(
+    draft.header,
+    draft.userInputs,
+  );
   // 启动轮的用户行由 run 卡代言，不进可见输入也不进流。
   const renderedRows =
     workflowLaunch === undefined
       ? draft.orderedRows
       : draft.orderedRows.filter((row) => !isWorkflowLaunchUserInputRow(row));
   const visibleUserInputs = renderedRows.filter(isUserInputRow);
-  const visibleAssistantWorkRows = draft.assistantWorkRows.filter(isVisibleAssistantWorkRow);
+  const visibleAssistantWorkRows = draft.assistantWorkRows.filter(
+    isVisibleAssistantWorkRow,
+  );
   const visibleOrderedRows = renderedRows.filter(isVisibleConversationRow);
   const timelineOnly =
     visibleUserInputs.length === 0 &&
@@ -211,7 +228,9 @@ function materializeDraftUnit(
   const leadingBoundaryRows = timelineOnly
     ? []
     : visibleAssistantWorkRows.filter(isLightBoundaryMarkerRow);
-  const leadingBoundaryRowIds = new Set(leadingBoundaryRows.map((row) => row.rowId));
+  const leadingBoundaryRowIds = new Set(
+    leadingBoundaryRows.map((row) => row.rowId),
+  );
   const bodyRows = timelineOnly
     ? visibleAssistantWorkRows
     : visibleAssistantWorkRows.filter((row) => !isLightBoundaryMarkerRow(row));
@@ -242,7 +261,10 @@ function materializeDraftUnit(
   // 旧展开规则只看 running 和最终正文，异常终态一旦保留 partial assistant text
   // 就会被当作正常完成而收起，隐藏中断/失败上下文。终态必须以 header 为权威；冷恢复
   // 尾窗缺 header 时才回退 session phase，desktop continuous 与 mobile replayable 共用此边界。
-  const forceOpenHistory = shouldForceOpenAbnormalHistory(draft.header, options.sessionPhase);
+  const forceOpenHistory = shouldForceOpenAbnormalHistory(
+    draft.header,
+    options.sessionPhase,
+  );
 
   // product turn 的最终正文仍是唯一 action target；视觉工作段只改变折叠边界。
   const assistantTextRows = flowRows.filter(isAssistantTextRow);
@@ -252,8 +274,14 @@ function materializeDraftUnit(
   const lastFlowRow = flowRows.at(-1);
   const latestAssistantTextRow =
     actionAssistantTextRow ??
-    (!isRunning && lastFlowRow && isAssistantTextRow(lastFlowRow) ? lastFlowRow : undefined);
-  const workDurationMs = resolveConversationTurnWorkDurationMs(draft.header, options, isRunning);
+    (!isRunning && lastFlowRow && isAssistantTextRow(lastFlowRow)
+      ? lastFlowRow
+      : undefined);
+  const workDurationMs = resolveConversationTurnWorkDurationMs(
+    draft.header,
+    options,
+    isRunning,
+  );
   const workStatus = resolveConversationTurnWorkStatus(
     draft.header,
     bodyRows,
@@ -261,11 +289,15 @@ function materializeDraftUnit(
     workDurationMs,
     isInterrupted,
   );
-  const browserTurnEndRowIds = new Set(browserTurnEndRows.map((row) => row.rowId));
+  const browserTurnEndRowIds = new Set(
+    browserTurnEndRows.map((row) => row.rowId),
+  );
   const orderedBodyRows = visibleOrderedRows.filter(
     // main 的 workSegments 会从 orderedRows 重建 flow；如果这里只从
     // bodyRows 抽取截图，它仍会被塞回正文流并在轮尾再次渲染，造成重复和顺序错乱。
-    (row) => !leadingBoundaryRowIds.has(row.rowId) && !browserTurnEndRowIds.has(row.rowId),
+    (row) =>
+      !leadingBoundaryRowIds.has(row.rowId) &&
+      !browserTurnEndRowIds.has(row.rowId),
   );
   const workSegments = buildConversationTurnWorkSegments({
     key: draft.key,
@@ -279,14 +311,19 @@ function materializeDraftUnit(
     forceOpenHistory,
     timelineOnly,
     nowMs: options.nowMs,
-    ...(options.pluginUiPinResolver ? { pluginUiPinResolver: options.pluginUiPinResolver } : {}),
+    ...(options.pluginUiPinResolver
+      ? { pluginUiPinResolver: options.pluginUiPinResolver }
+      : {}),
   });
   const orderedAssistantHistoryRows = workSegments.flatMap(
     (segment) => segment.assistantHistoryRows,
   );
-  const assistantFollowingRows = workSegments.flatMap((segment) => segment.assistantFollowingRows);
+  const assistantFollowingRows = workSegments.flatMap(
+    (segment) => segment.assistantFollowingRows,
+  );
   const flowItems = workSegments.flatMap((segment) => segment.flowItems);
-  const mustOpenHistory = workSegments.at(-1)?.assistantHistoryDefaultOpen ?? false;
+  const mustOpenHistory =
+    workSegments.at(-1)?.assistantHistoryDefaultOpen ?? false;
   return {
     key: draft.key,
     turnId: draft.turnId,
@@ -330,13 +367,76 @@ function createDraftUnit(turnId: string): DraftTurnRenderUnit {
   };
 }
 
+/**
+ * 上一次构建时每个 render unit 的输入指纹。手机远控流式帧（replayable
+ * flushWindowMs≈150ms，约 6-7 帧/秒）只改写尾部一行，其余行的对象引用由
+ * applyConversationDelta 的不可变结构共享保持稳定（packages/shared/src/zcode-protocol-v4/apply.ts）。
+ * 按行引用比对即可证明「该 turn 的 materialize 输入未变」，直接复用旧 unit 引用，
+ * 让虚拟窗口内 ConversationTurnGroup 的 memo 生效——这是 perf-1/perf-2 的核心：
+ * 每帧 O(总行数) 的对象重建会使所有已 memo 的 turn 无差别重渲染，长会话流式掉帧。
+ * WeakMap 随旧 unit 对象一起被 GC，不需要手工清理；复用条件里任何一项不满足就
+ * 全量重建该 turn，行为与旧实现逐字段一致（单测 v4ConversationTurnRenderUnitsIncremental 覆盖）。
+ */
+interface RenderUnitSource {
+  header: TurnHeaderRow | undefined;
+  rows: readonly ConversationRow[];
+  sessionPhase: SessionPhase | undefined;
+  pluginUiPinResolver: PluginUiRowPinResolver | undefined;
+  index: number;
+  total: number;
+  nowMs: number | undefined;
+}
+
+const renderUnitSources = new WeakMap<
+  ConversationTurnRenderUnit,
+  RenderUnitSource
+>();
+
+function sameRowReferences(
+  previous: readonly ConversationRow[],
+  current: readonly ConversationRow[],
+): boolean {
+  if (previous.length !== current.length) return false;
+  for (let index = 0; index < previous.length; index += 1) {
+    if (previous[index] !== current[index]) return false;
+  }
+  return true;
+}
+
+function canReuseRenderUnit(
+  previous: ConversationTurnRenderUnit,
+  draft: DraftTurnRenderUnit,
+  index: number,
+  total: number,
+  options: BuilderOptions,
+): boolean {
+  const source = renderUnitSources.get(previous);
+  if (!source) return false;
+  // isLastTurn 参与 materialize（workSegments 的运行段/折叠边界），位置变化必须重建。
+  if (source.index !== index || source.total !== total) return false;
+  if (source.header !== draft.header) return false;
+  if (source.sessionPhase !== options.sessionPhase) return false;
+  if (source.pluginUiPinResolver !== options.pluginUiPinResolver) return false;
+  if (!sameRowReferences(source.rows, draft.orderedRows)) return false;
+  // nowMs 只影响运行中轮的“工作中 N 秒”耗时文案（resolveConversationTurnWorkDurationMs
+  // 与运行段 duration 都以 isRunning/segmentRunning 为前提）；非运行轮对 nowMs 不敏感，
+  // 静默期 1s 时钟推进因此不再使历史 turn 失效（perf-2）。运行轮时钟推进仍要重建，
+  // 否则耗时文案会冻结。
+  if (source.nowMs !== options.nowMs && resolveTurnRunning(draft, options)) {
+    return false;
+  }
+  return true;
+}
+
 function shouldKeepRenderUnit(unit: ConversationTurnRenderUnit): boolean {
   // 隐形行清零后（投影不再产不可渲染 marker），任何工作行都可渲染；
   // 「哪些 marker 可渲染」不再是 UI 的判断。
   return (
     unit.visibleUserInputs.length > 0 ||
     unit.assistantWorkRows.length > 0 ||
-    unit.hookInvocations.some((row) => row.executions.some((execution) => execution.didExecute)) ||
+    unit.hookInvocations.some((row) =>
+      row.executions.some((execution) => execution.didExecute),
+    ) ||
     unit.leadingBoundaryRows.length > 0 ||
     // 直接启动轮：用户行不可见、无助手内容，轮由 run 卡呈现——它当然要留下。
     unit.workflowLaunch !== undefined ||
@@ -351,32 +451,38 @@ function normalizeRenderUnitPosition(
   options: BuildConversationTurnRenderUnitsOptions,
 ): ConversationTurnRenderUnit {
   const isLastTurn = index === total - 1;
-  const forceOpenHistory = shouldForceOpenAbnormalHistory(unit.header, options.sessionPhase);
+  const forceOpenHistory = shouldForceOpenAbnormalHistory(
+    unit.header,
+    options.sessionPhase,
+  );
   const assistantHistoryDefaultOpen =
     unit.workSegments && unit.workSegments.length > 0
       ? !unit.timelineOnly &&
         (forceOpenHistory ||
-          (isLastTurn && unit.workSegments.at(-1)?.workStatus?.state === "running") ||
+          (isLastTurn &&
+            unit.workSegments.at(-1)?.workStatus?.state === "running") ||
           (unit.workSegments.length === 1 &&
             unit.latestAssistantTextRow === undefined &&
             unit.assistantWorkRows.length > 0))
       : !unit.timelineOnly &&
         (forceOpenHistory ||
           (isLastTurn && unit.workStatus?.state === "running") ||
-          (unit.latestAssistantTextRow === undefined && unit.assistantWorkRows.length > 0));
-  const workSegments = unit.workSegments?.map((segment, segmentIndex, segments) =>
-    segmentIndex === segments.length - 1
-      ? {
-          ...segment,
-          assistantHistoryDefaultOpen:
-            !unit.timelineOnly &&
-            (forceOpenHistory ||
-              (isLastTurn && segment.workStatus?.state === "running") ||
-              (segments.length === 1 &&
-                unit.latestAssistantTextRow === undefined &&
-                segment.assistantWorkRows.length > 0)),
-        }
-      : segment,
+          (unit.latestAssistantTextRow === undefined &&
+            unit.assistantWorkRows.length > 0));
+  const workSegments = unit.workSegments?.map(
+    (segment, segmentIndex, segments) =>
+      segmentIndex === segments.length - 1
+        ? {
+            ...segment,
+            assistantHistoryDefaultOpen:
+              !unit.timelineOnly &&
+              (forceOpenHistory ||
+                (isLastTurn && segment.workStatus?.state === "running") ||
+                (segments.length === 1 &&
+                  unit.latestAssistantTextRow === undefined &&
+                  segment.assistantWorkRows.length > 0)),
+          }
+        : segment,
   );
   if (
     unit.isLastTurn === isLastTurn &&
@@ -394,9 +500,15 @@ function normalizeRenderUnitPosition(
   };
 }
 
+/** 增量复用选项：调用方（ConversationTimeline）回传上一次的 units，未变化的 turn 复用旧引用。 */
+export interface BuilderOptions extends BuildConversationTurnRenderUnitsOptions {
+  /** 上一次构建结果；键（turnId）相同的 unit 会先做输入指纹比对再决定复用或重建。 */
+  previousUnits?: readonly ConversationTurnRenderUnit[];
+}
+
 export function buildConversationTurnRenderUnits(
   rows: readonly ConversationRow[],
-  options: BuildConversationTurnRenderUnitsOptions = {},
+  options: BuilderOptions = {},
 ): ConversationTurnRenderUnit[] {
   const units: DraftTurnRenderUnit[] = [];
   const unitByTurnId = new Map<string, DraftTurnRenderUnit>();
@@ -430,9 +542,29 @@ export function buildConversationTurnRenderUnits(
     unit.assistantWorkRows.push(row);
   }
 
-  const materializedUnits = units.map((unit, index) =>
-    materializeDraftUnit(unit, index, units.length, options),
-  );
+  const previousByTurnId = options.previousUnits
+    ? new Map(options.previousUnits.map((unit) => [unit.key, unit]))
+    : null;
+  const materializedUnits = units.map((unit, index) => {
+    const previous = previousByTurnId?.get(unit.key);
+    if (
+      previous &&
+      canReuseRenderUnit(previous, unit, index, units.length, options)
+    ) {
+      return previous;
+    }
+    const built = materializeDraftUnit(unit, index, units.length, options);
+    renderUnitSources.set(built, {
+      header: unit.header,
+      rows: unit.orderedRows,
+      sessionPhase: options.sessionPhase,
+      pluginUiPinResolver: options.pluginUiPinResolver,
+      index,
+      total: units.length,
+      nowMs: options.nowMs,
+    });
+    return built;
+  });
   const keptUnits = materializedUnits.filter(shouldKeepRenderUnit);
   const normalizedUnits = keptUnits.map((unit, index) =>
     normalizeRenderUnitPosition(unit, index, keptUnits.length, options),

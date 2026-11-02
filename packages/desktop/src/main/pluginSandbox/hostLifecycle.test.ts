@@ -143,4 +143,43 @@ describe("MCP App native lifecycle", () => {
       }),
     ).toBe(false);
   });
+  // I20 TTL 复核结论：6h 只清理从未挂载/泄漏的 prepare；已挂载（pin）的后台页面跨 TTL 仍保留。
+  it("expires only unattached preparations while a pinned background page survives the TTL", () => {
+    let now = 1_000_000;
+    const registry = createPluginSandboxRegistry({ now: () => now });
+    const live = registry.register({ ...input, permissions: [] });
+    registry.pin(live.sandboxId);
+    const unattached = registry.register({
+      ...input,
+      instance: { ...input.instance, token: "two" },
+      permissions: [],
+    });
+    now += 6 * 60 * 60 * 1000 + 1;
+    expect(registry.get(live.sandboxId)).not.toBeNull();
+    expect(registry.get(unattached.sandboxId)).toBeNull();
+    expect(registry.size()).toBe(1);
+  });
+  // I20 容量口径：64 满后拒绝新登记并提示，不淘汰活页面（含无锚点的后台页面）。
+  it("rejects the sixty-fifth registration without evicting a pinned background page", () => {
+    const registry = createPluginSandboxRegistry();
+    const first = registry.register({ ...input, permissions: [] });
+    registry.pin(first.sandboxId);
+    for (let index = 1; index < 64; index++) {
+      const handle = registry.register({
+        ...input,
+        instance: { ...input.instance, token: `token-${index}` },
+        permissions: [],
+      });
+      registry.pin(handle.sandboxId);
+    }
+    expect(() =>
+      registry.register({
+        ...input,
+        instance: { ...input.instance, token: "overflow" },
+        permissions: [],
+      }),
+    ).toThrow(/已达上限/);
+    expect(registry.size()).toBe(64);
+    expect(registry.get(first.sandboxId)?.html).toBe(input.html);
+  });
 });

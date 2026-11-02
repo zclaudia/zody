@@ -1,23 +1,24 @@
 import { randomUUID } from "node:crypto";
-import { ipcMain, session, webContents, type BrowserWindow, type UtilityProcess } from "electron";
+import { ipcMain, session, webContents, type BrowserWindow } from "electron";
 import { HostMessageTypes, PlatformChannels, type NetworkCaptureBatch } from "@zcode/shared";
 import { createNodeNetworkCapture } from "@zcode/shared/node";
 import { NetworkCaptureBuffer } from "./networkCaptureBuffer.js";
 import { subscribeBeforeRequest } from "./observeBeforeRequest.js";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 
 const buffer = new NetworkCaptureBuffer();
 const nodeCapture = createNodeNetworkCapture("main", (batch) => buffer.ingest(batch));
 let captureId: string | null = null;
 let ownerId: number | null = null;
-let currentHosts: (() => Iterable<UtilityProcess>) | null = null;
+let currentHosts: (() => Iterable<HostProcessHandle>) | null = null;
 let disposers: Array<() => void> = [];
 
-export function configureNetworkCaptureHost(child: UtilityProcess): void {
+export function configureNetworkCaptureHost(child: HostProcessHandle): void {
   if (!captureId) return;
   sendControl(child);
 }
 
-function sendControl(child: UtilityProcess): void {
+function sendControl(child: HostProcessHandle): void {
   try {
     child.postMessage({ type: HostMessageTypes.NetworkCapture, control: { captureId } });
   } catch {
@@ -27,7 +28,7 @@ function sendControl(child: UtilityProcess): void {
 
 export function startResourceManagerNetwork(
   senderId: number,
-  hosts: () => Iterable<UtilityProcess>,
+  hosts: () => Iterable<HostProcessHandle>,
 ): void {
   if (captureId) return;
   captureId = randomUUID();
@@ -72,7 +73,7 @@ export function startResourceManagerNetwork(
   for (const host of hosts()) configureNetworkCaptureHost(host);
 }
 
-export function stopResourceManagerNetwork(hosts: Iterable<UtilityProcess>): void {
+export function stopResourceManagerNetwork(hosts: Iterable<HostProcessHandle>): void {
   if (!captureId) return;
   captureId = null;
   ownerId = null;
@@ -86,7 +87,7 @@ export function stopResourceManagerNetwork(hosts: Iterable<UtilityProcess>): voi
 
 export function observeNetworkWindow(
   window: BrowserWindow,
-  hosts: () => Iterable<UtilityProcess>,
+  hosts: () => Iterable<HostProcessHandle>,
 ): void {
   startResourceManagerNetwork(window.webContents.id, hosts);
   const stop = () => stopResourceManagerNetwork(hosts());

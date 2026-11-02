@@ -1,0 +1,17 @@
+{
+  "sourceHashCount": 29,
+  "sourceHashDrift": [],
+  "artifactSha256": "0f9c78bc691d5c6044854ce3b1d3c620b110a8b2bcb2e38b311645c8a5b65cb0",
+  "artifactBytes": 301208,
+  "nativeLicenseSha256": "606c36baf38b973227273df12a74930e4b4137280eea835c5cd623aa4553c13b",
+  "matchesRootLicense": true,
+  "compiler": {
+    "path": "/Library/Developer/CommandLineTools/usr/bin/clang++",
+    "versionFirstLine": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
+  },
+  "sdk": {
+    "requested": "macosx27.0",
+    "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+    "version": "27.0"
+  }
+}

@@ -33,6 +33,7 @@ beforeAll(async () => {
 afterAll(() => source.dispose());
 
 // 基线取自 a56dc32c26 的专用表达式，按相同表达式分组但逐条验证规则，不能随美化更新预期。
+// 后加规则（如 v2.6）使用 x.5 索引标记插入位置，避免与基线快照的整数索引混淆。
 const levels = [
   ["low", "high", "max"],
   ["low", "high", "max"],

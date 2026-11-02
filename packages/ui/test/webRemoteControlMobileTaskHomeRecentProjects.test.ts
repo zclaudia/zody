@@ -53,7 +53,6 @@ function renderHome() {
         onRecentProjectsUpdated: () => () => {},
         openRecentProject: vi.fn(async () => "/workspace/zcode"),
         openDesktopWindow: vi.fn(async () => {}),
-        onOpenSettings: vi.fn(),
       },
     }),
   );

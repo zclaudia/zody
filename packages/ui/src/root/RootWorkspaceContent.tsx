@@ -48,9 +48,11 @@ interface RootWorkspaceContentProps {
   initialWebRemoteControlMobileNavigationIntent?: RootProps["initialWebRemoteControlMobileNavigationIntent"];
   initialWebRemoteControlWorkspaceList?: RootProps["initialWebRemoteControlWorkspaceList"];
   webRemoteControlTerminalTransportState?: RootProps["webRemoteControlTerminalTransportState"];
+  webRemoteControlMobileConnectionSettings?: RootProps["webRemoteControlMobileConnectionSettings"];
   isDesktop?: RootProps["isDesktop"];
   isMacDesktop?: RootProps["isMacDesktop"];
   isWindowsDesktop?: RootProps["isWindowsDesktop"];
+  isWebRemoteControl?: boolean;
   supportsEmbeddedBrowser: NonNullable<RootProps["supportsEmbeddedBrowser"]>;
   windowsWindowControlsRightPaddingPx?: number;
 }
@@ -90,9 +92,11 @@ export function RootWorkspaceContent({
   initialWebRemoteControlMobileNavigationIntent,
   initialWebRemoteControlWorkspaceList,
   webRemoteControlTerminalTransportState,
+  webRemoteControlMobileConnectionSettings,
   isDesktop,
   isMacDesktop,
   isWindowsDesktop,
+  isWebRemoteControl,
   supportsEmbeddedBrowser,
   windowsWindowControlsRightPaddingPx,
 }: RootWorkspaceContentProps) {
@@ -208,6 +212,8 @@ export function RootWorkspaceContent({
             isDesktop={isDesktop}
             isMacDesktop={isMacDesktop}
             isWindowsDesktop={isWindowsDesktop}
+            isWebRemoteControl={isWebRemoteControl}
+            mobileConnectionSettings={webRemoteControlMobileConnectionSettings}
             windowsWindowControlsRightPaddingPx={windowsWindowControlsRightPaddingPx}
             captionWorkspacePath={activeWorkspacePath}
             onBack={activeWorkspacePath ? handleBackFromSettings : undefined}

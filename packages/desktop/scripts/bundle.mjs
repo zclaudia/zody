@@ -23,6 +23,15 @@ import {
   runCommandAndReadStdout,
 } from "../../../scripts/spawn-command.mjs";
 import { resolveIntranetDepsBaseUrl } from "../../../scripts/intranetDefaults.mjs";
+import {
+  NARROW_MANIFEST_ENV,
+  assertPackagedNarrowResource,
+  validateNarrowManifest,
+} from "./macos-cua-narrow-resources.mjs";
+import {
+  createMacosCuaDemoBuildEnv,
+  resolveMacosCuaDemoBuildSelection,
+} from "./macos-cua-demo-defaults.mjs";
 
 const desktopRoot = resolve(import.meta.dirname, "..");
 const workspaceRoot = resolve(desktopRoot, "../..");
@@ -257,12 +266,14 @@ function printHelp() {
   --arch, -a <x64|arm64>       目标 CPU 架构，默认 arm64
   --skip-prepare               跳过 prepare:runtime-assets
   --skip-build                 跳过 pnpm build
+  --cua-narrow-manifest <path> 显式装配已签名 desktop-session Helper（仅 darwin arm64）
   --dry-run                    只打印最终命令，不执行打包
   -h, --help                   查看帮助
 
 环境变量:
   ZCODE_TARGET_OS              与 --os 等价
   ZCODE_TARGET_ARCH            与 --arch 等价
+  ${NARROW_MANIFEST_ENV}       与 --cua-narrow-manifest 等价
 `);
 }
 
@@ -282,12 +293,16 @@ function normalizeArch(rawArch) {
   return normalizedArch;
 }
 
-function parseArgs(argv) {
+export async function parseArgs(
+  argv,
+  { env = process.env, repoRoot, validateManifest } = {},
+) {
   const options = {
-    os: process.env.ZCODE_TARGET_OS ?? null,
-    arch: process.env.ZCODE_TARGET_ARCH ?? null,
-    skipPrepare: process.env.ZCODE_SKIP_PREPARE === "1",
-    skipBuild: process.env.ZCODE_SKIP_BUILD === "1",
+    os: env.ZCODE_TARGET_OS ?? null,
+    arch: env.ZCODE_TARGET_ARCH ?? null,
+    skipPrepare: env.ZCODE_SKIP_PREPARE === "1",
+    skipBuild: env.ZCODE_SKIP_BUILD === "1",
+    cuaNarrowManifest: null,
     dryRun: false,
     positionals: [],
   };
@@ -316,6 +331,25 @@ function parseArgs(argv) {
 
     if (arg === "--skip-build") {
       options.skipBuild = true;
+      continue;
+    }
+
+    if (arg === "--cua-narrow-manifest") {
+      const value = argv[index + 1];
+      if (value === undefined || value.trim() === "" || value.startsWith("--")) {
+        throw new Error("--cua-narrow-manifest requires an absolute manifest path");
+      }
+      options.cuaNarrowManifest = value;
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith("--cua-narrow-manifest=")) {
+      const value = arg.slice("--cua-narrow-manifest=".length);
+      if (value.trim() === "") {
+        throw new Error("--cua-narrow-manifest requires an absolute manifest path");
+      }
+      options.cuaNarrowManifest = value;
       continue;
     }
 
@@ -357,12 +391,30 @@ function parseArgs(argv) {
 
   const resolvedOs = normalizeOs(options.os ?? positionalOs ?? DEFAULT_TARGET_OS);
   const resolvedArch = normalizeArch(options.arch ?? positionalArch ?? DEFAULT_TARGET_ARCH);
+  const narrowSelection = await resolveMacosCuaDemoBuildSelection({
+    cliManifestPath: options.cuaNarrowManifest,
+    env,
+    targetOs: resolvedOs,
+    targetArch: resolvedArch,
+    repoRoot,
+    validateManifest,
+  });
+  const narrowRequest =
+    narrowSelection && (narrowSelection.manifestPath || narrowSelection.profileJson)
+      ? {
+          ...(narrowSelection.manifestPath
+            ? { manifestPath: narrowSelection.manifestPath }
+            : {}),
+          ...(narrowSelection.profileJson ? { profileJson: narrowSelection.profileJson } : {}),
+        }
+      : null;
 
   return {
     os: resolvedOs,
     arch: resolvedArch,
     skipPrepare: options.skipPrepare,
     skipBuild: options.skipBuild,
+    narrowRequest,
     dryRun: options.dryRun,
   };
 }
@@ -703,7 +755,9 @@ function verifyPackagedRuntimeDependencies(os, arch) {
 }
 
 async function main() {
-  const { os, arch, skipPrepare, skipBuild, dryRun } = parseArgs(process.argv.slice(2));
+  const { os, arch, skipPrepare, skipBuild, narrowRequest, dryRun } = await parseArgs(
+    process.argv.slice(2),
+  );
   const buildArgs = [
     "exec",
     "electron-builder",
@@ -715,12 +769,22 @@ async function main() {
 
   console.log(`[bundle] target=${os}/${arch}`);
   console.log(`[bundle] skipPrepare=${skipPrepare} skipBuild=${skipBuild}`);
+  if (narrowRequest?.manifestPath) {
+    console.log(`[bundle] cuaNarrowManifest=${narrowRequest.manifestPath}`);
+    // 先验证受控 stage；构建 env 只进入本次 electron-builder，不写成 runtime 激活开关。
+    await validateNarrowManifest({
+      manifestPath: narrowRequest.manifestPath,
+      targetPlatform: { os: "darwin", arch: "arm64" },
+      env: process.env,
+    });
+  }
 
   const buildEnv = {
     ZCODE_TARGET_OS: os,
     ZCODE_TARGET_ARCH: arch,
     ...createElectronRuntimeMirrorEnv(resolveElectronMirror()),
     ...createElectronBuilderBinariesMirrorEnv(resolveElectronBuilderBinariesMirror()),
+    ...createMacosCuaDemoBuildEnv(narrowRequest),
   };
 
   if (dryRun) {
@@ -739,6 +803,16 @@ async function main() {
   await runTimedAsync("bundle:electron-builder", () =>
     runElectronBuilderWithRetry(buildArgs, buildEnv),
   );
+
+  if (narrowRequest?.manifestPath) {
+    await runTimedAsync("bundle:verify-cua-narrow-resources", () =>
+      assertPackagedNarrowResource({
+        resourcesDir: dirname(resolveAppAsarPath(os, arch)),
+        manifestPath: narrowRequest.manifestPath,
+        env: process.env,
+      }),
+    );
+  }
 
   runTimedSync("bundle:verify-runtime-dependencies", () =>
     verifyPackagedRuntimeDependencies(os, arch),

@@ -1,0 +1,20 @@
+The following is a diff from the previous accessibility tree for Window: "Zody" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 20-52, 54-68, 70-96, 124-126, 149-152, 159-232
+~					17 container
+~						18 container Projects
+~					19 container Result image 1
++						20 heading Result image 1, Value: 2
++							21 text Result image 1
++						22 container
++							23 button Download image
++							24 button Close
++						25 image Result image 1
++						26 container
++							27 button Zoom out
++							28 text 100 %
++							29 button Zoom in
+Selected text: ```
+￼
+```
+
+Note: Pay special attention to the content selected by the user. If the user asks a question or refers to the content they are looking at on-screen, they might be referring to the selected content (but they might be referring to something else that's visible, too).

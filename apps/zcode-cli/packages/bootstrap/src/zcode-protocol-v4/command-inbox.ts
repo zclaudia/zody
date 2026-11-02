@@ -213,6 +213,34 @@ export class CommandInbox {
     }
   }
 
+  /**
+   * 冷 READY 窗口内的幂等探测：只查 in-memory in-flight/live/settled，
+   * 不读持久事实、不做分类/CAS/admission。命中即回放同一终态；未命中返回 null，
+   * 让调用方先等 READY 再进入完整 handle。
+   */
+  async probe(raw: unknown): Promise<CommandAck | null> {
+    const parsed = parseCommandEnvelope(raw);
+    if (!parsed.ok) return null;
+    const envelope = parsed.envelope;
+    const key = { sessionId: envelope.sessionId, commandId: envelope.commandId };
+    const bucketKey = this.bucketKey(envelope.sessionId);
+    const releaseKey = await this.keyGates.acquire(this.keyGateKey(key));
+    try {
+      const pinned = this.inFlight.get(bucketKey)?.get(envelope.commandId);
+      if (pinned) return this.retryAck(await pinned.final);
+      const live = this.liveInputs.get(bucketKey)?.get(envelope.commandId);
+      if (live) return this.retryAck(live.ack);
+      const settled = this.settled.get(bucketKey)?.get(envelope.commandId);
+      if (settled) {
+        this.touchSettled(bucketKey, envelope.commandId, settled);
+        return this.retryAck(settled);
+      }
+      return null;
+    } finally {
+      releaseKey();
+    }
+  }
+
   /** 1..64 的上层 schema 由 gateway 校验；这里并行查询并保持 Promise.all 输入顺序。 */
   async query(
     keys: readonly CommandKey[],

@@ -1,0 +1,140 @@
+{
+  "source": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+  "before": {
+    "fileCount": 776,
+    "treeSha256": "73c3929c17b612cd4a0f39132e48d746871e8221a27ff38bed9b232576b6a947"
+  },
+  "environment": {
+    "PATH": "/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "HOME": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/home",
+    "USER": "zhvala",
+    "LOGNAME": "zhvala",
+    "TMPDIR": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/tmp",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "LC_CTYPE": "C.UTF-8",
+    "CARGO_HOME": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/cache/cargo-home",
+    "CARGO_TARGET_DIR": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_INCREMENTAL": "0",
+    "RUSTC": "/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin/rustc",
+    "RUSTUP_AUTO_INSTALL": "0",
+    "MACOSX_DEPLOYMENT_TARGET": "14.2"
+  },
+  "commands": [
+    {
+      "label": "pure-tests",
+      "command": "/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin/cargo",
+      "args": [
+        "test",
+        "--locked",
+        "--offline",
+        "--target",
+        "aarch64-apple-darwin",
+        "--package",
+        "cua-macos-visual",
+        "--lib",
+        "--test",
+        "pure_visual",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+      "code": 0
+    },
+    {
+      "label": "consumer-build",
+      "command": "/Users/zhvala/SourceCode/zody/output/cua-driver-round6/rustup/toolchains/1.97.1-aarch64-apple-darwin/bin/cargo",
+      "args": [
+        "build",
+        "--locked",
+        "--offline",
+        "--target",
+        "aarch64-apple-darwin",
+        "--package",
+        "cua-macos-visual-link-probe",
+        "--message-format=json-render-diagnostics"
+      ],
+      "cwd": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+      "code": 0
+    },
+    {
+      "label": "consumer-run",
+      "command": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target/aarch64-apple-darwin/debug/cua-macos-visual-link-probe",
+      "args": [],
+      "cwd": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+      "code": 0
+    },
+    {
+      "label": "consumer-libraries",
+      "command": "/usr/bin/otool",
+      "args": [
+        "-L",
+        "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target/aarch64-apple-darwin/debug/cua-macos-visual-link-probe"
+      ],
+      "cwd": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+      "code": 0
+    },
+    {
+      "label": "consumer-load-commands",
+      "command": "/usr/bin/otool",
+      "args": [
+        "-l",
+        "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target/aarch64-apple-darwin/debug/cua-macos-visual-link-probe"
+      ],
+      "cwd": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+      "code": 0
+    },
+    {
+      "label": "consumer-symbols",
+      "command": "/usr/bin/nm",
+      "args": [
+        "-g",
+        "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target/aarch64-apple-darwin/debug/cua-macos-visual-link-probe"
+      ],
+      "cwd": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+      "code": 0
+    },
+    {
+      "label": "consumer-undefined",
+      "command": "/usr/bin/nm",
+      "args": [
+        "-u",
+        "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target/aarch64-apple-darwin/debug/cua-macos-visual-link-probe"
+      ],
+      "cwd": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+      "code": 0
+    },
+    {
+      "label": "consumer-signature",
+      "command": "/usr/bin/codesign",
+      "args": [
+        "-dvv",
+        "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target/aarch64-apple-darwin/debug/cua-macos-visual-link-probe"
+      ],
+      "cwd": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+      "code": 0
+    },
+    {
+      "label": "object-0-load",
+      "command": "/usr/bin/otool",
+      "args": [
+        "-l",
+        "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target/aarch64-apple-darwin/debug/build/cua-macos-visual-7a5889e08cba4c87/out/CuaVisualCapture.o"
+      ],
+      "cwd": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+      "code": 0
+    },
+    {
+      "label": "object-0-symbols",
+      "command": "/usr/bin/nm",
+      "args": [
+        "-g",
+        "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-native-checks/target/aarch64-apple-darwin/debug/build/cua-macos-visual-7a5889e08cba4c87/out/CuaVisualCapture.o"
+      ],
+      "cwd": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-accepted/full-source",
+      "code": 0
+    }
+  ],
+  "scope": "Pure Rust tests and no-native-call final consumer; no window enumeration, TCC, screenshot or input."
+}

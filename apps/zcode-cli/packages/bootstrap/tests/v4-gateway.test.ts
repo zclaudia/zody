@@ -46,7 +46,10 @@ import {
   type CommandInbox,
   V4CommandNotImplementedError,
 } from "../src/zcode-protocol-v4/index.js";
-import type { SessionConfigSeed } from "../src/zcode-protocol-v4/index.js";
+import type {
+  SessionConfigSeed,
+  V4GatewayHost,
+} from "../src/zcode-protocol-v4/index.js";
 import { V4CommandExecutor } from "../src/zcode-protocol-v4/commands/executor.js";
 import type { V4SessionRecordView } from "../src/zcode-protocol-v4/commands/types.js";
 import { loadPersistentCommandFacts } from "../src/zcode-protocol-v4/persistent-command-facts.js";
@@ -171,7 +174,10 @@ function makeHost(): HostStub {
   };
 }
 
-function makeGateway(host: HostStub): ConversationV4Gateway {
+function makeGateway(
+  host: HostStub,
+  hostOverrides: Partial<V4GatewayHost> = {},
+): ConversationV4Gateway {
   return new ConversationV4Gateway(
     {
       sessionExists: (sessionId) => host.sessions.has(sessionId),
@@ -244,6 +250,7 @@ function makeGateway(host: HostStub): ConversationV4Gateway {
         host.persistentCommands.discarded.get(`${key.sessionId ?? "@global"}\0${key.commandId}`) ??
         null,
       onError: (scope, error) => host.errors.push({ scope, error }),
+      ...hostOverrides,
     },
     { now: () => 1_700_000_999_000, createLogEpoch: () => "epoch-1" },
   );
@@ -2599,6 +2606,187 @@ describe("订阅与帧调度", () => {
       kind: "turnHeader",
       fileChanges: { files: 1, state: "reverted" },
     });
+  });
+});
+
+// I19 反例（2026-10-24 C4 已决）：历史投影可先于 runtime 激活发布；断线/删除/取消后
+// 到达的 activation/hydration 结果必须丢弃。当前实现要先完成 activation+hydration 才发布，
+// 因此这些用例的“历史先可见”前置断言在当前 HEAD 上为红。
+describe("I19 冷历史先展示后激活（生命周期）", () => {
+  function deferred() {
+    let resolve!: () => void;
+    const promise = new Promise<void>((complete) => {
+      resolve = complete;
+    });
+    return { promise, resolve };
+  }
+
+  function nextMacrotask(): Promise<void> {
+    return new Promise((resolve) => setImmediate(resolve));
+  }
+
+  async function settledWithin<T>(promise: Promise<T>, ticks = 50): Promise<T | null> {
+    let settled = false;
+    let value: T | null = null;
+    void promise.then(
+      (result) => {
+        settled = true;
+        value = result;
+      },
+      () => {
+        settled = true;
+      },
+    );
+    for (let index = 0; index < ticks && !settled; index += 1) {
+      await nextMacrotask();
+    }
+    return settled ? value : null;
+  }
+
+  function coldHistory(sessionId: string): SessionEvent[] {
+    const log = new EventLog(sessionId);
+    log.push(SessionEventType.SessionCreated, { mode: "default", contextWindow: 200_000 });
+    log.push(
+      SessionEventType.TurnStarted,
+      { turnNumber: 1, input: "历史输入" },
+      { turnId: "turn-i19" },
+    );
+    log.push(
+      SessionEventType.ModelStreaming,
+      { kind: "text_start", delta: "", done: false },
+      { turnId: "turn-i19" },
+    );
+    log.push(
+      SessionEventType.ModelStreaming,
+      { kind: "text_delta", delta: "历史回复", done: false },
+      { turnId: "turn-i19" },
+    );
+    log.push(
+      SessionEventType.ModelStreaming,
+      { kind: "text_end", delta: "", done: false },
+      { turnId: "turn-i19" },
+    );
+    return log.events;
+  }
+
+  function gatedResume(host: HostStub) {
+    const started = deferred();
+    const gate = deferred();
+    return {
+      started,
+      gate,
+      resumePersistedSession: async (sessionId: string) => {
+        host.resumeCalls.push(sessionId);
+        started.resolve();
+        await gate.promise;
+        host.sessions.add(sessionId);
+        return { status: "resumed" as const };
+      },
+    };
+  }
+
+  it("反例：激活中删除会话，迟到 activation 结果不重建 publisher/订阅", async () => {
+    const sessionId = "session-i19-delete";
+    const host = makeHost();
+    host.persistedEvents.set(sessionId, coldHistory(sessionId));
+    const resume = gatedResume(host);
+    const gateway = makeGateway(host, {
+      resumePersistedSession: resume.resumePersistedSession,
+    });
+    const subscribing = gateway.subscribe(
+      subscribeParams({ topic: `conversation/${sessionId}` }),
+    );
+    try {
+      await resume.started.promise;
+      const history = await settledWithin(subscribing);
+      expect(history).not.toBeNull();
+
+      gateway.disposeSession(sessionId);
+      const framesAfterDelete = host.frames.length;
+      resume.gate.resolve();
+      await Promise.allSettled([subscribing]);
+      await nextMacrotask();
+      await nextMacrotask();
+
+      expect(host.frames).toHaveLength(framesAfterDelete);
+      expect(gateway.hasConversationSubscribers(sessionId)).toBe(false);
+      expect(gateway.collectMemoryDiagnostics().publishers).toBe(0);
+    } finally {
+      resume.gate.resolve();
+      await Promise.allSettled([subscribing]);
+      gateway.dispose();
+    }
+  });
+
+  it("反例：激活中退订，迟到 activation 不向已断连接发帧", async () => {
+    const sessionId = "session-i19-unsubscribe";
+    const host = makeHost();
+    host.persistedEvents.set(sessionId, coldHistory(sessionId));
+    const resume = gatedResume(host);
+    const gateway = makeGateway(host, {
+      resumePersistedSession: resume.resumePersistedSession,
+    });
+    const subscribing = gateway.subscribe(
+      subscribeParams({ topic: `conversation/${sessionId}` }),
+    );
+    try {
+      await resume.started.promise;
+      const history = await settledWithin(subscribing);
+      expect(history).not.toBeNull();
+      if (!history) return;
+
+      const framesBeforeUnsubscribe = host.frames.length;
+      gateway.unsubscribe({
+        topic: `conversation/${sessionId}`,
+        subscriptionId: history.ack.subscriptionId,
+        connectionId: "conn-1",
+      });
+      expect(gateway.hasConversationSubscribers(sessionId)).toBe(false);
+
+      resume.gate.resolve();
+      await nextMacrotask();
+      await nextMacrotask();
+
+      expect(host.frames).toHaveLength(framesBeforeUnsubscribe);
+      expect(gateway.hasConversationSubscribers(sessionId)).toBe(false);
+    } finally {
+      resume.gate.resolve();
+      await Promise.allSettled([subscribing]);
+      gateway.dispose();
+    }
+  });
+
+  it("反例：激活中去激活（取消），迟到 activation 不重启旧 runtime", async () => {
+    const sessionId = "session-i19-deactivate";
+    const host = makeHost();
+    host.persistedEvents.set(sessionId, coldHistory(sessionId));
+    const resume = gatedResume(host);
+    const gateway = makeGateway(host, {
+      resumePersistedSession: resume.resumePersistedSession,
+    });
+    const subscribing = gateway.subscribe(
+      subscribeParams({ topic: `conversation/${sessionId}` }),
+    );
+    try {
+      await resume.started.promise;
+      const history = await settledWithin(subscribing);
+      expect(history).not.toBeNull();
+
+      gateway.deactivateSession(sessionId);
+      expect(gateway.collectMemoryDiagnostics().publishers).toBe(0);
+
+      resume.gate.resolve();
+      await nextMacrotask();
+      await nextMacrotask();
+
+      expect(gateway.collectMemoryDiagnostics().publishers).toBe(0);
+      expect(gateway.hasConversationSubscribers(sessionId)).toBe(false);
+      expect(host.resumeCalls).toEqual([sessionId]);
+    } finally {
+      resume.gate.resolve();
+      await Promise.allSettled([subscribing]);
+      gateway.dispose();
+    }
   });
 });
 

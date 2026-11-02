@@ -2,7 +2,7 @@
  * fork（F4.5）：官方 Coding Plan / Start Plan / Team Plan 导航、购买与 OAuth 连接方式
  * 编排已删除；设置页只保留 BYOK（自定义 provider）的增删改、排序与连通性测试。
  */
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { Button } from "@/components/ui/button.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
@@ -12,6 +12,7 @@ import { logger } from "@/logger.js";
 import { sortModelProvidersForDisplay } from "@/lib/modelProviderOrdering.js";
 import type { SettingsModelProviderTarget } from "@/lib/settingsNavigation.js";
 import { ModelProviderSectionDetail } from "./model-provider-section/Detail.js";
+import { ModelProviderEmptyState } from "./model-provider-section/EmptyState.js";
 import { ModelProviderSectionLayout } from "./model-provider-section/SectionLayout.js";
 import { ProviderTemplatePicker } from "./model-provider-section/ProviderTemplatePicker.js";
 import { useModelProviderNavigation } from "./model-provider-section/useModelProviderNavigation.js";
@@ -85,6 +86,12 @@ export function ModelProviderSection({
     return createCustomProviderNodeKey(providerId);
   });
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  // 手机呈现状态：显式 provider intent 直达详情；否则从完整文字列表进入单个详情。
+  // 这里只记录“详情是否展开”，selectedNodeKey、表单草稿和空/模板状态仍归现有所有者。
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(() =>
+    Boolean(pendingModelProviderTarget?.providerId?.trim()),
+  );
+  const mobileDetailBeforeTemplateRef = useRef(false);
   const [creatingProvider, setCreatingProvider] = useState(false);
 
   const { navigationGroups, selectedNavItem } = useModelProviderNavigation({
@@ -134,7 +141,31 @@ export function ModelProviderSection({
   const handleSelectNavItem = useCallback((item: ModelProviderNavItem) => {
     setSelectedNodeKey(item.key);
     setTemplatePickerOpen(false);
+    // 手机列表点击条目进入详情；桌面无该视图，设置此标志无副作用。
+    setMobileDetailOpen(true);
   }, []);
+
+  const handleOpenTemplatePicker = useCallback(() => {
+    // 记住进入模板选择前的层级，取消模板时回到原列表/详情，而不是无条件清空选择。
+    mobileDetailBeforeTemplateRef.current = mobileDetailOpen;
+    setTemplatePickerOpen(true);
+    setMobileDetailOpen(true);
+  }, [mobileDetailOpen]);
+
+  const handleCloseTemplatePicker = useCallback(() => {
+    setTemplatePickerOpen(false);
+    setMobileDetailOpen(mobileDetailBeforeTemplateRef.current);
+  }, []);
+
+  // 通用手机 header 的父级返回与模板选择器自身的返回共用同一层级语义：
+  // 模板选择优先关闭并回到进入前层级，不会把模板静默丢在隐藏的详情子树里。
+  const handleMobileProviderBack = useCallback(() => {
+    if (templatePickerOpen) {
+      handleCloseTemplatePicker();
+      return;
+    }
+    setMobileDetailOpen(false);
+  }, [handleCloseTemplatePicker, templatePickerOpen]);
 
   const handleCreateProvider = useCallback(
     async (input: { templateId?: string; providerName?: string }) => {
@@ -184,6 +215,7 @@ export function ModelProviderSection({
 
   // 首屏慢网时先渲染布局壳子并展示分组 loading，避免整块设置页空白。
   const customLoading = loading || modelProvidersRefreshing;
+  const empty = !loading && navigationGroups.every((group) => group.items.length === 0);
 
   if (loadError) {
     return (
@@ -207,21 +239,27 @@ export function ModelProviderSection({
         void refresh();
       }}
       addProviderLabel={intl.formatMessage({ id: "settings.modelProvider.addProviderAction" })}
-      onAddProvider={() => setTemplatePickerOpen(true)}
+      onAddProvider={handleOpenTemplatePicker}
       navigationGroups={navigationGroups}
       selectedNodeKey={selectedNodeKey}
       onSelectNavItem={handleSelectNavItem}
       onReorderProviderIds={handleReorderProviderIds}
       reorderableProviderIds={reorderableProviderIds}
+      empty={empty}
+      mobileDetailOpen={mobileDetailOpen}
+      mobileTemplateOpen={templatePickerOpen}
+      onCloseMobileDetail={handleMobileProviderBack}
     >
       {templatePickerOpen ? (
         <ProviderTemplatePicker
           templates={providerTemplates}
           creating={creatingProvider}
-          onBack={() => setTemplatePickerOpen(false)}
+          onBack={handleCloseTemplatePicker}
           onCreateFromTemplate={(templateId) => handleCreateProvider({ templateId })}
           onCreateCustom={(label) => handleCreateProvider({ providerName: label })}
         />
+      ) : empty ? (
+        <ModelProviderEmptyState />
       ) : (
         <ModelProviderSectionDetail
           providerSettingsView={providerSettingsView}

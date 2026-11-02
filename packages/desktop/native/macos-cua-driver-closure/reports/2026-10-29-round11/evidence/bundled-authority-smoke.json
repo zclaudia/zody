@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "nodeFlags": [
+    "--jitless",
+    "--no-warnings",
+    "--input-type=module"
+  ],
+  "authoritySha256": "e0bb13d090179121b7a89bf85009e3a749647beb9c2611b0219d5d72cdf2ae62",
+  "bootstrap": true,
+  "revoked": "revoked",
+  "revocationEvent": true,
+  "exit": {
+    "code": 0,
+    "signal": null
+  },
+  "stderr": "",
+  "signatureAcceptance": false,
+  "nativeCapture": false
+}

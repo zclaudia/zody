@@ -1,0 +1,13 @@
+{
+  "packages/desktop/scripts/lib/cua-driver-closure-comparison-core.mjs": "49d573eb6db856f63cf424a8219cf94a25a4b4ccc9a3925918b7c96400434972",
+  "packages/desktop/scripts/lib/cua-driver-closure-comparison-report.mjs": "29f40abfb16e2917848ad854f7ef3a56e2a7cae66a16d7abe8d3e3ba3f99e7f5",
+  "packages/desktop/scripts/lib/cua-driver-closure-comparison-transition-policy.mjs": "de87333ae6fc197354f4589d3e8aec564b583781dc72d6790aa134e834a354a3",
+  "packages/desktop/scripts/lib/cua-driver-closure-comparison-transition.mjs": "1e95a125b77e56522ca8d6e6c7e81800e8ccf060a28eabcba971fa4a37df6796",
+  "packages/desktop/scripts/lib/cua-driver-round8-prepare-config.mjs": "65325bb55da6ed519e1e27efc585bd3cc658651f659bc6e30f1d7ba547c943bf",
+  "packages/desktop/scripts/lib/cua-driver-round8-prepare-policy.mjs": "972e0bbfe8f005d9ffbba679147038624e25756743b4c27529160b55abf248ff",
+  "packages/desktop/scripts/prepare-macos-cua-driver-round8.mjs": "4d0800d875a2668b07be8e6e2e796adc741e68fc3d95e6953e18f60230bbd7c5",
+  "packages/desktop/test/fixtures/cua-driver-round8-comparison-fixtures.mjs": "86e35bb7ae66d1db9fc60584b60dbc6b9c123899fab528885a4d17ba64d4a863",
+  "packages/desktop/test/fixtures/cua-driver-round8-prepare-fixtures.mjs": "2b3740042cd2d7f5d6ffdc3f814995e7de2834504c1c6587d23557ffa2f7711d",
+  "packages/desktop/test/macosCuaDriverRound8Comparison.test.ts": "1c30b9c54df8e906018f2d162b0be8d2dbd5ae0a7f41036ff2085a3db65ef01a",
+  "packages/desktop/test/macosCuaDriverRound8Prepare.test.ts": "19191d10148a4329aa6fa591cf12cad82ccf4055bdf27239083dc0e9526b7f97"
+}

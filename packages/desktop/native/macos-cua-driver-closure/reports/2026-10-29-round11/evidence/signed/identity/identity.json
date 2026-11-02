@@ -1,0 +1,17 @@
+{
+  "name": "Zody Local Computer Use",
+  "keychain": "/Users/zhvala/Library/Keychains/login.keychain-db",
+  "sha256": "a7f7afa6a507b71c996f4a9bfbf6eef908d67054acdca93833bcd4c94c13ef0b",
+  "sha1": "d2ad8f4bb39ad7dd13ceba3892cadb16659a4732",
+  "keyAlgorithm": "RSA-3072",
+  "signatureAlgorithm": "SHA256",
+  "privateKeyExportable": false,
+  "allowedApplication": "/usr/bin/codesign",
+  "userApproval": "User replied 允许 to the Round11 certificate-install proposal on 2026-10-29",
+  "importStatus": "success",
+  "trustStatus": "success",
+  "importFormat": "pemseq",
+  "trustDomain": "user",
+  "trustPolicy": "codeSign",
+  "temporaryPrivateFilesRemoved": true
+}

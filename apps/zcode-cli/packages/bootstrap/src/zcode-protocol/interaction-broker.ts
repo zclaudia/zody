@@ -58,6 +58,8 @@ import { withWorkflowSettingsAdjustment } from "./workflow-settings-answer.js";
 const EXIT_PLAN_MODE_APPROVAL_QUESTION = "Review this implementation plan.";
 const EXIT_PLAN_MODE_APPROVAL_APPROVE = "approve";
 const INTERACTION_REQUEST_REANNOUNCE_INTERVAL_MS = 1_000;
+/** App 内截图确认的固定 toolName（spec 2026-10-31）；UI 侧按同字面量识别。 */
+const CUA_SCREENSHOT_CONFIRM_TOOL_NAME = "cua_screenshot_confirm";
 
 interface RegisteredRequestOptions extends PermissionBrokerRequestOptions {
   onRegistered?: () => void;
@@ -75,7 +77,9 @@ export function createProtocolInteractionBroker(
           ? requestUserInput(context, request, registeredOptions)
           : request.toolName === EXIT_PLAN_MODE_TOOL_NAME
             ? requestExitPlanModeApproval(context, request, registeredOptions)
-            : requestPermission(context, request, registeredOptions);
+            : request.toolName === CUA_SCREENSHOT_CONFIRM_TOOL_NAME
+              ? requestCuaScreenshotConfirm(context, request, registeredOptions)
+              : requestPermission(context, request, registeredOptions);
       const result = requestResult.catch((error: unknown) => {
         // 协议错误只在适配层翻译；core 不识别传输错误码，也不能把基础设施故障当用户拒绝。
         if (request.mode === "guarded" && error instanceof ProtocolRequestError) {
@@ -181,6 +185,94 @@ async function requestPermission(
       : {}),
     resolvedAt: new Date(),
   };
+}
+
+/**
+ * App 内截图确认（spec 2026-10-31）走与普通 permission 相同的反向 RPC + v4 竞速，
+ * 但通用 requestPermission 只登记 v4Interactions、不产生 PermissionRequested 事件；
+ * PermissionDialog 的唯一渲染入口是 v4 snapshot 的 pendingInteractions，所以这里要在
+ * 请求发起前合成 PermissionRequested、结束时合成 PermissionResolved（与
+ * requestMcpElicitation 的 ingestSynthetic 同一先例）。合成事件只进 live 投影，
+ * 失败不得阻塞用户确认主链路。
+ */
+async function requestCuaScreenshotConfirm(
+  context: ZCodeProtocolAgentServerContext,
+  request: PermissionBrokerRequest,
+  options?: RegisteredRequestOptions,
+): Promise<PermissionBrokerResult> {
+  const scope = {
+    sessionId: String(request.sessionId),
+    ...(request.turnId ? { turnId: String(request.turnId) } : {}),
+    traceId: String(request.traceId),
+  };
+  await ingestSyntheticPermissionEvent(
+    context,
+    scope,
+    SessionEventType.PermissionRequested,
+    {
+      requestId: request.requestId,
+      toolCallId: request.toolCallId,
+      toolName: request.toolName,
+      riskLevel: request.riskLevel,
+      reason: request.reason,
+      input: request.input,
+      // 2026-10-31 用户修订：确认弹窗遵循既有权限策略，不设 approvalMode="user-once"。
+      // 随请求携带项目规则建议，v4 投影据此得到 allow_once + allow_always + deny；
+      // full access 与通用 requestPermission 分支保持同一透传条件。
+      ...(request.suggestedPermissionUpdates
+        ? { suggestedPermissionUpdates: request.suggestedPermissionUpdates }
+        : {}),
+      ...(context.deps?.sessionStore?.commitPermissionFullAccess &&
+      !request.origin &&
+      !request.optionsPolicy
+        ? { fullAccessSupported: true }
+        : {}),
+    },
+  ).catch(() => undefined);
+
+  let decision: PermissionBrokerResult["decision"] | undefined;
+  try {
+    const result = await requestPermission(context, request, options);
+    decision = result.decision;
+    return result;
+  } finally {
+    // abort/异常同样要收口：decision 未落定时按 deny 关闭弹窗（fail-closed）。
+    await ingestSyntheticPermissionEvent(
+      context,
+      scope,
+      SessionEventType.PermissionResolved,
+      {
+        requestId: request.requestId,
+        toolCallId: request.toolCallId,
+        decision: decision === "allow" ? "allow" : "deny",
+      },
+    ).catch(() => undefined);
+  }
+}
+
+/**
+ * v4 合成 permission 事件（不持久化）：raw seq 置 0，让 v4 gateway 分配 transport 序号。
+ * 若沿用持久化高水位 +1，第二条合成事件会因 seq 不高于游标被当作重放丢弃，pending 永远清不掉。
+ */
+async function ingestSyntheticPermissionEvent(
+  context: ZCodeProtocolAgentServerContext,
+  scope: { sessionId: string; turnId?: string; traceId: string },
+  type: typeof SessionEventType.PermissionRequested | typeof SessionEventType.PermissionResolved,
+  payload: Record<string, unknown>,
+): Promise<void> {
+  const gateway = context.v4Gateway;
+  if (!gateway) return;
+  const event: SessionEvent = {
+    id: createEventId(),
+    sessionId: scope.sessionId as never,
+    ...(scope.turnId ? { turnId: scope.turnId as never } : {}),
+    type,
+    timestamp: new Date(),
+    traceId: scope.traceId as never,
+    sequenceNumber: 0,
+    payload: payload as never,
+  };
+  gateway.ingest(scope.sessionId, event);
 }
 
 /**

@@ -1,5 +1,8 @@
 // @vitest-environment jsdom
 
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -81,6 +84,48 @@ describe("ProviderTemplatePicker", () => {
     expect(html).not.toContain("h-20");
     expect(html).not.toContain("line-clamp-2");
     expect(html).not.toContain('type="search"');
+  });
+
+  it("MiMo API 与 Token Plan 以两个独立模板出现在添加列表并可分别创建", async () => {
+    // 设置页回归读取正式 Built-in 配置，防止模板拆分后只剩一个入口或端点串用。
+    // 路径从测试文件定位仓库根：不能用 process.cwd()（`pnpm --dir packages/ui` 会落到包目录），
+    // 也不能在 jsdom 环境对相对 URL 做 resolve（Vite 会改写成 http://localhost/@fs/...）。
+    const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+    const builtin = JSON.parse(
+      await readFile(resolve(repoRoot, "config/provider/zcode-builtin.json"), "utf8"),
+    );
+    const templates = builtin.config.providerConfigRules.templateRules.filter(
+      (template: { templateId: string }) =>
+        template.templateId === "xiaomi-mimo" || template.templateId === "xiaomi-mimo-token-plan",
+    );
+    expect(templates.map((template: { templateId: string }) => template.templateId)).toEqual([
+      "xiaomi-mimo",
+      "xiaomi-mimo-token-plan",
+    ]);
+    const onCreateFromTemplate = vi.fn<(templateId: string) => Promise<void>>().mockResolvedValue();
+
+    render(
+      createElement(
+        TooltipProvider,
+        null,
+        createElement(ProviderTemplatePicker, {
+          templates,
+          onBack: vi.fn(),
+          onCreateFromTemplate,
+          onCreateCustom: vi.fn(),
+          creating: false,
+        }),
+      ),
+    );
+
+    expect(await screen.findByRole("button", { name: "Xiaomi MiMo API" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Xiaomi MiMo Token Plan" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Xiaomi MiMo API" }));
+    await waitFor(() => expect(onCreateFromTemplate).toHaveBeenLastCalledWith("xiaomi-mimo"));
+    fireEvent.click(screen.getByRole("button", { name: "Xiaomi MiMo Token Plan" }));
+    await waitFor(() =>
+      expect(onCreateFromTemplate).toHaveBeenLastCalledWith("xiaomi-mimo-token-plan"),
+    );
   });
 
   it("Template 创建失败时在详情底部显示错误并允许重试", async () => {

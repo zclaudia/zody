@@ -1,9 +1,26 @@
 import { createConnection } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { createComputerUseBridgeGlobals, NODE_REPL_CUA_BRIDGE_SYMBOL } from "../src/cua-bridge.js";
-import { createNodeReplCuaBroker, type NodeReplCuaBroker } from "../src/cua-broker.js";
 import { CUA_APP_ASSOCIATIONS_META_KEY } from "@zcode/zcode-cua/host-display-contract";
+import {
+  createNodeReplCuaBroker,
+  resolveTrustedCuaContext,
+  type NodeReplCuaBroker,
+} from "../src/cua-broker.js";
+import { createComputerUseBridgeGlobals, NODE_REPL_CUA_BRIDGE_SYMBOL } from "../src/cua-bridge.js";
+
+const trustedContext = {
+  runtime_scope: "main" as const,
+  session_id: "session-1",
+  workspace_path: "/workspace",
+  workspace_identity: "ssh://host/workspace",
+  workspace_key: "ssh://host/workspace",
+  turn_id: "turn-1",
+  client_mode: "desktop-continuous",
+  delivery_kind: "desktop-continuous",
+  trace_id: "trace-1",
+  span_id: "span-1",
+};
 
 describe("node_repl CUA bridge", () => {
   let broker: NodeReplCuaBroker | undefined;
@@ -13,8 +30,8 @@ describe("node_repl CUA bridge", () => {
     broker = undefined;
   });
 
-  it("forwards the complete trusted request context to the shared runtime", async () => {
-    const calls: unknown[] = [];
+  it("forwards the main-bound workspace identity to the shared runtime", async () => {
+    const calls: Array<{ context?: unknown }> = [];
     broker = createNodeReplCuaBroker({
       runtime: {
         execute: async (input) => {
@@ -27,35 +44,22 @@ describe("node_repl CUA bridge", () => {
         closeSession: async () => undefined,
         dispose: async () => undefined,
       },
-      // 不传 platform 时 createNodeReplCuaBroker 会走 POSIX 分支，在 tmpdir 里建
-      // `znrc-*.sock`；Windows 的 net.Server.listen 只接受命名管道，给文件路径直接
-      // EACCES，于是这条用例在 Windows 上从来没跑过。产品代码本身是对的（它按
-      // platform 分支选管道或 unix socket），所以测试必须跑在真实平台上，而不是
-      // 默默假设 POSIX。
       platform: process.platform,
     });
     await broker.ready;
 
     const active = {
       generation: 3,
-      requestMeta: {
-        runtime_scope: "main" as const,
-        session_id: "session-1",
-        workspace_path: "/workspace",
-        workspace_identity: "ssh://host/workspace",
-        workspace_key: "ssh://host/workspace",
-        remote_session_id: "remote-1",
-        turn_id: "turn-1",
-        client_mode: "web-remote-replayable",
-        delivery_kind: "web-remote-replayable",
-        trace_id: "trace-1",
-        span_id: "span-1",
-      },
+      requestMeta: trustedContext,
       signal: new AbortController().signal,
     };
     const session = { mergeResponseMeta: () => undefined } as never;
+    const capability = await broker.mint({
+      invocationId: "invocation-1",
+      context: resolveTrustedCuaContext(trustedContext)!,
+    });
     const globals = createComputerUseBridgeGlobals({
-      broker: broker.connection,
+      broker: capability,
       documentationRoot: "/tmp/docs",
       generation: active.generation,
       getActiveCall: () => active,
@@ -74,12 +78,13 @@ describe("node_repl CUA bridge", () => {
       arguments: { display_id: 1 },
       context: {
         sessionId: "session-1",
+        runtimeScope: "main",
         workspacePath: "/workspace",
         workspaceIdentity: "ssh://host/workspace",
         workspaceKey: "ssh://host/workspace",
-        remoteSessionId: "remote-1",
-        clientMode: "web-remote-replayable",
-        deliveryKind: "web-remote-replayable",
+        turnId: "turn-1",
+        clientMode: "desktop-continuous",
+        deliveryKind: "desktop-continuous",
         trace: { traceId: "trace-1", spanId: "span-1" },
       },
     });
@@ -113,7 +118,7 @@ describe("node_repl CUA bridge", () => {
 
     const active = {
       generation: 1,
-      requestMeta: { runtime_scope: "main" as const, session_id: "session-1", workspace_key: "ws" },
+      requestMeta: trustedContext,
       signal: new AbortController().signal,
     };
     const recorded: unknown[] = [];
@@ -121,8 +126,12 @@ describe("node_repl CUA bridge", () => {
       mergeResponseMeta: () => undefined,
       recordCuaAppIdentity: (app: unknown) => recorded.push(app),
     } as never;
+    const capability = await broker.mint({
+      invocationId: "invocation-2",
+      context: resolveTrustedCuaContext(trustedContext)!,
+    });
     const globals = createComputerUseBridgeGlobals({
-      broker: broker.connection,
+      broker: capability,
       documentationRoot: "/tmp/docs",
       generation: 1,
       getActiveCall: () => active,
@@ -161,12 +170,16 @@ describe("node_repl CUA bridge", () => {
 
     const active = {
       generation: 1,
-      requestMeta: { runtime_scope: "main" as const, session_id: "session-1", workspace_key: "ws" },
+      requestMeta: trustedContext,
       signal: new AbortController().signal,
     };
     const recorded: unknown[] = [];
+    const capability = await broker.mint({
+      invocationId: "invocation-3",
+      context: resolveTrustedCuaContext(trustedContext)!,
+    });
     const globals = createComputerUseBridgeGlobals({
-      broker: broker.connection,
+      broker: capability,
       documentationRoot: "/tmp/docs",
       generation: 1,
       getActiveCall: () => active,
@@ -209,7 +222,7 @@ describe("node_repl CUA bridge", () => {
   it("fails closed after a worker generation changes", async () => {
     const active = {
       generation: 1,
-      requestMeta: { runtime_scope: "main" as const, session_id: "session-1" },
+      requestMeta: trustedContext,
       signal: new AbortController().signal,
     };
     const globals = createComputerUseBridgeGlobals({
@@ -225,27 +238,35 @@ describe("node_repl CUA bridge", () => {
     expect(() => bridge.assertAvailable()).toThrow("runtime binding is stale");
   });
 
-  it("rejects a forged broker token", async () => {
+  it("rejects a forged broker token without executing", async () => {
+    let executions = 0;
     broker = createNodeReplCuaBroker({
       runtime: {
-        execute: async () => ({ content: [{ type: "text", text: "should not run" }] }),
+        execute: async () => {
+          executions += 1;
+          return { content: [{ type: "text", text: "should not run" }] };
+        },
         closeSession: async () => undefined,
         dispose: async () => undefined,
       },
       platform: process.platform,
     });
     await broker.ready;
+    const capability = await broker.mint({
+      invocationId: "invocation-forged",
+      context: resolveTrustedCuaContext(trustedContext)!,
+    });
     const result = await new Promise<string>((resolve) => {
-      const socket = createConnection(broker!.connection.socketPath);
+      const socket = createConnection(capability.socketPath);
       let buffer = "";
       socket.once("connect", () => {
         socket.end(
           `${JSON.stringify({
             id: "forged",
             token: "wrong-token",
+            invocationId: "invocation-forged",
             method: "screenshot",
             input: {},
-            context: { sessionId: "session-1", workspaceKey: "/workspace" },
           })}\n`,
         );
       });
@@ -256,5 +277,34 @@ describe("node_repl CUA bridge", () => {
       socket.once("error", () => resolve(buffer.trim()));
     });
     expect(result).toContain("not authorized");
+    expect(executions).toBe(0);
+  });
+
+  it("keeps CUA admission fail-closed for remote, unknown, and incomplete contexts", () => {
+    expect(resolveTrustedCuaContext(trustedContext)).toBeDefined();
+    expect(
+      resolveTrustedCuaContext({ ...trustedContext, remote_session_id: "remote-1" }),
+    ).toBeUndefined();
+    expect(
+      resolveTrustedCuaContext({ ...trustedContext, runtime_scope: "unknown" as never }),
+    ).toBeUndefined();
+    expect(
+      resolveTrustedCuaContext({ ...trustedContext, runtime_scope: undefined as never }),
+    ).toBeUndefined();
+    expect(
+      resolveTrustedCuaContext({ ...trustedContext, client_mode: "web-remote-replayable" }),
+    ).toBeUndefined();
+    expect(
+      resolveTrustedCuaContext({ ...trustedContext, delivery_kind: "web-remote-replayable" }),
+    ).toBeUndefined();
+    expect(resolveTrustedCuaContext({ ...trustedContext, session_id: "" })).toBeUndefined();
+    expect(
+      resolveTrustedCuaContext({
+        ...trustedContext,
+        workspace_path: "",
+        workspace_identity: "",
+        workspace_key: "",
+      }),
+    ).toBeUndefined();
   });
 });

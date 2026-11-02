@@ -250,6 +250,10 @@ export async function runZCodeProtocolAgent(
               }
             : {}),
           sourceTitle: "electron",
+          ...(options.cuaNativeCapture ? { cuaNativeCapture: options.cuaNativeCapture } : {}),
+          ...(options.cuaNodeReplMcpPortFactory
+            ? { cuaNodeReplMcpPortFactory: options.cuaNodeReplMcpPortFactory }
+            : {}),
           onToolExecResource: (params) =>
             connection.send({ method: zcodeProtocolNotifications.toolExecResource, params }),
         }),

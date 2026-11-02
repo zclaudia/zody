@@ -1,0 +1,40 @@
+{
+  "status": "one-real-desktop-screenshot-and-ui-stop-passed",
+  "sessionId": "sess_490310af-5c4f-4391-8fd6-360a131080b4",
+  "turnId": "turn_f83cb32d-b27d-45d4-83eb-a856d7d36a5c",
+  "lineageId": "7175ccc6-c4c0-4b1a-b535-22d34143b5bd",
+  "uiPid": 13515,
+  "windowId": 88108,
+  "helperPid": 14065,
+  "nativePNG": {
+    "sha256": "427d7fcec5a16e483fa75b3f12b14fdf2ff18ef491ae895783d9b4d8cd48e072",
+    "width": 2400,
+    "height": 1600,
+    "bytes": 476125,
+    "resourcesReleased": true,
+    "machineLeaseReleased": true,
+    "deliveredAt": "2026-10-30T11:23:41.694Z"
+  },
+  "modelImage": {
+    "mimeType": "image/jpeg",
+    "width": 2048,
+    "height": 1365,
+    "bytes": 149977,
+    "sha256": "db3048faeb4a1af8a75891f59bf17313d73fdbc29cca50cd7902b1ff23f9aeff",
+    "base64Chars": 199972,
+    "retrieval": "Downloaded original tool image through real UI; model-io body confirms image/jpeg source but intentionally omits pixels; independently viewed file"
+  },
+  "stop": {
+    "uiState": "Stopped",
+    "reason": "user-stop",
+    "revision": 2,
+    "at": "2026-10-30T11:24:11.429Z",
+    "waitToolCanceledAt": "2026-10-30T11:24:11.437Z",
+    "waitToolDurationMs": 27648
+  },
+  "limits": [
+    "No native Fenced/input release claim",
+    "Independent Helper TCC attribution not accepted; prior launch attributed to Codex",
+    "Default remains disabled; isolated explicit candidate only"
+  ]
+}

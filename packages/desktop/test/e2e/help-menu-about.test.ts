@@ -160,7 +160,7 @@ describe(`问号菜单应用入口（${expectedFlavor}）`, () => {
     await seedSettings({
       locale: "en-US",
       localePreference: "en-US",
-      zcodeEndpointOrigin: helpConfig.origin,
+      zodyEndpointOrigin: helpConfig.origin,
     });
     await browser.refresh();
     await enterWorkspace();

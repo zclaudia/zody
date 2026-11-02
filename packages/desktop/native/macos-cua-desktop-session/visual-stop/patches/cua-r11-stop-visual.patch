@@ -1,0 +1,712 @@
+--- a/crates/cua-macos-visual/Cargo.toml
++++ b/crates/cua-macos-visual/Cargo.toml
+@@ -9,6 +9,11 @@
+ [lib]
+ crate-type = ["rlib", "staticlib"]
+ 
++[features]
++# Build-time only. Production and normal tests compile without this feature;
++# the Swift bridge also receives the matching compiler define below.
++stop-diagnostic = []
++
+ [dependencies]
+ # 只开 PNG，显式绕开 workspace 的 image features（png+jpeg），避免 JPEG 编码器进入新图。
+ image = { version = "0.25", default-features = false, features = ["png"] }
+--- a/crates/cua-macos-visual/build.rs
++++ b/crates/cua-macos-visual/build.rs
+@@ -22,6 +22,7 @@
+     println!("cargo:rerun-if-changed=native/CuaVisualCapture.swift");
+     println!("cargo:rerun-if-env-changed=DEVELOPER_DIR");
+     println!("cargo:rerun-if-env-changed=TOOLCHAINS");
++    println!("cargo:rerun-if-env-changed=CARGO_FEATURE_STOP_DIAGNOSTIC");
+ 
+     if env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("macos") {
+         return;
+@@ -70,7 +71,8 @@
+     let source = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("missing manifest dir"))
+         .join("native/CuaVisualCapture.swift");
+ 
+-    let output = Command::new(&compiler)
++    let mut command = Command::new(&compiler);
++    command
+         .arg("-parse-as-library")
+         .arg("-emit-object")
+         .arg("-swift-version")
+@@ -83,7 +85,11 @@
+         .arg("-module-name")
+         .arg("CuaMacOSVisualBridge")
+         .arg("-module-cache-path")
+-        .arg(&module_cache)
++        .arg(&module_cache);
++    if env::var_os("CARGO_FEATURE_STOP_DIAGNOSTIC").is_some() {
++        command.args(["-D", "CUA_R11_STOP_DIAGNOSTIC"]);
++    }
++    let output = command
+         .arg("-o")
+         .arg(&object)
+         .arg(&source)
+--- a/crates/cua-macos-visual/native/CuaVisualCapture.swift
++++ b/crates/cua-macos-visual/native/CuaVisualCapture.swift
+@@ -7,6 +7,7 @@
+ 
+ import CoreGraphics
+ import CoreVideo
++import Dispatch
+ import Foundation
+ import ScreenCaptureKit
+ 
+@@ -40,6 +41,127 @@
+ ) -> Void
+ 
+ public typealias CuaPayloadReleasedCallback = @convention(c) (UInt64) -> Void
++
++// Swift only knows the session coordinator observation id (requestID). The
++// Rust helper maps that id to its separate helper operation id before calling
++// the native admission checkpoint, so the two ids are never assumed equal.
++public typealias CuaSubmitReturnedCallback = @convention(c) (
++    UInt64, UInt32, Int32, Int32, Double, Double, Double, Double
++) -> Int32
++
++#if CUA_R11_STOP_DIAGNOSTIC
++private let cuaStopDiagnosticGateTimeoutMs: Int32 = 30_000
++
++@_silgen_name("cua_r11_visual_wait_diagnostic_gate")
++private func cua_r11_visual_wait_diagnostic_gate(_ requestId: UInt64, _ timeoutMs: Int32) -> Int32
++
++private func cuaLogStopEvent(_ name: String, _ fields: [String: Any]) {
++    guard let data = try? JSONSerialization.data(withJSONObject: fields, options: [.sortedKeys]) else {
++        FileHandle.standardError.write(Data("[cua-native] \(name) {\"serializationError\":true}\n".utf8))
++        return
++    }
++    FileHandle.standardError.write(Data("[cua-native] \(name) ".utf8))
++    FileHandle.standardError.write(data)
++    FileHandle.standardError.write(Data("\n".utf8))
++}
++#endif
++
++// OS completion may arrive before captureImage returns. Store exactly one real
++// image/error without rendering, and let a separate consumer wait for both the
++// submit-return publication and completion. This keeps the framework callback
++// thread from blocking on Stop/diagnostic state.
++private final class CompletionMailbox {
++    private let condition = NSCondition()
++    private var submitted = false
++    private var stored = false
++    private var consumed = false
++    private var discarded = false
++    private var image: CGImage?
++    private var error: Error?
++
++    func store(image: CGImage?, error: Error?) {
++        condition.lock()
++        defer { condition.unlock() }
++        guard !stored, !discarded else { return }
++        self.image = image
++        self.error = error
++        self.stored = true
++        condition.broadcast()
++    }
++
++    func publishSubmit() {
++        condition.lock()
++        submitted = true
++        condition.broadcast()
++        condition.unlock()
++    }
++
++    /// Wait for both the real completion and submit-return publication without
++    /// taking or clearing the held image/error.
++    func waitReadyAfterSubmit() {
++        condition.lock()
++        defer { condition.unlock() }
++        while !submitted || !stored {
++            condition.wait()
++        }
++    }
++
++    /// Consume-and-clear exactly once for the normal render path.
++    func takeHeldCompletion() -> (CGImage?, Error?) {
++        condition.lock()
++        defer { condition.unlock() }
++        guard !consumed, !discarded else { return (nil, nil) }
++        consumed = true
++        let result = (image, error)
++        image = nil
++        error = nil
++        return result
++    }
++
++    /// Drop held bridge-owned image/error without rendering or success. A late
++    /// store after discard is ignored so no new reference is retained.
++    func discard() {
++        condition.lock()
++        defer { condition.unlock() }
++        discarded = true
++        consumed = true
++        image = nil
++        error = nil
++    }
++}
++
++private struct CuaPreparedCompletion {
++    let status: CuaVisualStatus
++    let width: UInt32
++    let height: UInt32
++    let rgba: RGBABuffer?
++}
++
++/// Consume-and-clear the mailbox inside a synchronous local scope. Only plain
++/// RGBA/status/dimensions escape, so the mailbox and consumer CGImage/error
++/// references are gone before finish/payloadReleased.
++private func prepareCompletion(
++    mailbox: CompletionMailbox,
++    outputWidth: UInt32,
++    outputHeight: UInt32,
++    maxSide: Int,
++    maxBytes: Int
++) -> CuaPreparedCompletion {
++    let (heldImage, heldError) = mailbox.takeHeldCompletion()
++    guard heldError == nil, let image = heldImage else {
++        return CuaPreparedCompletion(status: .captureFailed, width: 0, height: 0, rgba: nil)
++    }
++    guard image.width == Int(outputWidth), image.height == Int(outputHeight),
++          let rgba = renderRGBA(image: image, maxSide: maxSide, maxBytes: maxBytes) else {
++        return CuaPreparedCompletion(status: .imageInvalid, width: 0, height: 0, rgba: nil)
++    }
++    return CuaPreparedCompletion(
++        status: .success,
++        width: outputWidth,
++        height: outputHeight,
++        rgba: rgba
++    )
++}
+ 
+ private final class RGBABuffer {
+     private var pointer: UnsafeMutableRawPointer?
+@@ -238,6 +360,7 @@
+     admission: CuaAdmissionCallback,
+     completion: CuaCompletionCallback,
+     payloadReleased: CuaPayloadReleasedCallback,
++    submitReturned: CuaSubmitReturnedCallback,
+     maxSide: UInt32,
+     maxRGBABytes: UInt64
+ ) -> Int32 {
+@@ -357,6 +480,7 @@
+         configuration.pixelFormat = kCVPixelFormatType_32BGRA
+ 
+         guard gate.claimCapture() else { return }
++        let mailbox = CompletionMailbox()
+ 
+         SCScreenshotManager.captureImage(
+             contentFilter: filter,
+@@ -368,25 +492,101 @@
+             // 因此这里在进入校验/渲染前单独一次性 claim capture-completion；
+             // 它不代替 capture-start claim，也不代替最终 terminal claim。
+             guard gate.claimCaptureCompletion() else { return }
+-            guard captureError == nil, let image else {
++            mailbox.store(image: image, error: captureError)
++            #if CUA_R11_STOP_DIAGNOSTIC
++            cuaLogStopEvent("visual-completion-held", [
++                "requestId": requestID,
++                "hasImage": image != nil,
++                "captureErrorPresent": captureError != nil,
++            ])
++            #endif
++        }
++        let targetMatches = submitReturned(
++            requestID,
++            selected.windowID,
++            selected.pid,
++            selected.layer,
++            selected.x,
++            selected.y,
++            selected.width,
++            selected.height
++        ) == 0
++        #if CUA_R11_STOP_DIAGNOSTIC
++        cuaLogStopEvent("visual-submit-return", [
++            "requestId": requestID,
++            "targetMatches": targetMatches,
++        ])
++        #endif
++        if !targetMatches {
++            // The submit notification did not match the coordinator's existing
++            // observation/target association. Do not render or report success;
++            // release any held bridge completion and fail the admission.
++            mailbox.discard()
++            finish(.admissionRejected, selected: selected)
++            return
++        }
++        mailbox.publishSubmit()
++
++        // The diagnostic gate only delays consumption of an already-real
++        // completion. Production never references the gate symbol at all.
++        DispatchQueue.global(qos: .userInitiated).async {
++            mailbox.waitReadyAfterSubmit()
++            #if CUA_R11_STOP_DIAGNOSTIC
++            let gate = cua_r11_visual_wait_diagnostic_gate(
++                requestID,
++                cuaStopDiagnosticGateTimeoutMs
++            )
++            if gate == 1 {
++                // Stop: drop the held image/error without rendering or success
++                // completion. This terminal callback closes result reception
++                // and payloadReleased follows through the existing ABI.
++                mailbox.discard()
++                cuaLogStopEvent("visual-stop-gate-release", [
++                    "requestId": requestID,
++                    "completionConsumed": false,
++                    "heldCompletionDiscarded": true,
++                    "gateResult": "stopped",
++                ])
++                finish(.canceled, selected: selected)
++                return
++            }
++            if gate == 2 {
++                // A deadline timeout is an explicit failure, not a Stop.
++                mailbox.discard()
++                cuaLogStopEvent("visual-stop-gate-timeout", [
++                    "requestId": requestID,
++                    "timeoutMs": cuaStopDiagnosticGateTimeoutMs,
++                    "heldCompletionDiscarded": true,
++                    "gateResult": "deadline-timeout",
++                ])
+                 finish(.captureFailed, selected: selected)
+                 return
+             }
+-            guard image.width == Int(outputWidth), image.height == Int(outputHeight),
+-                  let rgba = renderRGBA(
+-                      image: image,
+-                      maxSide: maxSideInt,
+-                      maxBytes: maxBytes
+-                  ) else {
+-                finish(.imageInvalid, selected: selected)
++            if gate != 0 {
++                mailbox.discard()
++                cuaLogStopEvent("visual-stop-gate-error", [
++                    "requestId": requestID,
++                    "heldCompletionDiscarded": true,
++                    "gateResult": gate == 3 ? "missing-operation" : "invalid-result",
++                ])
++                finish(.captureFailed, selected: selected)
+                 return
+             }
++            #endif
++
++            let prepared = prepareCompletion(
++                mailbox: mailbox,
++                outputWidth: outputWidth,
++                outputHeight: outputHeight,
++                maxSide: maxSideInt,
++                maxBytes: maxBytes
++            )
+             finish(
+-                .success,
++                prepared.status,
+                 selected: selected,
+-                width: outputWidth,
+-                height: outputHeight,
+-                rgba: rgba
++                width: prepared.width,
++                height: prepared.height,
++                rgba: prepared.rgba
+             )
+         }
+     }
+--- a/crates/cua-macos-visual/src/capture.rs
++++ b/crates/cua-macos-visual/src/capture.rs
+@@ -35,12 +35,15 @@
+ type CompletionCallback =
+     unsafe extern "C" fn(u64, i32, u32, i32, i32, f64, f64, f64, f64, u32, u32, *const u8, usize);
+ type PayloadReleasedCallback = unsafe extern "C" fn(u64);
++type SubmitReturnedCallback =
++    unsafe extern "C" fn(u64, u32, i32, i32, f64, f64, f64, f64) -> i32;
+ type CaptureWindowFn = unsafe extern "C" fn(
+     u64,
+     u32,
+     AdmissionCallback,
+     CompletionCallback,
+     PayloadReleasedCallback,
++    SubmitReturnedCallback,
+     u32,
+     u64,
+ ) -> i32;
+@@ -52,6 +55,7 @@
+         admission: AdmissionCallback,
+         completion: CompletionCallback,
+         payload_released: PayloadReleasedCallback,
++        submit_returned: SubmitReturnedCallback,
+         max_side: u32,
+         max_rgba_bytes: u64,
+     ) -> i32;
+@@ -65,6 +69,7 @@
+ pub(crate) struct CaptureHooks {
+     pub(crate) operation_id: u64,
+     pub(crate) admission: session::AdmissionCheck,
++    pub(crate) submit: session::SubmitNotifier,
+     pub(crate) cancel: Arc<CancelSlot>,
+     pub(crate) gate: Arc<CallbackGate>,
+ }
+@@ -128,6 +133,7 @@
+                 request.expected_identity(),
+                 Some(Arc::clone(&hooks.admission)),
+                 Some(Arc::new(move || gate.mark_released())),
++                Some(Arc::clone(&hooks.submit)),
+             )?
+         }
+         None => coordinator.reserve(request.expected_identity())?,
+@@ -152,6 +158,7 @@
+             bridge_admission,
+             bridge_completion,
+             bridge_payload_released,
++            bridge_submit_returned,
+             MAX_CAPTURE_SIDE,
+             MAX_RGBA_BYTES as u64,
+         )
+@@ -167,6 +174,29 @@
+         return Err(error);
+     }
+     Ok(observation)
++}
++
++unsafe extern "C" fn bridge_submit_returned(
++    request_id: u64,
++    window_id: u32,
++    pid: i32,
++    layer: i32,
++    x: f64,
++    y: f64,
++    width: f64,
++    height: f64,
++) -> i32 {
++    let actual = WindowIdentity::new(
++        window_id,
++        pid,
++        layer,
++        crate::geometry::WindowBounds::new(x, y, width, height),
++    );
++    if session::global().notify_submit(request_id, actual) {
++        0
++    } else {
++        1
++    }
+ }
+ 
+ unsafe extern "C" fn bridge_admission(
+--- a/crates/cua-macos-visual/src/helper_bridge.rs
++++ b/crates/cua-macos-visual/src/helper_bridge.rs
+@@ -10,11 +10,14 @@
+ use std::ptr;
+ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+ use std::sync::{Arc, Condvar, Mutex, MutexGuard};
++use std::time::Duration;
+ 
+ use crate::capture::CaptureHooks;
+ use crate::error::VisualError;
+ use crate::geometry::{CaptureRequest, WindowBounds, WindowIdentity};
+-use crate::session::{AdmissionCheck, CaptureCancelHandle, Checkpoint};
++use crate::session::{
++    AdmissionCheck, CaptureCancelHandle, Checkpoint, DiagnosticGateWait, SubmitNotifier,
++};
+ use crate::CapturedFrame;
+ 
+ pub const CUA_R11_VISUAL_OK: i32 = 0;
+@@ -30,6 +33,7 @@
+ pub const CUA_R11_VISUAL_CHECK_START: u32 = 0;
+ pub const CUA_R11_VISUAL_CHECK_SWIFT_ADMISSION: u32 = 1;
+ pub const CUA_R11_VISUAL_CHECK_FINAL_DELIVERY: u32 = 2;
++pub const CUA_R11_VISUAL_CHECK_SUBMIT_RETURNED: u32 = 3;
+ 
+ pub type CuaR11AdmitFn = unsafe extern "C" fn(
+     context: *mut c_void,
+@@ -361,9 +365,20 @@
+                 native.check(operation_id, checkpoint_value(checkpoint), identity)
+             })
+         };
++        let submit: SubmitNotifier = {
++            let native = Arc::clone(&native);
++            Arc::new(move |identity| {
++                native.check(
++                    operation_id,
++                    CUA_R11_VISUAL_CHECK_SUBMIT_RETURNED,
++                    identity,
++                )
++            })
++        };
+         let hooks = CaptureHooks {
+             operation_id,
+             admission,
++            submit,
+             cancel: Arc::clone(&cancel),
+             gate: Arc::clone(&gate),
+         };
+@@ -441,6 +456,23 @@
+         _ => 0,
+     }))
+     .unwrap_or(0)
++}
++
++#[cfg(feature = "stop-diagnostic")]
++#[no_mangle]
++pub unsafe extern "C" fn cua_r11_visual_wait_diagnostic_gate(
++    request_id: u64,
++    timeout_ms: i32,
++) -> i32 {
++    catch_unwind(AssertUnwindSafe(|| {
++        let timeout = Duration::from_millis(timeout_ms.max(0) as u64);
++        match crate::session::global().wait_diagnostic_gate(request_id, timeout) {
++            DiagnosticGateWait::Stopped => 1,
++            DiagnosticGateWait::TimedOut => 2,
++            DiagnosticGateWait::Missing => 3,
++        }
++    }))
++    .unwrap_or(3)
+ }
+ 
+ #[no_mangle]
+@@ -542,7 +574,58 @@
+         }
+     }
+ 
++    unsafe extern "C" fn record_submit_checkpoint(
++        _context: *mut c_void,
++        operation_id: u64,
++        checkpoint: u32,
++        _window_id: u32,
++        _pid: i32,
++        _layer: i32,
++        _x: f64,
++        _y: f64,
++        _width: f64,
++        _height: f64,
++    ) -> i32 {
++        if operation_id == 91 && checkpoint == CUA_R11_VISUAL_CHECK_SUBMIT_RETURNED {
++            0
++        } else {
++            1
++        }
++    }
++
+     #[test]
++    fn submit_checkpoint_carries_the_helper_operation_id_not_swift_request_id() {
++        let request = valid_request();
++        let expected = crate::geometry::WindowIdentity::new(
++            request.window_id,
++            request.pid,
++            request.layer,
++            WindowBounds::new(
++                request.x,
++                request.y,
++                request.width,
++                request.height,
++            ),
++        );
++        let native = NativeAdmission {
++            callback: record_submit_checkpoint,
++            context: 0,
++        };
++        assert!(native.check(
++            91,
++            CUA_R11_VISUAL_CHECK_SUBMIT_RETURNED,
++            &expected
++        ));
++        // Swift's observation id is deliberately different. Forwarding it as
++        // the helper operation id must be rejected by the fixture above.
++        assert!(!native.check(
++            17,
++            CUA_R11_VISUAL_CHECK_SUBMIT_RETURNED,
++            &expected
++        ));
++    }
++
++    #[test]
+     fn start_requires_a_callback_and_a_valid_request() {
+         let request = valid_request();
+         let missing = unsafe { cua_r11_visual_start(&request, None, ptr::null_mut()) };
+--- a/crates/cua-macos-visual/src/session.rs
++++ b/crates/cua-macos-visual/src/session.rs
+@@ -7,6 +7,7 @@
+ 
+ use std::collections::BTreeMap;
+ use std::sync::{Arc, Condvar, Mutex, MutexGuard, OnceLock};
++use std::time::Duration;
+ 
+ use crate::error::{DriftStage, VisualError};
+ use crate::geometry::{
+@@ -57,6 +58,7 @@
+     admission_check: Option<AdmissionCheck>,
+     admission_error: Option<VisualError>,
+     release_notifier: Option<ReleaseNotifier>,
++    submit_notifier: Option<SubmitNotifier>,
+     callback_delivered: bool,
+     signal: Arc<Signal>,
+ }
+@@ -95,6 +97,19 @@
+ 
+ /// Called only after the Swift bridge reports callback resources returned.
+ pub(crate) type ReleaseNotifier = Arc<dyn Fn() + Send + Sync>;
++
++/// Notification-only publish hook for a real `captureImage` return. It carries
++/// the helper operation id through its captured closure; the coordinator key
++/// remains the independent session observation id.
++pub(crate) type SubmitNotifier = Arc<dyn Fn(&WindowIdentity) -> bool + Send + Sync>;
++
++/// Diagnostic-only result of waiting on the existing observation cancel slot.
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub(crate) enum DiagnosticGateWait {
++    Stopped,
++    TimedOut,
++    Missing,
++}
+ 
+ /// Native completion class. No field represents authorization.
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+@@ -257,7 +272,7 @@
+         &self,
+         expected: WindowIdentity,
+     ) -> Result<CaptureObservation, VisualError> {
+-        self.reserve_with_hooks(expected, None, None)
++        self.reserve_with_hooks(expected, None, None, None)
+     }
+ 
+     /// Reserve with the private Helper's admission and release hooks.
+@@ -266,6 +281,7 @@
+         expected: WindowIdentity,
+         admission_check: Option<AdmissionCheck>,
+         release_notifier: Option<ReleaseNotifier>,
++        submit_notifier: Option<SubmitNotifier>,
+     ) -> Result<CaptureObservation, VisualError> {
+         let mut registry = lock_registry(&self.registry);
+         if registry.entries.len() >= registry.capacity {
+@@ -287,6 +303,7 @@
+                 admission_check,
+                 admission_error: None,
+                 release_notifier,
++                submit_notifier,
+                 callback_delivered: false,
+                 signal: Arc::clone(&signal),
+             },
+@@ -359,7 +376,55 @@
+         if let Some(entry) = registry.entries.get_mut(&id) {
+             if entry.phase == Phase::Enumerating {
+                 entry.admission_error = Some(error);
++            }
++        }
++    }
++
++    /// Publish the real Swift submit-return fact without re-entering admission.
++    /// The notifier is selected by the session observation id and invokes the
++    /// native callback with the separate helper operation id it captured.
++    pub(crate) fn notify_submit(&self, id: u64, actual: WindowIdentity) -> bool {
++        let notifier = {
++            let registry = lock_registry(&self.registry);
++            let Some(entry) = registry.entries.get(&id) else {
++                return false;
++            };
++            if entry.phase != Phase::Capturing || entry.selected != Some(actual) {
++                return false;
+             }
++            entry.submit_notifier.clone()
++        };
++        notifier.map_or(false, |notify| notify(&actual))
++    }
++
++    /// Wait on the same existing observation cancel condition. The registry
++    /// lock is dropped before waiting. This observes cancellation only; it is
++    /// not authorization and does not consume or synthesize a completion.
++    pub(crate) fn wait_diagnostic_gate(
++        &self,
++        id: u64,
++        timeout: Duration,
++    ) -> DiagnosticGateWait {
++        let signal = {
++            let registry = lock_registry(&self.registry);
++            let Some(entry) = registry.entries.get(&id) else {
++                return DiagnosticGateWait::Missing;
++            };
++            Arc::clone(&entry.signal)
++        };
++        let mut state = lock_signal(&signal);
++        if state.canceled {
++            return DiagnosticGateWait::Stopped;
++        }
++        let (next, _) = signal
++            .changed
++            .wait_timeout_while(state, timeout, |state| !state.canceled)
++            .unwrap_or_else(|poisoned| poisoned.into_inner());
++        state = next;
++        if state.canceled {
++            DiagnosticGateWait::Stopped
++        } else {
++            DiagnosticGateWait::TimedOut
+         }
+     }
+ 
+@@ -544,6 +609,67 @@
+     }
+ 
+     #[test]
++    fn submit_notifier_is_selected_by_observation_id_not_a_second_authority() {
++        let coordinator = CaptureCoordinator::new(2);
++        let expected = expected();
++        let calls = Arc::new(Mutex::new(Vec::new()));
++        let calls_for_hook = Arc::clone(&calls);
++        let first = coordinator
++            .reserve_with_hooks(
++                expected,
++                None,
++                None,
++                Some(Arc::new(move |_identity| {
++                    calls_for_hook.lock().expect("calls").push(1_u64);
++                    true
++                })),
++            )
++            .expect("first reserve");
++        let first_id = first.id();
++        let second = coordinator.reserve(expected).expect("second reserve");
++        let second_id = second.id();
++        assert_eq!(
++            coordinator.admit(first_id, expected),
++            AdmissionDecision::Proceed
++        );
++        assert_eq!(
++            coordinator.admit(second_id, expected),
++            AdmissionDecision::Proceed
++        );
++
++        assert!(coordinator.notify_submit(first_id, expected));
++        assert_eq!(calls.lock().expect("calls").as_slice(), &[1]);
++        // The second observation has no submit hook. It must not inherit the
++        // first observation's notifier or re-enter admission.
++        assert!(!coordinator.notify_submit(second_id, expected));
++        assert_eq!(calls.lock().expect("calls").as_slice(), &[1]);
++    }
++
++    #[test]
++    fn diagnostic_gate_distinguishes_stop_timeout_and_missing_without_waiting_on_registry() {
++        let coordinator = CaptureCoordinator::new(1);
++        let observation = reserved(&coordinator);
++        let id = observation.id();
++        assert_eq!(
++            coordinator.wait_diagnostic_gate(id, Duration::from_millis(1)),
++            DiagnosticGateWait::TimedOut
++        );
++        observation.cancel();
++        assert_eq!(
++            coordinator.wait_diagnostic_gate(id, Duration::from_millis(1)),
++            DiagnosticGateWait::Stopped
++        );
++        assert_eq!(
++            coordinator.release_callback(id),
++            CallbackReleaseOutcome::Released
++        );
++        assert_eq!(
++            coordinator.wait_diagnostic_gate(id, Duration::from_millis(1)),
++            DiagnosticGateWait::Missing
++        );
++    }
++
++    #[test]
+     fn cancel_before_admission_never_starts_capture_and_releases_on_callback() {
+         let coordinator = CaptureCoordinator::new(2);
+         let mut observation = reserved(&coordinator);

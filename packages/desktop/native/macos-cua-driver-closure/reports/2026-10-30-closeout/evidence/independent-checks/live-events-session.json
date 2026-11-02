@@ -1,0 +1,191 @@
+[
+  {
+    "timestamp": "2026-10-30T14:28:41.518Z",
+    "level": "info",
+    "event": "tool.call.started",
+    "module": "core.tool.executor",
+    "message": "Tool call started",
+    "traceId": "76327579-acba-447c-be8f-c0e07fcbff35",
+    "spanId": "523a0d8a-41a0-4f",
+    "parentSpanId": "d1be84df-fbd8-4a",
+    "sessionId": "sess_e7117241-7dc9-4223-8a14-45072757a8a5",
+    "turnId": "turn_2e6ff938-8a88-4528-aa0f-4bc633d760d3",
+    "toolCallId": "call_00_V0Mch6vJNHfpPskZtaKM5865",
+    "status": "started",
+    "context": {
+      "queryId": "01a18d36-72fc-7b89-9c53-fa7ae30c8b9e",
+      "turnNumber": 0,
+      "providerId": "deepseek",
+      "modelId": "deepseek-flash",
+      "iteration": 0,
+      "querySource": "main_turn",
+      "toolName": "mcp__node_repl__js"
+    }
+  },
+  {
+    "timestamp": "2026-10-30T14:29:11.788Z",
+    "level": "info",
+    "event": "cua.native_capture.delivered",
+    "module": "bootstrap.cua_capture",
+    "message": "CUA native capture delivered",
+    "traceId": "76327579-acba-447c-be8f-c0e07fcbff35",
+    "spanId": "27a193a1-7c6b-45",
+    "sessionId": "sess_e7117241-7dc9-4223-8a14-45072757a8a5",
+    "turnId": "turn_2e6ff938-8a88-4528-aa0f-4bc633d760d3",
+    "status": "completed",
+    "context": {
+      "submissionLineageId": "79e65ce0-ae56-4648-a3d2-20bcd1728135",
+      "authorizationRevision": "[Redacted]",
+      "pngSha256": "a21627c4503c7b30bb71c30b29d6b0cfd8de24749875dd63dbabfc5b42716ec4",
+      "width": 2400,
+      "height": 1600,
+      "bytes": 454813,
+      "resourcesReleased": true,
+      "machineLeaseReleased": true
+    }
+  },
+  {
+    "timestamp": "2026-10-30T14:29:11.822Z",
+    "level": "info",
+    "event": "tool.call.completed",
+    "module": "core.tool.executor",
+    "message": "Tool call completed",
+    "traceId": "76327579-acba-447c-be8f-c0e07fcbff35",
+    "spanId": "523a0d8a-41a0-4f",
+    "parentSpanId": "d1be84df-fbd8-4a",
+    "sessionId": "sess_e7117241-7dc9-4223-8a14-45072757a8a5",
+    "turnId": "turn_2e6ff938-8a88-4528-aa0f-4bc633d760d3",
+    "toolCallId": "call_00_V0Mch6vJNHfpPskZtaKM5865",
+    "durationMs": 30294,
+    "status": "completed",
+    "context": {
+      "queryId": "01a18d36-72fc-7b89-9c53-fa7ae30c8b9e",
+      "turnNumber": 0,
+      "providerId": "deepseek",
+      "modelId": "deepseek-flash",
+      "iteration": 0,
+      "querySource": "main_turn",
+      "toolName": "mcp__node_repl__js"
+    }
+  },
+  {
+    "timestamp": "2026-10-30T14:29:13.370Z",
+    "level": "info",
+    "event": "tool.call.started",
+    "module": "core.tool.executor",
+    "message": "Tool call started",
+    "traceId": "76327579-acba-447c-be8f-c0e07fcbff35",
+    "spanId": "8ccf5aa5-14cd-43",
+    "parentSpanId": "0abe599d-5a66-47",
+    "sessionId": "sess_e7117241-7dc9-4223-8a14-45072757a8a5",
+    "turnId": "turn_2e6ff938-8a88-4528-aa0f-4bc633d760d3",
+    "toolCallId": "call_00_1hFBWWhfMVdehE7txemF3777",
+    "status": "started",
+    "context": {
+      "queryId": "01a18d36-72fc-7b89-9c53-fa7ae30c8b9e",
+      "turnNumber": 0,
+      "providerId": "deepseek",
+      "modelId": "deepseek-flash",
+      "iteration": 1,
+      "querySource": "main_turn",
+      "toolName": "mcp__node_repl__js"
+    }
+  },
+  {
+    "timestamp": "2026-10-30T14:29:43.726Z",
+    "level": "info",
+    "event": "tool.call.completed",
+    "module": "core.tool.executor",
+    "message": "Tool call completed",
+    "traceId": "76327579-acba-447c-be8f-c0e07fcbff35",
+    "spanId": "8ccf5aa5-14cd-43",
+    "parentSpanId": "0abe599d-5a66-47",
+    "sessionId": "sess_e7117241-7dc9-4223-8a14-45072757a8a5",
+    "turnId": "turn_2e6ff938-8a88-4528-aa0f-4bc633d760d3",
+    "toolCallId": "call_00_1hFBWWhfMVdehE7txemF3777",
+    "durationMs": 30347,
+    "status": "completed",
+    "context": {
+      "queryId": "01a18d36-72fc-7b89-9c53-fa7ae30c8b9e",
+      "turnNumber": 0,
+      "providerId": "deepseek",
+      "modelId": "deepseek-flash",
+      "iteration": 1,
+      "querySource": "main_turn",
+      "toolName": "mcp__node_repl__js"
+    }
+  },
+  {
+    "timestamp": "2026-10-30T14:31:14.714Z",
+    "level": "info",
+    "event": "tool.call.started",
+    "module": "core.tool.executor",
+    "message": "Tool call started",
+    "traceId": "76327579-acba-447c-be8f-c0e07fcbff35",
+    "spanId": "b6ec65d1-8d30-4b",
+    "parentSpanId": "f440221d-51af-45",
+    "sessionId": "sess_e7117241-7dc9-4223-8a14-45072757a8a5",
+    "turnId": "turn_acef41e5-1e23-4e45-8257-0865da7d42a6",
+    "toolCallId": "call_00_0BjwC8vkOO2Nrhi85VZD8378",
+    "status": "started",
+    "context": {
+      "queryId": "01a18d38-d0ab-7e5d-9a68-2b27cfc4b042",
+      "turnNumber": 1,
+      "providerId": "deepseek",
+      "modelId": "deepseek-flash",
+      "iteration": 0,
+      "querySource": "main_turn",
+      "toolName": "mcp__node_repl__js"
+    }
+  },
+  {
+    "timestamp": "2026-10-30T14:31:45.740Z",
+    "level": "info",
+    "event": "cua.submission.owner_revoked",
+    "module": "bootstrap",
+    "message": "CUA submission owner revoked",
+    "traceId": "76327579-acba-447c-be8f-c0e07fcbff35",
+    "spanId": "27a193a1-7c6b-45",
+    "sessionId": "sess_e7117241-7dc9-4223-8a14-45072757a8a5",
+    "context": {
+      "projectionStatus": "revoked",
+      "reason": "user-stop",
+      "revision": 2,
+      "lineageId": "884f7e4e-f948-445f-8130-3569e6f547af"
+    }
+  },
+  {
+    "timestamp": "2026-10-30T14:31:45.753Z",
+    "level": "error",
+    "event": "tool.call.failed",
+    "module": "core.tool.executor",
+    "message": "Tool call failed",
+    "traceId": "76327579-acba-447c-be8f-c0e07fcbff35",
+    "spanId": "b6ec65d1-8d30-4b",
+    "parentSpanId": "f440221d-51af-45",
+    "sessionId": "sess_e7117241-7dc9-4223-8a14-45072757a8a5",
+    "turnId": "turn_acef41e5-1e23-4e45-8257-0865da7d42a6",
+    "toolCallId": "call_00_0BjwC8vkOO2Nrhi85VZD8378",
+    "durationMs": 31035,
+    "status": "failed",
+    "context": {
+      "queryId": "01a18d38-d0ab-7e5d-9a68-2b27cfc4b042",
+      "turnNumber": 1,
+      "providerId": "deepseek",
+      "modelId": "deepseek-flash",
+      "iteration": 0,
+      "querySource": "main_turn",
+      "toolName": "mcp__node_repl__js"
+    },
+    "error": {
+      "name": "Error",
+      "message": "MCP tool mcp__node_repl__js was cancelled",
+      "code": "TOOL_CANCELLED",
+      "type": "tool_cancelled",
+      "context": {
+        "cancellation": "bestEffort",
+        "toolName": "mcp__node_repl__js"
+      }
+    }
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "collectedAfterControllerDiagnosticSIGTERM": true,
+  "helperPid": 15368,
+  "lines": [
+    "[cua-native] confirmation-presented {\"generation\":1}",
+    "[cua-native] confirmation-resolved {\"generation\":1,\"allowed\":false,\"reason\":\"authority-eof\"}",
+    "[cua-native] capture-rejected {\"reason\":\"connection-failed\"}",
+    "[cua-native] confirmation-presented {\"generation\":2}",
+    "[cua-native] confirmation-resolved {\"generation\":2,\"allowed\":true,\"reason\":\"user-approved\"}",
+    "[cua-native] capture-rejected {\"reason\":\"capture-failed\"}"
+  ]
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "repo": "madsmtm/objc2",
+    "commit": "b4167b582b2f75f9a1be75495c41b765344fd03c",
+    "path": "LICENSE.md",
+    "url": "https://raw.githubusercontent.com/madsmtm/objc2/b4167b582b2f75f9a1be75495c41b765344fd03c/LICENSE.md",
+    "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+    "bytes": 1339,
+    "local": "/tmp/zody-cua-r6-controller-objc2-b416-LICENSE"
+  },
+  {
+    "repo": "madsmtm/objc2",
+    "commit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+    "path": "LICENSE.md",
+    "url": "https://raw.githubusercontent.com/madsmtm/objc2/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
+    "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+    "bytes": 1339,
+    "local": "/tmp/zody-cua-r6-controller-objc2-8852-LICENSE"
+  },
+  {
+    "repo": "madsmtm/objc2",
+    "url": "https://raw.githubusercontent.com/madsmtm/objc2/e282618be4c3a3b9542957e0c8540e9588472ce8/framework-crates/LICENSE.txt",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "repo": "madsmtm/objc2",
+    "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+    "path": "LICENSE.md",
+    "url": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+    "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+    "bytes": 1339,
+    "local": "/tmp/zody-cua-r6-controller-objc2-7b1a-LICENSE"
+  },
+  {
+    "repo": "madsmtm/objc2",
+    "url": "https://raw.githubusercontent.com/madsmtm/objc2/8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.txt",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "repo": "Nugine/simd",
+    "commit": "d74c030d9dc4f3cae02146d1f497ff62726ef09a",
+    "path": "LICENSE",
+    "url": "https://raw.githubusercontent.com/Nugine/simd/d74c030d9dc4f3cae02146d1f497ff62726ef09a/LICENSE",
+    "sha256": "71674605ec4c087fe9eb534e3e4f9e26eb2e4aabcd76a29fd156c6a844d44b3d",
+    "bytes": 1062,
+    "local": "/tmp/zody-cua-r6-controller-simd-LICENSE"
+  },
+  {
+    "repo": "Stranger6667/jsonschema",
+    "commit": "ecaeceac2340908a8fbf71404442296bd1536520",
+    "path": "LICENSE",
+    "url": "https://raw.githubusercontent.com/Stranger6667/jsonschema/ecaeceac2340908a8fbf71404442296bd1536520/LICENSE",
+    "sha256": "117829c3ca21efb132d81a44b55363d395ab8eea18526873bc828da4c0e5f038",
+    "bytes": 1075,
+    "local": "/tmp/zody-cua-r6-controller-jsonschema-LICENSE"
+  },
+  {
+    "repo": "DelSkayn/rquickjs",
+    "commit": "d7ef5eeae702fea24c03643064de454f1c1dd4b0",
+    "path": "LICENSE",
+    "url": "https://raw.githubusercontent.com/DelSkayn/rquickjs/d7ef5eeae702fea24c03643064de454f1c1dd4b0/LICENSE",
+    "sha256": "976ad3d07927343ab99b31510625acba89eac8e0e517c712925620ddeda91b70",
+    "bytes": 1111,
+    "local": "/tmp/zody-cua-r6-controller-rquickjs-LICENSE"
+  }
+]

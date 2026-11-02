@@ -7,6 +7,12 @@ import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 
 /**
+ * home-5：触屏态命中区下限 44×44px（docs/web-remote-control/mobile-viewport-input-and-touch.md D1）。
+ * media 前缀与 lib/mobileTextInput.ts:3 同一内核；桌面（本组件只用于手机远控）不受影响。
+ */
+const TOUCH_TARGET_MEDIA = "[@media(hover:none)_and_(pointer:coarse)]";
+
+/**
  * 手机「打开其他项目」目录选择器（第二批 E1/E3）。
  *
  * 目录事实全部来自 app 级 `mobile-directory-list` payload（桌面 Main 现读），
@@ -27,9 +33,9 @@ export function MobileWorkspacePicker({
   onOpened(workspaceKey: string): void | Promise<void>;
 }) {
   const { intl } = useZCodeIntl();
-  const [initialResult, setInitialResult] = useState<
-    { resolvedPath: string } | "failed" | null
-  >(null);
+  const [initialResult, setInitialResult] = useState<{ resolvedPath: string } | "failed" | null>(
+    null,
+  );
   const [opening, setOpening] = useState(false);
   const [openError, setOpenError] = useState<string | null>(null);
   // 当前浏览目录；footer 的「打开此目录」以它为准，ref 无法驱动 disabled 重渲染。
@@ -99,9 +105,15 @@ export function MobileWorkspacePicker({
     } catch (error) {
       const code = error instanceof Error ? error.message : String(error);
       // 桌面回的是稳定错误码（arbitrary-path-disabled / path-invalid / open-failed / timeout）。
-      const known = code.startsWith("arbitrary-path-") || code === "path-invalid" || code === "open-failed" || code === "timeout";
+      const known =
+        code.startsWith("arbitrary-path-") ||
+        code === "path-invalid" ||
+        code === "open-failed" ||
+        code === "timeout";
       setOpenError(
-        known ? mapDirectoryError(code) : intl.formatMessage({ id: "mobileWorkspacePicker.error.open-failed" }, { error: code }),
+        known
+          ? mapDirectoryError(code)
+          : intl.formatMessage({ id: "mobileWorkspacePicker.error.open-failed" }, { error: code }),
       );
       logger.warn("[MobileWorkspacePicker] 打开目录失败", { error: code });
     } finally {
@@ -121,11 +133,13 @@ export function MobileWorkspacePicker({
         <span className="text-ui-lg font-medium text-foreground">
           {intl.formatMessage({ id: "mobileWorkspacePicker.title" })}
         </span>
+        {/* home-5：右上关闭按钮原 size icon 仅 28px，触屏态扩到 ≥44px 命中区。 */}
         <Button
           type="button"
           variant="ghost"
           size="icon"
           aria-label={intl.formatMessage({ id: "common.cancel" })}
+          className={`${TOUCH_TARGET_MEDIA}:size-11`}
           onClick={onClose}
         >
           <XIcon className="size-4" />
@@ -150,13 +164,22 @@ export function MobileWorkspacePicker({
             }}
             embeddedFooter={
               <>
-                <Button type="button" variant="secondary" size="lg" onClick={onClose}>
+                {/* home-5：footer 主按钮原 size lg 仅 32px，触屏态抬到 ≥44px 命中区；
+                    底部安全区由 DirectoryBrowser 的 embedded footer 容器消费。 */}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="lg"
+                  className={`${TOUCH_TARGET_MEDIA}:h-11`}
+                  onClick={onClose}
+                >
                   {intl.formatMessage({ id: "common.cancel" })}
                 </Button>
                 <Button
                   type="button"
                   size="lg"
                   data-testid="mobile-workspace-picker-open"
+                  className={`${TOUCH_TARGET_MEDIA}:h-11`}
                   disabled={!selectedPath.trim() || opening}
                   onClick={() => void handleOpen()}
                 >

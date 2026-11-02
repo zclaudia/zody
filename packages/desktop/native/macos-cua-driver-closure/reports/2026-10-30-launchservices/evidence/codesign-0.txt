@@ -1,0 +1,20 @@
+designated => identifier "io.github.zclaudia.zody.cua-helper" and certificate leaf = H"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732"
+Executable=/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-appkit/Zody CUA Launchservices Candidate.app/Contents/Resources/cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session
+Identifier=io.github.zclaudia.zody.cua-helper
+Format=app bundle with Mach-O thin (arm64)
+CodeDirectory v=20500 size=10787 flags=0x10000(runtime) hashes=330+3 location=embedded
+Hash type=sha256 size=32
+CandidateCDHash sha256=486e647f7b65e31747f62616e3258a7474f6a950
+CandidateCDHashFull sha256=486e647f7b65e31747f62616e3258a7474f6a9504f59fb371c4cb32595f5d488
+Hash choices=sha256
+CMSDigest=486e647f7b65e31747f62616e3258a7474f6a9504f59fb371c4cb32595f5d488
+CMSDigestType=2
+CDHash=486e647f7b65e31747f62616e3258a7474f6a950
+Signature size=2103
+Authority=Zody Local Computer Use
+Signed Time=Oct 30, 2026 at 20:26:52
+Info.plist entries=9
+TeamIdentifier=not set
+Runtime Version=27.0.0
+Sealed Resources version=2 rules=13 files=6
+warning: Specifying ':' in the path is deprecated and will not work in a future release

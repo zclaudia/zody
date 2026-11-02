@@ -3,6 +3,10 @@ import { Keyboard, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { formatShortcutBindingLabel } from "@/shortcuts/label.js";
+import {
+  SETTINGS_MOBILE_INPUT_SAFE_CLASS,
+  SETTINGS_TOUCH_MIN_SIZE_11_CLASS,
+} from "./settingsMobileClasses.js";
 import type { ShortcutKeySearch } from "./useShortcutKeySearch.js";
 
 interface ShortcutSearchBarProps {
@@ -34,7 +38,7 @@ export function ShortcutSearchBar({
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-subtle" />
         <Input
-          className={`pl-9 font-mono ${keyLabel !== null ? "pr-16 text-brand" : "pr-9"}`}
+          className={`pl-9 font-mono ${keyLabel !== null ? "pr-16 text-brand" : "pr-9"} ${SETTINGS_MOBILE_INPUT_SAFE_CLASS}`}
           placeholder={
             keySearch.armed
               ? intl.formatMessage({ id: "settings.shortcuts.keySearchPlaceholder" })
@@ -52,7 +56,7 @@ export function ShortcutSearchBar({
             type="button"
             aria-label={intl.formatMessage({ id: "settings.shortcuts.keySearchClearAria" })}
             data-testid="settings-shortcut-key-search-clear"
-            className="absolute right-9 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-foreground-subtle hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2"
+            className={`absolute right-9 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-foreground-subtle hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 ${SETTINGS_TOUCH_MIN_SIZE_11_CLASS}`}
             onClick={keySearch.clear}
           >
             <X className="size-3.5" />
@@ -63,7 +67,7 @@ export function ShortcutSearchBar({
           aria-label={intl.formatMessage({ id: "settings.shortcuts.keySearchAria" })}
           aria-pressed={keySearch.armed}
           data-testid="settings-shortcut-key-search"
-          className={`absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm p-1 focus-visible:outline-2 focus-visible:outline-offset-2 ${
+          className={`absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm p-1 focus-visible:outline-2 focus-visible:outline-offset-2 ${SETTINGS_TOUCH_MIN_SIZE_11_CLASS} ${
             keySearch.armed ? "text-brand" : "text-foreground-subtle hover:text-foreground"
           }`}
           onClick={() => {

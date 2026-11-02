@@ -1,0 +1,86 @@
+ing simd-adler32 v0.3.9
+   Compiling crc32fast v1.5.0
+   Compiling autocfg v1.5.0
+   Compiling libc v0.2.186
+   Compiling adler2 v2.0.1
+   Compiling pin-project-lite v0.2.17
+   Compiling futures-task v0.3.32
+   Compiling futures-core v0.3.32
+   Compiling cfg-if v1.0.4
+   Compiling apple-metal v0.6.0
+   Compiling apple-cf v0.9.3
+   Compiling bitflags v2.11.1
+   Compiling screencapturekit v8.0.1
+   Compiling miniz_oxide v0.8.9
+   Compiling futures-util v0.3.32
+   Compiling fdeflate v0.3.7
+   Compiling pxfm v0.1.29
+   Compiling bytemuck v1.25.0
+   Compiling num-traits v0.2.19
+   Compiling core-foundation-sys v0.8.7
+   Compiling byteorder-lite v0.1.0
+   Compiling core-foundation v0.10.1
+   Compiling crossbeam-queue v0.3.12
+   Compiling doom-fish-utils v0.3.2
+   Compiling flate2 v1.1.9
+   Compiling png v0.18.1
+   Compiling moxcms v0.8.1
+   Compiling image v0.25.10
+   Compiling cua-macos-visual v0.37.0 (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-probe2/full-source/crates/cua-macos-visual)
+error: linking with `cc` failed: exit status: 1
+  |
+  = note:  "cc" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/rustcU9sBdh/symbols.o" "<5 object files omitted>" "-framework" "CoreGraphics" "<sysroot>/lib/rustlib/aarch64-apple-darwin/lib/{libtest-*,libgetopts-*,librustc_std_workspace_std-*}.rlib" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/{libcore_foundation-fb402978c4f33215,libcore_foundation_sys-e76852b63f7cfd08,libscreencapturekit-ce0846415a3e5698,libapple_metal-3e68f58476f5e0e9,liblibc-6c47194e36645e2d,libapple_cf-469366bda8acc433,libdoom_fish_utils-d0a6e8417ec14eee,libfutures_util-4448d80b7fed60b5,libpin_project_lite-bfef9ff159e89b78,libfutures_task-d40152d327621793,libfutures_core-a3b907112fdbe1fd,libcrossbeam_queue-a26fc2bf743f3973,libcrossbeam_utils-a4a02fa6929e28d5,libimage-d4ed563c6d17ed21,libbytemuck-f9034ae9ad2c2f21,libbyteorder_lite-e38e9ebf0462a1e0,libmoxcms-49456c599e8f2828,libpxfm-26158ca010960ffc,libpng-48b0c6b77a2209ba,libbitflags-5fa9b41d14529ee5,libflate2-0bcfb441ef77df42,libminiz_oxide-e2c725de2d008a76,libfdeflate-9f266f5110a98d57,libsimd_adler32-c3e2cec88e71bd22,libcrc32fast-4bf0b5d2c7adcff5,libcfg_if-a38fbf69ac3f072b,libnum_traits-29e15dadc9aac59e}.rlib" "<sysroot>/lib/rustlib/aarch64-apple-darwin/lib/{libstd-*,libpanic_unwind-*,libobject-*,libmemchr-*,libaddr2line-*,libgimli-*,libcfg_if-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libminiz_oxide-*,libadler2-*,libunwind-*,liblibc-*,librustc_std_workspace_core-*,liballoc-*,libcore-*,libcompiler_builtins-*}.rlib" "-framework" "CoreFoundation" "-framework" "Metal" "-framework" "QuartzCore" "-framework" "ScreenCaptureKit" "-framework" "Foundation" "-framework" "CoreGraphics" "-framework" "CoreMedia" "-framework" "IOSurface" "-framework" "Metal" "-framework" "Foundation" "-framework" "IOSurface" "-liconv" "-framework" "ApplicationServices" "-framework" "CoreGraphics" "-framework" "IOSurface" "-framework" "CoreFoundation" "-framework" "CoreMedia" "-framework" "CoreVideo" "-framework" "Metal" "-framework" "Foundation" "-lSystem" "-lc" "-lm" "-arch" "arm64" "-mmacosx-version-min=11.0.0" "-L" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/build/screencapturekit-e1cfec5536a2bb2a/out/swift-build/release" "-L" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/build/apple-cf-869fe1ca0821d3a9/out/swift-build/release" "-L" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/build/apple-metal-79990c586193c596/out/swift-build/release" "-L" "/Library/Developer/CommandLineTools/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx" "-o" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/cua_macos_visual-bcffa4e5061e18e6" "-Wl,-dead_strip" "-nodefaultlibs"
+  = note: some arguments are omitted. use `--verbose` to show all linker arguments
+  = note: ld: warning: search path '/Library/Developer/CommandLineTools/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx' not found
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libscreencapturekit-ce0846415a3e5698.rlib[12](ScreenCaptureKitBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libscreencapturekit-ce0846415a3e5698.rlib[13](ScreenCaptureKitCoreMediaBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libscreencapturekit-ce0846415a3e5698.rlib[14](MetalBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_metal-3e68f58476f5e0e9.rlib[5](AppleMetalBridge.o)) was built for newer 'macOS' version (12.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[8](AppleCFBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[9](CoreGraphicsBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[10](IOSurfaceBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[11](DispatchBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[12](CoreMediaBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[13](CoreVideoBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[14](CoreFoundationBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: Could not find or use auto-linked library 'swiftCompatibility56': library 'swiftCompatibility56' not found
+          ld: warning: Could not find or use auto-linked library 'swiftCompatibilityPacks': library 'swiftCompatibilityPacks' not found
+          ld: warning: Could not find or use auto-linked framework 'CoreAudioTypes': framework 'CoreAudioTypes' not found
+          ld: warning: Could not parse or use implicit file '/Library/Developer/CommandLineTools/SDKs/MacOSX27.0.sdk/System/Library/Frameworks/SwiftUICore.framework/Versions/A/SwiftUICore.tbd': cannot link directly with 'SwiftUICore' because product being built is not an allowed client of it
+          Undefined symbols for architecture arm64:
+            "__swift_FORCE_LOAD_$_swiftCompatibility56", referenced from:
+                __swift_FORCE_LOAD_$_swiftCompatibility56_$_AppleMetalBridge in libapple_metal-3e68f58476f5e0e9.rlib[5](AppleMetalBridge.o)
+          ld: symbol(s) not found for architecture arm64
+          clang: error: linker command failed with exit code 1 (use -v to see invocation)
+          
+
+error: linking with `cc` failed: exit status: 1
+  |
+  = note:  "cc" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/rustcjfYp39/symbols.o" "<2 object files omitted>" "<sysroot>/lib/rustlib/aarch64-apple-darwin/lib/{libtest-*,libgetopts-*,librustc_std_workspace_std-*}.rlib" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/{libcua_macos_visual-ccdffcbf661babb4,libcore_foundation-fb402978c4f33215,libcore_foundation_sys-e76852b63f7cfd08,libscreencapturekit-ce0846415a3e5698,libapple_metal-3e68f58476f5e0e9,liblibc-6c47194e36645e2d,libapple_cf-469366bda8acc433,libdoom_fish_utils-d0a6e8417ec14eee,libfutures_util-4448d80b7fed60b5,libpin_project_lite-bfef9ff159e89b78,libfutures_task-d40152d327621793,libfutures_core-a3b907112fdbe1fd,libcrossbeam_queue-a26fc2bf743f3973,libcrossbeam_utils-a4a02fa6929e28d5,libimage-d4ed563c6d17ed21,libbytemuck-f9034ae9ad2c2f21,libbyteorder_lite-e38e9ebf0462a1e0,libmoxcms-49456c599e8f2828,libpxfm-26158ca010960ffc,libpng-48b0c6b77a2209ba,libbitflags-5fa9b41d14529ee5,libflate2-0bcfb441ef77df42,libminiz_oxide-e2c725de2d008a76,libfdeflate-9f266f5110a98d57,libsimd_adler32-c3e2cec88e71bd22,libcrc32fast-4bf0b5d2c7adcff5,libcfg_if-a38fbf69ac3f072b,libnum_traits-29e15dadc9aac59e}.rlib" "<sysroot>/lib/rustlib/aarch64-apple-darwin/lib/{libstd-*,libpanic_unwind-*,libobject-*,libmemchr-*,libaddr2line-*,libgimli-*,libcfg_if-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libminiz_oxide-*,libadler2-*,libunwind-*,liblibc-*,librustc_std_workspace_core-*,liballoc-*,libcore-*,libcompiler_builtins-*}.rlib" "-framework" "CoreGraphics" "-framework" "CoreFoundation" "-framework" "Metal" "-framework" "QuartzCore" "-framework" "ScreenCaptureKit" "-framework" "Foundation" "-framework" "CoreGraphics" "-framework" "CoreMedia" "-framework" "IOSurface" "-framework" "Metal" "-framework" "Foundation" "-framework" "IOSurface" "-liconv" "-framework" "ApplicationServices" "-framework" "CoreGraphics" "-framework" "IOSurface" "-framework" "CoreFoundation" "-framework" "CoreMedia" "-framework" "CoreVideo" "-framework" "Metal" "-framework" "Foundation" "-lSystem" "-lc" "-lm" "-arch" "arm64" "-mmacosx-version-min=11.0.0" "-L" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/build/screencapturekit-e1cfec5536a2bb2a/out/swift-build/release" "-L" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/build/apple-cf-869fe1ca0821d3a9/out/swift-build/release" "-L" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/build/apple-metal-79990c586193c596/out/swift-build/release" "-L" "/Library/Developer/CommandLineTools/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx" "-o" "/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/pure_visual-0d484a1833635968" "-Wl,-dead_strip" "-nodefaultlibs"
+  = note: some arguments are omitted. use `--verbose` to show all linker arguments
+  = note: ld: warning: search path '/Library/Developer/CommandLineTools/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx' not found
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libscreencapturekit-ce0846415a3e5698.rlib[12](ScreenCaptureKitBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libscreencapturekit-ce0846415a3e5698.rlib[13](ScreenCaptureKitCoreMediaBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libscreencapturekit-ce0846415a3e5698.rlib[14](MetalBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_metal-3e68f58476f5e0e9.rlib[5](AppleMetalBridge.o)) was built for newer 'macOS' version (12.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[8](AppleCFBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[9](CoreGraphicsBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[10](IOSurfaceBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[11](DispatchBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[12](CoreMediaBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[13](CoreVideoBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: object file (/Users/zhvala/SourceCode/zody/output/cua-driver-round8/controller-pure-tests2/target/aarch64-apple-darwin/debug/deps/libapple_cf-469366bda8acc433.rlib[14](CoreFoundationBridge.o)) was built for newer 'macOS' version (13.0) than being linked (11.0)
+          ld: warning: Could not find or use auto-linked library 'swiftCompatibility56': library 'swiftCompatibility56' not found
+          ld: warning: Could not find or use auto-linked library 'swiftCompatibilityPacks': library 'swiftCompatibilityPacks' not found
+          ld: warning: Could not find or use auto-linked framework 'CoreAudioTypes': framework 'CoreAudioTypes' not found
+          ld: warning: Could not parse or use implicit file '/Library/Developer/CommandLineTools/SDKs/MacOSX27.0.sdk/System/Library/Frameworks/SwiftUICore.framework/Versions/A/SwiftUICore.tbd': cannot link directly with 'SwiftUICore' because product being built is not an allowed client of it
+          Undefined symbols for architecture arm64:
+            "__swift_FORCE_LOAD_$_swiftCompatibility56", referenced from:
+                __swift_FORCE_LOAD_$_swiftCompatibility56_$_AppleMetalBridge in libapple_metal-3e68f58476f5e0e9.rlib[5](AppleMetalBridge.o)
+          ld: symbol(s) not found for architecture arm64
+          clang: error: linker command failed with exit code 1 (use -v to see invocation)
+          
+
+error: could not compile `cua-macos-visual` (test "pure_visual") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `cua-macos-visual` (lib test) due to 1 previous error

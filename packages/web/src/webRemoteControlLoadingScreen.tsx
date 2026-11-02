@@ -1,8 +1,10 @@
 import type { WebRemoteControlTerminalTransportState } from "@zcode/ui";
 
 /**
- * 手机远控启动壳（T1.2）：桌面 Web 客户端的 `/remote*` 路由与手机入口（mobile.html）
- * 共用同一份加载页，避免两条入口各自维护一套启动文案。
+ * 手机远控启动壳（T1.2）的连接加载页。当前全仓唯一消费方是手机入口的
+ * mobile-remote/bootstrap.tsx（import :87，渲染 :211/:1674/:1784）；
+ * 原注释「与桌面 Web 客户端 /remote* 路由共用」已过时（2026-10 复核 grep 无桌面引用），
+ * 本组件的字号/布局调整不影响桌面渲染。
  */
 
 function isZhLocale(): boolean {
@@ -94,16 +96,18 @@ export function WebRemoteControlLoadingScreen({
     <div className="h-dvh min-h-dvh w-screen bg-background text-foreground">
       <div className="mx-auto flex h-full w-full max-w-lg items-center px-4">
         <section className="w-full rounded-xl border border-card-border bg-card p-5">
+          {/* settings-4：弱网等待时这是全屏唯一内容，原先整卡 text-ui-xs（10px）手机上辨识吃力；
+              按角色提到 title=text-ui-base、描述/步骤=text-ui-sm（DESIGN.md 字号语义表）。 */}
           <div className="flex items-center gap-3">
             <span className="size-2 rounded-full bg-warning animate-pulse" />
-            <h1 className="text-ui-xs font-medium">{copy.title}</h1>
+            <h1 className="text-ui-base font-semibold">{copy.title}</h1>
           </div>
-          <p className="mt-2 text-ui-xs/relaxed text-foreground-subtle">{copy.description}</p>
+          <p className="mt-2 text-ui-sm/relaxed text-foreground-subtle">{copy.description}</p>
           <div className="mt-4 grid gap-2">
             {copy.steps.map((step, index) => (
               <div
                 key={step}
-                className="rounded-lg border border-border bg-surface px-3 py-2 text-ui-xs text-foreground-subtle"
+                className="rounded-lg border border-border bg-surface px-3 py-2 text-ui-sm text-foreground-subtle"
               >
                 {`${index + 1}. ${step}`}
               </div>

@@ -1,0 +1,21 @@
+{
+  "name": "bundle-narrow-dry-run",
+  "argv": [
+    "node",
+    "packages/desktop/scripts/bundle.mjs",
+    "--os",
+    "mac",
+    "--arch",
+    "arm64",
+    "--skip-build",
+    "--skip-prepare",
+    "--cua-narrow-manifest",
+    "/Users/zhvala/SourceCode/zody/output/cua-phase1-closeout/controller-narrow-relocated/manifest.json",
+    "--dry-run"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-30T14:40:30.185217+00:00",
+  "seconds": 1.209,
+  "exitCode": 0,
+  "log": "bundle-narrow-dry-run.log"
+}

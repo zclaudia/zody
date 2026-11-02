@@ -1,0 +1,36 @@
+{
+  "app": {
+    "bundle": "/Users/zhvala/SourceCode/zody/output/cua-launchservices/controller-ui-packaged/Zody CUA Launchservices Candidate.app",
+    "applicationName": "Zody CUA Launchservices Candidate",
+    "displayName": "Zody CUA Launchservices Candidate",
+    "bundleIdentifier": "io.github.zclaudia.zody.cua-launchservices-candidate",
+    "executable": "Contents/MacOS/ZodyCUACandidate",
+    "executableRenamedFrom": "Contents/MacOS/Electron",
+    "executableBytesUnchanged": true,
+    "executableSha256": "51ea98f5b4ff5e5c079a6953a886a10999e5b355a76bcd92ff5dd59cb7167bd9",
+    "packagedLayout": true
+  },
+  "nativeHostLaunch": {
+    "descriptor": {
+      "kind": "packaged-resources",
+      "launcherPathRelativeToResources": "cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session",
+      "cwdRelativeToResources": "cua-helper/ZCode Computer Use.app/Contents/MacOS",
+      "entryName": "host-entry.mjs",
+      "bridgeFd": 5,
+      "launchMode": "workspace-relay",
+      "applicationName": "Zody CUA Launchservices Candidate"
+    },
+    "resolvedLauncherRelativeToResources": "cua-helper/ZCode Computer Use.app/Contents/MacOS/macos-cua-desktop-session",
+    "compileTimeDefine": "__ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__"
+  },
+  "bundleSymlinks": {
+    "checked": 14,
+    "allRelative": true,
+    "allInsideBundle": true
+  },
+  "helperUnchanged": true,
+  "uiPid": 70801,
+  "relayPid": 71247,
+  "childPid": 71252,
+  "outcome": "actual packaged UI launched; Host bootstrap failed after LS child exited in about five seconds; no screenshot or permissions requested"
+}

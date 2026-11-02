@@ -124,6 +124,35 @@ function renderMobileShellWithTransportState(terminalTransportState: "paired" | 
   );
 }
 
+function renderMobileShellWithCapabilities(
+  initialNavigationIntent?: "chat",
+  terminalTransportState?: "paired" | "reconnecting",
+) {
+  return renderToStaticMarkup(
+    createElement(WebRemoteControlMobileShell, {
+      activeTaskId: "task-1",
+      activeWorkspacePath: "/workspace/app",
+      chatContent: createElement("main", { "data-testid": "chat-content" }),
+      initialNavigationIntent,
+      onSelectTask: vi.fn(),
+      renderChatHeader: () => createElement("header", { "data-testid": "chat-header" }),
+      switcher: {
+        listWorkspaces: vi.fn(async () => ({ workspaces: [], tasks: [] })),
+        switchWorkspace: vi.fn(async () => {}),
+        getMobileCapabilities: vi.fn(() => ({
+          fileBrowser: 1,
+          historySearch: 1,
+          notificationFeed: 1,
+        })),
+        getMobileConnection: vi.fn(() => ({ backendId: "b", connectionGeneration: 1 })),
+        getNotificationReader: vi.fn(() => undefined),
+        openNotification: vi.fn(async () => {}),
+      },
+      webRemoteControlTerminalTransportState: terminalTransportState,
+    }),
+  );
+}
+
 const workspaceList: WebRemoteControlWorkspaceListResult = {
   workspaces: [
     {
@@ -352,5 +381,44 @@ describe("WebRemoteControlMobileShell", () => {
     expect(isWebRemoteControlMobileChatHistoryState({ zcodeMobilePage: "chat" })).toBe(true);
     expect(isWebRemoteControlMobileChatHistoryState({ zcodeMobilePage: "home" })).toBe(false);
     expect(isWebRemoteControlMobileChatHistoryState(null)).toBe(false);
+  });
+
+  it("raises the mobile chat header icon hit areas to the 44px touch floor", () => {
+    // 走查 shell-3/touch-3：聊天页顶栏返回/文件/搜索/通知/主题 5 个按钮此前是 icon-sm=24px 命中区。
+    // 对齐任务首页顶栏 size-11 既有标准（视觉图标 size-4 不放大，由 tailwind-merge 覆盖 size-6）；
+    // 主题触发钮经 ThemeMenu 的 className 透传（WebRemoteControlThemeMenu.tsx:20/35）。
+    const html = renderMobileShellWithCapabilities("chat");
+    const touchSizedButtons = html.match(/class="[^"]*\bsize-11\b[^"]*"/g) ?? [];
+
+    expect(touchSizedButtons.length).toBe(5);
+  });
+
+  it("keeps the mobile chat header and reconnect notice below the notch safe area", () => {
+    // 走查 touch-9/viewport-3：viewport-fit=cover 时顶栏会顶进刘海、top-3 的重连提示会被状态栏压住。
+    // 两处消费 .zcode-safe-area-top（env(safe-area-inset-top)，无刘海环境为 0，位置不变）。
+    const chatHtml = renderMobileShellWithCapabilities("chat");
+    expect(chatHtml).toContain(
+      'class="zcode-safe-area-top shrink-0 border-b border-border bg-header"',
+    );
+
+    const reconnectHtml = renderMobileShellWithTransportState("reconnecting");
+    expect(reconnectHtml).toContain(
+      'class="zcode-safe-area-top pointer-events-none absolute top-3 left-1/2 z-50 flex -translate-x-1/2 justify-center px-3"',
+    );
+  });
+
+  it("keeps overlay history cleanup wiring in the shell without owning the keyboard tracker", () => {
+    // 走查 shell-1：挂载时剥掉刷新残留的 overlay history 标识，开关浮层走 push/back 助手。
+    // spec §2.2：keyboard inset tracker 的唯一所有者是手机入口 main.tsx:23（页面级生命周期，
+    // 安装点刻意丢弃卸载函数）；Shell 若安装并在 cleanup 卸载，会把页面级 tracker 一并回收。
+    const shellSource = readFileSync(
+      resolve(process.cwd(), "packages/ui/src/WebRemoteControlMobileShell.tsx"),
+      "utf8",
+    );
+
+    expect(shellSource).toContain("clearWebRemoteControlMobileOverlayHistoryState();");
+    expect(shellSource).toContain("pushWebRemoteControlMobileOverlayHistory(page);");
+    expect(shellSource).toContain("backOutOfWebRemoteControlMobileOverlayHistory();");
+    expect(shellSource).not.toContain("installMobileKeyboardInsetTracker");
   });
 });

@@ -1,0 +1,26 @@
+designated => identifier "io.github.zclaudia.zody.cua-helper" and certificate leaf = H"d2ad8f4bb39ad7dd13ceba3892cadb16659a4732"
+Executable=/Users/zhvala/SourceCode/zody/output/cua-helper-round11/controller-signed/candidate/helper/Zody CUA Helper Round11.app/Contents/MacOS/macos-cua-helper-round11
+Identifier=io.github.zclaudia.zody.cua-helper
+Format=app bundle with Mach-O thin (arm64)
+CodeDirectory v=20500 size=10467 flags=0x10000(runtime) hashes=320+3 location=embedded
+VersionPlatform=1
+VersionMin=918016
+VersionSDK=1769472
+Hash type=sha256 size=32
+CandidateCDHash sha256=d476586ca3d6d27c528458021d4dcc1727496a2d
+CandidateCDHashFull sha256=d476586ca3d6d27c528458021d4dcc1727496a2d9136a7ff6058739b6a789de5
+Hash choices=sha256
+CMSDigest=d476586ca3d6d27c528458021d4dcc1727496a2d9136a7ff6058739b6a789de5
+CMSDigestType=2
+Executable Segment base=0
+Executable Segment limit=3670016
+Executable Segment flags=0x1
+Page size=16384
+CDHash=d476586ca3d6d27c528458021d4dcc1727496a2d
+Signature size=2103
+Authority=Zody Local Computer Use
+Signed Time=Oct 29, 2026 at 23:01:03
+Info.plist entries=9
+TeamIdentifier=not set
+Runtime Version=27.0.0
+Sealed Resources version=2 rules=13 files=3

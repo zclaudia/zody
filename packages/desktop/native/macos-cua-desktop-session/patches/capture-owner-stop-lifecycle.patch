@@ -1,0 +1,339 @@
+--- a/src/capture_owner.mm
++++ b/src/capture_owner.mm
+@@ -9,6 +9,7 @@
+ #include <atomic>
+ #include <cerrno>
+ #include <chrono>
++#include <cstdio>
+ #include <cstring>
+ #include <mutex>
+ #include <string>
+@@ -22,7 +23,16 @@
+ 
+ #ifdef CUA_R11_HAVE_VISUAL
+ 
++// Swift 在真实 SCScreenshotManager.captureImage(...) 调用返回后，通过同一个
++// native admission 回调上报这个 notification-only checkpoint。它不再进入
++// session coordinator 的 admit，只用于审计 submit 事实。
++constexpr uint32_t kOsSubmittedCheckpoint = 3;
++// 测试可用更短的 timeout 验证 unknown release 保留 debt；生产默认不变。
++#ifdef CUA_R11_STOP_TEST_CALLBACK_RELEASE_TIMEOUT_MS
++constexpr int kCallbackReleaseTimeoutMs = CUA_R11_STOP_TEST_CALLBACK_RELEASE_TIMEOUT_MS;
++#else
+ constexpr int kCallbackReleaseTimeoutMs = 15'000;
++#endif
+ 
+ // 中文原因：callback 在 Swift 线程上晚于 wait() 返回，裸指针由主线程赋值/
+ // reader 线程读会形成 data race 与 destroy 后 cancel UAF。所有 publish、
+@@ -34,6 +44,8 @@
+   bool detached = false;
+   std::atomic<bool> revoked{false};
+   std::atomic<uint64_t> observed_operation{0};
++  std::atomic<bool> os_submitted{false};
++  std::atomic<int> authority_stop{static_cast<int>(stop_visual::AuthorityStopFact::None)};
+ 
+   AuthorityClient* authority = nullptr;
+   MachineLease* lease = nullptr;
+@@ -52,6 +64,52 @@
+          context.target.width == width && context.target.height == height;
+ }
+ 
++stop_visual::AuthorityStopFact classify_authority_close(const std::string& reason) {
++  return reason == "authority-eof" ? stop_visual::AuthorityStopFact::AuthorityEof
++                                   : stop_visual::AuthorityStopFact::AuthorityError;
++}
++
++// 事实只做审计；唯一取消锁存仍是 revoked。三种停止事实都必须 fail-closed。
++void record_authority_stop(CheckpointContext& context, stop_visual::AuthorityStopFact fact) {
++  int expected = static_cast<int>(stop_visual::AuthorityStopFact::None);
++  (void)context.authority_stop.compare_exchange_strong(expected, static_cast<int>(fact));
++  context.revoked.store(true);
++}
++
++void log_json_event(const char* name, NSDictionary* payload) {
++  NSError* error = nil;
++  NSData* data = [NSJSONSerialization dataWithJSONObject:payload options:0 error:&error];
++  if (data == nil || data.length == 0) {
++    std::fprintf(stderr, "[cua-native] %s {\"serializationError\":true}\n", name);
++    std::fflush(stderr);
++    return;
++  }
++  const std::string json(static_cast<const char*>(data.bytes), data.length);
++  std::fprintf(stderr, "[cua-native] %s %s\n", name, json.c_str());
++  std::fflush(stderr);
++}
++
++void log_stop_facts(const CheckpointContext& context, const CaptureOutcome& outcome) {
++  log_json_event(
++      "visual-stop-facts",
++      @{
++        @"traceId" : context.trace_id == nil ? @"" : context.trace_id,
++        @"operationId" : @(static_cast<unsigned long long>(context.observed_operation.load())),
++        @"authorityStop" :
++            [NSString stringWithUTF8String:stop_visual::authority_stop_name(outcome.authority_stop)],
++        @"visualStarted" : @(outcome.visual_started),
++        @"visualWaitReturned" : @(outcome.visual_wait_returned),
++        @"osSubmitted" : @(outcome.os_submitted),
++        @"callbackRelease" : [NSString
++            stringWithUTF8String:stop_visual::callback_release_name(outcome.callback_release)],
++        @"lateFrameDropped" : @(outcome.late_frame_dropped),
++        @"resourcesReleased" : @(outcome.resources_released),
++        @"actualCallbackReleased" :
++            @(stop_visual::actual_callback_released(outcome.callback_release)),
++        @"reason" : [NSString stringWithUTF8String:outcome.reason.c_str()] ?: @"",
++      });
++}
++
+ bool authority_candidate(AuthorityClient& authority, CheckpointContext& context,
+                          std::string& error) {
+   NSDictionary* payload = @{
+@@ -72,8 +130,32 @@
+                    int32_t pid, int32_t layer, double x, double y, double width,
+                    double height) {
+   auto* context = static_cast<CheckpointContext*>(raw);
+-  (void)checkpoint_id;
+-  if (context == nullptr) return 1;
++  if (context == nullptr) return 1;
++  if (checkpoint_id == kOsSubmittedCheckpoint) {
++    // notification-only：真实 captureImage 已 submit。不能再次进入旧 admission；
++    // 这里只绑定 operation、记录事实并输出可观测事件，不改变取消锁存。
++    {
++      std::lock_guard<std::mutex> lock(context->mutex);
++      if (context->detached) return 1;
++      uint64_t expected = context->observed_operation.load();
++      if (expected == 0) {
++        if (operation_id == 0) return 1;
++        context->observed_operation.store(operation_id);
++      } else if (expected != operation_id) {
++        return 1;
++      }
++    }
++    const bool matches = target_matches(*context, window_id, pid, layer, x, y, width, height);
++    if (matches) context->os_submitted.store(true);
++    log_json_event(
++        "visual-submitted",
++        @{
++          @"traceId" : context->trace_id == nil ? @"" : context->trace_id,
++          @"operationId" : @(static_cast<unsigned long long>(operation_id)),
++          @"targetMatches" : @(matches),
++        });
++    return matches ? 0 : 1;
++  }
+   {
+     std::lock_guard<std::mutex> lock(context->mutex);
+     if (context->detached || context->revoked.load()) return 1;
+@@ -199,28 +281,58 @@
+   state->target.width = context.width;
+   state->target.height = context.height;
+ 
+-  auto cancel_operation = [state]() {
++  auto cancel_operation = [state](stop_visual::AuthorityStopFact fact) {
++    // fact 只做审计；record_authority_stop 同时置唯一取消锁存 revoked。
++    record_authority_stop(*state, fact);
+     std::lock_guard<std::mutex> lock(state->mutex);
+-    state->revoked.store(true);
+     if (state->operation != nullptr && !state->detached) {
+       cua_r11_visual_cancel(state->operation);
+     }
+   };
+ 
+-  if (!authority.start([cancel_operation](const std::string&) { cancel_operation(); },
+-                       [cancel_operation](const std::string&) { cancel_operation(); },
+-                       outcome.reason)) {
++  if (!authority.start(
++          [cancel_operation](const std::string&) {
++            cancel_operation(stop_visual::AuthorityStopFact::OwnerRevoked);
++          },
++          [cancel_operation](const std::string& reason) {
++            cancel_operation(classify_authority_close(reason));
++          },
++          outcome.reason)) {
++    outcome.authority_stop =
++        static_cast<stop_visual::AuthorityStopFact>(state->authority_stop.load());
++    outcome.authority_stopped = stop_visual::authority_stop_observed(outcome.authority_stop);
++    outcome.callback_release = stop_visual::CallbackReleaseFact::NotStarted;
++    log_stop_facts(*state, outcome);
+     return outcome;
+   }
+ 
++  // 已知 revoked/EOF/error：在发布 visual start 前 fail-closed，避免启动 OS 截图。
++  if (stop_visual::reject_before_start(
++          static_cast<stop_visual::AuthorityStopFact>(state->authority_stop.load())) ||
++      state->revoked.load()) {
++    outcome.authority_stop =
++        static_cast<stop_visual::AuthorityStopFact>(state->authority_stop.load());
++    outcome.authority_stopped = stop_visual::authority_stop_observed(outcome.authority_stop);
++    outcome.callback_release = stop_visual::CallbackReleaseFact::NotStarted;
++    outcome.reason = "capture-canceled";
++    log_stop_facts(*state, outcome);
++    return outcome;
++  }
++
+   cua_r11_visual_operation* started =
+       cua_r11_visual_start(&state->target, checkpoint, state.get());
+   if (started == nullptr) {
+     // 中文原因：callback 线程可能仍持有 state；shared_ptr 由 authority 的
+     // std::function 持有，调用方 close authority 后才会安全释放。
+     outcome.reason = "visual-start-denied";
++    outcome.authority_stop =
++        static_cast<stop_visual::AuthorityStopFact>(state->authority_stop.load());
++    outcome.authority_stopped = stop_visual::authority_stop_observed(outcome.authority_stop);
++    outcome.callback_release = stop_visual::CallbackReleaseFact::NotStarted;
++    log_stop_facts(*state, outcome);
+     return outcome;
+   }
++  outcome.visual_started = true;
+   {
+     std::lock_guard<std::mutex> lock(state->mutex);
+     state->operation = started;
+@@ -229,51 +341,74 @@
+   }
+ 
+   const int32_t wait_status = cua_r11_visual_wait(started);
++  outcome.visual_wait_returned = true;
+   uint8_t* png = nullptr;
+   size_t png_len = 0;
+   uint32_t width = 0;
+   uint32_t height = 0;
+-  if (wait_status == CUA_R11_VISUAL_OK && !state->revoked.load()) {
+-    const int32_t take_status =
+-        cua_r11_visual_take_png(started, &png, &png_len, &width, &height);
+-    if (take_status != CUA_R11_VISUAL_OK || png == nullptr || png_len == 0) {
+-      outcome.reason = "visual-take-png-failed";
++  bool took_frame = false;
++  if (wait_status == CUA_R11_VISUAL_OK) {
++    if (state->revoked.load()) {
++      // 真实 completion 已 ready，但 Stop 先到：不 take、不落盘、不交付。
++      outcome.reason = "capture-canceled";
++      outcome.late_frame_dropped = true;
+     } else {
+-      uint32_t header_width = 0;
+-      uint32_t header_height = 0;
+-      if (!png_dimensions(png, png_len, header_width, header_height) ||
+-          header_width != width || header_height != height) {
+-        outcome.reason = "visual-png-invalid";
+-      } else if (state->revoked.load()) {
+-        outcome.reason = "capture-canceled";
++      const int32_t take_status =
++          cua_r11_visual_take_png(started, &png, &png_len, &width, &height);
++      took_frame = take_status == CUA_R11_VISUAL_OK && png != nullptr && png_len > 0;
++      if (!took_frame) {
++        outcome.reason = state->revoked.load() ? "capture-canceled" : "visual-take-png-failed";
++        outcome.late_frame_dropped = outcome.reason == "capture-canceled";
+       } else {
+-        std::string check_error;
+-        if (!authority_candidate(authority, *state, check_error)) {
+-          // 最后 gate：从 takePNG 到落盘之间观察到撤销，禁止发布晚图。
++        uint32_t header_width = 0;
++        uint32_t header_height = 0;
++        if (!png_dimensions(png, png_len, header_width, header_height) ||
++            header_width != width || header_height != height) {
++          outcome.reason = "visual-png-invalid";
++        } else if (state->revoked.load()) {
+           outcome.reason = "capture-canceled";
++          outcome.late_frame_dropped = true;
+         } else {
+-          const std::string output_path([context.output_path UTF8String]);
+-          std::string write_error;
+-          // 中文原因：authority check 在 mutex 外等待 reader，避免阻塞撤销；
+-          // 拿到 state mutex 后再检查一次 revoked，并把写文件/commit 放在同一
+-          // 临界区，撤销事件无法插入“已检查”与“文件可见”之间。
+-          bool committed = false;
+-          {
+-            std::lock_guard<std::mutex> lock(state->mutex);
+-            if (!state->revoked.load()) {
+-              if (!write_new_file(output_path, png, png_len, write_error)) {
+-                outcome.reason = write_error;
+-              } else {
+-                outcome.png_sha256 = sha256_bytes(png, png_len);
+-                outcome.width = width;
+-                outcome.height = height;
+-                committed = true;
++          std::string check_error;
++          if (!authority_candidate(authority, *state, check_error)) {
++            // 最后 gate：从 takePNG 到落盘之间观察到撤销，禁止发布晚图。
++            outcome.reason = "capture-canceled";
++            outcome.late_frame_dropped = true;
++          } else {
++            const std::string output_path([context.output_path UTF8String]);
++            std::string write_error;
++            // 中文原因：authority check 在 mutex 外等待 reader，避免阻塞撤销；
++            // 拿到 state mutex 后再检查一次 revoked，并把写文件/commit 放在同一
++            // 临界区，撤销事件无法插入“已检查”与“文件可见”之间。
++            bool committed = false;
++            {
++              std::lock_guard<std::mutex> lock(state->mutex);
++              if (!state->revoked.load()) {
++                if (!write_new_file(output_path, png, png_len, write_error)) {
++                  outcome.reason = write_error;
++                } else {
++                  outcome.png_sha256 = sha256_bytes(png, png_len);
++                  outcome.width = width;
++                  outcome.height = height;
++                  committed = true;
++                }
+               }
+             }
++            if (!committed && outcome.reason.empty()) {
++              outcome.reason = "capture-canceled";
++              outcome.late_frame_dropped = took_frame;
++            }
++            if (committed && state->revoked.load()) {
++              // 落盘后被 Stop：删除本次已提交文件，保持 old frozen 不交付晚图。
++              (void)unlink(output_path.c_str());
++              outcome.png_sha256.clear();
++              outcome.width = 0;
++              outcome.height = 0;
++              outcome.reason = "capture-canceled";
++              outcome.late_frame_dropped = true;
++              committed = false;
++            }
+           }
+-          if (!committed && outcome.reason.empty()) {
+-            outcome.reason = "capture-canceled";
+-          }
+         }
+       }
+     }
+@@ -283,15 +418,25 @@
+     outcome.reason = "visual-wait-failed";
+   }
+   if (png != nullptr) cua_r11_visual_free_png(png, png_len);
++  if (outcome.reason == "capture-canceled" && took_frame) {
++    outcome.late_frame_dropped = true;
++  }
+ 
+   // 资源归还是独立 callback 事实，不能把 wait()/cancel 返回当成已归还。
+   const bool released = wait_callback_release(started, kCallbackReleaseTimeoutMs);
++  outcome.callback_release = released ? stop_visual::CallbackReleaseFact::Released
++                                      : stop_visual::CallbackReleaseFact::Unknown;
++  outcome.authority_stop =
++      static_cast<stop_visual::AuthorityStopFact>(state->authority_stop.load());
++  outcome.authority_stopped = stop_visual::authority_stop_observed(outcome.authority_stop);
++  outcome.os_submitted = state->os_submitted.load();
+   if (!released) {
+     // 隔离：保留 operation 与 heap context，不释放仍可能被 callback 使用的
+     // 内存；同时调用方会保留 lease/authority 直到进程终止。
+     outcome.resources_released = false;
+     outcome.ok = false;
+     outcome.reason = "visual-resources-not-released";
++    log_stop_facts(*state, outcome);
+     return outcome;
+   }
+ 
+@@ -305,6 +450,7 @@
+     outcome.resources_released = false;
+     outcome.ok = false;
+     outcome.reason = "visual-destroy-pending";
++    log_stop_facts(*state, outcome);
+     return outcome;
+   }
+ 
+@@ -318,6 +464,7 @@
+       outcome.reason = "captured";
+     }
+   }
++  log_stop_facts(*state, outcome);
+ #else
+   (void)authority;
+   (void)lease;

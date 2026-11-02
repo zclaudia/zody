@@ -1,0 +1,2234 @@
+{
+  "binary": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/controller-signed-current/Zody CUA Desktop Session.app/Contents/MacOS/macos-cua-desktop-session",
+  "home": "/Users/zhvala/SourceCode/zody/output/cua-desktop-session/independent-checks/init-home-gUvZOE",
+  "pid": 56409,
+  "hello": {
+    "v": 1,
+    "kind": "hello",
+    "hostId": "a0290da7-01bb-4df4-bebd-4acaa4b507c6"
+  },
+  "frames": [
+    {
+      "kind": "hello"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "port-data"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "database-startup-state"
+    },
+    {
+      "kind": "control",
+      "type": "log"
+    },
+    {
+      "kind": "port-close"
+    }
+  ],
+  "states": [
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 1,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504611,
+      "phase": "starting",
+      "disk": [],
+      "migrationBaselines": []
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 2,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504612,
+      "phase": "preparing_host_storage",
+      "disk": [],
+      "databasePhase": "checking",
+      "migrationBaselines": []
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 3,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504619,
+      "phase": "preparing_host_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "checking",
+      "migrationBaselines": []
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 4,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504884,
+      "phase": "preparing_host_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "checking",
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index"
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 5,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504890,
+      "phase": "preparing_host_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "checking",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 0,
+        "committedCount": 0
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index"
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 0,
+        "committedCount": 0
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 6,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504890,
+      "phase": "preparing_host_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 0,
+        "committedCount": 0
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 0,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 7,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504893,
+      "phase": "preparing_host_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 1,
+        "committedCount": 0
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 1,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 8,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504894,
+      "phase": "preparing_host_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 2,
+        "committedCount": 0
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 2,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 9,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504894,
+      "phase": "preparing_host_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 3,
+        "committedCount": 0
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 3,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 10,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504894,
+      "phase": "preparing_host_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "committing",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 0
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 11,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504895,
+      "phase": "preparing_host_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "maintaining",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4,
+        "lastAppliedMigrationId": null
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 12,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504899,
+      "phase": "preparing_host_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "ready",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4,
+        "lastAppliedMigrationId": null
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 13,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347504904,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347504619
+        }
+      ],
+      "databasePhase": "checking",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 14,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347506635,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347506634
+        }
+      ],
+      "databasePhase": "checking",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 15,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347508626,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 0,
+          "minAvailableBytes": 40537702400,
+          "quality": "complete",
+          "sampledAt": 1793347508626
+        }
+      ],
+      "databasePhase": "checking",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 16,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347510627,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1071878144,
+          "minAvailableBytes": 39465824256,
+          "quality": "complete",
+          "sampledAt": 1793347510627
+        }
+      ],
+      "databasePhase": "checking",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 17,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511784,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "checking",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 18,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511793,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "checking",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session"
+        }
+      ],
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 19,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511795,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "checking",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session"
+        }
+      ],
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 20,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511798,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "checking",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session"
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 0,
+        "committedCount": 0
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 21,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511798,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 0,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 22,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511819,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 5,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 1,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 23,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511820,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 6,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 2,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 24,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511821,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 7,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 3,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 25,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511821,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 8,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 4,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 26,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511822,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 9,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 5,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 27,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511822,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 10,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 6,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 28,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511823,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 11,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 7,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 29,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511824,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 12,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 8,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 30,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511825,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 13,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 9,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 31,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511827,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 14,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 10,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 32,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511827,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 15,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 11,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 33,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511829,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 16,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 12,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 34,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511830,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 17,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 13,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 35,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511831,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 18,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 14,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 36,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511832,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 19,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 15,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 37,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511834,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 20,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 16,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 38,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511835,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 21,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 17,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 39,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511837,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 22,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 18,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 40,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511838,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 23,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 19,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 41,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511843,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 24,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 20,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 42,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511843,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "migrating",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 25,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 21,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 43,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511846,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "committing",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 26,
+        "committedCount": 4
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 22,
+        "committedCount": 0,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 44,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511849,
+      "phase": "preparing_session_storage",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "databasePhase": "ready",
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 26,
+        "committedCount": 26
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ],
+      "currentMigration": {
+        "kind": "initialize",
+        "executedCount": 22,
+        "committedCount": 22,
+        "lastAppliedMigrationId": null
+      },
+      "finalDatabase": true
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 45,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347511867,
+      "phase": "starting_services",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073106944,
+          "minAvailableBytes": 39464595456,
+          "quality": "complete",
+          "sampledAt": 1793347511784
+        }
+      ],
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 26,
+        "committedCount": 26
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 46,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347512781,
+      "phase": "starting_services",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073487872,
+          "minAvailableBytes": 39464214528,
+          "quality": "complete",
+          "sampledAt": 1793347512781
+        }
+      ],
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 26,
+        "committedCount": 26
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 47,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347512788,
+      "phase": "starting_services",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073487872,
+          "minAvailableBytes": 39464214528,
+          "quality": "complete",
+          "sampledAt": 1793347512781
+        }
+      ],
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 26,
+        "committedCount": 26
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "startupId": "independent-signed-init",
+      "attemptId": "7e6cbbc3-ede7-4198-a32f-e1c5c142b4a9",
+      "sequence": 48,
+      "startedAt": 1793347504611,
+      "updatedAt": 1793347512788,
+      "phase": "ready",
+      "disk": [
+        {
+          "scopeId": "5e1e2c07ec588f25889ac9d1416a35ad84b91d86abb531466084ffe691ea18b5",
+          "observedAvailableDropPeakBytes": 1073487872,
+          "minAvailableBytes": 39464214528,
+          "quality": "complete",
+          "sampledAt": 1793347512781
+        }
+      ],
+      "migration": {
+        "kind": "initialize",
+        "executedCount": 26,
+        "committedCount": 26
+      },
+      "migrationBaselines": [
+        {
+          "databaseId": "tasks-index",
+          "databaseKind": "tasks-index",
+          "lastAppliedMigrationId": null
+        },
+        {
+          "databaseId": "7ecf7b12d00337e4e00747bbc61aaaba0f3ad2508831f20baba3fb003024946a",
+          "databaseKind": "session",
+          "lastAppliedMigrationId": null
+        }
+      ]
+    }
+  ],
+  "timedOut": false,
+  "ready": true,
+  "abnormal": false,
+  "result": {
+    "code": 0,
+    "signal": null
+  },
+  "stdout": "[2026-10-30 16:05:11.868] [pid:56449] [zody-host] initializing local services\n[2026-10-30 16:05:12.775] [pid:56449] [cua-pip-session] [cua-pip-session] wiring resolved {\n  enabled: true,\n  platform: 'darwin',\n  serviceAuthorityMode: 'desktop-local',\n  lifecycleWired: true\n}\n[2026-10-30 16:05:12.784] [pid:56449] [zcode-agent-service] 开始初始化 ZCode agent {\n  workspaceKey: '/Users/zhvala/SourceCode/zody/output/cua-desktop-session/independent-checks/init-home-gUvZOE/workspace',\n  workspacePath: '/Users/zhvala/SourceCode/zody/output/cua-desktop-session/independent-checks/init-home-gUvZOE/workspace'\n}\n[2026-10-30 16:05:12.785] [pid:56449] [zody-host] mobile notification capture source attached { scopeKind: 'local' }\n[2026-10-30 16:05:12.785] [pid:56449] [zody-host] exposing services on ChannelServer...\n[2026-10-30 16:05:12.785] [pid:56449] [zody-host] creating ChannelServer (deferInit=false)\n[2026-10-30 16:05:12.786] [pid:56449] [zody-host] [rpc:register] channel \"file\"\n[2026-10-30 16:05:12.786] [pid:56449] [zody-host] [rpc:register] channel \"media-preview\"\n[2026-10-30 16:05:12.786] [pid:56449] [zody-host] [rpc:register] channel \"git\"\n[2026-10-30 16:05:12.786] [pid:56449] [zody-host] [rpc:register] channel \"git-checkpoint\"\n[2026-10-30 16:05:12.786] [pid:56449] [zody-host] [rpc:register] channel \"system\"\n[2026-10-30 16:05:12.786] [pid:56449] [zody-host] [rpc:register] channel \"terminal\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"setting\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"onboarding-record\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"credential\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"broadcast\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"zcode-task\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"zcode-agent\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"zcode-session\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"cua-permission\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"cua-pip-session\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"file-watcher\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"usage-stats\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"client-config\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"client-scenes\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"skills\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"skill-sync\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"mcp-sync\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"gen-ui\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"plugin-ui-bridge\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"plugin-ui-sampling\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"plugin-ui-app-tools\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"plugin-sync\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"plugins\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"plugin-management\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"subagents\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"commands\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"hooks\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"memory\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"output-style\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"settings-sync\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"feedback\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"prompt-attachment-transfer\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"provider-settings\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"model-selection\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"window-controller\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] [rpc:register] channel \"mobile-notification-reader\"\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] service connection ready mode=desktop-continuous\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] window Host topology, reason=base-attachment-ready, pid=56449, connections=0, logicalSessions=0, attachments=1\n[2026-10-30 16:05:12.787] [pid:56449] [zody-host] local services ready, all channels registered\n[2026-10-30 16:05:12.789] [pid:56449] [zody-host] disposing host resources, reason=parent dispose\n",
+  "stderr": "[2026-10-30 16:05:04.608] [pid:56449] [zody-host] ExperimentalWarning: SQLite is an experimental feature and might change at any time\n"
+}

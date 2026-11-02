@@ -1,0 +1,38 @@
+{
+  "session-storage-entry.mjs.inputs.json": {
+    "same": true,
+    "inputs": 3131,
+    "changed": [],
+    "removed": []
+  },
+  "tasks-storage-worker.mjs.inputs.json": {
+    "same": true,
+    "inputs": 352,
+    "changed": [],
+    "removed": []
+  },
+  "node-repl-server.mjs.inputs.json": {
+    "same": true,
+    "inputs": 627,
+    "changed": [],
+    "removed": []
+  },
+  "cli-entry.mjs.inputs.json": {
+    "same": true,
+    "inputs": 3183,
+    "changed": [],
+    "removed": []
+  },
+  "session-entry.mjs.inputs.json": {
+    "same": true,
+    "inputs": 3134,
+    "changed": [],
+    "removed": []
+  },
+  "host-entry.mjs.inputs.json": {
+    "same": true,
+    "inputs": 1038,
+    "changed": [],
+    "removed": []
+  }
+}

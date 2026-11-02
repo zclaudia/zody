@@ -19,6 +19,13 @@ type DesktopBrowserPlatformBridge = Pick<
   | "browserViewUpdateViewport"
   | "importChromeBrowserData"
   | "clearEmbeddedBrowserData"
+  | "getBrowserExtensionStatus"
+  | "beginBrowserExtensionPairing"
+  | "cancelBrowserExtensionPairing"
+  | "setBrowserExtensionDefaultBackend"
+  | "revokeBrowserExtensionProfile"
+  | "transferBrowserExtensionProfile"
+  | "setBrowserExtensionBridgePort"
   | "getPathForFile"
   | "saveFile"
   | "printPageToPdf"
@@ -74,4 +81,26 @@ export const desktopBrowserPlatformBridge = {
   clearEmbeddedBrowserData: (mode) =>
     window.zcode.clearEmbeddedBrowserData?.(mode) ??
     Promise.resolve({ success: false, error: "unsupported" }),
+  // 旧 preload 下保持 undefined：设置页按方法存在与否决定是否展示管理操作。
+  getBrowserExtensionStatus: window.zcode.getBrowserExtensionStatus
+    ? () => window.zcode.getBrowserExtensionStatus!()
+    : undefined,
+  beginBrowserExtensionPairing: window.zcode.beginBrowserExtensionPairing
+    ? () => window.zcode.beginBrowserExtensionPairing!()
+    : undefined,
+  cancelBrowserExtensionPairing: window.zcode.cancelBrowserExtensionPairing
+    ? (pairingSessionId) => window.zcode.cancelBrowserExtensionPairing!(pairingSessionId)
+    : undefined,
+  setBrowserExtensionDefaultBackend: window.zcode.setBrowserExtensionDefaultBackend
+    ? (browserId) => window.zcode.setBrowserExtensionDefaultBackend!(browserId)
+    : undefined,
+  revokeBrowserExtensionProfile: window.zcode.revokeBrowserExtensionProfile
+    ? (profileInstanceId) => window.zcode.revokeBrowserExtensionProfile!(profileInstanceId)
+    : undefined,
+  transferBrowserExtensionProfile: window.zcode.transferBrowserExtensionProfile
+    ? (profileInstanceId) => window.zcode.transferBrowserExtensionProfile!(profileInstanceId)
+    : undefined,
+  setBrowserExtensionBridgePort: window.zcode.setBrowserExtensionBridgePort
+    ? (port) => window.zcode.setBrowserExtensionBridgePort!(port)
+    : undefined,
 } satisfies DesktopBrowserPlatformBridge;

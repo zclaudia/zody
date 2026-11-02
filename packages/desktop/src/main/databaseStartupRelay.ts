@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { ipcMain, type BrowserWindow, type UtilityProcess } from "electron";
+import { ipcMain, type BrowserWindow } from "electron";
 import {
   HostMessageTypes,
   InternalChannels,
@@ -7,6 +7,7 @@ import {
   type DatabaseStartupState,
 } from "@zcode/shared";
 import { reportDatabaseStartupState } from "./databaseStartupTelemetry.js";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 
 let localStorageReady = false;
 let quit: (() => void) | undefined;
@@ -21,9 +22,9 @@ export function onLocalDatabaseStartupReady(listener: () => void): void {
 }
 
 const windowBindings = new WeakMap<BrowserWindow, () => void>();
-const hostStartupIds = new WeakMap<UtilityProcess, string>();
+const hostStartupIds = new WeakMap<HostProcessHandle, string>();
 export function getDatabaseStartupPortPayload(
-  child: UtilityProcess,
+  child: HostProcessHandle,
 ): { databaseStartupId: string } | undefined {
   const databaseStartupId = hostStartupIds.get(child);
   return databaseStartupId ? { databaseStartupId } : undefined;
@@ -31,7 +32,7 @@ export function getDatabaseStartupPortPayload(
 
 export function bindDatabaseStartupRelay(
   win: BrowserWindow,
-  child: UtilityProcess,
+  child: HostProcessHandle,
   startupId = randomUUID(),
 ) {
   // 同窗口重建 Host 时，旧监听不能继续重放 ready 或接收用户控制命令。

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "kind": "zody-cua-desktop-session-unsupported-native-pins",
+  "note": "这些模块被显式替换为固定来源的 throw-only 裁剪；不是成功 stub，也不允许运行时从 cwd/workspace/node_modules 解析。",
+  "modules": {
+    "node-pty": {
+      "file": "unsupported-node-pty.cjs",
+      "sha256": "964aefe6034720f945f39577d2f06e888b713899a7843985eca509bf81884231",
+      "capability": "terminal"
+    },
+    "ssh2": {
+      "file": "unsupported-ssh2.cjs",
+      "sha256": "3e240ea0f3c843f3a0f9b5a1dab5ac6f53bb4578e7378376eaa425cd110964e7",
+      "capability": "ssh-remote"
+    },
+    "bufferutil": {
+      "file": "unsupported-bufferutil.cjs",
+      "sha256": "90b9c49cdd1924706abbcf9f10a1771626973c5bb2d82ef831fc9499398e6109",
+      "capability": "optional-native-ws-buffer"
+    },
+    "utf-8-validate": {
+      "file": "unsupported-utf-8-validate.cjs",
+      "sha256": "64eea5db850da1f401cb3fa5b9dcd3fa5fe07e5213d39f7196329d19fc93250c",
+      "capability": "optional-native-ws-validation"
+    },
+    "koffi": {
+      "file": "../../macos-cua-helper-product-wiring/koffi-unavailable-darwin.mjs",
+      "sha256": "3e61791e3482451848295cfd1d1dd5bb96ee3845b057f84917090fc190a43f08",
+      "capability": "win32-only-ffi"
+    }
+  }
+}

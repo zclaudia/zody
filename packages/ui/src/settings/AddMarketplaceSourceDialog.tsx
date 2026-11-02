@@ -76,6 +76,7 @@ export function AddMarketplaceSourceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         data-testid="plugin-store-add-source-dialog"
+        data-settings-dialog="true"
         className={cn(
           "w-[min(420px,calc(100vw-2rem))] max-w-none transition-colors",
           canPickPath && dragActive ? "border-border-hover bg-surface-hover" : "",
@@ -104,7 +105,7 @@ export function AddMarketplaceSourceDialog({
         </DialogTitle>
         {error ? (
           <div
-            className="max-h-[min(240px,40vh)] min-w-0 overflow-y-auto rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-ui-base whitespace-pre-wrap break-words text-destructive"
+            className="max-h-[min(240px,40dvh)] min-w-0 overflow-y-auto rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-ui-base whitespace-pre-wrap break-words text-destructive"
             data-testid="plugin-store-add-source-error"
             role="alert"
           >

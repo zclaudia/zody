@@ -1,0 +1,123 @@
+0000000000001898 S _$s20CuaMacOSVisualBridge0A14SelectedWindow33_CEEC7B9E93C4E69517C84B034DB0BC89LLVMXX
+0000000000001810 S _$s20CuaMacOSVisualBridge10RGBABuffer33_CEEC7B9E93C4E69517C84B034DB0BC89LLCMXX
+0000000000001854 S _$s20CuaMacOSVisualBridge13LifecycleGate33_CEEC7B9E93C4E69517C84B034DB0BC89LLCMXX
+00000000000000e8 T _$s20CuaMacOSVisualBridge22cuaVisualCaptureWindow9requestID06windowJ09admission10completion15payloadReleased7maxSide0P9RGBABytess5Int32Vs6UInt64V_s6UInt32VAkM_Ao2KS4dtXCyAM_Ako2KS4dA2OSPys5UInt8VGSgSitXCyAMXCAoMtF
+0000000000001804 S _$s20CuaMacOSVisualBridgeMXM
+                 U _$sBoWV
+                 U _$sSa10FoundationE36_unconditionallyBridgeFromObjectiveCySayxGSo7NSArrayCSgFZ
+0000000000000fe4 T _$sSo10CGImageRefaSgs5Error_pSgIeghgg_ACSo7NSErrorCSgIeyBhyy_TR
+                 U _$sSo12CGContextRefa12CoreGraphicsE4draw_2in8byTilingySo07CGImageB0a_So6CGRectVSbtF
+0000000000000fe0 T _$sSo18SCShareableContentCSgs5Error_pSgIeghgg_ACSo7NSErrorCSgIeyBhyy_TR
+00000000000014a8 D _$sSo8SCWindowCML
+0000000000000c18 T _$sSo8SCWindowCMa
+                 U _$ss12_ArrayBufferV19_getElementSlowPathyyXlSiFyXl_Ts5
+                 U _$ss18_CocoaArrayWrapperV8endIndexSivg
+                 U _$ss5Int32VMn
+                 U _$ss5UInt8VMn
+                 U _$ss6UInt32VMn
+                 U _$ss6UInt64VMn
+                 U _CGBitmapContextCreate
+                 U _CGColorSpaceCreateDeviceRGB
+                 U _CGContextSetBlendMode
+                 U _CGImageGetHeight
+                 U _CGImageGetWidth
+                 U _CGRectGetHeight
+                 U _CGRectGetWidth
+                 U _OBJC_CLASS_$_NSLock
+                 U _OBJC_CLASS_$_SCContentFilter
+                 U _OBJC_CLASS_$_SCScreenshotManager
+                 U _OBJC_CLASS_$_SCShareableContent
+                 U _OBJC_CLASS_$_SCStreamConfiguration
+                 U _OBJC_CLASS_$_SCWindow
+                 U _OBJC_CLASS_$__TtCs12_SwiftObject
+                 U _OBJC_METACLASS_$__TtCs12_SwiftObject
+                 U __Block_copy
+                 U __Block_release
+                 U __NSConcreteStackBlock
+0000000000001332 S ___swift_reflection_version
+                 U __objc_empty_cache
+                 U __swift_FORCE_LOAD_$_swiftAVFoundation
+00000000000011f8 S __swift_FORCE_LOAD_$_swiftAVFoundation_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftCoreAudio
+0000000000001200 S __swift_FORCE_LOAD_$_swiftCoreAudio_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftCoreFoundation
+0000000000001198 S __swift_FORCE_LOAD_$_swiftCoreFoundation_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftCoreImage
+00000000000011f0 S __swift_FORCE_LOAD_$_swiftCoreImage_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftCoreMIDI
+0000000000001208 S __swift_FORCE_LOAD_$_swiftCoreMIDI_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftDispatch
+00000000000011a0 S __swift_FORCE_LOAD_$_swiftDispatch_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftFoundation
+0000000000001180 S __swift_FORCE_LOAD_$_swiftFoundation_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftIOKit
+00000000000011b0 S __swift_FORCE_LOAD_$_swiftIOKit_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftMetal
+00000000000011d8 S __swift_FORCE_LOAD_$_swiftMetal_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftOSLog
+00000000000011e8 S __swift_FORCE_LOAD_$_swiftOSLog_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftObjectiveC
+0000000000001190 S __swift_FORCE_LOAD_$_swiftObjectiveC_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftQuartzCore
+00000000000011d0 S __swift_FORCE_LOAD_$_swiftQuartzCore_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftSpatial
+00000000000011e0 S __swift_FORCE_LOAD_$_swiftSpatial_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftUniformTypeIdentifiers
+00000000000011b8 S __swift_FORCE_LOAD_$_swiftUniformTypeIdentifiers_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftXPC
+00000000000011a8 S __swift_FORCE_LOAD_$_swiftXPC_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swift_Builtin_float
+0000000000001188 S __swift_FORCE_LOAD_$_swift_Builtin_float_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftos
+00000000000011c8 S __swift_FORCE_LOAD_$_swiftos_$_CuaMacOSVisualBridge
+                 U __swift_FORCE_LOAD_$_swiftsimd
+00000000000011c0 S __swift_FORCE_LOAD_$_swiftsimd_$_CuaMacOSVisualBridge
+                 U _bzero
+00000000000000e4 T _cua_visual_capture_window
+                 U _objc_allocWithZone
+                 U _objc_msgSend$captureImageWithFilter:configuration:completionHandler:
+                 U _objc_msgSend$contentRect
+                 U _objc_msgSend$frame
+                 U _objc_msgSend$getShareableContentExcludingDesktopWindows:onScreenWindowsOnly:completionHandler:
+                 U _objc_msgSend$init
+                 U _objc_msgSend$initWithDesktopIndependentWindow:
+                 U _objc_msgSend$lock
+                 U _objc_msgSend$owningApplication
+                 U _objc_msgSend$pointPixelScale
+                 U _objc_msgSend$processID
+                 U _objc_msgSend$setHeight:
+                 U _objc_msgSend$setPixelFormat:
+                 U _objc_msgSend$setShowsCursor:
+                 U _objc_msgSend$setWidth:
+                 U _objc_msgSend$unlock
+                 U _objc_msgSend$windowID
+                 U _objc_msgSend$windowLayer
+                 U _objc_msgSend$windows
+                 U _objc_opt_self
+                 U _objc_release
+                 U _objc_retain
+                 U _objc_retainAutoreleasedReturnValue
+                 U _swift_allocObject
+                 U _swift_bridgeObjectRelease
+                 U _swift_deallocClassInstance
+                 U _swift_deallocObject
+                 U _swift_deletedMethodError
+                 U _swift_getObjCClassMetadata
+                 U _swift_release
+                 U _swift_retain
+                 U _swift_slowAlloc
+                 U _swift_slowDealloc
+00000000000010c0 S _symbolic Sb
+00000000000010d0 S _symbolic Sd
+00000000000010a4 S _symbolic Si
+00000000000010b4 S _symbolic So6NSLockC
+00000000000010ae S _symbolic SvSg
+00000000000010c4 S _symbolic _____ 20CuaMacOSVisualBridge0A14SelectedWindow33_CEEC7B9E93C4E69517C84B034DB0BC89LLV
+00000000000010a8 S _symbolic _____ 20CuaMacOSVisualBridge10RGBABuffer33_CEEC7B9E93C4E69517C84B034DB0BC89LLC
+0000000000001028 S _symbolic _____ 20CuaMacOSVisualBridge13LifecycleGate33_CEEC7B9E93C4E69517C84B034DB0BC89LLC
+00000000000010ca S _symbolic _____ s5Int32V
+0000000000001078 S _symbolic _____ s6UInt32V
+000000000000102e S _symbolic _____ s6UInt64V
+000000000000106c S _symbolic _____IetCy_ s6UInt64V
+0000000000001034 S _symbolic _______________A2BS4dA2CSPy_____GSgSiIetCyyyyyyyyyyyyy_ s6UInt64V s5Int32V s6UInt32V s5UInt8V
+000000000000107e S _symbolic _______________ACS4dACIetCyyyyyyyyd_ s6UInt64V s6UInt32V s5Int32V

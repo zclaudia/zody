@@ -1,4 +1,4 @@
-import type { UtilityProcess as ElectronUtilityProcess } from "electron";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 import { randomUUID } from "node:crypto";
 import {
   HostMessageTypes,
@@ -45,7 +45,7 @@ export function forgetHostResourceUsage(label: string): void {
 
 export function requestHostResourceUsage(
   label: string,
-  child: Pick<ElectronUtilityProcess, "postMessage">,
+  child: Pick<HostProcessHandle, "postMessage">,
   timeoutMs: number = HOST_SNAPSHOT_TIMEOUT_MS,
   signal?: AbortSignal,
 ): Promise<HostResourceUsageProcess[]> {

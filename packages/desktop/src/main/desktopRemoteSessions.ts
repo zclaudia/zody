@@ -1,7 +1,8 @@
 /* eslint-disable max-lines -- Main 的完整薄转发契约集中维护请求与端口关联。 */
 import { randomUUID } from "node:crypto";
 import { BrowserWindow, MessageChannelMain } from "electron";
-import type { MessagePortMain, UtilityProcess as ElectronUtilityProcess } from "electron";
+import type { MessagePortMain } from "electron";
+import type { HostProcessHandle } from "./hostProcessHandle.js";
 import {
   buildRemoteWorkspaceIdentity,
   buildRemoteEnvironmentKey,
@@ -59,7 +60,7 @@ interface RemoteAttachmentRoute {
 }
 
 interface PendingProviderProvisioningExecution {
-  readonly child: ElectronUtilityProcess;
+  readonly child: HostProcessHandle;
   readonly trigger: ProviderProvisioningTrigger;
   readonly startedAtMonotonicMs: number;
   readonly resolve: () => void;
@@ -113,7 +114,7 @@ export function createRemoteWorkspaceSessionManager(options: {
     warn: (...args: unknown[]) => void;
     error: (...args: unknown[]) => void;
   };
-  windowHostProcessMap: Map<number, ElectronUtilityProcess>;
+  windowHostProcessMap: Map<number, HostProcessHandle>;
   resolveRemoteAssetDirs: () => RemoteAssetDirs;
   resolveWslTarget?: (
     target: Extract<RemoteTarget, { kind: "wsl" }>,
@@ -142,7 +143,7 @@ export function createRemoteWorkspaceSessionManager(options: {
   const pendingByRequestKey = new Map<string, PendingConnect>();
   const routesBySessionId = new Map<string, RemoteAttachmentRoute>();
   // 手机远控（web-remote-replayable）与 SSH/WSL 建连共享的路由表，保留不动。
-  const listenedHosts = new WeakSet<ElectronUtilityProcess>();
+  const listenedHosts = new WeakSet<HostProcessHandle>();
   const pendingProviderProvisioningExecutions = new Map<
     string,
     PendingProviderProvisioningExecution
@@ -156,7 +157,7 @@ export function createRemoteWorkspaceSessionManager(options: {
     return `${webContentsId}\0${requestId}`;
   }
 
-  function getWindowHost(win: BrowserWindow): ElectronUtilityProcess {
+  function getWindowHost(win: BrowserWindow): HostProcessHandle {
     const child = options.windowHostProcessMap.get(win.webContents.id);
     if (!child || child.pid == null) {
       throw new Error(`未找到窗口 Local Host，windowId=${win.webContents.id}`);
@@ -198,7 +199,7 @@ export function createRemoteWorkspaceSessionManager(options: {
   }
 
   function detachServicePort(
-    child: ElectronUtilityProcess,
+    child: HostProcessHandle,
     attachmentId: string,
     reason: string,
   ): void {
@@ -361,7 +362,7 @@ export function createRemoteWorkspaceSessionManager(options: {
   }
 
   function handleConnected(
-    child: ElectronUtilityProcess,
+    child: HostProcessHandle,
     webContentsId: number,
     requestId: string,
     descriptor: WindowHostRemoteWorkspaceDescriptor,
@@ -424,7 +425,7 @@ export function createRemoteWorkspaceSessionManager(options: {
   }
 
   function executeProviderProvisioning(
-    child: ElectronUtilityProcess,
+    child: HostProcessHandle,
     remoteSessionId: string,
     environmentKey: string,
     trigger: ProviderProvisioningTrigger,
@@ -566,7 +567,7 @@ export function createRemoteWorkspaceSessionManager(options: {
     }
   }
 
-  function ensureHostListener(child: ElectronUtilityProcess, webContentsId: number): void {
+  function ensureHostListener(child: HostProcessHandle, webContentsId: number): void {
     if (listenedHosts.has(child)) return;
     listenedHosts.add(child);
     child.on("message", (message: unknown) => {
@@ -878,7 +879,7 @@ export function createRemoteWorkspaceSessionManager(options: {
     clientMode: "web-remote-replayable";
     mobileNotificationPrincipal?: import("@zcode/shared").MobileNotificationPrincipal;
   }): {
-    process: ElectronUtilityProcess;
+    process: HostProcessHandle;
     port: MessagePortMain;
     remoteKind: RemoteTarget["kind"];
   } {

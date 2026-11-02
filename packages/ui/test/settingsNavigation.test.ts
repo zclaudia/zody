@@ -325,6 +325,38 @@ describe("settingsNavigation", () => {
     expect(sessionStorage.has("zody-settings-section-intent")).toBe(false);
   });
 
+  it("区分普通最近分区与显式 intent，即使两者是同一分区", async () => {
+    const sessionStorage = new Map<string, string>([
+      ["zody-settings-section-intent", "mcp"],
+    ]);
+    const localStorage = new Map<string, string>([
+      ["zody-settings-last-section", "mcp"],
+    ]);
+    vi.stubGlobal("window", {
+      sessionStorage: {
+        getItem: (key: string) => sessionStorage.get(key) ?? null,
+        removeItem: (key: string) => sessionStorage.delete(key),
+        setItem: (key: string, value: string) => sessionStorage.set(key, value),
+      },
+      localStorage: {
+        getItem: (key: string) => localStorage.get(key) ?? null,
+        removeItem: (key: string) => localStorage.delete(key),
+        setItem: (key: string, value: string) => localStorage.set(key, value),
+      },
+    });
+    const navigation = await loadSettingsNavigation("test");
+
+    expect(navigation.consumeInitialSettingsSectionWithSource("general")).toEqual({
+      section: "mcp",
+      explicit: true,
+    });
+
+    expect(navigation.consumeInitialSettingsSectionWithSource("general")).toEqual({
+      section: "mcp",
+      explicit: false,
+    });
+  });
+
   it("记录设置页最后停留分区并清理非法旧值", async () => {
     const localStorage = new Map<string, string>([
       ["zody-settings-last-section", "legacy-removed-section"],

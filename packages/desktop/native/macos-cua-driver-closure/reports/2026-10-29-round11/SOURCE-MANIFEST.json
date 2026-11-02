@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 1,
+  "kind": "round11-controller-source-snapshot",
+  "files": [
+    {
+      "path": "apps/zcode-cli/packages/core/dist/cua-submission.js",
+      "sha256": "836f3ffe5fdb1e5c77f246d13a499dd604b406c55b8b95ab18f01c810bedf66c",
+      "bytes": 184
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-authority.js",
+      "sha256": "f831dc48d0406b5535e58a93605ee5e14cc4b4eaa7beb8f44f62ebe70d5861ab",
+      "bytes": 12927
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-helpers.js",
+      "sha256": "34ceb33a1781a24424c08411ae03a06feef0b8c5d919cfd72ab5445b5c117646",
+      "bytes": 2920
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/dist/runtime/cua/cua-submission-types.js",
+      "sha256": "1a615e17e8543bc43ba2880ad0e5de75d5b578edf6d5de23364828d58f2b5331",
+      "bytes": 156
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/package.json",
+      "sha256": "b3deb75a981134345a7a873cd1cb8ab06c56c8b42b35bab592335a3251de9e9a",
+      "bytes": 1586
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/cua-submission.ts",
+      "sha256": "e2ba0c4efb05cbe3afe30fe8edd0fac660e3a3d4cc55f5de566d10e5780f7f70",
+      "bytes": 276
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/cua/cua-submission-authority.ts",
+      "sha256": "2402a662e83e9fb86d17c3bc0d9df9475a6e07d1c918a82617dc7371dea8f1e6",
+      "bytes": 13603
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/cua/cua-submission-helpers.ts",
+      "sha256": "cb91ae7953ea7afa756bbcf03f1be3884e8aa36e95abd38fb9780c559eb90b38",
+      "bytes": 3548
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/cua/cua-submission-types.ts",
+      "sha256": "71907282ef1ed094e6415719e79432ea26bc607582a9af4969d46384b5534561",
+      "bytes": 2486
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/BUILD.md",
+      "sha256": "bf62a341279636369741f9ccc875553125508d805c14a770b60a7c1b160dc0d2",
+      "bytes": 1165
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/authority-entry.mjs",
+      "sha256": "5d7a8da1f7a4e72d7e313e12f84f6c437ac079e0e8bf900aa910107fed1e8291",
+      "bytes": 11334
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/authority_client.h",
+      "sha256": "69544e503b4652804fcd6a1c729dd7fe35a1f6a94101b6a4f4a4227ecc275e93",
+      "bytes": 2058
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/authority_client.mm",
+      "sha256": "7274d1b2f79fcaa71e263a1b6a3211cf60f4c05ba4682cf0b581c47bfd84e075",
+      "bytes": 10780
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/bundle_paths.h",
+      "sha256": "62d6c52441f5da4a3991a52a35e4ded189bbd47f41e98e08fc24fe0c9a3fc5c9",
+      "bytes": 1577
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/bundle_paths.mm",
+      "sha256": "276d43b9c769884c401543e316bad05c06088903c84dfac6ed28a275d646c966",
+      "bytes": 6646
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/capture_owner.h",
+      "sha256": "a7f6f89a26e2e64a215f2441c68d354460a4d6617959cff8d219a7b38382f14f",
+      "bytes": 1149
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/capture_owner.mm",
+      "sha256": "ccb3e5a3e9ffc375b96ea45b386cbb1b9430d8ab979113646e26661a5174516c",
+      "bytes": 12750
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/lease_test.mm",
+      "sha256": "a9b7a156cca7de0f9bfef2d4e5ef5e573d4c9276473dc021fe8a4bf6a681d287",
+      "bytes": 1897
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/machine_lease.h",
+      "sha256": "8df297f234a41678c8d052344bb2383eb914a725d7e0af644719aa5cf85cb0f9",
+      "bytes": 1132
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/machine_lease.mm",
+      "sha256": "5c16cda5d41837dcb220fc3513c1f722efedbd89c908122be72cbf4b5baf8c1b",
+      "bytes": 4348
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/main.mm",
+      "sha256": "085542973ea23b5195f5d56a49acbd5d4e418386c25cd9bb3d159daa613ea2dd",
+      "bytes": 7230
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/node_process.h",
+      "sha256": "fefb26ab207fb41a2f3618ace4d07fda00161d98379c1bb04ccfdfc4cbf7220f",
+      "bytes": 1159
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/node_process.mm",
+      "sha256": "59e15644f01b5bbcf4816b0e712c999346258ed791f8390f03d7039bf2f9d021",
+      "bytes": 10212
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/orchestrator.h",
+      "sha256": "a62d0510d8dce7a13a396638a5565ac3265b6e32b87390ce3cdf96a7a87d30cd",
+      "bytes": 678
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/orchestrator.mm",
+      "sha256": "e6230a10c58868000d5f4aace8bcb6a53efee657625854ee5c9308f4dcf6089d",
+      "bytes": 24824
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/peer_auth.h",
+      "sha256": "636f3f31af2e657bb4ddeaf50bea3db20b2e92da69fbc467c55f646015e46d23",
+      "bytes": 1481
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/peer_auth.mm",
+      "sha256": "f8947693701056e544500aebafddc86307279540834a6fe0f7551a92f7b61142",
+      "bytes": 4934
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/r11_pins.h",
+      "sha256": "1be71f6983b4d9e5269df148fe01ac3dab8e63cde9d261405771591510b460b6",
+      "bytes": 277
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/r11_pins.mm",
+      "sha256": "af44e539958d377841ed1f6927e612eeca5523abb0d2737f6d540e4bd9fbcca1",
+      "bytes": 1113
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/r11_self_identity.h",
+      "sha256": "f653fd96e7290353670e871295d6b65fce2deacda1bdb8801abc1eea352e1e71",
+      "bytes": 2127
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/src/r11_self_identity.mm",
+      "sha256": "50889c42a208134320ab94eca0998e3def05b362a1fba04cbdb4cd860e83f20f",
+      "bytes": 14611
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/visual-overlay/README.md",
+      "sha256": "89ba15b9234d4159e2fc1c1d384bd30ada26fe8922185c272a76c2a85e2a6398",
+      "bytes": 2452
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/visual-overlay/include/cua_r11_visual.h",
+      "sha256": "7b0a4f85815190272cec8ef04baa9b85a5c4b661fc3c7e2bb84725d58498f0b2",
+      "bytes": 3002
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/visual-overlay/round11-visual.patch",
+      "sha256": "601b6296bd6f48b954fb76acb6265f489203b73ffc82c937af72581a0b804d9a",
+      "bytes": 14621
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/visual-overlay/src/helper_bridge.rs",
+      "sha256": "5b52f478f357d8e275b6f1db3d2b91ae7bd76f0f774f65f736169420f63e2a8b",
+      "bytes": 22202
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/calibration_profile.h",
+      "sha256": "8cd9da272de90dba45b807425d164d93d53e04ac2eacc73fd29649b0bb87d80d",
+      "bytes": 275
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/cli_common.h",
+      "sha256": "bb4d4545b0b1a3d5da39222b7cfda0a3fddabde463fd73ad0a98cca5b0b4beff",
+      "bytes": 1713
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/macho_artifact.h",
+      "sha256": "85984a0e25d91ee922278ceeddb0e729479ff0b80de19984631f4026314bd833",
+      "bytes": 270
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/peer_frame.mm",
+      "sha256": "263574f244177c3d0c0ae36167ed9ae3d7db8a30a2afc1bcc6eca74fea2b9e2b",
+      "bytes": 4961
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/peer_internal.h",
+      "sha256": "aa93a3576ced5d7a5332350cd01e3f4a630da0793ed03ad9d01a5e8cff3220f3",
+      "bytes": 327
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/peer_socket.h",
+      "sha256": "ef29202676e6484ce9cff0c4a32ff109ffb9a139884440bb963d170cb87855f6",
+      "bytes": 1488
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/peer_socket.mm",
+      "sha256": "a6e274faf1a6994e67e80bc3855b9b071555b4a8cb7dd216a2ad591237845856",
+      "bytes": 10598
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/policy.h",
+      "sha256": "b4bd22644ab26f8ceaf075ca4497f376e7246fb9d529a7d1c381421a6e402d07",
+      "bytes": 793
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/profile.h",
+      "sha256": "143b23a93be081441345bc358bf89cac48743b0d1b68502283bc7c652e6db6f3",
+      "bytes": 806
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/profile.mm",
+      "sha256": "124befc37b4c24eb85abf94cbe28a6241b13240448eadef7199a4dc33ab42c4e",
+      "bytes": 13519
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/pure_policy.h",
+      "sha256": "8b2a10e88733dcef61c152e4fd9c49952cc1fa1a1d849babc4a65937bf31a7f0",
+      "bytes": 384
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/report.h",
+      "sha256": "7e0e1227ddb4614b7e4ced8bdfd978c59798cbe080a58544e3172a32d0658b58",
+      "bytes": 1389
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/security_identity.h",
+      "sha256": "078e5129ceb343519db24f47b270378d87430713db661636637b3b54a2f2ec4a",
+      "bytes": 1092
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/security_identity.mm",
+      "sha256": "fd1f5e62d1bdef5488016a656ffc61c3616b6069eda1ea0a9792c985771b29b2",
+      "bytes": 8348
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-peer-diagnostic/src/static_artifact.h",
+      "sha256": "e148e1e93d622cc664040df46277bab2edb77886e9d9fd7b7cbe3acb063416ad",
+      "bytes": 900
+    },
+    {
+      "path": "packages/desktop/scripts/build-round11.mjs",
+      "sha256": "2d3901c46c75be11576d5ca9747004cbbd4be4a9ec4bba95295ef662439f1add",
+      "bytes": 2540
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-helper-round11-build.mjs",
+      "sha256": "3f6488de739cf4206c773f5aee41546a03666a0d6510acd2ff2c707a42cb13de",
+      "bytes": 970
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-helper-round11-final-build.mjs",
+      "sha256": "693283db24c6456eed10305bb40126393fd4d7de1873eac2462d8dbfa25ca08a",
+      "bytes": 23707
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-helper-round11-visual.mjs",
+      "sha256": "022a1866636b55445690bd193dd375ff556de0a04c3f6a6f578e74aae88e27b7",
+      "bytes": 20229
+    },
+    {
+      "path": "packages/desktop/test/macosCuaHelperRound11Authority.test.ts",
+      "sha256": "d022a46b51bef1088a53d28161d40c2730a0f1a8b85f9c523608c38cfe4c75a4",
+      "bytes": 13075
+    },
+    {
+      "path": "packages/desktop/test/macosCuaHelperRound11Lease.test.ts",
+      "sha256": "19b516cf6e89dee6b31911882c7ea55c9e2f1547fc4ef470bcc0bbd044f7263a",
+      "bytes": 4621
+    },
+    {
+      "path": "packages/desktop/test/macosCuaHelperRound11Visual.test.ts",
+      "sha256": "65ae1187d1dcf8900baf21307eb225256f6fcc54e948febcc46e754888eb34aa",
+      "bytes": 4051
+    }
+  ],
+  "treeHashAlgorithm": "SHA256 of UTF-8 path-sorted path+NUL+sha256+LF",
+  "treeSha256": "0527c734fdcfcf7ba65f3b80f3de3fa43f46a1a7626d850a8c064b82577da64a",
+  "archive": "source-round11.tar.gz",
+  "archiveSha256": "41bbb0bf5987e66afab6e11b71dbae285e673b161c0d0ea4d976dae692357050",
+  "signedAcceptance": false
+}

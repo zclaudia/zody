@@ -1,0 +1,322 @@
+{
+  "kind": "round9-controller-acceptance",
+  "tree": {
+    "fileCount": 776,
+    "treeSha256": "421530ae2c2cab7b537226e459905916c849c1cf76095db0a45f574f9c49e02e"
+  },
+  "pins": {
+    "patch": {
+      "path": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-driver-closure/round9/candidate-source.patch",
+      "sha256": "2d4629a8985c59200fb4df5367d9b86ffdbaf4d7def49fccbd60201458a266da",
+      "bytes": 117293
+    },
+    "sourceManifestSha256": "939fee8c3ad251cba055bb97b917f130b74a876797c9228a7e0c7c20695144e3",
+    "reviewConfigSha256": "3f49c8358c5b17ed244da9d795a7eee5f41cbb4c7f584f136db3d19617b46c5b"
+  },
+  "rebuild": {
+    "status": "candidate-rebuilt",
+    "output": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/candidate-work/controller-final/full-source",
+    "base": {
+      "fileCount": 767,
+      "treeSha256": "4cbad8776947504f9883bf5370d6802177090d7a01075c5640b64a730950d9de"
+    },
+    "candidate": {
+      "fileCount": 776,
+      "treeSha256": "421530ae2c2cab7b537226e459905916c849c1cf76095db0a45f574f9c49e02e"
+    },
+    "patch": {
+      "path": "/Users/zhvala/SourceCode/zody/packages/desktop/native/macos-cua-driver-closure/round9/candidate-source.patch",
+      "sha256": "2d4629a8985c59200fb4df5367d9b86ffdbaf4d7def49fccbd60201458a266da",
+      "bytes": 117293
+    },
+    "sourceManifestSha256": "939fee8c3ad251cba055bb97b917f130b74a876797c9228a7e0c7c20695144e3",
+    "reviewConfigSha256": "3f49c8358c5b17ed244da9d795a7eee5f41cbb4c7f584f136db3d19617b46c5b",
+    "delta": {
+      "modified": [
+        "Cargo.lock",
+        "Cargo.toml",
+        "crates/cua-macos-visual/build.rs",
+        "crates/cua-macos-visual/Cargo.toml",
+        "crates/cua-macos-visual/PROVENANCE.md",
+        "crates/cua-macos-visual/src/capture.rs",
+        "crates/cua-macos-visual/src/error.rs",
+        "crates/cua-macos-visual/src/lib.rs",
+        "crates/cua-macos-visual/src/observe.rs",
+        "crates/cua-macos-visual/src/swift_link.rs"
+      ],
+      "added": [
+        "crates/cua-macos-visual-link-probe/.cargo/config.toml",
+        "crates/cua-macos-visual-link-probe/build.rs",
+        "crates/cua-macos-visual-link-probe/Cargo.toml",
+        "crates/cua-macos-visual-link-probe/src/main.rs",
+        "crates/cua-macos-visual/native/CuaVisualCapture.swift",
+        "crates/cua-macos-visual/native/DERIVATION.md",
+        "crates/cua-macos-visual/native/licenses/LICENSE-APACHE",
+        "crates/cua-macos-visual/native/licenses/LICENSE-MIT",
+        "crates/cua-macos-visual/src/session.rs"
+      ],
+      "removed": []
+    },
+    "dependencyPolicy": {
+      "visualRoot": "crates/cua-macos-visual",
+      "probeRoot": "crates/cua-macos-visual-link-probe",
+      "preservedFeatures": [
+        "zody-dev-no-input",
+        "zody-strict-frame-gate"
+      ],
+      "swiftBridgeFiles": [
+        "crates/cua-macos-visual/native/CuaVisualCapture.swift"
+      ],
+      "visualDependencies": [
+        "core-foundation",
+        "image"
+      ],
+      "probeDependencies": [
+        "cua-macos-visual"
+      ]
+    },
+    "lockPolicy": {
+      "lockVersion": 4,
+      "visualDependencies": [
+        "core-foundation",
+        "image"
+      ],
+      "probeDependencies": [
+        "cua-macos-visual"
+      ],
+      "addedPathPackages": [
+        "cua-macos-visual-link-probe"
+      ],
+      "existingPackagesRetained": 570,
+      "unchangedPackages": 569,
+      "modifiedPackages": [
+        "cua-macos-visual"
+      ]
+    }
+  },
+  "gates": {
+    "source": "pass",
+    "dependencies": "pass",
+    "licenses": "pass",
+    "toolchain": "pass",
+    "build": "pass",
+    "sourceAuditComplete": true,
+    "evidenceComplete": true,
+    "productAdoption": "blocked",
+    "productAdoptionReason": "closure audit never authorizes product adoption; native, signing, TCC and runtime evidence remain separate gates",
+    "verificationFailed": false,
+    "exitCode": 0
+  },
+  "graph": {
+    "baselinePackageCount": 30,
+    "candidatePackageCount": 20,
+    "delta": -10,
+    "removed": [
+      {
+        "name": "apple-cf",
+        "version": "0.9.3",
+        "key": "apple-cf@0.9.3",
+        "features": [
+          "cg",
+          "cm",
+          "cv",
+          "dispatch",
+          "iosurface"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "apple-metal",
+        "version": "0.6.0",
+        "key": "apple-metal@0.6.0",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "crossbeam-queue",
+        "version": "0.3.12",
+        "key": "crossbeam-queue@0.3.12",
+        "features": [
+          "alloc",
+          "default",
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "crossbeam-utils",
+        "version": "0.8.21",
+        "key": "crossbeam-utils@0.8.21",
+        "features": [
+          "std"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "doom-fish-utils",
+        "version": "0.3.2",
+        "key": "doom-fish-utils@0.3.2",
+        "features": [
+          "default"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "futures-core",
+        "version": "0.3.32",
+        "key": "futures-core@0.3.32",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "futures-task",
+        "version": "0.3.32",
+        "key": "futures-task@0.3.32",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "futures-util",
+        "version": "0.3.32",
+        "key": "futures-util@0.3.32",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "pin-project-lite",
+        "version": "0.2.17",
+        "key": "pin-project-lite@0.2.17",
+        "features": [],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      },
+      {
+        "name": "screencapturekit",
+        "version": "8.0.1",
+        "key": "screencapturekit@8.0.1",
+        "features": [
+          "default",
+          "macos_13_0",
+          "macos_14_0",
+          "macos_14_2"
+        ],
+        "kind": null,
+        "source": {
+          "kind": "registry",
+          "path": null,
+          "comparable": true
+        }
+      }
+    ],
+    "added": [],
+    "versionChanged": [],
+    "versionSetChanged": [],
+    "featureChanged": [],
+    "sourceChanged": []
+  },
+  "licenseMaterials": {
+    "indexPath": "licenses-index.json",
+    "sha256": "01e53718a8eae304d0e96b72ab5f762f80fef083acb4c8206e5a1e570f9cef70",
+    "fileCount": 44
+  },
+  "libraryArtifacts": [
+    {
+      "path": "build-artifacts/libcua_macos_visual.rlib",
+      "sha256": "4842b5536727a0971f3e98f38905e8fe8524d730483c92d4161cb5d6510da295",
+      "bytes": 1371240
+    }
+  ],
+  "nativeArtifacts": {
+    "binary": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-final-native/target/aarch64-apple-darwin/debug/cua-macos-visual-link-probe",
+    "bytes": 557520,
+    "sha256": "01a06969fbea1f8bd9cceb0530209828cbaa4b3015d5a02e3a992b004131ff25",
+    "nativeBuildArtifacts": [
+      "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-final-native/target/aarch64-apple-darwin/debug/build/cua-macos-visual-7a5889e08cba4c87/out/CuaVisualCapture.o",
+      "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-final-native/target/aarch64-apple-darwin/debug/build/cua-macos-visual-7a5889e08cba4c87/out/libcua_macos_visual_bridge.a"
+    ],
+    "nativeArtifactHashes": [
+      {
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-final-native/target/aarch64-apple-darwin/debug/build/cua-macos-visual-7a5889e08cba4c87/out/CuaVisualCapture.o",
+        "bytes": 28488,
+        "sha256": "f781b989dba8c671fced03f32fb87f128e2067ceaff0ec7a67c3144c5a798f7d"
+      },
+      {
+        "path": "/Users/zhvala/SourceCode/zody/output/cua-driver-round9/controller-final-native/target/aarch64-apple-darwin/debug/build/cua-macos-visual-7a5889e08cba4c87/out/libcua_macos_visual_bridge.a",
+        "bytes": 31432,
+        "sha256": "1b54e194fe8eaf3cf3c15cec60cb79b5148f983fbdc02fa7f00159e258e70f02"
+      }
+    ]
+  },
+  "tests": {
+    "rustLib": 34,
+    "rustIntegration": 16,
+    "driverTools": 106
+  },
+  "checks": {
+    "typecheck": "pass",
+    "lint": {
+      "errors": 0,
+      "warnings": 301
+    },
+    "architectureViolations": 0,
+    "rustfmt": "pass"
+  },
+  "notExecuted": [
+    "native window enumeration",
+    "native screenshot",
+    "native input",
+    "TCC or certificate changes",
+    "signed Helper validation",
+    "native Fenced/Drained",
+    "full D06",
+    "Intel",
+    "minimum macOS device"
+  ],
+  "productAdoption": "blocked",
+  "defaultDisabled": true,
+  "zcodeCuaPlaceholder": true
+}

@@ -1816,8 +1816,14 @@ function ConversationComposerImpl({
                   data-upload-status={attachment.uploadStatus}
                   className={
                     isMediaAttachment
-                      ? "relative size-12 overflow-hidden rounded-lg bg-surface after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:border after:border-border after:content-['']"
-                      : "h-12 w-fit max-w-full min-w-0 gap-2 rounded-lg border border-border bg-surface p-1.5 pr-6 [--attachment-bg:var(--color-surface)] hover:bg-surface-hover"
+                      ? // 修复（走查 composer-4/touch-6）：× 移除按钮的触屏扩展命中区在卡片角上，
+                        // 根节点 overflow-hidden 会把伪元素命中区裁剪回卡片内（<44px）。
+                        // 这里把裁剪内移到预览包裹层（视觉不变），根节点放开裁剪让命中区完整生效。
+                        "relative size-12 overflow-visible rounded-lg bg-surface after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:border after:border-border after:content-['']"
+                      : // 文件 chip 的 overflow-hidden 来自 Attachment 组件 inline 变体基类，
+                        // 同样会裁剪 × 的扩展命中区；用 overflow-visible 覆盖（twMerge 后者生效），
+                        // chip 内容自身已由 rounded/truncate 收边，无依赖根裁剪的视觉。
+                        "h-12 w-fit max-w-full min-w-0 overflow-visible gap-2 rounded-lg border border-border bg-surface p-1.5 pr-6 [--attachment-bg:var(--color-surface)] hover:bg-surface-hover"
                   }
                   data={{
                     id: attachment.id,
@@ -1881,7 +1887,10 @@ function ConversationComposerImpl({
                   <div
                     className={cn(
                       "relative shrink-0",
-                      isMediaAttachment ? "size-full" : "size-9 rounded-md bg-background",
+                      // 媒体卡片的圆角裁剪从根节点内移到这层（根节点需放开裁剪以放行 × 的触屏扩展命中区）。
+                      isMediaAttachment
+                        ? "size-full overflow-hidden rounded-lg"
+                        : "size-9 rounded-md bg-background",
                     )}
                   >
                     <AttachmentPreview
@@ -1901,11 +1910,14 @@ function ConversationComposerImpl({
                       }
                     />
                     {showUploadStatus && isMediaAttachment ? (
+                      // 修复（走查 design-6）：上传进度百分比原为任意字号 text-[7px]，弱网上传
+                      // 大图/视频时几乎不可读；按 DESIGN.md 字号规范迁到 text-ui-* 体系的
+                      // text-ui-xs（徽标/紧凑标签角色），随 Appearance 字号缩放，无 raw 字号。
                       <span
                         data-testid={testId(TID_V4_ATTACHMENT_UPLOAD_PROGRESS, attachment.id)}
                         role={attachment.uploadStatus === "failed" ? "alert" : "status"}
                         aria-label={uploadStatusLabel}
-                        className="absolute inset-0 grid place-items-center rounded-lg bg-background/85 text-[7px] font-semibold text-foreground"
+                        className="absolute inset-0 grid place-items-center rounded-lg bg-background/85 text-ui-xs font-semibold text-foreground"
                       >
                         <svg
                           aria-hidden="true"
@@ -1978,7 +1990,12 @@ function ConversationComposerImpl({
                         : uploadStatusLabel}
                     </span>
                   ) : null}
-                  {attachment.uploadStatus === "failed" ? (
+                  {/* 重试按钮只渲染在文件 chip 内。媒体卡片（grid 变体、block 流）里它原本始终
+                      溢出在 48px 卡片外、被根节点 overflow-hidden 裁剪为不可见；根节点放开裁剪后
+                      改为显式不渲染，保持既有可见行为不变（媒体失败态仍以中央 "!" 环提示）。
+                      触屏扩展命中区（走查 composer-4/touch-6）：视觉保持 size-5，伪元素向左展开
+                      44×44（远离右上角 × 的角落），触屏不误触打开附件。 */}
+                  {attachment.uploadStatus === "failed" && !isMediaAttachment ? (
                     <button
                       type="button"
                       data-testid={testId(TID_V4_ATTACHMENT_UPLOAD_RETRY, attachment.id)}
@@ -1986,7 +2003,7 @@ function ConversationComposerImpl({
                         id: "chat.attachments.upload.retry",
                       })}
                       title={uploadStatusLabel}
-                      className="grid size-5 shrink-0 place-items-center rounded-md text-destructive hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-input-border-focused"
+                      className="grid size-5 shrink-0 place-items-center rounded-md text-destructive hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-input-border-focused [@media(hover:none)_and_(pointer:coarse)]:relative [@media(hover:none)_and_(pointer:coarse)]:z-30 [@media(hover:none)_and_(pointer:coarse)]:after:absolute [@media(hover:none)_and_(pointer:coarse)]:after:right-[-8px] [@media(hover:none)_and_(pointer:coarse)]:after:top-1/2 [@media(hover:none)_and_(pointer:coarse)]:after:size-11 [@media(hover:none)_and_(pointer:coarse)]:after:-translate-y-1/2 [@media(hover:none)_and_(pointer:coarse)]:after:rounded-full [@media(hover:none)_and_(pointer:coarse)]:after:content-['']"
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -2004,7 +2021,12 @@ function ConversationComposerImpl({
                     aria-label={intl.formatMessage({
                       id: "chat.attachments.remove",
                     })}
-                    className="absolute right-0.5 top-0.5 z-20 size-3.5 rounded-full bg-primary p-0 text-primary-foreground opacity-0 transition-opacity hover:bg-primary/80 hover:text-primary-foreground group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+                    // 修复（走查 composer-4/touch-6）：× 视觉仅 14×14px，手机上点不中且易误触打开附件。
+                    // 触屏态用伪元素以 × 为中心展开 44×44 命中区（视觉不变，遵循
+                    // docs/web-remote-control/mobile-viewport-input-and-touch.md D1：
+                    // 作用域 (hover:none) and (pointer:coarse)，桌面密度不变）。
+                    // 失败态重试按钮的扩展命中区带 z-30，两者命中区重叠带内优先重试而非误删。
+                    className="absolute right-0.5 top-0.5 z-20 size-3.5 rounded-full bg-primary p-0 text-primary-foreground opacity-0 transition-opacity hover:bg-primary/80 hover:text-primary-foreground group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 [@media(hover:none)_and_(pointer:coarse)]:after:absolute [@media(hover:none)_and_(pointer:coarse)]:after:left-1/2 [@media(hover:none)_and_(pointer:coarse)]:after:top-1/2 [@media(hover:none)_and_(pointer:coarse)]:after:size-11 [@media(hover:none)_and_(pointer:coarse)]:after:-translate-x-1/2 [@media(hover:none)_and_(pointer:coarse)]:after:-translate-y-1/2 [@media(hover:none)_and_(pointer:coarse)]:after:rounded-full [@media(hover:none)_and_(pointer:coarse)]:after:content-['']"
                     onPointerDown={(event) => event.stopPropagation()}
                     onClick={(event) => {
                       event.preventDefault();
@@ -2143,6 +2165,10 @@ function ConversationComposerImpl({
               onClick={handleStopClick}
               data-testid={TID_V4_STOP}
               aria-label={stopTooltipTitle}
+              // 修复（走查 composer-3/touch-7）：停止/发送是手机端最高频操作，icon-md 视觉 28px
+              // 命中区过小。触屏态用 min-w/min-h 抬升到 44×44（图标视觉不变，
+              // 作用域 (hover:none) and (pointer:coarse)，桌面渲染不受影响）。
+              className="[@media(hover:none)_and_(pointer:coarse)]:min-h-11 [@media(hover:none)_and_(pointer:coarse)]:min-w-11"
             >
               <SquareIcon className="size-4 fill-current" />
               <span className="sr-only">{stopTooltipTitle}</span>
@@ -2162,7 +2188,7 @@ function ConversationComposerImpl({
               onClick={handleSendButtonClick}
               data-testid={TID_V4_COMPOSER_SEND}
               aria-label={resolvedSendTooltipTitle}
-              className="cursor-pointer gap-1 rounded-lg bg-brand text-ui-base text-foreground-inverse hover:bg-brand/80"
+              className="cursor-pointer gap-1 rounded-lg bg-brand text-ui-base text-foreground-inverse hover:bg-brand/80 [@media(hover:none)_and_(pointer:coarse)]:min-h-11 [@media(hover:none)_and_(pointer:coarse)]:min-w-11"
             >
               {pending ? <Spinner className="size-4" /> : <ArrowUpIcon className="size-4" />}
               <span className="sr-only">{resolvedSendTooltipTitle}</span>
@@ -2399,7 +2425,9 @@ function ConversationComposerImpl({
         <DialogContent
           data-testid={TID_V4_PAUSED_QUEUE_SEND_DIALOG}
           showCloseButton={false}
-          className="max-w-xl gap-6 p-6 sm:p-8"
+          // 走查 viewport-4：max-w-xl 会经 tailwind-merge 覆盖基类的 max-w-[calc(100%-2rem)] 边距防护，
+          // 手机上全出血贴边；改为 sm:max-w-xl 后窄屏保留呼吸边距（DESIGN.md「Dialogs should reuse patterns such as sm:max-w-*」）。
+          className="sm:max-w-xl gap-6 p-6 sm:p-8"
         >
           <DialogClose asChild>
             <Button

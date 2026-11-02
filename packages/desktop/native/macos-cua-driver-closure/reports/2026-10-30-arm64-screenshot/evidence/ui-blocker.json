@@ -1,0 +1,10 @@
+{
+  "observedAt": "2026-10-30T17:25Z",
+  "api": "cua.getState",
+  "nativeApps": [],
+  "error": "The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing.",
+  "confirmationPromptShown": false,
+  "newProductCaptureExecuted": false,
+  "newInflightUiStopExecuted": false,
+  "userUnlockAndDiskRequestPending": true
+}

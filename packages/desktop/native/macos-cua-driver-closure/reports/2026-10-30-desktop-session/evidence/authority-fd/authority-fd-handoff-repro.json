@@ -1,0 +1,13 @@
+{
+  "purpose": "真实 socketpair + 冻结 R11 AuthorityClient 的 O_NONBLOCK 交接复现",
+  "withoutConversion": {
+    "setup": "accepted 侧 fd 保持 O_NONBLOCK；请求后延迟 150ms 才写 response",
+    "result": "ok=0 error=authority channel closed before response close_reason=authority-read-error: Resource temporarily unavailable",
+    "exit": 1
+  },
+  "withConversion": {
+    "setup": "交接前仅清除 file-status O_NONBLOCK，保留其余 flags；同一延迟 response",
+    "result": "ok session-authority-fd",
+    "exit": 0
+  }
+}

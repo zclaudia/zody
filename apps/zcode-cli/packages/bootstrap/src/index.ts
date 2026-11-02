@@ -1,6 +1,15 @@
 // Bootstrap public API surface.
 
 export * from "./app/create-app.js";
+export type { CuaControlSessionOptions } from "./app/cua-runtime-control.js";
+export type { CuaNativeAuthorityCompositionOptions } from "./app/cua-runtime-native-authority.js";
+export type {
+  CuaNativeCaptureExpectation,
+  CuaNativeCaptureOnceOptions,
+  CuaNativeCaptureRuntimeOptions,
+  CuaNodeReplMcpPortFactory,
+  CuaNodeReplMcpPortFactoryInput,
+} from "./app/cua-runtime-native-capture.js";
 export type {
   ListZCodeSessionsOptions,
   PromptInput,

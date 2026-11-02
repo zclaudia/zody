@@ -1,0 +1,5 @@
+The following is a diff from the previous accessibility tree for Window: "Zody" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+~													191 button Collapse tool details
++													196 text No result to display.
++													197 button View execution details
+The focused UI element is 191 button Collapse tool details

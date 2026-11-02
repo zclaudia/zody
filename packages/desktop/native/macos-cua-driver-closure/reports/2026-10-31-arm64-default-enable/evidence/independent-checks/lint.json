@@ -1,0 +1,12 @@
+{
+  "name": "lint",
+  "argv": [
+    "pnpm",
+    "lint"
+  ],
+  "cwd": "/Users/zhvala/SourceCode/zody",
+  "startedAt": "2026-10-31T05:38:04.897455+00:00",
+  "seconds": 3.337,
+  "exitCode": 0,
+  "log": "lint.log"
+}

@@ -9,6 +9,7 @@ import {
 import { createPluginUiBridgeService } from "../../../services/src/plugin-ui-bridge/pluginUiBridgeService.js";
 import { startAgent } from "./agent.js";
 import { checkCombinations } from "./chain-combinations.js";
+import { checkInitializeBarrier, initializeBarrierState } from "./chain-initialize-barrier.js";
 import { evaluateGuest } from "./guest-evaluation.js";
 const [root, profile, node, cli] = process.argv.slice(2) as [string, string, string, string];
 app.setPath("userData", profile);
@@ -101,6 +102,7 @@ app
       assert.equal(params.sessionId, scope.sessionId);
       assert.equal(params.serverName, scope.serverName);
       if (method === "prepareSandbox") {
+        initializeBarrierState.prepareRequests.push(params.sessionId);
         // 同一逻辑页面并发初始化经过生产 bridge，必须只有一次 MCP read 与 Main register。
         const [a, b] = await Promise.all([
           bridge.prepareSandbox(params),
@@ -113,7 +115,7 @@ app
       assert.equal(typeof fn, "function");
       return fn(params);
     });
-    async function createWindow(scope: any) {
+    async function createWindow(scope: any, options: { awaitReady?: boolean } = {}) {
       const win = new BrowserWindow({
         show: false,
         width: 1000,
@@ -141,6 +143,8 @@ app
         host.attachGuest({ guest, hostWebContents: win.webContents, sandboxId: pending.shift()! });
       });
       await win.loadFile(join(root, "host.html"));
+      // 首开屏障场景要在 prepare 尚未完成时观察宿主，不能等页面 ready。
+      if (options.awaitReady === false) return win;
       await win.webContents.executeJavaScript("window.harnessReady");
       await evaluateGuest(guests.get(win.webContents.id)!, "window.fixtureReady");
       return win;
@@ -333,6 +337,15 @@ app
           }
         },
       );
+      await checkInitializeBarrier({
+        agent,
+        root,
+        handles,
+        guests,
+        createWindow,
+        closeWindow,
+        check,
+      });
       await checkCombinations({
         agent,
         win,

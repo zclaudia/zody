@@ -1,0 +1,2836 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 14a74c6..26478d7 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1091,7 +1091,13 @@ version = "0.37.0"
+ dependencies = [
+  "core-foundation",
+  "image",
+- "screencapturekit",
++]
++
++[[package]]
++name = "cua-macos-visual-link-probe"
++version = "0.37.0"
++dependencies = [
++ "cua-macos-visual",
+ ]
+ 
+ [[package]]
+diff --git a/Cargo.toml b/Cargo.toml
+index ab81066..ee02804 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -1,6 +1,6 @@
+ [workspace]
+ resolver = "2"
+-members = ["crates/cua-driver-sdk", "crates/cua-driver-core", "crates/cua-driver-contract", "crates/cua-macos-visual", "crates/platform-macos", "crates/platform-windows", "crates/platform-linux", "crates/cursor-overlay", "crates/cua-cursor-motion", "crates/pip-preview"]
++members = ["crates/cua-driver-sdk", "crates/cua-driver-core", "crates/cua-driver-contract", "crates/cua-macos-visual", "crates/cua-macos-visual-link-probe", "crates/platform-macos", "crates/platform-windows", "crates/platform-linux", "crates/cursor-overlay", "crates/cua-cursor-motion", "crates/pip-preview"]
+ 
+ [workspace.package]
+ version = "0.37.0"
+diff --git a/crates/cua-macos-visual/Cargo.toml b/crates/cua-macos-visual/Cargo.toml
+index 8fcf848..1ecdfa8 100644
+--- a/crates/cua-macos-visual/Cargo.toml
++++ b/crates/cua-macos-visual/Cargo.toml
+@@ -15,6 +15,3 @@ image = { version = "0.25", default-features = false, features = ["png"] }
+ 
+ [target.'cfg(target_os = "macos")'.dependencies]
+ core-foundation = "0.10"
+-# 默认 feature 为空。macos_14_2 是读取 content_rect 的最小 feature，
+-# 同时保留 macos_14_0 的 SCScreenshotManager/point_pixel_scale API。
+-screencapturekit = { version = "8.0.1", features = ["macos_14_2"] }
+diff --git a/crates/cua-macos-visual/PROVENANCE.md b/crates/cua-macos-visual/PROVENANCE.md
+index 89e53a3..0ba91eb 100644
+--- a/crates/cua-macos-visual/PROVENANCE.md
++++ b/crates/cua-macos-visual/PROVENANCE.md
+@@ -36,43 +36,61 @@ Not supported this round: off-Space, minimized and accessory/overlay windows.
+ Because enumeration is on-screen only, an absent window is `WindowNotFound`, not
+ a silently accepted zero fact. A request with a non-zero layer is rejected.
+ 
+-### `crates/platform-macos/src/capture.rs` -> `src/capture.rs` + `src/observe.rs`
++### R8 `crates/platform-macos/src/capture.rs` -> R9 `src/capture.rs` + `src/observe.rs` + `native/CuaVisualCapture.swift`
+ 
+-Kept:
+-
+-- `SCShareableContent::get()` and selection of the one exact requested window.
+-- Desktop-independent `SCContentFilter` built with `with_window`.
+-- `point_pixel_scale` / `content_rect` output sizing, rounded and bounded.
+-- `SCStreamConfiguration` with `shows_cursor(false)`.
+-- `SCScreenshotManager::capture_image`.
+-- CGImage dimension/RGBA length checks.
+-- Identity revalidation before capture, against the selected SCK window and
+-  after the frame is returned. Drift is rejected; the window is never reselected.
++R8 depended on the general `screencapturekit` Rust wrapper. R9 removes that
++wrapper from this crate and derives a narrow Swift completion bridge from the
++fixed wrapper's Swift sources; the exact archive, source hashes, licenses and
++delta are recorded in [`native/DERIVATION.md`](native/DERIVATION.md).
+ 
+-Added pure orchestration:
++Kept semantically in the Swift bridge:
+ 
+-- `observe_once` takes injected before/select/capture/after/encode closures and
+-  enforces the order. Tests prove drift stops later stages, a bad RGBA length
+-  stops before the after-check, an after-drift stops before encoding, and no
+-  empty PNG can become a successful frame. The native path calls this same
+-  function, so the tested order is the order actually used.
++- `SCShareableContent` on-screen enumeration and exact `windowID` selection.
++- `SCContentFilter(desktopIndependentWindow:)`, `pointPixelScale`/`contentRect`
++  sizing and `SCStreamConfiguration.showsCursor = false`, now with an explicit
++  `kCVPixelFormatType_32BGRA` pixel format.
++- `SCScreenshotManager.captureImage` and a bounded `CGImage` to RGBA conversion.
++- Identity revalidation before capture, against the selected SCK window and
++  after the frame returns. Drift is rejected; the window is never reselected.
++
++Changed for R9:
++
++- The bridge uses the framework completion handler instead of the wrapper's
++  `Task`/`SyncCompletion`, and passes no Rust userdata pointer.
++- `LifecycleGate` makes enumeration, admission, capture and terminal delivery
++  once-only, so a duplicate framework callback cannot enter admission or end an
++  operation whose first capture is still in flight.
++- RGBA byte and pixel budgets are checked before `SCScreenshotManager` is
++  called, not only while rendering.
++- `payloadReleased` is an explicit `@convention(c) (UInt64) -> Void` callback
++  sent after the bridge-owned pixel buffer is deallocated. It releases in-flight
++  capacity; it does not claim OS callback-thread exit or native `Fenced`/`Drained`.
++
++Added Rust ownership:
++
++- `src/session.rs` owns one bounded observation registry (four slots),
++  monotonic result-reception cancellation, a cloneable cancel handle, one-shot
++  `wait` (`CaptureAlreadyConsumed` on a second call) and idempotent
++  completion/release. Observer `Drop` also closes reception.
++- `src/observe.rs` keeps the injected before/select/capture/after/encode order
++  and adds a final cancellation check after PNG verification. That check is the
++  result-delivery linearization point, not an OS callback exit.
+ 
+ Removed:
+ 
+-- The two-second plan cache, native capture gate, worker timeout, retry after
+-  identity change, shell `screencapture` fallback and SkyLight fallback.
+-- `capture_consent`, display capture, overlay exclusion, video recording,
+-  recording hooks and all input/pointer/overlay/PiP dependencies.
++- `screencapturekit`, `apple-metal`, `apple-cf`, stream recording, audio,
++  content-sharing picker, Metal texture bridge, cache/timeout/retry and the
++  shell/SkyLight fallbacks.
+ 
+ Not solved here:
+ 
+-- `SCScreenshotManager::capture_image` ends in a one-shot
+-  `SyncCompletion::wait()` inside `screencapturekit 8.0.1`; if the system never
+-  invokes the callback, this synchronous call can stay pending indefinitely.
+-  This candidate deliberately adds no fake timeout or cancellation.
+-- CGWindow PID/window/geometry agreement is observation consistency only. It is
+-  not process-incarnation proof, foreground authorization, a lease or a
+-  published final frame.
++- Cancelling result reception is not native stop. A capture already admitted in
++  Swift may still start and its late result is dropped; a missing native
++  callback keeps the slot and the wait pending because no timeout is added.
++- `payloadReleased` is not a native `Fenced`/`Drained` signal and does not prove
++  that the OS callback thread has returned.
++- CGWindow identity agreement is observation consistency only. It is not
++  process-incarnation proof, authorization, a lease or a published final frame.
+ 
+ ### `crates/cua-driver-core/src/image_utils.rs` -> `src/png.rs`
+ 
+@@ -121,37 +139,37 @@ Removed:
+ 
+ ## Dependency and platform notes
+ 
+-- `screencapturekit = 8.0.1` with `features = ["macos_14_2"]`.
+-  `default = []`; `macos_14_2` enables `macos_14_0`, which enables `macos_13_0`.
+-  `macos_14_2` is the minimum feature that exposes `SCContentFilter::content_rect`
+-  (the method is `#[cfg(feature = "macos_14_2")]` in 8.0.1). The capture plan
+-  still uses `SCScreenshotManager` and `point_pixel_scale` from `macos_14_0`.
+-- The dependency's `build.rs` always configures and builds the Swift bridge and
+-  links multiple Apple frameworks. Enabling only `macos_14_0` does not remove
+-  the recording Swift sources from the dependency build, and this crate does not
+-  claim that the upstream SCK library contains no recording code. Raising the
+-  feature floor to `macos_14_2` likewise does not remove those sources.
+-- The existing R7 SDK/platform crates keep their own `macos_15_0` selection;
+-  this crate does not change those old candidates.
+-- `build.rs` is a new, crate-local link-path helper. It runs only the absolute
+-  `/usr/bin/xcrun --find swiftc`, requires one absolute
+-  `<toolchain>/usr/bin/swiftc` result, verifies that compiler file, derives the
+-  same toolchain's `usr/lib/swift/macosx`, and verifies that both
+-  `libswiftCompatibility56.a` and `libswiftCompatibilityPacks.a` exist. Only
+-  then does it emit `cargo:rustc-link-search=native=...`. It also emits
++- This crate's native closure is `core-foundation` plus the derived
++  `native/CuaVisualCapture.swift` bridge. It no longer depends on the general
++  `screencapturekit`, `apple-metal` or `apple-cf` wrapper. Those package entries
++  remain in the workspace lock because the old SDK/platform roots still use
++  them; this crate does not, and the probe graph confirms their absence here.
++- `build.rs` selects the compiler and SDK only through the absolute
++  `/usr/bin/xcrun`: `--find swiftc` and `--sdk macosx27.0 --show-sdk-path`. It
++  verifies one absolute `<toolchain>/usr/bin/swiftc`, the installed SDK
++  directory, and the SDK's real Swift autolink stub
++  (`<SDK>/usr/lib/swift/libswiftCore.tbd`). Missing compiler/SDK/stub,
++  unsupported architecture or compile failure aborts; there is no SDK fallback.
++- The bridge is compiled with `-parse-as-library -emit-object -swift-version 5
++  -O -target arm64-apple-macos14.2 -sdk <SDK>` through the CLT Swift 6.4
++  driver, then archived with `/usr/bin/libtool`.
++- `build.rs` adds `<SDK>/usr/lib/swift` as a native link search path, emits
++  `cargo:rustc-link-arg=-Wl,-syslibroot,<SDK>` and
+   `cargo:rustc-link-arg=-Wl,-rpath,/usr/lib/swift` for this crate's test/final
+-  executable, because upstream Swift objects reference the system Swift runtime
+-  through `@rpath` and the compatibility-library search path alone does not
+-  satisfy runtime loading. This is the standard system runtime directory; the
+-  script does not set `DYLD_LIBRARY_PATH`, copy a library, disable validation,
+-  force-link unrelated frameworks, modify a registry/global SDK setting, or
+-  lower the deployment target. The Swift object files keep their own autolink
+-  directives. It has no `DEVELOPER_DIR`, `xcode-select`, or hard-coded global
+-  fallback: xcrun failure, a relative/multi-line/wrong-layout result, or a
+-  missing library fails the build. An `rlib` does not carry this runtime
+-  closure: a future Helper consumer must put the same rpath on its own final
+-  executable. The existing minimum-deployment warnings for upstream Swift
+-  objects are not resolved by this helper.
++  executable. The independent probe crate adds the same syslibroot/rpath
++  itself; an rlib does not carry either. No `DYLD_LIBRARY_PATH`, copied system
++  library, disabled validation, ignored symbol, docs.rs bypass or global SDK
++  change is used.
++- The Swift object's real `LC_LINKER_OPTION` entries include ScreenCaptureKit,
++  Foundation, CoreFoundation and Metal frameworks plus system Swift overlays
++  (`swiftCore`, `swift_Concurrency`, `swiftMetal`, `swiftAVFoundation`,
++  `swiftCoreAudio`, `swiftCoreImage`, `swiftCoreMIDI`, `swiftIOKit`,
++  `swiftQuartzCore`, `swiftSpatial`, `swiftXPC`, `swiftos`, `swiftsimd`, ...).
++  It carries no `libswiftCompatibility56`/`libswiftCompatibilityPacks`
++  force-load, so those archives are not a prerequisite.
++- The object and the independent consumer both record `minos 14.2` and
++  `sdk 27.0`; the consumer records `LC_RPATH=/usr/lib/swift`. An earlier local
++  `macosx15.2` pin was a non-reproducible misdiagnosis and is not used.
+ - No cache, lease, registry migration, shell, SkyLight, AX SPI or TCC request is
+   introduced.
+ 
+@@ -162,4 +180,12 @@ Removed:
+   `c0779290c1d4783169aa3dbfb55feb505e563ef8a004bbf55298ceffcfbda8d9`,
+   1069 bytes. It is not a template.
+ - The crate expression is the workspace `MIT`; the copied text is the actual
+-  copyright/license body from the fixed upstream object.
++  copyright/license body from the fixed upstream object. The CUA root MIT text
++  does not cover the derived ScreenCaptureKit material.
++- The derived bridge retains the upstream dual-license texts verbatim under
++  `native/licenses/`: `LICENSE-MIT` (1091 bytes, SHA-256
++  `5464a5ed6a2143a9d31e5516c7336a312c3c067cdc6ad15323f18fdf8d9755ae`) and
++  `LICENSE-APACHE` (11358 bytes, SHA-256
++  `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`). See
++  `native/DERIVATION.md` for the archive checksum, git revision and per-file
++  digests.
+diff --git a/crates/cua-macos-visual/build.rs b/crates/cua-macos-visual/build.rs
+index 069365d..164965c 100644
+--- a/crates/cua-macos-visual/build.rs
++++ b/crates/cua-macos-visual/build.rs
+@@ -1,65 +1,143 @@
+-//! Add the active toolchain's Swift compatibility library directory to the
+-//! native link search path. The upstream SwiftPM build scripts only know the
+-//! full-Xcode `Toolchains/XcodeDefault.xctoolchain` layout; a Command Line
+-//! Tools-only host installs the same libraries under `usr/lib/swift/macosx`.
++//! Compile the narrow Swift completion bridge into a static object archive.
+ //!
+-//! This script emits the compatibility-library search path and the fixed system
+-//! Swift runtime rpath. It does not copy a library, force-link an unrelated
+-//! framework, change the SDK, or lower the deployment target. The Swift object
+-//! files carry the actual autolink directives, so the linker can resolve them
+-//! after the verified directory is on its search path.
++//! The compiler and SDK are selected only through `/usr/bin/xcrun`. The host's
++//! installed macOS 27.0 SDK is verified against the CLT Swift 6.4.0 driver by
++//! this crate's real build; a missing compiler, SDK, Swift overlay stub,
++//! unsupported target or compile failure aborts. There is no docs.rs bypass,
++//! DYLD override, symbol ignore or SDK fallback.
+ 
++use std::env;
++use std::fs;
+ use std::path::PathBuf;
+ use std::process::Command;
+ 
+ #[path = "src/swift_link.rs"]
+ mod swift_link;
+ 
++const SDK_SELECTOR: &str = "macosx27.0";
++
+ fn main() {
+     println!("cargo:rerun-if-changed=build.rs");
+     println!("cargo:rerun-if-changed=src/swift_link.rs");
++    println!("cargo:rerun-if-changed=native/CuaVisualCapture.swift");
+     println!("cargo:rerun-if-env-changed=DEVELOPER_DIR");
+     println!("cargo:rerun-if-env-changed=TOOLCHAINS");
+ 
+-    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("macos") {
++    if env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("macos") {
+         return;
+     }
+ 
+-    let compiler = xcrun_find_swiftc();
+-    if !compiler.is_file() {
++    let target_arch = env::var("CARGO_CFG_TARGET_ARCH").expect("missing target architecture");
++    let triple = swift_link::swift_target_triple(&target_arch).unwrap_or_else(|| {
++        panic!("unsupported macOS target architecture for Swift bridge: {target_arch}")
++    });
++    let compiler = parse_xcrun_output(
++        &["--find", "swiftc"],
++        swift_link::parse_xcrun_swiftc,
++        "swiftc",
++    );
++    let sdk = parse_xcrun_output(
++        &["--sdk", SDK_SELECTOR, "--show-sdk-path"],
++        swift_link::parse_xcrun_path,
++        "macOS SDK",
++    );
++    if !sdk.is_dir() {
++        panic!("xcrun returned a non-directory SDK path: {}", sdk.display());
++    }
++    if swift_link::swift_lib_dir_from_compiler(&compiler).is_none() {
+         panic!(
+-            "xcrun returned {}, but it is not a regular compiler file",
++            "xcrun returned {}, which is not <toolchain>/usr/bin/swiftc",
+             compiler.display()
+         );
+     }
+-    let directory = swift_link::swift_lib_dir_from_compiler(&compiler).unwrap_or_else(|| {
++    // The Swift object carries real LC_LINKER_OPTION entries for `-lswiftCore`,
++    // `-lswift_Concurrency`, `-lswiftMetal` and friends. It carries no
++    // libswiftCompatibility56/Packs force-load, so those archives are not a
++    // build prerequisite. Resolve the autolink entries from this exact SDK.
++    let sdk_swift_lib = sdk.join("usr/lib/swift");
++    if !sdk_swift_lib.join("libswiftCore.tbd").is_file() {
+         panic!(
+-            "xcrun returned {}, which is not <toolchain>/usr/bin/swiftc",
+-            compiler.display()
+-        )
+-    });
+-    if !swift_link::has_required_compat_libs(&directory) {
++            "{} does not contain the Swift autolink stubs used by the bridge",
++            sdk_swift_lib.display()
++        );
++    }
++
++    let out_dir = PathBuf::from(env::var("OUT_DIR").expect("missing OUT_DIR"));
++    let module_cache = out_dir.join("swift-module-cache");
++    fs::create_dir_all(&module_cache).expect("create Swift module cache");
++    let object = out_dir.join("CuaVisualCapture.o");
++    let archive = out_dir.join("libcua_macos_visual_bridge.a");
++    let source = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("missing manifest dir"))
++        .join("native/CuaVisualCapture.swift");
++
++    let output = Command::new(&compiler)
++        .arg("-parse-as-library")
++        .arg("-emit-object")
++        .arg("-swift-version")
++        .arg("5")
++        .arg("-O")
++        .arg("-target")
++        .arg(triple)
++        .arg("-sdk")
++        .arg(&sdk)
++        .arg("-module-name")
++        .arg("CuaMacOSVisualBridge")
++        .arg("-module-cache-path")
++        .arg(&module_cache)
++        .arg("-o")
++        .arg(&object)
++        .arg(&source)
++        .output()
++        .unwrap_or_else(|error| panic!("failed to run {}: {error}", compiler.display()));
++    if !output.status.success() {
+         panic!(
+-            "{} is missing libswiftCompatibility56.a or \
+-             libswiftCompatibilityPacks.a",
+-            directory.display()
++            "Swift bridge compilation failed with {}:\n{}",
++            output.status,
++            String::from_utf8_lossy(&output.stderr)
+         );
+     }
+-    println!("cargo:rustc-link-search=native={}", directory.display());
+ 
+-    // 上游 Swift 对象带 @rpath 依赖；compat 库搜索路径不能替代运行期 rpath。
+-    // 这里只补标准系统运行时目录，供本 crate 的测试/最终可执行文件解析。
++    let archive_status = Command::new("/usr/bin/libtool")
++        .args(["-static", "-o"])
++        .arg(&archive)
++        .arg(&object)
++        .status()
++        .unwrap_or_else(|error| panic!("failed to run /usr/bin/libtool: {error}"));
++    if !archive_status.success() {
++        panic!("libtool failed with {archive_status}");
++    }
++
++    println!("cargo:rustc-link-search=native={}", out_dir.display());
++    println!("cargo:rustc-link-lib=static=cua_macos_visual_bridge");
++    println!("cargo:rustc-link-search=native={}", sdk_swift_lib.display());
++    // Swift's actual autolink entries require the system runtime from @rpath.
++    // This applies to this crate's own test/final executable only; a separate
++    // final consumer must add its own rpath.
+     println!("cargo:rustc-link-arg=-Wl,-rpath,/usr/lib/swift");
++    // Keep the Rust final link on the same explicitly selected SDK as Swift.
++    println!("cargo:rustc-link-arg=-Wl,-syslibroot,{}", sdk.display());
+ }
+ 
+-fn xcrun_find_swiftc() -> PathBuf {
++fn parse_xcrun_output(
++    arguments: &[&str],
++    parser: fn(&[u8]) -> Result<PathBuf, &'static str>,
++    label: &str,
++) -> PathBuf {
+     let output = Command::new("/usr/bin/xcrun")
+-        .args(["--find", "swiftc"])
++        .args(arguments)
+         .output()
+         .unwrap_or_else(|error| panic!("failed to run /usr/bin/xcrun: {error}"));
+     if !output.status.success() {
+-        panic!("/usr/bin/xcrun --find swiftc failed with {}", output.status);
++        panic!(
++            "/usr/bin/xcrun {arguments:?} failed with {}: {}",
++            output.status,
++            String::from_utf8_lossy(&output.stderr)
++        );
++    }
++    let path = parser(&output.stdout)
++        .unwrap_or_else(|error| panic!("invalid /usr/bin/xcrun {label} output: {error}"));
++    if !path.is_absolute() {
++        panic!("xcrun {label} path is not absolute: {}", path.display());
+     }
+-    swift_link::parse_xcrun_swiftc(&output.stdout)
+-        .unwrap_or_else(|error| panic!("invalid /usr/bin/xcrun --find swiftc output: {error}"))
++    path
+ }
+diff --git a/crates/cua-macos-visual/native/CuaVisualCapture.swift b/crates/cua-macos-visual/native/CuaVisualCapture.swift
+new file mode 100644
+index 0000000..57c3763
+--- /dev/null
++++ b/crates/cua-macos-visual/native/CuaVisualCapture.swift
+@@ -0,0 +1,394 @@
++// Narrow single-window ScreenCaptureKit completion bridge.
++//
++// Derived from the fixed `screencapturekit 8.0.1` Swift bridge at git
++// 2a9f13bcbeadb0aabc5596f0ff3d2ba71da8c1d0. The upstream MIT/Apache-2.0
++// license texts are retained under `native/licenses/`. See `DERIVATION.md`
++// for the exact source files, hashes and omitted wrapper/streaming behavior.
++
++import CoreGraphics
++import CoreVideo
++import Foundation
++import ScreenCaptureKit
++
++private enum CuaVisualStatus: Int32 {
++    case success = 0
++    case canceled = 1
++    case admissionRejected = 2
++    case windowNotFound = 3
++    case enumerationFailed = 4
++    case captureFailed = 5
++    case imageInvalid = 6
++}
++
++private struct CuaSelectedWindow {
++    let windowID: UInt32
++    let pid: Int32
++    let layer: Int32
++    let x: Double
++    let y: Double
++    let width: Double
++    let height: Double
++}
++
++public typealias CuaAdmissionCallback = @convention(c) (
++    UInt64, UInt32, Int32, Int32, Double, Double, Double, Double
++) -> Int32
++
++public typealias CuaCompletionCallback = @convention(c) (
++    UInt64, Int32, UInt32, Int32, Int32, Double, Double, Double, Double,
++    UInt32, UInt32, UnsafePointer<UInt8>?, Int
++) -> Void
++
++public typealias CuaPayloadReleasedCallback = @convention(c) (UInt64) -> Void
++
++private final class RGBABuffer {
++    private var pointer: UnsafeMutableRawPointer?
++    let count: Int
++
++    init(pointer: UnsafeMutableRawPointer, count: Int) {
++        self.pointer = pointer
++        self.count = count
++    }
++
++    func withUnsafePointer(_ body: (UnsafePointer<UInt8>) -> Void) {
++        guard let pointer else { return }
++        body(pointer.assumingMemoryBound(to: UInt8.self))
++    }
++
++    /// Explicitly drops the bridge-owned pixels before capacity is released.
++    func release() {
++        pointer?.deallocate()
++        pointer = nil
++    }
++
++    deinit {
++        release()
++    }
++}
++
++private final class LifecycleGate {
++    private let lock = NSLock()
++    private var enumerationClaimed = false
++    private var admissionClaimed = false
++    private var captureClaimed = false
++    private var captureCompletionClaimed = false
++    private var terminal = false
++
++    func claimEnumeration() -> Bool {
++        lock.lock()
++        defer { lock.unlock() }
++        guard !enumerationClaimed else { return false }
++        enumerationClaimed = true
++        return true
++    }
++
++    func claimAdmission() -> Bool {
++        lock.lock()
++        defer { lock.unlock() }
++        guard !admissionClaimed else { return false }
++        admissionClaimed = true
++        return true
++    }
++
++    func claimCapture() -> Bool {
++        lock.lock()
++        defer { lock.unlock() }
++        guard admissionClaimed, !captureClaimed else { return false }
++        captureClaimed = true
++        return true
++    }
++
++    /// Once-only claim for the framework's screenshot completion.
++    ///
++    /// This is deliberately separate from `claimCapture` (before the capture
++    /// start) and `claimTerminal` (the final emit). A duplicate framework
++    /// callback must not validate or allocate/render RGBA after the first
++    /// callback already handed back its buffer and released capacity.
++    func claimCaptureCompletion() -> Bool {
++        lock.lock()
++        defer { lock.unlock() }
++        guard captureClaimed, !captureCompletionClaimed else { return false }
++        captureCompletionClaimed = true
++        return true
++    }
++
++    func claimTerminal() -> Bool {
++        lock.lock()
++        defer { lock.unlock() }
++        guard !terminal else { return false }
++        terminal = true
++        return true
++    }
++}
++
++private func emit(
++    gate: LifecycleGate,
++    requestID: UInt64,
++    completion: CuaCompletionCallback,
++    payloadReleased: CuaPayloadReleasedCallback,
++    status: CuaVisualStatus,
++    selected: CuaSelectedWindow?,
++    width: UInt32 = 0,
++    height: UInt32 = 0,
++    rgba: RGBABuffer? = nil
++) {
++    guard gate.claimTerminal() else { return }
++    let windowID = selected?.windowID ?? 0
++    let pid = selected?.pid ?? 0
++    let layer = selected?.layer ?? 0
++    let x = selected?.x ?? 0
++    let y = selected?.y ?? 0
++    let frameWidth = selected?.width ?? 0
++    let frameHeight = selected?.height ?? 0
++    if let rgba {
++        rgba.withUnsafePointer { pointer in
++            completion(
++                requestID,
++                status.rawValue,
++                windowID,
++                pid,
++                layer,
++                x,
++                y,
++                frameWidth,
++                frameHeight,
++                width,
++                height,
++                pointer,
++                rgba.count
++            )
++        }
++        // The only bridge-owned pixel allocation is gone before the release
++        // notification. This does not assert that the OS callback thread or
++        // ScreenCaptureKit has returned to an idle/fenced/drained state.
++        rgba.release()
++    } else {
++        completion(
++            requestID,
++            status.rawValue,
++            windowID,
++            pid,
++            layer,
++            x,
++            y,
++            frameWidth,
++            frameHeight,
++            width,
++            height,
++            nil,
++            0
++        )
++    }
++    payloadReleased(requestID)
++}
++
++private func checkedPixelExtent(_ value: Double, maxSide: Int) -> UInt32? {
++    guard value.isFinite, value > 0 else { return nil }
++    let rounded = value.rounded()
++    guard rounded >= 1, rounded <= Double(maxSide) else { return nil }
++    return UInt32(rounded)
++}
++
++private func renderRGBA(
++    image: CGImage,
++    maxSide: Int,
++    maxBytes: Int
++) -> RGBABuffer? {
++    let width = image.width
++    let height = image.height
++    guard width > 0, height > 0, width <= maxSide, height <= maxSide else {
++        return nil
++    }
++    let (bytesPerRow, rowOverflow) = width.multipliedReportingOverflow(by: 4)
++    let (totalBytes, totalOverflow) = height.multipliedReportingOverflow(by: bytesPerRow)
++    guard !rowOverflow, !totalOverflow, totalBytes > 0, totalBytes <= maxBytes else {
++        return nil
++    }
++
++    let pointer = UnsafeMutableRawPointer.allocate(
++        byteCount: totalBytes,
++        alignment: MemoryLayout<UInt8>.alignment
++    )
++    pointer.initializeMemory(as: UInt8.self, repeating: 0, count: totalBytes)
++    let colorSpace = CGColorSpaceCreateDeviceRGB()
++    // The R8 CGImage conversion also produced premultiplied RGBA. The PNG
++    // encoder writes these bytes as-is; transparency is not un-premultiplied.
++    let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
++    guard let context = CGContext(
++            data: pointer,
++            width: width,
++            height: height,
++            bitsPerComponent: 8,
++            bytesPerRow: bytesPerRow,
++            space: colorSpace,
++            bitmapInfo: bitmapInfo.rawValue
++        ) else {
++        pointer.deallocate()
++        return nil
++    }
++    context.setBlendMode(.copy)
++    context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
++    return RGBABuffer(pointer: pointer, count: totalBytes)
++}
++
++@_cdecl("cua_visual_capture_window")
++public func cuaVisualCaptureWindow(
++    requestID: UInt64,
++    windowID: UInt32,
++    admission: CuaAdmissionCallback,
++    completion: CuaCompletionCallback,
++    payloadReleased: CuaPayloadReleasedCallback,
++    maxSide: UInt32,
++    maxRGBABytes: UInt64
++) -> Int32 {
++    guard maxSide > 0, maxSide <= UInt32(Int32.max) else { return -1 }
++    guard let maxBytes = Int(exactly: maxRGBABytes), maxBytes > 0 else {
++        return -1
++    }
++    let maxSideInt = Int(maxSide)
++    let gate = LifecycleGate()
++
++    func finish(
++        _ status: CuaVisualStatus,
++        selected: CuaSelectedWindow?,
++        width: UInt32 = 0,
++        height: UInt32 = 0,
++        rgba: RGBABuffer? = nil
++    ) {
++        emit(
++            gate: gate,
++            requestID: requestID,
++            completion: completion,
++            payloadReleased: payloadReleased,
++            status: status,
++            selected: selected,
++            width: width,
++            height: height,
++            rgba: rgba
++        )
++    }
++
++    // The completion-handler form avoids introducing a Swift concurrency Task
++    // solely for this one-shot bridge. All error paths terminate through the
++    // same once gate, so an OS duplicate cannot call Rust twice.
++    SCShareableContent.getExcludingDesktopWindows(
++        false,
++        onScreenWindowsOnly: true
++    ) { content, error in
++        // A framework duplicate callback must not enter admission a second
++        // time and terminalize an operation while the first capture is in
++        // flight.
++        guard gate.claimEnumeration() else { return }
++        guard error == nil, let content else {
++            finish(.enumerationFailed, selected: nil)
++            return
++        }
++        guard let window = content.windows.first(where: { $0.windowID == windowID }) else {
++            finish(.windowNotFound, selected: nil)
++            return
++        }
++        guard let application = window.owningApplication,
++              let layer = Int32(exactly: window.windowLayer) else {
++            finish(.admissionRejected, selected: nil)
++            return
++        }
++        let frame = window.frame
++        let selected = CuaSelectedWindow(
++            windowID: window.windowID,
++            pid: application.processID,
++            layer: layer,
++            x: frame.origin.x,
++            y: frame.origin.y,
++            width: frame.size.width,
++            height: frame.size.height
++        )
++
++        guard gate.claimAdmission() else { return }
++        let decision = admission(
++            requestID,
++            selected.windowID,
++            selected.pid,
++            selected.layer,
++            selected.x,
++            selected.y,
++            selected.width,
++            selected.height
++        )
++        if decision == 1 {
++            finish(.canceled, selected: selected)
++            return
++        }
++        guard decision == 0 else {
++            finish(.admissionRejected, selected: selected)
++            return
++        }
++
++        let filter = SCContentFilter(desktopIndependentWindow: window)
++        let scale = Double(filter.pointPixelScale)
++        let contentRect = filter.contentRect
++        let contentWidth = contentRect.width
++        let contentHeight = contentRect.height
++        let contentRectUsable = contentWidth.isFinite && contentWidth > 0
++            && contentHeight.isFinite && contentHeight > 0
++        let pointsWidth = contentRectUsable ? contentWidth : frame.size.width
++        let pointsHeight = contentRectUsable ? contentHeight : frame.size.height
++        guard let outputWidth = checkedPixelExtent(pointsWidth * scale, maxSide: maxSideInt),
++              let outputHeight = checkedPixelExtent(pointsHeight * scale, maxSide: maxSideInt) else {
++            finish(.imageInvalid, selected: selected)
++            return
++        }
++        let (pixels, pixelOverflow) = UInt64(outputWidth).multipliedReportingOverflow(
++            by: UInt64(outputHeight)
++        )
++        let maxPixels = UInt64(maxBytes / 4)
++        let (rgbaBytes, byteOverflow) = pixels.multipliedReportingOverflow(by: 4)
++        guard !pixelOverflow, !byteOverflow, pixels > 0, pixels <= maxPixels,
++              rgbaBytes <= UInt64(maxBytes) else {
++            finish(.imageInvalid, selected: selected)
++            return
++        }
++
++        let configuration = SCStreamConfiguration()
++        configuration.width = Int(outputWidth)
++        configuration.height = Int(outputHeight)
++        configuration.showsCursor = false
++        // Keep the same fixed BGRA surface as R8 instead of relying on a
++        // framework default that may change with the OS.
++        configuration.pixelFormat = kCVPixelFormatType_32BGRA
++
++        guard gate.claimCapture() else { return }
++
++        SCScreenshotManager.captureImage(
++            contentFilter: filter,
++            configuration: configuration
++        ) { image, captureError in
++            // 竞态修复依据：系统可能重复调用截图 completion。若只在最终
++            // finish/emit 处 claim，第二次回调仍会先渲染并分配 RGBA，甚至发
++            // 生在上一次 payloadReleased 已释放容量之后，绕过有界在途意图。
++            // 因此这里在进入校验/渲染前单独一次性 claim capture-completion；
++            // 它不代替 capture-start claim，也不代替最终 terminal claim。
++            guard gate.claimCaptureCompletion() else { return }
++            guard captureError == nil, let image else {
++                finish(.captureFailed, selected: selected)
++                return
++            }
++            guard image.width == Int(outputWidth), image.height == Int(outputHeight),
++                  let rgba = renderRGBA(
++                      image: image,
++                      maxSide: maxSideInt,
++                      maxBytes: maxBytes
++                  ) else {
++                finish(.imageInvalid, selected: selected)
++                return
++            }
++            finish(
++                .success,
++                selected: selected,
++                width: outputWidth,
++                height: outputHeight,
++                rgba: rgba
++            )
++        }
++    }
++    return 0
++}
+diff --git a/crates/cua-macos-visual/native/DERIVATION.md b/crates/cua-macos-visual/native/DERIVATION.md
+new file mode 100644
+index 0000000..58c6887
+--- /dev/null
++++ b/crates/cua-macos-visual/native/DERIVATION.md
+@@ -0,0 +1,153 @@
++# R9 Swift completion bridge derivation
++
++This bridge is a narrow, single-window derivation of the fixed
++`screencapturekit 8.0.1` Swift package. It replaces this crate's dependency on
++the general SCK wrapper and its AppleMetal/streaming graph. It is not a
++drop-in replacement for that package and does not relicense it.
++
++## Fixed registry input
++
++- Crate: `screencapturekit 8.0.1`
++- Registry archive: `screencapturekit-8.0.1.crate`
++  - bytes: `216361`
++  - SHA-256: `9ddaa8d6b16a2762c9a97c9a6297f04cb8ded0487e5ef02dc98b4e2bee3a26c7`
++- `.cargo_vcs_info.json` git revision:
++  `2a9f13bcbeadb0aabc5596f0ff3d2ba71da8c1d0`
++- Upstream package source root: `swift-bridge/Sources/ScreenCaptureKitBridge/`
++- Registry/source tree is read-only for this round. The archive files are not
++  copied into the candidate; only the hashes and the derived Swift file are.
++
++## Source files read for the derivation
++
++All paths are relative to the extracted `screencapturekit-8.0.1` package.
++
++| File | SHA-256 | Used for |
++|---|---|---|
++| `swift-bridge/Sources/ScreenCaptureKitBridge/ScreenshotManager.swift` | `6737a988e36c183c7108d906aaf8dfd163d943355bf1d22318be4bc4448d5238` | `SCScreenshotManager.captureImage` completion form and CGImage result |
++| `swift-bridge/Sources/ScreenCaptureKitBridge/ShareableContent.swift` | `8b157597be5098d7024a902c8d4fffcc1ef78689eb0638b0c264c1bbbb2b6c43` | `SCShareableContent.getExcludingDesktopWindows` and window identity fields |
++| `swift-bridge/Sources/ScreenCaptureKitBridge/StreamConfiguration.swift` | `f35fe19942db95cf100c07c71a30f74b7d8aee1d598f33d91bffb422d913c1be` | `SCStreamConfiguration` width/height/showsCursor/pixelFormat |
++| `swift-bridge/Sources/ScreenCaptureKitBridge/Core.swift` | `c8f3959d4df06d5ab710ade3bbdacccccfdc41af131aea89caacba96ec8a7e27` | Window/filter bridge concepts and retained-pointer handling to remove |
++| `swift-bridge/Sources/ScreenCaptureKitBridge/CoreGraphicsStrided.swift` | `b86b0a4250b363ce59d29686e952aafa208ae604b79e89dd0d9c2da175b50b45` | CMYK/bounded pixel extent and CGImage-to-RGBA conversion rules |
++
++The general wrapper's `Stream.swift`, `RecordingOutput.swift`,
++`ContentSharingPicker.swift`, `AudioDevices.swift`, `Metal/Metal.swift` and
++`CoreMedia/CoreMedia.swift` are deliberately not read into the candidate graph.
++The target crate compiles none of them.
++
++## Derived delta
++
++Kept semantics:
++
++- On-screen, non-desktop window enumeration through
++  `SCShareableContent.getExcludingDesktopWindows(false, onScreenWindowsOnly: true)`.
++- Exact `windowID` match, then `owningApplication.processID`, `windowLayer` and
++  `frame` as the selected identity.
++- `SCContentFilter(desktopIndependentWindow:)` for the one selected window.
++- `filter.pointPixelScale` and `filter.contentRect` for output sizing.
++- `SCStreamConfiguration` with `showsCursor = false`.
++- `SCScreenshotManager.captureImage(contentFilter:configuration:)` completion
++  callback and a bounded `CGImage` to RGBA conversion.
++
++Removed from the derived graph:
++
++- The Rust `screencapturekit` wrapper crate, `apple-metal` and `apple-cf`
++  dependencies used by the R8 capture root.
++- `SCStream`, recording outputs, audio devices, content-sharing picker, Metal
++  texture bridging and all stream lifecycle code.
++- Swift `Task`/`async` wrappers, opaque C userdata pointers and retained
++  CF/SCK pointer handoff. The R9 bridge passes scalar callbacks directly.
++- Two-second plan cache, timeouts, retries, shell/SkyLight fallback and consent
++  helpers remain absent, as in R8.
++
++Changed for this round:
++
++- The release callback is an explicit
++  `@convention(c) (UInt64) -> Void` parameter, matching the C ABI instead of
++  relying on an `@_silgen_name` symbol and Swift calling convention.
++- `LifecycleGate` makes enumeration, admission, capture and terminal delivery
++  once-only, so a duplicate framework callback cannot enter admission or
++  terminalize an operation whose first capture is still in flight.
++- `outputWidth * outputHeight * 4` is checked with
++  `multipliedReportingOverflow` before `SCScreenshotManager.captureImage`, and is
++  rejected against both the pixel budget and `maxRGBABytes` before any capture
++  starts.
++- `contentRect` is usable only when both width and height are finite and
++  positive; otherwise both axes fall back to the enumerated frame. This keeps
++  the R8 two-axis semantics instead of mixing one content axis with one frame
++  axis.
++- `configuration.pixelFormat` is explicitly
++  `kCVPixelFormatType_32BGRA`, so a framework default change cannot silently
++  alter the surface format.
++- The bridge owns one `RGBABuffer`. `completion` borrows it for the C callback
++  only; the buffer is deallocated and then `payloadReleased(requestID)` is sent.
++  Capacity is released only on that notification.
++
++Pixel semantics note: `renderRGBA` uses
++`CGImageAlphaInfo.premultipliedLast` with device RGB, matching the R8
++`CGImage` conversion. The PNG encoder writes these bytes as-is; transparency is
++not un-premultiplied. This document records the encoding equivalence; it does
++not claim a colour-management conversion beyond the R8 path.
++
++## Lifecycle limits (not closed by this round)
++
++- `payload_released` means the bridge-owned pixel storage and its C callback
++  borrow have been handed back. It is not evidence that the OS/ScreenCaptureKit
++  callback thread has returned, and it is not a native `Fenced` or `Drained`
++  result.
++- Cancelling an observation closes result reception only. A capture already
++  admitted in Swift may still start; the late result is dropped. Cancellation
++  before admission never starts a screenshot.
++- A native completion that never calls back keeps its bounded slot and the
++  observer waiting. There is deliberately no timeout that frees it.
++
++## Build and ABI evidence
++
++- Compiler: `/Library/Developer/CommandLineTools/usr/bin/swiftc`,
++  `Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)`.
++- SDK selector: `macosx27.0`, path
++  `/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk`, reported version `27.0`.
++- Swift compile flags: `-parse-as-library -emit-object -swift-version 5 -O
++  -target arm64-apple-macos14.2 -sdk <SDK>`.
++- Object `LC_BUILD_VERSION`: `platform 1`, `minos 14.2`, `sdk 27.0`.
++- Real autolink entries include `-framework ScreenCaptureKit`,
++  `-framework Foundation`, `-framework CoreFoundation`, `-framework Metal`,
++  `-lswiftCore`, `-lswift_Concurrency`, `-lswiftMetal`, `-lswiftAVFoundation`,
++  `-lswiftCoreAudio`, `-lswiftCoreImage`, `-lswiftCoreMIDI`, `-lswiftIOKit`,
++  `-lswiftQuartzCore`, `-lswiftSpatial`, `-lswiftUniformTypeIdentifiers`,
++  `-lswiftXPC`, `-lswiftos` and `-lswiftsimd`.
++- The object defines `__swift_FORCE_LOAD_$_swiftMetal` and the other overlay
++  force-load symbols, but no `libswiftCompatibility56` or
++  `libswiftCompatibilityPacks` force-load. Those compat archives are therefore
++  not a build prerequisite; the build resolves the real autolink stubs from
++  `<SDK>/usr/lib/swift`.
++- The retained `-framework Metal`, `-lswiftMetal` and
++  `__swift_FORCE_LOAD_$_swiftMetal` entries are system framework/Swift-overlay
++  autolinks required by the SDK modules. They are not the removed `apple-metal`
++  crate, the upstream `swift-bridge/Sources/Metal/Metal.swift` texture wrapper,
++  or any recording/stream graph compiled by this candidate. System
++  ScreenCaptureKit may still use Metal internally; this round makes no claim
++  that it does not.
++- The independent consumer is linked with the same `-Wl,-syslibroot,<SDK>` and
++  records `minos 14.2`, `sdk 27.0`, `LC_RPATH=/usr/lib/swift`.
++
++An earlier local attempt pinned `macosx15.2` after a non-reproducible compiler
++diagnostic. Controller-run and repeated local builds then compiled the full
++bridge with SDK `27.0` with exit 0 and empty stderr. This document therefore
++does not claim that SDK 27 is incompatible with Swift 6.4; the 15.2 pin was a
++misdiagnosis and is not used.
++
++## License
++
++`screencapturekit 8.0.1` is dual-licensed. The original texts are retained
++verbatim next to this file:
++
++- `native/licenses/LICENSE-MIT`
++  - bytes: `1091`
++  - SHA-256: `5464a5ed6a2143a9d31e5516c7336a312c3c067cdc6ad15323f18fdf8d9755ae`
++- `native/licenses/LICENSE-APACHE`
++  - bytes: `11358`
++  - SHA-256: `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`
++
++The CUA root `MIT` text (`crates/cua-macos-visual/LICENSE-MIT`) does not cover
++the derived ScreenCaptureKit material. This archive records the source and
++license relationship; it is not a legal adoption decision.
+diff --git a/crates/cua-macos-visual/native/licenses/LICENSE-APACHE b/crates/cua-macos-visual/native/licenses/LICENSE-APACHE
+new file mode 100644
+index 0000000..d645695
+--- /dev/null
++++ b/crates/cua-macos-visual/native/licenses/LICENSE-APACHE
+@@ -0,0 +1,202 @@
++
++                                 Apache License
++                           Version 2.0, January 2004
++                        http://www.apache.org/licenses/
++
++   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
++
++   1. Definitions.
++
++      "License" shall mean the terms and conditions for use, reproduction,
++      and distribution as defined by Sections 1 through 9 of this document.
++
++      "Licensor" shall mean the copyright owner or entity authorized by
++      the copyright owner that is granting the License.
++
++      "Legal Entity" shall mean the union of the acting entity and all
++      other entities that control, are controlled by, or are under common
++      control with that entity. For the purposes of this definition,
++      "control" means (i) the power, direct or indirect, to cause the
++      direction or management of such entity, whether by contract or
++      otherwise, or (ii) ownership of fifty percent (50%) or more of the
++      outstanding shares, or (iii) beneficial ownership of such entity.
++
++      "You" (or "Your") shall mean an individual or Legal Entity
++      exercising permissions granted by this License.
++
++      "Source" form shall mean the preferred form for making modifications,
++      including but not limited to software source code, documentation
++      source, and configuration files.
++
++      "Object" form shall mean any form resulting from mechanical
++      transformation or translation of a Source form, including but
++      not limited to compiled object code, generated documentation,
++      and conversions to other media types.
++
++      "Work" shall mean the work of authorship, whether in Source or
++      Object form, made available under the License, as indicated by a
++      copyright notice that is included in or attached to the work
++      (an example is provided in the Appendix below).
++
++      "Derivative Works" shall mean any work, whether in Source or Object
++      form, that is based on (or derived from) the Work and for which the
++      editorial revisions, annotations, elaborations, or other modifications
++      represent, as a whole, an original work of authorship. For the purposes
++      of this License, Derivative Works shall not include works that remain
++      separable from, or merely link (or bind by name) to the interfaces of,
++      the Work and Derivative Works thereof.
++
++      "Contribution" shall mean any work of authorship, including
++      the original version of the Work and any modifications or additions
++      to that Work or Derivative Works thereof, that is intentionally
++      submitted to Licensor for inclusion in the Work by the copyright owner
++      or by an individual or Legal Entity authorized to submit on behalf of
++      the copyright owner. For the purposes of this definition, "submitted"
++      means any form of electronic, verbal, or written communication sent
++      to the Licensor or its representatives, including but not limited to
++      communication on electronic mailing lists, source code control systems,
++      and issue tracking systems that are managed by, or on behalf of, the
++      Licensor for the purpose of discussing and improving the Work, but
++      excluding communication that is conspicuously marked or otherwise
++      designated in writing by the copyright owner as "Not a Contribution."
++
++      "Contributor" shall mean Licensor and any individual or Legal Entity
++      on behalf of whom a Contribution has been received by Licensor and
++      subsequently incorporated within the Work.
++
++   2. Grant of Copyright License. Subject to the terms and conditions of
++      this License, each Contributor hereby grants to You a perpetual,
++      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++      copyright license to reproduce, prepare Derivative Works of,
++      publicly display, publicly perform, sublicense, and distribute the
++      Work and such Derivative Works in Source or Object form.
++
++   3. Grant of Patent License. Subject to the terms and conditions of
++      this License, each Contributor hereby grants to You a perpetual,
++      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++      (except as stated in this section) patent license to make, have made,
++      use, offer to sell, sell, import, and otherwise transfer the Work,
++      where such license applies only to those patent claims licensable
++      by such Contributor that are necessarily infringed by their
++      Contribution(s) alone or by combination of their Contribution(s)
++      with the Work to which such Contribution(s) was submitted. If You
++      institute patent litigation against any entity (including a
++      cross-claim or counterclaim in a lawsuit) alleging that the Work
++      or a Contribution incorporated within the Work constitutes direct
++      or contributory patent infringement, then any patent licenses
++      granted to You under this License for that Work shall terminate
++      as of the date such litigation is filed.
++
++   4. Redistribution. You may reproduce and distribute copies of the
++      Work or Derivative Works thereof in any medium, with or without
++      modifications, and in Source or Object form, provided that You
++      meet the following conditions:
++
++      (a) You must give any other recipients of the Work or
++          Derivative Works a copy of this License; and
++
++      (b) You must cause any modified files to carry prominent notices
++          stating that You changed the files; and
++
++      (c) You must retain, in the Source form of any Derivative Works
++          that You distribute, all copyright, patent, trademark, and
++          attribution notices from the Source form of the Work,
++          excluding those notices that do not pertain to any part of
++          the Derivative Works; and
++
++      (d) If the Work includes a "NOTICE" text file as part of its
++          distribution, then any Derivative Works that You distribute must
++          include a readable copy of the attribution notices contained
++          within such NOTICE file, excluding those notices that do not
++          pertain to any part of the Derivative Works, in at least one
++          of the following places: within a NOTICE text file distributed
++          as part of the Derivative Works; within the Source form or
++          documentation, if provided along with the Derivative Works; or,
++          within a display generated by the Derivative Works, if and
++          wherever such third-party notices normally appear. The contents
++          of the NOTICE file are for informational purposes only and
++          do not modify the License. You may add Your own attribution
++          notices within Derivative Works that You distribute, alongside
++          or as an addendum to the NOTICE text from the Work, provided
++          that such additional attribution notices cannot be construed
++          as modifying the License.
++
++      You may add Your own copyright statement to Your modifications and
++      may provide additional or different license terms and conditions
++      for use, reproduction, or distribution of Your modifications, or
++      for any such Derivative Works as a whole, provided Your use,
++      reproduction, and distribution of the Work otherwise complies with
++      the conditions stated in this License.
++
++   5. Submission of Contributions. Unless You explicitly state otherwise,
++      any Contribution intentionally submitted for inclusion in the Work
++      by You to the Licensor shall be under the terms and conditions of
++      this License, without any additional terms or conditions.
++      Notwithstanding the above, nothing herein shall supersede or modify
++      the terms of any separate license agreement you may have executed
++      with Licensor regarding such Contributions.
++
++   6. Trademarks. This License does not grant permission to use the trade
++      names, trademarks, service marks, or product names of the Licensor,
++      except as required for reasonable and customary use in describing the
++      origin of the Work and reproducing the content of the NOTICE file.
++
++   7. Disclaimer of Warranty. Unless required by applicable law or
++      agreed to in writing, Licensor provides the Work (and each
++      Contributor provides its Contributions) on an "AS IS" BASIS,
++      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
++      implied, including, without limitation, any warranties or conditions
++      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
++      PARTICULAR PURPOSE. You are solely responsible for determining the
++      appropriateness of using or redistributing the Work and assume any
++      risks associated with Your exercise of permissions under this License.
++
++   8. Limitation of Liability. In no event and under no legal theory,
++      whether in tort (including negligence), contract, or otherwise,
++      unless required by applicable law (such as deliberate and grossly
++      negligent acts) or agreed to in writing, shall any Contributor be
++      liable to You for damages, including any direct, indirect, special,
++      incidental, or consequential damages of any character arising as a
++      result of this License or out of the use or inability to use the
++      Work (including but not limited to damages for loss of goodwill,
++      work stoppage, computer failure or malfunction, or any and all
++      other commercial damages or losses), even if such Contributor
++      has been advised of the possibility of such damages.
++
++   9. Accepting Warranty or Additional Liability. While redistributing
++      the Work or Derivative Works thereof, You may choose to offer,
++      and charge a fee for, acceptance of support, warranty, indemnity,
++      or other liability obligations and/or rights consistent with this
++      License. However, in accepting such obligations, You may act only
++      on Your own behalf and on Your sole responsibility, not on behalf
++      of any other Contributor, and only if You agree to indemnify,
++      defend, and hold each Contributor harmless for any liability
++      incurred by, or claims asserted against, such Contributor by reason
++      of your accepting any such warranty or additional liability.
++
++   END OF TERMS AND CONDITIONS
++
++   APPENDIX: How to apply the Apache License to your work.
++
++      To apply the Apache License to your work, attach the following
++      boilerplate notice, with the fields enclosed by brackets "[]"
++      replaced with your own identifying information. (Don't include
++      the brackets!)  The text should be enclosed in the appropriate
++      comment syntax for the file format. We also recommend that a
++      file or class name and description of purpose be included on the
++      same "printed page" as the copyright notice for easier
++      identification within third-party archives.
++
++   Copyright [yyyy] [name of copyright owner]
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++   you may not use this file except in compliance with the License.
++   You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++   Unless required by applicable law or agreed to in writing, software
++   distributed under the License is distributed on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   See the License for the specific language governing permissions and
++   limitations under the License.
+diff --git a/crates/cua-macos-visual/native/licenses/LICENSE-MIT b/crates/cua-macos-visual/native/licenses/LICENSE-MIT
+new file mode 100644
+index 0000000..3a02ded
+--- /dev/null
++++ b/crates/cua-macos-visual/native/licenses/LICENSE-MIT
+@@ -0,0 +1,10 @@
++The MIT License (MIT)
++
++Copyright (c) 2023 Per Johansson, Svt Labs
++
++Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++
+diff --git a/crates/cua-macos-visual/src/capture.rs b/crates/cua-macos-visual/src/capture.rs
+index ac627cc..3375e22 100644
+--- a/crates/cua-macos-visual/src/capture.rs
++++ b/crates/cua-macos-visual/src/capture.rs
+@@ -1,152 +1,248 @@
+-//! Crate-private single-window ScreenCaptureKit capture.
++//! Crate-private single-window ScreenCaptureKit completion bridge.
+ //!
+-//! No cache, lease, retry, timeout, shell/SkyLight fallback or consent
+-//! bypass. Identity order and drift rejection live in [`crate::observe`]; this
+-//! module only reads CG facts and turns the exact SCK window into RGBA.
++//! The Swift object is derived from the fixed ScreenCaptureKit 8.0.1 bridge,
++//! but this crate does not depend on that wrapper or its Metal/streaming graph.
++//! No cache, lease, retry, timeout, shell/SkyLight fallback or consent bypass
++//! is present. The public capture request remains `HostNotApproved`.
+ 
+ #![allow(dead_code)]
+ 
+-use screencapturekit::prelude::{SCContentFilter, SCShareableContent, SCStreamConfiguration};
+-use screencapturekit::screenshot_manager::{CGImageExt, SCScreenshotManager};
++use std::slice;
+ 
+ use crate::error::VisualError;
+ use crate::geometry::{
+-    checked_pixel_dimensions, checked_pixel_extent, CaptureRequest, PixelDimensions, WindowBounds,
+-    WindowIdentity, MAX_CAPTURE_SIDE,
++    CaptureRequest, PixelDimensions, WindowIdentity, MAX_CAPTURE_SIDE, MAX_RGBA_BYTES,
+ };
+-use crate::observe::{observe_once, RawFrame};
++use crate::observe::{finish_observation, validate_before_identity};
+ use crate::png::encode_rgba_to_png;
++use crate::session::{
++    self, AdmissionDecision, CaptureObservation, CompletionStatus, NativeCompletion,
++};
+ use crate::window;
+ 
+-struct CapturePlan {
+-    filter: SCContentFilter,
+-    config: SCStreamConfiguration,
+-    output: PixelDimensions,
++const ADMISSION_PROCEED: i32 = 0;
++const ADMISSION_CANCELED: i32 = 1;
++const ADMISSION_REJECTED: i32 = 2;
++
++const COMPLETION_SUCCESS: i32 = 0;
++const COMPLETION_CANCELED: i32 = 1;
++const COMPLETION_ADMISSION_REJECTED: i32 = 2;
++const COMPLETION_WINDOW_NOT_FOUND: i32 = 3;
++
++type AdmissionCallback = unsafe extern "C" fn(u64, u32, i32, i32, f64, f64, f64, f64) -> i32;
++type CompletionCallback =
++    unsafe extern "C" fn(u64, i32, u32, i32, i32, f64, f64, f64, f64, u32, u32, *const u8, usize);
++type PayloadReleasedCallback = unsafe extern "C" fn(u64);
++type CaptureWindowFn = unsafe extern "C" fn(
++    u64,
++    u32,
++    AdmissionCallback,
++    CompletionCallback,
++    PayloadReleasedCallback,
++    u32,
++    u64,
++) -> i32;
++
++extern "C" {
++    fn cua_visual_capture_window(
++        request_id: u64,
++        window_id: u32,
++        admission: AdmissionCallback,
++        completion: CompletionCallback,
++        payload_released: PayloadReleasedCallback,
++        max_side: u32,
++        max_rgba_bytes: u64,
++    ) -> i32;
+ }
+ 
+ /// Capture one exact window and return a validated, non-empty PNG frame.
+ ///
+-/// `SCScreenshotManager::capture_image` waits on a one-shot completion with no
+-/// timeout. If the system never invokes that callback, this synchronous call
+-/// can remain pending indefinitely; this candidate deliberately adds no fake
+-/// timeout or cancellation. A trusted host must own that lifecycle before this
+-/// path can be exposed.
+-#[allow(dead_code)]
++/// The internal observer never adds a timeout. A missing native callback keeps
++/// its bounded slot and this wait pending. Closing the observer is only result
++/// reception closure, not proof of native stop, fence or drain.
+ pub(crate) fn capture_window_png(
+     request: &CaptureRequest,
+ ) -> Result<crate::CapturedFrame, VisualError> {
+     request.validate()?;
+     let expected = request.expected_identity();
+-    observe_once(
++
++    let before = window::window_identity(request.window_id)?;
++    validate_before_identity(&expected, &before)?;
++
++    let mut observation = start_native_capture(request)?;
++    let raw = observation.wait()?;
++
++    finish_observation(
+         &expected,
+-        || window::window_identity(request.window_id),
+-        || build_plan(request),
+-        capture_frame,
++        raw,
+         || window::window_identity(request.window_id),
+         |raw| encode_rgba_to_png(&raw.rgba, raw.dimensions.width, raw.dimensions.height),
++        || observation.ensure_open(),
+     )
+ }
+ 
+-/// Select the one exact shareable window and build its fixed output plan.
+-///
+-/// The returned identity is checked by [`observe_once`] before capture, so a
+-/// changed or substituted SCK window is rejected without reselection.
+-fn build_plan(request: &CaptureRequest) -> Result<(WindowIdentity, CapturePlan), VisualError> {
+-    let content = SCShareableContent::get()
+-        .map_err(|error| native(format!("SCShareableContent::get failed: {error}")))?;
+-    let window = content
+-        .windows()
+-        .into_iter()
+-        .find(|window| window.window_id() == request.window_id)
+-        .ok_or(VisualError::WindowNotFound {
+-            window_id: request.window_id,
+-        })?;
+-
+-    let frame = window.frame();
+-    let pid = window
+-        .owning_application()
+-        .map(|application| application.process_id())
+-        .ok_or_else(|| native("selected SCK window has no owning application"))?;
+-    let selected = WindowIdentity::new(
+-        request.window_id,
++/// Start exactly one native request after reserving one bounded callback slot.
++fn start_native_capture(request: &CaptureRequest) -> Result<CaptureObservation, VisualError> {
++    request.validate()?;
++    let coordinator = session::global();
++    let observation = coordinator.reserve(request.expected_identity())?;
++
++    // SAFETY: both callbacks are `extern "C"` functions with fixed layouts.
++    // The Swift side owns no Rust userdata and receives only the never-reused
++    // operation id, scalar bounds and a short-lived pixel pointer.
++    let status = unsafe {
++        cua_visual_capture_window(
++            observation.id(),
++            request.window_id,
++            bridge_admission,
++            bridge_completion,
++            bridge_payload_released,
++            MAX_CAPTURE_SIDE,
++            MAX_RGBA_BYTES as u64,
++        )
++    };
++    if status != 0 {
++        let error = VisualError::NativeCapture(format!(
++            "Swift capture bridge refused request with status {status}"
++        ));
++        let _ = coordinator.abort_before_native(observation.id(), error.clone());
++        return Err(error);
++    }
++    Ok(observation)
++}
++
++unsafe extern "C" fn bridge_admission(
++    request_id: u64,
++    window_id: u32,
++    pid: i32,
++    layer: i32,
++    x: f64,
++    y: f64,
++    width: f64,
++    height: f64,
++) -> i32 {
++    let actual = WindowIdentity::new(
++        window_id,
+         pid,
+-        window.window_layer(),
+-        WindowBounds::new(
+-            frame.origin.x,
+-            frame.origin.y,
+-            frame.size.width,
+-            frame.size.height,
+-        ),
++        layer,
++        crate::geometry::WindowBounds::new(x, y, width, height),
+     );
++    match session::global().admit(request_id, actual) {
++        AdmissionDecision::Proceed => ADMISSION_PROCEED,
++        AdmissionDecision::Canceled => ADMISSION_CANCELED,
++        AdmissionDecision::Rejected => ADMISSION_REJECTED,
++    }
++}
++
++unsafe extern "C" fn bridge_completion(
++    request_id: u64,
++    status_code: i32,
++    window_id: u32,
++    pid: i32,
++    layer: i32,
++    x: f64,
++    y: f64,
++    width: f64,
++    height: f64,
++    image_width: u32,
++    image_height: u32,
++    rgba: *const u8,
++    rgba_len: usize,
++) {
++    let status = match status_code {
++        COMPLETION_SUCCESS => CompletionStatus::Success,
++        COMPLETION_CANCELED => CompletionStatus::Canceled,
++        COMPLETION_ADMISSION_REJECTED => CompletionStatus::AdmissionRejected,
++        COMPLETION_WINDOW_NOT_FOUND => CompletionStatus::WindowNotFound,
++        other => CompletionStatus::NativeFailure(other),
++    };
++    let facts = Some(WindowIdentity::new(
++        window_id,
++        pid,
++        layer,
++        crate::geometry::WindowBounds::new(x, y, width, height),
++    ));
++    let dimensions = if status == CompletionStatus::Success {
++        Some(PixelDimensions {
++            width: image_width,
++            height: image_height,
++        })
++    } else {
++        None
++    };
+ 
+-    let filter = SCContentFilter::create().with_window(&window).build();
+-    let scale = f64::from(filter.point_pixel_scale());
+-    let rect = filter.content_rect();
+-    let (points_width, points_height) = if content_rect_usable(rect) {
+-        (rect.size.width, rect.size.height)
++    // The pixel pointer is borrowed only for this callback. Validate its length
++    // before creating a slice and copy before returning to Swift.
++    let (pixel_bytes, payload_error) = if status == CompletionStatus::Success {
++        if rgba_len as u64 > MAX_RGBA_BYTES {
++            (
++                Vec::new(),
++                Some(VisualError::NativeCapture(format!(
++                    "native RGBA length {rgba_len} exceeds {MAX_RGBA_BYTES}"
++                ))),
++            )
++        } else if rgba_len == 0 {
++            (Vec::new(), None)
++        } else if rgba.is_null() {
++            (
++                Vec::new(),
++                Some(VisualError::NativeCapture(
++                    "native RGBA pointer was null with non-zero length".to_owned(),
++                )),
++            )
++        } else {
++            (slice::from_raw_parts(rgba, rgba_len).to_vec(), None)
++        }
+     } else {
+-        (frame.size.width, frame.size.height)
++        (Vec::new(), None)
+     };
+-    let output_width = checked_pixel_extent(points_width * scale, "SCK output width")?;
+-    let output_height = checked_pixel_extent(points_height * scale, "SCK output height")?;
+-    let output = checked_pixel_dimensions(output_width, output_height)?;
+-
+-    let config = SCStreamConfiguration::new()
+-        .with_width(output_width)
+-        .with_height(output_height)
+-        .with_shows_cursor(false);
+-    Ok((
+-        selected,
+-        CapturePlan {
+-            filter,
+-            config,
+-            output,
++
++    session::global().complete(
++        request_id,
++        NativeCompletion {
++            status,
++            facts,
++            dimensions,
++            rgba: pixel_bytes,
++            payload_error,
+         },
+-    ))
++    );
+ }
+ 
+-fn capture_frame(plan: CapturePlan) -> Result<RawFrame, VisualError> {
+-    let image =
+-        SCScreenshotManager::capture_image(&plan.filter, &plan.config).map_err(|error| {
+-            native(format!(
+-                "SCScreenshotManager::capture_image failed: {error}"
+-            ))
+-        })?;
+-    let width = image_dim(image.width(), "CGImage width")?;
+-    let height = image_dim(image.height(), "CGImage height")?;
+-    let dimensions = checked_pixel_dimensions(width, height)?;
+-    if dimensions != plan.output {
+-        return Err(native(format!(
+-            "SCK returned {width}x{height}, configured {}x{}",
+-            plan.output.width, plan.output.height
+-        )));
+-    }
+-    let rgba = image
+-        .rgba_data()
+-        .map_err(|error| native(format!("CGImage::rgba_data failed: {error}")))?;
+-    Ok(RawFrame { dimensions, rgba })
++pub(crate) fn bridge_symbol_address() -> usize {
++    let function: CaptureWindowFn = cua_visual_capture_window;
++    function as usize
+ }
+ 
+-fn content_rect_usable(rect: screencapturekit::cg::CGRect) -> bool {
+-    rect.size.width.is_finite()
+-        && rect.size.height.is_finite()
+-        && rect.size.width > 0.0
+-        && rect.size.height > 0.0
++/// Called by Swift only after its bridge-owned pixel buffer was deallocated.
++///
++/// This releases capacity; it does not claim that the OS callback thread or
++/// ScreenCaptureKit has quiesced, and it is not `Fenced` or `Drained` evidence.
++extern "C" fn bridge_payload_released(request_id: u64) {
++    let _ = session::global().release_callback(request_id);
+ }
+ 
+-fn image_dim(value: usize, label: &'static str) -> Result<u32, VisualError> {
+-    if value == 0 || value > MAX_CAPTURE_SIDE as usize {
+-        return Err(VisualError::DimensionRejected {
+-            label,
+-            value: value as f64,
+-        });
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::geometry::{checked_rgba_len, WindowBounds};
++    use crate::observe::RawFrame;
++
++    #[test]
++    fn bridge_symbol_is_non_null_without_call() {
++        assert_ne!(bridge_symbol_address(), 0);
+     }
+-    u32::try_from(value).map_err(|_| VisualError::DimensionRejected {
+-        label,
+-        value: value as f64,
+-    })
+-}
+ 
+-fn native(message: impl Into<String>) -> VisualError {
+-    VisualError::NativeCapture(message.into())
++    #[test]
++    fn completion_payload_is_bounded_before_forming_a_frame() {
++        let raw = RawFrame {
++            dimensions: PixelDimensions {
++                width: 2,
++                height: 2,
++            },
++            rgba: vec![0; 16],
++        };
++        assert_eq!(checked_rgba_len(2, 2, raw.rgba.len()), Ok(16));
++        let _ = WindowBounds::new(0.0, 0.0, 2.0, 2.0);
++    }
+ }
+diff --git a/crates/cua-macos-visual/src/error.rs b/crates/cua-macos-visual/src/error.rs
+index ad8b1a7..70b7212 100644
+--- a/crates/cua-macos-visual/src/error.rs
++++ b/crates/cua-macos-visual/src/error.rs
+@@ -28,6 +28,14 @@ impl fmt::Display for DriftStage {
+ pub enum VisualError {
+     /// No trusted Helper approval integration owns this observation yet.
+     HostNotApproved,
++    /// The internal observer closed result reception before completion.
++    ///
++    /// This is not a native stop, fence, drain or process-exit assertion.
++    CaptureCanceled,
++    /// The one-shot observation result was already consumed.
++    CaptureAlreadyConsumed,
++    /// The bounded in-flight table has no free native-callback slot.
++    CaptureCapacityExhausted { limit: usize },
+     /// The request is structurally unusable before any native call.
+     InvalidRequest(&'static str),
+     /// A raw CGWindowList fact is missing or cannot be represented exactly.
+@@ -81,6 +89,13 @@ impl fmt::Display for VisualError {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+         match self {
+             Self::HostNotApproved => f.write_str("capture requires a trusted Helper approval"),
++            Self::CaptureCanceled => f.write_str("capture observation closed"),
++            Self::CaptureAlreadyConsumed => {
++                f.write_str("capture observation result already consumed")
++            }
++            Self::CaptureCapacityExhausted { limit } => {
++                write!(f, "capture in-flight capacity {limit} is exhausted")
++            }
+             Self::InvalidRequest(reason) => write!(f, "invalid capture request: {reason}"),
+             Self::InvalidWindowFact { field } => {
+                 write!(f, "invalid CGWindowList fact: {field}")
+diff --git a/crates/cua-macos-visual/src/lib.rs b/crates/cua-macos-visual/src/lib.rs
+index e44451b..747ce69 100644
+--- a/crates/cua-macos-visual/src/lib.rs
++++ b/crates/cua-macos-visual/src/lib.rs
+@@ -19,6 +19,8 @@ mod swift_link;
+ #[cfg(target_os = "macos")]
+ mod capture;
+ #[cfg(target_os = "macos")]
++mod session;
++#[cfg(target_os = "macos")]
+ mod window;
+ 
+ pub use error::{DriftStage, VisualError};
+@@ -40,3 +42,24 @@ pub fn request_window_capture(request: &CaptureRequest) -> Result<CapturedFrame,
+     request.validate()?;
+     Err(VisualError::HostNotApproved)
+ }
++
++/// No-I/O diagnostic for an independent consumer link check.
++///
++/// The function internally references the private Swift bridge symbol and uses
++/// `black_box` so the real object is retained, but it returns no address,
++/// function pointer, token or execution handle. There is deliberately no public
++/// native capture execution API.
++#[doc(hidden)]
++#[inline(never)]
++pub fn native_bridge_link_diagnostic() -> &'static str {
++    #[cfg(target_os = "macos")]
++    {
++        let address = capture::bridge_symbol_address();
++        std::hint::black_box(address);
++        "cua-macos-visual/r9-swift-completion"
++    }
++    #[cfg(not(target_os = "macos"))]
++    {
++        "cua-macos-visual/r9-non-macos-no-native"
++    }
++}
+diff --git a/crates/cua-macos-visual/src/observe.rs b/crates/cua-macos-visual/src/observe.rs
+index e4072e8..431d0c7 100644
+--- a/crates/cua-macos-visual/src/observe.rs
++++ b/crates/cua-macos-visual/src/observe.rs
+@@ -5,9 +5,11 @@
+ //! before later stages or reselection run.
+ 
+ use crate::error::{DriftStage, VisualError};
++#[cfg(test)]
++use crate::geometry::validate_window_identity;
+ use crate::geometry::{
+-    checked_rgba_len, validate_capture_frame, validate_identity, validate_window_identity,
+-    CapturedFrame, PixelDimensions, WindowIdentity,
++    checked_rgba_len, validate_capture_frame, validate_identity, CapturedFrame, PixelDimensions,
++    WindowIdentity,
+ };
+ use crate::png::verify_png_matches_dimensions;
+ 
+@@ -24,6 +26,7 @@ pub(crate) struct RawFrame {
+ /// capture -> RGBA length/geometry -> after identity -> encode -> bounded PNG
+ /// decode -> form non-empty [`CapturedFrame`]. A failure never falls through to
+ /// a later stage and never selects another window.
++#[cfg(test)]
+ pub(crate) fn observe_once<Before, Select, Capture, After, Encode, Token>(
+     expected: &WindowIdentity,
+     before: Before,
+@@ -42,12 +45,45 @@ where
+     validate_window_identity(expected)?;
+ 
+     let before_identity = before()?;
+-    validate_identity(expected, &before_identity, DriftStage::BeforeCapture)?;
++    validate_before_identity(expected, &before_identity)?;
+ 
+     let (selected_identity, token) = select()?;
+-    validate_identity(expected, &selected_identity, DriftStage::SelectedWindow)?;
++    validate_selected_identity(expected, &selected_identity)?;
+ 
+     let raw = capture(token)?;
++    finish_observation(expected, raw, after, encode, || Ok(()))
++}
++
++/// Validate the CGWindowList facts read immediately before native start.
++pub(crate) fn validate_before_identity(
++    expected: &WindowIdentity,
++    actual: &WindowIdentity,
++) -> Result<(), VisualError> {
++    validate_identity(expected, actual, DriftStage::BeforeCapture)
++}
++
++/// Validate the one SCK window returned by native enumeration.
++#[cfg(test)]
++pub(crate) fn validate_selected_identity(
++    expected: &WindowIdentity,
++    actual: &WindowIdentity,
++) -> Result<(), VisualError> {
++    validate_identity(expected, actual, DriftStage::SelectedWindow)
++}
++
++/// Finish one capture after native delivery: bounded RGBA, drift, PNG.
++pub(crate) fn finish_observation<After, Encode, FinalCheck>(
++    expected: &WindowIdentity,
++    raw: RawFrame,
++    after: After,
++    encode: Encode,
++    final_check: FinalCheck,
++) -> Result<CapturedFrame, VisualError>
++where
++    After: FnOnce() -> Result<WindowIdentity, VisualError>,
++    Encode: FnOnce(&RawFrame) -> Result<Vec<u8>, VisualError>,
++    FinalCheck: FnOnce() -> Result<(), VisualError>,
++{
+     checked_rgba_len(raw.dimensions.width, raw.dimensions.height, raw.rgba.len())?;
+     validate_capture_frame(
+         expected.window_id,
+@@ -61,6 +97,7 @@ where
+ 
+     let png = encode(&raw)?;
+     verify_png_matches_dimensions(&png, raw.dimensions.width, raw.dimensions.height)?;
++    final_check()?;
+     CapturedFrame::new(expected.window_id, raw.dimensions, png)
+ }
+ 
+@@ -211,4 +248,44 @@ mod tests {
+         assert_eq!(result, Ok(()));
+         assert_eq!(log, vec!["before", "select", "capture", "after", "encode"]);
+     }
++
++    #[test]
++    fn final_check_after_encode_observes_cancel_before_delivery() {
++        // 竞态依据：raw 已从 completion 取出、PNG 已编码后仍可能收到取消。
++        // 因此内部最终交付必须在 PNG 校验之后、形成 CapturedFrame 之前再次
++        // 检查取消；这里是结果交付的线性化点，不是 OS callback 退出证据。
++        let expected = expected_for(2, 2);
++        let log = RefCell::new(Vec::new());
++        let canceled = std::cell::Cell::new(false);
++        let result = finish_observation(
++            &expected,
++            raw_frame(2, 2),
++            || {
++                log.borrow_mut().push("after");
++                Ok(expected.clone())
++            },
++            |raw| {
++                log.borrow_mut().push("encode");
++                let png =
++                    encode_rgba_to_png(&raw.rgba, raw.dimensions.width, raw.dimensions.height)?;
++                // 取消交错发生在 raw 取出之后、最终交付之前。
++                canceled.set(true);
++                Ok(png)
++            },
++            || {
++                log.borrow_mut().push("final-check");
++                if canceled.get() {
++                    Err(VisualError::CaptureCanceled)
++                } else {
++                    Ok(())
++                }
++            },
++        );
++        assert_eq!(result, Err(VisualError::CaptureCanceled));
++        assert_eq!(
++            log.into_inner(),
++            vec!["after", "encode", "final-check"],
++            "final delivery check must run after PNG encoding"
++        );
++    }
+ }
+diff --git a/crates/cua-macos-visual/src/session.rs b/crates/cua-macos-visual/src/session.rs
+new file mode 100644
+index 0000000..b98e257
+--- /dev/null
++++ b/crates/cua-macos-visual/src/session.rs
+@@ -0,0 +1,840 @@
++//! Crate-private ownership for one native capture completion.
++//!
++//! This module owns only result reception and in-flight capacity. It does not
++//! own Helper approval, submission, leases, frame publication or input rights.
++//! Cancelling an observation closes its receiver monotonically; it does not
++//! stop ScreenCaptureKit and is not evidence of native `Fenced`/`Drained`.
++
++use std::collections::BTreeMap;
++use std::sync::{Arc, Condvar, Mutex, MutexGuard, OnceLock};
++
++use crate::error::{DriftStage, VisualError};
++use crate::geometry::{
++    checked_rgba_len, validate_identity, validate_window_identity, PixelDimensions, WindowIdentity,
++};
++use crate::observe::RawFrame;
++
++/// At most this many native completions may be outstanding at once.
++pub(crate) const MAX_IN_FLIGHT_CAPTURES: usize = 4;
++
++static GLOBAL: OnceLock<CaptureCoordinator> = OnceLock::new();
++
++/// The only mutable state owned by one in-flight native request.
++struct Signal {
++    state: Mutex<SignalState>,
++    changed: Condvar,
++}
++
++struct SignalState {
++    canceled: bool,
++    terminal: Option<Result<RawFrame, VisualError>>,
++    waiters: usize,
++}
++
++impl Signal {
++    fn new() -> Self {
++        Self {
++            state: Mutex::new(SignalState {
++                canceled: false,
++                terminal: None,
++                waiters: 0,
++            }),
++            changed: Condvar::new(),
++        }
++    }
++}
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++enum Phase {
++    Enumerating,
++    Capturing,
++}
++
++struct Entry {
++    expected: WindowIdentity,
++    phase: Phase,
++    selected: Option<WindowIdentity>,
++    admission_error: Option<VisualError>,
++    callback_delivered: bool,
++    signal: Arc<Signal>,
++}
++
++struct Registry {
++    next_id: u64,
++    capacity: usize,
++    entries: BTreeMap<u64, Entry>,
++}
++
++/// Single owner of bounded in-flight metadata for this process.
++#[derive(Clone)]
++pub(crate) struct CaptureCoordinator {
++    registry: Arc<Mutex<Registry>>,
++}
++
++/// Decision returned to the Swift bridge after window enumeration.
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub(crate) enum AdmissionDecision {
++    Proceed,
++    Canceled,
++    Rejected,
++}
++
++/// Native completion class. No field represents authorization.
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub(crate) enum CompletionStatus {
++    Success,
++    Canceled,
++    AdmissionRejected,
++    WindowNotFound,
++    NativeFailure(i32),
++}
++
++/// Owned completion data. Pixels are copied during the C callback only.
++#[derive(Debug)]
++pub(crate) struct NativeCompletion {
++    pub status: CompletionStatus,
++    pub facts: Option<WindowIdentity>,
++    pub dimensions: Option<PixelDimensions>,
++    pub rgba: Vec<u8>,
++    pub payload_error: Option<VisualError>,
++}
++
++/// Accounting result for tests and diagnostics.
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub(crate) enum CompletionOutcome {
++    Delivered,
++    DroppedCanceled,
++    DuplicateIgnored,
++}
++
++/// Result of the Swift bridge's `payload_released` notification. It is sent
++/// only after the bridge-owned pixel storage and borrow have been handed back.
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub(crate) enum CallbackReleaseOutcome {
++    Released,
++    DuplicateIgnored,
++}
++
++/// One observer's handle to a native callback that may still be alive.
++///
++/// Dropping this handle intentionally does not remove the registry entry. The
++/// entry is released only by the native completion (or by a synchronous native
++/// start failure), so a never-calling native path keeps its bounded slot.
++pub(crate) struct CaptureObservation {
++    id: u64,
++    signal: Arc<Signal>,
++    registry: Arc<Mutex<Registry>>,
++    consumed: bool,
++}
++
++/// Internal cloneable close handle for the same observation.
++///
++/// It is not an authorization token, lease, submission, identity or owner. It
++/// only lets an already-authorized internal caller close result reception while
++/// another thread is blocked in [`CaptureObservation::wait`].
++#[derive(Clone)]
++pub(crate) struct CaptureCancelHandle {
++    signal: Arc<Signal>,
++    registry: Arc<Mutex<Registry>>,
++}
++
++impl CaptureObservation {
++    pub(crate) fn id(&self) -> u64 {
++        self.id
++    }
++
++    /// Monotonically closes result reception. Safe to call repeatedly. This is
++    /// not native stop: an already-admitted OS capture may still complete.
++    pub(crate) fn cancel(&self) {
++        self.cancel_handle().cancel();
++    }
++
++    /// Clone the close path without transferring observation ownership.
++    pub(crate) fn cancel_handle(&self) -> CaptureCancelHandle {
++        CaptureCancelHandle {
++            signal: Arc::clone(&self.signal),
++            registry: Arc::clone(&self.registry),
++        }
++    }
++
++    /// Alias used by tests and future internal callers for idempotent shutdown.
++    #[allow(dead_code)]
++    pub(crate) fn close(&mut self) {
++        self.cancel();
++    }
++
++    /// Recheck cancellation immediately before final result delivery.
++    pub(crate) fn ensure_open(&self) -> Result<(), VisualError> {
++        if lock_signal(&self.signal).canceled {
++            Err(VisualError::CaptureCanceled)
++        } else {
++            Ok(())
++        }
++    }
++
++    /// Wait until native completion or cancellation. There is deliberately no
++    /// timeout: an absent callback keeps the slot and this observer pending.
++    /// Cancellation closes reception only; it does not prove native stop.
++    pub(crate) fn wait(&mut self) -> Result<RawFrame, VisualError> {
++        if self.consumed {
++            return Err(VisualError::CaptureAlreadyConsumed);
++        }
++        self.consumed = true;
++        let mut state = lock_signal(&self.signal);
++        state.waiters += 1;
++        loop {
++            if state.canceled {
++                state.waiters -= 1;
++                return Err(VisualError::CaptureCanceled);
++            }
++            if let Some(result) = state.terminal.take() {
++                state.waiters -= 1;
++                return result;
++            }
++            state = self
++                .signal
++                .changed
++                .wait(state)
++                .unwrap_or_else(|poisoned| poisoned.into_inner());
++        }
++    }
++}
++
++impl CaptureCancelHandle {
++    pub(crate) fn cancel(&self) {
++        // Keep the registry -> signal lock order used by admission/completion.
++        let _registry = lock_registry(&self.registry);
++        let mut state = lock_signal(&self.signal);
++        state.canceled = true;
++        // A result already deposited but not consumed is now late material and
++        // must not become a frame after the close linearization point.
++        state.terminal = None;
++        self.signal.changed.notify_all();
++    }
++}
++
++impl Drop for CaptureObservation {
++    fn drop(&mut self) {
++        // 竞态修复依据：observer 退出也必须单调关闭接收，否则枚举回调随后
++        // 仍可通过 admission 并启动截图。取消不清 slot；slot 只由 Swift 的
++        // payload_released 通知或同步 native 启动失败释放；它不是 OS callback
++        // 线程退出、Fenced 或 Drained 证据。
++        self.cancel();
++    }
++}
++
++impl CaptureCoordinator {
++    pub(crate) fn new(capacity: usize) -> Self {
++        assert!(capacity > 0, "capture capacity must be positive");
++        Self {
++            registry: Arc::new(Mutex::new(Registry {
++                next_id: 1,
++                capacity,
++                entries: BTreeMap::new(),
++            })),
++        }
++    }
++
++    /// Reserve one bounded slot before any native operation starts.
++    pub(crate) fn reserve(
++        &self,
++        expected: WindowIdentity,
++    ) -> Result<CaptureObservation, VisualError> {
++        let mut registry = lock_registry(&self.registry);
++        if registry.entries.len() >= registry.capacity {
++            return Err(VisualError::CaptureCapacityExhausted {
++                limit: registry.capacity,
++            });
++        }
++        let id = registry.next_id;
++        registry.next_id = id.checked_add(1).ok_or_else(|| {
++            VisualError::NativeCapture("capture operation id space exhausted".to_owned())
++        })?;
++        let signal = Arc::new(Signal::new());
++        registry.entries.insert(
++            id,
++            Entry {
++                expected,
++                phase: Phase::Enumerating,
++                selected: None,
++                admission_error: None,
++                callback_delivered: false,
++                signal: Arc::clone(&signal),
++            },
++        );
++        Ok(CaptureObservation {
++            id,
++            signal,
++            registry: Arc::clone(&self.registry),
++            consumed: false,
++        })
++    }
++
++    /// Linearization point between enumeration and screenshot start.
++    pub(crate) fn admit(&self, id: u64, actual: WindowIdentity) -> AdmissionDecision {
++        let mut registry = lock_registry(&self.registry);
++        let Some(entry) = registry.entries.get_mut(&id) else {
++            return AdmissionDecision::Rejected;
++        };
++        if entry.phase != Phase::Enumerating {
++            return AdmissionDecision::Rejected;
++        }
++        if let Err(error) = validate_window_identity(&actual) {
++            entry.admission_error = Some(error);
++            return AdmissionDecision::Rejected;
++        }
++        if let Err(error) = validate_identity(&entry.expected, &actual, DriftStage::SelectedWindow)
++        {
++            entry.admission_error = Some(error);
++            return AdmissionDecision::Rejected;
++        }
++        let state = lock_signal(&entry.signal);
++        if state.canceled {
++            return AdmissionDecision::Canceled;
++        }
++        drop(state);
++        entry.selected = Some(actual);
++        entry.phase = Phase::Capturing;
++        AdmissionDecision::Proceed
++    }
++
++    /// Record exactly one native completion without claiming native stop,
++    /// callback-thread exit, Fenced or Drained. The slot is not released here.
++    ///
++    /// The bounded slot stays occupied until Swift calls
++    /// [`Self::release_callback`] after the C callback and its pixel borrow have
++    /// returned. A duplicate callback is ignored and cannot release the slot or
++    /// deposit a second result.
++    pub(crate) fn complete(&self, id: u64, completion: NativeCompletion) -> CompletionOutcome {
++        let mut registry = lock_registry(&self.registry);
++        let Some(entry) = registry.entries.get_mut(&id) else {
++            return CompletionOutcome::DuplicateIgnored;
++        };
++        if entry.callback_delivered {
++            return CompletionOutcome::DuplicateIgnored;
++        }
++        entry.callback_delivered = true;
++        let signal = Arc::clone(&entry.signal);
++        let mut state = lock_signal(&signal);
++        if state.canceled {
++            state.terminal = Some(Err(VisualError::CaptureCanceled));
++            signal.changed.notify_all();
++            return CompletionOutcome::DroppedCanceled;
++        }
++
++        let result = terminal_result(entry, completion);
++        state.terminal = Some(result);
++        signal.changed.notify_all();
++        CompletionOutcome::Delivered
++    }
++
++    /// Release capacity only after Swift reports, via `payload_released`, that
++    /// its bridge-owned pixel storage and borrow were handed back. This is not
++    /// evidence that the OS callback thread has returned or that SCK is idle.
++    pub(crate) fn release_callback(&self, id: u64) -> CallbackReleaseOutcome {
++        let mut registry = lock_registry(&self.registry);
++        let Some(entry) = registry.entries.remove(&id) else {
++            return CallbackReleaseOutcome::DuplicateIgnored;
++        };
++        if !entry.callback_delivered {
++            let signal = Arc::clone(&entry.signal);
++            let mut state = lock_signal(&signal);
++            state.terminal = Some(Err(VisualError::NativeCapture(
++                "Swift sent payload_released before delivering completion".to_owned(),
++            )));
++            signal.changed.notify_all();
++        }
++        CallbackReleaseOutcome::Released
++    }
++
++    /// A synchronous native start failure guarantees no callback will follow.
++    pub(crate) fn abort_before_native(&self, id: u64, error: VisualError) -> CompletionOutcome {
++        let mut registry = lock_registry(&self.registry);
++        let Some(entry) = registry.entries.remove(&id) else {
++            return CompletionOutcome::DuplicateIgnored;
++        };
++        let signal = Arc::clone(&entry.signal);
++        let mut state = lock_signal(&signal);
++        if state.canceled {
++            state.terminal = Some(Err(VisualError::CaptureCanceled));
++            signal.changed.notify_all();
++            return CompletionOutcome::DroppedCanceled;
++        }
++        state.terminal = Some(Err(error));
++        signal.changed.notify_all();
++        CompletionOutcome::Delivered
++    }
++
++    #[cfg(test)]
++    fn in_flight(&self) -> usize {
++        lock_registry(&self.registry).entries.len()
++    }
++
++    #[cfg(test)]
++    fn waiters(&self, id: u64) -> usize {
++        let registry = lock_registry(&self.registry);
++        registry
++            .entries
++            .get(&id)
++            .map_or(0, |entry| lock_signal(&entry.signal).waiters)
++    }
++}
++
++fn terminal_result(entry: &Entry, completion: NativeCompletion) -> Result<RawFrame, VisualError> {
++    match completion.status {
++        CompletionStatus::Canceled => Err(VisualError::CaptureCanceled),
++        CompletionStatus::AdmissionRejected => {
++            Err(entry.admission_error.clone().unwrap_or_else(|| {
++                VisualError::NativeCapture("native admission rejected the window".to_owned())
++            }))
++        }
++        CompletionStatus::WindowNotFound => Err(VisualError::WindowNotFound {
++            window_id: entry.expected.window_id,
++        }),
++        CompletionStatus::NativeFailure(code) => Err(VisualError::NativeCapture(format!(
++            "native capture completion failed with status {code}"
++        ))),
++        CompletionStatus::Success => {
++            let Some(facts) = completion.facts else {
++                return Err(VisualError::NativeCapture(
++                    "successful completion omitted selected window facts".to_owned(),
++                ));
++            };
++            if let Some(error) = completion.payload_error {
++                return Err(error);
++            }
++            let Some(selected) = entry.selected else {
++                return Err(VisualError::NativeCapture(
++                    "successful completion arrived before admission".to_owned(),
++                ));
++            };
++            validate_identity(&selected, &facts, DriftStage::SelectedWindow)?;
++            let Some(dimensions) = completion.dimensions else {
++                return Err(VisualError::NativeCapture(
++                    "successful completion omitted image dimensions".to_owned(),
++                ));
++            };
++            checked_rgba_len(dimensions.width, dimensions.height, completion.rgba.len())?;
++            Ok(RawFrame {
++                dimensions,
++                rgba: completion.rgba,
++            })
++        }
++    }
++}
++
++pub(crate) fn global() -> &'static CaptureCoordinator {
++    GLOBAL.get_or_init(|| CaptureCoordinator::new(MAX_IN_FLIGHT_CAPTURES))
++}
++
++fn lock_registry(registry: &Mutex<Registry>) -> MutexGuard<'_, Registry> {
++    registry
++        .lock()
++        .unwrap_or_else(|poisoned| poisoned.into_inner())
++}
++
++fn lock_signal(signal: &Signal) -> MutexGuard<'_, SignalState> {
++    signal
++        .state
++        .lock()
++        .unwrap_or_else(|poisoned| poisoned.into_inner())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::geometry::WindowBounds;
++    use std::sync::Barrier;
++    use std::thread;
++
++    fn expected() -> WindowIdentity {
++        WindowIdentity::new(11, 4242, 0, WindowBounds::new(100.0, 580.0, 500.0, 500.0))
++    }
++
++    fn success_completion(width: u32, height: u32) -> NativeCompletion {
++        NativeCompletion {
++            status: CompletionStatus::Success,
++            facts: Some(expected()),
++            dimensions: Some(PixelDimensions { width, height }),
++            rgba: vec![0x41; (width * height * 4) as usize],
++            payload_error: None,
++        }
++    }
++
++    fn reserved(coordinator: &CaptureCoordinator) -> CaptureObservation {
++        coordinator.reserve(expected()).expect("reserve")
++    }
++
++    #[test]
++    fn cancel_before_admission_never_starts_capture_and_releases_on_callback() {
++        let coordinator = CaptureCoordinator::new(2);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        observation.cancel();
++        assert_eq!(coordinator.in_flight(), 1);
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Canceled
++        );
++        assert_eq!(
++            coordinator.complete(id, success_completion(2, 2)),
++            CompletionOutcome::DroppedCanceled
++        );
++        assert_eq!(coordinator.in_flight(), 1);
++        assert_eq!(
++            coordinator.release_callback(id),
++            CallbackReleaseOutcome::Released
++        );
++        assert_eq!(coordinator.in_flight(), 0);
++        assert_eq!(observation.wait(), Err(VisualError::CaptureCanceled));
++    }
++
++    #[test]
++    fn cancel_after_admission_drops_late_pixels() {
++        let coordinator = CaptureCoordinator::new(2);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Proceed
++        );
++        observation.cancel();
++        assert_eq!(
++            coordinator.complete(id, success_completion(2, 2)),
++            CompletionOutcome::DroppedCanceled
++        );
++        assert_eq!(coordinator.in_flight(), 1);
++        coordinator.release_callback(id);
++        assert_eq!(observation.wait(), Err(VisualError::CaptureCanceled));
++        assert_eq!(coordinator.in_flight(), 0);
++    }
++
++    #[test]
++    fn observer_drop_before_admission_prevents_capture_start() {
++        let coordinator = CaptureCoordinator::new(1);
++        let id = {
++            let observation = reserved(&coordinator);
++            observation.id()
++        };
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Canceled
++        );
++        assert_eq!(coordinator.in_flight(), 1);
++        assert!(matches!(
++            coordinator.reserve(expected()),
++            Err(VisualError::CaptureCapacityExhausted { limit: 1 })
++        ));
++        assert_eq!(
++            coordinator.complete(id, success_completion(2, 2)),
++            CompletionOutcome::DroppedCanceled
++        );
++        assert_eq!(coordinator.in_flight(), 1);
++        coordinator.release_callback(id);
++        assert_eq!(coordinator.in_flight(), 0);
++        assert!(coordinator.reserve(expected()).is_ok());
++    }
++
++    #[test]
++    fn observer_drop_after_admission_keeps_slot_until_bridge_release() {
++        let coordinator = CaptureCoordinator::new(1);
++        let id = {
++            let observation = reserved(&coordinator);
++            let id = observation.id();
++            assert_eq!(
++                coordinator.admit(id, expected()),
++                AdmissionDecision::Proceed
++            );
++            id
++        };
++        assert_eq!(coordinator.in_flight(), 1);
++        assert_eq!(
++            coordinator.complete(id, success_completion(2, 2)),
++            CompletionOutcome::DroppedCanceled
++        );
++        assert_eq!(coordinator.in_flight(), 1);
++        coordinator.release_callback(id);
++        assert_eq!(coordinator.in_flight(), 0);
++    }
++
++    #[test]
++    fn callback_delivery_does_not_release_capacity_before_payload_released() {
++        let coordinator = CaptureCoordinator::new(1);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Proceed
++        );
++        assert_eq!(
++            coordinator.complete(id, success_completion(2, 3)),
++            CompletionOutcome::Delivered
++        );
++        // Callback data is delivered, but the Swift bridge may still hold its
++        // bridge-owned pixel storage and borrow. Capacity must remain occupied
++        // until payload_released; this is not a claim about OS callback exit.
++        assert_eq!(coordinator.in_flight(), 1);
++        assert!(matches!(
++            coordinator.reserve(expected()),
++            Err(VisualError::CaptureCapacityExhausted { limit: 1 })
++        ));
++        let raw = observation.wait().expect("raw frame");
++        assert_eq!(raw.rgba.len(), 24);
++        assert_eq!(
++            coordinator.release_callback(id),
++            CallbackReleaseOutcome::Released
++        );
++        assert_eq!(coordinator.in_flight(), 0);
++    }
++
++    #[test]
++    fn duplicate_close_callback_and_release_are_idempotent() {
++        let coordinator = CaptureCoordinator::new(1);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Proceed
++        );
++        observation.close();
++        observation.close();
++        assert_eq!(
++            coordinator.complete(id, success_completion(1, 1)),
++            CompletionOutcome::DroppedCanceled
++        );
++        assert_eq!(
++            coordinator.complete(id, success_completion(1, 1)),
++            CompletionOutcome::DuplicateIgnored
++        );
++        assert_eq!(coordinator.in_flight(), 1);
++        assert_eq!(
++            coordinator.release_callback(id),
++            CallbackReleaseOutcome::Released
++        );
++        assert_eq!(
++            coordinator.release_callback(id),
++            CallbackReleaseOutcome::DuplicateIgnored
++        );
++        assert_eq!(coordinator.in_flight(), 0);
++    }
++
++    #[test]
++    fn capacity_is_bounded_and_released_only_by_payload_released() {
++        let coordinator = CaptureCoordinator::new(2);
++        let first = reserved(&coordinator);
++        let second = reserved(&coordinator);
++        assert!(matches!(
++            coordinator.reserve(expected()),
++            Err(VisualError::CaptureCapacityExhausted { limit: 2 })
++        ));
++        first.cancel();
++        drop(second);
++        assert_eq!(coordinator.in_flight(), 2);
++        assert_eq!(
++            coordinator.complete(first.id(), success_completion(1, 1)),
++            CompletionOutcome::DroppedCanceled
++        );
++        assert_eq!(coordinator.in_flight(), 2);
++        assert_eq!(
++            coordinator.release_callback(first.id()),
++            CallbackReleaseOutcome::Released
++        );
++        assert_eq!(coordinator.in_flight(), 1);
++        assert!(coordinator.reserve(expected()).is_ok());
++    }
++
++    #[test]
++    fn selected_drift_is_rejected_and_callback_returns_stored_error() {
++        let coordinator = CaptureCoordinator::new(1);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        let drifted =
++            WindowIdentity::new(11, 9999, 0, WindowBounds::new(100.0, 580.0, 500.0, 500.0));
++        assert_eq!(coordinator.admit(id, drifted), AdmissionDecision::Rejected);
++        let completion = NativeCompletion {
++            status: CompletionStatus::AdmissionRejected,
++            facts: None,
++            dimensions: None,
++            rgba: Vec::new(),
++            payload_error: None,
++        };
++        assert_eq!(
++            coordinator.complete(id, completion),
++            CompletionOutcome::Delivered
++        );
++        coordinator.release_callback(id);
++        assert!(matches!(
++            observation.wait(),
++            Err(VisualError::WindowDrift {
++                stage: DriftStage::SelectedWindow,
++                ..
++            })
++        ));
++    }
++
++    #[test]
++    fn successful_completion_delivers_exact_rgba() {
++        let coordinator = CaptureCoordinator::new(1);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Proceed
++        );
++        assert_eq!(
++            coordinator.complete(id, success_completion(2, 3)),
++            CompletionOutcome::Delivered
++        );
++        let raw = observation.wait().expect("raw frame");
++        assert_eq!(raw.dimensions.width, 2);
++        assert_eq!(raw.dimensions.height, 3);
++        assert_eq!(raw.rgba.len(), 24);
++        coordinator.release_callback(id);
++        assert_eq!(coordinator.in_flight(), 0);
++    }
++
++    #[test]
++    fn bad_payload_error_is_terminal_and_releases_on_payload_released() {
++        let coordinator = CaptureCoordinator::new(1);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Proceed
++        );
++        let completion = NativeCompletion {
++            status: CompletionStatus::Success,
++            facts: Some(expected()),
++            dimensions: Some(PixelDimensions {
++                width: 2,
++                height: 2,
++            }),
++            rgba: vec![0; 15],
++            payload_error: None,
++        };
++        assert_eq!(
++            coordinator.complete(id, completion),
++            CompletionOutcome::Delivered
++        );
++        coordinator.release_callback(id);
++        assert!(matches!(
++            observation.wait(),
++            Err(VisualError::RgbaLengthMismatch { .. })
++        ));
++        assert_eq!(coordinator.in_flight(), 0);
++    }
++
++    #[test]
++    fn wait_is_one_shot_and_final_check_observes_late_cancel() {
++        let coordinator = CaptureCoordinator::new(1);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Proceed
++        );
++        assert_eq!(
++            coordinator.complete(id, success_completion(2, 2)),
++            CompletionOutcome::Delivered
++        );
++        observation.wait().expect("first consume");
++        assert_eq!(observation.wait(), Err(VisualError::CaptureAlreadyConsumed));
++        observation.cancel();
++        assert_eq!(observation.ensure_open(), Err(VisualError::CaptureCanceled));
++        coordinator.release_callback(id);
++    }
++
++    #[test]
++    fn release_before_completion_is_a_terminal_protocol_error() {
++        let coordinator = CaptureCoordinator::new(1);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Proceed
++        );
++        assert_eq!(
++            coordinator.release_callback(id),
++            CallbackReleaseOutcome::Released
++        );
++        assert!(matches!(
++            observation.wait(),
++            Err(VisualError::NativeCapture(_))
++        ));
++        assert_eq!(coordinator.in_flight(), 0);
++    }
++
++    #[test]
++    fn duplicate_admission_is_rejected_without_releasing_the_first_capture() {
++        // 竞态依据：框架重复 enumeration callback 不能第二次进入 admission，
++        // 也不能因为第二个 Rejected 提前结束仍在途的第一次 capture。Rust 侧
++        // 用 phase 拒绝重复 admission，slot 仍由第一个 completion 的
++        // payload_released 释放。
++        let coordinator = CaptureCoordinator::new(1);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Proceed
++        );
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Rejected
++        );
++        assert_eq!(coordinator.in_flight(), 1);
++        assert_eq!(
++            coordinator.complete(id, success_completion(1, 1)),
++            CompletionOutcome::Delivered
++        );
++        assert_eq!(coordinator.in_flight(), 1);
++        assert_eq!(observation.wait().expect("first completion").rgba.len(), 4);
++        assert_eq!(
++            coordinator.release_callback(id),
++            CallbackReleaseOutcome::Released
++        );
++        assert_eq!(coordinator.in_flight(), 0);
++    }
++
++    #[test]
++    fn cancel_handle_wakes_a_thread_blocked_in_wait_and_keeps_the_slot() {
++        let coordinator = CaptureCoordinator::new(1);
++        let mut observation = reserved(&coordinator);
++        let id = observation.id();
++        assert_eq!(
++            coordinator.admit(id, expected()),
++            AdmissionDecision::Proceed
++        );
++        let cancel = observation.cancel_handle();
++        let coordinator_for_waiter = coordinator.clone();
++        let barrier = Arc::new(Barrier::new(2));
++        let waiter_barrier = Arc::clone(&barrier);
++        let waiter = thread::spawn(move || {
++            waiter_barrier.wait();
++            observation.wait()
++        });
++
++        barrier.wait();
++        let mut spins = 0_u32;
++        while coordinator_for_waiter.waiters(id) == 0 {
++            assert!(spins < 100_000, "wait did not become blocked");
++            spins += 1;
++            thread::yield_now();
++        }
++        cancel.cancel();
++        assert_eq!(
++            waiter.join().expect("wait thread"),
++            Err(VisualError::CaptureCanceled)
++        );
++
++        // Cancellation wakes the receiver but does not release in-flight
++        // capacity; only the Swift payload_released notification may do that.
++        assert_eq!(coordinator.in_flight(), 1);
++        assert_eq!(
++            coordinator.complete(id, success_completion(1, 1)),
++            CompletionOutcome::DroppedCanceled
++        );
++        assert_eq!(coordinator.in_flight(), 1);
++        coordinator.release_callback(id);
++        assert_eq!(coordinator.in_flight(), 0);
++    }
++}
+diff --git a/crates/cua-macos-visual/src/swift_link.rs b/crates/cua-macos-visual/src/swift_link.rs
+index baeeec3..237e96b 100644
+--- a/crates/cua-macos-visual/src/swift_link.rs
++++ b/crates/cua-macos-visual/src/swift_link.rs
+@@ -8,6 +8,17 @@ use std::path::{Path, PathBuf};
+ /// Parse the single absolute compiler path returned by
+ /// `/usr/bin/xcrun --find swiftc`.
+ pub(crate) fn parse_xcrun_swiftc(stdout: &[u8]) -> Result<PathBuf, &'static str> {
++    let compiler = parse_xcrun_path(stdout)?;
++    if compiler.file_name() != Some(std::ffi::OsStr::new("swiftc")) {
++        return Err("compiler path does not end in swiftc");
++    }
++    swift_lib_dir_from_compiler(&compiler)
++        .ok_or("compiler path is not <toolchain>/usr/bin/swiftc")?;
++    Ok(compiler)
++}
++
++/// Parse one absolute path returned by `xcrun`, with no shell or fallback.
++pub(crate) fn parse_xcrun_path(stdout: &[u8]) -> Result<PathBuf, &'static str> {
+     let value = std::str::from_utf8(stdout).map_err(|_| "output is not UTF-8")?;
+     let value = value.trim();
+     if value.is_empty() {
+@@ -18,16 +29,20 @@ pub(crate) fn parse_xcrun_swiftc(stdout: &[u8]) -> Result<PathBuf, &'static str>
+     if lines.next().is_some() {
+         return Err("output contains more than one line");
+     }
+-    let compiler = Path::new(line);
+-    if !compiler.is_absolute() {
+-        return Err("compiler path is not absolute");
++    let path = Path::new(line);
++    if !path.is_absolute() {
++        return Err("path is not absolute");
+     }
+-    if compiler.file_name() != Some(std::ffi::OsStr::new("swiftc")) {
+-        return Err("compiler path does not end in swiftc");
++    Ok(path.to_path_buf())
++}
++
++/// Match the Cargo target architecture to the fixed macOS 14.2 Swift triple.
++pub(crate) fn swift_target_triple(arch: &str) -> Option<&'static str> {
++    match arch {
++        "aarch64" => Some("arm64-apple-macos14.2"),
++        "x86_64" => Some("x86_64-apple-macos14.2"),
++        _ => None,
+     }
+-    swift_lib_dir_from_compiler(compiler)
+-        .ok_or("compiler path is not <toolchain>/usr/bin/swiftc")?;
+-    Ok(compiler.to_path_buf())
+ }
+ 
+ /// Derive `usr/lib/swift/macosx` from `<toolchain>/usr/bin/swiftc`.
+@@ -126,4 +141,25 @@ mod tests {
+         .is_err());
+         assert!(parse_xcrun_swiftc(&[0xFF]).is_err());
+     }
++
++    #[test]
++    fn parses_sdk_path_and_fixed_swift_triples() {
++        assert_eq!(
++            parse_xcrun_path(b"/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk\n"),
++            Ok(PathBuf::from(
++                "/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk"
++            ))
++        );
++        assert!(parse_xcrun_path(b"relative/SDK\n").is_err());
++        assert!(parse_xcrun_path(b"/one\n/two\n").is_err());
++        assert_eq!(
++            swift_target_triple("aarch64"),
++            Some("arm64-apple-macos14.2")
++        );
++        assert_eq!(
++            swift_target_triple("x86_64"),
++            Some("x86_64-apple-macos14.2")
++        );
++        assert_eq!(swift_target_triple("riscv64"), None);
++    }
+ }
+diff --git a/crates/cua-macos-visual-link-probe/.cargo/config.toml b/crates/cua-macos-visual-link-probe/.cargo/config.toml
+new file mode 100644
+index 0000000..8acc32d
+--- /dev/null
++++ b/crates/cua-macos-visual-link-probe/.cargo/config.toml
+@@ -0,0 +1,2 @@
++[env]
++MACOSX_DEPLOYMENT_TARGET = "14.2"
+diff --git a/crates/cua-macos-visual-link-probe/Cargo.toml b/crates/cua-macos-visual-link-probe/Cargo.toml
+new file mode 100644
+index 0000000..6a1c7f6
+--- /dev/null
++++ b/crates/cua-macos-visual-link-probe/Cargo.toml
+@@ -0,0 +1,14 @@
++[package]
++name = "cua-macos-visual-link-probe"
++version.workspace = true
++edition.workspace = true
++license.workspace = true
++description = "Independent link and deployment probe for the narrow macOS visual bridge"
++publish = false
++
++[dependencies]
++cua-macos-visual = { path = "../cua-macos-visual" }
++
++[[bin]]
++name = "cua-macos-visual-link-probe"
++path = "src/main.rs"
+diff --git a/crates/cua-macos-visual-link-probe/build.rs b/crates/cua-macos-visual-link-probe/build.rs
+new file mode 100644
+index 0000000..2d2070d
+--- /dev/null
++++ b/crates/cua-macos-visual-link-probe/build.rs
+@@ -0,0 +1,113 @@
++//! Final-consumer link closure for the Swift visual bridge.
++//!
++//! This crate owns its Swift autolink search path and `/usr/lib/swift` runtime
++//! rpath. It does not rely on an rlib to carry either. The build fails unless
++//! the consumer is compiled for the fixed macOS 14.2 deployment target. The
++//! final link is pinned to the same installed SDK that compiled the Swift
++//! object, so the Mach-O `sdk` field is real evidence rather than host default.
++
++use std::env;
++use std::path::{Path, PathBuf};
++use std::process::Command;
++
++const SDK_SELECTOR: &str = "macosx27.0";
++const DEPLOYMENT_TARGET: &str = "14.2";
++
++fn main() {
++    println!("cargo:rerun-if-changed=build.rs");
++    println!("cargo:rerun-if-env-changed=DEVELOPER_DIR");
++    println!("cargo:rerun-if-env-changed=TOOLCHAINS");
++    println!("cargo:rerun-if-env-changed=MACOSX_DEPLOYMENT_TARGET");
++
++    if env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("macos") {
++        return;
++    }
++    let deployment = env::var("MACOSX_DEPLOYMENT_TARGET").unwrap_or_default();
++    if deployment != DEPLOYMENT_TARGET {
++        panic!(
++            "cua-macos-visual-link-probe requires MACOSX_DEPLOYMENT_TARGET={DEPLOYMENT_TARGET}, got {deployment:?}; run from this crate directory so .cargo/config.toml applies"
++        );
++    }
++    match env::var("CARGO_CFG_TARGET_ARCH").as_deref() {
++        Ok("aarch64") | Ok("x86_64") => {}
++        other => panic!("unsupported probe target architecture: {other:?}"),
++    }
++
++    let compiler = parse_xcrun(&["--find", "swiftc"], "swiftc");
++    let sdk = parse_xcrun(&["--sdk", SDK_SELECTOR, "--show-sdk-path"], "SDK");
++    if !sdk.is_dir() {
++        panic!("xcrun returned a non-directory SDK path: {}", sdk.display());
++    }
++    if swift_lib_dir_from_compiler(&compiler).is_none() {
++        panic!(
++            "xcrun returned {}, which is not <toolchain>/usr/bin/swiftc",
++            compiler.display()
++        );
++    }
++    // The Swift object's real LC_LINKER_OPTION entries reference swiftCore,
++    // swift_Concurrency, swiftMetal and other system overlays, and carry no
++    // libswiftCompatibility56/Packs force-load. Resolve those entries from the
++    // same explicitly selected SDK used for the Swift compile.
++    let sdk_swift_lib = sdk.join("usr/lib/swift");
++    if !sdk_swift_lib.join("libswiftCore.tbd").is_file() {
++        panic!(
++            "{} does not contain the Swift autolink stubs used by the bridge",
++            sdk_swift_lib.display()
++        );
++    }
++
++    println!("cargo:rustc-link-search=native={}", sdk_swift_lib.display());
++    println!("cargo:rustc-link-arg=-Wl,-rpath,/usr/lib/swift");
++    // The consumer explicitly links against the same selected SDK as the
++    // Swift object instead of relying on the host's default SDK.
++    println!("cargo:rustc-link-arg=-Wl,-syslibroot,{}", sdk.display());
++}
++
++fn parse_xcrun(arguments: &[&str], label: &str) -> PathBuf {
++    let output = Command::new("/usr/bin/xcrun")
++        .args(arguments)
++        .output()
++        .unwrap_or_else(|error| panic!("failed to run /usr/bin/xcrun: {error}"));
++    if !output.status.success() {
++        panic!(
++            "/usr/bin/xcrun {arguments:?} failed with {}: {}",
++            output.status,
++            String::from_utf8_lossy(&output.stderr)
++        );
++    }
++    parse_single_path(&output.stdout)
++        .unwrap_or_else(|error| panic!("invalid xcrun {label} output: {error}"))
++}
++
++fn parse_single_path(stdout: &[u8]) -> Result<PathBuf, &'static str> {
++    let value = std::str::from_utf8(stdout).map_err(|_| "output is not UTF-8")?;
++    let value = value.trim();
++    if value.is_empty() {
++        return Err("output is empty");
++    }
++    let mut lines = value.lines();
++    let line = lines.next().ok_or("output is empty")?;
++    if lines.next().is_some() {
++        return Err("output contains more than one line");
++    }
++    let path = Path::new(line);
++    if !path.is_absolute() {
++        return Err("path is not absolute");
++    }
++    Ok(path.to_path_buf())
++}
++
++fn swift_lib_dir_from_compiler(compiler: &Path) -> Option<PathBuf> {
++    if !compiler.is_absolute() || compiler.file_name()? != "swiftc" {
++        return None;
++    }
++    let bin = compiler.parent()?;
++    if bin.file_name()? != "bin" {
++        return None;
++    }
++    let usr = bin.parent()?;
++    if usr.file_name()? != "usr" {
++        return None;
++    }
++    Some(usr.join("lib/swift/macosx"))
++}
+diff --git a/crates/cua-macos-visual-link-probe/src/main.rs b/crates/cua-macos-visual-link-probe/src/main.rs
+new file mode 100644
+index 0000000..db03b91
+--- /dev/null
++++ b/crates/cua-macos-visual-link-probe/src/main.rs
+@@ -0,0 +1,19 @@
++//! Pure link/start probe. This program never enumerates a window or captures.
++
++use cua_macos_visual::{
++    native_bridge_link_diagnostic, request_window_capture, CaptureRequest, VisualError,
++    WindowBounds,
++};
++
++fn main() {
++    let diagnostic = native_bridge_link_diagnostic();
++    assert_eq!(diagnostic, "cua-macos-visual/r9-swift-completion");
++    let request = CaptureRequest::new(11, 4242, 0, WindowBounds::new(100.0, 580.0, 500.0, 500.0));
++    assert_eq!(
++        request_window_capture(&request),
++        Err(VisualError::HostNotApproved)
++    );
++    println!("diagnostic={diagnostic}");
++    println!("public_capture=HostNotApproved");
++    println!("native_capture_invoked=false");
++}

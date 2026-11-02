@@ -19,7 +19,9 @@ describe("ImagePreviewContent", () => {
     expect(html).toContain("flex h-full min-h-0 items-center justify-center");
     expect(html).toContain("p-10");
     expect(html).toContain("[background-color:var(--color-background)]");
-    expect(html).toContain("[background-image:linear-gradient(45deg,var(--color-surface)_25%,transparent_25%)");
+    expect(html).toContain(
+      "[background-image:linear-gradient(45deg,var(--color-surface)_25%,transparent_25%)",
+    );
     expect(html).toContain("[background-position:0_0,0_4px,4px_-4px,-4px_0]");
     expect(html).toContain("[background-size:8px_8px]");
     expect(html).toContain("h-auto max-h-full w-auto max-w-full");
@@ -34,6 +36,20 @@ describe("ImagePreviewContent", () => {
     expect(getImagePreviewPixelRatio("/tmp/@2x/logo.png")).toBe(1);
     expect(getImagePreviewPixelRatio("logo@0x.png")).toBe(1);
     expect(getImagePreviewPixelRatio("logo@2x.backup.png")).toBe(1);
+  });
+
+  it("searchfile-7: 桌面保持 p-10，触屏态收窄内边距以放大图片可用宽度", () => {
+    const html = renderToStaticMarkup(
+      createElement(ImagePreviewContent, {
+        title: "logo.png",
+        imageSource: "data:image/png;base64,",
+      }),
+    );
+
+    // 桌面渲染不变（既有用例同时仍断言 p-10 存在）。
+    expect(html).toContain("p-10");
+    // 触屏态（(hover:none) and (pointer:coarse)）内边距收窄到 8px，390px 宽度下可用宽度约 374px。
+    expect(html).toContain("[@media(hover:none)_and_(pointer:coarse)]:p-2");
   });
 
   it("fits svg previews to the container instead of using bitmap natural sizing", () => {

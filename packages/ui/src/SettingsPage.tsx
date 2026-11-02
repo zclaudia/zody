@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ButtonHTMLAttributes,
   type ReactNode,
@@ -32,7 +33,7 @@ import {
   addPendingSettingsSectionListener,
   clearPendingSettingsPluginOrigin,
   clearPendingSettingsPluginScopeKey,
-  consumeInitialSettingsSection,
+  consumeInitialSettingsSectionWithSource,
   consumePendingSettingsPluginOrigin,
   consumePendingSettingsPluginScopeKey,
   consumePendingSettingsPluginTab,
@@ -56,6 +57,15 @@ import { ShortcutSettingsSection } from "@/settings/ShortcutSettingsSection.js";
 import { MigrationSection } from "@/settings/MigrationSection.js";
 import { SETTINGS_FRAME_CONTENT_CLASSNAME } from "@/settings/SettingsPageParts.js";
 import {
+  MobileSettingsIndex,
+  MobileSettingsSectionHeader,
+} from "@/settings/MobileSettingsNavigation.js";
+import { SettingsPresentationProvider } from "@/settings/SettingsPresentationContext.js";
+import {
+  WebRemoteControlMobileConnectionSettingsSection,
+  type WebRemoteControlMobileConnectionSettingsApi,
+} from "@/settings/WebRemoteControlMobileConnectionSettingsSection.js";
+import {
   SettingsBreadcrumbProvider,
   SettingsHeaderBreadcrumb,
   type SettingsBreadcrumbItem,
@@ -72,6 +82,15 @@ import { WorkspaceSidebarFooter } from "@/WorkspaceSidebarFooter.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { cn } from "@/components/lib/utils.js";
 import { useSelectDirectory } from "@/hooks/usePlatform.js";
+import { useWebRemoteControlMobileViewport } from "@/hooks/useWebRemoteControlMobileViewport.js";
+import {
+  backOutOfWebRemoteControlMobileSettingsHistory,
+  clearWebRemoteControlMobileSettingsHistoryState,
+  isWebRemoteControlMobileSettingsHistoryState,
+  planInitialWebRemoteControlMobileSettingsHistory,
+  pushWebRemoteControlMobileSettingsIndexHistory,
+  pushWebRemoteControlMobileSettingsSectionHistory,
+} from "@/mobileNavigationHistory.js";
 import { ServiceProvider, useServices } from "@/hooks/useServices.js";
 import { useSettings } from "@/hooks/useSettingService.js";
 import type { CreateTaskRequest } from "@/app-shell/types.js";
@@ -159,6 +178,7 @@ export function SettingsPage({
   isWindowsDesktop,
   isMacDesktop,
   isWebRemoteControl = false,
+  mobileConnectionSettings,
   windowsWindowControlsRightPaddingPx: _windowsWindowControlsRightPaddingPx,
   captionWorkspacePath,
   onBack,
@@ -170,6 +190,7 @@ export function SettingsPage({
   isWindowsDesktop?: boolean;
   isMacDesktop?: boolean;
   isWebRemoteControl?: boolean;
+  mobileConnectionSettings?: WebRemoteControlMobileConnectionSettingsApi;
   windowsWindowControlsRightPaddingPx?: number;
   captionWorkspacePath?: string | null;
   onBack?: () => void;
@@ -178,22 +199,29 @@ export function SettingsPage({
   allowOpenWorkspace?: boolean;
 }) {
   const { intl, localePreference, setLocalePreference } = useZCodeIntl();
+  const isMobileSettings = useWebRemoteControlMobileViewport(isWebRemoteControl);
+  // 连接分区只在手机 Web Remote Control 且 bootstrap 已注入连接能力时出现；
+  // 桌面 remoteAccess 与普通 Web 的设置列表保持原样。
+  const showMobileConnectionSettings = isMobileSettings && Boolean(mobileConnectionSettings);
   const { settingsSectionGroups, settingsSections } = useMemo(
     () =>
       createSettingsPageConfig({
         isDesktop: Boolean(isDesktop),
         isMacDesktop: Boolean(isMacDesktop),
         isWindowsDesktop: Boolean(isWindowsDesktop),
+        isWebRemoteControlMobile: showMobileConnectionSettings,
       }),
-    [isDesktop, isMacDesktop, isWindowsDesktop],
+    [isDesktop, isMacDesktop, isWindowsDesktop, showMobileConnectionSettings],
   );
   const isLinuxDesktop = Boolean(isDesktop && !isMacDesktop && !isWindowsDesktop);
   const usesInlineWindowControls = Boolean(isWindowsDesktop || isLinuxDesktop);
   const platform = usePlatform();
+  const [initialSettingsSection] = useState(() =>
+    consumeInitialSettingsSectionWithSource("general"),
+  );
   const [activeSection, setActiveSection] = useState<SettingsSectionId>(() => {
-    const initialSection = consumeInitialSettingsSection("general");
     const visibleInitialSection = resolveSettingsSectionForPlatform(
-      initialSection,
+      initialSettingsSection.section,
       settingsSections,
     );
     // 设置页首次挂载时也要写入当前落点。否则用户直接打开再退出，
@@ -201,6 +229,12 @@ export function SettingsPage({
     writeLastSettingsSectionPreference(visibleInitialSection);
     return visibleInitialSection;
   });
+  const [mobileSettingsView, setMobileSettingsView] = useState<"index" | "section">(
+    initialSettingsSection.explicit ? "section" : "index",
+  );
+  // 连接分区在设置首页下只隐藏不卸载；离开分区（顶部/浏览器/Android 返回或切区）时
+  // 递增该 token，让分区丢弃未保存的 Gateway/namespace/凭证草稿。
+  const [connectionDraftResetToken, setConnectionDraftResetToken] = useState(0);
   const [pluginTab, setPluginTab] = useState(() => consumePendingSettingsPluginTab());
   // Linux 关闭驻留托盘能力查询（spec：docs/desktop/linux-close-to-tray.md）：打开设置页时
   // 经 platform IPC 触发 main 侧探测（带 stale 缓存），用户装完 AppIndicator 扩展重开
@@ -270,14 +304,161 @@ export function SettingsPage({
   >(() => initialModelProviderTarget);
   const setNewUserOnboardingOpen = useZCodeStore((state) => state.setNewUserOnboardingOpen);
   const requestOnboardingDialog = () => setNewUserOnboardingOpen(true);
+
+  // 这些投影同时供桌面 breadcrumb、分区标题和手机 header/返回使用；提前计算，
+  // 让手机返回在分区内部详情时优先回到父级，而不是直接跳回设置首页。
+  const activeSectionMeta = settingsSections.find((section) => section.id === activeSection);
+  const activeSectionLabel = activeSectionMeta
+    ? intl.formatMessage({
+        id: activeSectionMeta.contentTitleId ?? activeSectionMeta.titleId,
+      })
+    : "";
+  const settingsBreadcrumbSectionLabel =
+    activeSection === "plugin" && pluginNavigationOrigin === "plugin-store"
+      ? intl.formatMessage({ id: "workspace.openPluginsSettings" })
+      : activeSectionLabel;
+  const visibleSettingsBreadcrumbItems =
+    settingsBreadcrumbItems[0]?.label === settingsBreadcrumbSectionLabel
+      ? settingsBreadcrumbItems
+      : [];
+  const hasVisibleSettingsBreadcrumb = visibleSettingsBreadcrumbItems.length >= 2;
+  const showActiveSectionTitle =
+    !hasVisibleSettingsBreadcrumb ||
+    (activeSection === "plugin" && pluginNavigationOrigin === "plugin-store");
+  // 手机分区 header 同时承担桌面 breadcrumb + 标题：内部详情显示详情名，其余显示分区名。
+  const mobileSettingsSectionTitle =
+    visibleSettingsBreadcrumbItems[visibleSettingsBreadcrumbItems.length - 1]?.label ??
+    activeSectionLabel;
+
+  const mobileHistoryInitializedRef = useRef(false);
   const setActiveSettingsSection = useCallback(
     (section: SettingsSectionId, fallbackSection: SettingsSectionId = activeSection) => {
       const resolvedSection = resolveSettingsSection(section, fallbackSection);
       setActiveSection(resolvedSection);
       writeLastSettingsSectionPreference(resolvedSection);
+      if (isMobileSettings) {
+        setMobileSettingsView("section");
+        pushWebRemoteControlMobileSettingsSectionHistory(resolvedSection);
+      }
     },
-    [activeSection],
+    [activeSection, isMobileSettings],
   );
+  useEffect(() => {
+    if (!isMobileSettings || typeof window === "undefined") {
+      mobileHistoryInitializedRef.current = false;
+      return;
+    }
+
+    const plan = planInitialWebRemoteControlMobileSettingsHistory({
+      state: window.history.state,
+      explicitSection: initialSettingsSection.explicit,
+      section: activeSection,
+      initialized: mobileHistoryInitializedRef.current,
+    });
+
+    if (plan.kind === "none") return;
+    // 识别或创建 settings 条目后都视为已初始化，后续 re-render 不再写 history；
+    // 否则 effect 依赖 activeSection/settingsSections 变化时会重复 push。
+    mobileHistoryInitializedRef.current = true;
+
+    if (plan.kind === "restore") {
+      setMobileSettingsView(plan.view);
+      if (plan.view === "section") {
+        const resolved = resolveSettingsSectionForPlatform(plan.section, settingsSections);
+        setActiveSection(resolved);
+        writeLastSettingsSectionPreference(resolved);
+      }
+      return;
+    }
+
+    if (plan.kind === "push-section") {
+      // 该 helper 会先补设置首页，保证显式深链第一次返回落到 index。
+      pushWebRemoteControlMobileSettingsSectionHistory(plan.section);
+      return;
+    }
+
+    pushWebRemoteControlMobileSettingsIndexHistory();
+  }, [activeSection, initialSettingsSection.explicit, isMobileSettings, settingsSections]);
+
+  useEffect(() => {
+    if (!isMobileSettings || typeof window === "undefined") return;
+    return () => {
+      // 设置层卸载（直接 onBack、切换 tab/workspace 或离开手机视口）时回收 settings 条目。
+      // popstate 已落回宿主条目时这里是空操作；直接关闭后下次普通打开仍从 index 开始。
+      clearWebRemoteControlMobileSettingsHistoryState();
+    };
+  }, [isMobileSettings]);
+
+  useEffect(() => {
+    if (!isMobileSettings || typeof window === "undefined") return;
+    const handlePopState = (event: PopStateEvent) => {
+      if (isWebRemoteControlMobileSettingsHistoryState(event.state)) {
+        const entry = event.state.zcodeMobileSettings;
+        // popstate 只回写 React 投影，不再调用 history 写操作，避免返回回环。
+        setMobileSettingsView(entry.view);
+        if (entry.view === "section") {
+          const resolved = resolveSettingsSectionForPlatform(entry.section, settingsSections);
+          setActiveSection(resolved);
+          writeLastSettingsSectionPreference(resolved);
+        }
+        return;
+      }
+
+      // 落回 home/chat 基础条目时才退出应用设置，底层 Shell 同步恢复宿主页面。
+      onBack?.();
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isMobileSettings, onBack, settingsSections]);
+
+  const handleMobileBack = useCallback((): boolean => {
+    // 只有分区页才让通用 breadcrumb 参与：index 下被隐藏但未卸载的 section 子树
+    // 仍可能上报旧 breadcrumb，不能把它当成当前返回目标。
+    if (mobileSettingsView === "section" && visibleSettingsBreadcrumbItems.length >= 2) {
+      const parentItem = visibleSettingsBreadcrumbItems[visibleSettingsBreadcrumbItems.length - 2];
+      if (parentItem?.onSelect) {
+        parentItem.onSelect();
+        return true;
+      }
+    }
+
+    if (
+      typeof window !== "undefined" &&
+      isWebRemoteControlMobileSettingsHistoryState(window.history.state)
+    ) {
+      backOutOfWebRemoteControlMobileSettingsHistory();
+      return true;
+    }
+    return false;
+  }, [mobileSettingsView, visibleSettingsBreadcrumbItems]);
+
+  const handleMobileBackOrClose = useCallback(() => {
+    if (handleMobileBack()) return;
+    onBack?.();
+  }, [handleMobileBack, onBack]);
+
+  useEffect(() => {
+    if (!showMobileConnectionSettings) return;
+    // 投影离开连接分区就清空草稿；只依赖视图/分区，保存有效变化时保持 section，
+    // 因此不会打断 go(-2) → popstate → reconnect 的等待链路。
+    if (mobileSettingsView === "index" || activeSection !== "connection") {
+      setConnectionDraftResetToken((token) => token + 1);
+    }
+  }, [activeSection, mobileSettingsView, showMobileConnectionSettings]);
+
+  // 连接分区取消/无变化保存都只回设置首页，不关闭 tab、不 dispose 会话。
+  const returnToMobileSettingsIndex = useCallback(() => {
+    if (handleMobileBack()) return;
+    setMobileSettingsView("index");
+  }, [handleMobileBack]);
+
+  useEffect(() => {
+    if (!isMobileSettings || !platform.onBackPressed) return;
+    // 后注册的设置页处理器先于 MobileShell 询问；settings 条目由这里逐层回退，
+    // 未命中时返回 false 让 Shell 处理下层页面。
+    return platform.onBackPressed(handleMobileBack);
+  }, [handleMobileBack, isMobileSettings, platform]);
+
   // fork（F4.1b）：设置页头像菜单的「升级套餐 / 使用统计」入口 handler 摘除
   // （openCodingPlanUpgrade 消费方随之消失；升级弹窗 Provider 已在 Root 摘挂载）。
   const handleOpenModelProviderSettings = useCallback(() => {
@@ -970,7 +1151,6 @@ export function SettingsPage({
     },
     [setCodePreviewSettings],
   );
-  const activeSectionMeta = settingsSections.find((section) => section.id === activeSection);
   // 灰度裁决异步到达：sections 列表可能在挂载后变化（如 computerUse 区被灰度移除）。
   // 若用户正停留在被移除的 section，回落到第一个可见区，避免整页 return null。
   useEffect(() => {
@@ -980,36 +1160,21 @@ export function SettingsPage({
     return null;
   }
 
-  const activeSectionLabel = intl.formatMessage({
-    id: activeSectionMeta.contentTitleId ?? activeSectionMeta.titleId,
-  });
-  const settingsBreadcrumbSectionLabel =
-    activeSection === "plugin" && pluginNavigationOrigin === "plugin-store"
-      ? intl.formatMessage({ id: "workspace.openPluginsSettings" })
-      : activeSectionLabel;
-  const visibleSettingsBreadcrumbItems =
-    settingsBreadcrumbItems[0]?.label === settingsBreadcrumbSectionLabel
-      ? settingsBreadcrumbItems
-      : [];
-  const hasVisibleSettingsBreadcrumb = visibleSettingsBreadcrumbItems.length >= 2;
-  const showActiveSectionTitle =
-    !hasVisibleSettingsBreadcrumb ||
-    (activeSection === "plugin" && pluginNavigationOrigin === "plugin-store");
-
-  return (
-    <>
-      <DesktopWindowFrame
-        title={intl.formatMessage({ id: "settings.title" })}
-        isDesktop={isDesktop}
-        isMacDesktop={isMacDesktop}
-        isWindowsDesktop={isWindowsDesktop}
-      >
+  // 先构建页面主体再包 Provider：避免为新增上下文把整棵既有 JSX 重新缩进。
+  const settingsPageContent = (
         <div
           data-testid={TID_SETTINGS_PAGE}
           data-active-section={activeSection}
+          data-mobile-settings={isMobileSettings ? "true" : undefined}
+          data-mobile-settings-view={isMobileSettings ? mobileSettingsView : undefined}
           // 隐式 auto 行会按 Memory viewer 的内容高度撑出窗口，随后被 DesktopWindowFrame 裁切且没有滚动条。
           // 固定为单个 minmax(0, 1fr) 行，让普通设置页和内部滚动 viewer 都以窗口剩余高度为边界。
-          className="relative grid h-screen min-h-full w-full grid-cols-[68px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] lg:grid-cols-[268px_minmax(0,1fr)]"
+          className={cn(
+            "relative grid min-h-full w-full grid-rows-[minmax(0,1fr)]",
+            isMobileSettings
+              ? "h-dvh grid-cols-1"
+              : "h-screen grid-cols-[68px_minmax(0,1fr)] lg:grid-cols-[268px_minmax(0,1fr)]",
+          )}
         >
           {isWindowsDesktop ? <WindowsTopLeftLogo /> : null}
 
@@ -1022,7 +1187,7 @@ export function SettingsPage({
               <DesktopWindowControls />
             </div>
           ) : null}
-          <aside className="min-w-0">
+          <aside className={cn("min-w-0", isMobileSettings && "hidden")}>
             <div className="flex h-full flex-col">
               <div className="h-12 [app-region:drag]"></div>
               <div className="px-2 pb-3 pt-3">
@@ -1184,27 +1349,47 @@ export function SettingsPage({
             </div>
           </aside>
 
+          {isMobileSettings && mobileSettingsView === "index" ? (
+            <MobileSettingsIndex
+              groups={settingsSectionGroups}
+              onSelectSection={setActiveSettingsSection}
+              onBack={onBack ? handleMobileBackOrClose : undefined}
+              onOpenOnboarding={requestOnboardingDialog}
+            />
+          ) : null}
+
           <section
             data-settings-content-frame="true"
             className={cn(
               "flex min-h-0 flex-col",
               // 桌面平台统一复用主工作区的面板 inset；左侧仍与导航相接，顶部由独立拖拽留白承接。
               isDesktop ? "p-1 pl-0 pt-0" : "p-0",
+              // 手机返回设置首页只隐藏分区块，保留其草稿、选中态和后台订阅。
+              isMobileSettings && mobileSettingsView === "index" && "hidden",
             )}
           >
             <div
               data-settings-top-inset={isDesktop ? "true" : undefined}
-              className={cn("[app-region:drag]", isDesktop && "h-1", isMacDesktop && "max-lg:h-16")}
+              className={cn(
+                "[app-region:drag]",
+                isDesktop && "h-1",
+                isMacDesktop && "max-lg:h-16",
+                isMobileSettings && "hidden",
+              )}
             />
             <div
               data-settings-panel-frame="true"
               className={cn(
                 "relative flex flex-col min-h-0 h-full border border-border bg-background",
                 // Windows 设置页已有 4px 外层留白，不再承担系统窗口外沿；圆角与主工作区统一为 5px。
-                isWindowsDesktop ? "rounded-[5px]" : "rounded-xl",
+                isMobileSettings
+                  ? "rounded-none border-0"
+                  : isWindowsDesktop
+                    ? "rounded-[5px]"
+                    : "rounded-xl",
               )}
             >
-              {!usesInlineWindowControls ? (
+              {!usesInlineWindowControls && !isMobileSettings ? (
                 <div
                   className={cn(
                     // Settings 使用和 new task 一致的问号定位：在内容面板内定位，外层让出自绘窗口按钮区，内层保持 top-2.5/right-2.5。
@@ -1225,7 +1410,14 @@ export function SettingsPage({
                 sectionLabel={settingsBreadcrumbSectionLabel}
               >
                 <div className="flex min-h-0 flex-1 flex-col">
-                  <div className="flex h-12 shrink-0">
+                  {/* 手机分区页的标题栏与返回：桌面 breadcrumb/标题行在手机上隐藏，避免重复。 */}
+                  {isMobileSettings && mobileSettingsView === "section" ? (
+                    <MobileSettingsSectionHeader
+                      title={mobileSettingsSectionTitle}
+                      onBack={handleMobileBackOrClose}
+                    />
+                  ) : null}
+                  <div className={cn("flex h-12 shrink-0", isMobileSettings && "hidden")}>
                     <div
                       // Settings 窄布局会像左侧导航一样在 max-lg 收成 icon rail。
                       // 此时外层已经提供 max-lg:h-16 的顶部拖拽/避让区，内层 h-10 再保留会把内容额外压低。
@@ -1256,7 +1448,7 @@ export function SettingsPage({
                         // isWindowsDesktop && "pt-12",
                       )}
                     >
-                      <div>
+                      <div className={cn(isMobileSettings && "hidden")}>
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div className="flex min-w-0 flex-wrap items-center gap-3">
                             {showActiveSectionTitle ? (
@@ -1563,6 +1755,13 @@ export function SettingsPage({
                               handleEmbeddedBrowserAllowInsecureCertificatesChange
                             }
                           />
+                        ) : activeSection === "connection" && mobileConnectionSettings ? (
+                          <WebRemoteControlMobileConnectionSettingsSection
+                            settings={mobileConnectionSettings}
+                            resetToken={connectionDraftResetToken}
+                            onBack={returnToMobileSettingsIndex}
+                            onSaved={returnToMobileSettingsIndex}
+                          />
                         ) : activeSection === "remoteAccess" ? (
                           <RemoteAccessSection isDesktop={Boolean(isDesktop)} />
                         ) : activeSection === "computerUse" ? (
@@ -1577,6 +1776,9 @@ export function SettingsPage({
                           />
                         ) : null}
                       </div>
+                      {isMobileSettings ? (
+                        <div className="zcode-safe-area-bottom" aria-hidden="true" />
+                      ) : null}
                     </div>
                   </main>
                 </div>
@@ -1584,6 +1786,19 @@ export function SettingsPage({
             </div>
           </section>
         </div>
+  );
+
+  return (
+    <>
+      <DesktopWindowFrame
+        title={intl.formatMessage({ id: "settings.title" })}
+        isDesktop={isDesktop}
+        isMacDesktop={isMacDesktop}
+        isWindowsDesktop={isWindowsDesktop}
+      >
+        <SettingsPresentationProvider isMobile={isMobileSettings}>
+          {settingsPageContent}
+        </SettingsPresentationProvider>
       </DesktopWindowFrame>
     </>
   );

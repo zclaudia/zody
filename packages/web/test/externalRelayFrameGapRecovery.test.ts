@@ -293,6 +293,29 @@ async function startMobileBootstrap(): Promise<void> {
   await bootstrapGatewayWebRemoteControl(new URLSearchParams(window.location.search));
 }
 
+/**
+ * 会话内连接设置浮层在 Provider 与 Root 之间增加了一个稳定宿主。
+ * 这里只关心“某次 render 是否带上了 Root services”，按元素树递归查找，
+ * 不再锁定 AppErrorBoundary → Provider → Root 的固定深度。
+ */
+function elementRendersRootServices(node: unknown, depth = 0): boolean {
+  if (!node || typeof node !== "object" || depth > 6) {
+    return false;
+  }
+  const props = (node as { props?: Record<string, unknown> }).props;
+  if (!props) {
+    return false;
+  }
+  if (props.services) {
+    return true;
+  }
+  const children = props.children;
+  if (Array.isArray(children)) {
+    return children.some((child) => elementRendersRootServices(child, depth + 1));
+  }
+  return elementRendersRootServices(children, depth + 1);
+}
+
 describe("external relay frame gap recovery", () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -335,9 +358,7 @@ describe("external relay frame gap recovery", () => {
       await startMobileBootstrap();
       await vi.waitFor(() =>
         expect(
-          renderMock.mock.calls.some(([element]) =>
-            Boolean(element?.props?.children?.props?.children?.props?.services),
-          ),
+          renderMock.mock.calls.some(([element]) => elementRendersRootServices(element)),
         ).toBe(true),
       );
       const renderCount = renderMock.mock.calls.length;

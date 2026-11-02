@@ -1,0 +1,362 @@
+{
+  "scope": "incremental owned files only; dirty opening tree preserved; not a full clean repository freeze",
+  "gitHead": "4a890e5e244edce66b0c3c3bd974068b4a6f1a81",
+  "files": [
+    {
+      "path": "apps/zcode-cli/docs/design/v2/tool/00-tool-change-chain.md",
+      "openingSha256": "942b28a4d32aee35c892d809830872c23f3afb445e28ed556f0d8248b9869e0a",
+      "sha256": "90d62b6002e5ae26e1bc50396f208503b196475c1f5d63fd8429971606d1be21",
+      "patchStatus": "opening-hash-only"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/control-only-contract.ts",
+      "openingSha256": "a4f6c4ee118c616363033aa6dc3afc0a6d7b008888a7c10ff2e478a819708e52",
+      "sha256": "f7e799ae2a28f26040f5a5f6225bf5fbb231279275bb40069e94eb0df3839304",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/control-only-launcher.ts",
+      "openingSha256": "4b97706e8d9b93e7bfabb16e841e489d9039e0cf53fe6ec78c9cbaf37b1e75a1",
+      "sha256": "52abf36729e4ad0f6c8a8b427e3f6cb5ce40b575d78091b8b3d9a9dca3653adb",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority-contract.ts",
+      "openingSha256": null,
+      "sha256": "a3241f5b489f35d30b58e8b90806850d9115943f6ffc14faa2f819c2bd2a4da3",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority-facts.ts",
+      "openingSha256": null,
+      "sha256": "2c6c93f832db8a1c8153901c54e359819374b0503f43396ae8a1d79e6294bcb3",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority-protocol.ts",
+      "openingSha256": null,
+      "sha256": "91a8a365cd93b5824e808de6b08b9bfbc16de2ffcb5c93884203a64573a0c483",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority-session.ts",
+      "openingSha256": null,
+      "sha256": "fae78b95e40ed7ae8f09f4f0925aa7388644ab1ace326ccb8058ea6e0c1b7d4b",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority-wire.ts",
+      "openingSha256": null,
+      "sha256": "e8fbd51adaf4169325c22d672dac41e6c3a49d00d95454b5089428649604bf8a",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-native-authority.ts",
+      "openingSha256": null,
+      "sha256": "066f1632d7c023dd906f3415e109a13950706708aa10ebb6d6d5c892b07b55c8",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-submission-control-contract.ts",
+      "openingSha256": "749cc0eb37dc330832cd0d6ce43e14e40cab38c7a1c3940596d96099b44d683d",
+      "sha256": "9f8bee7a389e2f2c1a3fa68d4aa46fdd6df179319b537d273b53554001f9223a",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-submission-control-inbound.ts",
+      "openingSha256": "3a94db57039a0653bc035c3813afdc9700519eaa26cbe540dfc4aca8d0dac8f5",
+      "sha256": "b3a8ad33f574f28ac6e1611c9f251fd9a1002490b245991e286a76736d586853",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-submission-control-lifecycle.ts",
+      "openingSha256": "0236636bad88d2574932a62c376239611361ff5c65527bc148d52bd57f2f6260",
+      "sha256": "592d5d1f309eb479ff04eea5fa88a4c33a307c5af4fc508d8f274246fb61b3cc",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-submission-control-revocation.ts",
+      "openingSha256": null,
+      "sha256": "ed9fe9581abc4e4fe8d3f5631905018e9e35f8c7f6a5d3917c148ee18aca1542",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-submission-control-stop.ts",
+      "openingSha256": null,
+      "sha256": "02c4864f89b3cf1a7bc284d0c82e159a7a1310fd33b927b9c40dce4a817bbe95",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-submission-control.ts",
+      "openingSha256": "2a7d78db6305b6491316dffd7e877c5f2aace4d33a33c7bf8cb16d0463846caa",
+      "sha256": "cb8068cb6fa1f4cfc4e6a56ed37a7923f0f72d6ebbaa0e7c0c0e4ee78a5451f0",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/cua-submission-runtime-scope.ts",
+      "openingSha256": null,
+      "sha256": "5ea2680e9d01a1b8eb160c324be4106291875e0ce30a92252d6e4dcd349e16c4",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/src/mcp/index.ts",
+      "openingSha256": "7de903d89cfe5424a4016956cc9f92eef92820a6b80eebe5cf3bf95ac942cd26",
+      "sha256": "747c9a6f4822ba710e41f9cefd6f7b4a6abc1a3cee3434231d991f2507803fbc",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/tests/cua-native-authority.test.ts",
+      "openingSha256": null,
+      "sha256": "2f26cf49fc4f2cde44c70cdcc57b8bb12e6d908e36b5d1d702c6025a1a298902",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/adapters/tests/fixtures/cua-submission-control-child.mjs",
+      "openingSha256": "b506714b4c53391ef1cb781c2fd8a2fb2d6f2a90fdbf7c30d19281b18a3f5f06",
+      "sha256": "62094350de66831f0d4ba5ced860b4345844ccddd88f1c6d6c7321f7a06f3017",
+      "patchStatus": "opening-hash-only"
+    },
+    {
+      "path": "apps/zcode-cli/packages/bootstrap/src/app/create-app.ts",
+      "openingSha256": "d439886927bbcb5423a40d255dd126a70423cf6a63f32ece61d384d5e6141b80",
+      "sha256": "06759d4881bede64c9371add56509bc03e67b10a19e90f8754e953d2a67d9561",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/bootstrap/src/app/cua-runtime-control.ts",
+      "openingSha256": null,
+      "sha256": "e8986bab59874696d1323f4dceda86f6ff8d228d61fa851ab1fb5d7dc6adc117",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/bootstrap/src/app/cua-runtime-native-authority.ts",
+      "openingSha256": null,
+      "sha256": "77d5fa70b865b0525c29924c7169c7bade4c7cb68fe6f61f020ea5a90366ebaf",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/bootstrap/src/app/types.ts",
+      "openingSha256": "5d84a2cd9fa07223a3c0739b03603660314b7d8b07a32fa318902a34e0f9b1e8",
+      "sha256": "646ed762f77fc25d21c914998eda7646bf0f903522194d41bbcaa994047ff173",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/bootstrap/src/index.ts",
+      "openingSha256": "a3fb040b924c94373692b3b766dd7d7cf61b3005f61cc4462671b1f43074f17d",
+      "sha256": "af86f54c5dd5441d166fbe6e9a8cf85b55a51b410b0c430fe8a36f1f1b0b832d",
+      "patchStatus": "opening-hash-only"
+    },
+    {
+      "path": "apps/zcode-cli/packages/bootstrap/tests/cua-runtime-control.integration.test.ts",
+      "openingSha256": null,
+      "sha256": "e6c0042e79cfc7e4fc745614da1d10d02ebb0b6b9fa3c2b52e9e2a473a276c6b",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/bootstrap/tests/cua-runtime-control.test.ts",
+      "openingSha256": null,
+      "sha256": "0a434d1d2544d865eef17d4d92f637b9a164dd9ca0c5e16b810ea5909e4b6e88",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/bootstrap/tests/fixtures/cua-native-owner-entry.ts",
+      "openingSha256": null,
+      "sha256": "2e5f57e432266c60ba5d842960605190aa4786d1b317e79c4731f657a9af9ea9",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/contracts/src/interfaces/cua-submission.port.ts",
+      "openingSha256": "db7494d1f57472ff01cc4fd3798da12b527865bc4608c48c6bd7055cb903181b",
+      "sha256": "ddd10a3eb923c5b907952c7d80b92715e395c3bf24d091fc8d86baed726541b0",
+      "patchStatus": "opening-hash-only"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts",
+      "openingSha256": "9df6c571a3e61127514d1bc097662d6cb9db795dfa3d875072867888d35b75e2",
+      "sha256": "21c30454e0390460e002868a6c04405a1420a8f697734c502999febcc8fca01d",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/cua/cua-submission-coordinator-factory.ts",
+      "openingSha256": null,
+      "sha256": "5e990e10d3e0024bdc3e58299854c1e0094cbba40c179c221873b52f19e4deb8",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/cua/cua-submission-coordinator-records.ts",
+      "openingSha256": null,
+      "sha256": "81419dfbc78edae5b3d27678421f38763725bc861b09eac4e0ac12d880300388",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/cua/cua-submission-coordinator.ts",
+      "openingSha256": "42496422a094a6187b9634eefaad8ba3add5a72efeef96de2f6168e951beaee0",
+      "sha256": "330ec45874f6fa2008f405f661abd097c8d35699823e67b53c612380600ce9c2",
+      "patchStatus": "opening-hash-only"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/cua/cua-submission-helpers.ts",
+      "openingSha256": "cb91ae7953ea7afa756bbcf03f1be3884e8aa36e95abd38fb9780c559eb90b38",
+      "sha256": "9ff1993a154ba7ad31f92c39b9e95b8b3409791e6e6df8299840e8889eaabe96",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/cua/cua-submission-revocation-hub.ts",
+      "openingSha256": null,
+      "sha256": "b4c3ad672067d7d2f3c2182ec03fc02e503b91814f88dce7e650c5b3ecca4c10",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/cua/cua-submission-turn-scope.ts",
+      "openingSha256": null,
+      "sha256": "adae315889dd1cec226aa39a970d4a4c6c9f9db628e3ce7a3ae8dfdde9df9599",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/cua/index.ts",
+      "openingSha256": "2e3bbd4284b8b1fc1fc76abfe92b9f914a8fe68fdcbd7150dda8a76cf154011d",
+      "sha256": "e5ccf39142c6320a5149d3ce9d265418c01a1080ced5e60076ba630626f0093c",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/internal-methods.ts",
+      "openingSha256": "0402d26701addf9da756c9b05dd896567134d13d8af2136f17dbd2071139a79c",
+      "sha256": "e9f89dc1cdb99141435fd70aa658525cbd095973ed3a0dc05aefb2bc87ea3952",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/internal.ts",
+      "openingSha256": "54afcc5fceb08496f12525d57271c92bdfb270e1678899df3475a89fc9fdabaa",
+      "sha256": "d6d5fb8aeac4591eb999711f7bbbafed833c9a0359f91b613109ca4a49d89572",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/methods/cua-submission.ts",
+      "openingSha256": "9d4f41e9787451868b49964ecf9751e30c135fb61698c9d27b6ffd5884b46e44",
+      "sha256": "47358b9f2847c646474dc1dbb7d719f9b44599aebf6d0bb208af553008fadb8b",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/methods/index.ts",
+      "openingSha256": "988069ae0756a72e2890eab36d666cce8e3dfcd37e762b89372f0beaae2cee57",
+      "sha256": "89ddabab49c1a2b1050a82701dec03972c02b8de8bc03aa9a7350d8774ce936d",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/methods/runtime-command-queue.ts",
+      "openingSha256": "ac13044b9fb5dbe6865b75573731d249924b8d9c7cd3a97fc2bd7e80999a010b",
+      "sha256": "57f872f3da11e43758ce227c32304cc0ca911e4a1a0f7b9b13b8f19ce33e2d1b",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/src/runtime/methods/steering.ts",
+      "openingSha256": "6454129abdce21176151a2c7f2352a8b51bbfb2cdd350611cbe7af06f465fce8",
+      "sha256": "8fde13eb8fc651da00c603bcb1e78810c8e3ec65def3d3759a2a7c8cb524301e",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/tests/cua-submission-control-binding.test.ts",
+      "openingSha256": "62d3ee1970bf1f4cb0011d12654eb965fcd14a28e7c4ee7b33066d49f0d470fc",
+      "sha256": "aeff89ec5fd1fa8723792b1c699fe4760b241af862aabdc6ed259a476d3e8fbd",
+      "patchStatus": "verified-opening-preimage"
+    },
+    {
+      "path": "apps/zcode-cli/packages/core/tests/cua-submission-turn-scope.test.ts",
+      "openingSha256": null,
+      "sha256": "002f0a3b14593d027ef809f3cf0c9d084c108917dc8027bf5e4d6297b354e3da",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "docs/plans/computer-use-macos-phase1-product-wiring.md",
+      "openingSha256": null,
+      "sha256": "b96ee93cb35b1f4351b501b79ece7e1f2696360cefbe4d807999b414d4075621",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-product-wiring/README.md",
+      "openingSha256": null,
+      "sha256": "fce0acc5b73b54286ba28d724e834495facd9684841d51729f2f3f5baea35fd0",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-product-wiring/koffi-unavailable-darwin.mjs",
+      "openingSha256": null,
+      "sha256": "3e61791e3482451848295cfd1d1dd5bb96ee3845b057f84917090fc190a43f08",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-product-wiring/patches/node-stderr-observability.patch",
+      "openingSha256": null,
+      "sha256": "3a904322b945df0e09ab202dd75e09449f5e0f7b6f48a305386f8c1db22dd242",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-product-wiring/patches/orchestrator-empty-bootstrap.patch",
+      "openingSha256": null,
+      "sha256": "b729d8dac9dcdf8b12097eaff0ce7cdfdbb02e25478948e965a1504b4886c792",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-product-wiring/patches/orchestrator-helper-result-reason.patch",
+      "openingSha256": null,
+      "sha256": "b5845a60273058f10df48461739d4149cb75b66acbbba5c74422e6cc52cc96d8",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-helper-product-wiring/source-baseline.json",
+      "openingSha256": null,
+      "sha256": "70bff1e97d560b328614368c6f8325f0b027c2c71bbf164e479667e6767afad0",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/scripts/build-cua-helper-product-wiring.mjs",
+      "openingSha256": null,
+      "sha256": "6ea3c1f8607af1bb227e1c3eec99c01ae6fc1c66b12d648e0e07a31546183b0e",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-helper-product-wiring-build.mjs",
+      "openingSha256": null,
+      "sha256": "18768b4e7aea262cb64eb5d08a0f51a4bc5676aa4a06e967d65cabec15d1215b",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-helper-product-wiring-bundle.mjs",
+      "openingSha256": null,
+      "sha256": "3bc10120ebbd9bd07e30187f80bcdc3aea5c6f83e0b95e45c7c0c7b70cbb228d",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-helper-product-wiring-config.mjs",
+      "openingSha256": null,
+      "sha256": "6b3030a8135bedb400f34f78f2c4dd2916b6a03553fef4d48f63c20121a5df76",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-helper-product-wiring-native.mjs",
+      "openingSha256": null,
+      "sha256": "c8cae25fd2bc35ced66befe3040ddcc1436e81359405f5c3534ca4b082f3a7ac",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "packages/desktop/scripts/lib/cua-helper-product-wiring-toolchain.mjs",
+      "openingSha256": null,
+      "sha256": "81ccaaff43b1d5a035e67549d8916ffeb90990a49d7fd1000c5dd7819d2600ad",
+      "patchStatus": "new-file"
+    },
+    {
+      "path": "specs/computer-use-macos-phase1.md",
+      "openingSha256": "59497dbb2e284e36ba5898ae03904e267935a149b24fe97554eb26d6ae438bb8",
+      "sha256": "fcdfede3d0c51a93bc9cad886d9f7fae65711725d071378bf0671fa8ce6f12bb",
+      "patchStatus": "opening-hash-only"
+    }
+  ],
+  "patchPreimageGaps": [
+    "apps/zcode-cli/docs/design/v2/tool/00-tool-change-chain.md",
+    "apps/zcode-cli/packages/adapters/tests/fixtures/cua-submission-control-child.mjs",
+    "apps/zcode-cli/packages/bootstrap/src/index.ts",
+    "apps/zcode-cli/packages/contracts/src/interfaces/cua-submission.port.ts",
+    "apps/zcode-cli/packages/core/src/runtime/cua/cua-submission-coordinator.ts",
+    "specs/computer-use-macos-phase1.md"
+  ]
+}

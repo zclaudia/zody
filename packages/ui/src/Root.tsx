@@ -284,6 +284,7 @@ function RootInner({
   initialWebRemoteControlMobileNavigationIntent,
   initialWebRemoteControlWorkspaceList,
   webRemoteControlTerminalTransportState,
+  webRemoteControlMobileConnectionSettings,
   initialWorkspaceLoadingFallback,
 }: RootProps) {
   useEffect(() => {
@@ -1082,6 +1083,7 @@ function RootInner({
     isMacDesktop,
     isWindowsDesktop,
     isWebRemoteControl: Boolean(webRemoteControlWorkspaceSwitcher),
+    mobileConnectionSettings: webRemoteControlMobileConnectionSettings,
     captionWorkspacePath: activeWorkspacePath,
     onBack: activeWorkspacePath ? handleBackFromSettings : undefined,
     onCreateTask: handleCreateTask,
@@ -1208,9 +1210,11 @@ function RootInner({
             }
             initialWebRemoteControlWorkspaceList={initialWebRemoteControlWorkspaceList}
             webRemoteControlTerminalTransportState={webRemoteControlTerminalTransportState}
+            webRemoteControlMobileConnectionSettings={webRemoteControlMobileConnectionSettings}
             isDesktop={isDesktop}
             isMacDesktop={isMacDesktop}
             isWindowsDesktop={isWindowsDesktop}
+            isWebRemoteControl={isWebRemoteControlRoot}
             supportsEmbeddedBrowser={supportsEmbeddedBrowser}
           />
         )}
