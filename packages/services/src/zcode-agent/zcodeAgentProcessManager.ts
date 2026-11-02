@@ -703,7 +703,7 @@ export function wrapZCodeAgentCommandWithStdioTapDevProxy(
     return command;
   }
 
-  const tapScript = findUpward("scripts/dev/zcode-stdio-tap.mjs");
+  const tapScript = findUpward("scripts/dev/zody-stdio-tap.mjs");
   if (!tapScript) {
     debugLog("ZCode stdio tap proxy enabled but script not found");
     return command;

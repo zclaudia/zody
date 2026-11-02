@@ -20,7 +20,7 @@ import { promisify } from "node:util";
 import { test } from "node:test";
 
 const exec = promisify(execFile);
-const runnerSource = new URL("./zcode-distribution/runner.mjs", import.meta.url);
+const runnerSource = new URL("./zody-distribution/runner.mjs", import.meta.url);
 
 async function fixture(t) {
   const directory = await realpath(await mkdtemp(join(tmpdir(), "zcode-distribution-")));

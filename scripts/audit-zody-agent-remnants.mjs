@@ -182,7 +182,7 @@ function parseLimit(arg, prefix) {
 }
 
 function printHelp() {
-  console.log(`Usage: node scripts/audit-zcode-agent-remnants.mjs [options]
+  console.log(`Usage: node scripts/audit-zody-agent-remnants.mjs [options]
 
 Options:
   --json                         Print machine-readable JSON
@@ -204,7 +204,7 @@ function isTestPath(relativePath) {
 }
 
 function shouldSkipPath(relativePath, options) {
-  if (relativePath === "scripts/audit-zcode-agent-remnants.mjs") {
+  if (relativePath === "scripts/audit-zody-agent-remnants.mjs") {
     return true;
   }
   const segments = relativePath.split("/");

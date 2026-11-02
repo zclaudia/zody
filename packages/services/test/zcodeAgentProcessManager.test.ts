@@ -2196,7 +2196,7 @@ setInterval(() => {}, 1000);
   it("开发态 stdio tap 开启时用旁路 proxy 包装 agent 命令", () => {
     const sandboxRoot = mkdtempSync(join(tmpdir(), "zcode-agent-stdio-tap-"));
     createdDirs.push(sandboxRoot);
-    const tapScript = join(sandboxRoot, "scripts", "dev", "zcode-stdio-tap.mjs");
+    const tapScript = join(sandboxRoot, "scripts", "dev", "zody-stdio-tap.mjs");
     mkdirSync(dirname(tapScript), { recursive: true });
     writeFileSync(tapScript, "#!/usr/bin/env node\n");
     process.chdir(sandboxRoot);
@@ -2240,7 +2240,7 @@ setInterval(() => {}, 1000);
     ({ input, expected }) => {
       const sandboxRoot = mkdtempSync(join(tmpdir(), "zcode-agent-stdio-tap-surface-"));
       createdDirs.push(sandboxRoot);
-      const tapScript = join(sandboxRoot, "scripts", "dev", "zcode-stdio-tap.mjs");
+      const tapScript = join(sandboxRoot, "scripts", "dev", "zody-stdio-tap.mjs");
       mkdirSync(dirname(tapScript), { recursive: true });
       writeFileSync(tapScript, "#!/usr/bin/env node\n");
       process.chdir(sandboxRoot);

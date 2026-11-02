@@ -9,17 +9,17 @@ import {
   copyRuntimeNodeModules,
   patchNodePtyPrebuilds,
   stageTuiRuntime,
-} from "./zcode-distribution/assets.mjs";
+} from "./zody-distribution/assets.mjs";
 import {
   archiveNameForTarget,
   assertDistributionVersion,
   nodeTargetForDistribution,
   parseDistributionArgs,
-} from "./zcode-distribution/targets.mjs";
+} from "./zody-distribution/targets.mjs";
 import { collectSeaRuntimeToolAssets } from "../apps/zcode-cli/packages/cli/scripts/sea-runtime-tool-assets.mjs";
 import { resolveDownloadedNodeBinary } from "../apps/zcode-cli/packages/cli/scripts/sea-node-download.mjs";
 import { outputBinaryName } from "../apps/zcode-cli/packages/cli/scripts/sea-targets.mjs";
-import { seaBuildSteps } from "./zcode-distribution/sea-build-steps.mjs";
+import { seaBuildSteps } from "./zody-distribution/sea-build-steps.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const defaultOutDir = resolve(root, "dist", "zody");
@@ -28,8 +28,8 @@ const bundledNodeVersion = "24.14.0";
 const cliRoot = resolve(root, "apps/zcode-cli/packages/cli");
 const usage = `Usage:
   pnpm run build:zody --all
-  node scripts/build-zcode.mjs --target darwin-arm64
-  node scripts/build-zcode.mjs --skip-build --target linux-x64
+  node scripts/build-zody.mjs --target darwin-arm64
+  node scripts/build-zody.mjs --skip-build --target linux-x64
 
 Options:
   --all               Build all supported CLI/Web targets.
@@ -158,7 +158,7 @@ async function stageZodyPackage({
   await copyFile(cliTarget, cliDestination);
   await chmod(cliDestination, 0o755);
   await cp(
-    resolve(root, "scripts/zcode-distribution/runner.mjs"),
+    resolve(root, "scripts/zody-distribution/runner.mjs"),
     resolve(packageRoot, "bin/zody.mjs"),
   );
   await writeFile(

@@ -9,7 +9,7 @@ import { spawn } from "node:child_process";
 function printUsageAndExit() {
   process.stderr.write(
     [
-      "Usage: zcode-stdio-tap.mjs --workspace-key <key> [--log-dir <dir>] -- <command> [...args]",
+      "Usage: zody-stdio-tap.mjs --workspace-key <key> [--log-dir <dir>] -- <command> [...args]",
       "",
     ].join("\n"),
   );
