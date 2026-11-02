@@ -202,6 +202,7 @@ Bridge v1 能力声明：
 
 - v1 业务仍使用现有 Web Gateway client 的 WSS/fetch，因此 Remote 页面会获得当前设备凭证；**不得宣称凭证完全不进入页面**。
 - 凭证只从 `getSessionContext()` 读取，不写 localStorage、URL、日志、遥测或 Web 普通 Store。
+- **仅限浏览器开发模式**：没有原生桥时，由 development-only 会话适配器模拟 `ZodyRemoteBridge`，消费 Shell 的开发 handoff/config 并生成合法 sessionId、returnShell 和 capabilities。该适配器及其 URL/localStorage 降级不得进入 release 产物；开发 `clientInstanceId` 的唯一生成/持久化所有者仍是 Shell 的开发 config client，Remote 不另建写入路径。
 - Remote 页面由用户选中的桌面提供，属于新增可信代码来源；桌面、桌面发行制品和 Gateway 静态代理都在信任边界内。
 - Remote CSP 至少禁止第三方脚本、`object`、frame 和非预期 base；`connect-src` 只包含 Remote origin、当前配置 Gateway 的 HTTP/WS origin 及现有功能必需的 scheme。
 - Shell bridge 与 Remote bridge 互斥，Remote 不能修改配置，外部导航不获得任何 bridge。

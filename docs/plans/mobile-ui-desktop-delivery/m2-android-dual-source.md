@@ -43,7 +43,8 @@
 - `packages/web/src/mobile-remote/bootstrap.tsx` 及未分配给 M2-T1 的 `mobile-remote/*`。
 - `packages/web/src/webPlatformService.ts` 中 Remote bridge 注入段。
 - `packages/web/mobile.html` 与首屏主题 bootstrap 的外置化，确保 Remote CSP `script-src 'self'` 不拦截内联脚本。
-- Remote focused 测试；不修改 Vite 配置、Shell 文件或 Android。
+- 仅开发 handoff 所需的 `packages/web/src/mobile-shell/bootstrap.ts` 和 `mobileShellConfigClient.ts`：由 Shell 开发 config client 统一生成/持久化 clientInstanceId 并提供只读 handoff，不修改生产 Shell bridge。
+- Remote focused 测试；不修改 Vite 配置、其它 Shell 文件或 Android。
 
 实施：
 
@@ -53,13 +54,15 @@
 4. 修改连接、重新配对和切换电脑统一调用 `returnShell(reason, sessionId)`，删除 Remote 的设置保存入口。
 5. manifest/bridge 不兼容时在启动业务 Channel 前显示升级 APK；release 监控由 M3 实现，本任务只保留启动校验。
 6. 把 `mobile.html` 的首屏主题内联脚本提取为同源静态模块，保留原主题初始化顺序；构建后 HTML 不得依赖 `unsafe-inline` 脚本。
-7. 保持现有 `appProtocol`、web-remote-replayable、pending optimistic overlay 和通知 pending 语义。
+7. 保留 `dev:mobile-remote`：development-only 会话适配器模拟只读 RemoteBridge，消费 Shell 的开发 handoff/config；开发 clientInstanceId 由 Shell 开发 config client 统一生成/持久化，release 产物仍是 native-only，不得包含 URL/localStorage 凭证回退。
+8. 保持现有 `appProtocol`、web-remote-replayable、pending optimistic overlay 和通知 pending 语义。
 
 测试：
 
 - 无效 context、缺失 bridge、stale session、backend 不匹配均 fail closed。
 - 凭证不进入 Web Storage/URL/日志；Remote 无配置写入路径。
 - 真实 Remote 产物不存在内联脚本，CSP `script-src 'self'` 下首屏主题初始化与模块加载顺序正确。
+- 开发 Shell openRemote→Remote bootstrap 成功，clientInstanceId 复用、returnShell 正确；HTTP 仅开发可用，release 无 URL/localStorage 凭证回退。
 - 现有 mobile bootstrap、聊天恢复和文件/通知适配器 focused 测试按新桥更新。
 
 交接：Remote 对 Android 的完整调用面、页面 ready 时序、stale 处理和测试证据。
