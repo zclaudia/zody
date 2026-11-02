@@ -69,10 +69,11 @@ const targetPath = `/${fullPath}${queryString}`;
 | `pnpm typecheck`                                                                                                                                                                                | exit 0。                                                                                                                                                                                                      |
 | `pnpm lint`                                                                                                                                                                                     | 0 errors；303 warnings 均为既有告警，改动文件无告警。                                                                                                                                                         |
 | `pnpm architecture:check --changed`                                                                                                                                                             | `architecture: OK`；violations 0、baseline 0、new 0。                                                                                                                                                         |
+| `ZCODE_TARGET_OS=linux pnpm --filter @zcode/desktop exec tsup` | exit 0；确认新增 provider/rootDir import 可被主进程 bundle。直接 darwin tsup 因本 worktree 缺少 `output/cua-app-icon/controller-prepared/manifest.json` 失败，与本改动无关；完整桌面构建由主线程验证。 |
 
 ### 真实 Gateway 环境说明
 
-- 复用现有 `zclaudia-gateway-gateway-1` 实例，未重启、未改写配置、未新增签发凭证。
+- 复用现有 `zclaudia-gateway-gateway-1` 实例，未重启、未改写配置。本 agent 的 proxy 集成测试只复用现有 backend/device 凭证；T3 对照 suite 按其既有设计经管理 API 临时签发并在结束后清理凭证。
 - `/health` 返回 200，`backends=0`、`peers=0`；本地 gateway 源码包版本 `0.1.0`，SDK 为 `@zclaudia/gateway-backend@0.4.0`，协议 v4。T3 对照 suite 通过，说明当前实例与 SDK 协议兼容。
 - 首次尝试真实 proxy 时 backend handshake 返回 `AUTH_FAILED/UNAUTHORIZED`。根因不是版本或凭证失效：同一凭证对 `/api/discovery/backends` 返回 200、对 `/api/backend/token` 返回 201；实际凭证 namespace 为 `zcode`，而本地 `.env.gateway.local` 的 `ZCODE_GATEWAY_NAMESPACE` 仍为 `zody`，`peer_hello` 因 namespace 不匹配被拒。测试改用既有 T3 约定 `ZCODE_GATEWAY_IT_NAMESPACE`（默认 `zcode`），未修改产品鉴权。
 - 所有输出与提交均未记录 `zgb_`/`zga_`/`zgd_`、管理令牌或 gateway 地址。
