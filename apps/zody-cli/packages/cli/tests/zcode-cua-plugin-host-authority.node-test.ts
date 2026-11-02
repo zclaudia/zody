@@ -9,7 +9,7 @@ import {
   ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   ZCODE_PLUGIN_ID_ENV_KEY,
   resetCapturedZCodeCuaBrokerCredentialsForTest,
-  sanitizeZCodeRuntimeEnvInPlace,
+  sanitizeZodyRuntimeEnvInPlace,
 } from "@zody/shared";
 import type { RunContext } from "@zody/shared-types";
 import { runPluginHostCommand, ZCODE_NODE_REPL_CONTROL_FLAG } from "../src/plugin-host-command.js";
@@ -69,7 +69,7 @@ export async function main() {
     process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "captured-control-authority";
     process.env[ZCODE_CUA_NODE_REPL_HOST_ENV_KEY] = "1";
     resetCapturedZCodeCuaBrokerCredentialsForTest();
-    sanitizeZCodeRuntimeEnvInPlace(process.env);
+    sanitizeZodyRuntimeEnvInPlace(process.env);
 
     const ctx = createContext([ZCODE_NODE_REPL_CONTROL_FLAG]);
     const exitCode = await runPluginHostCommand(ctx, [serverPath, ZCODE_NODE_REPL_CONTROL_FLAG]);

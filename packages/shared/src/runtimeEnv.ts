@@ -29,7 +29,7 @@ export const ZCODE_CUA_NODE_REPL_HOST_ENV_KEY = "ZCODE_CUA_NODE_REPL_HOST";
 // main→host 边界删除，不能用于 signed release 的 runtime override。
 export const ZCODE_CUA_DEV_MODE_ENV_KEY = "ZCODE_CUA_DEV_MODE";
 
-export type ZCodeRuntimeEnv = "development" | "production" | "test";
+export type ZodyRuntimeEnv = "development" | "production" | "test";
 
 type EnvRecord = Record<string, string | undefined>;
 
@@ -116,7 +116,7 @@ const NON_TOOL_PASSTHROUGH_RUNTIME_ENV_KEYS = [
 const SANITIZED_PACKAGE_MANAGER_ENV_PATTERN =
   /^(npm_config|yarn|pnpm)_(http_proxy|https_proxy|proxy|all_proxy|no_proxy|cafile|ca)$/i;
 
-export function normalizeZCodeRuntimeEnv(value: string | undefined): ZCodeRuntimeEnv | undefined {
+export function normalizeZodyRuntimeEnv(value: string | undefined): ZodyRuntimeEnv | undefined {
   const normalized = value?.trim().toLowerCase();
   if (normalized === "development" || normalized === "production" || normalized === "test") {
     return normalized;
@@ -126,9 +126,9 @@ export function normalizeZCodeRuntimeEnv(value: string | undefined): ZCodeRuntim
 
 export function resolveZCodeRuntimeEnv(
   env: Record<string, string | undefined>,
-  fallback: ZCodeRuntimeEnv = "production",
-): ZCodeRuntimeEnv {
-  return normalizeZCodeRuntimeEnv(env[ZCODE_RUNTIME_ENV_KEY]) ?? fallback;
+  fallback: ZodyRuntimeEnv = "production",
+): ZodyRuntimeEnv {
+  return normalizeZodyRuntimeEnv(env[ZCODE_RUNTIME_ENV_KEY]) ?? fallback;
 }
 
 // Exported so services/node.ts can inject the Helper's plugin authority into the agent spawn env
@@ -223,7 +223,7 @@ export function sanitizeZCodeRuntimeEnv<T extends Record<string, string | undefi
   captureZCodeAgentTelemetryEnv(env);
   const sanitized: Record<string, string> = {};
   for (const [key, value] of Object.entries(env)) {
-    if (value === undefined || shouldSanitizeZCodeRuntimeEnvKey(key)) {
+    if (value === undefined || shouldSanitizeZodyRuntimeEnvKey(key)) {
       continue;
     }
     sanitized[key] = value;
@@ -232,10 +232,10 @@ export function sanitizeZCodeRuntimeEnv<T extends Record<string, string | undefi
 }
 
 export function buildZCodeToolEnvPassthroughEnv(env: EnvRecord): Record<string, string> {
-  const captured = readZCodeToolEnvPassthroughEnv(env);
+  const captured = readZodyToolEnvPassthroughEnv(env);
 
   for (const [key, value] of Object.entries(env)) {
-    if (value === undefined || !shouldCaptureZCodeToolEnvPassthroughKey(key)) {
+    if (value === undefined || !shouldCaptureZodyToolEnvPassthroughKey(key)) {
       continue;
     }
     captured[key] = value;
@@ -244,7 +244,7 @@ export function buildZCodeToolEnvPassthroughEnv(env: EnvRecord): Record<string, 
   return stringifyZCodeToolEnvPassthroughEnv(captured);
 }
 
-export function readZCodeToolEnvPassthroughEnv(env: EnvRecord): Record<string, string> {
+export function readZodyToolEnvPassthroughEnv(env: EnvRecord): Record<string, string> {
   const raw = env[ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY];
   if (!raw) {
     return {};
@@ -261,7 +261,7 @@ export function readZCodeToolEnvPassthroughEnv(env: EnvRecord): Record<string, s
       if (
         typeof value === "string" &&
         /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) &&
-        shouldCaptureZCodeToolEnvPassthroughKey(key)
+        shouldCaptureZodyToolEnvPassthroughKey(key)
       ) {
         captured[key] = value;
       }
@@ -272,11 +272,11 @@ export function readZCodeToolEnvPassthroughEnv(env: EnvRecord): Record<string, s
   }
 }
 
-export function sanitizeZCodeRuntimeEnvInPlace(env: Record<string, string | undefined>): void {
+export function sanitizeZodyRuntimeEnvInPlace(env: Record<string, string | undefined>): void {
   captureZCodeCuaBrokerCredentials(env);
   captureZCodeAgentTelemetryEnv(env);
   for (const key of Object.keys(env)) {
-    if (shouldSanitizeZCodeRuntimeEnvKey(key)) {
+    if (shouldSanitizeZodyRuntimeEnvKey(key)) {
       delete env[key];
     }
   }
@@ -290,7 +290,7 @@ function isZCodeAgentTelemetryEnvKey(key: string): boolean {
   );
 }
 
-export function shouldSanitizeZCodeRuntimeEnvKey(key: string): boolean {
+export function shouldSanitizeZodyRuntimeEnvKey(key: string): boolean {
   const upperKey = key.toUpperCase();
   return (
     SANITIZED_RUNTIME_ENV_KEYS.some((candidate) => candidate === upperKey) ||
@@ -298,7 +298,7 @@ export function shouldSanitizeZCodeRuntimeEnvKey(key: string): boolean {
   );
 }
 
-export function shouldCaptureZCodeToolEnvPassthroughKey(key: string): boolean {
+export function shouldCaptureZodyToolEnvPassthroughKey(key: string): boolean {
   const upperKey = key.toUpperCase();
   if (isZCodeAgentTelemetryEnvKey(upperKey)) {
     return false;
@@ -306,7 +306,7 @@ export function shouldCaptureZCodeToolEnvPassthroughKey(key: string): boolean {
   if (NON_TOOL_PASSTHROUGH_RUNTIME_ENV_KEYS.some((candidate) => candidate === upperKey)) {
     return false;
   }
-  return shouldSanitizeZCodeRuntimeEnvKey(key);
+  return shouldSanitizeZodyRuntimeEnvKey(key);
 }
 
 function stringifyZCodeToolEnvPassthroughEnv(

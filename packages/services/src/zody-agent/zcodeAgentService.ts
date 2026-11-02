@@ -333,8 +333,8 @@ import { AutomationService } from "#src/session/automationService.js";
 import { AutomationRepo } from "#src/session/automationRepo.js";
 import { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
 import { ZCodeAgentMcpStatusModeUnsupportedError } from "#src/zody-agent/zcodeAgentErrors.js";
-import { ZCodeAgentProcessManager } from "./zcodeAgentProcessManager.js";
-import type { ZCodeAgentProcessManagerOptions } from "./zcodeAgentProcessManager.js";
+import { ZodyAgentProcessManager } from "./zodyAgentProcessManager.js";
+import type { ZodyAgentProcessManagerOptions } from "./zodyAgentProcessManager.js";
 // fork（F4.3）：IOffPeakTaskService import 随闲时任务全链路删除。
 import {
   ZCodeProtocolRequestTimeoutError,
@@ -909,7 +909,7 @@ function createRuntimeUnavailableError(params: ZCodeAgentWorkspaceTarget): Error
 }
 
 interface CreateZCodeAgentServiceOptions extends Omit<
-  ZCodeAgentProcessManagerOptions,
+  ZodyAgentProcessManagerOptions,
   "idleTimeoutMs"
 > {
   /** 仅供 MCP 状态探测进程使用，不能把空闲回收传给 chat。 */
@@ -1028,7 +1028,7 @@ export function createZCodeAgentService(
 ): IZCodeAgentService & { disposeAllAndWait(): Promise<void> } {
   // Only the chat/main manager forwards the selective startup-profile resolver; the
   // plugin and mcp-status managers below intentionally omit it.
-  const processManager = new ZCodeAgentProcessManager({
+  const processManager = new ZodyAgentProcessManager({
     ...options,
     nativeRuntimeResolver: options?.nativeRuntimeResolver,
   });
@@ -1053,7 +1053,7 @@ export function createZCodeAgentService(
   const automationRepo = new AutomationRepo();
   const automationService = new AutomationService(automationRepo);
   const automationTaskIndexRepo = new TaskIndexRepo();
-  const pluginProcessManager = new ZCodeAgentProcessManager({
+  const pluginProcessManager = new ZodyAgentProcessManager({
     commandResolver: options?.commandResolver,
     nativeRuntime: options?.nativeRuntime,
     presentationSurface: options?.presentationSurface,
@@ -1063,7 +1063,7 @@ export function createZCodeAgentService(
   });
   // 合并时误删了独立进程：mcp/list 的慢握手会堵住串行 stdio 队列，连带卡住插件卸载。
   // 恢复专用控制面进程及空闲回收；共享 workspace 路径，不共享请求队列或 watchdog。
-  const mcpStatusProcessManager = new ZCodeAgentProcessManager({
+  const mcpStatusProcessManager = new ZodyAgentProcessManager({
     commandResolver: options?.commandResolver,
     nativeRuntime: options?.nativeRuntime,
     presentationSurface: options?.presentationSurface,

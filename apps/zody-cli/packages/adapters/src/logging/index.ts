@@ -10,7 +10,7 @@ import { LogLevel, LogLevelName } from "@zody/contracts";
 import {
   ZCODE_RUNTIME_ENV_KEY,
   ZCODE_DATA_ROOT_DIR_NAME,
-  normalizeZCodeRuntimeEnv,
+  normalizeZodyRuntimeEnv,
 } from "@zody/shared";
 import {
   formatLocalLogDate,
@@ -233,7 +233,7 @@ function getDefaultMinLevel(env: NodeJS.ProcessEnv | undefined): LogLevel {
 }
 
 function isDevelopmentMode(env: NodeJS.ProcessEnv): boolean {
-  const runtimeEnv = normalizeZCodeRuntimeEnv(env[ZCODE_RUNTIME_ENV_KEY]);
+  const runtimeEnv = normalizeZodyRuntimeEnv(env[ZCODE_RUNTIME_ENV_KEY]);
   if (runtimeEnv === "development") return true;
   if (runtimeEnv === "production" || runtimeEnv === "test") return false;
 

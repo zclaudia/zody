@@ -1,11 +1,11 @@
 import { resolve } from "node:path";
 import type { ModelSelection } from "@zody/shared";
 import type {
-  ZCodeAgentCommandResolverContext,
-  ZCodeAgentNativeRuntimeConfig,
+  ZodyAgentCommandResolverContext,
+  ZodyAgentNativeRuntimeConfig,
   ZCodeAgentNativeRuntimeResolver,
   ZCodeAgentNativeRuntimeResolverContext,
-  ZCodeAgentNativeRuntimeStartupContext,
+  ZodyAgentNativeRuntimeStartupContext,
 } from "@zody/services/node";
 import {
   digestCuaNarrowNetworkConfig,
@@ -89,7 +89,7 @@ export interface PrepareCuaNarrowAgentRuntimeOptions {
   resourcesPath?: string;
   preparedWorkspacePaths?: readonly string[];
   /** Actual facts read once from the existing Host services before services are published. */
-  startupContext?: ZCodeAgentNativeRuntimeStartupContext;
+  startupContext?: ZodyAgentNativeRuntimeStartupContext;
   report?: (event: CuaNarrowDecisionEvent) => void;
   deps?: CuaNarrowRuntimeFileDependencies;
 }
@@ -106,7 +106,7 @@ function selectionDigest(selection: ModelSelection | null | undefined): string {
 
 function compareStartupContext(
   profile: CuaNarrowAgentBuildProfile,
-  context: ZCodeAgentNativeRuntimeStartupContext | undefined,
+  context: ZodyAgentNativeRuntimeStartupContext | undefined,
 ): StartupMismatchReason | null {
   if (!context) return "startup-context-unavailable";
   if (context.providerRevisionSha256 !== profile.provider.revisionSha256) {
@@ -260,10 +260,10 @@ export async function prepareCuaNarrowAgentRuntime(
   });
 
   const resolveWorkspace: ZCodeAgentNativeRuntimeResolver = async (
-    context: ZCodeAgentCommandResolverContext,
+    context: ZodyAgentCommandResolverContext,
     runtimeContext?: ZCodeAgentNativeRuntimeResolverContext,
-  ): Promise<ZCodeAgentNativeRuntimeConfig | null> => {
-    let spawnContext: ZCodeAgentNativeRuntimeStartupContext;
+  ): Promise<ZodyAgentNativeRuntimeConfig | null> => {
+    let spawnContext: ZodyAgentNativeRuntimeStartupContext;
     try {
       if (!runtimeContext) throw new Error("startup context reader unavailable");
       spawnContext = await runtimeContext.readStartupContext();

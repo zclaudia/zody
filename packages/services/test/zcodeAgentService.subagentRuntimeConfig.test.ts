@@ -7,7 +7,7 @@ import {
 import { testSelectionView } from "./fixtures/testSelectionView.js";
 
 afterEach(() => {
-  vi.doUnmock("../src/zcode-agent/zcodeAgentProcessManager.js");
+  vi.doUnmock("../src/zody-agent/zodyAgentProcessManager.js");
   vi.resetModules();
 });
 
@@ -20,8 +20,8 @@ describe("subagent runtime config reverse RPC", () => {
       );
     const respond = vi.fn(async () => {}),
       respondError = vi.fn(async () => {});
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class {
         onRuntimeLifecycle() {
           return { dispose() {} };
         }

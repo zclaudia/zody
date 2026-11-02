@@ -7,4 +7,11 @@
 - 先添加真实 seed 和 UI fallback 反例，旧实现均失败；修复后五个 CLI 相关测试文件 71/71 通过；UI 测试 12/12 通过。
 - `node --test apps/zody-cli/packages/cli/tests/build-sea.test.mjs`：退出 0，43 项通过（无纯源码正则镜像测试）。
 - `pnpm typecheck`、`pnpm lint`、`pnpm architecture:check --changed`、10 个目标文件 `oxfmt --check` 均退出 0；lint 303 warnings。`--changed` 不证明全量架构通过，全量基线两项失败已补充在 R20.md。
-- 未 install、改锁、发布或提交；未触及冻结资源及任务账本。
+- Terra 作者交付时未 install、改锁、发布或提交，未触及冻结资源及任务账本。随后 controller 固化为 `854ddf60` 并更新任务账本；这些控制器操作不属于作者的源码写入。
+
+CLI 71 项复跑命令（cwd：`/Users/zhvala/SourceCode/zody/.worktrees/zody-full-rename/apps/zody-cli`）：
+
+```sh
+export PATH="$PWD/../../output/zody-rename-toolchain/node-v24.14.0-darwin-arm64/bin:$PATH"
+../../node_modules/.bin/vitest run packages/bootstrap/tests/bundled-plugins-resilience.test.ts packages/bootstrap/tests/dynamic-workflow-skill.test.ts packages/bootstrap/tests/zody-guide-path-contract.test.ts packages/node-repl-host/test/computer-use-onboarding.test.ts packages/node-repl-host/test/mcp-server.test.ts
+```

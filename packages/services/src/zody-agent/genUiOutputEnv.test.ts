@@ -5,13 +5,13 @@ import { expect, it } from "vitest";
 import { z } from "zod";
 import { GEN_UI_OUTPUT_ROOT_ENV, getGenUiOutputDirectory } from "@zody/shared/node";
 import { getDataBaseDir, setDataBaseDir } from "../paths.js";
-import { ZCodeAgentProcessManager } from "./zcodeAgentProcessManager.js";
+import { ZodyAgentProcessManager } from "./zodyAgentProcessManager.js";
 
 it("passes the executor data directory to the spawned Agent over environment overrides", async () => {
   const root = await mkdtemp(join(tmpdir(), "gen-ui-spawn-"));
   const previous = getDataBaseDir();
   setDataBaseDir(root);
-  const manager = new ZCodeAgentProcessManager({
+  const manager = new ZodyAgentProcessManager({
     commandResolver: () => ({
       command: process.execPath,
       args: [
@@ -28,7 +28,8 @@ it("passes the executor data directory to the spawned Agent over environment ove
   try {
     const client = await manager.getClient({ workspacePath: root });
     const outputRoot = await client.request("session/list", {}, z.string());
-    expect(outputRoot).toBe(join(root, ".zcode", "v2", "visualizations"));
+    // 数据目录已切换到 .zody，断言须与真实输出目录一致。
+    expect(outputRoot).toBe(join(root, ".zody", "v2", "visualizations"));
     const scope = { workspacePath: join(root, "project"), sessionId: "s" };
     expect(getGenUiOutputDirectory(outputRoot, scope)).toContain(outputRoot);
   } finally {

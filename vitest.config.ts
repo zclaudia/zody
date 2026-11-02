@@ -5,7 +5,7 @@ const processLifecycleTests = [
   "packages/services/test/processTreeTerminator.test.ts",
   "packages/services/test/zcodeAgentService.test.ts",
   "packages/services/test/zcodeAgentService.v4.test.ts",
-  "packages/services/test/zcodeAgentProcessManager.test.ts",
+  "packages/services/test/zodyAgentProcessManager.test.ts",
   "packages/services/test/zcodeStdioTransport.test.ts",
 ];
 const forkIsolatedTests = [

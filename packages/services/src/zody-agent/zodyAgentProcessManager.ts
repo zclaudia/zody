@@ -43,7 +43,7 @@ import { shouldSpawnInDetachedProcessGroup } from "../process/processTreeTermina
 import type { RuntimeProcessLifecycleReporter } from "../process/runtimeProcessLifecycle.js";
 import { buildAgentWorkspaceIdentityEnv } from "../runtime-tools/agentProxyEnv.js";
 
-export interface ZCodeAgentCommand {
+export interface ZodyAgentCommand {
   /** 本地配套 CLI bundle 的存储专用 Worker 入口；远端/自定义命令不推断能力。 */
   storagePreparationEntry?: string;
   /** 本次部署的 Agent 支持迁移前的启动通知；旧自定义命令保持原协议。 */
@@ -65,7 +65,7 @@ export interface ZCodeAgentCommand {
  * This is wiring, not an OS trust proof. The native launcher verifies the signed CLI
  * entry and audit token; this object only tells the Host how to invoke it.
  */
-export interface ZCodeAgentNativeRuntimeConfig {
+export interface ZodyAgentNativeRuntimeConfig {
   /** Absolute path of the native launcher that verifies signed resources. */
   readonly launcherPath: string;
   readonly entryName?: "cli-entry.mjs";
@@ -77,22 +77,22 @@ export interface ZCodeAgentNativeRuntimeConfig {
   readonly env?: Readonly<Record<string, string>>;
 }
 
-export interface ZCodeAgentCommandResolverContext {
+export interface ZodyAgentCommandResolverContext {
   presentationSurface?: ZCodeAgentPresentationSurface;
   workspacePath: string;
   workspaceIdentity?: string;
   workspaceKey: string;
 }
 
-export type ZCodeAgentCommandResolver = (
-  context: ZCodeAgentCommandResolverContext,
-) => Promise<ZCodeAgentCommand | null> | ZCodeAgentCommand | null;
+export type ZodyAgentCommandResolver = (
+  context: ZodyAgentCommandResolverContext,
+) => Promise<ZodyAgentCommand | null> | ZodyAgentCommand | null;
 
 /**
  * Host-owned startup facts read from the existing provider/model/settings services.
  * Provider/network values are normalized summaries, not credentials or task-time overrides.
  */
-export interface ZCodeAgentNativeRuntimeStartupContext {
+export interface ZodyAgentNativeRuntimeStartupContext {
   readonly providerRevisionSha256: string;
   readonly selection: ModelSelection | null;
   readonly network: {
@@ -104,7 +104,7 @@ export interface ZCodeAgentNativeRuntimeStartupContext {
 
 export interface ZCodeAgentNativeRuntimeResolverContext {
   /** Called for every new Agent spawn; the Host must re-read current service facts. */
-  readonly readStartupContext: () => Promise<ZCodeAgentNativeRuntimeStartupContext>;
+  readonly readStartupContext: () => Promise<ZodyAgentNativeRuntimeStartupContext>;
 }
 
 /**
@@ -115,14 +115,14 @@ export interface ZCodeAgentNativeRuntimeResolverContext {
  * This is routing, not an authorization or trust proof.
  */
 export type ZCodeAgentNativeRuntimeResolver = (
-  context: ZCodeAgentCommandResolverContext,
+  context: ZodyAgentCommandResolverContext,
   runtimeContext?: ZCodeAgentNativeRuntimeResolverContext,
-) => Promise<ZCodeAgentNativeRuntimeConfig | null> | ZCodeAgentNativeRuntimeConfig | null;
+) => Promise<ZodyAgentNativeRuntimeConfig | null> | ZodyAgentNativeRuntimeConfig | null;
 
-export interface ZCodeAgentProcessManagerOptions {
-  commandResolver?: ZCodeAgentCommandResolver;
+export interface ZodyAgentProcessManagerOptions {
+  commandResolver?: ZodyAgentCommandResolver;
   /** Trusted composition injects this to bypass PATH/env command discovery. */
-  nativeRuntime?: ZCodeAgentNativeRuntimeConfig;
+  nativeRuntime?: ZodyAgentNativeRuntimeConfig;
   /**
    * Optional per-workspace native-runtime selector. Only a non-null result overrides
    * the original resolver; otherwise the existing command resolution is preserved.
@@ -416,7 +416,7 @@ function findUpward(relativePath: string): string | null {
 }
 
 async function buildZCodeAgentSpawnPreflight(
-  command: ZCodeAgentCommand,
+  command: ZodyAgentCommand,
   workspacePath: string,
   spawnFallbackCwd?: string,
 ): Promise<ZCodeAgentSpawnPreflight> {
@@ -446,8 +446,8 @@ async function buildZCodeAgentSpawnPreflight(
 }
 
 function resolveBundledWorkspaceZCodeAgentCommand(
-  context: ZCodeAgentCommandResolverContext,
-): ZCodeAgentCommand | null {
+  context: ZodyAgentCommandResolverContext,
+): ZodyAgentCommand | null {
   const distEntrypoint = findUpward("apps/zody-cli/packages/cli/dist/zody.cjs");
   if (distEntrypoint) {
     const useBytecode =
@@ -484,8 +484,8 @@ function resolveBundledWorkspaceZCodeAgentCommand(
 }
 
 function resolveDeployedZCodeAgentBinaryCommand(
-  context: ZCodeAgentCommandResolverContext,
-): ZCodeAgentCommand | null {
+  context: ZodyAgentCommandResolverContext,
+): ZodyAgentCommand | null {
   // 旧 resolver 只识别 ZCODE_AGENT_SERVER_COMMAND env 和 monorepo 源码树。
   // SSH 远端把 zody-server.cjs 单文件部署到 ~/.zody/server/，宿主进程的 cwd 不在仓库内、
   // env 也不会被 ssh exec 继承，即使 zcode-agent 已经部署到 ~/.zody/server/agents/glm/，
@@ -505,8 +505,8 @@ function resolveDeployedZCodeAgentBinaryCommand(
 }
 
 function resolveElectronRuntimeZCodeAgentCommand(
-  context: ZCodeAgentCommandResolverContext,
-): ZCodeAgentCommand | null {
+  context: ZodyAgentCommandResolverContext,
+): ZodyAgentCommand | null {
   // 桌面打包态：host 跑在 Electron utility process 里，process.execPath 指向 Electron Helper，
   // 它内置的 Node runtime 与 zcode-cli 目标版本一致（Electron 41 = Node 24.x）。
   // 这里直接用 app 自带的 Electron Node 执行打进 resources/glm 的 zody.cjs，
@@ -553,8 +553,8 @@ function assertNativeCliFd(fd: number, field: string): void {
 
 /** Validate a trusted native launcher config before it reaches spawn. */
 export function validateZCodeAgentNativeRuntimeConfig(
-  config: ZCodeAgentNativeRuntimeConfig,
-): ZCodeAgentNativeRuntimeConfig {
+  config: ZodyAgentNativeRuntimeConfig,
+): ZodyAgentNativeRuntimeConfig {
   assertAbsoluteNativeRuntimePath(config.launcherPath, "launcherPath");
   if (config.entryName !== undefined && config.entryName !== "cli-entry.mjs") {
     throw new Error(`Unsupported ZCode Agent native entry: ${config.entryName}`);
@@ -590,9 +590,9 @@ function buildNativeCliStdio(cliInFd: number, cliOutFd: number): StdioOptions {
 
 /** Build the Agent command from the trusted native launcher config. */
 export function resolveZCodeAgentNativeRuntimeCommand(
-  config: ZCodeAgentNativeRuntimeConfig,
-  context: ZCodeAgentCommandResolverContext,
-): ZCodeAgentCommand {
+  config: ZodyAgentNativeRuntimeConfig,
+  context: ZodyAgentCommandResolverContext,
+): ZodyAgentCommand {
   validateZCodeAgentNativeRuntimeConfig(config);
   const cliInFd = config.cliInFd ?? 6;
   const cliOutFd = config.cliOutFd ?? 7;
@@ -623,9 +623,9 @@ export function resolveZCodeAgentNativeRuntimeCommand(
 }
 
 export function resolveDefaultZCodeAgentCommand(
-  context: ZCodeAgentCommandResolverContext,
-  options?: { nativeRuntime?: ZCodeAgentNativeRuntimeConfig | null },
-): ZCodeAgentCommand | null {
+  context: ZodyAgentCommandResolverContext,
+  options?: { nativeRuntime?: ZodyAgentNativeRuntimeConfig | null },
+): ZodyAgentCommand | null {
   // 可信组合注入优先于任何 PATH/env 发现；环境变量不能改写固定 native 启动。
   if (options?.nativeRuntime) {
     return resolveZCodeAgentNativeRuntimeCommand(options.nativeRuntime, context);
@@ -656,9 +656,9 @@ export function resolveDefaultZCodeAgentCommand(
 }
 
 function applyPresentationSurfaceToCommand(
-  command: ZCodeAgentCommand | null,
-  presentationSurface: ZCodeAgentCommandResolverContext["presentationSurface"],
-): ZCodeAgentCommand | null {
+  command: ZodyAgentCommand | null,
+  presentationSurface: ZodyAgentCommandResolverContext["presentationSurface"],
+): ZodyAgentCommand | null {
   if (!command || presentationSurface !== "desktop") {
     return command;
   }
@@ -690,9 +690,9 @@ function applyPresentationSurfaceToCommand(
 }
 
 export function wrapZCodeAgentCommandWithStdioTapDevProxy(
-  command: ZCodeAgentCommand,
+  command: ZodyAgentCommand,
   workspaceKey: string,
-): ZCodeAgentCommand {
+): ZodyAgentCommand {
   // Native launcher verification is bound to its exact argv/fds; wrapping it with a Node
   // dev proxy would both break the protocol and bypass the native entry contract.
   if (command.nativeLauncher) {
@@ -740,8 +740,8 @@ export function wrapZCodeAgentCommandWithStdioTapDevProxy(
  * A selective resolver that returns `null` must not change local/remote behavior.
  */
 export function createZCodeAgentCommandResolver(
-  options?: ZCodeAgentProcessManagerOptions,
-): ZCodeAgentCommandResolver {
+  options?: ZodyAgentProcessManagerOptions,
+): ZodyAgentCommandResolver {
   const fallbackResolver = options?.commandResolver ?? resolveDefaultZCodeAgentCommand;
   const nativeRuntime = options?.nativeRuntime;
   if (nativeRuntime) {
@@ -763,7 +763,7 @@ export function createZCodeAgentCommandResolver(
 
 function createZCodeStdioChildView(
   child: ChildProcess,
-  command: ZCodeAgentCommand,
+  command: ZodyAgentCommand,
 ): ZCodeStdioChildLike {
   const indexes = command.stdioIndexes;
   const stdin = indexes ? child.stdio[indexes.stdin] : child.stdin;
@@ -798,7 +798,7 @@ function createZCodeStdioChildView(
   };
 }
 
-export class ZCodeAgentProcessManager {
+export class ZodyAgentProcessManager {
   private readonly processesByWorkspaceKey = new Map<string, ManagedZCodeAgentProcess>();
   private readonly ownedProcesses = new Set<ManagedZCodeAgentProcess>();
   private readonly startingByWorkspaceKey = new Map<string, Promise<ZCodeProtocolClient>>();
@@ -828,12 +828,12 @@ export class ZCodeAgentProcessManager {
       : null;
   }
 
-  private readonly commandResolver: ZCodeAgentCommandResolver;
-  private readonly presentationSurface: ZCodeAgentProcessManagerOptions["presentationSurface"];
+  private readonly commandResolver: ZodyAgentCommandResolver;
+  private readonly presentationSurface: ZodyAgentProcessManagerOptions["presentationSurface"];
   private readonly requestTimeoutMs: number | undefined;
   private readonly processLifecycleReporter: RuntimeProcessLifecycleReporter | undefined;
-  private readonly resolveSpawnEnv: ZCodeAgentProcessManagerOptions["resolveSpawnEnv"];
-  private readonly waitForSpawnAdmission: ZCodeAgentProcessManagerOptions["waitForSpawnAdmission"];
+  private readonly resolveSpawnEnv: ZodyAgentProcessManagerOptions["resolveSpawnEnv"];
+  private readonly waitForSpawnAdmission: ZodyAgentProcessManagerOptions["waitForSpawnAdmission"];
   private readonly spawnFallbackCwd: string | undefined;
   private readonly cuaHostInstanceId: string | undefined;
   private readonly startupIdentityFailureThreshold: number;
@@ -858,7 +858,7 @@ export class ZCodeAgentProcessManager {
   /** 真实 spawn、启动握手与 single-flight 收口后 available；client 关闭后 unavailable。 */
   readonly onRuntimeLifecycle = this.runtimeLifecycleEmitter.event;
 
-  constructor(options?: ZCodeAgentProcessManagerOptions) {
+  constructor(options?: ZodyAgentProcessManagerOptions) {
     this.commandResolver = createZCodeAgentCommandResolver(options);
     this.presentationSurface = options?.presentationSurface;
     this.requestTimeoutMs = options?.requestTimeoutMs;

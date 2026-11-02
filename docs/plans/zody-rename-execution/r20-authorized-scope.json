@@ -19840,6 +19840,21 @@
         "owner": "R20.5 manual provenance and active-template review; preserved identities retain existing contract owner",
         "permission": "read-only during automated R20.4; ask controller with exact evidence before modifying"
       }
+    ],
+    "implementationBaseline": "854ddf60ac1be92428e3c32192ee325aab6acd25",
+    "pendingCurrentDocReferences": [
+      "docs/runtime-tools/agent-electron-node-runtime.md",
+      "docs/windows-agent-process-cleanup-state-machine.md",
+      "docs/windows-test-compatibility.md",
+      "docs/workspace-project-removal-runtime-release.md",
+      "docs/zcode-agent-app-integration.md",
+      "docs/architecture/federated-node-hub-state-and-migration-plan.md"
+    ],
+    "generatedCompanionFiles": [
+      "packages/desktop/src/shared/armsRumShared.d.ts.map"
+    ],
+    "generatedCompanionRules": [
+      "armsRumShared declaration/map must come from successful isolated TypeScript emit of actual source with recorded inherited options. Preserve valid adjacent source map sources=[armsRumShared.ts]; do not copy temporary output-relative paths. No handwritten declaration/mapping edits."
     ]
   }
 }

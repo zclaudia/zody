@@ -17,8 +17,8 @@ describe("ZCodeAgentService workspace Hook Trust", () => {
       onClose: () => ({ dispose() {} }),
     }));
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class {
         getClient = getClient;
         onRuntimeLifecycle() {
           return { dispose() {} };

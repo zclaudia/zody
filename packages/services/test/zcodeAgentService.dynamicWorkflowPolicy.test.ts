@@ -80,8 +80,8 @@ async function setup(params: {
     onClose: () => ({ dispose() {} }),
   }));
   vi.resetModules();
-  vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-    ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+  vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+    ZodyAgentProcessManager: class extends MockProcessManagerBase {
       getClient = getClient;
       disposeAll() {}
     },

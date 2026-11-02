@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { extname } from "node:path";
-import { sanitizeZCodeRuntimeEnvInPlace } from "@zody/shared";
+import { sanitizeZodyRuntimeEnvInPlace } from "@zody/shared";
 import { applyNetworkEgressEnv, type NetworkEgressEnvPolicy } from "../network/subprocess-env.js";
 import {
   resolveEffectiveBashShellSelection,
@@ -45,7 +45,7 @@ export function buildExecutionEnv(
     }
     // Bash/tool 子进程不能直接继承运行时的 NODE_ENV、http_proxy 或证书变量。
     // 网络变量会在 applyNetworkEgressEnv 中从 ZCode 内部封存恢复，避免 app/provider 运行时先被污染。
-    sanitizeZCodeRuntimeEnvInPlace(env);
+    sanitizeZodyRuntimeEnvInPlace(env);
   }
 
   applyExecutionTextEnv(env, platform);

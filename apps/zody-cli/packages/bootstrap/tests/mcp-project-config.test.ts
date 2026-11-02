@@ -7,7 +7,7 @@ import type { McpPort, McpServerConfig } from "@zody/contracts";
 import { createRegistryBackedTestApp as createZCodeApp } from "./helpers/registry-backed-test-app.js";
 import {
   resetCapturedZCodeCuaBrokerCredentialsForTest,
-  sanitizeZCodeRuntimeEnvInPlace,
+  sanitizeZodyRuntimeEnvInPlace,
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
   ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   ZCODE_PLUGIN_ID_ENV_KEY,
@@ -552,7 +552,7 @@ describe("project MCP config", () => {
       delete process.env[ZCODE_CUA_BROKER_UNAVAILABLE_ENV];
 
       // 模拟真实 CLI 入口：sanitize 剔除凭据（剔除前捕获到进程内私有存储）。
-      sanitizeZCodeRuntimeEnvInPlace(process.env);
+      sanitizeZodyRuntimeEnvInPlace(process.env);
       expect(process.env[ZCODE_CUA_BROKER_SOCKET_ENV]).toBeUndefined();
       expect(process.env[LEGACY_BROKER_TOKEN_ENV]).toBeUndefined();
 
@@ -597,7 +597,7 @@ describe("project MCP config", () => {
         [ZCODE_CUA_BROKER_SOCKET_ENV]: "/tmp/partial.sock",
         [LEGACY_BROKER_TOKEN_ENV]: "partial-token",
       };
-      sanitizeZCodeRuntimeEnvInPlace(partialEnv);
+      sanitizeZodyRuntimeEnvInPlace(partialEnv);
 
       const result = omitMcpServers(
         {
@@ -662,7 +662,7 @@ describe("project MCP config", () => {
         [LEGACY_BROKER_TOKEN_ENV]: "captured-token",
         [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: "dev.zcode.cua-helper/captured",
       };
-      sanitizeZCodeRuntimeEnvInPlace(spawnEnv);
+      sanitizeZodyRuntimeEnvInPlace(spawnEnv);
       // 运行时 env 里残留/被注入了不同的 broker 值：绝不能覆盖 captured。
       process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = "/tmp/stale.sock";
       process.env[LEGACY_BROKER_TOKEN_ENV] = "stale-token";

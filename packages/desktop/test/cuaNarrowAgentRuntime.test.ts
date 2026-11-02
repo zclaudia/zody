@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   digestZCodeAgentNativeRuntimeNetwork,
-  type ZCodeAgentNativeRuntimeStartupContext,
+  type ZodyAgentNativeRuntimeStartupContext,
 } from "@zody/services/node";
 import {
   CUA_NARROW_APP_NAME,
@@ -70,7 +70,7 @@ function createWorkspace(name = "workspace") {
   return workspace;
 }
 
-const startupContext: ZCodeAgentNativeRuntimeStartupContext = {
+const startupContext: ZodyAgentNativeRuntimeStartupContext = {
   providerRevisionSha256: "a".repeat(64),
   selection: {
     providerId: "deepseek-anthropic",
@@ -128,7 +128,7 @@ function prepare(
 
 function resolverContext(
   workspace: string,
-  readStartupContext: () => Promise<ZCodeAgentNativeRuntimeStartupContext> = async () =>
+  readStartupContext: () => Promise<ZodyAgentNativeRuntimeStartupContext> = async () =>
     startupContext,
 ) {
   return {
@@ -326,7 +326,7 @@ describe("cua narrow agent runtime", () => {
     if (result.status !== "eligible") return;
 
     const readStartupContext = vi
-      .fn<() => Promise<ZCodeAgentNativeRuntimeStartupContext>>()
+      .fn<() => Promise<ZodyAgentNativeRuntimeStartupContext>>()
       .mockResolvedValueOnce(startupContext)
       .mockResolvedValueOnce({ ...startupContext, providerRevisionSha256: "c".repeat(64) })
       .mockRejectedValueOnce(new Error("provider service unavailable"))

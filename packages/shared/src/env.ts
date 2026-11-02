@@ -1,4 +1,4 @@
-import type { ZCodeRuntimeEnv } from "./runtimeEnv.js";
+import type { ZodyRuntimeEnv } from "./runtimeEnv.js";
 
 export type ZCodeEnv = "test" | "production";
 /** 安装包身份：决定应用名、app id、Electron 数据目录与更新策略；与后端环境 `ZCodeEnv` 是两个轴。 */
@@ -88,6 +88,6 @@ export function isDesktopAutoUpdateActive(): boolean {
 }
 
 /** 将本地运行态与编译期 ZCODE_ENV 映射为 ARMS 控制台识别的上报环境标签 */
-export function mapZCodeEnvToArmsRumEnv(runtimeEnv: ZCodeRuntimeEnv): ArmsRumEnv {
+export function mapZCodeEnvToArmsRumEnv(runtimeEnv: ZodyRuntimeEnv): ArmsRumEnv {
   return runtimeEnv !== "development" && ZCODE_ENV === "production" ? "prod" : "local";
 }

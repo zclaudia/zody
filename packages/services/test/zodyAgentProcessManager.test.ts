@@ -26,9 +26,9 @@ import {
   resolveZCodeAgentNativeRuntimeCommand,
   validateZCodeAgentNativeRuntimeConfig,
   wrapZCodeAgentCommandWithStdioTapDevProxy,
-  ZCodeAgentProcessManager,
-  type ZCodeAgentCommand,
-} from "../src/zody-agent/zcodeAgentProcessManager.js";
+  ZodyAgentProcessManager,
+  type ZodyAgentCommand,
+} from "../src/zody-agent/zodyAgentProcessManager.js";
 import { setDataBaseDir } from "../src/paths.js";
 import type {
   RuntimeProcessLifecycleReporter,
@@ -297,7 +297,7 @@ describe("selective native runtime spawn", () => {
     return { launcherPath, markerPath };
   }
 
-  function fallbackCommand(root: string, markerName: string): ZCodeAgentCommand {
+  function fallbackCommand(root: string, markerName: string): ZodyAgentCommand {
     const markerPath = join(root, markerName);
     return {
       command: process.execPath,
@@ -321,7 +321,7 @@ describe("selective native runtime spawn", () => {
       launchMode: "workspace-relay" as const,
     }));
     const commandResolver = vi.fn(() => fallbackCommand(root, "fallback.txt"));
-    const manager = new ZCodeAgentProcessManager({ commandResolver, nativeRuntimeResolver });
+    const manager = new ZodyAgentProcessManager({ commandResolver, nativeRuntimeResolver });
 
     try {
       await manager.getClient({ workspacePath: root });
@@ -351,7 +351,7 @@ describe("selective native runtime spawn", () => {
       launchMode: "workspace-relay" as const,
     }));
 
-    const normalManager = new ZCodeAgentProcessManager({
+    const normalManager = new ZodyAgentProcessManager({
       commandResolver: () => fallbackCommand(root, "normal-fallback.txt"),
       nativeRuntimeResolver: () => null,
     });
@@ -362,7 +362,7 @@ describe("selective native runtime spawn", () => {
       normalManager.disposeAll();
     }
 
-    const remoteManager = new ZCodeAgentProcessManager({
+    const remoteManager = new ZodyAgentProcessManager({
       commandResolver: () => fallbackCommand(root, "remote-fallback.txt"),
       nativeRuntimeResolver: (context) =>
         context.workspaceIdentity?.startsWith("remote:") ? null : nativeRuntimeResolver(),
@@ -377,7 +377,7 @@ describe("selective native runtime spawn", () => {
       remoteManager.disposeAll();
     }
 
-    const mcpManager = new ZCodeAgentProcessManager({
+    const mcpManager = new ZodyAgentProcessManager({
       commandResolver: () => fallbackCommand(root, "mcp-fallback.txt"),
       nativeRuntimeResolver,
       lane: "mcp-status",
@@ -483,7 +483,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     const distEntrypoint = join(
       appRepoDir,
       "apps",
-      "zcode-cli",
+      "zody-cli",
       "packages",
       "cli",
       "dist",
@@ -575,7 +575,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     const distEntrypoint = join(
       appRepoDir,
       "apps",
-      "zcode-cli",
+      "zody-cli",
       "packages",
       "cli",
       "dist",
@@ -655,9 +655,9 @@ describe("resolveDefaultZCodeAgentCommand", () => {
   it("并发启动同一 workspace 时只创建一个 client", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-"));
     createdDirs.push(workspacePath);
-    const command = createDeferred<ZCodeAgentCommand>();
+    const command = createDeferred<ZodyAgentCommand>();
     const commandResolver = vi.fn(() => command.promise);
-    const manager = new ZCodeAgentProcessManager({ commandResolver });
+    const manager = new ZodyAgentProcessManager({ commandResolver });
 
     const first = manager.getClient({ workspacePath });
     const second = manager.getClient({ workspacePath });
@@ -683,12 +683,12 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     createdDirs.push(workspacePath);
     const gate = new CuaAgentAdmissionGate();
     const recoveryEpoch = gate.beginRecovery();
-    const commandResolver = vi.fn<() => ZCodeAgentCommand>(() => ({
+    const commandResolver = vi.fn<() => ZodyAgentCommand>(() => ({
       command: process.execPath,
       args: ["-e", "setInterval(() => {}, 1000);"],
       cwd: workspacePath,
     }));
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver,
       waitForSpawnAdmission: (context) => gate.waitForSpawnAdmission(context),
     });
@@ -710,10 +710,10 @@ describe("resolveDefaultZCodeAgentCommand", () => {
   it("workspace dispose 不会遗失 pending start，旧代际不能在恢复后 spawn", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-cua-dispose-"));
     createdDirs.push(workspacePath);
-    const command = createDeferred<ZCodeAgentCommand>();
+    const command = createDeferred<ZodyAgentCommand>();
     const gate = new CuaAgentAdmissionGate();
     const recoveryEpoch = gate.beginRecovery();
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => command.promise,
       waitForSpawnAdmission: (context) => gate.waitForSpawnAdmission(context),
     });
@@ -742,7 +742,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-surface-"));
     createdDirs.push(workspacePath);
     const commandResolver = vi.fn(() => null);
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver,
       presentationSurface: "desktop",
     });
@@ -759,12 +759,12 @@ describe("resolveDefaultZCodeAgentCommand", () => {
   it("workspace cleanup 抛错后重试并允许重新拉起 agent", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-restart-"));
     createdDirs.push(workspacePath);
-    const commandResolver = vi.fn<() => ZCodeAgentCommand>(() => ({
+    const commandResolver = vi.fn<() => ZodyAgentCommand>(() => ({
       command: process.execPath,
       args: ["-e", "process.stdin.resume(); process.stdin.on('end', () => process.exit(0));"],
       cwd: workspacePath,
     }));
-    const manager = new ZCodeAgentProcessManager({ commandResolver });
+    const manager = new ZodyAgentProcessManager({ commandResolver });
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const firstClient = await manager.getClient({ workspacePath });
@@ -800,7 +800,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     const markerPath = join(workspacePath, "provider-env.json");
     const zcodeBuiltinFilePath = join(workspacePath, "zody-builtin.json");
     const personalFilePath = join(workspacePath, "personal.json");
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: [
@@ -830,12 +830,12 @@ describe("resolveDefaultZCodeAgentCommand", () => {
   it("查询 dormant workspace runtime identity 不会隐式启动 agent", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-dormant-runtime-"));
     createdDirs.push(workspacePath);
-    const commandResolver = vi.fn<() => ZCodeAgentCommand>(() => ({
+    const commandResolver = vi.fn<() => ZodyAgentCommand>(() => ({
       command: process.execPath,
       args: ["-e", "setInterval(() => {}, 1000);"],
       cwd: workspacePath,
     }));
-    const manager = new ZCodeAgentProcessManager({ commandResolver });
+    const manager = new ZodyAgentProcessManager({ commandResolver });
     await expect(manager.getRuntimeIdentity({ workspacePath })).rejects.toThrow(
       "ZCode agent runtime identity is unavailable.",
     );
@@ -847,12 +847,12 @@ describe("resolveDefaultZCodeAgentCommand", () => {
   it("transport 首轮进程树回收误报残留时重试并允许重新拉起 agent", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-recycle-retry-"));
     createdDirs.push(workspacePath);
-    const commandResolver = vi.fn<() => ZCodeAgentCommand>(() => ({
+    const commandResolver = vi.fn<() => ZodyAgentCommand>(() => ({
       command: process.execPath,
       args: ["-e", "setInterval(() => {}, 1000);"],
       cwd: workspacePath,
     }));
-    const manager = new ZCodeAgentProcessManager({ commandResolver });
+    const manager = new ZodyAgentProcessManager({ commandResolver });
     const originalDisposeAndWait = ZCodeStdioTransport.prototype.disposeAndWait;
     const disposeAndWaitSpy = vi
       .spyOn(ZCodeStdioTransport.prototype, "disposeAndWait")
@@ -880,7 +880,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
   it("重启单个 workspace 后 runtime identity 会变化", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-runtime-"));
     createdDirs.push(workspacePath);
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: ["-e", "setInterval(() => {}, 1000);"],
@@ -909,7 +909,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
   it("进程换代（generation>1）广播 onRuntimeRestarted，首次拉起不广播", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-restart-evt-"));
     createdDirs.push(workspacePath);
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: ["-e", "setInterval(() => {}, 1000);"],
@@ -947,12 +947,12 @@ describe("resolveDefaultZCodeAgentCommand", () => {
   it("换代进程 spawn 失败时不广播 onRuntimeRestarted", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-restart-failed-"));
     createdDirs.push(workspacePath);
-    let command: ZCodeAgentCommand = {
+    let command: ZodyAgentCommand = {
       command: process.execPath,
       args: ["-e", "setInterval(() => {}, 1000);"],
       cwd: workspacePath,
     };
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => command,
     });
     const restarts: number[] = [];
@@ -976,8 +976,8 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-dispose-"));
     createdDirs.push(workspacePath);
     const markerPath = join(workspacePath, "spawned.txt");
-    const command = createDeferred<ZCodeAgentCommand>();
-    const manager = new ZCodeAgentProcessManager({
+    const command = createDeferred<ZodyAgentCommand>();
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => command.promise,
     });
 
@@ -1011,7 +1011,7 @@ setInterval(() => {}, 1000);
       onSpawn: vi.fn((event) => spawnedPids.push(event.pid)),
       onExit: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: [
@@ -1072,7 +1072,7 @@ setInterval(() => {}, 1000);
   it("app quit 会重试先前失败的进程树回收", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-manager-cleanup-retry-"));
     createdDirs.push(workspacePath);
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: ["-e", "process.stdin.resume(); setInterval(() => {}, 1000);"],
@@ -1107,7 +1107,7 @@ setInterval(() => {}, 1000);
     const nodeEnvPath = join(workspacePath, "node-env.txt");
     process.env.NODE_ENV = "development";
     delete process.env[ZCODE_RUNTIME_ENV_KEY];
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: [
@@ -1146,7 +1146,7 @@ setInterval(() => {}, 1000);
     const nodeEnvPath = join(workspacePath, "node-env.txt");
     delete process.env.NODE_ENV;
     process.env[ZCODE_RUNTIME_ENV_KEY] = "development";
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: [
@@ -1185,7 +1185,7 @@ setInterval(() => {}, 1000);
       onExit: vi.fn(),
       onError: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: ["-e", "setTimeout(() => process.exit(7), 20);"],
@@ -1240,7 +1240,7 @@ setInterval(() => {}, 1000);
       onSpawn: vi.fn(),
       onExit: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       cuaHostInstanceId: "host-real",
       commandResolver: () => ({
         command: process.execPath,
@@ -1306,7 +1306,7 @@ setInterval(() => {}, 1000);
       createdDirs.push(workspacePath);
       const requestMarkerPath = join(workspacePath, "startup-request.json");
       const ackGatePath = join(workspacePath, "startup-ack-gate");
-      const manager = new ZCodeAgentProcessManager({
+      const manager = new ZodyAgentProcessManager({
         cuaHostInstanceId: "host-real",
         commandResolver: () => ({
           command: process.execPath,
@@ -1396,7 +1396,7 @@ setInterval(() => {}, 1000);
   it("旧 Agent 明确不认识 startup 帧时保留普通聊天 client", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-startup-unknown-method-"));
     createdDirs.push(workspacePath);
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       cuaHostInstanceId: "host-real",
       commandResolver: () => ({
         command: process.execPath,
@@ -1435,7 +1435,7 @@ setInterval(() => {}, 1000);
       onSpawn: vi.fn(),
       onExit: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       cuaHostInstanceId: "host-real",
       commandResolver: () => ({
         command: process.execPath,
@@ -1485,7 +1485,7 @@ setInterval(() => {}, 1000);
       onSpawn: vi.fn(),
       onExit: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       cuaHostInstanceId: "host-real",
       startupIdentityFailureThreshold: 2,
       startupIdentityRetryCooldownMs: 5_000,
@@ -1521,7 +1521,7 @@ setInterval(() => {}, 1000);
       onSpawn: vi.fn(),
       onExit: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const probeManager = new ZCodeAgentProcessManager({
+    const probeManager = new ZodyAgentProcessManager({
       cuaHostInstanceId: "host-real",
       startupIdentityFailureThreshold: 1,
       startupIdentityRetryCooldownMs: 50,
@@ -1594,7 +1594,7 @@ setInterval(() => {}, 1000);
       onSpawn: vi.fn(),
       onExit: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         // 测试只验证 protocol-close 根因；让 stdin EOF 可收尾，避免完整测试并发时
@@ -1645,7 +1645,7 @@ setInterval(() => {}, 1000);
   it("观测超时保留真实 Agent，持续观测也不能阻止空闲回收", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-observation-"));
     createdDirs.push(workspacePath);
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       idleTimeoutMs: 250,
       commandResolver: () => ({
         command: process.execPath,
@@ -1693,7 +1693,7 @@ setInterval(() => {}, 1000);
   it("旧启动请求结清后，仍在迁移的 Agent 不进入空闲回收", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-migration-idle-"));
     createdDirs.push(workspacePath);
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       idleTimeoutMs: 30,
       commandResolver: () => ({
         command: process.execPath,
@@ -1736,7 +1736,7 @@ setInterval(() => {}, 1000);
       onExit: vi.fn(),
       onError: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: ["-e", "setInterval(() => {}, 1000);"],
@@ -1770,7 +1770,7 @@ setInterval(() => {}, 1000);
       onReady: vi.fn(),
       onExit: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: ["-e", "setInterval(() => {}, 1000);"],
@@ -1809,7 +1809,7 @@ setInterval(() => {}, 1000);
       onExit: vi.fn(),
       onError: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: [
@@ -1863,7 +1863,7 @@ setInterval(() => {}, 1000);
       '[cua-native] cell-loaded-code {"pid":83436,"verified":true,"identifier":"io.github.zclaudia.zody.cua-helper.node","cdhash":"3c57a9bb9f4e8b748ac80d60bc78cdde14767218","entitlementsEmpty":true}';
     const secretLine = '[cua-native] cell-spawned {"pid":1,"suspended":true,"secret":"raw-secret"}';
     const script = `process.stderr.write(${JSON.stringify(`${nativeLine}\n${secretLine}\n`)}); setTimeout(() => process.exit(0), 250);`;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: ["-e", script],
@@ -1898,7 +1898,7 @@ setInterval(() => {}, 1000);
     const line =
       '[cua-native] cell-resumed {"pid":83436}';
     const script = `process.stderr.write(${JSON.stringify(`${line}\n`)}); setTimeout(() => process.exit(0), 250);`;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: ["-e", script],
@@ -1947,7 +1947,7 @@ setInterval(() => {}, 1000);
           if (failReporter === true) throw new Error("IPC unavailable");
         }),
       } satisfies RuntimeProcessLifecycleReporter;
-      const manager = new ZCodeAgentProcessManager({
+      const manager = new ZodyAgentProcessManager({
         commandResolver: () => ({
           command: process.execPath,
           cwd: workspacePath,
@@ -2008,7 +2008,7 @@ setInterval(() => {}, 1000);
       onExit: vi.fn(),
       onError: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: ["-e", "setInterval(() => {}, 1000);"],
@@ -2032,7 +2032,7 @@ setInterval(() => {}, 1000);
     const missingCwd = join(workspacePath, "missing-workspace");
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: missingCommand,
         args: ["app-server", "--stdio"],
@@ -2099,7 +2099,7 @@ setInterval(() => {}, 1000);
         cwd: requestedWorkspacePath,
       }),
     );
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver,
       spawnFallbackCwd: fallbackCwd,
     });
@@ -2132,7 +2132,7 @@ setInterval(() => {}, 1000);
     const markerPath = join(rootDir, "effective-cwd.txt");
     mkdirSync(fallbackCwd);
     mkdirSync(customCwd);
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
         args: [
@@ -2162,7 +2162,7 @@ setInterval(() => {}, 1000);
       onExit: vi.fn(),
       onError: vi.fn(),
     } satisfies RuntimeProcessLifecycleReporter;
-    const manager = new ZCodeAgentProcessManager({
+    const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: missingCommand,
         args: ["app-server", "--stdio"],

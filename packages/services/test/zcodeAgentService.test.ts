@@ -15,7 +15,7 @@ import {
   type ZCodeSessionRuntimePreferencesScope,
 } from "@zody/shared";
 import { createZCodeAgentService } from "../src/zody-agent/zcodeAgentService.js";
-import { ZCodeAgentProcessManager } from "../src/zody-agent/zcodeAgentProcessManager.js";
+import { ZodyAgentProcessManager } from "../src/zody-agent/zodyAgentProcessManager.js";
 import type { ZCodeProtocolClient } from "../src/zody-agent/zcodeProtocolClient.js";
 import { ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE } from "../src/zody-agent/zcodeAgentErrors.js";
 import type { ZCodeAgentServiceEvent } from "../src/zody-agent/zcodeAgent.js";
@@ -1189,7 +1189,7 @@ describe("createZCodeAgentService", () => {
     const request = vi.fn(async () => ({ processes: [] }));
     const migratingRequest = vi.fn();
     const enumeration = vi
-      .spyOn(ZCodeAgentProcessManager.prototype, "listManagedProcesses")
+      .spyOn(ZodyAgentProcessManager.prototype, "listManagedProcesses")
       .mockReturnValue([])
       .mockReturnValueOnce([
         {

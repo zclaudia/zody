@@ -4,7 +4,7 @@ import type {
   ModelSelectionView,
   ProviderSettingsView,
 } from "../model-provider/providerFacadeServices.js";
-import type { ZCodeAgentNativeRuntimeStartupContext } from "./zcodeAgentProcessManager.js";
+import type { ZodyAgentNativeRuntimeStartupContext } from "./zodyAgentProcessManager.js";
 
 /**
  * Provider registry revision is a process-local incrementing registry number, so it is not a
@@ -170,7 +170,7 @@ export function createZCodeAgentNativeRuntimeStartupContext(input: {
   readonly providerSettingsView: ProviderSettingsView;
   readonly modelSelectionView: Pick<ModelSelectionView, "preferredSelection">;
   readonly settings: Pick<AppSettings, "httpProxy" | "httpProxyNoProxy" | "httpProxyCaCertPath">;
-}): ZCodeAgentNativeRuntimeStartupContext {
+}): ZodyAgentNativeRuntimeStartupContext {
   return {
     providerRevisionSha256: digestZCodeAgentNativeRuntimeProviderSnapshot(
       input.providerSettingsView,

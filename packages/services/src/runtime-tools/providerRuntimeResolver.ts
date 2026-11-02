@@ -4,7 +4,7 @@ import { dirname, resolve as resolvePath } from "node:path";
 import {
   ZCODE_AGENT_RUNTIME,
   ZCODE_DATA_ROOT_DIR_NAME,
-  sanitizeZCodeRuntimeEnvInPlace,
+  sanitizeZodyRuntimeEnvInPlace,
 } from "@zody/shared";
 import { getDataBaseDir, getProviderWorkspaceConfigDir } from "../paths.js";
 import { buildRuntimeProcessEnvPatch } from "./runtimeCommandEnv.js";
@@ -48,7 +48,7 @@ export function buildCleanEnv(
   }
   // 修复原因：provider/agent runtime 子进程不能默认继承 shell 里的 NODE_ENV、代理或证书变量。
   // 这些运行时输入必须来自 ZCODE_* 显式配置或 app 设置页，避免用户环境污染模型请求和工具子进程。
-  sanitizeZCodeRuntimeEnvInPlace(env);
+  sanitizeZodyRuntimeEnvInPlace(env);
   // Bugfix: Windows 环境变量名大小写不敏感，但 JS 普通对象区分大小写。
   // process.env 枚举时 PATH 通常以 "Path"（title case）出现，
   // 复制到普通对象后，下游 buildRuntimeProcessEnvPatch 按 "PATH"（全大写）查找会得到 undefined，

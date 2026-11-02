@@ -9,7 +9,7 @@ import {
   isCuaDevModeRequested,
   isZCodeCuaInternalFeatureEnabled,
   readZCodeAgentTelemetryEnv,
-  readZCodeToolEnvPassthroughEnv,
+  readZodyToolEnvPassthroughEnv,
   resetCapturedZCodeCuaBrokerCredentialsForTest,
   sanitizeZCodeRuntimeEnv,
   getCapturedZCodeAgentTelemetryEnv,
@@ -53,7 +53,7 @@ describe("runtimeEnv", () => {
 
     const sanitized = sanitizeZCodeRuntimeEnv(sourceEnv);
     const passthroughEnv = buildZCodeToolEnvPassthroughEnv(sourceEnv);
-    const captured = readZCodeToolEnvPassthroughEnv(passthroughEnv);
+    const captured = readZodyToolEnvPassthroughEnv(passthroughEnv);
 
     expect(sanitized).toEqual({ PATH: "/usr/bin:/bin" });
     expect(passthroughEnv[ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY]).toBeDefined();
@@ -65,7 +65,7 @@ describe("runtimeEnv", () => {
   });
 
   it("ignores invalid passthrough JSON and non-network keys", () => {
-    const captured = readZCodeToolEnvPassthroughEnv({
+    const captured = readZodyToolEnvPassthroughEnv({
       [ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY]: JSON.stringify({
         HTTP_PROXY: "http://proxy.example:8080",
         NODE_ENV: "production",
@@ -77,7 +77,7 @@ describe("runtimeEnv", () => {
       HTTP_PROXY: "http://proxy.example:8080",
     });
     expect(
-      readZCodeToolEnvPassthroughEnv({
+      readZodyToolEnvPassthroughEnv({
         [ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY]: "not-json",
       }),
     ).toEqual({});
@@ -95,7 +95,7 @@ describe("runtimeEnv", () => {
     const sanitized = sanitizeZCodeRuntimeEnv(sourceEnv);
     expect(sanitized).toEqual({ PATH: "/usr/bin:/bin" });
 
-    const captured = readZCodeToolEnvPassthroughEnv(buildZCodeToolEnvPassthroughEnv(sourceEnv));
+    const captured = readZodyToolEnvPassthroughEnv(buildZCodeToolEnvPassthroughEnv(sourceEnv));
     expect(captured).not.toHaveProperty("ZCODE_CUA_PERMISSION_BROKER_SOCKET");
     expect(captured).not.toHaveProperty("ZCODE_CUA_PERMISSION_BROKER_SOCKET");
     expect(captured).not.toHaveProperty("ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER");
@@ -110,7 +110,7 @@ describe("runtimeEnv", () => {
     };
 
     expect(sanitizeZCodeRuntimeEnv(sourceEnv)).toEqual({ PATH: "/usr/bin:/bin" });
-    expect(readZCodeToolEnvPassthroughEnv(buildZCodeToolEnvPassthroughEnv(sourceEnv))).toEqual({});
+    expect(readZodyToolEnvPassthroughEnv(buildZCodeToolEnvPassthroughEnv(sourceEnv))).toEqual({});
   });
 
   it("captures broker credentials as one atomic pair and clears stale state on partial rotation", () => {
@@ -164,7 +164,7 @@ describe("runtimeEnv", () => {
       OTEL_EXPORTER_OTLP_METRICS_HEADERS: "Authorization=metric-secret",
       ZCODE_TELEMETRY_USER_SUBJECT_ID: "opaque-user",
     });
-    const toolEnv = readZCodeToolEnvPassthroughEnv(buildZCodeToolEnvPassthroughEnv(sourceEnv));
+    const toolEnv = readZodyToolEnvPassthroughEnv(buildZCodeToolEnvPassthroughEnv(sourceEnv));
     expect(toolEnv).not.toHaveProperty("OTEL_EXPORTER_OTLP_TRACES_HEADERS");
     expect(toolEnv).not.toHaveProperty("OTEL_EXPORTER_OTLP_METRICS_HEADERS");
     expect(toolEnv).not.toHaveProperty("ZCODE_TELEMETRY_USER_SUBJECT_ID");

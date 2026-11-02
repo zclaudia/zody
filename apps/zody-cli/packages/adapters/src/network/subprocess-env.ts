@@ -3,7 +3,7 @@ import {
   ZCODE_HTTP_PROXY_ENV_KEY,
   ZCODE_NO_PROXY_ENV_KEY,
   ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY,
-  readZCodeToolEnvPassthroughEnv,
+  readZodyToolEnvPassthroughEnv,
 } from "@zody/shared";
 
 export interface NetworkEgressEnvPolicy {
@@ -62,7 +62,7 @@ function applyToolEnvPassthroughEnv(
   sourceEnv: Record<string, string | undefined>,
   platform: NodeJS.Platform,
 ): void {
-  const passthroughEnv = readZCodeToolEnvPassthroughEnv(sourceEnv);
+  const passthroughEnv = readZodyToolEnvPassthroughEnv(sourceEnv);
   for (const [key, value] of Object.entries(passthroughEnv)) {
     setEnvKey(env, key, value, platform);
   }

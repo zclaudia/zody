@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   resetCapturedZCodeAgentTelemetryEnvForTest,
-  sanitizeZCodeRuntimeEnvInPlace,
+  sanitizeZodyRuntimeEnvInPlace,
 } from "@zody/shared";
 import { afterEach, describe, expect, it } from "vitest";
 import { prepareZCodeTelemetryEnv } from "../src/telemetry-bootstrap.js";
@@ -21,7 +21,7 @@ describe("prepareZCodeTelemetryEnv", () => {
         OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "https://arms.example/v1/traces",
         ZCODE_HOME: root,
       };
-      sanitizeZCodeRuntimeEnvInPlace(env);
+      sanitizeZodyRuntimeEnvInPlace(env);
 
       const prepared = await prepareZCodeTelemetryEnv(env);
 

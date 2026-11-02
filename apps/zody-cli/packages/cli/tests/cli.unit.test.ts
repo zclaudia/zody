@@ -16,9 +16,9 @@ import {
   ZCODE_PLUGIN_ID_ENV_KEY,
   ZCODE_RUNTIME_ENV_KEY,
   ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY,
-  readZCodeToolEnvPassthroughEnv,
+  readZodyToolEnvPassthroughEnv,
   resetCapturedZCodeCuaBrokerCredentialsForTest,
-  sanitizeZCodeRuntimeEnvInPlace,
+  sanitizeZodyRuntimeEnvInPlace,
   type ModelSelection,
   type ZCodeModelOption,
 } from "@zody/shared";
@@ -191,7 +191,7 @@ test("prepares a sanitized CLI runtime env with ZCode-owned runtime keys", () =>
   };
 
   const env = prepareCliRuntimeEnv(sourceEnv, ["/usr/bin/node", "/workspace/bin/zcode.js"]);
-  const toolEnv = readZCodeToolEnvPassthroughEnv(env);
+  const toolEnv = readZodyToolEnvPassthroughEnv(env);
 
   assert.equal(env.ZCODE_RUNTIME_ENV, "production");
   assert.equal(env.ZCODE_HTTP_PROXY, "http://zcode-proxy:8080");
@@ -3871,7 +3871,7 @@ export async function main() {
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "scoped-secret-token";
     process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
     resetCapturedZCodeCuaBrokerCredentialsForTest();
-    sanitizeZCodeRuntimeEnvInPlace(process.env);
+    sanitizeZodyRuntimeEnvInPlace(process.env);
     assert.equal(process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY], undefined);
 
     const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath]);
@@ -3932,7 +3932,7 @@ export async function main() {
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "scoped-secret-token";
     process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
     resetCapturedZCodeCuaBrokerCredentialsForTest();
-    sanitizeZCodeRuntimeEnvInPlace(process.env);
+    sanitizeZodyRuntimeEnvInPlace(process.env);
 
     const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath]);
     assert.equal(await runPluginHostCommand(ctx, [serverPath]), 0);
@@ -3996,7 +3996,7 @@ export async function main() {
     delete process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN;
     process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
     resetCapturedZCodeCuaBrokerCredentialsForTest();
-    sanitizeZCodeRuntimeEnvInPlace(process.env);
+    sanitizeZodyRuntimeEnvInPlace(process.env);
 
     const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath]);
     assert.equal(await runPluginHostCommand(ctx, [serverPath]), 0);
@@ -4045,7 +4045,7 @@ export async function main() {
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "must-not-leak";
     process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "captured-authority";
     resetCapturedZCodeCuaBrokerCredentialsForTest();
-    sanitizeZCodeRuntimeEnvInPlace(process.env);
+    sanitizeZodyRuntimeEnvInPlace(process.env);
     assert.equal(process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY], undefined);
 
     const ctx = createContext([

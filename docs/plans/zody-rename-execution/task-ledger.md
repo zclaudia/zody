@@ -120,3 +120,22 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 - Terra R10 is the sole product writer for those fixes, the builtin guide path fallback and SEA intermediate name closure. Terra R01 may only prepare semantic rename tooling under its output root and own report until the controller hands over the source lock.
 - The root/CLI workspace ownership question remains pending; no nested workspace/lock removal or dependency ownership change is authorized by elapsed time.
 - The plan's expanded subtask table was incorporated without replacing the accepted R01 protocol/test contracts. R20.4 authorization is a constrained candidate path set, not permission to rewrite external, serialized or historical identities.
+
+## R20.3 fixed candidate and R20.4 source handoff
+
+- Corrective candidate `854ddf60ac1be92428e3c32192ee325aab6acd25` contains the plugin source/staged boundary fixes and SEA blob closure. Controller independently reproduced 71 CLI + 12 UI + 43 SEA script tests, typecheck and lint (303 warnings); real SEA packaging not run.
+- DeepSeek review-3 resumed on the same exact read-only Broker handle against that immutable candidate. Mutable R20.4 source is excluded from its review evidence.
+- Terra R10 has stopped writing. Terra R01 now holds the sole source write lock for constrained R20.4. Initial closure covers public types, ProcessManager class/mock export keys and source/test basenames; dynamic and generated declaration provenance require validation.
+- 151 template/skill/fixture paths are excluded from automatic binding edits and assigned to R20.5 manual review, not permanent exemptions. Additional current-doc references will be reconciled under the same final residual task.
+
+- DeepSeek review-3 returned scoped PASS for `854ddf60` R20.3 corrections; report saved. This was a fixed-diff review, not an independent runtime test rerun. Remaining staged-layout runtime seed coverage, real SEA build, full architecture disposition, R20.4 and R21/R22 remain explicit gates.
+
+- R20.4 exposed Desktop main tsc errors omitted by root typecheck. Terra R10 independently exported `854ddf60`, performed its own offline frozen install, and reproduced all 85 main diagnostics; controller verified exact normalized raw-log equality against the captured R20.4 snapshot. See R20-desktop-main-baseline.md. No claim that main tsc passes or that subsequent changes are automatically covered.
+
+## R20.4 first-group validation, not yet accepted
+
+- First source candidate covers 7 public types, ProcessManager class and 2 basenames, 5 runtime-env functions, consumers/mocks and real regenerated declaration/map. Controller source/emit byte comparisons passed. No automated changes to the 151 manual-review paths.
+- Controller reproduced 113 ProcessManager/runtime/ARMS tests and 1 explicit source-adjacent Gen UI test; root typecheck/lint passed (303 warnings).
+- Additional CLI boundary verification exposed stale `adapters/dist` imports: bootstrap tests 14 pass / 5 fail; CLI authority 2 pass but cli.unit startup fails. The source was already renamed. Terra R01 now owns the exclusive build-output lock to rebuild the required actual dependency closure and re-run these tests. Do not restore old exports or mark this candidate accepted based only on the green root tests.
+
+- Terra rebuilt only the affected adapters dist from actual source after isolating the old output. Bootstrap now 19/19 and CLI node tests 176/176; controller independently repeated both. Combined first-group controller tests: 309 passed; root typecheck/lint passed. Final main tsc still exits 1 with the exact 85 baseline diagnostics, independently compared after all group changes. See R20-symbols-controller-verification.md. Source/build writes are stopped for snapshot and independent review; R20.4 remains incomplete.

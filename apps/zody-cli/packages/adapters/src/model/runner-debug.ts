@@ -13,7 +13,7 @@ import type { ModelTextResult } from "@zody/contracts";
 import {
   ZCODE_DATA_ROOT_DIR_NAME,
   ZCODE_RUNTIME_ENV_KEY,
-  normalizeZCodeRuntimeEnv,
+  normalizeZodyRuntimeEnv,
 } from "@zody/shared";
 import { redactAnthropicRequestMetadata } from "./anthropic-request-metadata.js";
 import type { EnvRecord } from "./model-execution.js";
@@ -466,7 +466,7 @@ async function settleModelIOValueWithTimeout<T>(
 
 // 归一化 ZCODE_RUNTIME_ENV；未设置时返回 undefined,由调用方按生产处理。
 function normalizeRuntimeEnv(env: EnvRecord): string | undefined {
-  return normalizeZCodeRuntimeEnv(env[ZCODE_RUNTIME_ENV_KEY]);
+  return normalizeZodyRuntimeEnv(env[ZCODE_RUNTIME_ENV_KEY]);
 }
 
 function writeModelIODebugRecord(

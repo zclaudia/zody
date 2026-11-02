@@ -6,8 +6,8 @@ import {
   disposeServiceResourcesAndWait,
   resolveDefaultZCodeAgentCommand,
   setDataBaseDir,
-  type ZCodeAgentCommand,
-  type ZCodeAgentCommandResolverContext,
+  type ZodyAgentCommand,
+  type ZodyAgentCommandResolverContext,
 } from "@zody/services/node";
 import {
   SERVICE_AUTHORITY_MODE_ENV,
@@ -179,8 +179,8 @@ describe("stdio Desktop presentation surface", () => {
       "utf8",
     );
 
-    let resolvedCommand: ZCodeAgentCommand | null = null;
-    const commandResolver = vi.fn((context: ZCodeAgentCommandResolverContext) => {
+    let resolvedCommand: ZodyAgentCommand | null = null;
+    const commandResolver = vi.fn((context: ZodyAgentCommandResolverContext) => {
       resolvedCommand = resolveDefaultZCodeAgentCommand(context);
       // 集成测试只验证入口装配与最终命令，不启动长驻 Agent 子进程。
       return null;

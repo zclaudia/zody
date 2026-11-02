@@ -21,7 +21,7 @@ import {
   normalizeDynamicWorkflowMode,
   readZCodeAgentTelemetryEnv,
   sanitizeZCodeRuntimeEnv,
-  type ZCodeRuntimeEnv,
+  type ZodyRuntimeEnv,
 } from "@zody/shared";
 import { resolvePlatformKeyForPackagedApp } from "../../scripts/target-platform.mjs";
 import {
@@ -38,7 +38,7 @@ declare const __ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__: Readonly<Record<string, st
 declare const __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__: string | undefined;
 
 const isLocalDevelopmentRuntime = !isElectronAppPackaged();
-export const desktopRuntimeEnv: ZCodeRuntimeEnv = isLocalDevelopmentRuntime
+export const desktopRuntimeEnv: ZodyRuntimeEnv = isLocalDevelopmentRuntime
   ? "development"
   : "production";
 // 身份看编译期 flavor 而不是 ZCODE_ENV：ZCODE_PREVIEW_IDENTITY=1 的生产后端构建同样是 Preview，
@@ -303,7 +303,7 @@ function applySelectedZCodeEnvLinks(env: Record<string, string>): Record<string,
   };
 }
 
-function resolveHostProcessNodeEnv(): ZCodeRuntimeEnv {
+function resolveHostProcessNodeEnv(): ZodyRuntimeEnv {
   return desktopRuntimeEnv;
 }
 

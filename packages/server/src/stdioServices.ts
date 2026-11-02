@@ -1,4 +1,4 @@
-import { createLocalServices, type ZCodeAgentCommandResolver } from "@zody/services/node";
+import { createLocalServices, type ZodyAgentCommandResolver } from "@zody/services/node";
 import {
   parseServiceAuthorityMode,
   ZCODE_REMOTE_HTTP_PROXY_ENV_KEY,
@@ -9,7 +9,7 @@ import {
 export interface CreateStdioServicesOptions {
   env?: Record<string, string | undefined>;
   zcodeBuiltinProviderConfigFilePath: string;
-  zcodeAgentCommandResolver?: ZCodeAgentCommandResolver;
+  zcodeAgentCommandResolver?: ZodyAgentCommandResolver;
 }
 
 export interface RemoteAgentNetworkOptions {

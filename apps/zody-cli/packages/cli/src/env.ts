@@ -7,10 +7,10 @@ import { getUserZodyRoot } from "@zody/shared/zody-paths";
 import {
   ZCODE_RUNTIME_ENV_KEY,
   buildZCodeToolEnvPassthroughEnv,
-  normalizeZCodeRuntimeEnv,
+  normalizeZodyRuntimeEnv,
   sanitizeZCodeRuntimeEnv,
-  sanitizeZCodeRuntimeEnvInPlace,
-  type ZCodeRuntimeEnv,
+  sanitizeZodyRuntimeEnvInPlace,
+  type ZodyRuntimeEnv,
 } from "@zody/shared/runtime-env";
 
 export type CliEnv = Record<string, string | undefined>;
@@ -44,7 +44,7 @@ export function applyCliRuntimeEnvSanitization(
   argv: readonly string[] = process.argv,
 ): void {
   const toolEnvPassthrough = buildZCodeToolEnvPassthroughEnv(env);
-  sanitizeZCodeRuntimeEnvInPlace(env);
+  sanitizeZodyRuntimeEnvInPlace(env);
   Object.assign(env, toolEnvPassthrough);
   applyCliRuntimeEnvDefaults(env, argv);
 }
@@ -118,8 +118,8 @@ function applyCliRuntimeEnvDefaults(env: CliEnv, argv: readonly string[]): void 
   applyBetaStorageDefault(env, argv);
 }
 
-function resolveCliRuntimeEnv(env: CliEnv, argv: readonly string[]): ZCodeRuntimeEnv {
-  const explicit = normalizeZCodeRuntimeEnv(env[ZCODE_RUNTIME_ENV_KEY]);
+function resolveCliRuntimeEnv(env: CliEnv, argv: readonly string[]): ZodyRuntimeEnv {
+  const explicit = normalizeZodyRuntimeEnv(env[ZCODE_RUNTIME_ENV_KEY]);
   if (explicit) {
     return explicit;
   }

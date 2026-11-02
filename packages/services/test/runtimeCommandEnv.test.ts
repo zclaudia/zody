@@ -4,7 +4,7 @@ import { delimiter, dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY,
-  readZCodeToolEnvPassthroughEnv,
+  readZodyToolEnvPassthroughEnv,
 } from "@zody/shared";
 import {
   buildLoginShellEnvPatch,
@@ -41,7 +41,7 @@ describe("runtimeCommandEnv", () => {
     expect(patch.NODE_ENV).toBeUndefined();
     expect(patch.NODE_EXTRA_CA_CERTS).toBeUndefined();
     expect(patch[ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY]).toBeDefined();
-    expect(readZCodeToolEnvPassthroughEnv(patch)).toMatchObject({
+    expect(readZodyToolEnvPassthroughEnv(patch)).toMatchObject({
       HTTP_PROXY: "http://shell-proxy:8080",
       NODE_EXTRA_CA_CERTS: "/tmp/shell-ca.pem",
       npm_config_proxy: "http://npm-proxy:8080",
@@ -175,7 +175,7 @@ describe("runtimeCommandEnv", () => {
     });
     expect(patch.HTTP_PROXY).toBeUndefined();
     expect(patch.NODE_OPTIONS).toBeUndefined();
-    const passthrough = readZCodeToolEnvPassthroughEnv(patch);
+    const passthrough = readZodyToolEnvPassthroughEnv(patch);
     expect(passthrough).toMatchObject({
       HTTP_PROXY: "http://shell-proxy:8080",
     });
@@ -279,7 +279,7 @@ describe("runtimeCommandEnv", () => {
     expect(captureSnapshot).toHaveBeenCalledTimes(1);
     expect(patch.PATH?.split(delimiter)[0]).toBe("/Users/dev/.local/bin");
     expect(patch.FNM_DIR).toBe("/Users/dev/.fnm");
-    expect(readZCodeToolEnvPassthroughEnv(patch)).toMatchObject({
+    expect(readZodyToolEnvPassthroughEnv(patch)).toMatchObject({
       HTTP_PROXY: "http://shell-proxy:8080",
     });
   });

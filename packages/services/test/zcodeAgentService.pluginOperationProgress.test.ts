@@ -29,8 +29,8 @@ describe("zcodeAgentService Plugin operation progress", () => {
     });
 
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class {
         onRuntimeLifecycle() {
           return { dispose() {} };
         }

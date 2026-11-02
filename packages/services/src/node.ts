@@ -104,18 +104,18 @@ export {
   resolveDefaultZCodeAgentCommand,
   resolveZCodeAgentNativeRuntimeCommand,
   validateZCodeAgentNativeRuntimeConfig,
-  ZCodeAgentProcessManager,
-} from "./zody-agent/zcodeAgentProcessManager.js";
+  ZodyAgentProcessManager,
+} from "./zody-agent/zodyAgentProcessManager.js";
 export type {
-  ZCodeAgentCommand,
-  ZCodeAgentCommandResolver,
-  ZCodeAgentCommandResolverContext,
-  ZCodeAgentNativeRuntimeConfig,
+  ZodyAgentCommand,
+  ZodyAgentCommandResolver,
+  ZodyAgentCommandResolverContext,
+  ZodyAgentNativeRuntimeConfig,
   ZCodeAgentNativeRuntimeResolver,
   ZCodeAgentNativeRuntimeResolverContext,
-  ZCodeAgentNativeRuntimeStartupContext,
-  ZCodeAgentProcessManagerOptions,
-} from "./zody-agent/zcodeAgentProcessManager.js";
+  ZodyAgentNativeRuntimeStartupContext,
+  ZodyAgentProcessManagerOptions,
+} from "./zody-agent/zodyAgentProcessManager.js";
 export {
   createZCodeAgentNativeRuntimeStartupContext,
   digestZCodeAgentNativeRuntimeProviderSnapshot,
@@ -316,11 +316,11 @@ import { createCredentialService } from "./credential/credentialService.js";
 import { createBroadcastService } from "./broadcast/broadcastService.js";
 import { createZCodeAgentService } from "./zody-agent/zcodeAgentService.js";
 import type {
-  ZCodeAgentCommandResolver,
-  ZCodeAgentCommandResolverContext,
-  ZCodeAgentNativeRuntimeConfig,
+  ZodyAgentCommandResolver,
+  ZodyAgentCommandResolverContext,
+  ZodyAgentNativeRuntimeConfig,
   ZCodeAgentNativeRuntimeResolver,
-} from "./zody-agent/zcodeAgentProcessManager.js";
+} from "./zody-agent/zodyAgentProcessManager.js";
 import { buildAgentTelemetrySpawnEnv } from "./zody-agent/agentTelemetryEnv.js";
 import { resolveZCodeAgentPresentationSurface } from "./zody-agent/zcodeAgentPresentationSurface.js";
 import { createZCodeTaskServiceAdapter } from "./zody-agent/zcodeTaskServiceAdapter.js";
@@ -1019,9 +1019,9 @@ export function createLocalServices(options: {
   // fork（F4.3）：onOffPeakSchedulerWakeRequested（闲时 scheduler 唤醒回调）随闲时任务全链路删除。
   // 注入点：默认 resolver 已能覆盖 dev/桌面/SSH 远端三类形态；
   // 测试或特殊宿主想强制走自定义 binary/参数时从这里注入。
-  zcodeAgentCommandResolver?: ZCodeAgentCommandResolver;
+  zcodeAgentCommandResolver?: ZodyAgentCommandResolver;
   /** Trusted sealed wrapper injection; takes precedence over PATH/env command discovery. */
-  zcodeAgentNativeRuntime?: ZCodeAgentNativeRuntimeConfig;
+  zcodeAgentNativeRuntime?: ZodyAgentNativeRuntimeConfig;
   /** Build-time opt-in narrow selector; null falls back to the original resolver. */
   zcodeAgentNativeRuntimeResolver?: ZCodeAgentNativeRuntimeResolver;
   /** Desktop Main 提前异步采集的本机 runtime 环境；Local Host 注入后不再同步启动 login shell。 */
@@ -1707,7 +1707,7 @@ export function createLocalServices(options: {
   // second provider/config store. The resolver invokes this callback only on a new spawn.
   const zcodeAgentNativeRuntimeResolver =
     options?.zcodeAgentNativeRuntimeResolver && !isDesktopAttachedRemote
-      ? (context: ZCodeAgentCommandResolverContext) =>
+      ? (context: ZodyAgentCommandResolverContext) =>
           options.zcodeAgentNativeRuntimeResolver!(context, {
             readStartupContext: async () => {
               const [providerSettingsView, modelSelectionView, settings] = await Promise.all([

@@ -252,8 +252,8 @@ describe("createZCodeAgentService provider registry", () => {
       throw new Error(`Unexpected method ${method}`);
     });
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         async getClient() {
           return {
             request,
@@ -305,8 +305,8 @@ describe("createZCodeAgentService provider registry", () => {
       onClose: () => ({ dispose() {} }),
     }));
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         getClient = getClient;
         disposeAll() {}
       },
@@ -347,8 +347,8 @@ describe("createZCodeAgentService provider registry", () => {
   it("keeps initialize waiting without creating a client when provider/model is unavailable", async () => {
     const getClient = vi.fn();
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         getClient = getClient;
         disposeAll() {}
       },
@@ -383,8 +383,8 @@ describe("createZCodeAgentService provider registry", () => {
       onClose: () => ({ dispose() {} }),
     }));
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         getClient = getClient;
         disposeAll() {}
       },
@@ -430,8 +430,8 @@ describe("createZCodeAgentService provider registry", () => {
         onClose: () => ({ dispose() {} }),
       }));
       vi.resetModules();
-      vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-        ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+      vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+        ZodyAgentProcessManager: class extends MockProcessManagerBase {
           getClient = getClient;
           disposeAll() {}
         },
@@ -491,8 +491,8 @@ describe("createZCodeAgentService provider registry", () => {
       onClose: () => ({ dispose() {} }),
     }));
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         getClient = getClient;
         async disposeWorkspace() {}
         disposeAll() {}
@@ -537,8 +537,8 @@ describe("createZCodeAgentService provider registry", () => {
       return client;
     });
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         getClient = getClient;
         disposeAll() {}
       },
@@ -595,8 +595,8 @@ describe("createZCodeAgentService provider registry", () => {
       onClose: () => ({ dispose() {} }),
     }));
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         getClient = getClient;
         disposeAll() {}
       },
@@ -627,8 +627,8 @@ describe("createZCodeAgentService provider registry", () => {
     }));
     const disposeWorkspace = vi.fn(async () => {});
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         getClient = getClient;
         disposeWorkspace = disposeWorkspace;
         disposeAll() {}
@@ -682,8 +682,8 @@ describe("createZCodeAgentService provider registry", () => {
       onClose: () => ({ dispose() {} }),
     }));
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         getClient = getClient;
         disposeAll() {}
       },
@@ -741,8 +741,8 @@ describe("createZCodeAgentService provider registry", () => {
       throw new Error(`Unexpected method ${method}`);
     });
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         async getClient() {
           return {
             request,
@@ -851,8 +851,8 @@ describe("createZCodeAgentService provider registry", () => {
       throw new Error(`Unexpected method ${method}`);
     });
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         async getClient() {
           return {
             request,
@@ -949,8 +949,8 @@ describe("createZCodeAgentService provider registry", () => {
       throw new Error(`Unexpected method ${method}`);
     });
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         async getClient() {
           return {
             request,
@@ -1019,8 +1019,8 @@ describe("createZCodeAgentService provider registry", () => {
       slashCommands: [],
     }));
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class extends MockProcessManagerBase {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class extends MockProcessManagerBase {
         async getClient() {
           return {
             request,
@@ -1098,8 +1098,8 @@ describe("createZCodeAgentService provider registry", () => {
         onClose: () => ({ dispose() {} }),
       });
     vi.resetModules();
-    vi.doMock("../src/zcode-agent/zcodeAgentProcessManager.js", () => ({
-      ZCodeAgentProcessManager: class {
+    vi.doMock("../src/zody-agent/zodyAgentProcessManager.js", () => ({
+      ZodyAgentProcessManager: class {
         getClient = getClient;
         // Bug 原因同共享 mock：service 构造期新增 runtime 生命周期订阅；本用例只驱动
         // stdio 重试，因此用空 disposable 补齐局部测试桩契约。

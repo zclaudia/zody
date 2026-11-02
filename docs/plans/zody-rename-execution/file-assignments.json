@@ -11292,6 +11292,7 @@
       "packages/desktop/src/shared/armsBrowserInit.ts",
       "packages/desktop/src/shared/armsRumBridgeForward.ts",
       "packages/desktop/src/shared/armsRumShared.d.ts",
+      "packages/desktop/src/shared/armsRumShared.d.ts.map",
       "packages/desktop/src/shared/armsRumShared.js",
       "packages/desktop/src/shared/armsRumShared.ts",
       "packages/desktop/test/app-asar-repack.test.ts",
