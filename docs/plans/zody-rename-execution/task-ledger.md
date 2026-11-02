@@ -1,6 +1,6 @@
 # Zody rename execution ledger
 
-Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. No product implementation milestone is complete yet.
+Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. R10 implementation candidate exists; independent review requested corrections. Full rename remains incomplete.
 
 - Source base: `033f91783901e6adaf968d3d4b8ca34c41d89442`.
 - Frozen plan commit: `06ad2270f121c46a0f5c069ae3da18641c6a9858`.
@@ -10,36 +10,36 @@ Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan usi
 - Terra R00: `/root/terra_r00` (native model `gpt-6.1-terra`). Owns manifest and R00 report/inventory files only.
 - DeepSeek review: `broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19cc4-82c8-7cc2-a81c-fee2d8b18b67`, route `deepseek-flash`, provider `magpie`, model `group/deepseek`, access `read-only`. Initial review scope: plan/baseline checklist; formal R00 review awaits stable output.
 - Broker grant: exact implementation cwd, connection scope, no UI grant.
-- Controller owns this ledger and all dispatch locks. No other product writer is active.
+- Controller owns this ledger and all dispatch locks. Active writes are disjoint: Terra R10 corrective files, Terra R02 isolated evidence/report, Terra R01 planning documents.
 
-| Task | Status  | Implementation  | Review / gate                                                       |
-| ---- | ------- | --------------- | ------------------------------------------------------------------- |
-| R00  | review  | /root/terra_r00 | DeepSeek review-2 PASS for initial dispatch scopes; later writeSets gated on R01               |
-| R01  | running | /root/terra_r01 | documentation-only work; no product code dispatch before R00 review |
-| R02  | planned | unassigned      | not run                                                             |
-| R10  | planned | unassigned      | not run                                                             |
-| R20  | planned | unassigned      | not run                                                             |
-| R21  | planned | unassigned      | not run                                                             |
-| R22  | planned | unassigned      | not run                                                             |
-| R30  | planned | unassigned      | not run                                                             |
-| R40  | planned | unassigned      | not run                                                             |
-| R41  | planned | unassigned      | not run                                                             |
-| R42  | planned | unassigned      | not run                                                             |
-| R43  | planned | unassigned      | not run                                                             |
-| R44  | planned | unassigned      | not run                                                             |
-| R45  | planned | unassigned      | not run                                                             |
-| R46  | planned | unassigned      | not run                                                             |
-| R47  | planned | unassigned      | not run                                                             |
-| R48  | planned | unassigned      | not run                                                             |
-| R50  | planned | unassigned      | not run                                                             |
-| R51  | planned | unassigned      | not run                                                             |
-| R52  | planned | unassigned      | not run                                                             |
-| R53  | planned | unassigned      | not run                                                             |
-| R54  | planned | unassigned      | not run                                                             |
-| R55  | planned | unassigned      | not run                                                             |
-| R56  | planned | unassigned      | not run                                                             |
-| R60  | planned | unassigned      | not run                                                             |
-| R61  | planned | unassigned      | not run                                                             |
+| Task | Status     | Implementation                    | Review / gate                                                                                                    |
+| ---- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| R00  | integrated | /root/terra_r00                   | DeepSeek review-2 PASS for initial dispatch; later scopes gated on contracts                                     |
+| R01  | integrated | /root/terra_r01                   | DeepSeek review-2 PASS at 40cae940; nonblocking cleanup and plan handoff in progress                             |
+| R02  | running    | /root/terra_r02_source_provenance | DeepSeek review-1 CHANGES_REQUIRED: preserve matching v4 source before R20; old runtime evidence remains due R48 |
+| R10  | review     | /root/terra_r10                   | Fix candidate 0e403023; controller distribution18/typecheck/lint pass; DeepSeek re-review running                |
+| R20  | planned    | unassigned                        | not run                                                                                                          |
+| R21  | planned    | unassigned                        | not run                                                                                                          |
+| R22  | planned    | unassigned                        | not run                                                                                                          |
+| R30  | planned    | unassigned                        | not run                                                                                                          |
+| R40  | planned    | unassigned                        | not run                                                                                                          |
+| R41  | planned    | unassigned                        | not run                                                                                                          |
+| R42  | planned    | unassigned                        | not run                                                                                                          |
+| R43  | planned    | unassigned                        | not run                                                                                                          |
+| R44  | planned    | unassigned                        | not run                                                                                                          |
+| R45  | planned    | unassigned                        | not run                                                                                                          |
+| R46  | planned    | unassigned                        | not run                                                                                                          |
+| R47  | planned    | unassigned                        | not run                                                                                                          |
+| R48  | planned    | unassigned                        | not run                                                                                                          |
+| R50  | planned    | unassigned                        | not run                                                                                                          |
+| R51  | planned    | unassigned                        | not run                                                                                                          |
+| R52  | planned    | unassigned                        | not run                                                                                                          |
+| R53  | planned    | unassigned                        | not run                                                                                                          |
+| R54  | planned    | unassigned                        | not run                                                                                                          |
+| R55  | planned    | unassigned                        | not run                                                                                                          |
+| R56  | planned    | unassigned                        | not run                                                                                                          |
+| R60  | planned    | unassigned                        | not run                                                                                                          |
+| R61  | planned    | unassigned                        | not run                                                                                                          |
 
 ## Verification
 
@@ -71,3 +71,22 @@ Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan usi
 - R00 DeepSeek review-2: PASS for initial dispatch scope; saved in reports/R00-deepseek-review-2.md. Count now includes two nested bootstrap protocol moves (13 mappings). It does not assert subsequent interface tasks are already verified.
 - R01 DeepSeek review-1: CHANGES_REQUIRED (reports/R01-deepseek-review-1.md), permitting R10 but blocking wire/plugin interface dispatch. Terra has addressed field-level ownership, separate RemoteServer/Agent stdio, Web and mobile consumers, manifest readers and exact env keys; re-review pending.
 - R10 completed by Terra, staged for independent review: distribution 17 tests, services process manager 66 tests and official-refs 17 tests reported passing. Controller diff review found only granted P1 changes; independent re-run/review pending. Extra grant includes services process-manager test and third-party/SPEC current script path.
+
+## Current review disposition and dispatch (2026-11-02 continuation)
+
+- Previous goal turn made planning progress, not product completion. Current worktree/known agent handles were revalidated before resuming.
+- DeepSeek R01 review-2 PASS is saved; its five nonblocking cleanups are in the working tree. Terra is preserving accepted contracts while merging the latest plan dispatch/checkpoint additions.
+- DeepSeek R02 review-1 independently verified the isolated v4 archive/restore hashes. Matching source preservation is the remaining R20 gate; old runtime and final signing/bundle tests remain R48/R60 gates. Terra is reconstructing and hashing source inputs from the recorded baseline and source archive into the isolated R02 evidence root.
+- DeepSeek R10 review-1 found an active spec stale path and smoke-entry mismatch. Terra is correcting those and current dev/historical-doc inconsistencies, with a dedicated fixture regression test.
+- R10 reviewer: `broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19cdb-5be9-73f3-9b21-930b5c45f36a`. R02 uses the original R00 reviewer handle. All three known reviewers are completed, not running, at this snapshot.
+- Controller independently ran the R10 candidate's 100 related tests, typecheck and lint successfully. Lint: 303 warnings. Full architecture check failed with two baseline violations (missing Gen UI contract test, plugin UI service 404 lines); unchanged versus source baseline. See reports/R10-controller-verification.md.
+- R20 is not dispatched for product writes. No main merge, release, production deployment or trust-root change has occurred.
+- Historical sections above preserve earlier evidence chronology; this table and this disposition supersede stale running/pending descriptions.
+
+## R02/R10 corrective candidates
+
+- R01 handoff commit: `5b09af46`; latest plan checkpoints merged without replacing accepted protocol contracts.
+- R10 correction commit: `0e403023`; active spec and smoke layout corrected, fixture regression and CI entry added. Controller distribution 18/18, typecheck/lint exit 0 (303 warnings); DeepSeek second review running on its existing handle.
+- R02 sealed source preservation: four-entry non-node_modules inputs 1979/1979 verified in source archive; native baseline/stage 34/34 and six patches captured. Controller independently compared all 1979 archive hashes to manifest. Source archive SHA256 `5968df6d10dbeeeec82470c81be3abba51544291e998dba0d65214db6260758e`. Report and evidence are under second review. This is not a successful full rebuild or final signature/runtime gate.
+- R20 preflight: Terra R01 may only write `output/zody-rename-r20-preflight/` and expand constrained replacement/file assignments; no product writes until R02/R10 gates and controller scope review.
+- R02 old runtime preparation: Terra source-provenance agent may create a detached 033f checkout under `output/zody-rename-r02/legacy-runtime-source`, install/build only there with isolated outputs, and write reports/R02-legacy-runtime.md. No production credentials, UI or trust changes.
