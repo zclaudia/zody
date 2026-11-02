@@ -74,6 +74,7 @@ import {
   DISABLED_RENDERER_ACTION_TRACE_CONFIG,
   DEFAULT_LOCALE,
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
+  tryNormalizeRemoteAccessGatewayUrl,
   TEST_ZCODE_ENDPOINT_ORIGIN,
   ZCODE_VERSION,
   ZCODE_DATA_ROOT_DIR_NAME,
@@ -128,6 +129,8 @@ import { createRemoteWorkspaceDirectory } from "./remote-access/remoteWorkspaceD
 import { createRemoteAccessCredentialStore } from "./remote-access/remoteAccessCredentialStore.js";
 import { createRemoteGatewayBackend } from "./remote-access/remoteGatewayBackend.js";
 import { createGatewayDeviceTransport } from "./remote-access/gatewayDeviceTransport.js";
+import { createMobileUiAssetProvider } from "./remote-access/mobileUiAssetProvider.js";
+import { resolveMobileWebRootDir } from "../../scripts/mobile-web-assets.mjs";
 import { createWebRemoteControlFeatureGate } from "./webRemoteControlFeatureGate.js";
 import { reconnectWebRemoteControlWorkspaceInRenderer } from "./webRemoteControlRendererReconnect.js";
 import { broadcastWebRemoteControlStatusChanged } from "./webRemoteControlStatusEvents.js";
@@ -760,6 +763,41 @@ const gatewayDeviceTransport = createGatewayDeviceTransport({
   logger,
   desktopAppVersion: ZCODE_VERSION || app.getVersion(),
 });
+/**
+ * M1-T5：Main 只装配只读 MobileUiAssetProvider，并把它交给 gateway backend 的 serveHttp。
+ *
+ * 状态边界（spec 第 3、5 节）：
+ * - 制品根目录由 M1-T4 的 `resolveMobileWebRootDir` 决定：dev 读 `packages/web/dist-mobile-remote`，
+ *   打包态只读 `process.resourcesPath/mobile-web`；
+ * - `resolveSecurityContext` 每次请求重新读取当前 settings 的 Gateway URL，只输出纯 HTTP/WS origin，
+ *   用于生成 CSP 的 connect-src；凭证只存在于凭据服务，绝不进入 CSP 或响应；
+ * - provider 不承载 task/session、Host attachment 或 runtime 状态，请求失败只影响 UI 静态资源。
+ */
+const mobileUiAssetProvider = createMobileUiAssetProvider({
+  rootDir: resolveMobileWebRootDir({
+    isPackaged: app.isPackaged,
+    resourcesPath: process.resourcesPath,
+    // dev 下 app.getAppPath() 是 packages/desktop，与 M1-T4 的源码目录解析一致。
+    desktopPackageRoot: app.getAppPath(),
+  }),
+  resolveSecurityContext: async () => {
+    const settings = await mainSettingService.get();
+    const endpoint = tryNormalizeRemoteAccessGatewayUrl(
+      settings.remoteAccess?.gatewayUrl ?? "",
+      // 与 backend 建连规则一致：只有非 release 的本地开发形态允许明文 gateway。
+      { allowInsecureTransport: !app.isPackaged },
+    );
+    if (!endpoint) {
+      return undefined;
+    }
+    // URL.origin 丢弃 path/query 与 userinfo，保证 CSP 只拿到纯 origin。
+    return {
+      gatewayHttpOrigin: new URL(endpoint.baseUrl).origin,
+      gatewayWsOrigin: new URL(endpoint.wsBaseUrl).origin,
+    };
+  },
+  logger,
+});
 const remoteGatewayBackend = createRemoteGatewayBackend({
   loadConfig: async () => {
     const settings = await mainSettingService.get();
@@ -779,6 +817,8 @@ const remoteGatewayBackend = createRemoteGatewayBackend({
   allowInsecureTransport: !app.isPackaged,
   // T3.3：transport 经 socketFactory 扣住数据 socket，读 bufferedAmount 做背压。
   socketFactory: gatewayDeviceTransport.socketFactory,
+  // M1-T3：存在 provider 时 backend 会在每次 connect() 前注册 serveHttp 并声明 UI capability。
+  mobileUiHandler: mobileUiAssetProvider,
 });
 // Stable authenticated identity is retained across temporary disconnects so Host outboxes keep recording.
 let mobileNotificationBackendId: string | undefined;

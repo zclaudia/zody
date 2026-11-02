@@ -40,6 +40,7 @@
     "build:desktop-agent:bytecode": "node scripts/build-desktop-agent-bytecode.mjs",
     "build:docs": "pnpm --filter @zcode/dev-docs build",
     "build:mobile-web": "node scripts/build-mobile-web-release.mjs",
+    "test:mobile-web-release": "node --test scripts/build-mobile-web-release.test.mjs",
     "check:mobile-web-isolation": "node scripts/check-mobile-web-bundle-isolation.mjs",
     "build:zcode": "node scripts/build-zcode.mjs",
     "build:zody": "node scripts/build-zcode.mjs",
