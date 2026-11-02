@@ -2,7 +2,7 @@ import { createLocalServices, getAppConfigDir } from "@zody/services/node";
 import {
   materializeBundledZCodeBuiltinProviderConfig,
   readBundledZCodeBuiltinProviderConfig,
-} from "./bundledZCodeBuiltinProviderConfig.js";
+} from "./bundledZodyBuiltinProviderConfig.js";
 import { createHttpServer } from "./http.js";
 
 async function main(): Promise<void> {

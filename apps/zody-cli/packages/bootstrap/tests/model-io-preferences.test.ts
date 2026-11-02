@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { zcodeWorkspaceUpdateModelIoPreferencesResultSchema } from "@zody/shared";
 import { updateModelIoPreferences } from "../src/zody-protocol/model-io-preferences.js";
 import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
-import { createFakeApp } from "./helpers/fake-zcode-app.js";
+import { createFakeApp } from "./helpers/fake-zody-app.js";
 
 const workspace = {
   workspacePath: "/workspace/app",

@@ -15,7 +15,7 @@ import {
 import {
   readZCodeDataSizeTelemetryState,
   writeZCodeDataSizeTelemetryState,
-} from "../src/main/zcodeDataSizeTelemetryState.js";
+} from "../src/main/zodyDataSizeTelemetryState.js";
 
 const COMPLETE_RESULT: ZCodeDataSizeScanResult = {
   bytes: 42,

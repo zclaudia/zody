@@ -122,8 +122,8 @@ import type {
 } from "@zody/shared/zody-protocol-v4";
 import { createServiceDescriptor } from "../descriptors.js";
 
-export * from "./zcodeAgentPluginParams.js";
-export * from "./zcodeAgentWorkflowParams.js";
+export * from "./zodyAgentPluginParams.js";
+export * from "./zodyAgentWorkflowParams.js";
 import type {
   ZCodeAgentAddPluginMarketplaceParams,
   ZCodeAgentAutomationIdParams,
@@ -159,7 +159,7 @@ import type {
   ZCodeAgentUpdateAutomationParams,
   ZCodeAgentValidatePluginParams,
   ZCodeAgentWorkspaceTarget,
-} from "./zcodeAgentPluginParams.js";
+} from "./zodyAgentPluginParams.js";
 import type {
   ZCodeAgentDeleteSavedWorkflowParams,
   ZCodeAgentFindSavedWorkflowForRunParams,
@@ -169,7 +169,7 @@ import type {
   ZCodeAgentMoveSavedWorkflowParams,
   ZCodeAgentSaveSavedWorkflowFromRunParams,
   ZCodeAgentUpdateSavedWorkflowMetaParams,
-} from "./zcodeAgentWorkflowParams.js";
+} from "./zodyAgentWorkflowParams.js";
 
 export interface ZCodeAgentSessionTarget extends ZCodeAgentWorkspaceTarget {
   sessionId: string;

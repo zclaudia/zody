@@ -38,7 +38,7 @@ import {
 import { Emitter, type Event, type IDisposable } from "@zody/rpc";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
-import type { ZCodeWorkspaceEventSubscriptionParams } from "#src/session/zcodeTaskListTypes.js";
+import type { ZCodeWorkspaceEventSubscriptionParams } from "#src/session/zodyTaskListTypes.js";
 import type {
   IZCodeAgentService,
   ZCodeAgentSessionTarget,

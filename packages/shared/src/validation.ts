@@ -58,7 +58,7 @@ import {
   taskStreamMirrorTargetSchema,
 } from "./task-realtime-core.js";
 import { wslUserSchema } from "./wslUserValidation.js";
-import { legacyZCodeProviderSchema } from "./zcode-agent-policy.js";
+import { legacyZCodeProviderSchema } from "./zody-agent-policy.js";
 import { errorAttributionSchema } from "./zody-protocol-v4/snapshot.js";
 import {
   zcodeMcpResourceSamplesSchema,
@@ -66,7 +66,7 @@ import {
   zcodeProcessResourceSampleSchema,
   zcodeToolExecResourceSchema,
 } from "./zody-protocol/index.js";
-import { zcodeTaskModeSchema } from "./zcode-task-mode-schema.js";
+import { zcodeTaskModeSchema } from "./zody-task-mode-schema.js";
 
 export {
   appSettingsOccupationEnum,
@@ -76,7 +76,7 @@ export {
   postUpdateReleaseNotesPayloadSchema,
 } from "./validationAppSettings.js";
 export { isValidWslUser, WSL_USER_MAX_LENGTH, wslUserSchema } from "./wslUserValidation.js";
-export { zcodeTaskModeSchema } from "./zcode-task-mode-schema.js";
+export { zcodeTaskModeSchema } from "./zody-task-mode-schema.js";
 
 export function formatZodError(error: z.ZodError): string {
   return error.issues

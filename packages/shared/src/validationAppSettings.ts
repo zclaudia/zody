@@ -3,7 +3,7 @@ import { z } from "zod";
 import { REMOTE_ASSET_INSTALL_MODES } from "./remoteAssetInstallMode.js";
 import { isKnownRemoteResourcePackageId } from "./remoteResourcePackages.js";
 import { wslUserSchema } from "./wslUserValidation.js";
-import { ZCODE_ENABLED_AGENT_PROVIDERS } from "./zcode-agent-policy.js";
+import { ZCODE_ENABLED_AGENT_PROVIDERS } from "./zody-agent-policy.js";
 import { DYNAMIC_WORKFLOW_MODES } from "./dynamic-workflow-feature.js";
 import { normalizeZCodeEndpointOrigin } from "./zcodeEndpoint.js";
 import {

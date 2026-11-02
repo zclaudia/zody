@@ -5,7 +5,7 @@ import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import { createWorkspaceZCodeApp } from "../src/zody-protocol/workspace-model-runtime.js";
 import type { ZCodeAppOptions } from "../src/app/types.js";
-import { createFakeApp } from "./helpers/fake-zcode-app.js";
+import { createFakeApp } from "./helpers/fake-zody-app.js";
 
 const LOCAL_WORKSPACE = {
   workspacePath: "/workspace/app",

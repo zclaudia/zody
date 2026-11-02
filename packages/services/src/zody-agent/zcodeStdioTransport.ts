@@ -8,7 +8,7 @@ import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import type {
   ZCodeProtocolTransport,
   ZCodeProtocolTransportClosedEvent,
-} from "./zcodeProtocolTransport.js";
+} from "./zodyProtocolTransport.js";
 import {
   captureProcessGroupSnapshot,
   captureExitedRootDescendantsSnapshotAsync,

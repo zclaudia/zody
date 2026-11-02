@@ -16,7 +16,7 @@ import {
 } from "@zody/shared/zody-protocol-v4";
 import type { ZCodeApp, ZCodeAppOptions } from "../src/app/types.js";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
-import { createFakeApp } from "./helpers/fake-zcode-app.js";
+import { createFakeApp } from "./helpers/fake-zody-app.js";
 
 const workspace = {
   workspacePath: "/workspace/v4-auto-drain-race",

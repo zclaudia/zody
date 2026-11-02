@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   collectBrowserAmbientContext,
   type BrowserAmbientContextExecutor,
-} from "../src/zody-agent/zcodeAgentBrowserAmbientContext.js";
+} from "../src/zody-agent/zodyAgentBrowserAmbientContext.js";
 
 const descriptor = {
   id: "iab-runtime",

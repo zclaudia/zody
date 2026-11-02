@@ -95,7 +95,7 @@ export type {
   ZCodeTaskGroup,
   ZCodeTaskGroupColor,
 } from "./session/zcodeTaskService.js";
-export type { ZCodeTaskListItem } from "./session/zcodeTaskListTypes.js";
+export type { ZCodeTaskListItem } from "./session/zodyTaskListTypes.js";
 
 export { IWindowControllerService } from "./window-controller/windowController.js";
 export { IMobileNotificationReader } from "./mobile-notifications/contract.js";
@@ -131,7 +131,7 @@ export {
   isZCodeAgentMcpStatusModeUnsupportedError,
   ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
   ZCodeAgentMcpStatusModeUnsupportedError,
-} from "./zody-agent/zcodeAgentErrors.js";
+} from "./zody-agent/zodyAgentErrors.js";
 export {
   createZCodeAgentConnectionScope,
   readTrustedZCodeAgentV4Connection,

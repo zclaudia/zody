@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   shouldHideZCodeSessionForkAction,
   supportsZCodeSessionFork,
-} from "../src/lib/zcodeProviders.js";
+} from "../src/lib/zodyProviders.js";
 
 describe("supportsZCodeSessionFork", () => {
   it("所有 provider 都开放 session fork 入口", () => {

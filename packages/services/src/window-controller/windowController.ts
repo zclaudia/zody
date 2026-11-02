@@ -19,7 +19,7 @@ import type {
   ZCodeTaskListQuery,
   ZCodeTaskListResult,
   ZCodeTaskListWorkspaceScope,
-} from "../session/zcodeTaskListTypes.js";
+} from "../session/zodyTaskListTypes.js";
 
 export type WindowHostControllerMutation =
   | { kind: "pin"; pinned: boolean }

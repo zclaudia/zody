@@ -9,7 +9,7 @@ import {
 import type {
   ZCodeProtocolTransport,
   ZCodeProtocolTransportClosedEvent,
-} from "../src/zody-agent/zcodeProtocolTransport.js";
+} from "../src/zody-agent/zodyProtocolTransport.js";
 
 const protocolModelProperties = {
   inputFormat: {

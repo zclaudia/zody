@@ -17,7 +17,7 @@ import {
 import { createZCodeAgentService } from "../src/zody-agent/zcodeAgentService.js";
 import { ZodyAgentProcessManager } from "../src/zody-agent/zodyAgentProcessManager.js";
 import type { ZCodeProtocolClient } from "../src/zody-agent/zcodeProtocolClient.js";
-import { ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE } from "../src/zody-agent/zcodeAgentErrors.js";
+import { ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE } from "../src/zody-agent/zodyAgentErrors.js";
 import type { ZCodeAgentServiceEvent } from "../src/zody-agent/zcodeAgent.js";
 import { getTasksIndexDatabasePath, setDataBaseDir } from "../src/paths.js";
 

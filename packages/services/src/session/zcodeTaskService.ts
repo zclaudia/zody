@@ -53,7 +53,7 @@ import type {
   ZCodeGroupedTaskViewStructure,
   ZCodeTaskGroup,
   ZCodeTaskGroupColor,
-} from "#src/session/zcodeTaskListTypes.js";
+} from "#src/session/zodyTaskListTypes.js";
 
 export interface ZCodeTaskSnapshotWithEtagResult {
   snapshot: ZCodeTaskSnapshot | null;
@@ -174,7 +174,7 @@ export type {
   ZCodeGroupedTaskViewTopLevelNodeRef,
   ZCodeTaskGroup,
   ZCodeTaskGroupColor,
-} from "#src/session/zcodeTaskListTypes.js";
+} from "#src/session/zodyTaskListTypes.js";
 
 /** 一个 task 输入轮次的终态结果，供后台派发（定时任务）回写运行结果。 */
 export interface ZCodeTaskTerminalOutcome {

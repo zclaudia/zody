@@ -7223,5 +7223,6 @@
       }
     ]
   },
-  "symbolMigrationLedger": "docs/plans/zody-rename-execution/r20-symbol-migrations.json"
+  "symbolMigrationLedger": "docs/plans/zody-rename-execution/r20-symbol-migrations.json",
+  "basenameMigrationLedger": "docs/plans/zody-rename-execution/r20-basename-migrations.json"
 }

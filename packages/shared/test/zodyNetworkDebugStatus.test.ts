@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { zcodeTaskNetworkDebugStatusFromPayload } from "../src/zcode-network-debug-status.js";
+import { zcodeTaskNetworkDebugStatusFromPayload } from "../src/zody-network-debug-status.js";
 
 describe("zcodeTaskNetworkDebugStatusFromPayload", () => {
   it("projects model network status payloads with headers and without response data", () => {

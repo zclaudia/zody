@@ -149,7 +149,7 @@ import {
   assertV4CommandAckOk,
   createHostCommandEnvelope,
   sendHostCasCommandV4,
-} from "./zcodeV4HostCommand.js";
+} from "./zodyV4HostCommand.js";
 import {
   getLegacyDeletedTaskSessionSnapshotPath,
   getLegacyTaskSessionSnapshotPath,

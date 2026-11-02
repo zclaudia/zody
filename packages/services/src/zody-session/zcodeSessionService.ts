@@ -23,10 +23,10 @@ import type {
   ZCodeSessionWorkspaceTarget,
 } from "#src/zody-session/zcodeSession.js";
 import { formatModelPickerValue } from "#src/zody-agent/zcodeConfigOptions.js";
-import { createZCodeSessionApiRetryRuntimeTracker } from "#src/zody-session/zcodeSessionApiRetry.js";
+import { createZCodeSessionApiRetryRuntimeTracker } from "#src/zody-session/zodySessionApiRetry.js";
 import { appendWorkspaceToFilesystemMcpServers } from "#src/session/mcpWorkspaceScope.js";
 import { repairEmptyImportedClaudeSessionSnapshot } from "#src/zody-session/importedClaudeSessionRepair.js";
-import { createZCodeDeferredDraftRegistry } from "#src/zody-session/zcodeSessionDraftRegistry.js";
+import { createZCodeDeferredDraftRegistry } from "#src/zody-session/zodySessionDraftRegistry.js";
 import type { CuaProductMcpServerResolver } from "#src/cua-permission-broker/index.js";
 
 const logger = createServiceLogger("zcode-session-service");

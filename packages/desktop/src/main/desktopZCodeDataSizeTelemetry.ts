@@ -6,10 +6,10 @@ import {
   readZCodeDataSizeTelemetryState,
   writeZCodeDataSizeTelemetryState,
   type ZCodeDataSizeTelemetryState,
-} from "./zcodeDataSizeTelemetryState.js";
-import { scanZCodeDataDirectoryInWorker } from "./zcodeDataSizeWorkerClient.js";
+} from "./zodyDataSizeTelemetryState.js";
+import { scanZCodeDataDirectoryInWorker } from "./zodyDataSizeWorkerClient.js";
 
-export type { ZCodeDataSizeTelemetryState } from "./zcodeDataSizeTelemetryState.js";
+export type { ZCodeDataSizeTelemetryState } from "./zodyDataSizeTelemetryState.js";
 
 export const ZCODE_DATA_SIZE_SCAN_MAX_DURATION_MS = 30_000;
 export const ZCODE_DATA_SIZE_SCAN_MAX_FILES = 200_000;

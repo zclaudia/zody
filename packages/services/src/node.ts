@@ -125,7 +125,7 @@ export {
   projectZCodeAgentNativeRuntimeProviderSnapshot,
 } from "./zody-agent/nativeRuntimeStartupProfile.js";
 export { ZCodeProtocolClient } from "./zody-agent/zcodeProtocolClient.js";
-export type { ZCodeProtocolTransport } from "./zody-agent/zcodeProtocolTransport.js";
+export type { ZCodeProtocolTransport } from "./zody-agent/zodyProtocolTransport.js";
 export { ZCodeStdioTransport } from "./zody-agent/zcodeStdioTransport.js";
 export {
   getZCodeStdioTapDevLogDir,
@@ -338,7 +338,7 @@ import { runOfficialAccountProviderDataMigration } from "./model-provider/offici
 import { resolveSubagentStateFile } from "./subagents/subagentStorage.js";
 // fork（F4.7）：官方账号 OAuth 仓库、账号连接解析与 Project Token 均已删除。
 import { createProviderConfigRuntime } from "./model-provider/providerConfigRuntime.js";
-import { fetchZCodeBuiltinRemoteRelease } from "./model-provider/zcodeBuiltinRemoteConfig.js";
+import { fetchZCodeBuiltinRemoteRelease } from "./model-provider/zodyBuiltinRemoteConfig.js";
 import {
   createProviderRuntimeFromConfigRuntime,
   type ProviderRuntime,

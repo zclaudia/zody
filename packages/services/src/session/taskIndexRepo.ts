@@ -21,7 +21,7 @@ import type {
   ZCodeTaskListQuery,
   ZCodeTaskListResult,
   ZCodeTaskListItem,
-} from "#src/session/zcodeTaskListTypes.js";
+} from "#src/session/zodyTaskListTypes.js";
 import type {
   ZCodeGroupedTaskRef,
   ZCodeGroupedTaskView,
@@ -34,7 +34,7 @@ import type {
   ZCodeGroupedTaskViewTopLevelNodeRef,
   ZCodeTaskGroup,
   ZCodeTaskGroupColor,
-} from "#src/session/zcodeTaskListTypes.js";
+} from "#src/session/zodyTaskListTypes.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { getTasksIndexDatabasePath } from "#src/paths.js";
 import { runTasksDatabaseMigrations } from "#src/session/tasksDatabase/migrations.js";

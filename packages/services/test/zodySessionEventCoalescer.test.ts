@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ZCodeSessionEvent } from "@zody/shared";
 import type { ZCodeAgentServiceEvent } from "../src/zody-agent/zcodeAgent.js";
-import { createBackgroundSessionEventCoalescer } from "../src/zody-agent/zcodeSessionEventCoalescer.js";
+import { createBackgroundSessionEventCoalescer } from "../src/zody-agent/zodySessionEventCoalescer.js";
 
 function sessionEvent(
   type: ZCodeSessionEvent["type"],

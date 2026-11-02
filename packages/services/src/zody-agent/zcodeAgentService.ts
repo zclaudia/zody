@@ -328,11 +328,11 @@ import {
   readTrustedZCodeAgentV4UnsubscribeRoute,
   type ZCodeAgentV4ConnectionContext,
 } from "./zcodeAgentConnectionScope.js";
-import { createBackgroundSessionEventCoalescer } from "#src/zody-agent/zcodeSessionEventCoalescer.js";
+import { createBackgroundSessionEventCoalescer } from "#src/zody-agent/zodySessionEventCoalescer.js";
 import { AutomationService } from "#src/session/automationService.js";
 import { AutomationRepo } from "#src/session/automationRepo.js";
 import { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
-import { ZCodeAgentMcpStatusModeUnsupportedError } from "#src/zody-agent/zcodeAgentErrors.js";
+import { ZCodeAgentMcpStatusModeUnsupportedError } from "#src/zody-agent/zodyAgentErrors.js";
 import { ZodyAgentProcessManager } from "./zodyAgentProcessManager.js";
 import type { ZodyAgentProcessManagerOptions } from "./zodyAgentProcessManager.js";
 // fork（F4.3）：IOffPeakTaskService import 随闲时任务全链路删除。
@@ -344,7 +344,7 @@ import { getDataBaseDir } from "../paths.js";
 import {
   collectBrowserAmbientContext,
   type BrowserAmbientContextExecutor,
-} from "./zcodeAgentBrowserAmbientContext.js";
+} from "./zodyAgentBrowserAmbientContext.js";
 import {
   createCuaOperationTurnTracker,
   type CuaOperationWorkspaceTarget,

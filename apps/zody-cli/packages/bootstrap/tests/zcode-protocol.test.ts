@@ -82,7 +82,7 @@ import {
 import { createWorkspaceZCodeApp } from "../src/zody-protocol/workspace-model-runtime.js";
 import { onSessionEvent } from "../src/zody-protocol/server-operations.js";
 import type { ZCodeApp, ZCodeAppOptions } from "../src/app/types.js";
-import { createFakeApp } from "./helpers/fake-zcode-app.js";
+import { createFakeApp } from "./helpers/fake-zody-app.js";
 import { createApiKeyProviderConfig } from "./provider-config-fixtures.js";
 
 const workspace = {

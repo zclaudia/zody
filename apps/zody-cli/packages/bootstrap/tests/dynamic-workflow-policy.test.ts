@@ -5,7 +5,7 @@ import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { closeSession, createSessionRecordForV4 } from "../src/zody-protocol/server-operations.js";
 import { listProtocolSlashCommands } from "../src/zody-protocol/slash-commands.js";
 import type { ZCodeAppOptions } from "../src/app/types.js";
-import { createFakeApp } from "./helpers/fake-zcode-app.js";
+import { createFakeApp } from "./helpers/fake-zody-app.js";
 
 const workspace = { workspaceKey: "/w", workspacePath: "/w" };
 

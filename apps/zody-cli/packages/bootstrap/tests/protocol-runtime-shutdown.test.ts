@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ProtocolRuntimeResources } from "../src/zody-protocol/runtime-resources.js";
 import { cleanupProtocolRuntime } from "../src/zody-protocol/runtime-cleanup.js";
 import { acquireProtocolStartupResource } from "../src/zody-protocol/startup-resource.js";
-import { createFakeApp } from "./helpers/fake-zcode-app.js";
+import { createFakeApp } from "./helpers/fake-zody-app.js";
 import type { Logger } from "@zody/contracts";
 import { createInMemorySessionEventStore } from "@zody/adapters/storage";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";

@@ -3,7 +3,7 @@ import {
   ZCODE_AGENT_PROVIDER,
   type ZCodeProvider,
 } from "@zody/shared";
-import { ZCODE_AGENT_PROVIDERS } from "./zcodeProviders.js";
+import { ZCODE_AGENT_PROVIDERS } from "./zodyProviders.js";
 
 interface StorageLike {
   getItem(key: string): string | null;

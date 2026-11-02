@@ -56,7 +56,7 @@ import type {
   ZCodeProtocolSessionRecord,
 } from "../src/zody-protocol/server-types.js";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
-import { createFakeApp } from "./helpers/fake-zcode-app.js";
+import { createFakeApp } from "./helpers/fake-zody-app.js";
 import type { ZCodeApp } from "../src/app/types.js";
 
 // ── 常驻池单元（fake host）──────────────────────────────────────────────────

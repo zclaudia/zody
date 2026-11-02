@@ -13,7 +13,7 @@ import { createStdioServices } from "./stdioServices.js";
 import {
   materializeBundledZCodeBuiltinProviderConfig,
   readBundledZCodeBuiltinProviderConfig,
-} from "./bundledZCodeBuiltinProviderConfig.js";
+} from "./bundledZodyBuiltinProviderConfig.js";
 
 // In stdio mode, all logging goes to stderr
 const log = (...args: unknown[]) =>

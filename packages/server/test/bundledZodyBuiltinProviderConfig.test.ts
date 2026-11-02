@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { materializeBundledZCodeBuiltinProviderConfig } from "../src/bundledZCodeBuiltinProviderConfig.js";
+import { materializeBundledZCodeBuiltinProviderConfig } from "../src/bundledZodyBuiltinProviderConfig.js";
 
 describe("materializeBundledZCodeBuiltinProviderConfig", () => {
   const tempDirs: string[] = [];

@@ -1,0 +1,621 @@
+{
+  "schemaVersion": 1,
+  "scope": "Actual basename moves; historical source references and remaining candidates are not globally exempted.",
+  "batches": [
+    {
+      "id": "R20.4-basename-01",
+      "candidate": "6720cfe22b8e16e6abcc4abbeee0d084f17594cb",
+      "status": "scoped-review-PASS",
+      "moves": [
+        {
+          "old": "packages/services/src/zody-agent/zcodeAgentProcessManager.ts",
+          "new": "packages/services/src/zody-agent/zodyAgentProcessManager.ts"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentProcessManager.test.ts",
+          "new": "packages/services/test/zodyAgentProcessManager.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "R20.4-basename-02",
+      "base": "e79eab7d35ba576140ff57698ca0fff122629366",
+      "candidate": null,
+      "status": "controller-verified-pending-review",
+      "moves": [
+        {
+          "old": "packages/desktop/src/main/zcodeDataSizeTelemetryState.ts",
+          "new": "packages/desktop/src/main/zodyDataSizeTelemetryState.ts",
+          "baseSha256": "80b5c74a638b89062a2f95d5fe03d439bfff930b0776259b34c4c051b138e0d3",
+          "candidateSha256": "80b5c74a638b89062a2f95d5fe03d439bfff930b0776259b34c4c051b138e0d3"
+        },
+        {
+          "old": "packages/desktop/src/main/zcodeDataSizeWorkerClient.ts",
+          "new": "packages/desktop/src/main/zodyDataSizeWorkerClient.ts",
+          "baseSha256": "7c1bebae1d9758e214ef812fc60b4316809e5724b607acc7d48d2dde7174311d",
+          "candidateSha256": "7c1bebae1d9758e214ef812fc60b4316809e5724b607acc7d48d2dde7174311d"
+        },
+        {
+          "old": "packages/server/src/bundledZCodeBuiltinProviderConfig.ts",
+          "new": "packages/server/src/bundledZodyBuiltinProviderConfig.ts",
+          "baseSha256": "87ea5fd8b469a052229fff95ef265ebe7db63ba7d8ea5dec4ab823b6e6a04fdf",
+          "candidateSha256": "87ea5fd8b469a052229fff95ef265ebe7db63ba7d8ea5dec4ab823b6e6a04fdf"
+        },
+        {
+          "old": "packages/services/src/model-provider/zcodeBuiltinRemoteConfig.ts",
+          "new": "packages/services/src/model-provider/zodyBuiltinRemoteConfig.ts",
+          "baseSha256": "b4fe4e912eb5e7ae2d04c422e096c00a6b4f931c0b9288e274ae963bc2e652d7",
+          "candidateSha256": "b4fe4e912eb5e7ae2d04c422e096c00a6b4f931c0b9288e274ae963bc2e652d7"
+        },
+        {
+          "old": "packages/services/src/session/zcodeTaskListTypes.ts",
+          "new": "packages/services/src/session/zodyTaskListTypes.ts",
+          "baseSha256": "9460b0621bea268caaa041f011e72d224666aa751b0d163d86e8d926cdb3427d",
+          "candidateSha256": "9460b0621bea268caaa041f011e72d224666aa751b0d163d86e8d926cdb3427d"
+        },
+        {
+          "old": "packages/services/src/zody-agent/zcodeAgentBrowserAmbientContext.ts",
+          "new": "packages/services/src/zody-agent/zodyAgentBrowserAmbientContext.ts",
+          "baseSha256": "22411e6e39fdb3cd7d953aba26986a4eeb77ca8ad8c17e3c0d11fe2b1969c803",
+          "candidateSha256": "22411e6e39fdb3cd7d953aba26986a4eeb77ca8ad8c17e3c0d11fe2b1969c803"
+        },
+        {
+          "old": "packages/services/src/zody-agent/zcodeAgentErrors.ts",
+          "new": "packages/services/src/zody-agent/zodyAgentErrors.ts",
+          "baseSha256": "00e4fc99545148e04d3553e8fcc3e972cd25b6e10b2ff791266c57194cdea885",
+          "candidateSha256": "00e4fc99545148e04d3553e8fcc3e972cd25b6e10b2ff791266c57194cdea885"
+        },
+        {
+          "old": "packages/services/src/zody-agent/zcodeAgentPluginParams.ts",
+          "new": "packages/services/src/zody-agent/zodyAgentPluginParams.ts",
+          "baseSha256": "6e1584a39f56c97d1ff49a3b0e8cad2ff259fba7edd20f476265f39d3d3b68a2",
+          "candidateSha256": "6e1584a39f56c97d1ff49a3b0e8cad2ff259fba7edd20f476265f39d3d3b68a2"
+        },
+        {
+          "old": "packages/services/src/zody-agent/zcodeAgentWorkflowParams.ts",
+          "new": "packages/services/src/zody-agent/zodyAgentWorkflowParams.ts",
+          "baseSha256": "3bf98a9d06e7bc8ad39ad34189b09142002f861e6f648fb44ac9cc435d934689",
+          "candidateSha256": "167b013556e98965b367de1ef9b8d0acbc65ba373357196691b4bbc5aebb2ece"
+        },
+        {
+          "old": "packages/services/src/zody-agent/zcodeProtocolTransport.ts",
+          "new": "packages/services/src/zody-agent/zodyProtocolTransport.ts",
+          "baseSha256": "84c06e5ea67aaf3a0fdc04cc280a653c4a15d0655e04c711a1013750977f6685",
+          "candidateSha256": "84c06e5ea67aaf3a0fdc04cc280a653c4a15d0655e04c711a1013750977f6685"
+        },
+        {
+          "old": "packages/services/src/zody-agent/zcodeSessionEventCoalescer.ts",
+          "new": "packages/services/src/zody-agent/zodySessionEventCoalescer.ts",
+          "baseSha256": "2b3c73564ec2d8652c461da4c706663c4cbeca34ccbd20160e5e5e5f8216a7a4",
+          "candidateSha256": "2b3c73564ec2d8652c461da4c706663c4cbeca34ccbd20160e5e5e5f8216a7a4"
+        },
+        {
+          "old": "packages/services/src/zody-agent/zcodeV4HostCommand.ts",
+          "new": "packages/services/src/zody-agent/zodyV4HostCommand.ts",
+          "baseSha256": "50bf7e6da2daa8a97473701f6af1b7c809c07833eb1b5c37999c687f432f83b9",
+          "candidateSha256": "50bf7e6da2daa8a97473701f6af1b7c809c07833eb1b5c37999c687f432f83b9"
+        },
+        {
+          "old": "packages/services/src/zody-session/zcodeSessionApiRetry.ts",
+          "new": "packages/services/src/zody-session/zodySessionApiRetry.ts",
+          "baseSha256": "2579ac8f6d21e198e6b8801d727495819a55e41168d4a6f09480b636d22ff9e6",
+          "candidateSha256": "2579ac8f6d21e198e6b8801d727495819a55e41168d4a6f09480b636d22ff9e6"
+        },
+        {
+          "old": "packages/services/src/zody-session/zcodeSessionDraftRegistry.ts",
+          "new": "packages/services/src/zody-session/zodySessionDraftRegistry.ts",
+          "baseSha256": "f9631d7fb4d5c5ab003f40630e166b07db75a7c1d588f59101aeb7174cf1ef62",
+          "candidateSha256": "f9631d7fb4d5c5ab003f40630e166b07db75a7c1d588f59101aeb7174cf1ef62"
+        },
+        {
+          "old": "packages/shared/src/zcode-agent-policy.ts",
+          "new": "packages/shared/src/zody-agent-policy.ts",
+          "baseSha256": "894048a7be8fdb6c7fc6ecf1ef154412fbdfa66e07a49ff2e3436ed6439a0e93",
+          "candidateSha256": "894048a7be8fdb6c7fc6ecf1ef154412fbdfa66e07a49ff2e3436ed6439a0e93"
+        },
+        {
+          "old": "packages/shared/src/zcode-api-retry-status.ts",
+          "new": "packages/shared/src/zody-api-retry-status.ts",
+          "baseSha256": "014b11bacdcf605522fa4e7d9e17f521fe26d4c0dd9043ed9e9802ca2fa01756",
+          "candidateSha256": "014b11bacdcf605522fa4e7d9e17f521fe26d4c0dd9043ed9e9802ca2fa01756"
+        },
+        {
+          "old": "packages/shared/src/zcode-media-policy.ts",
+          "new": "packages/shared/src/zody-media-policy.ts",
+          "baseSha256": "47ccb08304cf2a24f4795dc6ded2ef5712d1ee1bad5c8bffb4d6081dc86dcde1",
+          "candidateSha256": "47ccb08304cf2a24f4795dc6ded2ef5712d1ee1bad5c8bffb4d6081dc86dcde1"
+        },
+        {
+          "old": "packages/shared/src/zcode-network-debug-status.ts",
+          "new": "packages/shared/src/zody-network-debug-status.ts",
+          "baseSha256": "ccd42774b82262ffde2a34ccb862d6b938faa3c86301f75a32bb0730a74dc829",
+          "candidateSha256": "ccd42774b82262ffde2a34ccb862d6b938faa3c86301f75a32bb0730a74dc829"
+        },
+        {
+          "old": "packages/shared/src/zcode-session-content-profile.ts",
+          "new": "packages/shared/src/zody-session-content-profile.ts",
+          "baseSha256": "d26c9841049b3b17ba0206f73222d3d70b951e378d21cebde93dbda51a7e16e7",
+          "candidateSha256": "d26c9841049b3b17ba0206f73222d3d70b951e378d21cebde93dbda51a7e16e7"
+        },
+        {
+          "old": "packages/shared/src/zcode-task-mode-schema.ts",
+          "new": "packages/shared/src/zody-task-mode-schema.ts",
+          "baseSha256": "0b3ebc170b5e7245fb4c455151893cc0767ac990da976d0482ebe960cda5a765",
+          "candidateSha256": "0b3ebc170b5e7245fb4c455151893cc0767ac990da976d0482ebe960cda5a765"
+        },
+        {
+          "old": "packages/shared/src/zcode-tool-projection-memory.ts",
+          "new": "packages/shared/src/zody-tool-projection-memory.ts",
+          "baseSha256": "f0380ee3c483c26ba20e9939dd6c44ae6cbaecaa6d379980812ec4df4610bbcd",
+          "candidateSha256": "f0380ee3c483c26ba20e9939dd6c44ae6cbaecaa6d379980812ec4df4610bbcd"
+        },
+        {
+          "old": "packages/ui/src/lib/zcodeConfigOptionSelection.ts",
+          "new": "packages/ui/src/lib/zodyConfigOptionSelection.ts",
+          "baseSha256": "0de399a20aa7001689eae2be6b2ed7ad3031e4629b10944678488213c562ef13",
+          "candidateSha256": "0de399a20aa7001689eae2be6b2ed7ad3031e4629b10944678488213c562ef13"
+        },
+        {
+          "old": "packages/ui/src/lib/zcodeModePreference.ts",
+          "new": "packages/ui/src/lib/zodyModePreference.ts",
+          "baseSha256": "cba66813ab81a97b788a2b0d7980661f6543d06145e64b4f2a998fd9e8f1082b",
+          "candidateSha256": "cba66813ab81a97b788a2b0d7980661f6543d06145e64b4f2a998fd9e8f1082b"
+        },
+        {
+          "old": "packages/ui/src/lib/zcodeProviders.ts",
+          "new": "packages/ui/src/lib/zodyProviders.ts",
+          "baseSha256": "7490c1fbaf2e8603957b85f649cbeea4e30de58e4a9977cf7e59a50b8e4a16a9",
+          "candidateSha256": "7490c1fbaf2e8603957b85f649cbeea4e30de58e4a9977cf7e59a50b8e4a16a9"
+        },
+        {
+          "old": "packages/ui/src/lib/zcodeToolCallDisplayIdentity.ts",
+          "new": "packages/ui/src/lib/zodyToolCallDisplayIdentity.ts",
+          "baseSha256": "4205feb653f9c1eb5de18a9798192911f8998adc3eea3f5b8a9f1e6bff052ae7",
+          "candidateSha256": "4205feb653f9c1eb5de18a9798192911f8998adc3eea3f5b8a9f1e6bff052ae7"
+        },
+        {
+          "old": "apps/zody-cli/packages/bootstrap/tests/zcode-protocol-message-mapper.test.ts",
+          "new": "apps/zody-cli/packages/bootstrap/tests/zody-protocol-message-mapper.test.ts",
+          "baseSha256": "6df08dcbea3b3b3bbcbb1d85d0dfb1e8e890b393a474a22a36ca16ba69913edc",
+          "candidateSha256": "6df08dcbea3b3b3bbcbb1d85d0dfb1e8e890b393a474a22a36ca16ba69913edc"
+        },
+        {
+          "old": "apps/zody-cli/packages/bootstrap/tests/zcode-protocol-telemetry-lifecycle.test.ts",
+          "new": "apps/zody-cli/packages/bootstrap/tests/zody-protocol-telemetry-lifecycle.test.ts",
+          "baseSha256": "f3273440eeb35bafcc240f5afc2b09e8c1f48f373751fd2ff9062c421932e7e5",
+          "candidateSha256": "f3273440eeb35bafcc240f5afc2b09e8c1f48f373751fd2ff9062c421932e7e5"
+        },
+        {
+          "old": "apps/zody-cli/packages/bootstrap/tests/zcode-protocol-transport.test.ts",
+          "new": "apps/zody-cli/packages/bootstrap/tests/zody-protocol-transport.test.ts",
+          "baseSha256": "6d2b64996aebc70c78caa027c8a83a49d4e83ea3ea3e236b98f397f1f91c68e2",
+          "candidateSha256": "6d2b64996aebc70c78caa027c8a83a49d4e83ea3ea3e236b98f397f1f91c68e2"
+        },
+        {
+          "old": "packages/client/test/zcodeProtocolV4TopicEnvelope.test.ts",
+          "new": "packages/client/test/zodyProtocolV4TopicEnvelope.test.ts",
+          "baseSha256": "c6d62ea8603a26f6e424d95a5fa4cb25233bb18ae22446b0ebc35277ef34cc6e",
+          "candidateSha256": "c6d62ea8603a26f6e424d95a5fa4cb25233bb18ae22446b0ebc35277ef34cc6e"
+        },
+        {
+          "old": "packages/desktop/test/mcpZcodeAgent.test.ts",
+          "new": "packages/desktop/test/mcpZodyAgent.test.ts",
+          "baseSha256": "33cb0506c15ace7b7bb33c98c7250261342f2590f6318ff0a09e59b7e9edc976",
+          "candidateSha256": "33cb0506c15ace7b7bb33c98c7250261342f2590f6318ff0a09e59b7e9edc976"
+        },
+        {
+          "old": "packages/desktop/test/zcodeDataSizeTelemetry.test.ts",
+          "new": "packages/desktop/test/zodyDataSizeTelemetry.test.ts",
+          "baseSha256": "4b6fd708fa2b085ea6f282cfa6901d9d1c2ac5a1b34fe2236001eea63f4ae2c1",
+          "candidateSha256": "dba9baa14890acc27d57f42d08408c4cb907bebba1adf6fac4c996364a914694"
+        },
+        {
+          "old": "packages/provider-node/test/zcode-builtin-lifecycle.test.ts",
+          "new": "packages/provider-node/test/zody-builtin-lifecycle.test.ts",
+          "baseSha256": "5656c740617622b6917e05966ad23edf15450c8d593e8f74352a582cce3c78b4",
+          "candidateSha256": "5656c740617622b6917e05966ad23edf15450c8d593e8f74352a582cce3c78b4"
+        },
+        {
+          "old": "packages/provider-node/test/zcode-builtin-model-aliases.test.ts",
+          "new": "packages/provider-node/test/zody-builtin-model-aliases.test.ts",
+          "baseSha256": "fe028b0a12ab337ddd17bb3f89628a6059bfbad56c46a6affd788b5c8e54e0c4",
+          "candidateSha256": "fe028b0a12ab337ddd17bb3f89628a6059bfbad56c46a6affd788b5c8e54e0c4"
+        },
+        {
+          "old": "packages/server/test/bundledZCodeBuiltinProviderConfig.test.ts",
+          "new": "packages/server/test/bundledZodyBuiltinProviderConfig.test.ts",
+          "baseSha256": "6a85c8099c93e8fe84437bba0002d34841b83fd8fd2d20057fcdf278071cb09e",
+          "candidateSha256": "e65ad8856aeb87495c997888ad39271f5505380f05a768698ddc396a7abcacd4"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentBrowserAmbientContext.test.ts",
+          "new": "packages/services/test/zodyAgentBrowserAmbientContext.test.ts",
+          "baseSha256": "5cb6734f9814a6b4a957d236eb1ce61d64989ff4bd7a608782805b7aa6bb2277",
+          "candidateSha256": "2b9bd9f423c4e2774ecb61b115bfbfe0b3a5478c47e541d0c00842bc1a4617d1"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentErrors.rpc.test.ts",
+          "new": "packages/services/test/zodyAgentErrors.rpc.test.ts",
+          "baseSha256": "ebc6eff198032b38fde6ebc84ed69e11cb744ddb97ad7d2036a7f36cee3e76ee",
+          "candidateSha256": "a82ecf17139e8aa4222973a2deb27647d26b075fd872928154f231f1291dec5a"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentPresentationSurface.test.ts",
+          "new": "packages/services/test/zodyAgentPresentationSurface.test.ts",
+          "baseSha256": "c8695a6d92ae8f86e6e55ba7ad59854e2e69203668d9240c7becb88bfc3b0bb9",
+          "candidateSha256": "c8695a6d92ae8f86e6e55ba7ad59854e2e69203668d9240c7becb88bfc3b0bb9"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentResourceTelemetry.rpc.test.ts",
+          "new": "packages/services/test/zodyAgentResourceTelemetry.rpc.test.ts",
+          "baseSha256": "f1563b129a2ba5dfb32341abe8a0ee639f4cb7421170db2a1dffa1c8d3a5256f",
+          "candidateSha256": "f1563b129a2ba5dfb32341abe8a0ee639f4cb7421170db2a1dffa1c8d3a5256f"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentService.mcpTelemetry.test.ts",
+          "new": "packages/services/test/zodyAgentService.mcpTelemetry.test.ts",
+          "baseSha256": "ff2bc72d8ff43f0f504c595e480750aad9b2d87f5d7f2c5c65207857679cc12e",
+          "candidateSha256": "ff2bc72d8ff43f0f504c595e480750aad9b2d87f5d7f2c5c65207857679cc12e"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentService.pluginOperationProgress.test.ts",
+          "new": "packages/services/test/zodyAgentService.pluginOperationProgress.test.ts",
+          "baseSha256": "19b612eb992784baaad6d3380812b5275542b5cc20e05e853e0bd102df454a6e",
+          "candidateSha256": "19b612eb992784baaad6d3380812b5275542b5cc20e05e853e0bd102df454a6e"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentService.savedWorkflows.test.ts",
+          "new": "packages/services/test/zodyAgentService.savedWorkflows.test.ts",
+          "baseSha256": "b7030139e94484542a61c2d1a21fee4dd1fb3340b26bc045daef19c1a7bc933e",
+          "candidateSha256": "b7030139e94484542a61c2d1a21fee4dd1fb3340b26bc045daef19c1a7bc933e"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentService.subagentRuntimeConfig.test.ts",
+          "new": "packages/services/test/zodyAgentService.subagentRuntimeConfig.test.ts",
+          "baseSha256": "83f486ca5e4abb7061d5a2bc2eaa99cea388acf66b6d42db74c1a0ca3a405043",
+          "candidateSha256": "83f486ca5e4abb7061d5a2bc2eaa99cea388acf66b6d42db74c1a0ca3a405043"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentService.toolExecResourceTelemetry.test.ts",
+          "new": "packages/services/test/zodyAgentService.toolExecResourceTelemetry.test.ts",
+          "baseSha256": "65adbd81858c8dcc6b4e895248d21ea8972e3ae6db17a85f0a6cc3836e21f8d4",
+          "candidateSha256": "65adbd81858c8dcc6b4e895248d21ea8972e3ae6db17a85f0a6cc3836e21f8d4"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentService.workspaceHookTrust.test.ts",
+          "new": "packages/services/test/zodyAgentService.workspaceHookTrust.test.ts",
+          "baseSha256": "ece50ae06952715090dec49abd2b91000dccc93cc97e54a663ed7379a7dd80ee",
+          "candidateSha256": "ece50ae06952715090dec49abd2b91000dccc93cc97e54a663ed7379a7dd80ee"
+        },
+        {
+          "old": "packages/services/test/zcodeAgentSpawnCwd.test.ts",
+          "new": "packages/services/test/zodyAgentSpawnCwd.test.ts",
+          "baseSha256": "3bdd63a398525c16836527979e29341b27ffc3d7d6eb3abba2156a2f63cde16d",
+          "candidateSha256": "3bdd63a398525c16836527979e29341b27ffc3d7d6eb3abba2156a2f63cde16d"
+        },
+        {
+          "old": "packages/services/test/zcodeBuiltinRemoteConfig.test.ts",
+          "new": "packages/services/test/zodyBuiltinRemoteConfig.test.ts",
+          "baseSha256": "63673c28b9e040b06e2bf60aad39690bde0052420b8c27c4ab0900ae089518c5",
+          "candidateSha256": "0d325adf4afc440ff9d9f5e0343b4234e76ae27338c11cb05c842881c5b3adda"
+        },
+        {
+          "old": "packages/services/test/zcodeConfigOptions.test.ts",
+          "new": "packages/services/test/zodyConfigOptions.test.ts",
+          "baseSha256": "4a5648b154281861e5d7153124d12fa1bcd65f6508e86d4b54923d6838387c4b",
+          "candidateSha256": "4a5648b154281861e5d7153124d12fa1bcd65f6508e86d4b54923d6838387c4b"
+        },
+        {
+          "old": "packages/services/test/zcodeGroupedTaskViewOrder.test.ts",
+          "new": "packages/services/test/zodyGroupedTaskViewOrder.test.ts",
+          "baseSha256": "caec329bb004d7667cfb8d47e1024ae9a0b15166b1fa9896ceb9fdcf314920bf",
+          "candidateSha256": "caec329bb004d7667cfb8d47e1024ae9a0b15166b1fa9896ceb9fdcf314920bf"
+        },
+        {
+          "old": "packages/services/test/zcodeGroupedTaskViewStructure.test.ts",
+          "new": "packages/services/test/zodyGroupedTaskViewStructure.test.ts",
+          "baseSha256": "0948e5d6a020ddc5381cd4599d98bcc2cd7be935f372702882c8122827a26afe",
+          "candidateSha256": "0948e5d6a020ddc5381cd4599d98bcc2cd7be935f372702882c8122827a26afe"
+        },
+        {
+          "old": "packages/services/test/zcodeSessionEventCoalescer.test.ts",
+          "new": "packages/services/test/zodySessionEventCoalescer.test.ts",
+          "baseSha256": "169593a3e80d0f781f9e75f97b6c9d35c4f617511202f47dfecf6d835e325a85",
+          "candidateSha256": "4a8658fa3a2f820d6932970db6d953fcff3745b75fa70c2da0e71a285aa03602"
+        },
+        {
+          "old": "packages/services/test/zcodeStdioTransport.processTree.test.ts",
+          "new": "packages/services/test/zodyStdioTransport.processTree.test.ts",
+          "baseSha256": "a652b116361c8fa1feaf3ef90684f551ed2fb5602167bcb4d9b144873cee2866",
+          "candidateSha256": "a652b116361c8fa1feaf3ef90684f551ed2fb5602167bcb4d9b144873cee2866"
+        },
+        {
+          "old": "packages/services/test/zcodeStorageStartupGate.test.ts",
+          "new": "packages/services/test/zodyStorageStartupGate.test.ts",
+          "baseSha256": "370256fdb35456ac28f0025f12f8df3d62cc625a5d4ec9084a79d884e4971503",
+          "candidateSha256": "370256fdb35456ac28f0025f12f8df3d62cc625a5d4ec9084a79d884e4971503"
+        },
+        {
+          "old": "packages/shared/test/zcodeAgentRuntime.test.ts",
+          "new": "packages/shared/test/zodyAgentRuntime.test.ts",
+          "baseSha256": "48d8f2fba9a62bec330e990440e8d9117491e0de8056aa7177c98de7f147a171",
+          "candidateSha256": "48d8f2fba9a62bec330e990440e8d9117491e0de8056aa7177c98de7f147a171"
+        },
+        {
+          "old": "packages/shared/test/zcodeNetworkDebugStatus.test.ts",
+          "new": "packages/shared/test/zodyNetworkDebugStatus.test.ts",
+          "baseSha256": "9bc84851205146277b5ee9762f7c0566b7d38fc01ce00df70b0676b0a9bea5d3",
+          "candidateSha256": "6e4811b8425f0d26cea624c75b46985494219a2d16d07b997cbc70399b8a58b1"
+        },
+        {
+          "old": "packages/shared/test/zcodePersistedMessageMerge.test.ts",
+          "new": "packages/shared/test/zodyPersistedMessageMerge.test.ts",
+          "baseSha256": "2c52f07a3c03b47b77d6772e40a50ef8f13929aef2e5cf571fa1bdeced91a7a4",
+          "candidateSha256": "2c52f07a3c03b47b77d6772e40a50ef8f13929aef2e5cf571fa1bdeced91a7a4"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolRuntimeIdentity.test.ts",
+          "new": "packages/shared/test/zodyProtocolRuntimeIdentity.test.ts",
+          "baseSha256": "ccbe892e2a4de2dbd0ea3b61fe5f56414ec03fffde17ea3fd84a6962b6015c6c",
+          "candidateSha256": "ccbe892e2a4de2dbd0ea3b61fe5f56414ec03fffde17ea3fd84a6962b6015c6c"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolSavedWorkflows.test.ts",
+          "new": "packages/shared/test/zodyProtocolSavedWorkflows.test.ts",
+          "baseSha256": "1ee8225b4e8835d7c9e0c71cd9da75ab54d816c10a0d9eed68c85853c4390cdf",
+          "candidateSha256": "1ee8225b4e8835d7c9e0c71cd9da75ab54d816c10a0d9eed68c85853c4390cdf"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4AttachmentSource.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4AttachmentSource.test.ts",
+          "baseSha256": "6a2351397728ed9db64ff7cca91c8ae3f87d069643ef7c756e8b3940ccd94c12",
+          "candidateSha256": "6a2351397728ed9db64ff7cca91c8ae3f87d069643ef7c756e8b3940ccd94c12"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4Coalesce.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4Coalesce.test.ts",
+          "baseSha256": "dfafdeda2021a8d5c898477692b4a0c6c01059c57ffcc7333c3508676ff2afed",
+          "candidateSha256": "dfafdeda2021a8d5c898477692b4a0c6c01059c57ffcc7333c3508676ff2afed"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4CommandQuery.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4CommandQuery.test.ts",
+          "baseSha256": "321f28ea58774dfb1a0b4be0f1ef907917b5af75fe9be3c3131b445c7bb6869a",
+          "candidateSha256": "321f28ea58774dfb1a0b4be0f1ef907917b5af75fe9be3c3131b445c7bb6869a"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4ConnectionScope.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4ConnectionScope.test.ts",
+          "baseSha256": "cff9725c99246ce9c4fc72d8ff9538c2a44e1b8cef44e06fea91fc65976c1ad1",
+          "candidateSha256": "cff9725c99246ce9c4fc72d8ff9538c2a44e1b8cef44e06fea91fc65976c1ad1"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4FileRewind.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4FileRewind.test.ts",
+          "baseSha256": "aa8849708af3dbc843b74aa1ea84328bcf544022d7fdbdaf75c51aaec6d5fca4",
+          "candidateSha256": "aa8849708af3dbc843b74aa1ea84328bcf544022d7fdbdaf75c51aaec6d5fca4"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4HookSummary.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4HookSummary.test.ts",
+          "baseSha256": "f164c8151c01bd59840545a35a0d6f7186f1e886027109defdd1e1806703a2ae",
+          "candidateSha256": "f164c8151c01bd59840545a35a0d6f7186f1e886027109defdd1e1806703a2ae"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4PhysicalTopic.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4PhysicalTopic.test.ts",
+          "baseSha256": "43252a813de41349a40cc43861b863a50446a27649580fbe6d1cae5fc2d58cf2",
+          "candidateSha256": "43252a813de41349a40cc43861b863a50446a27649580fbe6d1cae5fc2d58cf2"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4Plans.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4Plans.test.ts",
+          "baseSha256": "0ba53667e17c86f4da612519822355ffee75432cc5c1df23b3a9e894fcb5477f",
+          "candidateSha256": "0ba53667e17c86f4da612519822355ffee75432cc5c1df23b3a9e894fcb5477f"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4SessionWorkflowActivity.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4SessionWorkflowActivity.test.ts",
+          "baseSha256": "64469c6177fa02c91706d57802330b9b20bfad371454083a5f08ae7c1546a127",
+          "candidateSha256": "64469c6177fa02c91706d57802330b9b20bfad371454083a5f08ae7c1546a127"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4StableFork.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4StableFork.test.ts",
+          "baseSha256": "71e6cb26fe7b1907e001ff73f87879e42cf73ca6399f76446c52cf2fcf0c35a0",
+          "candidateSha256": "71e6cb26fe7b1907e001ff73f87879e42cf73ca6399f76446c52cf2fcf0c35a0"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4Telemetry.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4Telemetry.test.ts",
+          "baseSha256": "eb4446db415780be1d7f8ae49e54dd8dfa6f272818817b74243f233cad0b262d",
+          "candidateSha256": "eb4446db415780be1d7f8ae49e54dd8dfa6f272818817b74243f233cad0b262d"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4Usage.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4Usage.test.ts",
+          "baseSha256": "af86a9ae5a1f0e678345fb91de960ef80214c66d65826c7c1f2ea42d06444b37",
+          "candidateSha256": "af86a9ae5a1f0e678345fb91de960ef80214c66d65826c7c1f2ea42d06444b37"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4UserInputEpilogue.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4UserInputEpilogue.test.ts",
+          "baseSha256": "4b62c4cda0b4576ec7bafb67e9f6465e301ce593bdb27befbf363e1b02c1124f",
+          "candidateSha256": "4b62c4cda0b4576ec7bafb67e9f6465e301ce593bdb27befbf363e1b02c1124f"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4Wire.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4Wire.test.ts",
+          "baseSha256": "74157fc238f69dbbb4e1a6f67c870f488a6804f931cab78cffb9a8334b8c7a7f",
+          "candidateSha256": "74157fc238f69dbbb4e1a6f67c870f488a6804f931cab78cffb9a8334b8c7a7f"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WireFault.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WireFault.test.ts",
+          "baseSha256": "eb1e455d33ce74a68fc76e9117ff5c6a11b4fa800f9ff10e06f7b7f99484c6ce",
+          "candidateSha256": "eb1e455d33ce74a68fc76e9117ff5c6a11b4fa800f9ff10e06f7b7f99484c6ce"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WorkflowObservationDisplay.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WorkflowObservationDisplay.test.ts",
+          "baseSha256": "eaacdf3eb24040d7cf6e0096164097dc3003585d7e7aaaf3c207a1b5421aafaf",
+          "candidateSha256": "eaacdf3eb24040d7cf6e0096164097dc3003585d7e7aaaf3c207a1b5421aafaf"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WorkflowRuns.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WorkflowRuns.test.ts",
+          "baseSha256": "3c9a06fed6b32370f359b2f8781d6b33414f2f8caf13af0d8154c66712ec83a0",
+          "candidateSha256": "3c9a06fed6b32370f359b2f8781d6b33414f2f8caf13af0d8154c66712ec83a0"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WorkflowRunsCachedSettle.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WorkflowRunsCachedSettle.test.ts",
+          "baseSha256": "b60f9adfab262c2a4a3583eb7032f4ab28a7ca2aaa18f6cfd660020f8a0dc463",
+          "candidateSha256": "b60f9adfab262c2a4a3583eb7032f4ab28a7ca2aaa18f6cfd660020f8a0dc463"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WorkflowRunsCaps.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WorkflowRunsCaps.test.ts",
+          "baseSha256": "ebdcdf773c6d7797794c3bc1a934ce51adecdf6e0deed3c0e3102ab200128deb",
+          "candidateSha256": "ebdcdf773c6d7797794c3bc1a934ce51adecdf6e0deed3c0e3102ab200128deb"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WorkflowRunsDelta.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WorkflowRunsDelta.test.ts",
+          "baseSha256": "f47c75c5adb91e83a28d1d1e0033716feec2c3641675174ef65c9fd2cd84828d",
+          "candidateSha256": "f47c75c5adb91e83a28d1d1e0033716feec2c3641675174ef65c9fd2cd84828d"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WorkflowRunsEviction.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WorkflowRunsEviction.test.ts",
+          "baseSha256": "9392d972cae75d5c9305ed9b7629eebc165e0a6bf95a69b235d620949db156fd",
+          "candidateSha256": "9392d972cae75d5c9305ed9b7629eebc165e0a6bf95a69b235d620949db156fd"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WorkflowRunsHoles.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WorkflowRunsHoles.test.ts",
+          "baseSha256": "2064ccbdd4fddc8d3809c282d209a492fc0fbed7191d8642aca5264c630ff4b0",
+          "candidateSha256": "2064ccbdd4fddc8d3809c282d209a492fc0fbed7191d8642aca5264c630ff4b0"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WorkflowWorkspace.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WorkflowWorkspace.test.ts",
+          "baseSha256": "65a28f881fc47b77c6d4864b34001d6dd0294639aba70866a8c0d77cde411353",
+          "candidateSha256": "65a28f881fc47b77c6d4864b34001d6dd0294639aba70866a8c0d77cde411353"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WorkspaceConfig.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WorkspaceConfig.test.ts",
+          "baseSha256": "a7077cf6ab3ed6ddf5be112987918c23a1d7c0f425c92fc202f2bae7b6e83ecd",
+          "candidateSha256": "a7077cf6ab3ed6ddf5be112987918c23a1d7c0f425c92fc202f2bae7b6e83ecd"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolV4WorkspaceHookReview.test.ts",
+          "new": "packages/shared/test/zodyProtocolV4WorkspaceHookReview.test.ts",
+          "baseSha256": "036ab92ce01c6356703d6ce5edf6225378b25561a1216b20daf5f57c7c932c67",
+          "candidateSha256": "036ab92ce01c6356703d6ce5edf6225378b25561a1216b20daf5f57c7c932c67"
+        },
+        {
+          "old": "packages/shared/test/zcodeProtocolWorkspaceHookTrust.test.ts",
+          "new": "packages/shared/test/zodyProtocolWorkspaceHookTrust.test.ts",
+          "baseSha256": "df9cc60fd06d8db3d2d9938f8b87db8b1ee72dabb6d8e175144a09c338746488",
+          "candidateSha256": "df9cc60fd06d8db3d2d9938f8b87db8b1ee72dabb6d8e175144a09c338746488"
+        },
+        {
+          "old": "packages/shared/test/zcodeSessionContentProfile.test.ts",
+          "new": "packages/shared/test/zodySessionContentProfile.test.ts",
+          "baseSha256": "e5cf155cdd56db37a4909ab932ca3255aeb4e7e0d1ad585a543464adb3fa4651",
+          "candidateSha256": "e5cf155cdd56db37a4909ab932ca3255aeb4e7e0d1ad585a543464adb3fa4651"
+        },
+        {
+          "old": "packages/shared/test/zcodeSessionTaskStatus.test.ts",
+          "new": "packages/shared/test/zodySessionTaskStatus.test.ts",
+          "baseSha256": "e7abb8d646e96369c9fe32a97cc0e0f8a9e088f7f39ec206f9df89e3099fb0a3",
+          "candidateSha256": "e7abb8d646e96369c9fe32a97cc0e0f8a9e088f7f39ec206f9df89e3099fb0a3"
+        },
+        {
+          "old": "packages/shared/test/zcodeSourceHeaders.test.ts",
+          "new": "packages/shared/test/zodySourceHeaders.test.ts",
+          "baseSha256": "8f940bba1d1ee0db7b3de6d3a230319de4f67d598be30d43240809630350ce73",
+          "candidateSha256": "8f940bba1d1ee0db7b3de6d3a230319de4f67d598be30d43240809630350ce73"
+        },
+        {
+          "old": "packages/shared/test/zcodeTaskMetaSchema.test.ts",
+          "new": "packages/shared/test/zodyTaskMetaSchema.test.ts",
+          "baseSha256": "8865b688f9c2be469de6e02a7794cd98b51e1d6c351bba2aedaf71b61a233ea6",
+          "candidateSha256": "8865b688f9c2be469de6e02a7794cd98b51e1d6c351bba2aedaf71b61a233ea6"
+        },
+        {
+          "old": "packages/ui/test/useZCodeTaskService.test.ts",
+          "new": "packages/ui/test/useZodyTaskService.test.ts",
+          "baseSha256": "70569c4035c247bbbae9f591b81d095d14673d7b9849b1da51654a870b6bbb87",
+          "candidateSha256": "70569c4035c247bbbae9f591b81d095d14673d7b9849b1da51654a870b6bbb87"
+        },
+        {
+          "old": "packages/ui/test/useZCodeTasksMerge.test.ts",
+          "new": "packages/ui/test/useZodyTasksMerge.test.ts",
+          "baseSha256": "c5375c73587aa1d14a48b2fb5c8afec7d645e2cd8d17ba999fbaf5747f15e389",
+          "candidateSha256": "c5375c73587aa1d14a48b2fb5c8afec7d645e2cd8d17ba999fbaf5747f15e389"
+        },
+        {
+          "old": "packages/ui/test/zcodeCustomModelValue.test.ts",
+          "new": "packages/ui/test/zodyCustomModelValue.test.ts",
+          "baseSha256": "e45a9ae9d1422a3d1c42d7b6e454faed77e5d3166b537d5c1605376ab5b54ee9",
+          "candidateSha256": "e45a9ae9d1422a3d1c42d7b6e454faed77e5d3166b537d5c1605376ab5b54ee9"
+        },
+        {
+          "old": "packages/ui/test/zcodeDraftSkillInvalidation.test.ts",
+          "new": "packages/ui/test/zodyDraftSkillInvalidation.test.ts",
+          "baseSha256": "1cf65404167577295a007c49e4dd55d3d6ab959945ce83411b74032de6f459ab",
+          "candidateSha256": "1cf65404167577295a007c49e4dd55d3d6ab959945ce83411b74032de6f459ab"
+        },
+        {
+          "old": "packages/ui/test/zcodeProviderPreference.test.ts",
+          "new": "packages/ui/test/zodyProviderPreference.test.ts",
+          "baseSha256": "5dcafa51d9a3d1db8be9862c7f2c528654a61af34acd7148c15b32e2a0191f32",
+          "candidateSha256": "5dcafa51d9a3d1db8be9862c7f2c528654a61af34acd7148c15b32e2a0191f32"
+        },
+        {
+          "old": "packages/ui/test/zcodeProviders.test.ts",
+          "new": "packages/ui/test/zodyProviders.test.ts",
+          "baseSha256": "c05ddec30a947905fffb76ac6338d75ef851eadab9d6b660065c66ee8013eefc",
+          "candidateSha256": "e86017439143c3dd18c1344f78278178a9dbfdd71722aad38d75b960761efd81"
+        },
+        {
+          "old": "packages/ui/test/zcodeSessionEventOrder.test.ts",
+          "new": "packages/ui/test/zodySessionEventOrder.test.ts",
+          "baseSha256": "0af32e40ce1a1ce02e069fbb39db7d085f4b1567e632e972479419893e5d80bf",
+          "candidateSha256": "0af32e40ce1a1ce02e069fbb39db7d085f4b1567e632e972479419893e5d80bf"
+        },
+        {
+          "old": "packages/ui/test/zcodeSessionRestore.test.ts",
+          "new": "packages/ui/test/zodySessionRestore.test.ts",
+          "baseSha256": "7d15044f669cce8b9caffe48a5f459ba6ae9d1373510b2868f8bcab3ed10fc5e",
+          "candidateSha256": "7d15044f669cce8b9caffe48a5f459ba6ae9d1373510b2868f8bcab3ed10fc5e"
+        },
+        {
+          "old": "packages/ui/test/zcodeTaskUsageFallback.test.ts",
+          "new": "packages/ui/test/zodyTaskUsageFallback.test.ts",
+          "baseSha256": "bd317be472d99d0ee65d2c1498aeb9c4b49f8f8b979d4be08a92e18298a39835",
+          "candidateSha256": "bd317be472d99d0ee65d2c1498aeb9c4b49f8f8b979d4be08a92e18298a39835"
+        },
+        {
+          "old": "packages/ui/test/zcodeTimelineRuntime.test.ts",
+          "new": "packages/ui/test/zodyTimelineRuntime.test.ts",
+          "baseSha256": "19437360bddbed16384c4b6a4f7fe03b63884ee3a9bac40806627e89bf5d9e9c",
+          "candidateSha256": "19437360bddbed16384c4b6a4f7fe03b63884ee3a9bac40806627e89bf5d9e9c"
+        },
+        {
+          "old": "apps/zody-cli/packages/bootstrap/tests/helpers/fake-zcode-app.ts",
+          "new": "apps/zody-cli/packages/bootstrap/tests/helpers/fake-zody-app.ts",
+          "baseSha256": "8349f11ca61dfef25ead7a83860ee39ef807e2ec3a0e3bf9d3a023a35a096bac",
+          "candidateSha256": "8349f11ca61dfef25ead7a83860ee39ef807e2ec3a0e3bf9d3a023a35a096bac"
+        }
+      ],
+      "deferredE2E": "packages/desktop/test/e2e/conversation-session/manual-review/pending/conversation-session-workspace-zcodeignore.test.ts",
+      "review": null,
+      "controllerReport": "docs/plans/zody-rename-execution/reports/R20-basenames-controller-verification.md",
+      "cleanRebuildEvidence": "output/zody-rename-r20-basenames/clean-rebuild-report.md"
+    }
+  ]
+}

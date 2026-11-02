@@ -119,8 +119,8 @@
     {
       "id": "R20.4-symbols-02",
       "base": "6720cfe22b8e16e6abcc4abbeee0d084f17594cb",
-      "candidate": null,
-      "status": "controller-verified-pending-review",
+      "candidate": "e79eab7d35ba576140ff57698ca0fff122629366",
+      "status": "scoped-review-PASS",
       "records": [
         {
           "old": "isZCodeCuaInternalFeatureEnabled",
@@ -312,7 +312,7 @@
         }
       ],
       "verification": "reports/R20-symbols-next-controller-verification.md",
-      "review": null
+      "review": "reports/R20-symbols-deepseek-review-2.md"
     }
   ]
 }

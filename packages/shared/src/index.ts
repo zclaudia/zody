@@ -102,21 +102,21 @@ export * from "./zcode-protocol-legacy-types.js";
 export * from "./zcode-task-types-core.js";
 export * from "./task-realtime-core.js";
 export * from "./remote-workspace-identity.js";
-export * from "./zcode-api-retry-status.js";
-export * from "./zcode-network-debug-status.js";
+export * from "./zody-api-retry-status.js";
+export * from "./zody-network-debug-status.js";
 export * from "./zcode-session-visible-content.js";
 // fork（F4.6）：official-mcp-auth / official-mcp-tool-error 随官方 MCP 全链路删除。
 export * from "./conversation-message-projection-policy.js";
 // fork（F4.8）：conversation-share（发布/预览/导入协议）随会话分享功能删除。
 export * from "./conversation-preview-artifacts.js";
 export * from "./zcode-session-task-status.js";
-export * from "./zcode-session-content-profile.js";
-export * from "./zcode-tool-projection-memory.js";
+export * from "./zody-session-content-profile.js";
+export * from "./zody-tool-projection-memory.js";
 export * from "./zcode-slash-command-help.js";
 export * from "./zcodeEndpoint.js";
 export * from "./zcode-source-headers.js";
-export * from "./zcode-agent-policy.js";
-export * from "./zcode-media-policy.js";
+export * from "./zody-agent-policy.js";
+export * from "./zody-media-policy.js";
 export * from "./media-preview.js";
 export * from "./plugin-display-name.js";
 export * from "./zcode-agent-runtime.js";

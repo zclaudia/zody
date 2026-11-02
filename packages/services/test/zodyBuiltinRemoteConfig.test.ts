@@ -1,6 +1,6 @@
 import type { ApiClient } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
-import { fetchZCodeBuiltinRemoteRelease } from "../src/model-provider/zcodeBuiltinRemoteConfig.js";
+import { fetchZCodeBuiltinRemoteRelease } from "../src/model-provider/zodyBuiltinRemoteConfig.js";
 import { NodeApiClient } from "../src/providers/api/nodeApiClient.js";
 
 const release = {
