@@ -1,6 +1,6 @@
 # Zody 全面分叉:zcode→zody 改名影响盘点与实施方案
 
-状态:调查完成(2026-10-31),方案修订(2026-11-02),产品实现尚未开始。2026-11-02 按评审补充兼容语义、远端切换、信任数据、发布边界和验证矩阵;保留 §8 的既有产品裁决。本文以**全面分叉**(不再常规按功能移植上游 zai-org/ZCode)为前提,拟替代 [zody-brand-residual-cleanup.md](../../specs/zody-brand-residual-cleanup.md)(2026-10-21)中"保留内部 workspace 标识"的决策;实施前必须先更新该 spec、[upstream-sync-policy.md](../fork/upstream-sync-policy.md) 与 [zody-path-compatibility.md](../../apps/zcode-cli/docs/design/v2/zody-path-compatibility.md)。本次修订方案不代表这些现行规则已同步更新。
+状态:调查完成(2026-10-31)，实施中(2026-11-02)。本设计保留 §8 的既有产品裁决；R01 已更新 [品牌规格](../../specs/zody-brand-residual-cleanup.md)、[上游策略](../fork/upstream-sync-policy.md) 与 [路径契约](../../apps/zcode-cli/docs/design/v2/zody-path-compatibility.md)。R10 脚本阶段已有验收候选；全面改名尚未完成，实际进度与门禁以 [执行账本](zody-rename-execution/task-ledger.md) 为准。
 
 调查方式:六个并行只读子代理分别扫描 workspace 结构、引用分布、运行时协议、环境变量/对外入口、插件生态、测试/CUA 冻结链,本文为汇总。
 

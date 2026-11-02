@@ -17,8 +17,8 @@ Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan usi
 | R00  | integrated | /root/terra_r00                   | DeepSeek review-2 PASS for initial dispatch; later scopes gated on contracts                                     |
 | R01  | integrated | /root/terra_r01                   | DeepSeek review-2 PASS at 40cae940; nonblocking cleanup and plan handoff in progress                             |
 | R02  | running    | /root/terra_r02_source_provenance | DeepSeek review-1 CHANGES_REQUIRED: preserve matching v4 source before R20; old runtime evidence remains due R48 |
-| R10  | review     | /root/terra_r10                   | Fix candidate 0e403023; controller distribution18/typecheck/lint pass; DeepSeek re-review running                |
-| R20  | planned    | unassigned                        | not run                                                                                                          |
+| R10  | verified   | /root/terra_r10                   | DeepSeek review-2 PASS at 0e403023; P1 scope only, not release validation                                        |
+| R20  | ready      | /root/terra_r10                   | R02 source gate + R10 PASS; controller authorized package/path subset, remaining substeps still gated            |
 | R21  | planned    | unassigned                        | not run                                                                                                          |
 | R22  | planned    | unassigned                        | not run                                                                                                          |
 | R30  | planned    | unassigned                        | not run                                                                                                          |
@@ -90,3 +90,9 @@ Updated: 2026-11-02 (Asia/Shanghai). Goal: implement the full execution plan usi
 - R02 sealed source preservation: four-entry non-node_modules inputs 1979/1979 verified in source archive; native baseline/stage 34/34 and six patches captured. Controller independently compared all 1979 archive hashes to manifest. Source archive SHA256 `5968df6d10dbeeeec82470c81be3abba51544291e998dba0d65214db6260758e`. Report and evidence are under second review. This is not a successful full rebuild or final signature/runtime gate.
 - R20 preflight: Terra R01 may only write `output/zody-rename-r20-preflight/` and expand constrained replacement/file assignments; no product writes until R02/R10 gates and controller scope review.
 - R02 old runtime preparation: Terra source-provenance agent may create a detached 033f checkout under `output/zody-rename-r02/legacy-runtime-source`, install/build only there with isolated outputs, and write reports/R02-legacy-runtime.md. No production credentials, UI or trust changes.
+
+## 2026-11-03 R20 scoped implementation dispatch
+
+R02 DeepSeek review-2 accepts source preservation for R20; R48/R60 remain incomplete. R10 review-2 PASS is saved. The controller reviewed exact package/path previews and authorizes only R20.2 through r20-authorized-scope.json; R21-owned graph/inventory/lock content is explicitly excluded, and 3 fixture package names are included. Moves may carry protected files byte-for-byte. DeepSeek preflight review continues on the original immutable preview and can trigger corrections; independent implementation acceptance remains mandatory.
+
+The original preview missed complete internal basename/TS symbol ownership. R20.4 now explicitly owns pure internal declarations/references; its AST candidate is not execution permission until references are resolved. R30/R40–R55 retain serialized values/bridge/env/plugin ownership. Builtin assets/private bin/output mapping is a separate R20.3 closure before phase acceptance. No P2 completion is claimed.
