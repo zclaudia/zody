@@ -1,0 +1,758 @@
+{
+  "R00": {
+    "title": "基线、改名清单与文件分配",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": [
+      "docs/plans/zody-rename-execution/manifest.json",
+      "docs/plans/zody-rename-execution/file-assignments.json",
+      "docs/plans/zody-rename-execution/residual-inventory.json",
+      "docs/plans/zody-rename-execution/scan-inventory.mjs",
+      "docs/plans/zody-rename-execution/reports/R00.md"
+    ],
+    "excludeSet": ["其他任务独占文件", "真实用户数据", "未列出的文件"],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R00.md"],
+    "scopeStatus": "candidate-needs-controller-review",
+    "gate": "候选集依文本扫描，需按任务卡、R01 契约及当前基线核实增删后才可派发"
+  },
+  "R01": {
+    "title": "固化领域 spec、共享接口与验收案例",
+    "readSet": [
+      "AGENTS.md",
+      "apps/zcode-cli/docs/design/v2/zody-path-compatibility.md",
+      "docs/architecture/communication-protocol-layers.md",
+      "docs/conversation-protocol-declaration.md",
+      "docs/fork/upstream-sync-policy.md",
+      "docs/hooks-runtime-contract.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/contract-map.md",
+      "docs/plans/zody-rename-execution/file-assignments.json",
+      "docs/plans/zody-rename-execution/manifest.json",
+      "docs/plans/zody-rename-execution/reports/R01.md",
+      "docs/plans/zody-rename-execution/test-map.md",
+      "docs/plugin-hooks-compat.md",
+      "docs/plugin-management-lifecycle-case-catalog.md",
+      "docs/plugin-mcp-skill-case-catalog.md",
+      "docs/specs/workspace-hook-trust-persistent-only.md",
+      "docs/testing/mobile-remote-phase2-e2e-plan.md",
+      "docs/zcode-protocol.md",
+      "specs/mobile-remote-control-via-gateway.md",
+      "specs/mobile-remote-phase2.md",
+      "specs/zody-brand-residual-cleanup.md",
+      "specs/zody-rename-runtime-contract.md"
+    ],
+    "writeSet": [
+      "AGENTS.md",
+      "apps/zcode-cli/docs/design/v2/zody-path-compatibility.md",
+      "docs/architecture/communication-protocol-layers.md",
+      "docs/conversation-protocol-declaration.md",
+      "docs/fork/upstream-sync-policy.md",
+      "docs/hooks-runtime-contract.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/contract-map.md",
+      "docs/plans/zody-rename-execution/reports/R01.md",
+      "docs/plans/zody-rename-execution/test-map.md",
+      "docs/plugin-hooks-compat.md",
+      "docs/plugin-management-lifecycle-case-catalog.md",
+      "docs/plugin-mcp-skill-case-catalog.md",
+      "docs/specs/workspace-hook-trust-persistent-only.md",
+      "docs/testing/mobile-remote-phase2-e2e-plan.md",
+      "docs/zcode-protocol.md",
+      "specs/mobile-remote-control-via-gateway.md",
+      "specs/mobile-remote-phase2.md",
+      "specs/zody-brand-residual-cleanup.md",
+      "specs/zody-rename-runtime-contract.md"
+    ],
+    "excludeSet": ["其他历史文档", "产品源码", "lock", "其他任务报告"],
+    "plannedPaths": [
+      "docs/plans/zody-rename-execution/contract-map.md",
+      "docs/plans/zody-rename-execution/reports/R01.md",
+      "docs/plans/zody-rename-execution/test-map.md",
+      "specs/zody-rename-runtime-contract.md"
+    ],
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "仅增改本次 case；如需额外目录先交主控扩权"
+  },
+  "R02": {
+    "title": "旧制品、冻结输入与回滚基线",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/manifest.json",
+      "packages/desktop/scripts/macos-cua-demo-defaults.mjs",
+      "packages/desktop/scripts/restore-cua-narrow-frozen.mjs"
+    ],
+    "writeSet": ["docs/plans/zody-rename-execution/reports/R02.md"],
+    "excludeSet": [
+      "output/cua-* 活动材料",
+      "活动 native 冻结目录",
+      "pins",
+      "私钥、凭据、真实用户数据"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R02.md"],
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "主控指定隔离目录及基线制品；备份不得覆盖活动资源",
+    "structureScope": ["隔离旧制品备份与恢复演练目录；由主控派发时指定绝对路径"]
+  },
+  "R10": {
+    "title": "P1 脚本、分发目录与现行文档清理",
+    "readSet": [
+      ".github/workflows/zody-release.yml",
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/manifest.json",
+      "docs/plans/zody-rename-execution/reports/R10.md",
+      "docs/zcode-lite-static-distribution.md",
+      "package.json",
+      "packages/services/src/zcode-agent/zcodeAgentProcessManager.ts",
+      "scripts/audit-zcode-agent-remnants.mjs",
+      "scripts/audit-zody-agent-remnants.mjs",
+      "scripts/build-zcode.mjs",
+      "scripts/build-zody.mjs",
+      "scripts/check-official-refs.mjs",
+      "scripts/dev/zcode-stdio-tap.mjs",
+      "scripts/dev/zody-stdio-tap.mjs",
+      "scripts/zcode-distribution-smoke.mjs",
+      "scripts/zcode-distribution.test.mjs",
+      "scripts/zcode-distribution/assets.mjs",
+      "scripts/zcode-distribution/collect-desktop-artifact.mjs",
+      "scripts/zcode-distribution/command.mjs",
+      "scripts/zcode-distribution/http-smoke.mjs",
+      "scripts/zcode-distribution/prepare-release-assets.mjs",
+      "scripts/zcode-distribution/publish-draft-release.mjs",
+      "scripts/zcode-distribution/release-assets.mjs",
+      "scripts/zcode-distribution/runner.mjs",
+      "scripts/zcode-distribution/sea-build-steps.mjs",
+      "scripts/zcode-distribution/smoke-cli-archive.mjs",
+      "scripts/zcode-distribution/targets.mjs",
+      "scripts/zcode-distribution/validate-release-tag.mjs",
+      "scripts/zody-distribution-smoke.mjs",
+      "scripts/zody-distribution.test.mjs",
+      "scripts/zody-distribution/assets.mjs",
+      "scripts/zody-distribution/collect-desktop-artifact.mjs",
+      "scripts/zody-distribution/command.mjs",
+      "scripts/zody-distribution/http-smoke.mjs",
+      "scripts/zody-distribution/prepare-release-assets.mjs",
+      "scripts/zody-distribution/publish-draft-release.mjs",
+      "scripts/zody-distribution/release-assets.mjs",
+      "scripts/zody-distribution/runner.mjs",
+      "scripts/zody-distribution/sea-build-steps.mjs",
+      "scripts/zody-distribution/smoke-cli-archive.mjs",
+      "scripts/zody-distribution/targets.mjs",
+      "scripts/zody-distribution/validate-release-tag.mjs",
+      "specs/zcode-unified-distribution.md",
+      "specs/zody-cli-distribution-release.md"
+    ],
+    "writeSet": [
+      ".github/workflows/zody-release.yml",
+      "docs/plans/zody-rename-execution/reports/R10.md",
+      "docs/zcode-lite-static-distribution.md",
+      "package.json",
+      "packages/services/src/zcode-agent/zcodeAgentProcessManager.ts",
+      "scripts/audit-zcode-agent-remnants.mjs",
+      "scripts/audit-zody-agent-remnants.mjs",
+      "scripts/build-zcode.mjs",
+      "scripts/build-zody.mjs",
+      "scripts/check-official-refs.mjs",
+      "scripts/dev/zcode-stdio-tap.mjs",
+      "scripts/dev/zody-stdio-tap.mjs",
+      "scripts/zcode-distribution-smoke.mjs",
+      "scripts/zcode-distribution.test.mjs",
+      "scripts/zcode-distribution/assets.mjs",
+      "scripts/zcode-distribution/collect-desktop-artifact.mjs",
+      "scripts/zcode-distribution/command.mjs",
+      "scripts/zcode-distribution/http-smoke.mjs",
+      "scripts/zcode-distribution/prepare-release-assets.mjs",
+      "scripts/zcode-distribution/publish-draft-release.mjs",
+      "scripts/zcode-distribution/release-assets.mjs",
+      "scripts/zcode-distribution/runner.mjs",
+      "scripts/zcode-distribution/sea-build-steps.mjs",
+      "scripts/zcode-distribution/smoke-cli-archive.mjs",
+      "scripts/zcode-distribution/targets.mjs",
+      "scripts/zcode-distribution/validate-release-tag.mjs",
+      "scripts/zody-distribution-smoke.mjs",
+      "scripts/zody-distribution.test.mjs",
+      "scripts/zody-distribution/assets.mjs",
+      "scripts/zody-distribution/collect-desktop-artifact.mjs",
+      "scripts/zody-distribution/command.mjs",
+      "scripts/zody-distribution/http-smoke.mjs",
+      "scripts/zody-distribution/prepare-release-assets.mjs",
+      "scripts/zody-distribution/publish-draft-release.mjs",
+      "scripts/zody-distribution/release-assets.mjs",
+      "scripts/zody-distribution/runner.mjs",
+      "scripts/zody-distribution/sea-build-steps.mjs",
+      "scripts/zody-distribution/smoke-cli-archive.mjs",
+      "scripts/zody-distribution/targets.mjs",
+      "scripts/zody-distribution/validate-release-tag.mjs",
+      "specs/zcode-unified-distribution.md",
+      "specs/zody-cli-distribution-release.md"
+    ],
+    "excludeSet": [
+      "pnpm-lock.yaml",
+      "feature graph",
+      "冻结材料",
+      "scope/env/wire 标识",
+      "历史文档"
+    ],
+    "plannedPaths": [
+      "docs/plans/zody-rename-execution/reports/R10.md",
+      "scripts/audit-zody-agent-remnants.mjs",
+      "scripts/build-zody.mjs",
+      "scripts/dev/zody-stdio-tap.mjs",
+      "scripts/zody-distribution-smoke.mjs",
+      "scripts/zody-distribution/assets.mjs",
+      "scripts/zody-distribution/collect-desktop-artifact.mjs",
+      "scripts/zody-distribution/command.mjs",
+      "scripts/zody-distribution/http-smoke.mjs",
+      "scripts/zody-distribution/prepare-release-assets.mjs",
+      "scripts/zody-distribution/publish-draft-release.mjs",
+      "scripts/zody-distribution/release-assets.mjs",
+      "scripts/zody-distribution/runner.mjs",
+      "scripts/zody-distribution/sea-build-steps.mjs",
+      "scripts/zody-distribution/smoke-cli-archive.mjs",
+      "scripts/zody-distribution/targets.mjs",
+      "scripts/zody-distribution/validate-release-tag.mjs"
+    ],
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "逐调用者只改脚本路径；发现额外调用者先向主控申请扩展，排除历史和冻结副本"
+  },
+  "R20": {
+    "title": "P2 全仓目录与包身份机械改名",
+    "readSet": [
+      ".oxfmtrc.json",
+      ".oxlintrc.json",
+      "AGENTS.md",
+      "architecture-policy.yaml",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "package.json",
+      "pnpm-workspace.yaml"
+    ],
+    "writeSet": [
+      ".oxfmtrc.json",
+      ".oxlintrc.json",
+      "architecture-policy.yaml",
+      "docs/plans/zody-rename-execution/reports/R20.md",
+      "package.json",
+      "pnpm-workspace.yaml"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R20.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["manifest 所列包及目录、生产 import/exports 和 CUA 路径"]
+  },
+  "R21": {
+    "title": "P2 lock、生成物与 feature graph 收口",
+    "readSet": [
+      ".agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "pnpm-lock.yaml",
+      "third-party/inventory.json"
+    ],
+    "writeSet": [
+      ".agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
+      "docs/plans/zody-rename-execution/reports/R21.md",
+      "pnpm-lock.yaml",
+      "third-party/inventory.json"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R21.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": []
+  },
+  "R22": {
+    "title": "P2 集成与构建门禁",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": ["docs/plans/zody-rename-execution/reports/R22.md"],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R22.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": []
+  },
+  "R30": {
+    "title": "P3 环境变量与 define 原子硬切",
+    "readSet": [
+      ".env.example",
+      ".github/workflows/zody-release.yml",
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "mise.toml",
+      "package.json"
+    ],
+    "writeSet": [
+      ".env.example",
+      ".github/workflows/zody-release.yml",
+      "docs/plans/zody-rename-execution/reports/R30.md",
+      "mise.toml",
+      "package.json"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R30.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["环境变量及 define 的生产者和消费者，排除插件身份双变量"]
+  },
+  "R40": {
+    "title": "共享 wire 名称、schema 与兼容门接口",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "packages/rpc/src/protocol.ts",
+      "packages/shared/src/handshake.ts"
+    ],
+    "writeSet": [
+      "docs/plans/zody-rename-execution/reports/R40.md",
+      "packages/rpc/src/protocol.ts",
+      "packages/shared/src/handshake.ts"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R40.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["shared wire/schema 和 bootstrap 对应副本；RPC 控制标记"]
+  },
+  "R41": {
+    "title": "stdio 握手双端接入",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "packages/server/src/entry-stdio.ts",
+      "packages/server/src/remote/handshake.ts",
+      "packages/server/test/remoteConnect.test.ts",
+      "packages/server/test/stdioLifecycle.test.ts",
+      "packages/services/src/zcode-agent/zcodeStdioTransport.ts",
+      "packages/services/test/zcodeStdioTransport.test.ts"
+    ],
+    "writeSet": [
+      "docs/plans/zody-rename-execution/reports/R41.md",
+      "packages/server/src/entry-stdio.ts",
+      "packages/server/src/remote/handshake.ts",
+      "packages/server/test/remoteConnect.test.ts",
+      "packages/server/test/stdioLifecycle.test.ts",
+      "packages/services/src/zcode-agent/zcodeStdioTransport.ts",
+      "packages/services/test/zcodeStdioTransport.test.ts"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R41.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["services stdio transport、CLI stdio 对端和测试"]
+  },
+  "R42": {
+    "title": "HTTP/Web/手机 attachment 门禁",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "packages/desktop/src/host/serverRemoteConnection.ts",
+      "packages/desktop/test/serverRemoteConnection.test.ts",
+      "packages/server/src/http.ts",
+      "packages/zcode-server-cli/src/server-core/http.ts",
+      "packages/zcode-server-cli/test/coreHttp.test.ts"
+    ],
+    "writeSet": [
+      "docs/plans/zody-rename-execution/reports/R42.md",
+      "packages/desktop/src/host/serverRemoteConnection.ts",
+      "packages/desktop/test/serverRemoteConnection.test.ts",
+      "packages/server/src/http.ts",
+      "packages/zcode-server-cli/src/server-core/http.ts",
+      "packages/zcode-server-cli/test/coreHttp.test.ts"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R42.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["Web/手机连接与 attachment 入口及测试"]
+  },
+  "R43": {
+    "title": "部署、启动与运行版本验证",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "packages/server/src/remote/connect.ts",
+      "packages/server/src/remote/deploy.ts",
+      "packages/server/src/remote/serverBundleDeployCheck.ts",
+      "packages/server/test/remoteConnect.test.ts"
+    ],
+    "writeSet": [
+      "docs/plans/zody-rename-execution/reports/R43.md",
+      "packages/server/src/remote/connect.ts",
+      "packages/server/src/remote/deploy.ts",
+      "packages/server/src/remote/serverBundleDeployCheck.ts",
+      "packages/server/test/remoteConnect.test.ts"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R43.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": []
+  },
+  "R44": {
+    "title": "主应用桥、IPC 与内部 builtin 属性",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "packages/client/src/globals.d.ts",
+      "packages/desktop/src/preload/index.ts",
+      "packages/provider-node/src/zcode-builtin-release.ts"
+    ],
+    "writeSet": [
+      "docs/plans/zody-rename-execution/reports/R44.md",
+      "packages/client/src/globals.d.ts",
+      "packages/desktop/src/preload/index.ts",
+      "packages/provider-node/src/zcode-builtin-release.ts"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R44.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["preload 主桥、Main IPC、desktopPlatform 和 builtin 属性及测试"]
+  },
+  "R45": {
+    "title": "artifact URI 硬切与历史会话可加载",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": ["docs/plans/zody-rename-execution/reports/R45.md"],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R45.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["artifact 生成、解析、投影及历史读取测试"]
+  },
+  "R46": {
+    "title": "遥测断代与单次上报",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": ["docs/plans/zody-rename-execution/reports/R46.md"],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R46.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["遥测 emit、schema、OTel 和对应测试"]
+  },
+  "R47": {
+    "title": "hook 来源身份、信任与异常回归",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": ["docs/plans/zody-rename-execution/reports/R47.md"],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R47.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["workspace hook digest、trust owner 和对应测试"]
+  },
+  "R48": {
+    "title": "P3/P4 全链路集成门禁",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": ["docs/plans/zody-rename-execution/reports/R48.md"],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R48.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": []
+  },
+  "R50": {
+    "title": "共享插件兼容规则与公共接口",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "packages/shared/src/gen-ui/contract.ts",
+      "packages/shared/src/mcp-apps/contract.ts",
+      "packages/shared/src/mcp-apps/toolMeta.ts"
+    ],
+    "writeSet": [
+      "docs/plans/zody-rename-execution/reports/R50.md",
+      "packages/shared/src/gen-ui/contract.ts",
+      "packages/shared/src/mcp-apps/contract.ts",
+      "packages/shared/src/mcp-apps/toolMeta.ts"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R50.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["shared MCP Apps/Gen UI 公共合同与测试"]
+  },
+  "R51": {
+    "title": "沙箱桥与 Gen UI 单次副作用",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "packages/desktop/test/e2e/plugins/manual-review/pending/zody-rename-plugin-wire.test.ts",
+      "packages/ui/src/gen-ui/adapters/page.ts"
+    ],
+    "writeSet": [
+      "docs/plans/zody-rename-execution/reports/R51.md",
+      "packages/desktop/test/e2e/plugins/manual-review/pending/zody-rename-plugin-wire.test.ts",
+      "packages/ui/src/gen-ui/adapters/page.ts"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": [
+      "packages/desktop/test/e2e/plugins/manual-review/pending/zody-rename-plugin-wire.test.ts",
+      "docs/plans/zody-rename-execution/reports/R51.md"
+    ],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["Desktop plugin-sandbox alias/Gen UI 与 UI page 和测试"]
+  },
+  "R52": {
+    "title": "MCP Apps 资源、hostContext 与结果边界",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": ["docs/plans/zody-rename-execution/reports/R52.md"],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R52.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["services plugin-ui-bridge 和 UI plugin-ui domain/app 与测试"]
+  },
+  "R53": {
+    "title": "CLI request-context、tool result 与历史读取",
+    "readSet": [
+      "AGENTS.md",
+      "apps/zcode-cli/packages/contracts/src/tools/tool-result-metadata.ts",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": [
+      "apps/zcode-cli/packages/contracts/src/tools/tool-result-metadata.ts",
+      "docs/plans/zody-rename-execution/reports/R53.md"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R53.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["CLI contracts tool-result、core/mcp、adapters/mcp 和历史读取"]
+  },
+  "R54": {
+    "title": "manifest 发现、同步、seed 与安装升级",
+    "readSet": [
+      "AGENTS.md",
+      "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-runtime.ts",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": [
+      "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-runtime.ts",
+      "docs/plans/zody-rename-execution/reports/R54.md"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R54.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": [
+      "CLI 插件发现、bootstrap bundled/official runtime、services plugin-sync 和测试"
+    ]
+  },
+  "R55": {
+    "title": "插件 env 与模板展开",
+    "readSet": [
+      "AGENTS.md",
+      "apps/zcode-cli/packages/adapters/src/plugins/mcp.ts",
+      "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-runtime.ts",
+      "apps/zcode-cli/packages/core/src/hooks/configured-runner-input.ts",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": [
+      "apps/zcode-cli/packages/adapters/src/plugins/mcp.ts",
+      "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-runtime.ts",
+      "apps/zcode-cli/packages/core/src/hooks/configured-runner-input.ts",
+      "docs/plans/zody-rename-execution/reports/R55.md"
+    ],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R55.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["插件 env/template 生产者、模板文档及测试"]
+  },
+  "R56": {
+    "title": "插件集成、官方插件与退役资产清单",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": ["docs/plans/zody-rename-execution/reports/R56.md"],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R56.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": []
+  },
+  "R60": {
+    "title": "最终 CUA 封存、签名、归档与恢复",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": ["docs/plans/zody-rename-execution/reports/R60.md"],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R60.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": ["最终 CUA 原生冻结目录、output 产物、pins 与新归档"]
+  },
+  "R61": {
+    "title": "跨平台最终验收与发布交接",
+    "readSet": [
+      "AGENTS.md",
+      "docs/plans/zody-full-divergence-rename-execution-plan.md",
+      "docs/plans/zody-full-divergence-rename-survey.md"
+    ],
+    "writeSet": ["docs/plans/zody-rename-execution/reports/R61.md"],
+    "excludeSet": [
+      "其他任务独占文件",
+      "真实用户数据",
+      "结构范围之外的文件",
+      "共享接口未经主控交接不得修改"
+    ],
+    "plannedPaths": ["docs/plans/zody-rename-execution/reports/R61.md"],
+    "scopeStatus": "structural-seed-not-authorized",
+    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "structureScope": []
+  }
+}

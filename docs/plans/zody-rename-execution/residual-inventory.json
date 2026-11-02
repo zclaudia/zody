@@ -1,0 +1,27 @@
+{
+  "baseline": "06ad2270f121c46a0f5c069ae3da18641c6a9858",
+  "command": "node docs/plans/zody-rename-execution/scan-inventory.mjs output/zody-rename-r00",
+  "excludedPrefixes": [
+    "docs/plans/zody-rename-execution/"
+  ],
+  "scannedTrackedFiles": 20673,
+  "occurrences": 96836,
+  "groups": 51544,
+  "categoryCounts": {
+    "wire-or-bridge-candidate": 2259,
+    "env-or-define": 4253,
+    "package-reference": 6851,
+    "other-review": 6055,
+    "plugin-candidate": 1174,
+    "builtin": 198,
+    "storage-or-source-candidate": 2956,
+    "artifact": 204,
+    "documentation": 11251,
+    "frozen-or-report": 61635
+  },
+  "rawEvidence": "output/zody-rename-r00/matches.jsonl",
+  "rawSha256": "5c2f6e03126fa9946dab845178173caeebb4f84577edf535f3e0847a093c9c5f",
+  "groupedEvidence": "output/zody-rename-r00/grouped.json",
+  "groupedSha256": "60a8012806055436a06498aa94981feaf149fbccffb525717e124f48c02c9df8",
+  "limitations": "Lexical candidates only; not a replacement map or proof of complete call graphs."
+}
