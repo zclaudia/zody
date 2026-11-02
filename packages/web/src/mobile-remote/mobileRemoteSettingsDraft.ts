@@ -68,7 +68,7 @@ function resolveMobileRemoteSettingsDraft({
 /** 校验草稿并写入唯一配置 store；失败（含 secure store 不可用）原样抛给表单展示。 */
 export async function saveMobileRemoteSettingsDraft(
   input: MobileRemoteSettingsDraftInput & {
-    store: { save(config: MobileRemoteGatewayConfig): Promise<void> };
+    store: { save(config: MobileRemoteGatewayConfig): Promise<unknown> };
   },
 ): Promise<MobileRemoteSettingsDraftResult> {
   const result = resolveMobileRemoteSettingsDraft(input);

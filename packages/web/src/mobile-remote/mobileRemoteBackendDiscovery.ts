@@ -2,6 +2,7 @@ import { GatewayClient, type GatewayDiscoveryBackend } from "@zclaudia/gateway-c
 import type { BackendPresenceV4 } from "@zclaudia/gateway-protocol";
 import {
   WEB_REMOTE_CONTROL_BACKEND_CAPABILITY,
+  WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY,
   type RemoteAccessMobileBackendOption,
   type WebRemoteControlFailure,
 } from "@zcode/shared";
@@ -68,7 +69,20 @@ function createFailure(
   return { reason, message };
 }
 
-/** registry 里在线且带能力位才认为支持远控；discovery 单独返回时能力未知，先按支持处理。 */
+/**
+ * 新 APK 只选择同时声明 `zcode-remote-control` 与 `zcode-remote-ui-v1` 的桌面
+ * （spec 第 2 节）。registry 里在线但缺 UI 能力时必须置为不可选，让用户停留在
+ * Shell 并看到升级提示；离线电脑能力未知，保持可选项等待 registry 更新。
+ * discovery 单独返回时能力未知，先按支持处理（等 registry 确认）。
+ */
+function isRemoteUiBackendSupported(presence: BackendPresenceV4): boolean {
+  return (
+    presence.capabilities.includes(WEB_REMOTE_CONTROL_BACKEND_CAPABILITY) &&
+    presence.capabilities.includes(WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY)
+  );
+}
+
+/** registry 里在线且同时具备远控与桌面 UI 能力位才认为支持；离线时能力未知，先按支持处理。 */
 function mergeBackends(
   discovered: GatewayDiscoveryBackend[],
   registry: BackendPresenceV4[],
@@ -89,7 +103,7 @@ function mergeBackends(
       backendId: presence.backendId,
       name: presence.name?.trim() || existing?.name || presence.backendId,
       online: true,
-      supported: presence.capabilities.includes(WEB_REMOTE_CONTROL_BACKEND_CAPABILITY),
+      supported: isRemoteUiBackendSupported(presence),
       lastSeenAt: presence.lastSeenAt ?? existing?.lastSeenAt ?? null,
     });
   }
