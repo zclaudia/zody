@@ -8,9 +8,11 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// 手机页面改为随 APK 内置：Gradle 构建时先跑根目录的 pnpm build:mobile-web，
-// 再把产物同步到 app/src/main/assets/remote/（WebViewAssetLoader 只服务这个目录）。
-// 生成目录已在 .gitignore 中排除；可用 -PmobileWebPnpm=<path> 覆盖 pnpm 可执行文件。
+// 新版 APK 只内置轻 Shell：Gradle 构建时先跑根目录的 pnpm build:mobile-shell，
+// 再把 packages/web/dist-mobile-shell 同步到 app/src/main/assets/shell/
+// （WebViewAssetLoader 固定服务 /assets/shell/）。完整 Remote 制品随桌面交付，
+// 不再进入 APK；生成目录不进入提交，可用 -PmobileShellPnpm=<path>
+// （兼容旧的 -PmobileWebPnpm）覆盖 pnpm 可执行文件。
 val repoRootDir: File = rootProject.projectDir.parentFile.parentFile
 val releaseVersion = (JsonSlurper().parse(repoRootDir.resolve("package.json")) as Map<*, *>)["version"]
     as? String ?: throw GradleException("Root package.json must define the Zody version.")
@@ -32,19 +34,22 @@ val validateZodyReleaseSigning = tasks.register("validateZodyReleaseSigning") {
         }
     }
 }
-val mobileWebDistDir = layout.projectDirectory.dir("../../web/dist-mobile-remote")
-val mobileWebAssetsDir = layout.projectDirectory.dir("src/main/assets/remote")
-val mobileWebPnpm = providers.gradleProperty("mobileWebPnpm").getOrElse("pnpm")
+val mobileShellDistDir = layout.projectDirectory.dir("../../web/dist-mobile-shell")
+val mobileShellAssetsDir = layout.projectDirectory.dir("src/main/assets/shell")
+val legacyRemoteAssetsDir = layout.projectDirectory.dir("src/main/assets/remote")
+val mobileShellPnpm = providers.gradleProperty("mobileShellPnpm")
+    .orElse(providers.gradleProperty("mobileWebPnpm"))
+    .getOrElse("pnpm")
 
-val buildMobileWeb = tasks.register<Exec>("buildMobileWeb") {
+val buildMobileShell = tasks.register<Exec>("buildMobileShell") {
     group = "mobile web"
-    description = "Builds the bundled mobile web page via pnpm build:mobile-web."
+    description = "Builds the lightweight shell page via pnpm build:mobile-shell."
     workingDir = repoRootDir
     if (System.getProperty("os.name").lowercase().contains("windows")) {
         // Windows 上 pnpm 是 .cmd 批处理，Gradle 的 Exec 需要经 cmd /c 启动。
-        commandLine("cmd", "/c", mobileWebPnpm, "build:mobile-web")
+        commandLine("cmd", "/c", mobileShellPnpm, "build:mobile-shell")
     } else {
-        commandLine(mobileWebPnpm, "build:mobile-web")
+        commandLine(mobileShellPnpm, "build:mobile-shell")
     }
 }
 
@@ -73,29 +78,41 @@ val verifyNotificationRenderServicePermission = tasks.register("verifyNotificati
     }
 }
 
-val syncMobileWebAssets = tasks.register<Sync>("syncMobileWebAssets") {
+// 旧版本会把完整 Remote 同步到 src/main/assets/remote/；该目录已被 gitignore，
+// 升级构建时必须主动删除，否则残留会让 APK 继续携带旧 Remote 制品。
+val clearLegacyRemoteAssets = tasks.register<Delete>("clearLegacyRemoteAssets") {
     group = "mobile web"
-    description = "Syncs the built mobile web page into app/src/main/assets/remote."
-    dependsOn(buildMobileWeb)
-    from(mobileWebDistDir) {
-        // build-mobile-web-release.mjs 已把 Vite 的 mobile.html 规范化为 index.html，并清理 sourcemap；
-        // 这里不再重命名，也不保留 mobile.html 副本。release.json 随制品一并同步，M2 再决定 Shell 取舍。
-        // 保留 **/*.map 排除作为兜底：即使有人绕过构建脚本，也不把整包源码塞进 APK。
+    description = "Removes the legacy full Remote assets directory from the APK sources."
+    delete(legacyRemoteAssetsDir)
+}
+
+val syncMobileShellAssets = tasks.register<Sync>("syncMobileShellAssets") {
+    group = "mobile web"
+    description = "Syncs the built lightweight shell page into app/src/main/assets/shell."
+    dependsOn(buildMobileShell)
+    dependsOn(clearLegacyRemoteAssets)
+    from(mobileShellDistDir) {
+        // Shell 构建允许本地 http gateway；但 sourcemap 不属于发布制品，保留兜底排除。
         exclude("**/*.map")
     }
-    into(mobileWebAssetsDir)
+    into(mobileShellAssetsDir)
     doFirst {
-        if (!mobileWebDistDir.file("index.html").asFile.isFile) {
+        if (!mobileShellDistDir.file("index.html").asFile.isFile) {
             throw GradleException(
-                "Mobile web build output is missing: ${mobileWebDistDir.file("index.html").asFile}. " +
-                    "Run `pnpm build:mobile-web` or check the buildMobileWeb task output.",
+                "Mobile shell build output is missing: ${mobileShellDistDir.file("index.html").asFile}. " +
+                    "Run `pnpm build:mobile-shell` or check the buildMobileShell task output.",
+            )
+        }
+        if (legacyRemoteAssetsDir.asFile.exists()) {
+            throw GradleException(
+                "Legacy mobile Remote assets still exist after cleanup: ${legacyRemoteAssetsDir.asFile}.",
             )
         }
     }
 }
 
 tasks.named("preBuild") {
-    dependsOn(syncMobileWebAssets)
+    dependsOn(syncMobileShellAssets)
     dependsOn(verifyNotificationRenderServicePermission)
 }
 
@@ -112,7 +129,8 @@ android {
         applicationId = "io.github.zclaudia.zody.mobile"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
+        // 破坏性升级：移除内置完整 Remote 并切换到新配置 schema，versionCode 必须大于旧的 1。
+        versionCode = 2
         versionName = releaseVersion
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

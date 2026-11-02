@@ -20,4 +20,9 @@
     <string name="remote_attachment_source_message">Take a photo or choose a file from this phone.</string>
     <string name="remote_attachment_take_photo">Take photo</string>
     <string name="remote_attachment_choose_file">Choose file</string>
+    <!-- M2-T3：旧配置 schema 的破坏性升级确认。确认前只检测、不删除任何凭证。 -->
+    <string name="mobile_shell_repair_title">Pair this phone again</string>
+    <string name="mobile_shell_repair_message">This version uses a new pairing format. Pair with your desktop again to continue. Existing pairing data is removed only after you confirm.</string>
+    <string name="mobile_shell_repair_confirm">Remove old pairing and re-pair</string>
+    <string name="mobile_shell_repair_cancel">Not now</string>
 </resources>
