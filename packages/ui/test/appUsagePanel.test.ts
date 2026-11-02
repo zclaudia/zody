@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFile } from "node:fs/promises";
-import type { AppUsageRange, AppUsageSnapshot } from "@zcode/shared";
-import type { IServiceAccessor } from "@zcode/services";
+import type { AppUsageRange, AppUsageSnapshot } from "@zody/shared";
+import type { IServiceAccessor } from "@zody/services";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import {

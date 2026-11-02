@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { shouldEnableE2ETestBridge } from "@zcode/shared";
+import { shouldEnableE2ETestBridge } from "@zody/shared";
 import {
   createFinalArmsCustomEventE2EController,
   dispatchFinalArmsCustomEvent,

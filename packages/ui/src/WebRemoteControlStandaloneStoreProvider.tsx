@@ -1,7 +1,7 @@
 import { useRef, type ReactNode } from "react";
-import { Emitter } from "@zcode/rpc";
+import { Emitter } from "@zody/rpc";
 import { StoreProvider } from "@/store/StoreProvider.js";
-import type { BroadcastMessage, IBroadcastService } from "@zcode/services";
+import type { BroadcastMessage, IBroadcastService } from "@zody/services";
 
 /**
  * 无 host services 的独立远控页面（如空态启动页）所需的本地 store 上下文。

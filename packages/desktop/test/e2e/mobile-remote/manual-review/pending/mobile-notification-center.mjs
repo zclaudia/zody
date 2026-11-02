@@ -26,7 +26,7 @@ const entryId = "\0mobile-notification-center-e2e-entry";
 const entry = `
 import React from 'react';
 import {createRoot} from 'react-dom/client';
-import {Emitter} from '@zcode/rpc';
+import {Emitter} from '@zody/rpc';
 import {PlatformProvider} from '@/hooks/usePlatform.js';
 import {ZCodeIntlProvider} from '@/i18n/IntlProvider.js';
 import {MobileNotificationsFeature} from '@/MobileNotificationsFeature.js';
@@ -96,7 +96,7 @@ const vite = await createServer({
   resolve: {
     alias: {
       "@": resolve(repoRoot, "packages/ui/src"),
-      "@zcode/rpc": resolve(repoRoot, "packages/rpc/src/index.ts"),
+      "@zody/rpc": resolve(repoRoot, "packages/rpc/src/index.ts"),
     },
   },
   server: { host: "127.0.0.1", port: 0 },

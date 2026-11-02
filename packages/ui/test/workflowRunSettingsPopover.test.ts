@@ -6,8 +6,8 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createElement, createRef, type ReactNode } from "react";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { TID_CHAT_THOUGHT_LEVEL_SELECT_TRIGGER } from "@zcode/shared";
-import type { CommandAck, WorkflowRunState } from "@zcode/shared/zcode-protocol-v4";
+import { TID_CHAT_THOUGHT_LEVEL_SELECT_TRIGGER } from "@zody/shared";
+import type { CommandAck, WorkflowRunState } from "@zody/shared/zody-protocol-v4";
 import type { WorkflowRunCardSummary } from "@/ToolCallBlocks/shared.js";
 
 vi.mock("@/logger.js", () => ({ logger: { debug: vi.fn(), warn: vi.fn(), info: vi.fn() } }));

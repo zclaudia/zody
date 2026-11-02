@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { RemoteTarget } from "@zcode/shared";
+import type { RemoteTarget } from "@zody/shared";
 import { pushDynamicWorkflowUserModeToRemoteHosts } from "../src/host/remoteDynamicWorkflowUserMode.js";
 
 // DWG-21（docs/dynamic-workflow/launch.md「The user's choice」）：desktop-attached remote Host 读不到

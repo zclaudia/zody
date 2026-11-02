@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { Button } from "@zcode/ui";
+import { Button } from "@zody/ui";
 import { resolveWebRemoteControlScreenLocale } from "../webRemoteControlFailureScreen.js";
 
 /** A failed deep link keeps the active page and its unsent draft mounted. */

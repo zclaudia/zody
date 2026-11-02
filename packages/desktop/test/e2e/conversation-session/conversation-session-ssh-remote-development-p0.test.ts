@@ -9,7 +9,7 @@ import {
   TID_WORKSPACE_FILE_TREE_REFRESH_BUTTON,
   TID_WORKSPACE_FILE_TREE_ROW,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData, clickTestIdByDom, waitForTestIdByDom } from "../helpers/desktop-app.js";
 import { prepareV4ConversationE2E } from "../helpers/v4-conversation.js";
 import {

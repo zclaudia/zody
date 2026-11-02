@@ -1,5 +1,5 @@
-import type { MobileNotificationPrincipal, WindowHostAttachmentScope } from "@zcode/shared";
-import type { ZCodeAgentV4ClientMode } from "@zcode/services";
+import type { MobileNotificationPrincipal, WindowHostAttachmentScope } from "@zody/shared";
+import type { ZCodeAgentV4ClientMode } from "@zody/services";
 
 export interface WindowHostAttachmentPort {
   once(event: "close", listener: () => void): unknown;

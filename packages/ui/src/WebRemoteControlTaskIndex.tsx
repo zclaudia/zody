@@ -19,7 +19,7 @@ import {
   resolveWebRemoteControlWorkspaceKey,
   type WebRemoteControlWorkspaceListResult,
   type WebRemoteControlTaskTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { toast } from "@/components/ui/toast.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";

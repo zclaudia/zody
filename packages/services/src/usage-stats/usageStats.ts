@@ -1,5 +1,5 @@
-import type { AppUsageRequest, AppUsageSnapshot } from "@zcode/shared";
-import { ServiceChannels } from "@zcode/shared";
+import type { AppUsageRequest, AppUsageSnapshot } from "@zody/shared";
+import { ServiceChannels } from "@zody/shared";
 import { createServiceDescriptor } from "../descriptors.js";
 
 /**

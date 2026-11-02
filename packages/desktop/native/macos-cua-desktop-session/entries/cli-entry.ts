@@ -4,8 +4,8 @@ import { dirname, join } from "node:path";
 import {
   createCuaNodeReplMcpPortFactory,
   readSealedResourceSnapshot,
-} from "@zcode/node-repl-host/cua-node-repl-mcp-port";
-import { runCuaLaunchSession } from "../../../../../apps/zcode-cli/packages/cli/src/cua-launch-session.js";
+} from "@zody/node-repl-host/cua-node-repl-mcp-port";
+import { runCuaLaunchSession } from "../../../../../apps/zody-cli/packages/cli/src/cua-launch-session.js";
 import { installCandidateFetch } from "../runtime/candidate-fetch.js";
 import { installFatalReporting } from "./entry-fatal.js";
 

@@ -3,7 +3,7 @@
 // 消费者：zcodeTaskServiceAdapter/zcodeSessionProjection/zcodeTaskIndexSyncer、
 // CLI bootstrap session-mapper。textFromZCodeMessageParts 已迁
 // zcode-protocol-legacy-types.ts（幸存面）。本文件与旧投影栈同生命周期。
-import type { ZCodeSessionGoal } from "./zcode-protocol/index.js";
+import type { ZCodeSessionGoal } from "./zody-protocol/index.js";
 import { getConversationMessageProjectionPolicy } from "./conversation-message-projection-policy.js";
 import {
   type ZCodeMessageWithParts,

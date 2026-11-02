@@ -8,10 +8,10 @@ import type {
   WebContents,
   WindowOpenHandlerResponse,
 } from "electron";
-import type { DesktopTitleBarTheme, Locale } from "@zcode/shared";
+import type { DesktopTitleBarTheme, Locale } from "@zody/shared";
 // fork（F4.4）：isTrustedCodingPlanWebviewOrigin / isTrustedRewardsUrl 随购买 webview 与
 // Rewards webview 基础设施删除（shared 中函数的 UI 侧消费者由 F4.5 处理）。
-import { DEFAULT_LOCALE, desktopMenuMessageIds, getDesktopMenuMessage, PlatformChannels } from "@zcode/shared";
+import { DEFAULT_LOCALE, desktopMenuMessageIds, getDesktopMenuMessage, PlatformChannels } from "@zody/shared";
 import { loadWindow, type WindowBootstrapOptions } from "./desktopHostProcess.js";
 import {
   buildWindowsTitleBarOverlayForZoomLevel,

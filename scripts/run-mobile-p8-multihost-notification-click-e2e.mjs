@@ -170,7 +170,7 @@ async function main() {
       "--using=24.14.0",
       "pnpm",
       "--filter",
-      "@zcode/desktop",
+      "@zody/desktop",
       "exec",
       "wdio",
       "run",

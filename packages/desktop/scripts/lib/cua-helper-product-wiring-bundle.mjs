@@ -212,7 +212,7 @@ export async function auditSealedBundle({
       name: "ripgrep",
       reason:
         "fs adapter 的 worker 源码字符串内 lazy import；held-model fixture 不执行搜索工具，非 bundle 静态依赖",
-      evidence: "apps/zcode-cli/packages/adapters/src/fs/index.ts",
+      evidence: "apps/zody-cli/packages/adapters/src/fs/index.ts",
     });
   }
 

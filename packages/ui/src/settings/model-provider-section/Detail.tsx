@@ -3,9 +3,9 @@
  * 本文件只保留 BYOK（自定义 provider）详情表单。
  */
 import { Loader2Icon } from "lucide-react";
-import type { ProviderSettingsView } from "@zcode/services";
-import type { SavePersonalModelDraftInput } from "@zcode/provider";
-import type { ModelConnectivityResult } from "@zcode/shared";
+import type { ProviderSettingsView } from "@zody/services";
+import type { SavePersonalModelDraftInput } from "@zody/provider";
+import type { ModelConnectivityResult } from "@zody/shared";
 import {
   getProviderFormApiKeyManagementUrl,
   type ProviderSettingsFormProvider,

@@ -2,7 +2,7 @@
 import { createElement } from "react";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import type { EmbeddedBrowserSitePermissionsSnapshot } from "@zcode/shared";
+import type { EmbeddedBrowserSitePermissionsSnapshot } from "@zody/shared";
 import { BrowserSitePermissionsPage } from "@/browser-use/BrowserSitePermissionsPage.js";
 
 const h = vi.hoisted(() => ({

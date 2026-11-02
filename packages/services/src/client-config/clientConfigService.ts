@@ -2,7 +2,7 @@ import {
   clientConfigReadOptionsSchema,
   type ClientConfigSnapshot,
   type DynamicWorkflowClientConfig,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { IClientConfigService } from "./clientConfig.js";
 import { resolveLocalDynamicWorkflowClientConfig } from "./localClientConfig.js";
 

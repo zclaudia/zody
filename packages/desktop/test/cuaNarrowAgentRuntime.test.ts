@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   digestZCodeAgentNativeRuntimeNetwork,
   type ZCodeAgentNativeRuntimeStartupContext,
-} from "@zcode/services/node";
+} from "@zody/services/node";
 import {
   CUA_NARROW_APP_NAME,
   CUA_NARROW_CAPABILITY,

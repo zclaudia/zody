@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { ChevronDown, UploadCloud } from "lucide-react";
-import type { RemoteTarget } from "@zcode/shared";
+import type { RemoteTarget } from "@zody/shared";
 import type {
   IMcpSyncService,
   IPluginSyncService,
   ISkillSyncService,
   IZCodeAgentService,
-} from "@zcode/services";
+} from "@zody/services";
 import { Button } from "@/components/ui/button.js";
 import {
   DropdownMenu,

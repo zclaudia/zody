@@ -4,8 +4,8 @@ import {
   mobileNotificationResultSchema,
   type MobileNotificationPublish,
   type MobileNotificationReceipt,
-} from "@zcode/shared";
-import type { IMobileNotificationService } from "@zcode/services/mobile-notifications/node";
+} from "@zody/shared";
+import type { IMobileNotificationService } from "@zody/services/mobile-notifications/node";
 
 /** A Host outbox worker. Main only transports a request and its HTTP receipt. */
 export function createMobileNotificationDeliveryBridge(options: {

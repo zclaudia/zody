@@ -2,37 +2,37 @@ import {
   ZCODE_AGENT_RUNTIME,
   ZCODE_AGENT_PROVIDER,
   type RemoteResourcePackageId,
-} from "@zcode/shared";
-import type { IRemoteBackend, RemoteEnvironment } from "@zcode/server/remote/backend.js";
+} from "@zody/shared";
+import type { IRemoteBackend, RemoteEnvironment } from "@zody/server/remote/backend.js";
 import {
   REMOTE_BASE,
   type DeployLoggers,
   type RemoteAssetDeployOptions,
   waitForClose,
-} from "@zcode/server/remote/deployShared.js";
-import type { RemoteAssetInstaller } from "@zcode/server/remote/remoteAssetInstaller.js";
-import { buildWriteLiteralFileCommand } from "@zcode/server/remote/posixShell.js";
-import { deployDevelopmentZCodeAgentRuntime } from "@zcode/server/remote/zcodeAgentDevDeploy.js";
+} from "@zody/server/remote/deployShared.js";
+import type { RemoteAssetInstaller } from "@zody/server/remote/remoteAssetInstaller.js";
+import { buildWriteLiteralFileCommand } from "@zody/server/remote/posixShell.js";
+import { deployDevelopmentZCodeAgentRuntime } from "@zody/server/remote/zcodeAgentDevDeploy.js";
 import {
   buildRemoteAgentBundleWrapper,
   isRemoteAgentBundleWrapperCurrent,
   REMOTE_AGENT_BUNDLE_NAME,
-} from "@zcode/server/remote/zcodeAgentBundleWrapper.js";
+} from "@zody/server/remote/zcodeAgentBundleWrapper.js";
 import {
   deployRemoteAgentWrapper,
   isWslBackend,
-} from "@zcode/server/remote/zcodeAgentWrapperDeploy.js";
+} from "@zody/server/remote/zcodeAgentWrapperDeploy.js";
 import {
   buildRemoteAgentOfficialPluginDir,
   buildRemoteAgentOfficialPluginRequiredPaths,
   buildRemoteAgentOfficialPluginSourceRelativePath,
   REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS,
-} from "@zcode/server/remote/zcodeAgentOfficialPluginAssets.js";
-import { repairLegacyRemoteOfficialPluginDirectoryPermissions } from "@zcode/server/remote/zcodeAgentOfficialPluginPermissionRepair.js";
+} from "@zody/server/remote/zcodeAgentOfficialPluginAssets.js";
+import { repairLegacyRemoteOfficialPluginDirectoryPermissions } from "@zody/server/remote/zcodeAgentOfficialPluginPermissionRepair.js";
 import {
   checkRemoteAssetComponentIdentity,
   writeRemoteAssetComponentMeta,
-} from "@zcode/server/remote/remoteAssetLiveIdentity.js";
+} from "@zody/server/remote/remoteAssetLiveIdentity.js";
 
 const REMOTE_AGENT_RUNTIME_BASE = `${REMOTE_BASE}/agents`;
 

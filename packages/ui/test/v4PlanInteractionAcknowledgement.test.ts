@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   CommandEnvelope,
   ConversationSnapshot,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import type { ElicitationDialog } from "@/ElicitationDialog.js";
 import { V4InteractionDialogs } from "@/v4/V4InteractionDialogs.js";

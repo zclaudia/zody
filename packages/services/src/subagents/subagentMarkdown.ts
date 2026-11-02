@@ -9,7 +9,7 @@ import {
   type AgentScope,
   type AgentSummary,
   type SubAgentConfig,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 const VALID_COLORS = new Set<AgentColor>([
   "red",

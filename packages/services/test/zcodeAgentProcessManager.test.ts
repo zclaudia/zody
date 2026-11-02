@@ -14,11 +14,11 @@ import {
   ZCODE_AGENT_RUNTIME,
   ZCODE_RUNTIME_ENV_KEY,
   hostResponseMessageSchema,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   ZCODE_PROCESS_DIAGNOSTIC_PREFIX,
   ZCODE_AGENT_LIFECYCLE_LOG_MARKER,
-} from "@zcode/shared/process-diagnostic";
+} from "@zody/shared/process-diagnostic";
 import {
   buildE2EAgentCoverageEnv,
   createZCodeAgentCommandResolver,
@@ -28,14 +28,14 @@ import {
   wrapZCodeAgentCommandWithStdioTapDevProxy,
   ZCodeAgentProcessManager,
   type ZCodeAgentCommand,
-} from "../src/zcode-agent/zcodeAgentProcessManager.js";
+} from "../src/zody-agent/zcodeAgentProcessManager.js";
 import { setDataBaseDir } from "../src/paths.js";
 import type {
   RuntimeProcessLifecycleReporter,
   RuntimeProcessExceptionEvent,
 } from "../src/process/runtimeProcessLifecycle.js";
-import { setZCodeStdioTapDevEnabled } from "../src/zcode-agent/zcodeStdioTapDevConfig.js";
-import { ZCodeStdioTransport } from "../src/zcode-agent/zcodeStdioTransport.js";
+import { setZCodeStdioTapDevEnabled } from "../src/zody-agent/zcodeStdioTapDevConfig.js";
+import { ZCodeStdioTransport } from "../src/zody-agent/zcodeStdioTransport.js";
 import { CuaAgentAdmissionGate } from "../src/cua-permission-broker/cuaAgentAdmissionGate.js";
 
 function createDeferred<T>() {
@@ -527,7 +527,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
       });
       const root = mkdtempSync(join(tmpdir(), "zcode-bytecode-resolver-"));
       createdDirs.push(root);
-      const source = join(root, "apps/zcode-cli/packages/cli/dist/zcode.cjs");
+      const source = join(root, "apps/zody-cli/packages/cli/dist/zcode.cjs");
       const bytecode = join(dirname(source), "zcode.bytecode.cjs");
       mkdirSync(dirname(source), { recursive: true });
       writeFileSync(source, "");
@@ -553,7 +553,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     Object.defineProperty(process.versions, "electron", { configurable: true, value: "41.0.3" });
     const root = mkdtempSync(join(tmpdir(), "zcode-bytecode-missing-"));
     createdDirs.push(root);
-    const source = join(root, "apps/zcode-cli/packages/cli/dist/zcode.cjs");
+    const source = join(root, "apps/zody-cli/packages/cli/dist/zcode.cjs");
     mkdirSync(dirname(source), { recursive: true });
     writeFileSync(source, "");
     process.chdir(root);

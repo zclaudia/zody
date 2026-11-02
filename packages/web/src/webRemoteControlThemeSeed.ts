@@ -1,7 +1,7 @@
 import {
   isWebRemoteControlThemeSeed,
   type WebRemoteControlThemeSeed,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export const WEB_REMOTE_CONTROL_DEFAULT_THEME: WebRemoteControlThemeSeed = "zai-dark";
 

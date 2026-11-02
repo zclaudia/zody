@@ -13,7 +13,7 @@ import type { BackendPresenceV4 } from "@zclaudia/gateway-protocol";
 import {
   WebRemoteControlRelayPayloadSerializer,
   type WebRemoteControlPayloadSendResult,
-} from "@zcode/client";
+} from "@zody/client";
 import {
   WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE,
   WEB_REMOTE_CONTROL_BACKEND_CAPABILITY,
@@ -32,7 +32,7 @@ import {
   type WebRemoteControlAppPayload,
   type WebRemoteControlChannelFrameOf,
   type WebRemoteControlFailure,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * 手机端 gateway transport（T3.4，方案「失败原因与恢复」）。

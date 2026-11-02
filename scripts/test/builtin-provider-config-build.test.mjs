@@ -13,11 +13,11 @@ import {
   resolveBuiltinProviderBuildEnvironment,
   stageBuiltinProviderConfig,
 } from "../builtin-provider-config.mjs";
-import { buildCli } from "../../apps/zcode-cli/packages/cli/scripts/build.mjs";
+import { buildCli } from "../../apps/zody-cli/packages/cli/scripts/build.mjs";
 import {
   collectSeaProviderConfigAssets,
   SEA_ZCODE_BUILTIN_PROVIDER_CONFIG_ASSET_KEY,
-} from "../../apps/zcode-cli/packages/cli/scripts/sea-provider-config-assets.mjs";
+} from "../../apps/zody-cli/packages/cli/scripts/sea-provider-config-assets.mjs";
 
 const repositoryRoot = resolve(import.meta.dirname, "../..");
 const productionFile = "config/provider/zcode-builtin.json";
@@ -88,7 +88,7 @@ for (const [environment, file, revision] of [
 
   test(`${environment} CLI bundle and its adjacent resource agree`, async (t) => {
     const root = await fixture(t);
-    const rootDirectory = resolve(root, "apps/zcode-cli");
+    const rootDirectory = resolve(root, "apps/zody-cli");
     const cliDirectory = resolve(rootDirectory, "packages/cli");
     await mkdir(resolve(cliDirectory, "src"), { recursive: true });
     await writeFile(resolve(cliDirectory, "src/main.ts"), "console.log('fixture CLI');");
@@ -192,9 +192,9 @@ test("both repository configurations pass the runtime release decoder", async ()
 
 test("Turbo and bootstrap include the out-of-workspace configuration inputs", async () => {
   const turbo = JSON.parse(
-    await readFile(resolve(repositoryRoot, "apps/zcode-cli/turbo.json"), "utf8"),
+    await readFile(resolve(repositoryRoot, "apps/zody-cli/turbo.json"), "utf8"),
   );
-  for (const taskName of ["@zcode/cli#build", "build:desktop-agent"]) {
+  for (const taskName of ["@zody/cli#build", "build:desktop-agent"]) {
     const task = turbo.tasks[taskName];
     assert.ok(task.env.includes("ZCODE_ENV"));
     assert.ok(task.env.includes("NODE_ENV"));

@@ -1,4 +1,4 @@
-import type { Theme } from "@zcode/ui";
+import type { Theme } from "@zody/ui";
 import {
   WEB_REMOTE_CONTROL_DEFAULT_THEME,
   resolveWebRemoteControlInitialTheme,

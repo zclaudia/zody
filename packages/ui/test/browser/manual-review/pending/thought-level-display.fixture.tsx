@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { IServiceAccessor } from "@zcode/services";
-import type { IPlatformService, ZCodeConfigOption } from "@zcode/shared";
+import type { IServiceAccessor } from "@zody/services";
+import type { IPlatformService, ZCodeConfigOption } from "@zody/shared";
 import { ThoughtLevelCycleControl } from "@/chat-input-toolbar/ThoughtLevelCycleControl.js";
 import { getNextThoughtLevelValue } from "@/chat-input-toolbar/thoughtLevelOptions.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";

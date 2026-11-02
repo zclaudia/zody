@@ -1,4 +1,4 @@
-import type { MobileNotificationActionClick, MobileNotificationClick } from "@zcode/shared";
+import type { MobileNotificationActionClick, MobileNotificationClick } from "@zody/shared";
 
 /** Keep the newest intent while a bridge is being replaced; never drop a native intent on busy. */
 function createMobileNotificationSerialQueue<T>(options: {

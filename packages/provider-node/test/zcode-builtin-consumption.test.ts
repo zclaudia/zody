@@ -10,7 +10,7 @@ import {
   ProviderConfigMap,
   ModelConfig,
   ModelPropertiesConfig,
-} from "@zcode/provider";
+} from "@zody/provider";
 import { expect, it, vi } from "vitest";
 import {
   NodeProviderRegistryRuntime,

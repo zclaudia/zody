@@ -22,7 +22,7 @@ const entryId = "\0mobile-history-search-e2e-entry";
 const entry = `
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Event } from '@zcode/rpc';
+import { Event } from '@zody/rpc';
 import { ServiceProvider } from '@/hooks/useServices.js';
 import { PlatformProvider } from '@/hooks/usePlatform.js';
 import { StoreProvider } from '@/store/StoreProvider.js';
@@ -108,7 +108,7 @@ const vite = await createServer({
   resolve: {
     alias: {
       "@": resolve(repoRoot, "packages/ui/src"),
-      "@zcode/rpc": resolve(repoRoot, "packages/rpc/src/index.ts"),
+      "@zody/rpc": resolve(repoRoot, "packages/rpc/src/index.ts"),
     },
   },
   server: { host: "127.0.0.1", port: 0 },

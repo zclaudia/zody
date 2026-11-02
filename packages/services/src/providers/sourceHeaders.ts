@@ -4,7 +4,7 @@ import {
   normalizeZCodeSourceHeaderValue,
   ZCODE_ENV,
   ZCODE_VERSION,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 interface ZCodeSourceHeaderOptions {
   appVersion?: string;

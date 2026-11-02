@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ISkillsService } from "@zcode/services";
+import type { ISkillsService } from "@zody/services";
 import { useSkillStore } from "../src/store/skillStore.js";
 
 function createSkillsServiceMock(overrides?: {

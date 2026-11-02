@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, readFile, readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { SKILL_SYNC_SIZE_LIMIT_ERROR_CODE } from "@zcode/shared";
+import { SKILL_SYNC_SIZE_LIMIT_ERROR_CODE } from "@zody/shared";
 import { describe, expect, it } from "vitest";
 import {
   createSkillSyncArchive,

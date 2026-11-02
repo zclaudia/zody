@@ -1,8 +1,8 @@
-import type { IZCodeAgentService, IZCodeTaskService } from "@zcode/services";
-import type { IMobileNotificationService } from "@zcode/services/mobile-notifications/node";
-import type { ZCodeTaskMeta } from "@zcode/shared";
-import type { SessionSummary } from "@zcode/shared/zcode-protocol-v4";
-import { extractMobileNotificationPushActions, resolveWorkspaceKey } from "@zcode/shared";
+import type { IZCodeAgentService, IZCodeTaskService } from "@zody/services";
+import type { IMobileNotificationService } from "@zody/services/mobile-notifications/node";
+import type { ZCodeTaskMeta } from "@zody/shared";
+import type { SessionSummary } from "@zody/shared/zody-protocol-v4";
+import { extractMobileNotificationPushActions, resolveWorkspaceKey } from "@zody/shared";
 
 export type WindowHostControllerSourceScope =
   | { kind: "local"; workspacePath: string; workspaceIdentity?: string }
@@ -49,7 +49,7 @@ export function createMobileNotificationEventBridge(params: {
   // pendingInteraction 是轻量投影拿不到 options，所以在这里按 requestId 缓存、record 时查。
   const permissionRequestActions = new Map<
     string,
-    import("@zcode/shared").MobileNotificationPushAction[]
+    import("@zody/shared").MobileNotificationPushAction[]
   >();
   const resolvedInteractionIds = new Set<string>();
   let tasksBySessionId = new Map<string, CapturableTask>();
@@ -62,7 +62,7 @@ export function createMobileNotificationEventBridge(params: {
   const reportedMessageKinds = new Set<string>();
 
   type ZCodeSessionTerminalEvent = Extract<
-    import("@zcode/shared").ZCodeSessionEvent,
+    import("@zody/shared").ZCodeSessionEvent,
     { type: "turn.completed" | "turn.failed" }
   >;
   type CapturedTerminalEvent = ZCodeSessionTerminalEvent & { recovered?: boolean };

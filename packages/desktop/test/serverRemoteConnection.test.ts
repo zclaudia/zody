@@ -2,16 +2,16 @@ import { once } from "node:events";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AddressInfo } from "node:net";
 import { WebSocket, type RawData } from "ws";
-import { Emitter, Event, SocketProtocol, VSBuffer, type ISocket } from "@zcode/rpc";
-import { ServiceCollection, ISystemService, IZCodeAgentService } from "@zcode/services";
-import { createHttpServer } from "@zcode/server";
-import { connectViaProtocol, connectViaWebSocket } from "@zcode/client";
+import { Emitter, Event, SocketProtocol, VSBuffer, type ISocket } from "@zody/rpc";
+import { ServiceCollection, ISystemService, IZCodeAgentService } from "@zody/services";
+import { createHttpServer } from "@zody/server";
+import { connectViaProtocol, connectViaWebSocket } from "@zody/client";
 import {
   connectServerRemote,
   resolveServerRemoteEndpoints,
 } from "../src/host/serverRemoteConnection.js";
 import { registerHostServiceResourceTelemetry } from "../src/host/hostServiceResourceTelemetry.js";
-import { serverRemoteInfoSchema, type AgentLaneResourceSample } from "@zcode/shared";
+import { serverRemoteInfoSchema, type AgentLaneResourceSample } from "@zody/shared";
 
 function wrapNodeWebSocket(socket: WebSocket): ISocket {
   const onData = new Emitter<VSBuffer>();

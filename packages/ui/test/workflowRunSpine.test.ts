@@ -7,7 +7,7 @@
 import { createElement } from "react";
 import { cleanup, render, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { WorkflowRunState } from "@zcode/shared/zcode-protocol-v4";
+import type { WorkflowRunState } from "@zody/shared/zody-protocol-v4";
 import type { WorkflowCausalityGraphData } from "@/components/workflow-graph/types.js";
 import { buildWorkflowTimeline } from "@/components/workflow-timeline/timeline-model.js";
 import { spineLayout } from "@/app-shell/workflowRunSpine.js";

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
-import type { IClientConfigService, IZCodeAgentService } from "@zcode/services";
-import type { DynamicWorkflowMode } from "@zcode/shared";
+import type { IClientConfigService, IZCodeAgentService } from "@zody/services";
+import type { DynamicWorkflowMode } from "@zody/shared";
 import { logger } from "@/logger.js";
 import {
   useDynamicWorkflowAvailabilityStore,

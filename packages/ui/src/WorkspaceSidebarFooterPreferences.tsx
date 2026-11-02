@@ -6,13 +6,13 @@
  */
 import type { KeyboardEvent, ReactNode } from "react";
 import { useEffect, useState } from "react";
-import type { Locale } from "@zcode/shared";
+import type { Locale } from "@zody/shared";
 import {
   DESKTOP_ZOOM_MAX_LEVEL,
   DESKTOP_ZOOM_MIN_LEVEL,
   DesktopCommandIds,
   resolveDesktopZoomFactorForLevel,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Minus, Monitor, Moon, Plus, Sun } from "lucide-react";
 import { ZODY_BRAND_NAME, zodyLogoUrl } from "@/brand.js";
 import { cn } from "@/components/lib/utils.js";

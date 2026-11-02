@@ -6,7 +6,7 @@ import { createHooksService } from "../src/hooks/hooksService.js";
 import {
   parseWorkspaceHookTrustStoreContent,
   type WorkspaceHookTrustStoreParseResult,
-} from "@zcode/shared/workspace-hook-trust-store-file";
+} from "@zody/shared/workspace-hook-trust-store-file";
 
 /**
  * Trust store schema parity（CR-01 回归）。

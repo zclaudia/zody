@@ -1,4 +1,4 @@
-import type { IBroadcastService } from "@zcode/services";
+import type { IBroadcastService } from "@zody/services";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createZCodeStore } from "@/store/index.js";
 

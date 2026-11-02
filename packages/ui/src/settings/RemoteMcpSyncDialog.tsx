@@ -8,8 +8,8 @@ import type {
   McpSyncImportResult,
   McpSyncRemoteStatus,
   RemoteTarget,
-} from "@zcode/shared";
-import type { IMcpSyncService } from "@zcode/services";
+} from "@zody/shared";
+import type { IMcpSyncService } from "@zody/services";
 import { Button } from "@/components/ui/button.js";
 import {
   Dialog,

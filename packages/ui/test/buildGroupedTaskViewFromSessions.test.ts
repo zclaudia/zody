@@ -1,7 +1,7 @@
 // M5 ②：grouped 客户端 join（分组原始结构 + sessions-index 会话 → 旧 listGroupedTaskView 同形视图）。
 import { describe, expect, it } from "vitest";
-import type { ZCodeGroupedTaskViewStructure, ZCodeTaskGroup } from "@zcode/services";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZCodeGroupedTaskViewStructure, ZCodeTaskGroup } from "@zody/services";
+import type { ZCodeTaskMeta } from "@zody/shared";
 import { buildGroupedTaskViewFromSessions } from "@/lib/buildGroupedTaskViewFromSessions.js";
 
 function task(id: string, overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {

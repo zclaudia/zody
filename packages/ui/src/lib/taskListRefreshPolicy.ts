@@ -1,4 +1,4 @@
-import type { ZCodeWorkspaceTaskListChanged } from "@zcode/shared";
+import type { ZCodeWorkspaceTaskListChanged } from "@zody/shared";
 
 export type TaskListMembershipWorkspaceEventReason =
   | "task_archived"

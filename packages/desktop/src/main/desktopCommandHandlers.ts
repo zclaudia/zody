@@ -1,6 +1,6 @@
 import { getPluginSandboxHost } from "./pluginSandbox/index.js";
 /* eslint-disable max-lines -- 桌面命令分发需要共享窗口与平台上下文，集中维护更便于一致性 */
-import { readZCodeStdioTapDevState, setZCodeStdioTapDevEnabled } from "@zcode/services/node";
+import { readZCodeStdioTapDevState, setZCodeStdioTapDevEnabled } from "@zody/services/node";
 import {
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   DesktopCommandIds,
@@ -15,7 +15,7 @@ import {
   type DesktopCommandId,
   type HelpAppConfig,
   type Locale,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { MessageBoxOptions } from "electron";
 import { app, BrowserWindow, dialog, shell } from "electron";
 import { showAboutDialog } from "./about.js";

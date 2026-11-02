@@ -1,6 +1,6 @@
-import type { IRemoteBackend, RemoteUploadOptions } from "@zcode/server/remote";
-import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
-import { ZCODE_DATA_ROOT_DIR_NAME, type TraceId, type ZCodePromptAttachment } from "@zcode/shared";
+import type { IRemoteBackend, RemoteUploadOptions } from "@zody/server/remote";
+import { quotePosixPathArg } from "@zody/server/remote/posixShell.js";
+import { ZCODE_DATA_ROOT_DIR_NAME, type TraceId, type ZCodePromptAttachment } from "@zody/shared";
 import { randomUUID } from "node:crypto";
 
 // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。

@@ -4,7 +4,7 @@ import type {
   ZCodeCommand,
   ZCodeInstalledPluginSummary,
   ZCodePluginInfo,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   filterPluginsByQuery,
   groupScopedSkillsBySource,

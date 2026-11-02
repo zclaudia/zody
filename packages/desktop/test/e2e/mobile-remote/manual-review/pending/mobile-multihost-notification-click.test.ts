@@ -9,7 +9,7 @@ import {
   buildRemoteWorkspaceIdentity,
   resolveWorkspaceKey,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByDom,
   seedSettings,

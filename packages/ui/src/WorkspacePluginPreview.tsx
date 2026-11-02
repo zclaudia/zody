@@ -5,7 +5,7 @@ import {
   isPublicStoreMarketplaceId,
   resolvePluginDisplayName,
   sortPluginStoreEntries,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   Popover,
   PopoverContent,

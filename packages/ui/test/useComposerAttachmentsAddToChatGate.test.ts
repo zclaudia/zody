@@ -1,7 +1,7 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { IPromptAttachmentTransferService } from "@zcode/services";
+import type { IPromptAttachmentTransferService } from "@zody/services";
 import { useComposerAttachmentUploadStore } from "@/store/composerAttachmentUploadStore.js";
 import {
   useComposerAttachments,

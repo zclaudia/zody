@@ -7,7 +7,7 @@ import { REPO_ROOT } from "./cua-desktop-session-config.mjs";
 
 const WORKSPACE_PACKAGE_ROOTS = [
   join(REPO_ROOT, "packages"),
-  join(REPO_ROOT, "apps", "zcode-cli", "packages"),
+  join(REPO_ROOT, "apps", "zody-cli", "packages"),
 ];
 
 function isWorkspacePackagePath(path) {
@@ -50,7 +50,7 @@ export function createWorkspaceSourcePlugin() {
   return {
     name: "cua-desktop-session-workspace-source",
     setup(pluginBuild) {
-      pluginBuild.onResolve({ filter: /^@zcode\// }, async (args) => {
+      pluginBuild.onResolve({ filter: /^@zody\// }, async (args) => {
         if (args.pluginData?.cuaWorkspaceSourceResolving) return null;
         const resolved = await pluginBuild.resolve(args.path, {
           importer: args.importer,

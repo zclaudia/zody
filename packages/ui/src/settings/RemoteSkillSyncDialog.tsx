@@ -9,8 +9,8 @@ import {
   type SkillSyncImportResult,
   type SkillSyncRemoteStatus,
   type SkillSyncSizeLimitErrorData,
-} from "@zcode/shared";
-import type { ISkillSyncService } from "@zcode/services";
+} from "@zody/shared";
+import type { ISkillSyncService } from "@zody/services";
 import { Button } from "@/components/ui/button.js";
 import {
   Dialog,

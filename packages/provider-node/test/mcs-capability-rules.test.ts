@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { parseModelConfig, parseZCodeBuiltinModelConfigRules } from "@zcode/provider";
+import { parseModelConfig, parseZCodeBuiltinModelConfigRules } from "@zody/provider";
 
 describe("MCS published capability boundaries", () => {
   it("supports known Claude models across sites, without granting Sonnet or a different API", async () => {

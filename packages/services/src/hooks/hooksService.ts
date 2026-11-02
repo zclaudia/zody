@@ -2,13 +2,13 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type {
   Hook,
   HookEvent,
   SettingsDirectoryLocation,
   SettingsDirectorySource,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   buildWorkspaceHookBundleSnapshot,
   createWorkspaceHookSourceInput,
@@ -18,9 +18,9 @@ import {
   type WorkspaceHookBundleSnapshotData,
   type WorkspaceHookSourceInput,
   type WorkspaceHooksConfig,
-} from "@zcode/shared/workspace-hook-discovery";
-import { parseWorkspaceHookTrustStoreContent } from "@zcode/shared/workspace-hook-trust-store-file";
-import { resolveProjectResourcePaths } from "@zcode/shared/zody-paths";
+} from "@zody/shared/workspace-hook-discovery";
+import { parseWorkspaceHookTrustStoreContent } from "@zody/shared/workspace-hook-trust-store-file";
+import { resolveProjectResourcePaths } from "@zody/shared/zody-paths";
 import { createServiceLogger, type ServiceLogger } from "#src/logger/serviceLogger.js";
 import type { IHooksService } from "./hooks.js";
 import { atomicWriteWorkspaceHookConfig } from "./workspaceHookConfigMutation.js";

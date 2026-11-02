@@ -4,12 +4,12 @@
 // fork（F2.6b）：重读经 IClientConfigService 读 Host 本地 offer，不经订阅服务。
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IClientConfigService } from "@zcode/services";
+import type { IClientConfigService } from "@zody/services";
 import {
   applyDynamicWorkflowUserMode,
   createDynamicWorkflowClientConfig,
   type DynamicWorkflowMode,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { useDynamicWorkflowUserModeSync } from "@/hooks/useDynamicWorkflowAvailability.js";
 import {
   resetDynamicWorkflowAvailabilityStoreForTests,

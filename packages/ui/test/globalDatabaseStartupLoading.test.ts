@@ -38,7 +38,7 @@ it("explains FULL, provides manual recovery, and never claims all changes rolled
 });
 
 function renderStartup(
-  state: import("@zcode/shared").DatabaseStartupState | null,
+  state: import("@zody/shared").DatabaseStartupState | null,
   locale: "zh-CN" | "en-US" = "zh-CN",
 ) {
   return renderToStaticMarkup(
@@ -54,7 +54,7 @@ function renderStartup(
     ),
   );
 }
-const baseState: import("@zcode/shared").DatabaseStartupState = {
+const baseState: import("@zody/shared").DatabaseStartupState = {
   schemaVersion: 1,
   startupId: "silent",
   attemptId: "silent",
@@ -140,7 +140,7 @@ it("SILENTDB-01: silent UI mounts no timer and migration-to-failure clears the p
   const interval = vi.spyOn(globalThis, "setInterval");
   const container = document.createElement("div");
   const root = createRoot(container);
-  const show = async (state: import("@zcode/shared").DatabaseStartupState) => {
+  const show = async (state: import("@zody/shared").DatabaseStartupState) => {
     await act(async () =>
       root.render(
         createElement(

@@ -20,9 +20,9 @@ import type {
   SettingsSyncSourceScope,
   SettingsSyncSourceRootSummary,
   SettingsSyncTaskImportResult,
-} from "@zcode/shared";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
-import { resolveProjectResourcePaths } from "@zcode/shared/zody-paths";
+} from "@zody/shared";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { resolveProjectResourcePaths } from "@zody/shared/zody-paths";
 import {
   copyFile,
   cp,

@@ -1,6 +1,6 @@
 import { app } from "electron";
 import { join } from "node:path";
-import { ZCODE_ENV } from "@zcode/shared";
+import { ZCODE_ENV } from "@zody/shared";
 
 export function resolveZCodeBuiltinProviderConfigFilePath(options?: {
   readonly appPath?: string;

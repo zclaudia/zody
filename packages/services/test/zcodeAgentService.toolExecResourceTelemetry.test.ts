@@ -1,7 +1,7 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ZCodeToolExecResource } from "@zcode/shared";
+import type { ZCodeToolExecResource } from "@zody/shared";
 import { expect, it } from "vitest";
 import { createZCodeAgentService } from "#src/zcode-agent/zcodeAgentService.js";
 import { createZCodeAgentConnectionScope } from "#src/zcode-agent/zcodeAgentConnectionScope.js";

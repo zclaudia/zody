@@ -8,7 +8,7 @@ import {
   WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES,
   WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION,
   type WebRemoteControlAppPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   createGatewayDeviceTransport,
   WEB_REMOTE_CONTROL_CHANNEL_MAX_BUFFERED_BYTES,

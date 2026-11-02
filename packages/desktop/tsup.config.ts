@@ -327,19 +327,19 @@ export default defineConfig([
     // desktop 保持 undici 为外部依赖，remote 单文件 bundle 再单独内联。
     external: desktopNodeRuntimeExternals,
     noExternal: [
-      "@zcode/server",
-      "@zcode/shared",
-      "@zcode/rpc",
-      "@zcode/services",
-      "@zcode/client",
+      "@zody/server",
+      "@zody/shared",
+      "@zody/rpc",
+      "@zody/services",
+      "@zody/client",
       // Provider Refactor 的 workspace 包导出 TypeScript 源码；Electron 生产运行时没有
       // TS loader，必须随 Desktop bundle 内联，不能留下指向 src/index.ts 的裸包引用。
-      "@zcode/provider",
-      "@zcode/provider-node",
+      "@zody/provider",
+      "@zody/provider-node",
       // services 已内联进 main，但其 producer import 曾被保留为裸包引用；
       // electron-builder 又会排除 node_modules/@zcode，导致安装包启动即 ERR_MODULE_NOT_FOUND。
       // producer 的 JS broker 必须跟随 services 一起内联，原生 addon 仍只存在于独立 Helper。
-      "@zcode/zcode-cua",
+      "@zody/zody-cua",
       // 远程访问改走 zclaudia-gateway。@zclaudia/gateway-backend 运行时 import "@zclaudia/gateway-client"
       // （解析到它自己声明的 0.2.x），安装包不随包发布 node_modules，所以三个包都必须内联进 main bundle；
       // 漏掉 gateway-client 会让打包后的安装包在启动远程访问时报 ERR_MODULE_NOT_FOUND。
@@ -375,7 +375,7 @@ export default defineConfig([
     platform: "node",
     target: "node22",
     external: ["electron"],
-    noExternal: ["@zcode/shared"],
+    noExternal: ["@zody/shared"],
     outExtension: () => ({ js: ".cjs" }),
     define: createSharedDefines(),
     esbuildOptions(options) {
@@ -424,14 +424,14 @@ export default defineConfig([
     // 这里同样保留为外部依赖，避免 desktop 开发态和打包态 host 进程启动失败。
     external: desktopNodeRuntimeExternals,
     noExternal: [
-      "@zcode/server",
-      "@zcode/shared",
-      "@zcode/rpc",
-      "@zcode/services",
-      "@zcode/client",
-      "@zcode/provider",
-      "@zcode/provider-node",
-      "@zcode/zcode-cua",
+      "@zody/server",
+      "@zody/shared",
+      "@zody/rpc",
+      "@zody/services",
+      "@zody/client",
+      "@zody/provider",
+      "@zody/provider-node",
+      "@zody/zody-cua",
     ],
     define: {
       ...createSharedDefines(),
@@ -457,14 +457,14 @@ export default defineConfig([
     // 同样保留 undici 等为外部依赖，避免 Electron ESM runtime 的 dynamic require 崩溃。
     external: desktopNodeRuntimeExternals,
     noExternal: [
-      "@zcode/server",
-      "@zcode/shared",
-      "@zcode/rpc",
-      "@zcode/services",
-      "@zcode/client",
-      "@zcode/provider",
-      "@zcode/provider-node",
-      "@zcode/zcode-cua",
+      "@zody/server",
+      "@zody/shared",
+      "@zody/rpc",
+      "@zody/services",
+      "@zody/client",
+      "@zody/provider",
+      "@zody/provider-node",
+      "@zody/zody-cua",
     ],
     define: createSharedDefines(),
     esbuildOptions(options) {

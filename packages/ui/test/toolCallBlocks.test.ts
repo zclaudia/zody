@@ -6,7 +6,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
-import type { ToolCallRow } from "@zcode/shared/zcode-protocol-v4";
+import type { ToolCallRow } from "@zody/shared/zody-protocol-v4";
 import { ToolCallBlock } from "../src/ToolCallBlocks.js";
 import { ToolCallBody } from "../src/ToolCallBlocks/ToolCallBody.js";
 import { readRawToolCallFileSummaries } from "../src/ToolCallBlocks/shared.js";

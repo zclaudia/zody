@@ -1,4 +1,4 @@
-import type { WebRemoteControlAppPayload, WebRemoteControlFailure } from "@zcode/shared";
+import type { WebRemoteControlAppPayload, WebRemoteControlFailure } from "@zody/shared";
 
 /**
  * 手机远控的应用 payload 请求层：把 requestId 等待、超时收敛和错误消费从 transport 里拆出来，

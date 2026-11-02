@@ -113,13 +113,13 @@ describe("desktop E2E build cache", () => {
     writeFileSync(
       resolve(ROOT, "packages/desktop/package.json"),
       JSON.stringify({
-        dependencies: { "@zcode/server": "workspace:*" },
-        name: "@zcode/desktop",
+        dependencies: { "@zody/server": "workspace:*" },
+        name: "@zody/desktop",
       }),
     );
     writeFileSync(
       resolve(ROOT, "packages/server/package.json"),
-      JSON.stringify({ name: "@zcode/server" }),
+      JSON.stringify({ name: "@zody/server" }),
     );
     writeFileSync(resolve(ROOT, "packages/desktop/src/main.ts"), "export const desktop = 1;\n");
     writeFileSync(resolve(ROOT, "packages/server/src/index.ts"), "export const server = 1;\n");

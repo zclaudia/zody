@@ -5,7 +5,7 @@ import {
   TID_LOGIN_USE_API_KEY_BUTTON,
   TID_TASK_ITEM,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,

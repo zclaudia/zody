@@ -8,7 +8,7 @@ import {
   type RemoteAssetSource,
   type RemoteResourcePackageId,
   type RemoteResourcePackageSelection,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { IRemoteBackend, RemoteEnvironment } from "./backend.js";
 import { deployZCodeAgentRuntime } from "./zcodeAgentDeploy.js";
 import {
@@ -16,7 +16,7 @@ import {
   deployNodeRuntime,
   createRemoteComponentVersionResolver,
   logDeployRequired,
-} from "@zcode/server/remote/remoteAssetDeployDecision.js";
+} from "@zody/server/remote/remoteAssetDeployDecision.js";
 import {
   REMOTE_BASE,
   fileExists,
@@ -24,35 +24,35 @@ import {
   formatOptionalValues,
   type DeployLoggers,
   type RemoteAssetDeployOptions,
-} from "@zcode/server/remote/deployShared.js";
-import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
-import { checkServerBundleRequiredMarkers } from "@zcode/server/remote/serverBundleDeployCheck.js";
-import { deployRuntimeTools } from "@zcode/server/remote/runtimeToolDeploy.js";
+} from "@zody/server/remote/deployShared.js";
+import { quotePosixPathArg } from "@zody/server/remote/posixShell.js";
+import { checkServerBundleRequiredMarkers } from "@zody/server/remote/serverBundleDeployCheck.js";
+import { deployRuntimeTools } from "@zody/server/remote/runtimeToolDeploy.js";
 import { resolveRequiredLocalReleasePaths } from "./remoteAssetLocalPaths.js";
 import { prepareLocalRemoteAssets } from "./localRemoteAssets.js";
 import {
   ensureRemoteReleaseDirFromCdn,
   selectRemoteAssetManifestComponents,
   type RemoteAssetManifestRef,
-} from "@zcode/server/remote/remoteAssetCache.js";
+} from "@zody/server/remote/remoteAssetCache.js";
 import {
   fetchRemoteDownloadManifest,
   LocalUploadAssetInstaller,
   RemoteDownloadAssetInstaller,
   type RemoteAssetInstaller,
   type RemoteManifestRef,
-} from "@zcode/server/remote/remoteAssetInstaller.js";
+} from "@zody/server/remote/remoteAssetInstaller.js";
 import {
   checkRemoteAssetComponentIdentity,
   createFreshRemoteAssetManifestRefResolver,
   hasRemoteAssetComponentRefreshPending,
   markRemoteAssetComponentRefreshPending,
   writeRemoteAssetComponentMeta,
-} from "@zcode/server/remote/remoteAssetLiveIdentity.js";
-import { detectRemoteAssetTools } from "@zcode/server/remote/remoteAssetPreflight.js";
-import { assertSupportedRemoteEnvironment } from "@zcode/server/remote/remotePlatformSupport.js";
-import { acquireRemoteDeployLock } from "@zcode/server/remote/remoteDeployLock.js";
-import type { RemoteAssetNetworkPort } from "@zcode/server/remote/remoteAssetNetwork.js";
+} from "@zody/server/remote/remoteAssetLiveIdentity.js";
+import { detectRemoteAssetTools } from "@zody/server/remote/remoteAssetPreflight.js";
+import { assertSupportedRemoteEnvironment } from "@zody/server/remote/remotePlatformSupport.js";
+import { acquireRemoteDeployLock } from "@zody/server/remote/remoteDeployLock.js";
+import type { RemoteAssetNetworkPort } from "@zody/server/remote/remoteAssetNetwork.js";
 
 const log = (...args: unknown[]) => console.log(formatLogPrefix("deploy", process.pid), ...args);
 const logWarn = (...args: unknown[]) =>

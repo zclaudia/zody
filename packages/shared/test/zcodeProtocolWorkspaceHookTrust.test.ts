@@ -3,7 +3,7 @@ import {
   zcodeProtocolMethods,
   zcodeWorkspaceHookTrustGrantParamsSchema,
   zcodeWorkspaceHookTrustGrantResultSchema,
-} from "../src/zcode-protocol/index.js";
+} from "../src/zody-protocol/index.js";
 
 describe("workspace Hook Trust workspace protocol", () => {
   it("declares an exact workspace/bundle/declaration grant contract", () => {

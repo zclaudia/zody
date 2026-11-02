@@ -1,4 +1,4 @@
-import type { BrowserCommand } from "@zcode/shared";
+import type { BrowserCommand } from "@zody/shared";
 import type { ExtensionExecutionContext } from "./extensionBrowserBackendTypes.js";
 
 /** 普通命令沿用 Host 桥 30 秒预算；claimTab 有自己的 TTL，不进入这条预算。 */

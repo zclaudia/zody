@@ -15,7 +15,7 @@ import {
   v4ConversationAttachmentReadResultSchema,
   v4ConversationAttachmentStatParamsSchema,
   v4ConversationAttachmentStatResultSchema,
-} from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
 import { VIDEO_INPUT_MAX_BYTES } from "../src/zcode-media-policy.js";
 
 const sha256 = `sha256:${"a".repeat(64)}`;

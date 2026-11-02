@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import { describe, expect, it } from "vitest";
-import { HostMessageTypes, HostResponseTypes } from "@zcode/shared";
+import { HostMessageTypes, HostResponseTypes } from "@zody/shared";
 import { probeNativeHostInitialization } from "../scripts/hostInitProbe.js";
 
 class FakeProbeHost extends EventEmitter {

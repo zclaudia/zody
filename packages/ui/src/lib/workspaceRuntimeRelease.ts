@@ -1,4 +1,4 @@
-import type { IZCodeTaskService } from "@zcode/services";
+import type { IZCodeTaskService } from "@zody/services";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import { logger } from "@/logger.js";
 

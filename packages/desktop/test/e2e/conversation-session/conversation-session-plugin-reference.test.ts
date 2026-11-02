@@ -19,7 +19,7 @@ import {
   TID_PROMPT_SUGGESTION_OPTION,
   TID_V4_COMPOSER_INPUT,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickV4SlashOption,
   getV4ComposerText,

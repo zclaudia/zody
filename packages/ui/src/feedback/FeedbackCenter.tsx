@@ -5,9 +5,9 @@ import { DownloadIcon, ExternalLinkIcon } from "lucide-react";
 // fork（F2.9，决策门 D7）：官方工单提交停用，反馈中心收敛为本地面板——
 // 「导出诊断日志」+「打开 fork 问题反馈地址」（构建期 ZCODE_FEEDBACK_ISSUE_URL，未配置不显示）。
 // 旧的提交表单 / 工单列表 / 产品需求弹窗文件保留（阶段 4 删除），此处不再挂载。
-import { ZCODE_FEEDBACK_ISSUE_URL } from "@zcode/shared";
-import type { IFeedbackService } from "@zcode/services";
-import type { IPlatformService } from "@zcode/shared";
+import { ZCODE_FEEDBACK_ISSUE_URL } from "@zody/shared";
+import type { IFeedbackService } from "@zody/services";
+import type { IPlatformService } from "@zody/shared";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { memo } from "react";
 import { runExportLogsAction } from "@/lib/exportLogsAction.js";

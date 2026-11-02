@@ -10,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
 const repoRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
-const coreDirectory = join(repoRoot, "apps/zcode-cli/packages/core");
+const coreDirectory = join(repoRoot, "apps/zody-cli/packages/core");
 const corePackagePath = join(coreDirectory, "package.json");
 const entryPath = join(
   repoRoot,
@@ -218,7 +218,7 @@ describe("macOS CUA R11 real CuaSubmissionAuthority entry", () => {
     const publicEntry = resolve(coreDirectory, publicExport.import);
     bundlePath = join(directory, "authority-entry.mjs");
     await build({
-      alias: { "@zcode/core/cua-submission": publicEntry },
+      alias: { "@zody/core/cua-submission": publicEntry },
       bundle: true,
       entryPoints: [entryPath],
       format: "esm",

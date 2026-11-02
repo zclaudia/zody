@@ -9,7 +9,7 @@ import {
   TID_TASK_SETTINGS_BUTTON,
   TID_TERMINAL_TOGGLE,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData, clickTestIdByDom } from "../helpers/desktop-app.js";
 import { prepareV4ConversationE2E } from "../helpers/v4-conversation.js";
 

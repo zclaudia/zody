@@ -6,7 +6,7 @@ import type {
 import type {
   RemoteAccessGatewayConnectionErrorReason,
   RemoteAccessGatewayConnectionStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * RemoteGatewayBackend 的公共契约与 SDK 抽象。

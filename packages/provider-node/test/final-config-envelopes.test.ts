@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { ModelConfigRules, ProviderConfigMap } from "@zcode/provider";
+import { ModelConfigRules, ProviderConfigMap } from "@zody/provider";
 import {
   decodeProviderConfigFile,
   encodeProviderConfigFile,

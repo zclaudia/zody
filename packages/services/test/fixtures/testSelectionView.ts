@@ -1,4 +1,4 @@
-import type { ModelSelectionView } from "@zcode/provider";
+import type { ModelSelectionView } from "@zody/provider";
 
 /**
  * fork（F4.3）：原 offPeakSelectionView（隐藏 off-peak provider 双域视图）随闲时任务全链路删除。

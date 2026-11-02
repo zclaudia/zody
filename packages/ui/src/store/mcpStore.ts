@@ -15,8 +15,8 @@ import type {
   ZCodeMcpListMode,
   ZCodeMcpServerStatusSnapshot,
   ZCodeMcpServer,
-} from "@zcode/shared";
-import { convertToZCodeAgentMcpServer } from "@zcode/shared";
+} from "@zody/shared";
+import { convertToZCodeAgentMcpServer } from "@zody/shared";
 import { logger } from "@/logger.js";
 import {
   fetchNativeMcpServers,

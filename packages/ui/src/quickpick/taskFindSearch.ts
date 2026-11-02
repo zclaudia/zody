@@ -1,4 +1,4 @@
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZCodeTaskMeta } from "@zody/shared";
 import { formatTaskChangedFileLabel } from "@/lib/taskChangeSummary.js";
 
 type TaskFindScope = "conversation" | "changes";

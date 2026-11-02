@@ -3,7 +3,7 @@ import {
   normalizeZCodeEndpointOrigin,
   ZCODE_ENV,
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   createSingleFeatureRollout,
   type SingleFeatureRollout,

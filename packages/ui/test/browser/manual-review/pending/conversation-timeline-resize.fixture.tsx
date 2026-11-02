@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { UserInputRow } from "@zcode/shared/zcode-protocol-v4";
+import type { UserInputRow } from "@zody/shared/zody-protocol-v4";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import { ConversationTimeline } from "@/v4/ConversationTimeline.js";

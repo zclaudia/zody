@@ -8,7 +8,7 @@ import {
   PlatformChannels,
   type UpdateStatePayload,
   type UpdateCheckResultPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_WORKSPACE,
   clickTestIdByWebDriver,

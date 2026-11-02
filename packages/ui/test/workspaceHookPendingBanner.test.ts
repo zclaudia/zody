@@ -10,7 +10,7 @@ import {
   TID_V4_WORKSPACE_HOOK_PENDING_BANNER,
   TID_V4_WORKSPACE_HOOK_PENDING_DISMISS,
   TID_V4_WORKSPACE_HOOK_PENDING_REVIEW,
-} from "@zcode/shared";
+} from "@zody/shared";
 import enUS from "@/i18n/locales/en-US.js";
 import zhCN from "@/i18n/locales/zh-CN.js";
 import {

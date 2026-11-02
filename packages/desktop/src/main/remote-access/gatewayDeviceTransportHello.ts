@@ -6,7 +6,7 @@ import {
   type WebRemoteControlAppProtocolRange,
   type WebRemoteControlAppProtocolUpgradeTarget,
   type WebRemoteControlChannelFrameOf,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { RemoteGatewayBackendLogger } from "./remoteGatewayBackendTypes.js";
 
 /**

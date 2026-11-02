@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { SpanKind, SpanStatusCode, TraceFlags, type HrTime } from "@opentelemetry/api";
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
-import { LOCAL_TTFT_STAGES, type LocalTtftRecord } from "@zcode/shared";
+import { LOCAL_TTFT_STAGES, type LocalTtftRecord } from "@zody/shared";
 
 export function createLocalTtftSpans(
   record: LocalTtftRecord,

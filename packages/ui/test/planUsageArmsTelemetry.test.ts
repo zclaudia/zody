@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { type ArmsCustomEventPayload } from "@zcode/shared";
+import { type ArmsCustomEventPayload } from "@zody/shared";
 import {
   PLAN_USAGE_ARMS_EVENT_TTFT,
   PLAN_USAGE_ARMS_EVENT_REQUEST,

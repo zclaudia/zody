@@ -10,12 +10,12 @@ import {
   setWebRemoteControlTerminalTransportState,
   type WebRemoteControlTerminalTransportState as UiWebRemoteControlTerminalTransportState,
   type WebRemoteControlMobileSettingsDraft,
-} from "@zcode/ui";
+} from "@zody/ui";
 import {
   connectViaProtocol,
   connectViaProtocolOwned,
   createAcknowledgedWebRemoteControlRelayProtocol,
-} from "@zcode/client";
+} from "@zody/client";
 import {
   WEB_REMOTE_CONTROL_WORKSPACE_RECONNECT_TIMEOUT_MS,
   ZCODE_VERSION,
@@ -40,7 +40,7 @@ import {
   type WebRemoteControlWindowBootstrapResult,
   type WebRemoteControlWorkspaceListResult,
   type WebRemoteControlWorkspaceSwitchOptions,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   createMobileNotificationPlatform,
   mobileNotificationTargetKey,
@@ -348,7 +348,7 @@ async function startGatewaySession(
 
   const navigationOwner = createMobileNavigationOwner();
   let mobileCapabilities:
-    | import("@zcode/shared").MobileCapabilities
+    | import("@zody/shared").MobileCapabilities
     | undefined;
   // 第二批 E1：协商出的 appProtocol；低于 4 的桌面隐藏「打开其他项目」入口（不发未知 payload）。
   let negotiatedAppProtocol: number | undefined;
@@ -1489,7 +1489,7 @@ async function startGatewaySession(
       connectionGeneration,
     }),
     searchMobileHistory: async (
-      request: import("@zcode/shared").MobileHistorySearchRequest,
+      request: import("@zody/shared").MobileHistorySearchRequest,
     ) => {
       if (
         mobileCapabilities?.historySearch !== 1 ||
@@ -1501,7 +1501,7 @@ async function startGatewaySession(
         request,
         (
           payload,
-        ): payload is import("@zcode/shared").MobileHistorySearchOutcome =>
+        ): payload is import("@zody/shared").MobileHistorySearchOutcome =>
           payload.zcode_type === "mobile-history-search-outcome" &&
           payload.context.requestId === request.context.requestId,
       );

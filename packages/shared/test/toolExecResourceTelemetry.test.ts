@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hostResponseMessageSchema, zcodeToolExecResourceSchema } from "@zcode/shared";
+import { hostResponseMessageSchema, zcodeToolExecResourceSchema } from "@zody/shared";
 
 const sample = {
   platform: "linux",

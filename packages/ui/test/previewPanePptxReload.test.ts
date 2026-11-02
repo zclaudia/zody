@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 import { act, render, screen, waitFor } from "@testing-library/react";
-import { Emitter } from "@zcode/rpc";
-import type { FileWatchEvent } from "@zcode/shared";
+import { Emitter } from "@zody/rpc";
+import type { FileWatchEvent } from "@zody/shared";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";

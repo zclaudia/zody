@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { GitDiffResult, GitFileChange, ZCodeWorkspaceGenerateTextParams } from "@zcode/shared";
+import type { GitDiffResult, GitFileChange, ZCodeWorkspaceGenerateTextParams } from "@zody/shared";
 
 type ZCodeSelection = ZCodeWorkspaceGenerateTextParams["selection"];
 import {

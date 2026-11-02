@@ -5,7 +5,7 @@ import type {
   DesktopWindowChromeState,
   IPlatformService,
   UpdateStatePayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
   useZCodeIntl: () => ({

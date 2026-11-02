@@ -3,14 +3,14 @@
 import { act, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Emitter } from "@zcode/rpc";
-import type { IServiceAccessor } from "@zcode/services";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import { Emitter } from "@zody/rpc";
+import type { IServiceAccessor } from "@zody/services";
+import type { ZCodeTaskMeta } from "@zody/shared";
 import type {
   SessionsIndexTopicFrame,
   SessionsIndexTopicWireFrame,
   SessionSummary,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { useGlobalTaskList } from "@/hooks/useGlobalTaskList.js";
 import { useSessionsMentionProvider } from "@/mentions/providers/sessionsMentionProvider.js";

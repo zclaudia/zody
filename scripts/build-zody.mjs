@@ -16,16 +16,16 @@ import {
   nodeTargetForDistribution,
   parseDistributionArgs,
 } from "./zody-distribution/targets.mjs";
-import { collectSeaRuntimeToolAssets } from "../apps/zcode-cli/packages/cli/scripts/sea-runtime-tool-assets.mjs";
-import { resolveDownloadedNodeBinary } from "../apps/zcode-cli/packages/cli/scripts/sea-node-download.mjs";
-import { outputBinaryName } from "../apps/zcode-cli/packages/cli/scripts/sea-targets.mjs";
+import { collectSeaRuntimeToolAssets } from "../apps/zody-cli/packages/cli/scripts/sea-runtime-tool-assets.mjs";
+import { resolveDownloadedNodeBinary } from "../apps/zody-cli/packages/cli/scripts/sea-node-download.mjs";
+import { outputBinaryName } from "../apps/zody-cli/packages/cli/scripts/sea-targets.mjs";
 import { seaBuildSteps } from "./zody-distribution/sea-build-steps.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const defaultOutDir = resolve(root, "dist", "zody");
 const packageDirName = "zody";
 const bundledNodeVersion = "24.14.0";
-const cliRoot = resolve(root, "apps/zcode-cli/packages/cli");
+const cliRoot = resolve(root, "apps/zody-cli/packages/cli");
 const usage = `Usage:
   pnpm run build:zody --all
   node scripts/build-zody.mjs --target darwin-arm64
@@ -73,10 +73,10 @@ async function buildOutputs(skipBuild, targets) {
       arch,
     ]);
   }
-  run("pnpm", ["--filter", "@zcode/cli...", "build"]);
+  run("pnpm", ["--filter", "@zody/cli...", "build"]);
   await rm(resolve(root, "packages/server/dist"), { force: true, recursive: true });
-  run("pnpm", ["--filter", "@zcode/server", "build"]);
-  run("pnpm", ["--filter", "@zcode/web", "build"]);
+  run("pnpm", ["--filter", "@zody/server", "build"]);
+  run("pnpm", ["--filter", "@zody/web", "build"]);
 }
 
 function seaBinary(target) {

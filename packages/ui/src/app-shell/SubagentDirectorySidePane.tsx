@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useState } from "react";
-import type { ZCodeSessionEndedSubagent } from "@zcode/shared";
-import type { RunningSubagentSummary } from "@zcode/shared/zcode-protocol-v4";
+import type { ZCodeSessionEndedSubagent } from "@zody/shared";
+import type { RunningSubagentSummary } from "@zody/shared/zody-protocol-v4";
 import {
   BanIcon,
   CheckCircle2Icon,

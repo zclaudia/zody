@@ -6,8 +6,8 @@ import type {
   CommandUpdateParams,
   UserCommand,
   ZCodeCommand,
-} from "@zcode/shared";
-import type { ICommandsService } from "@zcode/services";
+} from "@zody/shared";
+import type { ICommandsService } from "@zody/services";
 
 interface CommandsStoreState {
   workspacePath: string | null;

@@ -2,7 +2,7 @@
 // 不给新 Root 手工写配置；真实点击 New Task，先检查回退，再以 Write 验证执行权限。
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { TID_CHAT_MODE_SELECT_TRIGGER } from "@zcode/shared";
+import { TID_CHAT_MODE_SELECT_TRIGGER } from "@zody/shared";
 import { clearAppData, DEFAULT_WORKSPACE } from "../../../helpers/desktop-app.js";
 import { resolveE2ERuntimePath, resolveE2EToolPath } from "../../../helpers/e2e-runtime-paths.js";
 import { getLatestUpstreamToolResultByToolCallId } from "../../../helpers/conversation-session-network.js";

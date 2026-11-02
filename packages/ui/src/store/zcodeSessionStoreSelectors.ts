@@ -7,7 +7,7 @@
 import type {
   ZCodeTaskRuntimeStatus,
   ZCodeTaskMeta,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { mergeTaskWithOptimisticMeta } from "@/lib/zcodeTaskMetaMerge.js";
 import {
   DEFAULT_TASK_UI_STATE,

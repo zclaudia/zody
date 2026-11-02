@@ -4,7 +4,7 @@ import type {
   McpSource,
   NativeMcpServerRecord,
   ZCodeMcpServer,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export const MCP_CONFIG_KEY = "zcode-mcp-config";
 export const MCP_ENABLED_STATES_KEY = "zcode-mcp-enabled-states";

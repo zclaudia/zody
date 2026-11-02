@@ -8,13 +8,13 @@ import {
   serializeExtensionBridgeMessage,
   type ExtensionBridgeClientMessage,
   type ExtensionBridgeServerMessage,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import {
   TID_SETTINGS_PAGE,
   TID_SETTINGS_SECTION_NAV,
   TID_TASK_SETTINGS_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByDom,
   setInputValueByTestIdDom,

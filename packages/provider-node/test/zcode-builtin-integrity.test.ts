@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { compileModelOptionMaps } from "@zcode/model-option-map";
+import { compileModelOptionMaps } from "@zody/model-option-map";
 import { fileURLToPath } from "node:url";
 import {
   ApiKeyAccessConfig,
@@ -8,7 +8,7 @@ import {
   ProviderApiConfig,
   ProviderConfigMap,
   ProviderConfigResolver,
-} from "@zcode/provider";
+} from "@zody/provider";
 import { describe, expect, it } from "vitest";
 import {
   NodeZCodeBuiltinProviderConfigSource,

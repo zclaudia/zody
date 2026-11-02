@@ -1,5 +1,5 @@
-import type { IBroadcastService, IServiceAccessor } from "@zcode/services";
-import type { IPlatformService } from "@zcode/shared";
+import type { IBroadcastService, IServiceAccessor } from "@zody/services";
+import type { IPlatformService } from "@zody/shared";
 import { PlatformProvider } from "@/hooks/usePlatform.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { createElement } from "react";

@@ -6,7 +6,7 @@ import type {
   ConversationRow,
   TurnHeaderRow,
   UserInputRow,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import {
   SEARCH_RESULT_HIGHLIGHT_NAME,
   ensureConversationFindHighlightStyle,

@@ -1,5 +1,5 @@
 import type { GatewayBackendOptions } from "@zclaudia/gateway-backend";
-import type { WebRemoteControlAppPayload, WebRemoteControlAppProtocolRange } from "@zcode/shared";
+import type { WebRemoteControlAppPayload, WebRemoteControlAppProtocolRange } from "@zody/shared";
 import type {
   RemoteGatewayBackendLogger,
   RemoteGatewayChannel,

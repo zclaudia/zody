@@ -1,4 +1,4 @@
-import { InternalChannels, PlatformChannels } from "@zcode/shared";
+import { InternalChannels, PlatformChannels } from "@zody/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**

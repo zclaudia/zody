@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodePluginsOverviewResult, ZCodePluginInfo } from "@zcode/shared";
-import type { IPluginManagementService } from "@zcode/services";
+import type { ZCodePluginsOverviewResult, ZCodePluginInfo } from "@zody/shared";
+import type { IPluginManagementService } from "@zody/services";
 import { usePluginManagementStore } from "../src/store/pluginManagementStore.js";
 import { buildStoreItems } from "../src/settings/pluginStoreListing.js";
 

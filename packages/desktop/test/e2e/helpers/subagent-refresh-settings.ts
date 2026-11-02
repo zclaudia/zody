@@ -16,7 +16,7 @@ import {
   TID_TASK_SETTINGS_BUTTON,
   encodeCustomModelValue,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByDom,
   waitForTestIdByDom,

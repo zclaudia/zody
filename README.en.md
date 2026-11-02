@@ -19,7 +19,7 @@ zody --web --workspace /path/to/project --no-open
 
 Web binds to `127.0.0.1` by default. Non-loopback bindings require a token: `--host 0.0.0.0` generates one unless `--token` supplies it; `--no-token` is rejected for these bindings. Direct HTTP entry points accept `ZCODE_SERVER_AUTH_TOKEN`. Configure TLS and access control for network deployments.
 
-Updates are manual downloads from Releases. User data lives under `~/.zody/`; `ZCODE_DATA_BASE_DIR` overrides its parent directory. Old `~/.zcoder/` and `~/.zcode/` user data is not loaded, migrated, or deleted. Project configuration reads `.zody/` first and falls back to `.zcode/`, writing only to `.zody/`. See [configuration compatibility](apps/zcode-cli/docs/design/v2/zody-path-compatibility.md). Internal package names, protocol identifiers, and existing `ZCODE_*` environment keys remain internal compatibility interfaces.
+Updates are manual downloads from Releases. User data lives under `~/.zody/`; `ZCODE_DATA_BASE_DIR` overrides its parent directory. Old `~/.zcoder/` and `~/.zcode/` user data is not loaded, migrated, or deleted. Project configuration reads `.zody/` first and falls back to `.zcode/`, writing only to `.zody/`. See [configuration compatibility](apps/zody-cli/docs/design/v2/zody-path-compatibility.md). Internal package names, protocol identifiers, and existing `ZCODE_*` environment keys remain internal compatibility interfaces.
 
 ## Develop and build
 
@@ -32,9 +32,9 @@ pnpm dev:web
 pnpm typecheck
 pnpm lint
 pnpm test:unit
-pnpm --dir apps/zcode-cli typecheck
-pnpm --dir apps/zcode-cli lint
-pnpm --dir apps/zcode-cli test
+pnpm --dir apps/zody-cli typecheck
+pnpm --dir apps/zody-cli lint
+pnpm --dir apps/zody-cli test
 pnpm bundle:desktop -- --os mac --arch arm64
 pnpm build:zody --target darwin-arm64
 ```

@@ -6,7 +6,7 @@ import type {
   MobileNotificationActionClick,
   MobileNotificationClick,
   PlatformAppLifecycleState,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { resolveMobileRemoteNativeBridge } from "./mobileRemoteSecureStore.js";
 
 /**

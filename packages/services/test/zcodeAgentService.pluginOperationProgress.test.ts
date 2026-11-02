@@ -3,7 +3,7 @@ import {
   zcodeProtocolMethods,
   zcodeProtocolNotifications,
   type ZCodePluginOperationProgressNotification,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 describe("zcodeAgentService Plugin operation progress", () => {
   it("projects a validated Agent progress notification by operationId", async () => {
@@ -55,7 +55,7 @@ describe("zcodeAgentService Plugin operation progress", () => {
         async disposeAllAndWait() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService();
     const received: ZCodePluginOperationProgressNotification[] = [];
     const subscription = service.onDynamicPluginOperationProgress("suggested-progress")((event) =>

@@ -38,20 +38,20 @@ import {
   TID_V4_BACKGROUND_WORK_CANCEL,
   TID_V4_BACKGROUND_WORK_ITEM,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   GitChangeSourceId,
   GitRepositorySummary,
   ZCodeSessionRunningSubagent,
   ZCodeTaskChangeSummary,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   BackgroundWorkSummary,
   GoalState,
   PlanState,
   ToolCallRow,
   WorkflowRunState,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
 import { RUN_STATUS_DOT } from "@/components/workflow-graph/run-status-presentation.js";

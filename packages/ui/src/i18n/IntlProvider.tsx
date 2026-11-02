@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from "react";
 import type { ReactNode } from "react";
-import type { Locale, LocalePreference } from "@zcode/shared";
-import { DEFAULT_LOCALE } from "@zcode/shared";
-import type { BroadcastMessage, IBroadcastService, ISettingService } from "@zcode/services";
+import type { Locale, LocalePreference } from "@zody/shared";
+import { DEFAULT_LOCALE } from "@zody/shared";
+import type { BroadcastMessage, IBroadcastService, ISettingService } from "@zody/services";
 import { readNavigatorLanguage, readSafeLocalStorage, writeSafeLocalStorage } from "@/lib/browserEnvironment.js";
 import zhCN from "./locales/zh-CN.js";
 import enUS from "./locales/en-US.js";

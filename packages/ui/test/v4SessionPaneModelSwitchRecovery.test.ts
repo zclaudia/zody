@@ -1,19 +1,19 @@
 import { act, createElement, type ComponentProps, useRef } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ModelSelectionView } from "@zcode/services";
+import type { ModelSelectionView } from "@zody/services";
 import { useModelSelectionServiceView } from "@/hooks/useModelSelectionView.js";
 import {
   ZCODE_AGENT_PROVIDER_NOT_READY_CODE,
   type ZCodeWorkspaceStateSnapshot,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   CommandAck,
   CommandEnvelope,
   ConversationSnapshot,
   SessionModelTransition,
   SessionConfigState,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { SessionPane } from "@/v4/SessionPane.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import type { ConversationComposer } from "@/v4/ConversationComposer.js";

@@ -5,7 +5,7 @@ export function seaBuildSteps({ cliRoot, target, nodeExecutable }) {
   return [
     {
       command: "pnpm",
-      args: ["--filter", "@zcode/browser-use-plugin...", "build"],
+      args: ["--filter", "@zody/browser-use-plugin...", "build"],
     },
     {
       command: nodeExecutable,

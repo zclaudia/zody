@@ -7,22 +7,22 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { PassThrough } from "node:stream";
-import type { IDisposable, Event } from "@zcode/rpc";
+import type { IDisposable, Event } from "@zody/rpc";
 import type {
   IRemoteBackend,
   RemoteUploadOptions,
   StdioStream,
-} from "@zcode/server/remote/backend.js";
-import { ZCODE_VERSION } from "@zcode/shared";
+} from "@zody/server/remote/backend.js";
+import { ZCODE_VERSION } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import {
   LocalUploadAssetInstaller,
   RemoteDownloadAssetInstaller,
   buildRemoteArtifactDownloadCommand,
   buildRemoteChecksumCommand,
-} from "@zcode/server/remote/remoteAssetInstaller.js";
-import type { RemoteSha256Tool } from "@zcode/server/remote/remoteAssetPreflight.js";
-import { extractTarGzArchive } from "@zcode/server/remote/localTarGz.js";
+} from "@zody/server/remote/remoteAssetInstaller.js";
+import type { RemoteSha256Tool } from "@zody/server/remote/remoteAssetPreflight.js";
+import { extractTarGzArchive } from "@zody/server/remote/localTarGz.js";
 
 const execFileAsync = promisify(execFile);
 const localShellCommand = resolveLocalShellCommand();

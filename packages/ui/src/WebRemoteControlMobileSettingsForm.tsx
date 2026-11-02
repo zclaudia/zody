@@ -2,7 +2,7 @@ import { useRef, useState, type FormEvent, type RefObject } from "react";
 import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";

@@ -1,5 +1,5 @@
 import { Cron } from "croner";
-import type { ZCodeAutomation, ZCodeAutomationScheduleRule } from "@zcode/shared";
+import type { ZCodeAutomation, ZCodeAutomationScheduleRule } from "@zody/shared";
 import { isValidCronExpr } from "#src/session/automationCronValidation.js";
 
 export { isValidCronExpr } from "#src/session/automationCronValidation.js";

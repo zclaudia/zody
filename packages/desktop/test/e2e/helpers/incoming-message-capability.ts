@@ -1,5 +1,5 @@
-import { ModelConfig, ModelPropertiesConfig } from "@zcode/provider";
-import { NodePersonalProviderConfigRepository } from "@zcode/provider-node";
+import { ModelConfig, ModelPropertiesConfig } from "@zody/provider";
+import { NodePersonalProviderConfigRepository } from "@zody/provider-node";
 import { getE2EAppDataPaths, seedSettings } from "./desktop-app.js";
 import {
   ensureUpstreamModelForE2E,

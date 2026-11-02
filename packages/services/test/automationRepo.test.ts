@@ -24,7 +24,7 @@ import {
   AUTOMATION_CREATE_LIMIT,
   type ZCodeAutomationCreateParams,
   type ZCodeAutomationLifecycleStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 // 固定基准时间，保证退避 / 重排断言可复现。
 const NOW = 1_700_000_000_000;

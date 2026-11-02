@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MAX_SKILL_SCAN_DEPTH } from "@zcode/shared";
+import { MAX_SKILL_SCAN_DEPTH } from "@zody/shared";
 import type { ISkillsService } from "../src/skills/skills.js";
 
 const originalHome = process.env.HOME;

@@ -12,11 +12,11 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import type {
   ZCodeGroupedTaskViewNode,
   ZCodeTaskGroupColor,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   CRON_DEFAULT_GROUP_ID,
   type ZCodeTaskMeta,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   ChevronDownIcon,
   ChevronRightIcon,

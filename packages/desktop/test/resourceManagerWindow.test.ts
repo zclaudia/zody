@@ -5,7 +5,7 @@ import {
   formatZCodeRendererProcessName,
   formatZCodeUtilityProcessName,
   HostMessageTypes,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const getAppMetrics = vi.fn();

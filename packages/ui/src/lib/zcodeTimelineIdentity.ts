@@ -1,4 +1,4 @@
-import type { ZCodeTimelineMeta } from "@zcode/shared";
+import type { ZCodeTimelineMeta } from "@zody/shared";
 
 function addTimelineIdentityKey(
   keys: string[],

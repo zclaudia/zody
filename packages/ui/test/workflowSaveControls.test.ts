@@ -12,7 +12,7 @@ import {
   testId,
   type ZCodeSavedWorkflowEntry,
   type ZCodeWorkflowsSaveResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 vi.mock("@/logger.js", () => ({ logger: { debug: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
 const toastSpy = vi.hoisted(() => vi.fn());

@@ -7,7 +7,7 @@ import {
   type WebRemoteControlAppProtocolRange,
   type WebRemoteControlAppProtocolUpgradeTarget,
   type WebRemoteControlChannelCloseReason,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   RemoteGatewayBackendLogger,
   RemoteGatewayChannel,

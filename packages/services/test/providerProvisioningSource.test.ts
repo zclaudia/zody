@@ -1,11 +1,11 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ModelConfigRules, parsePersonalProviderConfigMap } from "@zcode/provider";
+import { ModelConfigRules, parsePersonalProviderConfigMap } from "@zody/provider";
 import {
   NodePersonalProviderConfigRepository,
   encodeProviderConfigFile,
-} from "@zcode/provider-node";
+} from "@zody/provider-node";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createCredentialCipherProvider } from "../src/credential/providers/credentialCipherProvider.js";
 import {

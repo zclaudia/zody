@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZCodeTaskMeta } from "@zody/shared";
 import type { TaskListRowActivity } from "@/v4/taskListRowActivity.js";
 import { deriveTaskLeadingIndicator } from "../src/TaskList.js";
 

@@ -1,9 +1,9 @@
-import { Emitter } from "@zcode/rpc";
-import type { IZCodeAgentService, ZCodeAgentRuntimeLifecycleEvent } from "@zcode/services";
+import { Emitter } from "@zody/rpc";
+import type { IZCodeAgentService, ZCodeAgentRuntimeLifecycleEvent } from "@zody/services";
 import type {
   SessionsIndexTopicWireCandidate,
   SessionSummary,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { describe, expect, it, vi } from "vitest";
 import { createWindowHostSessionsIndexObserver } from "../src/host/windowHostSessionsIndexObserver.js";
 

@@ -2,7 +2,7 @@ import {
   resolveWebRemoteControlWorkspaceKey,
   type WebRemoteControlTaskTarget,
   type WebRemoteControlWorkspaceTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * RemoteWorkspaceDirectory —— 各窗口 workspace 标签页与任务索引的只读投影（方案「状态归属」）。

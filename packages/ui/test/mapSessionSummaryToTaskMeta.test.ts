@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zcode/shared";
-import type { SessionSummary } from "@zcode/shared/zcode-protocol-v4";
+import type { ZCodeTaskMeta } from "@zody/shared";
+import type { SessionSummary } from "@zody/shared/zody-protocol-v4";
 import { mapSessionSummaryToTaskMeta } from "@/v4/mapSessionSummaryToTaskMeta.js";
 import { getTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 

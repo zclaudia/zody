@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ProcessResourceSample } from "@zcode/services/node";
+import type { ProcessResourceSample } from "@zody/services/node";
 import { createHostResourceUsageResponder } from "../src/host/hostResourceUsage.js";
 
 function sample(pid: number, ppid: number, command: string): [number, ProcessResourceSample] {

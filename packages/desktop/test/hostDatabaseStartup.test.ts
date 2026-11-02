@@ -5,11 +5,11 @@ import { join } from "node:path";
 import { expect, it, vi } from "vitest";
 
 const fixtures = vi.hoisted(() => ({ host: vi.fn(), session: vi.fn(), mark: vi.fn() }));
-vi.mock("@zcode/services/storage-startup", () => ({
+vi.mock("@zody/services/storage-startup", () => ({
   getTasksIndexDatabasePath: () => "/isolated/tasks.sqlite",
   resolveZCodeAgentSpawnCwd: async (...args: unknown[]) =>
     (
-      await import("../../services/src/zcode-agent/zcodeAgentSpawnCwd.js")
+      await import("../../services/src/zody-agent/zcodeAgentSpawnCwd.js")
     ).resolveZCodeAgentSpawnCwd(...(args as [never])),
   markTasksStoragePrepared: fixtures.mark,
 }));
@@ -92,7 +92,7 @@ it("uses the normal Agent fallback for ENOTDIR and preserves actual database fai
 
 it("only marks the last session database as eligible for global saving/finishing", async () => {
   const dir = await mkdtemp(join(tmpdir(), "zcode-startup-final-db-"));
-  const states: import("@zcode/shared").DatabaseStartupState[] = [];
+  const states: import("@zody/shared").DatabaseStartupState[] = [];
   const migration = { kind: "upgrade", executedCount: 1, committedCount: 0 };
   fixtures.host.mockImplementation(async (_path, report) => report("committing", migration));
   fixtures.session.mockImplementation(async ({ cwd, report }) => {

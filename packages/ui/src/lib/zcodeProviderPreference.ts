@@ -2,7 +2,7 @@ import {
   normalizeAgentProviderToZCodeAgent,
   ZCODE_AGENT_PROVIDER,
   type ZCodeProvider,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { ZCODE_AGENT_PROVIDERS } from "./zcodeProviders.js";
 
 interface StorageLike {

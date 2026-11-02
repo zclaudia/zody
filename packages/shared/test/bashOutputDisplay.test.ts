@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { zcodeSessionEventSchema } from "../src/zcode-protocol/index.js";
-import { conversationRowSchema } from "../src/zcode-protocol-v4/index.js";
+import { zcodeSessionEventSchema } from "../src/zody-protocol/index.js";
+import { conversationRowSchema } from "../src/zody-protocol-v4/index.js";
 
 const display = {
   kind: "bash_output",

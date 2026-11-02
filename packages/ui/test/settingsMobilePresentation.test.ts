@@ -3,7 +3,7 @@
 import { createElement, useEffect, useState, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { SHORTCUT_COMMANDS } from "@zcode/shared";
+import { SHORTCUT_COMMANDS } from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import type { ProviderSettingsFormProvider } from "@/lib/providerSettingsFormTypes.js";

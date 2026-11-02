@@ -1,16 +1,16 @@
 import { join } from "node:path";
 import { app } from "electron";
-import { HELPER_APP_NAME } from "@zcode/zcode-cua/broker/helperConstants";
+import { HELPER_APP_NAME } from "@zody/zody-cua/broker/helperConstants";
 import {
   canonicalizeCuaHelperInstallerOptions,
   createCuaHelperInstaller,
   type CuaHelperInstaller,
   type CuaHelperInstallerOptions,
-} from "@zcode/services/node";
+} from "@zody/services/node";
 
 type InstallerFactory = (options: CuaHelperInstallerOptions) => CuaHelperInstaller;
 
-export { normalizeCuaHelperArch, normalizeCuaHelperArchs } from "@zcode/services/node";
+export { normalizeCuaHelperArch, normalizeCuaHelperArchs } from "@zody/services/node";
 
 export interface DesktopCuaHelperInstallerOptions extends Pick<
   CuaHelperInstallerOptions,

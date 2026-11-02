@@ -8,7 +8,7 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodePermissionOption, ZCodePermissionRequest } from "@zcode/shared";
+import type { ZCodePermissionOption, ZCodePermissionRequest } from "@zody/shared";
 import { PermissionDialog } from "../src/PermissionDialog.js";
 import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
 import {

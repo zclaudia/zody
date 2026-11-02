@@ -7,7 +7,7 @@ import type { Stats } from "node:fs";
 import { EventEmitter, on } from "node:events";
 import { watch } from "chokidar";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as shared from "@zcode/shared";
+import * as shared from "@zody/shared";
 import { createSubagentRuntimeConfigCache } from "../src/subagents/subagentRuntimeConfig.js";
 import { createSubagentConfigScope } from "../src/subagents/subagentConfigScope.js";
 
@@ -31,7 +31,7 @@ vi.mock("node:fs/promises", async (importOriginal) => {
     }),
   };
 });
-vi.mock("@zcode/shared", { spy: true });
+vi.mock("@zody/shared", { spy: true });
 const readiness = vi.hoisted(() => ({ automatic: true }));
 const watched = vi.hoisted(() => new Set<EventEmitter>());
 vi.mock("chokidar", () => ({

@@ -1,4 +1,4 @@
-import type { PostUpdateReleaseNotesPayload } from "@zcode/shared";
+import type { PostUpdateReleaseNotesPayload } from "@zody/shared";
 import { MessageResponse } from "@/components/ai-elements/message.js";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";

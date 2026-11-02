@@ -2,4 +2,4 @@ export {
   extractPlanStepsFromToolInput,
   extractPlanStepsFromToolOutput,
   isTodoPlanToolName,
-} from "@zcode/shared";
+} from "@zody/shared";

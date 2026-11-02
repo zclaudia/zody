@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import type { ZCodeConfigOption, ZCodeProvider } from "@zcode/shared";
+import type { ZCodeConfigOption, ZCodeProvider } from "@zody/shared";
 import { SlidersHorizontalIcon } from "lucide-react";
 import { ConfigSelect } from "@/chat-input-toolbar/display.js";
 import type { useZCodeIntl } from "@/i18n/IntlProvider.js";

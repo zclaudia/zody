@@ -14,7 +14,7 @@ import {
   TID_SSH_USERNAME_INPUT,
   buildRemoteWorkspaceIdentity,
   type RemoteTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByWebDriver,
   setInputValueByTestIdDom,

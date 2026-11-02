@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { Hook } from "@zcode/shared";
+import type { Hook } from "@zody/shared";
 import { createElement } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";

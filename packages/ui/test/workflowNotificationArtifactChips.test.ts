@@ -10,10 +10,10 @@
 import { createElement } from "react";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TID_CHAT_WORKFLOW_ARTIFACT_CHIP } from "@zcode/shared";
-import type { IPlatformService } from "@zcode/shared";
-import type { AssistantTextRow, TurnHeaderRow } from "@zcode/shared/zcode-protocol-v4";
-import type { WorkflowNotificationMeta } from "@zcode/shared/zcode-protocol-v4";
+import { TID_CHAT_WORKFLOW_ARTIFACT_CHIP } from "@zody/shared";
+import type { IPlatformService } from "@zody/shared";
+import type { AssistantTextRow, TurnHeaderRow } from "@zody/shared/zody-protocol-v4";
+import type { WorkflowNotificationMeta } from "@zody/shared/zody-protocol-v4";
 
 vi.mock("@/hooks/useWorkspaceServices.js", () => ({
   useWorkspaceServices: () => ({}),

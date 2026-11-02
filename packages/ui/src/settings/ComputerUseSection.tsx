@@ -6,12 +6,12 @@
 //    只会制造「未知 + 点了没反应」的失真呈现）；接入窄链 Helper 的真实状态查询属 phase1 收尾。
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSettings } from "@/hooks/useSettingService.js";
-import type { CuaOsSupport, RemoteTarget } from "@zcode/shared";
+import type { CuaOsSupport, RemoteTarget } from "@zody/shared";
 import {
   DesktopCommandIds,
   isRemoteWorkspaceIdentity,
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { toast } from "@/components/ui/toast.js";
 import { Switch } from "@/components/ui/switch.js";
 import { usePlatform } from "@/hooks/usePlatform.js";

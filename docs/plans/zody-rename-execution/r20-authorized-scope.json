@@ -673,20 +673,29 @@
     "Map exact 13 paths longest source prefix to final target once; relative imports and exports require resolution against original and final file, not string prefix replacement.",
     "No blanket zcode or @zcode substring replacement: review string constants, generated embeds, plugin identities, archived fixtures, test assertions and docs individually.",
     "Never edit env/define, wire values, telemetry, artifact, hook source or plugin compatibility names as part of P2.",
-    "Move nested entries by final-tree plan in staging or children before parent; verify collisions and git status, never overwrite targets."
+    "Move nested entries by final-tree plan in staging or children before parent; verify collisions and git status, never overwrite targets.",
+    "CUA sealed-entry leak assertion must reject both legacy @zcode/ and new @zody/ unresolved workspace specifiers; cover both in focused tests.",
+    "Preserve THIRD-PARTY-NOTICES.md bytes with inventory; R21 regenerates both atomically if required."
   ],
   "contentProtectedPaths": [
-    "pnpm-lock.yaml",
+    ".agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
+    "THIRD-PARTY-NOTICES.md",
     "apps/zcode-cli/pnpm-lock.yaml",
-    "apps/zody-cli/pnpm-lock.yaml",
-    "skills-lock.json",
     "apps/zcode-cli/skills-lock.json",
+    "apps/zody-cli/pnpm-lock.yaml",
     "apps/zody-cli/skills-lock.json",
-    "third-party/inventory.json",
-    ".agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml"
+    "docs/analysis/memory-leak-audit-2026-09-03.md",
+    "docs/plugins/2026-09-17-official-plugin-version-sync-spec.md",
+    "docs/security/security-audit-2026-06-09.md",
+    "docs/trace/archive/model-api-observability-v1.md",
+    "docs/trace/archive/telemetry-v4-to-v5-upgrade-design.md",
+    "docs/trace/archive/turn-trace-observability-v2.md",
+    "pnpm-lock.yaml",
+    "skills-lock.json",
+    "third-party/inventory.json"
   ],
   "exclusions": {
-    "frozen": "packages/desktop/native/macos-cua-* and output/cua-* are not edited; tracked frozen files still require preservation",
+    "frozen": "packages/desktop/native/macos-cua-* and output/cua-* are not edited; tracked frozen files still require preservation; only activeNativeSourceExceptions and exact BUILD.md current guide may change (imports/paths only), never outputs, baseline hashes or pins.",
     "locks": "R21 root and CLI pnpm-lock; skills-lock only on explicit grant",
     "history": "docs/plans, evidence/archive, vendored historical snapshots excluded from content edits; parent directory moves preserve bytes",
     "future": "R30 env/define; R40+ wire, artifact, telemetry, hook, plugin; external IDs and signed trust roots retained",
@@ -6079,7 +6088,6 @@
     "AGENTS.md": "AGENTS.md",
     "README.en.md": "README.en.md",
     "README.md": "README.md",
-    "THIRD-PARTY-NOTICES.md": "THIRD-PARTY-NOTICES.md",
     "UI_PLUGIN.en.md": "UI_PLUGIN.en.md",
     "UI_PLUGIN.md": "UI_PLUGIN.md",
     "apps/dev-docs/package.json": "apps/dev-docs/package.json",
@@ -7715,7 +7723,6 @@
     "docs/analysis/credentials-json-code-audit.md": "docs/analysis/credentials-json-code-audit.md",
     "docs/analysis/exa-oauth-reauth-analysis.md": "docs/analysis/exa-oauth-reauth-analysis.md",
     "docs/analysis/fix-handoff-v4.md": "docs/analysis/fix-handoff-v4.md",
-    "docs/analysis/memory-leak-audit-2026-09-03.md": "docs/analysis/memory-leak-audit-2026-09-03.md",
     "docs/analysis/memory-leak-fix-plan-cli-event-store.md": "docs/analysis/memory-leak-fix-plan-cli-event-store.md",
     "docs/architecture/architecture.md": "docs/architecture/architecture.md",
     "docs/architecture/communication-protocol-layers.md": "docs/architecture/communication-protocol-layers.md",
@@ -7865,7 +7872,6 @@
     "docs/plugin-mcp-skill-case-catalog.md": "docs/plugin-mcp-skill-case-catalog.md",
     "docs/plugin-reference-mention.md": "docs/plugin-reference-mention.md",
     "docs/plugin-ui-connection-readiness.md": "docs/plugin-ui-connection-readiness.md",
-    "docs/plugins/2026-09-17-official-plugin-version-sync-spec.md": "docs/plugins/2026-09-17-official-plugin-version-sync-spec.md",
     "docs/product-capability-map-office-computer-use.md": "docs/product-capability-map-office-computer-use.md",
     "docs/releases/zody-0.1.0-validation.md": "docs/releases/zody-0.1.0-validation.md",
     "docs/remote-workspace-provider-sync-hang.md": "docs/remote-workspace-provider-sync-hang.md",
@@ -7875,7 +7881,6 @@
     "docs/runtime-tools/bash-effective-shell-snapshot.md": "docs/runtime-tools/bash-effective-shell-snapshot.md",
     "docs/runtime-tools/embedded-search-native-build.md": "docs/runtime-tools/embedded-search-native-build.md",
     "docs/runtime-tools/read-encoding-sample-boundary.md": "docs/runtime-tools/read-encoding-sample-boundary.md",
-    "docs/security/security-audit-2026-06-09.md": "docs/security/security-audit-2026-06-09.md",
     "docs/settings-storage-management.md": "docs/settings-storage-management.md",
     "docs/specs/builtin-plugin-catalog-runtime-separation.md": "docs/specs/builtin-plugin-catalog-runtime-separation.md",
     "docs/specs/workspace-hook-trust.md": "docs/specs/workspace-hook-trust.md",
@@ -7928,9 +7933,6 @@
     "docs/tmpdir-storage-paths-spec.md": "docs/tmpdir-storage-paths-spec.md",
     "docs/todo/wsl-native-support.md": "docs/todo/wsl-native-support.md",
     "docs/trace/README.md": "docs/trace/README.md",
-    "docs/trace/archive/model-api-observability-v1.md": "docs/trace/archive/model-api-observability-v1.md",
-    "docs/trace/archive/telemetry-v4-to-v5-upgrade-design.md": "docs/trace/archive/telemetry-v4-to-v5-upgrade-design.md",
-    "docs/trace/archive/turn-trace-observability-v2.md": "docs/trace/archive/turn-trace-observability-v2.md",
     "docs/trace/cli-agent-telemetry.md": "docs/trace/cli-agent-telemetry.md",
     "docs/ui-mcp-status-refresh-issue.md": "docs/ui-mcp-status-refresh-issue.md",
     "docs/ui/chat-composer-action-menu.md": "docs/ui/chat-composer-action-menu.md",
@@ -10644,7 +10646,17 @@
     "specs/zody-rename-runtime-contract.md": "specs/zody-rename-runtime-contract.md",
     "vitest.config.ts": "vitest.config.ts",
     "apps/zcode-cli/e2e/compact-microcompact/package.json": "apps/zody-cli/e2e/compact-microcompact/package.json",
-    "apps/zcode-cli/e2e/file-tools-atomic-write/package.json": "apps/zody-cli/e2e/file-tools-atomic-write/package.json"
+    "apps/zcode-cli/e2e/file-tools-atomic-write/package.json": "apps/zody-cli/e2e/file-tools-atomic-write/package.json",
+    "packages/desktop/native/macos-cua-helper-round11/authority-entry.mjs": "packages/desktop/native/macos-cua-helper-round11/authority-entry.mjs",
+    "packages/desktop/native/macos-cua-desktop-session/entries/cli-entry.ts": "packages/desktop/native/macos-cua-desktop-session/entries/cli-entry.ts",
+    "packages/desktop/native/macos-cua-desktop-session/entries/session-entry.ts": "packages/desktop/native/macos-cua-desktop-session/entries/session-entry.ts",
+    "packages/desktop/native/macos-cua-desktop-session/entries/session-storage-entry.ts": "packages/desktop/native/macos-cua-desktop-session/entries/session-storage-entry.ts",
+    "packages/desktop/native/macos-cua-helper-round11/BUILD.md": "packages/desktop/native/macos-cua-helper-round11/BUILD.md",
+    "packages/desktop/scripts/gen-ui-vendor-export.test.py": "packages/desktop/scripts/gen-ui-vendor-export.test.py",
+    "packages/desktop/scripts/lib/cua-helper-product-wiring-config.mjs": "packages/desktop/scripts/lib/cua-helper-product-wiring-config.mjs",
+    "scripts/stage-dev-cua-plugin-runtime.mjs": "scripts/stage-dev-cua-plugin-runtime.mjs",
+    "packages/desktop/scripts/lib/cua-desktop-session-bundle.mjs": "packages/desktop/scripts/lib/cua-desktop-session-bundle.mjs",
+    "apps/zcode-cli/packages/browser-use-plugin/e2e/headless-linux.Dockerfile": "apps/zody-cli/packages/browser-use-plugin/e2e/headless-linux.Dockerfile"
   },
   "contentContexts": {
     "automatic": [
@@ -10659,14 +10671,64 @@
       "wire/env/telemetry",
       "dynamic paths"
     ],
-    "fixturePackageNameOnly": [
-      "apps/zcode-cli/e2e/compact-microcompact/package.json",
-      "apps/zcode-cli/e2e/file-tools-atomic-write/package.json",
-      "apps/zcode-cli/e2e/memory/package.json"
-    ]
+    "fixturePackageNameOnly": [],
+    "fixtureRules": "Three fixture package manifests: exact package name, workspace --filter and --dir references only; no unrelated behavior/lock changes."
   },
   "counts": {
     "movedFiles": 5364,
-    "contentPaths": 4579
-  }
+    "contentPaths": 4582
+  },
+  "activeNativeSourceExceptions": [
+    {
+      "path": "packages/desktop/native/macos-cua-helper-round11/authority-entry.mjs",
+      "line": 2,
+      "kind": "active build source",
+      "old": "@zcode/core/cua-submission",
+      "new": "@zody/core/cua-submission",
+      "reader": [
+        "packages/desktop/scripts/lib/cua-helper-round11-final-build.mjs:463",
+        "packages/desktop/scripts/lib/cua-helper-round11-final-build.mjs:475",
+        "packages/desktop/test/macosCuaHelperRound11Authority.test.ts:17"
+      ],
+      "owner": "R20 exact import + paired builder alias; R60 rebuild/sign",
+      "risk": "sealed output source; change invalidates downstream evidence"
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/entries/cli-entry.ts",
+      "line": 7,
+      "kind": "active build source",
+      "old": "@zcode/node-repl-host/cua-node-repl-mcp-port and apps/zcode-cli",
+      "new": "@zody/node-repl-host/cua-node-repl-mcp-port and apps/zody-cli",
+      "reader": [
+        "packages/desktop/scripts/build-cua-desktop-session.mjs:65",
+        "packages/desktop/scripts/build-cua-desktop-session.mjs:193",
+        "packages/desktop/scripts/build-cua-desktop-session.mjs:200"
+      ],
+      "owner": "R20 exact import + paired aliases; R60 rebuild/sign"
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/entries/session-entry.ts",
+      "line": 3,
+      "kind": "active build source",
+      "old": "apps/zcode-cli",
+      "new": "apps/zody-cli",
+      "reader": [
+        "packages/desktop/scripts/build-cua-desktop-session.mjs:66",
+        "packages/desktop/scripts/build-cua-desktop-session.mjs:200"
+      ],
+      "owner": "R20 exact import; R60 rebuild/sign"
+    },
+    {
+      "path": "packages/desktop/native/macos-cua-desktop-session/entries/session-storage-entry.ts",
+      "line": 4,
+      "kind": "active embedded build source",
+      "old": "apps/zcode-cli",
+      "new": "apps/zody-cli (plus R20 approved module basename map)",
+      "reader": [
+        "packages/desktop/scripts/lib/cua-desktop-session-config.mjs:108",
+        "packages/desktop/scripts/build-cua-desktop-session.mjs:131"
+      ],
+      "owner": "R20 exact import; R60 rebuild/sign"
+    }
+  ]
 }

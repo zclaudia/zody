@@ -5,7 +5,7 @@ import {
   type ArmsCustomEventPayload,
   type IPlatformService,
   type ZCodeTaskNetworkDebugStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { logger } from "@/logger.js";
 
 export const PLAN_USAGE_ARMS_GROUP = "plan_usage";

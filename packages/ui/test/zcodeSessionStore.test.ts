@@ -5,7 +5,7 @@ import {
   type ZCodeConfigOption,
   type ZCodePermissionRequest,
   type ZCodeTaskMeta,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_TASK_UI_STATE,
   DEFAULT_TASK_RUNTIME_STATE,

@@ -12,8 +12,8 @@ import type { ISettingService } from "./setting/setting.js";
 import type { ICredentialService } from "./credential/credential.js";
 import type { IBroadcastService } from "./broadcast/broadcast.js";
 import type { IZCodeTaskService } from "./session/zcodeTaskService.js";
-import type { IZCodeAgentService } from "./zcode-agent/zcodeAgent.js";
-import type { IZCodeSessionService } from "./zcode-session/zcodeSession.js";
+import type { IZCodeAgentService } from "./zody-agent/zcodeAgent.js";
+import type { IZCodeSessionService } from "./zody-session/zcodeSession.js";
 import type { ICuaPermissionService } from "./cua-permission-broker/cuaPermissionService.js";
 // fork（bots 移除）：IBotsService 随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
 import type { IFileWatcherService } from "./fileWatcher/fileWatcher.js";

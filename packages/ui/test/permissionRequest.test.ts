@@ -1,4 +1,4 @@
-import type { ZCodePermissionRequest } from "@zcode/shared";
+import type { ZCodePermissionRequest } from "@zody/shared";
 import { describe, expect, it } from "vitest";
 import {
   getPermissionOptionDisplayKind,

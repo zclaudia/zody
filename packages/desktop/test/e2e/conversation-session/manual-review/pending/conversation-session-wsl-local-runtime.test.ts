@@ -6,7 +6,7 @@ import {
   TID_SSH_DIALOG,
   TID_WSL_USER_INPUT,
   type RemoteTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByWebDriver,

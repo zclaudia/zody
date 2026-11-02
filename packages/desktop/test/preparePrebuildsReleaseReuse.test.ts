@@ -3,7 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { ZCODE_AGENT_RUNTIME } from "@zcode/shared";
+import { ZCODE_AGENT_RUNTIME } from "@zody/shared";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 type RestoreReusableReleaseAssets = (options: {

@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { Smartphone } from "lucide-react";
-import type { RemoteAccessStatus } from "@zcode/shared";
+import type { RemoteAccessStatus } from "@zody/shared";
 import {
   buildWebRemoteControlEntryViewTelemetry,
   parseRemoteWorkspaceIdentity,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";

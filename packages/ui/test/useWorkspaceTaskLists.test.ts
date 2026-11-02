@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZCodeTaskMeta } from "@zody/shared";
 import { mergeWorkspaceTaskListItemsWithOptimistic } from "@/hooks/workspaceTaskListOptimisticOverlay.js";
 import { attachTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 import {

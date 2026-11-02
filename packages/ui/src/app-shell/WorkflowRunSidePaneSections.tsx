@@ -15,7 +15,7 @@ import {
   SlidersHorizontalIcon,
   SquareIcon,
 } from "lucide-react";
-import type { WorkflowRunState, WorkflowRunUsage } from "@zcode/shared/zcode-protocol-v4";
+import type { WorkflowRunState, WorkflowRunUsage } from "@zody/shared/zody-protocol-v4";
 import { Button } from "@/components/ui/button.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";

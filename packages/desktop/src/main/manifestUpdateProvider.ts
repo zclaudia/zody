@@ -4,7 +4,7 @@ import {
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   normalizeZCodeEndpointOrigin,
   type ElectronReleaseChannel,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   Provider,
   AppImageUpdater,

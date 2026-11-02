@@ -9,7 +9,7 @@ import {
   TID_V4_SPLIT_CLOSE,
   TID_V4_SPLIT_DOWN,
   TID_V4_SPLIT_OPEN,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { ConversationHeader } from "@/v4/ConversationHeader.js";
 

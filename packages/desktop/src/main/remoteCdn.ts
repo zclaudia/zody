@@ -1,4 +1,4 @@
-import { ZCODE_VERSION, type ZCodeEnv } from "@zcode/shared";
+import { ZCODE_VERSION, type ZCodeEnv } from "@zody/shared";
 
 declare const __ZCODE_REMOTE_CDN_RELEASE_ROOTS__: readonly string[] | undefined;
 

@@ -1,8 +1,8 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { FeedbackTicketDetail, FeedbackTicketSummary } from "@zcode/shared";
-import type { IFeedbackService } from "@zcode/services";
+import type { FeedbackTicketDetail, FeedbackTicketSummary } from "@zody/shared";
+import type { IFeedbackService } from "@zody/services";
 import {
   FeedbackBackgroundUploadIndicator,
   FeedbackBackgroundUploadIndicatorView,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeSessionEndedSubagent } from "@zcode/shared";
+import type { ZCodeSessionEndedSubagent } from "@zody/shared";
 import {
   mergeEndedSubagentPages,
   resolveEndedSubagentRefreshTargetCount,

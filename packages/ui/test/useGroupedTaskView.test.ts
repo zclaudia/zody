@@ -3,9 +3,9 @@ import { resolve } from "node:path";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import type { IServiceAccessor } from "@zcode/services";
-import type { ZCodeTaskMeta } from "@zcode/shared";
-import type { ZCodeGroupedTaskView } from "@zcode/services";
+import type { IServiceAccessor } from "@zody/services";
+import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZCodeGroupedTaskView } from "@zody/services";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import {
   clearCachedGroupedViewsForTest,

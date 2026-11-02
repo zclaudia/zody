@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
   type IMcpSyncService,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   buildMcpOAuthAuthorizationStatusRefreshOptions,
   buildPluginMcpServerStatusListKey,

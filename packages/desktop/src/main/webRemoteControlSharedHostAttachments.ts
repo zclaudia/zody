@@ -5,7 +5,7 @@ import {
   HostMessageTypes,
   type MobileNotificationPrincipal,
   type RemoteUsageRemoteKind,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 type WebRemoteControlSharedHostKind = "local" | "remote";
 

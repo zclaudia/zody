@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import type { CuaBuildCapability } from "@zcode/shared";
+import type { CuaBuildCapability } from "@zody/shared";
 
 // 打包后窄资源槽位：electron-builder extraResources 把 cua-narrow/manifest.json 落在
 // Resources 根（仅 darwin 分支装配），afterPack 的 assertPackagedCuaNarrowResource 校验

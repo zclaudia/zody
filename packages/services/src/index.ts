@@ -126,21 +126,21 @@ export {
   IZCodeAgentService,
   type ZCodeAgentLocalRuntimeChildProcesses,
   ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE,
-} from "./zcode-agent/zcodeAgent.js";
+} from "./zody-agent/zcodeAgent.js";
 export {
   isZCodeAgentMcpStatusModeUnsupportedError,
   ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
   ZCodeAgentMcpStatusModeUnsupportedError,
-} from "./zcode-agent/zcodeAgentErrors.js";
+} from "./zody-agent/zcodeAgentErrors.js";
 export {
   createZCodeAgentConnectionScope,
   readTrustedZCodeAgentV4Connection,
-} from "./zcode-agent/zcodeAgentConnectionScope.js";
+} from "./zody-agent/zcodeAgentConnectionScope.js";
 export type {
   ZCodeAgentConnectionScope,
   ZCodeAgentV4ClientMode,
   ZCodeAgentV4ConnectionContext,
-} from "./zcode-agent/zcodeAgentConnectionScope.js";
+} from "./zody-agent/zcodeAgentConnectionScope.js";
 export type {
   ZCodeAgentAttachmentBeginParams,
   ZCodeAgentAttachmentChunkParams,
@@ -164,10 +164,10 @@ export type {
   ZCodeAgentSetModelParams,
   ZCodeAgentSetThoughtLevelParams,
   ZCodeAgentWorkspaceTarget,
-} from "./zcode-agent/zcodeAgent.js";
+} from "./zody-agent/zcodeAgent.js";
 
 // ZCode session service — app-facing session facade without ZCode Agent naming.
-export { IZCodeSessionService } from "./zcode-session/zcodeSession.js";
+export { IZCodeSessionService } from "./zody-session/zcodeSession.js";
 export type {
   ZCodeSessionCreateParams,
   ZCodeSessionEventsParams,
@@ -183,7 +183,7 @@ export type {
   ZCodeSessionSubscribeParams,
   ZCodeTaskTarget,
   ZCodeSessionWorkspaceTarget,
-} from "./zcode-session/zcodeSession.js";
+} from "./zody-session/zcodeSession.js";
 
 // fork（bots 移除）：IBotsService 及 Bot* 类型导出随 bot channels 功能整体删除
 // （specs/bot-channels-removal.md）。
@@ -281,7 +281,7 @@ export type {
   FeedbackTicketStatus,
   FeedbackTicketSummary,
   FeedbackTicketType,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 // 插件 UI 桥：描述符、参数类型与工厂；App-Provided Tools 另有独立描述符。
 export {

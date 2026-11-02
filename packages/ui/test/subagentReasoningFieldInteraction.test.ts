@@ -3,7 +3,7 @@
 import { createElement } from "react";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import type { ZCodeConfigOption } from "@zcode/shared";
+import type { ZCodeConfigOption } from "@zody/shared";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import {
   SubagentReasoningField,

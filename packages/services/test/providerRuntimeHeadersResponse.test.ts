@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { zcodeProviderRuntimeHeadersResponseSchema } from "@zcode/shared";
+import { zcodeProviderRuntimeHeadersResponseSchema } from "@zody/shared";
 
 describe("request-scoped provider runtime headers response", () => {
   it("preserves the paired PAT and ID across the private protocol and rejects empty IDs", () => {

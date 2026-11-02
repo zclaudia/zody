@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeSlashCommand } from "@zcode/shared";
+import type { ZCodeSlashCommand } from "@zody/shared";
 import {
   buildAppSlashCommandSuggestions,
   buildSkillSuggestions,

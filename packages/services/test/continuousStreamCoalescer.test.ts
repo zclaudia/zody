@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeStreamEvent } from "@zcode/shared";
+import type { ZCodeStreamEvent } from "@zody/shared";
 import { createContinuousStreamCoalescer } from "../src/session/continuousStreamCoalescer.js";
 
 function messageChunk(content: string, overrides: Partial<Extract<ZCodeStreamEvent, { type: "agent_message_chunk" }>> = {}) {

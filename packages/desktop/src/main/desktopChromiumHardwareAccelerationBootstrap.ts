@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 
 interface ChromiumHardwareAccelerationApp {
   disableHardwareAcceleration(): void;

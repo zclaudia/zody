@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
-import { Emitter } from "@zcode/rpc";
-import type { Event } from "@zcode/rpc";
+import { Emitter } from "@zody/rpc";
+import type { Event } from "@zody/rpc";
 import type {
   MobileNotification,
   MobileNotificationOutboxClaim,

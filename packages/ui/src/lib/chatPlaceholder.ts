@@ -1,4 +1,4 @@
-import type { ZCodeTaskRuntimeStatus } from "@zcode/shared";
+import type { ZCodeTaskRuntimeStatus } from "@zody/shared";
 
 type ChatPlaceholderMessageKey =
   | "chat.placeholder.newTask"

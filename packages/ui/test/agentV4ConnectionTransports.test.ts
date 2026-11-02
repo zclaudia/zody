@@ -1,19 +1,19 @@
 import { LocalTtftObserver, setLocalTtftObserver } from "../src/v4/telemetry/localTtftObserver.js";
-import { Emitter } from "@zcode/rpc";
+import { Emitter } from "@zody/rpc";
 import type {
   ConversationTopicFrame,
   ConversationTopicWireFrame,
   SessionsIndexTopicFrame,
   SessionsIndexTopicWireFrame,
   TopicFrameDeliveryKind,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import {
   PROTOCOL_V4_LIMITS,
   TopicWireFrameAssembler,
   conversationTopicFrameSchema,
   encodeTopicWireFrames,
   utf8JsonByteLength,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { describe, expect, it, vi } from "vitest";
 import { createAgentConversationTransport } from "../src/v4/agentConversationTransport.js";
 import { createAgentSessionsIndexTransport } from "../src/v4/agentSessionsIndexTransport.js";
@@ -1160,12 +1160,12 @@ it("runtime unavailable 结束对应 workspace 的 TTFT，保留其他 workspace
   const lifecycle = new Emitter<{ workspaceKey: string; state: "available" | "unavailable" }>();
   const service = {
     ...agent,
-    onDynamicLocalTtftFacts: () => new Emitter<import("@zcode/shared").LocalTtftFacts>().event,
+    onDynamicLocalTtftFacts: () => new Emitter<import("@zody/shared").LocalTtftFacts>().event,
     onAgentRuntimeLifecycle: (
       listener: (event: { workspaceKey: string; state: "available" | "unavailable" }) => void,
     ) => lifecycle.event(listener),
   };
-  const records: import("@zcode/shared").LocalTtftRecord[] = [];
+  const records: import("@zody/shared").LocalTtftRecord[] = [];
   const observer = new LocalTtftObserver((record) => records.push(record));
   observer.enabled = true;
   setLocalTtftObserver(observer);
@@ -1188,7 +1188,7 @@ it("runtime unavailable 结束对应 workspace 的 TTFT，保留其他 workspace
 
 it("校准过期后收到 CLI 检查点或内容帧会重新探测时钟，有效期内不重复", async () => {
   const agent = setupAgent();
-  const facts = new Emitter<import("@zcode/shared").LocalTtftFacts>();
+  const facts = new Emitter<import("@zody/shared").LocalTtftFacts>();
   const service = { ...agent, onDynamicLocalTtftFacts: () => facts.event };
   let now = 100_000;
   const observer = new LocalTtftObserver(

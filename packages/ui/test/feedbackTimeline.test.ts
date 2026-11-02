@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { FeedbackTimeline } from "@/feedback/feedbackTimeline.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
-import type { FeedbackTicketEvent } from "@zcode/shared";
+import type { FeedbackTicketEvent } from "@zody/shared";
 
 function renderTimeline(events: FeedbackTicketEvent[], locale: "zh-CN" | "en-US" = "en-US") {
   return renderToStaticMarkup(

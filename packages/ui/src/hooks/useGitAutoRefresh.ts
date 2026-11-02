@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { IDisposable } from "@zcode/rpc";
-import type { GitRepositorySummary } from "@zcode/shared";
+import type { IDisposable } from "@zody/rpc";
+import type { GitRepositorySummary } from "@zody/shared";
 import {
   buildGitAutoRefreshWatchPaths,
   parseGitAutoRefreshWatchPaths,

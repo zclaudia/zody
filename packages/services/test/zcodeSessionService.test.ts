@@ -2,10 +2,10 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IZCodeAgentService } from "@zcode/services";
-import type { ZCodeAgentMcpServer, ZCodeSessionStateSnapshot } from "@zcode/shared";
-import { createZCodeSessionService } from "@zcode/services/node";
-import type { ZCodeTaskIndexSyncer } from "../src/zcode-agent/zcodeTaskIndexSyncer.js";
+import type { IZCodeAgentService } from "@zody/services";
+import type { ZCodeAgentMcpServer, ZCodeSessionStateSnapshot } from "@zody/shared";
+import { createZCodeSessionService } from "@zody/services/node";
+import type { ZCodeTaskIndexSyncer } from "../src/zody-agent/zcodeTaskIndexSyncer.js";
 import { getLegacyTaskSessionSnapshotPath, setDataBaseDir } from "../src/paths.js";
 
 const tempDirs: string[] = [];

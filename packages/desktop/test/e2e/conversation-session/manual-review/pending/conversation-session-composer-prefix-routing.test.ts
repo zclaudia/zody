@@ -3,7 +3,7 @@ import { join } from "node:path";
 import {
   TID_V4_COMPOSER_INPUT,
   ZCODE_AGENT_PROVIDER,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { DEFAULT_WORKSPACE } from "../../../helpers/desktop-app.js";
 import {
   prepareConversationE2E,

@@ -58,7 +58,7 @@ import type {
   UpdateCheckResultPayload,
   UpdateStatePayload,
   OpenInEditorOptions,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * window.zcode 类型定义 —— 仅包含需要 main 进程参与的平台操作
@@ -71,7 +71,7 @@ declare global {
     zcodePluginSandbox?: {
       supportsRetainedMove?: boolean;
       copyImage?(
-        input: import("@zcode/shared/mcp-apps").PluginSandboxCaptureRequest,
+        input: import("@zody/shared/mcp-apps").PluginSandboxCaptureRequest,
       ): Promise<void>;
       getOwnerWebContentsId(): Promise<number>;
       disposeSandbox(sandboxId: string, initId?: number): Promise<void>;
@@ -84,7 +84,7 @@ declare global {
         context?: {
           workspacePath: string;
           workspaceIdentity?: string;
-          connectTrigger?: import("@zcode/shared").RemoteWorkspaceConnectTrigger;
+          connectTrigger?: import("@zody/shared").RemoteWorkspaceConnectTrigger;
         },
       ): Promise<{ success: boolean; error?: string; sessionId?: string }>;
       /** 取消当前窗口尚未建立完成的远程连接 */
@@ -137,16 +137,16 @@ declare global {
       selectFiles?(): Promise<string[]>;
       /** 通过系统原生另存为对话框保存文件 */
       saveFile?(
-        payload: import("@zcode/shared").SaveFileRequest,
-      ): Promise<import("@zcode/shared").SaveFileResult>;
+        payload: import("@zody/shared").SaveFileRequest,
+      ): Promise<import("@zody/shared").SaveFileResult>;
       /** 将当前页面的 print 媒体版面导出为 PDF（Chromium 打印引擎，矢量文本） */
-      printPageToPdf?(): Promise<import("@zcode/shared").PrintPageToPdfResult>;
+      printPageToPdf?(): Promise<import("@zody/shared").PrintPageToPdfResult>;
       /** 从系统拖拽/文件输入得到的 Web File 解析真实本地路径 */
       getPathForFile?(file: File): string | null;
       /** dwf 产物「作为文件打开」：把某一版的字节落成本机副本，返回其路径 */
       materializeWorkflowArtifactFile(
-        payload: import("@zcode/shared").MaterializeWorkflowArtifactFileRequest,
-      ): Promise<import("@zcode/shared").MaterializeWorkflowArtifactFileResult>;
+        payload: import("@zody/shared").MaterializeWorkflowArtifactFileRequest,
+      ): Promise<import("@zody/shared").MaterializeWorkflowArtifactFileResult>;
       /** 订阅当前窗口内远程连接过程日志，返回 disposer */
       onRemoteConnectionLog(handler: (entry: RemoteConnectionRuntimeLog) => void): () => void;
       /** 订阅远程 workspace session 关闭事件，返回 disposer */
@@ -172,7 +172,7 @@ declare global {
       /** 同步需要 main 进程即时感知的应用设置 */
       syncAppSettings?(patch: Partial<AppSettings>): void;
       /** 查询关闭驻留托盘能力（Linux 置灰判断；spec：docs/desktop/linux-close-to-tray.md） */
-      getCloseToTrayCapability?(): Promise<import("@zcode/shared").DesktopCloseToTrayCapability>;
+      getCloseToTrayCapability?(): Promise<import("@zody/shared").DesktopCloseToTrayCapability>;
       /** 注册 main 进程要求聚焦指定 workspace tab 的回调，返回 disposer */
       onFocusTab(handler: (path: string) => void): () => void;
       /** 注册 main 进程触发新建 tab 的回调，返回 disposer */
@@ -331,31 +331,31 @@ declare global {
       }): Promise<void>;
       /** 从自动发现的 Chrome Profile 一次性导入内置浏览器数据。 */
       importChromeBrowserData?(
-        options?: import("@zcode/shared").ChromeBrowserDataImportOptions,
+        options?: import("@zody/shared").ChromeBrowserDataImportOptions,
       ): Promise<ChromeBrowserDataImportResult>;
       /** 清理内置浏览器缓存或全部站点数据。 */
       clearEmbeddedBrowserData?(mode: "cache" | "all"): Promise<EmbeddedBrowserDataClearResult>;
       /** 读取当前窗口可见的 Chrome 扩展 bridge/配对/Profile 状态。 */
       getBrowserExtensionStatus?(): Promise<
-        import("@zcode/shared").BrowserExtensionBridgeStatus
+        import("@zody/shared").BrowserExtensionBridgeStatus
       >;
       /** 在发起窗口生成一次性 Chrome 扩展配对码。 */
       beginBrowserExtensionPairing?(): Promise<
-        import("@zcode/shared").BrowserExtensionPairingTicket | null
+        import("@zody/shared").BrowserExtensionPairingTicket | null
       >;
       cancelBrowserExtensionPairing?(pairingSessionId: string): Promise<void>;
       setBrowserExtensionDefaultBackend?(
         browserId: string | null,
-      ): Promise<import("@zcode/shared").BrowserExtensionActionResult>;
+      ): Promise<import("@zody/shared").BrowserExtensionActionResult>;
       revokeBrowserExtensionProfile?(
         profileInstanceId: string,
-      ): Promise<import("@zcode/shared").BrowserExtensionActionResult>;
+      ): Promise<import("@zody/shared").BrowserExtensionActionResult>;
       transferBrowserExtensionProfile?(
         profileInstanceId: string,
-      ): Promise<import("@zcode/shared").BrowserExtensionActionResult>;
+      ): Promise<import("@zody/shared").BrowserExtensionActionResult>;
       setBrowserExtensionBridgePort?(
         port: number,
-      ): Promise<import("@zcode/shared").BrowserExtensionActionResult>;
+      ): Promise<import("@zody/shared").BrowserExtensionActionResult>;
       /** 注册新版本已下载完毕的回调，返回 disposer */
       onUpdateReady(callback: (version: string) => void): () => void;
       /** 注册"手动检查更新"结果的回调，返回 disposer */

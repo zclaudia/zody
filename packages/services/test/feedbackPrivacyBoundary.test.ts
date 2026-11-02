@@ -5,7 +5,7 @@ import { createFeedbackService } from "../src/feedback/feedbackService.js";
 import { setDataBaseDir } from "../src/paths.js";
 import { describe, expect, it, vi } from "vitest";
 import { FeedbackHttpClient } from "../src/feedback/feedbackHttpClient.js";
-import type { ApiRequestInit } from "@zcode/shared";
+import type { ApiRequestInit } from "@zody/shared";
 
 describe("工单发送隐私边界", () => {
   it("创建和补充均脱敏文本，保留用户联系方式并丢弃模型列表", async () => {

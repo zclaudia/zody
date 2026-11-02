@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ZCODE_AGENT_LIFECYCLE_LOG_MARKER } from "@zcode/shared/process-diagnostic";
+import { ZCODE_AGENT_LIFECYCLE_LOG_MARKER } from "@zody/shared/process-diagnostic";
 
 const init = vi.fn((_config: unknown) => Promise.resolve());
 
@@ -27,9 +27,9 @@ vi.mock("../src/main/logger.js", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("@zcode/shared", async (importOriginal) => {
+vi.mock("@zody/shared", async (importOriginal) => {
   // 脱敏收口是 beforeReport 的一部分，必须用真实实现验证；只覆写环境/版本等常量。
-  const actual = await importOriginal<typeof import("@zcode/shared")>();
+  const actual = await importOriginal<typeof import("@zody/shared")>();
   return {
     ...actual,
     ZCODE_ARMS_RUM_ENDPOINT: "https://example.test/endpoint",
@@ -227,7 +227,7 @@ describe("appARMSBootstrap beforeReport", () => {
 
   it("使用 Desktop 本地开发运行态计算 ARMS 环境", async () => {
     await import("../src/main/appARMSBootstrap.js");
-    const shared = await import("@zcode/shared");
+    const shared = await import("@zody/shared");
     const config = init.mock.calls[0]?.[0] as unknown as {
       env: string;
       app: { env: string };

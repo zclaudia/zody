@@ -48,7 +48,7 @@ export function resolvePnpmCommand(platform = process.platform) {
 
 export function runDesktopRemoteProdDev() {
   const repoRoot = resolve(import.meta.dirname, "..");
-  const child = spawn(resolvePnpmCommand(), ["--filter", "@zcode/desktop", "dev"], {
+  const child = spawn(resolvePnpmCommand(), ["--filter", "@zody/desktop", "dev"], {
     cwd: repoRoot,
     stdio: "inherit",
     env: buildDesktopRemoteProdEnv(),

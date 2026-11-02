@@ -24,8 +24,8 @@ import {
   getExportLogDir as getDefaultExportLogDir,
   getExportLogStageDir as getDefaultExportLogStageDir,
   getFeedbackLogArchiveDir as getDefaultFeedbackLogArchiveDir,
-} from "@zcode/services/node";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+} from "@zody/services/node";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { createAboutSnapshot, formatAboutDetail, readBuildMetadata } from "./about.js";
 import { logger } from "./logger.js";
 

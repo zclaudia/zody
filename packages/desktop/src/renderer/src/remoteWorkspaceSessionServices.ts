@@ -1,4 +1,4 @@
-import type { IServiceAccessor } from "@zcode/services";
+import type { IServiceAccessor } from "@zody/services";
 
 export function buildRemoteWorkspaceSessionServices(
   baseServices: IServiceAccessor,

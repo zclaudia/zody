@@ -1,4 +1,4 @@
-// escalate / ResolveWorkflowQuestion 专用工具卡（apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md）。
+// escalate / ResolveWorkflowQuestion 专用工具卡（apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md）。
 //
 // 文件名刻意是 `.test.ts` 而不是 `.test.tsx`：根 vitest 配置只收
 // `packages/*/test/**/*.test.ts`（vitest.config.ts），`.test.tsx` 一个用例都不会被采集。

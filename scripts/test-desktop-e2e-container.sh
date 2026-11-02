@@ -267,7 +267,7 @@ if [ "$BLOCK_OFFICIAL" = "1" ]; then
   # $HOST_ARTIFACT_DIR/official-requests.jsonl 读取），就绪检查失败立即退出；
   # E2E 结束向 sink 发 SIGINT 冲刷文件，容器退出码取 E2E 的。
   # 容器侧变量（\$SINK_PID 等）由容器 shell 求值；路径在此处展开，不含引号字符。
-  container_command="node /workspace/scripts/official-request-sink.mjs --output '${SINK_LOG_IN_CONTAINER}' & SINK_PID=\$!; sleep 1; kill -0 \$SINK_PID 2>/dev/null || { echo '[official-request-sink] sink exited at startup (port conflict or script missing in image?)' >&2; exit 90; }; E2E_STATUS=0; dbus-run-session -- pnpm --filter @zcode/desktop test:e2e \${EXTRA_WDIO_ARGS:-} || E2E_STATUS=\$?; kill -INT \$SINK_PID 2>/dev/null || true; wait \$SINK_PID 2>/dev/null || true; exit \$E2E_STATUS"
+  container_command="node /workspace/scripts/official-request-sink.mjs --output '${SINK_LOG_IN_CONTAINER}' & SINK_PID=\$!; sleep 1; kill -0 \$SINK_PID 2>/dev/null || { echo '[official-request-sink] sink exited at startup (port conflict or script missing in image?)' >&2; exit 90; }; E2E_STATUS=0; dbus-run-session -- pnpm --filter @zody/desktop test:e2e \${EXTRA_WDIO_ARGS:-} || E2E_STATUS=\$?; kill -INT \$SINK_PID 2>/dev/null || true; wait \$SINK_PID 2>/dev/null || true; exit \$E2E_STATUS"
   log "running ${E2E_SPEC}; network=${E2E_NETWORK_MODE}; official-request sink ON; artifacts: ${HOST_ARTIFACT_DIR}"
   sample_container_stats &
   stats_sampler_pid=$!

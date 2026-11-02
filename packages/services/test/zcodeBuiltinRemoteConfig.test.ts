@@ -1,4 +1,4 @@
-import type { ApiClient } from "@zcode/shared";
+import type { ApiClient } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import { fetchZCodeBuiltinRemoteRelease } from "../src/model-provider/zcodeBuiltinRemoteConfig.js";
 import { NodeApiClient } from "../src/providers/api/nodeApiClient.js";

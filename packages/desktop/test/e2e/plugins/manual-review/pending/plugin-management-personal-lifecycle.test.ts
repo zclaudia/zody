@@ -2,7 +2,7 @@ import {
   TID_SETTINGS_BACK_BUTTON,
   TID_V4_COMPOSER_INPUT,
   type ZCodePluginComponentKind,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,

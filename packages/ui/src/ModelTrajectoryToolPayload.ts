@@ -1,4 +1,4 @@
-import type { ZCodeModelTrajectoryMessage } from "@zcode/services";
+import type { ZCodeModelTrajectoryMessage } from "@zody/services";
 
 export function trajectoryToolOutputs(message: ZCodeModelTrajectoryMessage): string[] {
   return message.parts.flatMap((part) =>

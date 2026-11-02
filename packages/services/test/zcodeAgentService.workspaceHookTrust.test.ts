@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods } from "@zcode/shared";
+import { zcodeProtocolMethods } from "@zody/shared";
 
 describe("ZCodeAgentService workspace Hook Trust", () => {
   it("没有 task/provider 时只启动 read-only Agent 并发送 workspace grant", async () => {
@@ -30,7 +30,7 @@ describe("ZCodeAgentService workspace Hook Trust", () => {
       },
     }));
     const { createZCodeAgentService } = await import(
-      "../src/zcode-agent/zcodeAgentService.js"
+      "../src/zody-agent/zcodeAgentService.js"
     );
     const service = createZCodeAgentService();
 

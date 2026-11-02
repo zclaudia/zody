@@ -39,8 +39,8 @@ vi.mock("react", async () => {
 // 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；「接收预览更新」设置只读它。
 const autoUpdateState = vi.hoisted(() => ({ active: true }));
 
-vi.mock("@zcode/shared", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@zcode/shared")>()),
+vi.mock("@zody/shared", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@zody/shared")>()),
   isDesktopAutoUpdateActive: () => autoUpdateState.active,
 }));
 

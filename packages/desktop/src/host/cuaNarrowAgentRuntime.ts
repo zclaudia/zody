@@ -1,12 +1,12 @@
 import { resolve } from "node:path";
-import type { ModelSelection } from "@zcode/shared";
+import type { ModelSelection } from "@zody/shared";
 import type {
   ZCodeAgentCommandResolverContext,
   ZCodeAgentNativeRuntimeConfig,
   ZCodeAgentNativeRuntimeResolver,
   ZCodeAgentNativeRuntimeResolverContext,
   ZCodeAgentNativeRuntimeStartupContext,
-} from "@zcode/services/node";
+} from "@zody/services/node";
 import {
   digestCuaNarrowNetworkConfig,
   normalizeCuaNarrowSelection,

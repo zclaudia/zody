@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ZCODE_AGENT_RUNTIME } from "@zcode/shared";
+import { ZCODE_AGENT_RUNTIME } from "@zody/shared";
 
 describe("ZCode Agent runtime", () => {
   it("starts the private ZCode Protocol server instead of the retired ZCode Agent command", () => {

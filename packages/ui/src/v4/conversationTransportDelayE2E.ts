@@ -1,4 +1,4 @@
-import type { CommandAck, CommandEnvelope } from "@zcode/shared/zcode-protocol-v4";
+import type { CommandAck, CommandEnvelope } from "@zody/shared/zody-protocol-v4";
 import { shouldExposeE2EStoreBridge } from "@/lib/e2eStoreBridge.js";
 
 interface DelayPlan {

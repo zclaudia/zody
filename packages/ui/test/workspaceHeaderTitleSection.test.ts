@@ -1,7 +1,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { TID_WORKSPACE_MORE_BUTTON, TID_WORKSPACE_PATH, TID_WORKSPACE_TITLE } from "@zcode/shared";
+import { TID_WORKSPACE_MORE_BUTTON, TID_WORKSPACE_PATH, TID_WORKSPACE_TITLE } from "@zody/shared";
 
 const capturedGitBranchSwitcherProps = vi.hoisted(() => [] as Array<Record<string, unknown>>);
 

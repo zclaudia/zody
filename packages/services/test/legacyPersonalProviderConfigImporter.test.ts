@@ -9,7 +9,7 @@ import {
   ProviderConfigMap,
   ProviderConfigResolver,
   type ProviderConfigLayerSnapshot,
-} from "@zcode/provider";
+} from "@zody/provider";
 import { describe, expect, it } from "vitest";
 import type {
   ModelProviderConfig,

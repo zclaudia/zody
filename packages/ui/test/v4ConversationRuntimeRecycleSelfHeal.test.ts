@@ -18,13 +18,13 @@
 // 自愈成立的前提（zcodeAgentService.ts:5581）：subscribeConversationV4 走
 // getReadOnlyClient(params) 默认 start-if-needed，重订阅本身会把 agent 拉起来——这与侧栏
 // subscribeSessionsIndexV4 显式用 existing-only + dormant 的策略差异是故意设计的。
-import { Emitter } from "@zcode/rpc";
-import type { ConversationTopicWireFrame } from "@zcode/shared/zcode-protocol-v4";
+import { Emitter } from "@zody/rpc";
+import type { ConversationTopicWireFrame } from "@zody/shared/zody-protocol-v4";
 import {
   createZCodeAgentConnectionScope,
   readTrustedZCodeAgentV4Connection,
   type IZCodeAgentService,
-} from "@zcode/services";
+} from "@zody/services";
 import { describe, expect, it, vi } from "vitest";
 import { createAgentConversationTransport } from "@/v4/agentConversationTransport.js";
 import { ConversationProjectionStore } from "@/v4/conversationProjectionStore.js";

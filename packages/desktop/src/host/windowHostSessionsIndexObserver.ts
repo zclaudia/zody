@@ -1,5 +1,5 @@
-import type { IDisposable } from "@zcode/rpc";
-import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE, type IZCodeAgentService } from "@zcode/services";
+import type { IDisposable } from "@zody/rpc";
+import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE, type IZCodeAgentService } from "@zody/services";
 import {
   PROTOCOL_V4_LIMITS,
   sessionsIndexTopic,
@@ -8,7 +8,7 @@ import {
   type SessionsIndexTopicFrame,
   type SessionsIndexTopicWireCandidate,
   type SessionSummary,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 
 const SUBSCRIBER_SCOPE = "window-controller";
 const MAX_STAGED_WIRES = 1_024;

@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { beforeAll, describe, expect, it } from "vitest";
-import { compileModelOptionMaps } from "@zcode/model-option-map";
-import { ModelConfig, ModelConfigRules, parseZCodeBuiltinModelConfigRules } from "@zcode/provider";
+import { compileModelOptionMaps } from "@zody/model-option-map";
+import { ModelConfig, ModelConfigRules, parseZCodeBuiltinModelConfigRules } from "@zody/provider";
 
 const url = "https://opencode.ai/zen/go/v1";
 const members = {

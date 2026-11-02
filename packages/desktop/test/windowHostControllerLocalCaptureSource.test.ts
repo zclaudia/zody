@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { Event } from "@zcode/rpc";
-import type { ZCodeTaskMeta } from "@zcode/shared";
-import type { IZCodeAgentService, IZCodeTaskService } from "@zcode/services";
+import { Event } from "@zody/rpc";
+import type { ZCodeTaskMeta } from "@zody/shared";
+import type { IZCodeAgentService, IZCodeTaskService } from "@zody/services";
 import { createWindowHostControllerRuntime } from "../src/host/windowHostControllerService.js";
 
 function meta(params: { taskId: string; workspacePath?: string }): ZCodeTaskMeta {

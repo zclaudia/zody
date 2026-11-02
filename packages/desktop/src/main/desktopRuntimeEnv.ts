@@ -2,9 +2,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve, win32 } from "node:path";
-import type { ConnectOptions } from "@zcode/server/remote";
-import { listSSHConfigAliasesFromLocalConfig } from "@zcode/services/node";
-import { DEV_HELPER_APP_NAME, HELPER_APP_NAME } from "@zcode/zcode-cua/broker/helperConstants";
+import type { ConnectOptions } from "@zody/server/remote";
+import { listSSHConfigAliasesFromLocalConfig } from "@zody/services/node";
+import { DEV_HELPER_APP_NAME, HELPER_APP_NAME } from "@zody/zody-cua/broker/helperConstants";
 import {
   ZCODE_APP_VERSION_ENV,
   ZCODE_BUILD_COMMIT_ID_ENV,
@@ -22,14 +22,14 @@ import {
   readZCodeAgentTelemetryEnv,
   sanitizeZCodeRuntimeEnv,
   type ZCodeRuntimeEnv,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { resolvePlatformKeyForPackagedApp } from "../../scripts/target-platform.mjs";
 import {
   getAppConfigDir,
   getDataBaseDir,
   ZCODE_CUA_BUNDLED_HELPER_APP_PATH_ENV,
   ZCODE_WINDOWS_APP_INSTALL_DIR_ENV,
-} from "@zcode/services/node";
+} from "@zody/services/node";
 import { type ResolveRemoteCdnOptions } from "./remoteCdn.js";
 import { getElectronAppPath, isElectronAppPackaged } from "./desktopElectronApp.js";
 import { resolveCandidateApplicationName } from "./candidateNativeHostLaunch.js";
@@ -121,17 +121,17 @@ export type RemoteAssetDirs = Pick<
 type LocalRuntimeEnv = Record<string, string | undefined>;
 
 export async function isDockerDaemonAvailable(): Promise<boolean> {
-  const { isDockerAvailable } = await import("@zcode/server/remote");
+  const { isDockerAvailable } = await import("@zody/server/remote");
   return isDockerAvailable();
 }
 
 export async function listAvailableWSLDistros() {
-  const { listWSLDistros } = await import("@zcode/server/remote");
+  const { listWSLDistros } = await import("@zody/server/remote");
   return listWSLDistros();
 }
 
 export async function listAvailableDockerContainers() {
-  const { listDockerContainers } = await import("@zcode/server/remote");
+  const { listDockerContainers } = await import("@zody/server/remote");
   return listDockerContainers();
 }
 

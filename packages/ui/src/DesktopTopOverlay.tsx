@@ -1,4 +1,4 @@
-import type { IPlatformService, UpdateStatePayload } from "@zcode/shared";
+import type { IPlatformService, UpdateStatePayload } from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import {
   ArrowLeftIcon,

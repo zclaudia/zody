@@ -1,7 +1,7 @@
 import { once } from "node:events";
 import { readFile } from "node:fs/promises";
 import { createServer, type ServerResponse } from "node:http";
-import { ZCODE_DYNAMIC_WORKFLOW_MODE_ENV, type DynamicWorkflowMode } from "@zcode/shared";
+import { ZCODE_DYNAMIC_WORKFLOW_MODE_ENV, type DynamicWorkflowMode } from "@zody/shared";
 
 /**
  * 动态工作流灰度（docs/dynamic-workflow/launch.md「Gray release: the `dynamicWorkflow` feature key」）

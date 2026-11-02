@@ -43,7 +43,7 @@ export const R10_NATIVE_ROOT = join(
 export const CORE_ROOT = join(
   REPO_ROOT,
   "apps",
-  "zcode-cli",
+  "zody-cli",
   "packages",
   "core",
 );

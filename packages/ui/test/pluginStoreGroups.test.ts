@@ -2,7 +2,7 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID } from "@zcode/shared";
+import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID } from "@zody/shared";
 import type { PluginStoreActions } from "../src/settings/PluginStoreCard.js";
 import type { StorePluginItem } from "../src/settings/pluginStoreListing.js";
 

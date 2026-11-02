@@ -1,4 +1,4 @@
-import type { MobileNotificationPushAction } from "@zcode/shared";
+import type { MobileNotificationPushAction } from "@zody/shared";
 import type { MobileNotification, MobileNotificationRecordInput } from "../contract.js";
 
 export const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;

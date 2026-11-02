@@ -3,8 +3,8 @@ import {
   type ModelSelection,
   type ZCodeConfigOption,
   type ZCodeProvider,
-} from "@zcode/shared";
-import type { ModelSelectionView } from "@zcode/services";
+} from "@zody/shared";
+import type { ModelSelectionView } from "@zody/services";
 import type { ModelSelectGroup, ModelSelectGroupItem } from "@/ModelConfigSelect.js";
 import {
   buildRegistryModelSelectGroups,

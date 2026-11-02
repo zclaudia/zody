@@ -48,5 +48,5 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 
 console.info(`[dev:mobile-remote] 手机入口 ${mobilePageUrl}`);
 
-start(pnpmCommand, ["--filter", "@zcode/web", "exec", "vite", "dev", "--strictPort"]);
-start(pnpmCommand, ["--filter", "@zcode/desktop", "dev:local-cli"]);
+start(pnpmCommand, ["--filter", "@zody/web", "exec", "vite", "dev", "--strictPort"]);
+start(pnpmCommand, ["--filter", "@zody/desktop", "dev:local-cli"]);

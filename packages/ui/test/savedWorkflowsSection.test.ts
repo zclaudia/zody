@@ -16,7 +16,7 @@ import {
   TID_WORKFLOW_PROJECT_GROUP,
   resolveWorkspaceKey,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import {
   resetDynamicWorkflowAvailabilityStoreForTests,

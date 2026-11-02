@@ -5,7 +5,7 @@ vi.mock("react-dom/client", () => ({
   createRoot: () => ({ render: renderMock }),
 }));
 
-vi.mock("@zcode/ui", () => ({
+vi.mock("@zody/ui", () => ({
   AppErrorBoundary: ({ children }: { children: unknown }) => children,
   Root: () => null,
   ZCodeIntlProvider: ({ children }: { children: unknown }) => children,

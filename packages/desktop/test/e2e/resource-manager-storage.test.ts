@@ -23,7 +23,7 @@ import {
   TID_RESOURCE_MANAGER_STORAGE_STATUS,
   TID_RESOURCE_MANAGER_STORAGE_TOTAL,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_WORKSPACE,
   clearAppData,

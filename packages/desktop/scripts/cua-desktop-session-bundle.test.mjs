@@ -76,24 +76,24 @@ test("unsupported native shim must match its fixed hash", async () => {
 
 test("workspace dist inputs map to current source behind workspace exports", async () => {
   const mapped = await workspaceSourceCounterpart(
-    "apps/zcode-cli/packages/bootstrap/dist/app/create-app.js",
+    "apps/zody-cli/packages/bootstrap/dist/app/create-app.js",
   );
   assert.equal(
     mapped,
-    join(REPO_ROOT, "apps/zcode-cli/packages/bootstrap/src/app/create-app.ts"),
+    join(REPO_ROOT, "apps/zody-cli/packages/bootstrap/src/app/create-app.ts"),
   );
   assert.deepEqual(
     staleWorkspaceDistInputs({
       inputs: {
-        "apps/zcode-cli/packages/bootstrap/dist/app/create-app.js": {},
-        "apps/zcode-cli/packages/contracts/dist/no-source-counterpart.js": {},
+        "apps/zody-cli/packages/bootstrap/dist/app/create-app.js": {},
+        "apps/zody-cli/packages/contracts/dist/no-source-counterpart.js": {},
         "node_modules/example/dist/index.js": {},
-        "apps/zcode-cli/packages/adapters/node_modules/agent-base/dist/index.js": {},
+        "apps/zody-cli/packages/adapters/node_modules/agent-base/dist/index.js": {},
       },
     }),
     [
-      "apps/zcode-cli/packages/bootstrap/dist/app/create-app.js",
-      "apps/zcode-cli/packages/contracts/dist/no-source-counterpart.js",
+      "apps/zody-cli/packages/bootstrap/dist/app/create-app.js",
+      "apps/zody-cli/packages/contracts/dist/no-source-counterpart.js",
     ],
   );
   assert.equal(
@@ -102,7 +102,7 @@ test("workspace dist inputs map to current source behind workspace exports", asy
   );
   assert.equal(
     await workspaceSourceCounterpart(
-      "apps/zcode-cli/packages/adapters/node_modules/agent-base/dist/index.js",
+      "apps/zody-cli/packages/adapters/node_modules/agent-base/dist/index.js",
     ),
     undefined,
   );
@@ -120,9 +120,9 @@ test("workspace source resolver restores caller pluginData", async () => {
       resolutions.push({ path, options });
       return {
         path:
-          path === "@zcode/bootstrap/app/create-app"
-            ? join(REPO_ROOT, "apps/zcode-cli/packages/bootstrap/dist/app/create-app.js")
-            : join(REPO_ROOT, "apps/zcode-cli/packages/contracts/dist/no-source-counterpart.js"),
+          path === "@zody/bootstrap/app/create-app"
+            ? join(REPO_ROOT, "apps/zody-cli/packages/bootstrap/dist/app/create-app.js")
+            : join(REPO_ROOT, "apps/zody-cli/packages/contracts/dist/no-source-counterpart.js"),
         namespace: "file",
         errors: [],
         warnings: [],
@@ -136,22 +136,22 @@ test("workspace source resolver restores caller pluginData", async () => {
   const callerPluginData = { caller: "test" };
   const resolveArgs = (path) => ({
     path,
-    importer: join(REPO_ROOT, "apps/zcode-cli/packages/bootstrap/src/app/create-app.ts"),
+    importer: join(REPO_ROOT, "apps/zody-cli/packages/bootstrap/src/app/create-app.ts"),
     namespace: "file",
-    resolveDir: join(REPO_ROOT, "apps/zcode-cli/packages/bootstrap/src/app"),
+    resolveDir: join(REPO_ROOT, "apps/zody-cli/packages/bootstrap/src/app"),
     kind: "import-statement",
     pluginData: callerPluginData,
   });
 
-  const mapped = await resolver(resolveArgs("@zcode/bootstrap/app/create-app"));
+  const mapped = await resolver(resolveArgs("@zody/bootstrap/app/create-app"));
   assert.equal(resolutions[0].options.pluginData.cuaWorkspaceSourceResolving, true);
-  assert.equal(mapped.path, join(REPO_ROOT, "apps/zcode-cli/packages/bootstrap/src/app/create-app.ts"));
+  assert.equal(mapped.path, join(REPO_ROOT, "apps/zody-cli/packages/bootstrap/src/app/create-app.ts"));
   assert.equal(mapped.pluginData, callerPluginData);
 
-  const normal = await resolver(resolveArgs("@zcode/contracts/no-source-counterpart"));
+  const normal = await resolver(resolveArgs("@zody/contracts/no-source-counterpart"));
   assert.equal(
     normal.path,
-    join(REPO_ROOT, "apps/zcode-cli/packages/contracts/dist/no-source-counterpart.js"),
+    join(REPO_ROOT, "apps/zody-cli/packages/contracts/dist/no-source-counterpart.js"),
   );
   assert.equal(normal.pluginData, callerPluginData);
   assert.equal(normal.pluginData.cuaWorkspaceSourceResolving, undefined);
@@ -194,6 +194,26 @@ test("sealed entry audit rejects runtime package resolution and records wasm ref
   }
 });
 
+test("sealed entry audit rejects both workspace scopes", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "cua-session-scopes-"));
+  try {
+    const output = join(dir, "entry.mjs");
+    const metafilePath = join(dir, "metafile.json");
+    await writeFile(metafilePath, JSON.stringify({ inputs: {}, outputs: {} }));
+    for (const scope of ["zcode", "zody"]) {
+      for (const source of [`import value from "@${scope}/shared";`, `await import("@${scope}/shared");`]) {
+        await writeFile(output, source);
+        await assert.rejects(
+          () => auditEntry({ name: "host-entry.mjs", output, metafilePath }),
+          (error) => error.code === "entry-external-package",
+        );
+      }
+    }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("sealed entry audit rejects stale workspace dist inputs", async () => {
   const dir = await mkdtemp(join(tmpdir(), "cua-session-stale-dist-"));
   try {
@@ -203,7 +223,7 @@ test("sealed entry audit rejects stale workspace dist inputs", async () => {
     await writeFile(
       metafile,
       JSON.stringify({
-        inputs: { "apps/zcode-cli/packages/bootstrap/dist/app/create-app.js": {} },
+        inputs: { "apps/zody-cli/packages/bootstrap/dist/app/create-app.js": {} },
         outputs: {},
       }),
     );

@@ -3,7 +3,7 @@
 import { createElement, type ReactNode } from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { GitRepositorySummary } from "@zcode/shared";
+import type { GitRepositorySummary } from "@zody/shared";
 
 vi.mock("@/ControlHintTooltip.js", () => ({
   ControlHintTooltip: ({ children }: { children: ReactNode }) => children,

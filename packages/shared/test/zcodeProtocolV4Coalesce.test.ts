@@ -14,7 +14,7 @@ import {
   type TurnHeaderRow,
   reasoningRowSchema,
   toolCallRowSchema,
-} from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
 
 describe("assistant response correlation", () => {
   it("accepts the same optional assistantResponseId on reasoning, text and tool rows", () => {

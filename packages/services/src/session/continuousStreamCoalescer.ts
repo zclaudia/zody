@@ -1,4 +1,4 @@
-import type { ZCodeStreamEvent } from "@zcode/shared";
+import type { ZCodeStreamEvent } from "@zody/shared";
 
 const CONTINUOUS_CHUNK_FLUSH_DELAY_MS = 16;
 const CONTINUOUS_CHUNK_MAX_CHARS = 4096;

@@ -7,9 +7,9 @@ import type {
   ZCodePluginMarketplaceSummary,
   ZCodePluginScope,
   ZCodePluginsDescribeResult,
-} from "@zcode/shared";
-import { CLAUDE_OFFICIAL_PLUGIN_MARKETPLACE_ID } from "@zcode/shared";
-import type { IPluginManagementService } from "@zcode/services";
+} from "@zody/shared";
+import { CLAUDE_OFFICIAL_PLUGIN_MARKETPLACE_ID } from "@zody/shared";
+import type { IPluginManagementService } from "@zody/services";
 import { logger } from "@/logger.js";
 import { loadInto, runWorkspaceOperation } from "@/store/pluginManagementStoreLoading.js";
 import { setPluginEnabledOptimistically } from "@/store/pluginManagementStoreEnabled.js";

@@ -1,5 +1,5 @@
 import { PenIcon } from "lucide-react";
-import type { ToolCallCreateWorkflowCausalityGraph } from "@zcode/shared/zcode-protocol-v4";
+import type { ToolCallCreateWorkflowCausalityGraph } from "@zody/shared/zody-protocol-v4";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 
 /**

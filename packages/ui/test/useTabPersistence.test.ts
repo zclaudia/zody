@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { createElement, type ReactNode, useCallback } from "react";
 import { act, renderHook } from "@testing-library/react";
-import type { ISettingService } from "@zcode/services";
+import type { ISettingService } from "@zody/services";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildRestoredRecentProjectPaths,

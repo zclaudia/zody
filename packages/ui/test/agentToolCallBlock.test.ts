@@ -1,12 +1,12 @@
 /** @vitest-environment jsdom */
 
-import type { IBroadcastService, IServiceAccessor } from "@zcode/services";
-import type { FileMediaPreview } from "@zcode/shared";
+import type { IBroadcastService, IServiceAccessor } from "@zody/services";
+import type { FileMediaPreview } from "@zody/shared";
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
-import { testId, TID_TOOL_SUMMARY_TRIGGER } from "@zcode/shared";
+import { testId, TID_TOOL_SUMMARY_TRIGGER } from "@zody/shared";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ServiceProvider } from "@/hooks/useServices.js";

@@ -14,7 +14,7 @@ import {
   type ArmsRumEnv,
   type RemoteTarget,
   type TelemetryEventPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { dispatchTaskNotification } from "./desktopNotifications.js";
 import { clearDeepLinkRoutesForWindow, deliverPendingDeepLink } from "./desktopDeepLink.js";
 import {

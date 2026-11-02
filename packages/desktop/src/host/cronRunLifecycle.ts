@@ -1,7 +1,7 @@
 import type {
   ZCodeAutomationRunOutcome,
   ZCodeAutomationTrigger,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export interface CronRunLifecycleRepo {
   ensureRunClaimed(params: {

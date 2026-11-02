@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { ModelConfigRules, ProviderConfigMap, ProviderTemplateMap } from "@zcode/provider";
+import { ModelConfigRules, ProviderConfigMap, ProviderTemplateMap } from "@zody/provider";
 import type { ModelProviderConfig } from "../src/model-provider/legacyModelProviderSerialized.js";
 import { readLegacyZCodeConfigProviders } from "../src/model-provider/legacyZCodeConfigProviderReader.js";
 import { createProviderConfigRuntime } from "../src/model-provider/providerConfigRuntime.js";

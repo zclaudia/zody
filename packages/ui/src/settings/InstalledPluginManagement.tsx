@@ -6,7 +6,7 @@ import type {
   ZCodePluginInfo,
   ZCodePluginScope,
   ZCodePluginUserConfigOption,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog.js";

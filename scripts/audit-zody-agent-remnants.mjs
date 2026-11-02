@@ -26,7 +26,7 @@ const textExtensions = new Set([
 
 const defaultRoots = [
   "packages",
-  "apps/zcode-cli/packages",
+  "apps/zody-cli/packages",
   "scripts",
 ];
 

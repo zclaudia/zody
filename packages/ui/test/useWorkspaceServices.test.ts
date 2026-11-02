@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import type { IServiceAccessor } from "@zcode/services";
-import type { RemoteTarget } from "@zcode/shared";
+import type { IServiceAccessor } from "@zody/services";
+import type { RemoteTarget } from "@zody/shared";
 import {
   resolveBaseWorkspaceServices,
   resolveWorkspaceServiceIsRemoteTarget,

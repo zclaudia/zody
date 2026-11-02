@@ -1,14 +1,14 @@
 import { access, readFile, mkdir, rename } from "node:fs/promises";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import type { AppSettings } from "@zcode/shared";
+import type { AppSettings } from "@zody/shared";
 import {
   ZCODE_DATA_ROOT_DIR_NAME,
   appSettingsPatchSchema,
   appSettingsSchema,
   formatLogPrefix,
   formatZodError,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { ISettingService } from "./setting.js";
 import { normalizeSettingsPatch } from "#src/setting/normalizeSettingsPatch.js";
 import { copyDataDirectory, getDataBaseDir, validateDataBaseDirTarget } from "../paths.js";

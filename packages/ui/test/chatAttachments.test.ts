@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { VIDEO_INPUT_MAX_BYTES } from "@zcode/shared";
-import { PROTOCOL_V4_LIMITS } from "@zcode/shared/zcode-protocol-v4";
+import { VIDEO_INPUT_MAX_BYTES } from "@zody/shared";
+import { PROTOCOL_V4_LIMITS } from "@zody/shared/zody-protocol-v4";
 import {
   MissingInlineImageContentError,
   OversizedInlineImageAttachmentError,

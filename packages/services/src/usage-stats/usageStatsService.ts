@@ -1,5 +1,5 @@
-import type { AppUsageRequest, AppUsageSnapshot } from "@zcode/shared";
-import type { IZCodeAgentService } from "../zcode-agent/zcodeAgent.js";
+import type { AppUsageRequest, AppUsageSnapshot } from "@zody/shared";
+import type { IZCodeAgentService } from "../zody-agent/zcodeAgent.js";
 import type { IUsageStatsService } from "./usageStats.js";
 
 interface UsageStatsServiceDependencies {

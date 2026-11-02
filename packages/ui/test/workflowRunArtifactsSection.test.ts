@@ -12,8 +12,8 @@
 import { createElement } from "react";
 import { act, cleanup, fireEvent, render, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TID_WORKFLOW_ARTIFACTS_TOGGLE, TID_WORKFLOW_ARTIFACT_CARD } from "@zcode/shared";
-import type { V4ConversationWorkflowRunArtifactDataResult } from "@zcode/shared/zcode-protocol-v4";
+import { TID_WORKFLOW_ARTIFACTS_TOGGLE, TID_WORKFLOW_ARTIFACT_CARD } from "@zody/shared";
+import type { V4ConversationWorkflowRunArtifactDataResult } from "@zody/shared/zody-protocol-v4";
 
 vi.mock("@/logger.js", () => ({
   logger: { debug: vi.fn(), warn: vi.fn() },

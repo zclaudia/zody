@@ -8,7 +8,7 @@ import {
   resolveWebRemoteControlWorkspaceKey,
   type WebRemoteControlMobileNavigationIntent,
   type WebRemoteControlWorkspaceListResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { MobileNotificationsFeature } from "@/MobileNotificationsFeature.js";
 import { MobileWorkspacePicker } from "@/MobileWorkspacePicker.js";

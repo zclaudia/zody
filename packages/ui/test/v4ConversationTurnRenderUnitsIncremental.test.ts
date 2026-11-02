@@ -5,7 +5,7 @@ import type {
   ToolCallRow,
   TurnHeaderRow,
   UserInputRow,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import {
   buildConversationTurnRenderUnits,
   type BuilderOptions,

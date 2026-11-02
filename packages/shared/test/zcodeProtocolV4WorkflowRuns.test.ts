@@ -26,7 +26,7 @@ import {
   v4ConversationWorkflowRunArtifactsResultSchema,
   workflowRunArtifactSchema,
   workflowRunArtifactSummarySchema,
-} from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
 
 function run(overrides: Record<string, unknown> = {}) {
   return {
@@ -379,7 +379,7 @@ describe("v4 conversation workflowRuns query 的 run 摘要", () => {
     ).toBe(false);
   });
 
-  it("status 是三终态词汇；stopReason 五值可选（apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md）", () => {
+  it("status 是三终态词汇；stopReason 五值可选（apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md）", () => {
     for (const status of ["completed", "errored", "pending", "running", "stopped"] as const) {
       expect(v4ConversationWorkflowRunSummarySchema.safeParse(summary({ status })).success).toBe(
         true,

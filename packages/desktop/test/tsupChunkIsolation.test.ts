@@ -65,14 +65,14 @@ describe("desktop tsup chunk isolation", () => {
 
   it("main/host/scheduler 应内联 CUA producer，安装包不能依赖被排除的 @zcode node_modules", () => {
     for (const configName of ["main", "host", "scheduler"]) {
-      expect(getNoExternal(configName)).toContain("@zcode/zcode-cua");
+      expect(getNoExternal(configName)).toContain("@zody/zody-cua");
     }
   });
 
   it("main/host/scheduler 应内联 Provider workspace 包，Electron 不能直接加载 TypeScript 源码", () => {
     for (const configName of ["main", "host", "scheduler"]) {
-      expect(getNoExternal(configName)).toContain("@zcode/provider");
-      expect(getNoExternal(configName)).toContain("@zcode/provider-node");
+      expect(getNoExternal(configName)).toContain("@zody/provider");
+      expect(getNoExternal(configName)).toContain("@zody/provider-node");
     }
   });
 

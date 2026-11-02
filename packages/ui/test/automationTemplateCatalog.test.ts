@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ClientSceneConfig } from "@zcode/services";
+import type { ClientSceneConfig } from "@zody/services";
 import {
   materializeScheduledTemplateDraft,
   mapClientScenesToAutomationTemplates,

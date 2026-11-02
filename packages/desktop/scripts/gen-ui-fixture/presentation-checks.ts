@@ -2,7 +2,7 @@ import { BrowserWindow, clipboard, type WebContents } from "electron";
 import assert from "node:assert/strict";
 import { join } from "node:path";
 import { writeFile } from "node:fs/promises";
-import type { PluginSandboxHandle } from "@zcode/shared/mcp-apps";
+import type { PluginSandboxHandle } from "@zody/shared/mcp-apps";
 
 export async function checkCopyButton(win: BrowserWindow, preview = false) {
   const selector = `${preview ? '[role="dialog"] ' : ""}[data-testid="gen-ui-actions"] button`;

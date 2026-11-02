@@ -3,7 +3,7 @@ import { FolderOpen, FolderPlus, LoaderCircle, MonitorUp, Plus, Settings } from 
 import type {
   WebRemoteControlDesktopWindowState,
   WebRemoteControlRecentProjectTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -226,7 +226,7 @@ export interface WebRemoteControlMobileStartPageProps {
   openOtherProject?: {
     listDirectory(
       path?: string,
-    ): Promise<import("@zcode/shared").WebRemoteControlMobileDirectoryListResult>;
+    ): Promise<import("@zody/shared").WebRemoteControlMobileDirectoryListResult>;
     openWorkspacePath(workspacePath: string): Promise<string>;
     onOpened(workspaceKey: string): void | Promise<void>;
   };

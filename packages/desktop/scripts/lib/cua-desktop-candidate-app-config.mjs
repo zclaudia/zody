@@ -1,7 +1,7 @@
 import { isAbsolute, join, resolve } from "node:path";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { HELPER_APP_NAME } from "@zcode/zcode-cua/broker/helperConstants";
+import { HELPER_APP_NAME } from "@zody/zody-cua/broker/helperConstants";
 
 export const DESKTOP_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 export const REPO_ROOT = resolve(DESKTOP_ROOT, "../..");

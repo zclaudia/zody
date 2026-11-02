@@ -8,7 +8,7 @@ import {
   testId,
   type AppSettings,
   type DynamicWorkflowMode,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DynamicWorkflowAlwaysOnIcon,
   DynamicWorkflowOffIcon,

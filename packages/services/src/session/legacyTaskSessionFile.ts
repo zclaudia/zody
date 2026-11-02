@@ -1,5 +1,5 @@
-import type { ZCodeSessionFile, ZCodeTaskMeta } from "@zcode/shared";
-import { zcodeSessionFileSchema, zcodeTaskMetaSchema, zcodeTaskModeSchema } from "@zcode/shared";
+import type { ZCodeSessionFile, ZCodeTaskMeta } from "@zody/shared";
+import { zcodeSessionFileSchema, zcodeTaskMetaSchema, zcodeTaskModeSchema } from "@zody/shared";
 
 export type LegacyTaskSessionFile = Omit<ZCodeSessionFile, "meta"> & {
   meta: Omit<ZCodeTaskMeta, "mode"> & { mode?: ZCodeTaskMeta["mode"] };

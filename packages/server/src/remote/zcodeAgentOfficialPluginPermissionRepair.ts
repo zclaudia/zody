@@ -1,7 +1,7 @@
-import { ZCODE_AGENT_PROVIDER } from "@zcode/shared";
-import type { IRemoteBackend } from "@zcode/server/remote/backend.js";
-import { type DeployLoggers, waitForClose } from "@zcode/server/remote/deployShared.js";
-import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
+import { ZCODE_AGENT_PROVIDER } from "@zody/shared";
+import type { IRemoteBackend } from "@zody/server/remote/backend.js";
+import { type DeployLoggers, waitForClose } from "@zody/server/remote/deployShared.js";
+import { quotePosixPathArg } from "@zody/server/remote/posixShell.js";
 
 export async function repairLegacyRemoteOfficialPluginDirectoryPermissions(params: {
   backend: IRemoteBackend;

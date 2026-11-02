@@ -3,8 +3,8 @@ import { EventEmitter } from "node:events";
 import { PassThrough } from "node:stream";
 import { setTimeout as delay } from "node:timers/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { terminateProcessTree } from "@zcode/services/process/processTreeTerminator";
-import { ZCodeStdioTransport } from "@zcode/services/node";
+import { terminateProcessTree } from "@zody/services/process/processTreeTerminator";
+import { ZCodeStdioTransport } from "@zody/services/node";
 
 const activeChildren = new Set<ChildProcessWithoutNullStreams>();
 

@@ -8,7 +8,7 @@ import type {
   RemoteTarget,
   SSHConfigAliasOption,
   WSLDistro,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 type MockSelectProps = {
   children?: ReactNode;

@@ -1,4 +1,4 @@
-import { ZCODE_DATA_ROOT_DIR_NAME, type ZCodeProvider } from "@zcode/shared";
+import { ZCODE_DATA_ROOT_DIR_NAME, type ZCodeProvider } from "@zody/shared";
 
 type SkillSourceType = "glm" | "unknown";
 

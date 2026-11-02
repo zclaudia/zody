@@ -1,7 +1,7 @@
 import type {
   RemoteAccessGatewayConnectionStatus,
   RemoteAccessTestConnectionFailureReason,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /** gateway 连接状态 → 文案 key。设置页和远控弹层共用同一套状态描述。 */
 export function getGatewayStatusLabelId(gateway: RemoteAccessGatewayConnectionStatus): string {

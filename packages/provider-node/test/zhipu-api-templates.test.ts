@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { parseZCodeBuiltinModelConfigRules } from "@zcode/provider";
+import { parseZCodeBuiltinModelConfigRules } from "@zody/provider";
 
 describe("Zhipu four manual API templates", () => {
   it.each(["zcode-builtin.json", "zcode-builtin.test.json"])(

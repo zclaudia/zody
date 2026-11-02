@@ -1,10 +1,10 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Emitter } from "@zcode/rpc";
-import type { IServiceAccessor } from "@zcode/services";
-import type { IPlatformService } from "@zcode/shared";
-import type { ConversationTelemetryFact } from "@zcode/shared/zcode-protocol-v4";
+import { Emitter } from "@zody/rpc";
+import type { IServiceAccessor } from "@zody/services";
+import type { IPlatformService } from "@zody/shared";
+import type { ConversationTelemetryFact } from "@zody/shared/zody-protocol-v4";
 import { PlatformProvider } from "@/hooks/usePlatform.js";
 import {
   ConversationTelemetryWorkspaceAttachment,

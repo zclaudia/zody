@@ -3,8 +3,8 @@ import {
   completeModelPropertiesDataSchema,
   modelPropertiesDataSchema,
   completeEnumOptionSpecDataSchema,
-} from "@zcode/shared/model-config";
-import { zcodeModelFormatPropertiesSchema } from "../src/zcode-protocol/index.js";
+} from "@zody/shared/model-config";
+import { zcodeModelFormatPropertiesSchema } from "../src/zody-protocol/index.js";
 
 describe("共享 Model 数据合同", () => {
   it("拒绝未发布的旧格式名字，不双读、不静默丢字段", () => {

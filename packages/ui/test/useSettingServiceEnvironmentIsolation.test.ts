@@ -2,7 +2,7 @@
 import { createElement, useEffect, type ReactNode } from "react";
 import { render, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { AppSettings } from "@zcode/shared";
+import type { AppSettings } from "@zody/shared";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { useSettings } from "@/hooks/useSettingService.js";
 

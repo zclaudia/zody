@@ -1,6 +1,6 @@
-import { Emitter } from "@zcode/rpc";
-import type { ZCodeMcpTelemetryEvent } from "@zcode/shared";
-import { HostResponseTypes } from "@zcode/shared";
+import { Emitter } from "@zody/rpc";
+import type { ZCodeMcpTelemetryEvent } from "@zody/shared";
+import { HostResponseTypes } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import { registerHostMcpTelemetry } from "../src/host/hostMcpTelemetry.js";
 

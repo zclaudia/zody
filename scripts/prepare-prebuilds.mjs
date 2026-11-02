@@ -74,7 +74,7 @@ const isBootstrapWithRemote = process.env.ZCODE_BOOTSTRAP_WITH_REMOTE === "1";
  * Node dist 下载源。默认使用官方 `https://nodejs.org/dist`；需要镜像时用
  * `ZCODE_NODE_DIST_MIRROR` 显式覆盖，例如
  * `ZCODE_NODE_DIST_MIRROR=https://cdn.npmmirror.com/binaries/node`
- * （与 `packages/zcode-server-cli/src/packaging/nodeDistMirror.ts` 同一约定）。
+ * （与 `packages/zody-server-cli/src/packaging/nodeDistMirror.ts` 同一约定）。
  *
  * 修改原因：Zody 首发规格要求默认官方下载源，镜像只能显式启用
  * （specs/zody-brand-residual-cleanup.md「下载镜像」）。保留环境变量覆盖，
@@ -86,7 +86,7 @@ export function nodeDistBase(env = process.env) {
   const mirror = env.ZCODE_NODE_DIST_MIRROR?.trim();
   return (mirror || DEFAULT_NODE_DIST_BASE).replace(/\/+$/u, "");
 }
-const BROWSER_USE_PLUGIN_PACKAGE_NAME = "@zcode/browser-use-plugin";
+const BROWSER_USE_PLUGIN_PACKAGE_NAME = "@zody/browser-use-plugin";
 // node_repl 宿主抽成独立包 @zcode/node-repl-host 之后，browser-use
 // 不再产出 dist/mcp/server.js，CUA 资产也已归 @zcode/zcode-cua-plugin。这是**第三份**平行清单
 // （另两份：packages/desktop/scripts/prepare-agent-node-bundle.mjs 的生产打包、
@@ -106,41 +106,41 @@ const browserUseRequiredRuntimePaths = [
 ];
 const remoteOfficialPluginPackages = [
   {
-    packageName: "@zcode/android-emulator-plugin",
-    relativePath: "apps/zcode-cli/packages/android-emulator-plugin",
+    packageName: "@zody/android-emulator-plugin",
+    relativePath: "apps/zody-cli/packages/android-emulator-plugin",
     requiresRuntime: true,
     requiredRuntimePaths: ["dist/mcp/server.js"],
     runtimeBuildScript: "scripts/build-mcp.mjs",
     stagedPath: "packages/android-emulator-plugin",
   },
   {
-    packageName: "@zcode/documents-plugin",
-    relativePath: "apps/zcode-cli/packages/documents-plugin",
+    packageName: "@zody/documents-plugin",
+    relativePath: "apps/zody-cli/packages/documents-plugin",
     requiresRuntime: false,
     stagedPath: "packages/documents-plugin",
   },
   // fork（F4.6）：image-search 官方 MCP 插件随链删除。
   {
-    packageName: "@zcode/pdf-plugin",
-    relativePath: "apps/zcode-cli/packages/pdf-plugin",
+    packageName: "@zody/pdf-plugin",
+    relativePath: "apps/zody-cli/packages/pdf-plugin",
     requiresRuntime: false,
     stagedPath: "packages/pdf-plugin",
   },
   {
-    packageName: "@zcode/presentations-plugin",
-    relativePath: "apps/zcode-cli/packages/presentations-plugin",
+    packageName: "@zody/presentations-plugin",
+    relativePath: "apps/zody-cli/packages/presentations-plugin",
     requiresRuntime: false,
     stagedPath: "packages/presentations-plugin",
   },
   {
-    packageName: "@zcode/spreadsheets-plugin",
-    relativePath: "apps/zcode-cli/packages/spreadsheets-plugin",
+    packageName: "@zody/spreadsheets-plugin",
+    relativePath: "apps/zody-cli/packages/spreadsheets-plugin",
     requiresRuntime: false,
     stagedPath: "packages/spreadsheets-plugin",
   },
   {
-    packageName: "@zcode/visualize-plugin",
-    relativePath: "apps/zcode-cli/packages/visualize-plugin",
+    packageName: "@zody/visualize-plugin",
+    relativePath: "apps/zody-cli/packages/visualize-plugin",
     requiresRuntime: false,
     requiredSeedPaths: [
       "skills/visualize/SKILL.md",
@@ -175,8 +175,8 @@ const remoteOfficialPluginPackages = [
     // 远端 shared-host 必须部署 node_repl runtime，否则只剩 skill 而没有 mcp__node_repl__js ——
     // 该 runtime 现由 @zcode/node-repl-host 提供（见下一个条目），browser-use 只带自己的
     // client script 与 skill/docs。
-    packageName: "@zcode/browser-use-plugin",
-    relativePath: "apps/zcode-cli/packages/browser-use-plugin",
+    packageName: "@zody/browser-use-plugin",
+    relativePath: "apps/zody-cli/packages/browser-use-plugin",
     requiresRuntime: true,
     requiredRuntimePaths: browserUseRequiredRuntimePaths,
     runtimeBuildScript: "scripts/build.mjs",
@@ -185,8 +185,8 @@ const remoteOfficialPluginPackages = [
   {
     // node_repl 宿主：Browser Use 与 Computer Use 共用的 MCP runtime。远端 shared-host 缺它
     // 就没有 mcp__node_repl__js，bua/cua 两边都会连不上。
-    packageName: "@zcode/node-repl-host",
-    relativePath: "apps/zcode-cli/packages/node-repl-host",
+    packageName: "@zody/node-repl-host",
+    relativePath: "apps/zody-cli/packages/node-repl-host",
     requiresRuntime: true,
     requiredRuntimePaths: ["dist/mcp/server.js"],
     runtimeBuildScript: "scripts/build.mjs",
@@ -195,40 +195,40 @@ const remoteOfficialPluginPackages = [
   {
     // CUA 远端只部署 SDK/skill/docs；runtime 仍必须 attachment 到 desktop shared host，
     // 不在 remote workspace 安装或启动 native Helper。
-    packageName: "@zcode/zcode-cua-plugin",
-    relativePath: "apps/zcode-cli/packages/zcode-cua-plugin",
+    packageName: "@zody/zody-cua-plugin",
+    relativePath: "apps/zody-cli/packages/zody-cua-plugin",
     requiresRuntime: false,
     stagedPath: "packages/zcode-cua-plugin",
   },
   {
-    packageName: "@zcode/ios-simulator-plugin",
-    relativePath: "apps/zcode-cli/packages/ios-simulator-plugin",
+    packageName: "@zody/ios-simulator-plugin",
+    relativePath: "apps/zody-cli/packages/ios-simulator-plugin",
     requiresRuntime: true,
     requiredRuntimePaths: ["dist/mcp/server.js"],
     runtimeBuildScript: "scripts/build-mcp.mjs",
     stagedPath: "packages/ios-simulator-plugin",
   },
   {
-    packageName: "@zcode/restore-legacy-sessions-plugin",
-    relativePath: "apps/zcode-cli/packages/restore-legacy-sessions-plugin",
+    packageName: "@zody/restore-legacy-sessions-plugin",
+    relativePath: "apps/zody-cli/packages/restore-legacy-sessions-plugin",
     requiresRuntime: false,
     stagedPath: "packages/restore-legacy-sessions-plugin",
   },
   {
-    packageName: "@zcode/skill-creator-plugin",
-    relativePath: "apps/zcode-cli/packages/skill-creator-plugin",
+    packageName: "@zody/skill-creator-plugin",
+    relativePath: "apps/zody-cli/packages/skill-creator-plugin",
     requiresRuntime: false,
     stagedPath: "packages/skill-creator-plugin",
   },
   {
-    packageName: "@zcode/plugin-creator-plugin",
-    relativePath: "apps/zcode-cli/packages/plugin-creator-plugin",
+    packageName: "@zody/plugin-creator-plugin",
+    relativePath: "apps/zody-cli/packages/plugin-creator-plugin",
     requiresRuntime: false,
     stagedPath: "packages/plugin-creator-plugin",
   },
   {
-    packageName: "@zcode/zcode-guide-plugin",
-    relativePath: "apps/zcode-cli/packages/zcode-guide-plugin",
+    packageName: "@zody/zody-guide-plugin",
+    relativePath: "apps/zody-cli/packages/zody-guide-plugin",
     requiresRuntime: false,
     stagedPath: "packages/zcode-guide-plugin",
   },
@@ -236,7 +236,7 @@ const remoteOfficialPluginPackages = [
 // 随 CLI 内置的技能包（不是插件）：远端 agent 的 bootstrap 沿官方插件同款候选目录在 zcode.cjs 旁
 // 找 packages/bundled-skills 并原地读取；与 packages/desktop/scripts/prepare-agent-node-bundle.mjs 同一份清单。
 const remoteBundledSkillPack = {
-  relativePath: "apps/zcode-cli/packages/bundled-skills",
+  relativePath: "apps/zody-cli/packages/bundled-skills",
   requiredPaths: [
     "skills/dynamic-workflows/SKILL.md",
     "skills/dynamic-workflows/patterns.md",
@@ -577,7 +577,7 @@ function buildRemoteOfficialPluginRuntimes() {
 
     runCommand(
       pnpmCommand,
-      ["--dir", join(rootDir, "apps/zcode-cli"), "--filter", plugin.packageName, "build"],
+      ["--dir", join(rootDir, "apps/zody-cli"), "--filter", plugin.packageName, "build"],
       {
         cwd: rootDir,
         env: process.env,
@@ -691,7 +691,7 @@ function stageRemoteAgentBundles() {
   // browser-use runtime 的 tsc 依赖 @zcode/core/dist。远端资产也必须先构建
   // agent CLI 依赖，避免 CI 干净检出时被开发机缓存掩盖的 TS2307。
   buildRemoteOfficialPluginRuntimes();
-  const cliBundlePath = join(rootDir, "apps/zcode-cli/packages/cli/dist/zcode.cjs");
+  const cliBundlePath = join(rootDir, "apps/zody-cli/packages/cli/dist/zcode.cjs");
   if (!existsSync(cliBundlePath)) {
     throw new Error(`[prepare-prebuilds] expected cli bundle missing: ${cliBundlePath}`);
   }

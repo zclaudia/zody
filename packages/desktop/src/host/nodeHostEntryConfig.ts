@@ -1,5 +1,5 @@
 import { isAbsolute } from "node:path";
-import type { HostApiNetworkTransportDependencies } from "@zcode/services/node";
+import type { HostApiNetworkTransportDependencies } from "@zody/services/node";
 import type { NodeHostBridgeChannel } from "../common/nodeHostBridgeProtocol.js";
 import type {
   NodeHostBridgeProcessLike,

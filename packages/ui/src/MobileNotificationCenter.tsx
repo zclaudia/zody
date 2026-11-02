@@ -1,7 +1,7 @@
 import { useState } from "react";
-import type { MobileNotification } from "@zcode/services/mobile-notifications";
+import type { MobileNotification } from "@zody/services/mobile-notifications";
 import { useMobileNotificationFeed } from "@/hooks/useMobileNotificationFeed.js";
-import type { IMobileNotificationReaderContract } from "@zcode/services/mobile-notifications";
+import type { IMobileNotificationReaderContract } from "@zody/services/mobile-notifications";
 import { Button } from "@/components/ui/button.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { Loader2 } from "lucide-react";

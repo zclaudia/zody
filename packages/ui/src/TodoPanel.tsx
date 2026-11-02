@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ZCodePlanStep } from "@zcode/shared";
+import type { ZCodePlanStep } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import {
   Plan,

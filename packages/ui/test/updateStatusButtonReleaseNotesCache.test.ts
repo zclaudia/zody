@@ -1,8 +1,8 @@
 import { act, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IServiceAccessor } from "@zcode/services";
-import type { IPlatformService, UpdateStatePayload } from "@zcode/shared";
+import type { IServiceAccessor } from "@zody/services";
+import type { IPlatformService, UpdateStatePayload } from "@zody/shared";
 
 const { buttonPropsCalls, dialogPropsCalls } = vi.hoisted(() => ({
   buttonPropsCalls: [] as Array<Record<string, unknown>>,

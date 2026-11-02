@@ -297,10 +297,11 @@ export async function auditEntry({
     );
   }
   const text = await readFile(output, "utf8");
-  if (/\bfrom\s*["']@zcode\//.test(text) || /\bimport\s*\(\s*["']@zcode\//.test(text)) {
+  // 修复原因：迁移期间新旧 workspace scope 均可能漏入封装结果，必须同时拒绝。
+  if (/\bfrom\s*["']@(?:zcode|zody)\//.test(text) || /\bimport\s*\(\s*["']@(?:zcode|zody)\//.test(text)) {
     throw new DesktopSessionBuildError(
       "entry-external-package",
-      `sealed entry ${name} kept a runtime @zcode import`,
+      `sealed entry ${name} kept a runtime workspace import`,
     );
   }
   // 中文原因：入口可以是真正的 Host/CLI bundle，但它不能靠未封装的外部

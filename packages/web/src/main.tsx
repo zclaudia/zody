@@ -6,10 +6,10 @@ import {
   generateMobileDeviceFingerprint,
   installDocumentHiddenMotionPause,
   setStreamClientId,
-} from "@zcode/ui";
-import "@zcode/ui/styles.css";
-import { connectViaWebSocket } from "@zcode/client";
-import type { ServerRemoteInfo, WebRemoteControlFailure } from "@zcode/shared";
+} from "@zody/ui";
+import "@zody/ui/styles.css";
+import { connectViaWebSocket } from "@zody/client";
+import type { ServerRemoteInfo, WebRemoteControlFailure } from "@zody/shared";
 // fork（F4.10）：Web OAuth 登录与回调页随官方账号链删除；Web 远控入口由 gateway
 // 远程访问链路承载，普通 Web 启动流程直接渲染应用。
 import {

@@ -5,7 +5,7 @@ import type {
   ExtensionProfileInstanceId,
   ExtensionTabsCloseMessage,
   ExtensionTabsCreateMessage,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 
 /** Bridge 层稳定错误码；Host/UI 不解析 message 文本做流程判断。 */
 export type ExtensionBridgeErrorCode =

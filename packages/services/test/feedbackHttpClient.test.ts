@@ -11,7 +11,7 @@ import type {
   FeedbackDeviceInfo,
   FeedbackTicketSeverity,
   FeedbackTicketType,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { FeedbackHttpClient } from "../src/feedback/feedbackHttpClient.js";
 import type { ServiceLogger } from "../src/logger/serviceLogger.js";
 import { createNodeApiClient } from "#src/providers/api/nodeApiClient.js";

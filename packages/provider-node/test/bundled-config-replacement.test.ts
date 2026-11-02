@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, expect, it, vi } from "vitest";
 import { materializeZCodeBuiltinProviderConfig } from "../src/index.js";
-import * as persistence from "@zcode/shared/node";
+import * as persistence from "@zody/shared/node";
 
 const roots: string[] = [];
 afterEach(async () => {

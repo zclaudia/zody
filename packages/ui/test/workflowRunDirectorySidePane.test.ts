@@ -9,7 +9,7 @@
 import { createElement, useEffect, useState, type ReactNode } from "react";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { V4ConversationWorkflowRunSummary } from "@zcode/shared/zcode-protocol-v4";
+import type { V4ConversationWorkflowRunSummary } from "@zody/shared/zody-protocol-v4";
 import type { WorkflowRunDirectorySidePaneTab } from "@/lib/workspaceSidePane.js";
 
 vi.mock("@/logger.js", () => ({

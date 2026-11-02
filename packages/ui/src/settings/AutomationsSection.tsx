@@ -18,7 +18,7 @@ import {
   isAutomationCreateLimitError,
   resolveWorkspaceKey,
   type ZCodeAutomation,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import {
   DropdownMenu,

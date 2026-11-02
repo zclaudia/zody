@@ -5,7 +5,7 @@ import {
   WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES,
   type WebRemoteControlChannelFrame,
   type WebRemoteControlChannelFrameOf,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   RemoteGatewayBackendLogger,
   RemoteGatewayChannelMessage,

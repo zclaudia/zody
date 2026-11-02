@@ -1,5 +1,5 @@
 import { Socket } from "node:net";
-import { CuaSubmissionAuthority } from "@zcode/core/cua-submission";
+import { CuaSubmissionAuthority } from "@zody/core/cua-submission";
 
 const AUTHORITY_FD = 3;
 const MAX_FRAME_BYTES = 16 * 1024;

@@ -3,7 +3,7 @@ import {
   zcodeCuaLaunchIdentitySchema,
   zcodeRuntimeIdentityInitializeParamsSchema,
   zcodeRuntimeIdentityInitializeResultSchema,
-} from "../src/zcode-protocol/index.js";
+} from "../src/zody-protocol/index.js";
 
 describe("zcode protocol runtime identity startup contract", () => {
   it("accepts only a strict complete Host/runtime identity", () => {

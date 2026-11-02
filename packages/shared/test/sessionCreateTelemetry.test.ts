@@ -5,7 +5,7 @@ import {
   parseWebRemoteControlAppPayload,
   buildRemoteWorkspaceIdentity,
   type RemoteTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 describe("session_create 手机合同", () => {
   const event = {

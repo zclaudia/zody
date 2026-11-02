@@ -1,4 +1,4 @@
-import type { ExtensionTargetRef } from "@zcode/shared/browser-extension-transport";
+import type { ExtensionTargetRef } from "@zody/shared/browser-extension-transport";
 import type { NativeAttachment } from "./workerProtocol.js";
 
 export type AttachmentMap = Record<string, NativeAttachment>;

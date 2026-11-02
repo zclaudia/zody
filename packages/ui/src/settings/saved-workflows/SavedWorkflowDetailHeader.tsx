@@ -5,7 +5,7 @@ import {
   TID_WORKFLOW_ACTION_MOVE,
   testId,
   type ZCodeSavedWorkflowEntry,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import {
   DropdownMenu,

@@ -31,7 +31,7 @@ import {
   TID_WORKFLOWS_CREATE_VIA_CHAT,
   TID_WORKFLOWS_EMPTY,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_WORKSPACE,
   clearAppData,

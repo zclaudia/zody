@@ -5,7 +5,7 @@ import {
   commandsQueryResultSchema,
   conversationInputIntentSchema,
   queueItemSchema,
-} from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
 
 describe("ZCode Protocol v4 authoritative input intent", () => {
   const baseIntent = {

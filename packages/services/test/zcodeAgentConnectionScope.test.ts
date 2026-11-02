@@ -1,6 +1,6 @@
-import type { ZCodeMcpResourceSample } from "@zcode/shared";
-import { Emitter } from "@zcode/rpc";
-import type { ZCodeMcpTelemetryEvent, ZCodeProcessResourceSample } from "@zcode/shared";
+import type { ZCodeMcpResourceSample } from "@zody/shared";
+import { Emitter } from "@zody/rpc";
+import type { ZCodeMcpTelemetryEvent, ZCodeProcessResourceSample } from "@zody/shared";
 import type {
   ConversationTopicFrame,
   ConversationTopicWireFrame,
@@ -11,19 +11,19 @@ import type {
   TopicWireFrame,
   WorkspaceConfigTopicFrame,
   WorkspaceConfigTopicWireFrame,
-} from "@zcode/shared/zcode-protocol-v4";
-import { sessionsIndexTopic, workspaceConfigTopic } from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
+import { sessionsIndexTopic, workspaceConfigTopic } from "@zody/shared/zody-protocol-v4";
 import { describe, expect, it, vi } from "vitest";
 import type {
   IZCodeAgentService,
   ZCodeAgentRuntimeLifecycleEvent,
   ZCodeAgentCuaPermissionObservation,
-} from "../src/zcode-agent/zcodeAgent.js";
+} from "../src/zody-agent/zcodeAgent.js";
 import {
   createZCodeAgentConnectionScope,
   readTrustedZCodeAgentV4Connection,
   readTrustedZCodeAgentV4UnsubscribeRoute,
-} from "../src/zcode-agent/zcodeAgentConnectionScope.js";
+} from "../src/zody-agent/zcodeAgentConnectionScope.js";
 
 function makeFrame(topic: string, subscriptionId: string): ConversationTopicFrame {
   return {
@@ -1988,7 +1988,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
 it("本地 TTFT 检查点只向本地 desktop continuous attachment 暴露", () => {
   const { base } = setupBase();
-  const facts = new Emitter<import("@zcode/shared").LocalTtftFacts>();
+  const facts = new Emitter<import("@zody/shared").LocalTtftFacts>();
   base.onDynamicLocalTtftFacts = vi.fn(() => facts.event);
   const desktop = createZCodeAgentConnectionScope(base, {
     connectionId: "desktop",

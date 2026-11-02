@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { act, renderHook, waitFor } from "@testing-library/react";
-import type { ZCodeSkillsReferenceCatalogResult } from "@zcode/shared";
+import type { ZCodeSkillsReferenceCatalogResult } from "@zody/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getSkillReferenceCatalog =

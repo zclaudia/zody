@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { IBroadcastService } from "@zcode/services";
+import type { IBroadcastService } from "@zody/services";
 import { INTERFACE_MODE_STORAGE_KEY, normalizeInterfaceMode } from "@/lib/interfaceMode.js";
 import { createZCodeStore } from "@/store/index.js";
 

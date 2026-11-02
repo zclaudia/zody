@@ -4,7 +4,7 @@
  */
 
 import type { SettingsDirectoryLocation } from "./settings-source.js";
-import type { McpServerFailureKind } from "./zcode-protocol/index.js";
+import type { McpServerFailureKind } from "./zody-protocol/index.js";
 
 // CUA official plugin 身份常量（port 自 feat；UI 设置面板 + bootstrap 复用以避免字面量漂移）。
 export const ZCODE_CUA_OFFICIAL_PLUGIN_ID = "computer-use@zcode-plugins-official";
@@ -205,7 +205,7 @@ export function getMcpServerRequestHeaders(
 }
 
 // zcode-cua MCP server 识别的单一事实源。desktop 产品 broker resolver（@zcode/services 的
-// mcpBrokerInjection）与 CLI bootstrap（apps/zcode-cli 的 mcp-config）两条注入入口必须用
+// mcpBrokerInjection）与 CLI bootstrap（apps/zody-cli 的 mcp-config）两条注入入口必须用
 // 完全一致的判定；否则同一 MCP 配置在不同入口行为不同，可能漏注入 product broker，让
 // Python/uvx 自己持有 macOS TCC 权限（违反 fail-closed 边界）。改这里即同时改两条链路。
 function zcodeCuaArgLeaf(value: string): string {

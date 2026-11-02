@@ -5,7 +5,7 @@ import {
   TID_V4_TURN_NAVIGATOR_ITEM,
   TID_V4_TURN_NAVIGATOR_TOOLTIP,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import {
   HoverCard,

@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { TID_V4_USER_INPUT_DIALOG, TID_V4_USER_INPUT_OPTION, testId } from "@zcode/shared";
+import { TID_V4_USER_INPUT_DIALOG, TID_V4_USER_INPUT_OPTION, testId } from "@zody/shared";
 import { V4UserInputDialog } from "../src/v4/V4UserInputDialog.js";
 import type { V4UserInputViewModel } from "../src/v4/pendingInteractionAdapter.js";
 

@@ -2,8 +2,8 @@
 import { createElement } from "react";
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IServiceAccessor } from "@zcode/services";
-import type { SessionDebugSnapshot } from "@zcode/shared";
+import type { IServiceAccessor } from "@zody/services";
+import type { SessionDebugSnapshot } from "@zody/shared";
 import { ServiceProvider } from "../src/hooks/useServices.js";
 import { useSessionDebug } from "../src/hooks/useSessionDebug.js";
 

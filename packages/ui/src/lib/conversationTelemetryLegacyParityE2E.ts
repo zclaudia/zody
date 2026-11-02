@@ -5,7 +5,7 @@ import {
   type ZCodeProvider,
   type ZCodeStreamEvent,
   type ZCodeUsage,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { reportAppTelemetryEvent } from "@/lib/appTelemetry.js";
 import { reportChatErrorBannerTelemetry } from "@/lib/chatErrorBannerTelemetry.js";
 import {

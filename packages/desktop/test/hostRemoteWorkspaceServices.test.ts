@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ChannelClient, ChannelServer, createQueuePair, Emitter, ProxyChannel } from "@zcode/rpc";
+import { ChannelClient, ChannelServer, createQueuePair, Emitter, ProxyChannel } from "@zody/rpc";
 import {
   ServiceCollection,
   IFileService,
@@ -31,14 +31,14 @@ import {
   ICommandsService,
   ISettingsSyncService,
   type ZCodeAgentSessionRuntimePreferencesRequest,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   type ApiClient,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createRemoteConnectionServiceCollection } from "../src/host/remoteConnectionServiceCollection.js";
 import { createRemotePromptAttachmentTaskService } from "../src/host/remotePromptAttachments.js";
-import { setDataBaseDir } from "@zcode/services/node";
-import * as nodeServices from "@zcode/services/node";
+import { setDataBaseDir } from "@zody/services/node";
+import * as nodeServices from "@zody/services/node";
 import {
   createRemoteWorkspaceServiceCollection,
   createServerRemoteWorkspaceServiceCollection,

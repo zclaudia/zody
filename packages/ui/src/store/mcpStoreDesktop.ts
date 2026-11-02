@@ -3,8 +3,8 @@ import type {
   LoadCliMcpFromUserDirectoryRequest,
   NativeMcpServerRecord,
   SaveCliMcpToUserDirectoryRequest,
-} from "@zcode/shared";
-import type { IMcpSyncService } from "@zcode/services";
+} from "@zody/shared";
+import type { IMcpSyncService } from "@zody/services";
 import { logger } from "@/logger.js";
 
 export type McpPlatformService = Pick<

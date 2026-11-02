@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ZCODE_AGENT_PROVIDER } from "@zcode/shared";
+import { ZCODE_AGENT_PROVIDER } from "@zody/shared";
 import {
   UPSTREAM_MODEL,
   UPSTREAM_PROVIDER_ID,

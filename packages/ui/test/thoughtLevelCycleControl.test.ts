@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ThoughtLevelCycleControl } from "@/chat-input-toolbar/ThoughtLevelCycleControl.js";
 import { getNextThoughtLevelValue } from "@/chat-input-toolbar/thoughtLevelOptions.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
-import type { ZCodeConfigOption } from "@zcode/shared";
+import type { ZCodeConfigOption } from "@zody/shared";
 
 const zhIntl = {
   formatMessage({ id }: { id: string }) {

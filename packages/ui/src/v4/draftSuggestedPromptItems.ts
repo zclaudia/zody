@@ -1,4 +1,4 @@
-import type { ClientSceneConfig, ClientSceneItem } from "@zcode/services";
+import type { ClientSceneConfig, ClientSceneItem } from "@zody/services";
 
 export interface DraftSuggestedPromptLocalizedText {
   cn?: string;

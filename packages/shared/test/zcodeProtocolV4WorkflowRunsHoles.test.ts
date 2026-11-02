@@ -14,8 +14,8 @@ import {
   type WorkflowRunProgressEnvelope,
   type WorkflowRunState,
   type WorkflowRunsState,
-} from "../src/zcode-protocol-v4/index.js";
-import { deriveSessionWorkflowActivity } from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
+import { deriveSessionWorkflowActivity } from "../src/zody-protocol-v4/index.js";
 import { getZCodeToolFamilyForName, normalizeZCodeToolName } from "../src/tool-identity.js";
 
 const RUN_ID = "dwfrun-holes";

@@ -8,8 +8,8 @@ import {
   ProviderApiConfig,
   ProviderConfig,
   type ProviderConfigLayerSnapshot,
-} from "@zcode/provider";
-import { NodePersonalProviderConfigRepository } from "@zcode/provider-node";
+} from "@zody/provider";
+import { NodePersonalProviderConfigRepository } from "@zody/provider-node";
 import {
   createE2EProviderModelSnapshot,
   getE2EAppDataPaths,

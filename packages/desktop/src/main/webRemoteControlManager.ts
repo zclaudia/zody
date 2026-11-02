@@ -1,4 +1,4 @@
-import type { RendererTelemetryEventPayload } from "@zcode/shared";
+import type { RendererTelemetryEventPayload } from "@zody/shared";
 /* eslint-disable max-lines -- Web 远程控制 manager 承担 gateway app payload 路由与 workspace bridge 编排。 */
 import type { MessagePortMain } from "electron";
 import type { HostProcessHandle } from "./hostProcessHandle.js";
@@ -8,12 +8,12 @@ import {
   ProxyChannel,
   type MessagePortLike,
   type MessagePortPayload,
-} from "@zcode/rpc";
+} from "@zody/rpc";
 import {
   createAcknowledgedWebRemoteControlRelayProtocol,
   type AcknowledgedWebRemoteControlRelayProtocolAdapter,
   type WebRemoteControlPayloadSendResult,
-} from "@zcode/client";
+} from "@zody/client";
 import {
   buildWebRemoteControlBridgeResultTelemetry,
   buildWebRemoteControlPairResultTelemetry,
@@ -52,11 +52,11 @@ import {
   type RemoteUsageRemoteKind,
   type TelemetryEventPayload,
   measureWebRemoteControlRpcRelayEnvelopeBytes,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   IWindowControllerService,
   type IWindowControllerService as IWindowControllerServiceType,
-} from "@zcode/services";
+} from "@zody/services";
 import type {
   GatewayDeviceTransportSession,
   GatewayDeviceTransportSessionOptions,

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { IHooksService, type IServiceAccessor } from "@zcode/services";
-import { ChannelClient, ChannelServer, ProxyChannel, createQueuePair } from "@zcode/rpc";
+import { IHooksService, type IServiceAccessor } from "@zody/services";
+import { ChannelClient, ChannelServer, ProxyChannel, createQueuePair } from "@zody/rpc";
 import {
   buildRemoteWorkspaceSessionServices,
   buildServerRemoteWorkspaceSessionServices,

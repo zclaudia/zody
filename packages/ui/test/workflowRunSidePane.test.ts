@@ -11,8 +11,8 @@
 import { createElement, type ReactNode } from "react";
 import { act, cleanup, fireEvent, render, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TID_WORKFLOW_ARTIFACTS_SECTION, TID_WORKFLOW_ARTIFACT_CARD } from "@zcode/shared";
-import type { WorkflowRunState } from "@zcode/shared/zcode-protocol-v4";
+import { TID_WORKFLOW_ARTIFACTS_SECTION, TID_WORKFLOW_ARTIFACT_CARD } from "@zody/shared";
+import type { WorkflowRunState } from "@zody/shared/zody-protocol-v4";
 import type { WorkflowRunSidePaneTab } from "@/lib/workspaceSidePane.js";
 
 vi.mock("@/logger.js", () => ({

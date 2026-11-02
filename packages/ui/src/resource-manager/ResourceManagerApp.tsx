@@ -6,7 +6,7 @@ import {
   type ResourceUsageSnapshot,
   type StorageManagementBridge,
   type NetworkCaptureBridge,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs.js";
 import { useZCodeIntl } from "@/i18n/index.js";
 import { StorageSection } from "./storage/StorageSection.js";

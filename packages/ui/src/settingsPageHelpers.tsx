@@ -4,19 +4,19 @@ import type {
   IntegratedTerminalShellSelection,
   LocalePreference,
   ZCodeInteractionBehavior,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   TID_SETTINGS_ASK_USER_QUESTION_AUTO_RESOLUTION_SWITCH,
   TID_SETTINGS_NATIVE_SEARCH_SWITCH,
   isDesktopAutoUpdateActive,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { useState, useCallback, useEffect } from "react";
-import type { IPlatformService } from "@zcode/shared";
+import type { IPlatformService } from "@zody/shared";
 import {
   TID_SETTINGS_LOCALE_SELECT_ITEM,
   TID_SETTINGS_LOCALE_SELECT_TRIGGER,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   Select,
   SelectContent,
@@ -40,7 +40,7 @@ import {
   type SettingsSectionId,
 } from "@/settings/settingsPageConfig.js";
 
-export type { Locale, LocalePreference } from "@zcode/shared";
+export type { Locale, LocalePreference } from "@zody/shared";
 export { type SettingsSectionId };
 export { createSettingsPageConfig, resolveSettingsSectionForPlatform };
 

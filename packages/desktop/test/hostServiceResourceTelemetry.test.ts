@@ -1,17 +1,17 @@
-import { Emitter, type Event, type IDisposable } from "@zcode/rpc";
+import { Emitter, type Event, type IDisposable } from "@zody/rpc";
 import {
   createZCodeAgentConnectionScope,
   IZCodeAgentService,
   ServiceCollection,
   type IZCodeAgentService as IZCodeAgentServiceType,
-} from "@zcode/services";
+} from "@zody/services";
 import type {
   AgentLaneResourceSample,
   ZCodeMcpTelemetryEvent,
   ZCodeMcpResourceSample,
   ZCodeToolExecResource,
-} from "@zcode/shared";
-import { HostResponseTypes } from "@zcode/shared";
+} from "@zody/shared";
+import { HostResponseTypes } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import { registerHostServiceResourceTelemetry } from "../src/host/hostServiceResourceTelemetry.js";
 import { createWindowHostAttachmentRegistry } from "../src/host/windowHostAttachmentRegistry.js";

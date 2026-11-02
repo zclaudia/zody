@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "n
 import { mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CREDENTIAL_DECRYPT_ERROR_CODE, CREDENTIAL_DECRYPT_ERROR_PREFIX } from "@zcode/shared";
+import { CREDENTIAL_DECRYPT_ERROR_CODE, CREDENTIAL_DECRYPT_ERROR_PREFIX } from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ICredentialService } from "../src/credential/credential.js";
 import { createCredentialCipherProvider } from "../src/credential/providers/credentialCipherProvider.js";

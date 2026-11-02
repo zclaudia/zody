@@ -1,4 +1,4 @@
-import type { ZCodeEnv } from "@zcode/shared";
+import type { ZCodeEnv } from "@zody/shared";
 
 // 随包运行时已接入本地上传；目标类型由 useRemoteConnectionForm 限定为 SSH/Windows WSL。
 export const REMOTE_CONNECTION_CREATION_ENABLED = true;

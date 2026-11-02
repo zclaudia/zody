@@ -2,7 +2,7 @@ import type { TaskChatMessage as ChatMessage } from "@/lib/taskChatMessageTypes.
 import { shouldExposeE2EStoreBridge } from "@/lib/e2eStoreBridge.js";
 // fork（bot-channels 移除）：IBotsService / IZCodeTaskService 引用随 BotsService 与 bot
 // 群投递链删除（specs/bot-channels-removal.md）。
-import type { IZCodeAgentService } from "@zcode/services";
+import type { IZCodeAgentService } from "@zody/services";
 import type { TaskListE2EActions } from "@/lib/taskListE2EActions.js";
 import { useEffect } from "react";
 

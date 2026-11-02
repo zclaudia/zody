@@ -4,7 +4,7 @@ import {
   buildGhostSupplierKey,
   buildNativeSupplierKey,
   type ZCodeConfigOption,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   isCustomSupplierKeyForProvider,
   parseCustomProviderIdFromSupplierKey,

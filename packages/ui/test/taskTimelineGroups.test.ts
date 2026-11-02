@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZCodeTaskMeta } from "@zody/shared";
 import { groupTaskTimelineItems, resolveTaskTimelineGroupKey } from "@/lib/taskTimelineGroups.js";
 
 function localTimestamp(

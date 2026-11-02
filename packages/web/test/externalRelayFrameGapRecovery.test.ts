@@ -3,7 +3,7 @@ import {
   encodeWebRemoteControlRpcTransportMessage,
   type WebRemoteControlAppPayload,
   type WebRemoteControlRpcTransportPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 const testState = vi.hoisted(() => ({
   relayProtocolOptions: [] as Array<{
@@ -46,7 +46,7 @@ vi.mock("react-dom/client", () => ({
   createRoot: () => ({ render: renderMock }),
 }));
 
-vi.mock("@zcode/ui", () => ({
+vi.mock("@zody/ui", () => ({
   AppErrorBoundary: ({ children }: { children: unknown }) => children,
   Root: () => null,
   WebRemoteControlMobileStartPage: () => null,
@@ -60,7 +60,7 @@ vi.mock("@zcode/ui", () => ({
   setWebRemoteControlTerminalTransportState: vi.fn(),
 }));
 
-vi.mock("@zcode/client", () => ({
+vi.mock("@zody/client", () => ({
   connectViaProtocol: vi.fn(() => ({ settingService: {} })),
   connectViaWebSocket: vi.fn(),
   createAcknowledgedWebRemoteControlRelayProtocol: vi.fn((options) => {

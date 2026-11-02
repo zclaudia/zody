@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { OpenInEditorRemoteTarget } from "@zcode/shared";
+import type { OpenInEditorRemoteTarget } from "@zody/shared";
 import { useFileContextActions } from "@/hooks/useFileContextActions.js";
 
 const { mockOpenInEditor, mockOpenInFileManager } = vi.hoisted(() => ({

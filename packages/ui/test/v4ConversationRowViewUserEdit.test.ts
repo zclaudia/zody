@@ -9,8 +9,8 @@ import {
   TID_V4_FEEDBACK_DISLIKE,
   TID_V4_FEEDBACK_LIKE,
   testId,
-} from "@zcode/shared";
-import type { AssistantTextRow, ReasoningRow, UserInputRow } from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared";
+import type { AssistantTextRow, ReasoningRow, UserInputRow } from "@zody/shared/zody-protocol-v4";
 import type { CodeCommentComposerAttachment } from "@/lib/codeCommentContext.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import type { ConversationSelectionReference } from "@/lib/conversationSelectionReference.js";

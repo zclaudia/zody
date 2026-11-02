@@ -6,7 +6,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
-import type { GitRepositorySummary } from "@zcode/shared";
+import type { GitRepositorySummary } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import {
   Command,

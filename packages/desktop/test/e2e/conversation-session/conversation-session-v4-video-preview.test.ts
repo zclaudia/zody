@@ -16,8 +16,8 @@ import {
   TID_V4_EDIT_SUBMIT,
   TID_V4_ROW_ATTACHMENTS,
   testId,
-} from "@zcode/shared";
-import { PROTOCOL_V4_LIMITS } from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared";
+import { PROTOCOL_V4_LIMITS } from "@zody/shared/zody-protocol-v4";
 import { DEFAULT_WORKSPACE, clearAppData, clickTestIdByDom } from "../helpers/desktop-app.js";
 import { restartIntoWorkspacePreservingProfile } from "../helpers/model-provider-restart.js";
 import {

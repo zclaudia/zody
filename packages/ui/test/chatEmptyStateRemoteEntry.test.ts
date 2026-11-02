@@ -85,9 +85,9 @@ async function renderMenu(
   vi.doMock("@/hooks/useRemoteConnectionEntryVisibility.js", () => ({
     useRemoteConnectionEntryVisibility: () => showRemoteConnectionEntry,
   }));
-  vi.doMock("@zcode/shared", async () => {
-    const actual = await vi.importActual<typeof import("@zcode/shared")>(
-      "@zcode/shared"
+  vi.doMock("@zody/shared", async () => {
+    const actual = await vi.importActual<typeof import("@zody/shared")>(
+      "@zody/shared"
     );
     return {
       ...actual,

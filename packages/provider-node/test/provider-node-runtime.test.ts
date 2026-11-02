@@ -2,14 +2,14 @@ import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { compileModelOptionMap } from "@zcode/model-option-map";
+import { compileModelOptionMap } from "@zody/model-option-map";
 import {
   ApiKeyAccessConfig,
   ModelConfigRules,
   ProviderConfig,
   ProviderConfigMap,
   type ProviderConfigLayerUpdate,
-} from "@zcode/provider";
+} from "@zody/provider";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   NodeZCodeBuiltinProviderConfigSource,
@@ -67,7 +67,7 @@ afterEach(async () => {
   );
 });
 
-describe("@zcode/provider-node", () => {
+describe("@zody/provider-node", () => {
   it("从 Built-in Model Config Rules 解析 ox-alpha 同策略别名和 API-specific reasoning", async () => {
     const source = new NodeZCodeBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,

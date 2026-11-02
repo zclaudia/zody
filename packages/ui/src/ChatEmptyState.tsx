@@ -45,7 +45,7 @@ import {
   type RemoteTarget,
   type RemoteWorkspaceSessionEntry,
   type WorkspacePurpose,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { runUserAction, runUserActionAsync } from "@/lib/userActionTelemetry.js";
 export {
   getScratchWorkspaceLocationHint,

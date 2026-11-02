@@ -25,17 +25,17 @@
 //      属于已换代丢弃的恢复流，静默忽略，S2 保持 live；
 //   2. 若 notOwned 命中的是"仍属当前订阅"的 recovery（如错位 unsubscribe 造成的
 //      ownership 分歧），store 携当前水位 fresh subscribe 自愈，不落 error。
-import { Emitter } from "@zcode/rpc";
-import type { LocalTtftFacts } from "@zcode/shared";
+import { Emitter } from "@zody/rpc";
+import type { LocalTtftFacts } from "@zody/shared";
 import type {
   ConversationTopicFrame,
   ConversationTopicWireFrame,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import {
   createZCodeAgentConnectionScope,
   readTrustedZCodeAgentV4Connection,
   type IZCodeAgentService,
-} from "@zcode/services";
+} from "@zody/services";
 import { describe, expect, it, vi } from "vitest";
 import { createAgentConversationTransport } from "@/v4/agentConversationTransport.js";
 import { ConversationProjectionStore } from "@/v4/conversationProjectionStore.js";

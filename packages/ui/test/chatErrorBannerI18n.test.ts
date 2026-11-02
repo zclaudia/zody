@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   MEDIA_BUDGET_CURRENT_IMAGE_TOO_LARGE_ERROR_CODE,
   MEDIA_BUDGET_CURRENT_VIDEO_TOO_LARGE_ERROR_CODE,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { resolveChatErrorBannerDisplayMessage } from "@/ChatErrorBanner.js";
 import type { IntlInstance } from "@/i18n/IntlProvider.js";
 import enUS from "@/i18n/locales/en-US.js";

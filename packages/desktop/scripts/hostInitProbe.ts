@@ -7,7 +7,7 @@ import {
   HostMessageTypes,
   HostResponseTypes,
   type DatabaseStartupState,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { MessagePortMain } from "electron";
 import type { HostInitMessage } from "../src/main/desktopHostProcess.js";
 import {

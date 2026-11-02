@@ -13,7 +13,7 @@ import {
   serializeExtensionBridgeMessage,
   type ExtensionBridgeClientMessage,
   type ExtensionBridgeServerMessage,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import {
   createExtensionBridgeController,
   type ExtensionBridgeController,

@@ -15,7 +15,7 @@ import {
   pendingInteractionSchema,
   workspaceHookReviewDecisionSchema,
   workspaceHookReviewRequestPayloadSchema,
-} from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
 import {
   taskOwnerCommandDeliverySchema,
   taskOwnerCommandRequestSchema,

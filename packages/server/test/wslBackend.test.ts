@@ -17,7 +17,7 @@ vi.mock("node:child_process", () => ({
   spawn: mocks.spawn,
 }));
 
-vi.mock("@zcode/server/remote/wsl-detect.js", () => ({
+vi.mock("@zody/server/remote/wsl-detect.js", () => ({
   isWSLAvailable: mocks.isWSLAvailable,
   listWSLDistros: mocks.listWSLDistros,
 }));

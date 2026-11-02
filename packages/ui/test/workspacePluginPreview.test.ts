@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodePluginReferenceCatalogEntry } from "@zcode/shared";
+import type { ZCodePluginReferenceCatalogEntry } from "@zody/shared";
 import {
   buildWorkspacePluginMention,
   isWorkspacePluginReferenceable,

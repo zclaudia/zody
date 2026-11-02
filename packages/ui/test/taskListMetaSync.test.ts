@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { ZCodeTaskGoal, ZCodeTaskMeta } from "@zcode/shared";
+import type { ZCodeTaskGoal, ZCodeTaskMeta } from "@zody/shared";
 import {
   initializeBackgroundTaskInTaskCaches,
   insertTaskIntoTaskCaches,

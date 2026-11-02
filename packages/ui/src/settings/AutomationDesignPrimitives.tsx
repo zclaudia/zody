@@ -1,7 +1,7 @@
 import {
   TID_AUTOMATION_CREATE_MANUALLY,
   TID_AUTOMATION_CREATE_MENU,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { ReactNode } from "react";
 import {
   DropdownMenu,

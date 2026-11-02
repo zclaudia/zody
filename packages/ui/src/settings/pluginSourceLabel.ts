@@ -1,4 +1,4 @@
-import type { ZCodePluginMarketplaceSummary } from "@zcode/shared";
+import type { ZCodePluginMarketplaceSummary } from "@zody/shared";
 import { DEFAULT_MARKETPLACE_ID } from "@/settings/recommendedPlugins.js";
 
 // 官方插件在 agent 侧的 source 取值；其余取值（如 inline 本地目录）一律按「内置」处理。

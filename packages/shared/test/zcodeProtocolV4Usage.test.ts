@@ -6,7 +6,7 @@ import {
   v4ConversationUsageParamsSchema,
   v4ConversationUsageResultSchema,
   v4UsageStatsParamsSchema,
-} from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
 
 describe("zcode protocol v4 usage query", () => {
   it("freezes the v4 usage method names", () => {

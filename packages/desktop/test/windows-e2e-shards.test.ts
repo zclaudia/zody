@@ -578,13 +578,13 @@ describe("Windows E2E shard runner", () => {
     ) as { scripts: Record<string, string> };
 
     expect(desktopPackage.scripts["pretest:e2e"]).toBe(
-      "pnpm --filter @zcode/e2e-report build:node",
+      "pnpm --filter @zody/e2e-report build:node",
     );
     expect(desktopPackage.scripts["test:e2e"]).toBe("node scripts/run-windows-e2e-shards.mjs");
-    expect(rootPackage.scripts["test:e2e"]).toBe("pnpm --filter @zcode/desktop test:e2e");
+    expect(rootPackage.scripts["test:e2e"]).toBe("pnpm --filter @zody/desktop test:e2e");
     expect(desktopPackage.scripts["test:e2e:windows:sharded"]).toBe("pnpm test:e2e -- --shards=10");
     expect(rootPackage.scripts["test:e2e:windows:sharded"]).toBe(
-      "pnpm --filter @zcode/desktop test:e2e:windows:sharded",
+      "pnpm --filter @zody/desktop test:e2e:windows:sharded",
     );
   });
 });

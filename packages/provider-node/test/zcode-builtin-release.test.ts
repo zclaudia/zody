@@ -6,7 +6,7 @@ import {
   ProviderConfigService,
   ProviderRegistryService,
   createFailClosedAccountProviderConfigSnapshot,
-} from "@zcode/provider";
+} from "@zody/provider";
 import {
   NodeZCodeBuiltinProviderConfigSource,
   EndpointScopedZCodeBuiltinSource,

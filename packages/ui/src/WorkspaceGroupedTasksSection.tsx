@@ -21,8 +21,8 @@ import type {
 import type {
   ZCodeGroupedTaskView,
   ZCodeTaskGroupColor,
-} from "@zcode/services";
-import { type ZCodeTaskMeta } from "@zcode/shared";
+} from "@zody/services";
+import { type ZCodeTaskMeta } from "@zody/shared";
 import { createPortal } from "react-dom";
 import { cn } from "@/components/lib/utils.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";

@@ -3,7 +3,7 @@
 import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeElicitationRequest } from "@zcode/shared";
+import type { ZCodeElicitationRequest } from "@zody/shared";
 import { ElicitationDialog } from "@/ElicitationDialog.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 

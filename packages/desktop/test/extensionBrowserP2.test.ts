@@ -3,7 +3,7 @@ import {
   parseExtensionBridgeClientMessage,
   parseExtensionBridgeServerMessage,
   serializeExtensionBridgeMessage,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import {
   isClaimableUserTabUrl,
   parseUserTabId,

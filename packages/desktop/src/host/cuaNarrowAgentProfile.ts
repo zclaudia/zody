@@ -1,9 +1,9 @@
 import { isAbsolute } from "node:path";
-import type { ModelSelection } from "@zcode/shared";
+import type { ModelSelection } from "@zody/shared";
 import {
   digestZCodeAgentNativeRuntimeNetwork,
   normalizeZCodeAgentNativeRuntimeNetwork,
-} from "@zcode/services/node";
+} from "@zody/services/node";
 
 /** Fixed compile-time opt-in. Missing/undefined keeps the normal Electron utility Host path. */
 declare const __ZCODE_CUA_NARROW_AGENT__: unknown;

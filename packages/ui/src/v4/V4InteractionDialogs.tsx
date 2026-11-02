@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ZCodeElicitationRequest, ZCodePermissionOption, ZCodeProvider } from "@zcode/shared";
-import type { ConversationSnapshot } from "@zcode/shared/zcode-protocol-v4";
+import type { ZCodeElicitationRequest, ZCodePermissionOption, ZCodeProvider } from "@zody/shared";
+import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
 import { ElicitationDialog } from "@/ElicitationDialog.js";
 import { PermissionDialog } from "@/PermissionDialog.js";
 import { workflowSessionModelOf } from "@/components/workflow-timeline/workflowRunSettings.js";

@@ -3,7 +3,7 @@ import { createElement, type ReactNode } from "react";
 import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ConversationSnapshot } from "@zcode/shared/zcode-protocol-v4";
+import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { SessionPane } from "@/v4/SessionPane.js";
 import type { ConversationRowRenderContext } from "@/v4/conversationRowContext.js";

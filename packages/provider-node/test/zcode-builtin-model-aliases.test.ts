@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
-import { compileModelOptionMaps } from "@zcode/model-option-map";
+import { compileModelOptionMaps } from "@zody/model-option-map";
 
 describe("发布模型规则的前后缀与覆盖顺序", () => {
   it("OpenRouter Messages 的 GPT 选择实际生成对应 effort，保留完整请求型号", async () => {

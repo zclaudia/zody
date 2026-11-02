@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { HostResponseTypes } from "@zcode/shared";
-import { emitNetworkTelemetryObservation } from "@zcode/rpc";
+import { HostResponseTypes } from "@zody/shared";
+import { emitNetworkTelemetryObservation } from "@zody/rpc";
 import {
   registerHostNetworkTelemetry,
   stopHostNetworkTelemetry,

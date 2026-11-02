@@ -4,7 +4,7 @@
 // 租约必释放。
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { CommandAck, CommandEnvelope } from "@zcode/shared/zcode-protocol-v4";
+import type { CommandAck, CommandEnvelope } from "@zody/shared/zody-protocol-v4";
 
 const sendCommand = vi.fn<[CommandEnvelope], Promise<CommandAck>>();
 const release = vi.fn();

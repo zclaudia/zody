@@ -27,7 +27,7 @@ import {
   type WebRemoteControlTaskDisplayStatus,
   type WebRemoteControlTaskTarget,
   type WebRemoteControlWorkspaceListResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
 import {

@@ -2,8 +2,8 @@ import type {
   PluginScope,
   PluginsOverviewResult,
   ZCodePluginsMarketplaceMutationResult,
-} from "@zcode/shared";
-import { ServiceChannels } from "@zcode/shared";
+} from "@zody/shared";
+import { ServiceChannels } from "@zody/shared";
 import { createServiceDescriptor } from "../descriptors.js";
 
 export interface IPluginsService {

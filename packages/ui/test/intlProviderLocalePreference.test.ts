@@ -8,8 +8,8 @@ import {
   useZCodeIntl,
   ZCodeIntlProvider,
 } from "@/i18n/IntlProvider.js";
-import type { Locale } from "@zcode/shared";
-import type { BroadcastMessage } from "@zcode/services";
+import type { Locale } from "@zody/shared";
+import type { BroadcastMessage } from "@zody/services";
 
 function LocaleProbe() {
   const { locale, localePreference } = useZCodeIntl();

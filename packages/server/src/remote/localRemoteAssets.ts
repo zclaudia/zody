@@ -12,7 +12,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { isAbsolute, join, relative, sep } from "node:path";
-import { ZCODE_VERSION, type RemoteAssetSource } from "@zcode/shared";
+import { ZCODE_VERSION, type RemoteAssetSource } from "@zody/shared";
 import { extractTarGzArchive } from "./localTarGz.js";
 import {
   parseRemoteAssetManifestFromResponse,

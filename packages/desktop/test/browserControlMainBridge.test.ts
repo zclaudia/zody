@@ -3,7 +3,7 @@ import {
   createBrowserControlMainBridge,
   type BrowserExecuteRequestMessage,
 } from "../src/host/browserControlMainBridge.js";
-import type { BrowserCommand, BrowserCommandResult } from "@zcode/contracts";
+import type { BrowserCommand, BrowserCommandResult } from "@zody/contracts";
 
 const NAV: BrowserCommand = { method: "navigate", url: "https://example.com" };
 

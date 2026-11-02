@@ -1,5 +1,5 @@
 import type { BrowserWindow, NativeImage } from "electron";
-import { ZCODE_DOWNLOAD_PAGE_URL, type Locale } from "@zcode/shared";
+import { ZCODE_DOWNLOAD_PAGE_URL, type Locale } from "@zody/shared";
 
 export interface ArchitectureMismatch {
   /** 当前运行的二进制架构，例如 x64。 */

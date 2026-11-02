@@ -19,7 +19,7 @@ import { useModelProviderNavigation } from "./model-provider-section/useModelPro
 import { confirmAndDeleteModelProvider } from "./model-provider-section/modelProviderActions.js";
 import { createCustomProviderNodeKey } from "./model-provider-section/utils.js";
 import type { ModelProviderNavItem } from "./model-provider-section/constants.js";
-import type { ModelConnectivityResult } from "@zcode/shared";
+import type { ModelConnectivityResult } from "@zody/shared";
 import type { ProviderSettingsFormProvider } from "@/lib/providerSettingsFormTypes.js";
 
 // 端点建议/模糊匹配的纯函数由本模块对外转发（既有消费方从设置页入口导入）。

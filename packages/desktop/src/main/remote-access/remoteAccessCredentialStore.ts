@@ -1,4 +1,4 @@
-import type { ICredentialService } from "@zcode/services";
+import type { ICredentialService } from "@zody/services";
 
 /**
  * 桌面 remote access（gateway backend）凭证的唯一存储 key。

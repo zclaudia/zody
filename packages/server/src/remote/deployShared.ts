@@ -1,9 +1,9 @@
 import { join } from "node:path";
 import { access } from "node:fs/promises";
-import type { StdioStream } from "@zcode/server/remote/backend.js";
-import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
-import type { RemoteAssetNetworkPort } from "@zcode/server/remote/remoteAssetNetwork.js";
-import { ZCODE_DATA_ROOT_DIR_NAME, type RemoteAssetSource } from "@zcode/shared";
+import type { StdioStream } from "@zody/server/remote/backend.js";
+import { quotePosixPathArg } from "@zody/server/remote/posixShell.js";
+import type { RemoteAssetNetworkPort } from "@zody/server/remote/remoteAssetNetwork.js";
+import { ZCODE_DATA_ROOT_DIR_NAME, type RemoteAssetSource } from "@zody/shared";
 
 // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
 export const REMOTE_BASE = `~/${ZCODE_DATA_ROOT_DIR_NAME}/server`;

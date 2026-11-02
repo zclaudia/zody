@@ -7,33 +7,33 @@ import { basename, dirname, join } from "node:path";
 import { PassThrough } from "node:stream";
 import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IDisposable, Event } from "@zcode/rpc";
+import type { IDisposable, Event } from "@zody/rpc";
 import {
   getRemoteRuntimeToolsForPlatform,
   ZCODE_AGENT_RUNTIME,
   ZCODE_RUNTIME_ENV_KEY,
   ZCODE_VERSION,
-} from "@zcode/shared";
-import type { IRemoteBackend, StdioStream } from "@zcode/server/remote/backend.js";
-import { deployZCodeAgentRuntime } from "@zcode/server/remote/zcodeAgentDeploy.js";
-import { deployServer } from "@zcode/server/remote/deploy.js";
+} from "@zody/shared";
+import type { IRemoteBackend, StdioStream } from "@zody/server/remote/backend.js";
+import { deployZCodeAgentRuntime } from "@zody/server/remote/zcodeAgentDeploy.js";
+import { deployServer } from "@zody/server/remote/deploy.js";
 import {
   createRemoteComponentVersionResolver,
   deployNodeRuntime,
-} from "@zcode/server/remote/remoteAssetDeployDecision.js";
-import { buildRemoteExecutableReplaceCommand } from "@zcode/server/remote/deployShared.js";
-import { ensureRemoteReleaseDirFromCdn } from "@zcode/server/remote/remoteAssetCache.js";
+} from "@zody/server/remote/remoteAssetDeployDecision.js";
+import { buildRemoteExecutableReplaceCommand } from "@zody/server/remote/deployShared.js";
+import { ensureRemoteReleaseDirFromCdn } from "@zody/server/remote/remoteAssetCache.js";
 import {
   fetchRemoteDownloadManifest,
   type RemoteAssetInstaller,
-} from "@zcode/server/remote/remoteAssetInstaller.js";
-import { createTarGzArchive } from "@zcode/server/remote/localTarGz.js";
-import { buildRemoteAgentBundleWrapper } from "@zcode/server/remote/zcodeAgentBundleWrapper.js";
+} from "@zody/server/remote/remoteAssetInstaller.js";
+import { createTarGzArchive } from "@zody/server/remote/localTarGz.js";
+import { buildRemoteAgentBundleWrapper } from "@zody/server/remote/zcodeAgentBundleWrapper.js";
 import {
   REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS,
   REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES,
   REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS,
-} from "@zcode/server/remote/zcodeAgentOfficialPluginAssets.js";
+} from "@zody/server/remote/zcodeAgentOfficialPluginAssets.js";
 
 import { createLocalRuntimeFixture } from "./helpers/localRuntimeFixture.js";
 

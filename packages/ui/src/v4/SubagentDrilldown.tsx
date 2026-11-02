@@ -8,8 +8,8 @@ import { memo, useEffect, useMemo, useState } from "react";
 import {
   TID_V4_SUBAGENT_DRILLDOWN,
   testId,
-} from "@zcode/shared";
-import type { ConversationRow } from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared";
+import type { ConversationRow } from "@zody/shared/zody-protocol-v4";
 import { ConversationRowView } from "@/v4/ConversationRowView.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import type { ConversationRowRenderContext } from "@/v4/conversationRowContext.js";

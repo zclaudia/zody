@@ -1,5 +1,5 @@
-import type { BrowserCommand, BrowserCommandResult } from "@zcode/shared";
-import { browserSnapshotElementSchema } from "@zcode/shared";
+import type { BrowserCommand, BrowserCommandResult } from "@zody/shared";
+import { browserSnapshotElementSchema } from "@zody/shared";
 import {
   dispatchClickAt,
   dispatchDrag,

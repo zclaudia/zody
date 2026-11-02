@@ -1,8 +1,8 @@
 import { mkdirSync, appendFileSync } from "node:fs";
 import { join } from "node:path";
-import { formatTimestamp } from "@zcode/shared";
+import { formatTimestamp } from "@zody/shared";
 import { cleanupExpiredLogFiles, LOG_RETENTION_DAYS } from "./logRetention.js";
-import { getAppConfigDir, maybeThrowInjectedFsFault } from "@zcode/services/node";
+import { getAppConfigDir, maybeThrowInjectedFsFault } from "@zody/services/node";
 
 function getLogDir() {
   const e2eLogDir =

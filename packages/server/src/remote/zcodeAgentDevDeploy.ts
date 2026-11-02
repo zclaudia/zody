@@ -3,34 +3,34 @@ import {
   ZCODE_AGENT_PROVIDER,
   ZCODE_DATA_ROOT_DIR_NAME,
   resolveZCodeRuntimeEnv,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createHash, randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { cp, lstat, mkdir, mkdtemp, readdir, readFile, readlink, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import type { IRemoteBackend } from "@zcode/server/remote/backend.js";
+import type { IRemoteBackend } from "@zody/server/remote/backend.js";
 import {
   buildRemoteExecutableReplaceCommand,
   buildRemoteMoveCommand,
   type DeployLoggers,
   waitForClose,
-} from "@zcode/server/remote/deployShared.js";
+} from "@zody/server/remote/deployShared.js";
 import {
   buildWriteLiteralFileCommand,
   quotePosixPathArg,
   quotePosixShellArg,
-} from "@zcode/server/remote/posixShell.js";
-import { createTarGzArchive } from "@zcode/server/remote/localTarGz.js";
+} from "@zody/server/remote/posixShell.js";
+import { createTarGzArchive } from "@zody/server/remote/localTarGz.js";
 import {
   buildRemoteAgentBundleWrapper,
   isRemoteAgentBundleWrapperCurrent,
   REMOTE_AGENT_BUNDLE_NAME,
-} from "@zcode/server/remote/zcodeAgentBundleWrapper.js";
+} from "@zody/server/remote/zcodeAgentBundleWrapper.js";
 import {
   deployRemoteAgentWrapper,
   isWslBackend,
-} from "@zcode/server/remote/zcodeAgentWrapperDeploy.js";
+} from "@zody/server/remote/zcodeAgentWrapperDeploy.js";
 import {
   REMOTE_AGENT_OFFICIAL_PLUGIN_DIR_NAME,
   REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS,
@@ -38,10 +38,10 @@ import {
   REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS,
   buildRemoteAgentOfficialPluginDir,
   buildRemoteAgentOfficialPluginRequiredPaths,
-} from "@zcode/server/remote/zcodeAgentOfficialPluginAssets.js";
-import { repairLegacyRemoteOfficialPluginDirectoryPermissions } from "@zcode/server/remote/zcodeAgentOfficialPluginPermissionRepair.js";
+} from "@zody/server/remote/zcodeAgentOfficialPluginAssets.js";
+import { repairLegacyRemoteOfficialPluginDirectoryPermissions } from "@zody/server/remote/zcodeAgentOfficialPluginPermissionRepair.js";
 
-const DEV_AGENT_BUNDLE_RELATIVE_PATH = "apps/zcode-cli/packages/cli/dist/zcode.cjs";
+const DEV_AGENT_BUNDLE_RELATIVE_PATH = "apps/zody-cli/packages/cli/dist/zcode.cjs";
 const DEV_AGENT_BUNDLE_ENV = "ZCODE_REMOTE_DEV_AGENT_BUNDLE";
 const REMOTE_DEV_AGENT_BUNDLE_NAME = REMOTE_AGENT_BUNDLE_NAME;
 const REMOTE_DEV_AGENT_VERSION_FILE_NAME = ".dev-version";
@@ -417,7 +417,7 @@ export async function deployDevelopmentZCodeAgentRuntime(
 
   // 开发态 SSH 远端过去只会部署本地 zcode.cjs，不会携带 packages/*-plugin。
   // builtin plugin seed 依赖 agent 包旁边的官方插件源资源，所以 dev 部署需要同步 bundle 与插件资源。
-  // 本地修改 apps/zcode-cli 后，远端测试仍运行滞后的发布包。这里改为上传 dev 启动时刚构建的
+  // 本地修改 apps/zody-cli 后，远端测试仍运行滞后的发布包。这里改为上传 dev 启动时刚构建的
   // dist/zcode.cjs，并用远端已部署的 node 包一层 wrapper 启动，保证 agent 仍运行在目标机器内。
   loggers.log(
     `[zcode-agent-deploy] ${ZCODE_AGENT_PROVIDER}: 开发态上传本地 zcode.cjs ${devVersion.slice(0, 12)}`,

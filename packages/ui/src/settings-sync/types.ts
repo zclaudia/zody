@@ -3,7 +3,7 @@ import type {
   SettingsSyncCategory,
   SettingsSyncDiscoveryResult,
   SettingsSyncImportResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export type SettingsSyncUiStep = "selection" | "importing" | "complete";
 

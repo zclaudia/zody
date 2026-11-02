@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- 远程访问分区的表单、凭证只写不读状态机和连接状态展示共享同一组 pending/刷新边界，拆分会引入第二套状态。 */
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { DEFAULT_REMOTE_ACCESS_NAMESPACE, tryNormalizeRemoteAccessGatewayUrl } from "@zcode/shared";
+import { DEFAULT_REMOTE_ACCESS_NAMESPACE, tryNormalizeRemoteAccessGatewayUrl } from "@zody/shared";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";

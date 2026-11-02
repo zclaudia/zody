@@ -1,4 +1,4 @@
-import { ModelSelectionFacade, type ProviderRegistryFacadeSource } from "@zcode/provider";
+import { ModelSelectionFacade, type ProviderRegistryFacadeSource } from "@zody/provider";
 import { resolveLegacyReasoningLevel } from "./legacy-reasoning-level.js";
 
 /**

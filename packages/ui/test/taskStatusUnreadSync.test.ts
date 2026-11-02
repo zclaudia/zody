@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta, ZCodeWorkspaceTaskListChanged } from "@zcode/shared";
+import type { ZCodeTaskMeta, ZCodeWorkspaceTaskListChanged } from "@zody/shared";
 import {
   resetTaskStatusUnreadSyncForTest,
   shouldMarkStatusEventTaskUnread,

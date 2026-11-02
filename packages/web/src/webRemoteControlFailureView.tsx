@@ -1,4 +1,4 @@
-import type { WebRemoteControlFailure, WebRemoteControlFailureReason } from "@zcode/shared";
+import type { WebRemoteControlFailure, WebRemoteControlFailureReason } from "@zody/shared";
 import { webEntryRoot } from "./webEntryRoot.js";
 import {
   WebRemoteControlFailureScreen,

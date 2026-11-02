@@ -1,7 +1,7 @@
 import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ZCODE_VERSION } from "@zcode/shared";
+import { ZCODE_VERSION } from "@zody/shared";
 import { createLocalRuntimeFixture } from "../../server/test/helpers/localRuntimeFixture.js";
 import { stageRemoteRuntime, REMOTE_RUNTIME_PLATFORMS } from "../scripts/stage-remote-runtime.mjs";
 

@@ -2,7 +2,7 @@ import {
   resolveWebRemoteControlAppProtocolVersion,
   WEB_REMOTE_CONTROL_APP_PROTOCOL_FEATURES,
   type WebRemoteControlAppPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /** spec「Channel 帧协议」：`bufferedAmount` 超过 4 MiB 时返回 unavailable，交给上层缓冲。 */
 export const WEB_REMOTE_CONTROL_CHANNEL_MAX_BUFFERED_BYTES = 4 * 1024 * 1024;

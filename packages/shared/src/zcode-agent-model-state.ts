@@ -9,7 +9,7 @@
 // getZCodeAgentAvailableModes / getZCodeAgentModeSelectOptions / normalizeAvailableZCodeMode）。
 // 波次3 删除这些导出前必须先把模式目录迁到非 legacy 位置，不能连带删掉目录本身。
 import { formatModelPickerValue } from "./model-selection.js";
-import type { ZCodeSessionMode, ZCodeSessionSettingsState } from "./zcode-protocol/index.js";
+import type { ZCodeSessionMode, ZCodeSessionSettingsState } from "./zody-protocol/index.js";
 import type { ZCodeConfigOption, ZCodeTaskModeInfo } from "./zcode-task-types-core.js";
 const MODEL_CONFIG_ID = "model";
 const MODEL_CONFIG_CATEGORY = "model";

@@ -12,7 +12,7 @@ import {
   resolveWorkspaceKey,
   type ZCodeSavedWorkflowEntry,
   type ZCodeWorkflowsForRunCandidate,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Spinner } from "@/components/ui/spinner.js";
 import { toast } from "@/components/ui/toast.js";

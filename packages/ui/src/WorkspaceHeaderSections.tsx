@@ -7,7 +7,7 @@ import {
   TID_WORKSPACE_TITLE,
   type RemoteTarget,
   type ZCodeTaskMeta,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { useMemo, useRef, useState } from "react";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { cn } from "@/components/lib/utils.js";

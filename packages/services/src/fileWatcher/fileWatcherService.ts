@@ -1,7 +1,7 @@
 import { watch, type FSWatcher } from "node:fs";
 import { resolve } from "node:path";
-import { Emitter, Event, type Event as RpcEvent } from "@zcode/rpc";
-import type { FileWatchEvent } from "@zcode/shared";
+import { Emitter, Event, type Event as RpcEvent } from "@zody/rpc";
+import type { FileWatchEvent } from "@zody/shared";
 import {
   createServiceLogger,
   type ServiceLogger,

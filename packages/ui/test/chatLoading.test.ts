@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { ActiveWorkSummary, PendingInteraction } from "@zcode/shared/zcode-protocol-v4";
+import type { ActiveWorkSummary, PendingInteraction } from "@zody/shared/zody-protocol-v4";
 import { ChatLoading } from "@/components/ai-elements/chat-loading.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import {

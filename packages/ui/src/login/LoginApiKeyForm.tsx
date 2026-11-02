@@ -6,7 +6,7 @@
  * （各内置/自定义 provider 模板），也不再写 providerFamilyDomain。
  */
 import { useMemo, useState } from "react";
-import { resolveProviderTemplateName } from "@zcode/provider";
+import { resolveProviderTemplateName } from "@zody/provider";
 import {
   TID_LOGIN_API_KEY_CONTINUE_BUTTON,
   TID_LOGIN_API_KEY_ERROR,
@@ -15,7 +15,7 @@ import {
   TID_LOGIN_API_KEY_PROVIDER_TRIGGER,
   TID_LOGIN_API_KEY_SKIP_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert.js";
 import { Button } from "@/components/ui/button.js";

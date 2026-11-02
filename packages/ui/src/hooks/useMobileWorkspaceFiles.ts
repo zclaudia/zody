@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { MobileTargetRef } from "@zcode/shared";
-import type { FileEntry } from "@zcode/shared";
+import type { MobileTargetRef } from "@zody/shared";
+import type { FileEntry } from "@zody/shared";
 import { useWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
 import { getPathLeaf } from "@/lib/path.js";

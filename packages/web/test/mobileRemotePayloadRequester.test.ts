@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   WEB_REMOTE_CONTROL_WORKSPACE_RECONNECT_TIMEOUT_MS,
   type WebRemoteControlAppPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createWebRemoteControlAppPayloadRequester } from "../src/mobile-remote/payloadRequester.js";
 
 afterEach(() => {

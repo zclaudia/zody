@@ -1,4 +1,4 @@
-import type { Root } from "@zcode/ui";
+import type { Root } from "@zody/ui";
 
 /**
  * Root 组件要求的服务集合契约（T1.2）。

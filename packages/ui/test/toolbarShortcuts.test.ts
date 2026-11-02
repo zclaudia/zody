@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveEffectiveShortcutBindings } from "../src/shortcuts/bindings.js";
 import { resolveToolbarShortcutAction } from "../src/v4/composer/toolbarShortcuts.js";
-import type { ZCodeConfigOption } from "@zcode/shared";
+import type { ZCodeConfigOption } from "@zody/shared";
 
 /** 构造工具条关心的键盘事件字段子集。 */
 function toolbarEvent(patch: Partial<Parameters<typeof resolveToolbarShortcutAction>[0]> = {}) {

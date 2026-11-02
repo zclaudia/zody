@@ -24,7 +24,7 @@
 // (brokerServer, cuaHelperHost, electronNativeBackend, mcpBrokerInjection,
 // cuaProductMcpResolver, helperAppBundle, etc.)
 // plus the ax-types re-export via axReadOnly.
-export * from "@zcode/zcode-cua/broker/server";
+export * from "@zody/zody-cua/broker/server";
 
 /** @deprecated 默认 CUA 装配不再使用，仅为旧注入方保留兼容导出。 */
 export {
@@ -82,7 +82,7 @@ export {
   // helperErrors.ts
   CuaHelperError,
   isCuaHelperError,
-} from "@zcode/zcode-cua/broker";
+} from "@zody/zody-cua/broker";
 export type {
   BrokerErrorCode,
   BrokerMethod,
@@ -90,7 +90,7 @@ export type {
   BrokerResponse,
   CuaHelperErrorCode,
   NativeAutomationBackend,
-} from "@zcode/zcode-cua/broker";
+} from "@zody/zody-cua/broker";
 
 export { WindowsCuaHelperHost } from "./windowsCuaDevHelperHost.js";
 export type {

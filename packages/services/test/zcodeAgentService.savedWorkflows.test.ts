@@ -4,7 +4,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods } from "@zcode/shared";
+import { zcodeProtocolMethods } from "@zody/shared";
 
 async function createServiceWithRequest(request: ReturnType<typeof vi.fn>) {
   const getClient = vi.fn(async () => ({
@@ -27,7 +27,7 @@ async function createServiceWithRequest(request: ReturnType<typeof vi.fn>) {
       disposeAll() {}
     },
   }));
-  const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+  const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
   return { service: createZCodeAgentService(), getClient };
 }
 

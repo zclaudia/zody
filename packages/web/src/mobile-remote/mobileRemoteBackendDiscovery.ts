@@ -4,7 +4,7 @@ import {
   WEB_REMOTE_CONTROL_BACKEND_CAPABILITY,
   type RemoteAccessMobileBackendOption,
   type WebRemoteControlFailure,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * 选电脑页的数据源（T4.2）。

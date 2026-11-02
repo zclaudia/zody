@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
-import { createSessionTraceId } from "@zcode/shared";
-import type { ConversationOpenTiming, ConversationSnapshot } from "@zcode/shared/zcode-protocol-v4";
+import { createSessionTraceId } from "@zody/shared";
+import type { ConversationOpenTiming, ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
 import {
   reportSessionOpenResult,
   reportSessionOpenStart,

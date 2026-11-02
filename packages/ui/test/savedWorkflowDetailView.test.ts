@@ -18,7 +18,7 @@ import {
   type ZCodeSavedWorkflowEntry,
   type ZCodeSavedWorkflowRun,
   type ZCodeWorkflowsGetResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 
 const toastMock = vi.fn();

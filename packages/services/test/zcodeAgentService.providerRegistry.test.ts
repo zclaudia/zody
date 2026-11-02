@@ -5,9 +5,9 @@ import {
   ZhipuAccountAccessConfig,
   type AccountProviderConfigSnapshot,
   type ModelSelectionView,
-} from "@zcode/provider";
-import { zcodeProtocolMethods } from "@zcode/shared";
-import { V4_METHODS } from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/provider";
+import { zcodeProtocolMethods } from "@zody/shared";
+import { V4_METHODS } from "@zody/shared/zody-protocol-v4";
 import { createAccountProviderConfig } from "./providerConfigFixtures.js";
 
 const START_PLAN_PROVIDER_ID = "account:zai-start-plan";
@@ -266,7 +266,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
@@ -311,7 +311,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
@@ -353,7 +353,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: createModelSelectionChangeSource({
         revision: 1,
@@ -389,7 +389,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: createModelSelectionChangeSource(
         createModelSelectionViewFromRegistry(
@@ -436,7 +436,7 @@ describe("createZCodeAgentService provider registry", () => {
           disposeAll() {}
         },
       }));
-      const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+      const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
       const service = createZCodeAgentService({ modelSelectionReadinessSource: { getView } });
       const workspace = {
         workspacePath: "/workspace/concurrent-first-input",
@@ -498,7 +498,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({ modelSelectionReadinessSource: { getView } });
     const workspace = { workspacePath: "/workspace/reopen-during-readiness" };
     try {
@@ -547,7 +547,7 @@ describe("createZCodeAgentService provider registry", () => {
       revision: 1,
       providers: [],
     });
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
@@ -602,7 +602,7 @@ describe("createZCodeAgentService provider registry", () => {
       },
     }));
     const selectionSource = createModelSelectionChangeSource({ revision: 1, providers: [] });
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
@@ -638,7 +638,7 @@ describe("createZCodeAgentService provider registry", () => {
       revision: 1,
       providers: [],
     });
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
@@ -692,7 +692,7 @@ describe("createZCodeAgentService provider registry", () => {
       revision: 1,
       providers: [],
     });
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
@@ -755,7 +755,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const accountSnapshot: AccountProviderConfigSnapshot = {
       revision: "account-1",
       basedOnZCodeBuiltinRevision: "zcode-builtin:1",
@@ -865,7 +865,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: createReadyModelSelectionSource(),
       accountProviderConfigSource: accountSource.source,
@@ -963,7 +963,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: createReadyModelSelectionSource(),
     });
@@ -1033,7 +1033,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: createReadyModelSelectionSource(),
     });
@@ -1114,7 +1114,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       modelSelectionReadinessSource: createReadyModelSelectionSource(),
     });

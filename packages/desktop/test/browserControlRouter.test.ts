@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { BrowserBackendDescriptor } from "@zcode/shared";
+import type { BrowserBackendDescriptor } from "@zody/shared";
 import {
   createBrowserControlRouter,
   type BrowserControlBackend,

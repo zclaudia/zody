@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { TID_CHAT_MESSAGE_FORK_BUTTON } from "@zcode/shared";
+import { TID_CHAT_MESSAGE_FORK_BUTTON } from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,

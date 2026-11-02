@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { GatewayClient, type GatewayChannel } from "@zclaudia/gateway-client";
-import { WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION } from "@zcode/shared";
+import { WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION } from "@zody/shared";
 
 /**
  * T4.1 桌面 E2E 的真实 gateway 环境读取。

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
-import type { MobileTargetRef, WebRemoteControlWorkspaceListResult } from "@zcode/shared";
-import { resolveWebRemoteControlWorkspaceKey } from "@zcode/shared";
+import type { MobileTargetRef, WebRemoteControlWorkspaceListResult } from "@zody/shared";
+import { resolveWebRemoteControlWorkspaceKey } from "@zody/shared";
 import { WebRemoteControlMobileSearch } from "@/WebRemoteControlMobileSearch.js";
 import {
   MobileWorkspaceFileBrowser,

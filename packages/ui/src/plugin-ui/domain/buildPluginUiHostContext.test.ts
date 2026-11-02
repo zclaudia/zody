@@ -1,4 +1,4 @@
-import { MCP_APPS_HOST_NAME } from "@zcode/shared/mcp-apps";
+import { MCP_APPS_HOST_NAME } from "@zody/shared/mcp-apps";
 import { describe, expect, it } from "vitest";
 import { buildPluginUiHostContext } from "./buildPluginUiHostContext.js";
 

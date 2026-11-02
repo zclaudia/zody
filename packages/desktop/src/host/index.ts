@@ -28,7 +28,7 @@ import {
   type IChannelServer,
   LoggingChannelServer,
   NetworkTelemetryChannelServer,
-} from "@zcode/rpc";
+} from "@zody/rpc";
 import { registerHostNetworkTelemetry, stopHostNetworkTelemetry } from "./hostNetworkTelemetry.js";
 import { registerHostServiceResourceTelemetry } from "./hostServiceResourceTelemetry.js";
 import { resolveResourceTelemetryEnvironmentKey } from "./hostResourceTelemetryEnvironment.js";
@@ -57,10 +57,10 @@ import {
   createZCodeAgentConnectionScope,
   type ZCodeAgentV4ClientMode,
   collectServiceMemoryDiagnostics,
-} from "@zcode/services";
-import { createMobileNotificationService } from "@zcode/services/mobile-notifications/node";
-import type { IMobileNotificationService } from "@zcode/services/mobile-notifications/node";
-import { getTasksIndexDatabasePath } from "@zcode/services/storage-startup";
+} from "@zody/services";
+import { createMobileNotificationService } from "@zody/services/mobile-notifications/node";
+import type { IMobileNotificationService } from "@zody/services/mobile-notifications/node";
+import { getTasksIndexDatabasePath } from "@zody/services/storage-startup";
 import {
   createLocalServices,
   disposeServiceResources,
@@ -70,7 +70,7 @@ import {
   createHostApiNetworkTransport,
   createSettingServiceWithMigrations,
   type HostApiNetworkTransport,
-} from "@zcode/services/node";
+} from "@zody/services/node";
 // fork（F4.3）：getOffPeakRequestAuthBuilder / OffPeakTaskRepo / OffPeakTaskService /
 // OffPeakModelUnavailableError / OffPeakPermanentDispatchError / OffPeakRequestAuthBuilder
 // 的 import 随闲时任务全链路删除。
@@ -100,7 +100,7 @@ import {
   type ZCodeAutomationRun,
   type ZCodeAutomationRunOutcome,
   type ModelSelection,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   parseHostIncomingMessageEvent,
   rejectUnavailableAttachedServicePort,
@@ -115,8 +115,8 @@ import type {
   RemoteRuntimeNetworkOptions,
   RemoteAssetNetworkPort,
   RemoteConnection,
-} from "@zcode/server/remote";
-import type { RemoteTarget } from "@zcode/shared";
+} from "@zody/server/remote";
+import type { RemoteTarget } from "@zody/shared";
 import { wrapElectronPort } from "./electronPort.js";
 import type { HostParentPortLike, HostParentPortMessageEvent } from "./nodeHostBridge.js";
 import { createInjectedNodeHostBridge } from "./nodeHostEntryConfig.js";
@@ -126,7 +126,7 @@ import {
   readCuaNarrowAgentBuildProfile,
   type CuaNarrowDecisionEvent,
 } from "./cuaNarrowAgentRuntime.js";
-import type { ZCodeAgentNativeRuntimeResolver } from "@zcode/services/node";
+import type { ZCodeAgentNativeRuntimeResolver } from "@zody/services/node";
 import { createTaskRealtimeBridgeForHostInit } from "./taskRealtimeBridge.js";
 import { createMobileNotificationEventBridge } from "./mobileNotificationEventBridge.js";
 import { createMobileNotificationDeliveryBridge } from "./mobileNotificationDeliveryBridge.js";
@@ -169,7 +169,7 @@ import {
 import { pushDynamicWorkflowUserModeToRemoteHosts } from "./remoteDynamicWorkflowUserMode.js";
 import { createWindowHostControllerRuntime } from "./windowHostControllerService.js";
 import { resolveAutomationSubmissionModelSelection } from "./automationModelSelection.js";
-import { createRemoteConnectionProgressContext } from "@zcode/server/remote/remoteConnectionProgressContext.js";
+import { createRemoteConnectionProgressContext } from "@zody/server/remote/remoteConnectionProgressContext.js";
 import { startHostSelfResourceTelemetry } from "./hostSelfResourceTelemetry.js";
 type RemoteBackendHostConnection = RemoteConnection & {
   backend: IRemoteBackend;
@@ -2996,7 +2996,7 @@ async function setupRemoteConnection(
   }
   // 延迟加载 remote backend，避免 local 模式下因 ssh2 依赖链进入 asar 后崩溃
   const { createRemoteBackend, connectRemote, pickRemoteRuntimeEnv } =
-    await import("@zcode/server/remote");
+    await import("@zody/server/remote");
   const backend = await createRemoteBackend(target);
   // fork（bot channels 移除，specs/bot-channels-removal.md）：connectRemote 的
   // topicResourceChannel 透传随 bot topic/resource 反向 relay 删除。

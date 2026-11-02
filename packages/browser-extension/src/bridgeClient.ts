@@ -5,7 +5,7 @@ import {
   type ExtensionBridgeClientMessage,
   type ExtensionBridgeServerMessage,
   type ExtensionHelloMessage,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import {
   createClientResumeProof,
   createPairingProof,

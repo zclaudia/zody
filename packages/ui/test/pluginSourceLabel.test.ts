@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodePluginMarketplaceSummary } from "@zcode/shared";
+import type { ZCodePluginMarketplaceSummary } from "@zody/shared";
 import {
   resolveMarketplaceDisplayName,
   resolvePluginSourceLabel,

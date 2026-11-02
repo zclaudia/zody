@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeSessionSettingsState } from "@zcode/shared";
+import type { ZCodeSessionSettingsState } from "@zody/shared";
 import {
   getZCodeAgentAvailableModes,
   normalizeAvailableZCodeMode,
   settingsToConfigOptions,
-} from "../src/zcode-agent/zcodeConfigOptions.js";
+} from "../src/zody-agent/zcodeConfigOptions.js";
 
 function settingsWithMode(
   mode: ZCodeSessionSettingsState["mode"]["current"],

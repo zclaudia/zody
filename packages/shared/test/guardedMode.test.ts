@@ -4,7 +4,7 @@ import {
   getZCodeAgentModeSelectOptions,
   normalizeAvailableZCodeMode,
 } from "../src/zcode-agent-model-state.js";
-import { submissionModeSchema } from "../src/zcode-protocol-v4/submission.js";
+import { submissionModeSchema } from "../src/zody-protocol-v4/submission.js";
 import { zcodeSessionModeSchema } from "../src/zcode-protocol-legacy-types.js";
 import { executionStateSchema, resolveExecutionState } from "../src/execution-state.js";
 

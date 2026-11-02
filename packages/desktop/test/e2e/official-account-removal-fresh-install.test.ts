@@ -3,7 +3,7 @@ import {
   TID_OAUTH_LOGIN_BUTTON,
   TID_TASK_SETTINGS_BUTTON,
   TID_V4_COMPOSER,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData, waitForTestIdByDom } from "./helpers/desktop-app.js";
 
 /**

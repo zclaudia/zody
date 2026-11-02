@@ -13,7 +13,7 @@ import {
   createRegistryProviderConfig,
   type ModelSelection,
   type ProviderRegistryServiceSnapshot,
-} from "@zcode/provider";
+} from "@zody/provider";
 import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
 import { createNodeModelSelectionFacade } from "../src/model-selection-facade.js";
 import { legacyReasoningLevelRenames } from "../src/legacy-reasoning-level-renames.js";

@@ -34,7 +34,7 @@ import {
   ISettingsSyncService,
   IPromptAttachmentTransferService,
   type IServiceAccessor,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   createSettingService,
   createCredentialService,
@@ -51,8 +51,8 @@ import {
   createSubagentsService,
   createMemoryService,
   createOutputStyleService,
-} from "@zcode/services/node";
-import type { ZCodeSessionRuntimePreferencesResult } from "@zcode/shared";
+} from "@zody/services/node";
+import type { ZCodeSessionRuntimePreferencesResult } from "@zody/shared";
 import { assertLegacyRemoteWorkspaceRpcContract } from "./legacyRemoteWorkspaceRpcContract.js";
 import {
   createRemoteProviderProvisioningExecutorFromWorkspace,

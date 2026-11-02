@@ -6,7 +6,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { getZCodeToolFamilyForName, normalizeZCodeToolName } from "@zcode/shared";
+import { getZCodeToolFamilyForName, normalizeZCodeToolName } from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { resolveToolCallIdentity } from "@/lib/toolIdentity.js";
 

@@ -3,7 +3,7 @@ import {
   databaseStartupControlSchema,
   databaseStartupStateSchema,
   databaseStartupPortPayloadSchema,
-} from "@zcode/shared";
+} from "@zody/shared";
 /* eslint-disable max-lines -- preload bridge 集中暴露桌面平台 IPC，拆散会让 contextBridge 权限边界更难审计。 */
 import { contextBridge, ipcRenderer, webFrame, webUtils } from "electron";
 import {
@@ -90,13 +90,13 @@ import type {
   OpenCuaPermissionOnboardingOptions,
   ConfigureFinalArmsCustomEventE2ERequest,
   FinalArmsCustomEventE2EEntry,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   InternalChannels,
   PlatformChannels,
   formatZCodeRendererProcessName,
   shouldEnableE2ETestBridge,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 if (shouldEnableE2ETestBridge(process.env)) {
   contextBridge.exposeInMainWorld("__zcodeFinalArmsCustomEventsE2E", {
@@ -256,7 +256,7 @@ contextBridge.exposeInMainWorld("zcode", {
     context?: {
       workspacePath: string;
       workspaceIdentity?: string;
-      connectTrigger?: import("@zcode/shared").RemoteWorkspaceConnectTrigger;
+      connectTrigger?: import("@zody/shared").RemoteWorkspaceConnectTrigger;
     },
   ) =>
     ipcRenderer.invoke(PlatformChannels.ConnectRemote, {
@@ -725,7 +725,7 @@ contextBridge.exposeInMainWorld("zcode", {
       ipcRenderer.removeListener(PlatformChannels.RendererActionTraceConfigChanged, handler);
   },
   /** 发送已结束 Span；使用 send 避免遥测往返阻塞业务。 */
-  reportLocalTtftBatch: (batch: import("@zcode/shared").LocalTtftBatch): void =>
+  reportLocalTtftBatch: (batch: import("@zody/shared").LocalTtftBatch): void =>
     ipcRenderer.send(PlatformChannels.ReportLocalTtftBatch, batch),
   reportRendererActionTraceBatch: (batch: RendererActionTraceBatchV1): void =>
     ipcRenderer.send(PlatformChannels.ReportRendererActionTraceBatch, batch),
@@ -776,36 +776,36 @@ contextBridge.exposeInMainWorld("zcode", {
   browserViewUpdateViewport: (payload: { tabId: string; viewport: BrowserViewportSize | null }) =>
     ipcRenderer.invoke(PlatformChannels.BrowserViewUpdateViewport, payload),
   /** 从自动发现的 Chrome Profile 一次性导入内置浏览器数据。 */
-  importChromeBrowserData: (options?: import("@zcode/shared").ChromeBrowserDataImportOptions) =>
+  importChromeBrowserData: (options?: import("@zody/shared").ChromeBrowserDataImportOptions) =>
     ipcRenderer.invoke(PlatformChannels.ImportChromeBrowserData, options),
   /** 清理内置浏览器缓存或全部站点数据。 */
   clearEmbeddedBrowserData: (mode: "cache" | "all") =>
     ipcRenderer.invoke(PlatformChannels.ClearEmbeddedBrowserData, mode),
   /** Chrome 扩展 bridge/配对/Profile 状态；只返回当前窗口可见范围。 */
   getBrowserExtensionStatus: (): Promise<
-    import("@zcode/shared").BrowserExtensionBridgeStatus
+    import("@zody/shared").BrowserExtensionBridgeStatus
   > => ipcRenderer.invoke(PlatformChannels.GetBrowserExtensionStatus),
   /** 只在发起窗口生成一次性配对码。 */
   beginBrowserExtensionPairing: (): Promise<
-    import("@zcode/shared").BrowserExtensionPairingTicket | null
+    import("@zody/shared").BrowserExtensionPairingTicket | null
   > => ipcRenderer.invoke(PlatformChannels.BeginBrowserExtensionPairing),
   cancelBrowserExtensionPairing: (pairingSessionId: string): Promise<void> =>
     ipcRenderer.invoke(PlatformChannels.CancelBrowserExtensionPairing, pairingSessionId),
   setBrowserExtensionDefaultBackend: (
     browserId: string | null,
-  ): Promise<import("@zcode/shared").BrowserExtensionActionResult> =>
+  ): Promise<import("@zody/shared").BrowserExtensionActionResult> =>
     ipcRenderer.invoke(PlatformChannels.SetBrowserExtensionDefaultBackend, browserId),
   revokeBrowserExtensionProfile: (
     profileInstanceId: string,
-  ): Promise<import("@zcode/shared").BrowserExtensionActionResult> =>
+  ): Promise<import("@zody/shared").BrowserExtensionActionResult> =>
     ipcRenderer.invoke(PlatformChannels.RevokeBrowserExtensionProfile, profileInstanceId),
   transferBrowserExtensionProfile: (
     profileInstanceId: string,
-  ): Promise<import("@zcode/shared").BrowserExtensionActionResult> =>
+  ): Promise<import("@zody/shared").BrowserExtensionActionResult> =>
     ipcRenderer.invoke(PlatformChannels.TransferBrowserExtensionProfile, profileInstanceId),
   setBrowserExtensionBridgePort: (
     port: number,
-  ): Promise<import("@zcode/shared").BrowserExtensionActionResult> =>
+  ): Promise<import("@zody/shared").BrowserExtensionActionResult> =>
     ipcRenderer.invoke(PlatformChannels.SetBrowserExtensionBridgePort, port),
   /** 读取开发态 stdio tap proxy 开关状态 */
   getZCodeStdioTapDevState: (): Promise<ZCodeStdioTapDevState> =>

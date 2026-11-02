@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ExtensionBridgeClientMessage } from "@zcode/shared/browser-extension-transport";
+import type { ExtensionBridgeClientMessage } from "@zody/shared/browser-extension-transport";
 import { routeHostCommand, type HostCommandRouterDeps } from "../src/hostCommandRouter.js";
 import type { WorkerRequest, WorkerResponse } from "../src/workerProtocol.js";
 

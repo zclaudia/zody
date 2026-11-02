@@ -16,7 +16,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { collectRuntimeModuleClosureEntries } from "./runtime-dependency-closure.mjs";
 import { resolveSharpRuntimePackageNames } from "./sharp-package-assets.mjs";
 
-const EXPECTED_PACKAGE_NAME = "@zcode/zcode-cua";
+const EXPECTED_PACKAGE_NAME = "@zody/zody-cua";
 const RUNTIME_MANIFEST = "runtime-manifest.json";
 const MODULE_TYPE_PACKAGE_JSON = "package.json";
 const REMOVE_DIRECTORY_OPTIONS = {

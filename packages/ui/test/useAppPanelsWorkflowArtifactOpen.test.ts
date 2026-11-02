@@ -11,7 +11,7 @@
 //   3. 任何一条判据不成立、出处查不到、查询本身失败 ⇒ 退回产物 tab，点击绝不落空。
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { V4ConversationWorkflowRunArtifactsResult } from "@zcode/shared/zcode-protocol-v4";
+import type { V4ConversationWorkflowRunArtifactsResult } from "@zody/shared/zody-protocol-v4";
 import { useAppPanels } from "@/hooks/useAppPanels.js";
 import { shouldOpenWorkflowArtifactInBrowser } from "@/lib/workflowArtifactOpen.js";
 import { clearTaskSidePaneMemoryStateForTest } from "@/lib/taskSidePaneMemory.js";

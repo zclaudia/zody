@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FileEntry, WebRemoteControlMobileDirectoryListResult } from "@zcode/shared";
+import type { FileEntry, WebRemoteControlMobileDirectoryListResult } from "@zody/shared";
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import { DirectoryBrowser } from "@/DirectoryBrowser.js";

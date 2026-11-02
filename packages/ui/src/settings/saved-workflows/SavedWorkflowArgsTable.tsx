@@ -1,5 +1,5 @@
 import { Plus, X } from "lucide-react";
-import type { ZCodeSavedWorkflowArgType } from "@zcode/shared";
+import type { ZCodeSavedWorkflowArgType } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {

@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import type {
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceListResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   WebRemoteControlMobileTaskHome,
   buildWebRemoteControlMobileTaskHomeModel,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeMcpServer } from "@zcode/shared";
+import type { ZCodeMcpServer } from "@zody/shared";
 import { mergeMcpServerStatusSnapshots } from "../src/store/mcpStoreStatusList.js";
 
 const server: ZCodeMcpServer = {

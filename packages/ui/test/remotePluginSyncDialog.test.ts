@@ -4,7 +4,7 @@ import type {
   PluginSyncRemoteStatus,
   ZCodePluginInfo,
   ZCodePluginsOverviewResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   buildMarketplaceRemotePluginStatuses,
   buildMarketplaceRemotePluginSyncCandidates,

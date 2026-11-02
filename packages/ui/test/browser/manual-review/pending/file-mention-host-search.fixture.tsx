@@ -11,7 +11,7 @@ import { StoreContext } from "@/store/StoreProvider.js";
 import { createZCodeStore } from "@/store/index.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
-import type { IBroadcastService, IServiceAccessor } from "@zcode/services";
+import type { IBroadcastService, IServiceAccessor } from "@zody/services";
 import "@/styles.css";
 const params = new URLSearchParams(location.search);
 const store = createZCodeStore({

@@ -24,7 +24,7 @@ vi.mock("electron", () => ({
   app: appMock,
 }));
 
-vi.mock("@zcode/shared", () => ({
+vi.mock("@zody/shared", () => ({
   ZCODE_APP_VERSION_ENV: "ZCODE_APP_VERSION",
   ZCODE_BUILD_COMMIT_ID_ENV: "ZCODE_BUILD_COMMIT_ID",
   ZCODE_RUNTIME_ENV_KEY: "ZCODE_RUNTIME_ENV",
@@ -137,7 +137,7 @@ vi.mock("@zcode/shared", () => ({
   },
 }));
 
-vi.mock("@zcode/services/node", () => ({
+vi.mock("@zody/services/node", () => ({
   getAppConfigDir: vi.fn(() => "/mock/config"),
   getDataBaseDir: vi.fn(() => "/mock/db"),
   ZCODE_CUA_BUNDLED_HELPER_APP_PATH_ENV: "ZCODE_CUA_BUNDLED_HELPER_APP_PATH",

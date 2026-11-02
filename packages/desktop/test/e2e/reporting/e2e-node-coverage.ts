@@ -105,7 +105,7 @@ export function createE2ENodeCoverageCollector(
   const coverageDir = resolve(options.artifactDir, "coverage");
   const rawRoot = resolve(coverageDir, "raw");
   const sourceMapRoots: Record<E2ENodeCoverageDomain, string> = {
-    cli: resolve(options.repoRoot, "apps/zcode-cli/packages/cli/dist"),
+    cli: resolve(options.repoRoot, "apps/zody-cli/packages/cli/dist"),
     host: resolve(options.desktopDir, "out/host"),
     main: resolve(options.desktopDir, "out/main"),
   };

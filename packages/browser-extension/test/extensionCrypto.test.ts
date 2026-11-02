@@ -1,6 +1,6 @@
 import { createECDH, createHmac, hkdfSync } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { EXTENSION_BRIDGE_HKDF_INFO } from "@zcode/shared/browser-extension-transport";
+import { EXTENSION_BRIDGE_HKDF_INFO } from "@zody/shared/browser-extension-transport";
 import {
   base64UrlToBytes,
   bytesToBase64Url,

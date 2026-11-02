@@ -1,4 +1,4 @@
-import type { ZCodeTaskRuntimeStatus } from "@zcode/shared";
+import type { ZCodeTaskRuntimeStatus } from "@zody/shared";
 
 export function isLiveTaskRuntimeStatus(
   status: ZCodeTaskRuntimeStatus | undefined,

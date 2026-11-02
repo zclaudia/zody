@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildRemoteWorkspaceIdentity } from "@zcode/shared";
+import { buildRemoteWorkspaceIdentity } from "@zody/shared";
 import { createSessionCreateReporter } from "@/lib/sessionCreateTelemetry.js";
 import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
 

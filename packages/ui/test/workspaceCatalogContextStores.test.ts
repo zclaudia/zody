@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ISubagentsService } from "@zcode/services";
-import type { AgentSummary } from "@zcode/shared";
+import type { ISubagentsService } from "@zody/services";
+import type { AgentSummary } from "@zody/shared";
 import { getSubagentsContextKey, useSubagentsContextStore } from "@/store/subagentsContextStore.js";
 
 function createAgent(workspacePath: string, suffix = "initial"): AgentSummary {

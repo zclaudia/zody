@@ -5,7 +5,7 @@ import {
   type DynamicWorkflowClientConfig,
   type RequestVerificationConfig,
   type ZCodeModelContextBudgetStrategy,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * fork（F2.6b）Host 侧 client-config 本地值：`/api/v1/client/configs` 不再被请求，

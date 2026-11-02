@@ -2,8 +2,8 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { IFeedbackService } from "@zcode/services";
-import type { IPlatformService } from "@zcode/shared";
+import type { IFeedbackService } from "@zody/services";
+import type { IPlatformService } from "@zody/shared";
 import { FeedbackSubmitForm } from "@/feedback/FeedbackSubmitForm.js";
 import type {
   FeedbackSubmissionJob,

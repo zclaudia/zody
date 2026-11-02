@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Emitter } from "@zcode/rpc";
-import { groupStorageRootsByVolume, STORAGE_CATEGORY_IDS } from "@zcode/shared";
+import { Emitter } from "@zody/rpc";
+import { groupStorageRootsByVolume, STORAGE_CATEGORY_IDS } from "@zody/shared";
 import {
   type IStorageService,
   type StorageRootUsage,

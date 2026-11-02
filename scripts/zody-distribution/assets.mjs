@@ -4,7 +4,7 @@ import { dirname, relative, resolve, sep } from "node:path";
 import {
   collectSeaTuiAssets,
   seaTuiAssetPrefix,
-} from "../../apps/zcode-cli/packages/cli/scripts/sea-tui-assets.mjs";
+} from "../../apps/zody-cli/packages/cli/scripts/sea-tui-assets.mjs";
 const root = resolve(import.meta.dirname, "../..");
 const readJson = async (file) => JSON.parse(await readFile(file, "utf8"));
 
@@ -33,7 +33,7 @@ export async function stageTuiRuntime(packageRoot, target) {
   const copied = new Map();
   try {
     const { assets, manifest } = await collectSeaTuiAssets({
-      root: resolve(root, "apps/zcode-cli"),
+      root: resolve(root, "apps/zody-cli"),
       stagingDirectory,
       target,
     });
@@ -164,7 +164,7 @@ export async function copyRuntimeNodeModules(packageRoot) {
   await copyRuntimePackageTree({
     packageName: "playwright-core",
     packageRoot: resolve(packageRoot, "agent"),
-    requireFrom: createRequire(resolve(root, "apps/zcode-cli/packages/cli/package.json")),
+    requireFrom: createRequire(resolve(root, "apps/zody-cli/packages/cli/package.json")),
     seen: new Set(),
   });
 }

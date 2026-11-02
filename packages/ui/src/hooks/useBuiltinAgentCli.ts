@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- 内置 Agent CLI 的安装/卸载状态、随机进度模板与设置同步目前集中在同一 hook，先保持收口，避免把同一条交互链拆散。 */
 import { useCallback, useMemo, useState } from "react";
-import type { ZCodeProvider } from "@zcode/shared";
+import type { ZCodeProvider } from "@zody/shared";
 import { useSettings } from "@/hooks/useSettingService.js";
 import {
   resolveBuiltinAgentCliStatus,

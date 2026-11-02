@@ -6,7 +6,7 @@ import type {
   ChromeBrowserDataImportError,
   ChromeBrowserDataImportResult,
   EmbeddedBrowserDataClearResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   importChromeCookies,
   type ChromeCookieDatabaseBackup,

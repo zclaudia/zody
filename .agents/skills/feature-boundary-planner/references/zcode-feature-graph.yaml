@@ -27,7 +27,7 @@ nodes:
         "docs/working-memory/provider-refactor/steps/todo-158-permission-dialog-full-access-and-queued-mode.md",
       ]
     codeSeeds:
-      - file: "apps/zcode-cli/packages/core/src/runtime/permission-full-access.ts"
+      - file: "apps/zody-cli/packages/core/src/runtime/permission-full-access.ts"
         symbol: "grantPermissionFullAccess"
       - file: "packages/ui/src/v4/composer/composerPermissionGrant.ts"
         symbol: "applyComposerPermissionGrant"
@@ -55,9 +55,9 @@ nodes:
         symbol: "usePluginsMentionProvider"
       - file: "packages/shared/src/pluginStoreOrdering.ts"
         symbol: "sortPluginStoreEntries"
-      - file: "packages/services/src/zcode-agent/pluginReferenceCatalogRequest.ts"
+      - file: "packages/services/src/zody-agent/pluginReferenceCatalogRequest.ts"
         symbol: "requestPluginReferenceCatalog"
-      - file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/plugin-reference-catalog.ts"
+      - file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/plugin-reference-catalog.ts"
         symbol: "getPluginReferenceCatalog"
       - file: "packages/shared/src/pluginStoreOrder.ts"
         symbol: "parsePluginStoreOrder"
@@ -98,7 +98,7 @@ nodes:
         symbol: "ExecuteOutput"
       - file: "packages/ui/src/components/ui/scroll-fade-viewport.tsx"
         symbol: "ScrollFadeViewport"
-      - file: "apps/zcode-cli/packages/adapters/src/exec/bash-progress-poller.ts"
+      - file: "apps/zody-cli/packages/adapters/src/exec/bash-progress-poller.ts"
         symbol: "subscribeBashOutputProgress"
     invariants:
       - "Only expanded details render output; running and final fit short content with a five-line maximum and no additional notices or file links."
@@ -116,7 +116,7 @@ nodes:
         symbol: "BackgroundBashOutputSidePane"
       - file: "packages/ui/src/hooks/useBackgroundBashOutput.ts"
         symbol: "useBackgroundBashOutput"
-      - file: "apps/zcode-cli/packages/core/src/runtime/methods/background-bash-output.ts"
+      - file: "apps/zody-cli/packages/core/src/runtime/methods/background-bash-output.ts"
         symbol: "readBackgroundBashOutput"
     invariants:
       - "Visible selected tab only; bounded 8 KiB tail; no model tool or runtime startup."
@@ -153,17 +153,17 @@ nodes:
       - "docs/dangerous-command-approval-v1-plan.md"
     codeSeeds:
       - symbol: "matchDangerousCommand"
-        file: "apps/zcode-cli/packages/core/src/tool/handlers/guarded/command.ts"
+        file: "apps/zody-cli/packages/core/src/tool/handlers/guarded/command.ts"
       - symbol: "resolveToolPermission"
-        file: "apps/zcode-cli/packages/core/src/tool/executor/permission-flow.ts"
+        file: "apps/zody-cli/packages/core/src/tool/executor/permission-flow.ts"
       - symbol: "buildProtocolPermissionOptions"
-        file: "apps/zcode-cli/packages/bootstrap/src/permission-options.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/permission-options.ts"
       - symbol: "getZCodeAgentAvailableModes"
         file: "packages/shared/src/zcode-agent-model-state.ts"
       - symbol: "buildAutomationModeOption"
         file: "packages/ui/src/settings/automationAgentConfigOptions.ts"
       - symbol: "filterModeOptions"
-        file: "apps/zcode-cli/packages/tui/src/app-mode-command.ts"
+        file: "apps/zody-cli/packages/tui/src/app-mode-command.ts"
     invariants:
       - "Only guarded mode explicit catalog matches add mandatory one-time approval; unsupported analysis retains YOLO policy. Existing modes and defaults are unchanged."
       - "Guarded replaces Edit only in selectable menus and shortcut cycles; persisted edit values and explicit legacy commands retain their original policy. YOLO and full-auto aliases remain unchanged."
@@ -244,16 +244,16 @@ nodes:
       - "subagent computer use unavailable"
     docs:
       - "docs/cua/2026-08-18-subagent-computer-use-unavailable-spec.md"
-      - "apps/zcode-cli/docs/design/v2/tool/07-subagent.md"
+      - "apps/zody-cli/docs/design/v2/tool/07-subagent.md"
     codeSeeds:
       - symbol: "createBorrowedSubagentMcpAccess"
-        file: "apps/zcode-cli/packages/core/src/subagent/borrowed-mcp-port.ts"
+        file: "apps/zody-cli/packages/core/src/subagent/borrowed-mcp-port.ts"
       - symbol: "resolveSubagentMcpAccess"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/subagent.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/subagent.ts"
       - symbol: "resolveSubagentSkillPort"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/subagent.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/subagent.ts"
       - symbol: "main"
-        file: "apps/zcode-cli/packages/node-repl-host/src/server.ts"
+        file: "apps/zody-cli/packages/node-repl-host/src/server.ts"
     invariants:
       - "Only authority-verified official CUA is restricted; third-party MCP/Skill is unchanged."
       - "Main CUA and desktop/web delivery boundaries are unchanged."
@@ -268,12 +268,12 @@ nodes:
       - "模型轨迹全量保留"
     docs:
       - "docs/model-io-full-retention-setting.md"
-      - "apps/zcode-cli/docs/design/v2/model/README.md"
+      - "apps/zody-cli/docs/design/v2/model/README.md"
     codeSeeds:
       - symbol: "writeModelIODebugRecord"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-debug.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-debug.ts"
       - symbol: "AiSdkModelAdapter"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner.ts"
 
   - id: "capability.agent-core-runtime"
     kind: "capability"
@@ -285,8 +285,8 @@ nodes:
       - "回合运行时"
     docs:
       - "docs/product-capability-map.md"
-      - "apps/zcode-cli/docs/design/v2/runtime-refactor.md"
-      - "apps/zcode-cli/docs/design/v2/loop/architecture.md"
+      - "apps/zody-cli/docs/design/v2/runtime-refactor.md"
+      - "apps/zody-cli/docs/design/v2/loop/architecture.md"
 
   - id: "capability.read-pdf"
     kind: "capability"
@@ -296,17 +296,17 @@ nodes:
       - "PDF Read"
       - "PDF 页面提取"
     docs:
-      - "apps/zcode-cli/docs/design/v2/tool/01-read.md"
-      - "apps/zcode-cli/docs/design/v2/tool/00-tool-change-chain.md"
+      - "apps/zody-cli/docs/design/v2/tool/01-read.md"
+      - "apps/zody-cli/docs/design/v2/tool/00-tool-change-chain.md"
     codeSeeds:
       - symbol: "readToolEntry"
-        file: "apps/zcode-cli/packages/core/src/tool/handlers/read.ts"
+        file: "apps/zody-cli/packages/core/src/tool/handlers/read.ts"
       - symbol: "createPopplerPdfDocumentAdapter"
-        file: "apps/zcode-cli/packages/adapters/src/pdf/index.ts"
+        file: "apps/zody-cli/packages/adapters/src/pdf/index.ts"
       - symbol: "persistToolResultMediaAttachments"
-        file: "apps/zcode-cli/packages/core/src/runtime/helpers/tool-result-media-persistence.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/helpers/tool-result-media-persistence.ts"
       - symbol: "toAiSdkMessages"
-        file: "apps/zcode-cli/packages/adapters/src/model/transform.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/transform.ts"
     invariants:
       - "supportsPdf conditionally controls both provider-visible and executor Read schemas from the current turn snapshot."
       - "Native PDF and extracted page images keep supportsPdf and supportsImages as independent capabilities."
@@ -332,16 +332,16 @@ nodes:
       - "docs/testing/browser-use-codex-parity-coverage-matrix.md"
     codeSeeds:
       - symbol: "loadBrowserDocumentation"
-        file: "apps/zcode-cli/packages/core/src/browser-client/documentation.ts"
+        file: "apps/zody-cli/packages/core/src/browser-client/documentation.ts"
       - symbol: "buildJsToolDescription"
-        file: "apps/zcode-cli/packages/core/src/tool/handlers/node-repl.ts"
+        file: "apps/zody-cli/packages/core/src/tool/handlers/node-repl.ts"
       - symbol: "TAB_CONTEXT_RECOVERY_HINT"
         file: "packages/desktop/src/main/browserView/browserGuestManager.ts"
-      - file: "apps/zcode-cli/packages/browser-use-plugin/docs/api.json"
-      - file: "apps/zcode-cli/packages/browser-use-plugin/docs/overview.md"
-      - file: "apps/zcode-cli/packages/browser-use-plugin/docs/playwright.md"
-      - file: "apps/zcode-cli/packages/browser-use-plugin/docs/workflow.md"
-      - file: "apps/zcode-cli/packages/browser-use-plugin/skills/control-browser/SKILL.md"
+      - file: "apps/zody-cli/packages/browser-use-plugin/docs/api.json"
+      - file: "apps/zody-cli/packages/browser-use-plugin/docs/overview.md"
+      - file: "apps/zody-cli/packages/browser-use-plugin/docs/playwright.md"
+      - file: "apps/zody-cli/packages/browser-use-plugin/docs/workflow.md"
+      - file: "apps/zody-cli/packages/browser-use-plugin/skills/control-browser/SKILL.md"
 
   - id: "capability.browser-use-plugin-distribution"
     kind: "capability"
@@ -356,19 +356,19 @@ nodes:
       - "docs/browser-use/2026-08-14-browser-use-plugin-version-0-3-0-spec.md"
       - "docs/browser-use/2026-08-06-browser-use-plugin-version-0-2-1-spec.md"
       - "docs/browser-use/2026-08-02-browser-use-plugin-version-0-1-3-spec.md"
-      - "apps/zcode-cli/docs/design/v2/plugin-compat.md"
+      - "apps/zody-cli/docs/design/v2/plugin-compat.md"
       - "docs/browser-use/2026-07-13-node-repl-mcp-runtime-spec.md"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/browser-use-plugin/package.json"
-      - file: "apps/zcode-cli/packages/browser-use-plugin/.zcode-plugin/plugin.json"
+      - file: "apps/zody-cli/packages/browser-use-plugin/package.json"
+      - file: "apps/zody-cli/packages/browser-use-plugin/.zcode-plugin/plugin.json"
       - symbol: "OFFICIAL_PLUGIN_DEFINITIONS"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
       - symbol: "OFFICIAL_BROWSER_USE_REQUIRED_SEED_PATHS"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
       - symbol: "officialSeaPlugins"
-        file: "apps/zcode-cli/packages/cli/scripts/sea-official-plugin-assets.mjs"
+        file: "apps/zody-cli/packages/cli/scripts/sea-official-plugin-assets.mjs"
       - symbol: "NODE_REPL_SERVER_VERSION"
-        file: "apps/zcode-cli/packages/node-repl-host/src/tool-contract.ts"
+        file: "apps/zody-cli/packages/node-repl-host/src/tool-contract.ts"
       - symbol: "REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS"
         file: "packages/server/src/remote/zcodeAgentOfficialPluginAssets.ts"
       - symbol: "REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS"
@@ -421,7 +421,7 @@ nodes:
       - symbol: "compileModelOptionMaps"
         file: "packages/model-option-map/src/option-maps.ts"
       - symbol: "createModelOptionMapFetch"
-        file: "apps/zcode-cli/packages/adapters/src/model/model-option-map-fetch.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/model-option-map-fetch.ts"
       - symbol: "ProviderConfigResolver"
         file: "packages/provider/src/resolver.ts"
       - symbol: "ProviderRegistry"
@@ -431,9 +431,9 @@ nodes:
       - symbol: "createProviderModelDraftValues"
         file: "packages/ui/src/settings/model-provider-section/ProviderModelMetadata.ts"
       - symbol: "ApiProviderModelRuntime"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
       - symbol: "compactActiveConversation"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/compact-active.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/compact-active.ts"
       - symbol: "zcodeSessionSettingsToZCodeConfigOptions"
         file: "packages/shared/src/zcode-agent-model-state.ts"
     invariants:
@@ -468,7 +468,7 @@ nodes:
       - symbol: "ModelSelectionFacade"
         file: "packages/provider/src/facades.ts"
       - symbol: "ApiProviderModelRuntime"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
       - symbol: "useModelSelectionServiceView"
         file: "packages/ui/src/hooks/useModelSelectionView.ts"
       - symbol: "resolveEffectiveModelSelection"
@@ -478,7 +478,7 @@ nodes:
       - symbol: "createNodeModelSelectionFacade"
         file: "packages/provider-node/src/model-selection-facade.ts"
       - symbol: "resolveSubagentSelection"
-        file: "apps/zcode-cli/packages/core/src/runtime/helpers/subagent-selection.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/helpers/subagent-selection.ts"
     invariants:
       - "ModelSelectionFacade projects visible user candidates and change events only; authoritative selection validation occurs against the current process Registry when ModelFactory builds a Model. Internal products such as Off-Peak may preflight an exact hidden selection through the Registry, but that preflight never replaces final Model construction validation."
       - "User-visible model candidates, option specs, and preferredSelection come atomically from the target Workspace Host: local workspaces use Local Host and remote workspaces use Remote Host, with no Base/Local fallback while a remote target is waiting or disconnected. App Recent is isolated by workspaceKey = workspaceIdentity?.trim() || workspacePath; the Renderer may prefer a still-selectable Recent over Host preferredSelection, while final execution validation remains in the target Worker Registry and ModelFactory."
@@ -563,7 +563,7 @@ nodes:
     docs:
       - "docs/product-capability-map.md"
       - "docs/usage-stats-app-coding-plan-split.md"
-      - "apps/zcode-cli/docs/design/v2/usage-observability.md"
+      - "apps/zody-cli/docs/design/v2/usage-observability.md"
 
   - id: "capability.data-observability"
     kind: "capability"
@@ -589,19 +589,19 @@ nodes:
       - "docs/trace/model-attempt-error-diagnostics.md"
     codeSeeds:
       - symbol: "sanitizeTelemetryError"
-        file: "apps/zcode-cli/packages/telemetry/src/error-sanitizer.ts"
+        file: "apps/zody-cli/packages/telemetry/src/error-sanitizer.ts"
       - symbol: "TerminalStreamChunkError"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-retry.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-retry.ts"
       - symbol: "createZCodeProcessResourceSampler"
-        file: "apps/zcode-cli/packages/bootstrap/src/process-resource-sampler.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/process-resource-sampler.ts"
       - symbol: "createZCodeAgentService"
-        file: "packages/services/src/zcode-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
       - symbol: "ingestCliResourceSample"
         file: "packages/desktop/src/main/processResourceCliSource.ts"
       - symbol: "registerHostServiceResourceTelemetry"
         file: "packages/desktop/src/host/hostServiceResourceTelemetry.ts"
       - symbol: "createMcpTelemetryTracker"
-        file: "apps/zcode-cli/packages/adapters/src/mcp/telemetry.ts"
+        file: "apps/zody-cli/packages/adapters/src/mcp/telemetry.ts"
       - symbol: "reportMcpTelemetryToArms"
         file: "packages/desktop/src/main/desktopMcpTelemetry.ts"
     invariants:
@@ -689,15 +689,15 @@ nodes:
       - symbol: "attributeHostProcessTree"
         file: "packages/services/src/process/processResourceSampler.ts"
       - symbol: "collectLocalRuntimeChildProcesses"
-        file: "packages/services/src/zcode-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
       - symbol: "listChildProcesses"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/process-child-processes.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/process-child-processes.ts"
       - symbol: "registerResourceManagerStorageIpc"
         file: "packages/desktop/src/main/resourceManagerStorage.ts"
       - symbol: "startResourceManagerNetwork"
         file: "packages/desktop/src/main/resourceManagerNetwork.ts"
       - symbol: "LocalRuntimeNetworkCapture"
-        file: "packages/services/src/zcode-agent/localRuntimeNetworkCapture.ts"
+        file: "packages/services/src/zody-agent/localRuntimeNetworkCapture.ts"
       - symbol: "createStorageService"
         file: "packages/services/src/storage/app/storageService.ts"
       - symbol: "classifyStoragePath"
@@ -755,7 +755,7 @@ nodes:
       - symbol: "applyEarlyDataBaseDirBootstrap"
         file: "packages/desktop/src/main/desktopDataBaseDirBootstrap.ts"
       - symbol: "resolveZCodeStorageRoot"
-        file: "apps/zcode-cli/packages/adapters/src/storage/zcode-storage-root.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/zcode-storage-root.ts"
 
   - id: "capability.embedded-native-search"
     kind: "capability"
@@ -775,7 +775,7 @@ nodes:
       - symbol: "buildRuntimeToolEnvPatch"
         file: "packages/services/src/runtime-tools/runtimeToolResolver.ts"
       - symbol: "buildEmbeddedSearchPreludeContent"
-        file: "apps/zcode-cli/packages/adapters/src/exec/embedded-search-prelude.ts"
+        file: "apps/zody-cli/packages/adapters/src/exec/embedded-search-prelude.ts"
 
   - id: "capability.test-automation-platform"
     kind: "capability"
@@ -896,14 +896,14 @@ nodes:
       - symbol: "resolvePluginDisplayName"
         file: "packages/ui/src/settings/pluginStoreListing.ts"
       - symbol: "OFFICIAL_PLUGIN_DEFINITIONS"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
-      - file: "apps/zcode-cli/packages/zcode-cua-plugin/skills/computer-use/SKILL.md"
+        file: "apps/zody-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
+      - file: "apps/zody-cli/packages/zody-cua-plugin/skills/computer-use/SKILL.md"
       - symbol: "createComputerUseRuntime"
-        file: "packages/zcode-cua/index.js"
+        file: "packages/zody-cua/index.js"
       - symbol: "createComputerUseBridgeGlobals"
-        file: "apps/zcode-cli/packages/node-repl-host/src/cua-bridge.ts"
+        file: "apps/zody-cli/packages/node-repl-host/src/cua-bridge.ts"
       - symbol: "createNodeReplCuaBroker"
-        file: "apps/zcode-cli/packages/node-repl-host/src/cua-broker.ts"
+        file: "apps/zody-cli/packages/node-repl-host/src/cua-broker.ts"
 
   - id: "capability.conversation-runtime"
     kind: "capability"
@@ -928,13 +928,13 @@ nodes:
       - "docs/v4-refactor/17-cold-resume-runtime-activation.md"
     codeSeeds:
       - symbol: "ConversationV4Gateway.normalizeRuntimeEventSequence"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/v4-gateway.ts"
       - symbol: "startPromptTurn"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/prompt-turn.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/commands/prompt-turn.ts"
       - symbol: "sendText"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/session-flow.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/commands/handlers/session-flow.ts"
       - symbol: "drainPendingInput"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/steering.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/steering.ts"
     invariants:
       - "3.12.2: all new and cold-resumed runtimes normalize compatibility budget inputs to preflight-v1; runtime preferences never await client/configs for budgeting."
 
@@ -953,7 +953,7 @@ nodes:
       - symbol: "handleOpenSelectionSideConversation"
         file: "packages/ui/src/v4/SessionPane.tsx"
       - symbol: "createSelectionSideConversation"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/session-fork.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/session-fork.ts"
 
   - id: "capability.provider-retry-live-tail"
     kind: "capability"
@@ -966,7 +966,7 @@ nodes:
       - "重连次数"
     docs:
       - "docs/v4-composer-api-retry-status.md"
-      - "apps/zcode-cli/docs/design/v2/model/stream-error-retry.md"
+      - "apps/zody-cli/docs/design/v2/model/stream-error-retry.md"
       - "docs/conversation-session-case-catalog.md"
     codeSeeds:
       - symbol: "ChatApiRetryStatus"
@@ -974,7 +974,7 @@ nodes:
       - symbol: "TurnChatLoadingSlot"
         file: "packages/ui/src/v4/ConversationTurnGroup.tsx"
       - symbol: "ProductProjection"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/product-projection.ts"
       - symbol: "zcodeApiRetryFromStreamRecoveryPayload"
         file: "packages/shared/src/zcode-api-retry-status.ts"
 
@@ -988,14 +988,14 @@ nodes:
       - "SSE 断流恢复"
       - "思考阶段重试"
     docs:
-      - "apps/zcode-cli/docs/design/v2/model/stream-error-retry.md"
-      - "apps/zcode-cli/docs/design/v2/model/streaming-tool-execution-and-recovery.md"
+      - "apps/zody-cli/docs/design/v2/model/stream-error-retry.md"
+      - "apps/zody-cli/docs/design/v2/model/streaming-tool-execution-and-recovery.md"
       - "docs/testing/conversation-session-environment-fault-catalog.md"
     codeSeeds:
       - symbol: "recoverPartialAssistantOutputFailure"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/streaming-recovery.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/streaming-recovery.ts"
       - symbol: "createStreamingToolCoordinator"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/streaming-tool-coordinator.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/streaming-tool-coordinator.ts"
 
   - id: "capability.model-empty-completion-retry"
     kind: "capability"
@@ -1006,16 +1006,16 @@ nodes:
       - "空返回重试"
       - "finish=other 空响应"
     docs:
-      - "apps/zcode-cli/docs/design/v2/model/stream-error-retry.md"
+      - "apps/zody-cli/docs/design/v2/model/stream-error-retry.md"
     codeSeeds:
       - symbol: "canRetryEmptyCompletion"
-        file: "apps/zcode-cli/packages/adapters/src/model/empty-completion-retry.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/empty-completion-retry.ts"
       - symbol: "isZeroOutputModelCompletion"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-diagnostics.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-diagnostics.ts"
       - symbol: "runGenerateText"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-generate.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-generate.ts"
       - symbol: "runStreamText"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-stream.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-stream.ts"
 
   - id: "capability.assistant-file-preview-links"
     kind: "capability"
@@ -1049,18 +1049,18 @@ nodes:
       - "会话去激活"
     docs:
       - "docs/session-idle-deactivation.md"
-      - "apps/zcode-cli/docs/design/v2/session-idle-deactivation.md"
+      - "apps/zody-cli/docs/design/v2/session-idle-deactivation.md"
     codeSeeds:
       - symbol: "SessionResidentPool"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/session-resident-pool.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/session-resident-pool.ts"
       - symbol: "deactivateSessionRecord"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/session-residency.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/session-residency.ts"
       - symbol: "hasResidencyBlockingWork"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/residency.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/residency.ts"
       - symbol: "acquireSessionResidencyFinalization"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/session-residency.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/session-residency.ts"
       - symbol: "clearSession"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/command-inbox.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/command-inbox.ts"
 
   - id: "capability.ask-user-question-auto-resolution"
     kind: "capability"
@@ -1083,7 +1083,7 @@ nodes:
       - "project memory"
       - "持久 Memory"
     docs:
-      - "apps/zcode-cli/docs/design/v2/memory/README.md"
+      - "apps/zody-cli/docs/design/v2/memory/README.md"
     codeSeeds:
       - symbol: "MemorySettingsSection"
         file: "packages/ui/src/settings/MemorySettingsSection.tsx"
@@ -1174,7 +1174,7 @@ nodes:
       - symbol: "BrowserGuestManager"
         file: "packages/desktop/src/main/browserView/browserGuestManager.ts"
       - symbol: "Tab"
-        file: "apps/zcode-cli/packages/core/src/browser-client/facade.ts"
+        file: "apps/zody-cli/packages/core/src/browser-client/facade.ts"
       - symbol: "createBrowserControlMainBridge"
         file: "packages/desktop/src/host/browserControlMainBridge.ts"
       - symbol: "materializeBrowserRecordingArtifact"
@@ -1192,7 +1192,7 @@ nodes:
       - "内置浏览器自签名证书"
       - "内置浏览器代理"
     docs:
-      - "apps/zcode-cli/docs/design/v2/model/http-proxy.md"
+      - "apps/zody-cli/docs/design/v2/model/http-proxy.md"
       - "docs/testing/browser-use-codex-parity-coverage-matrix.md"
     codeSeeds:
       - symbol: "applyDesktopChromiumNetworkPolicies"
@@ -1214,7 +1214,7 @@ nodes:
     docs:
       - "docs/superpowers/specs/2026-08-25-host-api-proxy-design.md"
       - "docs/architecture/external-api-client.md"
-      - "apps/zcode-cli/docs/design/v2/model/http-proxy.md"
+      - "apps/zody-cli/docs/design/v2/model/http-proxy.md"
     codeSeeds:
       - symbol: "NodeApiClient"
         file: "packages/services/src/providers/api/nodeApiClient.ts"
@@ -1312,9 +1312,9 @@ nodes:
       - "docs/runtime-tools/mcp-status-list-control-plane.md"
     codeSeeds:
       - symbol: "startMcpStartup"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/mcp.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/mcp.ts"
       - symbol: "registerMcpTools"
-        file: "apps/zcode-cli/packages/core/src/mcp/index.ts"
+        file: "apps/zody-cli/packages/core/src/mcp/index.ts"
 
   - id: "capability.mcp-dual-era-version-negotiation"
     kind: "capability"
@@ -1330,11 +1330,11 @@ nodes:
       - "docs/mcp-platform-boundary.md"
     codeSeeds:
       - symbol: "NodeMcpAdapter"
-        file: "apps/zcode-cli/packages/adapters/src/mcp/index.ts"
+        file: "apps/zody-cli/packages/adapters/src/mcp/index.ts"
       - symbol: "resolveVersionNegotiationMode"
-        file: "apps/zcode-cli/packages/adapters/src/mcp/index.ts"
+        file: "apps/zody-cli/packages/adapters/src/mcp/index.ts"
       - symbol: "ProcessTreeStdioClientTransport"
-        file: "apps/zcode-cli/packages/adapters/src/mcp/stdio-transport.ts"
+        file: "apps/zody-cli/packages/adapters/src/mcp/stdio-transport.ts"
 
   - id: "capability.stateless-browser-use-mcp"
     kind: "capability"
@@ -1351,12 +1351,12 @@ nodes:
       - "docs/browser-use/browser-use-plugin-runtime-boundary.md"
     codeSeeds:
       - symbol: "createNodeReplMcpRuntime"
-        file: "apps/zcode-cli/packages/node-repl-host/src/server.ts"
+        file: "apps/zody-cli/packages/node-repl-host/src/server.ts"
       - symbol: "createNodeReplBrowserBroker"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/node-repl-browser-broker.ts"
-      - file: "apps/zcode-cli/packages/node-repl-host/src/tool-contract.ts"
-      - file: "apps/zcode-cli/packages/browser-use-plugin/skills/control-browser/SKILL.md"
-      - file: "apps/zcode-cli/packages/contracts/src/tools/node-repl.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/node-repl-browser-broker.ts"
+      - file: "apps/zody-cli/packages/node-repl-host/src/tool-contract.ts"
+      - file: "apps/zody-cli/packages/browser-use-plugin/skills/control-browser/SKILL.md"
+      - file: "apps/zody-cli/packages/contracts/src/tools/node-repl.ts"
 
   - id: "capability.automations"
     kind: "capability"
@@ -1409,11 +1409,11 @@ nodes:
       - symbol: "dispatchOffPeakRun"
         file: "packages/desktop/src/host/index.ts"
       - symbol: "sessionFlowHandlers"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/session-flow.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/commands/handlers/session-flow.ts"
       - symbol: "applySubmissionExecutionState"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/turn-model.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/turn-model.ts"
       - symbol: "ApiProviderModelRuntime"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
     invariants:
       - "Z.ai and BigModel each own one complete hidden Off-Peak Built-in Provider in the ordinary Registry. Account connection enables only the current family; neither Provider changes family at execution time, and visibility filters only Provider Settings and Model Selection."
       - "3.12.2: supported local hosts advertise OffPeak tools without reading client/configs; OffPeakCreate validates gray configuration, plan and model in the Host handler before ticket/task creation. Page visibility and remote/subagent restrictions stay separate."
@@ -1457,7 +1457,7 @@ nodes:
       - symbol: "mergeMcpServerStatusSnapshots"
         file: "packages/ui/src/store/mcpStoreStatusList.ts"
       - symbol: "listMcpServers"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/mcp.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/mcp.ts"
       - symbol: "fetchMcpQuotaSnapshot"
         file: "packages/services/src/usage-stats/providers/zcodeMcpQuotaProvider.ts"
       - symbol: "useV4SessionQuotaBanner"
@@ -1480,11 +1480,11 @@ nodes:
       - "docs/superpowers/plans/2026-07-06-subagent-permission-delegation.md"
     codeSeeds:
       - symbol: "AgentInputSchema"
-        file: "apps/zcode-cli/packages/contracts/src/tools/agent.ts"
+        file: "apps/zody-cli/packages/contracts/src/tools/agent.ts"
       - symbol: "agentHandler"
-        file: "apps/zcode-cli/packages/core/src/tool/handlers/agent.ts"
+        file: "apps/zody-cli/packages/core/src/tool/handlers/agent.ts"
       - symbol: "createExploreSubagentPort"
-        file: "apps/zcode-cli/packages/core/src/subagent/runner.ts"
+        file: "apps/zody-cli/packages/core/src/subagent/runner.ts"
       - symbol: "migrateUserSubagentMarkdown"
         file: "packages/shared/src/node/subagentMarkdownMigration.ts"
       - symbol: "parseSubagentMarkdownSelection"
@@ -1544,11 +1544,11 @@ nodes:
       - symbol: "AccountProviderService"
         file: "packages/provider/src/account-provider-service.ts"
       - symbol: "ApiProviderModelRuntime"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
       - symbol: "RuntimeModelFactory"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
       - symbol: "ApiProviderModelRuntime"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
     invariants:
       - "Model input/output format facts use the same properties.input_format/output_format shape in Config, Model, Runtime, and protocol; no parallel media capability DTO is authoritative."
       - "Provider/Model Config overlays and Personal updates may be sparse; after resolve, validateComplete supplies diagnostics and Provider/Model requireComplete boundaries are the only path into Registry, whose configs and properties are statically complete."
@@ -1598,8 +1598,8 @@ nodes:
       - "动态端点转发"
       - "静态网关"
     docs:
-      - "apps/zcode-cli/docs/design/v2/model/provider-endpoint-routing.md"
-      - "apps/zcode-cli/docs/design/v2/model/http-proxy.md"
+      - "apps/zody-cli/docs/design/v2/model/provider-endpoint-routing.md"
+      - "apps/zody-cli/docs/design/v2/model/http-proxy.md"
 
   - id: "capability.model-request-session-type-attribution"
     kind: "capability"
@@ -1611,14 +1611,14 @@ nodes:
       - "主会话子代理请求归因"
     docs:
       - "docs/superpowers/specs/2026-06-09-agent-model-request-session-header-design.md"
-      - "apps/zcode-cli/docs/design/v2/model/README.md"
+      - "apps/zody-cli/docs/design/v2/model/README.md"
     codeSeeds:
       - symbol: "ModelRequestSessionType"
-        file: "apps/zcode-cli/packages/contracts/src/model/index.ts"
+        file: "apps/zody-cli/packages/contracts/src/model/index.ts"
       - symbol: "resolveModelRequestSessionTypeFromTaskType"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/model-request-session-type.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/model-request-session-type.ts"
       - symbol: "createModelRequestAttributionHeaders"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-status.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-status.ts"
 
   - id: "capability.anthropic-request-metadata"
     kind: "capability"
@@ -1642,7 +1642,7 @@ nodes:
       - "Anthropic 推理历史回放"
       - "thinking 签名修复"
     docs:
-      - "apps/zcode-cli/docs/design/v2/model/anthropic-reasoning-history-replay.md"
+      - "apps/zody-cli/docs/design/v2/model/anthropic-reasoning-history-replay.md"
 
   - id: "capability.model-reasoning-request-projection"
     kind: "capability"
@@ -1653,8 +1653,8 @@ nodes:
       - "reasoning request projection"
       - "空 reasoning 请求投影"
     docs:
-      - "apps/zcode-cli/docs/design/v2/model/README.md"
-      - "apps/zcode-cli/docs/design/v2/model/anthropic-reasoning-history-replay.md"
+      - "apps/zody-cli/docs/design/v2/model/README.md"
+      - "apps/zody-cli/docs/design/v2/model/anthropic-reasoning-history-replay.md"
 
   - id: "capability.oauth-login-attribution"
     kind: "capability"
@@ -1810,13 +1810,13 @@ nodes:
     docs:
       - "docs/remote-prompt-attachment-materialization.md"
       - "docs/conversation-session-case-catalog.md"
-      - "apps/zcode-cli/docs/design/v2/message-attachments.md"
+      - "apps/zody-cli/docs/design/v2/message-attachments.md"
       - "docs/ui/chat-file-attachments.md"
     codeSeeds:
       - symbol: "NodeToolArtifactStore.ensureMediaAttachmentPath"
-        file: "apps/zcode-cli/packages/adapters/src/storage/index.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/index.ts"
       - symbol: "projectMessagesWithMediaAttachmentPaths"
-        file: "apps/zcode-cli/packages/core/src/runtime/helpers/media-attachment-path.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/helpers/media-attachment-path.ts"
 
   - id: "capability.video-input"
     kind: "capability"
@@ -1828,17 +1828,17 @@ nodes:
       - "视频附件"
     docs:
       - "docs/plans/2026-08-17-video-input-support-plan.md"
-      - "apps/zcode-cli/docs/design/v2/message-attachments.md"
-      - "apps/zcode-cli/docs/design/v2/tool/01-read.md"
+      - "apps/zody-cli/docs/design/v2/message-attachments.md"
+      - "apps/zody-cli/docs/design/v2/tool/01-read.md"
     codeSeeds:
       - symbol: "ModelVideoContentBlock"
-        file: "apps/zcode-cli/packages/contracts/src/model/index.ts"
+        file: "apps/zody-cli/packages/contracts/src/model/index.ts"
       - symbol: "resolveTurnAttachments"
-        file: "apps/zcode-cli/packages/core/src/runtime/helpers/attachments.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/helpers/attachments.ts"
       - symbol: "readVideoFile"
-        file: "apps/zcode-cli/packages/core/src/tool/handlers/read-video.ts"
+        file: "apps/zody-cli/packages/core/src/tool/handlers/read-video.ts"
       - symbol: "toAiSdkMessages"
-        file: "apps/zcode-cli/packages/adapters/src/model/transform.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/transform.ts"
 
   - id: "capability.task-persistence"
     kind: "capability"
@@ -1897,13 +1897,13 @@ nodes:
       - symbol: "RootStartupLoading"
         file: "packages/ui/src/root/RootStartupLoading.tsx"
       - symbol: "runSqliteSessionMigrations"
-        file: "apps/zcode-cli/packages/adapters/src/storage/session-store/migration-runner.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/session-store/migration-runner.ts"
       - file: "packages/desktop/src/renderer/src/main.tsx"
       - file: "packages/desktop/src/host/index.ts"
       - symbol: "TaskIndexRepo"
         file: "packages/services/src/session/taskIndexRepo.ts"
       - symbol: "SqliteSessionMigrationError"
-        file: "apps/zcode-cli/packages/adapters/src/storage/session-store/errors.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/session-store/errors.ts"
       - symbol: "dispatchFinalArmsCustomEvent"
         file: "packages/desktop/src/main/desktopArmsCustomEvent.ts"
     invariants:
@@ -2094,7 +2094,7 @@ nodes:
       - symbol: "createWindowsCuaOperationIndicator"
         file: "packages/desktop/src/main/windowsCuaOperationIndicator.ts"
       - symbol: "createCuaOperationTurnTracker"
-        file: "packages/services/src/zcode-agent/cuaOperationTurnTracker.ts"
+        file: "packages/services/src/zody-agent/cuaOperationTurnTracker.ts"
 
   - id: "surface.browser-use-side-pane-guest"
     kind: "ui-surface"
@@ -2343,7 +2343,7 @@ nodes:
     label: "Sessions-index to task-index synchronizer"
     codeSeeds:
       - symbol: "createZCodeTaskIndexSyncer"
-        file: "packages/services/src/zcode-agent/zcodeTaskIndexSyncer.ts"
+        file: "packages/services/src/zody-agent/zcodeTaskIndexSyncer.ts"
 
   - id: "surface.conversation-model-control"
     kind: "ui-surface"
@@ -2398,7 +2398,7 @@ nodes:
       - symbol: "V4InteractionDialogs"
         file: "packages/ui/src/v4/V4InteractionDialogs.tsx"
       - symbol: "onPermissionRequested"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/product-projection.ts"
 
   - id: "surface.conversation-tool-call"
     kind: "ui-surface"
@@ -2420,7 +2420,7 @@ nodes:
       - symbol: "toolCallRowToLegacyNode"
         file: "packages/ui/src/v4/toolCallRowAdapter.ts"
       - symbol: "ProductProjection"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/product-projection.ts"
       - symbol: "prepareCuaGroupFlowItems"
         file: "packages/ui/src/v4/conversationCuaGroups.ts"
 
@@ -2501,9 +2501,9 @@ nodes:
       - symbol: "ChatMediaAttachmentPreviewDialog"
         file: "packages/ui/src/ChatMediaAttachmentPreviewDialog.tsx"
       - symbol: "ConversationV4Gateway.attachmentRead"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/v4-gateway.ts"
       - symbol: "ConversationV4Gateway.attachmentPreviewSource"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/v4-gateway.ts"
       - symbol: "installLocalMediaPreviewProtocol"
         file: "packages/desktop/src/main/localMediaPreviewProtocol.ts"
 
@@ -2563,9 +2563,9 @@ nodes:
       - "会话内定时任务管理"
     codeSeeds:
       - symbol: "cronUpdateToolEntry"
-        file: "apps/zcode-cli/packages/core/src/tool/handlers/cron.ts"
+        file: "apps/zody-cli/packages/core/src/tool/handlers/cron.ts"
       - symbol: "createProtocolAutomationPort"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/automation-port.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/automation-port.ts"
       - symbol: "resolveCronAutomationTurnCards"
         file: "packages/ui/src/v4/ConversationTurnGroup.tsx"
 
@@ -2680,7 +2680,7 @@ nodes:
       - "docs/ui/mention-panel-layout.md"
     codeSeeds:
       - symbol: "resolveDefaultSkillRoots"
-        file: "apps/zcode-cli/packages/adapters/src/skills/roots.ts"
+        file: "apps/zody-cli/packages/adapters/src/skills/roots.ts"
       - symbol: "createSkillsService"
         file: "packages/services/src/skills/skillsService.ts"
       - symbol: "filterSkillsForProvider"
@@ -2715,7 +2715,7 @@ nodes:
       - "docs/external-agent-skills-import.md"
     codeSeeds:
       - symbol: "resolveDefaultSkillRoots"
-        file: "apps/zcode-cli/packages/adapters/src/skills/roots.ts"
+        file: "apps/zody-cli/packages/adapters/src/skills/roots.ts"
       - symbol: "resolveAncestorWorkspaceRoots"
         file: "packages/services/src/skills/skillsService.ts"
 
@@ -2725,7 +2725,7 @@ nodes:
     docs:
       - "docs/external-agent-skills-import.md"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/adapters/tests/skills.test.ts"
+      - file: "apps/zody-cli/packages/adapters/tests/skills.test.ts"
       - file: "packages/services/test/skillsService.test.ts"
       - file: "packages/ui/test/skillSourceFilter.test.ts"
 
@@ -2836,7 +2836,7 @@ nodes:
       - symbol: "expectAcceptedInputProjection"
         file: "packages/ui/src/v4/conversationProjectionStore.ts"
       - symbol: "ProductProjection"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/product-projection.ts"
     invariants:
       - "An accepted sendText waits for the same sourceCommandId queue item or real-user userInput row; complete silence triggers one same-sub recovery without synthesizing a row, creating a renderer queue, or replaying the command."
       - "The watchdog reuses the trusted attachment's desktop-continuous or web-remote-replayable delivery boundary; it does not move conversation state into host, gateway, or renderer-local queue."
@@ -2848,9 +2848,9 @@ nodes:
       - "docs/cua/2026-08-18-ax-action-state-consistency.md"
     codeSeeds:
       - symbol: "registerMcpTools"
-        file: "apps/zcode-cli/packages/core/src/mcp/index.ts"
+        file: "apps/zody-cli/packages/core/src/mcp/index.ts"
       - symbol: "serializeOutput"
-        file: "apps/zcode-cli/packages/core/src/tool/executor/result-serialization.ts"
+        file: "apps/zody-cli/packages/core/src/tool/executor/result-serialization.ts"
     invariants:
       - "Only zcode-cua owns pre/post state ids and mutation epochs; ZCode preserves or safely rejects their atomic projection."
       - "A synced outcome and its post-state reach the model together; over-budget or malformed pairs become refresh_required."
@@ -2860,18 +2860,18 @@ nodes:
     label: "Assistant model provenance in canonical model history"
     codeSeeds:
       - symbol: "MessageHistoryImpl"
-        file: "apps/zcode-cli/packages/core/src/agent/message-history.ts"
+        file: "apps/zody-cli/packages/core/src/agent/message-history.ts"
       - symbol: "hydrateMessageHistoryFromSession"
-        file: "apps/zcode-cli/packages/core/src/agent/session-history-hydrator.ts"
+        file: "apps/zody-cli/packages/core/src/agent/session-history-hydrator.ts"
 
   - id: "state.subagent-child-runtime"
     kind: "state-owner"
     label: "Subagent child runtime events and tool execution"
     codeSeeds:
       - symbol: "createDefaultSubagentPort"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/subagent.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/subagent.ts"
       - symbol: "mirrorSubagentToolEvent"
-        file: "apps/zcode-cli/packages/core/src/subagent/tool-event-mirror.ts"
+        file: "apps/zody-cli/packages/core/src/subagent/tool-event-mirror.ts"
 
   - id: "state.mcp-tool-catalog-cache"
     kind: "state-owner"
@@ -2900,9 +2900,9 @@ nodes:
       - "docs/browser-use/2026-07-28-stateless-browser-use-mcp-spec.md"
     codeSeeds:
       - symbol: "createProtocolBrowserControlBroker"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/browser-control-broker.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/browser-control-broker.ts"
       - symbol: "requireSession"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-types.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/server-types.ts"
 
   - id: "state.browser-screenshot-surface-coordination"
     kind: "state-owner"
@@ -2977,7 +2977,7 @@ nodes:
       - symbol: "backgroundSeedFromTurnStarted"
         file: "packages/ui/src/v4/telemetry/conversationTelemetrySupervisor.ts"
       - symbol: "turnStartedFactSchema"
-        file: "packages/shared/src/zcode-protocol-v4/telemetry.ts"
+        file: "packages/shared/src/zody-protocol-v4/telemetry.ts"
 
   - id: "state.coding-plan-purchase-funnel"
     kind: "state-owner"
@@ -3021,7 +3021,7 @@ nodes:
     label: "Process-local routing registry; dynamic implementations own their snapshot"
     codeSeeds:
       - symbol: "resolveProcessProviderEndpointRoutingPort"
-        file: "apps/zcode-cli/packages/bootstrap/src/provider-endpoint-routing.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/provider-endpoint-routing.ts"
 
   - id: "service.model-provider"
     kind: "service"
@@ -3066,18 +3066,18 @@ nodes:
     label: "ZCode CLI provider endpoint routing service"
     codeSeeds:
       - symbol: "createProviderEndpointRoutingPort"
-        file: "apps/zcode-cli/packages/adapters/src/model/endpoint-routing-edition/index.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/endpoint-routing-edition/index.ts"
       - symbol: "createProviderEndpointRoutingFetch"
-        file: "apps/zcode-cli/packages/adapters/src/model/provider-endpoint-routing-fetch.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/provider-endpoint-routing-fetch.ts"
 
   - id: "service.active-session-model-limits"
     kind: "service"
     label: "Active session model limit synchronization"
     codeSeeds:
       - symbol: "refreshActiveWorkspaceSessionModelLimits"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/active-session-model-limits.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/active-session-model-limits.ts"
       - symbol: "emitModelSelected"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/steering.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/steering.ts"
 
   - id: "service.automation"
     kind: "service"
@@ -3113,38 +3113,38 @@ nodes:
     label: "Conversation row action command authority"
     codeSeeds:
       - symbol: "resolveRowActionTarget"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/product-projection.ts"
       - symbol: "editUserQuery"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/fork-edit-retry.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/commands/handlers/fork-edit-retry.ts"
 
   - id: "service.selection-side-session-creation"
     kind: "service"
     label: "Selection side session command and atomic conversation fork"
     codeSeeds:
       - symbol: "createSelectionSideSession"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/selection-side-session.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/commands/handlers/selection-side-session.ts"
       - symbol: "createSelectionSideConversation"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/session-fork.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/session-fork.ts"
 
   - id: "service.project-memory-extraction-lifecycle"
     kind: "service"
     label: "Project Memory Extraction scheduler lifecycle"
     codeSeeds:
       - symbol: "createMemoryExtractionScheduler"
-        file: "apps/zcode-cli/packages/core/src/memory/extraction.ts"
+        file: "apps/zody-cli/packages/core/src/memory/extraction.ts"
       - symbol: "scheduleProjectMemoryExtraction"
-        file: "apps/zcode-cli/packages/core/src/runtime/helpers/project-memory-extraction.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/helpers/project-memory-extraction.ts"
       - symbol: "createSessionFacade"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/session-facade.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/session-facade.ts"
 
   - id: "service.headless-cli-prompt-runtime"
     kind: "service"
     label: "Headless CLI prompt and target runtime"
     codeSeeds:
       - symbol: "runPrompt"
-        file: "apps/zcode-cli/packages/cli/src/prompt-command.ts"
+        file: "apps/zody-cli/packages/cli/src/prompt-command.ts"
       - symbol: "run"
-        file: "apps/zcode-cli/packages/cli/src/run.ts"
+        file: "apps/zody-cli/packages/cli/src/run.ts"
 
   - id: "service.project-memory-catalog"
     kind: "service"
@@ -3160,20 +3160,20 @@ nodes:
     label: "Subagent parent-routed blocking interaction broker"
     codeSeeds:
       - symbol: "createSubagentInteractionBroker"
-        file: "apps/zcode-cli/packages/core/src/runtime/helpers/subagent-interaction-broker.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/helpers/subagent-interaction-broker.ts"
       - symbol: "createProtocolInteractionBroker"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/interaction-broker.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/interaction-broker.ts"
 
   - id: "service.interaction-auto-resolution-runtime"
     kind: "service"
     label: "CLI interaction auto-resolution registry"
     codeSeeds:
       - symbol: "V4InteractionRegistry"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/interaction-registry.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/interaction-registry.ts"
       - symbol: "syncAppRuntimePreferences"
-        file: "packages/services/src/zcode-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
       - symbol: "createZCodeAgentService"
-        file: "packages/services/src/zcode-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
 
   - id: "service.conversation-rows-range"
     kind: "service"
@@ -3182,7 +3182,7 @@ nodes:
       - symbol: "loadAllOlder"
         file: "packages/ui/src/v4/conversationProjectionStore.ts"
       - symbol: "getRowsRange"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/conversation-topic-publisher.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/conversation-topic-publisher.ts"
 
   - id: "service.session-runtime-activation"
     kind: "service"
@@ -3191,11 +3191,11 @@ nodes:
       - "docs/v4-refactor/17-cold-resume-runtime-activation.md"
     codeSeeds:
       - symbol: "activateSessionForResume"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-operations.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/server-operations.ts"
       - symbol: "ColdSessionResumeCoordinator"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/cold-session-resume.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/cold-session-resume.ts"
       - symbol: "createConversationV4Gateway"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/v4-bridge.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/v4-bridge.ts"
 
   - id: "service.persisted-remote-session-repair"
     kind: "service"
@@ -3204,20 +3204,20 @@ nodes:
       - "docs/v4-refactor/14-sessions-index.md"
     codeSeeds:
       - symbol: "repairPersistedRemoteSessionPaths"
-        file: "apps/zcode-cli/packages/core/src/runtime/helpers/persisted-remote-session-path-repair.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/helpers/persisted-remote-session-path-repair.ts"
       - symbol: "claimLegacySessionWorkspace"
-        file: "apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts"
       - symbol: "activateSessionForResume"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-operations.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/server-operations.ts"
 
   - id: "service.mcp-session-runtime"
     kind: "service"
     label: "Session-scoped live MCP runtime"
     codeSeeds:
       - symbol: "McpPort"
-        file: "apps/zcode-cli/packages/contracts/src/interfaces/mcp.port.ts"
+        file: "apps/zody-cli/packages/contracts/src/interfaces/mcp.port.ts"
       - symbol: "createMcpConnectionPool"
-        file: "apps/zcode-cli/packages/adapters/src/mcp/pool.ts"
+        file: "apps/zody-cli/packages/adapters/src/mcp/pool.ts"
 
   - id: "service.shared-browser-use-mcp-runtime"
     kind: "service"
@@ -3227,9 +3227,9 @@ nodes:
       - "docs/browser-use/2026-07-28-stateless-browser-use-mcp-spec.md"
     codeSeeds:
       - symbol: "NodeMcpAdapter"
-        file: "apps/zcode-cli/packages/adapters/src/mcp/index.ts"
+        file: "apps/zody-cli/packages/adapters/src/mcp/index.ts"
       - symbol: "createMcpConnectionPool"
-        file: "apps/zcode-cli/packages/adapters/src/mcp/pool.ts"
+        file: "apps/zody-cli/packages/adapters/src/mcp/pool.ts"
 
   - id: "service.oauth"
     kind: "service"
@@ -3250,9 +3250,9 @@ nodes:
     label: "ZCode CLI agent OTLP telemetry"
     codeSeeds:
       - symbol: "AgentExecutionTelemetryRuntime"
-        file: "apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts"
+        file: "apps/zody-cli/packages/telemetry/src/agent-trace-runtime.ts"
       - symbol: "RuntimeTelemetryFacade"
-        file: "apps/zcode-cli/packages/core/src/telemetry/runtime-telemetry.ts"
+        file: "apps/zody-cli/packages/core/src/telemetry/runtime-telemetry.ts"
 
   - id: "service.off-peak-task"
     kind: "service"
@@ -3271,55 +3271,55 @@ nodes:
     label: "ZCode CLI deviceMid ensure"
     codeSeeds:
       - symbol: "ensureCliDeviceMid"
-        file: "apps/zcode-cli/packages/adapters/src/device/cli-device-mid.ts"
+        file: "apps/zody-cli/packages/adapters/src/device/cli-device-mid.ts"
 
   - id: "service.anthropic-request-options"
     kind: "service"
     label: "Anthropic model request metadata options"
     codeSeeds:
       - symbol: "createAnthropicRequestMetadataUserId"
-        file: "apps/zcode-cli/packages/adapters/src/model/anthropic-request-metadata.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/anthropic-request-metadata.ts"
       - symbol: "createGenerateTextOptions"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-options.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-options.ts"
       - symbol: "createStreamTextOptions"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-options.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-options.ts"
 
   - id: "service.model-request-session-type-attribution"
     kind: "service"
     label: "Runtime model request session type attribution"
     codeSeeds:
       - symbol: "resolveModelRequestSessionTypeFromTaskType"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/model-request-session-type.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/model-request-session-type.ts"
       - symbol: "resolveModelRequestSessionType"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-status.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-status.ts"
       - symbol: "createModelRequestAttributionHeaders"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-status.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-status.ts"
 
   - id: "service.anthropic-reasoning-history-projection"
     kind: "service"
     label: "Anthropic request-local reasoning history projection"
     codeSeeds:
       - symbol: "AiSdkModelAdapter"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner.ts"
       - symbol: "normalizeReasoningHistory"
-        file: "apps/zcode-cli/packages/adapters/src/model/reasoning-history-normalization.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/reasoning-history-normalization.ts"
       - symbol: "repairReasoningHistoryAfterSignatureRejection"
-        file: "apps/zcode-cli/packages/adapters/src/model/reasoning-history-normalization.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/reasoning-history-normalization.ts"
       - symbol: "runGenerateText"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-generate.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-generate.ts"
       - symbol: "runStreamText"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-stream.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-stream.ts"
 
   - id: "service.model-reasoning-request-projection"
     kind: "service"
     label: "Model request-local reasoning content projection"
     codeSeeds:
       - symbol: "toAiSdkMessages"
-        file: "apps/zcode-cli/packages/adapters/src/model/transform.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/transform.ts"
       - symbol: "withOpenAiCompatibleReasoningContent"
-        file: "apps/zcode-cli/packages/adapters/src/model/reasoning-content-compat.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/reasoning-content-compat.ts"
       - symbol: "withDeepSeekV4AnthropicThinkingReplay"
-        file: "apps/zcode-cli/packages/adapters/src/model/anthropic-reasoning-metadata.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/anthropic-reasoning-metadata.ts"
 
   - id: "service.usage-stats-bridge"
     kind: "service"
@@ -3328,7 +3328,7 @@ nodes:
       - symbol: "createUsageStatsService"
         file: "packages/services/src/usage-stats/usageStatsService.ts"
       - symbol: "getAppUsageStats"
-        file: "packages/services/src/zcode-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
 
   - id: "service.plan-entitlements"
     kind: "service"
@@ -3350,15 +3350,15 @@ nodes:
       - "docs/document-skills-plugin.md"
     codeSeeds:
       - symbol: "OFFICIAL_PLUGIN_DEFINITIONS"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
       - symbol: "collectFilesystemPluginFiles"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/bundled-plugins.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/bundled-plugins.ts"
       - symbol: "collectSeaOfficialPluginAssets"
-        file: "apps/zcode-cli/packages/cli/scripts/sea-official-plugin-assets.mjs"
+        file: "apps/zody-cli/packages/cli/scripts/sea-official-plugin-assets.mjs"
       - symbol: "enumeratePluginComponents"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/plugin-components.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/plugin-components.ts"
       - symbol: "loadPluginAgentProfiles"
-        file: "apps/zcode-cli/packages/bootstrap/src/subagents.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/subagents.ts"
     invariants:
       - "Every official packaging and seed whitelist preserves agents/, and document-skills completeness requires agents/judge.md before a cache is reusable."
 
@@ -3366,7 +3366,7 @@ nodes:
     kind: "service"
     label: "Official marketplace-aligned PPTX production skill"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/document-skills-plugin/agents/judge.md"
+      - file: "apps/zody-cli/packages/document-skills-plugin/agents/judge.md"
 
   - id: "service.cua-platform"
     kind: "service"
@@ -3403,7 +3403,7 @@ nodes:
       - symbol: "createWindowsCuaOperationIndicator"
         file: "packages/desktop/src/main/windowsCuaOperationIndicator.ts"
       - symbol: "createCuaOperationTurnTracker"
-        file: "packages/services/src/zcode-agent/cuaOperationTurnTracker.ts"
+        file: "packages/services/src/zody-agent/cuaOperationTurnTracker.ts"
 
   - id: "service.cua-helper-build-release"
     kind: "service"
@@ -3427,8 +3427,8 @@ nodes:
       - "docs/superpowers/specs/2026-08-14-cua-final-raster-integrity-contract.md"
       - "docs/cua/2026-08-18-frame-pixel-zoom-regression.md"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/zcode-cua-plugin/upstream.json"
-      - file: "apps/zcode-cli/packages/core/src/mcp/index.ts"
+      - file: "apps/zody-cli/packages/zody-cua-plugin/upstream.json"
+      - file: "apps/zody-cli/packages/core/src/mcp/index.ts"
     invariants:
       - "Official CUA raster bytes and adjacent image_ref reach the model unchanged."
       - "Coordinate strategy=event uses WindowServer provenance and never requires AX hit-test."
@@ -3441,9 +3441,9 @@ nodes:
       - "docs/cua-permission-broker/cua-dev-mcp-runtime-assets.md"
     codeSeeds:
       - file: "scripts/build-desktop-agent-cli.mjs"
-      - file: "apps/zcode-cli/packages/zcode-cua-plugin/scripts/computer-use-client.mjs"
+      - file: "apps/zody-cli/packages/zody-cua-plugin/scripts/computer-use-client.mjs"
       - symbol: "resolveOfficialPluginRoots"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/bundled-plugins.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/bundled-plugins.ts"
 
   - id: "service.cua-node-repl-bridge"
     kind: "service"
@@ -3452,11 +3452,11 @@ nodes:
       - "docs/cua/2026-08-24-cua-node-repl-sdk-migration-spec.md"
     codeSeeds:
       - symbol: "createNodeReplMcpRuntime"
-        file: "apps/zcode-cli/packages/node-repl-host/src/server.ts"
+        file: "apps/zody-cli/packages/node-repl-host/src/server.ts"
       - symbol: "createComputerUseBridgeGlobals"
-        file: "apps/zcode-cli/packages/node-repl-host/src/cua-bridge.ts"
+        file: "apps/zody-cli/packages/node-repl-host/src/cua-bridge.ts"
       - symbol: "createNodeReplCuaBroker"
-        file: "apps/zcode-cli/packages/node-repl-host/src/cua-broker.ts"
+        file: "apps/zody-cli/packages/node-repl-host/src/cua-broker.ts"
     invariants:
       - "Only node_repl js/js_add_node_module_dir/js_reset are model-visible; CUA is SDK-only."
       - "Subagent requests are rejected and remote callers attach to an existing shared host."
@@ -3470,7 +3470,7 @@ nodes:
       - symbol: "createComputerUseRuntime"
         file: "../zcode-cua/src/tools/computer-use-runtime.ts"
       - symbol: "setupComputerUseRuntime"
-        file: "apps/zcode-cli/packages/zcode-cua-plugin/scripts/computer-use-client.mjs"
+        file: "apps/zody-cli/packages/zody-cua-plugin/scripts/computer-use-client.mjs"
     invariants:
       - "Session keys use workspaceKey + remoteSessionId + sessionId."
       - "AccessibilitySession, frame freshness, kill switch, input holds, and possibly-sent remain runtime-owned."
@@ -3484,7 +3484,7 @@ nodes:
       - "docs/cua-get-app-state-user-title.md"
     codeSeeds:
       - symbol: "registerMcpTools"
-        file: "apps/zcode-cli/packages/core/src/mcp/index.ts"
+        file: "apps/zody-cli/packages/core/src/mcp/index.ts"
       - symbol: "CuaToolCallBlock"
         file: "packages/ui/src/ToolCallBlocks/renderers/cua.tsx"
 
@@ -3531,9 +3531,9 @@ nodes:
     label: "App-to-CLI ModelIO retention preference sync"
     codeSeeds:
       - symbol: "syncAppRuntimePreferences"
-        file: "packages/services/src/zcode-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
       - symbol: "updateModelIoPreferences"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-io-preferences.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/model-io-preferences.ts"
 
   - id: "service.desktop-browser-screenshot-activity"
     kind: "service"
@@ -3546,7 +3546,7 @@ nodes:
     kind: "service"
     label: "Desktop main Chromium Session proxy and certificate policy"
     docs:
-      - "apps/zcode-cli/docs/design/v2/model/http-proxy.md"
+      - "apps/zody-cli/docs/design/v2/model/http-proxy.md"
     codeSeeds:
       - symbol: "applyDesktopChromiumNetworkPolicies"
         file: "packages/desktop/src/main/desktopNetworkPolicy.ts"
@@ -3612,9 +3612,9 @@ nodes:
     label: "ZCode CLI model, turn, and tool usage facts"
     codeSeeds:
       - symbol: "queryAppUsage"
-        file: "apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/usage.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/session-store/repositories/usage.ts"
       - symbol: "buildAppUsageSnapshot"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/usage-stats-builder.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/usage-stats-builder.ts"
 
   - id: "persistence.subagent-markdown"
     kind: "persistence"
@@ -3628,33 +3628,33 @@ nodes:
     label: "Session model change timeline parts"
     codeSeeds:
       - symbol: "persistPendingModelChangeTimeline"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/timeline-persistence.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/timeline-persistence.ts"
       - symbol: "synthesizeEventsFromMessages"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/transcript-hydration.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/transcript-hydration.ts"
 
   - id: "persistence.session-media-artifacts"
     kind: "persistence"
     label: "Provider-neutral session media artifacts"
     docs:
       - "docs/plans/2026-08-17-video-input-support-plan.md"
-      - "apps/zcode-cli/docs/design/v2/message-attachments.md"
-      - "apps/zcode-cli/docs/design/v2/session-persistence.md"
+      - "apps/zody-cli/docs/design/v2/message-attachments.md"
+      - "apps/zody-cli/docs/design/v2/session-persistence.md"
     codeSeeds:
       - symbol: "persistToolResultMediaAttachments"
-        file: "apps/zcode-cli/packages/core/src/runtime/helpers/tool-result-media-persistence.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/helpers/tool-result-media-persistence.ts"
       - symbol: "hydrateMessageHistoryFromSession"
-        file: "apps/zcode-cli/packages/core/src/agent/session-history-hydrator.ts"
+        file: "apps/zody-cli/packages/core/src/agent/session-history-hydrator.ts"
       - symbol: "NodeToolArtifactStore"
-        file: "apps/zcode-cli/packages/adapters/src/storage/index.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/index.ts"
 
   - id: "persistence.assistant-message-model-provenance"
     kind: "persistence"
     label: "Persisted assistant provider and model provenance"
     codeSeeds:
       - symbol: "persistAssistantMessage"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/message-persistence.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/message-persistence.ts"
       - symbol: "hydrateMessageHistoryFromSession"
-        file: "apps/zcode-cli/packages/core/src/agent/session-history-hydrator.ts"
+        file: "apps/zody-cli/packages/core/src/agent/session-history-hydrator.ts"
 
   - id: "persistence.task-index"
     kind: "persistence"
@@ -3677,16 +3677,16 @@ nodes:
     label: "Per-session ModelIO JSONL diagnostics"
     codeSeeds:
       - symbol: "writeModelIODebugRecord"
-        file: "apps/zcode-cli/packages/adapters/src/model/runner-debug.ts"
+        file: "apps/zody-cli/packages/adapters/src/model/runner-debug.ts"
       - symbol: "readModelTrajectory"
-        file: "packages/services/src/zcode-agent/modelTrajectory.ts"
+        file: "packages/services/src/zody-agent/modelTrajectory.ts"
 
   - id: "persistence.project-memory-files"
     kind: "persistence"
     label: "Local Project Memory Markdown files"
     codeSeeds:
       - symbol: "resolveProjectMemoryRoot"
-        file: "apps/zcode-cli/packages/core/src/memory/project-root.ts"
+        file: "apps/zody-cli/packages/core/src/memory/project-root.ts"
       - symbol: "createMemoryService"
         file: "packages/services/src/memory/memoryService.ts"
 
@@ -3706,7 +3706,7 @@ nodes:
       - symbol: "createTelemetryCore"
         file: "packages/services/src/telemetry/telemetryCore.ts"
       - symbol: "ensureCliDeviceMid"
-        file: "apps/zcode-cli/packages/adapters/src/device/cli-device-mid.ts"
+        file: "apps/zody-cli/packages/adapters/src/device/cli-device-mid.ts"
 
   - id: "persistence.native-search-shared-deps"
     kind: "persistence"
@@ -3768,7 +3768,7 @@ nodes:
       - symbol: "SessionPane"
         file: "packages/ui/src/v4/SessionPane.tsx"
       - symbol: "listProtocolSlashCommands"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/slash-commands.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/slash-commands.ts"
 
   - id: "surface.composer-at-context-picker"
     kind: "ui-surface"
@@ -3839,7 +3839,7 @@ nodes:
       - symbol: "useSkills"
         file: "packages/ui/src/hooks/useSkills.ts"
       - symbol: "getSkillReferenceCatalog"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/skill-reference-catalog.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/skill-reference-catalog.ts"
 
   - id: "capability.plugin-source-acquisition"
     kind: "capability"
@@ -3856,40 +3856,40 @@ nodes:
       - "docs/plugin-management-lifecycle-case-catalog.md"
     codeSeeds:
       - symbol: "loadMarketplaceFromSource"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts"
       - symbol: "resolvePluginSourceRoot"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts"
       - symbol: "resolveZipPluginSource"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/zip-source.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/zip-source.ts"
 
   - id: "service.plugin-source-materializer"
     kind: "service"
     label: "GitHub Archive or system Git plugin source materializer"
     codeSeeds:
       - symbol: "resolvePluginSourceRoot"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts"
       - symbol: "loadMarketplaceFromSource"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts"
       - symbol: "execGitCommand"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts"
 
   - id: "persistence.plugin-marketplace-installed-cache"
     kind: "persistence"
     label: "Known marketplace snapshots and installed plugin cache"
     codeSeeds:
       - symbol: "loadKnownMarketplacesSync"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts"
       - symbol: "copyMarketplaceDirectoryPlugins"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts"
       - symbol: "cacheMarketplacePlugin"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts"
 
   - id: "boundary.plugin-agent-host"
     kind: "delivery-boundary"
     label: "Plugin operations execute in the authoritative local or remote Agent Host"
     codeSeeds:
       - symbol: "updatePluginMarketplace"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/plugins.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/plugins.ts"
       - symbol: "PluginSyncService"
         file: "packages/services/src/plugin-sync/pluginSyncService.ts"
 
@@ -3908,11 +3908,11 @@ nodes:
       - "docs/plugin-management-lifecycle-case-catalog.md"
     codeSeeds:
       - symbol: "createConfig"
-        file: "apps/zcode-cli/packages/adapters/src/config/config-factory.ts"
+        file: "apps/zody-cli/packages/adapters/src/config/config-factory.ts"
       - symbol: "mergeConfigs"
-        file: "apps/zcode-cli/packages/adapters/src/config/config-merger.ts"
+        file: "apps/zody-cli/packages/adapters/src/config/config-merger.ts"
       - symbol: "resolveStartupPlugins"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/startup-marks.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/startup-marks.ts"
 
   - id: "surface.workspace-plugin-scope-controls"
     kind: "ui-surface"
@@ -3944,11 +3944,11 @@ nodes:
       - "插件有效配置"
     codeSeeds:
       - symbol: "createConfig"
-        file: "apps/zcode-cli/packages/adapters/src/config/config-factory.ts"
+        file: "apps/zody-cli/packages/adapters/src/config/config-factory.ts"
       - symbol: "mergeConfigs"
-        file: "apps/zcode-cli/packages/adapters/src/config/config-merger.ts"
+        file: "apps/zody-cli/packages/adapters/src/config/config-merger.ts"
       - symbol: "resolveEnabled"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/index.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/index.ts"
 
   - id: "persistence.workspace-plugin-project-config"
     kind: "persistence"
@@ -3958,7 +3958,7 @@ nodes:
       - "project enabledPlugins"
     codeSeeds:
       - symbol: "loadProjectConfigs"
-        file: "apps/zcode-cli/packages/adapters/src/config/project-config.adapter.ts"
+        file: "apps/zody-cli/packages/adapters/src/config/project-config.adapter.ts"
       - symbol: "resolvePluginConfigPathForScope"
         file: "packages/services/src/settings-sync/settingsSyncService.ts"
 
@@ -3986,9 +3986,9 @@ nodes:
       - "docs/plugins/workspace-level-plugin-architecture.md"
     codeSeeds:
       - symbol: "configureZCodePlugin"
-        file: "apps/zcode-cli/packages/bootstrap/src/plugins.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/plugins.ts"
       - symbol: "resolvePluginMcpServers"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/mcp.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/mcp.ts"
       - symbol: "PluginConfigControls"
         file: "packages/ui/src/settings/PluginConfigControls.tsx"
 
@@ -4005,8 +4005,8 @@ nodes:
     docs:
       - "docs/testing/plugin-management-lifecycle-e2e-coverage-matrix.md"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/adapters/tests/plugins.test.ts"
-      - file: "apps/zcode-cli/packages/bootstrap/tests/marketplace-import-e2e.test.ts"
+      - file: "apps/zody-cli/packages/adapters/tests/plugins.test.ts"
+      - file: "apps/zody-cli/packages/bootstrap/tests/marketplace-import-e2e.test.ts"
 
   - id: "capability.plugin-catalog-runtime-separation"
     kind: "capability"
@@ -4022,15 +4022,15 @@ nodes:
       - "docs/adr/0001-store-listing-in-marketplace-catalog.md"
     codeSeeds:
       - symbol: "seedBundledOfficialPlugins"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/bundled-plugins.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/bundled-plugins.ts"
       - symbol: "writeOfficialMarketplace"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/bundled-plugins.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/bundled-plugins.ts"
       - symbol: "uninstallZCodeMarketplacePlugin"
-        file: "apps/zcode-cli/packages/bootstrap/src/plugins.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/plugins.ts"
       - symbol: "describeMarketplacePlugin"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts"
       - symbol: "discoverNodePluginsSync"
-        file: "apps/zcode-cli/packages/adapters/src/plugins/index.ts"
+        file: "apps/zody-cli/packages/adapters/src/plugins/index.ts"
       - symbol: "buildStoreItems"
         file: "packages/ui/src/settings/pluginStoreListing.ts"
       - symbol: "PluginStoreDetailView"
@@ -4043,11 +4043,11 @@ nodes:
       - "docs/specs/builtin-plugin-catalog-runtime-separation.md"
     codeSeeds:
       - symbol: "suppressedBuiltins"
-        file: "apps/zcode-cli/packages/adapters/src/config/schema.ts"
+        file: "apps/zody-cli/packages/adapters/src/config/schema.ts"
       - symbol: "addSuppressedBuiltinInFileConfig"
-        file: "apps/zcode-cli/packages/adapters/src/config/file-config.adapter.ts"
+        file: "apps/zody-cli/packages/adapters/src/config/file-config.adapter.ts"
       - symbol: "removeSuppressedBuiltinInFileConfig"
-        file: "apps/zcode-cli/packages/adapters/src/config/file-config.adapter.ts"
+        file: "apps/zody-cli/packages/adapters/src/config/file-config.adapter.ts"
 
   - id: "service.plugin-catalog-detail"
     kind: "service"
@@ -4057,7 +4057,7 @@ nodes:
       - "docs/plugin-marketplace-ui-ux.md"
     codeSeeds:
       - symbol: "describeZCodePlugin"
-        file: "apps/zcode-cli/packages/bootstrap/src/plugins.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/plugins.ts"
       - symbol: "describePlugin"
         file: "packages/ui/src/store/pluginManagementStore.ts"
       - symbol: "PluginStoreDetailView"
@@ -4070,8 +4070,8 @@ nodes:
       - "docs/plugin-management-lifecycle-case-catalog.md"
       - "docs/testing/plugin-management-lifecycle-e2e-coverage-matrix.md"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/bootstrap/tests/plugins.test.ts"
-      - file: "apps/zcode-cli/packages/adapters/tests/plugins.test.ts"
+      - file: "apps/zody-cli/packages/bootstrap/tests/plugins.test.ts"
+      - file: "apps/zody-cli/packages/adapters/tests/plugins.test.ts"
       - file: "packages/ui/test/pluginStoreListing.test.ts"
 
   - id: "capability.plugin-reference"
@@ -4181,9 +4181,9 @@ nodes:
       - "冻结插件目录"
     codeSeeds:
       - symbol: "buildPluginReferenceCatalog"
-        file: "apps/zcode-cli/packages/core/src/plugin-reference/catalog.ts"
+        file: "apps/zody-cli/packages/core/src/plugin-reference/catalog.ts"
       - symbol: "resolveStartupPlugins"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/startup-marks.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/startup-marks.ts"
 
   - id: "state.session-skill-catalog"
     kind: "state-owner"
@@ -4193,27 +4193,27 @@ nodes:
       - "Session Skill 快照"
     codeSeeds:
       - symbol: "getSkillCatalog"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/context.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/context.ts"
       - symbol: "ensureContextInitialized"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/context.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/context.ts"
 
   - id: "service.skill-reference-catalog"
     kind: "service"
     label: "skills/referenceCatalog protocol query (session vs workspace authority)"
     codeSeeds:
       - symbol: "getSkillReferenceCatalog"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/skill-reference-catalog.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/skill-reference-catalog.ts"
       - symbol: "getSkillReferenceCatalog"
-        file: "packages/services/src/zcode-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
 
   - id: "service.plugin-reference-catalog"
     kind: "service"
     label: "plugins/referenceCatalog protocol query (session vs workspace authority)"
     codeSeeds:
       - symbol: "getPluginReferenceCatalog"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/plugins.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/plugins.ts"
       - symbol: "getPluginReferenceCatalog"
-        file: "packages/services/src/zcode-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
 
   - id: "service.suggested-plugin-reference-resolution"
     kind: "service"
@@ -4227,29 +4227,29 @@ nodes:
       - "docs/plugin-management-lifecycle-case-catalog.md"
     codeSeeds:
       - symbol: "resolveSuggestedPluginReference"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/plugin-reference-catalog.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/plugin-reference-catalog.ts"
       - symbol: "withPluginOperationSignal"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/server.ts"
       - symbol: "resolveSuggestedPluginReference"
-        file: "packages/services/src/zcode-agent/zcodeAgentService.ts"
+        file: "packages/services/src/zody-agent/zcodeAgentService.ts"
 
   - id: "service.plugin-reference-reminder"
     kind: "service"
     label: "Turn plugin_reference reminder injection (live capability intersection)"
     codeSeeds:
       - symbol: "buildPluginReferenceReminderBody"
-        file: "apps/zcode-cli/packages/core/src/plugin-reference/reminder.ts"
+        file: "apps/zody-cli/packages/core/src/plugin-reference/reminder.ts"
       - symbol: "injectPluginReferenceReminderFromTurn"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/plugin-reference.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/plugin-reference.ts"
 
   - id: "persistence.plugin-reference-reminder-history"
     kind: "persistence"
     label: "Append-only model-only plugin_reference notices in session history"
     codeSeeds:
       - symbol: "persistSyntheticUserNoticeForSession"
-        file: "apps/zcode-cli/packages/core/src/runtime/methods/message-persistence.ts"
+        file: "apps/zody-cli/packages/core/src/runtime/methods/message-persistence.ts"
       - symbol: "hydrateMessageHistoryFromSession"
-        file: "apps/zcode-cli/packages/core/src/agent/session-history-hydrator.ts"
+        file: "apps/zody-cli/packages/core/src/agent/session-history-hydrator.ts"
 
   - id: "boundary.local-development-runtime"
     kind: "delivery-boundary"
@@ -4282,8 +4282,8 @@ nodes:
       - "docs/testing/conversation-session-fault-e2e-coverage-matrix.md"
       - "docs/testing/conversation-session-network-sse-decision-worksheet.md"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/core/tests/runtime-stream-recovery.test.ts"
-      - file: "apps/zcode-cli/packages/bootstrap/tests/product-projection.test.ts"
+      - file: "apps/zody-cli/packages/core/tests/runtime-stream-recovery.test.ts"
+      - file: "apps/zody-cli/packages/bootstrap/tests/product-projection.test.ts"
 
   - id: "evidence.development-storage-isolation"
     kind: "evidence"
@@ -4301,26 +4301,26 @@ nodes:
       - file: "packages/ui/test/settingsDataBaseDirControl.test.ts"
       - file: "packages/ui/test/useSettingServiceAutoResolution.test.ts"
       - file: "packages/services/test/zcodeAgentService.test.ts"
-      - file: "apps/zcode-cli/packages/bootstrap/tests/zcode-protocol.test.ts"
-      - file: "apps/zcode-cli/packages/adapters/tests/runner.test.ts"
+      - file: "apps/zody-cli/packages/bootstrap/tests/zcode-protocol.test.ts"
+      - file: "apps/zody-cli/packages/adapters/tests/runner.test.ts"
 
   - id: "evidence.model-request-session-type-tests"
     kind: "evidence"
     label: "Model request session type classification and transport tests"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/core/tests/model-request-session-type.test.ts"
-      - file: "apps/zcode-cli/packages/adapters/tests/runner-options.test.ts"
-      - file: "apps/zcode-cli/packages/adapters/tests/runner.test.ts"
+      - file: "apps/zody-cli/packages/core/tests/model-request-session-type.test.ts"
+      - file: "apps/zody-cli/packages/adapters/tests/runner-options.test.ts"
+      - file: "apps/zody-cli/packages/adapters/tests/runner.test.ts"
 
   - id: "evidence.mcp-runtime-tests"
     kind: "evidence"
     label: "MCP runtime, tool bridge, and lifecycle tests"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/core/tests/mcp-runtime.test.ts"
-      - file: "apps/zcode-cli/packages/core/tests/mcp-tool-bridge.test.ts"
-      - file: "apps/zcode-cli/packages/adapters/tests/mcp.test.ts"
-      - file: "apps/zcode-cli/packages/adapters/tests/mcp-process-lifecycle.test.ts"
-      - file: "apps/zcode-cli/packages/adapters/tests/mcp-version-negotiation.test.ts"
+      - file: "apps/zody-cli/packages/core/tests/mcp-runtime.test.ts"
+      - file: "apps/zody-cli/packages/core/tests/mcp-tool-bridge.test.ts"
+      - file: "apps/zody-cli/packages/adapters/tests/mcp.test.ts"
+      - file: "apps/zody-cli/packages/adapters/tests/mcp-process-lifecycle.test.ts"
+      - file: "apps/zody-cli/packages/adapters/tests/mcp-version-negotiation.test.ts"
       - file: "packages/desktop/test/upstreamReplayServer.test.ts"
       - file: "packages/desktop/test/e2e/settings/mcp-dual-era-version-negotiation.test.ts"
       - file: "packages/desktop/test/e2e/conversation-session/manual-review/pending/conversation-session-browser-use-iab-multisession.test.ts"
@@ -4471,7 +4471,7 @@ nodes:
     label: "Browser WebView recording schema, SDK, main, artifact and runtime coverage"
     codeSeeds:
       - file: "packages/shared/test/browserControlProtocol.test.ts"
-      - file: "apps/zcode-cli/packages/core/tests/browser-client.test.ts"
+      - file: "apps/zody-cli/packages/core/tests/browser-client.test.ts"
       - file: "packages/desktop/test/browserGuestManager.test.ts"
       - file: "packages/desktop/test/browserControlMainBridge.test.ts"
       - file: "packages/desktop/test/browserRecordingArtifactMaterializer.test.ts"
@@ -4507,17 +4507,17 @@ nodes:
     kind: "evidence"
     label: "Browser Use bundled and fallback agent guidance coverage"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/core/tests/browser-manifest.test.ts"
+      - file: "apps/zody-cli/packages/core/tests/browser-manifest.test.ts"
 
   - id: "evidence.browser-use-plugin-distribution-tests"
     kind: "evidence"
     label: "Browser Use package, manifest, seed, SEA, and cache version alignment coverage"
     codeSeeds:
-      - file: "apps/zcode-cli/packages/bootstrap/tests/plugins.test.ts"
-      - file: "apps/zcode-cli/packages/bootstrap/tests/bundled-plugins-resilience.test.ts"
-      - file: "apps/zcode-cli/packages/cli/tests/build-sea.test.mjs"
-      - file: "apps/zcode-cli/packages/adapters/tests/plugins.test.ts"
-      - file: "apps/zcode-cli/packages/node-repl-host/test/mcp-server.test.ts"
+      - file: "apps/zody-cli/packages/bootstrap/tests/plugins.test.ts"
+      - file: "apps/zody-cli/packages/bootstrap/tests/bundled-plugins-resilience.test.ts"
+      - file: "apps/zody-cli/packages/cli/tests/build-sea.test.mjs"
+      - file: "apps/zody-cli/packages/adapters/tests/plugins.test.ts"
+      - file: "apps/zody-cli/packages/node-repl-host/test/mcp-server.test.ts"
       - file: "packages/server/test/remoteDeploy.test.ts"
       - file: "packages/desktop/test/runtime-asset-scripts.test.ts"
   - id: "capability.side-pane-tab-strip"
@@ -4599,7 +4599,7 @@ nodes:
       - "docs/specs/workspace-hook-trust-persistent-only.md"
     codeSeeds:
       - symbol: "WorkspaceHookReviewController"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-controller.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/workspace-hook-review-controller.ts"
       - symbol: "useWorkspaceHookInlineTrust"
         file: "packages/ui/src/settings/useWorkspaceHookInlineTrust.ts"
 
@@ -4616,7 +4616,7 @@ nodes:
       - "docs/chat/conversation-hook-turn-summary.md"
     codeSeeds:
       - symbol: "ProductProjection.onHookRunLifecycle"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/product-projection.ts"
       - symbol: "ConversationHookDetailsAction"
         file: "packages/ui/src/v4/ConversationHookDetailsAction.tsx"
       - symbol: "ConversationTurnGroup"
@@ -4696,16 +4696,16 @@ nodes:
     label: "Runtime Workspace Hook review and Trust mutation controller"
     codeSeeds:
       - symbol: "WorkspaceHookReviewController"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-controller.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/workspace-hook-review-controller.ts"
 
   - id: "service.workspace-hook-settings-pretrust"
     kind: "service"
     label: "Workspace-scoped Settings pretrust authority without a task"
     codeSeeds:
       - symbol: "grantWorkspaceHookTrust"
-        file: "apps/zcode-cli/packages/bootstrap/src/workspace-hook-trust-cli.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/workspace-hook-trust-cli.ts"
       - symbol: "grantWorkspaceHookTrustForProtocol"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/workspace-hook-trust.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/workspace-hook-trust.ts"
       - symbol: "createHooksService"
         file: "packages/services/src/hooks/hooksService.ts"
 
@@ -4714,16 +4714,16 @@ nodes:
     label: "Trusted Host-owned Workspace Hook managed policy provider"
     codeSeeds:
       - symbol: "WorkspaceHookPolicyProvider"
-        file: "apps/zcode-cli/packages/core/src/hooks/workspace-hook-policy.ts"
+        file: "apps/zody-cli/packages/core/src/hooks/workspace-hook-policy.ts"
       - symbol: "ZCodeProtocolAgentDependencies"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-types.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/server-types.ts"
 
   - id: "persistence.workspace-hook-trust-store"
     kind: "persistence"
     label: "User-owned Workspace Hook persistent Trust store"
     codeSeeds:
       - symbol: "FileWorkspaceHookTrustStore"
-        file: "apps/zcode-cli/packages/adapters/src/storage/workspace-hook-trust-store.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/workspace-hook-trust-store.ts"
 
   - id: "evidence.workspace-hook-persistent-trust-tests"
     kind: "evidence"
@@ -4732,8 +4732,8 @@ nodes:
       - file: "packages/ui/test/hooksSection.test.ts"
       - file: "packages/ui/test/workspaceHookInlineTrust.test.ts"
       - file: "packages/ui/test/workspaceHookReviewStore.test.ts"
-      - file: "apps/zcode-cli/packages/bootstrap/tests/workspace-hook-review-controller.test.ts"
-      - file: "apps/zcode-cli/packages/adapters/tests/workspace-hook-trust-store.test.ts"
+      - file: "apps/zody-cli/packages/bootstrap/tests/workspace-hook-review-controller.test.ts"
+      - file: "apps/zody-cli/packages/adapters/tests/workspace-hook-trust-store.test.ts"
   - id: "capability.workflow-run-confirmation"
     kind: "capability"
     label: "CreateWorkflow run confirmation gate with analysis preview"
@@ -4745,16 +4745,16 @@ nodes:
       - "工作流权限"
     docs:
       - "docs/dynamic-workflow/launch.md"
-      - "apps/zcode-cli/packages/dynamic-workflow/docs/analysis.md"
+      - "apps/zody-cli/packages/dynamic-workflow/docs/analysis.md"
     codeSeeds:
       - symbol: "createWorkflowToolEntry"
-        file: "apps/zcode-cli/packages/core/src/tool/handlers/create-workflow.ts"
+        file: "apps/zody-cli/packages/core/src/tool/handlers/create-workflow.ts"
       - symbol: "resolveToolPermission"
-        file: "apps/zcode-cli/packages/core/src/tool/executor/permission-flow.ts"
+        file: "apps/zody-cli/packages/core/src/tool/executor/permission-flow.ts"
       - symbol: "buildProtocolPermissionOptions"
-        file: "apps/zcode-cli/packages/bootstrap/src/permission-options.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/permission-options.ts"
       - symbol: "onPermissionRequested"
-        file: "apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/product-projection.ts"
 
   - id: "surface.workflow-run-confirmation-dialog"
     kind: "ui-surface"
@@ -4783,25 +4783,25 @@ nodes:
       - "运行工作流"
     docs:
       - "docs/dynamic-workflow/presentation.md"
-      - "apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md"
-      - "apps/zcode-cli/packages/dynamic-workflow/docs/analysis.md"
+      - "apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md"
+      - "apps/zody-cli/packages/dynamic-workflow/docs/analysis.md"
     codeSeeds:
       - symbol: "createWorkflowToolEntry"
-        file: "apps/zcode-cli/packages/core/src/tool/handlers/create-workflow.ts"
+        file: "apps/zody-cli/packages/core/src/tool/handlers/create-workflow.ts"
       - symbol: "runWorkflowScript"
-        file: "apps/zcode-cli/packages/dynamic-workflow-runtime/src/harness.ts"
+        file: "apps/zody-cli/packages/dynamic-workflow-runtime/src/harness.ts"
       - symbol: "WorkflowEngine"
-        file: "apps/zcode-cli/packages/dynamic-workflow/src/engine/engine.ts"
+        file: "apps/zody-cli/packages/dynamic-workflow/src/engine/engine.ts"
       - symbol: "createAgentRuntimeWorkflowDriver"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/workflow-driver.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/workflow-driver.ts"
       - symbol: "createScriptWorkflowAgentRuntime"
-        file: "apps/zcode-cli/packages/bootstrap/src/app/script-workflow-child-runtime.ts"
+        file: "apps/zody-cli/packages/bootstrap/src/app/script-workflow-child-runtime.ts"
       - symbol: "BackgroundTaskTracker"
-        file: "apps/zcode-cli/packages/core/src/tool/executor/background-tasks.ts"
+        file: "apps/zody-cli/packages/core/src/tool/executor/background-tasks.ts"
       - symbol: "statePatchSchema"
-        file: "packages/shared/src/zcode-protocol-v4/delta.ts"
+        file: "packages/shared/src/zody-protocol-v4/delta.ts"
       - symbol: "createDwfJournalStore"
-        file: "apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts"
 
   - id: "surface.workflow-run-detail-pane"
     kind: "ui-surface"
@@ -4890,11 +4890,11 @@ nodes:
       - "docs/dynamic-workflow/launch.md"
     codeSeeds:
       - symbol: "listWorkflowRunsToolEntry"
-        file: "apps/zcode-cli/packages/core/src/tool/handlers/list-workflow-runs.ts"
+        file: "apps/zody-cli/packages/core/src/tool/handlers/list-workflow-runs.ts"
       - symbol: "getWorkflowRunToolEntry"
-        file: "apps/zcode-cli/packages/core/src/tool/handlers/get-workflow-run.ts"
+        file: "apps/zody-cli/packages/core/src/tool/handlers/get-workflow-run.ts"
       - symbol: "createDwfJournalStore"
-        file: "apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts"
 
   - id: "surface.submit-result-tool-card"
     kind: "ui-surface"
@@ -4912,18 +4912,18 @@ nodes:
       - symbol: "ZCODE_KNOWN_TOOL_NAMES"
         file: "packages/shared/src/tool-identity.ts"
       - symbol: "SUBMIT_RESULT_TOOL_NAME"
-        file: "apps/zcode-cli/packages/contracts/src/tools/submit-result.ts"
+        file: "apps/zody-cli/packages/contracts/src/tools/submit-result.ts"
 
   - id: "state.workflow-run-journal"
     kind: "state-owner"
     label: "Dynamic workflow run journal and cancel registry (engine-owned run truth)"
     docs:
-      - "apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md"
+      - "apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md"
     codeSeeds:
       - symbol: "JournalStorePort"
-        file: "apps/zcode-cli/packages/dynamic-workflow/src/engine/types.ts"
+        file: "apps/zody-cli/packages/dynamic-workflow/src/engine/types.ts"
       - symbol: "SqliteDwfJournalStore"
-        file: "apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts"
 
   - id: "capability.conversation-sharing"
     kind: "capability"
@@ -4994,14 +4994,14 @@ nodes:
     label: "Shared context import status and provenance"
     codeSeeds:
       - symbol: "transitionSharedContextImport"
-        file: "apps/zcode-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts"
+        file: "apps/zody-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts"
 
   - id: "service.zcode-agent-connection-scope"
     kind: "service"
     label: "Host-trusted ZCode Agent attachment connection scope"
     codeSeeds:
       - symbol: "createZCodeAgentConnectionScope"
-        file: "packages/services/src/zcode-agent/zcodeAgentConnectionScope.ts"
+        file: "packages/services/src/zody-agent/zcodeAgentConnectionScope.ts"
 
   - id: "capability.plugin-creator-entry"
     kind: "capability"
@@ -5016,7 +5016,7 @@ nodes:
       - file: "packages/ui/src/settings/pluginSearch.ts"
       - file: "packages/ui/src/settings/PluginStoreListView.tsx"
       - file: "packages/ui/src/settings/pluginCapabilityProjection.ts"
-      - file: "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
+      - file: "apps/zody-cli/packages/bootstrap/src/app/official-plugin-definitions.ts"
     invariants:
       - "Creator only prefills an unsent draft using the target host official skill path."
       - "Market and User management share the two-item menu; Workspace config adds no marketplace mutations."

@@ -1,7 +1,7 @@
 import {
   MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE,
   type PlatformSecureStore,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * 手机页面侧的安全存储实现（T4.2；Android 原生桥在 T6.2 接入）。

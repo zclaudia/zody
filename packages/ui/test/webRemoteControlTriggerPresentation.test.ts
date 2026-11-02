@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RemoteAccessStatus } from "@zcode/shared";
+import type { RemoteAccessStatus } from "@zody/shared";
 import { getRemoteAccessTriggerPresentation } from "@/WorkspaceWebRemoteControlTrigger.js";
 
 const formatMessage = ({ id }: { id: string }) => id;

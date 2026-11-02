@@ -24,7 +24,7 @@ import {
   type ZCodeAutomationRunOutcome,
   type ZCodeAutomationTrigger,
   type ZCodeAutomationUpdateParams,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { getTasksIndexDatabasePath } from "#src/paths.js";
 import { runTasksDatabaseMigrations } from "#src/session/tasksDatabase/migrations.js";
 

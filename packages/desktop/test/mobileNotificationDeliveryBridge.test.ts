@@ -6,7 +6,7 @@ import { createMobileNotificationDeliveryBridge } from "../src/host/mobileNotifi
 import {
   createMobileNotificationService,
   type IMobileNotificationService,
-} from "@zcode/services/mobile-notifications/node";
+} from "@zody/services/mobile-notifications/node";
 
 function claimFixture(notificationId = "n") {
   return {

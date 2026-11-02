@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, type ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { IServiceAccessor } from "@zcode/services";
-import type { FileEntry } from "@zcode/shared";
+import type { IServiceAccessor } from "@zody/services";
+import type { FileEntry } from "@zody/shared";
 import { FolderIcon, FolderSymlinkIcon } from "lucide-react";
 import { Button } from "./components/ui/button.js";
 import { Input } from "./components/ui/input.js";

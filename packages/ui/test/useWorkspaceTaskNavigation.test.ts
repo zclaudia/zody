@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { createElement, type ReactNode } from "react";
 import { act, renderHook } from "@testing-library/react";
-import type { IServiceAccessor } from "@zcode/services";
+import type { IServiceAccessor } from "@zody/services";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { useWorkspaceTaskNavigation } from "@/app-shell/useWorkspaceTaskNavigation.js";

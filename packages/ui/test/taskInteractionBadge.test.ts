@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskPendingInteraction } from "@zcode/shared";
+import type { ZCodeTaskPendingInteraction } from "@zody/shared";
 import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
 import {
   TaskInteractionBadge,

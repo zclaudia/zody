@@ -13,7 +13,7 @@ import {
   type ZCodePluginsMarketplaceMutationResult,
   type ZCodePluginsOverviewResult,
   type ZCodePluginsReferenceCatalogResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_WORKSPACE,
   clickTestIdByDom,

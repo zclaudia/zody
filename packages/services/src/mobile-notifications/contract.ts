@@ -1,6 +1,6 @@
-import type { Event } from "@zcode/rpc";
-import type { MobileNotificationPrincipal, MobileNotificationPushAction } from "@zcode/shared";
-export type { MobileNotificationPrincipal } from "@zcode/shared";
+import type { Event } from "@zody/rpc";
+import type { MobileNotificationPrincipal, MobileNotificationPushAction } from "@zody/shared";
+export type { MobileNotificationPrincipal } from "@zody/shared";
 import { createServiceDescriptor } from "../descriptors.js";
 
 export type MobileNotificationKind = "completed" | "failed" | "permission" | "question";

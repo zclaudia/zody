@@ -9,7 +9,7 @@ import {
   type ZCodeMessageWithParts,
   type ZCodeSessionSettingsState,
   type ZCodeSessionStateSnapshot,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   formatModelPickerValue as formatProjectedModelSelection,
   parseModelPickerValue,

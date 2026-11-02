@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeCommand, ZCodeSlashCommand } from "@zcode/shared";
+import type { ZCodeCommand, ZCodeSlashCommand } from "@zody/shared";
 import { mergeSlashCommandsAfterCommandRefresh } from "../src/settings/pluginSlashCommandRefresh.js";
 
 function makePluginCommand(

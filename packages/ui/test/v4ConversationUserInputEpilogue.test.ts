@@ -4,7 +4,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import type { UserInputRow } from "@zcode/shared/zcode-protocol-v4";
+import type { UserInputRow } from "@zody/shared/zody-protocol-v4";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";

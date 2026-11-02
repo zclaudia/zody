@@ -7,7 +7,7 @@
 // 三个字段服务于两条路：填了什么，既随消息交给 ZCode，也是直接保存要写下去的那一份。
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { SparkleIcon } from "lucide-react";
-import type { ZCodeSavedWorkflowScope, ZCodeWorkflowsSaveResult } from "@zcode/shared";
+import type { ZCodeSavedWorkflowScope, ZCodeWorkflowsSaveResult } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTitle } from "@/components/ui/popover.js";
 import { Spinner } from "@/components/ui/spinner.js";

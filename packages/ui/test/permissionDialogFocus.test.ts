@@ -3,8 +3,8 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodePermissionRequest } from "@zcode/shared";
-import type { ConversationSnapshot } from "@zcode/shared/zcode-protocol-v4";
+import type { ZCodePermissionRequest } from "@zody/shared";
+import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
 import { PermissionDialog } from "@/PermissionDialog.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { V4InteractionDialogs } from "@/v4/V4InteractionDialogs.js";

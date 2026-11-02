@@ -1,4 +1,4 @@
-import type { BrowserClientMode } from "@zcode/shared";
+import type { BrowserClientMode } from "@zody/shared";
 
 /**
  * 窗口默认 backend 只对 desktop-continuous 生效。手机 replay 首版不返回 extension

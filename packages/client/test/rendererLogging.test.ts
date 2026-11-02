@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { MessagePortLike } from "@zcode/rpc";
+import type { MessagePortLike } from "@zody/rpc";
 
 async function importClientLogger() {
   vi.resetModules();

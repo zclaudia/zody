@@ -1,4 +1,4 @@
-import { resolveStoredCredentialSecret } from "@zcode/shared/node";
+import { resolveStoredCredentialSecret } from "@zody/shared/node";
 import { createCredentialCipherProvider } from "./credentialCipherProvider.js";
 
 export async function createStoredCredentialCipher(

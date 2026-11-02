@@ -1,6 +1,6 @@
 import { createHash, webcrypto } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
-import { PROTOCOL_V4_LIMITS } from "@zcode/shared/zcode-protocol-v4";
+import { PROTOCOL_V4_LIMITS } from "@zody/shared/zody-protocol-v4";
 import {
   ATTACHMENT_UPLOAD_CHUNK_BYTES,
   measureAttachmentChannelRequestBytes,

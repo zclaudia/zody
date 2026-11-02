@@ -1,6 +1,6 @@
 import { memo } from "react";
-import { TID_V4_GOAL_BANNER } from "@zcode/shared";
-import type { GoalState } from "@zcode/shared/zcode-protocol-v4";
+import { TID_V4_GOAL_BANNER } from "@zody/shared";
+import type { GoalState } from "@zody/shared/zody-protocol-v4";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 
 export interface ConversationGoalBannerProps {

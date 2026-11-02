@@ -2,8 +2,8 @@
 // run, and running it again」）：名字规则的前置回声、落点预览、弹层起点、交给 ZCode 的那条消息、
 // 转写里的候选联接、「再次运行」实参预填，以及「这次 run 存成了哪个工作流」的读缓存。
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ConversationRow } from "@zcode/shared/zcode-protocol-v4";
-import { ZCODE_WORKFLOWS_FOR_RUN_MAX_CANDIDATES } from "@zcode/shared";
+import type { ConversationRow } from "@zody/shared/zody-protocol-v4";
+import { ZCODE_WORKFLOWS_FOR_RUN_MAX_CANDIDATES } from "@zody/shared";
 
 vi.mock("@/logger.js", () => ({ logger: { debug: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
 

@@ -4,7 +4,7 @@ import {
   DISABLED_RENDERER_ACTION_TRACE_CONFIG,
   PlatformChannels,
   type RendererActionTraceConfigV1,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 const ipcListeners = new Map<string, (event: unknown, payload: unknown) => void>();
 const ipcHandlers = new Map<string, unknown>();

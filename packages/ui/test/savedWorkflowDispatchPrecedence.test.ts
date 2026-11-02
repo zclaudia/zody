@@ -18,7 +18,7 @@
 // resolvePermissionBlockKind 里按名字判定的那两段注释。
 
 import { cleanup, render, screen } from "@testing-library/react";
-import type { ZCodePermissionRequest } from "@zcode/shared";
+import type { ZCodePermissionRequest } from "@zody/shared";
 import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";

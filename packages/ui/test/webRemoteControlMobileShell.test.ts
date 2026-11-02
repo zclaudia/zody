@@ -11,7 +11,7 @@ import { persistWebRemoteControlMobileTaskHomePreferences } from "@/WebRemoteCon
 import type {
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceListResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
   useZCodeIntl: () => ({

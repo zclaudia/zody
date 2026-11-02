@@ -3,7 +3,7 @@ import type {
   WebRemoteControlAppPayload,
   WebRemoteControlRecentProjectTarget,
   WebRemoteControlWorkspaceTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   createWebRemoteControlManager,
   WEB_REMOTE_CONTROL_WORKSPACE_OPEN_TIMEOUT_MS,

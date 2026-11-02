@@ -4,7 +4,7 @@
  * locator click/press 在 IAB 与 extension backend 上必须使用同一套 CDP Input 语义；
  * 坐标只来自 Playwright injected runtime，不来自截图像素。
  */
-import type { BrowserKeyModifier, BrowserMouseButton } from "@zcode/shared";
+import type { BrowserKeyModifier, BrowserMouseButton } from "@zody/shared";
 import type { PlaywrightPage, PlaywrightPointer } from "./types.js";
 
 const MODIFIER_BITS: Record<BrowserKeyModifier, number> = {

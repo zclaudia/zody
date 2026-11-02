@@ -152,7 +152,7 @@ importers:
         specifier: ^8.0.2
         version: 8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
 
-  apps/zcode-cli:
+  apps/zody-cli:
     dependencies:
       dotenv:
         specifier: ^17.4.2
@@ -198,7 +198,7 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@5.9.3))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.25.12)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/adapters:
+  apps/zody-cli/packages/adapters:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: 3.0.81
@@ -212,24 +212,24 @@ importers:
       '@modelcontextprotocol/client':
         specifier: 2.0.0
         version: 2.0.0
-      '@zcode/contracts':
+      '@zody/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@zcode/dynamic-workflow':
+      '@zody/dynamic-workflow':
         specifier: workspace:*
         version: link:../dynamic-workflow
-      '@zcode/model-option-map':
+      '@zody/model-option-map':
         specifier: workspace:*
         version: link:../../../../packages/model-option-map
-      '@zcode/provider':
+      '@zody/provider':
         specifier: workspace:*
         version: link:../../../../packages/provider
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../../../../packages/shared
-      '@zcode/zcode-cua':
+      '@zody/zody-cua':
         specifier: workspace:*
-        version: link:../../../../packages/zcode-cua
+        version: link:../../../../packages/zody-cua
       ai:
         specifier: 6.0.193
         version: 6.0.193(zod@4.6.5)
@@ -277,7 +277,7 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@6.0.2))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/android-emulator-plugin:
+  apps/zody-cli/packages/android-emulator-plugin:
     dependencies:
       '@modelcontextprotocol/server':
         specifier: 2.0.0
@@ -299,36 +299,36 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@5.9.3))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.25.12)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/bootstrap:
+  apps/zody-cli/packages/bootstrap:
     dependencies:
-      '@zcode/adapters':
+      '@zody/adapters':
         specifier: workspace:*
         version: link:../adapters
-      '@zcode/contracts':
+      '@zody/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@zcode/core':
+      '@zody/core':
         specifier: workspace:*
         version: link:../core
-      '@zcode/dynamic-workflow':
+      '@zody/dynamic-workflow':
         specifier: workspace:*
         version: link:../dynamic-workflow
-      '@zcode/dynamic-workflow-runtime':
+      '@zody/dynamic-workflow-runtime':
         specifier: workspace:*
         version: link:../dynamic-workflow-runtime
-      '@zcode/i18n':
+      '@zody/i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@zcode/provider':
+      '@zody/provider':
         specifier: workspace:*
         version: link:../../../../packages/provider
-      '@zcode/provider-node':
+      '@zody/provider-node':
         specifier: workspace:*
         version: link:../../../../packages/provider-node
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../../../../packages/shared
-      '@zcode/telemetry':
+      '@zody/telemetry':
         specifier: workspace:*
         version: link:../telemetry
       diff:
@@ -344,28 +344,28 @@ importers:
       '@types/yazl':
         specifier: ^3.3.1
         version: 3.3.1
-      '@zcode/formal-proof':
+      '@zody/formal-proof':
         specifier: workspace:*
         version: link:../../../../packages/formal-proof
       yazl:
         specifier: ^3.3.1
         version: 3.3.1
 
-  apps/zcode-cli/packages/browser-use-plugin:
+  apps/zody-cli/packages/browser-use-plugin:
     dependencies:
       '@modelcontextprotocol/server':
         specifier: 2.0.0
         version: 2.0.0
-      '@zcode/contracts':
+      '@zody/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@zcode/core':
+      '@zody/core':
         specifier: workspace:*
         version: link:../core
-      '@zcode/node-repl-host':
+      '@zody/node-repl-host':
         specifier: workspace:*
         version: link:../node-repl-host
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../../../../packages/shared
       zod:
@@ -378,10 +378,10 @@ importers:
       '@types/node':
         specifier: ^24.0.0
         version: 24.12.2
-      '@zcode/adapters':
+      '@zody/adapters':
         specifier: workspace:*
         version: link:../adapters
-      '@zcode/bootstrap':
+      '@zody/bootstrap':
         specifier: workspace:*
         version: link:../bootstrap
       esbuild:
@@ -397,36 +397,36 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@5.9.3))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.25.12)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/cli:
+  apps/zody-cli/packages/cli:
     dependencies:
-      '@zcode/adapters':
+      '@zody/adapters':
         specifier: workspace:*
         version: link:../adapters
-      '@zcode/bootstrap':
+      '@zody/bootstrap':
         specifier: workspace:*
         version: link:../bootstrap
-      '@zcode/contracts':
+      '@zody/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@zcode/core':
+      '@zody/core':
         specifier: workspace:*
         version: link:../core
-      '@zcode/dynamic-workflow-runtime':
+      '@zody/dynamic-workflow-runtime':
         specifier: workspace:*
         version: link:../dynamic-workflow-runtime
-      '@zcode/i18n':
+      '@zody/i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@zcode/provider-node':
+      '@zody/provider-node':
         specifier: workspace:*
         version: link:../../../../packages/provider-node
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../../../../packages/shared
-      '@zcode/shared-types':
+      '@zody/shared-types':
         specifier: workspace:*
         version: link:../shared-types
-      '@zcode/tui':
+      '@zody/tui':
         specifier: workspace:*
         version: link:../tui
       dotenv:
@@ -436,9 +436,9 @@ importers:
         specifier: 1.59.1
         version: 1.59.1
 
-  apps/zcode-cli/packages/contracts:
+  apps/zody-cli/packages/contracts:
     dependencies:
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../../../../packages/shared
       zod:
@@ -455,23 +455,23 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@6.0.2))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/core:
+  apps/zody-cli/packages/core:
     dependencies:
-      '@zcode/contracts':
+      '@zody/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@zcode/dynamic-workflow':
+      '@zody/dynamic-workflow':
         specifier: workspace:*
         version: link:../dynamic-workflow
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../../../../packages/shared
-      '@zcode/shared-types':
+      '@zody/shared-types':
         specifier: workspace:*
         version: link:../shared-types
-      '@zcode/zcode-cua':
+      '@zody/zody-cua':
         specifier: workspace:*
-        version: link:../../../../packages/zcode-cua
+        version: link:../../../../packages/zody-cua
       cheerio:
         specifier: ^1.0.0
         version: 1.2.0
@@ -501,12 +501,12 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@6.0.2))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/debug:
+  apps/zody-cli/packages/debug:
     dependencies:
       '@hono/node-server':
         specifier: ^1.14.4
         version: 1.19.14(hono@4.12.12)
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../../../../packages/shared
       hono:
@@ -553,9 +553,9 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@5.9.3))(vite@7.3.3(@types/node@24.12.2)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/documents-plugin: {}
+  apps/zody-cli/packages/documents-plugin: {}
 
-  apps/zcode-cli/packages/dynamic-workflow:
+  apps/zody-cli/packages/dynamic-workflow:
     dependencies:
       typescript:
         specifier: ^5.9.0
@@ -568,12 +568,12 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@5.9.3))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/dynamic-workflow-runtime:
+  apps/zody-cli/packages/dynamic-workflow-runtime:
     dependencies:
-      '@zcode/dynamic-workflow':
+      '@zody/dynamic-workflow':
         specifier: workspace:*
         version: link:../dynamic-workflow
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../../../../packages/shared
     devDependencies:
@@ -584,9 +584,9 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@6.0.2))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/i18n:
+  apps/zody-cli/packages/i18n:
     dependencies:
-      '@zcode/contracts':
+      '@zody/contracts':
         specifier: workspace:*
         version: link:../contracts
     devDependencies:
@@ -594,7 +594,7 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@25.6.0)(typescript@6.0.2))(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/ios-simulator-plugin:
+  apps/zody-cli/packages/ios-simulator-plugin:
     dependencies:
       '@modelcontextprotocol/server':
         specifier: 2.0.0
@@ -616,7 +616,7 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@5.9.3))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.25.12)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/node-repl-host:
+  apps/zody-cli/packages/node-repl-host:
     dependencies:
       '@modelcontextprotocol/client':
         specifier: 2.0.0
@@ -624,18 +624,18 @@ importers:
       '@modelcontextprotocol/server':
         specifier: 2.0.0
         version: 2.0.0
-      '@zcode/contracts':
+      '@zody/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@zcode/core':
+      '@zody/core':
         specifier: workspace:*
         version: link:../core
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../../../../packages/shared
-      '@zcode/zcode-cua':
+      '@zody/zody-cua':
         specifier: workspace:*
-        version: link:../../../../packages/zcode-cua
+        version: link:../../../../packages/zody-cua
       zod:
         specifier: ^4.4.3
         version: 4.6.5
@@ -653,33 +653,33 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@5.9.3))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.25.12)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/pdf-plugin: {}
+  apps/zody-cli/packages/pdf-plugin: {}
 
-  apps/zcode-cli/packages/plugin-creator-plugin: {}
+  apps/zody-cli/packages/plugin-creator-plugin: {}
 
-  apps/zcode-cli/packages/presentations-plugin: {}
+  apps/zody-cli/packages/presentations-plugin: {}
 
-  apps/zcode-cli/packages/restore-legacy-sessions-plugin: {}
+  apps/zody-cli/packages/restore-legacy-sessions-plugin: {}
 
-  apps/zcode-cli/packages/shared-types:
+  apps/zody-cli/packages/shared-types:
     devDependencies:
       '@types/node':
         specifier: ^24.0.0
         version: 24.12.2
 
-  apps/zcode-cli/packages/skill-creator-plugin: {}
+  apps/zody-cli/packages/skill-creator-plugin: {}
 
-  apps/zcode-cli/packages/spreadsheets-plugin: {}
+  apps/zody-cli/packages/spreadsheets-plugin: {}
 
-  apps/zcode-cli/packages/superpowers-plugin: {}
+  apps/zody-cli/packages/superpowers-plugin: {}
 
-  apps/zcode-cli/packages/swift-bridge:
+  apps/zody-cli/packages/swift-bridge:
     dependencies:
-      '@zcode/shared-types':
+      '@zody/shared-types':
         specifier: workspace:*
         version: link:../shared-types
 
-  apps/zcode-cli/packages/telemetry:
+  apps/zody-cli/packages/telemetry:
     dependencies:
       '@opentelemetry/api':
         specifier: ^1.9.0
@@ -705,7 +705,7 @@ importers:
       '@opentelemetry/sdk-trace-base':
         specifier: 2.6.1
         version: 2.6.1(@opentelemetry/api@1.9.1)
-      '@zcode/contracts':
+      '@zody/contracts':
         specifier: workspace:*
         version: link:../contracts
     devDependencies:
@@ -716,7 +716,7 @@ importers:
         specifier: ^4.1.5
         version: 4.1.7(patch_hash=11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0)(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.13.3(@types/node@24.12.2)(typescript@6.0.2))(vite@8.0.8(@types/node@24.12.2)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  apps/zcode-cli/packages/tui:
+  apps/zody-cli/packages/tui:
     dependencies:
       '@mbears/opentui-core':
         specifier: 0.2.15
@@ -724,13 +724,13 @@ importers:
       '@mbears/opentui-react':
         specifier: 0.2.15
         version: 0.2.15(react-devtools-core@7.0.1)(react@19.2.7)(typescript@6.0.2)(web-tree-sitter@0.25.10)(ws@8.18.0)
-      '@zcode/contracts':
+      '@zody/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@zcode/i18n':
+      '@zody/i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../../../../packages/shared
       react:
@@ -756,13 +756,13 @@ importers:
         specifier: ^4.20.0
         version: 4.21.0
 
-  apps/zcode-cli/packages/visualize-plugin: {}
+  apps/zody-cli/packages/visualize-plugin: {}
 
-  apps/zcode-cli/packages/zcode-cua-plugin:
+  apps/zody-cli/packages/zody-cua-plugin:
     dependencies:
-      '@zcode/zcode-cua':
+      '@zody/zody-cua':
         specifier: workspace:*
-        version: link:../../../../packages/zcode-cua
+        version: link:../../../../packages/zody-cua
     devDependencies:
       '@types/node':
         specifier: ^24.0.0
@@ -771,9 +771,9 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
-  apps/zcode-cli/packages/zcode-guide-plugin: {}
+  apps/zody-cli/packages/zody-guide-plugin: {}
 
-  apps/zcode-cli/tools/prompt-trajectory:
+  apps/zody-cli/tools/prompt-trajectory:
     devDependencies:
       '@types/node':
         specifier: ^24.0.0
@@ -785,23 +785,23 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
-  apps/zcode-cli/tools/typescript: {}
+  apps/zody-cli/tools/typescript: {}
 
   packages/browser-extension:
     devDependencies:
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../shared
 
   packages/client:
     dependencies:
-      '@zcode/rpc':
+      '@zody/rpc':
         specifier: workspace:*
         version: link:../rpc
-      '@zcode/services':
+      '@zody/services':
         specifier: workspace:*
         version: link:../services
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../shared
     devDependencies:
@@ -859,36 +859,36 @@ importers:
       '@zclaudia/gateway-protocol':
         specifier: 0.3.0
         version: 0.3.0
-      '@zcode/client':
+      '@zody/client':
         specifier: workspace:*
         version: link:../client
-      '@zcode/e2e-report':
+      '@zody/e2e-report':
         specifier: workspace:*
         version: link:../e2e-report
-      '@zcode/provider':
+      '@zody/provider':
         specifier: workspace:*
         version: link:../provider
-      '@zcode/provider-node':
+      '@zody/provider-node':
         specifier: workspace:*
         version: link:../provider-node
-      '@zcode/rpc':
+      '@zody/rpc':
         specifier: workspace:*
         version: link:../rpc
-      '@zcode/server':
+      '@zody/server':
         specifier: workspace:*
         version: link:../server
-      '@zcode/services':
+      '@zody/services':
         specifier: workspace:*
         version: link:../services
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../shared
-      '@zcode/ui':
+      '@zody/ui':
         specifier: workspace:*
         version: link:../ui
-      '@zcode/zcode-cua':
+      '@zody/zody-cua':
         specifier: workspace:*
-        version: link:../zcode-cua
+        version: link:../zody-cua
       electron-updater:
         specifier: ^6.8.3
         version: 6.8.3
@@ -1093,10 +1093,10 @@ importers:
 
   packages/provider:
     dependencies:
-      '@zcode/model-option-map':
+      '@zody/model-option-map':
         specifier: workspace:*
         version: link:../model-option-map
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../shared
       zod:
@@ -1112,10 +1112,10 @@ importers:
 
   packages/provider-node:
     dependencies:
-      '@zcode/provider':
+      '@zody/provider':
         specifier: workspace:*
         version: link:../provider
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../shared
       zod:
@@ -1125,7 +1125,7 @@ importers:
       '@types/node':
         specifier: ^25.5.0
         version: 25.6.0
-      '@zcode/model-option-map':
+      '@zody/model-option-map':
         specifier: workspace:*
         version: link:../model-option-map
       typescript:
@@ -1164,16 +1164,16 @@ importers:
       '@lydell/node-pty-linux-x64':
         specifier: 1.2.0-beta.10
         version: 1.2.0-beta.10
-      '@zcode/client':
+      '@zody/client':
         specifier: workspace:*
         version: link:../client
-      '@zcode/rpc':
+      '@zody/rpc':
         specifier: workspace:*
         version: link:../rpc
-      '@zcode/services':
+      '@zody/services':
         specifier: workspace:*
         version: link:../services
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../shared
       axios:
@@ -1246,21 +1246,21 @@ importers:
       '@agentclientprotocol/sdk':
         specifier: ^0.21.1
         version: 0.21.1(zod@4.6.5)
-      '@zcode/provider':
+      '@zody/provider':
         specifier: workspace:*
         version: link:../provider
-      '@zcode/provider-node':
+      '@zody/provider-node':
         specifier: workspace:*
         version: link:../provider-node
-      '@zcode/rpc':
+      '@zody/rpc':
         specifier: workspace:*
         version: link:../rpc
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../shared
-      '@zcode/zcode-cua':
+      '@zody/zody-cua':
         specifier: workspace:*
-        version: link:../zcode-cua
+        version: link:../zody-cua
       chokidar:
         specifier: 4.0.3
         version: 4.0.3
@@ -1313,7 +1313,7 @@ importers:
 
   packages/shared:
     dependencies:
-      '@zcode/model-option-map':
+      '@zody/model-option-map':
         specifier: workspace:*
         version: link:../model-option-map
       zod:
@@ -1447,16 +1447,16 @@ importers:
       '@xyflow/react':
         specifier: ^12.10.1
         version: 12.10.2(@types/react@19.2.14)(immer@11.1.8)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@zcode/provider':
+      '@zody/provider':
         specifier: workspace:*
         version: link:../provider
-      '@zcode/rpc':
+      '@zody/rpc':
         specifier: workspace:*
         version: link:../rpc
-      '@zcode/services':
+      '@zody/services':
         specifier: workspace:*
         version: link:../services
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../shared
       ai:
@@ -1607,13 +1607,13 @@ importers:
       '@zclaudia/gateway-client':
         specifier: 0.3.0
         version: 0.3.0
-      '@zcode/client':
+      '@zody/client':
         specifier: workspace:*
         version: link:../client
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../shared
-      '@zcode/ui':
+      '@zody/ui':
         specifier: workspace:*
         version: link:../ui
       react:
@@ -1648,9 +1648,9 @@ importers:
         specifier: ^8.20.0
         version: 8.20.0
 
-  packages/zcode-cua: {}
+  packages/zody-cua: {}
 
-  packages/zcode-server-cli:
+  packages/zody-server-cli:
     dependencies:
       '@hono/node-server':
         specifier: ^1.19.11
@@ -1658,13 +1658,13 @@ importers:
       '@hono/node-ws':
         specifier: ^1.3.0
         version: 1.3.0(@hono/node-server@1.19.14(hono@4.12.12))(hono@4.12.12)
-      '@zcode/rpc':
+      '@zody/rpc':
         specifier: workspace:*
         version: link:../rpc
-      '@zcode/services':
+      '@zody/services':
         specifier: workspace:*
         version: link:../services
-      '@zcode/shared':
+      '@zody/shared':
         specifier: workspace:*
         version: link:../shared
       hono:

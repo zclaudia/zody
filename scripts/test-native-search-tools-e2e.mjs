@@ -43,7 +43,7 @@ function expectStatus(result, status, label) {
 function verifyBashEmbeddedSearch(plan) {
   const buildResult = execute(
     "pnpm",
-    ["--dir", repoRoot, "--filter", "@zcode/bootstrap^...", "--if-present", "build"],
+    ["--dir", repoRoot, "--filter", "@zody/bootstrap^...", "--if-present", "build"],
     { cwd: repoRoot, env: process.env },
   );
   expectStatus(buildResult, 0, "Bash embedded search dependency build");
@@ -52,7 +52,7 @@ function verifyBashEmbeddedSearch(plan) {
     "pnpm",
     [
       "--dir",
-      join(repoRoot, "apps/zcode-cli"),
+      join(repoRoot, "apps/zody-cli"),
       "exec",
       "vitest",
       "run",

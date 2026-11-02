@@ -5,7 +5,7 @@ import {
   TID_WORKSPACE_HELP_MENU_TRIGGER,
   testId,
   type ResourceUsageSnapshot,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clickTestIdByWebDriver, dispatchMouseDownByExactTestId } from "./desktop-app.js";
 import { sel } from "./selectors.js";
 

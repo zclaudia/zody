@@ -3,7 +3,7 @@ import {
   WebRemoteControlMobileBackendPicker,
   WebRemoteControlMobileSettingsScreen,
   type WebRemoteControlMobileSettingsDraft,
-} from "@zcode/ui";
+} from "@zody/ui";
 import {
   startMobileRemoteBackendDiscovery,
   type MobileRemoteBackendDiscoverySnapshot,

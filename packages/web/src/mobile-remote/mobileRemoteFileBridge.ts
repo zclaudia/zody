@@ -1,4 +1,4 @@
-import type { IPlatformService, SaveFileRequest, SaveFileResult } from "@zcode/shared";
+import type { IPlatformService, SaveFileRequest, SaveFileResult } from "@zody/shared";
 import { MOBILE_REMOTE_NATIVE_BRIDGE_GLOBAL_KEY } from "./mobileRemoteSecureStore.js";
 
 /**

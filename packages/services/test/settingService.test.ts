@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { AppSettings } from "@zcode/shared";
+import type { AppSettings } from "@zody/shared";
 import type { ISettingService } from "../src/setting/setting.js";
 
 const originalHome = process.env.HOME;

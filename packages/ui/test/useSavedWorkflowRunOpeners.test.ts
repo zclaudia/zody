@@ -8,7 +8,7 @@
 // 工具行），所以老行缺 toolCallId 时「查看实例」关闭而产物 chip 仍然可点。
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeSavedWorkflowRun } from "@zcode/shared";
+import type { ZCodeSavedWorkflowRun } from "@zody/shared";
 import {
   useSavedWorkflowRunOpeners,
   type SavedWorkflowRunOpenTarget,

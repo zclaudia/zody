@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { PlatformChannels, type WebRemoteControlStatus } from "@zcode/shared";
+import { PlatformChannels, type WebRemoteControlStatus } from "@zody/shared";
 import {
   broadcastWebRemoteControlStatusChanged,
   sendWebRemoteControlStatusChangedToWindow,

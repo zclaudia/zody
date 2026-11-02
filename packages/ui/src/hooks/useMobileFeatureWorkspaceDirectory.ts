@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { WebRemoteControlWorkspaceListResult } from "@zcode/shared";
+import type { WebRemoteControlWorkspaceListResult } from "@zody/shared";
 import type { WebRemoteControlWorkspaceSwitcherApi } from "@/root/types.js";
 
 export function useMobileFeatureWorkspaceDirectory(

@@ -2,7 +2,7 @@ import { mkdir, readFile, symlink, writeFile } from "node:fs/promises";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { MAX_SKILL_SCAN_DEPTH, SKILL_SYNC_SIZE_LIMIT_ERROR_CODE } from "@zcode/shared";
+import { MAX_SKILL_SCAN_DEPTH, SKILL_SYNC_SIZE_LIMIT_ERROR_CODE } from "@zody/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createSkillSyncService } from "../src/skill-sync/skillSyncService.js";
 

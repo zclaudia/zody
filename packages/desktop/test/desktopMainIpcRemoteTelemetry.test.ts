@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { InternalChannels, PlatformChannels, type RemoteTarget } from "@zcode/shared";
+import { InternalChannels, PlatformChannels, type RemoteTarget } from "@zody/shared";
 import { isAllowedExternalOpenUrl } from "../src/main/desktopMainIpcRemote.js";
 
 type IpcHandler = (...args: unknown[]) => unknown;

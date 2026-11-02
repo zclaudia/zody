@@ -5,7 +5,7 @@ import { createElement, type ChangeEvent } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TID_SUBAGENT_BUILT_IN_MODEL_TRIGGER, TID_SUBAGENT_ROW, testId } from "@zcode/shared";
+import { TID_SUBAGENT_BUILT_IN_MODEL_TRIGGER, TID_SUBAGENT_ROW, testId } from "@zody/shared";
 import { encodeCustomModelValue } from "../src/lib/zcodeCustomModelValue.js";
 
 const capturedButtons: Array<Record<string, unknown>> = [];

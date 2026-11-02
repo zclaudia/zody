@@ -9,8 +9,8 @@ import {
   Pin,
   Smartphone,
 } from "lucide-react";
-import { isCronTask, type ZCodeTaskMeta } from "@zcode/shared";
-import { TID_TASK_ARCHIVE, TID_TASK_ITEM, testId } from "@zcode/shared";
+import { isCronTask, type ZCodeTaskMeta } from "@zody/shared";
+import { TID_TASK_ARCHIVE, TID_TASK_ITEM, testId } from "@zody/shared";
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";

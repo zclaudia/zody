@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { DockerContainerInfo, IPlatformService } from "@zcode/shared";
+import type { DockerContainerInfo, IPlatformService } from "@zody/shared";
 import {
   loadRemoteConnectionDockerOptions,
   resolveDockerContainerSelectionAfterRefresh,

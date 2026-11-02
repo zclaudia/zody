@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZCodeTaskMeta } from "@zody/shared";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 
 const { globalTaskListResult, remotePinnedState } = vi.hoisted(() => ({

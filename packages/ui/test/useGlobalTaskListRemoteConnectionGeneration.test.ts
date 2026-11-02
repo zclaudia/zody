@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { createElement, type ReactNode } from "react";
 import { renderHook, waitFor } from "@testing-library/react";
-import { Emitter } from "@zcode/rpc";
+import { Emitter } from "@zody/rpc";
 import type {
   IServiceAccessor,
   IWindowControllerService,
   WindowHostControllerFrame,
-} from "@zcode/services";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+} from "@zody/services";
+import type { ZCodeTaskMeta } from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { useGlobalTaskList } from "@/hooks/useGlobalTaskList.js";

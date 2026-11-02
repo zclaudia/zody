@@ -11,8 +11,8 @@ import type { WorkflowRunSettingsChange } from "@/components/workflow-timeline/w
 import type { WorkflowDraftPosition, WorkflowRunCardSummary } from "@/ToolCallBlocks/shared.js";
 import type { WorkflowFillGraph } from "@/v4/workflowRunCardJoin.js";
 import type { Theme } from "@/useTheme.js";
-import type { ModelSelectionView } from "@zcode/services";
-import type { ZCodeWorkflowsForRunCandidate } from "@zcode/shared";
+import type { ModelSelectionView } from "@zody/services";
+import type { ZCodeWorkflowsForRunCandidate } from "@zody/shared";
 import type { ConversationAttachmentReadParams, ConversationTransport } from "@/v4/transport.js";
 import type {
   OpenPlanDetailSideTabRequest,
@@ -28,7 +28,7 @@ import type {
   TurnHeaderRow,
   V4ConversationFileChangesResult,
   V4ConversationFileRewindPreviewResult,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 
 export type ConversationFileChangesState = Exclude<
   NonNullable<TurnHeaderRow["fileChanges"]>["state"],

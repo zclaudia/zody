@@ -5,7 +5,7 @@ import {
   v4ConversationFileChangesResultSchema,
   v4ConversationFileRewindPreviewParamsSchema,
   v4ConversationFileRewindPreviewResultSchema,
-} from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
 
 describe("zcode-protocol-v4 file summary queries", () => {
   it("defines fileChanges and fileRewindPreview v4 methods", () => {

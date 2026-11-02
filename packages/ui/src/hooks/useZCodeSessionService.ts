@@ -1,4 +1,4 @@
-import type { IZCodeSessionService } from "@zcode/services";
+import type { IZCodeSessionService } from "@zody/services";
 import { useServices } from "@/hooks/useServices.js";
 import { useWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 

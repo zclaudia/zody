@@ -11,7 +11,7 @@ import {
   type ToolCallListWorkflowRunsDisplay,
   type ToolCallResumeWorkflowRunDisplay,
   type ToolCallSavedWorkflowListDisplay,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 
 export interface LocalAgentMessageToolResultDisplay {
   kind: "local_agent_message";

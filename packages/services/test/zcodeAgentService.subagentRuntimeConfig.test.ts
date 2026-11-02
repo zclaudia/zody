@@ -3,7 +3,7 @@ import {
   subagentRuntimeConfigSchema,
   zcodeProtocolMethods,
   type SubagentRuntimeConfig,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { testSelectionView } from "./fixtures/testSelectionView.js";
 
 afterEach(() => {
@@ -64,7 +64,7 @@ describe("subagent runtime config reverse RPC", () => {
     const read = vi
       .fn(async (): Promise<SubagentRuntimeConfig> => configuration)
       .mockReturnValueOnce(pending.promise);
-    const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+    const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
     const service = createZCodeAgentService({
       readSubagentRuntimeConfig: read,
       modelSelectionReadinessSource: { getView: async () => testSelectionView() },

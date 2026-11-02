@@ -4,7 +4,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type {
   ZCodePluginReferenceCatalogEntry,
   ZCodePluginsReferenceCatalogResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getPluginReferenceCatalog =

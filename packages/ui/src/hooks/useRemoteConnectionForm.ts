@@ -4,7 +4,7 @@ import type {
   RemoteTarget,
   SSHConfigAliasOption,
   WSLDistro,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import {
   loadRemoteConnectionDockerOptions,

@@ -3,7 +3,7 @@ import {
   normalizeZCodeEndpointOrigin,
   type ApiClient,
   type ApiRequestInit,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { buildZCodeSourceHeaders } from "../sourceHeaders.js";
 import { withRequestIdHeader } from "./requestIdHeaders.js";

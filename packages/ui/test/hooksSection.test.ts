@@ -1,5 +1,5 @@
-import type { IHooksService } from "@zcode/services";
-import type { Hook } from "@zcode/shared";
+import type { IHooksService } from "@zody/services";
+import type { Hook } from "@zody/shared";
 import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";

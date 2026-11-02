@@ -11,12 +11,12 @@ const productionRoots = [
   "packages/ui/src",
   "packages/desktop/src",
   "packages/shared/src",
-  "apps/zcode-cli/packages/adapters/src",
-  "apps/zcode-cli/packages/bootstrap/src",
-  "apps/zcode-cli/packages/cli/src",
-  "apps/zcode-cli/packages/contracts/src",
-  "apps/zcode-cli/packages/core/src",
-  "apps/zcode-cli/packages/tui/src",
+  "apps/zody-cli/packages/adapters/src",
+  "apps/zody-cli/packages/bootstrap/src",
+  "apps/zody-cli/packages/cli/src",
+  "apps/zody-cli/packages/contracts/src",
+  "apps/zody-cli/packages/core/src",
+  "apps/zody-cli/packages/tui/src",
 ] as const;
 
 const legacyDtoOwners = new Set([

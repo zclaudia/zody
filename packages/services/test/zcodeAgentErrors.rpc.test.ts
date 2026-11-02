@@ -1,4 +1,4 @@
-import { ChannelClient, ChannelServer, createQueuePair, ProxyChannel } from "@zcode/rpc";
+import { ChannelClient, ChannelServer, createQueuePair, ProxyChannel } from "@zody/rpc";
 import { describe, expect, it } from "vitest";
 import { IZCodeAgentService } from "#src/zcode-agent/zcodeAgent.js";
 import {

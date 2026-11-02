@@ -1,4 +1,4 @@
-import { resolveLocalHelpAppConfig, type Locale } from "@zcode/shared";
+import { resolveLocalHelpAppConfig, type Locale } from "@zody/shared";
 import localDefaultAppConfig from "../../../config/default.json" with { type: "json" };
 
 interface ResolveWebHelpConfigOptions {

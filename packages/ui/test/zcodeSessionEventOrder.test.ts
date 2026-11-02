@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeSessionEvent } from "@zcode/shared";
+import type { ZCodeSessionEvent } from "@zody/shared";
 import { createZCodeSessionEventOrderGate } from "@/lib/zcodeSessionEventOrder.js";
 
 function event(seq: number, eventId = `evt-${seq}`): ZCodeSessionEvent {

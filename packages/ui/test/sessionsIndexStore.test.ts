@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import { ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE } from "@zcode/shared";
+import { ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE } from "@zody/shared";
 import type {
   SessionSummary,
   SessionsIndexTopicFrame,
   TopicFrameDeliveryKind,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import {
   PROTOCOL_V4_LIMITS,
   SUBSCRIPTION_CONTENT_REJECTED,
   WIRE_FAULT_INVALID_PAYLOAD,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import type { SessionsIndexTransport } from "@/v4/agentSessionsIndexTransport.js";
 import { logger } from "@/logger.js";
 import {

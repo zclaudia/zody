@@ -5,7 +5,7 @@ import type {
   ZCodePluginDiagnostic,
   ZCodePluginInfo,
   ZCodePluginUserConfigOption,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { InstalledPluginDetailPanel } from "../src/settings/InstalledPluginManagement.js";
 

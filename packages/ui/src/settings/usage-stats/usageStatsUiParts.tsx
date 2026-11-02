@@ -1,4 +1,4 @@
-import type { AppUsageRange } from "@zcode/shared";
+import type { AppUsageRange } from "@zody/shared";
 import { Flame } from "lucide-react";
 import { cn } from "@/components/lib/utils.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";

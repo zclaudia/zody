@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type {
   ExtensionAttachResultMessage,
   ExtensionTargetRef,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import type { PlaywrightPage } from "../browser-core/playwright/types.js";
 import type { ExtensionCdpTransport } from "../browser-core/extensionCdpTransport.js";
 import type { ExtensionTransportClient } from "./extensionTransportClient.js";

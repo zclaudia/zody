@@ -50,7 +50,7 @@ if (
         "pnpm",
         [
           "--dir",
-          join(root, "apps/zcode-cli"),
+          join(root, "apps/zody-cli"),
           "--filter",
           `@zcode/${name}`,
           name === "cli" ? "build:desktop-agent" : "build",
@@ -70,7 +70,7 @@ const alias = {
   "@": join(root, "packages/ui/src"),
   ...Object.fromEntries(
     Object.entries(sharedExports).map(([key, value]) => [
-      key === "." ? "@zcode/shared" : `@zcode/shared/${key.slice(2)}`,
+      key === "." ? "@zody/shared" : `@zody/shared/${key.slice(2)}`,
       resolve(shared, "..", value),
     ]),
   ),
@@ -213,7 +213,7 @@ for (const mode of modes) {
             output,
             join(output, `${mode}-profile`),
             process.execPath,
-            join(root, "apps/zcode-cli/packages/cli/dist/zcode.cjs"),
+            join(root, "apps/zody-cli/packages/cli/dist/zcode.cjs"),
             showcaseServer ?? "",
           ]
         : mode === "managed-empty"

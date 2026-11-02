@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 
-import type { IBroadcastService } from "@zcode/services";
+import type { IBroadcastService } from "@zody/services";
 import {
   createElement,
   type ComponentProps,

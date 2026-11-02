@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type {
   GitRepositorySummary,
   ZCodeTaskChangeSummary,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { V4ChatPane } from "@/v4/V4ChatPane.js";
 import { V4_PRIMARY_PANE_ID } from "@/v4/paneLayoutStore.js";
 import type { WorkbenchShellBinding } from "@/v4/WorkbenchPane.js";

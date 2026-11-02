@@ -1,5 +1,5 @@
 import type { SettingsDirectoryLocation } from "./settings-source.js";
-import type { WorkspaceHookReviewTrustState } from "./zcode-protocol-v4/workspace-hook-review.js";
+import type { WorkspaceHookReviewTrustState } from "./zody-protocol-v4/workspace-hook-review.js";
 
 export type HookEvent =
   | "SessionStart"

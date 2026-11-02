@@ -6,19 +6,19 @@ import {
   type ModelConfig,
   type ProviderConfig,
   type ProviderConfigLayerSnapshot,
-} from "@zcode/provider";
+} from "@zody/provider";
 import {
   NodePersonalProviderConfigRepository,
   PERSONAL_PROVIDER_CONFIG_FILE_NAME,
-} from "@zcode/provider-node";
+} from "@zody/provider-node";
 import {
   TID_COMPOSER_WORKSPACE_TRIGGER,
   TID_V4_SESSION_PANE,
   TID_WORKSPACE_ITEM,
   TID_WORKSPACE_PATH,
   testId,
-} from "@zcode/shared";
-import type { AppSettings } from "@zcode/shared";
+} from "@zody/shared";
+import type { AppSettings } from "@zody/shared";
 import { collectWindowsE2EProcessTreePids } from "./e2e-process-cleanup.js";
 import {
   collectE2EWebDriverPageHandleCandidates,

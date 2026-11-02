@@ -1,7 +1,7 @@
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { build } from "esbuild";
-import { TID_FEEDBACK_LOGS_OPT_IN } from "@zcode/shared";
+import { TID_FEEDBACK_LOGS_OPT_IN } from "@zody/shared";
 import {
   readSettings,
   seedSettings,

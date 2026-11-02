@@ -8,7 +8,7 @@ import {
   ZCODE_AGENT_PROVIDER,
   encodeCustomModelValue,
   type ProviderFamilyConnectionSelection,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { getE2EAppDataPaths } from "./desktop-app.js";
 import { getUpstreamApiKey } from "./upstream-provider.js";
 import { waitForSqliteTable } from "./e2e-sqlite-readiness.js";

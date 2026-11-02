@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { setDataBaseDir } from "../src/paths.js";
-import { readModelTrajectory } from "../src/zcode-agent/modelTrajectory.js";
+import { readModelTrajectory } from "../src/zody-agent/modelTrajectory.js";
 
 const tempDirs: string[] = [];
 

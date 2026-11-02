@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { IPlatformService, WindowScreenshotResult } from "@zcode/shared";
+import type { IPlatformService, WindowScreenshotResult } from "@zody/shared";
 import { captureFeedbackScreenshotDraft } from "@/feedback/feedbackScreenshotDraft.js";
 
 const screenshot: WindowScreenshotResult = {

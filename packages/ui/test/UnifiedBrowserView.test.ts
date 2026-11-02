@@ -37,7 +37,7 @@ import {
   TID_BROWSER_RESPONSIVE_ZOOM_OPTION,
   TID_BROWSER_RESPONSIVE_ZOOM_SELECT,
   TID_BROWSER_WEBVIEW,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 
 // 用 vi.hoisted 定义 mock 依赖，规避 vi.mock 工厂对外部变量的引用限制。

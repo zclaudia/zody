@@ -1,12 +1,12 @@
-import { PERMISSION_FULL_ACCESS_OPTION_ID } from "@zcode/shared/zcode-protocol-v4";
-import type { ZCodePermissionOption } from "@zcode/shared";
+import { PERMISSION_FULL_ACCESS_OPTION_ID } from "@zody/shared/zody-protocol-v4";
+import type { ZCodePermissionOption } from "@zody/shared";
 
 export {
   getPermissionRequestPreview,
   type PermissionRequestFileChange,
   type PermissionRequestPreview,
   type PermissionRequestScope,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * macOS CUA 截图「App 内确认弹窗」（specs/computer-use-macos-phase1.md

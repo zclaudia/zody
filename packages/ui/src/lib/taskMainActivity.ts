@@ -1,4 +1,4 @@
-import type { ZCodeStreamEvent, ZCodeTaskRuntimeStatus } from "@zcode/shared";
+import type { ZCodeStreamEvent, ZCodeTaskRuntimeStatus } from "@zody/shared";
 import type { TaskChatMessage } from "@/lib/taskChatMessageTypes.js";
 import { hasRunningZCodeTimeline } from "@/lib/zcodeTimelineRuntime.js";
 

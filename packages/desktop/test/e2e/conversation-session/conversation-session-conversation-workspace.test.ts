@@ -9,7 +9,7 @@ import {
   TID_PROJECT_SECTION,
   TID_V4_COMPOSER_INPUT,
   TID_WORKSPACE_LIST,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_CONVERSATION_WORKSPACE,
   DEFAULT_WORKSPACE,

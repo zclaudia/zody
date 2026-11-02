@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { createElement, type ReactNode } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { TID_MODEL_PROVIDER_ADD_PROVIDER_BUTTON } from "@zcode/shared";
+import { TID_MODEL_PROVIDER_ADD_PROVIDER_BUTTON } from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ProviderSettingsFormProvider } from "@/lib/providerSettingsFormTypes.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";

@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IPlatformService } from "@zcode/shared";
+import type { IPlatformService } from "@zody/shared";
 
 const { setPendingSettingsSectionMock } = vi.hoisted(() => ({
   setPendingSettingsSectionMock: vi.fn(),

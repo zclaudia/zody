@@ -1,5 +1,5 @@
-import { ChannelClient, ChannelServer, createQueuePair, Emitter, ProxyChannel } from "@zcode/rpc";
-import type { AgentLaneResourceSample } from "@zcode/shared";
+import { ChannelClient, ChannelServer, createQueuePair, Emitter, ProxyChannel } from "@zody/rpc";
+import type { AgentLaneResourceSample } from "@zody/shared";
 import { describe, expect, it } from "vitest";
 import { IZCodeAgentService } from "#src/zcode-agent/zcodeAgent.js";
 

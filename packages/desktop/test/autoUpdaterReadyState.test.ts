@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import { PlatformChannels, desktopMenuMessageIds, formatDesktopMenuMessage } from "@zcode/shared";
+import { PlatformChannels, desktopMenuMessageIds, formatDesktopMenuMessage } from "@zody/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { loggerErrorMock, loggerInfoMock, loggerWarnMock, readFileMock, spawnMock } = vi.hoisted(

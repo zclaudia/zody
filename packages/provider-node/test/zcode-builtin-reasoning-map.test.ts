@@ -1,12 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
-import { compileModelOptionMaps } from "@zcode/model-option-map";
+import { compileModelOptionMaps } from "@zody/model-option-map";
 import {
   ModelConfig,
   ModelOptionSpecsConfig,
   validateModelSelectionOptions,
-} from "@zcode/provider";
+} from "@zody/provider";
 import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
 import baseline from "./fixtures/reasoning-map-before-todo95.json";
 

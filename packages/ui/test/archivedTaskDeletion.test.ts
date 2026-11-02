@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { IZCodeTaskService } from "@zcode/services";
+import type { IZCodeTaskService } from "@zody/services";
 import {
   collectArchivedTaskDeletion,
   deleteArchivedTaskSelection,

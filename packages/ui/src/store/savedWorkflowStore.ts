@@ -8,8 +8,8 @@ import {
   type ZCodeSavedWorkflowInvalidEntry,
   type ZCodeSavedWorkflowRun,
   type ZCodeWorkflowsListResult,
-} from "@zcode/shared";
-import type { IZCodeAgentService, ZCodeAgentSavedWorkflowTarget } from "@zcode/services";
+} from "@zody/shared";
+import type { IZCodeAgentService, ZCodeAgentSavedWorkflowTarget } from "@zody/services";
 import { logger } from "@/logger.js";
 import { useWorkflowRunSavedStore } from "@/store/workflowRunSavedStore.js";
 

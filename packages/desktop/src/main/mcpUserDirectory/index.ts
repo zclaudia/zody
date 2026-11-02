@@ -5,8 +5,8 @@
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { homedir } from "node:os";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
-import { resolveProjectResourcePaths } from "@zcode/shared/zody-paths";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { resolveProjectResourcePaths } from "@zody/shared/zody-paths";
 import type {
   CliMcpSource,
   LoadCliMcpFromUserDirectoryRequest,
@@ -16,7 +16,7 @@ import type {
   SettingsDirectorySource,
   NativeMcpServerRecord,
   SaveCliMcpToUserDirectoryRequest,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { McpConfigKeyName } from "./types.js";
 import { isRecord, readJsonObject, writeTextAtomic } from "./utils.js";
 

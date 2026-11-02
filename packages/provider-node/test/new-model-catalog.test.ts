@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { parseZCodeBuiltinModelConfigRules } from "@zcode/provider";
+import { parseZCodeBuiltinModelConfigRules } from "@zody/provider";
 
 describe("2026-09 新模型官方目录", () => {
   it("模型身份、能力和值域独立声明，不能从旧型号宽匹配猜测", async () => {

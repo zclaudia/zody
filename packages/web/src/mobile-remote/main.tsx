@@ -3,8 +3,8 @@ import {
   installDocumentHiddenMotionPause,
   installMobileKeyboardInsetTracker,
   setStreamClientId,
-} from "@zcode/ui";
-import "@zcode/ui/styles.css";
+} from "@zody/ui";
+import "@zody/ui/styles.css";
 import { applyWebThemePreference } from "../webThemePreference.js";
 import { bootstrapGatewayWebRemoteControl } from "./bootstrap.js";
 

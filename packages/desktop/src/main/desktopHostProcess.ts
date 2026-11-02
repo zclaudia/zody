@@ -21,12 +21,12 @@ import {
   RUNTIME_ZCODE_DEBUG,
   serializeLaunchMarks,
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   PluginSandboxHandle,
   PluginSandboxRegisterRequestPayload,
   PluginSandboxRegisterResultPayload,
-} from "@zcode/shared/mcp-apps";
+} from "@zody/shared/mcp-apps";
 import type { MessagePortMain } from "electron";
 import {
   app,
@@ -164,8 +164,8 @@ export function spawnHostProcess(
   initMessage: HostInitMessage,
   dependencies: {
     publishMobileNotification?: (
-      message: import("@zcode/shared").MobileNotificationPublish,
-    ) => Promise<import("@zcode/shared").MobileNotificationReceipt>;
+      message: import("@zody/shared").MobileNotificationPublish,
+    ) => Promise<import("@zody/shared").MobileNotificationReceipt>;
     getMobileNotificationContext?: () => { enabled: boolean; backendId?: string };
     hostProcessLocalEnv: Record<string, string>;
     logger: {

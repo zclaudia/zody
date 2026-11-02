@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { ESTIMATED_TOKEN_CHAR_DIVISOR } from "@zcode/shared";
+import { ESTIMATED_TOKEN_CHAR_DIVISOR } from "@zody/shared";
 import { clearAppData, getE2EAppDataPaths } from "../helpers/desktop-app.js";
 import { selectUpstreamProviderModelById } from "../helpers/upstream-provider.js";
 import { waitForSelectedModel } from "../helpers/model-provider-restart.js";

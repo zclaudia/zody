@@ -2,7 +2,7 @@ import {
   OFFICIAL_CUA_PERMISSION_RULE_TOOL_NAME,
   type ZCodePermissionRequest,
   type ZCodeProvider,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createElement } from "react";
 import type { ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";

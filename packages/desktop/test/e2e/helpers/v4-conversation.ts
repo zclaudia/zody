@@ -62,7 +62,7 @@ import {
   TID_V4_TURN_NAVIGATOR_TOOLTIP,
   encodeCustomModelValue,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByDom,
   dispatchMouseDownByExactTestId,

@@ -1,4 +1,4 @@
-import type { ZCodeConfigOption, ZCodeProvider, ZCodeTaskMode } from "@zcode/shared";
+import type { ZCodeConfigOption, ZCodeProvider, ZCodeTaskMode } from "@zody/shared";
 
 const ZCODE_TASK_MODE_VALUES: readonly ZCodeTaskMode[] = [
   "default",

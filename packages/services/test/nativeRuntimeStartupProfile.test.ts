@@ -5,7 +5,7 @@ import {
   digestZCodeAgentNativeRuntimeProviderSnapshot,
   normalizeZCodeAgentNativeRuntimeNetwork,
   projectZCodeAgentNativeRuntimeProviderSnapshot,
-} from "../src/zcode-agent/nativeRuntimeStartupProfile.js";
+} from "../src/zody-agent/nativeRuntimeStartupProfile.js";
 
 function providerView(
   revision = 7,

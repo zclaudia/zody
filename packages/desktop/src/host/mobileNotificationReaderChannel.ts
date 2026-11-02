@@ -1,8 +1,8 @@
-import { Event, ProxyChannel, type IChannelServer } from "@zcode/rpc";
-import { IMobileNotificationReader } from "@zcode/services";
-import type { MobileNotificationPrincipal } from "@zcode/shared";
-import { bindMobileNotificationReader } from "@zcode/services/mobile-notifications/node";
-import type { IMobileNotificationService } from "@zcode/services/mobile-notifications/node";
+import { Event, ProxyChannel, type IChannelServer } from "@zody/rpc";
+import { IMobileNotificationReader } from "@zody/services";
+import type { MobileNotificationPrincipal } from "@zody/shared";
+import { bindMobileNotificationReader } from "@zody/services/mobile-notifications/node";
+import type { IMobileNotificationService } from "@zody/services/mobile-notifications/node";
 
 /** Register a reader on this attachment only; its authority comes from Main. */
 export function registerMobileNotificationReaderChannel(

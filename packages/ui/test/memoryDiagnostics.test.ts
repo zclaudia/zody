@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createMemoryDiagnosticsRegistry } from "@zcode/shared";
+import { createMemoryDiagnosticsRegistry } from "@zody/shared";
 import {
   readRendererHeapSnapshot,
   startMemoryDiagnosticsLogger,

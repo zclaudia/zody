@@ -18,12 +18,12 @@ import {
   type SettingsDirectorySource,
   type UserCommand,
   type ZCodeCommand,
-} from "@zcode/shared";
-import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+} from "@zody/shared";
+import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type { ICommandsService } from "./commands.js";
 import { CommandFileParser, type CommandFileFormat } from "./commandFileParser.js";
 import { readInstalledPluginRoots } from "#src/plugins/installedPluginRoots.js";
-import { resolveProjectResourceRoots, ZODY_DIRECTORY_NAME } from "@zcode/shared/zody-paths";
+import { resolveProjectResourceRoots, ZODY_DIRECTORY_NAME } from "@zody/shared/zody-paths";
 
 function resolveUserHomeDir() {
   const envHome = process.env.HOME?.trim() || process.env.USERPROFILE?.trim();

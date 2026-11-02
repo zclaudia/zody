@@ -38,14 +38,14 @@ import {
   zcodeAutomationCheckTaskBindingResultSchema,
   zcodeAutomationUpdateParamsSchema,
   zcodeAutomationProtocolSchema,
-} from "../src/zcode-protocol/index.js";
+} from "../src/zody-protocol/index.js";
 import {
   APP_RUNTIME_PREFERENCES_CHANGED_BROADCAST_CHANNEL,
   appRuntimePreferencesChangedBroadcastPayloadSchema,
 } from "../src/app-runtime-preferences.js";
 import { zcodeUserMessageInfoSchema } from "../src/zcode-protocol-legacy-types.js";
-import { conversationRowSchema, workflowLaunchMetaSchema } from "../src/zcode-protocol-v4/rows.js";
-import { errorAttributionSchema } from "../src/zcode-protocol-v4/snapshot.js";
+import { conversationRowSchema, workflowLaunchMetaSchema } from "../src/zody-protocol-v4/rows.js";
+import { errorAttributionSchema } from "../src/zody-protocol-v4/snapshot.js";
 
 const workspace = {
   workspacePath: "/workspace/app",

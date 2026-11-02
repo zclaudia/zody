@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { InternalChannels } from "@zcode/shared";
+import { InternalChannels } from "@zody/shared";
 import {
   notifyRemoteWorkspaceServicePortReady,
   parseRemoteWorkspaceServicePortMessage,

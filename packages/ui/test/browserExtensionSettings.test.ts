@@ -96,7 +96,7 @@ describe("BrowserExtensionSettingsSection", () => {
   it("桌面展示安装指引、端口、Profile 和默认 backend 选择", async () => {
     render(createElement(BrowserExtensionSettingsSection, { isDesktop: true }));
 
-    expect(screen.getByText("pnpm --filter @zcode/browser-extension build")).toBeTruthy();
+    expect(screen.getByText("pnpm --filter @zody/browser-extension build")).toBeTruthy();
     await waitFor(() => {
       expect(screen.getByTestId("browser-extension-install-directory").textContent).toBe(
         "/tmp/browser-extension/dist",

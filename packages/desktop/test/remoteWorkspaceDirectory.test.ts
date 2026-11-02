@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
-import type { WebRemoteControlTaskTarget, WebRemoteControlWorkspaceTarget } from "@zcode/shared";
+import type { WebRemoteControlTaskTarget, WebRemoteControlWorkspaceTarget } from "@zody/shared";
 import { createRemoteWorkspaceDirectory } from "../src/main/remote-access/remoteWorkspaceDirectory.js";
 
 function source(relative: string): string {

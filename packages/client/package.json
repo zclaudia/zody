@@ -1,5 +1,5 @@
 {
-  "name": "@zcode/client",
+  "name": "@zody/client",
   "private": true,
   "type": "module",
   "exports": {
@@ -11,9 +11,9 @@
     "lint:fix": "oxlint --fix"
   },
   "dependencies": {
-    "@zcode/rpc": "workspace:*",
-    "@zcode/services": "workspace:*",
-    "@zcode/shared": "workspace:*"
+    "@zody/rpc": "workspace:*",
+    "@zody/services": "workspace:*",
+    "@zody/shared": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^6.0.2"

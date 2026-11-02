@@ -2,7 +2,7 @@ import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   isWebRemoteControlThemeSeed,
   type WebRemoteControlThemeSeed,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { MobileRemoteGatewayConfig } from "./mobileRemoteConfigStore.js";
 
 /**

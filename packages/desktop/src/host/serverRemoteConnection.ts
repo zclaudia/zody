@@ -1,19 +1,19 @@
 import { WebSocket, type RawData } from "ws";
-import { connectViaProtocol } from "@zcode/client";
+import { connectViaProtocol } from "@zody/client";
 import {
   Emitter,
   SocketProtocol,
   VSBuffer,
   type ISocket,
-} from "@zcode/rpc";
-import type { IServiceAccessor } from "@zcode/services";
+} from "@zody/rpc";
+import type { IServiceAccessor } from "@zody/services";
 import {
   ZCODE_RPC_HOST_CAPABILITY_HEADER,
   serverRemoteHostCapabilitySchema,
   serverRemoteInfoSchema,
   type ServerConnectOptions,
   type ServerRemoteInfo,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export interface ServerRemoteEndpoints {
   infoUrl: string;

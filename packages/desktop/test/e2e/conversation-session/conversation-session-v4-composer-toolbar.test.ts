@@ -19,7 +19,7 @@ import {
   TID_CHAT_MODEL_SELECT_TRIGGER,
   TID_CHAT_THOUGHT_LEVEL_SELECT_TRIGGER,
   TID_V4_COMPOSER_INPUT,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickV4SlashOption,
   getV4ComposerText,

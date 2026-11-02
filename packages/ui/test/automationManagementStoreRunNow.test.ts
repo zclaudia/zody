@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   IZCodeAgentService,
   ZCodeAgentRunAutomationNowResult,
-} from "@zcode/services";
-import type { ZCodeAutomation } from "@zcode/shared";
+} from "@zody/services";
+import type { ZCodeAutomation } from "@zody/shared";
 import { useAutomationManagementStore } from "@/store/automationManagementStore.js";
 
 function deferred<T>() {

@@ -8,7 +8,7 @@ import type {
   ClientSceneConfig,
   ClientScenesResponse,
   IClientScenesService,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   CLIENT_SCENES_DEDUPING_INTERVAL_MS,
   isClientScenesBusinessError,

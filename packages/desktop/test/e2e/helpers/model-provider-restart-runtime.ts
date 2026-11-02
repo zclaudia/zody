@@ -1,4 +1,4 @@
-import { NodePersonalProviderConfigRepository } from "@zcode/provider-node";
+import { NodePersonalProviderConfigRepository } from "@zody/provider-node";
 import {
   getE2EAppDataPaths,
   waitForDefaultWorkspaceReady,

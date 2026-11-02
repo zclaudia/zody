@@ -1,7 +1,7 @@
 // Sharp native module staging for the shared node_repl runtime.
 //
 // Why this exists: the bundled node_repl server
-// (apps/zcode-cli/packages/browser-use-plugin/dist/mcp/server.js) externalizes `sharp` because it loads a native `.node`
+// (apps/zody-cli/packages/browser-use-plugin/dist/mcp/server.js) externalizes `sharp` because it loads a native `.node`
 // binary that esbuild cannot inline. In dev the workspace's hoisted
 // `node_modules/sharp` resolves fine. In the installed ZCode.app the server
 // runs from `<Resources>/glm/packages/browser-use-plugin/dist/mcp/server.js` and

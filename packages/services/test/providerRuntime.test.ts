@@ -6,12 +6,12 @@ import {
   extractManualModelConfig,
   type AccountProviderConfigSnapshot,
   type ProviderSource,
-} from "@zcode/provider";
+} from "@zody/provider";
 import {
   NodePersonalProviderConfigRepository,
   NodeZCodeBuiltinProviderConfigSource,
-} from "@zcode/provider-node";
-import type { ModelSelection } from "@zcode/shared/model-selection";
+} from "@zody/provider-node";
+import type { ModelSelection } from "@zody/shared/model-selection";
 import { describe, expect, it, vi } from "vitest";
 import { createProviderConfigRuntime } from "../src/model-provider/providerConfigRuntime.js";
 import {

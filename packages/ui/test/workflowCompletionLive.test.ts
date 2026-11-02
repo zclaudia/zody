@@ -9,7 +9,7 @@
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { WorkflowRunArtifact } from "@zcode/shared/zcode-protocol-v4";
+import type { WorkflowRunArtifact } from "@zody/shared/zody-protocol-v4";
 
 vi.mock("@/logger.js", () => ({ logger: { debug: vi.fn(), warn: vi.fn() } }));
 vi.mock("@/ControlHintTooltip.js", () => ({

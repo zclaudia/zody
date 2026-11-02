@@ -1,7 +1,7 @@
 /* eslint-disable max-lines -- 五个存量存储位置的一次性迁移必须共享同一幂等判定，拆开会复制键匹配规则 */
 import { readFile } from "node:fs/promises";
-import type { PersonalProviderConfigRepository } from "@zcode/provider";
-import { atomicWritePrivateTextFile, withFileLock } from "@zcode/shared/node";
+import type { PersonalProviderConfigRepository } from "@zody/provider";
+import { atomicWritePrivateTextFile, withFileLock } from "@zody/shared/node";
 import { createServiceLogger } from "../logger/serviceLogger.js";
 import { atomicWriteText } from "#src/fs/atomicFileUtils.js";
 

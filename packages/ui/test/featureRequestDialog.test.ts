@@ -1,7 +1,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { IFeedbackService } from "@zcode/services";
+import type { IFeedbackService } from "@zody/services";
 import {
   FeatureRequestDialog,
   buildFeatureRequestDescription,

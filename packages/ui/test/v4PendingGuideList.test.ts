@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { QueueItem } from "@zcode/shared/zcode-protocol-v4";
+import type { QueueItem } from "@zody/shared/zody-protocol-v4";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { ConversationPendingGuideList } from "@/v4/ConversationPendingGuideList.js";
 

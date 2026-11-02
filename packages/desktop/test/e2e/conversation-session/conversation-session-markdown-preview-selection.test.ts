@@ -8,7 +8,7 @@ import {
   TID_V4_COMPOSER_INPUT,
   TID_V4_SESSION_PANE,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData, clickTestIdByDom, DEFAULT_WORKSPACE } from "../helpers/desktop-app.js";
 import { resolveE2ERuntimePath } from "../helpers/e2e-runtime-paths.js";
 import {

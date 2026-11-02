@@ -2,7 +2,7 @@ import {
   resolveWebRemoteControlWorkspaceKey,
   type WebRemoteControlExternalWorkspaceBridge,
   type WebRemoteControlTaskTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   markWebRemoteControlBridgeTaskRead,
   markWebRemoteControlTaskRead,

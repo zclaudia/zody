@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { resolveRuntimeZCodeEndpointOrigin } from "@zcode/shared";
+import { resolveRuntimeZCodeEndpointOrigin } from "@zody/shared";
 import {
   buildAgentCaCertEnv,
   buildAgentEndpointOriginEnv,

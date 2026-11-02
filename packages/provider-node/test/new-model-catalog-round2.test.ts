@@ -1,11 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { beforeAll, describe, expect, it } from "vitest";
-import { compileModelOptionMaps } from "@zcode/model-option-map";
+import { compileModelOptionMaps } from "@zody/model-option-map";
 import {
   ModelConfig,
   ModelOptionSpecsConfig,
   parseZCodeBuiltinModelConfigRules,
-} from "@zcode/provider";
+} from "@zody/provider";
 
 type Release = {
   config: {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ArmsCustomEventPayload } from "@zcode/shared";
+import type { ArmsCustomEventPayload } from "@zody/shared";
 import {
   REACT_ERROR_ARMS_EVENT_NAME,
   REACT_ERROR_ARMS_GROUP,

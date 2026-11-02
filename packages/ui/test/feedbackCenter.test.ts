@@ -2,8 +2,8 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IFeedbackService } from "@zcode/services";
-import type { IPlatformService } from "@zcode/shared";
+import type { IFeedbackService } from "@zody/services";
+import type { IPlatformService } from "@zody/shared";
 
 import { useFeedbackStore } from "@/feedback/feedbackStore.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
@@ -14,8 +14,8 @@ import { TabStoreProvider } from "@/store/TabStoreProvider.js";
 // 构建期 define 的两种注入结果（未注入为空串、注入为完整 URL）。
 const sharedMocks = vi.hoisted(() => ({ feedbackIssueUrl: "" as string }));
 
-vi.mock("@zcode/shared", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@zcode/shared")>();
+vi.mock("@zody/shared", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@zody/shared")>();
   return {
     ...original,
     get ZCODE_FEEDBACK_ISSUE_URL() {

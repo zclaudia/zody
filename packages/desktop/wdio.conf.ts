@@ -63,7 +63,7 @@ import { createE2EStartupCredentialSeed } from "./test/e2e/helpers/e2e-startup-c
 import { createE2EReplayFixtureVariables } from "./test/e2e/helpers/e2e-runtime-paths.js";
 import { stageE2EAppOutput } from "./test/e2e/helpers/e2e-app-output-stage.js";
 import { ensureSshRemoteReleaseAssets } from "./test/e2e/helpers/e2e-ssh-remote-release-assets.js";
-import { ASK_USER_QUESTION_E2E_CLOCK_SCALE_ENV } from "@zcode/shared";
+import { ASK_USER_QUESTION_E2E_CLOCK_SCALE_ENV } from "@zody/shared";
 import {
   seedPersonalProviderConfig,
   seedPersonalDefaultModelSelection,
@@ -140,7 +140,7 @@ const E2E_LOCAL_ENV_FILES = [
 // 代理、证书和缓存配置。所有读取 process.env 的 runner 初始化都必须位于该调用之后。
 loadE2ELocalEnv();
 const BUILD_DESKTOP_AGENT_SCRIPT = resolve(REPO_ROOT, "scripts/build-desktop-agent-cli.mjs");
-const ZCODE_CLI_ENTRYPOINT = resolve(REPO_ROOT, "apps/zcode-cli/packages/cli/dist/zcode.cjs");
+const ZCODE_CLI_ENTRYPOINT = resolve(REPO_ROOT, "apps/zody-cli/packages/cli/dist/zcode.cjs");
 const E2E_HOME_DIR = resolve(
   process.env.ZCODE_E2E_HOME_DIR?.trim() ||
     // 修复原因：多个 WDIO 本地并发时会互相清理默认 .e2e-home，导致窗口白屏、
@@ -830,7 +830,7 @@ function prepareDesktopAppBuild() {
   // Bugfix: 直接执行 `wdio run` 会绕过 package.json 的 pretest:e2e；只检查
   // out 文件是否存在又会跑到旧 renderer，表现成”已修复但 e2e 仍白屏/没动作”。
   // 因此 WDIO 入口始终先构建，确保测试使用当前源码对应的桌面产物。
-  runPnpmWorkspaceCommand(["--filter", "@zcode/desktop", "build:no-runtime-assets"]);
+  runPnpmWorkspaceCommand(["--filter", "@zody/desktop", "build:no-runtime-assets"]);
   assertDesktopE2EBuildReady("onPrepare build");
 }
 
@@ -885,7 +885,7 @@ async function stageDesktopE2EAppOutput() {
     ensureSshRemoteReleaseAssets({
       releaseDir: E2E_REMOTE_RELEASE_SOURCE_DIR,
       prepareReleaseAssets: () =>
-        runPnpmWorkspaceCommand(["--filter", "@zcode/desktop", "prepare:remote-assets"], {
+        runPnpmWorkspaceCommand(["--filter", "@zody/desktop", "prepare:remote-assets"], {
           // 防挂死上限：冷缓存全量 prepare 约 10 分钟，给到 30 分钟只兑现在「彻底卡死」时
           // 让 onPrepare 失败退出，正常慢路径不受影响。
           timeoutMs: 30 * 60 * 1000,
@@ -895,7 +895,7 @@ async function stageDesktopE2EAppOutput() {
     // 当前源码构建的 remote release 放进 runId 隔离目录，远端会继续复用同版本的旧
     // server bundle，并用旧协议 schema 拒绝 enabledSource 等新字段。
     // local-only 依赖 manifest 引用的 components 归档；只复制松散 release 会导致真实部署缺件。
-    runPnpmWorkspaceCommand(["--filter", "@zcode/desktop", "stage:remote-runtime"]);
+    runPnpmWorkspaceCommand(["--filter", "@zody/desktop", "stage:remote-runtime"]);
     await stageE2EAppOutput(
       resolve(REPO_ROOT, "packages/desktop/resources/remote-runtime"),
       resolve(E2E_REMOTE_RELEASE_OUTPUT_DIR, "../.."),
@@ -936,7 +936,7 @@ function createPnpmChildEnv() {
     // CI 清理 .e2e-home 后会找不到 corepack 管理的 pnpm.mjs。
     ...(HOST_HOME_DIR ? { HOME: HOST_HOME_DIR } : {}),
     ...(HOST_USERPROFILE_DIR ? { USERPROFILE: HOST_USERPROFILE_DIR } : {}),
-    // Bugfix: agent 构建脚本会进入 apps/zcode-cli 子 workspace；pnpm 11 的
+    // Bugfix: agent 构建脚本会进入 apps/zody-cli 子 workspace；pnpm 11 的
     // verify-deps-before-run 会触发子 workspace install，但该 workspace 运行时
     // 依赖根仓库 @zcode/shared，自动 install 无法解析，必须在 E2E 构建链路关闭。
     PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false",
@@ -1799,7 +1799,7 @@ function seedE2EPluginCdnZipMarketplace(specs: string[] = []) {
 // 时执行。注意 storageRoot 在 agent 视角是 `<home>/.zody`，而 pluginStorageRoot
 // 是 `<home>/.zody/cli/plugins`，installed_plugins.json 必须落在后者下面才会被
 // bootstrap 的 `listInstalledPluginRecords(pluginStorageRoot)` 读到（见
-// `apps/zcode-cli/packages/adapters/src/plugins/marketplace.ts:347`）。
+// `apps/zody-cli/packages/adapters/src/plugins/marketplace.ts:347`）。
 function seedE2EPluginMcpSkillInstalledPlugins(specs: string[] = []) {
   const state = resolvePluginMcpSkillState(specs);
   if (!state || state === "not-installed" || state === "workspace-root") return;
@@ -2141,7 +2141,7 @@ function seedE2EPluginMcpSkillState(specs: string[] = []) {
   const enabledPlugins = (plugins.enabledPlugins as Record<string, boolean> | undefined) ?? {};
   const pluginId = "e2e-plugin-mcp-ping@e2e-fixture";
   // Bugfix: 安装型 plugin 在 candidate 构造时 defaultEnabled=false（见
-  // apps/zcode-cli/packages/adapters/src/plugins/index.ts:resolveCandidates）；
+  // apps/zody-cli/packages/adapters/src/plugins/index.ts:resolveCandidates）；
   // resolveEnabled 用 `config.enabledPlugins[id] ?? defaultEnabled` 判定，
   // 所以 enabled 状态必须显式写 true，不能只 "delete 字段"。
   if (state === "installed-disabled") {

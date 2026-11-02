@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   MCP_SERVER_FAILURE_KINDS,
   zcodeMcpServerStatusSnapshotSchema,
-} from "../src/zcode-protocol/index.js";
+} from "../src/zody-protocol/index.js";
 
 describe("MCP status diagnostics protocol", () => {
   it("accepts structured failure diagnostics and keeps legacy snapshots compatible", () => {

@@ -9,7 +9,7 @@ import {
   TID_BROWSER_RESPONSIVE_VIEWPORT,
   TID_BROWSER_RESPONSIVE_ZOOM_OPTION,
   TID_BROWSER_RESPONSIVE_ZOOM_SELECT,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData, clickTestIdByWebDriver } from "../../../helpers/desktop-app.js";
 import {
   prepareV4ConversationE2E,

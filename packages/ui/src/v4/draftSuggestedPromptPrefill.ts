@@ -1,4 +1,4 @@
-import type { ZCodePluginReferenceCatalogEntry } from "@zcode/shared";
+import type { ZCodePluginReferenceCatalogEntry } from "@zody/shared";
 import { buildPluginMentionMarkdown } from "@/mentions/mentionMarkdown.js";
 import type { ComposerMentionPrefill } from "@/store/zcodeSessionStoreTypes.js";
 

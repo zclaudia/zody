@@ -5,8 +5,8 @@ import { Terminal as XTerm } from "@xterm/xterm";
 import { ClipboardPaste, Copy } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import type { ILink, ILinkHandler, ITheme, IWindowsPty } from "@xterm/xterm";
-import type { IServiceAccessor } from "@zcode/services";
-import type { IDisposable } from "@zcode/rpc";
+import type { IServiceAccessor } from "@zody/services";
+import type { IDisposable } from "@zody/rpc";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import {

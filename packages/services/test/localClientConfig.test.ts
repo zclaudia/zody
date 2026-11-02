@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
   ZCODE_DYNAMIC_WORKFLOW_MODE_ENV,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   LOCAL_MODEL_CONTEXT_BUDGET_STRATEGY,
   resolveLocalDynamicWorkflowClientConfig,

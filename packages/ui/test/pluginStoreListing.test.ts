@@ -4,7 +4,7 @@ import type {
   ZCodeInstalledPluginSummary,
   ZCodePluginInfo,
   ZCodePluginMarketplaceSummary,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   buildStoreItems,
   canUpdatePluginItem,

@@ -1,10 +1,10 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeConfigOption } from "@zcode/shared";
-import type { SessionConfigState } from "@zcode/shared/zcode-protocol-v4";
-import type { IModelSelectionService, ModelSelectionView } from "@zcode/services";
-import { resolveEffectiveModelSelection, type ProviderRegistryView } from "@zcode/provider";
+import type { ZCodeConfigOption } from "@zody/shared";
+import type { SessionConfigState } from "@zody/shared/zody-protocol-v4";
+import type { IModelSelectionService, ModelSelectionView } from "@zody/services";
+import { resolveEffectiveModelSelection, type ProviderRegistryView } from "@zody/provider";
 import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
 import { useDraftConfigControl as useActualDraftConfigControl } from "@/v4/composer/useDraftConfigControl.js";
 import { persistV4ComposerDraft, readV4ComposerDraft } from "@/v4/composer/composerDraftStore.js";

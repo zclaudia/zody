@@ -15,11 +15,11 @@ import {
   type ConversationSnapshot,
   type ConversationTopicFrame,
   type ConversationTopicWireFrame,
-} from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
 import {
   ZCODE_PROTOCOL_V4_WIRE_VERSION,
   ZCODE_PROTOCOL_VERSION,
-} from "../src/zcode-protocol/index.js";
+} from "../src/zody-protocol/index.js";
 
 const TOPIC = "conversation/session-wire";
 const SUBSCRIPTION_ID = "sub-wire";

@@ -1,8 +1,8 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TID_V4_TIMELINE, TID_V4_TIMELINE_BOTTOM } from "@zcode/shared";
-import type { ConversationRow, UserInputRow } from "@zcode/shared/zcode-protocol-v4";
+import { TID_V4_TIMELINE, TID_V4_TIMELINE_BOTTOM } from "@zody/shared";
+import type { ConversationRow, UserInputRow } from "@zody/shared/zody-protocol-v4";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import {
   clearChatSessionScrollMemoryForTest,

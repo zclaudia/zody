@@ -1,4 +1,4 @@
-import { PlatformChannels, type WebRemoteControlStatus } from "@zcode/shared";
+import { PlatformChannels, type WebRemoteControlStatus } from "@zody/shared";
 
 interface WebRemoteControlStatusEventTarget {
   isDestroyed(): boolean;

@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   digestZCodeAgentNativeRuntimeNetwork,
   digestZCodeAgentNativeRuntimeProviderSnapshot,
-} from "@zcode/services/node";
+} from "@zody/services/node";
 import {
   CUA_NARROW_APP_NAME,
   CUA_NARROW_LAUNCHER_RELATIVE_PATH,
@@ -300,7 +300,7 @@ describe("normal Host candidate startup profile", () => {
     );
     writeFileSync(
       packageJsonPath,
-      JSON.stringify({ name: "@zcode/desktop", main: "out/main/index.js" }),
+      JSON.stringify({ name: "@zody/desktop", main: "out/main/index.js" }),
     );
     const plutilCalls: string[][] = [];
     const helperRenameCalls: Array<[string, string, { sourceApplicationName: string }]> = [];

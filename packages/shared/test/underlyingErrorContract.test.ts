@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { zcodeProtocolErrorDetailSchema } from "../src/zcode-protocol/index.js";
-import { sessionErrorInfoSchema } from "../src/zcode-protocol-v4/snapshot.js";
+import { zcodeProtocolErrorDetailSchema } from "../src/zody-protocol/index.js";
+import { sessionErrorInfoSchema } from "../src/zody-protocol-v4/snapshot.js";
 
 describe("underlying error wire contract", () => {
   const fields = {

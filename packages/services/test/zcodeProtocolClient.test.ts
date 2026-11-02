@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import { Emitter } from "@zcode/rpc";
-import type { ZCodeProtocolMessage } from "@zcode/shared";
-import { zcodeSessionStateSnapshotSchema } from "@zcode/shared";
+import { Emitter } from "@zody/rpc";
+import type { ZCodeProtocolMessage } from "@zody/shared";
+import { zcodeSessionStateSnapshotSchema } from "@zody/shared";
 import {
   DEFAULT_ZCODE_PROTOCOL_REQUEST_TIMEOUT_MS,
   ZCodeProtocolClient,
-} from "../src/zcode-agent/zcodeProtocolClient.js";
+} from "../src/zody-agent/zcodeProtocolClient.js";
 import type {
   ZCodeProtocolTransport,
   ZCodeProtocolTransportClosedEvent,
-} from "../src/zcode-agent/zcodeProtocolTransport.js";
+} from "../src/zody-agent/zcodeProtocolTransport.js";
 
 const protocolModelProperties = {
   inputFormat: {

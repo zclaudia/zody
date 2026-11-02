@@ -4,7 +4,7 @@ import type {
   ExtensionTabClass,
   ExtensionTargetDetachReason,
   ExtensionTargetRef,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 
 /** Offscreen document ↔ MV3 service worker 的内部控制消息。 */
 export type WorkerOperation =

@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ElicitationDialog } from "../src/ElicitationDialog.js";
 import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
-import type { ZCodeElicitationRequest } from "@zcode/shared";
+import type { ZCodeElicitationRequest } from "@zody/shared";
 
 const TOUCH_SIZE_11 = "[@media(hover:none)_and_(pointer:coarse)]:size-11";
 const TOUCH_MIN_H_11 = "[@media(hover:none)_and_(pointer:coarse)]:min-h-11";

@@ -1,7 +1,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { QueueState } from "@zcode/shared/zcode-protocol-v4";
+import type { QueueState } from "@zody/shared/zody-protocol-v4";
 import {
   ConversationQueuePanel,
   resolveV4QueueReorderAnchor,

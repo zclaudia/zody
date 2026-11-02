@@ -2,12 +2,12 @@
 // 只钉三件事：一个 app 会话取一次、失败 fail-closed、换了 service 实例会重试。
 // fork（F2.6b）：取数经 IClientConfigService 读 Host 本地 offer，不经订阅服务。
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { IClientConfigService } from "@zcode/services";
+import type { IClientConfigService } from "@zody/services";
 import {
   applyDynamicWorkflowUserMode,
   createDynamicWorkflowClientConfig,
   type DynamicWorkflowClientConfig,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   resetDynamicWorkflowAvailabilityStoreForTests,
   useDynamicWorkflowAvailabilityStore,

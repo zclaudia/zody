@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AppUsageSnapshot } from "@zcode/shared";
+import type { AppUsageSnapshot } from "@zody/shared";
 import { createUsageStatsService } from "../src/usage-stats/usageStatsService.js";
 
 // fork（F4.5）：官方 Coding Plan / Start Plan 额度与用量 monitor 链路已删除，

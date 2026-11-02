@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeProvider } from "@zcode/shared";
+import type { ZCodeProvider } from "@zody/shared";
 import {
   resolveProviderConfigOpenTargetPath,
   useTaskListItemContextActions,

@@ -7,7 +7,7 @@ import {
   TID_WORKSPACE_FILE_TREE_ROW,
   TID_WORKSPACE_ITEM,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_WORKSPACE,
   clearAppData,

@@ -1,7 +1,7 @@
 import { PassThrough } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
-import { Emitter, type IDisposable, type Event } from "@zcode/rpc";
-import { ZCODE_VERSION } from "@zcode/shared";
+import { Emitter, type IDisposable, type Event } from "@zody/rpc";
+import { ZCODE_VERSION } from "@zody/shared";
 import { connectRemote, pickRemoteRuntimeEnv } from "../src/remote/connect.js";
 import type { IRemoteBackend, RemoteDisconnectEvent, StdioStream } from "../src/remote/backend.js";
 

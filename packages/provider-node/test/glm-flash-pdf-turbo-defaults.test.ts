@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { ModelConfig, ModelConfigRules } from "@zcode/provider";
+import { ModelConfig, ModelConfigRules } from "@zody/provider";
 import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
 
 describe("Todo126 发布配置的 Flash PDF 和模板 Turbo 默认", () => {

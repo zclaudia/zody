@@ -12,7 +12,7 @@ import type {
   ZCodeStreamEvent,
   ZCodeTimelineStatus,
   ZCodeUsage,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   CUSTOM_SUPPLIER_KEY_PREFIX,
   GHOST_SUPPLIER_KEY_PREFIX,
@@ -20,7 +20,7 @@ import {
   createUuid,
   computeLineChangeStat,
   decodeCustomModelValue,
-} from "@zcode/shared";
+} from "@zody/shared";
 interface ComposerInputTimingState {
   inputStartTime: number;
   inputFirstCharTime: number;

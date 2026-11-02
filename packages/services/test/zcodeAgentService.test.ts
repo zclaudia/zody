@@ -13,12 +13,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
   type ZCodeSessionRuntimePreferencesScope,
-} from "@zcode/shared";
-import { createZCodeAgentService } from "../src/zcode-agent/zcodeAgentService.js";
-import { ZCodeAgentProcessManager } from "../src/zcode-agent/zcodeAgentProcessManager.js";
-import type { ZCodeProtocolClient } from "../src/zcode-agent/zcodeProtocolClient.js";
-import { ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE } from "../src/zcode-agent/zcodeAgentErrors.js";
-import type { ZCodeAgentServiceEvent } from "../src/zcode-agent/zcodeAgent.js";
+} from "@zody/shared";
+import { createZCodeAgentService } from "../src/zody-agent/zcodeAgentService.js";
+import { ZCodeAgentProcessManager } from "../src/zody-agent/zcodeAgentProcessManager.js";
+import type { ZCodeProtocolClient } from "../src/zody-agent/zcodeProtocolClient.js";
+import { ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE } from "../src/zody-agent/zcodeAgentErrors.js";
+import type { ZCodeAgentServiceEvent } from "../src/zody-agent/zcodeAgent.js";
 import { getTasksIndexDatabasePath, setDataBaseDir } from "../src/paths.js";
 
 const protocolModelProperties = {

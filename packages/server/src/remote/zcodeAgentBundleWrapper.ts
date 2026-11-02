@@ -6,7 +6,7 @@
 // 这样 provider runtime resolver 不需要区分原生/JS，照旧找 zcode-agent 这个可执行文件即可。
 // 开发态与生产态共用同一份 wrapper 语义。
 
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 
 export const REMOTE_AGENT_BUNDLE_NAME = "zcode.cjs";
 

@@ -4,8 +4,8 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { createElement, isValidElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { SKILL_SYNC_SIZE_LIMIT_ERROR_CODE } from "@zcode/shared";
-import type { ISkillSyncService } from "@zcode/services";
+import { SKILL_SYNC_SIZE_LIMIT_ERROR_CODE } from "@zody/shared";
+import type { ISkillSyncService } from "@zody/services";
 import {
   buildRemoteSkillSyncRows,
   filterRemoteSkillSyncRows,

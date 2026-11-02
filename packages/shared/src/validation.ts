@@ -38,8 +38,8 @@ import {
   mobileCapabilitiesSchema,
   mobileNotificationPrincipalSchema,
 } from "./mobile-remote-phase1.js";
-import { PROTOCOL_V4_LIMITS } from "./zcode-protocol-v4/core.js";
-import { sessionWorkflowActivitySchema } from "./zcode-protocol-v4/sessions-index-workflow-activity.js";
+import { PROTOCOL_V4_LIMITS } from "./zody-protocol-v4/core.js";
+import { sessionWorkflowActivitySchema } from "./zody-protocol-v4/sessions-index-workflow-activity.js";
 import {
   webRemoteControlRpcTransportAckSchema,
   webRemoteControlRpcTransportFrameSchema,
@@ -59,13 +59,13 @@ import {
 } from "./task-realtime-core.js";
 import { wslUserSchema } from "./wslUserValidation.js";
 import { legacyZCodeProviderSchema } from "./zcode-agent-policy.js";
-import { errorAttributionSchema } from "./zcode-protocol-v4/snapshot.js";
+import { errorAttributionSchema } from "./zody-protocol-v4/snapshot.js";
 import {
   zcodeMcpResourceSamplesSchema,
   zcodeMcpTelemetryEventSchema,
   zcodeProcessResourceSampleSchema,
   zcodeToolExecResourceSchema,
-} from "./zcode-protocol/index.js";
+} from "./zody-protocol/index.js";
 import { zcodeTaskModeSchema } from "./zcode-task-mode-schema.js";
 
 export {

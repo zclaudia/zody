@@ -6,7 +6,7 @@ import {
   TID_AUTOMATION_SCHEDULE_PREVIEW,
   type ZCodeAutomation,
   type ModelSelection,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const stableHookValues = vi.hoisted(() => ({

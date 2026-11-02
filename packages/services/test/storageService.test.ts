@@ -6,7 +6,7 @@ import type {
   StorageScanProgress,
   StorageScanRunRequest,
 } from "../src/storage/app/ports.js";
-import type { StorageRootSpec, StorageUsageSnapshot } from "@zcode/shared";
+import type { StorageRootSpec, StorageUsageSnapshot } from "@zody/shared";
 
 const homeRoot: StorageRootSpec = { id: "home", path: "/h/.zody", hasCustomDataBaseDir: false };
 

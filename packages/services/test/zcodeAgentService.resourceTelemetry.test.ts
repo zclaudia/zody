@@ -1,9 +1,9 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentLaneResourceSample } from "@zcode/shared";
+import type { AgentLaneResourceSample } from "@zody/shared";
 import { afterEach, describe, expect, it } from "vitest";
-import { createZCodeAgentService } from "../src/zcode-agent/zcodeAgentService.js";
+import { createZCodeAgentService } from "../src/zody-agent/zcodeAgentService.js";
 
 const RESOURCE_SAMPLE_FAKE_AGENT = `
 let buffer = "";

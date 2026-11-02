@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { FeedbackTicketDetail } from "@zcode/shared";
-import type { IFeedbackService } from "@zcode/services";
+import type { FeedbackTicketDetail } from "@zody/shared";
+import type { IFeedbackService } from "@zody/services";
 
 function createTicket(id: string): FeedbackTicketDetail {
   return {

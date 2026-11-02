@@ -3,8 +3,8 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, posix, win32 } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
-import { resolveProjectResourcePaths, ZODY_DIRECTORY_NAME } from "@zcode/shared/zody-paths";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { resolveProjectResourcePaths, ZODY_DIRECTORY_NAME } from "@zody/shared/zody-paths";
 import type {
   LoadCliMcpFromUserDirectoryRequest,
   LoadCliMcpFromUserDirectoryResult,
@@ -19,7 +19,7 @@ import type {
   SaveCliMcpToUserDirectoryRequest,
   SettingsDirectoryLocation,
   SettingsDirectorySource,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { IMcpSyncService } from "./mcpSync.js";
 import { checkRemoteSyncDirectoryWriteAccess } from "../remote-sync/remoteSyncWriteAccess.js";
 

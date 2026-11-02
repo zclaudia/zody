@@ -1,4 +1,4 @@
-import type { ModelSelectionView } from "@zcode/services";
+import type { ModelSelectionView } from "@zody/services";
 import { encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
 
 // fork（F4.1b）：resolveLoginApiKeyDefaultProvider / resolveLoginApiKeyTemplateId /

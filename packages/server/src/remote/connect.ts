@@ -1,6 +1,6 @@
-import { SocketProtocol, ChannelClient } from "@zcode/rpc";
-import type { IServiceAccessor } from "@zcode/services";
-import { RemoteServiceAccess } from "@zcode/client";
+import { SocketProtocol, ChannelClient } from "@zody/rpc";
+import type { IServiceAccessor } from "@zody/services";
+import { RemoteServiceAccess } from "@zody/client";
 import {
   SERVICE_AUTHORITY_MODE_ENV,
   ZCODE_APP_VERSION_ENV,
@@ -11,13 +11,13 @@ import {
   ZCODE_REMOTE_NO_PROXY_ENV_KEY,
   ZCODE_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
   ZCODE_DATA_ROOT_DIR_NAME,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { IRemoteBackend } from "./backend.js";
 import { wrapStdioStream } from "./stdio-socket.js";
 import { performHandshake } from "./handshake.js";
 import { deployServer } from "./deploy.js";
 import type { DeployOptions } from "./deploy.js";
-import { assertSupportedRemoteEnvironment } from "@zcode/server/remote/remotePlatformSupport.js";
+import { assertSupportedRemoteEnvironment } from "@zody/server/remote/remotePlatformSupport.js";
 import { quotePosixShellArg } from "./posixShell.js";
 import { formatWslProxyForLog } from "./wslProxy.js";
 

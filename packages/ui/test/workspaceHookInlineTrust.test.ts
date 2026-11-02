@@ -1,5 +1,5 @@
-import type { CommandAck, CommandEnvelope } from "@zcode/shared/zcode-protocol-v4";
-import type { Hook } from "@zcode/shared";
+import type { CommandAck, CommandEnvelope } from "@zody/shared/zody-protocol-v4";
+import type { Hook } from "@zody/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { trustWorkspaceHookWithReview } from "@/settings/workspaceHookReviewCommands.js";
 import {

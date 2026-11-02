@@ -5,7 +5,7 @@ import {
   normalizeZCodeToolName,
   type ZCodeKnownToolName,
   type ZCodeToolFamily,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   normalizeAskUserQuestionInput,
   readAskUserQuestionInput,

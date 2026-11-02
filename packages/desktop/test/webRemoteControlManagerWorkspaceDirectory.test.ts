@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { WebRemoteControlTaskTarget, WebRemoteControlWorkspaceTarget } from "@zcode/shared";
+import type { WebRemoteControlTaskTarget, WebRemoteControlWorkspaceTarget } from "@zody/shared";
 import { createWebRemoteControlManager } from "../src/main/webRemoteControlManager.js";
 import { createWebRemoteControlFeatureGate } from "../src/main/webRemoteControlFeatureGate.js";
 import { createRemoteWorkspaceDirectory } from "../src/main/remote-access/remoteWorkspaceDirectory.js";

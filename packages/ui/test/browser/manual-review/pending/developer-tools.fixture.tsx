@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { DeveloperToolsPane } from "@/DeveloperToolsPane.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
-import type { IServiceAccessor } from "@zcode/services";
+import type { IServiceAccessor } from "@zody/services";
 import "@/styles.css";
 const params = new URLSearchParams(location.search);
 document.documentElement.classList.add(

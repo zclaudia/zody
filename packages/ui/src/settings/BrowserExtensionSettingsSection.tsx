@@ -4,7 +4,7 @@ import type {
   BrowserExtensionBridgeStatus,
   BrowserExtensionPairingTicket,
   BrowserExtensionProfileStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {

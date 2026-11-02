@@ -2,7 +2,7 @@ import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   tryNormalizeRemoteAccessGatewayUrl,
   type PlatformSecureStore,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE } from "./mobileRemoteSecureStore.js";
 
 /**

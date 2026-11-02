@@ -86,7 +86,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "由 `session/create` 创建；`session/resume` 复用；会随 snapshot、event、message、part 全程回传。",
     owner: "agent server",
-    source: "apps/zcode-cli/packages/contracts/src/interfaces/shared.ts#createSessionId",
+    source: "apps/zody-cli/packages/contracts/src/interfaces/shared.ts#createSessionId",
     aliases: ["legacy acpSessionId"],
     related: ["taskId", "traceId", "turnId", "messageId"],
   },
@@ -110,7 +110,7 @@ export const concepts: Concept[] = [
       "当前 agent server 在创建 session record 时用 UUID 生成 root trace；之后事件 envelope 带同一观测 trace。",
     owner: "agent runtime / protocol server",
     source:
-      "apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-types.ts#createProtocolTraceId",
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol/server-types.ts#createProtocolTraceId",
     aliases: ["protocol trace", "envelope.traceId"],
     related: ["inputId", "sessionId", "eventEnvelope"],
   },
@@ -145,7 +145,7 @@ export const concepts: Concept[] = [
     summary: "旧字段名，过去承载 UI 每次 prompt 的相关性 ID；已统一改名为 inputId。",
     lifecycle: "旧协议字段；新 ZCode Protocol schema 不再接受它，继续发送会触发 Invalid params。",
     owner: "deprecated",
-    source: "dae26032: packages/shared/src/zcode-protocol/index.ts",
+    source: "dae26032: packages/shared/src/zody-protocol/index.ts",
     related: ["inputId", "sessionSend"],
   },
   {
@@ -168,7 +168,7 @@ export const concepts: Concept[] = [
       "运行中追加输入被 agent 接收为 steer queue 时生成；drained/discarded/rejected 事件回带。",
     owner: "agent runtime",
     source:
-      "apps/zcode-cli/packages/contracts/src/interfaces/session.port.ts#PendingSteerInputInfo",
+      "apps/zody-cli/packages/contracts/src/interfaces/session.port.ts#PendingSteerInputInfo",
     related: ["inputId", "turnId", "turnSteerQueued"],
   },
   {
@@ -178,7 +178,7 @@ export const concepts: Concept[] = [
     summary: "Agent core 中一次 turn 的主键；一个 inputId 通常启动或归属到一个 turnId。",
     lifecycle: "agent runtime 在 turn 启动时创建；所有 turn 内事件可携带。",
     owner: "agent runtime",
-    source: "apps/zcode-cli/packages/contracts/src/interfaces/shared.ts#createTurnId",
+    source: "apps/zody-cli/packages/contracts/src/interfaces/shared.ts#createTurnId",
     related: ["sessionId", "inputId", "messageId"],
   },
   {
@@ -188,7 +188,7 @@ export const concepts: Concept[] = [
     summary: "消息主键，标识 user/assistant message。",
     lifecycle: "消息创建时生成；message upsert/remove、part、snapshot 都围绕它组织。",
     owner: "agent runtime",
-    source: "packages/shared/src/zcode-protocol/index.ts#ZCodeMessageInfo",
+    source: "packages/shared/src/zody-protocol/index.ts#ZCodeMessageInfo",
     related: ["partId", "sessionId", "turnId"],
   },
   {
@@ -198,7 +198,7 @@ export const concepts: Concept[] = [
     summary: "消息内部 part 的主键，用于 text、reasoning、tool、patch、compaction 等细粒度更新。",
     lifecycle: "part.started/upserted/delta/remove 时使用。",
     owner: "agent runtime",
-    source: "packages/shared/src/zcode-protocol/index.ts#ZCodeMessagePart",
+    source: "packages/shared/src/zody-protocol/index.ts#ZCodeMessagePart",
     related: ["messageId", "toolCallId"],
   },
   {
@@ -208,7 +208,7 @@ export const concepts: Concept[] = [
     summary: "工具调用主键，用于工具状态、权限请求和 active tool projection。",
     lifecycle: "工具 scheduled/started/progress/result/error 流程中保持稳定。",
     owner: "agent runtime",
-    source: "packages/shared/src/zcode-protocol/index.ts#ZCodeActiveToolCall",
+    source: "packages/shared/src/zody-protocol/index.ts#ZCodeActiveToolCall",
     related: ["partId", "permissionRequest"],
   },
   {
@@ -219,7 +219,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "server 发起 `interaction/requestPermission`；host 路由给 owner client；结果通过 permission.resolved 回到 session。",
     owner: "agent server + host owner routing",
-    source: "packages/shared/src/zcode-protocol/index.ts#zcodePermissionRequestParamsSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zcodePermissionRequestParamsSchema",
     related: ["toolCallId", "deliveryKind", "sessionId"],
   },
   {
@@ -230,7 +230,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "UI 在 busy 时提交输入；agent 返回 pendingInputId，并在 drained/discarded/rejected 中更新状态。",
     owner: "agent runtime",
-    source: "packages/shared/src/zcode-protocol/index.ts#zcodeTurnSteerQueuedEventPayloadSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zcodeTurnSteerQueuedEventPayloadSchema",
     related: ["pendingInputId", "turnId", "inputId"],
   },
   {
@@ -241,7 +241,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "每个 session 独立递增；desktop continuous 可实时消费，web remote replayable 必须用 afterSeq 补齐。",
     owner: "agent server",
-    source: "packages/shared/src/zcode-protocol/index.ts#zcodeEventEnvelopeSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zcodeEventEnvelopeSchema",
     aliases: ["seq"],
     related: ["deliveryKind", "eventEnvelope"],
   },
@@ -253,7 +253,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "`session/read`、`session/subscribe` 和事件 envelope 可携带；影响 snapshot/replay 行为。",
     owner: "host / protocol client",
-    source: "packages/shared/src/zcode-protocol/index.ts#zcodeDeliveryKindSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zcodeDeliveryKindSchema",
     related: ["eventSeq", "taskStreamMirrorBatch"],
   },
   {
@@ -273,7 +273,7 @@ export const concepts: Concept[] = [
     summary: "真实文件路径，只用于文件读写、命令 cwd、Git 操作和路径展示。",
     lifecycle: "本地 workspace 通常直接使用；远程 workspace 不能只靠它做身份判等。",
     owner: "app/host",
-    source: "packages/shared/src/zcode-protocol/index.ts#ZCodeWorkspaceRef",
+    source: "packages/shared/src/zody-protocol/index.ts#ZCodeWorkspaceRef",
     related: ["workspaceIdentity", "workspaceKey"],
   },
   {
@@ -294,7 +294,7 @@ export const concepts: Concept[] = [
       "ZCode Protocol 事件外壳，承载 eventId、sessionId、turnId、seq、traceId、timestamp、deliveryKind。",
     lifecycle: "所有 `session/event` 通知和 `session/events` 读取结果都使用它。",
     owner: "agent server",
-    source: "packages/shared/src/zcode-protocol/index.ts#zcodeEventEnvelopeSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zcodeEventEnvelopeSchema",
     related: ["sessionId", "traceId", "eventSeq", "deliveryKind"],
   },
   {
@@ -304,7 +304,7 @@ export const concepts: Concept[] = [
     summary: "提交用户输入的 ZCode Protocol 方法，立即 ACK，不等待整轮模型生成完成。",
     lifecycle: "client 调用后，agent 后台执行 turn，并通过 session.event/state.updated 推送进度。",
     owner: "protocol client -> agent server",
-    source: "packages/shared/src/zcode-protocol/index.ts#zcodeSessionSendParamsSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zcodeSessionSendParamsSchema",
     related: ["sessionId", "inputId", "traceId"],
   },
   {
@@ -402,7 +402,7 @@ export const structures: StructureDoc[] = [
   {
     id: "zcode-session-send",
     title: "ZCodeSessionSendParams",
-    path: "packages/shared/src/zcode-protocol/index.ts",
+    path: "packages/shared/src/zody-protocol/index.ts",
     purpose: "`session/send` 的参数结构。它只提交输入并立即 ACK，结果通过事件流返回。",
     oldShape: "{ sessionId, clientMessageId?, content, attachments?, expectedRevision? }",
     newShape: "{ sessionId, inputId?, content, attachments?, expectedRevision? }",
@@ -460,7 +460,7 @@ export const structures: StructureDoc[] = [
   {
     id: "turn-event-payloads",
     title: "Turn Event Payloads",
-    path: "packages/shared/src/zcode-protocol/index.ts + apps/zcode-cli/packages/contracts/src/events/session.events.ts",
+    path: "packages/shared/src/zody-protocol/index.ts + apps/zody-cli/packages/contracts/src/events/session.events.ts",
     purpose:
       "turn.started / steerQueued / completed / failed 用 payload.inputId 把 agent 回流事件归属到某次 UI 输入。",
     oldShape: "turn payloads 使用 clientMessageId。",
@@ -715,7 +715,7 @@ export const structures: StructureDoc[] = [
   {
     id: "zcode-event-envelope",
     title: "ZCode Event Envelope",
-    path: "packages/shared/src/zcode-protocol/index.ts",
+    path: "packages/shared/src/zody-protocol/index.ts",
     purpose: "协议事件外壳。它描述事件日志顺序和观测链路，不描述 UI 输入归属。",
     newShape: "{ eventId, sessionId, turnId?, seq, traceId?, timestamp, deliveryKind? }",
     migration: "Projection 不再把 envelope.traceId 当 input/run；payload.inputId 才是输入归属。",
@@ -788,7 +788,7 @@ export const structures: StructureDoc[] = [
   {
     id: "session-state-snapshot",
     title: "SessionStateSnapshot",
-    path: "packages/shared/src/zcode-protocol/index.ts",
+    path: "packages/shared/src/zody-protocol/index.ts",
     purpose:
       "`session/create`、`session/read`、`session/subscribe(includeSnapshot)` 返回的完整可恢复视图。",
     newShape: "{ protocol, session, settings, projection, runtime, messages }",
@@ -855,7 +855,7 @@ export const structures: StructureDoc[] = [
   {
     id: "workspace-ref",
     title: "ZCodeWorkspaceRef",
-    path: "packages/shared/src/zcode-protocol/index.ts",
+    path: "packages/shared/src/zody-protocol/index.ts",
     purpose: "协议层 workspace 身份结构，分清执行路径和身份隔离。",
     newShape: "{ workspacePath, workspaceIdentity?, workspaceKey }",
     migration:

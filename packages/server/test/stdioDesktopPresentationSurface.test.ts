@@ -1,21 +1,21 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { IModelSelectionService, IZCodeAgentService } from "@zcode/services";
+import { IModelSelectionService, IZCodeAgentService } from "@zody/services";
 import {
   disposeServiceResourcesAndWait,
   resolveDefaultZCodeAgentCommand,
   setDataBaseDir,
   type ZCodeAgentCommand,
   type ZCodeAgentCommandResolverContext,
-} from "@zcode/services/node";
+} from "@zody/services/node";
 import {
   SERVICE_AUTHORITY_MODE_ENV,
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
   ZCODE_REMOTE_HTTP_PROXY_ENV_KEY,
   ZCODE_REMOTE_NO_PROXY_ENV_KEY,
   ZCODE_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createStdioServices, resolveRemoteAgentNetworkFromEnv } from "../src/stdioServices.js";
 

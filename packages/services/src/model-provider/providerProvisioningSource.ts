@@ -5,12 +5,12 @@ import {
   providerProvisioningEnvelopeSchema,
   type ProviderProvisioningCredentialEntry,
   type ProviderProvisioningEnvelope,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   PersonalProviderConfigRepository,
   ProviderConfigLayerSnapshot,
-} from "@zcode/provider";
-import { decodeProviderConfigFile, encodeProviderConfigFile } from "@zcode/provider-node";
+} from "@zody/provider";
+import { decodeProviderConfigFile, encodeProviderConfigFile } from "@zody/provider-node";
 import type { CredentialCipherProvider } from "../credential/providers/credentialCipherProvider.js";
 import { createStoredCredentialCipher } from "../credential/providers/credentialKeyStore.js";
 import type { ISettingService } from "../setting/setting.js";

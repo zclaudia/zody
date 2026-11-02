@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ApiClient } from "@zcode/shared";
+import type { ApiClient } from "@zody/shared";
 
 const TEST_ZCODE_ORIGIN = "https://scenes.example.test";
 

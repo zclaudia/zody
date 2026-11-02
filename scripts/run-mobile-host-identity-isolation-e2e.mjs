@@ -205,7 +205,7 @@ async function main() {
     "pnpm",
     [
       "--filter",
-      "@zcode/desktop",
+      "@zody/desktop",
       "exec",
       "wdio",
       "run",

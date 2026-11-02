@@ -1,4 +1,4 @@
-import type { ZCodeSlashCommand } from "@zcode/shared";
+import type { ZCodeSlashCommand } from "@zody/shared";
 
 const WHITESPACE_RE = /\s/;
 

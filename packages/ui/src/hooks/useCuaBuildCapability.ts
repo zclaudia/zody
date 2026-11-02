@@ -7,7 +7,7 @@
  * 而不是先渲染另一态——占位卡与开关之间闪跳会被当成界面坏了。
  */
 import { useEffect, useState } from "react";
-import { DesktopCommandIds, type CuaBuildCapability } from "@zcode/shared";
+import { DesktopCommandIds, type CuaBuildCapability } from "@zody/shared";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { isCuaBuildCapability } from "@/settings/computerUseAvailability.js";
 

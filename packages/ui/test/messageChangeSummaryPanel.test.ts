@@ -1,5 +1,5 @@
-import type { IBroadcastService } from "@zcode/services";
-import type { IPlatformService } from "@zcode/shared";
+import type { IBroadcastService } from "@zody/services";
+import type { IPlatformService } from "@zody/shared";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";

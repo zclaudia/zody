@@ -190,8 +190,8 @@ export async function buildCuaDesktopSession(options = {}) {
       __CUA_NODE_REPL_SERVER_MAX_BYTES__: JSON.stringify(nodeReplServer.maxBytes),
     };
     const cliAliases = {
-      "@zcode/node-repl-host/cua-node-repl-mcp-port": await resolvePublicExport(
-        join(REPO_ROOT, "apps", "zcode-cli", "packages", "node-repl-host"),
+      "@zody/node-repl-host/cua-node-repl-mcp-port": await resolvePublicExport(
+        join(REPO_ROOT, "apps", "zody-cli", "packages", "node-repl-host"),
         "./cua-node-repl-mcp-port",
       ),
     };

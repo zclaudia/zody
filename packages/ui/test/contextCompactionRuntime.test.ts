@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeContextCompactionTimelineMeta } from "@zcode/shared";
+import type { ZCodeContextCompactionTimelineMeta } from "@zody/shared";
 import {
   isRunningContextCompactionTimeline,
   shouldContextCompactionTimelineCompleteTask,

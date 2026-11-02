@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodePluginInfo } from "@zcode/shared";
+import type { ZCodePluginInfo } from "@zody/shared";
 import { storeItemMatches, type StorePluginItem } from "../src/settings/pluginStoreListing.js";
 import { filterPluginsByQuery } from "../src/settings/pluginCapabilityProjection.js";
 

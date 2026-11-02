@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { NodePersonalProviderConfigRepository } from "@zcode/provider-node";
-import { buildRemoteWorkspaceIdentity, type RemoteTarget } from "@zcode/shared";
+import { NodePersonalProviderConfigRepository } from "@zody/provider-node";
+import { buildRemoteWorkspaceIdentity, type RemoteTarget } from "@zody/shared";
 import {
   clearAppData,
   getE2EAppDataPaths,

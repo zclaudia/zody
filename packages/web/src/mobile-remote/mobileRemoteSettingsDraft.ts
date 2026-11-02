@@ -1,5 +1,5 @@
-import { DEFAULT_REMOTE_ACCESS_NAMESPACE } from "@zcode/shared";
-import type { WebRemoteControlMobileSettingsDraft } from "@zcode/ui";
+import { DEFAULT_REMOTE_ACCESS_NAMESPACE } from "@zody/shared";
+import type { WebRemoteControlMobileSettingsDraft } from "@zody/ui";
 import {
   validateMobileRemoteGatewayConfig,
   type MobileRemoteGatewayConfig,

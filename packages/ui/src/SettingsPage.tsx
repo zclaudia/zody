@@ -16,13 +16,13 @@ import type {
   IntegratedTerminalShellSelection,
   Locale,
   ZCodeInteractionBehavior,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   TID_SETTINGS_BACK_BUTTON,
   TID_SETTINGS_PAGE,
   TID_SETTINGS_SECTION_NAV,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { toast } from "@/components/ui/toast.js";
 import { DesktopWindowFrame } from "@/DesktopWindowFrame.js";

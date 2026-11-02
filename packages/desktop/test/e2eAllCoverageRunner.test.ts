@@ -75,7 +75,7 @@ describe("all E2E coverage runner", () => {
       "node scripts/run-all-e2e-coverage.mjs",
     );
     expect(rootPackage.scripts["test:e2e:all:coverage"]).toBe(
-      "pnpm --filter @zcode/desktop test:e2e:all:coverage",
+      "pnpm --filter @zody/desktop test:e2e:all:coverage",
     );
   });
 

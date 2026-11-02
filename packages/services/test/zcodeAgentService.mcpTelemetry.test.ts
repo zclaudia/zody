@@ -1,9 +1,9 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ZCodeMcpTelemetryEvent, ZCodeMcpResourceSample } from "@zcode/shared";
+import type { ZCodeMcpTelemetryEvent, ZCodeMcpResourceSample } from "@zody/shared";
 import { afterEach, describe, expect, it } from "vitest";
-import { createZCodeAgentService } from "../src/zcode-agent/zcodeAgentService.js";
+import { createZCodeAgentService } from "../src/zody-agent/zcodeAgentService.js";
 
 const MCP_TELEMETRY_FAKE_AGENT = `
 let buffer = "";

@@ -3,7 +3,7 @@ import { memo, useState } from "react";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import type { UniqueIdentifier } from "@dnd-kit/core";
-import { isCronTask, type ZCodeTaskMeta } from "@zcode/shared";
+import { isCronTask, type ZCodeTaskMeta } from "@zody/shared";
 import {
   ArrowUpToLine,
   Clock,

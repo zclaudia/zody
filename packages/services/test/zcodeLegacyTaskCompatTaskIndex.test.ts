@@ -4,24 +4,24 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Emitter, setNetworkTelemetrySink } from "@zcode/rpc";
+import { Emitter, setNetworkTelemetrySink } from "@zody/rpc";
 import type {
   SessionSummary,
   SessionsIndexTopicFrame,
   SessionsIndexTopicWireFrame,
   WorkspaceConfigTopicWireFrame,
-} from "@zcode/shared/zcode-protocol-v4";
-import type { NetworkObservation } from "@zcode/rpc";
+} from "@zody/shared/zody-protocol-v4";
+import type { NetworkObservation } from "@zody/rpc";
 import { getLegacyTaskSessionSnapshotPath, setDataBaseDir } from "../src/paths.js";
-import { createZCodeTaskServiceAdapter } from "../src/zcode-agent/zcodeTaskServiceAdapter.js";
-import { createZCodeTaskIndexSyncer } from "../src/zcode-agent/zcodeTaskIndexSyncer.js";
+import { createZCodeTaskServiceAdapter } from "../src/zody-agent/zcodeTaskServiceAdapter.js";
+import { createZCodeTaskIndexSyncer } from "../src/zody-agent/zcodeTaskIndexSyncer.js";
 import { TaskIndexRepo } from "../src/session/taskIndexRepo.js";
 import type { CuaProductMcpServerResolver } from "../src/cua-permission-broker/index.js";
 import type {
   IZCodeAgentService,
   ZCodeAgentCreateSessionParams,
   ZCodeAgentServiceEvent,
-} from "../src/zcode-agent/zcodeAgent.js";
+} from "../src/zody-agent/zcodeAgent.js";
 import type {
   AppSettings,
   TraceId,
@@ -32,14 +32,14 @@ import type {
   ZCodeSessionStateSnapshot,
   ZCodeStreamEvent,
   ZCodeWorkspaceStateSnapshot,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   resolveWorkspaceKey,
   ZCODE_CUA_OFFICIAL_MCP_NAMESPACE_NAME,
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
   ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   ZCODE_PLUGIN_ID_ENV_KEY,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 const tempDirs: string[] = [];
 const disposables: Array<{ disposeAll(): void }> = [];

@@ -15,7 +15,7 @@ import {
   type ZCodeSavedWorkflowScope,
   type ZCodeWorkflowsForRunCandidate,
   type ZCodeWorkflowsSaveResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import {
   selectWorkflowRunSavedState,

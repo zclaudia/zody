@@ -3,7 +3,7 @@ import {
   userInputRowSchema,
   v4AttachmentReadResultSchema,
   PROTOCOL_V4_LIMITS,
-} from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
 
 describe("V4 attachment source across row transport", () => {
   it("accepts text preview responses and keeps the text attachment size limit", () => {

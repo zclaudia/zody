@@ -44,7 +44,7 @@ import {
   TID_V4_ROW_ATTACHMENTS,
   parseAutomationRunId,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   AttachmentRef,
   ArtifactRow,
@@ -60,7 +60,7 @@ import type {
   TurnHeaderRow,
   UserInputRow,
   V4ConversationFileRewindPreviewResult,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { AssistantPreviewCards } from "@/AssistantPreviewCards.js";
 import { AssistantCodeCommentCards } from "@/AssistantCodeCommentCards.js";
 import { useAssistantCodeCommentFeatureEnabled } from "@/AssistantCodeCommentFeatureProvider.js";
@@ -222,7 +222,7 @@ type UserInputEditHandler = (
   newText: string,
   attachments?: readonly AttachmentRef[],
   workspaceMode?: "preserve" | "rewind",
-  conversationQuotes?: import("@zcode/shared").ConversationSelectionText[],
+  conversationQuotes?: import("@zody/shared").ConversationSelectionText[],
 ) => Promise<CommandAck | boolean | void> | CommandAck | boolean | void;
 
 type AssistantMessageFeedback = "like" | "dislike";

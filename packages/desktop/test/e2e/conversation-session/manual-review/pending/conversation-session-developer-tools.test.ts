@@ -1,4 +1,4 @@
-import { TID_SIDE_PANE_TOGGLE, TID_V4_COMPOSER_INPUT } from "@zcode/shared";
+import { TID_SIDE_PANE_TOGGLE, TID_V4_COMPOSER_INPUT } from "@zody/shared";
 import { clearAppData, switchToNewestWindow } from "../../../helpers/desktop-app.js";
 import {
   prepareV4ConversationE2E,

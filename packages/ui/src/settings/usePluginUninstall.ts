@@ -2,8 +2,8 @@ import { useCallback, useMemo, useState } from "react";
 import type {
   ZCodeInstalledPluginSummary,
   ZCodePluginInfo,
-} from "@zcode/shared";
-import type { IPluginManagementService } from "@zcode/services";
+} from "@zody/shared";
+import type { IPluginManagementService } from "@zody/services";
 import { usePluginManagementStore } from "@/store/pluginManagementStore.js";
 
 interface UsePluginUninstallInput {

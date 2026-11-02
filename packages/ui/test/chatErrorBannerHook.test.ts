@@ -4,7 +4,7 @@ import {
   TID_CHAT_ERROR_DETAILS_BUTTON,
   TID_CHAT_ERROR_HOOK_ICON,
   type IPlatformService,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import { ChatErrorBanner } from "@/ChatErrorBanner.js";
 import { PlatformProvider } from "@/hooks/usePlatform.js";

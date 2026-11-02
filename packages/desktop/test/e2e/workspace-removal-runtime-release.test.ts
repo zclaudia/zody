@@ -6,7 +6,7 @@ import {
   TID_WORKSPACE_ITEM,
   formatZCodeAgentProcessName,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,

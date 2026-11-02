@@ -4,7 +4,7 @@ import type {
   ZCodeSessionImportHistory,
   ZCodeSessionImportMessage,
   ZCodeSessionStateSnapshot,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   getLegacyDeletedTaskSessionSnapshotPath,
   getLegacyTaskSessionSnapshotPath,

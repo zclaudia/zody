@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZCodeTaskMeta } from "@zody/shared";
 import { deriveTaskLeadingIndicator } from "@/lib/taskListItemPresentation.js";
 import { buildTaskListResult, type TaskListKind } from "@/v4/buildTaskListResultFromSessions.js";
 import {

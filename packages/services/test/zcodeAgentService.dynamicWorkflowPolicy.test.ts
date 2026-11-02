@@ -5,8 +5,8 @@ import {
   createDynamicWorkflowClientConfig,
   type DynamicWorkflowClientConfig,
   type DynamicWorkflowMode,
-} from "@zcode/shared";
-import { V4_METHODS } from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared";
+import { V4_METHODS } from "@zody/shared/zody-protocol-v4";
 import { testSelectionView } from "./fixtures/testSelectionView.js";
 
 // DWG-02（docs/dynamic-workflow/launch.md「Gray release」）：Host 是灰度的唯一裁决者。
@@ -86,7 +86,7 @@ async function setup(params: {
       disposeAll() {}
     },
   }));
-  const { createZCodeAgentService } = await import("../src/zcode-agent/zcodeAgentService.js");
+  const { createZCodeAgentService } = await import("../src/zody-agent/zcodeAgentService.js");
   const service = createZCodeAgentService({
     modelSelectionReadinessSource: { getView: async () => testSelectionView() },
     ...(params.enabled === undefined && !params.configResolver

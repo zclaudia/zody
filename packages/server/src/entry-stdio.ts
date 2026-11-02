@@ -1,12 +1,12 @@
-import { disposeServiceResourcesAndWait, getAppConfigDir } from "@zcode/services/node";
+import { disposeServiceResourcesAndWait, getAppConfigDir } from "@zody/services/node";
 import {
   ZCODE_VERSION,
   SERVICE_AUTHORITY_MODE_ENV,
   formatLogPrefix,
   formatZodError,
   helloAckMessageSchema,
-} from "@zcode/shared";
-import type { HelloMessage, HelloAckMessage } from "@zcode/shared";
+} from "@zody/shared";
+import type { HelloMessage, HelloAckMessage } from "@zody/shared";
 import { createStdioServer } from "./stdio.js";
 import { registerStdioProcessLifecycle } from "./stdio-lifecycle.js";
 import { createStdioServices } from "./stdioServices.js";

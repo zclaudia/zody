@@ -7,7 +7,7 @@ import {
   buildRemoteWorkspaceIdentity,
   testId,
   type RemoteTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByDom,
   waitForWorkspaceApp,

@@ -5,14 +5,14 @@ import { cp, lstat, mkdir, readFile, readdir, realpath, rm, stat } from "node:fs
 import { homedir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { parse as parseYaml } from "yaml";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type {
   SkillSyncArchiveExportResult,
   SkillSyncCandidate,
   SkillSyncCandidateListResult,
   SkillSyncImportResult,
   SkillSyncRemoteStatusResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { ISkillSyncService } from "./skillSync.js";
 import { createSkillSyncArchive, extractSkillSyncArchive } from "./skillSyncArchive.js";
 import { normalizeSkillSyncRelativePath, resolveSkillSyncPathWithin } from "./skillSyncPath.js";

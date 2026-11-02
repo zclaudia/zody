@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { PassThrough } from "node:stream";
-import type { IDisposable, Event } from "@zcode/rpc";
-import type { ZCodePromptAttachment } from "@zcode/shared";
+import type { IDisposable, Event } from "@zody/rpc";
+import type { ZCodePromptAttachment } from "@zody/shared";
 import {
   REMOTE_PROMPT_ATTACHMENT_ROOT,
   buildRemotePromptAttachmentPath,

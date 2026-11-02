@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { IServiceAccessor } from "@zcode/services";
+import type { IServiceAccessor } from "@zody/services";
 import {
   LEGACY_REMOTE_WORKSPACE_RPC_CHANNELS,
   assertLegacyRemoteWorkspaceRpcContract,

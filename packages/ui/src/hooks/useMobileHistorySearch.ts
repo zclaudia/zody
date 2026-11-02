@@ -3,8 +3,8 @@ import type {
   MobileHistorySearchOutcome,
   MobileHistorySearchRequest,
   MobileHistorySearchItem,
-} from "@zcode/shared";
-import { resolveWebRemoteControlWorkspaceKey } from "@zcode/shared";
+} from "@zody/shared";
+import { resolveWebRemoteControlWorkspaceKey } from "@zody/shared";
 
 export interface MobileHistorySearchWorkspace {
   workspacePath: string;

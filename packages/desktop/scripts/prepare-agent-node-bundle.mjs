@@ -23,17 +23,17 @@ import { stageKoffiIntoBundledAgents } from "./koffi-package-assets.mjs";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const desktopRoot = resolve(scriptDir, "..");
 const repoRoot = resolve(desktopRoot, "..", "..");
-const cliBundlePath = resolve(repoRoot, "apps/zcode-cli/packages/cli/dist/zcode.cjs");
-const adaptersRoot = resolve(repoRoot, "apps/zcode-cli/packages/adapters");
+const cliBundlePath = resolve(repoRoot, "apps/zody-cli/packages/cli/dist/zcode.cjs");
+const adaptersRoot = resolve(repoRoot, "apps/zody-cli/packages/adapters");
 const pnpmRunEnv = {
   ...process.env,
-  // pnpm 11 会在 apps/zcode-cli 子 workspace 执行 run 前触发 install；
+  // pnpm 11 会在 apps/zody-cli 子 workspace 执行 run 前触发 install；
   // 子 workspace 不能解析根 workspace 的 @zcode/shared，Docker/web app 打包会因此卡在插件 runtime 构建。
   PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false",
 };
-const BROWSER_USE_PLUGIN_PACKAGE_NAME = "@zcode/browser-use-plugin";
-const NODE_REPL_HOST_PACKAGE_NAME = "@zcode/node-repl-host";
-const CUA_PLUGIN_PACKAGE_NAME = "@zcode/zcode-cua-plugin";
+const BROWSER_USE_PLUGIN_PACKAGE_NAME = "@zody/browser-use-plugin";
+const NODE_REPL_HOST_PACKAGE_NAME = "@zody/node-repl-host";
+const CUA_PLUGIN_PACKAGE_NAME = "@zody/zody-cua-plugin";
 
 // 平台目录命名：darwin/win32/linux + x64/arm64，
 // 支持 ZCODE_TARGET_OS / ZCODE_TARGET_ARCH 覆盖（交叉打包时由 CI 注入）。
@@ -94,45 +94,45 @@ const browserUseRequiredRuntimePaths = [
 ];
 const officialPluginPackages = [
   {
-    packageName: "@zcode/android-emulator-plugin",
-    relativePath: "apps/zcode-cli/packages/android-emulator-plugin",
+    packageName: "@zody/android-emulator-plugin",
+    relativePath: "apps/zody-cli/packages/android-emulator-plugin",
     requiresRuntime: true,
     requiredRuntimePaths: ["dist/mcp/server.js"],
     runtimeBuildScript: "scripts/build-mcp.mjs",
     stagedPath: "packages/android-emulator-plugin",
   },
   {
-    packageName: "@zcode/documents-plugin",
-    relativePath: "apps/zcode-cli/packages/documents-plugin",
+    packageName: "@zody/documents-plugin",
+    relativePath: "apps/zody-cli/packages/documents-plugin",
     requiresRuntime: false,
     requiredSeedPaths: ["agents/visual-judge.md", "skills/docx/SKILL.md"],
     stagedPath: "packages/documents-plugin",
   },
   // fork（F4.6）：image-search 官方 MCP 插件随链删除。
   {
-    packageName: "@zcode/pdf-plugin",
-    relativePath: "apps/zcode-cli/packages/pdf-plugin",
+    packageName: "@zody/pdf-plugin",
+    relativePath: "apps/zody-cli/packages/pdf-plugin",
     requiresRuntime: false,
     requiredSeedPaths: ["agents/visual-judge.md", "skills/pdf/SKILL.md"],
     stagedPath: "packages/pdf-plugin",
   },
   {
-    packageName: "@zcode/presentations-plugin",
-    relativePath: "apps/zcode-cli/packages/presentations-plugin",
+    packageName: "@zody/presentations-plugin",
+    relativePath: "apps/zody-cli/packages/presentations-plugin",
     requiresRuntime: false,
     requiredSeedPaths: ["agents/visual-judge.md", "skills/pptx/SKILL.md"],
     stagedPath: "packages/presentations-plugin",
   },
   {
-    packageName: "@zcode/spreadsheets-plugin",
-    relativePath: "apps/zcode-cli/packages/spreadsheets-plugin",
+    packageName: "@zody/spreadsheets-plugin",
+    relativePath: "apps/zody-cli/packages/spreadsheets-plugin",
     requiresRuntime: false,
     requiredSeedPaths: ["agents/visual-judge.md", "skills/xlsx/SKILL.md"],
     stagedPath: "packages/spreadsheets-plugin",
   },
   {
-    packageName: "@zcode/visualize-plugin",
-    relativePath: "apps/zcode-cli/packages/visualize-plugin",
+    packageName: "@zody/visualize-plugin",
+    relativePath: "apps/zody-cli/packages/visualize-plugin",
     requiresRuntime: false,
     requiredSeedPaths: [
       "skills/visualize/SKILL.md",
@@ -166,16 +166,16 @@ const officialPluginPackages = [
   {
     // browser-use 只携带自己的 client script 与 skill/docs；node_repl MCP runtime 归
     // @zcode/node-repl-host（见上方常量注释）。
-    packageName: "@zcode/browser-use-plugin",
-    relativePath: "apps/zcode-cli/packages/browser-use-plugin",
+    packageName: "@zody/browser-use-plugin",
+    relativePath: "apps/zody-cli/packages/browser-use-plugin",
     requiresRuntime: true,
     requiredRuntimePaths: browserUseRequiredRuntimePaths,
     runtimeBuildScript: "scripts/build.mjs",
     stagedPath: "packages/browser-use-plugin",
   },
   {
-    packageName: "@zcode/ios-simulator-plugin",
-    relativePath: "apps/zcode-cli/packages/ios-simulator-plugin",
+    packageName: "@zody/ios-simulator-plugin",
+    relativePath: "apps/zody-cli/packages/ios-simulator-plugin",
     requiresRuntime: true,
     requiredRuntimePaths: ["dist/mcp/server.js"],
     runtimeBuildScript: "scripts/build-mcp.mjs",
@@ -184,20 +184,20 @@ const officialPluginPackages = [
   {
     // 修复原因：restore-legacy-sessions 已注册为官方插件，但 Electron 生产包只会拷贝
     // 这里列出的资源。漏掉它会导致用户生产包首次启动后 plugins list 里看不到该插件。
-    packageName: "@zcode/restore-legacy-sessions-plugin",
-    relativePath: "apps/zcode-cli/packages/restore-legacy-sessions-plugin",
+    packageName: "@zody/restore-legacy-sessions-plugin",
+    relativePath: "apps/zody-cli/packages/restore-legacy-sessions-plugin",
     requiresRuntime: false,
     stagedPath: "packages/restore-legacy-sessions-plugin",
   },
   {
-    packageName: "@zcode/skill-creator-plugin",
-    relativePath: "apps/zcode-cli/packages/skill-creator-plugin",
+    packageName: "@zody/skill-creator-plugin",
+    relativePath: "apps/zody-cli/packages/skill-creator-plugin",
     requiresRuntime: false,
     stagedPath: "packages/skill-creator-plugin",
   },
   {
-    packageName: "@zcode/plugin-creator-plugin",
-    relativePath: "apps/zcode-cli/packages/plugin-creator-plugin",
+    packageName: "@zody/plugin-creator-plugin",
+    relativePath: "apps/zody-cli/packages/plugin-creator-plugin",
     requiresRuntime: false,
     stagedPath: "packages/plugin-creator-plugin",
   },
@@ -205,8 +205,8 @@ const officialPluginPackages = [
     // 修复原因：zcode-guide 已注册为官方默认启用内容型插件（见 official-plugin-definitions.ts）。
     // Electron 生产包不是 SEA 路径，官方插件 seed 依赖这里 stage 的 resources/glm/packages/*-plugin；
     // 漏掉它会导致生产桌面包首启 seed 不到该插件，用户拿不到默认启用的配置指南技能。
-    packageName: "@zcode/zcode-guide-plugin",
-    relativePath: "apps/zcode-cli/packages/zcode-guide-plugin",
+    packageName: "@zody/zody-guide-plugin",
+    relativePath: "apps/zody-cli/packages/zody-guide-plugin",
     requiresRuntime: false,
     stagedPath: "packages/zcode-guide-plugin",
   },
@@ -214,8 +214,8 @@ const officialPluginPackages = [
     // node_repl 宿主：Browser Use 与 Computer Use 共用的 MCP runtime，本轮抽成独立包。
     // 它没有 listing（不进插件市场展示面），但生产包首启 seed 必须拿到它的 dist runtime，
     // 否则 bua/cua 任一开启时都会连不上 node_repl。
-    packageName: "@zcode/node-repl-host",
-    relativePath: "apps/zcode-cli/packages/node-repl-host",
+    packageName: "@zody/node-repl-host",
+    relativePath: "apps/zody-cli/packages/node-repl-host",
     requiresRuntime: true,
     requiredRuntimePaths: ["dist/mcp/server.js"],
     runtimeBuildScript: "scripts/build.mjs",
@@ -223,8 +223,8 @@ const officialPluginPackages = [
   },
   {
     // CUA 插件只携带 SDK/skill/docs；node_repl MCP runtime 归 @zcode/node-repl-host。
-    packageName: "@zcode/zcode-cua-plugin",
-    relativePath: "apps/zcode-cli/packages/zcode-cua-plugin",
+    packageName: "@zody/zody-cua-plugin",
+    relativePath: "apps/zody-cli/packages/zody-cua-plugin",
     requiresRuntime: false,
     stagedPath: "packages/zcode-cua-plugin",
   },
@@ -234,7 +234,7 @@ const officialPluginPackages = [
 // 在 zcode.cjs 旁找 packages/bundled-skills 并原地读取。漏 stage 它，桌面包的 /workflow 会展开成
 // 「先加载 dynamic-workflows 技能」而技能不存在——这正是把它从可卸载的 zcode-guide 插件搬出来要修的事故形态。
 const bundledSkillPack = {
-  relativePath: "apps/zcode-cli/packages/bundled-skills",
+  relativePath: "apps/zody-cli/packages/bundled-skills",
   requiredPaths: [
     "skills/dynamic-workflows/SKILL.md",
     "skills/dynamic-workflows/patterns.md",
@@ -298,7 +298,7 @@ function buildOfficialPluginRuntimes() {
 
     runCommand(
       "pnpm",
-      ["--dir", resolve(repoRoot, "apps/zcode-cli"), "--filter", plugin.packageName, "build"],
+      ["--dir", resolve(repoRoot, "apps/zody-cli"), "--filter", plugin.packageName, "build"],
       {
         cwd: repoRoot,
         env: pnpmRunEnv,

@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { DynamicWorkflowClientConfig } from "@zcode/shared";
-import type { IClientConfigService } from "@zcode/services";
+import type { DynamicWorkflowClientConfig } from "@zody/shared";
+import type { IClientConfigService } from "@zody/services";
 import { logger } from "@/logger.js";
 
 // ============================================================

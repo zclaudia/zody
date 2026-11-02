@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hostResponseMessageSchema, zcodeMcpResourceSamplesSchema } from "@zcode/shared";
+import { hostResponseMessageSchema, zcodeMcpResourceSamplesSchema } from "@zody/shared";
 
 const sample = {
   mcpId: "builtin:node_repl",

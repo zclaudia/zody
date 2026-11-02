@@ -1,16 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
-import { ChannelClient, ChannelServer, createQueuePair, Emitter, Event, ProxyChannel } from "@zcode/rpc";
-import { IWindowControllerService } from "@zcode/services";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import { ChannelClient, ChannelServer, createQueuePair, Emitter, Event, ProxyChannel } from "@zody/rpc";
+import { IWindowControllerService } from "@zody/services";
+import type { ZCodeTaskMeta } from "@zody/shared";
 import type {
   IZCodeAgentService,
   IZCodeTaskService,
   WindowHostControllerFrame,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   CONTROLLER_TASKS_INDEX_TOPIC,
   type SessionsIndexTopicWireCandidate,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { createWindowHostControllerRuntime } from "../src/host/windowHostControllerService.js";
 
 function meta(params: {

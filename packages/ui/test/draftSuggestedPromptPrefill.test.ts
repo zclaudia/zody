@@ -1,4 +1,4 @@
-import type { ZCodePluginReferenceCatalogEntry } from "@zcode/shared";
+import type { ZCodePluginReferenceCatalogEntry } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import { buildDraftSuggestedPromptPrefill } from "@/v4/draftSuggestedPromptPrefill.js";
 

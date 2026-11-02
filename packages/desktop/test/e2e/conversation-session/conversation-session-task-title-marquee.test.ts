@@ -4,7 +4,7 @@ import {
   TID_WORKSPACE_PATH,
   TID_WORKSPACE_TITLE,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_WORKSPACE,
   clearAppData,

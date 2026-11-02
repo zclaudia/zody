@@ -3,12 +3,12 @@ import type {
   BrowserExtensionPairingStatus,
   BrowserExtensionPairingTicket,
   BrowserExtensionProfileStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { SettingsRow } from "@/settings/SettingsPageParts.js";
 
-export const BROWSER_EXTENSION_INSTALL_COMMAND = "pnpm --filter @zcode/browser-extension build";
+export const BROWSER_EXTENSION_INSTALL_COMMAND = "pnpm --filter @zody/browser-extension build";
 
 const BINDING_LABEL_IDS = {
   "current-window": "settings.browser.extension.profile.boundHere",

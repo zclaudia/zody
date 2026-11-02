@@ -1,4 +1,4 @@
-import type { ZCodeElicitationRequest } from "@zcode/shared";
+import type { ZCodeElicitationRequest } from "@zody/shared";
 import { createElement, type ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";

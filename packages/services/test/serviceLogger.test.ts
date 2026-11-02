@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ZCODE_RUNTIME_ENV_KEY } from "@zcode/shared";
+import { ZCODE_RUNTIME_ENV_KEY } from "@zody/shared";
 import { createServiceLogger } from "../src/logger/serviceLogger.js";
 
 describe("createServiceLogger", () => {

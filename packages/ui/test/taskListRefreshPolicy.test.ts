@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta, ZCodeWorkspaceTaskListChanged } from "@zcode/shared";
+import type { ZCodeTaskMeta, ZCodeWorkspaceTaskListChanged } from "@zody/shared";
 import {
   getTaskMetaWorkspaceEventSyncMode,
   isTaskListMembershipWorkspaceEvent,

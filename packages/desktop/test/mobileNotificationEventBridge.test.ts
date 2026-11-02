@@ -2,16 +2,16 @@ import { describe, expect, it, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Event } from "@zcode/rpc";
-import type { ZCodeTaskMeta } from "@zcode/shared";
-import type { IZCodeAgentService, IZCodeTaskService } from "@zcode/services";
+import { Event } from "@zody/rpc";
+import type { ZCodeTaskMeta } from "@zody/shared";
+import type { IZCodeAgentService, IZCodeTaskService } from "@zody/services";
 import { createMobileNotificationEventBridge } from "../src/host/mobileNotificationEventBridge.js";
 import { createMobileNotificationDeliveryBridge } from "../src/host/mobileNotificationDeliveryBridge.js";
 import {
   createMobileNotificationService,
   type IMobileNotificationService,
-} from "@zcode/services/mobile-notifications/node";
-import type { MobileNotificationRecordInput } from "@zcode/services/mobile-notifications";
+} from "@zody/services/mobile-notifications/node";
+import type { MobileNotificationRecordInput } from "@zody/services/mobile-notifications";
 
 describe("MobileNotificationEventBridge", () => {
   it("从 sessions-index 发现 task-index 暂未返回的 runtime session 并捕获终态", async () => {

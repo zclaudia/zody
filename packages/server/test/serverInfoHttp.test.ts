@@ -5,8 +5,8 @@ import { request } from "node:http";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { ServiceCollection } from "@zcode/services";
-import { SERVER_REMOTE_PROTOCOL_VERSION } from "@zcode/shared";
+import { ServiceCollection } from "@zody/services";
+import { SERVER_REMOTE_PROTOCOL_VERSION } from "@zody/shared";
 import { createHttpServer } from "../src/http.js";
 
 async function boundAddress(server: ReturnType<typeof createHttpServer>): Promise<AddressInfo> {

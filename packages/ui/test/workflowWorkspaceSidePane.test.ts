@@ -12,7 +12,7 @@ import type {
   V4ConversationWorkflowRunNodeResultResult,
   V4ConversationWorkflowRunWorkspaceResult,
   WorkflowRunState,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import type { WorkflowWorkspaceSidePaneTab } from "@/lib/workspaceSidePane.js";
 
 vi.mock("@/logger.js", () => ({

@@ -3,7 +3,7 @@
  * 通过 IPC 将日志传到 main 进程统一写入 ~/.zody/v2/logs/YYYY-MM-DD.log
  * 同时保留 console 输出方便开发调试
  */
-import { formatLogPrefix } from "@zcode/shared";
+import { formatLogPrefix } from "@zody/shared";
 import { isRendererProductionBuild } from "./rendererLoggingEnv.js";
 
 export const logger = {

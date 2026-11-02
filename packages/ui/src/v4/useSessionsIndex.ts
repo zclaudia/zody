@@ -2,7 +2,7 @@
 // 侧栏/任务列表消费本 hook 拿会话摘要列表，替代 zustand 任务态（08-phasing M5 步骤 2）；
 // 多个列表消费者共享同一 workspace 订阅时改走 sessionsIndexRegistry（引用计数复用 store）。
 import { useEffect, useMemo, useSyncExternalStore } from "react";
-import type { SessionSummary } from "@zcode/shared/zcode-protocol-v4";
+import type { SessionSummary } from "@zody/shared/zody-protocol-v4";
 import { useServices } from "@/hooks/useServices.js";
 import { createAgentSessionsIndexTransport } from "@/v4/agentSessionsIndexTransport.js";
 import {

@@ -15,7 +15,7 @@ import {
   type ExtensionPairingProofMessage,
   type ExtensionResumeProofMessage,
   type ExtensionWelcomeMessage,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import {
   createClientResumeProof,
   createNonce,

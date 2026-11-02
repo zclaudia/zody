@@ -20,7 +20,7 @@ import {
   TID_SETTINGS_SECTION_NAV,
   TID_TASK_SETTINGS_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { E2ENetworkCaptureArtifact } from "../helpers/network-capture-proxy.js";
 import {
   clearAppData,
@@ -784,7 +784,7 @@ async function readMainMemoryFixture(): Promise<string> {
   const content = normalizeTextFixtureLineEndings(
     await readFile(
       new URL(
-        "../../../../../apps/zcode-cli/packages/core/tests/fixtures/memory/main-memory-default-index.md",
+        "../../../../../apps/zody-cli/packages/core/tests/fixtures/memory/main-memory-default-index.md",
         import.meta.url,
       ),
       "utf8",
@@ -797,7 +797,7 @@ async function readMainMemoryIndexFixture(): Promise<string> {
   const content = normalizeTextFixtureLineEndings(
     await readFile(
       new URL(
-        "../../../../../apps/zcode-cli/packages/core/tests/fixtures/memory/main-memory-index.md",
+        "../../../../../apps/zody-cli/packages/core/tests/fixtures/memory/main-memory-index.md",
         import.meta.url,
       ),
       "utf8",

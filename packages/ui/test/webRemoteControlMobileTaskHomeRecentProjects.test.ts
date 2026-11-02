@@ -3,7 +3,7 @@
 import { createElement } from "react";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { WebRemoteControlWorkspaceListResult } from "@zcode/shared";
+import type { WebRemoteControlWorkspaceListResult } from "@zody/shared";
 import { WebRemoteControlMobileTaskHome } from "@/WebRemoteControlMobileTaskHome.js";
 
 vi.mock("@/i18n/IntlProvider.js", () => ({

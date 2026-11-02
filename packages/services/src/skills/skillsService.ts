@@ -24,8 +24,8 @@ import type {
   SkillsPromptContext,
   SkillsListResult,
   SkillsCapability,
-} from "@zcode/shared";
-import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+} from "@zody/shared";
+import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type { ISkillsService } from "./skills.js";
 import { SKILL_FILE_NAME, walkSkillMarkdownPaths } from "./skillDiscoveryWalk.js";
 import { readInstalledPluginRoots } from "#src/plugins/installedPluginRoots.js";
@@ -33,7 +33,7 @@ import {
   resolveProjectResourceRoots,
   ZODY_DIRECTORY_NAME,
   LEGACY_ZCODE_DIRECTORY_NAME,
-} from "@zcode/shared/zody-paths";
+} from "@zody/shared/zody-paths";
 
 interface DiscoverResult {
   skills: SkillSummary[];
@@ -64,7 +64,7 @@ const ZCODE_PLUGIN_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
 const CLAUDE_PLUGIN_MANIFEST_PATH = join(".claude-plugin", "plugin.json");
 const CODEX_PLUGIN_MANIFEST_PATH = join(".codex-plugin", "plugin.json");
 
-/** 对齐 apps/zcode-cli/packages/adapters/src/skills/index.ts:19 */
+/** 对齐 apps/zody-cli/packages/adapters/src/skills/index.ts:19 */
 const MAX_DESCRIPTION_LENGTH = 1024;
 function resolveUserHomeDir() {
   const envHome = process.env.HOME?.trim() || process.env.USERPROFILE?.trim();
@@ -140,7 +140,7 @@ async function isUserAgentsSkillCoveredByZcode(params: {
 /**
  * 从 workspacePath 向上走到 worktree 根（含 .git 标记），把每一层的
  * `.zody/skills`、`.zcode/skills` 与 `.agents/skills` 都收集起来；同名由 .zody 优先。
- * 对齐 apps/zcode-cli/packages/adapters/src/skills/roots.ts:60-72。
+ * 对齐 apps/zody-cli/packages/adapters/src/skills/roots.ts:60-72。
  * 找不到 .git 时退回 workspacePath 自身。
  */
 async function resolveAncestorWorkspaceRoots(workspacePath: string): Promise<string[]> {

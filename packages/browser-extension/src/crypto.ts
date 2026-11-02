@@ -2,7 +2,7 @@ import {
   EXTENSION_BRIDGE_CLIENT_PROOF_PREFIX,
   EXTENSION_BRIDGE_HKDF_INFO,
   EXTENSION_BRIDGE_SERVER_PROOF_PREFIX,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 
 export interface StoredClientKeyPair {
   /** P-256 ECDH 私钥 JWK；保存在 chrome.storage.local，仅本扩展可读。 */

@@ -1,4 +1,4 @@
-import { type ZCodeRuntimeEnv } from "@zcode/shared";
+import { type ZCodeRuntimeEnv } from "@zody/shared";
 /** 主进程 init 的 browserCollectors，经 autoInject 注入到 renderer 的 RumSDK.init(collectors) */
 export declare const ARMS_BROWSER_COLLECTORS: {
     readonly perf: true;
@@ -17,7 +17,7 @@ export declare function buildArmsBrowserInitConfig(runtimeEnv: ZCodeRuntimeEnv):
     enable: boolean;
     version: string;
     endpoint: string;
-    env: import("@zcode/shared").ArmsRumEnv;
+    env: import("@zody/shared").ArmsRumEnv;
     sessionConfig: {
         sampleRate: number;
     };

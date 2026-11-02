@@ -8,7 +8,7 @@ import {
   normalizeConsecutiveMarkdownImageBlocks,
 } from "@/components/ai-elements/markdown-image.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
-import { rewriteMarkdownArtifactImageSources } from "@zcode/shared";
+import { rewriteMarkdownArtifactImageSources } from "@zody/shared";
 import { sanitizeImageSourceForLog } from "@/components/ai-elements/image-preview-dialog.js";
 import {
   imageThumbnailClassName,

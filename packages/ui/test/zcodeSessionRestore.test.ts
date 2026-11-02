@@ -5,7 +5,7 @@ import {
   type ZCodeMessageWithParts,
   type ZCodeSessionStateSnapshot,
   type ZCodeTaskSnapshot,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   readDesktopContinuousSessionRestoreSnapshot,
   readWebRemoteReplayableSessionConfigOptions,

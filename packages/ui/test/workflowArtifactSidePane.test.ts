@@ -14,13 +14,13 @@
 import { createElement, type ReactNode } from "react";
 import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TID_WORKFLOW_ARTIFACT_PANE, type IPlatformService } from "@zcode/shared";
+import { TID_WORKFLOW_ARTIFACT_PANE, type IPlatformService } from "@zody/shared";
 import type {
   V4ConversationWorkflowRunArtifactDataResult,
   V4ConversationWorkflowRunArtifactReadResult,
   V4ConversationWorkflowRunArtifactsResult,
   WorkflowRunArtifact,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import type { WorkflowArtifactSidePaneTab } from "@/lib/workspaceSidePane.js";
 
 vi.mock("@/logger.js", () => ({

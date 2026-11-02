@@ -9,7 +9,7 @@ import {
   createDynamicWorkflowClientConfig,
   TID_SETTINGS_DYNAMIC_WORKFLOW_MODE_TRIGGER,
   type DynamicWorkflowMode,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   buildDynamicWorkflowModePatch,
   DynamicWorkflowModeSetting,

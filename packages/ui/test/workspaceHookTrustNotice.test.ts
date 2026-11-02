@@ -1,4 +1,4 @@
-import type { Hook, WorkspaceHookReviewTrustState } from "@zcode/shared";
+import type { Hook, WorkspaceHookReviewTrustState } from "@zody/shared";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";

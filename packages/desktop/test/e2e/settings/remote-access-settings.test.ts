@@ -10,7 +10,7 @@ import {
   TID_TASK_SETTINGS_BUTTON,
   TID_WORKSPACE_ITEM,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_WORKSPACE,
   clickTestIdByDom,

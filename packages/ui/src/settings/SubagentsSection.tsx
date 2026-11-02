@@ -1,7 +1,7 @@
 /* eslint-disable max-lines -- 子智能体管理页集中维护作用域列表、表单和启用状态，避免状态分散 */
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Bot, Check, Plus, Trash2 } from "lucide-react";
-import { completeNewModelSelection } from "@zcode/provider";
+import { completeNewModelSelection } from "@zody/provider";
 import {
   TID_SUBAGENT_BUILT_IN_MODEL_TRIGGER,
   TID_SUBAGENT_ROW,
@@ -14,8 +14,8 @@ import {
   type BuiltInSubagentName,
   type ModelSelection,
   type SubAgentConfig,
-} from "@zcode/shared";
-import type { ModelSelectionView } from "@zcode/services";
+} from "@zody/shared";
+import type { ModelSelectionView } from "@zody/services";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {

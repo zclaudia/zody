@@ -6,7 +6,7 @@ import {
   formatZCodeAgentProcessName,
   type HostResourceUsageProcess,
   type ZCodeProcessChildProcess,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * 资源管理器 Host 侧采样。

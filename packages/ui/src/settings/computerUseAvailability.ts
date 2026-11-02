@@ -1,5 +1,5 @@
-import type { CuaBuildCapability, RemoteTarget } from "@zcode/shared";
-import { isRemoteWorkspaceIdentity } from "@zcode/shared";
+import type { CuaBuildCapability, RemoteTarget } from "@zody/shared";
+import { isRemoteWorkspaceIdentity } from "@zody/shared";
 
 export type ComputerUseAvailabilityKind =
   | "local-macos"

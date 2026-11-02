@@ -6,7 +6,7 @@ import type {
   MobileHistorySearchItem,
   MobileHistorySearchOutcome,
   MobileHistorySearchRequest,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearMobileHistorySearchSessionForTest,
   useMobileHistorySearch,

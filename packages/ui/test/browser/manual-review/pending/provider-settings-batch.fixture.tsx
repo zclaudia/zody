@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { parseZCodeBuiltinModelConfigRules } from "@zcode/provider";
-import type { IServiceAccessor, ProviderSettingsView } from "@zcode/services";
+import { parseZCodeBuiltinModelConfigRules } from "@zody/provider";
+import type { IServiceAccessor, ProviderSettingsView } from "@zody/services";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";

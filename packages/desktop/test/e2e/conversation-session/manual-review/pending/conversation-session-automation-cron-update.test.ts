@@ -18,7 +18,7 @@ import {
   TID_AUTOMATIONS_OPEN,
   TID_CRON_CREATE_CARD,
   TID_CRON_CREATE_OPEN,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,

@@ -1,7 +1,7 @@
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { AccountProviderService, ProviderConfigMap } from "@zcode/provider";
+import { AccountProviderService, ProviderConfigMap } from "@zody/provider";
 import { describe, expect, it, vi } from "vitest";
 import { createProviderConfigRuntime } from "../src/model-provider/providerConfigRuntime.js";
 import { createProviderRuntimeFromConfigRuntime } from "../src/model-provider/providerRuntime.js";

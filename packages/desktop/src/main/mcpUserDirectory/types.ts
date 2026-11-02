@@ -2,7 +2,7 @@
  * MCP 用户目录模块 - 类型和常量定义
  */
 
-import { ZCODE_DATA_ROOT_DIR_NAME, type CliMcpSource, type McpFileFormat } from "@zcode/shared";
+import { ZCODE_DATA_ROOT_DIR_NAME, type CliMcpSource, type McpFileFormat } from "@zody/shared";
 
 /**
  * MCP 配置键名类型

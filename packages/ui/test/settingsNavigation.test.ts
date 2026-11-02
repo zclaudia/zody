@@ -2,9 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 async function loadSettingsNavigation(env: "test" | "production") {
   vi.resetModules();
-  vi.doMock("@zcode/shared", async () => {
+  vi.doMock("@zody/shared", async () => {
     const actual =
-      await vi.importActual<typeof import("@zcode/shared")>("@zcode/shared");
+      await vi.importActual<typeof import("@zody/shared")>("@zody/shared");
     return {
       ...actual,
       ZCODE_ENV: env,

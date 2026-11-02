@@ -4,7 +4,7 @@ import { createElement } from "react";
 // 群投递与话题准备链删除（specs/bot-channels-removal.md）。
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { IPlatformService } from "@zcode/shared";
+import type { IPlatformService } from "@zody/shared";
 import type {
   ApiRetryState,
   AssistantTextRow,
@@ -18,14 +18,14 @@ import type {
   UserInputRow,
   WorkflowLaunchMeta,
   WorkflowRunState,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import {
   TID_CHAT_WORKFLOW_ARTIFACT_CHIP,
   TID_CHAT_WORKFLOW_RUN_DIGEST,
   TID_CRON_CREATE_CARD,
   TID_CRON_CREATE_OPEN,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import { PlatformProvider } from "@/hooks/usePlatform.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";

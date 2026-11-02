@@ -1,11 +1,11 @@
 import { createHash, randomUUID } from "node:crypto";
 import { link, mkdir, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { getZCodeDataRootDir } from "@zcode/services/node";
+import { getZCodeDataRootDir } from "@zody/services/node";
 import type {
   MaterializeWorkflowArtifactFileRequest,
   MaterializeWorkflowArtifactFileResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * dwf 产物「作为文件打开」的宿主副本（docs/dynamic-workflow/authoring.md「How the user sees them」）。

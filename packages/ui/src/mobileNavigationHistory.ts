@@ -1,4 +1,4 @@
-import type { WebRemoteControlMobileNavigationIntent } from "@zcode/shared";
+import type { WebRemoteControlMobileNavigationIntent } from "@zody/shared";
 import type { SettingsSectionId } from "@/lib/settingsNavigation.js";
 
 export type WebRemoteControlMobilePage = "home" | "chat";

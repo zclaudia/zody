@@ -1,5 +1,5 @@
-import type { BrowserCommandResult, BrowserViewportSize } from "@zcode/shared";
-import type { ExtensionTargetRef } from "@zcode/shared/browser-extension-transport";
+import type { BrowserCommandResult, BrowserViewportSize } from "@zody/shared";
+import type { ExtensionTargetRef } from "@zody/shared/browser-extension-transport";
 import type { ExtensionCdpTransport } from "../browser-core/extensionCdpTransport.js";
 import type {
   ExtensionHostConnection,

@@ -146,7 +146,7 @@ export function createE2EDesktopBuildFingerprint({
 }
 
 export function resolveE2EDesktopBuildInputPaths({
-  entryPackageName = "@zcode/desktop",
+  entryPackageName = "@zody/desktop",
   repoRoot = REPO_ROOT,
 } = {}) {
   const workspacePackages = readWorkspacePackages(repoRoot);
@@ -271,7 +271,7 @@ export function ensureE2EDesktopBuild({
     if (buildDesktop) {
       buildDesktop();
     } else {
-      execFileSync("pnpm", ["--filter", "@zcode/desktop", "build:no-runtime-assets"], {
+      execFileSync("pnpm", ["--filter", "@zody/desktop", "build:no-runtime-assets"], {
         cwd: REPO_ROOT,
         env,
         shell: process.platform === "win32",

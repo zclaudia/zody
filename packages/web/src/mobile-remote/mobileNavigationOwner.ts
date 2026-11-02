@@ -1,4 +1,4 @@
-import type { WebRemoteControlMobileNavigationIntent } from "@zcode/shared";
+import type { WebRemoteControlMobileNavigationIntent } from "@zody/shared";
 
 export interface MobileNavigationRequest {
   workspaceKey: string;

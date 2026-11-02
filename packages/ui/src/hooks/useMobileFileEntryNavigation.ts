@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { resolveWebRemoteControlWorkspaceKey } from "@zcode/shared";
+import { resolveWebRemoteControlWorkspaceKey } from "@zody/shared";
 import type { MobileFileBrowserOpenRequest } from "@/MobileWorkspaceFileBrowser.js";
 import type { WebRemoteControlMobileFeaturePage } from "@/MobileFeatureOverlay.js";
 import type { WebRemoteControlWorkspaceSwitcherApi } from "@/root/types.js";

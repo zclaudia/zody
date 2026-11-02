@@ -1,4 +1,4 @@
-import { TID_WORKSPACE_ITEM, formatZCodeAgentProcessName, testId } from "@zcode/shared";
+import { TID_WORKSPACE_ITEM, formatZCodeAgentProcessName, testId } from "@zody/shared";
 import {
   countAgentProcessRows,
   listAgentProcessIdentities,

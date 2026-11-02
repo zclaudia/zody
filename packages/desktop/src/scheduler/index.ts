@@ -11,13 +11,13 @@ import {
   AutomationRepo,
   computeAutomationNextRunAt,
   isOneShotAutomation,
-} from "@zcode/services/node";
+} from "@zody/services/node";
 import {
   resolveWorkspaceKey,
   type ZCodeAutomation,
   type ZCodeAutomationTrigger,
   type ZCodeAutomationRun,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { MainToSchedulerMessage, SchedulerToMainMessage } from "./schedulerProtocol.js";
 import { settleManualClaimForDispatchResult } from "./manualClaimRelease.js";
 import {

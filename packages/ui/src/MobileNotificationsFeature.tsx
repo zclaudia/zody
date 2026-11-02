@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import type { MobileNotification } from "@zcode/services/mobile-notifications";
-import type { MobileNotificationPushStatus } from "@zcode/shared";
+import type { MobileNotification } from "@zody/services/mobile-notifications";
+import type { MobileNotificationPushStatus } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { MobileNotificationCenter } from "@/MobileNotificationCenter.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";

@@ -5,7 +5,7 @@ import {
   jsonDraftToForm,
   serverToForm,
 } from "@/settings/mcpSettingsShared.js";
-import type { ZCodeMcpServer } from "@zcode/shared";
+import type { ZCodeMcpServer } from "@zody/shared";
 
 describe("mcp settings shared protocolVersion round-trip", () => {
   it("preserves a configured protocolVersion across serverToForm -> formToConfig", () => {

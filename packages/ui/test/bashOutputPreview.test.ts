@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { toolCallRowToLegacyNode } from "../src/v4/toolCallRowAdapter.js";
-import type { ToolCallRow } from "@zcode/shared/zcode-protocol-v4";
+import type { ToolCallRow } from "@zody/shared/zody-protocol-v4";
 import { ExecuteToolCallBlock } from "../src/ToolCallBlocks/renderers/execute.js";
 
 describe("Bash bounded output preview", () => {

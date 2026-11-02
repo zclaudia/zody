@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { join } from "node:path";
-import { PlatformChannels } from "@zcode/shared";
+import { PlatformChannels } from "@zody/shared";
 
 const mocks = vi.hoisted(() => ({
   agentOptions: [] as Array<{ connect?: { lookup?: Function } }>,

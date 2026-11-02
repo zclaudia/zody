@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { ZCODE_VERSION } from "@zcode/shared";
+import { ZCODE_VERSION } from "@zody/shared";
 import { clearAppData, seedSettings } from "../../../helpers/desktop-app.js";
 import { prepareV4ConversationE2E } from "../../../helpers/v4-conversation.js";
 import {

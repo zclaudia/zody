@@ -12,7 +12,7 @@ import type {
   ZCodeTaskSnapshotBodyRef,
   ZCodeTaskSnapshotToolFieldRef,
   ZCodeTaskSnapshotToolSlice,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export interface TaskChatToolCall {
   toolId: string;

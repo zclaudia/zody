@@ -1,4 +1,4 @@
-import type { InputId, ZCodeProvider, ZCodeTaskMeta } from "@zcode/shared";
+import type { InputId, ZCodeProvider, ZCodeTaskMeta } from "@zody/shared";
 import { getTaskMeta, resolveWorkspaceStateKey, useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
 import {
   mergeTaskMetaCandidates,

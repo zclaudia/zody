@@ -5,7 +5,7 @@ import {
   TID_SIDE_PANE_TOGGLE,
   TID_WORKSPACE_HEADER,
   TID_WORKSPACE_TITLE,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData, waitForDefaultWorkspaceReady } from "../helpers/desktop-app.js";
 
 const TAB_SELECTOR = "[data-side-pane-tab-id]";

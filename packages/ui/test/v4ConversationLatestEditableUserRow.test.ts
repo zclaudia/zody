@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ConversationRow, UserInputRow } from "@zcode/shared/zcode-protocol-v4";
+import type { ConversationRow, UserInputRow } from "@zody/shared/zody-protocol-v4";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import { ConversationTurnGroup } from "@/v4/ConversationTurnGroup.js";
 import { buildConversationTurnRenderUnits } from "@/v4/conversationTurnRenderUnits.js";

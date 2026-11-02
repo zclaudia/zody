@@ -1,7 +1,7 @@
 // 冻结基线 0e40230d34 的旧协议/Target，防止新 schema 掩盖混版本破坏性删除回归。
 import { z } from "zod";
-import { modelSelectionSchema } from "@zcode/shared";
-import { providerFamilyConnectionSelectionSettingsSchema } from "@zcode/shared";
+import { modelSelectionSchema } from "@zody/shared";
+import { providerFamilyConnectionSelectionSettingsSchema } from "@zody/shared";
 
 const nonEmptyString = z.string().trim().min(1);
 

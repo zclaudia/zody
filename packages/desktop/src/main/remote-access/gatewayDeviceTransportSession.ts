@@ -2,7 +2,7 @@ import {
   createWebRemoteControlChannelDataFrame,
   WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES,
   type WebRemoteControlAppPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { RemoteGatewayChannel } from "./remoteGatewayBackendTypes.js";
 import { measureUtf8Bytes, prepareOutboundPayload } from "./gatewayDeviceTransportSupport.js";
 import type {

@@ -21,7 +21,7 @@ import type {
   WebRemoteControlAppPayload,
   WebRemoteControlChannelFrame,
   WebRemoteControlFailure,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * T3.4 方案「验收」第 6 条：用 fake client 覆盖 GatewayTerminalTransport。

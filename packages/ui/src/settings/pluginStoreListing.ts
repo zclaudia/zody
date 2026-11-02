@@ -5,7 +5,7 @@ import type {
   ZCodePluginInfo,
   ZCodePluginMarketplaceSummary,
   ZCodePluginStoreListing,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   sortPluginStoreEntries,
   compareDocumentPluginPriority,
@@ -17,7 +17,7 @@ import {
   resolvePluginDisplayName,
   ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID,
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { DEFAULT_MARKETPLACE_ID } from "@/settings/recommendedPlugins.js";
 import { pluginSearchMatches } from "@/settings/pluginSearch.js";
 
@@ -25,7 +25,7 @@ export {
   formatCanonicalPluginName,
   resolveLocalizedText,
   resolvePluginDisplayName,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export { isPublicStoreMarketplaceId };
 export { isTrustedImageUrl } from "@/lib/trustedImageUrl.js";
@@ -147,7 +147,7 @@ export {
   resolvePluginStoreCategory as resolveStoreCategory,
   FALLBACK_PLUGIN_STORE_CATEGORY as FALLBACK_CATEGORY,
   PLUGIN_STORE_CATEGORY_ORDER as KNOWN_CATEGORY_ORDER,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export interface StoreCategoryGroup {
   category: string;

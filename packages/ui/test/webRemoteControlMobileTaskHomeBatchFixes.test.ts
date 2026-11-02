@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { WebRemoteControlWorkspaceListResult } from "@zcode/shared";
+import type { WebRemoteControlWorkspaceListResult } from "@zody/shared";
 import {
   WebRemoteControlMobileTaskHome,
   resetWebRemoteControlMobileTaskHomeExpandedWorkspaceKeysForTests,

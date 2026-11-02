@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { encodeCustomModelValue, type ZCodeAutomation } from "@zcode/shared";
+import { encodeCustomModelValue, type ZCodeAutomation } from "@zody/shared";
 import {
   buildV4ConversationPromptTelemetryExtraDetail,
   resolveLegacyRuntimeModelValue,

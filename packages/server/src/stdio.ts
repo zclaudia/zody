@@ -6,12 +6,12 @@ import {
   ChannelServer,
   ChannelClient,
   type ISocket,
-} from "@zcode/rpc";
+} from "@zody/rpc";
 import {
   IZCodeAgentService,
   createZCodeAgentConnectionScope,
   type ServiceCollection,
-} from "@zcode/services";
+} from "@zody/services";
 
 /**
  * Wrap process.stdin/stdout as an ISocket for RPC communication.

@@ -6,7 +6,7 @@ import type {
   ConversationSnapshot,
   SubagentRow,
   ToolCallRow,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import type { AssistantPreviewCard } from "@/lib/assistantPreviewCards.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";

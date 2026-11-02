@@ -29,8 +29,8 @@ import type {
   V4ConversationWorkflowRunsParams,
   V4ConversationWorkflowRunEventsResult,
   V4ConversationWorkflowRunsResult,
-} from "@zcode/shared/zcode-protocol-v4";
-import type { IServiceAccessor } from "@zcode/services";
+} from "@zody/shared/zody-protocol-v4";
+import type { IServiceAccessor } from "@zody/services";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";

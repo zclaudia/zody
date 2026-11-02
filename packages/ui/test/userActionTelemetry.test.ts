@@ -3,7 +3,7 @@ import type {
   RendererActionTraceBatchV1,
   RendererActionTraceConfigV1,
   RendererActionTraceResourceV1,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   RendererUserActionTelemetry,
   type UserActionTelemetryClock,

@@ -1,6 +1,6 @@
-import type { Locale } from "@zcode/shared";
+import type { Locale } from "@zody/shared";
 import { memo, useState, type ReactNode } from "react";
-import { TID_LOGIN_TRIGGER, TID_TASK_SETTINGS_BUTTON } from "@zcode/shared";
+import { TID_LOGIN_TRIGGER, TID_TASK_SETTINGS_BUTTON } from "@zody/shared";
 import { ChevronUp, Settings } from "lucide-react";
 import { ZODY_BRAND_NAME, zodyLogoUrl } from "@/brand.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";

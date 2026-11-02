@@ -4,7 +4,7 @@ import {
   buildGhostSupplierKey,
   encodeCustomModelValue,
   type ZCodePersistedFileChange,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 import {
   activatePromptTelemetry,

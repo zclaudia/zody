@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { DesktopCommandIds, PlatformChannels, type Locale } from "@zcode/shared";
+import { DesktopCommandIds, PlatformChannels, type Locale } from "@zody/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import localDefaultAppConfig from "../../../config/default.json" with { type: "json" };
 

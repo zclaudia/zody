@@ -3,7 +3,7 @@
 // enabled 过滤、同名冲突禁选与原因、canonical markdown 载体、身份只在 destination、
 // parseMentionMarkdown 的 plugin 分支不落 file/外链。
 import { describe, expect, it } from "vitest";
-import type { ZCodePluginReferenceCatalogEntry } from "@zcode/shared";
+import type { ZCodePluginReferenceCatalogEntry } from "@zody/shared";
 import { mapPluginCatalogToMentionItemsForTest } from "../src/mentions/providers/pluginsMentionProvider.js";
 import {
   coerceEnabledMentionIndex,

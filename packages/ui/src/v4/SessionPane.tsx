@@ -1,5 +1,5 @@
 import { resolveSelectionSideInheritedModel } from "@/lib/selectionSideInheritedModel.js";
-import type { SessionCreateSource } from "@zcode/shared";
+import type { SessionCreateSource } from "@zody/shared";
 import { reportSessionCreate } from "@/lib/sessionCreateTelemetry.js";
 import { getLocalTtftObserver } from "@/v4/telemetry/localTtftObserver.js";
 // fork（bot-channels 移除）：BotGroupDeliveryProvider 引用随 bot 群投递链删除（specs/bot-channels-removal.md）。
@@ -22,13 +22,13 @@ import {
   TID_V4_SESSION_PANE,
   testId,
   ZCODE_AGENT_PROVIDER,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   GitChangeSourceId,
   GitRepositorySummary,
   ZCodeProvider,
   ZCodeTaskChangeSummary,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   AttachmentRef,
   CommandAck,
@@ -39,7 +39,7 @@ import type {
   SessionErrorInfo,
   SessionModelTransition,
   V4ConversationFileChangesResult,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { logger } from "@/logger.js";
 import { PluginUiSessionProvider } from "@/plugin-ui/index.js";
 // fork（F4.8）：会话分享发布/导入（错误映射、分享服务类型、回链本地化）随分享功能删除。
@@ -63,7 +63,7 @@ import {
 } from "@/components/workflow-timeline/workflowRunSettings.js";
 import { useWorkflowRunJournalSummaries } from "@/hooks/useWorkflowRunJournalSummaries.js";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
-import { buildGenUiModelContext } from "@zcode/shared/gen-ui";
+import { buildGenUiModelContext } from "@zody/shared/gen-ui";
 import { useWorkspaceHomePath } from "@/hooks/useWorkspaceHomePath.js";
 import { prepareWorkspaceWithZCodeSessionService } from "@/hooks/useWorkspacePrepare.js";
 // fork（F4.1b）：createCodingPlanFunnelContext / resolveCodingPlanEntryPlanState 随套餐横幅
@@ -3220,7 +3220,7 @@ export function SessionPane({
       newText: string,
       attachments?: readonly AttachmentRef[],
       workspaceMode: "preserve" | "rewind" = "preserve",
-      conversationQuotes?: import("@zcode/shared").ConversationSelectionText[],
+      conversationQuotes?: import("@zody/shared").ConversationSelectionText[],
     ) => {
       const current = snapshotRef.current;
       if (!sessionId || current === null) return false;

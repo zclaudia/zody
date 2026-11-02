@@ -3,7 +3,7 @@ import {
   ZCODE_AGENT_PROVIDER_NOT_READY_CODE,
   type ZCodeProvider,
   type ZCodeError,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { normalizeZCodeUiError } from "@/lib/zcodeUiError.js";
 
 export const MODEL_CONFIG_MISSING_UI_ERROR_CODE = "model_config_missing";

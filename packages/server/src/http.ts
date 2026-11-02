@@ -15,7 +15,7 @@ import {
   ChannelClient,
   LoggingChannelServer,
   type ISocket,
-} from "@zcode/rpc";
+} from "@zody/rpc";
 import {
   ServiceCollection,
   IZCodeAgentService,
@@ -25,7 +25,7 @@ import {
   ISystemService,
   ITerminalService,
   IProviderProvisioningTargetService,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   formatLogPrefix,
   formatZodError,
@@ -35,7 +35,7 @@ import {
   ZCODE_VERSION,
   type ServerRemoteInfo,
   type ServerRemoteWorkspaceInfo,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { connectRemote, createRemoteBackend, type RemoteConnection } from "./remote/index.js";
 import { createHostCapabilityStore } from "./hostCapability.js";
 import { isAllowedHttpRequest, resolveHttpBinding } from "./httpSecurity.js";

@@ -1,11 +1,11 @@
 import { PassThrough } from "node:stream";
-import { Emitter } from "@zcode/rpc";
+import { Emitter } from "@zody/rpc";
 import type {
   IRemoteBackend,
   RemoteEnvironment,
   StdioStream,
-} from "@zcode/server/remote/backend.js";
-import { acquireRemoteDeployLock } from "@zcode/server/remote/remoteDeployLock.js";
+} from "@zody/server/remote/backend.js";
+import { acquireRemoteDeployLock } from "@zody/server/remote/remoteDeployLock.js";
 import { describe, expect, it, vi } from "vitest";
 
 class ControlledLockBackend implements IRemoteBackend {

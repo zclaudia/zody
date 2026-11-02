@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import { describe, expect, it, vi } from "vitest";
-import { HostMessageTypes } from "@zcode/shared";
+import { HostMessageTypes } from "@zody/shared";
 import {
   createTaskRealtimeBridge,
   createTaskRealtimeBridgeForHostInit,

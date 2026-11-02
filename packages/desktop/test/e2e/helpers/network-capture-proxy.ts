@@ -8,7 +8,7 @@ import {
   ZCODE_AGENT_CA_CERT_ENV_KEY,
   ZCODE_HTTP_PROXY_ENV_KEY,
   ZCODE_NO_PROXY_ENV_KEY,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Proxy } from "http-mitm-proxy";
 import type { IContext } from "http-mitm-proxy";
 import { writeE2EJsonFileAtomically } from "./e2e-atomic-json-file.js";

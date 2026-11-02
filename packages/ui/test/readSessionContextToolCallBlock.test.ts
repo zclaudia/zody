@@ -1,4 +1,4 @@
-import type { IBroadcastService } from "@zcode/services";
+import type { IBroadcastService } from "@zody/services";
 import { createElement } from "react";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";

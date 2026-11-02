@@ -1,4 +1,4 @@
-import type { ZCodeTaskRuntimeStatus, ZCodeWorkspaceInitStatus } from "@zcode/shared";
+import type { ZCodeTaskRuntimeStatus, ZCodeWorkspaceInitStatus } from "@zody/shared";
 
 type ChatComposerStatus = "idle" | "submitting" | "streaming" | "error";
 

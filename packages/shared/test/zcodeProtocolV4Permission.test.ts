@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { zcodePermissionRequestedEventPayloadSchema } from "../src/zcode-protocol/index.js";
+import { zcodePermissionRequestedEventPayloadSchema } from "../src/zody-protocol/index.js";
 import {
   pendingInteractionSchema,
   permissionRequestPayloadSchema,
-} from "../src/zcode-protocol-v4/index.js";
+} from "../src/zody-protocol-v4/index.js";
 
 describe("v4 permission payload compatibility", () => {
   const preCapabilityGroupStrictRuleSchema = z

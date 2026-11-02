@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodePermissionRequest } from "@zcode/shared";
+import type { ZCodePermissionRequest } from "@zody/shared";
 import { PermissionDialog } from "../src/PermissionDialog.js";
 import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
 

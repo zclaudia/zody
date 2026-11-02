@@ -3,8 +3,8 @@ import {
   isZCodeAgentProvider,
   ZCODE_AGENT_PROVIDER,
   type ZCodeProvider,
-} from "@zcode/shared";
-import type { IModelSelectionService, ModelSelectionView } from "@zcode/services";
+} from "@zody/shared";
+import type { IModelSelectionService, ModelSelectionView } from "@zody/services";
 import {
   buildModelConfigMissingUiError,
   type ModelConfigMissingUiError,

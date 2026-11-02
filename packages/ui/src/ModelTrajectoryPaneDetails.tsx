@@ -3,7 +3,7 @@ import type {
   ZCodeModelTrajectoryContentPart,
   ZCodeModelTrajectoryRecord,
   ZCodeModelTrajectoryUsage,
-} from "@zcode/services";
+} from "@zody/services";
 import { Badge } from "@/components/ui/badge.js";
 import { cn } from "@/components/lib/utils.js";
 import type { useZCodeIntl } from "@/i18n/IntlProvider.js";

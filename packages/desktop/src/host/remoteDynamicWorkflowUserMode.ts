@@ -1,5 +1,5 @@
-import type { DynamicWorkflowMode, RemoteTarget } from "@zcode/shared";
-import type { IZCodeAgentService } from "@zcode/services";
+import type { DynamicWorkflowMode, RemoteTarget } from "@zody/shared";
+import type { IZCodeAgentService } from "@zody/services";
 
 /**
  * 把动态工作流的用户选择推给远程 Host（docs/dynamic-workflow/launch.md「The user's choice」）。

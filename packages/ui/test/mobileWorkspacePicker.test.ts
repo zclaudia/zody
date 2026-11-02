@@ -2,7 +2,7 @@
 import { createElement } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { WebRemoteControlMobileDirectoryListResult } from "@zcode/shared";
+import type { WebRemoteControlMobileDirectoryListResult } from "@zody/shared";
 import { MobileWorkspacePicker } from "../src/MobileWorkspacePicker.js";
 import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
 

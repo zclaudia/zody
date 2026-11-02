@@ -1,4 +1,4 @@
-import type { ZCodePluginReferenceCatalogEntry } from "@zcode/shared";
+import type { ZCodePluginReferenceCatalogEntry } from "@zody/shared";
 import { describe, expect, it } from "vitest";
 import {
   buildSessionPluginIconMap,

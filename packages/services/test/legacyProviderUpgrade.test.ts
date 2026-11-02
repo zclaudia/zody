@@ -8,11 +8,11 @@ import {
   ProviderConfig,
   ProviderConfigMap,
   ProviderConfigResolver,
-} from "@zcode/provider";
+} from "@zody/provider";
 import {
   NodePersonalProviderConfigRepository,
   NodeZCodeBuiltinProviderConfigSource,
-} from "@zcode/provider-node";
+} from "@zody/provider-node";
 import { getAppConfigDir, setDataBaseDir } from "../src/paths.js";
 import { readLegacyZCodeConfigProviders } from "../src/model-provider/legacyZCodeConfigProviderReader.js";
 import { importLegacyPersonalProviderConfig } from "../src/model-provider/legacyPersonalProviderConfigImporter.js";

@@ -4,7 +4,7 @@ import type {
   WebRemoteControlDesktopWindowState,
   WebRemoteControlRecentProjectTarget,
   WebRemoteControlRecentProjectsResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * 最近项目投影（T2.4）。

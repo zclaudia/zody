@@ -23,7 +23,7 @@ import {
   zcodeWorkflowsForRunResultSchema,
   zcodeWorkflowsSaveParamsSchema,
   zcodeWorkflowsSaveResultSchema,
-} from "../src/zcode-protocol/index.js";
+} from "../src/zody-protocol/index.js";
 
 // workspace ref 要带 workspaceKey（services 层 resolveWorkspaceKey 补上；协议层不猜）。
 const workspace = { workspacePath: "/repo", workspaceKey: "/repo" };

@@ -61,7 +61,7 @@
     ".claude/skills",
     ".agents/skills",
     "packages/formal-proof",
-    "apps/zcode-cli",
+    "apps/zody-cli",
     "docs/electron",
     // 冻结报告中的源码副本不再位于原目录，无法继承原始 ignore/overrides；
     // 仅排除该归档副本，仓库内原始源码仍按原有规则检查。

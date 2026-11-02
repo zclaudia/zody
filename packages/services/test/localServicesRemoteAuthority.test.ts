@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ChannelClient, ChannelServer, createQueuePair } from "@zcode/rpc";
+import { ChannelClient, ChannelServer, createQueuePair } from "@zody/rpc";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const originalHome = process.env.HOME;

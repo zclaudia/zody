@@ -3,7 +3,7 @@ import {
   TID_CHAT_CONTEXT_USAGE_TRIGGER,
   type ZCodeContextUsageBreakdownItem,
   type ZCodeProvider,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   Context,
   ContextContentBody,

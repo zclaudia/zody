@@ -6,7 +6,7 @@ import {
   TID_V4_ATTACHMENT_UPLOAD_RETRY,
   TID_V4_COMPOSER_SEND,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { ConversationComposer } from "@/v4/ConversationComposer.js";
 

@@ -6,14 +6,14 @@
 // zcode-task-types.ts / task-realtime.ts 仍保留旧协议兼容面，共用本文件中的核心类型。
 
 import type { ZCodeBackgroundTaskControlItem } from "./background-task-controls.js";
-import type { ToolCallDisplay } from "./zcode-protocol-v4/toolDisplay.js";
+import type { ToolCallDisplay } from "./zody-protocol-v4/toolDisplay.js";
 import type {
   ZCodeContextUsageBreakdownItem,
   ZCodeInteractionRequestOrigin,
   ZCodePermissionResponse,
   ZCodeSessionActiveTurnKind,
 } from "./zcode-protocol-legacy-types.js";
-import type { ErrorAttribution } from "./zcode-protocol-v4/snapshot.js";
+import type { ErrorAttribution } from "./zody-protocol-v4/snapshot.js";
 
 /**
  * ZCode task/session 投影共享类型定义

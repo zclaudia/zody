@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeConfigOption } from "@zcode/shared";
+import type { ZCodeConfigOption } from "@zody/shared";
 import { readCurrentZCodeMode } from "../src/hooks/chatActionHelpers.js";
 
 function createModeOption(currentValue: string | boolean): ZCodeConfigOption {

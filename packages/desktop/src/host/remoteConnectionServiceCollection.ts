@@ -24,15 +24,15 @@ import {
   ISettingsSyncService,
   IPromptAttachmentTransferService,
   type IServiceAccessor,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   createSettingService,
   createBroadcastService,
   createClientScenesService,
   createSettingsSyncService,
   createMediaPreviewService,
-} from "@zcode/services/node";
-import type { ApiClient } from "@zcode/shared";
+} from "@zody/services/node";
+import type { ApiClient } from "@zody/shared";
 
 export function createRemoteConnectionServiceCollection(params: {
   clientConfigService: IClientConfigService;

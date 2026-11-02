@@ -9,7 +9,7 @@ import {
   TID_TASK_ITEM,
   TID_TASK_SETTINGS_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByDom,
   seedSettings,

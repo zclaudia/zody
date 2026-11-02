@@ -4,7 +4,7 @@ import {
   ZCODE_DATA_ROOT_DIR_NAME,
   type ZCodeProvider,
   type CommandAgentSource,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export const COMMAND_AGENT_SOURCES = [
   ...ZCODE_COMMAND_AGENT_SOURCES,

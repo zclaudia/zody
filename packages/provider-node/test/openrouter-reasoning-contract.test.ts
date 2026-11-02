@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { compileModelOptionMaps } from "@zcode/model-option-map";
-import { ModelConfig, ModelOptionSpecsConfig } from "@zcode/provider";
+import { compileModelOptionMaps } from "@zody/model-option-map";
+import { ModelConfig, ModelOptionSpecsConfig } from "@zody/provider";
 import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
 
 const path = fileURLToPath(new URL("../../../config/provider/zcode-builtin.json", import.meta.url));

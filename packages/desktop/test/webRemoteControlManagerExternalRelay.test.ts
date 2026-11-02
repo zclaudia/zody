@@ -1,13 +1,13 @@
 import { EventEmitter } from "node:events";
-import { ChannelServer, MessagePortProtocol, ProxyChannel } from "@zcode/rpc";
-import { IWindowControllerService } from "@zcode/services";
+import { ChannelServer, MessagePortProtocol, ProxyChannel } from "@zody/rpc";
+import { IWindowControllerService } from "@zody/services";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   WebRemoteControlAppPayload,
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceTarget,
-} from "@zcode/shared";
-import { encodeWebRemoteControlRpcTransportMessage } from "@zcode/shared";
+} from "@zody/shared";
+import { encodeWebRemoteControlRpcTransportMessage } from "@zody/shared";
 import { createWebRemoteControlManager } from "../src/main/webRemoteControlManager.js";
 import { createWebRemoteControlFeatureGate } from "../src/main/webRemoteControlFeatureGate.js";
 import { createRemoteWorkspaceDirectory } from "../src/main/remote-access/remoteWorkspaceDirectory.js";

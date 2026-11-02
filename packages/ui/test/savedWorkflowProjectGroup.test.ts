@@ -20,7 +20,7 @@ import {
   type ZCodeSavedWorkflowRun,
   type ZCodeWorkflowsDeleteResult,
   type ZCodeWorkflowsListResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { AutomationWorkspaceOption } from "@/settings/automationWorkspaceOptions.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { resetSavedWorkflowStoreForTests } from "@/store/savedWorkflowStore.js";

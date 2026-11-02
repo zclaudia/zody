@@ -16,7 +16,7 @@ import type {
   TimelineMarkerRow,
   TurnHeaderRow,
   UserInputRow,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import type {
   AssistantWorkRow,
   ConversationTurnFlowItem,
@@ -370,7 +370,7 @@ function createDraftUnit(turnId: string): DraftTurnRenderUnit {
 /**
  * 上一次构建时每个 render unit 的输入指纹。手机远控流式帧（replayable
  * flushWindowMs≈150ms，约 6-7 帧/秒）只改写尾部一行，其余行的对象引用由
- * applyConversationDelta 的不可变结构共享保持稳定（packages/shared/src/zcode-protocol-v4/apply.ts）。
+ * applyConversationDelta 的不可变结构共享保持稳定（packages/shared/src/zody-protocol-v4/apply.ts）。
  * 按行引用比对即可证明「该 turn 的 materialize 输入未变」，直接复用旧 unit 引用，
  * 让虚拟窗口内 ConversationTurnGroup 的 memo 生效——这是 perf-1/perf-2 的核心：
  * 每帧 O(总行数) 的对象重建会使所有已 memo 的 turn 无差别重渲染，长会话流式掉帧。

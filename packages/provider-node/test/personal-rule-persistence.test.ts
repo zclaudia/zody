@@ -12,7 +12,7 @@ import {
   ProviderConfigService,
   ProviderTemplateMap,
   parseProviderTemplateMap,
-} from "@zcode/provider";
+} from "@zody/provider";
 import { NodePersonalProviderConfigRepository } from "../src/personal-provider-config-repository.js";
 import { encodeProviderConfigFile } from "../src/provider-config-file-codec.js";
 import { NodeModelSelectionConfigRepository } from "../src/model-selection-config-repository.js";

@@ -2,7 +2,7 @@ import {
   decodeCustomModelValue,
   ZCODE_MODEL_REASONING_SEPARATOR,
   type ZCodeConfigOption,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 function normalizeModelIdentity(value: string | null | undefined): string | null {
   const trimmed = value?.trim();

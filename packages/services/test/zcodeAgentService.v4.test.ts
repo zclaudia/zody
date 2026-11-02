@@ -15,12 +15,12 @@ import {
   type ConversationTopicWireFrame,
   type SessionsIndexTopicWireCandidate,
   type WorkspaceConfigTopicWireCandidate,
-} from "@zcode/shared/zcode-protocol-v4";
-import { createZCodeAgentConnectionScope } from "../src/zcode-agent/zcodeAgentConnectionScope.js";
+} from "@zody/shared/zody-protocol-v4";
+import { createZCodeAgentConnectionScope } from "../src/zody-agent/zcodeAgentConnectionScope.js";
 import {
   createZCodeAgentService,
   supportsLegacyRemoteTaskAllowlist,
-} from "../src/zcode-agent/zcodeAgentService.js";
+} from "../src/zody-agent/zcodeAgentService.js";
 import { setDataBaseDir } from "../src/paths.js";
 import { TaskIndexRepo } from "../src/session/taskIndexRepo.js";
 

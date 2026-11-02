@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { RemoteAccessStatus } from "@zcode/shared";
+import type { RemoteAccessStatus } from "@zody/shared";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
 import { logger } from "@/logger.js";
 

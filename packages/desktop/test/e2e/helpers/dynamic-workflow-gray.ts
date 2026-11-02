@@ -10,7 +10,7 @@ import {
   TID_V4_COMPOSER_INPUT,
   testId,
   type DynamicWorkflowMode,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByDom,
   clickTestIdByWebDriver,

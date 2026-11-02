@@ -17,7 +17,7 @@ vi.mock("react-dom/client", () => ({
   createRoot: createRootMock,
 }));
 
-vi.mock("@zcode/ui", () => ({
+vi.mock("@zody/ui", () => ({
   AppErrorBoundary: ({ children }: { children: unknown }) => children,
   Root: () => null,
   ZCodeIntlProvider: ({ children }: { children: unknown }) => children,
@@ -26,7 +26,7 @@ vi.mock("@zcode/ui", () => ({
   playTaskNotificationSound: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("@zcode/client", () => ({
+vi.mock("@zody/client", () => ({
   connectViaMessagePort: vi.fn(() => ({
     settingService: {},
   })),

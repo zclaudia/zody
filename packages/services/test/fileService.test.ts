@@ -21,7 +21,7 @@ import {
   WORKSPACE_FILE_SEARCH_IGNORE_DEFAULTS_MARKER,
   WORKSPACE_FILE_SEARCH_IGNORE_SYNC_MARKER,
 } from "../src/file/workspaceFileIgnore.js";
-import { unpackWorkspaceFileEntries } from "@zcode/shared/workspaceFileEntriesCodec";
+import { unpackWorkspaceFileEntries } from "@zody/shared/workspaceFileEntriesCodec";
 import type { IFileService } from "../src/file/file.js";
 
 // 分块拉全量（测试语义等价旧单次 listWorkspaceFiles）。

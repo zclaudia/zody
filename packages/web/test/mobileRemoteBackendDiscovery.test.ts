@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { BackendPresenceV4 } from "@zclaudia/gateway-protocol";
-import { WEB_REMOTE_CONTROL_BACKEND_CAPABILITY } from "@zcode/shared";
+import { WEB_REMOTE_CONTROL_BACKEND_CAPABILITY } from "@zody/shared";
 import {
   startMobileRemoteBackendDiscovery,
   type MobileRemoteBackendDiscoverySnapshot,

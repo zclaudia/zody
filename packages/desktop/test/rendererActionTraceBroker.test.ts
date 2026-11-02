@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ReadableSpan, SpanExporter } from "@opentelemetry/sdk-trace-base";
-import type { RendererActionTraceBatchV1 } from "@zcode/shared";
+import type { RendererActionTraceBatchV1 } from "@zody/shared";
 import { createRendererActionTraceBroker } from "../src/main/rendererActionTraceBroker.js";
 
 function createBatch(): RendererActionTraceBatchV1 {

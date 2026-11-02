@@ -1,10 +1,10 @@
-import type { IZCodeSessionService, IZCodeTaskService } from "@zcode/services";
+import type { IZCodeSessionService, IZCodeTaskService } from "@zody/services";
 import type {
   ZCodeConfigOption,
   ModelSelection,
   ZCodeSessionStateSnapshot,
   ZCodeTaskSnapshot,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   zcodeSessionSettingsToConfigOptions,
   zcodeSessionSnapshotToZCodeTaskSnapshot,

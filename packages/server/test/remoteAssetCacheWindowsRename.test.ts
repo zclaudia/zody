@@ -5,8 +5,8 @@ import { tmpdir } from "node:os";
 import { join, normalize } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ZCODE_VERSION } from "@zcode/shared";
-import { createTarGzArchive } from "@zcode/server/remote/localTarGz.js";
+import { ZCODE_VERSION } from "@zody/shared";
+import { createTarGzArchive } from "@zody/server/remote/localTarGz.js";
 
 function remoteAssetRenameEperm(): NodeJS.ErrnoException {
   const error = new Error("operation not permitted, rename") as NodeJS.ErrnoException;
@@ -153,7 +153,7 @@ describe("remote asset cache Windows directory commit", () => {
       );
 
       const { ensureRemoteReleaseDirFromCdn } = await import(
-        "@zcode/server/remote/remoteAssetCache.js"
+        "@zody/server/remote/remoteAssetCache.js"
       );
       const releaseDir = await ensureRemoteReleaseDirFromCdn(
         {

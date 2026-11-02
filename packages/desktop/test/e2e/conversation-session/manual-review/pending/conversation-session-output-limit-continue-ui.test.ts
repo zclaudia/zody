@@ -1,4 +1,4 @@
-import { TID_V4_TIMELINE } from "@zcode/shared";
+import { TID_V4_TIMELINE } from "@zody/shared";
 import { clearAppData } from "../../../helpers/desktop-app.js";
 import {
   countUpstreamRequests,

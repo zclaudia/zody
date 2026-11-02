@@ -9,8 +9,8 @@ import {
   ProviderApiConfig,
   ProviderConfig,
   ProviderConfigMap,
-} from "@zcode/provider";
-import { encodeProviderConfigFile } from "@zcode/provider-node";
+} from "@zody/provider";
+import { encodeProviderConfigFile } from "@zody/provider-node";
 import { createProviderRuntime } from "../src/model-provider/providerRuntime.js";
 
 describe("Todo104 Services 规则读写完整链路", () => {

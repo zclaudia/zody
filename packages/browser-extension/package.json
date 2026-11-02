@@ -1,5 +1,5 @@
 {
-  "name": "@zcode/browser-extension",
+  "name": "@zody/browser-extension",
   "version": "0.1.0",
   "private": true,
   "description": "Zody Chrome Extension browser bridge (MV3)",
@@ -14,6 +14,6 @@
     "smoke:p3": "node --import tsx scripts/p3-smoke.mjs"
   },
   "devDependencies": {
-    "@zcode/shared": "workspace:*"
+    "@zody/shared": "workspace:*"
   }
 }

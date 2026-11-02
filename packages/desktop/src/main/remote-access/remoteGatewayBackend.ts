@@ -2,7 +2,7 @@ import type { GatewayBackendOptions, GatewayBackendState } from "@zclaudia/gatew
 import {
   WEB_REMOTE_CONTROL_BACKEND_CAPABILITY,
   type RemoteAccessGatewayConnectionStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   RemoteGatewayBackend,
   RemoteGatewayBackendConfig,

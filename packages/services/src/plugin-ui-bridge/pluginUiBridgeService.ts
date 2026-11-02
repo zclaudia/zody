@@ -6,18 +6,18 @@ import type {
   ZCodeMcpUiListResourcesResult,
   ZCodeMcpUiReadResourceResult,
   ZCodePluginsListUiSurfacesResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   McpAppResourceMeta,
   PluginSandboxHandle,
   PluginSandboxRegisterInput,
-} from "@zcode/shared/mcp-apps";
+} from "@zody/shared/mcp-apps";
 import {
   MCP_APPS_HTML_MAX_BYTES,
   MCP_APPS_HTML_MIME_TYPES,
   MCP_APPS_UI_READ_RESOURCE_MAX_BYTES,
   normalizeMcpAppResourceMeta,
-} from "@zcode/shared/mcp-apps";
+} from "@zody/shared/mcp-apps";
 import { createServiceLogger } from "../logger/serviceLogger.js";
 import type {
   IPluginUiBridgeService,
@@ -35,7 +35,7 @@ export interface PluginUiBridgeServiceDependencies {
   validateInstance?: (params: import("./contract.js").PluginUiPluginScope) => Promise<void>;
   openInstance?: (
     params: PluginUiPrepareSandboxParams,
-  ) => Promise<import("@zcode/shared/mcp-apps").McpAppInstance>;
+  ) => Promise<import("@zody/shared/mcp-apps").McpAppInstance>;
   closeInstance?: (params: import("./contract.js").PluginUiPluginScope) => Promise<void>;
 
   readMcpResource?: (params: {
@@ -45,7 +45,7 @@ export interface PluginUiBridgeServiceDependencies {
     pluginId: string;
     serverName: string;
     uri: string;
-    instance: import("@zcode/shared/mcp-apps").McpAppInstance;
+    instance: import("@zody/shared/mcp-apps").McpAppInstance;
   }) => Promise<ZCodeMcpReadResourceResult>;
   callMcpToolForUi?: (
     params: PluginUiCallToolParams,
@@ -106,7 +106,7 @@ export function createPluginUiBridgeService(
   const preparing = new Map<string, Promise<PluginSandboxHandle>>();
   const prepareSandboxOnce = async (
     params: PluginUiPrepareSandboxParams,
-    instance: import("@zcode/shared/mcp-apps").McpAppInstance,
+    instance: import("@zody/shared/mcp-apps").McpAppInstance,
   ) => {
     if (
       !dependencies.readMcpResource ||
@@ -322,7 +322,7 @@ const LIST_LEVEL_META_MAX_PAGES = 8;
 async function readListLevelResourceMeta(
   list: PluginUiBridgeServiceDependencies["listMcpResourcesForUi"],
   params: PluginUiPrepareSandboxParams & {
-    instance: import("@zcode/shared/mcp-apps").McpAppInstance;
+    instance: import("@zody/shared/mcp-apps").McpAppInstance;
   },
 ): Promise<McpAppResourceMeta | null> {
   if (!list) return null;

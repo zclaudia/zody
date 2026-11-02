@@ -15,7 +15,7 @@ import {
   type WebRemoteControlBootstrapResponsePayload,
   type WebRemoteControlFailure,
   type WebRemoteControlRpcTransportAssemblyEvent,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createGatewayDeviceTransport } from "../src/main/remote-access/gatewayDeviceTransport.js";
 import type {
   GatewayDeviceSocket,

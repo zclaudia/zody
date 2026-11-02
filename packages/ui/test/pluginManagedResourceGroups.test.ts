@@ -5,7 +5,7 @@ import type {
   ZCodeMcpServer,
   ZCodePluginComponentGroup,
   ZCodePluginInfo,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   buildInstalledPluginDisplayGroups,
   buildPluginMcpServerItems,

@@ -6,8 +6,8 @@
 // 计数语义写明：**动态工作流没有静态总数**，`nodesTotal` 是**已排程**（observed）节点数，
 // 进度读作「已排程的里结算了几个」，绝不冒充全程百分比。
 import { describe, expect, it } from "vitest";
-import type { WorkflowRunNode, WorkflowRunState } from "@zcode/shared/zcode-protocol-v4";
-import { workflowRunStepCounts } from "@zcode/shared/zcode-protocol-v4";
+import type { WorkflowRunNode, WorkflowRunState } from "@zody/shared/zody-protocol-v4";
+import { workflowRunStepCounts } from "@zody/shared/zody-protocol-v4";
 import {
   buildWorkflowGraphByToolCallId,
   buildWorkflowRunByRunId,
@@ -15,7 +15,7 @@ import {
   buildWorkflowRunPendingQuestionsByRunId,
   resolveWorkflowRunOpenToolCallId,
 } from "@/v4/workflowRunCardJoin.js";
-import type { ConversationRow } from "@zcode/shared/zcode-protocol-v4";
+import type { ConversationRow } from "@zody/shared/zody-protocol-v4";
 
 function node(
   overrides: Partial<WorkflowRunNode> & Pick<WorkflowRunNode, "phase">,

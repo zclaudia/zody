@@ -6,7 +6,7 @@ import {
   type ZCodeConfigOption,
   type ZCodeProvider,
   type ZCodeTaskMeta,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { decodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
 
 interface ModelConfigSyncScope {

@@ -10,14 +10,14 @@ import type {
   WindowHostControllerTaskListResult,
   ZCodeGroupedTaskViewStructure,
   ZCodeTaskListQuery,
-} from "@zcode/services";
-import type { ZCodeTaskMeta } from "@zcode/shared";
-import type { ZCodeGroupedTaskView } from "@zcode/services";
+} from "@zody/services";
+import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZCodeGroupedTaskView } from "@zody/services";
 import {
   CONTROLLER_TASKS_INDEX_TOPIC,
   type WindowHostControllerFrame,
   type WindowHostControllerTaskRow,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import {
   clearCachedGroupedViewsForTest,

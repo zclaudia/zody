@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { zcodeSessionSendParamsSchema } from "../src/zcode-protocol/index.js";
-import { commandPayloadSchemas } from "../src/zcode-protocol-v4/command.js";
+import { zcodeSessionSendParamsSchema } from "../src/zody-protocol/index.js";
+import { commandPayloadSchemas } from "../src/zody-protocol-v4/command.js";
 
 describe("附件与文本发送的模型合同", () => {
   const modelSelection = {

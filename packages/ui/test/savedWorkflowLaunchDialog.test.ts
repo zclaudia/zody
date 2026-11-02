@@ -11,7 +11,7 @@ import {
   TID_WORKFLOW_LAUNCH_TARGET,
   testId,
   type ZCodeSavedWorkflowEntry,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import {
   resolveAutomationWorkspaceSelectionKey,

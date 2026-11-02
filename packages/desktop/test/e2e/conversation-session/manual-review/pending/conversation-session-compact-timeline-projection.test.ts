@@ -6,7 +6,7 @@ import {
   TID_CHAT_MESSAGES,
   TID_CHAT_USER_MESSAGE,
   TID_CHAT_VIEW,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData } from "../../../helpers/desktop-app.js";
 import {
   assertVisibleUserMessagesNotContaining,

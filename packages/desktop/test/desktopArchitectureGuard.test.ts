@@ -11,8 +11,8 @@ import {
 // getter 保证函数调用时读到 beforeEach 里设置的当前值。
 const downloadPageUrlState = vi.hoisted(() => ({ value: "" }));
 
-vi.mock("@zcode/shared", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@zcode/shared")>()),
+vi.mock("@zody/shared", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@zody/shared")>()),
   get ZCODE_DOWNLOAD_PAGE_URL() {
     return downloadPageUrlState.value;
   },

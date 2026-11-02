@@ -236,7 +236,7 @@ export async function buildCuaHelperProductWiring(options = {}) {
       sourceRoot: R11_NATIVE_ROOT,
       fixture: {
         entry: bootstrapEntry,
-        root: "apps/zcode-cli/packages/bootstrap/tests/fixtures",
+        root: "apps/zody-cli/packages/bootstrap/tests/fixtures",
         synthetic: true,
         installedUi: false,
         note:
@@ -251,8 +251,8 @@ export async function buildCuaHelperProductWiring(options = {}) {
           module: KOFFI_PLATFORM_TRIM,
           behavior: "throw-only darwin 平台裁剪，不是 koffi 可用实现",
           evidence: [
-            "apps/zcode-cli/packages/adapters/src/mcp/windows-job-object.ts:31",
-            "apps/zcode-cli/packages/adapters/src/mcp/stdio-transport.ts:96",
+            "apps/zody-cli/packages/adapters/src/mcp/windows-job-object.ts:31",
+            "apps/zody-cli/packages/adapters/src/mcp/stdio-transport.ts:96",
           ],
           installUiEquivalence: false,
         },

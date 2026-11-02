@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DesktopCommandIds, TEST_ZCODE_ENDPOINT_ORIGIN } from "@zcode/shared";
+import { DesktopCommandIds, TEST_ZCODE_ENDPOINT_ORIGIN } from "@zody/shared";
 
 const appMock = {
   isPackaged: false,
@@ -109,8 +109,8 @@ const originalPlatform = process.platform;
 // 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；检查更新命令只读它。
 const autoUpdateState = vi.hoisted(() => ({ active: false }));
 
-vi.mock("@zcode/shared", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@zcode/shared")>()),
+vi.mock("@zody/shared", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@zody/shared")>()),
   isDesktopAutoUpdateActive: () => autoUpdateState.active,
 }));
 

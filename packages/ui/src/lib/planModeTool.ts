@@ -3,7 +3,7 @@ import type {
   ZCodePlanStep,
   ZCodeProvider,
   ZCodeTaskModeInfo,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 interface PlanToolLike {
   title?: string;

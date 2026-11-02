@@ -1,24 +1,24 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Emitter, type Event } from "@zcode/rpc";
+import { Emitter, type Event } from "@zody/rpc";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   SessionsIndexTopicWireFrame,
   IZCodeAgentService,
   ZCodeAgentRuntimeLifecycleEvent,
   ZCodeAgentSessionTarget,
-} from "../src/zcode-agent/zcodeAgent.js";
+} from "../src/zody-agent/zcodeAgent.js";
 import { TaskIndexRepo } from "../src/session/taskIndexRepo.js";
 import { setDataBaseDir } from "../src/paths.js";
-import { createZCodeTaskIndexSyncer } from "../src/zcode-agent/zcodeTaskIndexSyncer.js";
+import { createZCodeTaskIndexSyncer } from "../src/zody-agent/zcodeTaskIndexSyncer.js";
 import type {
   ModelSelection,
   ZCodeSessionStateSnapshot,
   ZCodeTaskMeta,
   ZCodeWorkspaceEvent,
-} from "@zcode/shared";
-import { elideSessionSnapshotForIndex, ZCODE_AGENT_PROVIDER_NOT_READY_CODE } from "@zcode/shared";
+} from "@zody/shared";
+import { elideSessionSnapshotForIndex, ZCODE_AGENT_PROVIDER_NOT_READY_CODE } from "@zody/shared";
 import type {
   SessionSummary,
   ErrorAttribution,
@@ -26,12 +26,12 @@ import type {
   WorkspaceConfigState,
   WorkspaceConfigTopicFrame,
   WorkspaceConfigTopicWireFrame,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import {
   encodeTopicWireFrames,
   PROTOCOL_V4_LIMITS,
   utf8JsonByteLength,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 
 let tempDir: string;
 // 跟踪当前测试的 env，用于 afterEach 清理

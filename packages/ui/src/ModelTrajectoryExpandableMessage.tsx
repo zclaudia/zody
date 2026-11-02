@@ -1,4 +1,4 @@
-import type { ZCodeModelTrajectoryMessage } from "@zcode/services";
+import type { ZCodeModelTrajectoryMessage } from "@zody/services";
 import { ArrowRightIcon, ChevronRightIcon, CircleAlertIcon, CopyIcon } from "lucide-react";
 import { useContext, useState } from "react";
 import { Badge } from "@/components/ui/badge.js";

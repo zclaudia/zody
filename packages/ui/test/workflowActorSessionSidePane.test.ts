@@ -13,7 +13,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { WorkflowRunState } from "@zcode/shared/zcode-protocol-v4";
+import type { WorkflowRunState } from "@zody/shared/zody-protocol-v4";
 import type { WorkflowActorSessionSidePaneTab } from "@/lib/workspaceSidePane.js";
 
 const paneState = vi.hoisted(() => ({

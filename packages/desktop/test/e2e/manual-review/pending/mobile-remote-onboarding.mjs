@@ -11,9 +11,9 @@ import { createServer } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { WebSocketServer } from "ws";
-import { ChannelServer, Emitter, Event, SocketProtocol, VSBuffer } from "@zcode/rpc";
-import { IBroadcastService, ISettingService } from "@zcode/services";
-import { setDataBaseDir } from "@zcode/services/node";
+import { ChannelServer, Emitter, Event, SocketProtocol, VSBuffer } from "@zody/rpc";
+import { IBroadcastService, ISettingService } from "@zody/services";
+import { setDataBaseDir } from "@zody/services/node";
 import { createOnboardingRecordService } from "../../../../../services/src/onboarding/onboardingRecordService.js";
 import {
   createRemoteWorkspaceServiceCollection,
@@ -74,8 +74,8 @@ const entryId = resolve(repoRoot, "packages/desktop/onboarding-e2e-entry.js");
 const entry = `
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { connectViaWebSocket } from '@zcode/client';
-import { Event } from '@zcode/rpc';
+import { connectViaWebSocket } from '@zody/client';
+import { Event } from '@zody/rpc';
 import { ServiceProvider } from '@/hooks/useServices.js';
 import { PlatformProvider } from '@/hooks/usePlatform.js';
 import { StoreProvider } from '@/store/StoreProvider.js';

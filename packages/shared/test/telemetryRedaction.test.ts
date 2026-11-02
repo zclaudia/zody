@@ -7,7 +7,7 @@ import {
   resolveTelemetryProviderScope,
   resolveTelemetryModelId,
   sanitizeTelemetryModelValue,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 describe("redactTelemetryText", () => {
   it("把 POSIX 绝对路径归一为占位符，不保留用户名", () => {

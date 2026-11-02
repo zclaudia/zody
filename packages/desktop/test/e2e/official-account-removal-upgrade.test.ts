@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { TID_OAUTH_ERROR, TID_OAUTH_LOGIN_BUTTON, TID_TASK_SETTINGS_BUTTON } from "@zcode/shared";
+import { TID_OAUTH_ERROR, TID_OAUTH_LOGIN_BUTTON, TID_TASK_SETTINGS_BUTTON } from "@zody/shared";
 import { clearAppData, getE2EAppDataPaths, waitForTestIdByDom } from "./helpers/desktop-app.js";
 import { reloadElectronSessionSafely } from "./helpers/e2e-electron-reload.js";
 

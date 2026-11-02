@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IZCodeAgentService } from "@zcode/services";
+import type { IZCodeAgentService } from "@zody/services";
 import {
   AUTOMATION_CREATE_LIMIT,
   AUTOMATION_CREATE_LIMIT_ERROR_CODE,
   type ZCodeAutomation,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { useAutomationManagementStore } from "@/store/automationManagementStore.js";
 
 function makeAutomation(index: number): ZCodeAutomation {

@@ -39,9 +39,9 @@ jobs:
       - run: pnpm lint
       - run: pnpm architecture:check --changed
       - run: pnpm test:unit
-      - run: pnpm --dir apps/zcode-cli test
-      - run: pnpm --dir apps/zcode-cli typecheck
-      - run: pnpm --dir apps/zcode-cli lint
+      - run: pnpm --dir apps/zody-cli test
+      - run: pnpm --dir apps/zody-cli typecheck
+      - run: pnpm --dir apps/zody-cli lint
       - run: node --test scripts/zody-distribution-runner.test.mjs scripts/zody-distribution.test.mjs scripts/zody-distribution-smoke.test.mjs
 
   desktop:

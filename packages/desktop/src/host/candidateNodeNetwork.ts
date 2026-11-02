@@ -1,4 +1,4 @@
-import type { HostApiNetworkTransportDependencies } from "@zcode/services/node";
+import type { HostApiNetworkTransportDependencies } from "@zody/services/node";
 
 const UNSUPPORTED_REASON =
   "Proxy and custom CA are not supported by the signed Node candidate network transport";

@@ -12,19 +12,19 @@ import {
   createNodeProviderRuntimePathEnv,
   NodeModelSelectionConfigRepository,
   PERSONAL_PROVIDER_CONFIG_FILE_NAME,
-} from "@zcode/provider-node";
+} from "@zody/provider-node";
 import { getAppConfigDir as resolveAppConfigDir } from "./paths.js";
 import {
   buildLocalMediaPreviewUrl,
   ZCODE_DATA_ROOT_DIR_NAME,
   type DynamicWorkflowMode,
   type ProviderProvisioningTrigger,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export {
   materializeZCodeBuiltinProviderConfig,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
-} from "@zcode/provider-node";
+} from "@zody/provider-node";
 // fork（bots 移除）：readTopicResourceFromRelay / validateTopicResourceFromRelay 只被 topic
 // resource executor 使用，随 bot channels 功能整体删除；IChannel import 只服务已删除的
 // topicResourceRelayChannel options 槽位，随槽位一并摘除（消费方 windowTopicResourceRelay
@@ -96,16 +96,16 @@ export {
 } from "./setting/settingService.js";
 export { createCredentialService } from "./credential/credentialService.js";
 export { createBroadcastService } from "./broadcast/broadcastService.js";
-export { createZCodeAgentService } from "./zcode-agent/zcodeAgentService.js";
-export { createZCodeTaskServiceAdapter } from "./zcode-agent/zcodeTaskServiceAdapter.js";
-export { createZCodeSessionService } from "./zcode-session/zcodeSessionService.js";
+export { createZCodeAgentService } from "./zody-agent/zcodeAgentService.js";
+export { createZCodeTaskServiceAdapter } from "./zody-agent/zcodeTaskServiceAdapter.js";
+export { createZCodeSessionService } from "./zody-session/zcodeSessionService.js";
 export {
   createZCodeAgentCommandResolver,
   resolveDefaultZCodeAgentCommand,
   resolveZCodeAgentNativeRuntimeCommand,
   validateZCodeAgentNativeRuntimeConfig,
   ZCodeAgentProcessManager,
-} from "./zcode-agent/zcodeAgentProcessManager.js";
+} from "./zody-agent/zcodeAgentProcessManager.js";
 export type {
   ZCodeAgentCommand,
   ZCodeAgentCommandResolver,
@@ -115,7 +115,7 @@ export type {
   ZCodeAgentNativeRuntimeResolverContext,
   ZCodeAgentNativeRuntimeStartupContext,
   ZCodeAgentProcessManagerOptions,
-} from "./zcode-agent/zcodeAgentProcessManager.js";
+} from "./zody-agent/zcodeAgentProcessManager.js";
 export {
   createZCodeAgentNativeRuntimeStartupContext,
   digestZCodeAgentNativeRuntimeProviderSnapshot,
@@ -123,16 +123,16 @@ export {
   normalizeZCodeAgentNativeRuntimeNetwork,
   normalizeZCodeAgentNativeRuntimeSelection,
   projectZCodeAgentNativeRuntimeProviderSnapshot,
-} from "./zcode-agent/nativeRuntimeStartupProfile.js";
-export { ZCodeProtocolClient } from "./zcode-agent/zcodeProtocolClient.js";
-export type { ZCodeProtocolTransport } from "./zcode-agent/zcodeProtocolTransport.js";
-export { ZCodeStdioTransport } from "./zcode-agent/zcodeStdioTransport.js";
+} from "./zody-agent/nativeRuntimeStartupProfile.js";
+export { ZCodeProtocolClient } from "./zody-agent/zcodeProtocolClient.js";
+export type { ZCodeProtocolTransport } from "./zody-agent/zcodeProtocolTransport.js";
+export { ZCodeStdioTransport } from "./zody-agent/zcodeStdioTransport.js";
 export {
   getZCodeStdioTapDevLogDir,
   readZCodeStdioTapDevState,
   setZCodeStdioTapDevEnabled,
-} from "./zcode-agent/zcodeStdioTapDevConfig.js";
-export type { ZCodeStdioTapDevState } from "@zcode/shared";
+} from "./zody-agent/zcodeStdioTapDevConfig.js";
+export type { ZCodeStdioTapDevState } from "@zody/shared";
 export {
   createCuaHelperInstaller,
   requestHelperAccessibilityPermissionViaLaunchServices,
@@ -280,9 +280,9 @@ import { IOnboardingRecordService } from "./onboarding/onboardingRecord.js";
 import { ICredentialService } from "./credential/credential.js";
 import { IBroadcastService } from "./broadcast/broadcast.js";
 import { IZCodeTaskService } from "./session/zcodeTaskService.js";
-import { IZCodeAgentService } from "./zcode-agent/zcodeAgent.js";
-import type { CuaOperationStateReporter } from "./zcode-agent/cuaOperationTurnTracker.js";
-import { IZCodeSessionService } from "./zcode-session/zcodeSession.js";
+import { IZCodeAgentService } from "./zody-agent/zcodeAgent.js";
+import type { CuaOperationStateReporter } from "./zody-agent/cuaOperationTurnTracker.js";
+import { IZCodeSessionService } from "./zody-session/zcodeSession.js";
 // fork（bots 移除）：IBotsService 随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
 import { IFileWatcherService } from "./fileWatcher/fileWatcher.js";
 import { IUsageStatsService } from "./usage-stats/usageStats.js";
@@ -314,18 +314,18 @@ import { createOnboardingRecordService } from "./onboarding/onboardingRecordServ
 import { createObservableSettingService } from "./setting/observableSettingService.js";
 import { createCredentialService } from "./credential/credentialService.js";
 import { createBroadcastService } from "./broadcast/broadcastService.js";
-import { createZCodeAgentService } from "./zcode-agent/zcodeAgentService.js";
+import { createZCodeAgentService } from "./zody-agent/zcodeAgentService.js";
 import type {
   ZCodeAgentCommandResolver,
   ZCodeAgentCommandResolverContext,
   ZCodeAgentNativeRuntimeConfig,
   ZCodeAgentNativeRuntimeResolver,
-} from "./zcode-agent/zcodeAgentProcessManager.js";
-import { buildAgentTelemetrySpawnEnv } from "./zcode-agent/agentTelemetryEnv.js";
-import { resolveZCodeAgentPresentationSurface } from "./zcode-agent/zcodeAgentPresentationSurface.js";
-import { createZCodeTaskServiceAdapter } from "./zcode-agent/zcodeTaskServiceAdapter.js";
-import { createZCodeSessionService } from "./zcode-session/zcodeSessionService.js";
-import { createZCodeTaskIndexSyncer } from "./zcode-agent/zcodeTaskIndexSyncer.js";
+} from "./zody-agent/zcodeAgentProcessManager.js";
+import { buildAgentTelemetrySpawnEnv } from "./zody-agent/agentTelemetryEnv.js";
+import { resolveZCodeAgentPresentationSurface } from "./zody-agent/zcodeAgentPresentationSurface.js";
+import { createZCodeTaskServiceAdapter } from "./zody-agent/zcodeTaskServiceAdapter.js";
+import { createZCodeSessionService } from "./zody-session/zcodeSessionService.js";
+import { createZCodeTaskIndexSyncer } from "./zody-agent/zcodeTaskIndexSyncer.js";
 import { TaskIndexRepo } from "./session/taskIndexRepo.js";
 // fork（bots 移除）：createBotsService / createBotRemoteWorkspaceService 随 bot channels
 // 功能整体删除（specs/bot-channels-removal.md）。
@@ -348,7 +348,7 @@ import {
   IProviderSettingsService,
 } from "./model-provider/providerFacadeServices.js";
 import { createProviderSettingsConnectivityTester } from "./model-provider/providerSettingsConnectivity.js";
-import { createZCodeAgentNativeRuntimeStartupContext } from "./zcode-agent/nativeRuntimeStartupProfile.js";
+import { createZCodeAgentNativeRuntimeStartupContext } from "./zody-agent/nativeRuntimeStartupProfile.js";
 import {
   createProviderProvisioningSource,
   listProviderProvisioningCredentialKeys,
@@ -374,7 +374,7 @@ import {
   createPluginUiAppToolsService,
   createPluginUiBridgeService,
 } from "./plugin-ui-bridge/index.js";
-import type { PluginSandboxHandle, PluginSandboxRegisterInput } from "@zcode/shared/mcp-apps";
+import type { PluginSandboxHandle, PluginSandboxRegisterInput } from "@zody/shared/mcp-apps";
 import { createPluginSyncService } from "./plugin-sync/pluginSyncService.js";
 import { createPluginsService } from "./plugins/pluginsService.js";
 import { createPluginManagementService } from "./plugins/pluginManagementService.js";
@@ -404,7 +404,7 @@ import {
   buildAgentRuntimeEnv,
 } from "./runtime-tools/agentProxyEnv.js";
 import { ensureAppCaCert } from "./runtime-tools/appCaCert.js";
-import { buildHelperOpenArgs, isCuaLocalDevelopmentRuntime } from "@zcode/zcode-cua/broker/server";
+import { buildHelperOpenArgs, isCuaLocalDevelopmentRuntime } from "@zody/zody-cua/broker/server";
 import { createServiceLogger, type ServiceLogger } from "#src/logger/serviceLogger.js";
 // fork（F4.3）：offPeak 服务的 import 与装配（IOffPeakTaskService/OffPeakTaskService/
 // OffPeakTaskRepo/offPeakServerClient/offPeakRuntimeModel）随闲时任务全链路删除。
@@ -447,8 +447,8 @@ import {
   getStableCuaPipeName,
   resolveStableCuaWinRecipe,
 } from "#src/cua-permission-broker/stableCuaTransport.js";
-import { HELPER_APP_NAME } from "@zcode/zcode-cua/broker/helperConstants";
-import { resolveBrokerSocketPath } from "@zcode/zcode-cua/broker/socketPath";
+import { HELPER_APP_NAME } from "@zody/zody-cua/broker/helperConstants";
+import { resolveBrokerSocketPath } from "@zody/zody-cua/broker/socketPath";
 import {
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
   formatLogPrefix,
@@ -467,7 +467,7 @@ import {
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
   ZCODE_VERSION,
   ZCODE_ENV,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 // fork（F4.8）：conversation-share 的 Node 实现（服务/HTTP 客户端/connection scope）
 // 随会话分享功能删除；根入口仍只暴露 browser-safe 契约。
@@ -1548,7 +1548,7 @@ export function createLocalServices(options: {
         }
         // standalone Helper 上直接查权限真值（身份模式，无 token）。
         try {
-          const { callBrokerMethod } = await import("@zcode/zcode-cua/broker/helperHealth");
+          const { callBrokerMethod } = await import("@zody/zody-cua/broker/helperHealth");
           const report = await callBrokerMethod<{
             grant_owner: string;
             owner?: { display_name?: string };
@@ -2181,4 +2181,4 @@ export async function disposeServiceResourcesAndWait(services: ServiceCollection
     ?.disposeAndWait()
     .catch(() => {});
 }
-export { localRuntimeNetworkCapture } from "./zcode-agent/localRuntimeNetworkCapture.js";
+export { localRuntimeNetworkCapture } from "./zody-agent/localRuntimeNetworkCapture.js";

@@ -1,4 +1,4 @@
-import type { ZCodeConfigOption } from "@zcode/shared";
+import type { ZCodeConfigOption } from "@zody/shared";
 import { describe, expect, it } from "vitest";
 import {
   mergeRecoveredTaskModelConfigOptions,

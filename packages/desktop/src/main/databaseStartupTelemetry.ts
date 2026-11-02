@@ -3,7 +3,7 @@ import {
   ZCODE_VERSION,
   type DatabaseStartupState,
   type ArmsCustomEventPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { ensureDesktopDeviceMidSync } from "./desktopDeviceMid.js";
 import { buildFinalArmsCustomEventPayload } from "./desktopArmsCustomEvent.js";
 import { logger } from "./logger.js";

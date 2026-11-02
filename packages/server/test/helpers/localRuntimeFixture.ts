@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { ZCODE_VERSION } from "@zcode/shared";
+import { ZCODE_VERSION } from "@zody/shared";
 import { createTarGzArchive } from "../../src/remote/localTarGz.js";
 import { resolveRequiredLocalReleasePaths } from "../../src/remote/remoteAssetLocalPaths.js";
 

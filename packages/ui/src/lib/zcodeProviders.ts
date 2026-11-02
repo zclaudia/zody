@@ -2,7 +2,7 @@ import {
   ZCODE_AGENT_PROVIDER,
   ZCODE_AGENT_PROVIDER_LABEL,
   type ZCodeProvider,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export const ZCODE_AGENT_PROVIDERS: ZCodeProvider[] = [ZCODE_AGENT_PROVIDER];
 

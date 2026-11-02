@@ -1,7 +1,7 @@
 /* oxlint-disable eslint(max-lines) -- 平台事件（窗口/任务/更新/快捷键）共用同一生命周期。 */
 import { useEffect, useRef } from "react";
 import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
-import type { IPlatformService } from "@zcode/shared";
+import type { IPlatformService } from "@zody/shared";
 import { isWorkspaceTab, type TabStoreState, type WindowTabState } from "@/store/tabStore.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
 import { logger } from "@/logger.js";
@@ -46,14 +46,14 @@ export function useRootPlatformEffects({
 }: {
   initialWorkspaceAbsPath?: string;
   initialWorkspaceIdentity?: string;
-  initialWorkspacePurpose?: import("@zcode/shared").WorkspacePurpose;
+  initialWorkspacePurpose?: import("@zody/shared").WorkspacePurpose;
   initialTaskId?: string;
   canBootstrapInitialWorkspace?: boolean;
   addTab: (
     workspacePath: string,
     options?: {
       workspaceIdentity?: string;
-      workspacePurpose?: import("@zcode/shared").WorkspacePurpose;
+      workspacePurpose?: import("@zody/shared").WorkspacePurpose;
     },
   ) => void;
   setIsBootstrappingInitialWorkspace: (value: boolean) => void;

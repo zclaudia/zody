@@ -3,8 +3,8 @@ import {
   parseZCodeProcessDiagnostic,
   ZCODE_PROCESS_DIAGNOSTIC_PREFIX,
   ZCODE_PROCESS_DIAGNOSTIC_MAX_LINE_CHARS,
-} from "@zcode/shared/process-diagnostic";
-import { hostResponseMessageSchema } from "@zcode/shared";
+} from "@zody/shared/process-diagnostic";
+import { hostResponseMessageSchema } from "@zody/shared";
 
 const diagnostic = {
   version: 1,

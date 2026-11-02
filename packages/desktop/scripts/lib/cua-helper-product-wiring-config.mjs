@@ -30,7 +30,7 @@ export const KOFFI_PLATFORM_TRIM = join(PRODUCT_WIRING_ROOT, "koffi-unavailable-
 export const BOOTSTRAP_ENTRY = join(
   REPO_ROOT,
   "apps",
-  "zcode-cli",
+  "zody-cli",
   "packages",
   "bootstrap",
   "tests",

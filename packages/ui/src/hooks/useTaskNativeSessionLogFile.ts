@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { ZCodeProvider } from "@zcode/shared";
+import type { ZCodeProvider } from "@zody/shared";
 import { logger } from "@/logger.js";
 import { useZCodeTaskService } from "@/hooks/useZCodeTaskService.js";
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   zcodeProviderUpdateAccountConfigParamsSchema,
   zcodeProviderUpdateAccountConfigResultSchema,
-} from "../src/zcode-protocol/index.js";
+} from "../src/zody-protocol/index.js";
 
 describe("Account 快照协议", () => {
   const snapshot = {

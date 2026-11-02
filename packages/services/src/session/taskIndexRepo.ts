@@ -16,7 +16,7 @@ import {
   // fork（F4.3）：OFF_PEAK_DEFAULT_GROUP_ID import 随闲时任务全链路删除。
   type ZCodeProvider,
   type ZCodeTaskMeta,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   ZCodeTaskListQuery,
   ZCodeTaskListResult,
@@ -286,7 +286,7 @@ function normalizeWorkspaceBootstrapScopes(
   scopes: Array<{
     workspacePath: string;
     workspaceIdentity?: string;
-    workspacePurpose?: import("@zcode/shared").WorkspacePurpose;
+    workspacePurpose?: import("@zody/shared").WorkspacePurpose;
   }>,
 ): WorkspaceBootstrapScope[] {
   const seen = new Set<string>();

@@ -1,4 +1,4 @@
-import type { ZCodeTimelineMeta } from "@zcode/shared";
+import type { ZCodeTimelineMeta } from "@zody/shared";
 import type { TaskChatMessage } from "@/lib/taskChatMessageTypes.js";
 
 const RUNNING_CONTEXT_COMPACTION_STATUSES = new Set(["started", "retrying"]);

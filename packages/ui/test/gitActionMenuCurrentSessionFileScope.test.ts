@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type {
   GitRepositorySummary,
   ZCodeTaskChangeSummary,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { GitBranchCommitPreviewFile } from "@/git-branch-switcher/display.js";
 import {
   filterCommitPreviewFilesByCurrentSession,

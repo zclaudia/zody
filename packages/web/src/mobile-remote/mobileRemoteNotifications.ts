@@ -3,7 +3,7 @@ import type {
   MobileNotificationClick,
   MobileNotificationPlatform,
   MobileNotificationPushStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 type NativeNotifications = {
   notificationSyncSubscription(config: string): string;
