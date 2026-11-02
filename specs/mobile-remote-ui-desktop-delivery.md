@@ -53,7 +53,7 @@
 
 | 状态或能力 | 唯一所有者 | 规则 |
 | --- | --- | --- |
-| Gateway、namespace、凭证、选中 backend 的持久配置 | Android 原生安全存储 | 只有 Shell 可写；Remote 只读当前会话上下文 |
+| Gateway、namespace、凭证、选中 backend、按 backend 持久化的 clientInstanceId | Android 原生安全存储 | 只有 Shell 可写；Remote 只读当前会话上下文 |
 | 当前 WebView source、选中 backend、导航代次、sessionId | Android `MobileShellController` | 不保存 task/session 业务状态 |
 | Shell 页面与 Remote 页面可用的 JS bridge | Android `MobileShellController` | 导航前移除旧 bridge，只安装目标 source 的 bridge |
 | 移动 UI 文件、releaseId、Cache-Control、CSP | 桌面 `MobileUiAssetProvider` | 只读当前桌面制品；不读工作区、settings 或 runtime |
@@ -171,13 +171,14 @@ Main 只负责装配 `MobileUiAssetProvider` 和 Gateway 转发，不承载 task
 ### `ZodyShellBridge`
 
 - 读取、写入、清除连接配置；配置写入递增 `configRevision`。
+- 按 backend 生成并持久化 `clientInstanceId`；同一手机重连同一 backend 必须复用，换 backend 必须不同。Remote 只读该值，不得再经 SecureStore 自行生成或写入。
 - 打开指定 backend：`openRemote(backendId, expectedConfigRevision)`。
 - 获取 Shell 构建信息、Debug 传输能力和连接诊断。
 - 不暴露 Remote 文件、通知动作或业务能力。
 
 ### `ZodyRemoteBridge`
 
-- `getSessionContext()`：返回当前 `sessionId`、Gateway、namespace、backendId、凭证、appVersion 和 bridge capabilities。
+- `getSessionContext()`：返回当前 `sessionId`、Gateway、namespace、backendId、按 backend 持久化的 clientInstanceId、凭证、appVersion 和 bridge capabilities。
 - 文件保存/打开、通知、前后台事件、返回 Shell。
 - 除只读会话上下文外，所有会改变原生或远端状态的调用都带 `sessionId`；native 检查当前代次，旧 sessionId 一律拒绝。
 - 不提供任意 key 的安全存储读写，不允许修改 Gateway 或选中 backend。

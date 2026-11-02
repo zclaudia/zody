@@ -18,7 +18,7 @@
 
 实施：
 
-1. 按 spec 定义 `MobileShellConfig`、`MobileSessionContext`、`MobileBridgeCapabilities`、`configRevision` 和稳定错误码的公开类型/schema。
+1. 按 spec 定义 `MobileShellConfig`、`MobileSessionContext`、`MobileBridgeCapabilities`、`configRevision` 和稳定错误码的公开类型/schema；`MobileSessionContext` 包含按 backend 持久化的 `clientInstanceId`，其唯一生成/写入所有者是 Shell，Remote 只读。
 2. Shell 只承载配对、Gateway 设置、discovery、选电脑、错误/升级提示和 `openRemote(backendId, expectedConfigRevision)`。
 3. 把全局连接配置写入集中在 Shell；Remote 不再拥有设置写路径。
 4. Shell 检查 `zcode-remote-control` 与 `zcode-remote-ui-v1`；缺 UI capability 时提示升级桌面，不调用 openRemote。
