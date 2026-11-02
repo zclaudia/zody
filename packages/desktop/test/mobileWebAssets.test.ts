@@ -1,5 +1,8 @@
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
+import { finalizeMobileWebRelease } from "../../../scripts/build-mobile-web-release.mjs";
 import {
   resolveMobileWebRootDir,
   resolveMobileWebSourceDir,
@@ -101,5 +104,41 @@ describe("移动 Remote UI 发布校验委派", () => {
 
     await expect(verifyMobileWebReleaseDirectory({ verifyRelease })).rejects.toThrow(/rootDir/);
     expect(verifyRelease).not.toHaveBeenCalled();
+  });
+
+  it("不注入 verifier 时真实走 M1-T1 默认校验", async () => {
+    const distDir = await mkdtemp(path.join(tmpdir(), "zody-mobile-web-default-"));
+    try {
+      await mkdir(path.join(distDir, "assets"), { recursive: true });
+      await writeFile(
+        path.join(distDir, "mobile.html"),
+        [
+          "<!doctype html>",
+          '<html><head><meta charset="UTF-8" /></head><body>',
+          '<script type="module" src="/assets/remote/assets/index-abc123.js"></script>',
+          "</body></html>",
+        ].join(""),
+        "utf8",
+      );
+      await writeFile(
+        path.join(distDir, "assets", "index-abc123.js"),
+        "console.log('mobile');\n",
+        "utf8",
+      );
+
+      const finalized = await finalizeMobileWebRelease({
+        distDir,
+        desktopVersion: "0.0.0-test",
+      });
+      const verified = await verifyMobileWebReleaseDirectory({ rootDir: distDir });
+
+      expect(verified).toEqual(finalized);
+      expect(verified).toMatchObject({
+        desktopVersion: "0.0.0-test",
+        entry: "/assets/remote/index.html",
+      });
+    } finally {
+      await rm(distDir, { recursive: true, force: true });
+    }
   });
 });

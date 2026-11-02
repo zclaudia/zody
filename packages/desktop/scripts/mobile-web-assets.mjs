@@ -32,9 +32,9 @@ export function resolveMobileWebRootDir({
 
 // M1-T1 的 verifyMobileWebRelease 是发布完整性的唯一规则：manifest schema、HTML meta、
 // 资源引用、sourcemap 排除与摘要复核都由它负责。桌面层只把 rootDir 映射为 distDir。
-async function defaultVerifyMobileWebRelease({ rootDir }) {
+async function defaultVerifyMobileWebRelease({ distDir }) {
   const { verifyMobileWebRelease } = await import("../../../scripts/build-mobile-web-release.mjs");
-  return verifyMobileWebRelease({ distDir: rootDir });
+  return verifyMobileWebRelease({ distDir });
 }
 
 /**
