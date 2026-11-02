@@ -101,7 +101,9 @@ export interface CreateMobileRemoteSecureStoreOptions {
   storagePrefix?: string;
 }
 
-const DEFAULT_STORAGE_PREFIX = "zody-mobile-remote:";
+/** 开发降级存储的统一前缀；Shell handoff 与 Remote 开发桥必须读同一命名空间。 */
+export const MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX = "zody-mobile-remote:";
+const DEFAULT_STORAGE_PREFIX = MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX;
 
 /**
  * 生产/发布构建使用的实现：只有原生桥。

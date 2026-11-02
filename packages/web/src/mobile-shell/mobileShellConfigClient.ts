@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Shell 配置客户端同时承载 native 与 development 两条实现；拆分需同步公开入口和 focused 测试，超出本次 M2-T2 交接范围。 */
 import {
   MOBILE_UI_BRIDGE_SCHEMA_VERSION,
   MOBILE_UI_BRIDGE_VERSION,
@@ -15,6 +16,7 @@ import {
   type MobileShellBridgeInfo,
   type MobileShellConfig,
   type MobileShellDiagnostics,
+  type MobileSessionContext,
   type PlatformSecureStore,
 } from "@zcode/shared";
 import {
@@ -22,6 +24,12 @@ import {
   type MobileRemoteGatewayConfig,
 } from "../mobile-remote/mobileRemoteConfigStore.js";
 import { createMobileRemoteSecureStore } from "../mobile-remote/mobileRemoteSecureStore.js";
+import {
+  allocateDevelopmentClientInstanceId,
+  clearDevelopmentRemoteHandoff,
+  type MobileRemoteDevelopmentStorage,
+  writeDevelopmentRemoteHandoff,
+} from "../mobile-remote/mobileRemoteDevelopmentHandoff.js";
 
 /**
  * Shell 连接配置客户端（M2-T1）。
@@ -31,8 +39,10 @@ import { createMobileRemoteSecureStore } from "../mobile-remote/mobileRemoteSecu
  * store 按 backendId 持久化，仅通过 Remote 的只读 session context 交给页面（M2-T2）。
  *
  * 开发路径（`pnpm dev:mobile-remote` 或普通浏览器）没有原生桥，允许降级到现有
- * `createMobileRemoteSecureStore`（仅开发构建会落到 localStorage）。release 构建缺少
- * `ZodyShellBridge` 时不会创建降级客户端，由入口直接 fail closed。
+ * `createMobileRemoteSecureStore`（仅开发构建会落到 localStorage）。`openRemote` 在开发
+ * 模式写入一次性 handoff（含按 backendId 持久化的 clientInstanceId），Remote 开发桥再把
+ * 它模拟成 `getSessionContext()`；URL 不再携带凭证。release 构建缺少 `ZodyShellBridge`
+ * 时不会创建降级客户端，由入口直接 fail closed。
  */
 
 export const MOBILE_SHELL_DEVELOPMENT_CONFIG_REVISION_KEY = "mobile-shell-config-revision";
@@ -274,16 +284,37 @@ async function writeDevelopmentRevision(
   return revision;
 }
 
-function buildDevelopmentRemoteUrl(config: MobileRemoteGatewayConfig): string {
+function buildDevelopmentRemoteUrl(): string {
+  // 凭证只经 handoff 交给 Remote，导航 URL 不再携带 Gateway/namespace/credential/backend。
   const url = new URL("mobile.html", globalThis.location?.href ?? "http://localhost/");
   url.search = "";
-  url.searchParams.set("gateway", config.gatewayUrl);
-  url.searchParams.set("namespace", config.namespace);
-  url.searchParams.set("credential", config.credential);
-  if (config.backendId) {
-    url.searchParams.set("backend", config.backendId);
-  }
   return url.toString();
+}
+
+function createDevelopmentSessionContext(
+  config: MobileRemoteGatewayConfig,
+  backendId: string,
+  clientInstanceId: string,
+  sessionId: string,
+): MobileSessionContext {
+  const bridgeInfo = createDevelopmentMobileShellBridgeInfo();
+  return {
+    schemaVersion: MOBILE_UI_BRIDGE_SCHEMA_VERSION,
+    sessionId,
+    gatewayUrl: config.gatewayUrl,
+    namespace: config.namespace,
+    backendId,
+    credential: config.credential,
+    clientInstanceId,
+    appVersion: bridgeInfo.appVersion,
+    bridgeCapabilities: {
+      schemaVersion: MOBILE_UI_BRIDGE_SCHEMA_VERSION,
+      bridgeVersion: MOBILE_UI_BRIDGE_VERSION,
+      appVersion: bridgeInfo.appVersion,
+      // 开发桥只实现只读会话与 returnShell；不声明不存在的文件/通知能力。
+      capabilities: ["session-context", "insecure-gateway-transport"],
+    },
+  };
 }
 
 /**
@@ -293,7 +324,9 @@ function buildDevelopmentRemoteUrl(config: MobileRemoteGatewayConfig): string {
 function createDevelopmentMobileShellConfigClient(options: {
   secureStore: PlatformSecureStore;
   allowInsecureTransport: boolean;
+  handoffStorage?: MobileRemoteDevelopmentStorage;
   navigate?: (url: string) => void;
+  sessionIdFactory?: () => string;
 }): MobileShellConfigClient {
   const store = new MobileRemoteConfigStore(options.secureStore, {
     allowInsecureTransport: options.allowInsecureTransport,
@@ -301,6 +334,10 @@ function createDevelopmentMobileShellConfigClient(options: {
   let configRevision: number | undefined;
   let lastConfig: MobileRemoteGatewayConfig | null = null;
   const resolveRevision = () => readDevelopmentRevision(options.secureStore);
+  const newSessionId = () =>
+    options.sessionIdFactory?.() ??
+    globalThis.crypto?.randomUUID?.() ??
+    `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
   const readConfig = async (): Promise<MobileShellConfig | null> => {
     const config = await store.load();
@@ -338,6 +375,8 @@ function createDevelopmentMobileShellConfigClient(options: {
         throw new MobileShellBridgeError("config-write-failed", "Config was not persisted.");
       }
       lastConfig = config;
+      // 配置换代后旧 handoff 必须失效，避免 Remote 用上一个 backend 的上下文启动。
+      clearDevelopmentRemoteHandoff(options.handoffStorage);
       const revision = await writeDevelopmentRevision(
         options.secureStore,
         (await resolveRevision()) + 1,
@@ -352,6 +391,7 @@ function createDevelopmentMobileShellConfigClient(options: {
     async clear() {
       await store.clear();
       lastConfig = null;
+      clearDevelopmentRemoteHandoff(options.handoffStorage);
       configRevision = await writeDevelopmentRevision(
         options.secureStore,
         (await resolveRevision()) + 1,
@@ -374,8 +414,29 @@ function createDevelopmentMobileShellConfigClient(options: {
           error: { code: "config-revision-stale", message: "Config revision changed." },
         };
       }
+      try {
+        // clientInstanceId 的唯一生成/持久所有者仍是 Shell；Remote 只从 handoff 读取。
+        const clientInstanceId = allocateDevelopmentClientInstanceId(
+          backendId,
+          options.handoffStorage,
+        );
+        writeDevelopmentRemoteHandoff(
+          createDevelopmentSessionContext(
+            config,
+            backendId,
+            clientInstanceId,
+            newSessionId(),
+          ),
+          options.handoffStorage,
+        );
+      } catch (error) {
+        return failure(
+          "config-write-failed",
+          error instanceof Error ? error.message : String(error),
+        );
+      }
       const navigate = options.navigate ?? ((url: string) => globalThis.location.assign(url));
-      navigate(buildDevelopmentRemoteUrl(config));
+      navigate(buildDevelopmentRemoteUrl());
       return { kind: "opened" };
     },
     async getInfo() {
@@ -397,7 +458,11 @@ export interface CreateMobileShellConfigClientOptions {
   bridge?: MobileShellBridge;
   allowInsecureTransport: boolean;
   secureStore?: PlatformSecureStore;
+  /** 开发模式 Shell → Remote handoff 的同步存储；缺省 localStorage。 */
+  handoffStorage?: MobileRemoteDevelopmentStorage;
   navigate?: (url: string) => void;
+  /** 测试注入；开发模式生成 sessionId。 */
+  sessionIdFactory?: () => string;
 }
 
 /** 创建唯一配置客户端；native 模式缺少 bridge 时立即 fail closed。 */
@@ -420,7 +485,9 @@ export function createMobileShellConfigClient(
   return createDevelopmentMobileShellConfigClient({
     secureStore,
     allowInsecureTransport: options.allowInsecureTransport,
+    ...(options.handoffStorage ? { handoffStorage: options.handoffStorage } : {}),
     ...(options.navigate ? { navigate: options.navigate } : {}),
+    ...(options.sessionIdFactory ? { sessionIdFactory: options.sessionIdFactory } : {}),
   });
 }
 

@@ -105,6 +105,7 @@ import {
   createMobileRemoteFileCapabilities,
   resolveMobileRemoteFileBridge,
 } from "./mobileRemoteFileBridge.js";
+import { parseMobileRemoteBridgeEnvelope } from "./mobileRemoteBridgeEnvelope.js";
 
 /**
  * 手机 Remote 启动模块（M2-T2）。
@@ -262,12 +263,22 @@ export async function bootstrapGatewayWebRemoteControl(
   );
 
   const isProduction = options.isProduction ?? import.meta.env.PROD;
+  let bridge = options.bridge;
+  if (!bridge && !isProduction && !import.meta.env.PROD) {
+    // 浏览器开发模式的 Shell 会写入 handoff；这里把 handoff 模拟成原生桥。
+    // `import.meta.env.PROD` 在 release 构建被常量折叠，开发适配器不会进入产物。
+    const { installDevelopmentMobileRemoteBridge } = await import(
+      "./mobileRemoteDevelopmentBridge.js"
+    );
+    bridge = installDevelopmentMobileRemoteBridge();
+  }
+
   let session: MobileRemoteSession;
   try {
     // M2-T2：Remote 唯一的数据入口。缺桥、JSON/schema 损坏、backend 或 bridgeVersion
     // 不兼容都在这里 fail closed，不会带着部分配置创建 transport。
     session = readMobileRemoteSessionContext({
-      ...(options.bridge ? { bridge: options.bridge } : {}),
+      ...(bridge ? { bridge } : {}),
       isProduction,
       ...(options.allowInsecureTransport !== undefined
         ? { allowInsecureTransport: options.allowInsecureTransport }
@@ -281,7 +292,7 @@ export async function bootstrapGatewayWebRemoteControl(
   }
 
   // clientInstanceId 由原生配置 store 按 backendId 持久化；页面只把它作为流式 clientId，
-  // 不再生成、写 localStorage 或回写 SecureStore。
+  // 不再生成、写入页面存储或回写 SecureStore。
   setStreamClientId(session.context.clientInstanceId);
 
   let returningToShell = false;
@@ -343,8 +354,8 @@ export async function bootstrapGatewayWebRemoteControl(
     return;
   }
 
-  // T6.2：Android 注入 ZodyRemoteBridge 后，安装宿主 → 页面的 ZodyRemoteBridgeHost
-  // （前后台/返回键/通知事件）；所有事件按当前 sessionId 过滤。
+  // T6.2：Android 注入 ZodyRemoteBridge 后，安装宿主 → 页面的 ZcodeMobileBridgeHost
+  // （前后台/返回键/通知事件）；带 sessionId 的旧格式仍按当前 session 过滤。
   const nativeHost = installMobileRemoteNativeHost({
     sessionId: session.context.sessionId,
     bridge: session.bridge,
@@ -433,6 +444,26 @@ async function startGatewaySession(
   let currentWorkspaceKey: string | undefined;
   let currentTaskId: string | undefined;
   let currentRecoveryId: string | undefined;
+  // M2-T2/M2-T5：业务 Channel 真正可交互后只通知一次；原生在此前只排队通知 intent。
+  let remoteReadySignalled = false;
+  const signalRemoteReady = (): void => {
+    if (remoteReadySignalled || terminated) {
+      return;
+    }
+    remoteReadySignalled = true;
+    const bridge = context.bridge;
+    const markReady = bridge?.markRemoteReady;
+    if (!bridge || !markReady) {
+      return;
+    }
+    try {
+      parseMobileRemoteBridgeEnvelope(
+        markReady.call(bridge, gatewayConfig.sessionId),
+      );
+    } catch {
+      // 原生可能已在导航/重建期间淘汰当前 session；保持页面 fail closed，不重试也不写配置。
+    }
+  };
   let nextBridgeGeneration = 0;
   let latestRecentProjects: WebRemoteControlRecentProjectsResult | undefined;
   let renderStartPageIfActive: (() => void) | undefined;
@@ -745,6 +776,8 @@ async function startGatewaySession(
       recovering = false;
       bootstrapping = false;
       if (recoveryReady && !terminated) {
+        // 首次 ready 后原生才允许派发；恢复成功时补一次幂等通知。
+        signalRemoteReady();
         // Android 可能在回前台重协商期间点击通知；原生 slot 仍是权威待办，
         // 仅在 recovery owner 成功后重新读取，不用定时器猜恢复时序。
         retryPendingNotificationClick();
@@ -2048,6 +2081,7 @@ async function startGatewaySession(
     if (bootstrapResult.workspaces.length === 0) {
       // 「电脑上没有窗口 / 没有打开的项目」不是失败，属于首页空态（方案「失败原因与恢复」）。
       renderMobileRemoteStartPage();
+      signalRemoteReady();
       void consumeNativeNotification();
       void consumeNativeNotificationAction();
       return;
@@ -2073,6 +2107,7 @@ async function startGatewaySession(
       : resolveWebRemoteControlInitialWorkspaceSelection(bootstrapResult);
     if (!selectedWorkspace) {
       renderMobileRemoteStartPage();
+      signalRemoteReady();
       void consumeNativeNotification();
       void consumeNativeNotificationAction();
       return;
@@ -2082,6 +2117,7 @@ async function startGatewaySession(
         selectedWorkspace.workspaceKey,
         selectedWorkspace.taskId,
       );
+      signalRemoteReady();
       void consumeNativeNotification();
       void consumeNativeNotificationAction();
       return;
@@ -2091,6 +2127,7 @@ async function startGatewaySession(
       taskId: selectedWorkspace.taskId,
     });
     renderExternalRelayRoot(result.services, result.bridge);
+    signalRemoteReady();
     void consumeNativeNotification();
   };
 

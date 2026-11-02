@@ -14,6 +14,10 @@ import {
   readMobileShellBridgeInfo,
   resolveMobileShellRuntimeMode,
 } from "../src/mobile-shell/mobileShellConfigClient.js";
+import {
+  MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX,
+  type MobileRemoteDevelopmentStorage,
+} from "../src/mobile-remote/mobileRemoteDevelopmentHandoff.js";
 
 function createMemorySecureStore(initial: Record<string, string> = {}): PlatformSecureStore {
   const state = new Map(Object.entries(initial));
@@ -28,6 +32,30 @@ function createMemorySecureStore(initial: Record<string, string> = {}): Platform
       state.delete(key);
     },
   };
+}
+
+function createMemoryDevelopmentStorage(
+  initial: Record<string, string> = {},
+): MobileRemoteDevelopmentStorage {
+  const state = new Map(Object.entries(initial));
+  return {
+    getItem(key) {
+      return state.get(key) ?? null;
+    },
+    setItem(key, value) {
+      state.set(key, value);
+    },
+    removeItem(key) {
+      state.delete(key);
+    },
+  };
+}
+
+function readHandoff(storage: MobileRemoteDevelopmentStorage) {
+  const raw = storage.getItem(
+    `${MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX}remote-handoff`,
+  );
+  return raw ? (JSON.parse(raw) as Record<string, unknown>) : null;
 }
 
 function createNativeBridge(initialConfig: MobileShellConfig | null = null) {
@@ -241,13 +269,17 @@ describe("native Shell config client", () => {
 });
 
 describe("development Shell config client", () => {
-  it("递增开发期 configRevision，并把 openRemote 降级为带 URL 参数的 Remote 导航", async () => {
+  it("递增开发期 configRevision，并通过 handoff 导航到无凭证 URL 的 Remote", async () => {
     const secureStore = createMemorySecureStore();
+    const handoffStorage = createMemoryDevelopmentStorage();
     const navigate = vi.fn();
+    let sessionCounter = 0;
     const client = createMobileShellConfigClient({
       mode: "development",
       allowInsecureTransport: true,
       secureStore,
+      handoffStorage,
+      sessionIdFactory: () => `session-dev-${(sessionCounter += 1)}`,
       navigate,
     });
 
@@ -265,6 +297,8 @@ describe("development Shell config client", () => {
     });
     expect(second.configRevision).toBe(2);
     await expect(secureStore.get(MOBILE_SHELL_DEVELOPMENT_CONFIG_REVISION_KEY)).resolves.toBe("2");
+    // 保存配置会清除旧 handoff，避免 Remote 用到上一个 backend。
+    expect(readHandoff(handoffStorage)).toBeNull();
 
     await expect(client.openRemote("backend-a", 1)).resolves.toMatchObject({ kind: "stale" });
     expect(navigate).not.toHaveBeenCalled();
@@ -273,29 +307,59 @@ describe("development Shell config client", () => {
     expect(navigate).toHaveBeenCalledOnce();
     const url = new URL(navigate.mock.calls[0]![0]);
     expect(url.pathname.endsWith("/mobile.html")).toBe(true);
-    expect(url.searchParams.get("gateway")).toBe("http://localhost:3200");
-    expect(url.searchParams.get("credential")).toBe("zgd_test");
-    expect(url.searchParams.get("backend")).toBe("backend-a");
+    // 凭证只经 handoff，不再进入 URL。
+    expect(url.search).toBe("");
+
+    const handoff = readHandoff(handoffStorage);
+    expect(handoff).toMatchObject({
+      schemaVersion: 1,
+      sessionId: "session-dev-1",
+      gatewayUrl: "http://localhost:3200",
+      namespace: "zody",
+      backendId: "backend-a",
+      credential: "zgd_test",
+      appVersion: expect.any(String),
+      bridgeCapabilities: {
+        schemaVersion: 1,
+        bridgeVersion: 1,
+        capabilities: ["session-context", "insecure-gateway-transport"],
+      },
+    });
+    const clientInstanceId = handoff?.clientInstanceId;
+    expect(typeof clientInstanceId).toBe("string");
+
+    // 同一 backend 重连复用 clientInstanceId，sessionId 每次导航都重新生成。
+    await expect(client.openRemote("backend-a", 2)).resolves.toEqual({ kind: "opened" });
+    expect(readHandoff(handoffStorage)).toMatchObject({
+      sessionId: "session-dev-2",
+      clientInstanceId,
+    });
   });
 
-  it("清除配置也递增 revision，并回到未配置状态", async () => {
+  it("清除配置也递增 revision、清除 handoff 并回到未配置状态", async () => {
     const secureStore = createMemorySecureStore();
+    const handoffStorage = createMemoryDevelopmentStorage();
     const client = createMobileShellConfigClient({
       mode: "development",
       allowInsecureTransport: true,
       secureStore,
+      handoffStorage,
       navigate: () => {},
     });
 
-    await client.save({
+    const saved = await client.save({
       gatewayUrl: "https://gateway.example.com",
       namespace: "zody",
       credential: "zgd_test",
       backendId: "backend-a",
     });
+    await client.openRemote("backend-a", saved.configRevision);
+    expect(readHandoff(handoffStorage)).not.toBeNull();
+
     await client.clear();
 
     expect(await client.read()).toBeNull();
+    expect(readHandoff(handoffStorage)).toBeNull();
     expect(await secureStore.get(MOBILE_SHELL_DEVELOPMENT_CONFIG_REVISION_KEY)).toBe("2");
   });
 });

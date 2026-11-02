@@ -360,6 +360,11 @@ export interface MobileShellBridge {
 export interface MobileRemoteBridge {
   /** 返回 `MobileSessionContextReadResult` JSON。 */
   getSessionContext(): string;
+  /**
+   * 业务 Channel 真正 ready 后调用；原生在收到之前只排队通知 intent。
+   * 返回 `MobileBridgeOperationResult` JSON；旧壳缺少该方法时页面按不支持处理。
+   */
+  markRemoteReady?(sessionId: string): string;
   /** 当前 sessionId 不符时原生拒绝，不执行返回 Shell。 */
   returnShell(reason: string, sessionId: string): void;
 }

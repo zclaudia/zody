@@ -9,6 +9,18 @@ import {
   type MobileRemoteFileNativeBridge,
 } from "../src/mobile-remote/mobileRemoteFileBridge.js";
 
+function success(extra: Record<string, unknown> = {}): string {
+  return JSON.stringify({ schemaVersion: 1, ok: true, ...extra });
+}
+
+function failure(code: string, message?: string): string {
+  return JSON.stringify({
+    schemaVersion: 1,
+    ok: false,
+    error: { code, ...(message ? { message } : {}) },
+  });
+}
+
 function createFakeBridge() {
   const chunks: string[] = [];
   const bridge: MobileRemoteFileNativeBridge & {
@@ -18,32 +30,40 @@ function createFakeBridge() {
     abort: ReturnType<typeof vi.fn>;
     open: ReturnType<typeof vi.fn>;
   } = {
-    begin: vi.fn((_sessionId: string, _fileName: string, _mimeType: string) => "save-token"),
+    begin: vi.fn(
+      (_sessionId: string, _fileName: string, _mimeType: string) =>
+        success({ token: "save-token" }),
+    ),
     append: vi.fn((_sessionId: string, _token: string, chunk: string) => {
       chunks.push(chunk);
     }),
     finish: vi.fn((_sessionId: string, _token: string) =>
-      JSON.stringify({
-        uri: "content://media/external/downloads/42",
-        displayPath: "Download/report.pdf",
+      success({
+        file: {
+          uri: "content://media/external/downloads/42",
+          displayPath: "Download/report.pdf",
+        },
       }),
     ),
-    abort: vi.fn((_sessionId: string, _token: string) => {}),
-    open: vi.fn((_sessionId: string, _uri: string, _mimeType: string) => true),
+    abort: vi.fn((_sessionId: string, _token: string) => success()),
+    open: vi.fn((_sessionId: string, _uri: string, _mimeType: string) =>
+      success({ opened: true }),
+    ),
     saveFileBegin(sessionId, fileName, mimeType) {
       return bridge.begin(sessionId, fileName, mimeType) as string;
     },
     saveFileAppend(sessionId, token, chunk) {
       bridge.append(sessionId, token, chunk);
+      return success();
     },
     saveFileFinish(sessionId, token) {
       return bridge.finish(sessionId, token) as string;
     },
     saveFileAbort(sessionId, token) {
-      bridge.abort(sessionId, token);
+      return bridge.abort(sessionId, token) as string;
     },
     openFile(sessionId, uri, mimeType) {
-      return bridge.open(sessionId, uri, mimeType) as boolean;
+      return bridge.open(sessionId, uri, mimeType) as string;
     },
   };
   return { bridge, chunks };
@@ -216,13 +236,13 @@ describe("mobile remote file bridge (T6.3)", () => {
 
   it("每次原生文件调用都携带当前 sessionId", async () => {
     const native = {
-      saveFileBegin: vi.fn(() => "token"),
-      saveFileAppend: vi.fn(),
+      saveFileBegin: vi.fn(() => success({ token: "token" })),
+      saveFileAppend: vi.fn(() => success()),
       saveFileFinish: vi.fn(() =>
-        JSON.stringify({ uri: "content://file/1", displayPath: "Download/a.txt" }),
+        success({ file: { uri: "content://file/1", displayPath: "Download/a.txt" } }),
       ),
-      saveFileAbort: vi.fn(),
-      openFile: vi.fn(() => true),
+      saveFileAbort: vi.fn(() => success()),
+      openFile: vi.fn(() => success({ opened: true })),
     };
     const { bridge } = createFakeBridge();
     const capabilities = createMobileRemoteFileCapabilities(
@@ -231,13 +251,13 @@ describe("mobile remote file bridge (T6.3)", () => {
           return native.saveFileBegin(sessionId, fileName, mimeType);
         },
         saveFileAppend(sessionId, token, chunk) {
-          native.saveFileAppend(sessionId, token, chunk);
+          return native.saveFileAppend(sessionId, token, chunk);
         },
         saveFileFinish(sessionId, token) {
           return native.saveFileFinish(sessionId, token);
         },
         saveFileAbort(sessionId, token) {
-          native.saveFileAbort(sessionId, token);
+          return native.saveFileAbort(sessionId, token);
         },
         openFile(sessionId, uri, mimeType) {
           return native.openFile(sessionId, uri, mimeType);
@@ -273,9 +293,7 @@ describe("mobile remote file bridge (T6.3)", () => {
 
   it("原生 stale-session 直接返回失败，不重试、不写新配置", async () => {
     const native = {
-      saveFileBegin: vi.fn(() => {
-        throw new Error("stale-session");
-      }),
+      saveFileBegin: vi.fn(() => failure("stale-session")),
     };
     const capabilities = createMobileRemoteFileCapabilities(
       {

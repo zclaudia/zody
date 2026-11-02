@@ -5,6 +5,7 @@ import {
   type MobileNotificationPlatform,
   type MobileNotificationPushStatus,
 } from "@zcode/shared";
+import { parseMobileRemoteBridgeEnvelope } from "./mobileRemoteBridgeEnvelope.js";
 
 /**
  * Android `ZodyRemoteBridge` 的通知方法面。
@@ -12,29 +13,91 @@ import {
  * 除只读会话上下文外，所有会改变原生状态的通知调用都把当前 sessionId 作为第一个参数；
  * 原生按 MobileShellController 的当前代次校验，旧 session 的 pending 点击/按钮动作、
  * ack 和订阅变更一律拒绝。页面只透传，不缓存第二份 pending 状态。
+ *
+ * M2-T5 envelope：状态类方法返回 `{ status }` 或 `{ statusRaw }`，pending 类返回
+ * `{ click }` / `{ action }`（可为 null），其余状态变更返回空成功 envelope。
  */
 type NativeNotifications = {
   notificationSyncSubscription(sessionId: string, config: string): string;
-  notificationGetPendingClick(sessionId: string): string | null;
-  notificationAcknowledgeClick(sessionId: string, id: string): void;
-  notificationSetActiveTarget?(sessionId: string, targetKey: string | null): void;
+  notificationGetPendingClick(sessionId: string): string;
+  notificationAcknowledgeClick(sessionId: string, id: string): string;
+  notificationSetActiveTarget?(sessionId: string, targetKey: string | null): string;
   notificationGetStatus(sessionId: string): string;
-  notificationRequestPermission(sessionId: string): void;
-  notificationShow?(sessionId: string, payload: string): void;
+  notificationRequestPermission(sessionId: string): string;
+  notificationShow?(sessionId: string, payload: string): string;
   /** 第二批 E4：旧壳没有这三个方法；能力探测后按可选接入。 */
-  notificationGetPendingAction?(sessionId: string): string | null;
-  notificationAcknowledgeAction?(sessionId: string, id: string): void;
-  notificationCancel?(sessionId: string, id: string): void;
+  notificationGetPendingAction?(sessionId: string): string;
+  notificationAcknowledgeAction?(sessionId: string, id: string): string;
+  notificationCancel?(sessionId: string, id: string): string;
 };
-function parseStatus(raw: string): MobileNotificationPushStatus {
+
+const MOBILE_NOTIFICATION_PUSH_STATUSES = [
+  "ready",
+  "unavailable",
+  "permission-denied",
+  "error",
+  "disabled",
+] as const;
+
+function isPushStatus(value: unknown): value is MobileNotificationPushStatus["status"] {
+  return (
+    typeof value === "string" &&
+    (MOBILE_NOTIFICATION_PUSH_STATUSES as readonly string[]).includes(value)
+  );
+}
+
+/** 接受对象状态、JSON 字符串或裸状态字符串；未知值一律降级为 error。 */
+function coerceStatus(value: unknown): MobileNotificationPushStatus["status"] | undefined {
+  if (isPushStatus(value)) {
+    return value;
+  }
+  if (typeof value === "string") {
+    try {
+      return coerceStatus(JSON.parse(value));
+    } catch {
+      return undefined;
+    }
+  }
+  if (value && typeof value === "object") {
+    const status = (value as Record<string, unknown>).status;
+    return isPushStatus(status) ? status : undefined;
+  }
+  return undefined;
+}
+
+function parseStatus(raw: unknown): MobileNotificationPushStatus {
   try {
-    const result = JSON.parse(raw);
-    if (["ready", "unavailable", "permission-denied", "error", "disabled"].includes(result?.status))
-      return { status: result.status };
+    const envelope = parseMobileRemoteBridgeEnvelope(raw);
+    const status = coerceStatus(
+      envelope.status !== undefined ? envelope.status : envelope.statusRaw,
+    );
+    return status ? { status } : { status: "error" };
   } catch {
     /* Native failures must become explicit capability state. */
+    return { status: "error" };
   }
-  return { status: "error" };
+}
+
+function parsePendingClick(raw: unknown): MobileNotificationClick | null {
+  try {
+    const envelope = parseMobileRemoteBridgeEnvelope(raw);
+    return parseMobileNotificationClick(envelope.click);
+  } catch {
+    return null;
+  }
+}
+
+function parsePendingAction(raw: unknown): MobileNotificationActionClick | null {
+  try {
+    const envelope = parseMobileRemoteBridgeEnvelope(raw);
+    return parseMobileNotificationAction(envelope.action);
+  } catch {
+    return null;
+  }
+}
+
+function parseOperation(raw: unknown): void {
+  parseMobileRemoteBridgeEnvelope(raw);
 }
 export function parseMobileNotificationClick(value: unknown): MobileNotificationClick | null {
   if (!value || typeof value !== "object") return null;
@@ -90,53 +153,49 @@ export function createMobileNotificationPlatform(
     syncSubscription: async (config) =>
       parseStatus(await native.notificationSyncSubscription(sessionId, JSON.stringify(config))),
     setActiveTarget: async (key) => {
-      await native.notificationSetActiveTarget?.(sessionId, key);
-    },
-    getStatus: async () => parseStatus(await native.notificationGetStatus(sessionId)),
-    getPendingClick: async () => {
-      try {
-        return parseMobileNotificationClick(
-          JSON.parse((await native.notificationGetPendingClick(sessionId)) ?? "null"),
-        );
-      } catch {
-        return null;
+      if (native.notificationSetActiveTarget) {
+        parseOperation(await native.notificationSetActiveTarget(sessionId, key));
       }
     },
+    getStatus: async () => parseStatus(await native.notificationGetStatus(sessionId)),
+    getPendingClick: async () =>
+      parsePendingClick(await native.notificationGetPendingClick(sessionId)),
     acknowledgeClick: async (id) => {
-      await native.notificationAcknowledgeClick(sessionId, id);
+      parseOperation(await native.notificationAcknowledgeClick(sessionId, id));
     },
     // 第二批 E4：只有新壳提供；方法缺失时不暴露能力（快速路径在缺省时提示升级）。
     ...(typeof native.notificationGetPendingAction === "function" &&
     typeof native.notificationAcknowledgeAction === "function"
       ? {
-          getPendingAction: async (): Promise<MobileNotificationActionClick | null> => {
-            try {
-              return parseMobileNotificationAction(
-                JSON.parse(
-                  (await native.notificationGetPendingAction?.(sessionId)) ?? "null",
-                ),
-              );
-            } catch {
-              return null;
-            }
-          },
+          getPendingAction: async (): Promise<MobileNotificationActionClick | null> =>
+            parsePendingAction(
+              await native.notificationGetPendingAction?.(sessionId),
+            ),
           acknowledgeAction: async (id) => {
-            await native.notificationAcknowledgeAction?.(sessionId, id);
+            if (native.notificationAcknowledgeAction) {
+              parseOperation(
+                await native.notificationAcknowledgeAction(sessionId, id),
+              );
+            }
           },
         }
       : {}),
     ...(typeof native.notificationCancel === "function"
       ? {
           cancel: async (id) => {
-            await native.notificationCancel?.(sessionId, id);
+            if (native.notificationCancel) {
+              parseOperation(await native.notificationCancel(sessionId, id));
+            }
           },
         }
       : {}),
     requestPermission: async () => {
-      await native.notificationRequestPermission(sessionId);
+      parseOperation(await native.notificationRequestPermission(sessionId));
     },
     show: async (payload) => {
-      await native.notificationShow?.(sessionId, JSON.stringify(payload));
+      if (native.notificationShow) {
+        parseOperation(await native.notificationShow(sessionId, JSON.stringify(payload)));
+      }
     },
   };
 }

@@ -5,23 +5,33 @@ import {
   syncGatewayNotificationSubscription,
 } from "../src/mobile-remote/mobileRemoteNotifications.js";
 
+function success(extra: Record<string, unknown> = {}): string {
+  return JSON.stringify({ schemaVersion: 1, ok: true, ...extra });
+}
+
+function failure(code: string): string {
+  return JSON.stringify({ schemaVersion: 1, ok: false, error: { code } });
+}
+
 describe("native notification capability", () => {
   it("keeps ordinary web unsupported and validates cold click data", async () => {
     expect(
       createMobileNotificationPlatform({}, { sessionId: "session-1" }),
     ).toBeUndefined();
     const native = {
-      notificationGetPendingClick: vi.fn(
-        (_sessionId: string) => JSON.stringify({ backendId: "b", notificationId: "n" }),
+      notificationGetPendingClick: vi.fn((_sessionId: string) =>
+        success({ click: { backendId: "b", notificationId: "n" } }),
       ),
       notificationSyncSubscription: vi.fn(
-        (_sessionId: string, _config: string) => '{"status":"ready"}',
+        (_sessionId: string, _config: string) => success({ status: { status: "ready" } }),
       ),
-      notificationAcknowledgeClick: vi.fn(),
-      notificationGetStatus: vi.fn((_sessionId: string) => '{"status":"ready"}'),
-      notificationRequestPermission: vi.fn(),
-      notificationShow: vi.fn(),
-      notificationSetActiveTarget: vi.fn(),
+      notificationAcknowledgeClick: vi.fn(() => success()),
+      notificationGetStatus: vi.fn((_sessionId: string) =>
+        success({ status: { status: "ready" } }),
+      ),
+      notificationRequestPermission: vi.fn(() => success()),
+      notificationShow: vi.fn(() => success({ shown: true })),
+      notificationSetActiveTarget: vi.fn(() => success()),
     };
     const capability = createMobileNotificationPlatform(
       { ZodyRemoteBridge: native },
@@ -35,22 +45,22 @@ describe("native notification capability", () => {
       "target",
     );
     native.notificationGetPendingClick.mockReturnValue(
-      '{"backendId":"b","notificationId":""}',
+      success({ click: { backendId: "b", notificationId: "" } }),
     );
     expect(await capability.getPendingClick()).toBeNull();
   });
 
   it("所有原生通知调用都携带当前 sessionId", async () => {
     const native = {
-      notificationGetPendingClick: vi.fn(() => null),
-      notificationSyncSubscription: vi.fn(() => '{"status":"ready"}'),
-      notificationAcknowledgeClick: vi.fn(),
-      notificationGetStatus: vi.fn(() => '{"status":"ready"}'),
-      notificationRequestPermission: vi.fn(),
-      notificationShow: vi.fn(),
-      notificationGetPendingAction: vi.fn(() => null),
-      notificationAcknowledgeAction: vi.fn(),
-      notificationCancel: vi.fn(),
+      notificationGetPendingClick: vi.fn(() => success({ click: null })),
+      notificationSyncSubscription: vi.fn(() => success({ status: { status: "ready" } })),
+      notificationAcknowledgeClick: vi.fn(() => success()),
+      notificationGetStatus: vi.fn(() => success({ status: { status: "ready" } })),
+      notificationRequestPermission: vi.fn(() => success()),
+      notificationShow: vi.fn(() => success({ shown: true })),
+      notificationGetPendingAction: vi.fn(() => success({ action: null })),
+      notificationAcknowledgeAction: vi.fn(() => success()),
+      notificationCancel: vi.fn(() => success()),
     };
     const capability = createMobileNotificationPlatform(
       { ZodyRemoteBridge: native },
@@ -90,6 +100,36 @@ describe("native notification capability", () => {
     );
     expect(native.notificationCancel).toHaveBeenCalledWith("session-1", "n");
   });
+
+  it("supports statusRaw and degrades failure envelopes to an explicit error", async () => {
+    const native = {
+      notificationGetPendingClick: vi.fn(() => success({ click: null })),
+      notificationSyncSubscription: vi.fn(() => success({ statusRaw: '{"status":"disabled"}' })),
+      notificationAcknowledgeClick: vi.fn(() => failure("stale-session")),
+      notificationGetStatus: vi.fn(() => failure("stale-session")),
+      notificationRequestPermission: vi.fn(() => success()),
+      notificationSetActiveTarget: vi.fn(() => success()),
+    };
+    const capability = createMobileNotificationPlatform(
+      { ZodyRemoteBridge: native },
+      { sessionId: "session-1" },
+    )!;
+
+    await expect(
+      capability.syncSubscription({
+        enabled: false,
+        backendId: "b",
+        ntfyUrl: "https://gateway.example.invalid",
+        topic: "push-b",
+        authToken: "",
+      }),
+    ).resolves.toEqual({ status: "disabled" });
+    await expect(capability.getStatus()).resolves.toEqual({ status: "error" });
+    await expect(capability.acknowledgeClick("n")).rejects.toMatchObject({
+      code: "stale-session",
+    });
+  });
+
   it("syncs a scoped Gateway root alias without exporting ntfy credentials", async () => {
     const syncSubscription = vi.fn().mockResolvedValue({ status: "ready" });
     const fetcher = vi.fn().mockResolvedValue({

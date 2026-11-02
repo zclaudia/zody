@@ -133,12 +133,21 @@ describe.runIf(existsSync(resolve(REMOTE_DIST, "index.html")))(
       const document = new DOMParser().parseFromString(html, "text/html");
 
       expect(document.querySelectorAll("script:not([src])")).toHaveLength(0);
+      // Vite 的 Remote base 是 `/assets/remote/`；public 资源按 base 前缀重写，
+      // 但仍是同源静态文件，不能出现内联脚本或 unsafe-inline。
+      const themeScript = document.querySelector<HTMLScriptElement>(
+        'script[src$="/mobile-theme-bootstrap.js"]',
+      );
+      expect(themeScript).not.toBeNull();
+      const themeHref = themeScript!.getAttribute("src")!;
+      expect(themeHref.startsWith("/assets/remote/")).toBe(true);
       expect(
-        document.querySelector(`script[src="${THEME_BOOTSTRAP_SCRIPT}"]`),
-      ).not.toBeNull();
-      expect(existsSync(resolve(REMOTE_DIST, "mobile-theme-bootstrap.js"))).toBe(true);
+        existsSync(
+          resolve(REMOTE_DIST, themeHref.slice("/assets/remote/".length)),
+        ),
+      ).toBe(true);
 
-      const themeIndex = html.indexOf(`src="${THEME_BOOTSTRAP_SCRIPT}"`);
+      const themeIndex = html.indexOf(`src="${themeHref}"`);
       const moduleIndex = html.search(/<script type="module"[^>]*src="[^"]+"/u);
       expect(moduleIndex).toBeGreaterThan(themeIndex);
     });

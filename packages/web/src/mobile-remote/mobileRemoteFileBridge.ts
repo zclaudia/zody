@@ -4,6 +4,11 @@ import {
   type SaveFileRequest,
   type SaveFileResult,
 } from "@zcode/shared";
+import {
+  parseMobileRemoteBridgeEnvelope,
+  requireMobileRemoteBridgeObject,
+  requireMobileRemoteBridgeString,
+} from "./mobileRemoteBridgeEnvelope.js";
 
 /**
  * 手机页面的文件保存能力（T6.3）。
@@ -16,7 +21,10 @@ import {
  *
  * 1. 先把 `data` 或 `sourceUrl` 读成字节；
  * 2. 每 256 KiB 编码成 base64 调用一次 `saveFileAppend`，避免单次 JS ↔ 原生调用过大；
- * 3. `saveFileFinish` 返回 `{uri, displayPath}`，再调用 `openFile` 打开。
+ * 3. `saveFileBegin` 返回 `{ token }`，`saveFileFinish` 返回 `{ file: { uri, displayPath } }`，
+ *    再调用 `openFile`（返回 `{ opened }`）打开。
+ *
+ * 所有方法都返回 M2-T5 的 JSON envelope；页面只按 `error.code` 分支，损坏响应按失败处理。
  *
  * 附件选择不经过这里：WebView 的 `onShowFileChooser` 直接把系统选择器/拍照结果交给
  * `<input type="file">`，composer 继续走现有按字节上传的远端附件链路。`selectFiles` 的契约
@@ -31,10 +39,10 @@ export const MOBILE_REMOTE_SAVE_CHUNK_BYTES = 256 * 1024;
 
 export interface MobileRemoteFileNativeBridge {
   saveFileBegin(sessionId: string, fileName: string, mimeType: string): string;
-  saveFileAppend(sessionId: string, token: string, chunkBase64: string): void;
+  saveFileAppend(sessionId: string, token: string, chunkBase64: string): string;
   saveFileFinish(sessionId: string, token: string): string;
-  saveFileAbort(sessionId: string, token: string): void;
-  openFile?(sessionId: string, uri: string, mimeType: string): boolean;
+  saveFileAbort(sessionId: string, token: string): string;
+  openFile?(sessionId: string, uri: string, mimeType: string): string;
 }
 
 interface SavedNativeFile {
@@ -134,11 +142,12 @@ async function readSavePayload(
 }
 
 function parseSavedFile(value: string): SavedNativeFile {
-  const parsed = JSON.parse(value) as Partial<SavedNativeFile> | null;
-  if (!parsed || typeof parsed.uri !== "string" || typeof parsed.displayPath !== "string") {
+  const envelope = parseMobileRemoteBridgeEnvelope(value);
+  const file = requireMobileRemoteBridgeObject(envelope, "file");
+  if (typeof file.uri !== "string" || typeof file.displayPath !== "string") {
     throw new Error("The native file bridge returned an invalid save result.");
   }
-  return { uri: parsed.uri, displayPath: parsed.displayPath };
+  return { uri: file.uri, displayPath: file.displayPath };
 }
 
 /** 把一次 saveFile 请求分块写入原生下载目录，并在成功后尝试用系统应用打开。 */
@@ -150,26 +159,37 @@ export async function saveMobileRemoteFile(
   let token: string | undefined;
   try {
     const { bytes, mimeType } = await readSavePayload(payload);
-    token = bridge.saveFileBegin(sessionId, payload.suggestedName, mimeType);
+    token = requireMobileRemoteBridgeString(
+      parseMobileRemoteBridgeEnvelope(
+        bridge.saveFileBegin(sessionId, payload.suggestedName, mimeType),
+      ),
+      "token",
+    );
     for (let offset = 0; offset < bytes.length; offset += MOBILE_REMOTE_SAVE_CHUNK_BYTES) {
       const chunk = bytes.subarray(
         offset,
         Math.min(offset + MOBILE_REMOTE_SAVE_CHUNK_BYTES, bytes.length),
       );
-      bridge.saveFileAppend(sessionId, token, encodeBase64(chunk));
+      parseMobileRemoteBridgeEnvelope(
+        bridge.saveFileAppend(sessionId, token, encodeBase64(chunk)),
+      );
     }
     const saved = parseSavedFile(bridge.saveFileFinish(sessionId, token));
     token = undefined;
-    try {
-      bridge.openFile?.(sessionId, saved.uri, mimeType);
-    } catch {
-      // Bugfix: 保存已经成功，系统没有可打开该类型的应用时不能把保存结果改成失败。
+    if (bridge.openFile) {
+      try {
+        parseMobileRemoteBridgeEnvelope(
+          bridge.openFile(sessionId, saved.uri, mimeType),
+        );
+      } catch {
+        // Bugfix: 保存已经成功，系统没有可打开该类型的应用时不能把保存结果改成失败。
+      }
     }
     return { success: true, path: saved.displayPath };
   } catch (error) {
     if (token) {
       try {
-        bridge.saveFileAbort(sessionId, token);
+        parseMobileRemoteBridgeEnvelope(bridge.saveFileAbort(sessionId, token));
       } catch {
         // 原生会话可能已经结束；保留原始错误。
       }

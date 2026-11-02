@@ -66,4 +66,17 @@ describe("Remote 只读 session context（M2-T2）", () => {
     expect(source).toContain("installMobileRemoteNativeHost({");
     expect(source).toContain("sessionId: session.context.sessionId");
   });
+
+  it("业务 Channel ready 后先 markRemoteReady，再消费通知 intent", () => {
+    const bootstrapStart = source.indexOf("bootstrapPairedSession = async");
+    expect(bootstrapStart).toBeGreaterThan(0);
+    const bootstrapBody = source.slice(bootstrapStart);
+    const readyIndex = bootstrapBody.indexOf("signalRemoteReady();");
+    const consumeIndex = bootstrapBody.indexOf("void consumeNativeNotification();");
+    expect(readyIndex).toBeGreaterThan(0);
+    expect(consumeIndex).toBeGreaterThan(readyIndex);
+    expect(source).toContain("markRemoteReady");
+    expect(source).toContain("markReady.call(bridge, gatewayConfig.sessionId)");
+    expect(source).toContain("parseMobileRemoteBridgeEnvelope(");
+  });
 });

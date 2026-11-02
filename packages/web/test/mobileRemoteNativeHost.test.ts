@@ -148,6 +148,33 @@ describe("mobile remote native host (T6.2 / M2-T2)", () => {
   });
 });
 
+describe("mobile remote native host M2-T5 dispatch shape", () => {
+  it("accepts single-payload events from MobileBridgeEventDispatcher", () => {
+    const target = createTarget();
+    const binding = install(target)!;
+    const lifecycle = vi.fn();
+    const click = vi.fn();
+    binding.onAppLifecycleChange(lifecycle);
+    binding.onNotificationClick(click);
+
+    const host = installedHost(target) as unknown as {
+      onAppLifecycle(state: unknown): void;
+      onNotificationClick(value: unknown): void;
+      onBackPressed(): boolean;
+    };
+    host.onAppLifecycle("foreground");
+    host.onNotificationClick({ backendId: "b", notificationId: "n" });
+
+    expect(lifecycle).toHaveBeenCalledExactlyOnceWith("foreground");
+    expect(click).toHaveBeenCalledExactlyOnceWith({
+      backendId: "b",
+      notificationId: "n",
+    });
+    expect(host.onBackPressed()).toBe(false);
+    expect(target[MOBILE_REMOTE_NATIVE_HOST_GLOBAL_KEY]).toBeDefined();
+  });
+});
+
 describe("mobile remote native host notification action (E4)", () => {
   it("forwards validated action clicks and drops malformed payloads", () => {
     const target = createTarget();
