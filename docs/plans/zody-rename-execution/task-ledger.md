@@ -1,6 +1,6 @@
 # Zody rename execution ledger
 
-Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest committed product candidate: `0ed4aa34ffd611c3ec05a90a51759c25bb7a304f`. Type batch04 at677771fe is under independent review; root-only install at7c passed clean host installation/build checks but requires the container corrections now being verified. Manual data paths and directory corrections through3cb have scoped PASS. Full rename and release gates remain incomplete.
+Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest committed product candidate: `0ed4aa34ffd611c3ec05a90a51759c25bb7a304f`. Type batch04 at677771fe received scoped DeepSeek PASS; root-only install at7c passed clean host installation/build checks but requires the container corrections now being verified. Manual data paths and directory corrections through3cb have scoped PASS. Full rename and release gates remain incomplete.
 
 - Source base: `033f91783901e6adaf968d3d4b8ca34c41d89442`.
 - Frozen plan commit: `06ad2270f121c46a0f5c069ae3da18641c6a9858`.
@@ -18,7 +18,7 @@ Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan usi
 | R01  | integrated | /root/terra_r01                   | Accepted contracts at 40cae940; later source/doc refinements preserve those contracts |
 | R02  | review     | controller / prior Terra evidence | Source preservation and isolated restore gate passed; old runtime smoke recorded. Standalone old server-cli defect and full mixed-mode runtime evidence remain unresolved for R48 |
 | R10  | verified   | /root/terra_r10                   | DeepSeek review-2 PASS at 0e403023; P1 scope only, not release validation                                        |
-| R20  | running    | /root/terra_r10 + /root/terra_r01 | R20.2/3, symbols through d49, and all198 registered basenames through f28 scoped PASS. Manual data paths at83680ddc under review; full type/binding and residual closure incomplete |
+| R20  | running    | /root/terra_r10 + /root/terra_r01 | R20.2/3, all198 registered basenames, manual data paths/directory corrections and type batch04 at677 scoped PASS; runtime bindings, other types and text residuals incomplete |
 | R21  | running    | /root/terra_r21_links             | User selected root-only installation; Terra implementing root Turbo, CLI task scopes, install docs and container consumers. Earlier root frozen/link evidence does not validate this new candidate   |
 | R22  | planned    | unassigned                        | not run                                                                                                          |
 | R30  | planned    | unassigned                        | not run                                                                                                          |
@@ -232,3 +232,10 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 - Type batch04 frozen as `677771fef8ea7b14498668d7b52057bdf7c1bef4`; reviewer A independently audits fixed3cb→677. Container correction is a separate three-file candidate: pin compact Node24.14.0 and supply native build tools; assign browser workdir ownership to node. Root lock and filtered CLI task scope unchanged. Actual container verification will use a new complete frozen tree, not mutable source or the earlier failed7c candidate.
 
 - Root-owner DeepSeek review1 requested Docker corrections, while confirming installation ownership/lock/task scope. Raw report stored in R21-root-workspace-deepseek-review-1.md. Three-file correction at0ed4 retains hoisted layout and supplies supported native build prerequisites; no claim that filtered workspace selection excludes all unrelated third-party lifecycle scripts. Historical path maps are now explicitly distinguished from removed current paths; active R21 write sets cannot recreate the nested workspace/lock.
+
+- DeepSeek A returned scoped PASS for fixed3cb→677 type batch04, verifying all695 product hashes and3873 input hashes. Nonblocking baseline/retry/intermediate-log limitations retained; architecture-retest provenance is explicitly annotated. Remaining runtime/type inventory and R21 source-input updates are separate work, not part of this acceptance.
+
+## R21 minimal graph and copied-source inputs
+
+- Exactly2 graph symbols and3 copied-component roots updated; controller reconstructs byte-exact expected result and verifies copied files retain original hashes. Graph test4/4 pass; root types/lint and changed architecture pass for this limited input diff. Existing full graph missing seeds and two full architecture violations remain; no semantic deletion/restoration of retired functionality.
+- Notices/inventory regeneration not yet executed. Docker0ed compact install/23 CLI build tasks passed but image export has not returned; no image success or browser run claimed. Avoid extra heavy installation while export and host disk pressure persist.

@@ -2328,7 +2328,7 @@ nodes:
     kind: "service"
     label: "ZCode task list service"
     codeSeeds:
-      - symbol: "IZCodeTaskService"
+      - symbol: "IZodyTaskService"
         file: "packages/services/src/session/zodyTaskService.ts"
 
   - id: "service.workspace-file-binary-preview"
@@ -4715,7 +4715,7 @@ nodes:
     codeSeeds:
       - symbol: "WorkspaceHookPolicyProvider"
         file: "apps/zody-cli/packages/core/src/hooks/workspace-hook-policy.ts"
-      - symbol: "ZCodeProtocolAgentDependencies"
+      - symbol: "ZodyProtocolAgentDependencies"
         file: "apps/zody-cli/packages/bootstrap/src/zody-protocol/server-types.ts"
 
   - id: "persistence.workspace-hook-trust-store"

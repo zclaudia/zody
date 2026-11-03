@@ -553,7 +553,7 @@
       "id": "R20.4-symbols-04",
       "base": "3cb3a0050fb47771305fe084852fc6aed994eb92",
       "candidate": "677771fef8ea7b14498668d7b52057bdf7c1bef4",
-      "status": "controller-verified-with-baseline-failures-pending-review",
+      "status": "scoped-review-PASS-with-recorded-baseline-failures",
       "records": [
         {
           "file": "apps/zody-cli/packages/bootstrap/src/zody-protocol/server-operations.ts",
@@ -5398,7 +5398,8 @@
         "packages/services/test/claudeNativeSessionImportFlow.test.ts"
       ],
       "controllerReport": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-04-controller-verification.md",
-      "implementationReport": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-04-implementation.md"
+      "implementationReport": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-04-implementation.md",
+      "review": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-04-deepseek-review.md"
     }
   ]
 }

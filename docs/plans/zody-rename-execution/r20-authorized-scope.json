@@ -20188,5 +20188,19 @@
       "retiredAt": "7c4ff9113680a38e273032b09bee32ee6ba399af"
     }
   ],
-  "retiredPathsPolicy": "Earlier moveMap/contentMap/substep3 entries are historical migration evidence, not permission to recreate retired paths. The old lock remains protected against writes/recreation; current installation uses root pnpm-lock.yaml, pnpm-workspace.yaml and turbo.json only."
+  "retiredPathsPolicy": "Earlier moveMap/contentMap/substep3 entries are historical migration evidence, not permission to recreate retired paths. The old lock remains protected against writes/recreation; current installation uses root pnpm-lock.yaml, pnpm-workspace.yaml and turbo.json only.",
+  "batch04ReviewFollowups": [
+    {
+      "file": "packages/services/src/zody-agent/zodyTaskServiceAdapter.ts",
+      "oldText": "IZCodeTaskService",
+      "kind": "runtime error text",
+      "owner": "R20.5",
+      "status": "pending-current-text-cleanup"
+    },
+    {
+      "kind": "current comments referring to renamed internal types",
+      "owner": "R20.5",
+      "status": "pending-not-a-permanent-exception"
+    }
+  ]
 }
