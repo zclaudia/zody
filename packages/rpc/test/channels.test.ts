@@ -6,8 +6,10 @@ import {
   getDelayedChannel,
 } from "../src/channels.js";
 import { createQueuePair, SocketProtocol, type ISocket } from "../src/protocol.js";
+import type { IMessagePassingProtocol } from "../src/protocol.js";
 import { Emitter, Event, DisposableStore } from "../src/foundation.js";
 import { VSBuffer } from "../src/buffer.js";
+import { BufferReader, BufferWriter, serialize, deserialize } from "../src/serialization.js";
 
 function createPair(ctx = "test-ctx") {
   const [serverProtocol, clientProtocol] = createQueuePair();
@@ -426,5 +428,103 @@ describe("getDelayedChannel", () => {
 
     const result = await resultPromise;
     expect(result).toBe("delayed-result");
+  });
+});
+
+// ============================================================================
+// 事件订阅错误回传（ResponseType.EventError = 205，上游 a60ba6a7）
+// ============================================================================
+//
+// 反例用 wire 级数字帧构造（200/204/205/102），在枚举引入前后都能编译运行：
+// 修复前 205 帧在 onBuffer 的 switch 中无分支，被静默丢弃，订阅泄漏且错误不可达。
+
+describe("event subscription error delivery (ResponseType.EventError)", () => {
+  const WIRE_INITIALIZE = 200;
+  const WIRE_EVENT_FIRE = 204;
+  const WIRE_EVENT_ERROR = 205;
+  const WIRE_REQUEST_EVENT_LISTEN = 102;
+
+  function createManualPeerClient() {
+    const peerMessages = new Emitter<VSBuffer>();
+    const sentFrames: VSBuffer[] = [];
+    const protocol: IMessagePassingProtocol = {
+      onMessage: peerMessages.event,
+      send(buffer: VSBuffer) {
+        sentFrames.push(buffer);
+      },
+    };
+    const client = new ChannelClient(protocol);
+
+    const sendResponse = (header: unknown[], body?: unknown) => {
+      const writer = new BufferWriter();
+      serialize(writer, header);
+      serialize(writer, body);
+      peerMessages.fire(writer.buffer);
+    };
+    const parseSentHeader = (frame: VSBuffer) => deserialize(new BufferReader(frame)) as unknown[];
+
+    return { client, sentFrames, sendResponse, parseSentHeader };
+  }
+
+  it("terminates the subscription and surfaces the error when an EventError frame arrives", async () => {
+    const { client, sentFrames, sendResponse, parseSentHeader } = createManualPeerClient();
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const listener = vi.fn();
+    const subscription = client.getChannel("events").listen<string>("onData")(listener);
+    sendResponse([WIRE_INITIALIZE], undefined);
+    await vi.waitFor(() => expect(sentFrames.length).toBe(1));
+
+    const requestHeader = parseSentHeader(sentFrames[0]);
+    expect(requestHeader[0]).toBe(WIRE_REQUEST_EVENT_LISTEN);
+    const subscriptionId = requestHeader[1] as number;
+
+    // 对端回传订阅失败帧
+    sendResponse([WIRE_EVENT_ERROR, subscriptionId], {
+      name: "TerminalClosedError",
+      message: "terminal already closed",
+      stack: ["at channelServer:1"],
+    });
+
+    // 错误必须可达：以独立错误日志呈现，而不是被静默丢弃
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(String(errorSpy.mock.calls[0][0])).toContain("RPC event subscription failed");
+
+    // 订阅必须终止：同一 id 的后续 EventFire 不再投递给监听器
+    sendResponse([WIRE_EVENT_FIRE, subscriptionId], "late-event");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(listener).not.toHaveBeenCalled();
+
+    errorSpy.mockRestore();
+    subscription.dispose();
+    client.dispose();
+  });
+
+  it("keeps later subscriptions on the same channel working after an EventError", async () => {
+    const { client, sentFrames, sendResponse, parseSentHeader } = createManualPeerClient();
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const firstListener = vi.fn();
+    const firstSubscription = client.getChannel("events").listen<string>("onData")(firstListener);
+    sendResponse([WIRE_INITIALIZE], undefined);
+    await vi.waitFor(() => expect(sentFrames.length).toBe(1));
+    const firstId = parseSentHeader(sentFrames[0])[1] as number;
+
+    sendResponse([WIRE_EVENT_ERROR, firstId], { name: "Error", message: "rejected" });
+
+    const secondListener = vi.fn();
+    const secondSubscription = client.getChannel("events").listen<string>("onData")(secondListener);
+    await vi.waitFor(() => expect(sentFrames.length).toBe(2));
+    const secondId = parseSentHeader(sentFrames[1])[1] as number;
+    expect(secondId).not.toBe(firstId);
+
+    sendResponse([WIRE_EVENT_FIRE, secondId], "still-ok");
+    await vi.waitFor(() => expect(secondListener).toHaveBeenCalledWith("still-ok"));
+    expect(firstListener).not.toHaveBeenCalled();
+
+    errorSpy.mockRestore();
+    secondSubscription.dispose();
+    firstSubscription.dispose();
+    client.dispose();
   });
 });

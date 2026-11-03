@@ -169,7 +169,19 @@ export class ChannelClient implements IChannelClient, IDisposable {
     });
 
     this.handlers.set(id, (response) => {
-      emitter.fire((response as { data: any }).data);
+      if (response.type === ResponseType.EventFire) {
+        emitter.fire(response.data);
+      } else if (response.type === ResponseType.EventError) {
+        // 订阅失败必须结束其监听器，不能把错误对象写入终端等正常事件流，也不能继续保留旧请求
+        // （上游 ZCode v3.17.1 a60ba6a7 channelClient.ts：EventError 独立失败帧，枚举 205）。
+        this.handlers.delete(id);
+        this.activeRequests.delete(emitter);
+        emitter.dispose();
+        const error = new Error(response.data.message);
+        error.name = response.data.name;
+        if (response.data.stack) error.stack = response.data.stack.join("\n");
+        console.error(`RPC event subscription failed: ${channelName}.${name}`, error);
+      }
     });
 
     return emitter.event;
@@ -219,6 +231,7 @@ export class ChannelClient implements IChannelClient, IDisposable {
       case ResponseType.PromiseSuccess:
       case ResponseType.PromiseError:
       case ResponseType.EventFire:
+      case ResponseType.EventError:
       case ResponseType.PromiseErrorObj:
         this.onResponse({
           type,

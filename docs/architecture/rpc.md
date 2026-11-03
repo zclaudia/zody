@@ -131,6 +131,12 @@ cts.dispose(); // 释放资源
 
 支持的类型：Undefined、String (UTF-8)、Buffer、VSBuffer、Array (递归)、Object (JSON fallback)、Int (VQL 编码)。
 
+Object JSON fallback 中的嵌套二进制字段（包括 Node Buffer 这类会被 `toJSON` 展开的 `Uint8Array` 子类）由
+replacer 按 holder 原值（`this[key]`）识别，统一编码为 base64 标记对象
+`{"__zcode_rpc_nested_uint8array_v1":true,"base64":"…"}`，反序列化时恢复为 `Uint8Array`（内容逐字节一致）。
+顶层 `Uint8Array` / `VSBuffer` 仍走原生二进制标签，wire 形态不变。若按 `toJSON` 展开形态（`{"type":"Buffer","data":[…]}`）
+编码，归档体积约 3.6 倍且接收端拿不到二进制，技能 / 插件归档传输会因此在解压阶段失败。
+
 VQL (Variable-Length Quantity) 编码：小整数只需 1 字节（vs JSON 的 4 字节），非常节省空间。
 
 ```typescript
@@ -242,6 +248,7 @@ calc.listen<string>("onDidLog")((msg) => console.log(msg)); // 订阅事件
   PromiseError(202)    调用失败 (Error)
   PromiseErrorObj(203) 调用失败 (非 Error)
   EventFire(204)       事件触发
+  EventError(205)      事件订阅失败（客户端终止该订阅并记录错误，错误对象不进入正常事件流）
 ```
 
 ---

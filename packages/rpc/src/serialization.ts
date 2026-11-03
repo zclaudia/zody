@@ -217,11 +217,17 @@ export function deserialize(reader: IReader): any {
   }
 }
 
-function encodeRpcJsonValue(_key: string, value: unknown): unknown {
-  if (value instanceof Uint8Array) {
+function encodeRpcJsonValue(this: unknown, key: string, value: unknown): unknown {
+  // Bug 根因（上游 ZCode v3.17.1 a60ba6a7 packages/rpc/src/serialization.ts）：JSON.stringify 先调用
+  // toJSON 再调用 replacer。Node Buffer（Uint8Array 子类，技能 / 插件归档都是 gzip 产出的 Buffer）
+  // 到这里已被展开成 {type:"Buffer",data:[...]}，旧逻辑按普通对象编码：体积约 3.6 倍，每一跳解码
+  // 上百万个数字的数组，大插件还会超出远端 WebSocket 单条消息上限；接收端拿到的是普通对象，
+  // 归档大小检查读不到 byteLength。修法：按 holder 上的原值判断是否为二进制。
+  const original = (this as Record<string, unknown>)[key];
+  if (original instanceof Uint8Array) {
     return {
       [RPC_NESTED_UINT8_ARRAY_MARKER]: true,
-      [RPC_NESTED_UINT8_ARRAY_BASE64_KEY]: bytesToBase64(value),
+      [RPC_NESTED_UINT8_ARRAY_BASE64_KEY]: bytesToBase64(original),
     };
   }
   return value;
