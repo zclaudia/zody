@@ -18640,7 +18640,7 @@
     {
       "id": "R20.5-current-text-review-correction-02",
       "base": "8dfd3615410d763631b5646056ed83fc02aca2bf",
-      "status": "controller-verified-pending-freeze-and-independent-review",
+      "status": "DeepSeek scoped PASS; original70366 review1 superseded only by this correction",
       "sourceFiles": [
         "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/commands/types.ts",
         "apps/zody-cli/packages/bootstrap/src/zody-protocol/interaction-broker.ts",
@@ -18728,7 +18728,10 @@
         "reports/R20-additional-current-comments.md"
       ],
       "controllerReport": "reports/R20-current-text-correction-controller-verification.md",
-      "review1": "reports/R20-current-text-deepseek-review-1.md"
+      "review1": "reports/R20-current-text-deepseek-review-1.md",
+      "candidate": "4fac2fb0f23628578347479232dfdb458d74885f",
+      "review": "reports/R20-current-text-deepseek-review-2.md",
+      "review1Role": "original70366 findings that triggered correction; not the corrected candidate verdict"
     }
   ]
 }

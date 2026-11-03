@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "inputHashEncoding": "UTF-8 with CRLF normalized to LF; notice and source snapshot hashes remain byte-exact",
   "scope": "Production dependency union across current workspace projects, copied source/assets and native tools; not a per-installer SBOM or a certification of all licensing obligations.",
-  "noticesSha256": "188e3fa1943d8db9aba911e9e7d706391fa0ca1a4ae86e4ec98e247e5abf29e7",
+  "noticesSha256": "4843ca45ba256b8de9170e47949138af930d7e9b6829acef073387d2f67508d3",
   "inputs": {
     ".agents/skills/agent-browser/references/authentication.md": "e2c3b0f4a1dc1368dee821f03c000d818a48421d09f3872525dddffe73f2112b",
     ".agents/skills/agent-browser/references/commands.md": "17522fc56d742663f47231ff06c4811abc87e12c7f78e11f94d253ddd540a909",
@@ -224,40 +224,40 @@
     ".agents/skills/react-best-practices/rules/server-parallel-nested-fetching.md": "ad5d9656984d4a959997a2367bf59cc6632297b4634a1dd13a087939d83f30b3",
     ".agents/skills/react-best-practices/rules/server-serialization.md": "f4c7d68b29c82381baad059c4a7f09e868e71ec9c3115a26ad3ae7d24c0dfe1f",
     ".agents/skills/react-best-practices/SKILL.md": "71ed7794962fa6e803ee83030517b5b93a9f70fbfeb431ec4535c5480a8d8355",
-    "apps/dev-docs/package.json": "3830c01890b83081debf6596aceb19734924f43b4dee2111c5ea85584f3e944b",
-    "apps/zcode-cli/package.json": "243f392c7f0fcdd4c0f8027fc3f5039f4de439a01b9bef9724cbdd05aefee931",
-    "apps/zcode-cli/packages/adapters/package.json": "12316ccf002e19a4fbc6536007b2e89ded5704a8f757baeec4dc83d47c0ea345",
-    "apps/zcode-cli/packages/android-emulator-plugin/package.json": "96ecaa9ce091e13f7e508b0aed8ab116360b40ba21dc1be78c906b2eebbf5571",
-    "apps/zcode-cli/packages/bootstrap/package.json": "554ddd3fc3a017e1bde9af23477d7cff16d4e86b63f3faeda19ce3af7f1edee8",
-    "apps/zcode-cli/packages/browser-use-plugin/package.json": "1679341b2b999e5872c342dfbfb24deca30d3abbb8d3deb0480b7cabf78c8a32",
-    "apps/zcode-cli/packages/cli/package.json": "b3d42cc239e15aef7b6369d0c8355d11aa873484502075b88adeca3c82751e95",
-    "apps/zcode-cli/packages/contracts/package.json": "d71e04825072c7407dcc3e1fcca3d8b9221cfac411ea58a024998a57cb579029",
-    "apps/zcode-cli/packages/core/package.json": "e70205607c75f7fb51cd1815ff3d411d7ea63bef6a0148f3a698229c30189d32",
-    "apps/zcode-cli/packages/core/src/tool/handlers/generated/bash-command-registry.ts": "60fa5acd9f5c357f4e51b1d1e944ee39da92680e4bc5e98dd708f1457fcf612b",
-    "apps/zcode-cli/packages/debug/package.json": "0cf03ea1dd384546319e8f301e99c2b668c7c15271f5d38d5a3b0526c24a3279",
-    "apps/zcode-cli/packages/documents-plugin/package.json": "b5711c53e567e122754b2075238dd1d9d5685ecdb5d129c0166ea5d259d8116c",
-    "apps/zcode-cli/packages/dynamic-workflow-runtime/package.json": "85ad8af5c225933881616f650e6fb436334dbc40a949a62e79f115b9e4ac7b32",
-    "apps/zcode-cli/packages/dynamic-workflow/package.json": "9edb746ae170418d81c4431dc16533e814bf3a97e4693a2a94f06b4516151a95",
-    "apps/zcode-cli/packages/i18n/package.json": "cd51fc9cda66d726ab54f9821ff748bc150bf4bd84143bb7c8aa9b712a7e6c61",
-    "apps/zcode-cli/packages/ios-simulator-plugin/package.json": "fc38d3f6d88598f2c84aced1dfbbef0682addc54e477500dbe323e829c74217a",
-    "apps/zcode-cli/packages/node-repl-host/package.json": "3b8fafd78a122a59eb7941e7ef44f62fbacdc75b344aa5859f814c250f9de4d8",
-    "apps/zcode-cli/packages/pdf-plugin/package.json": "0d5ba6459bfbae2d482f424e1c6fa639e303c666396392dc64b6e4e69db7c2fc",
-    "apps/zcode-cli/packages/plugin-creator-plugin/package.json": "fee2928cb759004485dbf5dc2f2b29117476a5eff455cf0b1fce03b0c7c984b5",
-    "apps/zcode-cli/packages/presentations-plugin/package.json": "3581ca29512226b308ac970a0c2dbfe6b5119b12fa6e9c65ecd706924a2e782b",
-    "apps/zcode-cli/packages/restore-legacy-sessions-plugin/package.json": "ee180a70bc31e945dfa798fd2592a3150cd2e55d546d44be361a90a24cb33fd3",
-    "apps/zcode-cli/packages/shared-types/package.json": "6616fb50cf5b4b854273d09411f38857c17df5d4b4abebdfe5d9601e7341e451",
-    "apps/zcode-cli/packages/skill-creator-plugin/package.json": "8067c02221b2ca7becc2b6bf3ec23f43d853dda0c5da47da3c14007c8607465b",
-    "apps/zcode-cli/packages/spreadsheets-plugin/package.json": "1378c412419c34c78d4f817a555e21f15abab0ea1e0781947f9e9ca06646b530",
-    "apps/zcode-cli/packages/superpowers-plugin/LICENSE": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
-    "apps/zcode-cli/packages/superpowers-plugin/package.json": "1f112c9c2a5ef09ac860575232f352333873faae9948e198201d5bb6aa3e59c8",
-    "apps/zcode-cli/packages/swift-bridge/package.json": "958674fcd44c789564ee672b0e6c687f1f900f4286174280700ddfb442d23906",
-    "apps/zcode-cli/packages/telemetry/package.json": "2c7efa1d5b42700400b971fff61314c7277f5e05b5f96f48b7d50c9ccf11772e",
-    "apps/zcode-cli/packages/tui/package.json": "80c93218c1c24e7682237a34e15b6220ab64da1e05b5ee853709863f31baf9a2",
-    "apps/zcode-cli/packages/visualize-plugin/package.json": "dd24b9b8a01eab2c3a58be2ab5dd39b0c85450fbfa63c4888c29b26f6a2eb006",
-    "apps/zcode-cli/packages/zcode-cua-plugin/package.json": "0e97cde4857029d01f071a63179785da175f15e5adaa764dca02b145f47920ea",
-    "apps/zcode-cli/packages/zcode-guide-plugin/package.json": "7e56582a0aeec3ffeff374c8b486ee818a0c206175e5a8e6195610d1fd7dbc1d",
-    "apps/zcode-cli/tools/prompt-trajectory/package.json": "a8374fef7b1f1814d91dfe5ef5f3d369de8d12f73601dbed6e026f2b12bcca0d",
-    "apps/zcode-cli/tools/typescript/package.json": "23d7e50d2089d205ce3022c5bafbb6b3e31d000e41ac678a5934e0b72627cf3a",
+    "apps/dev-docs/package.json": "0fdb244bb5e26285f5c58d2d19d24aaa6509e1fd8236e9dcb81ed1d7f1c9db3d",
+    "apps/zody-cli/package.json": "5d888eefceec4aca26c7746914d3bded8e8e7fa3684294f89d27198bba620035",
+    "apps/zody-cli/packages/adapters/package.json": "0a5b76da7ef1a6a432011e78641ca41aca35637c972da427871705812e81e2be",
+    "apps/zody-cli/packages/android-emulator-plugin/package.json": "00f29fd67ebdffd073d93fd65747768663ff580592bb122ba2c17440f8a591eb",
+    "apps/zody-cli/packages/bootstrap/package.json": "fc214a4e1be76442abdbbdcfcb4bab04a30cb5b4e0457472cbe7b21b5bea7df0",
+    "apps/zody-cli/packages/browser-use-plugin/package.json": "50dfedac5b3cd18e110f168a38719047f47c883a94345c9efefa48e64ddfa398",
+    "apps/zody-cli/packages/cli/package.json": "4d8c6a0612f40f62610d5e5d8066bf985851038d5b6d60ccc0273b705f5ab187",
+    "apps/zody-cli/packages/contracts/package.json": "87fdc8f7b617103a333d73c9283af3131a501cbdc418302c0b494f753902a237",
+    "apps/zody-cli/packages/core/package.json": "6354ce97f87e322f5599b91754acffe5f8811084ca0f08d23c0e8f925b27f858",
+    "apps/zody-cli/packages/core/src/tool/handlers/generated/bash-command-registry.ts": "60fa5acd9f5c357f4e51b1d1e944ee39da92680e4bc5e98dd708f1457fcf612b",
+    "apps/zody-cli/packages/debug/package.json": "a885c099e0a725a18d52663bf8d0d241e299a523d78e3f15ba4dfef35e374dbb",
+    "apps/zody-cli/packages/documents-plugin/package.json": "b317a3fa905c3c8d82c1f151aca48041aa2588c6d0886ff7fc9357d8974ee4b4",
+    "apps/zody-cli/packages/dynamic-workflow-runtime/package.json": "1316d823968d64c98a6b4e4601b7e95b24f5066695102ce4d0ffbee1d3b98025",
+    "apps/zody-cli/packages/dynamic-workflow/package.json": "1ed1de1fdfe7d55f0572d3abb66f30220b4183a79b7243097d6f5cd4344590aa",
+    "apps/zody-cli/packages/i18n/package.json": "dad6bc9e0458fe845cac4ab46817265a4be7109cfd7a20331295b4739fc4553f",
+    "apps/zody-cli/packages/ios-simulator-plugin/package.json": "55de47dffc0c24fb3677299e83823e011191abfbd72ca7e2505e1e4ab841a3a4",
+    "apps/zody-cli/packages/node-repl-host/package.json": "20f22cfc2ea1293e9a508311b759327f1f9b95202ddd4463cc0a9ab04a271790",
+    "apps/zody-cli/packages/pdf-plugin/package.json": "07a6e78d940c32324de3c9d246f17a759bd694bf361bfcdc1203f0fdc7e4a8af",
+    "apps/zody-cli/packages/plugin-creator-plugin/package.json": "658e73fb8039408c6c73288e324d852e7a36706b98a26336e900f7a9dec75338",
+    "apps/zody-cli/packages/presentations-plugin/package.json": "8232092739bba9ad1b13fdbdb8f6b02e8b33d16d81cce9507c4b1f8b228b5c6b",
+    "apps/zody-cli/packages/restore-legacy-sessions-plugin/package.json": "e6285fc8b6130338ef3c9af277fdb382233d73ce541961026ac187a525c3ea08",
+    "apps/zody-cli/packages/shared-types/package.json": "07fa77e32b254193a476973b6bb2fa5bef52c0e3bfd6d812cb1d15721b53846a",
+    "apps/zody-cli/packages/skill-creator-plugin/package.json": "cbd2cb5c4158aebe93f8208c3adc0aad621444e8cb6bd78bf2b0f96671043118",
+    "apps/zody-cli/packages/spreadsheets-plugin/package.json": "662a71f3234a643c95f47057456632e6eef1287d19e677d2fe7b84a852f6af6b",
+    "apps/zody-cli/packages/superpowers-plugin/LICENSE": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
+    "apps/zody-cli/packages/superpowers-plugin/package.json": "0426c5cc3d33f83a5157f8a1dfc90c76cad76df336c6aae7e7f53bbc2412a74e",
+    "apps/zody-cli/packages/swift-bridge/package.json": "6d4c524dc1dfcdb10051e452783e26b2d8e40cf8be26c022e5c4afdf5167767e",
+    "apps/zody-cli/packages/telemetry/package.json": "686c2003c3e9edf658e01e8cdfda028f5eef11162a4ee02e443f8643230b9076",
+    "apps/zody-cli/packages/tui/package.json": "31d3ce560d80073c329bb30b22ec9f48b8c4634bba1e014272a9322bc4ab31b4",
+    "apps/zody-cli/packages/visualize-plugin/package.json": "1f9c7ce5752a0610a7a47ec1cf21eb60eaf34bc03159812feedec39847b702db",
+    "apps/zody-cli/packages/zody-cua-plugin/package.json": "41edd9bc9d95dd272be7fec7211c45a644bf0cb013421c6f0a00269a3805fcd3",
+    "apps/zody-cli/packages/zody-guide-plugin/package.json": "b7c919f47165044b7ac78be5e9b9672da06d9503838143c776528cc9e4601ec2",
+    "apps/zody-cli/tools/prompt-trajectory/package.json": "0fd9863d017d84fa86e742f93cc0102ad52c958d78c82852ab6cbd4d10486fa9",
+    "apps/zody-cli/tools/typescript/package.json": "c64c3855bec6a07ed3c4704e0c33330cc3267c83b806f85c573a9d32bb996873",
     "docs/knip/docs/.gitignore": "ceb40af0a4929eda8eb4d8e9562783000df06dd09ef7a4de9f170b7c1b79aaac",
     "docs/knip/docs/astro.config.ts": "e28f72a471b759d9caa185f9b0e0f65ed50bf2314a4513a8513ce6fa0bfb42fb",
     "docs/knip/docs/LICENSE": "ef3e637bb6cc9fa34bacda2f2d31a794ca65abfe3109c150e00bb10dca25e431",
@@ -431,9 +431,10 @@
     "docs/knip/docs/src/styles/theme-light.css": "e2e85900fd43b5b563f56b9ce7e2a09f07d7420a78e80f0133efffeb8fce2aa0",
     "docs/knip/docs/src/util/post.ts": "6d7c45bd29035a73f1b67d24524760c7e317f367d32216de2c9a240dda7a40d1",
     "docs/knip/docs/tsconfig.json": "662b1f10a5e572b49a45669e4be9ee46c22f987dcf277c204948777b367df1cd",
-    "package.json": "9fa285d4d3d3e96f22f8f54fc88073c9b69f3f4051ebedc711d4190d25d523c8",
-    "packages/client/package.json": "e76f441549130dc3e5e68072a36b6cb9044e19a6625f1e813f19a4def2b1b689",
-    "packages/desktop/package.json": "0e3d7086c7924b750f02d57e1ed7e88ebdf5bd6699b40a1a4a58de835832816b",
+    "package.json": "416cc6de9667a0ef9593de42b91af6940d30ae0011fdb42d5f1e01b4876d6ef4",
+    "packages/browser-extension/package.json": "ff228c7647cf84a45b950e3551a167e83c365b0081ef75ce31ade92f97a01386",
+    "packages/client/package.json": "6c53ebd317d7629f34984e8a94a8de6c988eb275a5e7387a712237bb53b63f1e",
+    "packages/desktop/package.json": "afe907b8cb6047b28a143f778145689a513f3e7844326435fbd062c26c2ac6b1",
     "packages/desktop/src/renderer/public/material-icons/3d.svg": "9527b849f0fba57ca7640e2717b3a19cb5f5e046712cbbd8b75d73af338c68fb",
     "packages/desktop/src/renderer/public/material-icons/abap.svg": "1335bd7eb9a0ed49deb622330d680c2e97731726a7a5eee8e4f46dc1e5db4de4",
     "packages/desktop/src/renderer/public/material-icons/abc.svg": "d1a68020e8f020ef29dca5f94dc8613b7ae8fb5b212d8b1cc23b0f975ac7acda",
@@ -1580,16 +1581,16 @@
     "packages/desktop/src/renderer/public/material-icons/zeabur.svg": "8bb7c84934202e9b24842ddb1ca69d316b9d69f1a4f5ebc9bbcce78eb2cea1a7",
     "packages/desktop/src/renderer/public/material-icons/zig.svg": "37be0ce02cf471b18d86150b3c38e80caa7c16c49a15078e7db6f1f41788d101",
     "packages/desktop/src/renderer/public/material-icons/zip.svg": "dad79a45f756542d37abd422502ecfbea15720b92ea1c9d80ef0439ab6b9448a",
-    "packages/e2e-report/package.json": "4619226682bcfd35b3e20c0dbbe16d6c1474a532fbd3fcadc06646dc3cb323eb",
-    "packages/formal-proof/package.json": "ccfbc2908b846d96a053ba348b0cabeccf76a6dffc126a0326e228f3af92aaaf",
-    "packages/model-option-map/package.json": "9ba8537bca94b388eca39307ebb3ab85c473f01fa51368162be5b3bc303315ee",
-    "packages/provider-node/package.json": "b9b475a0f8cd0822980e64013f8b41139082ede376868051480702ead2913cb8",
-    "packages/provider/package.json": "0f52edde6ef9712efc10dfccf12a918255f5be4a0379b5c8693fab79abacf2fc",
+    "packages/e2e-report/package.json": "69d2f8d06e1d7c15b10424e7e1a6e8cde45449125e744803fad377ce75057ae1",
+    "packages/formal-proof/package.json": "73f0701e87c593338b81a436db240156b85a655057f66a45888c91b1af323249",
+    "packages/model-option-map/package.json": "43ee44ecfd650a2b1c09fec2cb2f41adb28d2583156413d0d728ce9e8d941aef",
+    "packages/provider-node/package.json": "f6e80e0a9f8607642340e0584b3c701e29a20ee4614ccb5a6c90640c7ac721af",
+    "packages/provider/package.json": "612f38c4b48872c0747e8cfb125ef82317c236b532181e7693af3c4f4c1ee7e3",
     "packages/rpc/examples/01-basic-ipc.ts": "bb4423c1642918846010f9307262c379536ca9541d79df6ebba120b5cf792f3e",
     "packages/rpc/examples/02-proxy-channel.ts": "66dda9aec12cd46da8a56560cb765a3de590917bbc40f329185e6fd05a388fff",
     "packages/rpc/examples/03-ipc-server-client.ts": "9b873f565b4a3426ee3a5338a975cb6ab76e29af094cf6bbee4f7030f872f758",
     "packages/rpc/examples/04-remote-connection.ts": "fe43a2d631ba54a1cf63a86e344b6e2e58d83c2e8c95f2f8b7371f63e6442541",
-    "packages/rpc/package.json": "096520229295f4efc4d8bea1d184484cd2f7289af17472d80847c7db1ac26dd0",
+    "packages/rpc/package.json": "08cce8bbc4bf48ecb27aa0546b3ee18fc1c220013ab33d05b8d51f731ce75558",
     "packages/rpc/src/buffer.ts": "6bc6a44e6abd088f72d57616d9556d78ce078b6f3813bf75402dde386781492c",
     "packages/rpc/src/channelClient.ts": "d2504929253ebb18f020e6f35e51a3741190558875d18a47192f9af78ca3f8ac",
     "packages/rpc/src/channels.shared.ts": "e2d3ce17dfb23d53ea8fef6cd4dc87bef4558ff6e72b458e50fd456b0b2a6ae2",
@@ -1606,42 +1607,42 @@
     "packages/rpc/src/proxy-channel.ts": "ec5b43e6a3a622a88a8aaa6af9cb37dbfe517932ee7f4a337019ec138bb2d513",
     "packages/rpc/src/remote.ts": "a11e072d5df7e1c1ce64814a68f72afc081246b364f0da409b5c9d22bc815957",
     "packages/rpc/src/serialization.ts": "e949418e1cd17cc863c147fc8d1ff15237e1b5f0cb8e3344fd2a9ccfae9d54e7",
-    "packages/server/package.json": "0a6119239c88af79bc766e3c023eb4437105a0d35b03ecca1137d1e688e60a90",
-    "packages/services/package.json": "725570b80727956dd8277ba2eb02675ef2394e51ddfe6052a5db32f047f880fe",
-    "packages/shared/package.json": "6519e196ae9de154a0b4837558eaa25f561a8eefffdb0cb0f8c16e9c939d4059",
-    "packages/shared/src/zcode-protocol-v4/wire-codec.ts": "ac2494a3acc795c809c94ee9393f50271a9c2a0fd33813459e5ab93842ceef75",
-    "packages/stream-animate/package.json": "31cb25ed87e64dbcd695bbc932729ac30499107d45f747b96a5c3de832afdc28",
-    "packages/ui/package.json": "d408e15dadbde702cdde61fb81283f61820356f2eaa0cad1e034067f8f401939",
+    "packages/server/package.json": "534e79d3f3fb9e625c0629d0195ec63697da78535ed65efa40882577628bbb1c",
+    "packages/services/package.json": "1c5d43f2057191b620925a1f08f110e78fbe15c100ddd6bc1ef4b2e8abd18650",
+    "packages/shared/package.json": "bb3d151a760de2246a00ab3f0e8978fb47eb64dc9b905720cfedbdfb5696930d",
+    "packages/shared/src/zody-protocol-v4/wire-codec.ts": "ac2494a3acc795c809c94ee9393f50271a9c2a0fd33813459e5ab93842ceef75",
+    "packages/stream-animate/package.json": "61ea66d79d4b55ec8b99a7b3e6d9457592871a2cc1eb80954d001d7c409f3c4e",
+    "packages/ui/package.json": "bc430b3c8b6167c093799351b94ef46b28a7cd20f428d26407b34ef92a801127",
     "packages/ui/src/components/ai-elements/agent.tsx": "830e7ea9e927de1524851337f1d35bda0e5690e3e4fa307fff854b60006b16c7",
     "packages/ui/src/components/ai-elements/artifact.tsx": "7d73f08864d6280ac86c77d32e56d0e702f8aa6208e5910820139d0fb08ce64c",
     "packages/ui/src/components/ai-elements/attachments.tsx": "7a847ce6c8ac9dc630481a82dd20a5e9e00949bf710a41fea1d32a18123011d8",
     "packages/ui/src/components/ai-elements/audio-player.tsx": "3ed28af16b3a49123ac19b27763188d1087bdb8919d52263c00c761326d0a15a",
     "packages/ui/src/components/ai-elements/canvas.tsx": "7bc92905e97c182c9a2f52b421a4d70414c8700a66039af9a4466587f74d2687",
     "packages/ui/src/components/ai-elements/chain-of-thought.tsx": "d9755d90e2949137f03bb603ed34a1e1893a83fdc3cae321a02814af307400e3",
-    "packages/ui/src/components/ai-elements/chat-loading.tsx": "b75d4398d778179f78209debde63547410d76e01cdaf3887f60b13ef9a35331f",
+    "packages/ui/src/components/ai-elements/chat-loading.tsx": "0cf8551dfd40f9e6fd541ad7ac42761bf47a11a4509b0a9f8f28958756a4842f",
     "packages/ui/src/components/ai-elements/checkpoint.tsx": "72459f6fb8668e9245ec32542f92c7de809cc9b5a366bb44ab08f91ea4e1255b",
-    "packages/ui/src/components/ai-elements/code-block.tsx": "ae4f975537ebb9c8ef905b7b9de39bc37180f81511bffc027dc4da1929037f18",
+    "packages/ui/src/components/ai-elements/code-block.tsx": "66ac9513bca0293fab26c69602e31c790e2c6f87e166f6e38d0c27992d09761d",
     "packages/ui/src/components/ai-elements/commit.tsx": "e9f5dcffac4ec7702b6d77b41cfc28fab54f0595375dd2c992dc972c0a9e74d2",
     "packages/ui/src/components/ai-elements/confirmation.tsx": "bb39ae89d5550f4ffcbb36e73dc8b75d1c9930f0fdba28cc8ff135d753b65a9b",
     "packages/ui/src/components/ai-elements/connection.tsx": "6e6cf65efcef612a3d14f5fda69e27009bc06046d1f7aa842a1a93b9142a7f81",
     "packages/ui/src/components/ai-elements/context.tsx": "9f9a766dcab0010b1483b5276f9d5f4b4c3b31bd85434731fc7ce4d8bf9913f7",
     "packages/ui/src/components/ai-elements/controls.tsx": "3123e9cb668171780944fb91632c68977617ae4ef46312540c1f7ddecc3fc568",
     "packages/ui/src/components/ai-elements/conversation.tsx": "1fda6a3c198ae104e8736b70992e9ce8549f667a942246d9a9762be8f4431e3a",
-    "packages/ui/src/components/ai-elements/diagram-preview-dialog.tsx": "cc142f8808370897dfc40cd7aea3f1aa42fd07ce471a7fbb284d9ae728b1299a",
+    "packages/ui/src/components/ai-elements/diagram-preview-dialog.tsx": "2a8fb5311cafd6063718dc544e6e467b7200b33dbaae91fe0bfc74575f558fca",
     "packages/ui/src/components/ai-elements/edge.tsx": "661a25632f0879b8363f22e6b99198a6d37ad622781c798c090fcad9b591b181",
     "packages/ui/src/components/ai-elements/environment-variables.tsx": "397931dbf3496ad98df1f5e044410b87030e37c245e1299bc774c294fb08c047",
     "packages/ui/src/components/ai-elements/file-tree.tsx": "55386da0f5d2f453dd88fa84716e02cd0ea36a2f3822d93e717102ca8247b15f",
-    "packages/ui/src/components/ai-elements/image-preview-dialog.tsx": "47d4ecdefc84d39f2deda93119ce400b36224276bb6c7dab6a914868914ac8de",
+    "packages/ui/src/components/ai-elements/image-preview-dialog.tsx": "cbbb50695b440ea3475b61e6598805fe6c375b7f84a9bceea549f420c7ea5823",
     "packages/ui/src/components/ai-elements/image-thumbnail-gallery.tsx": "185766c039c6c4852ae12360360f7cf29e844a1463358b8cc2c6de972dcdaf43",
     "packages/ui/src/components/ai-elements/image.tsx": "1c6f9595ef814c4ef9648607562fa77a3007f7d857571f8e107a24022fe83e24",
     "packages/ui/src/components/ai-elements/inline-citation.tsx": "f7221c9ed75860944f1eee97df52edb95f822acdafa94852a1ba2bee4f97725c",
     "packages/ui/src/components/ai-elements/jsx-preview.tsx": "11a93d14c32bfd883436fc7942babd892e430f9fe986d7b4804e06f48987cee3",
     "packages/ui/src/components/ai-elements/markdown-blockquote.tsx": "0c76599780a464136703d40d07172dcc62730dee1ce01a155100cf4712440a7f",
-    "packages/ui/src/components/ai-elements/markdown-image.tsx": "aedf797b19d4f5d37fc7e8833b2824a9d1a1a4fca440b69519b43a43eb122e90",
+    "packages/ui/src/components/ai-elements/markdown-image.tsx": "07b4f04cc99a184ba51bd0f1ce11be39af5ac6a867a438946b1c695b16068213",
     "packages/ui/src/components/ai-elements/markdown-list.tsx": "ecf50ad4f48cd460ddcf90db7b463671f915d8c22c7cb8e7760ff3b02282c7f1",
-    "packages/ui/src/components/ai-elements/markdown-table.tsx": "612d78092eaeb950931070fff2a194a244e84c5c2d63c6df645e6b91391953da",
-    "packages/ui/src/components/ai-elements/mermaid-block.tsx": "4cc6783097a6ecbb1896ee1f3dd1d89115ca81f3efb15d9fbabcf448063818ae",
-    "packages/ui/src/components/ai-elements/message.tsx": "6c35829ed11321e850cd59e20c1c88fdd452e8e2d9b5da45f808371021aabf99",
+    "packages/ui/src/components/ai-elements/markdown-table.tsx": "15f5aab40ac92c845df6f4dedb9ac705f10b8311e81bfe6257b4f9d1355022b1",
+    "packages/ui/src/components/ai-elements/mermaid-block.tsx": "ad86207380a91f0c388d3dc3f1811c13ff246579162a5f618ad8267f95407a53",
+    "packages/ui/src/components/ai-elements/message.tsx": "7b1b71107e365729e6b9df3f88044a0f63fc031963b495efe0df3885c3929525",
     "packages/ui/src/components/ai-elements/mic-selector.tsx": "e6249c6380a9aa768a411b7fc05e57388b7dc8a6e2afae687250d33ce9bb54db",
     "packages/ui/src/components/ai-elements/model-selector.tsx": "745414195be63160ab61efadc8352c2c6a28d3ba53107896c146a499c0847b99",
     "packages/ui/src/components/ai-elements/node.tsx": "d7b68c41717a509bd9063f0a9fc0c4525ceb2b23bae4028bcd49ec949fc6268f",
@@ -1656,7 +1657,7 @@
     "packages/ui/src/components/ai-elements/prompt-input-textarea.tsx": "4798574a8f2fc8584a1c5585d9dd878dd19d76bd05603e77948ec12180649def",
     "packages/ui/src/components/ai-elements/prompt-input.tsx": "68a92e07c27774e9c1d63bccd12ec3ff38b4f89dd245b20bfffbbd052e6101c4",
     "packages/ui/src/components/ai-elements/queue.tsx": "9d84f6e15708519ec65e258d9843dc5f4d76f106fc85155f7dcf51f89474b695",
-    "packages/ui/src/components/ai-elements/reasoning.tsx": "a10a38c7b3ca633e9b5480ad94f9c7a1fdd52bc5526ae0801e3e6ed141f2b604",
+    "packages/ui/src/components/ai-elements/reasoning.tsx": "10ce75543db4aecb6aa4f7ad6b88fb4f5706bbfc9e04eb4f4332d72e1383a022",
     "packages/ui/src/components/ai-elements/sandbox.tsx": "f521400dbaebe4c2a2fbcdcb8c18f98980c566169233beb137b22a093b44bbf0",
     "packages/ui/src/components/ai-elements/schema-display.tsx": "826d2e11423ee3bc0295c31936c347f06361335aa849626031aa0885e3530cdd",
     "packages/ui/src/components/ai-elements/shimmer.tsx": "5d06ffdff80a13453a0b61b67f588c48d838a20d9be2cd319ca2a97d441b3127",
@@ -1682,7 +1683,7 @@
     "packages/ui/src/components/ui/button-group.tsx": "3c455ad047c87097070c4e107bc0e58dd087531e85b1c60f28f1f526dd9a0061",
     "packages/ui/src/components/ui/button.tsx": "3bf0b1573c940999f875a1dd5e67a32e7d9bcb3e320774fa8277f5c00748b32b",
     "packages/ui/src/components/ui/card.tsx": "cdfb5121c2647a4b496a377609acb05d14513f7975858482b911a3873c3695b3",
-    "packages/ui/src/components/ui/carousel.tsx": "75966a0c51114fb00e21a1d9a481008306055f2811c8fd744c889b1fb7924677",
+    "packages/ui/src/components/ui/carousel.tsx": "7fa19fdaf1e675d0a2066d2ebb2d383d15b1039bbaceb9f2ef2d8ca16abdffa8",
     "packages/ui/src/components/ui/chart.tsx": "272efec5aa60d34665104b45341d9f2b8cad4480070bca91e9d5409713b6fecd",
     "packages/ui/src/components/ui/checkbox.tsx": "5b3cb5612ed7654218e1cdd86fc41c7b490475721948d50a603996133245bace",
     "packages/ui/src/components/ui/code-viewer.tsx": "dfccd2feaccc62af84f3e92dc5b8e25e7025b6c64cbd16f177586b1dc763affe",
@@ -1691,16 +1692,16 @@
     "packages/ui/src/components/ui/context-menu.tsx": "3820461fd68ca7a345fc919ab356bdefbbead23abb3ac0f4e8d46898f7522a6f",
     "packages/ui/src/components/ui/dialog.tsx": "53dc10761bd894a5e86278d9354aac47920c81b4aab8b414b840af095f7c0b31",
     "packages/ui/src/components/ui/diff-viewer.tsx": "f02208b316e6dc4043ed1794455422bc74cdd521285fcac5a2c0d589c2eb9af2",
-    "packages/ui/src/components/ui/dropdown-menu.tsx": "34c5b79489756aa3467ec26d2b44587f3d47eafcb2cb16402686aac15e4debdb",
+    "packages/ui/src/components/ui/dropdown-menu.tsx": "d2927a966330af9cedd843214931ec8485afbaaea2a6cc79136b9a803287f6d9",
     "packages/ui/src/components/ui/flip-metric-value.tsx": "ce2d6cf063003e1023191b0fa4e3eb9b365e04a14eb0d498b897326600bf4071",
-    "packages/ui/src/components/ui/GlmMonochromeIcon.tsx": "f1691224d23be4359e1a79bcd81b9dd5ee19c0177b3a4bf750332c620b98ae5c",
+    "packages/ui/src/components/ui/GlmMonochromeIcon.tsx": "9593e038c5ffa2ca36e1be15479bab1e6b3a14e58bd92f2147db69120beb1d2b",
     "packages/ui/src/components/ui/highlighted-lightweight-diff-preview.tsx": "c04bb6009683ab74cb72ff8f1e1157ffbdd06be4a46dc3c725c63e0bc43fea72",
     "packages/ui/src/components/ui/hover-card.tsx": "28e49fb55a3fd4f5bfc5d61f336854304bc92c5a7098305b208274913b226f3d",
     "packages/ui/src/components/ui/input-group.tsx": "72e8c0775e55525efe49dfa42ecba7b9244836a78c31be0dd576d52640d4c3c9",
     "packages/ui/src/components/ui/input.tsx": "946d37bdf07c81e70ad13242b904c27618d5d09f7c17a74f6b6c8cb613fa93dc",
     "packages/ui/src/components/ui/kbd.tsx": "a7fabb33892c759337ae5c936d3b62f27fb2356a5a6340dbff8bfbac6f0a359f",
     "packages/ui/src/components/ui/label.tsx": "717bd1167a7c8c136abfe0b3e23e8cfcb38abbe51b04c74d6d01ba1ea0b53fa5",
-    "packages/ui/src/components/ui/lightweight-diff-preview.tsx": "7d1ff2a02815d988f5ffd2d6549848920c98488a4dba43f67ba9d81a3da49d01",
+    "packages/ui/src/components/ui/lightweight-diff-preview.tsx": "c4ab4c0ab601c089c3c9ef156db25c94010220e3ac2b50bd14d853a548cb136f",
     "packages/ui/src/components/ui/pdf-viewer.tsx": "19ba82ab97a84599bb99178de85a4d5c6a89da6924ba55a0dc14f33286187fdc",
     "packages/ui/src/components/ui/popover.tsx": "e23c9238865ba7e85965ebed89e7328cfbdbbdcc2264156c775d51e9e264b484",
     "packages/ui/src/components/ui/pptx-preview-viewer.tsx": "64d7ed9e83cad0e98ba56ff2c49be2db335aedca4230b207cba5a383a15cb93d",
@@ -1711,20 +1712,20 @@
     "packages/ui/src/components/ui/resizable.tsx": "83425c34fb76c35276e6dbf8d7ad0ee860b4536ba9d4cfd8e8a60aec3b7cabc4",
     "packages/ui/src/components/ui/scroll-area.tsx": "83999d597a4a417aea402e833884826539b9aa1bd1ec966aa2f6dab9a97afb3c",
     "packages/ui/src/components/ui/scroll-fade-viewport.tsx": "50e5984232b6a7d59e872aab4ebb36ae837e2865e3a770adbc234b61c2531da1",
-    "packages/ui/src/components/ui/select.tsx": "718c222c5acdfa149f4a61da3d6756a4ca5ef1ba14b2ebafb7a5306c3a616beb",
+    "packages/ui/src/components/ui/select.tsx": "c541454ea111e0bba006a838eb7dd385985f58c2c7b58280a7d8d200bf1aa65c",
     "packages/ui/src/components/ui/separator.tsx": "31ade0b9a0eca6689226c94d479352416ef076859980a976422a8af17879dee2",
     "packages/ui/src/components/ui/smooth-metric-value.tsx": "d26a10fbad01c343e415d560c94d76bef64f810cbe388c2c7af03906f31e9f29",
-    "packages/ui/src/components/ui/spinner.tsx": "96bef1c5ef7e582de503aac8402b55f3539cea37bd2c186a12a4f2cb7605468e",
-    "packages/ui/src/components/ui/switch.tsx": "1a6490eb3c47b3a86b76c8469e5702608ea57da7853df5de00fffa9a4a472adf",
+    "packages/ui/src/components/ui/spinner.tsx": "c25ee9b25f0fe575d350b604e127ee504e70cb0e0c70f568d9f9afc62b655404",
+    "packages/ui/src/components/ui/switch.tsx": "ea5cb689d5ed9b8db47a4fa9df2970f1bafa4741968e320b6f013b0f10a23ecd",
     "packages/ui/src/components/ui/tabs.tsx": "adc59a0469c80118e9d60c08bf0222d55664ef95e6c522496b5c201011b347f0",
     "packages/ui/src/components/ui/textarea.tsx": "a839574ce1301fbaa9ba917fdb980900eb9118bffa7c6c4e469f3293b122ed30",
-    "packages/ui/src/components/ui/toast.tsx": "0f8894c6fc30e4cec44caa4cffe70e111f9c41ff9bf3699ec8e91696ea631671",
+    "packages/ui/src/components/ui/toast.tsx": "b7b0e2824dedc71268e47970857b5b4480972acf80a723ed21e8fcbb849f1e03",
     "packages/ui/src/components/ui/tooltip.tsx": "301dbf3a6f8b1bc496f9bdc6fbc5fe6202ed373182897f39cd1ecd19b00fdfbe",
     "packages/ui/src/components/ui/usePdfZoomOverlay.ts": "c8c91b003ce2fded32c7a2369dc6eac43aa4b9dc9c830a0f5ceccb21d366b610",
-    "packages/ui/src/components/ui/ZCodeAboutLogo.tsx": "960110978723f621697ab47099e50ecb0a2ff6d17298a2069f250bb72b682266",
-    "packages/ui/src/lib/builtinSkillI18n.ts": "34d87c733ca63bdb8eb82fd03db4d507e1b13684be989446462d1d06a2d718cd",
-    "packages/ui/src/styles.css": "6dab662b540b4d846e2578759a6e511d9bebfad44a2ff7cf96841f5e93ff5e4f",
-    "packages/web/package.json": "c1663ded129cdef204d7a505a1a512a0dde06a8a810e22ca821263c0d018cfcf",
+    "packages/ui/src/components/ui/ZodyAboutLogo.tsx": "ae941278ca5753404694f55d8d144983919b5a98af1f1457ed0820ecd4ad62ee",
+    "packages/ui/src/lib/builtinSkillI18n.ts": "c0b7cd5b39d0f19f7e1858bfde2dda2fe1b559ac431aaf544984bb2b4974d1e3",
+    "packages/ui/src/styles.css": "f2be9cf2df421a20adb98adf9113b70adf36eced12a911c49777a90cdbfb624c",
+    "packages/web/package.json": "119d8737da84547a4d838d8bcab768b2c0db724d315d231a5c81cbf022595b68",
     "packages/web/public/material-icons/3d.svg": "9527b849f0fba57ca7640e2717b3a19cb5f5e046712cbbd8b75d73af338c68fb",
     "packages/web/public/material-icons/abap.svg": "1335bd7eb9a0ed49deb622330d680c2e97731726a7a5eee8e4f46dc1e5db4de4",
     "packages/web/public/material-icons/abc.svg": "d1a68020e8f020ef29dca5f94dc8613b7ae8fb5b212d8b1cc23b0f975ac7acda",
@@ -2871,20 +2872,20 @@
     "packages/web/public/material-icons/zeabur.svg": "8bb7c84934202e9b24842ddb1ca69d316b9d69f1a4f5ebc9bbcce78eb2cea1a7",
     "packages/web/public/material-icons/zig.svg": "37be0ce02cf471b18d86150b3c38e80caa7c16c49a15078e7db6f1f41788d101",
     "packages/web/public/material-icons/zip.svg": "dad79a45f756542d37abd422502ecfbea15720b92ea1c9d80ef0439ab6b9448a",
-    "packages/zcode-cua/package.json": "e71948820aafebeac7ec92879adf344011d0f310ed954eb7204be7320f08ebef",
-    "packages/zcode-server-cli/package.json": "1dfc113333cda0bc06f7c2eb22b5b1fdd7e9e4049368c8f0d4ef1becbf85c1c5",
+    "packages/zody-cua/package.json": "a9bca850da7bb64c458df450c374eaf65f5a8b96978fa8ab2eec1781b49e3a28",
+    "packages/zody-server-cli/package.json": "89a45fd272989a1b1430889e32789afbbe1142cad7d7c4610014721d38d30070",
     "patches/@ai-sdk__anthropic@3.0.81.patch": "d3a7c381eba7f5157f765a0528003af17cf84544911dfb7412c7800168e01c18",
     "patches/@ai-sdk__openai-compatible@2.0.60.patch": "9632fe9d821b3dc20939ae509cc35b968d90d018bbd1d812390718898182a38b",
     "patches/@arms__rum-electron@0.0.3.patch": "36855354851ea495bc47a03340b0484ff62836b739cad56904b8a69f18e2ae97",
     "patches/@radix-ui__react-collapsible@1.1.12.patch": "f10c389fd699917d4f3a9914818bd35a44e70706644b3fd40f8610bbfa41b12a",
     "patches/vitest@4.1.7.patch": "11fdb66aa985e1d77e68752deeb7c1130ae33c9a4e2968f23aae8adaf8bc9ba0",
     "patches/wdio-electron-service@9.2.1.patch": "52481dae5e76772fcb8c2a9ff42feb3d0e1478e28815a4b975c81b9287e3385f",
-    "pnpm-lock.yaml": "2bcb062615fb1ec80565833c5b80b056005121a58310fa21baf306ef6bb93b07",
-    "pnpm-workspace.yaml": "ddf4d195a433a1fae0a991462b9b19281435d7055d768d2a2942de8f4aff89f3",
+    "pnpm-lock.yaml": "12e11b834269bada1625ea6b086eabab1234881e2038adb2a3cac21eb345a63f",
+    "pnpm-workspace.yaml": "959c637c84b263146719345c6be802362c8a445728014690968de4868cda2c4a",
     "scripts/license-texts/Apache-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-    "scripts/native-search-tools-config.mjs": "06e9d2b066a22f4bb731fb7356d786b52cf08e20dd6faf91e1a82b167d7462e8",
+    "scripts/native-search-tools-config.mjs": "2efb3f3aade0205b400b990b8a7dda3ce3437b568008d508e8c16465c5254078",
     "scripts/remote-native-search-tools-config.mjs": "2ddb7054e219ea487596cbdcb83d5c7eac9f239cfe169cfac22e3759d95d7c35",
-    "third-party/copied-components.json": "c39849cf13ab9660754fcda693b45f6c5f9f91d196789620dba54941a23d3443",
+    "third-party/copied-components.json": "83eaa4066afd1ea13eb1536330460467f8c0b79ac383cc11ce6c030771a3fdec",
     "third-party/embedded-components.json": "9586ccca15897f56d4ca1d703dffe9e02880fedd766c1dff93f7ac1f52ea891a",
     "third-party/native-search/licenses/00373c9bf56a894b2ed67586596bc1e8b0630cabbaf1ab46c75fc754b6bcd1ce.txt": "00373c9bf56a894b2ed67586596bc1e8b0630cabbaf1ab46c75fc754b6bcd1ce",
     "third-party/native-search/licenses/01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f.txt": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
@@ -3000,7 +3001,7 @@
     "third-party/native-search/licenses/f8a6a9a718ca8be13701d706d208dd0d7b4d2b41cb1df3342fc5a6d602bd1dac.txt": "f8a6a9a718ca8be13701d706d208dd0d7b4d2b41cb1df3342fc5a6d602bd1dac",
     "third-party/native-search/licenses/f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af.txt": "f9bc4423732350eb0b3f7ed7e91d530298476f8fec0c6c427a1c04ade22655af",
     "third-party/native-search/licenses/f9c375a1be4a41f7b70301dd83c91cb89e41567478859b77eef375a52d782505.txt": "f9c375a1be4a41f7b70301dd83c91cb89e41567478859b77eef375a52d782505",
-    "third-party/native-search/sources.json": "5e1aedef96227f4deefe6f07cda644bd25e638443e86e93ddb2e9578a73d9609",
+    "third-party/native-search/sources.json": "4156003526ec2f596e0a685c6f7cbb94b984087a75a7aba0fddd09e66f2501e5",
     "third-party/npm-overrides.json": "d4166877b76fa8e1f0892a9783bb926d06d262afb0cbb2afb00c943d86df8162",
     "third-party/runtime/node-22.16.0-LICENSE.txt": "1ae62e2015784ba438db7b04ebd33f3c4ff3efdb824c111c4ececd99945fd52d",
     "third-party/runtime/node-24.14.0-LICENSE.txt": "4573185d56580da2b890ba34a85a409257640f1c5632eade4300137266194d18",
@@ -19754,15 +19755,15 @@
       "files": [
         {
           "file": "packages/ui/src/components/ui/GlmMonochromeIcon.tsx",
-          "sha256": "f1691224d23be4359e1a79bcd81b9dd5ee19c0177b3a4bf750332c620b98ae5c"
+          "sha256": "9593e038c5ffa2ca36e1be15479bab1e6b3a14e58bd92f2147db69120beb1d2b"
         },
         {
           "file": "packages/ui/src/components/ui/README.md",
           "sha256": "5b5d554e2ad0c8e095258d70e5c3f35f58b9340a850c767f7b76bbe19c3b42d0"
         },
         {
-          "file": "packages/ui/src/components/ui/ZCodeAboutLogo.tsx",
-          "sha256": "960110978723f621697ab47099e50ecb0a2ff6d17298a2069f250bb72b682266"
+          "file": "packages/ui/src/components/ui/ZodyAboutLogo.tsx",
+          "sha256": "ae941278ca5753404694f55d8d144983919b5a98af1f1457ed0820ecd4ad62ee"
         },
         {
           "file": "packages/ui/src/components/ui/accordion.tsx",
@@ -19798,7 +19799,7 @@
         },
         {
           "file": "packages/ui/src/components/ui/carousel.tsx",
-          "sha256": "75966a0c51114fb00e21a1d9a481008306055f2811c8fd744c889b1fb7924677"
+          "sha256": "7fa19fdaf1e675d0a2066d2ebb2d383d15b1039bbaceb9f2ef2d8ca16abdffa8"
         },
         {
           "file": "packages/ui/src/components/ui/chart.tsx",
@@ -19834,7 +19835,7 @@
         },
         {
           "file": "packages/ui/src/components/ui/dropdown-menu.tsx",
-          "sha256": "34c5b79489756aa3467ec26d2b44587f3d47eafcb2cb16402686aac15e4debdb"
+          "sha256": "d2927a966330af9cedd843214931ec8485afbaaea2a6cc79136b9a803287f6d9"
         },
         {
           "file": "packages/ui/src/components/ui/flip-metric-value.tsx",
@@ -19866,7 +19867,7 @@
         },
         {
           "file": "packages/ui/src/components/ui/lightweight-diff-preview.tsx",
-          "sha256": "7d1ff2a02815d988f5ffd2d6549848920c98488a4dba43f67ba9d81a3da49d01"
+          "sha256": "c4ab4c0ab601c089c3c9ef156db25c94010220e3ac2b50bd14d853a548cb136f"
         },
         {
           "file": "packages/ui/src/components/ui/pdf-viewer.tsx",
@@ -19906,7 +19907,7 @@
         },
         {
           "file": "packages/ui/src/components/ui/select.tsx",
-          "sha256": "718c222c5acdfa149f4a61da3d6756a4ca5ef1ba14b2ebafb7a5306c3a616beb"
+          "sha256": "c541454ea111e0bba006a838eb7dd385985f58c2c7b58280a7d8d200bf1aa65c"
         },
         {
           "file": "packages/ui/src/components/ui/separator.tsx",
@@ -19918,11 +19919,11 @@
         },
         {
           "file": "packages/ui/src/components/ui/spinner.tsx",
-          "sha256": "96bef1c5ef7e582de503aac8402b55f3539cea37bd2c186a12a4f2cb7605468e"
+          "sha256": "c25ee9b25f0fe575d350b604e127ee504e70cb0e0c70f568d9f9afc62b655404"
         },
         {
           "file": "packages/ui/src/components/ui/switch.tsx",
-          "sha256": "1a6490eb3c47b3a86b76c8469e5702608ea57da7853df5de00fffa9a4a472adf"
+          "sha256": "ea5cb689d5ed9b8db47a4fa9df2970f1bafa4741968e320b6f013b0f10a23ecd"
         },
         {
           "file": "packages/ui/src/components/ui/tabs.tsx",
@@ -19934,7 +19935,7 @@
         },
         {
           "file": "packages/ui/src/components/ui/toast.tsx",
-          "sha256": "0f8894c6fc30e4cec44caa4cffe70e111f9c41ff9bf3699ec8e91696ea631671"
+          "sha256": "b7b0e2824dedc71268e47970857b5b4480972acf80a723ed21e8fcbb849f1e03"
         },
         {
           "file": "packages/ui/src/components/ui/tooltip.tsx",
@@ -19946,7 +19947,7 @@
         },
         {
           "file": "packages/ui/src/styles.css",
-          "sha256": "6dab662b540b4d846e2578759a6e511d9bebfad44a2ff7cf96841f5e93ff5e4f"
+          "sha256": "f2be9cf2df421a20adb98adf9113b70adf36eced12a911c49777a90cdbfb624c"
         }
       ]
     },
@@ -20132,7 +20133,7 @@
         },
         {
           "file": "packages/ui/src/components/ai-elements/chat-loading.tsx",
-          "sha256": "b75d4398d778179f78209debde63547410d76e01cdaf3887f60b13ef9a35331f"
+          "sha256": "0cf8551dfd40f9e6fd541ad7ac42761bf47a11a4509b0a9f8f28958756a4842f"
         },
         {
           "file": "packages/ui/src/components/ai-elements/checkpoint.tsx",
@@ -20140,7 +20141,7 @@
         },
         {
           "file": "packages/ui/src/components/ai-elements/code-block.tsx",
-          "sha256": "ae4f975537ebb9c8ef905b7b9de39bc37180f81511bffc027dc4da1929037f18"
+          "sha256": "66ac9513bca0293fab26c69602e31c790e2c6f87e166f6e38d0c27992d09761d"
         },
         {
           "file": "packages/ui/src/components/ai-elements/commit.tsx",
@@ -20168,7 +20169,7 @@
         },
         {
           "file": "packages/ui/src/components/ai-elements/diagram-preview-dialog.tsx",
-          "sha256": "cc142f8808370897dfc40cd7aea3f1aa42fd07ce471a7fbb284d9ae728b1299a"
+          "sha256": "2a8fb5311cafd6063718dc544e6e467b7200b33dbaae91fe0bfc74575f558fca"
         },
         {
           "file": "packages/ui/src/components/ai-elements/edge.tsx",
@@ -20184,7 +20185,7 @@
         },
         {
           "file": "packages/ui/src/components/ai-elements/image-preview-dialog.tsx",
-          "sha256": "47d4ecdefc84d39f2deda93119ce400b36224276bb6c7dab6a914868914ac8de"
+          "sha256": "cbbb50695b440ea3475b61e6598805fe6c375b7f84a9bceea549f420c7ea5823"
         },
         {
           "file": "packages/ui/src/components/ai-elements/image-thumbnail-gallery.tsx",
@@ -20208,7 +20209,7 @@
         },
         {
           "file": "packages/ui/src/components/ai-elements/markdown-image.tsx",
-          "sha256": "aedf797b19d4f5d37fc7e8833b2824a9d1a1a4fca440b69519b43a43eb122e90"
+          "sha256": "07b4f04cc99a184ba51bd0f1ce11be39af5ac6a867a438946b1c695b16068213"
         },
         {
           "file": "packages/ui/src/components/ai-elements/markdown-list.tsx",
@@ -20216,15 +20217,15 @@
         },
         {
           "file": "packages/ui/src/components/ai-elements/markdown-table.tsx",
-          "sha256": "612d78092eaeb950931070fff2a194a244e84c5c2d63c6df645e6b91391953da"
+          "sha256": "15f5aab40ac92c845df6f4dedb9ac705f10b8311e81bfe6257b4f9d1355022b1"
         },
         {
           "file": "packages/ui/src/components/ai-elements/mermaid-block.tsx",
-          "sha256": "4cc6783097a6ecbb1896ee1f3dd1d89115ca81f3efb15d9fbabcf448063818ae"
+          "sha256": "ad86207380a91f0c388d3dc3f1811c13ff246579162a5f618ad8267f95407a53"
         },
         {
           "file": "packages/ui/src/components/ai-elements/message.tsx",
-          "sha256": "6c35829ed11321e850cd59e20c1c88fdd452e8e2d9b5da45f808371021aabf99"
+          "sha256": "7b1b71107e365729e6b9df3f88044a0f63fc031963b495efe0df3885c3929525"
         },
         {
           "file": "packages/ui/src/components/ai-elements/mic-selector.tsx",
@@ -20284,7 +20285,7 @@
         },
         {
           "file": "packages/ui/src/components/ai-elements/reasoning.tsx",
-          "sha256": "a10a38c7b3ca633e9b5480ad94f9c7a1fdd52bc5526ae0801e3e6ed141f2b604"
+          "sha256": "10ce75543db4aecb6aa4f7ad6b88fb4f5706bbfc9e04eb4f4332d72e1383a022"
         },
         {
           "file": "packages/ui/src/components/ai-elements/sandbox.tsx",
@@ -20875,7 +20876,7 @@
     {
       "id": "Fig autocomplete registry",
       "roots": [
-        "apps/zcode-cli/packages/core/src/tool/handlers/generated/bash-command-registry.ts"
+        "apps/zody-cli/packages/core/src/tool/handlers/generated/bash-command-registry.ts"
       ],
       "license": "MIT",
       "source": "https://raw.githubusercontent.com/withfig/autocomplete/aef52acff84c45edde61ae610cc2c964802b9a38/LICENSE",
@@ -20885,7 +20886,7 @@
       "importRevision": null,
       "files": [
         {
-          "file": "apps/zcode-cli/packages/core/src/tool/handlers/generated/bash-command-registry.ts",
+          "file": "apps/zody-cli/packages/core/src/tool/handlers/generated/bash-command-registry.ts",
           "sha256": "60fa5acd9f5c357f4e51b1d1e944ee39da92680e4bc5e98dd708f1457fcf612b"
         }
       ]
@@ -30173,7 +30174,7 @@
       "roots": [
         "packages/rpc/src",
         "packages/rpc/examples",
-        "packages/shared/src/zcode-protocol-v4/wire-codec.ts"
+        "packages/shared/src/zody-protocol-v4/wire-codec.ts"
       ],
       "scope": "Upstream-derived IPC, serialization, buffer, lifecycle and event portions only. Local RPC extensions, transports and envelope measurement are ZCode adaptations; inclusion does not attribute all local code to Microsoft.",
       "license": "MIT",
@@ -30259,7 +30260,7 @@
           "sha256": "fe43a2d631ba54a1cf63a86e344b6e2e58d83c2e8c95f2f8b7371f63e6442541"
         },
         {
-          "file": "packages/shared/src/zcode-protocol-v4/wire-codec.ts",
+          "file": "packages/shared/src/zody-protocol-v4/wire-codec.ts",
           "sha256": "ac2494a3acc795c809c94ee9393f50271a9c2a0fd33813459e5ab93842ceef75"
         }
       ]
@@ -30274,17 +30275,17 @@
       "provenance": "Original import revision is not recorded. This pinned upstream license/source reference is not asserted to be the original import version.",
       "roots": [
         "packages/ui/src/lib/builtinSkillI18n.ts",
-        "apps/zcode-cli/packages/superpowers-plugin/LICENSE"
+        "apps/zody-cli/packages/superpowers-plugin/LICENSE"
       ],
       "scope": "Superpowers-derived skill descriptions and their translations only; unrelated descriptions from other projects in this file are not covered. The former bundled plugin implementation has been removed; only its retained license remains.",
       "license": "MIT",
       "files": [
         {
           "file": "packages/ui/src/lib/builtinSkillI18n.ts",
-          "sha256": "34d87c733ca63bdb8eb82fd03db4d507e1b13684be989446462d1d06a2d718cd"
+          "sha256": "c0b7cd5b39d0f19f7e1858bfde2dda2fe1b559ac431aaf544984bb2b4974d1e3"
         },
         {
-          "file": "apps/zcode-cli/packages/superpowers-plugin/LICENSE",
+          "file": "apps/zody-cli/packages/superpowers-plugin/LICENSE",
           "sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400"
         }
       ]

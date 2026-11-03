@@ -1,0 +1,11 @@
+# R21 4fac 生成对主控裁决
+
+源码冻结 `4fac2fb0f23628578347479232dfdb458d74885f`，新干净工作树首次无node_modules/dist，完整 frozen install含lifecycles退出0，50成员/92links，rootlock与7c字节相同；notices实际生成退出0。基础check0、许可tests11/11、strict1（原19条reviewRequired）；四个自有dist bin待R22实际build，不称发行完成。
+
+主控独立对before/after JSON逐字段比较：顶层仅copied、inputs、noticesSha256不同。1217npm版本记录及patches/exceptions/embedded/runtimes/notInstalled/reviewRequired完全相等；12copied组件除files/roots外的来源、原始license、revision、scope等全部相等。主控把旧notices中三条已授权路径精确替换后得到新文件逐字节相同，原文/来源没有其他改动；新SHA `4843ca45ba256b8de9170e47949138af930d7e9b6829acef073387d2f67508d3` 与inventory自洽。
+
+主控独立核验3081 inputs及2826 copied源文件hash，全部匹配。首次Python校验器错误地对PNG严格UTF8解码而退出；随后核实际实现，inputs按Node UTF8 replacement+CRLF→LF规范计算，copied来源按原始字节计算，成功记录为controller-generated-inputs.json；该校验器失败不是产品生成失败。
+
+Terra逐项归因143字段：copied27（20源码hash及路径/roots），inputs115（37对路径迁移、1个033f已存在但旧inventory漏登的browser-extension manifest、40同路径变化），noticehash1。20个变化copied源码中新值全匹配，旧清单有7项在033f已过期；115 input变更中77个旧值有16个在033f已漂移。该既有漂移被此次实际重生成更新，不声称全部差异由改名首次造成，也未借此改源码、许可、来源或版本。旧/新各值、033f依据见reconciliation-rows.json；033f→4fac根锁packages/snapshots/patchedDependencies逐字段相等。
+
+主控据以上证据批准将两文件作为同一变更单元纳入，保留原19项待审义务；不修改runner原始review-required或strict失败状态。完整证据目录 `output/zody-rename-r21/final-validation-4fac2fb0/`。本裁决是生成输入和文件对一致性验收，完整R22构建/运行及发行门禁仍待执行。
