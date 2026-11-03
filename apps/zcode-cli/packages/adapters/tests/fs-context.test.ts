@@ -1134,7 +1134,9 @@ describe("Node file and context adapters", () => {
 
       expect(snapshot.envInfo.cwd).toBe(dir);
       expect(snapshot.envInfo.shell).toBe("zsh");
-      expect(snapshot.envInfo.isGitRepository).toBe(false);
+      // 有 .git 就是仓库，与项目根同一个事实；原来按 git 进程判定，空 .git 被当成"不是仓库"。
+      // 语义随上游 v3.17.1 a60ba6a7 git-snapshot 加固（F05）更新，见 docs/specs/git-snapshot-context.md。
+      expect(snapshot.envInfo.isGitRepository).toBe(true);
       expect(snapshot.userInstructions?.content).toBe("project instructions");
       expect(snapshot.projectContext).toMatchObject({
         type: "node",
