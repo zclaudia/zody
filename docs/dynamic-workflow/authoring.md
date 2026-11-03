@@ -600,7 +600,7 @@ How the pack reaches each runtime:
   hosts.
 - SEA binaries embed `skills/**` under the `zody-bundled-skills/` asset prefix
   (`cli/scripts/sea-bundled-skill-assets.mjs`) with a manifest whose hash covers every file.
-  On start the CLI extracts the pack once into `~/.zcode/cli/bundled-skills/<hash>/`; the
+  On start the CLI extracts the pack once into `~/.zody/cli/bundled-skills/<hash>/`; the
   directory name is the content identity, so restarts are idempotent and concurrent starts
   have exactly one winner. A hash mismatch refuses the pack and falls back to the newest
   complete extraction.
