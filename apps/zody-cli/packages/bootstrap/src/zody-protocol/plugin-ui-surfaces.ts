@@ -1,7 +1,7 @@
 // `plugins/listUiSurfaces`：工作区级只读投影，
 // 返回已启用插件清单 `ui.surfaces[]` 的合法条目。与 plugin-reference-catalog.ts 同因分文件：plugins.ts 已近门禁。
 import {
-  zcodePluginsListUiSurfacesParamsSchema,
+  zodyPluginsListUiSurfacesParamsSchema,
   type ZodyPluginUiSurface,
   type ZodyPluginsListUiSurfacesResult,
 } from "@zody/shared";
@@ -36,7 +36,7 @@ export async function listPluginUiSurfaces(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsListUiSurfacesResult> {
-  const params = parseParams(zcodePluginsListUiSurfacesParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsListUiSurfacesParamsSchema, rawParams);
   const outcome = resolveZCodePlugins({
     logger: context.logger,
     workingDirectory: params.workspace.workspacePath,

@@ -15,7 +15,7 @@ import {
   type ISocket,
 } from "@zody/rpc";
 import {
-  createZCodeAgentConnectionScope,
+  createZodyAgentConnectionScope,
   IZodyAgentService,
   ServiceCollection,
 } from "@zody/services";
@@ -102,7 +102,7 @@ function exposeWebSocket(
   const reverseClient =
     clientMode === "desktop-continuous" ? new ChannelClient(protocol) : undefined;
   const scope = agentService
-    ? createZCodeAgentConnectionScope(agentService, {
+    ? createZodyAgentConnectionScope(agentService, {
         connectionId: `server-core-ws-${randomUUID()}`,
         clientMode,
         role: clientMode === "desktop-continuous" ? "trusted-host-relay" : "terminal-client",

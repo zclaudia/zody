@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { ISubagentsService } from "@zody/services";
 import {
-  normalizeAgentProviderToZCodeAgent,
+  normalizeAgentProviderToZodyAgent,
   type AgentSummary,
   type AgentsCapability,
   type ZodyProvider,
@@ -52,7 +52,7 @@ export function getSubagentsContextKey(
   provider: ZodyProvider,
   workspaceIdentity?: string | null,
 ): string {
-  return `${workspaceIdentity?.trim() || workspacePath}::${normalizeAgentProviderToZCodeAgent(provider)}`;
+  return `${workspaceIdentity?.trim() || workspacePath}::${normalizeAgentProviderToZodyAgent(provider)}`;
 }
 
 function updateContext(
@@ -97,7 +97,7 @@ async function loadContext(
   ) => void,
   get: () => SubagentsContextStoreState,
 ): Promise<void> {
-  const provider = normalizeAgentProviderToZCodeAgent(params.provider);
+  const provider = normalizeAgentProviderToZodyAgent(params.provider);
   const workspaceIdentity = params.workspaceIdentity?.trim() || undefined;
   const key = getSubagentsContextKey(params.workspacePath, provider, workspaceIdentity);
   const existing = get().contexts[key];

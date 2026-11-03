@@ -70,3 +70,7 @@ localStorage、分区和 cookie 改名不迁移旧值：0.1.0 无正式存量用
 根 `pnpm-workspace.yaml` 和 `pnpm-lock.yaml` 是仓库唯一的 pnpm 工作区与安装解析所有者。CLI 包随根工作区安装，不再维护嵌套 workspace 或锁；保留 `pnpm --dir apps/zody-cli …` 开发入口。CLI 的 Turbo 批量任务只选择 CLI packages 与 tools 为入口，允许按真实依赖执行根工作区的构建任务；不得递归执行 CLI 根脚本或将无关根包选为入口。根锁中的第三方版本、integrity、peer 和 patch 不因所有权调整变化。CI 和容器从根使用 frozen install，执行入口保持相同。
 
 验收：完整候选提交的干净工作树根 frozen install 成功；根与 CLI 命令发现相同 workspace，逐项核对本地依赖链接目标和包名。Turbo 对 build、clean、coverage、lint、lint:fix、test、typecheck 及 check 所用 typecheck 的入口和依赖闭包正确，SEA 构建排除 CLI 自身入口，选择其余 CLI 包及真实依赖；这些选择使用 dry-run 核查，再执行受影响真实测试和构建。旧嵌套锁只作为历史证据，不参与当前安装。
+
+## 运行时内部绑定闭合
+
+shared、bootstrap、services 和其消费者的内部声明、导出、动态导入与内部依赖注入属性按真实绑定同步重命名；CUA broker 的 JS 与配套声明及消费者作为同一接口批次。`Error.name`、ServiceChannels、环境变量、wire、持久化字段和插件外部身份保留既有值，由各自后续契约阶段处理。对象简写若属于外部字段，重命名绑定时显式保留原字段名。验收应覆盖动态导入与 mock、依赖注入、保留错误身份和 CUA JS/声明一致，并验证现有客户端链路。

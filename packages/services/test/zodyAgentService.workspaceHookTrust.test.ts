@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods } from "@zody/shared";
+import { zodyProtocolMethods } from "@zody/shared";
 
 describe("ZCodeAgentService workspace Hook Trust", () => {
   it("没有 task/provider 时只启动 read-only Agent 并发送 workspace grant", async () => {
     const request = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workspaceHookTrustGrant) {
+      if (method === zodyProtocolMethods.workspaceHookTrustGrant) {
         return { accepted: true };
       }
       throw new Error(`Unexpected method ${method}`);
@@ -29,10 +29,10 @@ describe("ZCodeAgentService workspace Hook Trust", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import(
+    const { createZodyAgentService } = await import(
       "../src/zody-agent/zodyAgentService.js"
     );
-    const service = createZCodeAgentService();
+    const service = createZodyAgentService();
 
     await expect(
       service.grantWorkspaceHookTrust({
@@ -45,7 +45,7 @@ describe("ZCodeAgentService workspace Hook Trust", () => {
     ).resolves.toEqual({ accepted: true });
     expect(getClient).toHaveBeenCalledTimes(1);
     expect(request).toHaveBeenCalledWith(
-      zcodeProtocolMethods.workspaceHookTrustGrant,
+      zodyProtocolMethods.workspaceHookTrustGrant,
       {
         workspace: {
           workspacePath: "/repo",

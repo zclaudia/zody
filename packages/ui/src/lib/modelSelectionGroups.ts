@@ -1,5 +1,5 @@
 import {
-  isZCodeAgentProvider,
+  isZodyAgentProvider,
   type ZodyProvider,
 } from "@zody/shared";
 import type { ModelSelectionView } from "@zody/services";
@@ -24,7 +24,7 @@ function supportsRegistryApiFormat(
 ): boolean {
   if (!apiFormat) return false;
   // 仅剩 glm（ZCode Agent）provider；三方 CLI 的 api format 差异已随 provider 下线。
-  return isZCodeAgentProvider(selectedProvider);
+  return isZodyAgentProvider(selectedProvider);
 }
 
 export function buildRegistryModelSelectGroups(

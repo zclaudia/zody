@@ -14,7 +14,7 @@ import type { McpTelemetryTracker } from "@zody/adapters";
 import type { WorkspaceHookPolicyProvider } from "@zody/core";
 import type { AccountProviderConfigSnapshot } from "@zody/provider";
 import {
-  zcodeProtocolErrorCodes,
+  zodyProtocolErrorCodes,
   type ZodyDeliveryKind,
   type ModelSelection,
   type ZodyModelContextBudgetStrategy,
@@ -337,7 +337,7 @@ export function requireSession(
       sessionId,
     });
     throw new ProtocolRequestError(
-      zcodeProtocolErrorCodes.sessionUnavailable,
+      zodyProtocolErrorCodes.sessionUnavailable,
       `Session is not active: ${sessionId}`,
     );
   }

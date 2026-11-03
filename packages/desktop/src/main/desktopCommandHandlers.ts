@@ -1,14 +1,14 @@
 import { getPluginSandboxHost } from "./pluginSandbox/index.js";
 /* eslint-disable max-lines -- 桌面命令分发需要共享窗口与平台上下文，集中维护更便于一致性 */
-import { readZCodeStdioTapDevState, setZCodeStdioTapDevEnabled } from "@zody/services/node";
+import { readZodyStdioTapDevState, setZodyStdioTapDevEnabled } from "@zody/services/node";
 import {
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   DesktopCommandIds,
   isDesktopAutoUpdateActive,
   TEST_ZCODE_ENDPOINT_ORIGIN,
-  normalizeZCodeEndpointOrigin,
+  normalizeZodyEndpointOrigin,
   PlatformChannels,
-  resolveZCodeEndpointOrigin,
+  resolveZodyEndpointOrigin,
   ZCODE_ENV,
   ZCODE_DATA_ROOT_DIR_NAME,
   type AppSettings,
@@ -331,7 +331,7 @@ async function setZCodeEndpointOverride(options: {
   if (ZCODE_ENV === "production") {
     return;
   }
-  const normalized = options.value ? normalizeZCodeEndpointOrigin(options.value) : undefined;
+  const normalized = options.value ? normalizeZodyEndpointOrigin(options.value) : undefined;
   await options.settingService.update({ zodyEndpointOrigin: normalized });
   await options.onZCodeEndpointChanged();
 }
@@ -354,8 +354,8 @@ function toggleZCodeStdioTapDevProxy(options: {
   logger: { info: (...args: unknown[]) => void };
   updateZCodeStdioTapDevMenuState: () => void;
 }) {
-  const current = readZCodeStdioTapDevState();
-  const next = setZCodeStdioTapDevEnabled(!current.enabled);
+  const current = readZodyStdioTapDevState();
+  const next = setZodyStdioTapDevEnabled(!current.enabled);
   options.updateZCodeStdioTapDevMenuState();
   options.logger.info("[stdio-tap] dev proxy toggled", {
     enabled: next.enabled,
@@ -376,7 +376,7 @@ function resolveChangelogUrl(
   if (!endpointOrigin.trim()) {
     return undefined;
   }
-  const origin = normalizeZCodeEndpointOrigin(endpointOrigin);
+  const origin = normalizeZodyEndpointOrigin(endpointOrigin);
   return locale === "zh-CN" ? `${origin}/cn/changelog` : `${origin}/en/changelog`;
 }
 
@@ -396,7 +396,7 @@ async function resolveCurrentZodyEndpointOrigin(settingService: {
   envBaseOrigin?: string | null;
 }): Promise<string> {
   const settings = await settingService.get();
-  return resolveZCodeEndpointOrigin({
+  return resolveZodyEndpointOrigin({
     env: ZCODE_ENV,
     envBaseOrigin: settingService.envBaseOrigin,
     overrideOrigin: settings.zodyEndpointOrigin,

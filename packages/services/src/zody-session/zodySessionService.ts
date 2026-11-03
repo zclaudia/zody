@@ -23,10 +23,10 @@ import type {
   ZodySessionWorkspaceTarget,
 } from "#src/zody-session/zodySession.js";
 import { formatModelPickerValue } from "#src/zody-agent/zodyConfigOptions.js";
-import { createZCodeSessionApiRetryRuntimeTracker } from "#src/zody-session/zodySessionApiRetry.js";
+import { createZodySessionApiRetryRuntimeTracker } from "#src/zody-session/zodySessionApiRetry.js";
 import { appendWorkspaceToFilesystemMcpServers } from "#src/session/mcpWorkspaceScope.js";
 import { repairEmptyImportedClaudeSessionSnapshot } from "#src/zody-session/importedClaudeSessionRepair.js";
-import { createZCodeDeferredDraftRegistry } from "#src/zody-session/zodySessionDraftRegistry.js";
+import { createZodyDeferredDraftRegistry } from "#src/zody-session/zodySessionDraftRegistry.js";
 import type { CuaProductMcpServerResolver } from "#src/cua-permission-broker/index.js";
 
 const logger = createServiceLogger("zcode-session-service");
@@ -44,13 +44,13 @@ interface CreateZodySessionServiceOptions {
   cuaProductMcpServerResolver?: CuaProductMcpServerResolver;
 }
 
-export function createZCodeSessionService({
+export function createZodySessionService({
   agentService,
   taskIndexSyncer,
   cuaProductMcpServerResolver,
 }: CreateZodySessionServiceOptions): IZodySessionService {
-  const { withApiRetryRuntime } = createZCodeSessionApiRetryRuntimeTracker();
-  const deferredDraftSessions = createZCodeDeferredDraftRegistry();
+  const { withApiRetryRuntime } = createZodySessionApiRetryRuntimeTracker();
+  const deferredDraftSessions = createZodyDeferredDraftRegistry();
 
   function notifySyncer(
     target: ZodyTaskTarget,

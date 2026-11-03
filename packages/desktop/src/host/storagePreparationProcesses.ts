@@ -8,7 +8,7 @@ import {
   databaseMigrationFactsSchema,
   type DatabaseMigrationFacts,
   databaseStartupErrorDetailsSchema,
-  zcodeStoragePreparationFrameSchema,
+  zodyStoragePreparationFrameSchema,
   type DatabaseStartupState,
 } from "@zody/shared";
 import { resolveDefaultZodyAgentCommand } from "@zody/services/storage-startup";
@@ -183,7 +183,7 @@ export async function prepareSessionStorage(options: {
     lines.on("line", (line) => {
       try {
         if (line.length > 65536) throw statusError("transport_closed");
-        const frame = zcodeStoragePreparationFrameSchema.parse(JSON.parse(line));
+        const frame = zodyStoragePreparationFrameSchema.parse(JSON.parse(line));
         clearTimeout(firstStateTimer);
         if (frame.method === "startup/storagePath") {
           if (pathReceived) throw statusError("transport_closed");

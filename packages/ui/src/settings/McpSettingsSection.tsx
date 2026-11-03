@@ -13,7 +13,7 @@ import {
   useState,
 } from "react";
 import {
-  convertToZCodeAgentMcpServer,
+  convertToZodyAgentMcpServer,
   TID_MCP_OPEN_AUTHORIZATION_BUTTON,
   TID_PLUGIN_MCP_SERVER_ROW,
   testId,
@@ -28,7 +28,7 @@ import type {
   ZodyPluginInfo,
 } from "@zody/shared";
 import {
-  isZCodeAgentMcpStatusModeUnsupportedError,
+  isZodyAgentMcpStatusModeUnsupportedError,
   type IMcpSyncService,
 } from "@zody/services";
 import { Button } from "@/components/ui/button.js";
@@ -169,7 +169,7 @@ export async function refreshMcpServerStatusList({
     }
     if (
       refreshMode === "status" &&
-      isZCodeAgentMcpStatusModeUnsupportedError(error)
+      isZodyAgentMcpStatusModeUnsupportedError(error)
     ) {
       return "status-mode-unsupported";
     }
@@ -359,7 +359,7 @@ export function buildMcpOAuthAuthorizationStatusRefreshServers(
     if (!hasPendingAuthorization || seenNames.has(server.name)) {
       continue;
     }
-    const zcodeAgentServer = convertToZCodeAgentMcpServer(
+    const zcodeAgentServer = convertToZodyAgentMcpServer(
       server.name,
       server.config,
     );

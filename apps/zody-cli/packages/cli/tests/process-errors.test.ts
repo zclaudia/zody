@@ -4,7 +4,7 @@ import { once } from "node:events";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { Writable } from "node:stream";
-import { parseZCodeProcessDiagnostic } from "@zody/shared/process-diagnostic";
+import { parseZodyProcessDiagnostic } from "@zody/shared/process-diagnostic";
 import { isProtocolServerInvocation } from "../src/arguments.js";
 import { interceptKnownRuntimeWarnings } from "../src/runtime-warnings.js";
 import { installProtocolStderrBoundary } from "../src/protocol-stderr.js";
@@ -103,7 +103,7 @@ test("process error boundary observes uncaught exceptions without throwing", () 
 
   assert.match(stderr.output(), /kind=uncaughtException/);
   assert.match(stderr.output(), /uncaught boom/);
-  const events = stderr.output().split("\n").map(parseZCodeProcessDiagnostic).filter(Boolean);
+  const events = stderr.output().split("\n").map(parseZodyProcessDiagnostic).filter(Boolean);
   assert.equal(events.length, 1);
   assert.equal(events[0]?.name, "Error");
   assert.equal(events[0]?.message, "uncaught boom");
@@ -128,7 +128,7 @@ test("process error boundary observes non-Error promise rejection reasons", () =
 
   assert.match(stderr.output(), /kind=unhandledRejection/);
   assert.match(stderr.output(), /rejected value/);
-  const event = stderr.output().split("\n").map(parseZCodeProcessDiagnostic).find(Boolean);
+  const event = stderr.output().split("\n").map(parseZodyProcessDiagnostic).find(Boolean);
   assert.equal(event?.kind, "unhandledRejection");
   assert.equal(event?.message, "rejected value");
   dispose();
@@ -149,7 +149,7 @@ test("fatal diagnostics are bounded and shutdown is requested only once", () => 
   target.emit("uncaughtExceptionMonitor", error, "uncaughtException");
   target.emit("uncaughtException", error);
   target.emit("uncaughtException", error);
-  const events = stderr.output().split("\n").map(parseZCodeProcessDiagnostic).filter(Boolean);
+  const events = stderr.output().split("\n").map(parseZodyProcessDiagnostic).filter(Boolean);
   assert.equal(events.length, 1);
   assert.equal(fatalCount, 1);
   assert.equal(events[0]?.origin, "uncaughtException");
@@ -230,7 +230,7 @@ for (const rejectionMode of ["throw", "strict"]) {
         const events = Buffer.concat(probe.stderr)
           .toString()
           .split("\n")
-          .map(parseZCodeProcessDiagnostic)
+          .map(parseZodyProcessDiagnostic)
           .filter(Boolean);
         assert.equal(events.length, 1);
         assert.equal(

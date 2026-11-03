@@ -12,7 +12,7 @@ import { inspectZCodeSkill, listZCodeSkills } from "../src/skills.js";
 import { StartupTimer } from "../src/startup-logging.js";
 import { getSkillReferenceCatalog } from "../src/zody-protocol/skill-reference-catalog.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
-import { createWorkspaceZCodeApp } from "../src/zody-protocol/workspace-model-runtime.js";
+import { createWorkspaceZodyApp } from "../src/zody-protocol/workspace-model-runtime.js";
 
 const VISUALIZE_PLUGIN_ID = "visualize@zcode-plugins-official";
 const VISUALIZE_SKILL = "visualize:visualize";
@@ -129,7 +129,7 @@ describe("visualize protocol-only skill discovery", () => {
       sessions: new Map(),
     } as unknown as ZodyProtocolAgentServerContext;
     const workspace = { workspacePath: root, workspaceKey: root };
-    await createWorkspaceZCodeApp(context, workspace, {
+    await createWorkspaceZodyApp(context, workspace, {
       providerRuntimeHeadersPort: {} as ZodyAppOptions["providerRuntimeHeadersPort"],
     });
     expect(createZCodeApp).toHaveBeenCalledWith(

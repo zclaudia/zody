@@ -1,13 +1,13 @@
 import { SessionEventType, createEventId } from "@zody/contracts";
 import {
-  zcodeMcpReadResourceParamsSchema,
-  zcodeMcpUiCallToolParamsSchema,
-  zcodeMcpUiCancelCallParamsSchema,
-  zcodeMcpUiCloseInstanceParamsSchema,
-  zcodeMcpUiListResourcesParamsSchema,
-  zcodeMcpUiOpenInstanceParamsSchema,
-  zcodeMcpUiReadResourceParamsSchema,
-  zcodeMcpUiResourceSubscriptionParamsSchema,
+  zodyMcpReadResourceParamsSchema,
+  zodyMcpUiCallToolParamsSchema,
+  zodyMcpUiCancelCallParamsSchema,
+  zodyMcpUiCloseInstanceParamsSchema,
+  zodyMcpUiListResourcesParamsSchema,
+  zodyMcpUiOpenInstanceParamsSchema,
+  zodyMcpUiReadResourceParamsSchema,
+  zodyMcpUiResourceSubscriptionParamsSchema,
   type ZodyMcpReadResourceResult,
   type ZodyMcpUiCallToolResult,
   type ZodyMcpUiCancelCallResult,
@@ -38,7 +38,7 @@ export async function readMcpUiResource(
   rawParams: unknown,
   signal?: AbortSignal,
 ): Promise<ZodyMcpReadResourceResult> {
-  const params = parseParams(zcodeMcpReadResourceParamsSchema, rawParams);
+  const params = parseParams(zodyMcpReadResourceParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, { operation: "mcp/readResource" });
   const active = mcpUiInstances.validate(
     params.instance,
@@ -62,7 +62,7 @@ export async function callMcpUiTool(
   rawParams: unknown,
   signal?: AbortSignal,
 ): Promise<ZodyMcpUiCallToolResult> {
-  const params = parseParams(zcodeMcpUiCallToolParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiCallToolParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, { operation: "mcp/uiCallTool" });
   return translateScopeError(() =>
     createMcpUiHandlers({ logger: context.logger }).callTool(
@@ -78,7 +78,7 @@ export async function cancelMcpUiToolCall(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyMcpUiCancelCallResult> {
-  const params = parseParams(zcodeMcpUiCancelCallParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiCancelCallParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, { operation: "mcp/uiCancelCall" });
   return translateScopeError(async () =>
     createMcpUiHandlers({ logger: context.logger }).cancelToolCall(
@@ -94,7 +94,7 @@ export async function listMcpUiResources(
   rawParams: unknown,
   signal?: AbortSignal,
 ): Promise<ZodyMcpUiListResourcesResult> {
-  const params = parseParams(zcodeMcpUiListResourcesParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiListResourcesParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, { operation: "mcp/uiListResources" });
   return translateScopeError(() =>
     createMcpUiHandlers({ logger: context.logger }).listResources(
@@ -110,7 +110,7 @@ export async function listMcpUiResourceTemplates(
   rawParams: unknown,
   signal?: AbortSignal,
 ): Promise<ZodyMcpUiListResourceTemplatesResult> {
-  const params = parseParams(zcodeMcpUiListResourcesParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiListResourcesParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, {
     operation: "mcp/uiListResourceTemplates",
   });
@@ -129,7 +129,7 @@ export async function subscribeMcpUiResource(
   rawParams: unknown,
   signal?: AbortSignal,
 ): Promise<Record<string, never>> {
-  const params = parseParams(zcodeMcpUiResourceSubscriptionParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiResourceSubscriptionParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, {
     operation: "mcp/uiSubscribeResource",
   });
@@ -148,7 +148,7 @@ export async function unsubscribeMcpUiResource(
   rawParams: unknown,
   signal?: AbortSignal,
 ): Promise<Record<string, never>> {
-  const params = parseParams(zcodeMcpUiResourceSubscriptionParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiResourceSubscriptionParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, {
     operation: "mcp/uiUnsubscribeResource",
   });
@@ -168,7 +168,7 @@ export async function readMcpUiResourceForUi(
   rawParams: unknown,
   signal?: AbortSignal,
 ): Promise<ZodyMcpUiReadResourceResult> {
-  const params = parseParams(zcodeMcpUiReadResourceParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiReadResourceParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, { operation: "mcp/uiReadResource" });
   return translateScopeError(() =>
     createMcpUiHandlers({ logger: context.logger }).readResourceForUi(
@@ -217,7 +217,7 @@ export async function openMcpUiInstance(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeMcpUiOpenInstanceParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiOpenInstanceParamsSchema, rawParams);
   let record = requireSession(context, params.sessionId, { operation: "mcp/uiOpenInstance" });
   let source = record.app.getMcpAppConnectionSnapshot(params.serverName);
   if (!source) {
@@ -307,7 +307,7 @@ export async function closeMcpUiInstance(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeMcpUiCloseInstanceParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiCloseInstanceParamsSchema, rawParams);
   const active = mcpUiInstances.find(params.instance.token);
   // 清理允许连接已经断开，但不能用另一来源或会话的凭证撤销当前实例。
   if (active) mcpUiInstances.validate(params.instance, params, active.source);
@@ -328,7 +328,7 @@ export async function validateMcpUiInstance(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeMcpUiCloseInstanceParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiCloseInstanceParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, { operation: "mcp/uiValidateInstance" });
   mcpUiInstances.validate(
     params.instance,

@@ -1115,3 +1115,8 @@ describe("monotonic revocation", () => {
     }
   });
 });
+
+it("keeps the renamed broker predicate fail-closed through its runtime export", async () => {
+  const broker = await import("@zody/zody-cua/broker/server");
+  expect(broker.isPotentialZodyCuaAgentMcpServer({})).toBe(false);
+});

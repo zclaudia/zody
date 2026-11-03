@@ -54,7 +54,7 @@ import {
   IZodyTaskService,
   IZodySessionService,
   ICuaPipSessionService,
-  createZCodeAgentConnectionScope,
+  createZodyAgentConnectionScope,
   type ZodyAgentV4ClientMode,
   collectServiceMemoryDiagnostics,
 } from "@zody/services";
@@ -81,7 +81,7 @@ import {
   HostResponseTypes,
   ZCODE_VERSION,
   formatLogPrefix,
-  formatZCodeHostProcessName,
+  formatZodyHostProcessName,
   formatZodError,
   buildRemoteWorkspaceIdentity,
   buildRemoteEnvironmentKey,
@@ -221,7 +221,7 @@ const hostNetworkCapture = createHostNetworkCapture(parentPort);
 
 // 进程检索体验优化：host 由 utilityProcess 拉起时外壳仍是 Electron Helper，
 // 这里根据 main 传入的窗口 label 补一层稳定的 zody-* title，方便系统进程列表过滤。
-process.title = formatZCodeHostProcessName(process.env["ZCODE_PROCESS_LABEL"]);
+process.title = formatZodyHostProcessName(process.env["ZCODE_PROCESS_LABEL"]);
 
 type HostLogLevel = "info" | "warn" | "error";
 
@@ -1932,7 +1932,7 @@ function exposeServicesOnMessagePort(
   const server = new NetworkTelemetryChannelServer(loggedServer);
   const agentService = services.getOptional(IZodyAgentService);
   const connectionScope = agentService
-    ? createZCodeAgentConnectionScope(agentService, {
+    ? createZodyAgentConnectionScope(agentService, {
         connectionId: `host-rpc-${randomUUID()}`,
         clientMode,
       })

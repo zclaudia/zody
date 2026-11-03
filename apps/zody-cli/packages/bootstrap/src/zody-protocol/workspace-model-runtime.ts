@@ -3,8 +3,8 @@ import { createInMemorySessionEventStore } from "@zody/adapters/storage";
 import type { ModelSelection } from "@zody/contracts";
 import {
   isRemoteWorkspaceIdentity,
-  zcodeProviderTestModelConnectivityParamsSchema,
-  zcodeWorkspaceReadPresentationParamsSchema,
+  zodyProviderTestModelConnectivityParamsSchema,
+  zodyWorkspaceReadPresentationParamsSchema,
   type ZodyWorkspaceRef,
 } from "@zody/shared";
 import type { ZodyApp, ZodyAppOptions } from "../app/types.js";
@@ -21,7 +21,7 @@ export async function readWorkspacePresentation(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeWorkspaceReadPresentationParamsSchema, rawParams);
+  const params = parseParams(zodyWorkspaceReadPresentationParamsSchema, rawParams);
   return {
     workspace: params.workspace,
     mode: "build" as const,
@@ -40,7 +40,7 @@ export async function testProviderModelConnectivity(
   rawParams: unknown,
   abortSignal?: AbortSignal,
 ) {
-  const params = parseParams(zcodeProviderTestModelConnectivityParamsSchema, rawParams);
+  const params = parseParams(zodyProviderTestModelConnectivityParamsSchema, rawParams);
   // 旧 Personal Config 跨进程 watcher 可能永久漏掉原子写事件；连接测试若不先
   // 主动刷新，会反复查询旧 Registry。这里复用正式 Registry refresh，不旁路创建配置事实。
   await context.deps.refreshProviderRegistry?.("provider-connectivity");
@@ -49,7 +49,7 @@ export async function testProviderModelConnectivity(
   );
   const app =
     active?.app ??
-    (await createWorkspaceZCodeApp(context, params.workspace, {
+    (await createWorkspaceZodyApp(context, params.workspace, {
       env: context.deps.env,
       eventStore: createInMemorySessionEventStore(),
       runtimeConfig: { workingDirectory: params.workspace.workspacePath },
@@ -67,7 +67,7 @@ export async function testProviderModelConnectivity(
   }
 }
 
-export async function createWorkspaceZCodeApp(
+export async function createWorkspaceZodyApp(
   context: ZodyProtocolAgentServerContext,
   workspace: ZodyWorkspaceRef,
   options: Omit<ZodyAppOptions, "providerRegistry">,

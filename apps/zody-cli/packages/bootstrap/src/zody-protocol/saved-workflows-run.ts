@@ -25,8 +25,8 @@ import {
   type ResolvedSavedWorkflow,
 } from "@zody/core";
 import {
-  zcodeWorkflowsForRunParamsSchema,
-  zcodeWorkflowsSaveParamsSchema,
+  zodyWorkflowsForRunParamsSchema,
+  zodyWorkflowsSaveParamsSchema,
   type ZodySavedWorkflowEntry,
   type ZodyWorkflowsForRunResult,
   type ZodyWorkflowsSaveResult,
@@ -95,7 +95,7 @@ export async function saveSavedWorkflowFromRunOp(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyWorkflowsSaveResult> {
-  const params = parseParams(zcodeWorkflowsSaveParamsSchema, rawParams);
+  const params = parseParams(zodyWorkflowsSaveParamsSchema, rawParams);
   const cwd = params.workspace.workspacePath;
   const scope = scopeOf(params);
   // 名字先验后拼路径：这条顺序是路径穿越的防线本身（store.ts 的同一论证）。
@@ -160,7 +160,7 @@ export async function findSavedWorkflowForRunOp(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyWorkflowsForRunResult> {
-  const params = parseParams(zcodeWorkflowsForRunParamsSchema, rawParams);
+  const params = parseParams(zodyWorkflowsForRunParamsSchema, rawParams);
   const cwd = params.workspace.workspacePath;
   const record = runRecordOf(context, params.runId);
   // 实参与命中与否无关：它服务的是「再次运行」的实参窗预填，run 在就给。

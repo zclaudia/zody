@@ -460,7 +460,7 @@ async function loadProtocolAgent(): Promise<
   (options?: RunZodyProtocolAgentOptions) => Promise<void>
 > {
   const module = await import("@zody/bootstrap");
-  return module.runZCodeProtocolAgent;
+  return module.runZodyProtocolAgent;
 }
 
 interface CuaControlLifetime {

@@ -2,7 +2,7 @@ import type { SessionCreateSource } from "@zody/shared";
 /* eslint-disable max-lines -- workspace 级状态动作集中在同一 slice，先保持收口便于维护。 */
 import {
   buildNativeSupplierKey,
-  normalizeAgentProviderToZCodeAgent,
+  normalizeAgentProviderToZodyAgent,
   type ZodyConfigOption,
   type ModelSelectionResolution,
   type ZodyProvider,
@@ -518,7 +518,7 @@ export function createWorkspaceSlice(set: SetFn) {
       },
     ) => {
       const normalizedProvider = provider
-        ? normalizeAgentProviderToZCodeAgent(provider)
+        ? normalizeAgentProviderToZodyAgent(provider)
         : undefined;
       if (normalizedProvider) {
         persistLastSelectedAgentProvider(normalizedProvider);
@@ -529,7 +529,7 @@ export function createWorkspaceSlice(set: SetFn) {
           state,
           workspacePath,
           (current) => {
-            const nextSelectedProvider = normalizeAgentProviderToZCodeAgent(
+            const nextSelectedProvider = normalizeAgentProviderToZodyAgent(
               normalizedProvider ?? current.selectedProvider,
             );
             const shouldResetSupplierForDraftProvider =
@@ -666,7 +666,7 @@ export function createWorkspaceSlice(set: SetFn) {
           workspacePath,
           (current) => ({
             ...current,
-            selectedProvider: normalizeAgentProviderToZCodeAgent(provider),
+            selectedProvider: normalizeAgentProviderToZodyAgent(provider),
           }),
           workspaceIdentity,
         ),

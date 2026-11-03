@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  isZCodeAgentProvider,
+  isZodyAgentProvider,
   ZCODE_AGENT_PROVIDER,
   type ZodyProvider,
 } from "@zody/shared";
@@ -61,7 +61,7 @@ export function useDraftModelReadinessGate(params: {
   } = params;
   const workspaceKey = workspaceIdentity?.trim() || workspacePath;
   const displayProvider = provider ?? ZCODE_AGENT_PROVIDER;
-  const enabled = sessionId === null && isZCodeAgentProvider(displayProvider);
+  const enabled = sessionId === null && isZodyAgentProvider(displayProvider);
   const gateKey = `${workspaceKey}\u0000${displayProvider}`;
   const [state, setState] = useState<DraftModelReadinessState>(() => ({
     gateKey,

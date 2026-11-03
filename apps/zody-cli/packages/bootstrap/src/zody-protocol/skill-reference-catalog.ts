@@ -1,7 +1,7 @@
 // Composer Skill 只读 catalog。
 // 与 Skills Settings 管理接口分离：这里的 sessionId 决定 authority，不提供启停/删除能力。
 import {
-  zcodeSkillsReferenceCatalogParamsSchema,
+  zodySkillsReferenceCatalogParamsSchema,
   type ZodySkillReferenceCatalogEntry,
   type ZodySkillsReferenceCatalogResult,
 } from "@zody/shared";
@@ -17,7 +17,7 @@ export async function getSkillReferenceCatalog(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodySkillsReferenceCatalogResult> {
-  const params = parseParams(zcodeSkillsReferenceCatalogParamsSchema, rawParams);
+  const params = parseParams(zodySkillsReferenceCatalogParamsSchema, rawParams);
   if (params.sessionId) {
     const record = requireSession(context, params.sessionId);
     const outcome = await record.app.getSkillCatalog();

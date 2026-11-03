@@ -24,8 +24,8 @@ import {
   requestWorkspaceHookReviewTargetSchema,
 } from "./workspace-hook-review.js";
 import {
-  zcodeBrowserAmbientContextSchema,
-  zcodeProtocolMcpServerSchema,
+  zodyBrowserAmbientContextSchema,
+  zodyProtocolMcpServerSchema,
 } from "../zody-protocol/index.js";
 import { sharedContextRefSchema } from "./shared-context-ref.js";
 import { conversationInputSourceSchema } from "./input-intent.js";
@@ -66,7 +66,7 @@ export const commandPayloadSchemas = {
       .optional(),
     config: createSessionRequestedConfigSchema.optional(),
     // MCP 是 runtime 启动期配置，必须随 create 一次性进入 record，不能在首发后补写。
-    mcpServers: z.array(zcodeProtocolMcpServerSchema).optional(),
+    mcpServers: z.array(zodyProtocolMcpServerSchema).optional(),
     // fork（F4.3）：offPeakToolEnabled 随闲时任务全链路删除。
     // 动态工作流灰度 flag，与原 offPeakToolEnabled 同一模式。
     dynamicWorkflowEnabled: z.boolean().optional(),
@@ -94,7 +94,7 @@ export const commandPayloadSchemas = {
       // Desktop Cmd/Ctrl+Enter 只覆盖本次 busy input，不改 session followupMode。
       // startNow 由 CLI 原子抢占当前 turn，不经过 queue admission。
       requestedDelivery: z.enum(["startNow", "queue", "guide"]).optional(),
-      browserAmbientContext: zcodeBrowserAmbientContextSchema.optional(),
+      browserAmbientContext: zodyBrowserAmbientContextSchema.optional(),
       // Share handover 只允许当前 session 的一个已导入上下文；完整正文由 runtime 从
       // 持久化 provenance 解析，不能随 command 从 renderer 传入。
       context_refs: z.array(sharedContextRefSchema).max(1).optional(),

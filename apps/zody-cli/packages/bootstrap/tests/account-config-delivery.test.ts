@@ -8,12 +8,12 @@ import {
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
   ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
 } from "@zody/provider-node";
-import { zcodeProtocolMethods } from "@zody/shared";
+import { zodyProtocolMethods } from "@zody/shared";
 import {
   startProcessProviderRegistryRuntime,
   parseProcessAccountProviderConfigSnapshot,
 } from "../src/app/process-provider-registry-runtime.js";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 
 const cleanups: (() => Promise<void>)[] = [];
 afterEach(async () => {
@@ -40,7 +40,7 @@ describe("托管 Worker 账号交付", () => {
     const registry = started.runtime.registryService;
     const previous = registry.getSnapshot();
     const next = createAccountProviderConfigSnapshot("builtin-B", ProviderConfigMap.empty(), {});
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp() {
         throw new Error("账号交付不得创建会话");
       },
@@ -49,7 +49,7 @@ describe("托管 Worker 账号交付", () => {
     expect(
       await server.handleMessage({
         id: 1,
-        method: zcodeProtocolMethods.providerUpdateAccountConfig,
+        method: zodyProtocolMethods.providerUpdateAccountConfig,
         params: {
           ...next,
           providers: Object.fromEntries(

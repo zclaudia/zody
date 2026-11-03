@@ -7,9 +7,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  zcodeProtocolMethods,
-  zcodeWorkflowsForRunResultSchema,
-  zcodeWorkflowsSaveResultSchema,
+  zodyProtocolMethods,
+  zodyWorkflowsForRunResultSchema,
+  zodyWorkflowsSaveResultSchema,
 } from "@zody/shared";
 import { parseSavedWorkflow, serializeSavedWorkflow } from "@zody/core";
 import {
@@ -96,8 +96,8 @@ afterEach(async () => {
 
 describe("workflows/save", () => {
   it("registers the method names", () => {
-    expect(zcodeProtocolMethods.workflowsSave).toBe("workflows/save");
-    expect(zcodeProtocolMethods.workflowsForRun).toBe("workflows/forRun");
+    expect(zodyProtocolMethods.workflowsSave).toBe("workflows/save");
+    expect(zodyProtocolMethods.workflowsForRun).toBe("workflows/forRun");
   });
 
   it("按 runId 取 journal 里的脚本原文逐字节写下去；元数据按 SaveWorkflow 同一套规则落 frontmatter", async () => {
@@ -108,7 +108,7 @@ describe("workflows/save", () => {
       name: "pr-review",
       meta: { description: "分层评审" },
     });
-    expect(() => zcodeWorkflowsSaveResultSchema.parse(result)).not.toThrow();
+    expect(() => zodyWorkflowsSaveResultSchema.parse(result)).not.toThrow();
     expect(result).toEqual({
       ok: true,
       name: "pr-review",
@@ -211,7 +211,7 @@ describe("workflows/forRun", () => {
       runId: "r",
       candidates: [{ name: "gone" }, { name: "distilled", scope: "project" }],
     });
-    expect(() => zcodeWorkflowsForRunResultSchema.parse(byCandidate)).not.toThrow();
+    expect(() => zodyWorkflowsForRunResultSchema.parse(byCandidate)).not.toThrow();
     expect(byCandidate).toMatchObject({
       entry: { name: "distilled", scope: "project" },
       match: "candidate",

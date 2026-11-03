@@ -23,7 +23,7 @@ import type {
   ProjectId,
   SessionId,
 } from "@zody/contracts";
-import { zcodeProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
+import { zodyProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
 import {
   V4_METHODS,
   conversationTopic,
@@ -55,7 +55,7 @@ import type {
   ZodyProtocolAgentServerContext,
   ZodyProtocolSessionRecord,
 } from "../src/zody-protocol/server-types.js";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 import type { ZodyApp } from "../src/app/types.js";
 
@@ -648,7 +648,7 @@ const WORKSPACE_PATH = "/workspace/idle-deactivation";
 const SESSION_ID = "sess_idle_deactivate" as SessionId;
 type TestSessionStore = ReturnType<typeof createSqliteSessionStore>;
 
-async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProtocolMessage) {
+async function requestResult(server: ZodyProtocolAgentServer, message: ZodyProtocolMessage) {
   const response = await server.handleMessage(message);
   if (!response || !("result" in response)) {
     throw new Error(`Expected protocol success response: ${JSON.stringify(response)}`);
@@ -728,7 +728,7 @@ async function seedPersistedSession(dbPath: string): Promise<void> {
 }
 
 interface IntegrationHarness {
-  server: ZCodeProtocolAgentServer;
+  server: ZodyProtocolAgentServer;
   store: TestSessionStore;
   createdApps: ZodyApp[];
   sessions: Map<string, ZodyProtocolSessionRecord>;
@@ -743,7 +743,7 @@ function bootServer(
 ): IntegrationHarness {
   const store = createSqliteSessionStore({ dbPath });
   const createdApps: ZodyApp[] = [];
-  const server = new ZCodeProtocolAgentServer({
+  const server = new ZodyProtocolAgentServer({
     createZCodeApp: (appOptions) => {
       const app = createFakeApp(appOptions, options.appOverrides ?? {});
       createdApps.push(app);
@@ -765,7 +765,7 @@ function bootServer(
 // subscribe response 严格 ACK-only；initial snapshot 走 request-scoped post-response
 // outbox（response line 之后的 owned notification），此处解析出来一并返回。
 async function subscribeConversation(
-  server: ZCodeProtocolAgentServer,
+  server: ZodyProtocolAgentServer,
   requestId: string,
   connectionId: string,
 ) {
@@ -791,7 +791,7 @@ async function subscribeConversation(
 
 /** I19：history 帧先返回；runtime/record 是否物化由 READY 收口。 */
 async function awaitConversationReady(
-  server: ZCodeProtocolAgentServer,
+  server: ZodyProtocolAgentServer,
   requestId: string,
 ): Promise<void> {
   await requestResult(server, {
@@ -830,7 +830,7 @@ describe("session resident pool（集成：真 sqlite + server + binder）", () 
       if (
         "id" in message &&
         "method" in message &&
-        message.method === zcodeProtocolMethods.sessionRequestRuntimePreferences
+        message.method === zodyProtocolMethods.sessionRequestRuntimePreferences
       ) {
         void server.handleMessage({
           id: message.id,
@@ -978,14 +978,14 @@ describe("session resident pool（集成：真 sqlite + server + binder）", () 
 
 describe("SessionResidentPool 配置回退", () => {
   function makeServer(deps: Partial<ZodyProtocolAgentDependencies>) {
-    return new ZCodeProtocolAgentServer({
+    return new ZodyProtocolAgentServer({
       createZCodeApp: (appOptions) => createFakeApp(appOptions, {}),
       cwd: WORKSPACE_PATH,
       ...deps,
     });
   }
 
-  function contextOf(server: ZCodeProtocolAgentServer) {
+  function contextOf(server: ZodyProtocolAgentServer) {
     return (server as unknown as { context: ZodyProtocolAgentServerContext }).context;
   }
 

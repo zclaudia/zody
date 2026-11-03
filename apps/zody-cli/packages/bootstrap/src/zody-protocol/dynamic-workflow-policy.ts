@@ -1,5 +1,5 @@
 import {
-  zcodeWorkspaceUpdateDynamicWorkflowPolicyParamsSchema,
+  zodyWorkspaceUpdateDynamicWorkflowPolicyParamsSchema,
   type DynamicWorkflowMode,
 } from "@zody/shared";
 import { parseParams, type ZodyProtocolAgentServerContext } from "./server-types.js";
@@ -16,7 +16,7 @@ export async function updateDynamicWorkflowPolicy(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeWorkspaceUpdateDynamicWorkflowPolicyParamsSchema, rawParams);
+  const params = parseParams(zodyWorkspaceUpdateDynamicWorkflowPolicyParamsSchema, rawParams);
   context.appRuntimePreferences.dynamicWorkflowEnabled = params.enabled;
   // mode 只在开启时有意义；关闭时清掉，免得下次开启（只发布尔的旧 Host）沿用过期的 onDemand。
   context.appRuntimePreferences.dynamicWorkflowMode = params.enabled ? params.mode : undefined;

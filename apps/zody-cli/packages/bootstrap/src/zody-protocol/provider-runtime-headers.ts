@@ -1,9 +1,9 @@
 import { requestVerificationTimeoutMessage } from "@zody/shared";
 import { randomUUID } from "node:crypto";
 import {
-  zcodeProtocolMethods,
-  zcodeProtocolNotifications,
-  zcodeProviderRuntimeHeadersResponseSchema,
+  zodyProtocolMethods,
+  zodyProtocolNotifications,
+  zodyProviderRuntimeHeadersResponseSchema,
   type ZodyWorkspaceRef,
 } from "@zody/shared";
 import type { ZodyAppOptions } from "../app/types.js";
@@ -32,7 +32,7 @@ export function createProviderRuntimeHeadersPort(
       let result;
       try {
         result = await context.requestClient(
-          zcodeProtocolMethods.interactionRequestProviderRuntimeHeaders,
+          zodyProtocolMethods.interactionRequestProviderRuntimeHeaders,
           {
             // 同一毫秒内的并发请求不能共用关联键，否则 pending 应答会覆盖或串用。
             requestId,
@@ -49,7 +49,7 @@ export function createProviderRuntimeHeadersPort(
               : {}),
             reason: input.reason,
           },
-          zcodeProviderRuntimeHeadersResponseSchema,
+          zodyProviderRuntimeHeadersResponseSchema,
           {
             signal: input.abortSignal,
             trace: protocolTraceFromTraceContext(input.traceContext),
@@ -64,7 +64,7 @@ export function createProviderRuntimeHeadersPort(
         // 总时限与主动停止都必须释放 Host；否则 CLI 已失败，旧请求仍会占用队列。
         if (input.abortSignal?.aborted || timedOut) {
           context.notify({
-            method: zcodeProtocolNotifications.providerRuntimeHeadersCancelled,
+            method: zodyProtocolNotifications.providerRuntimeHeadersCancelled,
             trace: protocolTraceFromTraceContext(input.traceContext),
             params: { workspace, sessionId: input.sessionId, requestId },
           });

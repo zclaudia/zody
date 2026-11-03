@@ -2,9 +2,9 @@ import { resolve } from "node:path";
 import { workspaceHookPolicySchema } from "@zody/contracts";
 import type { WorkspaceHookPolicyProvider } from "@zody/core";
 import {
-  zcodeWorkspaceHookTrustGrantParamsSchema,
-  zcodeWorkspaceHookTrustGrantReasonCodeSchema,
-  zcodeWorkspaceHookTrustGrantResultSchema,
+  zodyWorkspaceHookTrustGrantParamsSchema,
+  zodyWorkspaceHookTrustGrantReasonCodeSchema,
+  zodyWorkspaceHookTrustGrantResultSchema,
   type ZodyWorkspaceHookTrustGrantReasonCode,
   type ZodyWorkspaceHookTrustGrantResult,
 } from "@zody/shared";
@@ -29,7 +29,7 @@ export async function grantWorkspaceHookTrustForProtocol(
     policyProvider: WorkspaceHookPolicyProvider;
   },
 ): Promise<ZodyWorkspaceHookTrustGrantResult> {
-  const params = zcodeWorkspaceHookTrustGrantParamsSchema.parse(rawParams);
+  const params = zodyWorkspaceHookTrustGrantParamsSchema.parse(rawParams);
   const grant = dependencies.grant ?? grantWorkspaceHookTrust;
   const workspaceIdentity =
     params.workspace.workspaceIdentity?.trim() || resolve(params.workspace.workspacePath);
@@ -38,7 +38,7 @@ export async function grantWorkspaceHookTrustForProtocol(
     workspaceIdentity,
   );
   if (policyRejection) {
-    return zcodeWorkspaceHookTrustGrantResultSchema.parse({
+    return zodyWorkspaceHookTrustGrantResultSchema.parse({
       accepted: false,
       reasonCode: policyRejection,
     });
@@ -53,13 +53,13 @@ export async function grantWorkspaceHookTrustForProtocol(
       hookDeclarationDigests: [params.hookDeclarationDigest],
       ...(dependencies.appVersion ? { appVersion: dependencies.appVersion } : {}),
     });
-    return zcodeWorkspaceHookTrustGrantResultSchema.parse(
+    return zodyWorkspaceHookTrustGrantResultSchema.parse(
       didGrantExactDeclaration(status, params.hookDeclarationDigest)
         ? { accepted: true }
         : { accepted: false, reasonCode: toPublicReasonCode(status.reasonCode) },
     );
   } catch (error) {
-    return zcodeWorkspaceHookTrustGrantResultSchema.parse({
+    return zodyWorkspaceHookTrustGrantResultSchema.parse({
       accepted: false,
       reasonCode: toPublicReasonCode(error),
     });
@@ -87,7 +87,7 @@ function getPolicyRejectionReason(
 
 function toPublicReasonCode(error: unknown): ZodyWorkspaceHookTrustGrantReasonCode {
   const candidate = error instanceof Error ? error.message : error;
-  const parsed = zcodeWorkspaceHookTrustGrantReasonCodeSchema.safeParse(candidate);
+  const parsed = zodyWorkspaceHookTrustGrantReasonCodeSchema.safeParse(candidate);
   if (parsed.success) return parsed.data;
 
   // 这里曾把底层 Error.message 直接放进 reasonCode，导致配置绝对路径和

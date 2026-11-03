@@ -1,5 +1,5 @@
 import { localRuntimeNetworkCapture } from "#src/zody-agent/localRuntimeNetworkCapture.js";
-import { resolveZCodeAgentSpawnCwd } from "#src/zody-agent/zodyAgentSpawnCwd.js";
+import { resolveZodyAgentSpawnCwd } from "#src/zody-agent/zodyAgentSpawnCwd.js";
 import type { ZodyAgentStorageStartupSnapshot } from "#src/zody-agent/zodyAgent.js";
 /* eslint-disable max-lines -- zcodeAgentProcessManager 集中维护 agent 子进程启动、复用、超时回收和 runtime identity，拆分会扩大进程生命周期状态同步面 */
 import { spawn, type ChildProcess, type StdioOptions } from "node:child_process";
@@ -11,7 +11,7 @@ import { Emitter } from "@zody/rpc";
 import { GEN_UI_OUTPUT_DIRECTORY, GEN_UI_OUTPUT_ROOT_ENV } from "@zody/shared/node";
 import { getAppConfigDir } from "../paths.js";
 import {
-  parseZCodeProcessDiagnostic,
+  parseZodyProcessDiagnostic,
   ZCODE_AGENT_LIFECYCLE_LOG_MARKER,
   ZCODE_PROCESS_DIAGNOSTIC_NAME_MAX_CHARS,
   ZCODE_PROCESS_DIAGNOSTIC_MESSAGE_MAX_CHARS,
@@ -24,8 +24,8 @@ import {
   resolveWorkspaceKey,
   resolveZodyRuntimeEnv,
   sanitizeZodyRuntimeEnv,
-  zcodeProtocolMethods,
-  zcodeRuntimeIdentityInitializeResultSchema,
+  zodyProtocolMethods,
+  zodyRuntimeIdentityInitializeResultSchema,
 } from "@zody/shared";
 import type { ModelSelection } from "@zody/shared";
 import {
@@ -34,9 +34,9 @@ import {
 } from "../runtime-tools/providerRuntimeResolver.js";
 import { isEffectiveDevelopmentNodeEnv } from "#src/runtime-tools/nodeEnv.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
-import { ZCodeProtocolClient } from "./zodyProtocolClient.js";
-import { ZCodeStdioTransport, type ZodyStdioChildLike } from "./zodyStdioTransport.js";
-import { readZCodeStdioTapDevState } from "./zodyStdioTapDevConfig.js";
+import { ZodyProtocolClient } from "./zodyProtocolClient.js";
+import { ZodyStdioTransport, type ZodyStdioChildLike } from "./zodyStdioTransport.js";
+import { readZodyStdioTapDevState } from "./zodyStdioTapDevConfig.js";
 import { parseCuaNativeAuditLine } from "./cuaNativeAuditLog.js";
 import type { ZodyAgentPresentationSurface } from "./zodyAgentPresentationSurface.js";
 import { shouldSpawnInDetachedProcessGroup } from "../process/processTreeTerminator.js";
@@ -185,7 +185,7 @@ export interface ZodyAgentProcessManagerOptions {
 }
 
 interface ManagedZodyAgentProcess {
-  client: ZCodeProtocolClient;
+  client: ZodyProtocolClient;
   child: ChildProcess;
   cleanupPromise?: Promise<void>;
   exited: boolean;
@@ -426,7 +426,7 @@ async function buildZodyAgentSpawnPreflight(
     cwd,
     usedFallback: shouldUseWorkspaceFallback,
     cwdExists,
-  } = await resolveZCodeAgentSpawnCwd({ requestedCwd, workspacePath, spawnFallbackCwd });
+  } = await resolveZodyAgentSpawnCwd({ requestedCwd, workspacePath, spawnFallbackCwd });
   return {
     command: command.command,
     args: command.args ?? [],
@@ -698,7 +698,7 @@ export function wrapZodyAgentCommandWithStdioTapDevProxy(
   if (command.nativeLauncher) {
     return command;
   }
-  const tapState = readZCodeStdioTapDevState();
+  const tapState = readZodyStdioTapDevState();
   if (!tapState.enabled) {
     return command;
   }
@@ -801,7 +801,7 @@ function createZodyStdioChildView(
 export class ZodyAgentProcessManager {
   private readonly processesByWorkspaceKey = new Map<string, ManagedZodyAgentProcess>();
   private readonly ownedProcesses = new Set<ManagedZodyAgentProcess>();
-  private readonly startingByWorkspaceKey = new Map<string, Promise<ZCodeProtocolClient>>();
+  private readonly startingByWorkspaceKey = new Map<string, Promise<ZodyProtocolClient>>();
   private readonly restartGenerationByWorkspaceKey = new Map<string, number>();
   private readonly runtimeGenerationByWorkspaceKey = new Map<string, number>();
   private readonly availableRuntimeIdentityByWorkspaceKey = new Map<string, string>();
@@ -1190,7 +1190,7 @@ export class ZodyAgentProcessManager {
   async getClient(params: {
     workspacePath: string;
     workspaceIdentity?: string;
-  }): Promise<ZCodeProtocolClient> {
+  }): Promise<ZodyProtocolClient> {
     if (this.disposed) {
       throw new Error("ZCode agent process manager is disposed.");
     }
@@ -1238,7 +1238,7 @@ export class ZodyAgentProcessManager {
       admissionAbortController.signal,
     );
     this.startingByWorkspaceKey.set(workspaceKey, startPromise);
-    let client: ZCodeProtocolClient;
+    let client: ZodyProtocolClient;
     try {
       client = await startPromise;
     } finally {
@@ -1263,7 +1263,7 @@ export class ZodyAgentProcessManager {
   getExistingClient(params: {
     workspacePath: string;
     workspaceIdentity?: string;
-  }): ZCodeProtocolClient | undefined {
+  }): ZodyProtocolClient | undefined {
     const workspaceKey = resolveWorkspaceKey(params);
     // 启动握手完成前不能向被动业务观察者暴露 client；listManagedProcesses 仍可用于诊断。
     if (this.startingByWorkspaceKey.has(workspaceKey)) return undefined;
@@ -1277,14 +1277,14 @@ export class ZodyAgentProcessManager {
     workspacePath: string;
     workspaceIdentity?: string;
     lane?: string;
-    client: ZCodeProtocolClient;
+    client: ZodyProtocolClient;
   }> {
     const result: Array<{
       pid: number;
       workspacePath: string;
       workspaceIdentity?: string;
       lane?: string;
-      client: ZCodeProtocolClient;
+      client: ZodyProtocolClient;
     }> = [];
     for (const managed of this.processesByWorkspaceKey.values()) {
       if (managed.exited || managed.child.killed || typeof managed.child.pid !== "number") continue;
@@ -1304,7 +1304,7 @@ export class ZodyAgentProcessManager {
   /** Agent service 首次通过 provider/model 门禁后调用；同一 runtime 只上报一次。 */
   markReady(
     params: { workspacePath: string; workspaceIdentity?: string },
-    client: ZCodeProtocolClient,
+    client: ZodyProtocolClient,
   ): void {
     const managed = this.processesByWorkspaceKey.get(resolveWorkspaceKey(params));
     if (!managed || managed.client !== client || managed.readyAt != null || managed.exited) {
@@ -1324,7 +1324,7 @@ export class ZodyAgentProcessManager {
     workspaceKey: string,
     startGeneration: number,
     admissionSignal: AbortSignal,
-  ): Promise<ZCodeProtocolClient> {
+  ): Promise<ZodyProtocolClient> {
     const startStartedAt = Date.now();
     const resolveCommandStartedAt = Date.now();
     const command = await this.commandResolver({
@@ -1417,9 +1417,9 @@ export class ZodyAgentProcessManager {
       child.kill();
       throw error;
     }
-    const transport = new ZCodeStdioTransport(transportChild, {
+    const transport = new ZodyStdioTransport(transportChild, {
       onStderrLine: (line) => {
-        const diagnostic = parseZCodeProcessDiagnostic(line);
+        const diagnostic = parseZodyProcessDiagnostic(line);
         if (diagnostic && typeof child.pid === "number") {
           // 根因：只保存 exit tail 会漏掉存活 runtime 的异常；此旁路不依赖 debug 开关。
           // 身份绑定创建时的 child，不能查当前 workspace，避免重启后的迟到事件串进程。
@@ -1473,7 +1473,7 @@ export class ZodyAgentProcessManager {
       // 拥有的独立 PGID；异常 root exit 后 cleanup 仍可按组回收同组后代。
       ...(process.platform !== "win32" && child.pid ? { ownedProcessGroupId: child.pid } : {}),
     });
-    const client = new ZCodeProtocolClient(transport, {
+    const client = new ZodyProtocolClient(transport, {
       requireStorageStartup: effectiveCommand.supportsStorageStartup,
       requestTimeoutMs: this.requestTimeoutMs,
     });
@@ -1723,14 +1723,14 @@ export class ZodyAgentProcessManager {
     if (this.cuaHostInstanceId) {
       try {
         await client.request(
-          zcodeProtocolMethods.runtimeIdentityInitialize,
+          zodyProtocolMethods.runtimeIdentityInitialize,
           {
             identity: {
               hostInstanceId: this.cuaHostInstanceId,
               runtimeInstanceId,
             },
           },
-          zcodeRuntimeIdentityInitializeResultSchema,
+          zodyRuntimeIdentityInitializeResultSchema,
           { timeoutMs: 15_000 },
         );
       } catch (error) {

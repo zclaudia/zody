@@ -14,7 +14,7 @@ const MODEL_NETWORK_STATUS_TYPES = new Set<ZodyTaskNetworkDebugStatusType>([
   "model_stream_stalled",
 ]);
 
-export function zcodeTaskNetworkDebugStatusFromPayload(params: {
+export function zodyTaskNetworkDebugStatusFromPayload(params: {
   taskId: string;
   traceId: TraceId;
   inputId?: InputId;

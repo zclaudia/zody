@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { Emitter } from "@zody/rpc";
 import {
-  zcodeStorageStartupStateSchema,
+  zodyStorageStartupStateSchema,
   type ZodyStorageStartupState,
   type DatabaseStartupErrorCode,
 } from "@zody/shared";
@@ -9,7 +9,7 @@ import {
 const FIRST_STATUS_TIMEOUT_MS = 30_000;
 
 /** 一个 protocol client 对应一个进程代次，状态只来自该连接的合法控制帧。 */
-export class ZCodeStorageStartupGate {
+export class ZodyStorageStartupGate {
   private current?: ZodyStorageStartupState;
   private terminalError?: Error;
   private pending?: Promise<void>;
@@ -36,7 +36,7 @@ export class ZCodeStorageStartupGate {
   }
 
   accept(input: unknown): boolean {
-    const parsed = zcodeStorageStartupStateSchema.safeParse(input);
+    const parsed = zodyStorageStartupStateSchema.safeParse(input);
     if (!parsed.success || this.terminalError) return false;
     const next = parsed.data;
     if (

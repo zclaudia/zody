@@ -20,9 +20,9 @@ import type {
   ZodyAgentCuaPermissionObservation,
 } from "../src/zody-agent/zodyAgent.js";
 import {
-  createZCodeAgentConnectionScope,
-  readTrustedZCodeAgentV4Connection,
-  readTrustedZCodeAgentV4UnsubscribeRoute,
+  createZodyAgentConnectionScope,
+  readTrustedZodyAgentV4Connection,
+  readTrustedZodyAgentV4UnsubscribeRoute,
 } from "../src/zody-agent/zodyAgentConnectionScope.js";
 
 function makeFrame(topic: string, subscriptionId: string): ConversationTopicFrame {
@@ -64,7 +64,7 @@ function setupBase() {
   const runtimeRestarts = new Emitter<{ workspaceKey: string }>();
   const nextSerialByConnection = new Map<string, number>();
   const nextId = (params: unknown) => {
-    const connection = readTrustedZCodeAgentV4Connection(params);
+    const connection = readTrustedZodyAgentV4Connection(params);
     if (!connection) throw new Error("missing trusted connection");
     const serial = (nextSerialByConnection.get(connection.connectionId) ?? 0) + 1;
     nextSerialByConnection.set(connection.connectionId, serial);
@@ -199,11 +199,11 @@ function makeRuntimeLifecycleEvent(
 describe("ZCodeAgent connection-scoped service facade", () => {
   it("desktop continuous 与 web replayable 都宣告 Host review domain capability", async () => {
     const { base } = setupBase();
-    const desktop = createZCodeAgentConnectionScope(base, {
+    const desktop = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-hook-capability",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(base, {
+    const mobile = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-hook-capability",
       clientMode: "web-remote-replayable",
     });
@@ -222,11 +222,11 @@ describe("ZCodeAgent connection-scoped service facade", () => {
   // `.strict()` 的 clientHello capabilities 里回声明；host 再把这条连接的声明当可信位注入订阅。
   it("hello 宣告 workflowRunDeltas，clientHello 声明后才成为订阅上的可信位", async () => {
     const { base } = setupBase();
-    const declared = createZCodeAgentConnectionScope(base, {
+    const declared = createZodyAgentConnectionScope(base, {
       connectionId: "deltas-declared",
       clientMode: "desktop-continuous",
     });
-    const silent = createZCodeAgentConnectionScope(base, {
+    const silent = createZodyAgentConnectionScope(base, {
       connectionId: "deltas-silent",
       clientMode: "web-remote-replayable",
     });
@@ -262,13 +262,13 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     } as never);
 
     const calls = vi.mocked(base.subscribeConversationV4).mock.calls;
-    expect(readTrustedZCodeAgentV4Connection(calls[0]?.[0])).toEqual({
+    expect(readTrustedZodyAgentV4Connection(calls[0]?.[0])).toEqual({
       connectionId: "deltas-declared",
       clientMode: "desktop-continuous",
       workflowRunDeltas: true,
     });
     expect(calls[0]?.[0]).not.toHaveProperty("workflowRunDeltas");
-    expect(readTrustedZCodeAgentV4Connection(calls[1]?.[0])).toEqual({
+    expect(readTrustedZodyAgentV4Connection(calls[1]?.[0])).toEqual({
       connectionId: "deltas-silent",
       clientMode: "web-remote-replayable",
     });
@@ -277,12 +277,12 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("trusted relay 把下游 clientHello 的 workflowRunDeltas 原样带到上游订阅", async () => {
     const { base } = setupBase();
-    const relay = createZCodeAgentConnectionScope(base, {
+    const relay = createZodyAgentConnectionScope(base, {
       connectionId: "server-upstream",
       clientMode: "desktop-continuous",
       role: "trusted-host-relay",
     });
-    const mobile = createZCodeAgentConnectionScope(relay.service, {
+    const mobile = createZodyAgentConnectionScope(relay.service, {
       connectionId: "mobile-downstream",
       clientMode: "web-remote-replayable",
     });
@@ -301,7 +301,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     });
 
     // relay 自己没有 clientHello（它不消费帧）：这个位只能是下游那一端的事实。
-    const forwarded = readTrustedZCodeAgentV4Connection(
+    const forwarded = readTrustedZodyAgentV4Connection(
       vi.mocked(base.subscribeConversationV4).mock.calls[0]?.[0],
     );
     expect(forwarded).toMatchObject({
@@ -313,11 +313,11 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("rows/range forwards the connection-owned Desktop/Web mode as trusted metadata", async () => {
     const { base } = setupBase();
-    const desktop = createZCodeAgentConnectionScope(base, {
+    const desktop = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-rows",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(base, {
+    const mobile = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-rows",
       clientMode: "web-remote-replayable",
     });
@@ -337,11 +337,11 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     }
 
     const calls = vi.mocked(base.conversationRowsRangeV4).mock.calls;
-    expect(readTrustedZCodeAgentV4Connection(calls[0]?.[0])).toEqual({
+    expect(readTrustedZodyAgentV4Connection(calls[0]?.[0])).toEqual({
       connectionId: "desktop-rows",
       clientMode: "desktop-continuous",
     });
-    expect(readTrustedZCodeAgentV4Connection(calls[1]?.[0])).toEqual({
+    expect(readTrustedZodyAgentV4Connection(calls[1]?.[0])).toEqual({
       connectionId: "mobile-rows",
       clientMode: "web-remote-replayable",
     });
@@ -349,16 +349,16 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("只有 trusted Host relay 能跨连接订阅 CLI 进程资源样本", () => {
     const { base, processResourceSamples } = setupBase();
-    const relay = createZCodeAgentConnectionScope(base, {
+    const relay = createZodyAgentConnectionScope(base, {
       connectionId: "server-upstream",
       clientMode: "desktop-continuous",
       role: "trusted-host-relay",
     });
-    const desktop = createZCodeAgentConnectionScope(relay.service, {
+    const desktop = createZodyAgentConnectionScope(relay.service, {
       connectionId: "desktop-downstream",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(relay.service, {
+    const mobile = createZodyAgentConnectionScope(relay.service, {
       connectionId: "mobile-downstream",
       clientMode: "web-remote-replayable",
     });
@@ -388,16 +388,16 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("只有 trusted Host relay 能订阅 MCP 遥测", () => {
     const { base, mcpTelemetryEvents } = setupBase();
-    const relay = createZCodeAgentConnectionScope(base, {
+    const relay = createZodyAgentConnectionScope(base, {
       connectionId: "server-upstream",
       clientMode: "desktop-continuous",
       role: "trusted-host-relay",
     });
-    const desktop = createZCodeAgentConnectionScope(relay.service, {
+    const desktop = createZodyAgentConnectionScope(relay.service, {
       connectionId: "desktop-downstream",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(relay.service, {
+    const mobile = createZodyAgentConnectionScope(relay.service, {
       connectionId: "mobile-downstream",
       clientMode: "web-remote-replayable",
     });
@@ -428,16 +428,16 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("只有 trusted Host relay 能订阅 MCP 资源数组", () => {
     const { base, mcpResourceSamples } = setupBase();
-    const relay = createZCodeAgentConnectionScope(base, {
+    const relay = createZodyAgentConnectionScope(base, {
       connectionId: "server-upstream",
       clientMode: "desktop-continuous",
       role: "trusted-host-relay",
     });
-    const desktop = createZCodeAgentConnectionScope(relay.service, {
+    const desktop = createZodyAgentConnectionScope(relay.service, {
       connectionId: "desktop-downstream",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(relay.service, {
+    const mobile = createZodyAgentConnectionScope(relay.service, {
       connectionId: "mobile-downstream",
       clientMode: "web-remote-replayable",
     });
@@ -475,11 +475,11 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("只有可信 desktop-continuous attachment 能订阅 workspace telemetry fact", async () => {
     const { base, telemetryFacts } = setupBase();
-    const desktop = createZCodeAgentConnectionScope(base, {
+    const desktop = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-telemetry",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(base, {
+    const mobile = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-telemetry",
       clientMode: "web-remote-replayable",
     });
@@ -519,16 +519,16 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("trusted host relay 只向 desktop-continuous 下游转发 telemetry fact", () => {
     const { base, telemetryFacts } = setupBase();
-    const relay = createZCodeAgentConnectionScope(base, {
+    const relay = createZodyAgentConnectionScope(base, {
       connectionId: "server-telemetry-relay",
       clientMode: "desktop-continuous",
       role: "trusted-host-relay",
     });
-    const desktop = createZCodeAgentConnectionScope(relay.service, {
+    const desktop = createZodyAgentConnectionScope(relay.service, {
       connectionId: "desktop-telemetry-downstream",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(relay.service, {
+    const mobile = createZodyAgentConnectionScope(relay.service, {
       connectionId: "mobile-telemetry-downstream",
       clientMode: "web-remote-replayable",
     });
@@ -561,7 +561,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     expect(mobileSeen).toHaveLength(0);
     expect(base.onDynamicConversationTelemetryFact).toHaveBeenCalledOnce();
     expect(
-      readTrustedZCodeAgentV4Connection(
+      readTrustedZodyAgentV4Connection(
         vi.mocked(base.onDynamicConversationTelemetryFact).mock.calls[0]?.[0],
       ),
     ).toEqual({
@@ -572,11 +572,11 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("只有可信 desktop-continuous attachment 能订阅窗口级 CUA 权限观察", () => {
     const { base, cuaPermissionObservations } = setupBase();
-    const desktop = createZCodeAgentConnectionScope(base, {
+    const desktop = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-cua-permission",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(base, {
+    const mobile = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-cua-permission",
       clientMode: "web-remote-replayable",
     });
@@ -617,7 +617,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     vi.mocked(base.subscribeConversationV4).mockImplementationOnce(
       () => new Promise((resolve) => (resolveSubscribe = resolve)),
     );
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "physical-overflow",
       clientMode: "desktop-continuous",
     });
@@ -664,11 +664,11 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("host mode 决定 hello/profile，双端同 session 只收到 owned subscription", async () => {
     const { base, conversationFrames } = setupBase();
-    const desktop = createZCodeAgentConnectionScope(base, {
+    const desktop = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-a",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(base, {
+    const mobile = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-b",
       clientMode: "web-remote-replayable",
     });
@@ -742,7 +742,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       workspaceIdentity: "local:repo",
       sessionId: "session-1",
     });
-    expect(readTrustedZCodeAgentV4Connection(desktopForwarded)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(desktopForwarded)).toEqual({
       connectionId: "desktop-a",
       clientMode: "desktop-continuous",
     });
@@ -751,11 +751,11 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("same-sub resync 只允许 owner，并从 registry 注入 topic/trusted connection", async () => {
     const { base } = setupBase();
-    const desktop = createZCodeAgentConnectionScope(base, {
+    const desktop = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-resync",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(base, {
+    const mobile = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-resync",
       clientMode: "web-remote-replayable",
     });
@@ -795,7 +795,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       subscriptionId: subscribed.ack.subscriptionId,
       base: { logEpoch: "epoch-1", seq: 4 },
     });
-    expect(readTrustedZCodeAgentV4UnsubscribeRoute(forwarded)).toEqual({
+    expect(readTrustedZodyAgentV4UnsubscribeRoute(forwarded)).toEqual({
       topic: "conversation/session-resync",
       connectionId: "mobile-resync",
     });
@@ -810,16 +810,16 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     vi.mocked(base.subscribeConversationV4).mockImplementation(
       (params: unknown) =>
         new Promise((resolve) => {
-          const connection = readTrustedZCodeAgentV4Connection(params);
+          const connection = readTrustedZodyAgentV4Connection(params);
           if (!connection) throw new Error("missing trusted connection");
           resolvers.set(connection.connectionId, resolve);
         }),
     );
-    const desktop = createZCodeAgentConnectionScope(base, {
+    const desktop = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-pending",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(base, {
+    const mobile = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-pending",
       clientMode: "web-remote-replayable",
     });
@@ -888,11 +888,11 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("unowned unsubscribe 不越权，dispose 清理本连接全部 topic", async () => {
     const { base, sessionsIndexFrames, workspaceConfigFrames } = setupBase();
-    const desktop = createZCodeAgentConnectionScope(base, {
+    const desktop = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-a",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(base, {
+    const mobile = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-b",
       clientMode: "web-remote-replayable",
     });
@@ -971,7 +971,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       }),
     );
     expect(
-      readTrustedZCodeAgentV4UnsubscribeRoute(
+      readTrustedZodyAgentV4UnsubscribeRoute(
         vi.mocked(base.unsubscribeConversationV4).mock.calls[0]?.[0],
       ),
     ).toEqual({
@@ -991,7 +991,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
           resolveSubscribe = resolve;
         }),
     );
-    const mobile = createZCodeAgentConnectionScope(base, {
+    const mobile = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-race",
       clientMode: "web-remote-replayable",
     });
@@ -1023,7 +1023,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       }),
     );
     expect(
-      readTrustedZCodeAgentV4UnsubscribeRoute(
+      readTrustedZodyAgentV4UnsubscribeRoute(
         vi.mocked(base.unsubscribeConversationV4).mock.calls[0]?.[0],
       ),
     ).toEqual({
@@ -1041,7 +1041,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     vi.mocked(base.subscribeConversationV4).mockImplementation(
       () => new Promise((resolve) => resolvers.push(resolve)),
     );
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-cold-start",
       clientMode: "web-remote-replayable",
     });
@@ -1095,7 +1095,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     vi.mocked(base.subscribeConversationV4).mockImplementation(
       () => new Promise((resolve) => resolvers.push(resolve)),
     );
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-lifecycle-boundary",
       clientMode: "desktop-continuous",
     });
@@ -1147,7 +1147,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     vi.mocked(base.subscribeConversationV4).mockImplementation(
       () => new Promise((resolve) => resolvers.push(resolve)),
     );
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "restart-scope",
       clientMode: "desktop-continuous",
     });
@@ -1206,7 +1206,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       (params: { sessionId: string }) =>
         new Promise((resolve) => resolvers.set(params.sessionId, resolve)),
     );
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "workspace-isolation",
       clientMode: "desktop-continuous",
     });
@@ -1250,16 +1250,16 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("trusted host relay 为 desktop/mobile 下游保留 mode 并 namespace connectionId", async () => {
     const { base } = setupBase();
-    const relay = createZCodeAgentConnectionScope(base, {
+    const relay = createZodyAgentConnectionScope(base, {
       connectionId: "server-upstream",
       clientMode: "desktop-continuous",
       role: "trusted-host-relay",
     });
-    const desktop = createZCodeAgentConnectionScope(relay.service, {
+    const desktop = createZodyAgentConnectionScope(relay.service, {
       connectionId: "desktop-downstream",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(relay.service, {
+    const mobile = createZodyAgentConnectionScope(relay.service, {
       connectionId: "mobile-downstream",
       clientMode: "web-remote-replayable",
     });
@@ -1283,11 +1283,11 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     });
 
     const forwarded = vi.mocked(base.subscribeConversationV4).mock.calls;
-    expect(readTrustedZCodeAgentV4Connection(forwarded[0]?.[0])).toEqual({
+    expect(readTrustedZodyAgentV4Connection(forwarded[0]?.[0])).toEqual({
       connectionId: "relay:15:server-upstream18:desktop-downstream",
       clientMode: "desktop-continuous",
     });
-    expect(readTrustedZCodeAgentV4Connection(forwarded[1]?.[0])).toEqual({
+    expect(readTrustedZodyAgentV4Connection(forwarded[1]?.[0])).toEqual({
       connectionId: "relay:15:server-upstream17:mobile-downstream",
       clientMode: "web-remote-replayable",
     });
@@ -1295,7 +1295,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("stores pre-subscribe flow state, forwards one trusted route, and serializes edges", async () => {
     const { base } = setupBase();
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-flow",
       clientMode: "web-remote-replayable",
     });
@@ -1317,7 +1317,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     expect(base.setConnectionFlowStateV4).toHaveBeenCalledTimes(1);
     const first = vi.mocked(base.setConnectionFlowStateV4).mock.calls[0]?.[0];
     expect(first).toMatchObject({ workspacePath: "/repo", state: "saturated" });
-    expect(readTrustedZCodeAgentV4Connection(first)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(first)).toEqual({
       connectionId: "mobile-flow",
       clientMode: "web-remote-replayable",
     });
@@ -1355,12 +1355,12 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("trusted relay namespaces downstream flow control and rejects terminal injection", async () => {
     const { base } = setupBase();
-    const relay = createZCodeAgentConnectionScope(base, {
+    const relay = createZodyAgentConnectionScope(base, {
       connectionId: "server-upstream",
       clientMode: "desktop-continuous",
       role: "trusted-host-relay",
     });
-    const mobile = createZCodeAgentConnectionScope(relay.service, {
+    const mobile = createZodyAgentConnectionScope(relay.service, {
       connectionId: "mobile-downstream",
       clientMode: "web-remote-replayable",
     });
@@ -1378,7 +1378,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
     await mobile.setTransportFlowState("saturated");
     const forwarded = vi.mocked(base.setConnectionFlowStateV4).mock.calls[0]?.[0];
-    expect(readTrustedZCodeAgentV4Connection(forwarded)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(forwarded)).toEqual({
       connectionId: "relay:15:server-upstream17:mobile-downstream",
       clientMode: "web-remote-replayable",
     });
@@ -1410,12 +1410,12 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("trusted relay 允许 attachment-only downstream close 清理 namespaced staging", async () => {
     const { base } = setupBase();
-    const relay = createZCodeAgentConnectionScope(base, {
+    const relay = createZodyAgentConnectionScope(base, {
       connectionId: "server-attachment",
       clientMode: "desktop-continuous",
       role: "trusted-host-relay",
     });
-    const mobile = createZCodeAgentConnectionScope(relay.service, {
+    const mobile = createZodyAgentConnectionScope(relay.service, {
       connectionId: "mobile-attachment",
       clientMode: "web-remote-replayable",
     });
@@ -1442,7 +1442,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       .mocked(base.setConnectionFlowStateV4)
       .mock.calls.map(([params]) => params)
       .find((params) => params.state === "closed");
-    expect(readTrustedZCodeAgentV4Connection(closed)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(closed)).toEqual({
       connectionId: "relay:17:server-attachment17:mobile-attachment",
       clientMode: "web-remote-replayable",
     });
@@ -1459,16 +1459,16 @@ describe("ZCodeAgent connection-scoped service facade", () => {
         logEpoch: "epoch-shared",
       },
     }));
-    const relay = createZCodeAgentConnectionScope(base, {
+    const relay = createZodyAgentConnectionScope(base, {
       connectionId: "server-upstream",
       clientMode: "desktop-continuous",
       role: "trusted-host-relay",
     });
-    const desktop = createZCodeAgentConnectionScope(relay.service, {
+    const desktop = createZodyAgentConnectionScope(relay.service, {
       connectionId: "desktop-downstream",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(relay.service, {
+    const mobile = createZodyAgentConnectionScope(relay.service, {
       connectionId: "mobile-downstream",
       clientMode: "web-remote-replayable",
     });
@@ -1497,7 +1497,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       workspacePath: "/repo",
       subscriptionId: "sub-shared",
     });
-    const firstRoute = readTrustedZCodeAgentV4UnsubscribeRoute(
+    const firstRoute = readTrustedZodyAgentV4UnsubscribeRoute(
       vi.mocked(base.unsubscribeConversationV4).mock.calls[0]?.[0],
     );
     expect(firstRoute).toEqual({
@@ -1509,7 +1509,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       workspacePath: "/repo",
       subscriptionId: "sub-shared",
     });
-    const secondRoute = readTrustedZCodeAgentV4UnsubscribeRoute(
+    const secondRoute = readTrustedZodyAgentV4UnsubscribeRoute(
       vi.mocked(base.unsubscribeConversationV4).mock.calls[1]?.[0],
     );
     expect(secondRoute).toEqual({
@@ -1521,13 +1521,13 @@ describe("ZCodeAgent connection-scoped service facade", () => {
   it("connectionId 拒绝空值/超长值，relay namespace 不使用可歧义分隔符拼接", () => {
     const { base } = setupBase();
     expect(() =>
-      createZCodeAgentConnectionScope(base, {
+      createZodyAgentConnectionScope(base, {
         connectionId: "",
         clientMode: "desktop-continuous",
       }),
     ).toThrow("fault.connection.invalidConnectionId");
     expect(() =>
-      createZCodeAgentConnectionScope(base, {
+      createZodyAgentConnectionScope(base, {
         connectionId: "x".repeat(257),
         clientMode: "desktop-continuous",
       }),
@@ -1536,7 +1536,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("terminal command/attachment 受握手门禁约束，且 command clientId 必须匹配绑定身份", async () => {
     const { base } = setupBase();
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "terminal-command",
       clientMode: "desktop-continuous",
     });
@@ -1589,7 +1589,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     });
     const forwardedCommand = vi.mocked(base.sendConversationCommandV4).mock.calls.at(-1)?.[0];
     expect(forwardedCommand).toMatchObject(command);
-    expect(readTrustedZCodeAgentV4Connection(forwardedCommand)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(forwardedCommand)).toEqual({
       connectionId: "terminal-command",
       clientMode: "desktop-continuous",
     });
@@ -1605,7 +1605,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       checksum: `sha256:${"0".repeat(64)}`,
     });
     const forwardedAttachment = vi.mocked(base.attachmentBeginV4).mock.calls.at(-1)?.[0];
-    expect(readTrustedZCodeAgentV4Connection(forwardedAttachment)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(forwardedAttachment)).toEqual({
       connectionId: "terminal-command",
       clientMode: "desktop-continuous",
     });
@@ -1613,7 +1613,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("手机 replayable command 原样透传 canonical plugin link，不新增 selection state", async () => {
     const { base } = setupBase();
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-plugin-reference",
       clientMode: "web-remote-replayable",
     });
@@ -1652,7 +1652,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     });
     expect(forwarded).not.toHaveProperty("clientMode");
     expect(forwarded?.envelope.payload).toEqual({ text: canonicalText });
-    expect(readTrustedZCodeAgentV4Connection(forwarded)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(forwarded)).toEqual({
       connectionId: "mobile-plugin-reference",
       clientMode: "web-remote-replayable",
     });
@@ -1663,7 +1663,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     "Bash output query preserves remote routing and trusted %s mode",
     async (clientMode) => {
       const { base } = setupBase();
-      const scope = createZCodeAgentConnectionScope(base, {
+      const scope = createZodyAgentConnectionScope(base, {
         connectionId: "bash-output",
         clientMode,
       });
@@ -1686,7 +1686,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       await scope.service.backgroundBashOutputV4(query);
       const forwarded = vi.mocked(base.backgroundBashOutputV4).mock.calls[0]?.[0];
       expect(forwarded).toMatchObject(query);
-      expect(readTrustedZCodeAgentV4Connection(forwarded)).toEqual({
+      expect(readTrustedZodyAgentV4Connection(forwarded)).toEqual({
         connectionId: "bash-output",
         clientMode,
       });
@@ -1697,7 +1697,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("commands/query 必须握手、注入 trusted connection，并拒绝跨 workspace 复用", async () => {
     const { base } = setupBase();
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "terminal-query",
       clientMode: "desktop-continuous",
     });
@@ -1726,7 +1726,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       results: [{ result: "unknown" }],
     });
     const forwarded = vi.mocked(base.queryConversationCommandsV4).mock.calls.at(-1)?.[0];
-    expect(readTrustedZCodeAgentV4Connection(forwarded)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(forwarded)).toEqual({
       connectionId: "terminal-query",
       clientMode: "desktop-continuous",
     });
@@ -1741,7 +1741,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("attachment staging 即使没有 subscription，scope dispose 也向该 trusted connection 发 closed", async () => {
     const { base } = setupBase();
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "attachment-only",
       clientMode: "web-remote-replayable",
     });
@@ -1766,7 +1766,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
     const closed = vi.mocked(base.setConnectionFlowStateV4).mock.calls.at(-1)?.[0];
     expect(closed?.state).toBe("closed");
-    expect(readTrustedZCodeAgentV4Connection(closed)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(closed)).toEqual({
       connectionId: "attachment-only",
       clientMode: "web-remote-replayable",
     });
@@ -1785,7 +1785,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
           resolveBegin = resolve;
         }),
     );
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "attachment-late",
       clientMode: "web-remote-replayable",
     });
@@ -1813,7 +1813,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     await expect(pending).rejects.toThrow("fault.connection.closed");
     expect(base.attachmentAbortV4).toHaveBeenCalledTimes(1);
     expect(
-      readTrustedZCodeAgentV4Connection(vi.mocked(base.attachmentAbortV4).mock.calls[0][0]),
+      readTrustedZodyAgentV4Connection(vi.mocked(base.attachmentAbortV4).mock.calls[0][0]),
     ).toEqual({
       connectionId: "attachment-late",
       clientMode: "web-remote-replayable",
@@ -1822,7 +1822,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("已发送媒体精确 row target 沿当前 mobile connection 注入可信 workspace 路由", async () => {
     const { base } = setupBase();
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-preview",
       clientMode: "web-remote-replayable",
     });
@@ -1847,7 +1847,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     await scope.service.attachmentReadV4(params);
     const forwarded = vi.mocked(base.attachmentReadV4).mock.calls[0]?.[0];
     expect(forwarded).toMatchObject(params);
-    expect(readTrustedZCodeAgentV4Connection(forwarded)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(forwarded)).toEqual({
       connectionId: "mobile-preview",
       clientMode: "web-remote-replayable",
     });
@@ -1856,7 +1856,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
 
   it("trusted relay 保留下游 terminal 已校验的 command envelope", async () => {
     const { base } = setupBase();
-    const relay = createZCodeAgentConnectionScope(base, {
+    const relay = createZodyAgentConnectionScope(base, {
       connectionId: "server-relay",
       clientMode: "desktop-continuous",
       role: "trusted-host-relay",
@@ -1876,7 +1876,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
     await relay.service.sendConversationCommandV4(params);
     const forwarded = vi.mocked(base.sendConversationCommandV4).mock.calls.at(-1)?.[0];
     expect(forwarded).toMatchObject(params);
-    expect(readTrustedZCodeAgentV4Connection(forwarded)).toEqual({
+    expect(readTrustedZodyAgentV4Connection(forwarded)).toEqual({
       connectionId: "server-relay",
       clientMode: "desktop-continuous",
     });
@@ -1891,11 +1891,11 @@ describe("ZCodeAgent connection-scoped service facade", () => {
         logEpoch: "epoch-collision",
       },
     });
-    const desktop = createZCodeAgentConnectionScope(base, {
+    const desktop = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-collision",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(base, {
+    const mobile = createZodyAgentConnectionScope(base, {
       connectionId: "mobile-collision",
       clientMode: "web-remote-replayable",
     });
@@ -1943,7 +1943,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
   it("被动 topic 清理保留 existing-only，runtime unavailable 后直接丢弃 attachment owner", async () => {
     const { base } = setupBase();
     const runtimeLifecycle = attachRuntimeLifecycle(base);
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "desktop-passive-runtime",
       clientMode: "desktop-continuous",
     });
@@ -1990,11 +1990,11 @@ it("本地 TTFT 检查点只向本地 desktop continuous attachment 暴露", () 
   const { base } = setupBase();
   const facts = new Emitter<import("@zody/shared").LocalTtftFacts>();
   base.onDynamicLocalTtftFacts = vi.fn(() => facts.event);
-  const desktop = createZCodeAgentConnectionScope(base, {
+  const desktop = createZodyAgentConnectionScope(base, {
     connectionId: "desktop",
     clientMode: "desktop-continuous",
   });
-  const mobile = createZCodeAgentConnectionScope(base, {
+  const mobile = createZodyAgentConnectionScope(base, {
     connectionId: "mobile",
     clientMode: "web-remote-replayable",
   });

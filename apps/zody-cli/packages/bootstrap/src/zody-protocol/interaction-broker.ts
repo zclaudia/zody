@@ -28,9 +28,9 @@ import {
 } from "../zody-protocol-v4/mcp-elicitation.js";
 import {
   WORKFLOW_REFINE_PERMISSION_OPTION_ID,
-  zcodePermissionResponseSchema,
-  zcodeProtocolMethods,
-  zcodeUserInputResponseSchema,
+  zodyPermissionResponseSchema,
+  zodyProtocolMethods,
+  zodyUserInputResponseSchema,
   type ZodyPermissionOption,
   type ZodyPermissionResponse,
   type ZodyUserInputQuestion,
@@ -123,7 +123,7 @@ async function requestPermission(
     options?.signal,
     (signal) =>
       context.requestClient(
-        zcodeProtocolMethods.interactionRequestPermission,
+        zodyProtocolMethods.interactionRequestPermission,
         {
           input: request.input,
           reason: request.reason,
@@ -136,7 +136,7 @@ async function requestPermission(
           toolName: request.toolName,
           turnId: request.turnId,
         },
-        zcodePermissionResponseSchema,
+        zodyPermissionResponseSchema,
         withInteractionRequestRecovery(options, signal),
       ),
     // v4 answer → ZCodePermissionResponse：optionId 语义来自 v4 reducer 合成的
@@ -395,7 +395,7 @@ export async function requestMcpElicitation(
       options?.signal,
       (signal) =>
         context.requestClient(
-          zcodeProtocolMethods.interactionRequestUserInput,
+          zodyProtocolMethods.interactionRequestUserInput,
           {
             input,
             prompt: request.message,
@@ -411,7 +411,7 @@ export async function requestMcpElicitation(
             toolName: MCP_ELICITATION_TOOL_NAME,
             ...(request.trace?.turnId ? { turnId: request.trace.turnId } : {}),
           },
-          zcodeUserInputResponseSchema,
+          zodyUserInputResponseSchema,
           withInteractionRequestRecovery(options, signal),
         ),
       (answer) => v4AnswerToUserInputResponse(answer),
@@ -455,7 +455,7 @@ async function requestUserInput(
     options?.signal,
     (signal) =>
       context.requestClient(
-        zcodeProtocolMethods.interactionRequestUserInput,
+        zodyProtocolMethods.interactionRequestUserInput,
         {
           input: request.input,
           prompt: request.reason,
@@ -468,7 +468,7 @@ async function requestUserInput(
           toolName: request.toolName,
           turnId: request.turnId,
         },
-        zcodeUserInputResponseSchema,
+        zodyUserInputResponseSchema,
         withInteractionRequestRecovery(options, signal),
       ),
     // v4 答 AskUserQuestion：freeText/optionId 落到单题 answer 槽位
@@ -517,7 +517,7 @@ async function requestExitPlanModeApproval(
     options?.signal,
     (signal) =>
       context.requestClient(
-        zcodeProtocolMethods.interactionRequestUserInput,
+        zodyProtocolMethods.interactionRequestUserInput,
         {
           input: request.input,
           prompt: request.reason,
@@ -530,7 +530,7 @@ async function requestExitPlanModeApproval(
           toolName: request.toolName,
           turnId: request.turnId,
         },
-        zcodeUserInputResponseSchema,
+        zodyUserInputResponseSchema,
         withInteractionRequestRecovery(options, signal),
       ),
     // v4 答 plan approval：allow 类 optionId = 批准；freeText = 计划反馈

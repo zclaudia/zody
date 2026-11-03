@@ -1,4 +1,4 @@
-import { ZCodeStorageStartupGate } from "#src/zody-agent/zodyStorageStartupGate.js";
+import { ZodyStorageStartupGate } from "#src/zody-agent/zodyStorageStartupGate.js";
 import { Emitter } from "@zody/rpc";
 import type { IDisposable } from "@zody/rpc";
 import type {
@@ -49,7 +49,7 @@ interface ZodyProtocolClientRequestOptions {
 
 export const DEFAULT_ZCODE_PROTOCOL_REQUEST_TIMEOUT_MS = 3 * 60_000;
 
-class ZCodeProtocolClientError extends Error {
+class ZodyProtocolClientError extends Error {
   constructor(
     message: string,
     readonly code?: number,
@@ -60,7 +60,7 @@ class ZCodeProtocolClientError extends Error {
   }
 }
 
-export class ZCodeProtocolRequestTimeoutError extends Error {
+export class ZodyProtocolRequestTimeoutError extends Error {
   constructor(
     readonly method: ZodyProtocolClientMethod,
     readonly requestId: ZodyProtocolRequestId,
@@ -71,8 +71,8 @@ export class ZCodeProtocolRequestTimeoutError extends Error {
   }
 }
 
-export class ZCodeProtocolClient implements IDisposable {
-  readonly storageStartup: ZCodeStorageStartupGate;
+export class ZodyProtocolClient implements IDisposable {
+  readonly storageStartup: ZodyStorageStartupGate;
   private readonly pending = new Map<string, PendingRequest<unknown>>();
   private readonly notificationEmitter = new Emitter<ZodyProtocolNotification>();
   private readonly requestEmitter = new Emitter<ZodyProtocolRequest>();
@@ -116,7 +116,7 @@ export class ZCodeProtocolClient implements IDisposable {
     private readonly transport: ZodyProtocolTransport,
     options?: ZodyProtocolClientOptions,
   ) {
-    this.storageStartup = new ZCodeStorageStartupGate(options?.requireStorageStartup ?? false);
+    this.storageStartup = new ZodyStorageStartupGate(options?.requireStorageStartup ?? false);
     this.requestTimeoutMs = options?.requestTimeoutMs ?? DEFAULT_ZCODE_PROTOCOL_REQUEST_TIMEOUT_MS;
     this.disposables.push(
       transport.onMessage((message) => this.handleMessage(message)),
@@ -173,7 +173,7 @@ export class ZCodeProtocolClient implements IDisposable {
         const pending = this.pending.get(requestKey);
         pending?.cleanupAbort?.();
         this.deletePending(requestKey);
-        const error = new ZCodeProtocolRequestTimeoutError(method, id, requestTimeoutMs);
+        const error = new ZodyProtocolRequestTimeoutError(method, id, requestTimeoutMs);
         // 子进程仍存活但协议 event loop 已无响应时，只让单次 request 超时是不够的：
         // process manager 仍复用这个 stale client，导致后续 plugins/list 等请求连续卡在超时窗口。
         // 超时事件把“连接已不可信”的事实上抛给 owner，由 owner 负责淘汰进程。
@@ -315,7 +315,7 @@ export class ZCodeProtocolClient implements IDisposable {
       };
       this.rejectResponse(
         errorMessage.id,
-        new ZCodeProtocolClientError(
+        new ZodyProtocolClientError(
           errorMessage.error.message,
           errorMessage.error.code,
           errorMessage.error.data,

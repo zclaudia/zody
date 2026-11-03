@@ -32,8 +32,8 @@ import type {
   ConversationTopicWireFrame,
 } from "@zody/shared/zody-protocol-v4";
 import {
-  createZCodeAgentConnectionScope,
-  readTrustedZCodeAgentV4Connection,
+  createZodyAgentConnectionScope,
+  readTrustedZodyAgentV4Connection,
   type IZodyAgentService,
 } from "@zody/services";
 import { describe, expect, it, vi } from "vitest";
@@ -52,7 +52,7 @@ function setupBase() {
   const runtimeRestarts = new Emitter<{ workspaceKey: string }>();
   const nextSerialByConnection = new Map<string, number>();
   const nextId = (params: unknown) => {
-    const connection = readTrustedZCodeAgentV4Connection(params);
+    const connection = readTrustedZodyAgentV4Connection(params);
     if (!connection) throw new Error("missing trusted connection");
     const serial = (nextSerialByConnection.get(connection.connectionId) ?? 0) + 1;
     nextSerialByConnection.set(connection.connectionId, serial);
@@ -167,7 +167,7 @@ function onlineDeltasWire(
 describe("v4 resync notOwned eviction race（真实 store + transport + connectionScope）", () => {
   it("换代 subscribe ACK 静默驱逐旧 ownership 后，迟到 resync 的 notOwned 被静默忽略，S2 保持 live", async () => {
     const { base, mocks, conversationFrames } = setupBase();
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "conn-1",
       clientMode: "desktop-continuous",
     });
@@ -230,7 +230,7 @@ describe("v4 resync notOwned eviction race（真实 store + transport + connecti
 
   it("错位 unsubscribe 造成 ownership 分歧时，resync notOwned 自动携水位重订阅自愈", async () => {
     const { base, mocks, conversationFrames } = setupBase();
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "conn-3",
       clientMode: "desktop-continuous",
     });
@@ -273,7 +273,7 @@ describe("v4 resync notOwned eviction race（真实 store + transport + connecti
 
   it("对照：resync(S1) 先于 subscribe(S2) ACK 抵达 host 时不触发 notOwned", async () => {
     const { base, mocks, conversationFrames } = setupBase();
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "conn-2",
       clientMode: "desktop-continuous",
     });

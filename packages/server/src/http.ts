@@ -19,7 +19,7 @@ import {
 import {
   ServiceCollection,
   IZodyAgentService,
-  createZCodeAgentConnectionScope,
+  createZodyAgentConnectionScope,
   IFileService,
   IGitService,
   ISystemService,
@@ -99,7 +99,7 @@ function setupChannelServer(
   const reverseClient =
     clientMode === "desktop-continuous" ? new ChannelClient(protocol) : undefined;
   const connectionScope = agentService
-    ? createZCodeAgentConnectionScope(agentService, {
+    ? createZodyAgentConnectionScope(agentService, {
         connectionId: `server-ws-${randomUUID()}`,
         clientMode,
         role: clientMode === "desktop-continuous" ? "trusted-host-relay" : "terminal-client",

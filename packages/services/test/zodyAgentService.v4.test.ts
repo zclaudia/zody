@@ -16,9 +16,9 @@ import {
   type SessionsIndexTopicWireCandidate,
   type WorkspaceConfigTopicWireCandidate,
 } from "@zody/shared/zody-protocol-v4";
-import { createZCodeAgentConnectionScope } from "../src/zody-agent/zodyAgentConnectionScope.js";
+import { createZodyAgentConnectionScope } from "../src/zody-agent/zodyAgentConnectionScope.js";
 import {
-  createZCodeAgentService,
+  createZodyAgentService,
   supportsLegacyRemoteTaskAllowlist,
 } from "../src/zody-agent/zodyAgentService.js";
 import { setDataBaseDir } from "../src/paths.js";
@@ -382,7 +382,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
           : []),
       ],
     }));
-    const service = createZCodeAgentService({
+    const service = createZodyAgentService({
       commandResolver,
       cuaHostInstanceId: options.cuaHostInstanceId,
       authorizeLocalMediaPreviewPath: options.authorizeLocalMediaPreviewPath,
@@ -418,7 +418,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
     "session debug remains read-only and workspace-scoped on %s",
     async (clientMode) => {
       const { service, workspacePath, commandResolver, logPath } = setupService();
-      const scope = createZCodeAgentConnectionScope(service, { connectionId: "debug", clientMode });
+      const scope = createZodyAgentConnectionScope(service, { connectionId: "debug", clientMode });
       const target = {
         workspacePath,
         workspaceIdentity: "ssh://debug/workspace",
@@ -567,7 +567,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
     "background Bash query stays existing-only on %s",
     async (clientMode) => {
       const { service, workspacePath, commandResolver, logPath } = setupService();
-      const scope = createZCodeAgentConnectionScope(service, {
+      const scope = createZodyAgentConnectionScope(service, {
         connectionId: "bash-query",
         clientMode,
       });
@@ -670,7 +670,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
     "subscribe 的 workflowRunDeltas 只由 clientHello 声明决定（declared=%s）",
     async (declared) => {
       const { service, workspacePath, logPath } = setupService();
-      const scope = createZCodeAgentConnectionScope(service, {
+      const scope = createZodyAgentConnectionScope(service, {
         connectionId: "workflow-run-deltas",
         clientMode: "desktop-continuous",
       });
@@ -809,7 +809,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
 
   it("labels mobile input from the trusted attachment instead of caller metadata", async () => {
     const { service, workspacePath, logPath } = setupService();
-    const scope = createZCodeAgentConnectionScope(service, {
+    const scope = createZodyAgentConnectionScope(service, {
       connectionId: "group-mobile-origin",
       clientMode: "web-remote-replayable",
     });
@@ -881,7 +881,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
       cuaHostInstanceId: "host-real",
       delayStartupIdentityAckMs: 1_500,
     });
-    const scope = createZCodeAgentConnectionScope(service, {
+    const scope = createZodyAgentConnectionScope(service, {
       connectionId: "replay-lifecycle",
       clientMode: "web-remote-replayable",
     });
@@ -931,7 +931,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
 
   it("overrides forged desktop input origin on trusted replayable createSession first input", async () => {
     const { service, workspacePath, logPath } = setupService({ cuaHostInstanceId: "host-real" });
-    const scope = createZCodeAgentConnectionScope(service, {
+    const scope = createZodyAgentConnectionScope(service, {
       connectionId: "mobile-create",
       clientMode: "web-remote-replayable",
     });
@@ -1078,7 +1078,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
 
   it("forwards connection flow only through the non-RPC trusted scope control", async () => {
     const { service, workspacePath, logPath } = setupService();
-    const scope = createZCodeAgentConnectionScope(service, {
+    const scope = createZodyAgentConnectionScope(service, {
       connectionId: "mobile-flow",
       clientMode: "web-remote-replayable",
     });
@@ -1124,7 +1124,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
         checksum: `sha256:${"0".repeat(64)}`,
       }),
     ).rejects.toThrow("fault.attachment.connectionUntrusted");
-    const scope = createZCodeAgentConnectionScope(service, {
+    const scope = createZodyAgentConnectionScope(service, {
       connectionId: "mobile-upload",
       clientMode: "web-remote-replayable",
     });
@@ -1174,11 +1174,11 @@ describe("zcodeAgentService v4 conversation channel", () => {
     const { service, workspacePath, logPath } = setupService({
       authorizeLocalMediaPreviewPath,
     });
-    const desktop = createZCodeAgentConnectionScope(service, {
+    const desktop = createZodyAgentConnectionScope(service, {
       connectionId: "desktop-preview",
       clientMode: "desktop-continuous",
     });
-    const mobile = createZCodeAgentConnectionScope(service, {
+    const mobile = createZodyAgentConnectionScope(service, {
       connectionId: "mobile-preview",
       clientMode: "web-remote-replayable",
     });
@@ -1242,7 +1242,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
         throw new Error("preview path authorization failed");
       },
     });
-    const desktop = createZCodeAgentConnectionScope(service, {
+    const desktop = createZodyAgentConnectionScope(service, {
       connectionId: "desktop-preview-failed",
       clientMode: "desktop-continuous",
     });
@@ -1285,7 +1285,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
     "routes %s through service → owned facade → assembler typed fault",
     async (sessionId, reasonCode) => {
       const { service, workspacePath } = setupService();
-      const scope = createZCodeAgentConnectionScope(service, {
+      const scope = createZodyAgentConnectionScope(service, {
         connectionId: `test-${sessionId}`,
         clientMode: "desktop-continuous",
       });
@@ -1484,7 +1484,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
   it("PV4-24 web-remote replayable 在 shared host 原样透传组合 rewind 命令", async () => {
     const { service, workspacePath, logPath, commandResolver } = setupService();
     const workspaceIdentity = "ssh://rewind-e2e/workspace";
-    const scope = createZCodeAgentConnectionScope(service, {
+    const scope = createZodyAgentConnectionScope(service, {
       connectionId: "mobile-rewind",
       clientMode: "web-remote-replayable",
     });
@@ -1561,7 +1561,7 @@ describe("zcodeAgentService v4 conversation channel", () => {
       sessionId: index === 0 ? null : "s1",
       commandId: `command-${index}`,
     }));
-    const scope = createZCodeAgentConnectionScope(service, {
+    const scope = createZodyAgentConnectionScope(service, {
       connectionId: "query-wire",
       clientMode: "web-remote-replayable",
     });

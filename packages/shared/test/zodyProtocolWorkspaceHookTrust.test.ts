@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
-  zcodeProtocolMethods,
-  zcodeWorkspaceHookTrustGrantParamsSchema,
-  zcodeWorkspaceHookTrustGrantResultSchema,
+  zodyProtocolMethods,
+  zodyWorkspaceHookTrustGrantParamsSchema,
+  zodyWorkspaceHookTrustGrantResultSchema,
 } from "../src/zody-protocol/index.js";
 
 describe("workspace Hook Trust workspace protocol", () => {
   it("declares an exact workspace/bundle/declaration grant contract", () => {
-    expect(zcodeProtocolMethods.workspaceHookTrustGrant).toBe("workspace/hooks/trustGrant");
+    expect(zodyProtocolMethods.workspaceHookTrustGrant).toBe("workspace/hooks/trustGrant");
     expect(
-      zcodeWorkspaceHookTrustGrantParamsSchema.parse({
+      zodyWorkspaceHookTrustGrantParamsSchema.parse({
         workspace: {
           workspacePath: "/repo",
           workspaceIdentity: "remote:ssh:host:/repo",
@@ -25,7 +25,7 @@ describe("workspace Hook Trust workspace protocol", () => {
       }),
     );
     expect(
-      zcodeWorkspaceHookTrustGrantResultSchema.parse({
+      zodyWorkspaceHookTrustGrantResultSchema.parse({
         accepted: false,
         reasonCode: "workspace_hooks_config_unreadable",
       }),
@@ -34,17 +34,17 @@ describe("workspace Hook Trust workspace protocol", () => {
 
   it("rejects malformed digests and undeclared fields", () => {
     expect(() =>
-      zcodeWorkspaceHookTrustGrantParamsSchema.parse({
+      zodyWorkspaceHookTrustGrantParamsSchema.parse({
         workspace: { workspacePath: "/repo", workspaceKey: "/repo" },
         bundleDigest: "not-a-digest",
         hookDeclarationDigest: "a".repeat(64),
       }),
     ).toThrow();
     expect(() =>
-      zcodeWorkspaceHookTrustGrantResultSchema.parse({ accepted: true, bypassed: true }),
+      zodyWorkspaceHookTrustGrantResultSchema.parse({ accepted: true, bypassed: true }),
     ).toThrow();
     expect(() =>
-      zcodeWorkspaceHookTrustGrantResultSchema.parse({
+      zodyWorkspaceHookTrustGrantResultSchema.parse({
         accepted: false,
         reasonCode: "/Users/alice/private/config.json",
       }),

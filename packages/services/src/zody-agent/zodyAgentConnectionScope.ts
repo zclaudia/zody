@@ -53,7 +53,7 @@ type TrustedUnsubscribeRouteCarrier = {
   [TRUSTED_UNSUBSCRIBE_ROUTE_FIELD]?: TrustedZodyAgentV4UnsubscribeRoute;
 };
 
-export function readTrustedZCodeAgentV4UnsubscribeRoute(
+export function readTrustedZodyAgentV4UnsubscribeRoute(
   value: unknown,
 ): TrustedZodyAgentV4UnsubscribeRoute | null {
   if (typeof value !== "object" || value === null) return null;
@@ -68,7 +68,7 @@ export function readTrustedZCodeAgentV4UnsubscribeRoute(
  * 该字段只在 host facade → base/remote service proxy 之间传递；facade 会覆盖所有
  * UI 入参中的同名字段，因此 renderer/mobile 不能伪造可信连接模式。
  */
-export function readTrustedZCodeAgentV4Connection(
+export function readTrustedZodyAgentV4Connection(
   value: unknown,
 ): ZodyAgentV4ConnectionContext | null {
   if (typeof value !== "object" || value === null) return null;
@@ -234,7 +234,7 @@ export interface ZodyAgentConnectionScope {
 }
 
 /** 为单个 host/server RPC attachment 建立可信 V4 facade。 */
-export function createZCodeAgentConnectionScope(
+export function createZodyAgentConnectionScope(
   base: IZodyAgentService,
   context: ZodyAgentV4ConnectionContext,
 ): ZodyAgentConnectionScope {
@@ -262,7 +262,7 @@ export function createZCodeAgentConnectionScope(
   const attachmentFlowRoutes = new Map<string, ConnectionFlowRoute>();
 
   const forwardedConnection = (params: unknown): ZodyAgentV4ConnectionContext => {
-    const downstream = readTrustedZCodeAgentV4Connection(params);
+    const downstream = readTrustedZodyAgentV4Connection(params);
     if (role === "trusted-host-relay" && downstream) {
       assertConnectionId(downstream.connectionId);
       return {
@@ -404,7 +404,7 @@ export function createZCodeAgentConnectionScope(
     params: unknown,
   ): TrustedZodyAgentV4UnsubscribeRoute | null => {
     if (role !== "trusted-host-relay") return null;
-    const downstream = readTrustedZCodeAgentV4UnsubscribeRoute(params);
+    const downstream = readTrustedZodyAgentV4UnsubscribeRoute(params);
     if (!downstream) return null;
     assertConnectionId(downstream.connectionId);
     return {
@@ -686,7 +686,7 @@ export function createZCodeAgentConnectionScope(
       if (role !== "trusted-host-relay") {
         throw new Error("fault.connection.flowControlForbidden");
       }
-      const downstream = readTrustedZCodeAgentV4Connection(params);
+      const downstream = readTrustedZodyAgentV4Connection(params);
       if (!downstream) throw new Error("fault.connection.flowControlUntrusted");
       const forwarded = forwardedConnection(params);
       const ownsRoute =
@@ -869,7 +869,7 @@ export function createZCodeAgentConnectionScope(
       assertOpen();
       // 可信 clientMode 来自 host attachment；Web/mobile/relay 即使能读权威对话态，
       // 也不能借共享 workspace emitter 安装生产 telemetry reporter。
-      const downstream = readTrustedZCodeAgentV4Connection(params);
+      const downstream = readTrustedZodyAgentV4Connection(params);
       const relayDesktopDownstream =
         role === "trusted-host-relay" && downstream?.clientMode === "desktop-continuous";
       if (

@@ -7,7 +7,7 @@ import {
   ZhipuAccountAccessConfig,
   createAccountProviderConfigSnapshot,
 } from "@zody/provider";
-import { zcodeProviderUpdateAccountConfigParamsSchema } from "@zody/shared";
+import { zodyProviderUpdateAccountConfigParamsSchema } from "@zody/shared";
 import {
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
   ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
@@ -240,7 +240,7 @@ describe("process provider registry runtime", () => {
           },
         );
         revisions.add(snapshot.revision);
-        const wire = zcodeProviderUpdateAccountConfigParamsSchema.parse(
+        const wire = zodyProviderUpdateAccountConfigParamsSchema.parse(
           JSON.parse(
             JSON.stringify({
               ...snapshot,

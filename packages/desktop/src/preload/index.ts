@@ -94,7 +94,7 @@ import type {
 import {
   InternalChannels,
   PlatformChannels,
-  formatZCodeRendererProcessName,
+  formatZodyRendererProcessName,
   shouldEnableE2ETestBridge,
 } from "@zody/shared";
 
@@ -208,7 +208,7 @@ ipcRenderer.on(PlatformChannels.OpenWorkspacePath, (_event: unknown, path: strin
 // fork（F4.8）：PlatformChannels.ShareImport 监听随会话分享功能删除。
 
 function updateRendererProcessTitle(): void {
-  process.title = formatZCodeRendererProcessName(document.title);
+  process.title = formatZodyRendererProcessName(document.title);
 }
 
 function notifyUpdateReadyCallbacks(version: string): void {

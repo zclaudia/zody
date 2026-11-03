@@ -1,6 +1,6 @@
 // v4 workspace-config 只承载 workspace presentation；模型候选与首选项由目标 Host
 // ModelSelectionView 提供，不能再从 live Session settings 反向建立第二份模型目录。
-import { getZCodeAgentModeSelectOptions, normalizeAvailableZCodeMode } from "@zody/shared";
+import { getZodyAgentModeSelectOptions, normalizeAvailableZodyMode } from "@zody/shared";
 import type { ZodySessionSettingsState, ZodySlashCommand } from "@zody/shared";
 import type { WorkspaceConfigState } from "@zody/shared/zody-protocol-v4";
 import { mapSessionSettings } from "./mapper.js";
@@ -19,8 +19,8 @@ export function toV4WorkspaceConfigState(
         name: "Mode",
         category: "mode",
         type: "select",
-        currentValue: normalizeAvailableZCodeMode(settings.mode.current),
-        options: getZCodeAgentModeSelectOptions(),
+        currentValue: normalizeAvailableZodyMode(settings.mode.current),
+        options: getZodyAgentModeSelectOptions(),
       },
     ],
     slashCommands: slashCommands.map((command) => ({

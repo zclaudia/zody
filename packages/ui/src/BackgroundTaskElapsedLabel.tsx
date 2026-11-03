@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import {
-  getZCodeBackgroundTaskControlItemElapsedMs,
+  getZodyBackgroundTaskControlItemElapsedMs,
   type ZodyBackgroundTaskControlItem,
 } from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
@@ -30,7 +30,7 @@ export function formatBackgroundTaskElapsedLabel(
 function createElapsedBaseline(job: ZodyBackgroundTaskControlItem) {
   const mountedAt = Date.now();
   return {
-    elapsedMs: getZCodeBackgroundTaskControlItemElapsedMs(job, mountedAt),
+    elapsedMs: getZodyBackgroundTaskControlItemElapsedMs(job, mountedAt),
     key: `${job.jobId}:${job.startedAt ?? "no-start"}:${job.elapsedMs ?? "no-elapsed"}`,
     mountedAt,
   };
@@ -41,7 +41,7 @@ function elapsedMsForClock(input: {
   job: ZodyBackgroundTaskControlItem;
   now: number;
 }) {
-  const elapsedFromJob = getZCodeBackgroundTaskControlItemElapsedMs(input.job, input.now);
+  const elapsedFromJob = getZodyBackgroundTaskControlItemElapsedMs(input.job, input.now);
   const elapsedFromBaseline =
     input.baseline.elapsedMs + Math.max(0, input.now - input.baseline.mountedAt);
   return Math.max(elapsedFromJob, elapsedFromBaseline);

@@ -7,7 +7,7 @@ import type { ZodyPersistedMessage, ZodyPersistedMessagePart } from "./zody-task
 //
 // 顺便把 turnIndex 显式按 user 计数赋值，修掉 `toTaskChatMessages` 的兜底
 // `Math.floor(index / 2)` 在多 assistant 时算错的次要 bug。
-export function coalesceConsecutiveZCodeAssistants(
+export function coalesceConsecutiveZodyAssistants(
   messages: readonly ZodyPersistedMessage[],
 ): ZodyPersistedMessage[] {
   const merged: ZodyPersistedMessage[] = [];

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zcodeTaskMetaSchema } from "../validation.js";
+import { zodyTaskMetaSchema } from "../validation.js";
 import { pendingInteractionSummarySchema } from "./sessions-index.js";
 import { sessionWorkflowActivitySchema } from "./sessions-index-workflow-activity.js";
 import { sessionPhaseSchema } from "./snapshot.js";
@@ -90,7 +90,7 @@ export type WindowHostControllerTaskActivity = z.infer<
 export const windowHostControllerTaskRowSchema = z
   .object({
     address: windowHostTaskAddressSchema,
-    meta: zcodeTaskMetaSchema,
+    meta: zodyTaskMetaSchema,
     membership: z
       .object({
         pinned: z.boolean(),

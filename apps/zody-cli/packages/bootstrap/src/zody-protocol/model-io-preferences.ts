@@ -1,4 +1,4 @@
-import { zcodeWorkspaceUpdateModelIoPreferencesParamsSchema } from "@zody/shared";
+import { zodyWorkspaceUpdateModelIoPreferencesParamsSchema } from "@zody/shared";
 import { parseParams, type ZodyProtocolAgentServerContext } from "./server-types.js";
 
 /**
@@ -9,7 +9,7 @@ export async function updateModelIoPreferences(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeWorkspaceUpdateModelIoPreferencesParamsSchema, rawParams);
+  const params = parseParams(zodyWorkspaceUpdateModelIoPreferencesParamsSchema, rawParams);
   const enabled = params.preferences.fullRetentionEnabled;
   context.appRuntimePreferences.modelIoFullRetentionEnabled = enabled;
 

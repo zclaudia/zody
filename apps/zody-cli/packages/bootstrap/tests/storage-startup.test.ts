@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { Writable } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
 import { DatabaseSync } from "node:sqlite";
-import { zcodeStorageStartupStateSchema } from "@zody/shared";
+import { zodyStorageStartupStateSchema } from "@zody/shared";
 import { openProtocolStartupStorage } from "../src/zody-protocol/storage-startup.js";
 
 const dirs: string[] = [];
@@ -58,7 +58,7 @@ describe("迁移前的 stdio 启动控制帧", () => {
       const states = packets.map((packet) => {
         const envelope = packet as { method: string; params: unknown };
         expect(envelope.method).toBe("startup/storageState");
-        return zcodeStorageStartupStateSchema.parse(envelope.params);
+        return zodyStorageStartupStateSchema.parse(envelope.params);
       });
       expect(states.at(-1)?.phase).toBe("ready");
       expect(new Set(states.map((s) => s.attemptId)).size).toBe(1);

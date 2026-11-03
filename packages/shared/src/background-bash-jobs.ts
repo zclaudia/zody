@@ -1,8 +1,8 @@
 import {
-  collectVisibleZCodeBackgroundTaskControlItems,
-  getZCodeBackgroundTaskControlItemElapsedMs,
-  isActiveZCodeBackgroundTaskControlItem,
-  parseZCodeBackgroundTaskControlItems,
+  collectVisibleZodyBackgroundTaskControlItems,
+  getZodyBackgroundTaskControlItemElapsedMs,
+  isActiveZodyBackgroundTaskControlItem,
+  parseZodyBackgroundTaskControlItems,
   type ZodyBackgroundTaskControlItem,
   type ZodyBackgroundTaskControlStatus,
 } from "./background-task-controls.js";
@@ -12,27 +12,27 @@ export type ZodyBackgroundBashJob = ZodyBackgroundTaskControlItem & {
   taskKind: "bash";
 };
 
-export function parseZCodeBackgroundBashJobs(value: unknown): ZodyBackgroundBashJob[] {
-  return parseZCodeBackgroundTaskControlItems(value).filter(isBackgroundBashJob);
+export function parseZodyBackgroundBashJobs(value: unknown): ZodyBackgroundBashJob[] {
+  return parseZodyBackgroundTaskControlItems(value).filter(isBackgroundBashJob);
 }
 
-export function isActiveZCodeBackgroundBashJob(job: ZodyBackgroundBashJob): boolean {
-  return isActiveZCodeBackgroundTaskControlItem(job);
+export function isActiveZodyBackgroundBashJob(job: ZodyBackgroundBashJob): boolean {
+  return isActiveZodyBackgroundTaskControlItem(job);
 }
 
-export function getZCodeBackgroundBashJobElapsedMs(
+export function getZodyBackgroundBashJobElapsedMs(
   job: ZodyBackgroundBashJob,
   now = Date.now(),
 ): number {
-  return getZCodeBackgroundTaskControlItemElapsedMs(job, now);
+  return getZodyBackgroundTaskControlItemElapsedMs(job, now);
 }
 
-export function collectVisibleZCodeBackgroundBashJobs(
+export function collectVisibleZodyBackgroundBashJobs(
   jobs: readonly ZodyBackgroundBashJob[],
   now = Date.now(),
   thresholdMs = 30_000,
 ): Array<ZodyBackgroundBashJob & { elapsedMs: number }> {
-  return collectVisibleZCodeBackgroundTaskControlItems(jobs, now, thresholdMs) as Array<
+  return collectVisibleZodyBackgroundTaskControlItems(jobs, now, thresholdMs) as Array<
     ZodyBackgroundBashJob & { elapsedMs: number }
   >;
 }

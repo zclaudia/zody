@@ -17,7 +17,7 @@ import {
   ZCODE_VERSION,
   ZCODE_DATA_ROOT_DIR_NAME,
   buildZodyToolEnvPassthroughEnv,
-  resolveRuntimeZCodeEndpointOrigin,
+  resolveRuntimeZodyEndpointOrigin,
   normalizeDynamicWorkflowMode,
   readZodyAgentTelemetryEnv,
   sanitizeZodyRuntimeEnv,
@@ -291,7 +291,7 @@ function applySelectedZCodeEnvLinks(env: Record<string, string>): Record<string,
     ...env,
     ZCODE_ENV,
   };
-  const endpointOrigin = env.ZCODE_BASE_URL ?? resolveRuntimeZCodeEndpointOrigin(endpointEnv);
+  const endpointOrigin = env.ZCODE_BASE_URL ?? resolveRuntimeZodyEndpointOrigin(endpointEnv);
 
   return {
     ...env,

@@ -38,7 +38,7 @@ export type ZodyAttachmentFaultCode =
 
 const KNOWN_FAULT_CODES = new Set<string>(Object.values(ZCODE_ATTACHMENT_FAULT_CODES));
 
-export function isZCodeAttachmentFaultCode(value: unknown): value is ZodyAttachmentFaultCode {
+export function isZodyAttachmentFaultCode(value: unknown): value is ZodyAttachmentFaultCode {
   return typeof value === "string" && KNOWN_FAULT_CODES.has(value);
 }
 
@@ -46,7 +46,7 @@ export function isZCodeAttachmentFaultCode(value: unknown): value is ZodyAttachm
  * 带稳定错误码的附件错误。`code` 是 string，`toProtocolError` 会把它放进
  * JSON-RPC `error.data.code`，因此同进程与跨进程都能按码分类。
  */
-export class ZCodeAttachmentFaultError extends Error {
+export class ZodyAttachmentFaultError extends Error {
   readonly code: ZodyAttachmentFaultCode;
 
   constructor(code: ZodyAttachmentFaultCode, options?: { cause?: unknown; message?: string }) {
@@ -66,16 +66,16 @@ export class ZCodeAttachmentFaultError extends Error {
  * - 跨 JSON-RPC 回传的 `error.data.code`；
  * - 旧版本 CLI 只有消息文本时的兼容兜底（见下方注释）。
  */
-export function readZCodeAttachmentFaultCode(error: unknown): ZodyAttachmentFaultCode | undefined {
+export function readZodyAttachmentFaultCode(error: unknown): ZodyAttachmentFaultCode | undefined {
   if (!error || typeof error !== "object") return undefined;
   const candidate = error as { code?: unknown; data?: unknown };
-  if (isZCodeAttachmentFaultCode(candidate.code)) return candidate.code;
+  if (isZodyAttachmentFaultCode(candidate.code)) return candidate.code;
   if (candidate.data && typeof candidate.data === "object") {
     const data = candidate.data as { code?: unknown };
-    if (isZCodeAttachmentFaultCode(data.code)) return data.code;
+    if (isZodyAttachmentFaultCode(data.code)) return data.code;
   }
   // 兼容兜底：桌面端可能连接尚未带结构化 code 的旧 zcode-cli。仅在消息「整体等于」
   // 某个 fault 码时命中，不做模糊匹配，避免把包装后的任意文本误判成确定分类。
-  if (error instanceof Error && isZCodeAttachmentFaultCode(error.message)) return error.message;
+  if (error instanceof Error && isZodyAttachmentFaultCode(error.message)) return error.message;
   return undefined;
 }

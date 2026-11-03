@@ -1,5 +1,5 @@
 import {
-  normalizeAgentProviderToZCodeAgent,
+  normalizeAgentProviderToZodyAgent,
   ZCODE_AGENT_PROVIDER,
   type ZodyProvider,
 } from "@zody/shared";
@@ -36,7 +36,7 @@ export function readLastSelectedAgentProvider(storage: StorageLike | null = getB
 
   // Bugfix: 单 ZCode Agent 迁移后，旧本地存储里已移除的第三方 provider 值不能再参与首屏预热。
   // 否则 UI 会短暂以旧 provider 作为事实源发起 prepare/create，和 agent server 的 glm 状态产生竞态。
-  return normalizeAgentProviderToZCodeAgent(rawValue);
+  return normalizeAgentProviderToZodyAgent(rawValue);
 }
 
 export function persistLastSelectedAgentProvider(
@@ -47,6 +47,6 @@ export function persistLastSelectedAgentProvider(
   // 如果继续照读，草稿预热和首发 createTask 会在 UI 层短暂走错 provider。这里统一收敛到 glm。
   storage?.setItem(
     LAST_SELECTED_AGENT_PROVIDER_STORAGE_KEY,
-    normalizeAgentProviderToZCodeAgent(provider),
+    normalizeAgentProviderToZodyAgent(provider),
   );
 }

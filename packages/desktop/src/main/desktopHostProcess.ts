@@ -12,7 +12,7 @@ import {
   type HostSessionCreateTelemetryResponse,
   type TaskRealtimeHostDeliveryKind,
   type WorkspacePurpose,
-  formatZCodeHostProcessName,
+  formatZodyHostProcessName,
   HostMessageTypes,
   hostResponseMessageSchema,
   HostResponseTypes,
@@ -287,7 +287,7 @@ export function spawnHostProcess(
   const child: HostProcessHandle =
     nativeHost ??
     electronUtilityProcess.fork(hostModulePath, [], {
-      serviceName: formatZCodeHostProcessName(label),
+      serviceName: formatZodyHostProcessName(label),
       execArgv,
       env: {
         ...buildHostProcessEnv(dependencies.hostProcessLocalEnv),

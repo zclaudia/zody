@@ -40,7 +40,7 @@ import {
   type TargetChangedPayload,
   type WorkflowRunSnapshot,
 } from "@zody/contracts";
-import { resolveLatestSession, runZCodeProtocolAgent } from "../src/index.js";
+import { resolveLatestSession, runZodyProtocolAgent } from "../src/index.js";
 import { ProductProjection } from "../src/zody-protocol-v4/product-projection.js";
 import { synthesizeEventsFromMessages } from "../src/zody-protocol-v4/transcript-hydration.js";
 import {
@@ -1415,7 +1415,7 @@ describe("session persistence", () => {
 
     try {
       await expect(
-        runZCodeProtocolAgent({
+        runZodyProtocolAgent({
           env: {
             ...providerEnv,
             ZCODE_SESSION_DB_PATH: dbPath,
@@ -1455,7 +1455,7 @@ describe("session persistence", () => {
     const providerEnv = await createProtocolProviderEnv(tempRoot);
 
     try {
-      await runZCodeProtocolAgent({
+      await runZodyProtocolAgent({
         env: {
           ...providerEnv,
           ZCODE_LOG_DIR: join(tempRoot, "log"),
@@ -1499,7 +1499,7 @@ describe("session persistence", () => {
     const providerEnv = await createProtocolProviderEnv(tempRoot);
 
     try {
-      await runZCodeProtocolAgent({
+      await runZodyProtocolAgent({
         env: {
           ...providerEnv,
           ZCODE_LOG_DIR: logDir,

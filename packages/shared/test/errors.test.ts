@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isOpenCodeRuntimeCrashError,
-  isZCodeFileLockTimeoutError,
+  isZodyFileLockTimeoutError,
   normalizeUnknownError,
   ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE,
 } from "../src/errors.js";
@@ -46,17 +46,17 @@ describe("isOpenCodeRuntimeCrashError", () => {
   });
 });
 
-describe("isZCodeFileLockTimeoutError", () => {
+describe("isZodyFileLockTimeoutError", () => {
   it("matches direct and RPC-wrapped timeout codes", () => {
-    expect(isZCodeFileLockTimeoutError({ code: ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE })).toBe(true);
+    expect(isZodyFileLockTimeoutError({ code: ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE })).toBe(true);
     expect(
-      isZCodeFileLockTimeoutError({
+      isZodyFileLockTimeoutError({
         error: { code: ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE, message: "lock timeout" },
       }),
     ).toBe(true);
   });
 
   it("does not classify legacy EEXIST as the explicit timeout code", () => {
-    expect(isZCodeFileLockTimeoutError({ code: "EEXIST" })).toBe(false);
+    expect(isZodyFileLockTimeoutError({ code: "EEXIST" })).toBe(false);
   });
 });

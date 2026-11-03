@@ -4,7 +4,7 @@ import { PassThrough } from "node:stream";
 import { setTimeout as delay } from "node:timers/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { terminateProcessTree } from "@zody/services/process/processTreeTerminator";
-import { ZCodeStdioTransport } from "@zody/services/node";
+import { ZodyStdioTransport } from "@zody/services/node";
 
 const activeChildren = new Set<ChildProcessWithoutNullStreams>();
 
@@ -42,7 +42,7 @@ afterEach(() => {
   activeChildren.clear();
 });
 
-describe("ZCodeStdioTransport", () => {
+describe("ZodyStdioTransport", () => {
   it("stderr failure alone leaves a responsive protocol usable", async () => {
     const child = spawn(
       process.execPath,
@@ -57,7 +57,7 @@ describe("ZCodeStdioTransport", () => {
       { stdio: ["pipe", "pipe", "pipe"] },
     );
     activeChildren.add(child);
-    const transport = new ZCodeStdioTransport(child);
+    const transport = new ZodyStdioTransport(child);
     await new Promise<void>((resolve) => transport.onMessage(() => resolve()));
     let closed = false;
     transport.onClose(() => {
@@ -87,7 +87,7 @@ describe("ZCodeStdioTransport", () => {
     );
     activeChildren.add(child);
     const lines: string[] = [];
-    const transport = new ZCodeStdioTransport(child, { onStderrLine: (line) => lines.push(line) });
+    const transport = new ZodyStdioTransport(child, { onStderrLine: (line) => lines.push(line) });
     await new Promise<void>((resolve) => transport.onMessage(() => resolve()));
     // 修复原因：退出后的进程身份复核可能阻塞事件循环，让 250ms drain timer
     // 先于 stderr EOF 投递。本用例只验证尾行收集，真实退出时限由后续用例验证。
@@ -119,7 +119,7 @@ setInterval(() => {}, 1000);
       },
     );
     activeChildren.add(child);
-    const transport = new ZCodeStdioTransport(child);
+    const transport = new ZodyStdioTransport(child);
     await delay(50);
 
     const startedAt = Date.now();
@@ -170,7 +170,7 @@ setInterval(() => {}, 1000);
       const descendantPidPromise = new Promise<number>((resolve) => {
         reportPid = resolve;
       });
-      const transport = new ZCodeStdioTransport(child, {
+      const transport = new ZodyStdioTransport(child, {
         onStderrLine: (line) => {
           const pid = Number(line);
           if (Number.isInteger(pid)) reportPid?.(pid);
@@ -221,7 +221,7 @@ descendant.once("message", () => {
         },
       );
       activeChildren.add(child);
-      const transport = new ZCodeStdioTransport(child, {
+      const transport = new ZodyStdioTransport(child, {
         ownedProcessGroupId: child.pid,
       });
       const descendantPidPromise = new Promise<number>((resolve) => {
@@ -274,7 +274,7 @@ descendant.once("message", () => {
         { stdio: ["pipe", "pipe", "pipe"], windowsHide: true },
       );
       activeChildren.add(child);
-      const transport = new ZCodeStdioTransport(child, {
+      const transport = new ZodyStdioTransport(child, {
         ownedProcessStartedAtMs: spawnRequestedAt,
       });
       const descendantPidPromise = new Promise<number>((resolve) => {
@@ -320,7 +320,7 @@ setInterval(() => {}, 1000);
       { stdio: ["pipe", "pipe", "pipe"], windowsHide: true },
     );
     activeChildren.add(child);
-    const transport = new ZCodeStdioTransport(child);
+    const transport = new ZodyStdioTransport(child);
     let firstFrameAt = 0;
     let receivedFrameCount = 0;
     let agentPid = 0;
@@ -361,7 +361,7 @@ setInterval(() => {}, 1000);
       windowsHide: true,
     });
     activeChildren.add(child);
-    const transport = new ZCodeStdioTransport(child);
+    const transport = new ZodyStdioTransport(child);
     await new Promise<void>((resolve) => child.once("exit", () => resolve()));
 
     await expect(
@@ -394,7 +394,7 @@ process.stdout.write(frame, () => setTimeout(() => process.exit(0), 10));
       },
     );
     activeChildren.add(child);
-    const transport = new ZCodeStdioTransport(child);
+    const transport = new ZodyStdioTransport(child);
     let closeReason: string | undefined;
     transport.onClose((event) => {
       closeReason = event.reason;
@@ -439,10 +439,10 @@ function writeInChunks(stream: PassThrough, bytes: Buffer, chunkBytes: number): 
   }
 }
 
-describe("ZCodeStdioTransport stdout 分帧", () => {
+describe("ZodyStdioTransport stdout 分帧", () => {
   it("跨 chunk 的超大多字节帧、同 chunk 多帧与 EOF 尾帧按序完整交付", async () => {
     const child = createFakeChild();
-    const transport = new ZCodeStdioTransport(child);
+    const transport = new ZodyStdioTransport(child);
     const messages: unknown[] = [];
     transport.onMessage((message) => messages.push(message));
     const closed = new Promise<string | undefined>((resolve) => {
@@ -466,7 +466,7 @@ describe("ZCodeStdioTransport stdout 分帧", () => {
 
   it("超大单行按小块到达时换行扫描量保持线性", async () => {
     const child = createFakeChild();
-    const transport = new ZCodeStdioTransport(child);
+    const transport = new ZodyStdioTransport(child);
     const received = new Promise((resolve) => transport.onMessage(resolve));
     const line = Buffer.from(
       `${JSON.stringify({ method: "session/event", params: { text: "x".repeat(4 << 20) } })}\n`,

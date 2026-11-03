@@ -73,7 +73,7 @@ function buildFallbackAssistantParts({
   ];
 }
 
-export function buildZCodeAssistantPresentation({
+export function buildZodyAssistantPresentation({
   content,
   thought,
   toolCalls = [],

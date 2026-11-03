@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { zodyProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 
-async function request(server: ZCodeProtocolAgentServer, method: string, params: unknown) {
+async function request(server: ZodyProtocolAgentServer, method: string, params: unknown) {
   const response = await server.handleMessage({ id: 1, method, params } as ZodyProtocolMessage);
   if (!response || !("result" in response)) throw new Error(JSON.stringify(response));
   return response.result;
@@ -12,10 +12,10 @@ async function request(server: ZCodeProtocolAgentServer, method: string, params:
 describe("Session 原选择与输入协议", () => {
   it("完整配置命令保留档位，Session read 不用候选名单过滤原选择", async () => {
     let app!: ReturnType<typeof createFakeApp>;
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp: (options) => (app = createFakeApp(options)),
     });
-    await request(server, zcodeProtocolMethods.sessionCreate, {
+    await request(server, zodyProtocolMethods.sessionCreate, {
       workspace: { workspacePath: "/fixture", workspaceKey: "/fixture" },
     });
     const setModel = vi.spyOn(app, "setModel");
@@ -24,7 +24,7 @@ describe("Session 原选择与输入协议", () => {
       modelId: "glm-4-air",
       options: { reasoningLevel: "deep" },
     };
-    const result = await request(server, zcodeProtocolMethods.sessionSetModel, {
+    const result = await request(server, zodyProtocolMethods.sessionSetModel, {
       sessionId: app.sessionId,
       model: selection,
     });
@@ -35,13 +35,13 @@ describe("Session 原选择与输入协议", () => {
       options: { reasoningLevel: "removed-level" },
     });
     expect(
-      await request(server, zcodeProtocolMethods.sessionRead, { sessionId: app.sessionId }),
+      await request(server, zodyProtocolMethods.sessionRead, { sessionId: app.sessionId }),
     ).toMatchObject({
       settings: {
         model: { current: { ...selection, options: { reasoningLevel: "removed-level" } } },
       },
     });
-    await request(server, zcodeProtocolMethods.sessionClose, { sessionId: app.sessionId });
+    await request(server, zodyProtocolMethods.sessionClose, { sessionId: app.sessionId });
   });
 
   it("附件 Selection 进入同一个 input intent，执行凭据只进入非持久执行依赖", async () => {
@@ -55,10 +55,10 @@ describe("Session 原选择与输入协议", () => {
       turnId: "turn" as never,
       completion,
     }));
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp: (options) => (app = createFakeApp(options, { sendInput })),
     });
-    await request(server, zcodeProtocolMethods.sessionCreate, {
+    await request(server, zodyProtocolMethods.sessionCreate, {
       workspace: { workspacePath: "/fixture", workspaceKey: "/fixture" },
     });
     const selection = {
@@ -66,7 +66,7 @@ describe("Session 原选择与输入协议", () => {
       modelId: "fixture-model",
       options: { reasoningLevel: "high" },
     };
-    await request(server, zcodeProtocolMethods.sessionSend, {
+    await request(server, zodyProtocolMethods.sessionSend, {
       sessionId: app.sessionId,
       inputId: "attachment-input",
       content: "hi",
@@ -101,7 +101,7 @@ describe("Session 原选择与输入协议", () => {
     try {
       const next = await server.handleMessage({
         id: 2,
-        method: zcodeProtocolMethods.sessionSend,
+        method: zodyProtocolMethods.sessionSend,
         params: { sessionId: app.sessionId, content: "next" },
       });
       expect(next).toMatchObject({ error: { code: -32010 } });
@@ -109,6 +109,6 @@ describe("Session 原选择与输入协议", () => {
     } finally {
       finish({} as never);
     }
-    await request(server, zcodeProtocolMethods.sessionClose, { sessionId: app.sessionId });
+    await request(server, zodyProtocolMethods.sessionClose, { sessionId: app.sessionId });
   });
 });

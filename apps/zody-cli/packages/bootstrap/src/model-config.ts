@@ -4,8 +4,8 @@ import type {
   EnvRecord,
 } from "@zody/adapters/model";
 import {
-  resolveRuntimeZCodeEnv,
-  resolveRuntimeZCodeEndpointOrigin,
+  resolveRuntimeZodyEnv,
+  resolveRuntimeZodyEndpointOrigin,
   ZCODE_APP_VERSION_ENV,
 } from "@zody/shared";
 import {
@@ -54,13 +54,13 @@ export function buildCliZCodeSourceHeaders(
   const timezone = normalizePrintableHeaderValue(Intl.DateTimeFormat().resolvedOptions().timeZone);
   // fork（F3.1）：端点未配置（空）时不发送 HTTP-Referer，避免空 header；
   // 也不再通过默认常量回落到官方地址。
-  const zcodeEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(env);
+  const zcodeEndpointOrigin = resolveRuntimeZodyEndpointOrigin(env);
   return {
     ...(zcodeEndpointOrigin ? { "HTTP-Referer": zcodeEndpointOrigin } : {}),
     "User-Agent": `Zody/${appVersion ?? "unknown"}`,
     ...(appVersion ? { "X-Zody-App-Version": appVersion } : {}),
     "X-Title": `Zody@${sourceTitle}`,
-    "X-Release-Channel": resolveRuntimeZCodeEnv(env),
+    "X-Release-Channel": resolveRuntimeZodyEnv(env),
     "X-Client-Language": locale ?? "unknown",
     "X-Client-Timezone": timezone ?? "unknown",
     "X-Zody-Agent": "glm",

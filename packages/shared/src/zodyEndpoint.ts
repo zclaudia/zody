@@ -40,7 +40,7 @@ function readRuntimeEnvValue(
   return value ? value : undefined;
 }
 
-export function normalizeZCodeEndpointOrigin(value: string): string {
+export function normalizeZodyEndpointOrigin(value: string): string {
   const trimmed = value.trim();
   if (!trimmed) {
     throw new Error("Zody endpoint origin is empty");
@@ -53,7 +53,7 @@ export function normalizeZCodeEndpointOrigin(value: string): string {
   return parsed.origin;
 }
 
-export function resolveZCodeEndpointOrigin(options?: {
+export function resolveZodyEndpointOrigin(options?: {
   env?: ZodyEnv;
   envBaseOrigin?: string | null;
   overrideOrigin?: string | null;
@@ -63,37 +63,37 @@ export function resolveZCodeEndpointOrigin(options?: {
   if (env === "production") {
     // fork（F3.1）：生产环境未显式配置时返回空（未配置），不再回落官方地址。
     return envBaseOrigin
-      ? normalizeZCodeEndpointOrigin(envBaseOrigin)
+      ? normalizeZodyEndpointOrigin(envBaseOrigin)
       : DEFAULT_ZCODE_ENDPOINT_ORIGIN;
   }
 
   const overrideOrigin = options?.overrideOrigin?.trim();
   if (overrideOrigin) {
-    return normalizeZCodeEndpointOrigin(overrideOrigin);
+    return normalizeZodyEndpointOrigin(overrideOrigin);
   }
 
-  return envBaseOrigin ? normalizeZCodeEndpointOrigin(envBaseOrigin) : TEST_ZCODE_ENDPOINT_ORIGIN;
+  return envBaseOrigin ? normalizeZodyEndpointOrigin(envBaseOrigin) : TEST_ZCODE_ENDPOINT_ORIGIN;
 }
 
-export function resolveRuntimeZCodeEnv(env: RuntimeZodyEndpointEnv = {}): ZodyEnv {
+export function resolveRuntimeZodyEnv(env: RuntimeZodyEndpointEnv = {}): ZodyEnv {
   // 独立 CLI / 服务测试未注入 ZCODE_ENV 时默认生产环境；桌面测试包会显式下发 ZCODE_ENV=test。
   // fork（F3.1）：「生产环境」只决定读取 ZCODE_PRODUCTION_BASE_URL，不再意味着官方地址；
   // 端点未配置时 resolveRuntimeZCodeEndpointOrigin 返回空字符串。
   return env.ZCODE_ENV?.trim().toLowerCase() === "test" ? "test" : "production";
 }
 
-export function resolveRuntimeZCodeEndpointOrigin(
+export function resolveRuntimeZodyEndpointOrigin(
   env: RuntimeZodyEndpointEnv = {},
   options?: { overrideOrigin?: string | null },
 ): string {
-  const zcodeEnv = resolveRuntimeZCodeEnv(env);
+  const zodyEnv = resolveRuntimeZodyEnv(env);
   const scopedBaseOrigin =
-    zcodeEnv === "production"
+    zodyEnv === "production"
       ? readRuntimeEnvValue(env, "ZCODE_PRODUCTION_BASE_URL")
       : readRuntimeEnvValue(env, "ZCODE_TEST_BASE_URL");
 
-  return resolveZCodeEndpointOrigin({
-    env: zcodeEnv,
+  return resolveZodyEndpointOrigin({
+    env: zodyEnv,
     envBaseOrigin:
       readRuntimeEnvValue(env, "ZCODE_BASE_URL") ??
       readRuntimeEnvValue(env, "ZCODE_ENDPOINT_ORIGIN") ??
@@ -102,8 +102,8 @@ export function resolveRuntimeZCodeEndpointOrigin(
   });
 }
 
-export function buildRuntimeZCodeApiUrl(env: RuntimeZodyEndpointEnv = {}, path: string): string {
-  const endpointOrigin = resolveRuntimeZCodeEndpointOrigin(env);
+export function buildRuntimeZodyApiUrl(env: RuntimeZodyEndpointEnv = {}, path: string): string {
+  const endpointOrigin = resolveRuntimeZodyEndpointOrigin(env);
   // fork（F3.1）：未配置端点时返回空字符串，消费方据此关闭远端能力；
   // 不能返回 `${""}${path}` 这类相对 URL（Node fetch 会直接抛 TypeError）。
   if (!endpointOrigin) {
@@ -113,7 +113,7 @@ export function buildRuntimeZCodeApiUrl(env: RuntimeZodyEndpointEnv = {}, path: 
   return `${endpointOrigin}${normalizedPath}`;
 }
 
-export function rewriteZCodeEndpointUrl(
+export function rewriteZodyEndpointUrl(
   input: string | URL,
   endpointOrigin: string,
   options: {
@@ -150,7 +150,7 @@ export function rewriteZCodeEndpointUrl(
     return input;
   }
 
-  const targetOrigin = normalizeZCodeEndpointOrigin(targetValue);
+  const targetOrigin = normalizeZodyEndpointOrigin(targetValue);
   if (targetOrigin === sourceOrigin) {
     return input;
   }

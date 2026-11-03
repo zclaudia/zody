@@ -1,8 +1,8 @@
 import {
-  getZCodeToolFamilyForName,
+  getZodyToolFamilyForName,
   isTodoPlanToolName,
-  isZCodeFileContentWriteToolName,
-  normalizeZCodeToolName,
+  isZodyFileContentWriteToolName,
+  normalizeZodyToolName,
   type ZodyKnownToolName,
   type ZodyToolFamily,
 } from "@zody/shared";
@@ -89,11 +89,11 @@ function identityFromKnownToolName(
   value: string | null | undefined,
   source: ToolCallIdentitySource,
 ): ToolCallIdentity | null {
-  const toolName = normalizeZCodeToolName(value);
+  const toolName = normalizeZodyToolName(value);
   if (!toolName) {
     return null;
   }
-  const family = getZCodeToolFamilyForName(toolName);
+  const family = getZodyToolFamilyForName(toolName);
   if (!family) {
     return null;
   }
@@ -397,7 +397,7 @@ export function isFileContentWriteToolCall(
   if (identity.family !== "file-write") {
     return false;
   }
-  if (isZCodeFileContentWriteToolName(identity.toolName)) {
+  if (isZodyFileContentWriteToolName(identity.toolName)) {
     return true;
   }
   const legacyKind = normalizeLegacyToken(toolCall.kind);

@@ -1,19 +1,19 @@
 import { existsSync } from "node:fs";
 import {
-  zcodePluginsConfigureParamsSchema,
-  zcodePluginsResetConfigParamsSchema,
-  zcodePluginsInstallParamsSchema,
-  zcodePluginsMarketplaceAddParamsSchema,
-  zcodePluginsMarketplaceRemoveParamsSchema,
-  zcodePluginsMarketplaceUpdateParamsSchema,
-  zcodePluginsOverviewParamsSchema,
-  zcodePluginsListParamsSchema,
-  zcodePluginsSetEnabledParamsSchema,
-  zcodePluginsUninstallParamsSchema,
-  zcodePluginsUpdateParamsSchema,
-  zcodePluginsValidateParamsSchema,
-  zcodePluginsDescribeParamsSchema,
-  zcodePluginsRestoreBuiltinParamsSchema,
+  zodyPluginsConfigureParamsSchema,
+  zodyPluginsResetConfigParamsSchema,
+  zodyPluginsInstallParamsSchema,
+  zodyPluginsMarketplaceAddParamsSchema,
+  zodyPluginsMarketplaceRemoveParamsSchema,
+  zodyPluginsMarketplaceUpdateParamsSchema,
+  zodyPluginsOverviewParamsSchema,
+  zodyPluginsListParamsSchema,
+  zodyPluginsSetEnabledParamsSchema,
+  zodyPluginsUninstallParamsSchema,
+  zodyPluginsUpdateParamsSchema,
+  zodyPluginsValidateParamsSchema,
+  zodyPluginsDescribeParamsSchema,
+  zodyPluginsRestoreBuiltinParamsSchema,
   type ZodyAvailablePluginSummary,
   type ZodyInstalledPluginSummary,
   type ZodyPluginComponentGroup,
@@ -216,7 +216,7 @@ export async function listPlugins(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsListResult> {
-  const params = parseParams(zcodePluginsListParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsListParamsSchema, rawParams);
   const configResult = createPluginConfigView(
     context,
     params.workspace.workspacePath,
@@ -247,7 +247,7 @@ export async function setPluginEnabled(
   rawParams: unknown,
   abortSignal?: AbortSignal,
 ): Promise<ZodyPluginsSetEnabledResult> {
-  const params = parseParams(zcodePluginsSetEnabledParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsSetEnabledParamsSchema, rawParams);
   abortSignal?.throwIfAborted();
   const result = await setZCodePluginEnabled({
     enabled: params.enabled,
@@ -271,7 +271,7 @@ export async function getPluginsOverview(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsOverviewResult> {
-  const params = parseParams(zcodePluginsOverviewParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsOverviewParamsSchema, rawParams);
   const overview = getZCodePluginsOverview({
     configResult: createPluginConfigView(
       context,
@@ -296,7 +296,7 @@ export async function addPluginMarketplace(
   rawParams: unknown,
   abortSignal?: AbortSignal,
 ): Promise<ZodyPluginsMarketplaceMutationResult> {
-  const params = parseParams(zcodePluginsMarketplaceAddParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsMarketplaceAddParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const marketplace = await withPluginStorageLock(pluginStorageRoot, async () =>
     addZCodePluginMarketplace({
@@ -314,7 +314,7 @@ export async function removePluginMarketplace(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsMarketplaceMutationResult> {
-  const params = parseParams(zcodePluginsMarketplaceRemoveParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsMarketplaceRemoveParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   await withPluginStorageLock(pluginStorageRoot, async () =>
     removeZCodePluginMarketplace({
@@ -331,7 +331,7 @@ export async function updatePluginMarketplace(
   rawParams: unknown,
   abortSignal?: AbortSignal,
 ): Promise<ZodyPluginsMarketplaceMutationResult> {
-  const params = parseParams(zcodePluginsMarketplaceUpdateParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsMarketplaceUpdateParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const result = await withPluginStorageLock(pluginStorageRoot, async () =>
     updateZCodePluginMarketplace({
@@ -352,7 +352,7 @@ export async function installPlugin(
   rawParams: unknown,
   abortSignal?: AbortSignal,
 ): Promise<ZodyPluginsInstallResult> {
-  const params = parseParams(zcodePluginsInstallParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsInstallParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const result = await withPluginStorageLock(pluginStorageRoot, async () =>
     installZCodeMarketplacePlugin({
@@ -376,7 +376,7 @@ export async function uninstallPlugin(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsUninstallResult> {
-  const params = parseParams(zcodePluginsUninstallParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsUninstallParamsSchema, rawParams);
   const removed = await uninstallZCodeMarketplacePlugin({
     logger: context.logger,
     marketplace: params.marketplace,
@@ -395,7 +395,7 @@ export async function updatePlugin(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsInstallResult> {
-  const params = parseParams(zcodePluginsUpdateParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsUpdateParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const installed = listInstalledPluginRecords(pluginStorageRoot).filter((record) => {
     if (params.pluginId) return record.id === params.pluginId;
@@ -434,7 +434,7 @@ export async function restoreBuiltinPlugin(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsRestoreBuiltinResult> {
-  const params = parseParams(zcodePluginsRestoreBuiltinParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsRestoreBuiltinParamsSchema, rawParams);
   await restoreBuiltinPluginCore({
     logger: context.logger,
     pluginId: params.pluginId,
@@ -447,7 +447,7 @@ export async function configurePlugin(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsConfigureResult> {
-  const params = parseParams(zcodePluginsConfigureParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsConfigureParamsSchema, rawParams);
   await configureZCodePlugin({
     clearOptionKeys: params.clearOptionKeys,
     dryRun: params.dryRun,
@@ -464,7 +464,7 @@ export async function resetPluginConfig(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsConfigureResult> {
-  const params = parseParams(zcodePluginsResetConfigParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsResetConfigParamsSchema, rawParams);
   await resetZCodePluginConfig({
     logger: context.logger,
     pluginId: params.pluginId,
@@ -511,7 +511,7 @@ export async function validatePlugin(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsValidateResult> {
-  const params = parseParams(zcodePluginsValidateParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsValidateParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const diagnostics = await withPluginStorageWriteGateWhenNeeded(
     pluginStorageRoot,
@@ -546,7 +546,7 @@ export async function describePlugin(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyPluginsDescribeResult> {
-  const params = parseParams(zcodePluginsDescribeParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsDescribeParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const result = await withPluginStorageWriteGateWhenNeeded(
     pluginStorageRoot,

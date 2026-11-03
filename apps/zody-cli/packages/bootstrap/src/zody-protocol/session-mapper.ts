@@ -1,10 +1,10 @@
 import {
   ZCODE_PROTOCOL_NAME,
   ZCODE_PROTOCOL_VERSION,
-  getZCodeGoalActiveIterationCount,
-  zcodeApiRetryFromModelNetworkStatusPayload,
-  zcodeApiRetryFromStreamRecoveryPayload,
-  zcodeContextUsageBreakdownSchema,
+  getZodyGoalActiveIterationCount,
+  zodyApiRetryFromModelNetworkStatusPayload,
+  zodyApiRetryFromStreamRecoveryPayload,
+  zodyContextUsageBreakdownSchema,
   type ZodyActiveToolCall,
   type ZodyContextUsageBreakdownItem,
   type ZodyDeliveryKind,
@@ -497,18 +497,18 @@ function mapModelRequestPayload(payload: unknown): Record<string, unknown> {
 
 function mapModelNetworkStatusPayload(payload: unknown): Record<string, unknown> {
   const record = asRecord(payload);
-  const apiRetry = zcodeApiRetryFromModelNetworkStatusPayload(record);
+  const apiRetry = zodyApiRetryFromModelNetworkStatusPayload(record);
   if (apiRetry === undefined) {
     return record;
   }
   const meta = asRecord(record._meta);
-  const zcodeMeta = asRecord(meta.zcode);
+  const zodyMeta = asRecord(meta.zcode);
   return {
     ...record,
     _meta: {
       ...meta,
       zcode: {
-        ...zcodeMeta,
+        ...zodyMeta,
         // 网络重试是模型请求运行态，不属于可持久化消息内容。
         // 这里通过 app 私有 meta 暴露给旧 task 投影，app 再写入 host runtime snapshot。
         apiRetry,
@@ -519,18 +519,18 @@ function mapModelNetworkStatusPayload(payload: unknown): Record<string, unknown>
 
 function mapStreamRecoveryPayload(payload: unknown): Record<string, unknown> {
   const record = asRecord(payload);
-  const apiRetry = zcodeApiRetryFromStreamRecoveryPayload(record);
+  const apiRetry = zodyApiRetryFromStreamRecoveryPayload(record);
   if (apiRetry === undefined) {
     return record;
   }
   const meta = asRecord(record._meta);
-  const zcodeMeta = asRecord(meta.zcode);
+  const zodyMeta = asRecord(meta.zcode);
   return {
     ...record,
     _meta: {
       ...meta,
       zcode: {
-        ...zcodeMeta,
+        ...zodyMeta,
         // streamRecovery.updated 才是 SSE 断流恢复的核心进度事件。
         // 之前只在后续 model_request_started 上补 meta，UI 错过该事件时不会显示重试次数。
         apiRetry,
@@ -660,7 +660,7 @@ function latestContextUsageBreakdownFromEvents(
     if (querySource !== undefined && querySource !== "main_turn") {
       continue;
     }
-    const parsed = zcodeContextUsageBreakdownSchema.safeParse(payload.contextUsageBreakdown);
+    const parsed = zodyContextUsageBreakdownSchema.safeParse(payload.contextUsageBreakdown);
     const used = getModelUsageContextTokens(payload.usage);
     if (!parsed.success || parsed.data.length === 0 || used === undefined) {
       continue;
@@ -1262,7 +1262,7 @@ function getGoalActiveIterationCount(
   target?: SessionGoal | null,
 ): number {
   const timeline = getTargetGoalVerificationTimeline(projection, target);
-  return getZCodeGoalActiveIterationCount({
+  return getZodyGoalActiveIterationCount({
     targetStatus: target?.status ?? null,
     timeline,
   });

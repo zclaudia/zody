@@ -9,7 +9,7 @@ export const ZCODE_PROCESS_DIAGNOSTIC_MAX_LINE_CHARS = 128 * 1024;
 export const ZCODE_AGENT_LIFECYCLE_LOG_MARKER = "[zcode-agent-lifecycle-reported]";
 
 const processErrorKindSchema = z.enum(["uncaughtException", "unhandledRejection"]);
-export const zcodeProcessDiagnosticSchema = z
+export const zodyProcessDiagnosticSchema = z
   .object({
     version: z.literal(1),
     errorId: z.uuid(),
@@ -21,9 +21,9 @@ export const zcodeProcessDiagnosticSchema = z
     occurredAt: z.number().int().nonnegative(),
   })
   .strict();
-export type ZodyProcessDiagnostic = z.infer<typeof zcodeProcessDiagnosticSchema>;
+export type ZodyProcessDiagnostic = z.infer<typeof zodyProcessDiagnosticSchema>;
 
-export function parseZCodeProcessDiagnostic(line: string): ZodyProcessDiagnostic | undefined {
+export function parseZodyProcessDiagnostic(line: string): ZodyProcessDiagnostic | undefined {
   if (
     !line.startsWith(ZCODE_PROCESS_DIAGNOSTIC_PREFIX) ||
     line.length > ZCODE_PROCESS_DIAGNOSTIC_MAX_LINE_CHARS
@@ -31,7 +31,7 @@ export function parseZCodeProcessDiagnostic(line: string): ZodyProcessDiagnostic
     return undefined;
   }
   try {
-    const result = zcodeProcessDiagnosticSchema.safeParse(
+    const result = zodyProcessDiagnosticSchema.safeParse(
       JSON.parse(line.slice(ZCODE_PROCESS_DIAGNOSTIC_PREFIX.length)),
     );
     return result.success ? result.data : undefined;

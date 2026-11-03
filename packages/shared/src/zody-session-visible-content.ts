@@ -7,7 +7,7 @@ import type { ZodySessionGoal } from "./zody-protocol/index.js";
 import { getConversationMessageProjectionPolicy } from "./conversation-message-projection-policy.js";
 import {
   type ZodyMessageWithParts,
-  textFromZCodeMessageParts,
+  textFromZodyMessageParts,
 } from "./zody-protocol-legacy-types.js";
 
 const GOAL_CONTINUATION_REMINDER_PREFIX = '<system-reminder source="goal-continuation">';
@@ -15,7 +15,7 @@ const GOAL_CONTINUATION_TEXT_MARKER = "Continue working toward the active sessio
 const GOAL_STATE_TEXT_MARKER = "Current session goal state";
 const SUBAGENT_MESSAGE_SOURCE = "subagent_message";
 
-export function isZCodeGoalContinuationReminderText(text: string): boolean {
+export function isZodyGoalContinuationReminderText(text: string): boolean {
   const normalized = text.trimStart();
   if (normalized.startsWith(GOAL_CONTINUATION_REMINDER_PREFIX)) {
     return true;
@@ -25,29 +25,29 @@ export function isZCodeGoalContinuationReminderText(text: string): boolean {
   );
 }
 
-export function isZCodeGoalContinuationReminderMessage(message: ZodyMessageWithParts): boolean {
+export function isZodyGoalContinuationReminderMessage(message: ZodyMessageWithParts): boolean {
   return (
     message.info.role === "user" &&
     (message.info.source === "goal-continuation" ||
       String(message.info.metadata?.["source"] ?? "") === "goal-continuation" ||
-      isZCodeGoalContinuationReminderText(textFromZCodeMessageParts(message.parts)))
+      isZodyGoalContinuationReminderText(textFromZodyMessageParts(message.parts)))
   );
 }
 
-export function isZCodeGoalStateReminderText(text: string): boolean {
+export function isZodyGoalStateReminderText(text: string): boolean {
   const normalized = text.trimStart();
   return normalized.startsWith("<system-reminder>") && normalized.includes(GOAL_STATE_TEXT_MARKER);
 }
 
-export function isZCodeGoalModelOnlyReminderMessage(message: ZodyMessageWithParts): boolean {
+export function isZodyGoalModelOnlyReminderMessage(message: ZodyMessageWithParts): boolean {
   return (
     message.info.role === "user" &&
-    (isZCodeGoalContinuationReminderMessage(message) ||
-      isZCodeGoalStateReminderText(textFromZCodeMessageParts(message.parts)))
+    (isZodyGoalContinuationReminderMessage(message) ||
+      isZodyGoalStateReminderText(textFromZodyMessageParts(message.parts)))
   );
 }
 
-export function isZCodeModelOnlySyntheticUserMessage(message: ZodyMessageWithParts): boolean {
+export function isZodyModelOnlySyntheticUserMessage(message: ZodyMessageWithParts): boolean {
   if (
     message.info.role === "user" &&
     (String(message.info.source ?? "") === SUBAGENT_MESSAGE_SOURCE ||
@@ -64,7 +64,7 @@ export function isZCodeModelOnlySyntheticUserMessage(message: ZodyMessageWithPar
   return policy === "providerContextOnly" || policy === "hiddenSynthetic";
 }
 
-export function isZCodeCompactSummaryMessage(message: ZodyMessageWithParts): boolean {
+export function isZodyCompactSummaryMessage(message: ZodyMessageWithParts): boolean {
   return (
     message.info.role === "user" &&
     message.parts.some((part) => {
@@ -79,13 +79,13 @@ export function isZCodeCompactSummaryMessage(message: ZodyMessageWithParts): boo
   );
 }
 
-export function getZCodeUserVisibleMessages(
+export function getZodyUserVisibleMessages(
   messages: readonly ZodyMessageWithParts[],
   _options: { target?: ZodySessionGoal | null } = {},
 ): ZodyMessageWithParts[] {
   const visibleMessages: ZodyMessageWithParts[] = [];
   for (const message of messages) {
-    if (isZCodeModelOnlySyntheticUserMessage(message) || isZCodeCompactSummaryMessage(message)) {
+    if (isZodyModelOnlySyntheticUserMessage(message) || isZodyCompactSummaryMessage(message)) {
       // /goal 续跑、后台任务、子 agent、rewind 通知和 compact summary
       // 都是 runtime 注入给模型继续推理的上下文，不是用户真实 query；可见投影必须过滤，
       // 避免快照/远控恢复时渲染成右侧用户气泡或挤占 timeline 位置。
@@ -96,7 +96,7 @@ export function getZCodeUserVisibleMessages(
   return visibleMessages;
 }
 
-export function getZCodeGoalIterationByAssistantMessageId(
+export function getZodyGoalIterationByAssistantMessageId(
   messages: readonly ZodyMessageWithParts[],
   options: { maxGoalIteration?: number; target?: ZodySessionGoal | null } = {},
 ): Map<string, number> {
@@ -106,14 +106,14 @@ export function getZCodeGoalIterationByAssistantMessageId(
   }
 
   const iterationByAssistantId = new Map<string, number>();
-  const sortedMessages = [...messages].sort(compareZCodeMessagesByCreatedTime);
+  const sortedMessages = [...messages].sort(compareZodyMessagesByCreatedTime);
   const inactiveAt = target.status === "active" ? null : target.updatedAt;
   let currentIteration = 0;
   let pendingVisibleGoalUserIteration = false;
 
   for (const message of sortedMessages) {
     if (message.info.role === "user") {
-      if (isZCodeGoalContinuationReminderMessage(message)) {
+      if (isZodyGoalContinuationReminderMessage(message)) {
         // goal 续跑边界只来自 Continue/source=goal-continuation；
         // Current session goal state 是同一轮内反复注入的状态提示，不能在这里推进迭代号。
         currentIteration += 1;
@@ -165,7 +165,7 @@ export interface ZodyGoalIterationCountTimelineItem {
   verification?: { passed?: boolean | null } | null;
 }
 
-export function getZCodeGoalActiveIterationCount(input: {
+export function getZodyGoalActiveIterationCount(input: {
   targetStatus?: string | null;
   timeline?: readonly ZodyGoalIterationCountTimelineItem[] | null;
 }): number {
@@ -198,7 +198,7 @@ export function getZCodeGoalActiveIterationCount(input: {
   return latestIteration + 1;
 }
 
-function compareZCodeMessagesByCreatedTime(
+function compareZodyMessagesByCreatedTime(
   left: ZodyMessageWithParts,
   right: ZodyMessageWithParts,
 ) {
@@ -226,7 +226,7 @@ function isVisibleRealGoalUserMessage(message: ZodyMessageWithParts, target: Zod
   return true;
 }
 
-export function resolveZCodeVisibleSessionTitle(input: {
+export function resolveZodyVisibleSessionTitle(input: {
   title?: string;
   messages: readonly ZodyMessageWithParts[];
   target?: ZodySessionGoal | null;
@@ -235,8 +235,8 @@ export function resolveZCodeVisibleSessionTitle(input: {
   const normalizedTitle = input.title?.trim() ?? "";
   if (
     normalizedTitle &&
-    !isZCodeGoalContinuationReminderText(normalizedTitle) &&
-    !isZCodeGoalStateReminderText(normalizedTitle)
+    !isZodyGoalContinuationReminderText(normalizedTitle) &&
+    !isZodyGoalStateReminderText(normalizedTitle)
   ) {
     return normalizedTitle;
   }
@@ -245,9 +245,9 @@ export function resolveZCodeVisibleSessionTitle(input: {
     (message) =>
       message.info.role === "user" &&
       getConversationMessageProjectionPolicy(message) === "realUserInput" &&
-      !isZCodeGoalModelOnlyReminderMessage(message),
+      !isZodyGoalModelOnlyReminderMessage(message),
   );
-  const firstUserText = textFromZCodeMessageParts(firstUser?.parts ?? []).trim();
+  const firstUserText = textFromZodyMessageParts(firstUser?.parts ?? []).trim();
   if (firstUserText) {
     return firstUserText.slice(0, 80);
   }

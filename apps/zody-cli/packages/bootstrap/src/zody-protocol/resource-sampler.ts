@@ -2,7 +2,7 @@ import type { Logger } from "@zody/contracts";
 import {
   createMemorySampleWriteGate,
   memoryUsageToSampleFields,
-  zcodeProtocolNotifications,
+  zodyProtocolNotifications,
   type MemorySample,
   type ZodyProtocolNotification,
 } from "@zody/shared";
@@ -10,10 +10,10 @@ import {
   createZCodeProcessResourceSampler,
   type ZodyProcessResourceSampler,
 } from "../process-resource-sampler.js";
-import type { ZCodeProtocolAgentServer } from "./server.js";
+import type { ZodyProtocolAgentServer } from "./server.js";
 
 export function startProtocolResourceSampler(
-  server: ZCodeProtocolAgentServer,
+  server: ZodyProtocolAgentServer,
   send: (message: ZodyProtocolNotification) => void,
   logger: Logger,
 ): ZodyProcessResourceSampler | undefined {
@@ -24,7 +24,7 @@ export function startProtocolResourceSampler(
     const sampler = createZCodeProcessResourceSampler({
       onSample: (sample, memoryUsage) => {
         send({
-          method: zcodeProtocolNotifications.processResourceSample,
+          method: zodyProtocolNotifications.processResourceSample,
           params: sample,
         });
         // resident session TTL / 水位收敛借用资源采样节拍（60s）作兜底，不新增定时器；

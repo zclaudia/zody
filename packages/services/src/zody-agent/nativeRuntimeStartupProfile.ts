@@ -101,7 +101,7 @@ function projectProvider(providerValue: unknown): unknown {
   };
 }
 
-export function projectZCodeAgentNativeRuntimeProviderSnapshot(
+export function projectZodyAgentNativeRuntimeProviderSnapshot(
   view: ProviderSettingsView,
 ): ZodyAgentNativeRuntimeProviderSnapshot {
   const providers = Array.isArray(view?.providers) ? view.providers : [];
@@ -117,13 +117,13 @@ export function projectZCodeAgentNativeRuntimeProviderSnapshot(
   };
 }
 
-export function digestZCodeAgentNativeRuntimeProviderSnapshot(view: ProviderSettingsView): string {
+export function digestZodyAgentNativeRuntimeProviderSnapshot(view: ProviderSettingsView): string {
   return createHash("sha256")
-    .update(canonicalJson(projectZCodeAgentNativeRuntimeProviderSnapshot(view)))
+    .update(canonicalJson(projectZodyAgentNativeRuntimeProviderSnapshot(view)))
     .digest("hex");
 }
 
-export function normalizeZCodeAgentNativeRuntimeSelection(
+export function normalizeZodyAgentNativeRuntimeSelection(
   selection: ModelSelection | null | undefined,
 ): ModelSelection | null {
   if (!selection) return null;
@@ -144,7 +144,7 @@ export interface ZodyAgentNativeRuntimeNormalizedNetwork {
   readonly caCertPath: string | null;
 }
 
-export function normalizeZCodeAgentNativeRuntimeNetwork(input: {
+export function normalizeZodyAgentNativeRuntimeNetwork(input: {
   readonly httpProxy?: string | null;
   readonly noProxy?: string | null;
   readonly caCertPath?: string | null;
@@ -156,29 +156,29 @@ export function normalizeZCodeAgentNativeRuntimeNetwork(input: {
   };
 }
 
-export function digestZCodeAgentNativeRuntimeNetwork(input: {
+export function digestZodyAgentNativeRuntimeNetwork(input: {
   readonly httpProxy?: string | null;
   readonly noProxy?: string | null;
   readonly caCertPath?: string | null;
 }): string {
   return createHash("sha256")
-    .update(canonicalJson(normalizeZCodeAgentNativeRuntimeNetwork(input)))
+    .update(canonicalJson(normalizeZodyAgentNativeRuntimeNetwork(input)))
     .digest("hex");
 }
 
-export function createZCodeAgentNativeRuntimeStartupContext(input: {
+export function createZodyAgentNativeRuntimeStartupContext(input: {
   readonly providerSettingsView: ProviderSettingsView;
   readonly modelSelectionView: Pick<ModelSelectionView, "preferredSelection">;
   readonly settings: Pick<AppSettings, "httpProxy" | "httpProxyNoProxy" | "httpProxyCaCertPath">;
 }): ZodyAgentNativeRuntimeStartupContext {
   return {
-    providerRevisionSha256: digestZCodeAgentNativeRuntimeProviderSnapshot(
+    providerRevisionSha256: digestZodyAgentNativeRuntimeProviderSnapshot(
       input.providerSettingsView,
     ),
-    selection: normalizeZCodeAgentNativeRuntimeSelection(
+    selection: normalizeZodyAgentNativeRuntimeSelection(
       input.modelSelectionView.preferredSelection,
     ),
-    network: normalizeZCodeAgentNativeRuntimeNetwork({
+    network: normalizeZodyAgentNativeRuntimeNetwork({
       httpProxy: input.settings.httpProxy,
       noProxy: input.settings.httpProxyNoProxy,
       caCertPath: input.settings.httpProxyCaCertPath,

@@ -1,5 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { createProviderRuntimeHeadersPort } from "../src/zody-protocol/provider-runtime-headers.js";
+// 在测试加载阶段转换固定模块，避免将模块转换时间计入业务行为的超时。
+import { createWorkspaceZodyApp } from "../src/zody-protocol/workspace-model-runtime.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import type { ZodyAppOptions } from "../src/app/types.js";
 import type { ZodyProviderRuntimeHeadersRequestParams } from "@zody/shared";
@@ -9,8 +11,6 @@ const workspace = {
   workspaceKey: "ssh:host:/work",
 };
 it("真实工厂同样装配唯一请求端口，完整账号事实透传而不写旧 ModelRef", async () => {
-  const { createWorkspaceZCodeApp } =
-    await import("../src/zody-protocol/workspace-model-runtime.js");
   const requestAuth = { apiKey: "team-key", headers: { "X-Team": "team-a" } };
   const requestClient = vi.fn(
     async (_method: string, _params: ZodyProviderRuntimeHeadersRequestParams) => ({
@@ -19,7 +19,7 @@ it("真实工厂同样装配唯一请求端口，完整账号事实透传而不�
     }),
   );
   const createZCodeApp = vi.fn(async (_options: Omit<ZodyAppOptions, "providerRegistry">) => ({}));
-  await createWorkspaceZCodeApp(
+  await createWorkspaceZodyApp(
     {
       deps: { createZCodeApp },
       requestClient,
@@ -119,10 +119,10 @@ it("成功或普通错误不发送取消，保留原始响应和失败原因", a
 
 // 使用真实 RPC pending/timeout/response 实现，避免 mock 自己制造超时掩盖未配置时限。
 it("无人应答在总时限后失败并取消，迟到响应失效且下一请求可以成功", async () => {
-  const { ZCodeProtocolAgentServer } = await import("../src/zody-protocol/server.js");
+  const { ZodyProtocolAgentServer } = await import("../src/zody-protocol/server.js");
   vi.useFakeTimers();
   try {
-    const server = new ZCodeProtocolAgentServer({ createZCodeApp: vi.fn() });
+    const server = new ZodyProtocolAgentServer({ createZCodeApp: vi.fn() });
     const sink = vi.fn();
     server.setNotificationSink(sink);
     const context = (server as unknown as { context: ZodyProtocolAgentServerContext }).context;
@@ -176,13 +176,13 @@ it("无人应答在总时限后失败并取消，迟到响应失效且下一请�
 it("闲时 scope 经过执行投影和私有反向 RPC 保留，SSH workspace 身份不变", async () => {
   const { createModelExecutionContext } = await import("../src/model-execution.js");
   const {
-    zcodeSessionSendParamsSchema,
-    zcodeProviderRuntimeHeadersRequestParamsSchema,
-    zcodeProviderRuntimeHeadersResponseSchema,
+    zodySessionSendParamsSchema,
+    zodyProviderRuntimeHeadersRequestParamsSchema,
+    zodyProviderRuntimeHeadersResponseSchema,
   } = await import("@zody/shared");
   const accountScope = "a".repeat(64);
   const execution = createModelExecutionContext(
-    zcodeSessionSendParamsSchema.parse({
+    zodySessionSendParamsSchema.parse({
       sessionId: "session",
       content: "continue",
       modelSelection: { providerId: "idle", modelId: "glm" },
@@ -199,12 +199,12 @@ it("闲时 scope 经过执行投影和私有反向 RPC 保留，SSH workspace �
   });
   expect(auth?.accountScope).toBe(accountScope);
   const requestClient = vi.fn(async (_method, params) => {
-    expect(zcodeProviderRuntimeHeadersRequestParamsSchema.parse(params)).toMatchObject({
+    expect(zodyProviderRuntimeHeadersRequestParamsSchema.parse(params)).toMatchObject({
       expectedAccountScope: accountScope,
       rejectedProjectTokenFingerprint: "b".repeat(64),
       workspace,
     });
-    return zcodeProviderRuntimeHeadersResponseSchema.parse({
+    return zodyProviderRuntimeHeadersResponseSchema.parse({
       headersApplied: true,
       requestAuth: { apiKey: "fresh-pat", accountScope },
     });

@@ -1,12 +1,12 @@
 import { PassThrough } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
-import { ZCodeProtocolNdjsonConnection } from "../src/zody-protocol/transport.js";
+import { zodyProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
+import { ZodyProtocolNdjsonConnection } from "../src/zody-protocol/transport.js";
 
-describe("ZCodeProtocolNdjsonConnection", () => {
+describe("ZodyProtocolNdjsonConnection", () => {
   it("stdout 背压时丢弃观测批次，业务响应仍可写入", () => {
     const output = new PassThrough({ highWaterMark: 1 });
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       input: new PassThrough(),
       output,
       handleMessage: async () => undefined,
@@ -26,7 +26,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
     const input = new PassThrough();
     const output = new PassThrough();
     const controls: unknown[] = [];
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       input,
       output,
       handleMessage: async (message) => {
@@ -49,7 +49,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
     const input = new PassThrough();
     const output = new PassThrough();
     const closed = vi.fn();
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       input,
       output,
       handleMessage: () => new Promise(() => {}),
@@ -73,7 +73,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       };
       order.push(value.id ? "response" : `wire-${value.params?.fragmentIndex}`);
     });
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       handleMessage: async (message) =>
         "id" in message && "method" in message
           ? { id: message.id, result: { ack: {} } }
@@ -108,7 +108,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       return originalWrite(chunk);
     }) as typeof output.write;
     const commit = vi.fn(() => true);
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       handleMessage: async (message) =>
         "id" in message && "method" in message
           ? { id: message.id, result: { ack: {} } }
@@ -142,7 +142,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       messages: [{ method: "v4/conversation/frame", params: { kind: "complete" } }],
       commit,
     }));
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       clearPostResponseMessages,
       handleMessage: async (message) =>
         "id" in message && "method" in message
@@ -178,7 +178,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
     output.on("data", (chunk: Buffer) => {
       written += chunk.toString("utf8");
     });
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       handleMessage: async (message) => {
         if (!("id" in message) || !("method" in message)) return undefined;
         return {
@@ -246,7 +246,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
     output.on("data", (chunk: Buffer) => {
       written += chunk.toString("utf8");
     });
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       handleMessage: async (message) =>
         "id" in message && "method" in message
           ? {
@@ -284,7 +284,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
     const input = new PassThrough();
     const output = new PassThrough();
     const clearPostResponseMessages = vi.fn();
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       clearPostResponseMessages,
       handleMessage: async () => {
         throw new Error("request failed");
@@ -310,7 +310,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
     const input = new PassThrough();
     const output = new PassThrough();
     const clearPostResponseMessages = vi.fn();
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       clearPostResponseMessages,
       handleMessage: async () => {
         throw new Error("bypass failed");
@@ -354,7 +354,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
     output.on("data", (chunk: Buffer) => {
       written += chunk.toString("utf8");
     });
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       clearPostResponseMessages,
       handleMessage: async () => {
         resolveStarted();
@@ -411,16 +411,16 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       }
     });
 
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       handleMessage: async (message) => {
         if (!("method" in message)) {
           return undefined;
         }
         handledMethods.push(message.method);
-        if (message.method === zcodeProtocolMethods.sessionCompact) {
+        if (message.method === zodyProtocolMethods.sessionCompact) {
           return await new Promise<never>(() => undefined);
         }
-        if (message.method === zcodeProtocolMethods.sessionStop && "id" in message) {
+        if (message.method === zodyProtocolMethods.sessionStop && "id" in message) {
           resolveStopHandled();
           return { id: message.id, result: {} };
         }
@@ -435,12 +435,12 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       [
         frame({
           id: 1,
-          method: zcodeProtocolMethods.sessionCompact,
+          method: zodyProtocolMethods.sessionCompact,
           params: { sessionId: "sess_1" },
         }),
         frame({
           id: 2,
-          method: zcodeProtocolMethods.sessionStop,
+          method: zodyProtocolMethods.sessionStop,
           params: { sessionId: "sess_1" },
         }),
       ].join(""),
@@ -453,8 +453,8 @@ describe("ZCodeProtocolNdjsonConnection", () => {
 
     expect(stopResult).toBe("handled");
     expect(handledMethods).toEqual([
-      zcodeProtocolMethods.sessionCompact,
-      zcodeProtocolMethods.sessionStop,
+      zodyProtocolMethods.sessionCompact,
+      zodyProtocolMethods.sessionStop,
     ]);
     await vi.waitFor(() => {
       expect(responses).toContainEqual({ id: 2, result: {} });
@@ -487,12 +487,12 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       }
     });
 
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       handleMessage: async (message) => {
         if (!("method" in message) || !("id" in message)) {
           return undefined;
         }
-        if (message.method === zcodeProtocolMethods.workspaceGenerateText) {
+        if (message.method === zodyProtocolMethods.workspaceGenerateText) {
           generateCount += 1;
           generateActive = true;
           activeGenerateCount += 1;
@@ -504,7 +504,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
           generateActive = false;
           return { id: message.id, result: { text: `generate-${generateCount}` } };
         }
-        if (message.method === zcodeProtocolMethods.workspaceCancelGenerateText) {
+        if (message.method === zodyProtocolMethods.workspaceCancelGenerateText) {
           cancelSawActiveGenerate = generateActive;
           releaseGenerate();
           resolveCancelHandled();
@@ -524,7 +524,7 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       [
         frame({
           id: 1,
-          method: zcodeProtocolMethods.workspaceGenerateText,
+          method: zodyProtocolMethods.workspaceGenerateText,
           params: {
             operationId: "workspace-model-1",
             workspace: { workspaceKey: "/workspace/app", workspacePath: "/workspace/app" },
@@ -532,12 +532,12 @@ describe("ZCodeProtocolNdjsonConnection", () => {
         }),
         frame({
           id: 2,
-          method: zcodeProtocolMethods.workspaceCancelGenerateText,
+          method: zodyProtocolMethods.workspaceCancelGenerateText,
           params: { operationId: "workspace-model-1" },
         }),
         frame({
           id: 3,
-          method: zcodeProtocolMethods.workspaceGenerateText,
+          method: zodyProtocolMethods.workspaceGenerateText,
           params: {
             operationId: "workspace-model-2",
             workspace: { workspaceKey: "/workspace/app", workspacePath: "/workspace/app" },
@@ -573,10 +573,10 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       resolveResponseHandled = resolve;
     });
 
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       handleMessage: async (message) => {
         handled.push(message);
-        if ("method" in message && message.method === zcodeProtocolMethods.sessionCompact) {
+        if ("method" in message && message.method === zodyProtocolMethods.sessionCompact) {
           return await new Promise<never>(() => undefined);
         }
         if ("result" in message && "id" in message) {
@@ -593,12 +593,12 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       [
         frame({
           id: 1,
-          method: zcodeProtocolMethods.sessionCompact,
+          method: zodyProtocolMethods.sessionCompact,
           params: { sessionId: "sess_1" },
         }),
         frame({
           id: 2,
-          method: zcodeProtocolMethods.sessionRead,
+          method: zodyProtocolMethods.sessionRead,
           params: { sessionId: "sess_1" },
         }),
         frame({
@@ -635,20 +635,20 @@ describe("ZCodeProtocolNdjsonConnection", () => {
     let sendActive = false;
     let stopSawActiveSend = false;
 
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       handleMessage: async (message) => {
         if (!("method" in message)) {
           return undefined;
         }
-        if (message.method === zcodeProtocolMethods.sessionCompact) {
+        if (message.method === zodyProtocolMethods.sessionCompact) {
           await compactReleased;
         }
-        if (message.method === zcodeProtocolMethods.sessionSend) {
+        if (message.method === zodyProtocolMethods.sessionSend) {
           sendActive = true;
           await sendReleased;
           sendActive = false;
         }
-        if (message.method === zcodeProtocolMethods.sessionStop) {
+        if (message.method === zodyProtocolMethods.sessionStop) {
           stopSawActiveSend = sendActive;
           releaseSend();
           resolveStopHandled();
@@ -664,17 +664,17 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       [
         frame({
           id: 1,
-          method: zcodeProtocolMethods.sessionCompact,
+          method: zodyProtocolMethods.sessionCompact,
           params: { sessionId: "sess_blocking" },
         }),
         frame({
           id: 2,
-          method: zcodeProtocolMethods.sessionSend,
+          method: zodyProtocolMethods.sessionSend,
           params: { sessionId: "sess_target", inputId: "input_target", content: "run" },
         }),
         frame({
           id: 3,
-          method: zcodeProtocolMethods.sessionStop,
+          method: zodyProtocolMethods.sessionStop,
           params: { sessionId: "sess_target" },
         }),
       ].join(""),
@@ -710,15 +710,15 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       }
     });
 
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       handleMessage: async (message) => {
         if (!("method" in message)) {
           return undefined;
         }
-        if (message.method === zcodeProtocolMethods.sessionCompact) {
+        if (message.method === zodyProtocolMethods.sessionCompact) {
           return await new Promise<never>(() => undefined);
         }
-        if (message.method === zcodeProtocolMethods.sessionStop && "id" in message) {
+        if (message.method === zodyProtocolMethods.sessionStop && "id" in message) {
           resolveStopHandled();
           return {
             id: message.id,
@@ -736,12 +736,12 @@ describe("ZCodeProtocolNdjsonConnection", () => {
       [
         frame({
           id: 1,
-          method: zcodeProtocolMethods.sessionCompact,
+          method: zodyProtocolMethods.sessionCompact,
           params: { sessionId: "sess_1" },
         }),
         frame({
           id: 2,
-          method: zcodeProtocolMethods.sessionStop,
+          method: zodyProtocolMethods.sessionStop,
           params: { sessionId: "sess_1" },
         }),
       ].join(""),

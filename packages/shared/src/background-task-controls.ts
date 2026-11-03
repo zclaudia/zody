@@ -223,7 +223,7 @@ function resolveTaskKind(record: Record<string, unknown>): BackgroundTaskControl
  * 旧 background task 事件的唯一 kind 兼容入口。
  * 新协议应直接携带 taskKind；只有历史记录缺字段时才从工具名/类型别名恢复。
  */
-export function resolveZCodeBackgroundTaskControlKind(
+export function resolveZodyBackgroundTaskControlKind(
   value: unknown,
 ): BackgroundTaskControlKind | undefined {
   return isPlainRecord(value) ? resolveTaskKind(value) : undefined;
@@ -317,7 +317,7 @@ function readJobId(record: Record<string, unknown>, command: string): string {
   return `background-task:${pid ?? "no-pid"}:${startedAt ?? "no-start"}:${command}`;
 }
 
-export function parseZCodeBackgroundTaskControlItems(
+export function parseZodyBackgroundTaskControlItems(
   value: unknown,
 ): ZodyBackgroundTaskControlItem[] {
   if (!Array.isArray(value)) {
@@ -328,7 +328,7 @@ export function parseZCodeBackgroundTaskControlItems(
     if (!isPlainRecord(item)) {
       continue;
     }
-    const taskKind = resolveZCodeBackgroundTaskControlKind(item);
+    const taskKind = resolveZodyBackgroundTaskControlKind(item);
     if (!taskKind) {
       continue;
     }
@@ -373,13 +373,13 @@ export function parseZCodeBackgroundTaskControlItems(
   return Array.from(jobsById.values());
 }
 
-export function isActiveZCodeBackgroundTaskControlItem(
+export function isActiveZodyBackgroundTaskControlItem(
   job: ZodyBackgroundTaskControlItem,
 ): boolean {
   return ACTIVE_BACKGROUND_TASK_CONTROL_STATUSES.has(job.status);
 }
 
-export function getZCodeBackgroundTaskControlItemElapsedMs(
+export function getZodyBackgroundTaskControlItemElapsedMs(
   job: ZodyBackgroundTaskControlItem,
   now = Date.now(),
 ): number {
@@ -388,16 +388,16 @@ export function getZCodeBackgroundTaskControlItemElapsedMs(
   return Math.max(elapsedFromStart ?? 0, job.elapsedMs ?? 0);
 }
 
-export function collectVisibleZCodeBackgroundTaskControlItems(
+export function collectVisibleZodyBackgroundTaskControlItems(
   jobs: readonly ZodyBackgroundTaskControlItem[],
   now = Date.now(),
   thresholdMs = 30_000,
 ): Array<ZodyBackgroundTaskControlItem & { elapsedMs: number }> {
   return jobs
-    .filter(isActiveZCodeBackgroundTaskControlItem)
+    .filter(isActiveZodyBackgroundTaskControlItem)
     .map((job) => ({
       ...job,
-      elapsedMs: getZCodeBackgroundTaskControlItemElapsedMs(job, now),
+      elapsedMs: getZodyBackgroundTaskControlItemElapsedMs(job, now),
     }))
     .filter((job) => job.elapsedMs >= thresholdMs)
     .sort((left, right) => right.elapsedMs - left.elapsedMs);

@@ -34,8 +34,8 @@ import type {
   RuntimeProcessLifecycleReporter,
   RuntimeProcessExceptionEvent,
 } from "../src/process/runtimeProcessLifecycle.js";
-import { setZCodeStdioTapDevEnabled } from "../src/zody-agent/zodyStdioTapDevConfig.js";
-import { ZCodeStdioTransport } from "../src/zody-agent/zodyStdioTransport.js";
+import { setZodyStdioTapDevEnabled } from "../src/zody-agent/zodyStdioTapDevConfig.js";
+import { ZodyStdioTransport } from "../src/zody-agent/zodyStdioTransport.js";
 import { CuaAgentAdmissionGate } from "../src/cua-permission-broker/cuaAgentAdmissionGate.js";
 
 function createDeferred<T>() {
@@ -853,13 +853,13 @@ describe("resolveDefaultZCodeAgentCommand", () => {
       cwd: workspacePath,
     }));
     const manager = new ZodyAgentProcessManager({ commandResolver });
-    const originalDisposeAndWait = ZCodeStdioTransport.prototype.disposeAndWait;
+    const originalDisposeAndWait = ZodyStdioTransport.prototype.disposeAndWait;
     const disposeAndWaitSpy = vi
-      .spyOn(ZCodeStdioTransport.prototype, "disposeAndWait")
+      .spyOn(ZodyStdioTransport.prototype, "disposeAndWait")
       .mockRejectedValueOnce(
         new Error("runtime process tree cleanup incomplete; remaining pid=12345"),
       )
-      .mockImplementation(function (this: ZCodeStdioTransport) {
+      .mockImplementation(function (this: ZodyStdioTransport) {
         return originalDisposeAndWait.call(this);
       });
 
@@ -2202,7 +2202,7 @@ setInterval(() => {}, 1000);
     process.chdir(sandboxRoot);
     process.env[ZCODE_RUNTIME_ENV_KEY] = "development";
     setDataBaseDir(sandboxRoot);
-    setZCodeStdioTapDevEnabled(true);
+    setZodyStdioTapDevEnabled(true);
 
     const wrapped = wrapZodyAgentCommandWithStdioTapDevProxy(
       {
@@ -2248,7 +2248,7 @@ setInterval(() => {}, 1000);
       process.env.ZCODE_AGENT_SERVER_COMMAND = "zcode-agent";
       process.env.ZCODE_AGENT_SERVER_ARGS_JSON = JSON.stringify(input);
       setDataBaseDir(sandboxRoot);
-      setZCodeStdioTapDevEnabled(true);
+      setZodyStdioTapDevEnabled(true);
 
       const command = resolveDefaultZodyAgentCommand({
         presentationSurface: "desktop",

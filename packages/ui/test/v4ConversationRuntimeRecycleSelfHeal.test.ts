@@ -21,8 +21,8 @@
 import { Emitter } from "@zody/rpc";
 import type { ConversationTopicWireFrame } from "@zody/shared/zody-protocol-v4";
 import {
-  createZCodeAgentConnectionScope,
-  readTrustedZCodeAgentV4Connection,
+  createZodyAgentConnectionScope,
+  readTrustedZodyAgentV4Connection,
   type IZodyAgentService,
 } from "@zody/services";
 import { describe, expect, it, vi } from "vitest";
@@ -66,7 +66,7 @@ function setupBase(options: { withLifecycle?: boolean } = {}) {
   const runtimeLifecycle = new Emitter<LifecycleEvent>();
   const nextSerialByConnection = new Map<string, number>();
   const nextId = (params: unknown) => {
-    const connection = readTrustedZCodeAgentV4Connection(params);
+    const connection = readTrustedZodyAgentV4Connection(params);
     if (!connection) throw new Error("missing trusted connection");
     const serial = (nextSerialByConnection.get(connection.connectionId) ?? 0) + 1;
     nextSerialByConnection.set(connection.connectionId, serial);
@@ -128,7 +128,7 @@ function createStore(
   connectionId: string,
   clientMode: "desktop-continuous" | "web-remote-replayable" = "desktop-continuous",
 ) {
-  const scope = createZCodeAgentConnectionScope(base, {
+  const scope = createZodyAgentConnectionScope(base, {
     connectionId,
     clientMode,
   });
@@ -298,7 +298,7 @@ describe("conversation projection 在 CUA Helper 回收 agent runtime 后自愈"
   // 退订旧 proxy 上的订阅，store 却停在 live + 旧 subscriptionId，帧流静默中断且不自愈。
   it("lifecycle 模式下仍接收 proxy 换代（transportReplaced），携原水位重订阅", async () => {
     const { base, mocks } = setupBase({ withLifecycle: true });
-    const scope = createZCodeAgentConnectionScope(base, {
+    const scope = createZodyAgentConnectionScope(base, {
       connectionId: "conn-proxy-1",
       clientMode: "desktop-continuous",
     });
@@ -314,7 +314,7 @@ describe("conversation projection 在 CUA Helper 回收 agent runtime 后自愈"
     expect(mocks.subscribeConversationV4).toHaveBeenCalledTimes(1);
 
     // activateRemoteService() → replace()：新 proxy 接管，旧订阅已被退订。
-    const nextScope = createZCodeAgentConnectionScope(base, {
+    const nextScope = createZodyAgentConnectionScope(base, {
       connectionId: "conn-proxy-2",
       clientMode: "desktop-continuous",
     });

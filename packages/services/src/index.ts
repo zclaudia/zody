@@ -128,13 +128,13 @@ export {
   ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE,
 } from "./zody-agent/zodyAgent.js";
 export {
-  isZCodeAgentMcpStatusModeUnsupportedError,
+  isZodyAgentMcpStatusModeUnsupportedError,
   ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
-  ZCodeAgentMcpStatusModeUnsupportedError,
+  ZodyAgentMcpStatusModeUnsupportedError,
 } from "./zody-agent/zodyAgentErrors.js";
 export {
-  createZCodeAgentConnectionScope,
-  readTrustedZCodeAgentV4Connection,
+  createZodyAgentConnectionScope,
+  readTrustedZodyAgentV4Connection,
 } from "./zody-agent/zodyAgentConnectionScope.js";
 export type {
   ZodyAgentConnectionScope,

@@ -3,47 +3,47 @@ import {
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
   ZCODE_PROTOCOL_NAME,
   ZCODE_PROTOCOL_VERSION,
-  zcodeComputerUseOperationEventSchema,
-  zcodeProviderRuntimeHeadersRequestParamsSchema,
-  zcodeProviderRuntimeHeadersResponseSchema,
-  zcodeProtocolMethods,
-  zcodeProtocolMessageSchema,
-  zcodeProcessResourceSampleSchema,
-  zcodeProtocolNotifications,
-  zcodeMcpListParamsSchema,
-  zcodeModelFormatPropertiesSchema,
-  zcodeMcpTelemetryEventSchema,
-  zcodeSessionCreateParamsSchema,
-  zcodeSessionCompactParamsSchema,
-  zcodeSessionEventSchema,
-  zcodeSessionEventsResultSchema,
-  zcodeSessionResumeParamsSchema,
-  zcodeSessionSubagentsParamsSchema,
-  zcodeSessionSubagentsResultSchema,
-  zcodeSessionSendParamsSchema,
-  zcodeSessionSetModelParamsSchema,
-  zcodeSessionSetThoughtLevelParamsSchema,
-  zcodeSessionRuntimePreferencesResultSchema,
-  zcodeSessionSettingsStateSchema,
-  zcodeSessionStateSnapshotSchema,
-  zcodeStateUpdatedNotificationSchema,
-  zcodeWorkspacePresentationSchema,
-  zcodeWorkspaceReadPresentationParamsSchema,
-  zcodeWorkspaceUpdateInteractionPreferencesParamsSchema,
-  zcodeWorkspaceUpdateInteractionPreferencesResultSchema,
-  zcodeWorkspaceUpdateModelIoPreferencesParamsSchema,
-  zcodeWorkspaceUpdateModelIoPreferencesResultSchema,
-  zcodeAutomationCreateParamsSchema,
-  zcodeAutomationCheckTaskBindingParamsSchema,
-  zcodeAutomationCheckTaskBindingResultSchema,
-  zcodeAutomationUpdateParamsSchema,
-  zcodeAutomationProtocolSchema,
+  zodyComputerUseOperationEventSchema,
+  zodyProviderRuntimeHeadersRequestParamsSchema,
+  zodyProviderRuntimeHeadersResponseSchema,
+  zodyProtocolMethods,
+  zodyProtocolMessageSchema,
+  zodyProcessResourceSampleSchema,
+  zodyProtocolNotifications,
+  zodyMcpListParamsSchema,
+  zodyModelFormatPropertiesSchema,
+  zodyMcpTelemetryEventSchema,
+  zodySessionCreateParamsSchema,
+  zodySessionCompactParamsSchema,
+  zodySessionEventSchema,
+  zodySessionEventsResultSchema,
+  zodySessionResumeParamsSchema,
+  zodySessionSubagentsParamsSchema,
+  zodySessionSubagentsResultSchema,
+  zodySessionSendParamsSchema,
+  zodySessionSetModelParamsSchema,
+  zodySessionSetThoughtLevelParamsSchema,
+  zodySessionRuntimePreferencesResultSchema,
+  zodySessionSettingsStateSchema,
+  zodySessionStateSnapshotSchema,
+  zodyStateUpdatedNotificationSchema,
+  zodyWorkspacePresentationSchema,
+  zodyWorkspaceReadPresentationParamsSchema,
+  zodyWorkspaceUpdateInteractionPreferencesParamsSchema,
+  zodyWorkspaceUpdateInteractionPreferencesResultSchema,
+  zodyWorkspaceUpdateModelIoPreferencesParamsSchema,
+  zodyWorkspaceUpdateModelIoPreferencesResultSchema,
+  zodyAutomationCreateParamsSchema,
+  zodyAutomationCheckTaskBindingParamsSchema,
+  zodyAutomationCheckTaskBindingResultSchema,
+  zodyAutomationUpdateParamsSchema,
+  zodyAutomationProtocolSchema,
 } from "../src/zody-protocol/index.js";
 import {
   APP_RUNTIME_PREFERENCES_CHANGED_BROADCAST_CHANNEL,
   appRuntimePreferencesChangedBroadcastPayloadSchema,
 } from "../src/app-runtime-preferences.js";
-import { zcodeUserMessageInfoSchema } from "../src/zody-protocol-legacy-types.js";
+import { zodyUserMessageInfoSchema } from "../src/zody-protocol-legacy-types.js";
 import { conversationRowSchema, workflowLaunchMetaSchema } from "../src/zody-protocol-v4/rows.js";
 import { errorAttributionSchema } from "../src/zody-protocol-v4/snapshot.js";
 
@@ -82,16 +82,16 @@ describe("ZCode Protocol", () => {
       outputFormat: { supportsText: true },
     };
 
-    expect(zcodeModelFormatPropertiesSchema.parse(properties)).toEqual(properties);
+    expect(zodyModelFormatPropertiesSchema.parse(properties)).toEqual(properties);
     expect(() =>
-      zcodeModelFormatPropertiesSchema.parse({
+      zodyModelFormatPropertiesSchema.parse({
         supportsImages: true,
         supportsPdf: true,
         supportsVideo: false,
       }),
     ).toThrow();
     expect(() =>
-      zcodeModelFormatPropertiesSchema.parse({
+      zodyModelFormatPropertiesSchema.parse({
         inputFormat: {
           supportsText: true,
           supportsImage: false,
@@ -118,10 +118,10 @@ describe("ZCode Protocol", () => {
     };
 
     const payloads = [
-      [zcodeSessionCreateParamsSchema, { workspace, model, runtimeModel }],
-      [zcodeSessionResumeParamsSchema, { sessionId: "session-1", runtimeModel }],
+      [zodySessionCreateParamsSchema, { workspace, model, runtimeModel }],
+      [zodySessionResumeParamsSchema, { sessionId: "session-1", runtimeModel }],
       [
-        zcodeSessionSendParamsSchema,
+        zodySessionSendParamsSchema,
         {
           sessionId: "session-1",
           content: "hello",
@@ -129,10 +129,10 @@ describe("ZCode Protocol", () => {
           runtimeModel,
         },
       ],
-      [zcodeSessionCompactParamsSchema, { sessionId: "session-1", runtimeModel }],
-      [zcodeSessionSetModelParamsSchema, { sessionId: "session-1", model, runtimeModel }],
+      [zodySessionCompactParamsSchema, { sessionId: "session-1", runtimeModel }],
+      [zodySessionSetModelParamsSchema, { sessionId: "session-1", model, runtimeModel }],
       [
-        zcodeSessionSetThoughtLevelParamsSchema,
+        zodySessionSetThoughtLevelParamsSchema,
         { sessionId: "session-1", thoughtLevel: "high", runtimeModel },
       ],
     ] as const;
@@ -153,9 +153,9 @@ describe("ZCode Protocol", () => {
       rssKb: 65_536,
     };
 
-    expect(zcodeProtocolNotifications.processResourceSample).toBe("process/resourceSample");
+    expect(zodyProtocolNotifications.processResourceSample).toBe("process/resourceSample");
     // PRT-025：旧 CLI 发来的样本没有新字段，仍必须通过校验（新增字段全部可选，握手版本不递增）。
-    expect(zcodeProcessResourceSampleSchema.parse(sample)).toEqual(sample);
+    expect(zodyProcessResourceSampleSchema.parse(sample)).toEqual(sample);
     const sampleWithTelemetryFields = {
       ...sample,
       heapUsedKb: 20_480,
@@ -163,36 +163,36 @@ describe("ZCode Protocol", () => {
       totalMemoryGb: 16,
       instanceToken: "9f2c4a1b7d0e5638",
     };
-    expect(zcodeProcessResourceSampleSchema.parse(sampleWithTelemetryFields)).toEqual(
+    expect(zodyProcessResourceSampleSchema.parse(sampleWithTelemetryFields)).toEqual(
       sampleWithTelemetryFields,
     );
     // lane 由 app 侧 services 按所属进程管理器打标，CLI 不知道自己的 lane，也不允许自报。
-    expect(() => zcodeProcessResourceSampleSchema.parse({ ...sample, lane: "chat" })).toThrow();
+    expect(() => zodyProcessResourceSampleSchema.parse({ ...sample, lane: "chat" })).toThrow();
     // instanceToken 只用于 main 统计进程数，绝不能被拿来夹带 pid、路径或 workspace 标识。
     expect(() =>
-      zcodeProcessResourceSampleSchema.parse({ ...sample, instanceToken: "/private/repo" }),
+      zodyProcessResourceSampleSchema.parse({ ...sample, instanceToken: "/private/repo" }),
     ).toThrow();
     expect(() =>
-      zcodeProcessResourceSampleSchema.parse({ ...sample, instanceToken: "" }),
+      zodyProcessResourceSampleSchema.parse({ ...sample, instanceToken: "" }),
     ).toThrow();
-    expect(() => zcodeProcessResourceSampleSchema.parse({ ...sample, heapUsedKb: -1 })).toThrow();
+    expect(() => zodyProcessResourceSampleSchema.parse({ ...sample, heapUsedKb: -1 })).toThrow();
     expect(() =>
-      zcodeProcessResourceSampleSchema.parse({ ...sample, uptimeMinutes: 1.5 }),
+      zodyProcessResourceSampleSchema.parse({ ...sample, uptimeMinutes: 1.5 }),
     ).toThrow();
     expect(() =>
-      zcodeProcessResourceSampleSchema.parse({
+      zodyProcessResourceSampleSchema.parse({
         ...sample,
         workspacePath: "/private/repo",
       }),
     ).toThrow();
     expect(() =>
-      zcodeProcessResourceSampleSchema.parse({
+      zodyProcessResourceSampleSchema.parse({
         ...sample,
         cpuCores: Number.NaN,
       }),
     ).toThrow();
     expect(() =>
-      zcodeProcessResourceSampleSchema.parse({
+      zodyProcessResourceSampleSchema.parse({
         ...sample,
         logicalCpuCount: 0,
       }),
@@ -266,10 +266,10 @@ describe("ZCode Protocol", () => {
       },
     ];
 
-    expect(zcodeProtocolNotifications.mcpTelemetry).toBe("process/mcpTelemetry");
-    expect(events.map((event) => zcodeMcpTelemetryEventSchema.parse(event))).toEqual(events);
+    expect(zodyProtocolNotifications.mcpTelemetry).toBe("process/mcpTelemetry");
+    expect(events.map((event) => zodyMcpTelemetryEventSchema.parse(event))).toEqual(events);
     expect(() =>
-      zcodeMcpTelemetryEventSchema.parse({
+      zodyMcpTelemetryEventSchema.parse({
         ...events[0],
         mcpServerName: "private-company-server",
       }),
@@ -278,7 +278,7 @@ describe("ZCode Protocol", () => {
 
   it("accepts a default thought level in session settings", () => {
     expect(
-      zcodeSessionSettingsStateSchema.parse({
+      zodySessionSettingsStateSchema.parse({
         model: {
           current: model,
           available: [{ ref: model, label: "GLM 4.6", properties: modelProperties }],
@@ -312,7 +312,7 @@ describe("ZCode Protocol", () => {
     };
 
     expect(
-      zcodeSessionSettingsStateSchema.parse({
+      zodySessionSettingsStateSchema.parse({
         model: { current: model, available: [currentModelOption] },
         thoughtLevel: { enabled: true, available: [], current: undefined },
         mode: { current: "build" },
@@ -327,7 +327,7 @@ describe("ZCode Protocol", () => {
       "supportsJsonSchemaOutput",
     ]) {
       expect(() =>
-        zcodeSessionSettingsStateSchema.parse({
+        zodySessionSettingsStateSchema.parse({
           model: {
             current: model,
             available: [{ ...currentModelOption, [removedField]: true }],
@@ -339,7 +339,7 @@ describe("ZCode Protocol", () => {
     }
 
     expect(() =>
-      zcodeSessionSettingsStateSchema.parse({
+      zodySessionSettingsStateSchema.parse({
         model: {
           current: model,
           available: [{ ...currentModelOption, reasoning: { enabled: true, levels: [] } }],
@@ -372,7 +372,7 @@ describe("ZCode Protocol", () => {
 
   it("accepts bounded browser ambient context on session/send while staying strict", () => {
     expect(
-      zcodeSessionSendParamsSchema.parse({
+      zodySessionSendParamsSchema.parse({
         sessionId: "sess_1",
         content: "continue",
         browserAmbientContext: {
@@ -382,14 +382,14 @@ describe("ZCode Protocol", () => {
       }).browserAmbientContext,
     ).toEqual({ tabCount: 1, currentUrl: "https://example.com/current?q=1" });
     expect(() =>
-      zcodeSessionSendParamsSchema.parse({
+      zodySessionSendParamsSchema.parse({
         sessionId: "sess_1",
         content: "continue",
         browserAmbientContext: { tabCount: 0 },
       }),
     ).toThrow();
     expect(() =>
-      zcodeSessionSendParamsSchema.parse({
+      zodySessionSendParamsSchema.parse({
         sessionId: "sess_1",
         content: "continue",
         browserAmbientContext: { tabCount: 1, pageText: "secret" },
@@ -404,7 +404,7 @@ describe("ZCode Protocol", () => {
   // （specs/bot-channels-removal.md）；session/send 与 automation/create 的对应字段已摘除。
 
   it("keeps protocol methods session-first and private", () => {
-    const methods = Object.values(zcodeProtocolMethods);
+    const methods = Object.values(zodyProtocolMethods);
 
     expect(methods).not.toContain("capabilities");
     expect(methods.every((method) => !method.includes("task"))).toBe(true);
@@ -422,7 +422,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("validates the strict Computer Use operation lifecycle notification", () => {
-    expect(zcodeProtocolMethods.computerUseOperationEvent).toBe("computer-use/operation-event");
+    expect(zodyProtocolMethods.computerUseOperationEvent).toBe("computer-use/operation-event");
 
     const base = {
       eventId: "evt-1",
@@ -457,7 +457,7 @@ describe("ZCode Protocol", () => {
       },
       { ...base, kind: "session-closed" },
     ]) {
-      expect(zcodeComputerUseOperationEventSchema.safeParse(event).success).toBe(true);
+      expect(zodyComputerUseOperationEventSchema.safeParse(event).success).toBe(true);
     }
 
     for (const event of [
@@ -486,22 +486,22 @@ describe("ZCode Protocol", () => {
       { ...base, kind: "session-closed", toolName: "must-not-pass" },
       { ...base, kind: "unknown-kind" },
     ]) {
-      expect(zcodeComputerUseOperationEventSchema.safeParse(event).success).toBe(false);
+      expect(zodyComputerUseOperationEventSchema.safeParse(event).success).toBe(false);
     }
   });
 
   it("workspace/readPresentation 只接受 workspace identity", () => {
     expect(() =>
-      zcodeWorkspaceReadPresentationParamsSchema.parse({
+      zodyWorkspaceReadPresentationParamsSchema.parse({
         workspace,
         runtimeModel: {},
       }),
     ).toThrow();
-    expect(zcodeWorkspaceReadPresentationParamsSchema.parse({ workspace })).toEqual({ workspace });
+    expect(zodyWorkspaceReadPresentationParamsSchema.parse({ workspace })).toEqual({ workspace });
   });
 
   it("preserves automation runtime config in strict protocol schemas", () => {
-    const create = zcodeAutomationCreateParamsSchema.parse({
+    const create = zodyAutomationCreateParamsSchema.parse({
       title: "daily report",
       cronExpr: "0 9 * * *",
       prompt: "summarize",
@@ -513,7 +513,7 @@ describe("ZCode Protocol", () => {
       mode: "plan",
     });
     expect(
-      zcodeAutomationCreateParamsSchema.parse({
+      zodyAutomationCreateParamsSchema.parse({
         title: "3分钟后提醒",
         cronExpr: "* * * * *",
         relativeDelayMinutes: 3,
@@ -531,7 +531,7 @@ describe("ZCode Protocol", () => {
     });
 
     expect(
-      zcodeAutomationProtocolSchema.parse({
+      zodyAutomationProtocolSchema.parse({
         automationId: "automation-1",
         ...create,
         enabled: true,
@@ -542,7 +542,7 @@ describe("ZCode Protocol", () => {
     ).toMatchObject({ mode: "plan", modelSelection: { modelId: "glm-5.2" } });
 
     expect(
-      zcodeAutomationProtocolSchema.parse({
+      zodyAutomationProtocolSchema.parse({
         automationId: "automation-default-mode",
         title: "daily report",
         cronExpr: "0 9 * * *",
@@ -558,7 +558,7 @@ describe("ZCode Protocol", () => {
 
   it("将会话 Cron interval carrier 严格限制为 1-200 并要求成对提交", () => {
     expect(
-      zcodeAutomationCreateParamsSchema.parse({
+      zodyAutomationCreateParamsSchema.parse({
         cronExpr: "* * * * *",
         prompt: "提醒我",
         intervalUnit: "minute",
@@ -566,7 +566,7 @@ describe("ZCode Protocol", () => {
       }),
     ).toMatchObject({ intervalUnit: "minute", interval: 200 });
     expect(() =>
-      zcodeAutomationCreateParamsSchema.parse({
+      zodyAutomationCreateParamsSchema.parse({
         cronExpr: "* * * * *",
         prompt: "提醒我",
         intervalUnit: "minute",
@@ -574,7 +574,7 @@ describe("ZCode Protocol", () => {
       }),
     ).toThrow();
     expect(() =>
-      zcodeAutomationCreateParamsSchema.parse({
+      zodyAutomationCreateParamsSchema.parse({
         cronExpr: "* * * * *",
         prompt: "提醒我",
         intervalUnit: "minute",
@@ -582,14 +582,14 @@ describe("ZCode Protocol", () => {
     ).toThrow();
 
     expect(
-      zcodeAutomationUpdateParamsSchema.parse({
+      zodyAutomationUpdateParamsSchema.parse({
         automationId: "automation-1",
         intervalUnit: "yearly",
         interval: 200,
       }),
     ).toMatchObject({ intervalUnit: "yearly", interval: 200 });
     expect(() =>
-      zcodeAutomationUpdateParamsSchema.parse({
+      zodyAutomationUpdateParamsSchema.parse({
         automationId: "automation-1",
         intervalUnit: "yearly",
         interval: 1.5,
@@ -597,7 +597,7 @@ describe("ZCode Protocol", () => {
     ).toThrow();
     // carrier 必须保持无限循环，避免 host 直接收到 recurring=false / 有限次数的矛盾状态。
     expect(
-      zcodeAutomationUpdateParamsSchema.parse({
+      zodyAutomationUpdateParamsSchema.parse({
         automationId: "automation-1",
         intervalUnit: "yearly",
         interval: 200,
@@ -607,7 +607,7 @@ describe("ZCode Protocol", () => {
     ).toMatchObject({ recurring: true, maxRuns: null });
     for (const invalidMode of [{ recurring: false }, { maxRuns: 2 }]) {
       expect(() =>
-        zcodeAutomationUpdateParamsSchema.parse({
+        zodyAutomationUpdateParamsSchema.parse({
           automationId: "automation-1",
           intervalUnit: "yearly",
           interval: 200,
@@ -617,7 +617,7 @@ describe("ZCode Protocol", () => {
     }
     for (const invalidMode of [{ recurring: false }, { maxRuns: 2 }]) {
       expect(() =>
-        zcodeAutomationCreateParamsSchema.parse({
+        zodyAutomationCreateParamsSchema.parse({
           cronExpr: "* * * * *",
           prompt: "提醒我",
           intervalUnit: "minute",
@@ -630,22 +630,22 @@ describe("ZCode Protocol", () => {
 
   it("validates the dedicated automation task-binding query", () => {
     expect(
-      zcodeAutomationCheckTaskBindingParamsSchema.parse({ targetTaskId: "session-1" }),
+      zodyAutomationCheckTaskBindingParamsSchema.parse({ targetTaskId: "session-1" }),
     ).toEqual({ targetTaskId: "session-1" });
-    expect(zcodeAutomationCheckTaskBindingResultSchema.parse({ bound: true })).toEqual({
+    expect(zodyAutomationCheckTaskBindingResultSchema.parse({ bound: true })).toEqual({
       bound: true,
     });
     expect(() =>
-      zcodeAutomationCheckTaskBindingParamsSchema.parse({ targetTaskId: " " }),
+      zodyAutomationCheckTaskBindingParamsSchema.parse({ targetTaskId: " " }),
     ).toThrow();
     expect(() =>
-      zcodeAutomationCheckTaskBindingResultSchema.parse({ bound: false, automations: [] }),
+      zodyAutomationCheckTaskBindingResultSchema.parse({ bound: false, automations: [] }),
     ).toThrow();
   });
 
   it("validates a strict non-empty automation update patch", () => {
     expect(
-      zcodeAutomationUpdateParamsSchema.parse({
+      zodyAutomationUpdateParamsSchema.parse({
         automationId: "automation-1",
         cronExpr: "0 10 * * *",
         recurring: true,
@@ -658,7 +658,7 @@ describe("ZCode Protocol", () => {
       maxRuns: null,
     });
     expect(
-      zcodeAutomationUpdateParamsSchema.parse({
+      zodyAutomationUpdateParamsSchema.parse({
         automationId: "automation-1",
         recurring: true,
       }),
@@ -668,30 +668,30 @@ describe("ZCode Protocol", () => {
     });
 
     expect(() =>
-      zcodeAutomationUpdateParamsSchema.parse({ automationId: "automation-1" }),
+      zodyAutomationUpdateParamsSchema.parse({ automationId: "automation-1" }),
     ).toThrow();
     expect(() =>
-      zcodeAutomationUpdateParamsSchema.parse({
+      zodyAutomationUpdateParamsSchema.parse({
         automationId: "automation-1",
         title: "new title",
         enabled: false,
       }),
     ).toThrow();
     expect(() =>
-      zcodeAutomationUpdateParamsSchema.parse({
+      zodyAutomationUpdateParamsSchema.parse({
         automationId: "automation-1",
         maxRuns: null,
       }),
     ).toThrow("clearing maxRuns requires recurring=true");
     expect(() =>
-      zcodeAutomationUpdateParamsSchema.parse({
+      zodyAutomationUpdateParamsSchema.parse({
         automationId: "automation-1",
         recurring: false,
         maxRuns: null,
       }),
     ).toThrow("clearing maxRuns requires recurring=true");
     expect(() =>
-      zcodeAutomationUpdateParamsSchema.parse({
+      zodyAutomationUpdateParamsSchema.parse({
         automationId: "automation-1",
         recurring: true,
         maxRuns: 3,
@@ -701,13 +701,13 @@ describe("ZCode Protocol", () => {
 
   it("accepts an explicit session title-generation switch while staying strict", () => {
     expect(
-      zcodeSessionCreateParamsSchema.parse({
+      zodySessionCreateParamsSchema.parse({
         workspace,
         titleGenerationEnabled: false,
       }).titleGenerationEnabled,
     ).toBe(false);
     expect(() =>
-      zcodeSessionCreateParamsSchema.parse({
+      zodySessionCreateParamsSchema.parse({
         workspace,
         titleGenerationEnabled: "false",
       }),
@@ -716,7 +716,7 @@ describe("ZCode Protocol", () => {
 
   it("validates the paged session subagent projection", () => {
     expect(
-      zcodeSessionSubagentsParamsSchema.parse({
+      zodySessionSubagentsParamsSchema.parse({
         sessionId: "sess_parent",
         endedCursor: "cursor-20",
         endedLimit: 20,
@@ -728,7 +728,7 @@ describe("ZCode Protocol", () => {
     });
 
     expect(
-      zcodeSessionSubagentsResultSchema.parse({
+      zodySessionSubagentsResultSchema.parse({
         revision: 7,
         childSessionIds: ["sess_child_running", "sess_child_failed"],
         running: [
@@ -764,13 +764,13 @@ describe("ZCode Protocol", () => {
     });
 
     expect(() =>
-      zcodeSessionSubagentsParamsSchema.parse({
+      zodySessionSubagentsParamsSchema.parse({
         sessionId: "sess_parent",
         endedLimit: 0,
       }),
     ).toThrow();
     expect(() =>
-      zcodeSessionSubagentsResultSchema.parse({
+      zodySessionSubagentsResultSchema.parse({
         revision: 0,
         childSessionIds: ["sess_child"],
         running: [],
@@ -790,7 +790,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("parses JSON-RPC style messages without requiring a jsonrpc field", () => {
-    const parsed = zcodeProtocolMessageSchema.parse({
+    const parsed = zodyProtocolMessageSchema.parse({
       id: "request-1",
       method: "session/read",
       params: {
@@ -806,7 +806,7 @@ describe("ZCode Protocol", () => {
 
   it("allows MCP list requests to carry explicit MCP servers", () => {
     expect(
-      zcodeMcpListParamsSchema.parse({
+      zodyMcpListParamsSchema.parse({
         workspace,
         mcpServers: [
           {
@@ -857,18 +857,18 @@ describe("ZCode Protocol", () => {
       },
     ];
 
-    expect(zcodeSessionCreateParamsSchema.parse({ workspace, mcpServers }).mcpServers).toEqual(
+    expect(zodySessionCreateParamsSchema.parse({ workspace, mcpServers }).mcpServers).toEqual(
       mcpServers,
     );
     expect(
-      zcodeSessionResumeParamsSchema.parse({
+      zodySessionResumeParamsSchema.parse({
         sessionId: "sess_1",
         workspace,
         mcpServers,
       }).mcpServers,
     ).toEqual(mcpServers);
     expect(() =>
-      zcodeSessionCreateParamsSchema.parse({
+      zodySessionCreateParamsSchema.parse({
         workspace,
         mcpServers: [
           {
@@ -881,7 +881,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("accepts session create tool lists while staying strict", () => {
-    const parsed = zcodeSessionCreateParamsSchema.parse({
+    const parsed = zodySessionCreateParamsSchema.parse({
       workspace,
       toolAllowlist: ["mcp__zcode-cua__request_access", "mcp__zcode-cua__list_apps"],
       toolDenylist: ["Bash"],
@@ -893,7 +893,7 @@ describe("ZCode Protocol", () => {
     ]);
     expect(parsed.toolDenylist).toEqual(["Bash"]);
     expect(() =>
-      zcodeSessionCreateParamsSchema.parse({
+      zodySessionCreateParamsSchema.parse({
         workspace,
         toolAllowlist: ["Read"],
         unexpectedToolPolicy: true,
@@ -903,7 +903,7 @@ describe("ZCode Protocol", () => {
 
   it("accepts session RESUME tool lists too (cold resume keeps the same isolation)", () => {
     // 冷恢复必须和 create 同边界地带工具面约束，否则 CUA 会话 resume 后会重新可见 Bash 等被禁工具。
-    const parsed = zcodeSessionResumeParamsSchema.parse({
+    const parsed = zodySessionResumeParamsSchema.parse({
       sessionId: "sess_1",
       toolAllowlist: ["mcp__zcode-cua__request_access"],
       toolDenylist: ["Bash"],
@@ -912,7 +912,7 @@ describe("ZCode Protocol", () => {
     expect(parsed.toolDenylist).toEqual(["Bash"]);
     // 仍 strict：未知字段拒绝。
     expect(() =>
-      zcodeSessionResumeParamsSchema.parse({
+      zodySessionResumeParamsSchema.parse({
         sessionId: "sess_1",
         unexpectedToolPolicy: true,
       }),
@@ -920,7 +920,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("models provider runtime header refresh as a strict interaction request", () => {
-    const params = zcodeProviderRuntimeHeadersRequestParamsSchema.parse({
+    const params = zodyProviderRuntimeHeadersRequestParamsSchema.parse({
       requestId: "header-refresh-1",
       sessionId: "sess_1",
       turnId: "turn_1",
@@ -934,7 +934,7 @@ describe("ZCode Protocol", () => {
       "X-Request-Scoped-Param": "request-token",
       "X-Request-Scoped-Region": "cn",
     };
-    const response = zcodeProviderRuntimeHeadersResponseSchema.parse({
+    const response = zodyProviderRuntimeHeadersResponseSchema.parse({
       headersApplied: true,
       requestAuth: {
         apiKey: "request-key",
@@ -943,23 +943,23 @@ describe("ZCode Protocol", () => {
     });
     expect(response).toMatchObject({ requestAuth: { headers: runtimeProviderHeaders } });
     expect(() =>
-      zcodeProviderRuntimeHeadersResponseSchema.parse({
+      zodyProviderRuntimeHeadersResponseSchema.parse({
         headersApplied: true,
       }),
     ).toThrow();
     expect(() =>
-      zcodeProviderRuntimeHeadersResponseSchema.parse({
+      zodyProviderRuntimeHeadersResponseSchema.parse({
         headersApplied: true,
         runtimeProviderHeaders,
         providerRevision: "rev-2",
       }),
     ).toThrow();
 
-    expect(zcodeProtocolMethods.interactionRequestProviderRuntimeHeaders).toBe(
+    expect(zodyProtocolMethods.interactionRequestProviderRuntimeHeaders).toBe(
       "interaction/requestProviderRuntimeHeaders",
     );
     expect(() =>
-      zcodeProviderRuntimeHeadersRequestParamsSchema.parse({
+      zodyProviderRuntimeHeadersRequestParamsSchema.parse({
         ...params,
         staleHeader: "must-not-pass-through",
       }),
@@ -970,7 +970,7 @@ describe("ZCode Protocol", () => {
   // strict schema 必须拒绝旧字段，避免半断的账号鉴权链重新流入。
   it("runtime headers 拒绝已删除的 accountAccess 字段", () => {
     expect(() =>
-      zcodeProviderRuntimeHeadersRequestParamsSchema.parse({
+      zodyProviderRuntimeHeadersRequestParamsSchema.parse({
         ...params,
         accountAccess: {
           type: "zhipu-account",
@@ -983,7 +983,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("parses subagent mirrored tool updates with explicit protocol metadata", () => {
-    const scheduled = zcodeSessionEventSchema.parse({
+    const scheduled = zodySessionEventSchema.parse({
       eventId: "evt_subagent_tool_scheduled",
       seq: 12,
       sessionId: "sess_parent",
@@ -1005,7 +1005,7 @@ describe("ZCode Protocol", () => {
         description: "Inspect workspace",
       },
     });
-    const started = zcodeSessionEventSchema.parse({
+    const started = zodySessionEventSchema.parse({
       eventId: "evt_subagent_tool_started",
       seq: 13,
       sessionId: "sess_parent",
@@ -1030,7 +1030,7 @@ describe("ZCode Protocol", () => {
     expect(scheduled.payload.parentToolCallId).toBe("call_parent_agent");
     expect(started.payload.source).toBe("subagent");
     expect(() =>
-      zcodeSessionEventSchema.parse({
+      zodySessionEventSchema.parse({
         ...scheduled,
         payload: {
           ...scheduled.payload,
@@ -1041,7 +1041,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("parses background subagent mirrored tool updates", () => {
-    const event = zcodeSessionEventSchema.parse({
+    const event = zodySessionEventSchema.parse({
       eventId: "evt_background_subagent_tool_started",
       seq: 14,
       sessionId: "sess_parent",
@@ -1066,7 +1066,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("parses subagent mirrored permission events with routing metadata", () => {
-    const requested = zcodeSessionEventSchema.parse({
+    const requested = zodySessionEventSchema.parse({
       eventId: "evt_subagent_permission_requested",
       seq: 14,
       sessionId: "sess_parent",
@@ -1093,7 +1093,7 @@ describe("ZCode Protocol", () => {
         ],
       },
     });
-    const resolved = zcodeSessionEventSchema.parse({
+    const resolved = zodySessionEventSchema.parse({
       eventId: "evt_subagent_permission_resolved",
       seq: 15,
       sessionId: "sess_parent",
@@ -1118,7 +1118,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("parses scheduled tool updates that reference model-streamed input", () => {
-    const scheduled = zcodeSessionEventSchema.parse({
+    const scheduled = zodySessionEventSchema.parse({
       eventId: "evt_tool_scheduled_tombstone",
       seq: 15,
       sessionId: "sess_parent",
@@ -1164,20 +1164,20 @@ describe("ZCode Protocol", () => {
         };
 
         // 旧 CLI 没有消息归属字段时仍须兼容；新 CLI 的字段不能导致整条调度事件丢失。
-        expect(zcodeSessionEventSchema.parse(event).payload).toEqual(event.payload);
+        expect(zodySessionEventSchema.parse(event).payload).toEqual(event.payload);
         const payload = { ...event.payload, assistantMessageId: "msg_assistant" };
-        expect(zcodeSessionEventSchema.parse({ ...event, payload })).toEqual({ ...event, payload });
+        expect(zodySessionEventSchema.parse({ ...event, payload })).toEqual({ ...event, payload });
 
         for (const assistantMessageId of ["", null, 42]) {
           expect(
-            zcodeSessionEventSchema.safeParse({
+            zodySessionEventSchema.safeParse({
               ...event,
               payload: { ...payload, assistantMessageId },
             }).success,
           ).toBe(false);
         }
         expect(
-          zcodeSessionEventSchema.safeParse({
+          zodySessionEventSchema.safeParse({
             ...event,
             payload: { ...payload, unknownField: true },
           }).success,
@@ -1187,7 +1187,7 @@ describe("ZCode Protocol", () => {
   );
 
   it("parses a server-authoritative session state snapshot", () => {
-    const snapshot = zcodeSessionStateSnapshotSchema.parse({
+    const snapshot = zodySessionStateSnapshotSchema.parse({
       protocol: {
         name: ZCODE_PROTOCOL_NAME,
         version: ZCODE_PROTOCOL_VERSION,
@@ -1290,7 +1290,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("parses agent-owned session title update events", () => {
-    const event = zcodeSessionEventSchema.parse({
+    const event = zodySessionEventSchema.parse({
       eventId: "evt_title_1",
       seq: 8,
       sessionId: "sess_1",
@@ -1309,7 +1309,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("preserves attribution on legacy turn.failed events", () => {
-    const event = zcodeSessionEventSchema.parse({
+    const event = zodySessionEventSchema.parse({
       eventId: "evt_failed_1",
       seq: 9,
       sessionId: "sess_1",
@@ -1355,7 +1355,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("accepts complete steer queue and drain facts emitted by the CLI", () => {
-    const queued = zcodeSessionEventSchema.parse({
+    const queued = zodySessionEventSchema.parse({
       eventId: "evt_steer_queued_1",
       seq: 9,
       sessionId: "sess_1",
@@ -1375,7 +1375,7 @@ describe("ZCode Protocol", () => {
         queueLength: 1,
       },
     });
-    const drained = zcodeSessionEventSchema.parse({
+    const drained = zodySessionEventSchema.parse({
       eventId: "evt_steer_drained_1",
       seq: 10,
       sessionId: "sess_1",
@@ -1406,7 +1406,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("parses typed session events for tool updates", () => {
-    const event = zcodeSessionEventSchema.parse({
+    const event = zodySessionEventSchema.parse({
       eventId: "evt_tool_1",
       seq: 12,
       sessionId: "sess_1",
@@ -1452,14 +1452,14 @@ describe("ZCode Protocol", () => {
       },
     };
 
-    expect(zcodeSessionEventSchema.parse(event).payload).toMatchObject({
+    expect(zodySessionEventSchema.parse(event).payload).toMatchObject({
       kind: "result",
       result: {
         display: { kind: "node_repl_images", source: "browser_turn_end" },
       },
     });
     expect(() =>
-      zcodeSessionEventSchema.parse({
+      zodySessionEventSchema.parse({
         ...event,
         payload: {
           ...event.payload,
@@ -1526,12 +1526,12 @@ describe("ZCode Protocol", () => {
       },
     };
 
-    expect(zcodeSessionEventSchema.parse(event).payload).toMatchObject({
+    expect(zodySessionEventSchema.parse(event).payload).toMatchObject({
       kind: "result",
       result: { display: { kind: "create_workflow", ok: false, errorCount: 1 } },
     });
     expect(() =>
-      zcodeSessionEventSchema.parse({
+      zodySessionEventSchema.parse({
         ...event,
         payload: {
           ...event.payload,
@@ -1653,7 +1653,7 @@ describe("ZCode Protocol", () => {
     };
 
     // Legacy protocol: result.display superRefine.
-    const event = zcodeSessionEventSchema.parse({
+    const event = zodySessionEventSchema.parse({
       eventId: "evt_tool_workflow_graph",
       seq: 16,
       sessionId: "sess_1",
@@ -1769,7 +1769,7 @@ describe("ZCode Protocol", () => {
     };
 
     // Legacy protocol: result.display superRefine.
-    const event = zcodeSessionEventSchema.parse({
+    const event = zodySessionEventSchema.parse({
       eventId: "evt_tool_workflow_holes",
       seq: 22,
       sessionId: "sess_1",
@@ -1966,7 +1966,7 @@ describe("ZCode Protocol", () => {
     };
 
     // Legacy protocol: result.display superRefine.
-    const event = zcodeSessionEventSchema.parse({
+    const event = zodySessionEventSchema.parse({
       eventId: "evt_tool_workflow_may_set",
       seq: 18,
       sessionId: "sess_1",
@@ -2105,7 +2105,7 @@ describe("ZCode Protocol", () => {
     };
 
     // Legacy protocol: result.display superRefine.
-    const event = zcodeSessionEventSchema.parse({
+    const event = zodySessionEventSchema.parse({
       eventId: "evt_tool_workflow_phases",
       seq: 20,
       sessionId: "sess_1",
@@ -2172,7 +2172,7 @@ describe("ZCode Protocol", () => {
     };
     expect(() => parseWith(emptyVocabulary)).not.toThrow();
     expect(
-      zcodeSessionEventSchema.parse({
+      zodySessionEventSchema.parse({
         eventId: "evt_tool_workflow_phases_empty",
         seq: 21,
         sessionId: "sess_1",
@@ -2297,7 +2297,7 @@ describe("ZCode Protocol", () => {
     const verdicts = (causalityGraph: unknown) => {
       const row = conversationRowSchema.safeParse(rowOf(causalityGraph));
       return [
-        zcodeSessionEventSchema.safeParse(eventOf(causalityGraph)).success,
+        zodySessionEventSchema.safeParse(eventOf(causalityGraph)).success,
         row.success && row.data.kind === "toolCall" && row.data.display !== undefined,
       ];
     };
@@ -2442,7 +2442,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("parses replayable session event batches", () => {
-    const batch = zcodeSessionEventsResultSchema.parse({
+    const batch = zodySessionEventsResultSchema.parse({
       events: [
         {
           eventId: "evt_turn_1",
@@ -2467,7 +2467,7 @@ describe("ZCode Protocol", () => {
   it.each([undefined, "desktop-continuous", "web-remote-replayable"])(
     "accepts the complete runtime turn.started payload (%s)",
     (deliveryKind) => {
-      const event = zcodeSessionEventSchema.parse({
+      const event = zodySessionEventSchema.parse({
         eventId: "evt_turn_runtime",
         seq: 2,
         sessionId: "sess_1",
@@ -2504,7 +2504,7 @@ describe("ZCode Protocol", () => {
   );
 
   it("parses subagent message model-only inputs for replayable delivery", () => {
-    const event = zcodeSessionEventSchema.parse({
+    const event = zodySessionEventSchema.parse({
       eventId: "evt_subagent_response",
       seq: 2,
       sessionId: "sess_1",
@@ -2527,7 +2527,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("parses persisted model-only subagent messages across the app/agent boundary", () => {
-    const message = zcodeUserMessageInfoSchema.parse({
+    const message = zodyUserMessageInfoSchema.parse({
       messageId: "msg_subagent_response",
       sessionId: "sess_1",
       role: "user",
@@ -2543,7 +2543,7 @@ describe("ZCode Protocol", () => {
 
   it("parses strict workspace interaction preference updates", () => {
     expect(
-      zcodeWorkspaceUpdateInteractionPreferencesParamsSchema.parse({
+      zodyWorkspaceUpdateInteractionPreferencesParamsSchema.parse({
         workspace,
         preferences: {
           askUserQuestionAutoResolutionEnabled: false,
@@ -2556,7 +2556,7 @@ describe("ZCode Protocol", () => {
       },
     });
     expect(
-      zcodeWorkspaceUpdateInteractionPreferencesResultSchema.parse({
+      zodyWorkspaceUpdateInteractionPreferencesResultSchema.parse({
         workspace,
         askUserQuestionAutoResolutionEnabled: false,
         snoozedInteractionCount: 2,
@@ -2566,7 +2566,7 @@ describe("ZCode Protocol", () => {
       snoozedInteractionCount: 2,
     });
     expect(() =>
-      zcodeWorkspaceUpdateInteractionPreferencesParamsSchema.parse({
+      zodyWorkspaceUpdateInteractionPreferencesParamsSchema.parse({
         workspace,
         preferences: {
           askUserQuestionAutoResolutionEnabled: false,
@@ -2578,7 +2578,7 @@ describe("ZCode Protocol", () => {
 
   it("parses strict workspace ModelIO retention preference updates", () => {
     expect(
-      zcodeWorkspaceUpdateModelIoPreferencesParamsSchema.parse({
+      zodyWorkspaceUpdateModelIoPreferencesParamsSchema.parse({
         workspace,
         preferences: { fullRetentionEnabled: true },
       }),
@@ -2587,7 +2587,7 @@ describe("ZCode Protocol", () => {
       preferences: { fullRetentionEnabled: true },
     });
     expect(
-      zcodeWorkspaceUpdateModelIoPreferencesResultSchema.parse({
+      zodyWorkspaceUpdateModelIoPreferencesResultSchema.parse({
         workspace,
         fullRetentionEnabled: true,
         updatedSessionCount: 2,
@@ -2597,7 +2597,7 @@ describe("ZCode Protocol", () => {
       updatedSessionCount: 2,
     });
     expect(() =>
-      zcodeWorkspaceUpdateModelIoPreferencesParamsSchema.parse({
+      zodyWorkspaceUpdateModelIoPreferencesParamsSchema.parse({
         workspace,
         preferences: { fullRetentionEnabled: true, ignored: true },
       }),
@@ -2607,7 +2607,7 @@ describe("ZCode Protocol", () => {
   it("keeps runtime preference compatibility by defaulting missing fields", () => {
     expect(DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY).toBe("preflight-v1");
     expect(
-      zcodeSessionRuntimePreferencesResultSchema.parse({
+      zodySessionRuntimePreferencesResultSchema.parse({
         nativeSearchEnhancementsEnabled: true,
       }),
     ).toMatchObject({
@@ -2616,14 +2616,14 @@ describe("ZCode Protocol", () => {
       modelContextBudgetStrategy: DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
     });
     expect(
-      zcodeSessionRuntimePreferencesResultSchema.parse({
+      zodySessionRuntimePreferencesResultSchema.parse({
         nativeSearchEnhancementsEnabled: true,
         askUserQuestionAutoResolutionEnabled: false,
         modelContextBudgetStrategy: "preflight-v1",
       }).askUserQuestionAutoResolutionEnabled,
     ).toBe(false);
     expect(() =>
-      zcodeSessionRuntimePreferencesResultSchema.parse({
+      zodySessionRuntimePreferencesResultSchema.parse({
         nativeSearchEnhancementsEnabled: true,
         modelContextBudgetStrategy: "unknown",
       }),
@@ -2631,7 +2631,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("accepts turn.completed cache stats and history round count from runtime events", () => {
-    const event = zcodeSessionEventSchema.parse({
+    const event = zodySessionEventSchema.parse({
       type: "turn.completed",
       eventId: "evt_1",
       sessionId: "sess_1",
@@ -2665,7 +2665,7 @@ describe("ZCode Protocol", () => {
   });
 
   it("parses state.updated notifications as the core state sync primitive", () => {
-    const event = zcodeStateUpdatedNotificationSchema.parse({
+    const event = zodyStateUpdatedNotificationSchema.parse({
       type: "state.updated",
       scope: "session",
       workspace,
@@ -2686,7 +2686,7 @@ describe("ZCode Protocol", () => {
 
   it("workspace presentation rejects model facts", () => {
     expect(() =>
-      zcodeWorkspacePresentationSchema.parse({
+      zodyWorkspacePresentationSchema.parse({
         workspace,
         mode: "build",
         slashCommands: [],

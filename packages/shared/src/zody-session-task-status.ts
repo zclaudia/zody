@@ -2,11 +2,11 @@
 // 剩余 1 个导出：deriveZCodeTaskStatusFromSessionSnapshot。
 // 消费者：zcodeTaskServiceAdapter/zcodeTaskIndexSyncer/zcodeSessionProjection（旧投影栈）。
 import type { ZodySessionStateSnapshot } from "./zody-protocol/index.js";
-import { getZCodeUserVisibleMessages } from "./zody-session-visible-content.js";
+import { getZodyUserVisibleMessages } from "./zody-session-visible-content.js";
 import type { ZodyTaskMeta } from "./zody-task-types-core.js";
 type ZodyTaskStatus = ZodyTaskMeta["status"];
 
-function statusFromZCodeSession(
+function statusFromZodySession(
   status: ZodySessionStateSnapshot["session"]["status"],
 ): ZodyTaskStatus {
   if (status === "running" || status === "waiting" || status === "paused") {
@@ -41,7 +41,7 @@ function isToolCallContinuationFinish(finish: string | undefined): boolean {
 }
 
 function hasCompletedVisibleAssistantTurn(snapshot: ZodySessionStateSnapshot): boolean {
-  const visibleMessages = getZCodeUserVisibleMessages(snapshot.messages, {
+  const visibleMessages = getZodyUserVisibleMessages(snapshot.messages, {
     target: snapshot.projection.target,
   });
   const latestVisibleMessage = visibleMessages.at(-1);
@@ -54,14 +54,14 @@ function hasCompletedVisibleAssistantTurn(snapshot: ZodySessionStateSnapshot): b
   return typeof latestVisibleMessage.info.time.completed === "number";
 }
 
-export function deriveZCodeTaskStatusFromSessionSnapshot(
+export function deriveZodyTaskStatusFromSessionSnapshot(
   snapshot: ZodySessionStateSnapshot,
 ): ZodyTaskStatus {
   if (snapshot.projection.lastError) {
     return "error";
   }
 
-  const status = statusFromZCodeSession(snapshot.session.status);
+  const status = statusFromZodySession(snapshot.session.status);
   if (status === "error" || status === "completed") {
     return status;
   }

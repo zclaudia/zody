@@ -4,7 +4,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods } from "@zody/shared";
+import { zodyProtocolMethods } from "@zody/shared";
 
 async function createServiceWithRequest(request: ReturnType<typeof vi.fn>) {
   const getClient = vi.fn(async () => ({
@@ -27,8 +27,8 @@ async function createServiceWithRequest(request: ReturnType<typeof vi.fn>) {
       disposeAll() {}
     },
   }));
-  const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-  return { service: createZCodeAgentService(), getClient };
+  const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+  return { service: createZodyAgentService(), getClient };
 }
 
 const WORKSPACE = expect.objectContaining({ workspacePath: "/repo" });
@@ -36,7 +36,7 @@ const WORKSPACE = expect.objectContaining({ workspacePath: "/repo" });
 describe("ZCodeAgentService saved workflows", () => {
   it("listSavedWorkflows → workflows/list，只带 workspace", async () => {
     const request = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workflowsList) return { workflows: [], invalid: [] };
+      if (method === zodyProtocolMethods.workflowsList) return { workflows: [], invalid: [] };
       throw new Error(`Unexpected method ${method}`);
     });
     const { service, getClient } = await createServiceWithRequest(request);
@@ -46,7 +46,7 @@ describe("ZCodeAgentService saved workflows", () => {
     });
     expect(getClient).toHaveBeenCalledTimes(1);
     expect(request).toHaveBeenCalledWith(
-      zcodeProtocolMethods.workflowsList,
+      zodyProtocolMethods.workflowsList,
       { workspace: WORKSPACE },
       expect.anything(),
     );
@@ -55,7 +55,7 @@ describe("ZCodeAgentService saved workflows", () => {
 
   it("getSavedWorkflow / deleteSavedWorkflow → 对应方法 + name", async () => {
     const request = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workflowsGet) {
+      if (method === zodyProtocolMethods.workflowsGet) {
         return {
           ok: true,
           name: "x",
@@ -65,7 +65,7 @@ describe("ZCodeAgentService saved workflows", () => {
           script: "export default async () => {}",
         };
       }
-      if (method === zcodeProtocolMethods.workflowsDelete)
+      if (method === zodyProtocolMethods.workflowsDelete)
         return { ok: false, reason: "not_found" };
       throw new Error(`Unexpected method ${method}`);
     });
@@ -73,7 +73,7 @@ describe("ZCodeAgentService saved workflows", () => {
     const detail = await service.getSavedWorkflow({ workspacePath: "/repo", name: "x" });
     expect(detail).toMatchObject({ ok: true, name: "x", script: "export default async () => {}" });
     expect(request).toHaveBeenCalledWith(
-      zcodeProtocolMethods.workflowsGet,
+      zodyProtocolMethods.workflowsGet,
       { workspace: WORKSPACE, name: "x" },
       expect.anything(),
     );
@@ -84,7 +84,7 @@ describe("ZCodeAgentService saved workflows", () => {
       reason: "not_found",
     });
     expect(request).toHaveBeenCalledWith(
-      zcodeProtocolMethods.workflowsDelete,
+      zodyProtocolMethods.workflowsDelete,
       { workspace: WORKSPACE, name: "gone" },
       expect.anything(),
     );
@@ -98,7 +98,7 @@ describe("ZCodeAgentService saved workflows", () => {
       args: { branch: { type: "string" as const } },
     };
     const request = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workflowsUpdateMeta) {
+      if (method === zodyProtocolMethods.workflowsUpdateMeta) {
         return { ok: true, path: "/repo/.zcode/workflows/x.dwf.ts" };
       }
       throw new Error(`Unexpected method ${method}`);
@@ -108,7 +108,7 @@ describe("ZCodeAgentService saved workflows", () => {
       service.updateSavedWorkflowMeta({ workspacePath: "/repo", name: "x", meta }),
     ).resolves.toEqual({ ok: true, path: "/repo/.zcode/workflows/x.dwf.ts" });
     expect(request).toHaveBeenCalledWith(
-      zcodeProtocolMethods.workflowsUpdateMeta,
+      zodyProtocolMethods.workflowsUpdateMeta,
       { workspace: WORKSPACE, name: "x", meta },
       expect.anything(),
     );
@@ -117,7 +117,7 @@ describe("ZCodeAgentService saved workflows", () => {
 
   it("listSavedWorkflowRuns → workflows/runs，name 可选、limit 必传", async () => {
     const request = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workflowsRuns) {
+      if (method === zodyProtocolMethods.workflowsRuns) {
         return {
           runs: [
             {
@@ -142,13 +142,13 @@ describe("ZCodeAgentService saved workflows", () => {
     expect(result.runs).toHaveLength(1);
     expect(result.truncated).toBe(true);
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsRuns,
+      zodyProtocolMethods.workflowsRuns,
       { workspace: WORKSPACE, limit: 20 },
       expect.anything(),
     );
     await service.listSavedWorkflowRuns({ workspacePath: "/repo", name: "x", limit: 5 });
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsRuns,
+      zodyProtocolMethods.workflowsRuns,
       { workspace: WORKSPACE, name: "x", limit: 5 },
       expect.anything(),
     );
@@ -159,9 +159,9 @@ describe("ZCodeAgentService saved workflows", () => {
 // 各方法的 schema 校验发生在真实 client；这里 request 是 stub，只回够断言的形状即可。
 function replyForMethod(method: string): unknown {
   switch (method) {
-    case zcodeProtocolMethods.workflowsList:
+    case zodyProtocolMethods.workflowsList:
       return { workflows: [], invalid: [], dir: "/repo/.zcode/workflows" };
-    case zcodeProtocolMethods.workflowsGet:
+    case zodyProtocolMethods.workflowsGet:
       return {
         ok: true,
         name: "x",
@@ -170,13 +170,13 @@ function replyForMethod(method: string): unknown {
         meta: { description: "d" },
         script: "export default async () => {}",
       };
-    case zcodeProtocolMethods.workflowsUpdateMeta:
+    case zodyProtocolMethods.workflowsUpdateMeta:
       return { ok: true, path: "/repo/.zcode/workflows/x.dwf.ts" };
-    case zcodeProtocolMethods.workflowsDelete:
+    case zodyProtocolMethods.workflowsDelete:
       return { ok: true, path: "/repo/.zcode/workflows/x.dwf.ts" };
-    case zcodeProtocolMethods.workflowsRuns:
+    case zodyProtocolMethods.workflowsRuns:
       return { runs: [], truncated: false };
-    case zcodeProtocolMethods.workflowsMove:
+    case zodyProtocolMethods.workflowsMove:
       return { ok: true, from: "/from.dwf.ts", to: "/to.dwf.ts", scope: "global" };
     default:
       throw new Error(`Unexpected method ${method}`);
@@ -191,14 +191,14 @@ describe("ZCodeAgentService saved workflows scope 下推", () => {
 
     await service.listSavedWorkflows(base);
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsList,
+      zodyProtocolMethods.workflowsList,
       { workspace: WORKSPACE, scope: "global" },
       expect.anything(),
     );
 
     await service.getSavedWorkflow({ ...base, name: "x" });
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsGet,
+      zodyProtocolMethods.workflowsGet,
       { workspace: WORKSPACE, name: "x", scope: "global" },
       expect.anything(),
     );
@@ -206,21 +206,21 @@ describe("ZCodeAgentService saved workflows scope 下推", () => {
     const meta = { description: "d" };
     await service.updateSavedWorkflowMeta({ ...base, name: "x", meta });
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsUpdateMeta,
+      zodyProtocolMethods.workflowsUpdateMeta,
       { workspace: WORKSPACE, name: "x", meta, scope: "global" },
       expect.anything(),
     );
 
     await service.deleteSavedWorkflow({ ...base, name: "x" });
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsDelete,
+      zodyProtocolMethods.workflowsDelete,
       { workspace: WORKSPACE, name: "x", scope: "global" },
       expect.anything(),
     );
 
     await service.listSavedWorkflowRuns({ ...base, name: "x", limit: 20 });
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsRuns,
+      zodyProtocolMethods.workflowsRuns,
       { workspace: WORKSPACE, name: "x", limit: 20, scope: "global" },
       expect.anything(),
     );
@@ -242,7 +242,7 @@ describe("ZCodeAgentService moveSavedWorkflow", () => {
   // 只有全局→项目一向（docs/dynamic-workflow/launch.md「Promote to global」），请求体没有 to。
   it("→ workflows/move，带 workspace / name（无 to），解析 ok 分支", async () => {
     const request = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workflowsMove) {
+      if (method === zodyProtocolMethods.workflowsMove) {
         return {
           ok: true,
           from: "/home/.zody/workflows/x.dwf.ts",
@@ -260,7 +260,7 @@ describe("ZCodeAgentService moveSavedWorkflow", () => {
       },
     );
     expect(request).toHaveBeenCalledWith(
-      zcodeProtocolMethods.workflowsMove,
+      zodyProtocolMethods.workflowsMove,
       { workspace: WORKSPACE, name: "x" },
       expect.anything(),
     );
@@ -269,7 +269,7 @@ describe("ZCodeAgentService moveSavedWorkflow", () => {
 
   it("解析失败分支（target_exists）", async () => {
     const request = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workflowsMove) {
+      if (method === zodyProtocolMethods.workflowsMove) {
         return { ok: false, reason: "target_exists", path: "/repo/.zcode/workflows/x.dwf.ts" };
       }
       throw new Error(`Unexpected method ${method}`);
@@ -283,7 +283,7 @@ describe("ZCodeAgentService moveSavedWorkflow", () => {
       },
     );
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsMove,
+      zodyProtocolMethods.workflowsMove,
       { workspace: WORKSPACE, name: "x" },
       expect.anything(),
     );
@@ -311,7 +311,7 @@ describe("ZCodeAgentService 全局档载体运行时选择（无 workspace）", 
     await service.listSavedWorkflows({ scope: "global" });
     expect(getClient).toHaveBeenCalledTimes(1);
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsList,
+      zodyProtocolMethods.workflowsList,
       { workspace: expect.objectContaining({ workspacePath: "/repo" }), scope: "global" },
       expect.anything(),
     );
@@ -363,7 +363,7 @@ describe("ZCodeAgentService 全局档载体运行时选择（无 workspace）", 
 describe("ZCodeAgentService saving a run", () => {
   it("saveSavedWorkflowFromRun → workflows/save，runId / meta / scope / overwrite 原样透传", async () => {
     const request = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workflowsSave) {
+      if (method === zodyProtocolMethods.workflowsSave) {
         return {
           ok: true,
           name: "pr-review",
@@ -388,7 +388,7 @@ describe("ZCodeAgentService saving a run", () => {
     // 全局档也走这条 workspace 的 client：不经载体选择。
     expect(getClient).toHaveBeenCalledTimes(1);
     expect(request).toHaveBeenCalledWith(
-      zcodeProtocolMethods.workflowsSave,
+      zodyProtocolMethods.workflowsSave,
       {
         workspace: WORKSPACE,
         runId: "run-1",
@@ -404,7 +404,7 @@ describe("ZCodeAgentService saving a run", () => {
 
   it("saveSavedWorkflowFromRun 缺省 scope / overwrite 时不带这两个键；拒绝是结果不是异常", async () => {
     const request = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workflowsSave) {
+      if (method === zodyProtocolMethods.workflowsSave) {
         return { ok: false, reason: "target_exists", path: "/repo/.zcode/workflows/x.dwf.ts" };
       }
       throw new Error(`Unexpected method ${method}`);
@@ -423,7 +423,7 @@ describe("ZCodeAgentService saving a run", () => {
       path: "/repo/.zcode/workflows/x.dwf.ts",
     });
     expect(request).toHaveBeenCalledWith(
-      zcodeProtocolMethods.workflowsSave,
+      zodyProtocolMethods.workflowsSave,
       { workspace: WORKSPACE, runId: "run-1", name: "x", meta: { description: "d" } },
       expect.anything(),
     );
@@ -438,7 +438,7 @@ describe("ZCodeAgentService saving a run", () => {
       path: "/repo/.zcode/workflows/pr-review.dwf.ts",
     };
     const request = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workflowsForRun) {
+      if (method === zodyProtocolMethods.workflowsForRun) {
         return { entry, match: "candidate", runArgs: { base: "main" } };
       }
       throw new Error(`Unexpected method ${method}`);
@@ -452,7 +452,7 @@ describe("ZCodeAgentService saving a run", () => {
       }),
     ).resolves.toEqual({ entry, match: "candidate", runArgs: { base: "main" } });
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsForRun,
+      zodyProtocolMethods.workflowsForRun,
       {
         workspace: WORKSPACE,
         runId: "run-1",
@@ -462,7 +462,7 @@ describe("ZCodeAgentService saving a run", () => {
     );
     await service.findSavedWorkflowForRun({ workspacePath: "/repo", runId: "run-2" });
     expect(request).toHaveBeenLastCalledWith(
-      zcodeProtocolMethods.workflowsForRun,
+      zodyProtocolMethods.workflowsForRun,
       { workspace: WORKSPACE, runId: "run-2" },
       expect.anything(),
     );

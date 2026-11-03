@@ -7,7 +7,7 @@ import {
   SESSION_DEBUG_LIMITS,
   calculateOutputTps,
   sessionDebugParamsSchema,
-  zcodeTaskNetworkDebugStatusFromPayload,
+  zodyTaskNetworkDebugStatusFromPayload,
   type SessionDebugSnapshot,
 } from "@zody/shared";
 import { requireSession, type ZodyProtocolAgentServerContext } from "./server-types.js";
@@ -56,7 +56,7 @@ export function observeSessionDebug(record: SessionRecord, event: SessionEvent):
   )
     return;
   const payload = event.payload as ModelNetworkStatusPayload;
-  const mapped = zcodeTaskNetworkDebugStatusFromPayload({
+  const mapped = zodyTaskNetworkDebugStatusFromPayload({
     taskId: record.app.sessionId,
     traceId: event.traceId,
     eventId: String(event.id),

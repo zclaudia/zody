@@ -12,7 +12,7 @@ function getSessionScopedKey(target: ZodyTaskTarget): string {
   return `${getWorkspaceKey(target)}\0${target.sessionId}`;
 }
 
-export function createZCodeDeferredDraftRegistry() {
+export function createZodyDeferredDraftRegistry() {
   const sessionKeys = new Set<string>();
 
   return {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const zcodeProtocolTraceSchema = z
+export const zodyProtocolTraceSchema = z
   .object({
     traceId: z.string().min(1).optional(),
     parentId: z.string().min(1).optional(),
@@ -8,4 +8,4 @@ export const zcodeProtocolTraceSchema = z
     traceparent: z.string().min(1).optional(),
   })
   .strict();
-export type ZodyProtocolTrace = z.infer<typeof zcodeProtocolTraceSchema>;
+export type ZodyProtocolTrace = z.infer<typeof zodyProtocolTraceSchema>;

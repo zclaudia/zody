@@ -8,7 +8,7 @@ import {
   type PermissionBrokerResult,
   type SessionEvent,
 } from "@zody/contracts";
-import { zcodePermissionResponseSchema } from "@zody/shared";
+import { zodyPermissionResponseSchema } from "@zody/shared";
 import {
   createToolExecutor,
   createToolRegistry,
@@ -78,7 +78,7 @@ function harness(
       if (options.clientError)
         return Promise.reject(new ProtocolRequestError(options.clientError, "protocol failure"));
       if (options.clientResponse)
-        return Promise.resolve(zcodePermissionResponseSchema.parse(options.clientResponse()));
+        return Promise.resolve(zodyPermissionResponseSchema.parse(options.clientResponse()));
       return new Promise((_, reject) => {
         const abort = () => reject(new ProtocolRequestError(-32021, "client request cancelled"));
         if (callOptions.signal?.aborted) abort();

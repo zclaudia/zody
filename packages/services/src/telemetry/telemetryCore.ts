@@ -4,8 +4,8 @@ import {
   ZCODE_VERSION,
   ZCODE_ENV,
   ZCODE_TELEMETRY_REPORT_ENDPOINT,
-  buildZCodeSourceHeadersFromContext,
-  rewriteZCodeEndpointUrl,
+  buildZodySourceHeadersFromContext,
+  rewriteZodyEndpointUrl,
   ZCODE_DATA_ROOT_DIR_NAME,
   sanitizeTelemetryEventDetail,
   type TelemetryEventPayload,
@@ -64,7 +64,7 @@ interface TelemetryCoreDependencies {
   releaseChannel?: string;
   osVersion?: string;
   homeDir?: string;
-  resolveZCodeEndpointOrigin?: () => Promise<string> | string;
+  resolveZodyEndpointOrigin?: () => Promise<string> | string;
   requestTimeoutMs?: number;
   sleep?: (ms: number) => Promise<void>;
   warn?: (message: string) => void;
@@ -470,14 +470,14 @@ export function createTelemetryCore(dependencies: TelemetryCoreDependencies = {}
     });
 
     const endpoint = String(
-      rewriteZCodeEndpointUrl(
+      rewriteZodyEndpointUrl(
         REPORT_ENDPOINT,
-        (await dependencies.resolveZCodeEndpointOrigin?.()) ?? REPORT_ENDPOINT,
+        (await dependencies.resolveZodyEndpointOrigin?.()) ?? REPORT_ENDPOINT,
         { sourceOrigin: REPORT_ENDPOINT_ORIGIN },
       ),
     );
 
-    const headers = buildZCodeSourceHeadersFromContext({
+    const headers = buildZodySourceHeadersFromContext({
       appVersion,
       platform,
       arch: dependencies.arch ?? process.arch,

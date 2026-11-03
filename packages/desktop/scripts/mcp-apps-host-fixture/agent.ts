@@ -3,8 +3,8 @@ import { createServer, type Socket } from "node:net";
 import { createInterface } from "node:readline";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { ZCodeProtocolClient } from "../../../services/src/zody-agent/zodyProtocolClient.js";
-import { ZCodeStdioTransport } from "../../../services/src/zody-agent/zodyStdioTransport.js";
+import { ZodyProtocolClient } from "../../../services/src/zody-agent/zodyProtocolClient.js";
+import { ZodyStdioTransport } from "../../../services/src/zody-agent/zodyStdioTransport.js";
 
 export class Events<T> {
   readonly history: T[] = [];
@@ -70,10 +70,10 @@ export async function startAgent(
     },
     stdio: ["pipe", "pipe", "pipe"],
   });
-  const transport = new ZCodeStdioTransport(child, {
+  const transport = new ZodyStdioTransport(child, {
     onStderrLine: (line) => process.stderr.write(line + "\n"),
   });
-  const client = new ZCodeProtocolClient(transport, {
+  const client = new ZodyProtocolClient(transport, {
     requireStorageStartup: true,
     requestTimeoutMs: 15_000,
   });

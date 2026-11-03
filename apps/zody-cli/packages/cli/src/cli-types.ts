@@ -87,7 +87,7 @@ export interface RunDependencies extends PluginsCommandOverrides {
     options: ResolveLatestSessionOptions,
   ) => ReturnType<typeof resolveLatestSession>;
   resolveWorkspaceGitBranch?: typeof resolveWorkspaceGitBranch;
-  runZCodeProtocolAgent?: (options?: RunZodyProtocolAgentOptions) => Promise<void>;
+  runZodyProtocolAgent?: (options?: RunZodyProtocolAgentOptions) => Promise<void>;
   runTui?: typeof import("@zody/tui").runTui;
   skipUserConfig?: boolean;
   userConfigPath?: string;

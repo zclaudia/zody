@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { zcodeToolExecResourceSchema } from "@zody/shared";
+import { zodyToolExecResourceSchema } from "@zody/shared";
 import { createBashResourceTelemetry } from "../src/exec/bash-resource-telemetry.js";
 import { createProcessProbe } from "../src/device/process-probe.js";
 
@@ -27,8 +27,8 @@ describe("Bash 慢命令采样", () => {
     const secondSample = onComplete.mock.calls[1]?.[0];
     expect(firstSample).toMatchObject({ completionToken: expect.any(String) });
     expect(secondSample).toMatchObject({ completionToken: expect.any(String) });
-    expect(zcodeToolExecResourceSchema.parse(firstSample)).toEqual(firstSample);
-    expect(zcodeToolExecResourceSchema.parse(secondSample)).toEqual(secondSample);
+    expect(zodyToolExecResourceSchema.parse(firstSample)).toEqual(firstSample);
+    expect(zodyToolExecResourceSchema.parse(secondSample)).toEqual(secondSample);
     expect(firstSample.completionToken).not.toBe(secondSample.completionToken);
     expect({ ...firstSample, completionToken: undefined }).toEqual({
       ...secondSample,

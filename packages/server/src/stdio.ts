@@ -9,7 +9,7 @@ import {
 } from "@zody/rpc";
 import {
   IZodyAgentService,
-  createZCodeAgentConnectionScope,
+  createZodyAgentConnectionScope,
   type ServiceCollection,
 } from "@zody/services";
 
@@ -71,7 +71,7 @@ export function createStdioServer(
   if (reverseClient) onReverseClientReady?.(reverseClient);
   const agentService = services.getOptional(IZodyAgentService);
   const connectionScope = agentService
-    ? createZCodeAgentConnectionScope(agentService, {
+    ? createZodyAgentConnectionScope(agentService, {
         connectionId: `server-stdio-${randomUUID()}`,
         clientMode: "desktop-continuous",
         role: "trusted-host-relay",

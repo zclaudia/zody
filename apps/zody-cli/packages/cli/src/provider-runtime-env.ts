@@ -13,7 +13,7 @@ import {
   type ZodyBuiltinRefreshEvent,
 } from "@zody/provider-node";
 import {
-  resolveRuntimeZCodeEndpointOrigin,
+  resolveRuntimeZodyEndpointOrigin,
   ZCODE_DATA_ROOT_DIR_NAME,
   ZCODE_VERSION,
 } from "@zody/shared";
@@ -82,7 +82,7 @@ export async function prepareCliProviderRuntimeEnv(
     join(dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2", PERSONAL_PROVIDER_CONFIG_FILE_NAME);
   const appVersion = options.appVersion ?? ZCODE_VERSION;
   const platform = options.platform ?? resolveZCodeBuiltinClientPlatform();
-  const zcodeEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(options.env);
+  const zcodeEndpointOrigin = resolveRuntimeZodyEndpointOrigin(options.env);
   const cachePaths = resolveZCodeBuiltinCachePaths({
     environmentConfigRoot: join(dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2"),
     platform,

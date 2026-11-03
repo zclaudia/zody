@@ -13,7 +13,7 @@ import {
   AUTOMATION_CREATE_LIMIT_ERROR_CODE,
   resolveWorkspaceKey,
   modelSelectionSchema,
-  zcodeTaskModeSchema,
+  zodyTaskModeSchema,
   type ZodyAutomation,
   type ZodyAutomationCreateParams,
   type ZodyAutomationDispatchStatus,
@@ -166,13 +166,13 @@ function serializeAutomationModelSelection(
 }
 
 function normalizeAutomationMode(mode: string | null): ZodyAutomation["mode"] | undefined {
-  const parsed = zcodeTaskModeSchema.safeParse(mode);
+  const parsed = zodyTaskModeSchema.safeParse(mode);
   return parsed.success ? parsed.data : undefined;
 }
 
 function assertValidAutomationMode(mode: unknown): void {
   if (mode === undefined || mode === null) return;
-  if (!zcodeTaskModeSchema.safeParse(mode).success) {
+  if (!zodyTaskModeSchema.safeParse(mode).success) {
     // 读取兼容历史脏数据不代表允许继续写脏数据；Repo 是绕过 RPC 时的最终持久化边界。
     throw new Error(`Invalid automation mode: ${String(mode)}`);
   }

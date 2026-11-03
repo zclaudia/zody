@@ -22,7 +22,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => "http://localhost:3030",
+      resolveZodyEndpointOrigin: async () => "http://localhost:3030",
     });
 
     await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/event/report?x=1`);
@@ -43,7 +43,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
+      resolveZodyEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
     });
 
     await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/client/configs`);
@@ -80,7 +80,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
+      resolveZodyEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
     });
 
     await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/oauth/token`, {
@@ -121,7 +121,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
+      resolveZodyEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
     });
 
     await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/client/configs`);

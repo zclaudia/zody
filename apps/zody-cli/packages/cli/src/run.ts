@@ -274,7 +274,7 @@ const runZCodeProtocolCommand = async (
     }
 
     const runProtocolAgent =
-      deps.runZCodeProtocolAgent ?? (await loadBootstrapModule()).runZCodeProtocolAgent;
+      deps.runZodyProtocolAgent ?? (await loadBootstrapModule()).runZodyProtocolAgent;
     await runProtocolAgent({
       lifecycle: deps.protocolLifecycle,
       cwd: workingDirectory,

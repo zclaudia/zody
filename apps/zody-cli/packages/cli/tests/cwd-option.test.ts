@@ -265,7 +265,7 @@ test("passes --cwd into the app-server runner", async () => {
         dotenvCalls += 1;
         return { keys: [], loaded: false };
       },
-      runZCodeProtocolAgent: async (options) => {
+      runZodyProtocolAgent: async (options) => {
         called = true;
         assert.equal(options?.cwd, cwd);
       },

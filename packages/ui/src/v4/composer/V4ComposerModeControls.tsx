@@ -5,7 +5,7 @@ import {
   TID_CHAT_MODE_SELECT_ITEM,
   TID_V4_COMPOSER_INPUT,
   ZCODE_AGENT_PROVIDER,
-  getZCodeAgentAvailableModes,
+  getZodyAgentAvailableModes,
   testId,
   type ZodyConfigOption,
 } from "@zody/shared";
@@ -59,7 +59,7 @@ function V4ComposerModeSwitchImpl({
   const { intl } = useZCodeIntl();
   const displayProvider = provider ?? ZCODE_AGENT_PROVIDER;
   const modeShortcutLabel = useShortcutCommandLabel("cycleSessionMode");
-  const modes = getZCodeAgentAvailableModes();
+  const modes = getZodyAgentAvailableModes();
   const permissions = modes.filter((mode) => mode.id !== "plan");
   // 新菜单隐藏 Edit，但历史草稿仍可回显，不能因候选变化隐藏整个权限入口。
   const selected =
@@ -78,7 +78,7 @@ function V4ComposerModeSwitchImpl({
       category: "mode",
       type: "select",
       currentValue: draftConfig?.mode ?? "build",
-      options: getZCodeAgentAvailableModes()
+      options: getZodyAgentAvailableModes()
         .filter((mode) => mode.id !== "plan")
         .map((mode) => ({ value: mode.id, name: mode.name })),
     }),

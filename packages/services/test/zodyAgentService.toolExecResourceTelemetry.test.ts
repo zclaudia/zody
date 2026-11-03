@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ZodyToolExecResource } from "@zody/shared";
 import { expect, it } from "vitest";
-import { createZCodeAgentService } from "#src/zody-agent/zodyAgentService.js";
-import { createZCodeAgentConnectionScope } from "#src/zody-agent/zodyAgentConnectionScope.js";
+import { createZodyAgentService } from "#src/zody-agent/zodyAgentService.js";
+import { createZodyAgentConnectionScope } from "#src/zody-agent/zodyAgentConnectionScope.js";
 
 it("真实 stdio 严格解析 Bash 完成事实，只允许 trusted Host 订阅", async () => {
   const root = await mkdtemp(join(tmpdir(), "tool-resource-"));
@@ -35,19 +35,19 @@ readline.createInterface({ input: process.stdin }).on('line', (line) => {
   send({ id: request.id, result: { sessions: [] } });
 });`,
   );
-  const service = createZCodeAgentService({
+  const service = createZodyAgentService({
     commandResolver: () => ({ command: process.execPath, args: [script] }),
   });
-  const relay = createZCodeAgentConnectionScope(service, {
+  const relay = createZodyAgentConnectionScope(service, {
     connectionId: "relay",
     clientMode: "desktop-continuous",
     role: "trusted-host-relay",
   });
-  const desktop = createZCodeAgentConnectionScope(relay.service, {
+  const desktop = createZodyAgentConnectionScope(relay.service, {
     connectionId: "desktop",
     clientMode: "desktop-continuous",
   });
-  const mobile = createZCodeAgentConnectionScope(relay.service, {
+  const mobile = createZodyAgentConnectionScope(relay.service, {
     connectionId: "mobile",
     clientMode: "web-remote-replayable",
   });

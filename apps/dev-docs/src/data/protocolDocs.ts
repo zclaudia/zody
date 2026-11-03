@@ -219,7 +219,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "server 发起 `interaction/requestPermission`；host 路由给 owner client；结果通过 permission.resolved 回到 session。",
     owner: "agent server + host owner routing",
-    source: "packages/shared/src/zody-protocol/index.ts#zcodePermissionRequestParamsSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zodyPermissionRequestParamsSchema",
     related: ["toolCallId", "deliveryKind", "sessionId"],
   },
   {
@@ -230,7 +230,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "UI 在 busy 时提交输入；agent 返回 pendingInputId，并在 drained/discarded/rejected 中更新状态。",
     owner: "agent runtime",
-    source: "packages/shared/src/zody-protocol/index.ts#zcodeTurnSteerQueuedEventPayloadSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zodyTurnSteerQueuedEventPayloadSchema",
     related: ["pendingInputId", "turnId", "inputId"],
   },
   {
@@ -241,7 +241,7 @@ export const concepts: Concept[] = [
     lifecycle:
       "每个 session 独立递增；desktop continuous 可实时消费，web remote replayable 必须用 afterSeq 补齐。",
     owner: "agent server",
-    source: "packages/shared/src/zody-protocol/index.ts#zcodeEventEnvelopeSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zodyEventEnvelopeSchema",
     aliases: ["seq"],
     related: ["deliveryKind", "eventEnvelope"],
   },
@@ -294,7 +294,7 @@ export const concepts: Concept[] = [
       "ZCode Protocol 事件外壳，承载 eventId、sessionId、turnId、seq、traceId、timestamp、deliveryKind。",
     lifecycle: "所有 `session/event` 通知和 `session/events` 读取结果都使用它。",
     owner: "agent server",
-    source: "packages/shared/src/zody-protocol/index.ts#zcodeEventEnvelopeSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zodyEventEnvelopeSchema",
     related: ["sessionId", "traceId", "eventSeq", "deliveryKind"],
   },
   {
@@ -304,7 +304,7 @@ export const concepts: Concept[] = [
     summary: "提交用户输入的 ZCode Protocol 方法，立即 ACK，不等待整轮模型生成完成。",
     lifecycle: "client 调用后，agent 后台执行 turn，并通过 session.event/state.updated 推送进度。",
     owner: "protocol client -> agent server",
-    source: "packages/shared/src/zody-protocol/index.ts#zcodeSessionSendParamsSchema",
+    source: "packages/shared/src/zody-protocol/index.ts#zodySessionSendParamsSchema",
     related: ["sessionId", "inputId", "traceId"],
   },
   {
@@ -415,7 +415,7 @@ export const structures: StructureDoc[] = [
         meaning:
           "目标 agent session。不是 UI 临时生成值，必须来自 `session/create` 或 `session/resume`。",
         owner: "agent server",
-        source: "zcodeSessionSendParamsSchema",
+        source: "zodySessionSendParamsSchema",
         conceptIds: ["sessionId", "sessionSend"],
       },
       {
@@ -424,7 +424,7 @@ export const structures: StructureDoc[] = [
         required: "optional",
         meaning: "本次用户输入的相关性 ID；agent 不解析业务含义，只在 turn payload 里原样回带。",
         owner: "app/ui",
-        source: "zcodeSessionSendParamsSchema",
+        source: "zodySessionSendParamsSchema",
         conceptIds: ["inputId", "sessionSend"],
         oldName: "clientMessageId",
       },
@@ -434,7 +434,7 @@ export const structures: StructureDoc[] = [
         required: "required",
         meaning: "用户提交给 agent 的最终文本，可以已经过技能注入或附件文本化。",
         owner: "app/ui",
-        source: "zcodeSessionSendParamsSchema",
+        source: "zodySessionSendParamsSchema",
         conceptIds: ["sessionSend"],
       },
       {
@@ -443,7 +443,7 @@ export const structures: StructureDoc[] = [
         required: "optional",
         meaning: "图片、音频或文件附件的协议投影。普通文件可带 textContent，二进制附件带 base64。",
         owner: "app/ui",
-        source: "zcodeSessionSendParamsSchema",
+        source: "zodySessionSendParamsSchema",
         conceptIds: ["sessionSend"],
       },
       {
@@ -452,7 +452,7 @@ export const structures: StructureDoc[] = [
         required: "optional",
         meaning: "乐观并发控制的 session stateRevision；不匹配时 server 可拒绝以避免覆盖旧状态。",
         owner: "app/ui + agent server",
-        source: "zcodeSessionSendParamsSchema",
+        source: "zodySessionSendParamsSchema",
         conceptIds: ["sessionSend"],
       },
     ],
@@ -519,7 +519,7 @@ export const structures: StructureDoc[] = [
         required: "optional",
         meaning: "turn.completed 里的缓存统计。新 schema 补齐该字段，避免 strict 校验丢终态事件。",
         owner: "agent runtime",
-        source: "zcodeTurnCompletedEventPayloadSchema",
+        source: "zodyTurnCompletedEventPayloadSchema",
         conceptIds: ["eventEnvelope"],
       },
       {
@@ -726,7 +726,7 @@ export const structures: StructureDoc[] = [
         required: "required",
         meaning: "事件唯一 ID，用于日志和去重。",
         owner: "agent server",
-        source: "zcodeEventEnvelopeSchema",
+        source: "zodyEventEnvelopeSchema",
         conceptIds: ["eventEnvelope"],
       },
       {
@@ -735,7 +735,7 @@ export const structures: StructureDoc[] = [
         required: "required",
         meaning: "事件所属 session。",
         owner: "agent server",
-        source: "zcodeEventEnvelopeSchema",
+        source: "zodyEventEnvelopeSchema",
         conceptIds: ["sessionId"],
       },
       {
@@ -744,7 +744,7 @@ export const structures: StructureDoc[] = [
         required: "optional",
         meaning: "事件所属 turn。session 级事件可为空。",
         owner: "agent runtime",
-        source: "zcodeEventEnvelopeSchema",
+        source: "zodyEventEnvelopeSchema",
         conceptIds: ["turnId"],
       },
       {
@@ -753,7 +753,7 @@ export const structures: StructureDoc[] = [
         required: "required",
         meaning: "session 内单调递增事件序号，replayable 恢复以它为水位。",
         owner: "agent server",
-        source: "zcodeEventEnvelopeSchema",
+        source: "zodyEventEnvelopeSchema",
         conceptIds: ["eventSeq", "deliveryKind"],
       },
       {
@@ -762,7 +762,7 @@ export const structures: StructureDoc[] = [
         required: "optional",
         meaning: "观测 trace。不要用它判断 completed/failed 是否属于当前输入。",
         owner: "agent runtime",
-        source: "zcodeEventEnvelopeSchema",
+        source: "zodyEventEnvelopeSchema",
         conceptIds: ["traceId"],
       },
       {
@@ -771,7 +771,7 @@ export const structures: StructureDoc[] = [
         required: "required",
         meaning: "事件发生时间，毫秒时间戳。",
         owner: "agent server",
-        source: "zcodeEventEnvelopeSchema",
+        source: "zodyEventEnvelopeSchema",
         conceptIds: ["eventEnvelope"],
       },
       {
@@ -780,7 +780,7 @@ export const structures: StructureDoc[] = [
         required: "optional",
         meaning: "事件配送语义。手机远控恢复必须尊重 replayable 边界。",
         owner: "host/protocol client",
-        source: "zcodeEventEnvelopeSchema",
+        source: "zodyEventEnvelopeSchema",
         conceptIds: ["deliveryKind"],
       },
     ],
@@ -800,7 +800,7 @@ export const structures: StructureDoc[] = [
         required: "required",
         meaning: "协议名和版本，客户端据此确定 schema。",
         owner: "agent server",
-        source: "zcodeSessionStateSnapshotSchema",
+        source: "zodySessionStateSnapshotSchema",
         conceptIds: ["eventEnvelope"],
       },
       {
@@ -819,7 +819,7 @@ export const structures: StructureDoc[] = [
         required: "required",
         meaning: "server-authoritative 模型、思考深度、模式和权限规则状态。",
         owner: "agent server",
-        source: "zcodeSessionSettingsStateSchema",
+        source: "zodySessionSettingsStateSchema",
         conceptIds: ["sessionId"],
       },
       {
@@ -829,7 +829,7 @@ export const structures: StructureDoc[] = [
         meaning:
           "运行投影：status、currentTurnId、pendingPermissions、activeToolCalls、target、lastError 等。",
         owner: "agent server",
-        source: "zcodeSessionProjectionSchema",
+        source: "zodySessionProjectionSchema",
         conceptIds: ["turnId", "toolCallId", "permissionRequest"],
       },
       {

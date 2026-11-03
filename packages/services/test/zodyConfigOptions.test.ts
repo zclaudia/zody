@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { ZodySessionSettingsState } from "@zody/shared";
 import {
-  getZCodeAgentAvailableModes,
-  normalizeAvailableZCodeMode,
+  getZodyAgentAvailableModes,
+  normalizeAvailableZodyMode,
   settingsToConfigOptions,
 } from "../src/zody-agent/zodyConfigOptions.js";
 
@@ -34,12 +34,12 @@ describe("zcodeConfigOptions", () => {
       "plan",
       "yolo",
     ]);
-    expect(getZCodeAgentAvailableModes().map((mode) => mode.id)).toEqual([
+    expect(getZodyAgentAvailableModes().map((mode) => mode.id)).toEqual([
       "build",
       "guarded",
       "plan",
       "yolo",
     ]);
-    expect(normalizeAvailableZCodeMode("edit")).toBe("edit");
+    expect(normalizeAvailableZodyMode("edit")).toBe("edit");
   });
 });

@@ -1,6 +1,6 @@
 import {
-  normalizeAgentProviderToZCodeAgent,
-  normalizeAgentProvidersToZCodeAgent,
+  normalizeAgentProviderToZodyAgent,
+  normalizeAgentProvidersToZodyAgent,
   type ZodyProvider,
   type AppSettings,
 } from "@zody/shared";
@@ -15,7 +15,7 @@ export type BuiltinAgentCliStatus =
 function normalizeEnabledBuiltinAgentCliProviders(
   providers?: ReadonlyArray<ZodyProvider>,
 ): ZodyProvider[] {
-  return normalizeAgentProvidersToZCodeAgent(providers);
+  return normalizeAgentProvidersToZodyAgent(providers);
 }
 
 export function getEnabledBuiltinAgentCliProviders(
@@ -60,5 +60,5 @@ export function getEffectiveBuiltinAgentCliProvider(
   // Bugfix: workspace/store 里的 selectedProvider 可能残留旧三方 provider。
   // 如果 UI 继续直接消费这个值，菜单和任务创建会把旧 agent 当作可用状态。
   // 这里统一回退到始终可用的 glm，避免 UI 状态和 agent server 单一事实源分叉。
-  return normalizeAgentProviderToZCodeAgent(provider);
+  return normalizeAgentProviderToZodyAgent(provider);
 }

@@ -11,7 +11,7 @@ import type {
 } from "../src/zody-agent/zodyAgent.js";
 import { TaskIndexRepo } from "../src/session/taskIndexRepo.js";
 import { setDataBaseDir } from "../src/paths.js";
-import { createZCodeTaskIndexSyncer } from "../src/zody-agent/zodyTaskIndexSyncer.js";
+import { createZodyTaskIndexSyncer } from "../src/zody-agent/zodyTaskIndexSyncer.js";
 import type {
   ModelSelection,
   ZodySessionStateSnapshot,
@@ -402,13 +402,13 @@ function snapshotWith(
   } as unknown as ZodySessionStateSnapshot;
 }
 
-describe("createZCodeTaskIndexSyncer", () => {
+describe("createZodyTaskIndexSyncer", () => {
   it("writes status: completed on v4 phase running->completedSuccess, broadcasts and emits terminal/ready", async () => {
     const env = setupEnv({
       initialSessions: [summaryOf(seedTarget.sessionId, "running")],
     });
     await seedRunningTask(env.repo);
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -479,7 +479,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         initialSessions: [summaryOf(seedTarget.sessionId, "running", { goalStatus })],
       });
       await seedRunningTask(env.repo);
-      const syncer = createZCodeTaskIndexSyncer({
+      const syncer = createZodyTaskIndexSyncer({
         agentService: env.agent,
         taskIndexRepo: env.repo,
       });
@@ -521,7 +521,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         updatedAt: 120,
       }),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -569,7 +569,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         updatedAt: 6,
       }),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -608,7 +608,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       initialSessions: [summaryOf(seedTarget.sessionId, "running")],
     });
     await seedRunningTask(env.repo);
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -654,7 +654,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         updatedAt: 8,
       }),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -711,7 +711,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     vi.mocked(env.agent.readSession).mockResolvedValue(
       snapshotWith("sess-promoted", "/repo", { title: "", updatedAt: 8 }),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -751,7 +751,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     const env = setupEnv({
       initialSessions: [summaryOf("sess_history", "completedSuccess", { title: "历史会话" })],
     });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -790,7 +790,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("keeps dynamic workspace-event consumers passive when no runtime exists", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -815,7 +815,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       initialSessions: [summaryOf(seedTarget.sessionId, "running")],
       runtimeLifecycle: true,
     });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -906,7 +906,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     vi.useFakeTimers();
     try {
       const env = setupEnv({ runtimeLifecycle: true });
-      const syncer = createZCodeTaskIndexSyncer({
+      const syncer = createZodyTaskIndexSyncer({
         agentService: env.agent,
         taskIndexRepo: env.repo,
       });
@@ -1014,7 +1014,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       { ...snapshotWith("child", "/repo").session, sessionKind: "subagent_child" },
       { ...snapshotWith("fork", "/repo").session, sessionKind: "fork", parentSessionId: "parent" },
     ]);
-    const syncer = createZCodeTaskIndexSyncer({ agentService: env.agent, taskIndexRepo: env.repo });
+    const syncer = createZodyTaskIndexSyncer({ agentService: env.agent, taskIndexRepo: env.repo });
     const changed = vi.fn();
     const listener = syncer.onDynamicWorkspaceEvent("/repo")(changed);
     syncer.ensureWorkspaceSubscription({ workspacePath: "/repo" });
@@ -1062,7 +1062,7 @@ describe("createZCodeTaskIndexSyncer", () => {
               finish = resolve;
             }),
       );
-      const syncer = createZCodeTaskIndexSyncer({
+      const syncer = createZodyTaskIndexSyncer({
         agentService: env.agent,
         taskIndexRepo: env.repo,
       });
@@ -1081,7 +1081,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("SAT28: child 完整快照不重新写入主列表", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({ agentService: env.agent, taskIndexRepo: env.repo });
+    const syncer = createZodyTaskIndexSyncer({ agentService: env.agent, taskIndexRepo: env.repo });
     const snapshot = snapshotWith("child", "/repo", { userMessageText: "child prompt" });
     snapshot.session.sessionKind = "subagent_child";
     await syncer.syncSnapshotAndBroadcast(snapshot, { broadcastReason: "task_status_changed" });
@@ -1116,7 +1116,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       pinned: true,
       titleOverridden: true,
     });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1150,7 +1150,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         }),
       ],
     });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1181,7 +1181,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("forwards v4 workspace-config frames as workspace_config_options_update and drops empty catalogs", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1232,7 +1232,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncSnapshotAndBroadcast writes meta and fires workspace_task_list_changed", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1316,7 +1316,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         writes.push(structuredClone(input));
         return await original(input);
       });
-      const syncer = createZCodeTaskIndexSyncer({
+      const syncer = createZodyTaskIndexSyncer({
         agentService: env.agent,
         taskIndexRepo: env.repo,
       });
@@ -1346,7 +1346,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncSnapshotAndBroadcast prefers structured projection error code in task meta", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1396,7 +1396,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncSnapshotAndBroadcast stores the latest message model when settings current is polluted", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1432,7 +1432,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncSnapshotAndBroadcast can override task model for explicit model switches", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1468,7 +1468,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncSnapshotAndBroadcast can override task thought level for explicit resume", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1497,7 +1497,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncTaskModel updates only the persisted task model", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1534,7 +1534,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncSnapshotAndBroadcast titles /goal sessions without indexing continuation reminders", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1603,7 +1603,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncSnapshotAndBroadcast preserves indexed goal when snapshot omits target", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1670,7 +1670,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     // 此时不应该广播 workspace_task_list_changed，否则侧边栏会先闪一下 "New session" 占位符。
     // sqlite 行仍然要写，让后续 session.titleUpdated (source="first_input") 的 applyAgentPatch 能找到行。
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1730,7 +1730,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     await env.repo.queryGroupedTaskView({
       workspaceScopes: [{ workspacePath: "/repo" }],
     });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1758,7 +1758,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("does not reorder an existing task when duplicate first-snapshot sync finishes late", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1811,7 +1811,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     // 如果直接用 snapshot.updatedAt 覆盖会让刚被 applyAgentPatch 写入的更新时间倒退，
     // 表现就是新会话第一次 prompt 后又被压到列表底部。
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1852,7 +1852,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncSnapshotAndBroadcast does not downgrade newer terminal status with an older running snapshot", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1893,7 +1893,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncSnapshotAndBroadcast repairs running status when snapshot has a completed assistant turn", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1935,7 +1935,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("syncSnapshotAndBroadcast keeps idle completed snapshots terminal in sqlite", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -1978,7 +1978,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("only subscribes the workspace once even across many sessions", async () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2034,7 +2034,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         },
       };
     });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2088,7 +2088,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       initialSessions: [summaryOf(seedTarget.sessionId, "running")],
     });
     await seedRunningTask(env.repo);
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2150,7 +2150,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       initialSessions: [summaryOf(seedTarget.sessionId, "running")],
     });
     await seedRunningTask(env.repo);
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2213,7 +2213,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     vi.mocked(env.agent.subscribeSessionsIndexV4).mockImplementation(
       () => new Promise((resolve) => resolvers.push(resolve)),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2272,7 +2272,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     vi.mocked(env.agent.subscribeSessionsIndexV4).mockImplementationOnce(
       () => new Promise((resolve) => (resolveIndex = resolve)),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2310,7 +2310,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     vi.mocked(env.agent.subscribeSessionsIndexV4).mockImplementationOnce(
       () => new Promise((resolve) => (resolveIndex = resolve)),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2399,7 +2399,7 @@ describe("createZCodeTaskIndexSyncer", () => {
           };
         }),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2503,7 +2503,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         },
       };
     });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2543,7 +2543,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       initialSessions: [summaryOf(seedTarget.sessionId, "running")],
     });
     await seedRunningTask(env.repo);
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2595,7 +2595,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     vi.mocked(env.agent.resyncSessionsIndexV4).mockImplementationOnce(
       () => new Promise((resolve) => (resolveResync = resolve)),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2641,7 +2641,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     const env = setupEnv({
       initialSessions: [summaryOf(seedTarget.sessionId, "running")],
     });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2681,7 +2681,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     vi.mocked(env.agent.resyncWorkspaceConfigV4).mockImplementationOnce(
       () => new Promise((resolve) => (resolveResync = resolve)),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2724,7 +2724,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       initialSessions: [summaryOf(seedTarget.sessionId, "running")],
     });
     await seedRunningTask(env.repo);
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2783,7 +2783,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         },
       };
     });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2850,7 +2850,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         ack: { subscriptionId: params.subscriptionId, mode: "resume", logEpoch: "epoch-cfg" },
       };
     });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2879,7 +2879,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     vi.mocked(env.agent.resyncSessionsIndexV4).mockImplementationOnce(
       () => new Promise((resolve) => (resolveRecovery = resolve)),
     );
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2925,7 +2925,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       ],
       slashCommands: [],
     };
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -2972,7 +2972,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     vi.mocked(env.agent.subscribeSessionsIndexV4).mockRejectedValueOnce(providerNotReadyError);
     vi.mocked(env.agent.subscribeWorkspaceConfigV4).mockRejectedValueOnce(providerNotReadyError);
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -3008,7 +3008,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     vi.mocked(env.agent.subscribeSessionsIndexV4).mockRejectedValue(persistentError);
     vi.mocked(env.agent.subscribeWorkspaceConfigV4).mockRejectedValue(persistentError);
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -3072,7 +3072,7 @@ describe("createZCodeTaskIndexSyncer", () => {
           },
         };
       });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -3144,7 +3144,7 @@ describe("createZCodeTaskIndexSyncer", () => {
           },
         };
       });
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -3168,7 +3168,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("ignores ensureSessionSubscription after disposeAll", () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
@@ -3181,7 +3181,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("shares the same workspace emitter across getWorkspaceEmitter and onDynamicWorkspaceEvent", () => {
     const env = setupEnv();
-    const syncer = createZCodeTaskIndexSyncer({
+    const syncer = createZodyTaskIndexSyncer({
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });

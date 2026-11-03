@@ -11,7 +11,7 @@ export const ZCODE_COMMAND_AGENT_SOURCE = "zcodeAgent" satisfies CommandAgentSou
  * 已移除的第三方 provider 历史值仅作为归一化输入保留，统一收敛为 glm；
  * 其它非法值保持拒绝，与收窄前的校验边界一致。
  */
-export const legacyZCodeProviderSchema = z
+export const legacyZodyProviderSchema = z
   .enum(["claude", "opencode", "gemini", "codex", "glm"])
   .transform((): typeof ZCODE_AGENT_PROVIDER => ZCODE_AGENT_PROVIDER);
 
@@ -23,25 +23,25 @@ export const ZCODE_COMMAND_AGENT_SOURCES = [
   ZCODE_COMMAND_AGENT_SOURCE,
 ] as const satisfies readonly CommandAgentSource[];
 
-export function normalizeAgentProviderToZCodeAgent(
+export function normalizeAgentProviderToZodyAgent(
   _provider?: ZodyProvider | null,
 ): ZodyProvider {
   return ZCODE_AGENT_PROVIDER;
 }
 
-export function normalizeAgentProvidersToZCodeAgent(
+export function normalizeAgentProvidersToZodyAgent(
   _providers?: ReadonlyArray<ZodyProvider> | null,
 ): ZodyProvider[] {
   return [...ZCODE_ENABLED_AGENT_PROVIDERS];
 }
 
-export function normalizeCommandAgentSourceToZCodeAgent(
+export function normalizeCommandAgentSourceToZodyAgent(
   _agentSource?: CommandAgentSource | null,
 ): CommandAgentSource {
   return ZCODE_COMMAND_AGENT_SOURCE;
 }
 
-export function isZCodeAgentProvider(
+export function isZodyAgentProvider(
   provider: ZodyProvider | null | undefined,
 ): provider is typeof ZCODE_AGENT_PROVIDER {
   return provider === ZCODE_AGENT_PROVIDER;

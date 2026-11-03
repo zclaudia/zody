@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  buildZCodeSourceHeadersFromContext,
+  buildZodySourceHeadersFromContext,
   ZCODE_SOURCE_HEADERS,
   ZCODE_SOURCE_REFERER_URL,
   ZCODE_SOURCE_TITLE,
 } from "../src/zody-source-headers.js";
 
-describe("buildZCodeSourceHeadersFromContext", () => {
+describe("buildZodySourceHeadersFromContext", () => {
   it("默认只发基础上下文头，停发来源标识与设备标识（F2.10：D5 未决取中性值）", () => {
     expect(
-      buildZCodeSourceHeadersFromContext({
+      buildZodySourceHeadersFromContext({
         appVersion: " 2.14.0 ",
         arch: "arm64",
         clientLanguage: "zh-CN",
@@ -33,7 +33,7 @@ describe("buildZCodeSourceHeadersFromContext", () => {
   });
 
   it("drops invalid optional values without emitting malformed headers", () => {
-    const headers = buildZCodeSourceHeadersFromContext({
+    const headers = buildZodySourceHeadersFromContext({
       appVersion: "bad\nversion",
       clientLanguage: "\n",
       clientTimezone: "",
@@ -65,7 +65,7 @@ describe("buildZCodeSourceHeadersFromContext", () => {
     try {
       // 带 query 强制 vitest 重新执行模块，模拟 bundler define 注入后的构建产物。
       const injected = await import("../src/zody-source-headers.js?build-time-injected");
-      const headers = injected.buildZCodeSourceHeadersFromContext({
+      const headers = injected.buildZodySourceHeadersFromContext({
         appVersion: "2.14.0",
         platform: "darwin",
         sourceTitle: "cli",

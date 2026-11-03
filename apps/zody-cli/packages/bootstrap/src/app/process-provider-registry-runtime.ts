@@ -6,7 +6,7 @@ import {
   type AccountProviderStates,
 } from "@zody/provider";
 import {
-  resolveRuntimeZCodeEndpointOrigin,
+  resolveRuntimeZodyEndpointOrigin,
   ZCODE_VERSION,
 } from "@zody/shared";
 import { dirname, join } from "node:path";
@@ -50,7 +50,7 @@ export async function startProcessProviderRegistryRuntime(
   // configRevision 被回填为 zcode-builtin:31）。仅显式设置 ZCODE_BUILTIN_REMOTE_REFRESH=1
   // 时启用，留作未来接入自建控制面的过渡开关。
   // fork（F3.1）：端点未配置（空）时同样关闭远端刷新，避免把空 endpoint 传给下载器。
-  const remoteRefreshEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(env).trim();
+  const remoteRefreshEndpointOrigin = resolveRuntimeZodyEndpointOrigin(env).trim();
   const remoteRefreshEnabled =
     ["1", "true", "yes"].includes(
       (env.ZCODE_BUILTIN_REMOTE_REFRESH ?? "").trim().toLowerCase(),

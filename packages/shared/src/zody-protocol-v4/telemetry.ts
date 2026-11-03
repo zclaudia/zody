@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zcodeSyntheticUserMessageSourceSchema } from "../zody-protocol-legacy-types.js";
+import { zodySyntheticUserMessageSourceSchema } from "../zody-protocol-legacy-types.js";
 import { timestampSchema } from "./core.js";
 
 const factBaseFields = {
@@ -64,7 +64,7 @@ const turnStartedFactSchema = z
     ...factBaseFields,
     kind: z.literal("turn.started"),
     executionKind: z.enum(["agent", "controlOnly"]).optional(),
-    inputSource: zcodeSyntheticUserMessageSourceSchema.optional(),
+    inputSource: zodySyntheticUserMessageSourceSchema.optional(),
     // `workflow`：dynamic-workflow run 的完成 / 提问通知唤起的独立轮。
     backgroundSource: z.enum(["bash", "subagent", "workflow"]).optional(),
     automationId: z.string().min(1).optional(),

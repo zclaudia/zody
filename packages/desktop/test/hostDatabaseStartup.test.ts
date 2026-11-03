@@ -7,10 +7,10 @@ import { expect, it, vi } from "vitest";
 const fixtures = vi.hoisted(() => ({ host: vi.fn(), session: vi.fn(), mark: vi.fn() }));
 vi.mock("@zody/services/storage-startup", () => ({
   getTasksIndexDatabasePath: () => "/isolated/tasks.sqlite",
-  resolveZCodeAgentSpawnCwd: async (...args: unknown[]) =>
+  resolveZodyAgentSpawnCwd: async (...args: unknown[]) =>
     (
       await import("../../services/src/zody-agent/zodyAgentSpawnCwd.js")
-    ).resolveZCodeAgentSpawnCwd(...(args as [never])),
+    ).resolveZodyAgentSpawnCwd(...(args as [never])),
   markTasksStoragePrepared: fixtures.mark,
 }));
 vi.mock("../src/host/storagePreparationProcesses.js", () => ({

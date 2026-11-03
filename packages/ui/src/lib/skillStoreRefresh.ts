@@ -1,6 +1,6 @@
 import type { ISkillsService } from "@zody/services";
 import {
-  normalizeAgentProviderToZCodeAgent,
+  normalizeAgentProviderToZodyAgent,
   ZCODE_AGENT_PROVIDER,
   type ZodyProvider,
 } from "@zody/shared";
@@ -18,7 +18,7 @@ export async function refreshSharedSkillStoreForWorkspace(params: {
   }
   const skillStore = useSkillStore.getState();
   const normalizedWorkspaceIdentity = params.workspaceIdentity?.trim() || null;
-  const normalizedProvider = normalizeAgentProviderToZCodeAgent(
+  const normalizedProvider = normalizeAgentProviderToZodyAgent(
     params.provider ?? ZCODE_AGENT_PROVIDER,
   );
   const refreshes: Promise<void>[] = [];
@@ -28,7 +28,7 @@ export async function refreshSharedSkillStoreForWorkspace(params: {
     skillStore.workspaceIdentity === normalizedWorkspaceIdentity &&
     skillStore.loadedWorkspacePath === workspacePath &&
     skillStore.loadedWorkspaceIdentity === normalizedWorkspaceIdentity &&
-    normalizeAgentProviderToZCodeAgent(skillStore.provider) === normalizedProvider &&
+    normalizeAgentProviderToZodyAgent(skillStore.provider) === normalizedProvider &&
     skillStore.loadedProvider === normalizedProvider
   ) {
     refreshes.push(

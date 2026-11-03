@@ -1,22 +1,22 @@
 import {
   networkCaptureBatchSchema,
-  zcodeProtocolMethods,
-  zcodeProtocolNotifications,
+  zodyProtocolMethods,
+  zodyProtocolNotifications,
   type NetworkCaptureBatch,
 } from "@zody/shared";
 import type { IDisposable } from "@zody/rpc";
-import type { ZCodeProtocolClient } from "#src/zody-agent/zodyProtocolClient.js";
+import type { ZodyProtocolClient } from "#src/zody-agent/zodyProtocolClient.js";
 
 /** 仅由本机子进程 spawn 点登记；remote RPC/手机 attachment 不登记也不透传启停。 */
 export class LocalRuntimeNetworkCapture {
   private readonly clients = new Map<
-    ZCodeProtocolClient,
+    ZodyProtocolClient,
     { pid: number; subscription?: IDisposable }
   >();
   private captureId: string | null = null;
   private sink?: (batch: NetworkCaptureBatch) => void;
 
-  register(client: ZCodeProtocolClient, pid: number): () => void {
+  register(client: ZodyProtocolClient, pid: number): () => void {
     this.clients.set(client, { pid });
     if (this.captureId) this.configure(client);
     return () => {
@@ -31,7 +31,7 @@ export class LocalRuntimeNetworkCapture {
     for (const client of this.clients.keys()) this.configure(client);
   }
 
-  private configure(client: ZCodeProtocolClient): void {
+  private configure(client: ZodyProtocolClient): void {
     const entry = this.clients.get(client)!;
     entry.subscription?.dispose();
     entry.subscription = undefined;
@@ -41,7 +41,7 @@ export class LocalRuntimeNetworkCapture {
     }
     if (this.captureId) {
       entry.subscription = client.onNotification((message) => {
-        if (message.method !== zcodeProtocolNotifications.processNetworkRequests) return;
+        if (message.method !== zodyProtocolNotifications.processNetworkRequests) return;
         const result = networkCaptureBatchSchema.safeParse(message.params);
         if (!result.success || result.data.captureId !== this.captureId) return;
         // PID/角色来自本机 spawn 登记，不能采用对端自报身份。
@@ -56,7 +56,7 @@ export class LocalRuntimeNetworkCapture {
       });
     }
     void client
-      .notify(zcodeProtocolMethods.processNetworkCapture, { captureId: this.captureId })
+      .notify(zodyProtocolMethods.processNetworkCapture, { captureId: this.captureId })
       .catch(() => {
         /* 已退出进程无需重试或重启 */
       });

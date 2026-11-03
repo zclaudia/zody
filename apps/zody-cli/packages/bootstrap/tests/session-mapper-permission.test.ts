@@ -10,7 +10,7 @@ import {
   type ToolCallId,
   type TraceId,
 } from "@zody/contracts";
-import { zcodeSessionEventSchema, zcodeSessionProjectionSchema } from "@zody/shared";
+import { zodySessionEventSchema, zodySessionProjectionSchema } from "@zody/shared";
 import {
   mapSessionEvent,
   mapSessionProjection,
@@ -50,7 +50,7 @@ describe("legacy permission.requested 映射", () => {
       }),
     );
 
-    const parsed = zcodeSessionEventSchema.safeParse(mapped);
+    const parsed = zodySessionEventSchema.safeParse(mapped);
     expect(parsed.success).toBe(true);
     expect(mapped.payload).not.toHaveProperty("display");
     expect(mapped.payload).not.toHaveProperty("optionsPolicy");
@@ -86,7 +86,7 @@ describe("legacy permission.requested 映射", () => {
       }),
     );
 
-    expect(zcodeSessionEventSchema.safeParse(mapped).success).toBe(true);
+    expect(zodySessionEventSchema.safeParse(mapped).success).toBe(true);
     // display 照旧被剥离（legacy 拿不到图），但入参一个字段都没少——旧桌面的
     // readWorkflowScript(raw.script) / readWorkflowName(raw.name) 因此命中。
     expect(mapped.payload).not.toHaveProperty("display");
@@ -117,7 +117,7 @@ describe("legacy permission.requested 映射", () => {
       }),
     );
 
-    expect(zcodeSessionEventSchema.safeParse(mapped).success).toBe(true);
+    expect(zodySessionEventSchema.safeParse(mapped).success).toBe(true);
     expect((mapped.payload as { input: unknown }).input).toEqual(normalizedInput);
   });
 
@@ -140,7 +140,7 @@ describe("legacy permission.requested 映射", () => {
       permissionRequestedEvent({ ...basePayload, optionsPolicy: "session-always-allow" }),
     );
 
-    expect(zcodeSessionEventSchema.safeParse(mapped).success).toBe(true);
+    expect(zodySessionEventSchema.safeParse(mapped).success).toBe(true);
     expect(mapped.payload).not.toHaveProperty("optionsPolicy");
     const options = (mapped.payload as { options: { optionId: string; kind: string }[] }).options;
     expect(options.map((option) => option.optionId)).toEqual(["allow_once", "deny"]);
@@ -226,7 +226,7 @@ describe("legacy permission.requested 映射", () => {
 
     // 事件通道。
     const mappedEvent = mapSessionEvent(permissionRequestedEvent(askPayload));
-    expect(zcodeSessionEventSchema.safeParse(mappedEvent).success).toBe(true);
+    expect(zodySessionEventSchema.safeParse(mappedEvent).success).toBe(true);
 
     // 快照通道：先让 reducer 真的把 display 收进 PendingPermission，再过 legacy 映射。
     const projection = new EventReducer().reduce([
@@ -239,7 +239,7 @@ describe("legacy permission.requested 映射", () => {
     expect(projection.pendingPermissions[0]?.display).toEqual(display);
 
     const mappedProjection = mapSessionProjection(projection);
-    const parsedProjection = zcodeSessionProjectionSchema.safeParse(mappedProjection);
+    const parsedProjection = zodySessionProjectionSchema.safeParse(mappedProjection);
     expect(parsedProjection.success).toBe(true);
     const pending = mappedProjection.pendingPermissions[0]!;
     expect(pending).not.toHaveProperty("display");
@@ -297,7 +297,7 @@ describe("legacy permission.requested 映射", () => {
     ]);
 
     const mapped = mapSessionProjection(projection);
-    expect(zcodeSessionProjectionSchema.safeParse(mapped).success).toBe(true);
+    expect(zodySessionProjectionSchema.safeParse(mapped).success).toBe(true);
     expect(mapped.pendingPermissions.map((pending) => pending.input)).toEqual([
       savedRunInput,
       saveInput,
@@ -355,11 +355,11 @@ describe("legacy v3 剥离 dwf run 进度事件", () => {
   it("万一被透出，映射结果仍过 strict schema（v3 侧没有状态键要剥）", () => {
     // 这条是"下一个人把剥离拆掉"的绊线：即便剥离没了，映射产物也不能让旧桌面丢弃整条事件。
     const mapped = mapSessionEvent(runProgressEvent());
-    expect(zcodeSessionEventSchema.safeParse(mapped).success).toBe(true);
+    expect(zodySessionEventSchema.safeParse(mapped).success).toBe(true);
     // v3 的 zcodeSessionProjectionSchema 是 .strict() 且根本没有 subagents 这类状态面，
     // 所以不存在"要在 legacy 映射里剥掉 workflowRuns"的对应物。
     expect(
-      zcodeSessionProjectionSchema.safeParse(
+      zodySessionProjectionSchema.safeParse(
         mapSessionProjection(
           new EventReducer().reduce([
             createSessionEvent(SessionEventType.SessionCreated, "legacy-session" as SessionId, {

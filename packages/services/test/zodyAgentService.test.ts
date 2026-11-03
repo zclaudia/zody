@@ -14,9 +14,9 @@ import {
   ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
   type ZodySessionRuntimePreferencesScope,
 } from "@zody/shared";
-import { createZCodeAgentService } from "../src/zody-agent/zodyAgentService.js";
+import { createZodyAgentService } from "../src/zody-agent/zodyAgentService.js";
 import { ZodyAgentProcessManager } from "../src/zody-agent/zodyAgentProcessManager.js";
-import type { ZCodeProtocolClient } from "../src/zody-agent/zodyProtocolClient.js";
+import type { ZodyProtocolClient } from "../src/zody-agent/zodyProtocolClient.js";
 import { ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE } from "../src/zody-agent/zodyAgentErrors.js";
 import type { ZodyAgentServiceEvent } from "../src/zody-agent/zodyAgent.js";
 import { getTasksIndexDatabasePath, setDataBaseDir } from "../src/paths.js";
@@ -33,8 +33,8 @@ const protocolModelProperties = {
 };
 const protocolModelPropertiesJson = JSON.stringify(protocolModelProperties);
 
-function createReadyZCodeAgentService(options?: Parameters<typeof createZCodeAgentService>[0]) {
-  return createZCodeAgentService({
+function createReadyZCodeAgentService(options?: Parameters<typeof createZodyAgentService>[0]) {
+  return createZodyAgentService({
     modelSelectionReadinessSource: {
       async getView() {
         return {
@@ -1184,7 +1184,7 @@ process.stdin.on("data", (chunk) => {
 });
 `;
 
-describe("createZCodeAgentService", () => {
+describe("createZodyAgentService", () => {
   it("资源查询仅观察就绪的现存 runtime，透传取消且不启动或等待迁移", async () => {
     const request = vi.fn(async () => ({ processes: [] }));
     const migratingRequest = vi.fn();
@@ -1199,7 +1199,7 @@ describe("createZCodeAgentService", () => {
             request,
             isDisposed: false,
             storageStartup: { isWaiting: false },
-          } as unknown as ZCodeProtocolClient,
+          } as unknown as ZodyProtocolClient,
         },
         {
           pid: 102,
@@ -1208,11 +1208,11 @@ describe("createZCodeAgentService", () => {
             request: migratingRequest,
             isDisposed: false,
             storageStartup: { isWaiting: true },
-          } as unknown as ZCodeProtocolClient,
+          } as unknown as ZodyProtocolClient,
         },
       ]);
     const commandResolver = vi.fn(() => null);
-    const service = createZCodeAgentService({ commandResolver });
+    const service = createZodyAgentService({ commandResolver });
     const controller = new AbortController();
     try {
       await expect(service.collectLocalRuntimeChildProcesses(controller.signal)).resolves.toEqual([
@@ -1241,7 +1241,7 @@ describe("createZCodeAgentService", () => {
       onExit: vi.fn(),
       onError: vi.fn(),
     };
-    const service = createZCodeAgentService({
+    const service = createZodyAgentService({
       commandResolver,
       processLifecycleReporter,
       modelSelectionReadinessSource: {
@@ -1458,7 +1458,7 @@ describe("createZCodeAgentService", () => {
     createdDirs.push(sandboxRoot);
     setDataBaseDir(sandboxRoot);
     const workspacePath = "/workspace/run-now";
-    const serviceWithoutDispatcher = createZCodeAgentService();
+    const serviceWithoutDispatcher = createZodyAgentService();
     const automation = await serviceWithoutDispatcher.createAutomation({
       workspacePath,
       title: "daily check",
@@ -1481,7 +1481,7 @@ describe("createZCodeAgentService", () => {
     ).resolves.toEqual([]);
 
     const dispatch = vi.fn(async () => undefined);
-    const serviceWithDispatcher = createZCodeAgentService({
+    const serviceWithDispatcher = createZodyAgentService({
       onAutomationManualRunRequested: dispatch,
     });
     await expect(
@@ -2878,7 +2878,7 @@ describe("createZCodeAgentService", () => {
     createdDirs.push(workspacePath);
     const scriptPath = join(workspacePath, "mcp-mode-agent.cjs");
     writeFileSync(scriptPath, MCP_LIST_ECHO_MODE_FAKE_AGENT);
-    const service = createZCodeAgentService({
+    const service = createZodyAgentService({
       commandResolver: () => ({ command: process.execPath, args: [scriptPath] }),
     });
 
@@ -2920,7 +2920,7 @@ describe("createZCodeAgentService", () => {
     createdDirs.push(workspacePath);
     const scriptPath = join(workspacePath, "mcp-mode-compat-agent.cjs");
     writeFileSync(scriptPath, MCP_LIST_REJECTS_MODE_ONCE_FAKE_AGENT);
-    const service = createZCodeAgentService({
+    const service = createZodyAgentService({
       commandResolver: () => ({ command: process.execPath, args: [scriptPath] }),
     });
 
@@ -2944,7 +2944,7 @@ describe("createZCodeAgentService", () => {
     createdDirs.push(workspacePath);
     const scriptPath = join(workspacePath, "mcp-mode-subset-compat-agent.cjs");
     writeFileSync(scriptPath, MCP_LIST_REJECTS_MODE_ONCE_FAKE_AGENT);
-    const service = createZCodeAgentService({
+    const service = createZodyAgentService({
       commandResolver: () => ({ command: process.execPath, args: [scriptPath] }),
     });
 

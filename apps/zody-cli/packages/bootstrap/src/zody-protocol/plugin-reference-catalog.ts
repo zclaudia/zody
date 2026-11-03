@@ -3,9 +3,9 @@
 // 且 plugins.ts 已接近 max-lines 门禁。
 import {
   ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID,
-  zcodeProtocolNotifications,
-  zcodePluginsReferenceCatalogParamsSchema,
-  zcodePluginsResolveSuggestedReferenceParamsSchema,
+  zodyProtocolNotifications,
+  zodyPluginsReferenceCatalogParamsSchema,
+  zodyPluginsResolveSuggestedReferenceParamsSchema,
   type ZodyPluginReferenceCatalogEntry,
   type ZodyPluginDiagnostic as SharedPluginDiagnostic,
   type ZodyPluginsReferenceCatalogResult,
@@ -32,7 +32,7 @@ export async function getPluginReferenceCatalog(
   rawParams: unknown,
   includeCategory = false,
 ): Promise<ZodyPluginsReferenceCatalogResult> {
-  const params = parseParams(zcodePluginsReferenceCatalogParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsReferenceCatalogParamsSchema, rawParams);
   if (params.sessionId) {
     const record = requireSession(context, params.sessionId);
     const displayByPluginId = resolveReferenceListingDisplayByPluginId(
@@ -68,7 +68,7 @@ export async function resolveSuggestedPluginReference(
   rawParams: unknown,
   signal?: AbortSignal,
 ): Promise<ZodyPluginsResolveSuggestedReferenceResult> {
-  const params = parseParams(zcodePluginsResolveSuggestedReferenceParamsSchema, rawParams);
+  const params = parseParams(zodyPluginsResolveSuggestedReferenceParamsSchema, rawParams);
   const stableId = params.stableId.trim();
   const at = stableId.lastIndexOf("@");
   const pluginName = at > 0 ? stableId.slice(0, at) : "";
@@ -142,7 +142,7 @@ export async function resolveSuggestedPluginReference(
   // 旧流程只有官方 Marketplace 刷新完成后才把 missing 结果返回 UI，网络等待期间
   // 没有任何反馈，用户会误以为点击未生效。首次本地检查缺失后先通知同一 operation 进入 loading。
   context.notify({
-    method: zcodeProtocolNotifications.pluginOperationProgress,
+    method: zodyProtocolNotifications.pluginOperationProgress,
     params: { operationId: params.operationId, state: "refreshing" },
   });
 

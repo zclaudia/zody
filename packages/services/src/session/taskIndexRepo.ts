@@ -9,8 +9,8 @@ import { createRequire } from "node:module";
 import { dirname } from "node:path";
 import {
   isRemoteWorkspaceIdentity,
-  normalizeAgentProviderToZCodeAgent,
-  zcodeTaskMetaSchema,
+  normalizeAgentProviderToZodyAgent,
+  zodyTaskMetaSchema,
   resolveWorkspaceKey,
   CRON_DEFAULT_GROUP_ID,
   // fork（F4.3）：OFF_PEAK_DEFAULT_GROUP_ID import 随闲时任务全链路删除。
@@ -42,7 +42,7 @@ import { runTasksDatabaseMigrations } from "#src/session/tasksDatabase/migration
 const require = createRequire(import.meta.url);
 const { DatabaseSync } = require("node:sqlite") as typeof import("node:sqlite");
 
-function appendZCodeAgentIndexedProviderFilter(
+function appendZodyAgentIndexedProviderFilter(
   where: string[],
   args: Array<string | number>,
   provider: ZodyProvider,
@@ -210,7 +210,7 @@ function resolveTaskIndexRowWorkspaceIdentity(row: TaskIndexRow): string | undef
 function rowToMeta(row: TaskIndexRow): ZodyTaskMeta {
   const workspaceIdentity = resolveTaskIndexRowWorkspaceIdentity(row);
   try {
-    const parsed = zcodeTaskMetaSchema.safeParse(JSON.parse(row.meta_json));
+    const parsed = zodyTaskMetaSchema.safeParse(JSON.parse(row.meta_json));
     if (parsed.success) {
       return {
         ...(parsed.data as ZodyTaskMeta),
@@ -252,7 +252,7 @@ function rowToMeta(row: TaskIndexRow): ZodyTaskMeta {
     model: row.model ?? undefined,
     // 旧行 provider 列可能残留三方 CLI 值；meta 回退投影时统一归一为 glm。
     provider: row.provider
-      ? normalizeAgentProviderToZCodeAgent(row.provider as ZodyTaskMeta["provider"])
+      ? normalizeAgentProviderToZodyAgent(row.provider as ZodyTaskMeta["provider"])
       : undefined,
     migrationSource: (row.migration_source as ZodyTaskMeta["migrationSource"]) ?? undefined,
     forkedFromTaskId: row.forked_from_task_id ?? undefined,
@@ -415,7 +415,7 @@ function migrateLegacyTaskMetaJson(
     status: typeof parsed.status === "string" ? parsed.status : fallback.status,
     migrationSource: undefined,
   };
-  return zcodeTaskMetaSchema.parse(meta) as ZodyTaskMeta;
+  return zodyTaskMetaSchema.parse(meta) as ZodyTaskMeta;
 }
 
 function isTaskGroupColor(value: string): value is ZodyTaskGroupColor {
@@ -1185,7 +1185,7 @@ export class TaskIndexRepo {
     ];
     const args: Array<string | number> = [workspaceKey(params), cutoff];
     if (params.provider) {
-      appendZCodeAgentIndexedProviderFilter(where, args, params.provider);
+      appendZodyAgentIndexedProviderFilter(where, args, params.provider);
     }
     const rows = this.getDatabase()
       .prepare(
@@ -2091,7 +2091,7 @@ export class TaskIndexRepo {
     const where = ["deleted = 0", `workspace_key IN (${workspaceKeys.map(() => "?").join(", ")})`];
     const args: Array<string | number> = [...workspaceKeys];
     if (params.provider) {
-      appendZCodeAgentIndexedProviderFilter(where, args, params.provider);
+      appendZodyAgentIndexedProviderFilter(where, args, params.provider);
     }
     if (params.kind === "pinned") {
       where.push("pinned = 1", "archived = 0");
@@ -2369,7 +2369,7 @@ export class TaskIndexRepo {
     if (params.provider) {
       // grouped 和 workspace 都是 ZCode Agent 任务列表入口，必须共享旧 provider
       // 残留过滤口径；否则历史第三方 provider 的索引行会只在 grouped 里冒出来。
-      appendZCodeAgentIndexedProviderFilter(activeTaskWhere, activeTaskArgs, params.provider);
+      appendZodyAgentIndexedProviderFilter(activeTaskWhere, activeTaskArgs, params.provider);
     }
     const activeTasks =
       !includeAllWorkspaces && workspaceKeys.length === 0

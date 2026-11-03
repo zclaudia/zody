@@ -18,12 +18,12 @@ vi.mock("../src/plugins.js", () => ({
 }));
 
 import {
-  zcodePluginOperationStateSchema,
-  zcodePluginOperationProgressNotificationSchema,
-  zcodePluginsResolveSuggestedReferenceParamsSchema,
-  zcodePluginsResolveSuggestedReferenceResultSchema,
-  zcodeProtocolMethods,
-  zcodeProtocolNotifications,
+  zodyPluginOperationStateSchema,
+  zodyPluginOperationProgressNotificationSchema,
+  zodyPluginsResolveSuggestedReferenceParamsSchema,
+  zodyPluginsResolveSuggestedReferenceResultSchema,
+  zodyProtocolMethods,
+  zodyProtocolNotifications,
 } from "@zody/shared";
 import type { PluginReferenceCatalogEntry } from "@zody/contracts";
 import { resolveSuggestedPluginReference } from "../src/zody-protocol/plugin-reference-catalog.js";
@@ -93,27 +93,27 @@ describe("plugins/resolveSuggestedReference protocol", () => {
   });
 
   it("registers a strict request/result contract with operation and delivery boundaries", () => {
-    expect(zcodeProtocolMethods.pluginsResolveSuggestedReference).toBe(
+    expect(zodyProtocolMethods.pluginsResolveSuggestedReference).toBe(
       "plugins/resolveSuggestedReference",
     );
-    expect(zcodePluginOperationStateSchema.parse("cancelling")).toBe("cancelling");
-    expect(zcodePluginOperationStateSchema.parse("cancelled")).toBe("cancelled");
+    expect(zodyPluginOperationStateSchema.parse("cancelling")).toBe("cancelling");
+    expect(zodyPluginOperationStateSchema.parse("cancelled")).toBe("cancelled");
     expect(
-      zcodePluginOperationProgressNotificationSchema.parse({
+      zodyPluginOperationProgressNotificationSchema.parse({
         operationId: "suggested-1",
         state: "refreshing",
       }),
     ).toEqual({ operationId: "suggested-1", state: "refreshing" });
     expect(() =>
-      zcodePluginOperationProgressNotificationSchema.parse({
+      zodyPluginOperationProgressNotificationSchema.parse({
         operationId: "suggested-1",
         state: "refreshing",
         unexpected: true,
       }),
     ).toThrow();
-    expect(zcodeProtocolNotifications.pluginOperationProgress).toBe("plugins/operationProgress");
+    expect(zodyProtocolNotifications.pluginOperationProgress).toBe("plugins/operationProgress");
     expect(
-      zcodePluginsResolveSuggestedReferenceParamsSchema.parse({
+      zodyPluginsResolveSuggestedReferenceParamsSchema.parse({
         workspace: WORKSPACE,
         stableId: STABLE_ID,
         operationId: "suggested-1",
@@ -128,7 +128,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
       deliveryKind: "web-remote-replayable",
     });
     expect(() =>
-      zcodePluginsResolveSuggestedReferenceParamsSchema.parse({
+      zodyPluginsResolveSuggestedReferenceParamsSchema.parse({
         workspace: WORKSPACE,
         stableId: STABLE_ID,
         operationId: "suggested-missing-client-mode",
@@ -136,7 +136,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
       }),
     ).toThrow();
     expect(() =>
-      zcodePluginsResolveSuggestedReferenceParamsSchema.parse({
+      zodyPluginsResolveSuggestedReferenceParamsSchema.parse({
         workspace: WORKSPACE,
         stableId: STABLE_ID,
         clientMode: "desktop-continuous",
@@ -144,21 +144,21 @@ describe("plugins/resolveSuggestedReference protocol", () => {
       }),
     ).toThrow();
     expect(() =>
-      zcodePluginsResolveSuggestedReferenceParamsSchema.parse({
+      zodyPluginsResolveSuggestedReferenceParamsSchema.parse({
         workspace: WORKSPACE,
         stableId: STABLE_ID,
         unexpected: true,
       }),
     ).toThrow();
     expect(() =>
-      zcodePluginsResolveSuggestedReferenceResultSchema.parse({
+      zodyPluginsResolveSuggestedReferenceResultSchema.parse({
         stableId: STABLE_ID,
         status: "missing",
         diagnostics: [],
       }),
     ).toThrow(/trusted install identity/);
     expect(
-      zcodePluginsResolveSuggestedReferenceResultSchema.parse({
+      zodyPluginsResolveSuggestedReferenceResultSchema.parse({
         stableId: STABLE_ID,
         status: "ready",
         marketplace: "zcode-plugins-official",
@@ -185,7 +185,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
       "plugin_suggested_reference_untrusted_source",
     );
     expect(mocks.updateZCodePluginMarketplace).not.toHaveBeenCalled();
-    expect(() => zcodePluginsResolveSuggestedReferenceResultSchema.parse(result)).not.toThrow();
+    expect(() => zodyPluginsResolveSuggestedReferenceResultSchema.parse(result)).not.toThrow();
   });
 
   it.each([
@@ -283,7 +283,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
 
     await vi.waitFor(() => {
       expect(notify).toHaveBeenCalledWith({
-        method: zcodeProtocolNotifications.pluginOperationProgress,
+        method: zodyProtocolNotifications.pluginOperationProgress,
         params: { operationId: "suggested-progress", state: "refreshing" },
       });
     });

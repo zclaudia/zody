@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { zcodeProtocolErrorDetailSchema } from "../src/zody-protocol/index.js";
+import { zodyProtocolErrorDetailSchema } from "../src/zody-protocol/index.js";
 import { sessionErrorInfoSchema } from "../src/zody-protocol-v4/snapshot.js";
 
 describe("underlying error wire contract", () => {
@@ -10,7 +10,7 @@ describe("underlying error wire contract", () => {
 
   it("retains optional details through protocol and V4 snapshot validation", () => {
     expect(
-      zcodeProtocolErrorDetailSchema.parse({
+      zodyProtocolErrorDetailSchema.parse({
         type: "ModelError",
         message: "Request failed",
         ...fields,
@@ -30,7 +30,7 @@ describe("underlying error wire contract", () => {
 
   it("rejects non-string detail instead of silently stripping it", () => {
     expect(
-      zcodeProtocolErrorDetailSchema.safeParse({
+      zodyProtocolErrorDetailSchema.safeParse({
         type: "ModelError",
         message: "Request failed",
         underlyingErrorDetail: {},

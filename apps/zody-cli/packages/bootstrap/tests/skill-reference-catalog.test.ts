@@ -5,9 +5,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  zcodeProtocolMethods,
-  zcodeSkillsReferenceCatalogParamsSchema,
-  zcodeSkillsReferenceCatalogResultSchema,
+  zodyProtocolMethods,
+  zodySkillsReferenceCatalogParamsSchema,
+  zodySkillsReferenceCatalogResultSchema,
 } from "@zody/shared";
 import type { SkillLoadOutcome } from "@zody/contracts";
 import { getSkillReferenceCatalog } from "../src/zody-protocol/skill-reference-catalog.js";
@@ -48,15 +48,15 @@ function contextWithSession(sessionId: string): ZodyProtocolAgentServerContext {
 
 describe("skills/referenceCatalog protocol", () => {
   it("registers the method and strict schemas", () => {
-    expect(zcodeProtocolMethods.skillsReferenceCatalog).toBe("skills/referenceCatalog");
+    expect(zodyProtocolMethods.skillsReferenceCatalog).toBe("skills/referenceCatalog");
     expect(() =>
-      zcodeSkillsReferenceCatalogParamsSchema.parse({
+      zodySkillsReferenceCatalogParamsSchema.parse({
         workspace: { workspacePath: "/w", workspaceKey: "/w" },
         sessionId: "session-a",
       }),
     ).not.toThrow();
     expect(() =>
-      zcodeSkillsReferenceCatalogResultSchema.parse({
+      zodySkillsReferenceCatalogResultSchema.parse({
         authority: "session",
         skills: [
           {
@@ -91,7 +91,7 @@ describe("skills/referenceCatalog protocol", () => {
         },
       ],
     });
-    expect(() => zcodeSkillsReferenceCatalogResultSchema.parse(result)).not.toThrow();
+    expect(() => zodySkillsReferenceCatalogResultSchema.parse(result)).not.toThrow();
   });
 
   it("fails closed for an unknown Session instead of falling back to workspace discovery", async () => {
@@ -134,7 +134,7 @@ describe("skills/referenceCatalog protocol", () => {
           enabled: true,
         }),
       );
-      expect(() => zcodeSkillsReferenceCatalogResultSchema.parse(result)).not.toThrow();
+      expect(() => zodySkillsReferenceCatalogResultSchema.parse(result)).not.toThrow();
     } finally {
       await rm(root, { force: true, recursive: true });
     }

@@ -1,6 +1,6 @@
 /** MCP 每个上报窗口只交一份合计；瞬时读数不进入会话、队列或持久化。 */
 import {
-  zcodeMcpResourceSamplesSchema,
+  zodyMcpResourceSamplesSchema,
   ZCODE_MCP_RESOURCE_SAMPLE_INTERVAL_MS,
   type ZodyMcpResourceSample,
   type ProcessResourceRuntimeSurface,
@@ -38,7 +38,7 @@ export function ingestMcpResourceSamples(
   runtimeSurface: ProcessResourceRuntimeSurface,
   environmentKey?: string,
 ): void {
-  const parsed = zcodeMcpResourceSamplesSchema.safeParse(raw);
+  const parsed = zodyMcpResourceSamplesSchema.safeParse(raw);
   if (!parsed.success) return;
   const receivedAt = Date.now();
   purgeExpired(receivedAt);

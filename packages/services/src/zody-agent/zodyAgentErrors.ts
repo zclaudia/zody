@@ -3,7 +3,7 @@
 export const ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE =
   "ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED";
 
-export class ZCodeAgentMcpStatusModeUnsupportedError extends Error {
+export class ZodyAgentMcpStatusModeUnsupportedError extends Error {
   readonly code = ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE;
 
   constructor() {
@@ -12,7 +12,7 @@ export class ZCodeAgentMcpStatusModeUnsupportedError extends Error {
   }
 }
 
-export function isZCodeAgentMcpStatusModeUnsupportedError(error: unknown): boolean {
+export function isZodyAgentMcpStatusModeUnsupportedError(error: unknown): boolean {
   if (!error || typeof error !== "object") {
     return false;
   }

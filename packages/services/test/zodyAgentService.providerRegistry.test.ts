@@ -6,7 +6,7 @@ import {
   type AccountProviderConfigSnapshot,
   type ModelSelectionView,
 } from "@zody/provider";
-import { zcodeProtocolMethods } from "@zody/shared";
+import { zodyProtocolMethods } from "@zody/shared";
 import { V4_METHODS } from "@zody/shared/zody-protocol-v4";
 import { createAccountProviderConfig } from "./providerConfigFixtures.js";
 
@@ -227,7 +227,7 @@ function createReadyModelSelectionSource() {
   ).source;
 }
 
-describe("createZCodeAgentService provider registry", () => {
+describe("createZodyAgentService provider registry", () => {
   it("uses the process model selection view for local startup without sending runtimeModel", async () => {
     const selectionSource = createModelSelectionChangeSource({
       revision: 1,
@@ -245,7 +245,7 @@ describe("createZCodeAgentService provider registry", () => {
       ],
     });
     const request = vi.fn(async (method: string, params?: unknown) => {
-      if (method === zcodeProtocolMethods.sessionCreate) {
+      if (method === zodyProtocolMethods.sessionCreate) {
         const model = (params as { model: { providerId: string; modelId: string } }).model;
         return createSessionSnapshot({ model, thoughtLevel: "high" });
       }
@@ -266,8 +266,8 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
 
@@ -278,7 +278,7 @@ describe("createZCodeAgentService provider registry", () => {
     });
 
     const createCall = request.mock.calls.find(
-      ([method]) => method === zcodeProtocolMethods.sessionCreate,
+      ([method]) => method === zodyProtocolMethods.sessionCreate,
     );
     expect(createCall?.[1]).toMatchObject({
       model: { providerId: "custom-openai", modelId: "agent-model" },
@@ -311,8 +311,8 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
 
@@ -353,8 +353,8 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: createModelSelectionChangeSource({
         revision: 1,
         providers: [],
@@ -389,8 +389,8 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: createModelSelectionChangeSource(
         createModelSelectionViewFromRegistry(
           createStartPlanRegistry({ revision: "sha256:ready-concurrent" }),
@@ -436,8 +436,8 @@ describe("createZCodeAgentService provider registry", () => {
           disposeAll() {}
         },
       }));
-      const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-      const service = createZCodeAgentService({ modelSelectionReadinessSource: { getView } });
+      const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+      const service = createZodyAgentService({ modelSelectionReadinessSource: { getView } });
       const workspace = {
         workspacePath: "/workspace/concurrent-first-input",
         ...(clientMode === "web-remote-replayable"
@@ -498,8 +498,8 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({ modelSelectionReadinessSource: { getView } });
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({ modelSelectionReadinessSource: { getView } });
     const workspace = { workspacePath: "/workspace/reopen-during-readiness" };
     try {
       const oldStartup = service.initialize(workspace);
@@ -547,8 +547,8 @@ describe("createZCodeAgentService provider registry", () => {
       revision: 1,
       providers: [],
     });
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
     const firstIdentity = "remote:ssh:first:/workspace/app";
@@ -602,8 +602,8 @@ describe("createZCodeAgentService provider registry", () => {
       },
     }));
     const selectionSource = createModelSelectionChangeSource({ revision: 1, providers: [] });
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
     try {
@@ -638,8 +638,8 @@ describe("createZCodeAgentService provider registry", () => {
       revision: 1,
       providers: [],
     });
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
     const workspace = { workspacePath: "/workspace/released-before-ready" };
@@ -692,8 +692,8 @@ describe("createZCodeAgentService provider registry", () => {
       revision: 1,
       providers: [],
     });
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: selectionSource.source,
     });
     const workspacePath = "/workspace/read-only-then-ready";
@@ -726,14 +726,14 @@ describe("createZCodeAgentService provider registry", () => {
     const calls: string[] = [];
     const request = vi.fn(async (method: string) => {
       calls.push(method);
-      if (method === zcodeProtocolMethods.providerUpdateAccountConfig) {
+      if (method === zodyProtocolMethods.providerUpdateAccountConfig) {
         return {
           receivedRevision: "account-1",
           status: "received" as const,
           providerCount: 1,
         };
       }
-      if (method === zcodeProtocolMethods.sessionCreate) {
+      if (method === zodyProtocolMethods.sessionCreate) {
         return createSessionSnapshot({
           model: { providerId: "e2e-primary", modelId: "deepseek-v4-flash" },
         });
@@ -755,7 +755,7 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
     const accountSnapshot: AccountProviderConfigSnapshot = {
       revision: "account-1",
       basedOnZCodeBuiltinRevision: "zcode-builtin:1",
@@ -776,7 +776,7 @@ describe("createZCodeAgentService provider registry", () => {
         ],
       ]),
     };
-    const service = createZCodeAgentService({
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: createReadyModelSelectionSource(),
       accountProviderConfigSource: {
         async read() {
@@ -795,12 +795,12 @@ describe("createZCodeAgentService provider registry", () => {
     });
 
     expect(calls).toEqual([
-      zcodeProtocolMethods.providerUpdateAccountConfig,
-      zcodeProtocolMethods.sessionCreate,
+      zodyProtocolMethods.providerUpdateAccountConfig,
+      zodyProtocolMethods.sessionCreate,
     ]);
     expect(request).toHaveBeenNthCalledWith(
       1,
-      zcodeProtocolMethods.providerUpdateAccountConfig,
+      zodyProtocolMethods.providerUpdateAccountConfig,
       {
         revision: "account-1",
         basedOnZCodeBuiltinRevision: "zcode-builtin:1",
@@ -839,11 +839,11 @@ describe("createZCodeAgentService provider registry", () => {
       ]),
     });
     const request = vi.fn(async (method: string, params?: unknown) => {
-      if (method === zcodeProtocolMethods.providerUpdateAccountConfig) {
+      if (method === zodyProtocolMethods.providerUpdateAccountConfig) {
         const revision = (params as { revision: string }).revision;
         return { receivedRevision: revision, providerCount: 1, status: "received" as const };
       }
-      if (method === zcodeProtocolMethods.sessionCreate) {
+      if (method === zodyProtocolMethods.sessionCreate) {
         return createSessionSnapshot({
           model: { providerId: "e2e-primary", modelId: "model-a" },
         });
@@ -865,8 +865,8 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: createReadyModelSelectionSource(),
       accountProviderConfigSource: accountSource.source,
     });
@@ -891,7 +891,7 @@ describe("createZCodeAgentService provider registry", () => {
 
     await vi.waitFor(() => {
       expect(request).toHaveBeenCalledWith(
-        zcodeProtocolMethods.providerUpdateAccountConfig,
+        zodyProtocolMethods.providerUpdateAccountConfig,
         expect.objectContaining({ revision: "account-2" }),
         expect.any(Object),
       );
@@ -921,12 +921,12 @@ describe("createZCodeAgentService provider registry", () => {
     await vi.waitFor(() => {
       expect(
         request.mock.calls.filter(
-          ([method]) => method === zcodeProtocolMethods.providerUpdateAccountConfig,
+          ([method]) => method === zodyProtocolMethods.providerUpdateAccountConfig,
         ),
       ).toHaveLength(2);
     });
     const delivered = request.mock.calls
-      .filter(([method]) => method === zcodeProtocolMethods.providerUpdateAccountConfig)
+      .filter(([method]) => method === zodyProtocolMethods.providerUpdateAccountConfig)
       .map(([, params]) => (params as { revision: string }).revision);
     service.disposeAll();
     expect(readsBeforeRelease).toBe(1);
@@ -963,8 +963,8 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: createReadyModelSelectionSource(),
     });
 
@@ -1033,15 +1033,15 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: createReadyModelSelectionSource(),
     });
 
     await service.readWorkspacePresentation({ workspacePath: "/workspace/app" });
 
     const readPresentationCall = request.mock.calls.find(
-      ([method]) => method === zcodeProtocolMethods.workspaceReadPresentation,
+      ([method]) => method === zodyProtocolMethods.workspaceReadPresentation,
     );
     expect(readPresentationCall?.[1]).toMatchObject({
       workspace: {
@@ -1062,7 +1062,7 @@ describe("createZCodeAgentService provider registry", () => {
       slashCommands: [],
     };
     const firstRequest = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workspaceReadPresentation) {
+      if (method === zodyProtocolMethods.workspaceReadPresentation) {
         throw new Error("ZCode agent stdio transport is closed");
       }
       return {
@@ -1072,7 +1072,7 @@ describe("createZCodeAgentService provider registry", () => {
       };
     });
     const secondRequest = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.workspaceReadPresentation) {
+      if (method === zodyProtocolMethods.workspaceReadPresentation) {
         return workspacePresentation;
       }
       return {
@@ -1114,8 +1114,8 @@ describe("createZCodeAgentService provider registry", () => {
         disposeAll() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       modelSelectionReadinessSource: createReadyModelSelectionSource(),
     });
 
@@ -1125,12 +1125,12 @@ describe("createZCodeAgentService provider registry", () => {
 
     expect(getClient).toHaveBeenCalledTimes(2);
     expect(firstRequest).toHaveBeenCalledWith(
-      zcodeProtocolMethods.workspaceReadPresentation,
+      zodyProtocolMethods.workspaceReadPresentation,
       expect.anything(),
       expect.anything(),
     );
     expect(secondRequest).toHaveBeenCalledWith(
-      zcodeProtocolMethods.workspaceReadPresentation,
+      zodyProtocolMethods.workspaceReadPresentation,
       expect.anything(),
       expect.anything(),
     );

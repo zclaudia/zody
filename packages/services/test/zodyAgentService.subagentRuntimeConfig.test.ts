@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   subagentRuntimeConfigSchema,
-  zcodeProtocolMethods,
+  zodyProtocolMethods,
   type SubagentRuntimeConfig,
 } from "@zody/shared";
 import { testSelectionView } from "./fixtures/testSelectionView.js";
@@ -16,7 +16,7 @@ describe("subagent runtime config reverse RPC", () => {
     const handlers: Array<(request: { id: string; method: string; params?: unknown }) => void> = [];
     const request = (id: string, params: unknown) =>
       handlers.forEach((handler) =>
-        handler({ id, method: zcodeProtocolMethods.subagentsReadRuntimeConfig, params }),
+        handler({ id, method: zodyProtocolMethods.subagentsReadRuntimeConfig, params }),
       );
     const respond = vi.fn(async () => {}),
       respondError = vi.fn(async () => {});
@@ -64,8 +64,8 @@ describe("subagent runtime config reverse RPC", () => {
     const read = vi
       .fn(async (): Promise<SubagentRuntimeConfig> => configuration)
       .mockReturnValueOnce(pending.promise);
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService({
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService({
       readSubagentRuntimeConfig: read,
       modelSelectionReadinessSource: { getView: async () => testSelectionView() },
     });

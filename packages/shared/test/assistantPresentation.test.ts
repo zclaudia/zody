@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   appendAssistantMessagePart,
-  buildZCodeAssistantPresentation,
+  buildZodyAssistantPresentation,
   type ZodyAssistantMessagePart,
 } from "../src/index.js";
 
@@ -13,7 +13,7 @@ describe("assistant presentation", () => {
       { type: "content", content: "最终正文" },
     ];
 
-    const presentation = buildZCodeAssistantPresentation({
+    const presentation = buildZodyAssistantPresentation({
       content: "",
       parts,
       toolCalls: [
@@ -41,7 +41,7 @@ describe("assistant presentation", () => {
       { settling: true },
     ]) {
       expect(
-        buildZCodeAssistantPresentation({
+        buildZodyAssistantPresentation({
           content: "正文",
           ...state,
         }).latestPart,
@@ -55,13 +55,13 @@ describe("assistant presentation", () => {
       { type: "content", content: "B" },
     );
 
-    expect(buildZCodeAssistantPresentation({ content: "", parts }).blocks).toEqual([
+    expect(buildZodyAssistantPresentation({ content: "", parts }).blocks).toEqual([
       { type: "content", content: "AB" },
     ]);
   });
 
   it("keeps child tool calls inside the parent tree instead of rendering duplicate root blocks", () => {
-    const presentation = buildZCodeAssistantPresentation({
+    const presentation = buildZodyAssistantPresentation({
       content: "",
       parts: [
         { type: "tool-call", toolId: "parent" },

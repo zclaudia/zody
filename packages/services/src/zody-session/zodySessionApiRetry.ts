@@ -1,15 +1,15 @@
 import {
-  normalizeZCodeApiRetryStatus,
-  isZCodeModelRetryRecoveryProgressPayload,
+  normalizeZodyApiRetryStatus,
+  isZodyModelRetryRecoveryProgressPayload,
   resolveWorkspaceKey,
   type ZodySessionApiRetryStatus,
   type ZodySessionStateSnapshot,
-  zcodeApiRetryFromModelNetworkStatusPayload,
-  zcodeApiRetryFromStreamRecoveryPayload,
+  zodyApiRetryFromModelNetworkStatusPayload,
+  zodyApiRetryFromStreamRecoveryPayload,
 } from "@zody/shared";
 import type { ZodySessionServiceEvent, ZodyTaskTarget } from "#src/zody-session/zodySession.js";
 
-export function createZCodeSessionApiRetryRuntimeTracker(): {
+export function createZodySessionApiRetryRuntimeTracker(): {
   trackApiRetryFromSessionEvent: (
     params: ZodyTaskTarget,
     event: ZodySessionServiceEvent,
@@ -38,7 +38,7 @@ export function createZCodeSessionApiRetryRuntimeTracker(): {
         apiRetryBySessionKey.set(key, apiRetry);
       } else if (
         apiRetryBySessionKey.get(key) != null &&
-        isZCodeModelRetryRecoveryProgressPayload(asRecord(event.event.payload))
+        isZodyModelRetryRecoveryProgressPayload(asRecord(event.event.payload))
       ) {
         // snapshot runtime 和 live UI 要使用同一个恢复成功边界；
         // retry attempt 开始不清，等首个模型进展到达才清，避免重连时状态闪烁或切回 task 后残留。
@@ -108,19 +108,19 @@ function apiRetryFromSessionPayload(
   payload: Record<string, unknown>,
 ): ZodySessionApiRetryStatus | null | undefined {
   if ("apiRetry" in payload) {
-    return normalizeZCodeApiRetryStatus(payload.apiRetry);
+    return normalizeZodyApiRetryStatus(payload.apiRetry);
   }
-  const runtimeRetry = normalizeZCodeApiRetryStatus(asRecord(payload.runtime).apiRetry);
+  const runtimeRetry = normalizeZodyApiRetryStatus(asRecord(payload.runtime).apiRetry);
   if (runtimeRetry !== undefined) {
     return runtimeRetry;
   }
-  const metaRetry = normalizeZCodeApiRetryStatus(asRecord(asRecord(payload._meta).zcode).apiRetry);
+  const metaRetry = normalizeZodyApiRetryStatus(asRecord(asRecord(payload._meta).zcode).apiRetry);
   if (metaRetry !== undefined) {
     return metaRetry;
   }
   return (
-    zcodeApiRetryFromStreamRecoveryPayload(payload) ??
-    zcodeApiRetryFromModelNetworkStatusPayload(payload)
+    zodyApiRetryFromStreamRecoveryPayload(payload) ??
+    zodyApiRetryFromModelNetworkStatusPayload(payload)
   );
 }
 

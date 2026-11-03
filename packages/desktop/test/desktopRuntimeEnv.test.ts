@@ -57,7 +57,7 @@ vi.mock("@zody/shared", () => ({
   ZCODE_VERSION: "0.0.0-test",
   DEFAULT_ZCODE_ENDPOINT_ORIGIN: "",
   TEST_ZCODE_ENDPOINT_ORIGIN: "https://example.invalid",
-  resolveRuntimeZCodeEndpointOrigin: (env: Record<string, string | undefined>) =>
+  resolveRuntimeZodyEndpointOrigin: (env: Record<string, string | undefined>) =>
     env.ZCODE_BASE_URL ?? env.ZCODE_TEST_BASE_URL ?? "",
   sanitizeZodyRuntimeEnv: (env: Record<string, string | undefined>) => {
     const sanitizedKeys = new Set([

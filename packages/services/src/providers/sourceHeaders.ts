@@ -1,7 +1,7 @@
 import { version as readOsVersion } from "node:os";
 import {
-  buildZCodeSourceHeadersFromContext,
-  normalizeZCodeSourceHeaderValue,
+  buildZodySourceHeadersFromContext,
+  normalizeZodySourceHeaderValue,
   ZCODE_ENV,
   ZCODE_VERSION,
 } from "@zody/shared";
@@ -17,7 +17,7 @@ interface ZodySourceHeaderOptions {
 }
 
 function normalizePrintableHeaderValue(value: string | undefined): string | undefined {
-  return normalizeZCodeSourceHeaderValue(value);
+  return normalizeZodySourceHeaderValue(value);
 }
 
 function resolveClientLanguage(): string {
@@ -44,7 +44,7 @@ export function buildZCodeSourceHeaders(
   const osVersion = normalizePrintableHeaderValue(options.osVersion ?? readOsVersion());
 
   // fork（F2.10）：设备标识 X-Device-Mid 停发，不再读取 telemetry-state.json。
-  return buildZCodeSourceHeadersFromContext({
+  return buildZodySourceHeadersFromContext({
     appVersion,
     arch,
     clientLanguage,

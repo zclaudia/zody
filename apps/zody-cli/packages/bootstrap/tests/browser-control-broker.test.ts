@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods } from "@zody/shared";
+import { zodyProtocolMethods } from "@zody/shared";
 import { createProtocolBrowserControlBroker } from "../src/zody-protocol/browser-control-broker.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 
@@ -70,7 +70,7 @@ describe("createProtocolBrowserControlBroker", () => {
     expect(result).toEqual([IAB_DESCRIPTOR]);
     expect(requestClient).toHaveBeenCalledTimes(1);
     const [method, params, , requestOptions] = requestClient.mock.calls[0];
-    expect(method).toBe(zcodeProtocolMethods.interactionBrowserList);
+    expect(method).toBe(zodyProtocolMethods.interactionBrowserList);
     expect(params).toMatchObject({
       sessionId: "sess-1",
       turnId: "turn-1",
@@ -107,7 +107,7 @@ describe("createProtocolBrowserControlBroker", () => {
     });
 
     const [method, params, , requestOptions] = requestClient.mock.calls[0];
-    expect(method).toBe(zcodeProtocolMethods.interactionBrowserExecute);
+    expect(method).toBe(zodyProtocolMethods.interactionBrowserExecute);
     expect(params).toMatchObject({
       browserId: "iab-runtime-1",
       browserGeneration: 1,
@@ -239,7 +239,7 @@ describe("createProtocolBrowserControlBroker", () => {
       "extension:profile-1",
     );
     const [method, params] = requestClient.mock.calls[0];
-    expect(method).toBe(zcodeProtocolMethods.interactionBrowserDefault);
+    expect(method).toBe(zodyProtocolMethods.interactionBrowserDefault);
     expect(params).toMatchObject({ sessionId: "sess-1", workspaceKey: "/repo" });
 
     requestClient.mockResolvedValueOnce({});

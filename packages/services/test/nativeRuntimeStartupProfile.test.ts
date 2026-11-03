@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  createZCodeAgentNativeRuntimeStartupContext,
-  digestZCodeAgentNativeRuntimeNetwork,
-  digestZCodeAgentNativeRuntimeProviderSnapshot,
-  normalizeZCodeAgentNativeRuntimeNetwork,
-  projectZCodeAgentNativeRuntimeProviderSnapshot,
+  createZodyAgentNativeRuntimeStartupContext,
+  digestZodyAgentNativeRuntimeNetwork,
+  digestZodyAgentNativeRuntimeProviderSnapshot,
+  normalizeZodyAgentNativeRuntimeNetwork,
+  projectZodyAgentNativeRuntimeProviderSnapshot,
 } from "../src/zody-agent/nativeRuntimeStartupProfile.js";
 
 function providerView(
@@ -68,16 +68,16 @@ function providerView(
 
 describe("native runtime startup profile", () => {
   it("uses a content digest instead of an instance registry revision", () => {
-    const first = projectZCodeAgentNativeRuntimeProviderSnapshot(providerView(1));
-    const second = projectZCodeAgentNativeRuntimeProviderSnapshot(providerView(999));
+    const first = projectZodyAgentNativeRuntimeProviderSnapshot(providerView(1));
+    const second = projectZodyAgentNativeRuntimeProviderSnapshot(providerView(999));
     expect(first).toEqual(second);
-    expect(digestZCodeAgentNativeRuntimeProviderSnapshot(providerView(1))).toBe(
-      digestZCodeAgentNativeRuntimeProviderSnapshot(providerView(999)),
+    expect(digestZodyAgentNativeRuntimeProviderSnapshot(providerView(1))).toBe(
+      digestZodyAgentNativeRuntimeProviderSnapshot(providerView(999)),
     );
   });
 
   it("excludes credentials, headers, and other non-snapshot fields", () => {
-    const snapshot = projectZCodeAgentNativeRuntimeProviderSnapshot(providerView());
+    const snapshot = projectZodyAgentNativeRuntimeProviderSnapshot(providerView());
     const serialized = JSON.stringify(snapshot);
     expect(serialized).not.toContain("must-not-be-in-snapshot");
     expect(serialized).not.toContain("also-secret");
@@ -85,34 +85,34 @@ describe("native runtime startup profile", () => {
     expect(serialized).not.toContain("must-not-be-in-snapshot");
     expect(serialized).toContain('"access":{"type":"api-key"}');
     expect(serialized).toContain("https://api.example.test");
-    expect(digestZCodeAgentNativeRuntimeProviderSnapshot(providerView(1, false))).not.toBe(
-      digestZCodeAgentNativeRuntimeProviderSnapshot(providerView(1, true)),
+    expect(digestZodyAgentNativeRuntimeProviderSnapshot(providerView(1, false))).not.toBe(
+      digestZodyAgentNativeRuntimeProviderSnapshot(providerView(1, true)),
     );
   });
 
   it("keeps credential rotation stable but changes on runtime auth mode", () => {
     expect(
-      digestZCodeAgentNativeRuntimeProviderSnapshot(
+      digestZodyAgentNativeRuntimeProviderSnapshot(
         providerView(7, true, "api-key", undefined, "old-key"),
       ),
     ).toBe(
-      digestZCodeAgentNativeRuntimeProviderSnapshot(
+      digestZodyAgentNativeRuntimeProviderSnapshot(
         providerView(8, true, "api-key", undefined, "rotated-key"),
       ),
     );
     expect(
-      digestZCodeAgentNativeRuntimeProviderSnapshot(providerView(7, true, "api-key")),
+      digestZodyAgentNativeRuntimeProviderSnapshot(providerView(7, true, "api-key")),
     ).not.toBe(
-      digestZCodeAgentNativeRuntimeProviderSnapshot(
+      digestZodyAgentNativeRuntimeProviderSnapshot(
         providerView(7, true, "zhipu-account", "individual-coding-plan"),
       ),
     );
     expect(
-      digestZCodeAgentNativeRuntimeProviderSnapshot(
+      digestZodyAgentNativeRuntimeProviderSnapshot(
         providerView(7, true, "zhipu-account", "individual-coding-plan"),
       ),
     ).not.toBe(
-      digestZCodeAgentNativeRuntimeProviderSnapshot(
+      digestZodyAgentNativeRuntimeProviderSnapshot(
         providerView(7, true, "zhipu-account", "team-coding-plan"),
       ),
     );
@@ -132,13 +132,13 @@ describe("native runtime startup profile", () => {
         },
       ],
     };
-    expect(digestZCodeAgentNativeRuntimeProviderSnapshot(providerView())).not.toBe(
-      digestZCodeAgentNativeRuntimeProviderSnapshot(changedTransport),
+    expect(digestZodyAgentNativeRuntimeProviderSnapshot(providerView())).not.toBe(
+      digestZodyAgentNativeRuntimeProviderSnapshot(changedTransport),
     );
   });
 
   it("reads selection and normalized network values from the existing public services", async () => {
-    const context = await createZCodeAgentNativeRuntimeStartupContext({
+    const context = await createZodyAgentNativeRuntimeStartupContext({
       providerSettingsView: providerView(),
       modelSelectionView: {
         revision: 1,
@@ -157,7 +157,7 @@ describe("native runtime startup profile", () => {
     });
 
     expect(context).toEqual({
-      providerRevisionSha256: digestZCodeAgentNativeRuntimeProviderSnapshot(providerView()),
+      providerRevisionSha256: digestZodyAgentNativeRuntimeProviderSnapshot(providerView()),
       selection: {
         providerId: "deepseek-anthropic",
         modelId: "deepseek-v3.2",
@@ -170,20 +170,20 @@ describe("native runtime startup profile", () => {
       },
     });
     expect(
-      normalizeZCodeAgentNativeRuntimeNetwork({
+      normalizeZodyAgentNativeRuntimeNetwork({
         httpProxy: "  ",
         noProxy: undefined,
         caCertPath: " ",
       }),
     ).toEqual({ httpProxy: null, noProxy: null, caCertPath: null });
     expect(
-      digestZCodeAgentNativeRuntimeNetwork({
+      digestZodyAgentNativeRuntimeNetwork({
         httpProxy: " http://127.0.0.1:7890 ",
         noProxy: " localhost,127.0.0.1 ",
         caCertPath: " /tmp/zody-test-ca.pem ",
       }),
     ).toBe(
-      digestZCodeAgentNativeRuntimeNetwork({
+      digestZodyAgentNativeRuntimeNetwork({
         httpProxy: "http://127.0.0.1:7890",
         noProxy: "localhost,127.0.0.1",
         caCertPath: "/tmp/zody-test-ca.pem",

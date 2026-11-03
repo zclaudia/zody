@@ -21,12 +21,12 @@ import {
 } from "@zody/core";
 import {
   ZCODE_WORKFLOWS_RUNS_MAX_LIMIT,
-  zcodeWorkflowsDeleteParamsSchema,
-  zcodeWorkflowsGetParamsSchema,
-  zcodeWorkflowsListParamsSchema,
-  zcodeWorkflowsMoveParamsSchema,
-  zcodeWorkflowsRunsParamsSchema,
-  zcodeWorkflowsUpdateMetaParamsSchema,
+  zodyWorkflowsDeleteParamsSchema,
+  zodyWorkflowsGetParamsSchema,
+  zodyWorkflowsListParamsSchema,
+  zodyWorkflowsMoveParamsSchema,
+  zodyWorkflowsRunsParamsSchema,
+  zodyWorkflowsUpdateMetaParamsSchema,
   type ZodySavedWorkflowRun,
   type ZodySavedWorkflowScope,
   type ZodyWorkflowsDeleteResult,
@@ -53,7 +53,7 @@ export async function listSavedWorkflowsOp(
   _context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyWorkflowsListResult> {
-  const params = parseParams(zcodeWorkflowsListParamsSchema, rawParams);
+  const params = parseParams(zodyWorkflowsListParamsSchema, rawParams);
   const cwd = params.workspace.workspacePath;
   const scope = scopeOf(params);
   // 中枢的 PROJECT 组只列本项目那一份，全局组只列全局那一份——**永远**传定向 scope，绝不走
@@ -71,7 +71,7 @@ export async function getSavedWorkflowOp(
   _context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyWorkflowsGetResult> {
-  const params = parseParams(zcodeWorkflowsGetParamsSchema, rawParams);
+  const params = parseParams(zodyWorkflowsGetParamsSchema, rawParams);
   // 定向 scope：`global` 只查全局根、不做遮蔽——中枢的全局组要看到被项目档遮蔽的那份。
   const resolved = resolveSavedWorkflow({
     cwd: params.workspace.workspacePath,
@@ -97,7 +97,7 @@ export async function updateSavedWorkflowMetaOp(
   _context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyWorkflowsUpdateMetaResult> {
-  const params = parseParams(zcodeWorkflowsUpdateMetaParamsSchema, rawParams);
+  const params = parseParams(zodyWorkflowsUpdateMetaParamsSchema, rawParams);
   // shared 与 contracts 的 meta schema 逐字对齐，但序列化器认的是 contracts 那份类型；再过一遍
   // 让「两边漂移」在这里炸成 -32602 而不是写出一个自己读不回来的文件。
   const meta = SavedWorkflowMetaSchema.parse(params.meta);
@@ -120,7 +120,7 @@ export async function deleteSavedWorkflowOp(
   _context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyWorkflowsDeleteResult> {
-  const params = parseParams(zcodeWorkflowsDeleteParamsSchema, rawParams);
+  const params = parseParams(zodyWorkflowsDeleteParamsSchema, rawParams);
   if (!isValidSavedWorkflowName(params.name)) {
     return { ok: false, reason: "invalid_name" };
   }
@@ -186,7 +186,7 @@ export async function listSavedWorkflowRunsOp(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyWorkflowsRunsResult> {
-  const params = parseParams(zcodeWorkflowsRunsParamsSchema, rawParams);
+  const params = parseParams(zodyWorkflowsRunsParamsSchema, rawParams);
   const journal = resolveDynamicWorkflowJournalStore(context.deps.sessionStore);
   if (journal === undefined || !supportsRunIntrospection(journal)) return { runs: [] };
   const limit = Math.min(ZCODE_WORKFLOWS_RUNS_MAX_LIMIT, params.limit);
@@ -270,7 +270,7 @@ export async function moveSavedWorkflowOp(
   _context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyWorkflowsMoveResult> {
-  const params = parseParams(zcodeWorkflowsMoveParamsSchema, rawParams);
+  const params = parseParams(zodyWorkflowsMoveParamsSchema, rawParams);
   const result = moveSavedWorkflow({ cwd: params.workspace.workspacePath, name: params.name });
   if (result.ok) {
     return { ok: true, from: result.from, to: result.to };

@@ -1,4 +1,4 @@
-import { zcodeWorkspaceUpdateInteractionPreferencesParamsSchema } from "@zody/shared";
+import { zodyWorkspaceUpdateInteractionPreferencesParamsSchema } from "@zody/shared";
 import { parseParams, type ZodyProtocolAgentServerContext } from "./server-types.js";
 
 /**
@@ -9,7 +9,7 @@ export async function updateInteractionPreferences(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeWorkspaceUpdateInteractionPreferencesParamsSchema, rawParams);
+  const params = parseParams(zodyWorkspaceUpdateInteractionPreferencesParamsSchema, rawParams);
   const enabled = params.preferences.askUserQuestionAutoResolutionEnabled;
   context.appRuntimePreferences.askUserQuestionAutoResolutionEnabled = enabled;
   const snoozedInteractionCount =

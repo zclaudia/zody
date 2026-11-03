@@ -9,7 +9,7 @@ import {
   type DesktopCommandId,
   type Locale,
 } from "@zody/shared";
-import { readZCodeStdioTapDevState } from "@zody/services/node";
+import { readZodyStdioTapDevState } from "@zody/services/node";
 import { CHECK_FOR_UPDATE_MENU_ID, setAutoUpdaterMenuLocale } from "./autoUpdater.js";
 import {
   DESKTOP_ZOOM_MAX_LEVEL,
@@ -44,7 +44,7 @@ export function updateZCodeStdioTapDevMenuState() {
   if (!item) {
     return;
   }
-  const state = readZCodeStdioTapDevState();
+  const state = readZodyStdioTapDevState();
   item.checked = state.enabled;
   item.visible = state.visible;
 }
@@ -97,7 +97,7 @@ function buildApplicationMenuTemplate(options: {
     getDesktopMenuLabel(options.currentApplicationLocale, id);
   const getAppLabel = (id: (typeof desktopMenuMessageIds)[keyof typeof desktopMenuMessageIds]) =>
     getLabel(id).replaceAll("{appName}", app.name);
-  const stdioTapState = readZCodeStdioTapDevState();
+  const stdioTapState = readZodyStdioTapDevState();
   const isLocalDevelopmentRuntime = !app.isPackaged;
   const currentZoomLevel = clampDesktopZoomLevel(options.currentZoomLevel ?? 0);
   const canResetZoom = currentZoomLevel !== 0;

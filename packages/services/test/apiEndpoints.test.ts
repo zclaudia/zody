@@ -27,7 +27,7 @@ describe("ZCode API endpoints", () => {
         });
         return new Response('{"code":0,"msg":"","data":[]}', { status: 200 });
       },
-      resolveZCodeEndpointOrigin: () => TEST_ZCODE_ORIGIN,
+      resolveZodyEndpointOrigin: () => TEST_ZCODE_ORIGIN,
     });
 
     await client.request(ZCODE_CLIENT_SCENES_URL, { method: "GET" });

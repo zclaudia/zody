@@ -6,14 +6,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  zcodeProtocolMethods,
-  zcodeWorkflowsDeleteResultSchema,
-  zcodeWorkflowsGetResultSchema,
-  zcodeWorkflowsListResultSchema,
-  zcodeWorkflowsMoveResultSchema,
-  zcodeWorkflowsRunsParamsSchema,
-  zcodeWorkflowsRunsResultSchema,
-  zcodeWorkflowsUpdateMetaResultSchema,
+  zodyProtocolMethods,
+  zodyWorkflowsDeleteResultSchema,
+  zodyWorkflowsGetResultSchema,
+  zodyWorkflowsListResultSchema,
+  zodyWorkflowsMoveResultSchema,
+  zodyWorkflowsRunsParamsSchema,
+  zodyWorkflowsRunsResultSchema,
+  zodyWorkflowsUpdateMetaResultSchema,
 } from "@zody/shared";
 import { SavedWorkflowEntrySchema, SavedWorkflowMetaSchema } from "@zody/contracts";
 import { parseSavedWorkflow, serializeSavedWorkflow } from "@zody/core";
@@ -97,12 +97,12 @@ afterEach(async () => {
 
 describe("workflows/* protocol methods", () => {
   it("registers the method names", () => {
-    expect(zcodeProtocolMethods.workflowsList).toBe("workflows/list");
-    expect(zcodeProtocolMethods.workflowsGet).toBe("workflows/get");
-    expect(zcodeProtocolMethods.workflowsUpdateMeta).toBe("workflows/updateMeta");
-    expect(zcodeProtocolMethods.workflowsDelete).toBe("workflows/delete");
-    expect(zcodeProtocolMethods.workflowsRuns).toBe("workflows/runs");
-    expect(zcodeProtocolMethods.workflowsMove).toBe("workflows/move");
+    expect(zodyProtocolMethods.workflowsList).toBe("workflows/list");
+    expect(zodyProtocolMethods.workflowsGet).toBe("workflows/get");
+    expect(zodyProtocolMethods.workflowsUpdateMeta).toBe("workflows/updateMeta");
+    expect(zodyProtocolMethods.workflowsDelete).toBe("workflows/delete");
+    expect(zodyProtocolMethods.workflowsRuns).toBe("workflows/runs");
+    expect(zodyProtocolMethods.workflowsMove).toBe("workflows/move");
   });
 
   it("list：目录不存在回空（带 dir）；坏文件进 invalid；legacy .workflow.js 不可见；不回脚本正文", async () => {
@@ -126,7 +126,7 @@ describe("workflows/* protocol methods", () => {
 
     const result = await listSavedWorkflowsOp(contextWith(), { workspace: workspace() });
     // 协议 schema（shared）与 contracts 的 entry schema 都要认同一份结果——两边形状互相钉住。
-    expect(() => zcodeWorkflowsListResultSchema.parse(result)).not.toThrow();
+    expect(() => zodyWorkflowsListResultSchema.parse(result)).not.toThrow();
     for (const entry of result.workflows) {
       expect(() => SavedWorkflowEntrySchema.parse(entry)).not.toThrow();
     }
@@ -151,7 +151,7 @@ describe("workflows/* protocol methods", () => {
       workspace: workspace(),
       name: "release-check",
     });
-    expect(() => zcodeWorkflowsGetResultSchema.parse(hit)).not.toThrow();
+    expect(() => zodyWorkflowsGetResultSchema.parse(hit)).not.toThrow();
     expect(hit).toMatchObject({
       ok: true,
       name: "release-check",
@@ -200,7 +200,7 @@ describe("workflows/* protocol methods", () => {
       name: "release-check",
       meta,
     });
-    expect(() => zcodeWorkflowsUpdateMetaResultSchema.parse(updated)).not.toThrow();
+    expect(() => zodyWorkflowsUpdateMetaResultSchema.parse(updated)).not.toThrow();
     expect(updated).toEqual({ ok: true, path });
 
     const parsed = parseSavedWorkflow(await readFile(path, "utf8"));
@@ -237,7 +237,7 @@ describe("workflows/* protocol methods", () => {
       workspace: workspace(),
       name: "release-check",
     });
-    expect(() => zcodeWorkflowsDeleteResultSchema.parse(deleted)).not.toThrow();
+    expect(() => zodyWorkflowsDeleteResultSchema.parse(deleted)).not.toThrow();
     expect(deleted).toEqual({ ok: true, path });
     expect(
       (await listSavedWorkflowsOp(contextWith(), { workspace: workspace() })).workflows,
@@ -267,7 +267,7 @@ describe("workflows/* protocol methods", () => {
       workspace: workspace(),
       name: "legacy-only",
     });
-    expect(() => zcodeWorkflowsDeleteResultSchema.parse(deleted)).not.toThrow();
+    expect(() => zodyWorkflowsDeleteResultSchema.parse(deleted)).not.toThrow();
     expect(deleted).toEqual({ ok: false, reason: "read_only_source" });
     await expect(readFile(legacyPath, "utf8")).resolves.toContain("旧定义");
     expect(
@@ -339,13 +339,13 @@ describe("workflows/* protocol methods", () => {
     };
     const sessionStore = { workflowJournalStore: () => journal };
 
-    const params = zcodeWorkflowsRunsParamsSchema.parse({
+    const params = zodyWorkflowsRunsParamsSchema.parse({
       workspace: workspace(),
       name: "release-check",
       limit: 2,
     });
     const result = await listSavedWorkflowRunsOp(contextWith(sessionStore), params);
-    expect(() => zcodeWorkflowsRunsResultSchema.parse(result)).not.toThrow();
+    expect(() => zodyWorkflowsRunsResultSchema.parse(result)).not.toThrow();
     expect(queries).toEqual([{ cwd, limit: 3, name: "release-check" }]);
     expect(result).toEqual({
       runs: [
@@ -472,7 +472,7 @@ describe("workflows/* protocol methods", () => {
       workspace: workspace(),
       limit: 5,
     });
-    expect(() => zcodeWorkflowsRunsResultSchema.parse(result)).not.toThrow();
+    expect(() => zodyWorkflowsRunsResultSchema.parse(result)).not.toThrow();
     // 顶层字段取最新版（title 是 v2 的「审计报告」而不是 v1 的「旧版」）；失败行不出现。
     expect(result.runs[0]?.artifacts).toEqual([
       { id: "audit", kind: "file", title: "审计报告", version: 2, contentType: "application/pdf" },
@@ -513,7 +513,7 @@ describe("workflows/* 全局作用域与 workflows/move", () => {
       workspace: workspace(),
       scope: "project",
     });
-    expect(() => zcodeWorkflowsListResultSchema.parse(proj)).not.toThrow();
+    expect(() => zodyWorkflowsListResultSchema.parse(proj)).not.toThrow();
     expect(proj.dir).toBe(projectDir());
     expect(proj.workflows.map((entry) => entry.name)).toEqual(["proj-only"]);
     expect(proj.workflows[0]).toMatchObject({ scope: "project" });
@@ -522,7 +522,7 @@ describe("workflows/* 全局作用域与 workflows/move", () => {
       workspace: workspace(),
       scope: "global",
     });
-    expect(() => zcodeWorkflowsListResultSchema.parse(glob)).not.toThrow();
+    expect(() => zodyWorkflowsListResultSchema.parse(glob)).not.toThrow();
     expect(glob.dir).toBe(globalDir());
     expect(glob.workflows.map((entry) => entry.name)).toEqual(["global-only"]);
     expect(glob.workflows[0]).toMatchObject({
@@ -561,7 +561,7 @@ describe("workflows/* 全局作用域与 workflows/move", () => {
       name: "shared",
       scope: "global",
     });
-    expect(() => zcodeWorkflowsGetResultSchema.parse(glob)).not.toThrow();
+    expect(() => zodyWorkflowsGetResultSchema.parse(glob)).not.toThrow();
     expect(glob).toMatchObject({
       ok: true,
       name: "shared",
@@ -602,7 +602,7 @@ describe("workflows/* 全局作用域与 workflows/move", () => {
       meta: { description: "全局新说明" },
       scope: "global",
     });
-    expect(() => zcodeWorkflowsUpdateMetaResultSchema.parse(updated)).not.toThrow();
+    expect(() => zodyWorkflowsUpdateMetaResultSchema.parse(updated)).not.toThrow();
     expect(updated).toEqual({ ok: true, path: join(globalDir(), "shared.dwf.ts") });
 
     const globParsed = parseSavedWorkflow(
@@ -624,7 +624,7 @@ describe("workflows/* 全局作用域与 workflows/move", () => {
       name: "shared",
       scope: "global",
     });
-    expect(() => zcodeWorkflowsDeleteResultSchema.parse(deleted)).not.toThrow();
+    expect(() => zodyWorkflowsDeleteResultSchema.parse(deleted)).not.toThrow();
     expect(deleted).toEqual({ ok: true, path: globPath });
     await expect(readFile(globPath, "utf8")).rejects.toThrow();
     // 项目档留存。
@@ -680,7 +680,7 @@ describe("workflows/* 全局作用域与 workflows/move", () => {
       limit: 10,
       scope: "global",
     });
-    expect(() => zcodeWorkflowsRunsResultSchema.parse(glob)).not.toThrow();
+    expect(() => zodyWorkflowsRunsResultSchema.parse(glob)).not.toThrow();
     // 全局变体：查询袋没有 cwd 键（跨所有项目）。
     expect(queries).toEqual([{ limit: 11, name: "research" }]);
     expect(glob.runs).toEqual([
@@ -727,7 +727,7 @@ describe("workflows/* 全局作用域与 workflows/move", () => {
       workspace: workspace(),
       name: "mover",
     });
-    expect(() => zcodeWorkflowsMoveResultSchema.parse(result)).not.toThrow();
+    expect(() => zodyWorkflowsMoveResultSchema.parse(result)).not.toThrow();
     const projPath = join(projectDir(), "mover.dwf.ts");
     expect(result).toEqual({ ok: true, from: globPath, to: projPath });
     // 源已删。
@@ -755,7 +755,7 @@ describe("workflows/* 全局作用域与 workflows/move", () => {
       workspace: workspace(),
       name: "dup",
     });
-    expect(() => zcodeWorkflowsMoveResultSchema.parse(result)).not.toThrow();
+    expect(() => zodyWorkflowsMoveResultSchema.parse(result)).not.toThrow();
     expect(result).toEqual({ ok: false, reason: "target_exists", path: projPath });
     // 两份都还在。
     await expect(readFile(join(projectDir(), "dup.dwf.ts"), "utf8")).resolves.toContain("项目那份");
@@ -776,6 +776,6 @@ describe("workflows/* 全局作用域与 workflows/move", () => {
       name: "../etc",
     });
     expect(invalid).toMatchObject({ ok: false, reason: "invalid_name" });
-    expect(() => zcodeWorkflowsMoveResultSchema.parse(invalid)).not.toThrow();
+    expect(() => zodyWorkflowsMoveResultSchema.parse(invalid)).not.toThrow();
   });
 });

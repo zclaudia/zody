@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { SessionStorePort } from "@zody/contracts";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { createSessionRecordForV4, closeSession } from "../src/zody-protocol/server-operations.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
@@ -13,7 +13,7 @@ describe("分享上下文导入与当前选择合同", () => {
         NonNullable<SessionStorePort["commitSharedContextImportBundle"]>
       >(async () => {});
       const resume = vi.fn(async () => undefined);
-      const server = new ZCodeProtocolAgentServer({
+      const server = new ZodyProtocolAgentServer({
         sessionStore: { commitSharedContextImportBundle } as unknown as SessionStorePort,
         createZCodeApp: (options) => createFakeApp(options, { getModel: () => model, resume }),
       });

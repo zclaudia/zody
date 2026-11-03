@@ -6,7 +6,7 @@ import {
   type SessionEvent,
   type SessionId,
 } from "@zody/contracts";
-import { zcodeProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
+import { zodyProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
 import {
   V4_METHODS,
   conversationTopic,
@@ -15,7 +15,7 @@ import {
   routedTopicWireFrameSchema,
 } from "@zody/shared/zody-protocol-v4";
 import type { ZodyApp, ZodyAppOptions } from "../src/app/types.js";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 
 const workspace = {
@@ -24,7 +24,7 @@ const workspace = {
 };
 
 async function requestResult(
-  server: ZCodeProtocolAgentServer,
+  server: ZodyProtocolAgentServer,
   message: ZodyProtocolMessage,
 ): Promise<unknown> {
   const response = await server.handleMessage(message);
@@ -106,7 +106,7 @@ describe("v4 queue auto-drain foreground races", () => {
         },
       );
 
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp: (options: ZodyAppOptions) => {
         const app = createFakeApp(options);
         return {
@@ -135,7 +135,7 @@ describe("v4 queue auto-drain foreground races", () => {
     });
     const created = (await requestResult(server, {
       id: "create-bg43",
-      method: zcodeProtocolMethods.sessionCreate,
+      method: zodyProtocolMethods.sessionCreate,
       params: { workspace },
     })) as { session: { sessionId: string } };
     const sessionId = created.session.sessionId as SessionId;

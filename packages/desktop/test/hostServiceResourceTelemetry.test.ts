@@ -1,6 +1,6 @@
 import { Emitter, type Event, type IDisposable } from "@zody/rpc";
 import {
-  createZCodeAgentConnectionScope,
+  createZodyAgentConnectionScope,
   IZodyAgentService,
   ServiceCollection,
   type IZodyAgentService as IZCodeAgentServiceType,
@@ -263,7 +263,7 @@ describe("registerHostServiceResourceTelemetry", () => {
     >({
       resolveScope: () => ({ services: remote.services, generation: 1 }),
       expose: ({ services, clientMode }) => {
-        const scope = createZCodeAgentConnectionScope(services.get(IZodyAgentService), {
+        const scope = createZodyAgentConnectionScope(services.get(IZodyAgentService), {
           connectionId: `host-rpc-${clientMode}`,
           clientMode,
         });

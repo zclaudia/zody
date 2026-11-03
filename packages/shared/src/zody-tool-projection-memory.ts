@@ -12,7 +12,7 @@ export interface ZodyToolProjectionMetadata {
   toolName?: string;
 }
 
-export function createZCodeToolProjectionMemory(): ZodyToolProjectionMemory {
+export function createZodyToolProjectionMemory(): ZodyToolProjectionMemory {
   return {
     completeToolInputById: new Map<string, unknown>(),
     streamingToolInputById: new Map<string, ZodyStreamingToolInputState>(),
@@ -20,7 +20,7 @@ export function createZCodeToolProjectionMemory(): ZodyToolProjectionMemory {
   };
 }
 
-export function ensureZCodeToolProjectionMemory(
+export function ensureZodyToolProjectionMemory(
   memory: ZodyToolProjectionMemory,
 ): ZodyToolProjectionMemory {
   memory.completeToolInputById ??= new Map<string, unknown>();
@@ -29,7 +29,7 @@ export function ensureZCodeToolProjectionMemory(
   return memory;
 }
 
-export function resolveZCodeToolProjectionMetadata(
+export function resolveZodyToolProjectionMetadata(
   payload: Record<string, unknown>,
   toolId: string,
   memory: ZodyToolProjectionMemory,
@@ -61,7 +61,7 @@ export function resolveZCodeToolProjectionMetadata(
   };
 }
 
-export function finalizeZCodeToolProjectionInput(
+export function finalizeZodyToolProjectionInput(
   toolId: string,
   input: unknown,
   memory: ZodyToolProjectionMemory,
@@ -75,7 +75,7 @@ export function finalizeZCodeToolProjectionInput(
   }
 }
 
-export function forgetZCodeToolProjectionMetadata(
+export function forgetZodyToolProjectionMetadata(
   toolId: string,
   memory: ZodyToolProjectionMemory,
 ): void {

@@ -16,7 +16,7 @@ import {
   type WorkflowRunsState,
 } from "../src/zody-protocol-v4/index.js";
 import { deriveSessionWorkflowActivity } from "../src/zody-protocol-v4/index.js";
-import { getZCodeToolFamilyForName, normalizeZCodeToolName } from "../src/tool-identity.js";
+import { getZodyToolFamilyForName, normalizeZodyToolName } from "../src/tool-identity.js";
 
 const RUN_ID = "dwfrun-holes";
 
@@ -213,8 +213,8 @@ describe("通知载荷：kind = hole", () => {
 
 describe("tool identity：FillWorkflowHole 属于 workflow family", () => {
   it("按名归一并落到 workflow family（确认窗按 family 选运行确认块）", () => {
-    expect(normalizeZCodeToolName("fillworkflowhole")).toBe("FillWorkflowHole");
-    expect(getZCodeToolFamilyForName("FillWorkflowHole")).toBe("workflow");
+    expect(normalizeZodyToolName("fillworkflowhole")).toBe("FillWorkflowHole");
+    expect(getZodyToolFamilyForName("FillWorkflowHole")).toBe("workflow");
   });
 });
 

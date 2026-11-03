@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  deriveZCodeTaskStatusFromSessionSnapshot,
+  deriveZodyTaskStatusFromSessionSnapshot,
   type ZodySessionStateSnapshot,
 } from "../src/index.js";
 
@@ -63,10 +63,10 @@ function snapshot(options: SnapshotOptions = {}): ZodySessionStateSnapshot {
   } as unknown as ZodySessionStateSnapshot;
 }
 
-describe("deriveZCodeTaskStatusFromSessionSnapshot", () => {
+describe("deriveZodyTaskStatusFromSessionSnapshot", () => {
   it("treats idle snapshots with a completed visible assistant turn as completed", () => {
     expect(
-      deriveZCodeTaskStatusFromSessionSnapshot(
+      deriveZodyTaskStatusFromSessionSnapshot(
         snapshot({
           sessionStatus: "idle",
           assistantCompletedAt: 3,
@@ -77,7 +77,7 @@ describe("deriveZCodeTaskStatusFromSessionSnapshot", () => {
 
   it("does not treat tool-call continuation assistant turns as completed", () => {
     expect(
-      deriveZCodeTaskStatusFromSessionSnapshot(
+      deriveZodyTaskStatusFromSessionSnapshot(
         snapshot({
           sessionStatus: "idle",
           assistantCompletedAt: 3,
@@ -89,7 +89,7 @@ describe("deriveZCodeTaskStatusFromSessionSnapshot", () => {
 
   it("keeps active runtime snapshots running even when session status is idle", () => {
     expect(
-      deriveZCodeTaskStatusFromSessionSnapshot(
+      deriveZodyTaskStatusFromSessionSnapshot(
         snapshot({
           sessionStatus: "idle",
           activeTurnId: "turn_active",
@@ -100,7 +100,7 @@ describe("deriveZCodeTaskStatusFromSessionSnapshot", () => {
 
   it("does not treat the last projected turn id as active runtime", () => {
     expect(
-      deriveZCodeTaskStatusFromSessionSnapshot(
+      deriveZodyTaskStatusFromSessionSnapshot(
         snapshot({
           sessionStatus: "idle",
           currentTurnId: "turn_completed",
@@ -111,7 +111,7 @@ describe("deriveZCodeTaskStatusFromSessionSnapshot", () => {
 
   it("keeps completed idle snapshots completed when only currentTurnId remains", () => {
     expect(
-      deriveZCodeTaskStatusFromSessionSnapshot(
+      deriveZodyTaskStatusFromSessionSnapshot(
         snapshot({
           sessionStatus: "idle",
           currentTurnId: "turn_completed",
@@ -123,7 +123,7 @@ describe("deriveZCodeTaskStatusFromSessionSnapshot", () => {
 
   it("treats a completed assistant as terminal when only stale projection currentTurnId remains", () => {
     expect(
-      deriveZCodeTaskStatusFromSessionSnapshot(
+      deriveZodyTaskStatusFromSessionSnapshot(
         snapshot({
           sessionStatus: "running",
           assistantCompletedAt: 3,
@@ -135,7 +135,7 @@ describe("deriveZCodeTaskStatusFromSessionSnapshot", () => {
 
   it("keeps real active compact snapshots running even after a previous assistant completed", () => {
     expect(
-      deriveZCodeTaskStatusFromSessionSnapshot(
+      deriveZodyTaskStatusFromSessionSnapshot(
         snapshot({
           sessionStatus: "running",
           assistantCompletedAt: 3,
@@ -148,7 +148,7 @@ describe("deriveZCodeTaskStatusFromSessionSnapshot", () => {
 
   it("prefers projection lastError over a previous completed assistant message", () => {
     expect(
-      deriveZCodeTaskStatusFromSessionSnapshot(
+      deriveZodyTaskStatusFromSessionSnapshot(
         snapshot({
           sessionStatus: "idle",
           assistantCompletedAt: 3,

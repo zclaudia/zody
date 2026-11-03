@@ -10,41 +10,41 @@ import {
   type NetworkObservation,
 } from "@zody/rpc";
 import {
-  coalesceConsecutiveZCodeAssistants,
+  coalesceConsecutiveZodyAssistants,
   createSessionTraceId,
   decodeCustomModelValue,
-  deriveZCodeTaskStatusFromSessionSnapshot,
+  deriveZodyTaskStatusFromSessionSnapshot,
   extractPlanStepsFromToolInput,
   extractPlanStepsFromToolOutput,
   generateTraceId,
-  getZCodeGoalActiveIterationCount,
-  getZCodeGoalIterationByAssistantMessageId,
-  getZCodeUserVisibleMessages,
+  getZodyGoalActiveIterationCount,
+  getZodyGoalIterationByAssistantMessageId,
+  getZodyUserVisibleMessages,
   isMainAgentToolProjectionSource,
-  normalizeZCodeApiRetryStatus,
-  attachZCodeBackgroundTaskNotificationToRaw,
-  collectZCodeBackgroundTaskNotificationsByToolUseId,
-  mergeZCodeBackgroundTaskControlItems,
-  parseZCodeBackgroundTaskControlItems,
-  parseZCodeBackgroundTaskNotificationText,
+  normalizeZodyApiRetryStatus,
+  attachZodyBackgroundTaskNotificationToRaw,
+  collectZodyBackgroundTaskNotificationsByToolUseId,
+  mergeZodyBackgroundTaskControlItems,
+  parseZodyBackgroundTaskControlItems,
+  parseZodyBackgroundTaskNotificationText,
   parseModelPickerValue as parseSharedModelSelection,
   resolveWorkspaceKey,
-  resolveZCodeVisibleSessionTitle,
-  textFromZCodeMessageParts,
+  resolveZodyVisibleSessionTitle,
+  textFromZodyMessageParts,
   ZCODE_AGENT_PROVIDER,
-  zcodeBackgroundTaskNotificationToolUpdateStatus,
-  appendZCodeStreamingToolInputDelta,
-  buildZCodeStreamingToolInputPreview,
-  createZCodeToolProjectionMemory,
-  finalizeZCodeToolProjectionInput,
-  forgetZCodeToolProjectionMetadata,
-  isZCodeModelRetryRecoveryProgressPayload,
-  markZCodeStreamingToolInputPreviewMaterialized,
-  resolveZCodeToolProjectionMetadata,
-  zcodeApiRetryFromModelNetworkStatusPayload,
-  zcodeApiRetryFromStreamRecoveryPayload,
-  zcodeTaskNetworkDebugStatusFromPayload,
-  shouldMaterializeZCodeStreamingToolInputPreview,
+  zodyBackgroundTaskNotificationToolUpdateStatus,
+  appendZodyStreamingToolInputDelta,
+  buildZodyStreamingToolInputPreview,
+  createZodyToolProjectionMemory,
+  finalizeZodyToolProjectionInput,
+  forgetZodyToolProjectionMetadata,
+  isZodyModelRetryRecoveryProgressPayload,
+  markZodyStreamingToolInputPreviewMaterialized,
+  resolveZodyToolProjectionMetadata,
+  zodyApiRetryFromModelNetworkStatusPayload,
+  zodyApiRetryFromStreamRecoveryPayload,
+  zodyTaskNetworkDebugStatusFromPayload,
+  shouldMaterializeZodyStreamingToolInputPreview,
   type ZodyApiRetryStatus,
   type ZodyAssistantMessageFeedback,
   type ZodyBackgroundTaskNotificationInfo,
@@ -89,8 +89,8 @@ import {
   type ZodyWorkspaceTaskListChanged,
   type InputId,
   type TraceId,
-  zcodeContextUsageBreakdownSchema,
-  zcodeSessionSettingsStateSchema,
+  zodyContextUsageBreakdownSchema,
+  zodySessionSettingsStateSchema,
   type ZodyDeliveryKind,
   type ZodyMessagePart,
   type ZodyMessageWithParts,
@@ -165,8 +165,8 @@ import {
   THOUGHT_LEVEL_CONFIG_ID,
   formatTaskMetaModelSelectionFromSnapshot,
   formatModelPickerValue,
-  getZCodeAgentAvailableModes,
-  normalizeAvailableZCodeMode,
+  getZodyAgentAvailableModes,
+  normalizeAvailableZodyMode,
   settingsToConfigOptions,
 } from "./zodyConfigOptions.js";
 import type { CuaProductMcpServerResolver } from "#src/cua-permission-broker/index.js";
@@ -243,18 +243,18 @@ function padDatePart(value: number): string {
   return value.toString().padStart(2, "0");
 }
 
-function formatZCodeAgentLogDate(now: Date): string {
+function formatZodyAgentLogDate(now: Date): string {
   return [now.getFullYear(), padDatePart(now.getMonth() + 1), padDatePart(now.getDate())].join("-");
 }
 
-function resolveZCodeAgentCurrentLogFilePath(now = new Date()): string {
+function resolveZodyAgentCurrentLogFilePath(now = new Date()): string {
   const configuredLogDir = process.env.ZCODE_LOG_DIR?.trim();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const logDir = configuredLogDir || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "log");
-  return join(logDir, `zody-${formatZCodeAgentLogDate(now)}.jsonl`);
+  return join(logDir, `zody-${formatZodyAgentLogDate(now)}.jsonl`);
 }
 
-export function createZCodeTaskServiceAdapter(
+export function createZodyTaskServiceAdapter(
   options: CreateZodyTaskServiceAdapterOptions,
 ): IZodyTaskService {
   // fork（bot channels 移除，specs/bot-channels-removal.md）：bot 专用连接 scope
@@ -997,7 +997,7 @@ export function createZCodeTaskServiceAdapter(
     const key = taskKey(params);
     let memory = toolProjectionMemoryByTaskKey.get(key);
     if (!memory) {
-      memory = createZCodeToolProjectionMemory();
+      memory = createZodyToolProjectionMemory();
       toolProjectionMemoryByTaskKey.set(key, memory);
     }
     return memory;
@@ -1386,11 +1386,11 @@ export function createZCodeTaskServiceAdapter(
         workspaceIdentity: snapshot.session.workspace.workspaceIdentity,
         createdAt: snapshot.session.createdAt,
         updatedAt: snapshot.session.updatedAt,
-        mode: fromZCodeMode(snapshot.session.mode),
+        mode: fromZodyMode(snapshot.session.mode),
         model: formatTaskMetaModelSelectionFromSnapshot(snapshot),
         thoughtLevel: snapshot.settings.thoughtLevel.current,
         provider: GLM_PROVIDER,
-        status: deriveZCodeTaskStatusFromSessionSnapshot(snapshot),
+        status: deriveZodyTaskStatusFromSessionSnapshot(snapshot),
         lastError: snapshot.projection.lastError
           ? {
               code: snapshot.projection.lastError.code ?? snapshot.projection.lastError.type,
@@ -1406,7 +1406,7 @@ export function createZCodeTaskServiceAdapter(
             }
           : undefined,
         target: snapshot.projection.target
-          ? fromZCodeGoal(snapshot.projection.target)
+          ? fromZodyGoal(snapshot.projection.target)
           : snapshot.projection.target,
       },
       getOverlay(target),
@@ -1591,20 +1591,20 @@ export function createZCodeTaskServiceAdapter(
     return apiRetryByTaskKey.get(taskKey(params)) != null;
   }
 
-  function snapshotToZCode(
+  function snapshotToZody(
     snapshot: ZodySessionStateSnapshot,
     options?: { includeEmptyPendingElicitations?: boolean },
   ): ZodyTaskSnapshot {
     const meta = snapshotToMeta(snapshot);
     const activeGoalIterationCount = getSnapshotGoalActiveIterationCount(snapshot);
-    const goalIterationByAssistantMessageId = getZCodeGoalIterationByAssistantMessageId(
+    const goalIterationByAssistantMessageId = getZodyGoalIterationByAssistantMessageId(
       snapshot.messages,
       {
         ...(activeGoalIterationCount > 0 ? { maxGoalIteration: activeGoalIterationCount } : {}),
         target: snapshot.projection.target,
       },
     );
-    const backgroundTaskNotifications = collectZCodeBackgroundTaskNotificationsByToolUseId(
+    const backgroundTaskNotifications = collectZodyBackgroundTaskNotificationsByToolUseId(
       snapshot.messages,
     );
     const messages = mergeLiveToolProjectionIntoSnapshotMessages(
@@ -1612,8 +1612,8 @@ export function createZCodeTaskServiceAdapter(
       normalizeGoalVerificationTimelineMessageOrder(
         addGoalVerificationTimelineSnapshotFallback(
           addSessionForkSnapshotFallback(
-            coalesceConsecutiveZCodeAssistants(
-              getZCodeUserVisibleMessages(snapshot.messages, {
+            coalesceConsecutiveZodyAssistants(
+              getZodyUserVisibleMessages(snapshot.messages, {
                 target: snapshot.projection.target,
               }).map((message) =>
                 mapMessage(
@@ -1643,7 +1643,7 @@ export function createZCodeTaskServiceAdapter(
         (event): event is Extract<ZodyStreamEvent, { type: "elicitation_request" }> =>
           event !== null,
       );
-    const backgroundTaskControls = parseZCodeBackgroundTaskControlItems(
+    const backgroundTaskControls = parseZodyBackgroundTaskControlItems(
       snapshot.projection.backgroundJobs,
     );
     setTaskBackgroundTaskControlCache(
@@ -1838,7 +1838,7 @@ export function createZCodeTaskServiceAdapter(
     streamedTurnText.clear();
   }
 
-  async function disposeZCodeAgentServiceAndWait(): Promise<void> {
+  async function disposeZodyAgentServiceAndWait(): Promise<void> {
     const agentService = options.zcodeAgentService as IZodyAgentService & {
       disposeAllAndWait?: () => Promise<void>;
     };
@@ -1949,7 +1949,7 @@ export function createZCodeTaskServiceAdapter(
                     ...(model?.options?.reasoningLevel
                       ? { thought: model.options.reasoningLevel }
                       : {}),
-                    ...(params.mode ? { mode: toZCodeMode(params.mode) } : {}),
+                    ...(params.mode ? { mode: toZodyMode(params.mode) } : {}),
                   },
                   ...(mcpServers ? { mcpServers } : {}),
                 },
@@ -1969,7 +1969,7 @@ export function createZCodeTaskServiceAdapter(
           snapshot = await options.zcodeAgentService.createSession({
             ...target,
             sessionTraceId: createSessionTraceId(),
-            mode: toZCodeMode(params.mode),
+            mode: toZodyMode(params.mode),
             model: requestedSelection,
             thoughtLevel: requestedSelection?.options?.reasoningLevel,
             ...(params.automationId || params.deferPersistenceUntilFirstPrompt
@@ -2661,8 +2661,8 @@ export function createZCodeTaskServiceAdapter(
       }
       const snapshot = restored.snapshot;
       const projectionStartedAt = Date.now();
-      const zcodeSnapshot = limitTaskSnapshotMessages(
-        snapshotToZCode(snapshot, {
+      const zodySnapshot = limitTaskSnapshotMessages(
+        snapshotToZody(snapshot, {
           includeEmptyPendingElicitations: params.clientMode === "web-remote-replayable",
         }),
         params.messageLimit,
@@ -2670,7 +2670,7 @@ export function createZCodeTaskServiceAdapter(
       const projectionDurationMs = Date.now() - projectionStartedAt;
       // session owner 的快照刷新索引投影；syncTaskMeta 继续保留用户手动标题。
       const indexStartedAt = Date.now();
-      const indexedMeta = await syncTaskIndexMeta(zcodeSnapshot.meta);
+      const indexedMeta = await syncTaskIndexMeta(zodySnapshot.meta);
       const indexDurationMs = Date.now() - indexStartedAt;
       logger.info(undefined, "[zcode-task-service] 历史快照读取完成", {
         clientMode: params.clientMode ?? "unknown",
@@ -2680,12 +2680,12 @@ export function createZCodeTaskServiceAdapter(
         projectionDurationMs,
         resumeDurationMs,
         snapshotKind: "session",
-        stats: getTaskSnapshotMessageDiagnostics(zcodeSnapshot),
+        stats: getTaskSnapshotMessageDiagnostics(zodySnapshot),
         taskId: params.taskId,
         workspaceIdentity: params.workspaceIdentity ?? null,
         workspacePath: params.workspacePath,
       });
-      return { ...zcodeSnapshot, meta: indexedMeta };
+      return { ...zodySnapshot, meta: indexedMeta };
     },
 
     async getTaskSnapshotWithEtag(params) {
@@ -2858,7 +2858,7 @@ export function createZCodeTaskServiceAdapter(
       // sendHostCasCommandV4）。v4 handler 不发旧 state.updated，观察端一致性与桌面
       // v4 工具条切换同批（读路径 v4 store 收口）；发起端由下方 resumeSnapshot 保真。
       const target = getTaskTarget(params.taskId);
-      await switchCollaborationModeViaProtocol(target, toZCodeMode(params.mode) ?? "build");
+      await switchCollaborationModeViaProtocol(target, toZodyMode(params.mode) ?? "build");
       const snapshot = await resumeSnapshot(target);
       await syncTaskIndexSnapshot(snapshot);
     },
@@ -2898,7 +2898,7 @@ export function createZCodeTaskServiceAdapter(
       } else if (params.configId === MODE_CONFIG_ID) {
         await switchCollaborationModeViaProtocol(
           target,
-          toZCodeMode(params.value as ZodyTaskMode) ?? "build",
+          toZodyMode(params.value as ZodyTaskMode) ?? "build",
         );
       }
       const snapshot = await resumeSnapshot(target);
@@ -2957,7 +2957,7 @@ export function createZCodeTaskServiceAdapter(
         );
       }
       if (params.mode?.trim()) {
-        await switchCollaborationModeViaProtocol(target, toZCodeMode(params.mode) ?? "build");
+        await switchCollaborationModeViaProtocol(target, toZodyMode(params.mode) ?? "build");
       }
       const snapshot = await resumeSnapshot(target);
       await syncTaskIndexSnapshot(snapshot);
@@ -2973,7 +2973,7 @@ export function createZCodeTaskServiceAdapter(
     },
 
     async getTaskNativeSessionLogFile() {
-      const path = resolveZCodeAgentCurrentLogFilePath();
+      const path = resolveZodyAgentCurrentLogFilePath();
       // 返回 ZCode Agent 的结构化日志 JSONL；日志行中的 sessionId 用于按当前任务排查。
       return { provider: GLM_PROVIDER, path, exists: existsSync(path) };
     },
@@ -3263,7 +3263,7 @@ export function createZCodeTaskServiceAdapter(
           workspacePath: params.workspacePath,
           workspaceIdentity: params.workspaceIdentity,
           sessionId: params.taskId,
-          deliveryKind: toZCodeDeliveryKind(params.deliveryKind),
+          deliveryKind: toZodyDeliveryKind(params.deliveryKind),
           includeSnapshot: params.deliveryKind === "replayable",
         })((event) => mapServiceEvent(target, event));
         return {
@@ -3303,7 +3303,7 @@ export function createZCodeTaskServiceAdapter(
       // app 退出必须先断开 task index syncer 的订阅，再等待 agent 进程树完成清理；
       // 否则 host 退出时会把 zcode-cli 的 SIGKILL 兜底 timer 一起带走。
       taskIndexSyncer.disposeAll();
-      await disposeZCodeAgentServiceAndWait();
+      await disposeZodyAgentServiceAndWait();
       disposeLocalTaskState();
     },
   };
@@ -3330,7 +3330,7 @@ function applyOverlayToMeta(meta: ZodyTaskMeta, overlay: TaskOverlay): ZodyTaskM
 }
 
 function deriveTitleFromSnapshot(snapshot: ZodySessionStateSnapshot): string {
-  return resolveZCodeVisibleSessionTitle({
+  return resolveZodyVisibleSessionTitle({
     title: snapshot.session.title,
     messages: snapshot.messages,
     target: snapshot.projection.target,
@@ -3426,7 +3426,7 @@ function parseModelPickerValue(value: string): ModelSelection {
   return parseSharedModelSelection(value);
 }
 
-function toZCodeMode(mode: ZodyTaskMode | undefined): ZodySessionMode | undefined {
+function toZodyMode(mode: ZodyTaskMode | undefined): ZodySessionMode | undefined {
   switch (mode) {
     case "plan":
       return "plan";
@@ -3452,7 +3452,7 @@ function toZCodeMode(mode: ZodyTaskMode | undefined): ZodySessionMode | undefine
   }
 }
 
-function fromZCodeMode(mode: ZodySessionMode): ZodyTaskMode {
+function fromZodyMode(mode: ZodySessionMode): ZodyTaskMode {
   return mode === "build" ? "build" : mode;
 }
 
@@ -3617,7 +3617,7 @@ function getSnapshotGoalActiveIterationCount(snapshot: ZodySessionStateSnapshot)
     snapshot.runtime.goalVerificationTimeline?.filter(
       (item) => !targetId || item.targetId === targetId,
     ) ?? [];
-  return getZCodeGoalActiveIterationCount({
+  return getZodyGoalActiveIterationCount({
     targetStatus: snapshot.projection.target?.status ?? null,
     timeline,
   });
@@ -3626,7 +3626,7 @@ function getSnapshotGoalActiveIterationCount(snapshot: ZodySessionStateSnapshot)
 // fork（bot channels 移除，specs/bot-channels-removal.md）：deliveryKind 联合删除
 // "bot-channel-continuous"；"replayable" → "web-remote-replayable" 映射是手机远控
 // 恢复链路语义，保留不动。
-function toZCodeDeliveryKind(
+function toZodyDeliveryKind(
   deliveryKind: "continuous" | "replayable" | "mixed" | undefined,
 ): ZodyDeliveryKind {
   return deliveryKind === "replayable" ? "web-remote-replayable" : "desktop-continuous";
@@ -3638,11 +3638,11 @@ function backgroundTaskNotificationToolUpdateFromInput(params: {
   taskId: string;
   traceId: TraceId;
 }): Extract<ZodyStreamEvent, { type: "tool_call_update" }> | null {
-  const parsed = parseZCodeBackgroundTaskNotificationText(params.input);
+  const parsed = parseZodyBackgroundTaskNotificationText(params.input);
   if (!parsed) {
     return null;
   }
-  const status = zcodeBackgroundTaskNotificationToolUpdateStatus(parsed.notification.status);
+  const status = zodyBackgroundTaskNotificationToolUpdateStatus(parsed.notification.status);
   return {
     type: "tool_call_update",
     taskId: params.taskId,
@@ -3656,7 +3656,7 @@ function backgroundTaskNotificationToolUpdateFromInput(params: {
     ...(status === "failed" && parsed.notification.error
       ? { error: parsed.notification.error }
       : {}),
-    raw: attachZCodeBackgroundTaskNotificationToRaw(
+    raw: attachZodyBackgroundTaskNotificationToRaw(
       { toolCallId: parsed.toolUseId },
       parsed.notification,
     ),
@@ -3901,7 +3901,7 @@ function mapToolPart(
   const taskNotification = backgroundTaskNotifications?.get(part.callId);
   // ZCode Protocol 的 part.callId 是实时流和终态 snapshot 共同的工具身份。
   // 以前只保存 metadata 会丢掉 toolCallId，手机 replayable 里 result-only 临时工具就无法被终态快照覆盖。
-  const raw = attachZCodeBackgroundTaskNotificationToRaw(
+  const raw = attachZodyBackgroundTaskNotificationToRaw(
     attachToolCallIdToRaw("metadata" in state ? (state.metadata ?? state) : state, part.callId),
     taskNotification,
   );
@@ -3909,7 +3909,7 @@ function mapToolPart(
     // snapshot 里的 completed 是 background Agent launch ACK；failed
     // notification 必须在 replayable restore 中覆盖它，但不能顺带改变 stopped 等既有语义。
     const notificationStatus = taskNotification?.status
-      ? zcodeBackgroundTaskNotificationToolUpdateStatus(taskNotification.status)
+      ? zodyBackgroundTaskNotificationToolUpdateStatus(taskNotification.status)
       : undefined;
     const notificationFailed = notificationStatus === "failed";
     return {
@@ -3957,7 +3957,7 @@ function attachToolCallIdToRaw(raw: unknown, toolCallId: string): unknown {
 }
 
 function textFromParts(parts: readonly ZodyMessagePart[]): string {
-  return textFromZCodeMessageParts(parts);
+  return textFromZodyMessageParts(parts);
 }
 
 function reasoningFromParts(parts: readonly ZodyMessagePart[]): string | undefined {
@@ -3970,7 +3970,7 @@ function reasoningFromParts(parts: readonly ZodyMessagePart[]): string | undefin
   return text || undefined;
 }
 
-function fromZCodeGoal(goal: unknown): ZodyTaskGoal {
+function fromZodyGoal(goal: unknown): ZodyTaskGoal {
   const record = asRecord(goal);
   const time = asRecord(record.time);
   const status = stringValue(record.status);
@@ -3979,7 +3979,7 @@ function fromZCodeGoal(goal: unknown): ZodyTaskGoal {
     targetID: stringValue(record.targetID) ?? stringValue(record.targetId) ?? "",
     objective: stringValue(record.objective) ?? "",
     summaryTitle: stringValue(record.summaryTitle) ?? null,
-    status: isZCodeTaskGoalStatus(status) ? status : "active",
+    status: isZodyTaskGoalStatus(status) ? status : "active",
     tokenBudget: typeof record.tokenBudget === "number" ? record.tokenBudget : null,
     tokensUsed: numberValue(record.tokensUsed) ?? 0,
     timeUsedSeconds: numberValue(record.timeUsedSeconds) ?? 0,
@@ -3990,7 +3990,7 @@ function fromZCodeGoal(goal: unknown): ZodyTaskGoal {
   };
 }
 
-function isZCodeTaskGoalStatus(status: string | undefined): status is ZodyTaskGoal["status"] {
+function isZodyTaskGoalStatus(status: string | undefined): status is ZodyTaskGoal["status"] {
   return (
     status === "active" ||
     status === "paused" ||
@@ -4043,7 +4043,7 @@ function mapStateUpdated(
   params: TaskTarget,
   notification: ZodyStateUpdatedNotification,
 ): ZodyStreamEvent[] {
-  const parsedSettings = zcodeSessionSettingsStateSchema.safeParse(notification.patch);
+  const parsedSettings = zodySessionSettingsStateSchema.safeParse(notification.patch);
   if (!parsedSettings.success) {
     return [];
   }
@@ -4053,8 +4053,8 @@ function mapStateUpdated(
       type: "mode_update",
       taskId: params.taskId,
       traceId,
-      currentModeId: normalizeAvailableZCodeMode(parsedSettings.data.mode.current),
-      availableModes: getZCodeAgentAvailableModes(),
+      currentModeId: normalizeAvailableZodyMode(parsedSettings.data.mode.current),
+      availableModes: getZodyAgentAvailableModes(),
     },
     {
       type: "glm_agent_model_state_update",
@@ -4355,7 +4355,7 @@ function maybeBuildApiRetryClearOnModelProgress(
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
 ): Extract<ZodyStreamEvent, { type: "session_info_update" }> | null {
-  if (!hasActiveApiRetry || !isZCodeModelRetryRecoveryProgressPayload(payload)) {
+  if (!hasActiveApiRetry || !isZodyModelRetryRecoveryProgressPayload(payload)) {
     return null;
   }
   // 重试请求开始不代表恢复成功，立即清会让输入栏闪烁；
@@ -4462,18 +4462,18 @@ function mapToolInputStreaming(
   }
 
   if (kind === "tool_input_delta") {
-    const state = appendZCodeStreamingToolInputDelta(
+    const state = appendZodyStreamingToolInputDelta(
       streamingToolInputById?.get(toolId),
       stringValue(payload.delta) ?? "",
     );
     streamingToolInputById?.set(toolId, state);
-    if (!shouldMaterializeZCodeStreamingToolInputPreview(state, { toolName })) {
+    if (!shouldMaterializeZodyStreamingToolInputPreview(state, { toolName })) {
       // 性能修复：services 兼容投影曾经每个 delta 都解析累计 JSON，并把 rawInput 全量塞进 raw。
       // 这里先只维护 tombstone buffer，达到预算或控制边界再 emit，避免 host/renderer 双端 O(n²)。
       return null;
     }
-    const preview = buildZCodeStreamingToolInputPreview(state.rawInput);
-    markZCodeStreamingToolInputPreviewMaterialized(state);
+    const preview = buildZodyStreamingToolInputPreview(state.rawInput);
+    markZodyStreamingToolInputPreviewMaterialized(state);
     const previewToolName = toolName ?? inferStreamingToolInputToolName(preview.input);
     const previewTitle = previewToolName ?? title;
     if (previewToolName && !toolName) {
@@ -4539,7 +4539,7 @@ function mapToolInputStreaming(
     const rawInput = state?.rawInput ?? "";
     const hasCompleteInput = "input" in payload;
     const completeInput = hasCompleteInput ? payload.input : undefined;
-    const preview = buildZCodeStreamingToolInputPreview(
+    const preview = buildZodyStreamingToolInputPreview(
       rawInput,
       hasCompleteInput ? completeInput : undefined,
     );
@@ -4549,7 +4549,7 @@ function mapToolInputStreaming(
       toolNameById?.set(toolId, previewToolName);
     }
     if ((hasCompleteInput || preview.complete) && toolProjectionMemory) {
-      finalizeZCodeToolProjectionInput(toolId, preview.input, toolProjectionMemory);
+      finalizeZodyToolProjectionInput(toolId, preview.input, toolProjectionMemory);
     }
     streamingToolInputById?.set(toolId, {
       // 性能修复：最终 tool_call 已经持有完整 input，compat projection 不再长期保留
@@ -4794,13 +4794,13 @@ function mapToolUpdated(
   const parentToolUseId = parentToolUseIdFromToolPayload(payload);
   const memory = toolProjectionMemory ?? {};
   const toolNameById = memory.toolNameById;
-  const rememberedTool = resolveZCodeToolProjectionMetadata(payload, toolId, memory);
+  const rememberedTool = resolveZodyToolProjectionMetadata(payload, toolId, memory);
   const rememberedToolName = rememberedTool.toolName;
   const rememberedInput = rememberedTool.hasInput ? rememberedTool.input : undefined;
   if ("input" in payload && "toolName" in payload) {
     const toolName = rememberedToolName ?? "tool";
     toolNameById?.set(toolId, toolName);
-    finalizeZCodeToolProjectionInput(toolId, payload.input, memory);
+    finalizeZodyToolProjectionInput(toolId, payload.input, memory);
     const toolEvent: ZodyStreamEvent = {
       type: "tool_call",
       taskId,
@@ -4860,7 +4860,7 @@ function mapToolUpdated(
       raw: payload,
     };
     if (status !== "in_progress") {
-      forgetZCodeToolProjectionMetadata(toolId, memory);
+      forgetZodyToolProjectionMetadata(toolId, memory);
     }
     const planSteps = isMainAgentToolProjectionSource(payload)
       ? extractPlanStepsFromToolOutput({
@@ -4884,7 +4884,7 @@ function mapToolUpdated(
     ];
   }
   if ("error" in payload) {
-    forgetZCodeToolProjectionMetadata(toolId, memory);
+    forgetZodyToolProjectionMetadata(toolId, memory);
     return [
       {
         type: "tool_call_update",
@@ -5262,14 +5262,14 @@ function updateTaskBackgroundTaskControlCacheFromPayload(
   cacheKey: string,
   payload: Record<string, unknown>,
 ): ZodyBackgroundTaskControlItem[] | null {
-  const parsedJobs = parseZCodeBackgroundTaskControlItems([payload]);
+  const parsedJobs = parseZodyBackgroundTaskControlItems([payload]);
   if (parsedJobs.length === 0) {
     return null;
   }
   if (!cache) {
     return parsedJobs;
   }
-  const nextJobs = mergeZCodeBackgroundTaskControlItems(cache.get(cacheKey) ?? [], parsedJobs);
+  const nextJobs = mergeZodyBackgroundTaskControlItems(cache.get(cacheKey) ?? [], parsedJobs);
   cache.set(cacheKey, nextJobs);
   return nextJobs;
 }
@@ -5443,7 +5443,7 @@ function mapSessionInfoLikePayload(
   if (tokenUsageDelta) {
     events.push(tokenUsageDelta);
   }
-  const networkDebugStatus = zcodeTaskNetworkDebugStatusFromPayload({
+  const networkDebugStatus = zodyTaskNetworkDebugStatusFromPayload({
     taskId,
     traceId,
     ...(inputId ? { inputId } : {}),
@@ -5496,16 +5496,16 @@ function mapSessionInfoLikePayload(
       target: {
         action: stringValue(payload.action) === "cleared" ? "cleared" : "set",
         source: stringValue(payload.source) === "tool" ? "tool" : "runtime",
-        target: payload.target ? fromZCodeGoal(payload.target as never) : null,
+        target: payload.target ? fromZodyGoal(payload.target as never) : null,
         previousTarget: payload.previousTarget
-          ? fromZCodeGoal(payload.previousTarget as never)
+          ? fromZodyGoal(payload.previousTarget as never)
           : undefined,
       },
     });
   }
   const projection = asRecord(payload.projection);
   if (Array.isArray(projection.backgroundJobs)) {
-    const jobs = parseZCodeBackgroundTaskControlItems(projection.backgroundJobs);
+    const jobs = parseZodyBackgroundTaskControlItems(projection.backgroundJobs);
     setTaskBackgroundTaskControlCache(
       backgroundTaskControlsByTaskKey,
       backgroundTaskControlCacheKey,
@@ -5586,22 +5586,22 @@ function apiRetryFromSessionInfoPayload(
   payload: Record<string, unknown>,
 ): ZodyApiRetryStatus | null | undefined {
   if ("apiRetry" in payload) {
-    return normalizeZCodeApiRetryStatus(payload.apiRetry);
+    return normalizeZodyApiRetryStatus(payload.apiRetry);
   }
 
-  const runtimeRetry = normalizeZCodeApiRetryStatus(asRecord(payload.runtime).apiRetry);
+  const runtimeRetry = normalizeZodyApiRetryStatus(asRecord(payload.runtime).apiRetry);
   if (runtimeRetry !== undefined) {
     return runtimeRetry;
   }
 
-  const metaRetry = normalizeZCodeApiRetryStatus(asRecord(asRecord(payload._meta).zcode).apiRetry);
+  const metaRetry = normalizeZodyApiRetryStatus(asRecord(asRecord(payload._meta).zcode).apiRetry);
   if (metaRetry !== undefined) {
     return metaRetry;
   }
 
   return (
-    zcodeApiRetryFromStreamRecoveryPayload(payload) ??
-    zcodeApiRetryFromModelNetworkStatusPayload(payload)
+    zodyApiRetryFromStreamRecoveryPayload(payload) ??
+    zodyApiRetryFromModelNetworkStatusPayload(payload)
   );
 }
 
@@ -5772,7 +5772,7 @@ function contextUsageFromPayload(payload: Record<string, unknown>): ContextUsage
 function optionalContextUsageBreakdownFromPayload(
   payload: Record<string, unknown>,
 ): Pick<ContextUsageUpdate, "breakdown"> {
-  const parsed = zcodeContextUsageBreakdownSchema.safeParse(payload.contextUsageBreakdown);
+  const parsed = zodyContextUsageBreakdownSchema.safeParse(payload.contextUsageBreakdown);
   return parsed.success && parsed.data.length > 0 ? { breakdown: parsed.data } : {};
 }
 

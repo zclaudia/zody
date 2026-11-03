@@ -1,6 +1,6 @@
 import type { ZodyBackgroundTaskControlItem } from "./background-task-controls.js";
 
-export function mergeZCodeBackgroundTaskControlItems(
+export function mergeZodyBackgroundTaskControlItems(
   current: readonly ZodyBackgroundTaskControlItem[],
   updates: readonly ZodyBackgroundTaskControlItem[],
 ): ZodyBackgroundTaskControlItem[] {

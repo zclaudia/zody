@@ -24,18 +24,18 @@ vi.mock("node:os", async (importOriginal) => {
 });
 
 import {
-  zcodeProtocolMethods,
-  zcodePluginsConfigureParamsSchema,
-  zcodePluginsInstallResultSchema,
-  zcodePluginsListParamsSchema,
-  zcodePluginsListResultSchema,
-  zcodePluginsMarketplaceMutationResultSchema,
-  zcodePluginsMarketplaceUpdateParamsSchema,
-  zcodePluginsOverviewParamsSchema,
-  zcodePluginsCancelOperationParamsSchema,
-  zcodePluginsCancelOperationResultSchema,
-  zcodePluginsSetEnabledParamsSchema,
-  zcodePluginsValidateResultSchema,
+  zodyProtocolMethods,
+  zodyPluginsConfigureParamsSchema,
+  zodyPluginsInstallResultSchema,
+  zodyPluginsListParamsSchema,
+  zodyPluginsListResultSchema,
+  zodyPluginsMarketplaceMutationResultSchema,
+  zodyPluginsMarketplaceUpdateParamsSchema,
+  zodyPluginsOverviewParamsSchema,
+  zodyPluginsCancelOperationParamsSchema,
+  zodyPluginsCancelOperationResultSchema,
+  zodyPluginsSetEnabledParamsSchema,
+  zodyPluginsValidateResultSchema,
 } from "@zody/shared";
 import { getCliStorageRoot, getPluginStorageRoot } from "../src/app/paths.js";
 import { installZCodeMarketplacePlugin } from "../src/plugins.js";
@@ -111,26 +111,26 @@ describe("plugins protocol contracts", () => {
   });
 
   it("registers plugin management methods", () => {
-    expect(zcodeProtocolMethods.pluginsList).toBe("plugins/list");
-    expect(zcodeProtocolMethods.pluginsSetEnabled).toBe("plugins/setEnabled");
-    expect(zcodeProtocolMethods.pluginsOverview).toBe("plugins/overview");
-    expect(zcodeProtocolMethods.pluginsMarketplaceAdd).toBe("plugins/marketplace/add");
-    expect(zcodeProtocolMethods.pluginsMarketplaceUpdate).toBe("plugins/marketplace/update");
-    expect(zcodeProtocolMethods.pluginsInstall).toBe("plugins/install");
-    expect(zcodeProtocolMethods.pluginsCancelOperation).toBe("plugins/cancelOperation");
-    expect(zcodeProtocolMethods.pluginsValidate).toBe("plugins/validate");
+    expect(zodyProtocolMethods.pluginsList).toBe("plugins/list");
+    expect(zodyProtocolMethods.pluginsSetEnabled).toBe("plugins/setEnabled");
+    expect(zodyProtocolMethods.pluginsOverview).toBe("plugins/overview");
+    expect(zodyProtocolMethods.pluginsMarketplaceAdd).toBe("plugins/marketplace/add");
+    expect(zodyProtocolMethods.pluginsMarketplaceUpdate).toBe("plugins/marketplace/update");
+    expect(zodyProtocolMethods.pluginsInstall).toBe("plugins/install");
+    expect(zodyProtocolMethods.pluginsCancelOperation).toBe("plugins/cancelOperation");
+    expect(zodyProtocolMethods.pluginsValidate).toBe("plugins/validate");
   });
 
   it("accepts an optional config scope for Settings list and overview projections", () => {
     const workspace = { workspacePath: "/w", workspaceKey: "/w" };
     expect(
-      zcodePluginsListParamsSchema.parse({
+      zodyPluginsListParamsSchema.parse({
         workspace,
         configScope: "user",
       }).configScope,
     ).toBe("user");
     expect(
-      zcodePluginsOverviewParamsSchema.parse({
+      zodyPluginsOverviewParamsSchema.parse({
         workspace,
         configScope: "workspace",
       }).configScope,
@@ -138,7 +138,7 @@ describe("plugins protocol contracts", () => {
   });
 
   it("parses a plugins/list result payload", () => {
-    const parsed = zcodePluginsListResultSchema.parse({
+    const parsed = zodyPluginsListResultSchema.parse({
       plugins: [
         {
           id: "skill-creator@zcode-plugins-official",
@@ -345,7 +345,7 @@ describe("plugins protocol contracts", () => {
 
   it("rejects a plugins/setEnabled payload missing pluginId", () => {
     expect(() =>
-      zcodePluginsSetEnabledParamsSchema.parse({
+      zodyPluginsSetEnabledParamsSchema.parse({
         workspace: { workspacePath: "/w", workspaceKey: "/w" },
         enabled: true,
       }),
@@ -354,7 +354,7 @@ describe("plugins protocol contracts", () => {
 
   it("accepts an operationId for cancellable suggested-prompt enablement", () => {
     expect(
-      zcodePluginsSetEnabledParamsSchema.parse({
+      zodyPluginsSetEnabledParamsSchema.parse({
         workspace: { workspacePath: "/w", workspaceKey: "/w" },
         pluginId: "document-skills@zcode-plugins-official",
         enabled: true,
@@ -365,7 +365,7 @@ describe("plugins protocol contracts", () => {
 
   it("parses marketplace mutation, install, and validate result payloads", () => {
     expect(
-      zcodePluginsConfigureParamsSchema.parse({
+      zodyPluginsConfigureParamsSchema.parse({
         workspace: { workspacePath: "/w", workspaceKey: "/w" },
         pluginId: "secret-plugin@personal",
         options: { region: "us-east-1" },
@@ -374,7 +374,7 @@ describe("plugins protocol contracts", () => {
     ).toEqual(["token"]);
 
     expect(
-      zcodePluginsMarketplaceUpdateParamsSchema.parse({
+      zodyPluginsMarketplaceUpdateParamsSchema.parse({
         workspace: { workspacePath: "/w", workspaceKey: "/w" },
         marketplace: "workspace-market",
         operationId: "refresh-workspace-market",
@@ -382,7 +382,7 @@ describe("plugins protocol contracts", () => {
     ).toBe("refresh-workspace-market");
 
     expect(
-      zcodePluginsMarketplaceMutationResultSchema.parse({
+      zodyPluginsMarketplaceMutationResultSchema.parse({
         marketplace: {
           id: "claude-plugins-official",
           name: "claude-plugins-official",
@@ -399,7 +399,7 @@ describe("plugins protocol contracts", () => {
     ).toBe("claude-plugins-official");
 
     expect(
-      zcodePluginsInstallResultSchema.parse({
+      zodyPluginsInstallResultSchema.parse({
         installedPlugins: [
           {
             id: "hello@claude-plugins-official",
@@ -415,7 +415,7 @@ describe("plugins protocol contracts", () => {
     ).toBe("hello@claude-plugins-official");
 
     expect(
-      zcodePluginsValidateResultSchema.parse({
+      zodyPluginsValidateResultSchema.parse({
         ok: true,
         diagnostics: [],
         compatibility: {
@@ -429,12 +429,12 @@ describe("plugins protocol contracts", () => {
 
   it("parses a plugins/cancelOperation payload", () => {
     expect(
-      zcodePluginsCancelOperationParamsSchema.parse({
+      zodyPluginsCancelOperationParamsSchema.parse({
         operationId: "remote-plugin-sync-1",
       }).operationId,
     ).toBe("remote-plugin-sync-1");
     expect(
-      zcodePluginsCancelOperationResultSchema.parse({
+      zodyPluginsCancelOperationResultSchema.parse({
         operationId: "remote-plugin-sync-1",
         cancelled: true,
       }),

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  deriveZCodeTaskStatusFromSessionSnapshot,
+  deriveZodyTaskStatusFromSessionSnapshot,
   elideSessionSnapshotForIndex,
   getConversationMessageProjectionPolicy,
-  getZCodeUserVisibleMessages,
-  resolveZCodeVisibleSessionTitle,
-  zcodeMessageWithPartsSchema,
-  zcodeSessionReadParamsSchema,
+  getZodyUserVisibleMessages,
+  resolveZodyVisibleSessionTitle,
+  zodyMessageWithPartsSchema,
+  zodySessionReadParamsSchema,
   type ZodyMessageWithParts,
   type ZodySessionStateSnapshot,
 } from "../src/index.js";
@@ -219,7 +219,7 @@ describe("elideSessionSnapshotForIndex", () => {
     expect(JSON.stringify(elided).length).toBeLessThan(10_000);
     expect(JSON.stringify(full).length).toBeGreaterThan(BIG.length * 10);
     for (const message of elided.messages) {
-      expect(() => zcodeMessageWithPartsSchema.parse(message)).not.toThrow();
+      expect(() => zodyMessageWithPartsSchema.parse(message)).not.toThrow();
     }
     const parts = elided.messages.flatMap((message) => message.parts);
     const byId = new Map(parts.map((part) => [part.partId, part]));
@@ -248,7 +248,7 @@ describe("elideSessionSnapshotForIndex", () => {
     const elided = elideSessionSnapshotForIndex(full);
 
     const visibleIds = (snapshot: ZodySessionStateSnapshot) =>
-      getZCodeUserVisibleMessages(snapshot.messages).map((message) => message.info.messageId);
+      getZodyUserVisibleMessages(snapshot.messages).map((message) => message.info.messageId);
     expect(visibleIds(elided)).toEqual(visibleIds(full));
     expect(visibleIds(full)).toEqual(["m_u1", "m_a1", "m_a2"]);
 
@@ -256,11 +256,11 @@ describe("elideSessionSnapshotForIndex", () => {
       full.messages.map(getConversationMessageProjectionPolicy),
     );
     const title = (snapshot: ZodySessionStateSnapshot) =>
-      resolveZCodeVisibleSessionTitle({ title: "", messages: snapshot.messages, target: null });
+      resolveZodyVisibleSessionTitle({ title: "", messages: snapshot.messages, target: null });
     expect(title(elided)).toBe(title(full));
     expect(title(full)).toBe("帮我实现订单查询");
-    expect(deriveZCodeTaskStatusFromSessionSnapshot(elided)).toBe(
-      deriveZCodeTaskStatusFromSessionSnapshot(full),
+    expect(deriveZodyTaskStatusFromSessionSnapshot(elided)).toBe(
+      deriveZodyTaskStatusFromSessionSnapshot(full),
     );
   });
 
@@ -276,16 +276,16 @@ describe("elideSessionSnapshotForIndex", () => {
 
 describe("session/read contentProfile", () => {
   it("接受 full / index，缺省兼容旧调用，拒绝未知值", () => {
-    expect(zcodeSessionReadParamsSchema.parse({ sessionId: "s" })).toEqual({ sessionId: "s" });
+    expect(zodySessionReadParamsSchema.parse({ sessionId: "s" })).toEqual({ sessionId: "s" });
     expect(
-      zcodeSessionReadParamsSchema.parse({ sessionId: "s", contentProfile: "index" })
+      zodySessionReadParamsSchema.parse({ sessionId: "s", contentProfile: "index" })
         .contentProfile,
     ).toBe("index");
     expect(
-      zcodeSessionReadParamsSchema.parse({ sessionId: "s", contentProfile: "full" }).contentProfile,
+      zodySessionReadParamsSchema.parse({ sessionId: "s", contentProfile: "full" }).contentProfile,
     ).toBe("full");
     expect(() =>
-      zcodeSessionReadParamsSchema.parse({ sessionId: "s", contentProfile: "tiny" }),
+      zodySessionReadParamsSchema.parse({ sessionId: "s", contentProfile: "tiny" }),
     ).toThrow();
   });
 });

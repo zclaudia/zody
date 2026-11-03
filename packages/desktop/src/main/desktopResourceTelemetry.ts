@@ -10,7 +10,7 @@ import {
   type ProcessResourceRole,
   type ProcessResourceRuntimeSurface,
   PROCESS_RESOURCE_EVENT_NAMES,
-  zcodeToolExecResourceSchema,
+  zodyToolExecResourceSchema,
 } from "@zody/shared";
 import { BrowserWindow } from "electron";
 import os from "node:os";
@@ -177,7 +177,7 @@ export function ingestToolExecResource(
   runtimeSurface: ProcessResourceRuntimeSurface,
 ): void {
   if (!globalContext) return;
-  const parsed = zcodeToolExecResourceSchema.safeParse(raw);
+  const parsed = zodyToolExecResourceSchema.safeParse(raw);
   if (!parsed.success) return;
   const sample = parsed.data;
   // 同一 Server 可经多个 workspace 和 window Host 转发完成事实；只在 main 唯一出口去重。

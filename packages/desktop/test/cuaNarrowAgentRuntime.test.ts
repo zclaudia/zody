@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  digestZCodeAgentNativeRuntimeNetwork,
+  digestZodyAgentNativeRuntimeNetwork,
   type ZodyAgentNativeRuntimeStartupContext,
 } from "@zody/services/node";
 import {
@@ -280,14 +280,14 @@ describe("cua narrow agent runtime", () => {
       reason: "read-before-eligibility-compare",
       providerRevisionSha256: startupContext.providerRevisionSha256,
       selection: startupContext.selection,
-      networkDigestSha256: digestZCodeAgentNativeRuntimeNetwork(startupContext.network),
+      networkDigestSha256: digestZodyAgentNativeRuntimeNetwork(startupContext.network),
       snapshotSource: "existing-host-services",
       taskTimeProviderGuard: false,
     });
     expect(JSON.stringify(snapshot)).not.toContain("127.0.0.1:7890");
     expect(JSON.stringify(snapshot)).not.toContain("zody-test-ca.pem");
     expect(digestCuaNarrowNetworkConfig(startupContext.network)).toBe(
-      digestZCodeAgentNativeRuntimeNetwork(startupContext.network),
+      digestZodyAgentNativeRuntimeNetwork(startupContext.network),
     );
   });
 

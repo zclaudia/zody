@@ -9,6 +9,6 @@ import { z } from "zod";
  */
 export const ZCODE_PROVIDERS = ["glm"] as const;
 
-export const zcodeProviderSchema = z.enum(ZCODE_PROVIDERS);
+export const zodyProviderSchema = z.enum(ZCODE_PROVIDERS);
 
 export type ZodyProvider = (typeof ZCODE_PROVIDERS)[number];

@@ -44,31 +44,31 @@ import {
   subagentRuntimeConfigSchema,
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
   ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
-  zcodeProtocolErrorCodes,
-  zcodeProtocolMethods,
-  zcodeSessionCancelBackgroundTaskParamsSchema,
-  zcodeSessionCompactParamsSchema,
-  zcodeSessionCloseParamsSchema,
-  zcodeSessionCreateParamsSchema,
-  zcodeSessionEventsParamsSchema,
-  zcodeSessionForkParamsSchema,
-  zcodeSessionGoalParamsSchema,
-  zcodeSessionListParamsSchema,
-  zcodeSessionMessagesParamsSchema,
-  zcodeSessionReadParamsSchema,
+  zodyProtocolErrorCodes,
+  zodyProtocolMethods,
+  zodySessionCancelBackgroundTaskParamsSchema,
+  zodySessionCompactParamsSchema,
+  zodySessionCloseParamsSchema,
+  zodySessionCreateParamsSchema,
+  zodySessionEventsParamsSchema,
+  zodySessionForkParamsSchema,
+  zodySessionGoalParamsSchema,
+  zodySessionListParamsSchema,
+  zodySessionMessagesParamsSchema,
+  zodySessionReadParamsSchema,
   elideSessionSnapshotForIndex,
-  zcodeSessionRuntimePreferencesResultSchema,
-  zcodeSessionResumeParamsSchema,
-  zcodeSessionSendParamsSchema,
-  zcodeSessionSetModeParamsSchema,
-  zcodeSessionSetModelParamsSchema,
-  zcodeSessionSetThoughtLevelParamsSchema,
-  zcodeSessionStopParamsSchema,
-  zcodeSessionSubscribeParamsSchema,
-  zcodeSessionSubagentsParamsSchema,
-  zcodeTaskTokenUsageParamsSchema,
-  zcodeUsageStatsParamsSchema,
-  zcodeWorkspaceGenerateTextParamsSchema,
+  zodySessionRuntimePreferencesResultSchema,
+  zodySessionResumeParamsSchema,
+  zodySessionSendParamsSchema,
+  zodySessionSetModeParamsSchema,
+  zodySessionSetModelParamsSchema,
+  zodySessionSetThoughtLevelParamsSchema,
+  zodySessionStopParamsSchema,
+  zodySessionSubscribeParamsSchema,
+  zodySessionSubagentsParamsSchema,
+  zodyTaskTokenUsageParamsSchema,
+  zodyUsageStatsParamsSchema,
+  zodyWorkspaceGenerateTextParamsSchema,
   getConversationMessageProjectionPolicy,
   isRemoteWorkspaceIdentity,
   parseRemoteWorkspaceIdentity,
@@ -108,7 +108,7 @@ import {
   type ZodyProtocolSessionRecord,
   type ZodyProtocolToolInputTransmissionState,
 } from "./server-types.js";
-import { createWorkspaceZCodeApp, ensureSessionModelAvailable } from "./workspace-model-runtime.js";
+import { createWorkspaceZodyApp, ensureSessionModelAvailable } from "./workspace-model-runtime.js";
 import { buildAppUsageSnapshot, resolveTzOffsetMs } from "./usage-stats-builder.js";
 import { createProtocolInteractionBroker } from "./interaction-broker.js";
 import { createProtocolAutomationPort } from "./automation-port.js";
@@ -334,13 +334,13 @@ function readProtocolStreamingParentToolUseId(
     return direct;
   }
   const meta = asRecord(payload._meta);
-  const zcode = asRecord(meta.zcode);
+  const zody = asRecord(meta.zcode);
   const claudeCode = asRecord(meta.claudeCode);
   return (
     stringValue(meta.parentToolUseId) ??
     stringValue(meta.parentToolCallId) ??
-    stringValue(zcode.parentToolUseId) ??
-    stringValue(zcode.parentToolCallId) ??
+    stringValue(zody.parentToolUseId) ??
+    stringValue(zody.parentToolCallId) ??
     stringValue(claudeCode.parentToolUseId) ??
     stringValue(claudeCode.parentToolCallId)
   );
@@ -1262,7 +1262,7 @@ async function createSessionWithProjection<T>(
     record: ZodyProtocolSessionRecord,
   ) => Promise<{ value: T; phaseDurationsMs?: SnapshotPhaseDurationsMs; messageCount?: number }>,
 ): Promise<T> {
-  const params = parseParams(zcodeSessionCreateParamsSchema, rawParams);
+  const params = parseParams(zodySessionCreateParamsSchema, rawParams);
   const startedAt = Date.now();
   if (params.sessionId && !params.importedHistory) {
     // 普通 session/create 若允许外部指定 id，会覆盖 context.sessions 里的 active record，
@@ -1463,7 +1463,7 @@ export async function activateSessionForResume(
       sessionId: params.sessionId,
     });
     throw new ProtocolRequestError(
-      zcodeProtocolErrorCodes.sessionUnavailable,
+      zodyProtocolErrorCodes.sessionUnavailable,
       `Session not found: ${params.sessionId}`,
     );
   }
@@ -1542,7 +1542,7 @@ export async function activateSessionForResume(
 }
 
 export async function resumeSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionResumeParamsSchema, rawParams);
+  const params = parseParams(zodySessionResumeParamsSchema, rawParams);
   const activated = await activateSessionForResume(context, params);
   return await snapshot(context, activated.record, activated.knownSession);
 }
@@ -1645,7 +1645,7 @@ function resolveLegacyRemoteWorkspace(
 }
 
 export async function listSessions(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionListParamsSchema, rawParams ?? {});
+  const params = parseParams(zodySessionListParamsSchema, rawParams ?? {});
   const store = context.deps.sessionStore;
   // 显式 ID 查询只读持久化身份，供 Host 修复旧索引；不能为了识别 child 激活 runtime。
   const stored = (
@@ -1700,7 +1700,7 @@ export async function listSessionSubagents(
   rawParams: unknown,
   persistedMessages?: MessageWithParts[],
 ) {
-  const params = parseParams(zcodeSessionSubagentsParamsSchema, rawParams ?? {});
+  const params = parseParams(zodySessionSubagentsParamsSchema, rawParams ?? {});
   const store = context.deps.sessionStore;
   const liveParent = context.sessions.get(params.sessionId);
   if (!store) {
@@ -1725,7 +1725,7 @@ export async function listSessionSubagents(
       sessionId: params.sessionId,
     });
     throw new ProtocolRequestError(
-      zcodeProtocolErrorCodes.sessionUnavailable,
+      zodyProtocolErrorCodes.sessionUnavailable,
       `Session not found: ${params.sessionId}`,
     );
   }
@@ -1791,7 +1791,7 @@ export async function listSessionSubagents(
 const APP_USAGE_RANGE_DAYS: Record<string, number> = { "7d": 7, "30d": 30 };
 
 export async function getUsageStats(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeUsageStatsParamsSchema, rawParams ?? {});
+  const params = parseParams(zodyUsageStatsParamsSchema, rawParams ?? {});
   const timeZone = params.timeZone ?? "UTC";
   const until = Date.now();
   const tzOffsetMs = resolveTzOffsetMs(timeZone, until);
@@ -1845,7 +1845,7 @@ export async function getUsageStats(context: ZodyProtocolAgentServerContext, raw
 }
 
 export async function readSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionReadParamsSchema, rawParams);
+  const params = parseParams(zodySessionReadParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, {
     deliveryKind: params.deliveryKind,
     operation: "session_read",
@@ -1892,7 +1892,7 @@ export async function readSessionContextUsage(
 }
 
 export async function readMessages(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionMessagesParamsSchema, rawParams);
+  const params = parseParams(zodySessionMessagesParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   const allMessages = await readActiveSessionMessages(context, record);
   const afterMessageIndex = params.afterMessageId
@@ -1905,7 +1905,7 @@ export async function readMessages(context: ZodyProtocolAgentServerContext, rawP
 }
 
 export async function readEvents(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionEventsParamsSchema, rawParams);
+  const params = parseParams(zodySessionEventsParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   return {
     events: await readProtocolSessionEvents(context, record, record.deliveryKind, {
@@ -1919,7 +1919,7 @@ export async function subscribeSession(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeSessionSubscribeParamsSchema, rawParams);
+  const params = parseParams(zodySessionSubscribeParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   record.deliveryKind = params.deliveryKind;
   // 兼容保护：旧 replayable 流没有 unsubscribe RPC。这里只记录真正的 subscribe，
@@ -1944,7 +1944,7 @@ export async function subscribeSession(
 }
 
 export async function sendPrompt(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionSendParamsSchema, rawParams);
+  const params = parseParams(zodySessionSendParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   // legacy 输入入口同样必须保持子代理只读，不能绕过 V4 用户输入准入。
   if (record.taskType === "subagent_child") {
@@ -2035,7 +2035,7 @@ export async function sendPrompt(context: ZodyProtocolAgentServerContext, rawPar
 }
 
 export async function compactSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionCompactParamsSchema, rawParams);
+  const params = parseParams(zodySessionCompactParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   assertExpectedRevision(record, params.expectedRevision);
   const activeTurn = record.app.runtime.getActiveTurnInfo();
@@ -2142,7 +2142,7 @@ async function runCompactTurnInBackground(
 }
 
 export async function goalSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionGoalParamsSchema, rawParams);
+  const params = parseParams(zodySessionGoalParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   assertExpectedRevision(record, params.expectedRevision);
   // /goal 是目标状态写入，不是普通 prompt；除 pause 外运行中允许执行会绕过前端队列并污染当前 turn。
@@ -2249,7 +2249,7 @@ export async function goalSession(context: ZodyProtocolAgentServerContext, rawPa
 }
 
 export async function forkSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionForkParamsSchema, rawParams);
+  const params = parseParams(zodySessionForkParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   assertExpectedRevision(record, params.expectedRevision);
   ensureNoActiveTurn(record, "Cannot fork while a prompt is running");
@@ -2575,7 +2575,7 @@ async function runGoalContinuationInBackground(
 }
 
 export async function stopSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionStopParamsSchema, rawParams);
+  const params = parseParams(zodySessionStopParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   const hadActivePrompt = Boolean(record.activeAbortController);
   let pausedTarget: ProtocolGoalTarget | null = null;
@@ -2636,7 +2636,7 @@ export async function cancelBackgroundTask(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeSessionCancelBackgroundTaskParamsSchema, rawParams);
+  const params = parseParams(zodySessionCancelBackgroundTaskParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   context.logger?.info("ZCode Protocol session/cancelBackgroundTask received", {
     sessionId: params.sessionId,
@@ -2663,7 +2663,7 @@ export async function cancelBackgroundTask(
 }
 
 export async function setModel(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionSetModelParamsSchema, rawParams);
+  const params = parseParams(zodySessionSetModelParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   assertExpectedRevision(record, params.expectedRevision);
   await runSessionModelConfigMutation(record.app, async () => {
@@ -2677,7 +2677,7 @@ export async function setThoughtLevel(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeSessionSetThoughtLevelParamsSchema, rawParams);
+  const params = parseParams(zodySessionSetThoughtLevelParamsSchema, rawParams);
   if (!params.thoughtLevel) {
     throw new ProtocolRequestError(-32602, "thoughtLevel is required");
   }
@@ -2691,7 +2691,7 @@ export async function setThoughtLevel(
 }
 
 export async function setMode(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionSetModeParamsSchema, rawParams);
+  const params = parseParams(zodySessionSetModeParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   assertExpectedRevision(record, params.expectedRevision);
   await record.app.setMode(params.mode);
@@ -2699,7 +2699,7 @@ export async function setMode(context: ZodyProtocolAgentServerContext, rawParams
 }
 
 export async function closeSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
-  const params = parseParams(zcodeSessionCloseParamsSchema, rawParams);
+  const params = parseParams(zodySessionCloseParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   if (!shouldCloseSessionForExpectedPersistence(record.persistence, params.expectedPersistence)) {
     // 连接切换与跨端首发可能并发。session/send 会先把 deferred 提升为
@@ -2736,7 +2736,7 @@ export async function generateWorkspaceText(
   rawParams: unknown,
   abortSignal?: AbortSignal,
 ) {
-  const params = parseParams(zcodeWorkspaceGenerateTextParamsSchema, rawParams);
+  const params = parseParams(zodyWorkspaceGenerateTextParamsSchema, rawParams);
   const active = Array.from(context.sessions.values()).find(
     (record) => record.workspace.workspaceKey === params.workspace.workspaceKey,
   );
@@ -2758,7 +2758,7 @@ export async function generateWorkspaceText(
   };
   const app =
     active?.app ??
-    (await createWorkspaceZCodeApp(context, params.workspace, {
+    (await createWorkspaceZodyApp(context, params.workspace, {
       env: context.deps.env,
       eventStore: context.deps.createSessionEventStore("workspace-generate-text"),
       runtimeConfig: {
@@ -2889,7 +2889,7 @@ async function resolveTurnMessageId(
     return lastAssistantForTargetTurn;
   }
   throw new ProtocolRequestError(
-    zcodeProtocolErrorCodes.sessionUnavailable,
+    zodyProtocolErrorCodes.sessionUnavailable,
     `Cannot resolve ${role} message for turnIndex=${turnIndex}`,
   );
 }
@@ -2898,7 +2898,7 @@ export async function getTaskTokenUsage(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
-  const params = parseParams(zcodeTaskTokenUsageParamsSchema, rawParams ?? {});
+  const params = parseParams(zodyTaskTokenUsageParamsSchema, rawParams ?? {});
   const usageStore = context.deps.sessionStore as Partial<UsageStorePort> | undefined;
   if (!usageStore?.queryTaskUsage) {
     return {
@@ -2988,7 +2988,7 @@ export function onSessionEvent(
       // 桌面 v4 主链没有旧 session/event 的 deliveryKind 订阅，顶部提示不能继续
       // 依赖该旧门控；这里只发送无内容的生命周期元数据，并与 v4 投影并行、互不阻断。
       context.notify({
-        method: zcodeProtocolMethods.computerUseOperationEvent,
+        method: zodyProtocolMethods.computerUseOperationEvent,
         params: computerUseOperationEvent,
       });
       // 这条 notify 过去只在抛错时有日志，成功路径无痕，于是「agent 压根没发」
@@ -3166,9 +3166,9 @@ async function requestSessionRuntimePreferences(
   });
   try {
     const result = await context.requestClient(
-      zcodeProtocolMethods.sessionRequestRuntimePreferences,
+      zodyProtocolMethods.sessionRequestRuntimePreferences,
       { sessionId, scope },
-      zcodeSessionRuntimePreferencesResultSchema,
+      zodySessionRuntimePreferencesResultSchema,
       {
         timeoutMs: ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
         ...(trace ? { trace } : {}),
@@ -3321,7 +3321,7 @@ async function createRecord(
   // automation-port 需要读取「本会话」的实时 model/mode/thought；record 在 app 之后才建。
   // 用可变持有者做惰性绑定：CronCreate 在 turn 中调用 create() 时 record 早已就绪。
   let ownSessionRecord: ZodyProtocolSessionRecord | undefined;
-  const app = await createWorkspaceZCodeApp(context, workspace, {
+  const app = await createWorkspaceZodyApp(context, workspace, {
     env: context.deps.env,
     eventStore,
     resume,
@@ -3382,7 +3382,7 @@ async function createRecord(
           readSubagentRuntimeConfig: async ({ signal, traceContext }) => {
             signal.throwIfAborted();
             const result = await context.requestClient(
-              zcodeProtocolMethods.subagentsReadRuntimeConfig,
+              zodyProtocolMethods.subagentsReadRuntimeConfig,
               { sessionId },
               subagentRuntimeConfigSchema,
               {
@@ -3477,12 +3477,12 @@ function derivePersistedSessionMode(
 ): ZodySessionCreateParams["mode"] | undefined {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const info = messages[index]?.info;
-    if (info?.role === "assistant" && isZCodeSessionMode(info.mode)) return info.mode;
+    if (info?.role === "assistant" && isZodySessionMode(info.mode)) return info.mode;
   }
   return undefined;
 }
 
-function isZCodeSessionMode(
+function isZodySessionMode(
   value: unknown,
 ): value is NonNullable<ZodySessionCreateParams["mode"]> {
   return (

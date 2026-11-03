@@ -1,5 +1,5 @@
 import {
-  zcodeProviderUpdateAccountConfigParamsSchema,
+  zodyProviderUpdateAccountConfigParamsSchema,
   type ZodyProviderUpdateAccountConfigResult,
 } from "@zody/shared";
 import { parseProcessAccountProviderConfigSnapshot } from "../app/process-provider-registry-runtime.js";
@@ -18,7 +18,7 @@ export async function updateAccountProviderConfig(
   context: ZodyProtocolAgentServerContext,
   params: unknown,
 ): Promise<ZodyProviderUpdateAccountConfigResult> {
-  const envelope = parseParams(zcodeProviderUpdateAccountConfigParamsSchema, params);
+  const envelope = parseParams(zodyProviderUpdateAccountConfigParamsSchema, params);
   const snapshot = parseProcessAccountProviderConfigSnapshot(envelope);
   if (!context.deps.syncAccountProviderConfig) {
     throw new ProtocolRequestError(-32018, "Account Provider Config runtime is not configured");

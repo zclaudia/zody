@@ -80,7 +80,7 @@ function harness(argv: string[]) {
       });
       return 0;
     },
-    runZCodeProtocolAgent: async (options) => {
+    runZodyProtocolAgent: async (options) => {
       protocolCalls += 1;
       // stdio 只接收原有协议入口参数，工作流策略继续由 Host 决定。
       assert.equal("dynamicWorkflowEnabled" in options, false);

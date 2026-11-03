@@ -77,7 +77,7 @@ import {
   TEST_ZCODE_ENDPOINT_ORIGIN,
   ZCODE_VERSION,
   ZCODE_DATA_ROOT_DIR_NAME,
-  resolveZCodeEndpointOrigin,
+  resolveZodyEndpointOrigin,
   shouldEnableE2ETestBridge,
   type UpdateStatePayload,
   type TelemetryEventPayload,
@@ -811,7 +811,7 @@ remoteGatewayBackend.onChannelClosed((info) =>
 const appLaunchGate = createAppLaunchGate();
 const appLaunchCoordinator = createAppLaunchCoordinator(appLaunchGate);
 async function resolveCurrentZodyEndpointOrigin() {
-  return resolveZCodeEndpointOrigin({
+  return resolveZodyEndpointOrigin({
     env: ZCODE_ENV,
     envBaseOrigin: resolveZCodeEndpointEnvBaseOrigin(hostProcessLocalEnv),
     overrideOrigin: (await mainSettingService.get()).zodyEndpointOrigin,
@@ -820,7 +820,7 @@ async function resolveCurrentZodyEndpointOrigin() {
 // fork（F4.7）：官方账号 OAuth 下线后不再注入 userId/授权/营销参数 loader，
 // TelemetryCore 回落到匿名遥测（空 userId、无 Authorization）。
 const appTelemetryCore = createTelemetryCore({
-  resolveZCodeEndpointOrigin: resolveCurrentZodyEndpointOrigin,
+  resolveZodyEndpointOrigin: resolveCurrentZodyEndpointOrigin,
   fetchImpl: createDesktopTelemetryFetch(net),
 });
 const appTelemetryRuntime = createAppTelemetryRuntime({

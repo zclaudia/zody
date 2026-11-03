@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods, type ZodyWorkspaceRef } from "@zody/shared";
+import { zodyProtocolMethods, type ZodyWorkspaceRef } from "@zody/shared";
 import type { ZodyProtocolMessage } from "@zody/shared";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
-import { createWorkspaceZCodeApp } from "../src/zody-protocol/workspace-model-runtime.js";
+import { createWorkspaceZodyApp } from "../src/zody-protocol/workspace-model-runtime.js";
 import type { ZodyAppOptions } from "../src/app/types.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 
@@ -16,7 +16,7 @@ const TRUSTED_IDENTITY = {
   runtimeInstanceId: "agent-real",
 } as const;
 
-async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProtocolMessage) {
+async function requestResult(server: ZodyProtocolAgentServer, message: ZodyProtocolMessage) {
   const response = await server.handleMessage(message);
   if (!response || !("result" in response)) {
     throw new Error(`Expected protocol success response: ${JSON.stringify(response)}`);
@@ -40,14 +40,14 @@ async function createWorkspaceAppWithServerIdentity(
     notify: () => undefined,
     sessions: new Map(),
   } as unknown as ZodyProtocolAgentServerContext;
-  await createWorkspaceZCodeApp(context, workspace, options);
+  await createWorkspaceZodyApp(context, workspace, options);
   return createdOptions[0];
 }
 
 describe("CUA startup identity protocol", () => {
   it("pins the first identity, treats the same value as idempotent, and rejects replacement", async () => {
     const createdOptions: ZodyAppOptions[] = [];
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp: (options) => {
         createdOptions.push(options ?? {});
         return createFakeApp(options);
@@ -59,14 +59,14 @@ describe("CUA startup identity protocol", () => {
     await expect(
       requestResult(server, {
         id: "startup-first",
-        method: zcodeProtocolMethods.runtimeIdentityInitialize,
+        method: zodyProtocolMethods.runtimeIdentityInitialize,
         params: { identity: TRUSTED_IDENTITY },
       }),
     ).resolves.toEqual({ initialized: true, reused: false });
     await expect(
       requestResult(server, {
         id: "startup-same",
-        method: zcodeProtocolMethods.runtimeIdentityInitialize,
+        method: zodyProtocolMethods.runtimeIdentityInitialize,
         params: { identity: { ...TRUSTED_IDENTITY } },
       }),
     ).resolves.toEqual({ initialized: true, reused: true });
@@ -74,7 +74,7 @@ describe("CUA startup identity protocol", () => {
     await expect(
       server.handleMessage({
         id: "startup-conflict",
-        method: zcodeProtocolMethods.runtimeIdentityInitialize,
+        method: zodyProtocolMethods.runtimeIdentityInitialize,
         params: {
           identity: { hostInstanceId: "other-host", runtimeInstanceId: "other-runtime" },
         },
@@ -85,7 +85,7 @@ describe("CUA startup identity protocol", () => {
 
     await requestResult(server, {
       id: "create-after-conflict",
-      method: zcodeProtocolMethods.sessionCreate,
+      method: zodyProtocolMethods.sessionCreate,
       params: { workspace: LOCAL_WORKSPACE },
     });
     expect(createdOptions[0]?.cuaLaunchIdentity).toEqual({

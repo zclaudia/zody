@@ -9,9 +9,9 @@ import type {
 } from "@zody/shared";
 import {
   formatModelPickerValue as formatSharedModelSelection,
-  getZCodeAgentAvailableModes as getSharedZCodeAgentAvailableModes,
-  normalizeAvailableZCodeMode as normalizeSharedAvailableZCodeMode,
-  zcodeSessionSettingsToZCodeConfigOptions,
+  getZodyAgentAvailableModes as getSharedZCodeAgentAvailableModes,
+  normalizeAvailableZodyMode as normalizeSharedAvailableZCodeMode,
+  zodySessionSettingsToZodyConfigOptions,
 } from "@zody/shared";
 
 export const MODEL_CONFIG_ID = "model";
@@ -49,16 +49,16 @@ export function formatTaskMetaModelSelectionFromSnapshot(
   return formatModelPickerValue(resolveTaskMetaModelSelectionFromSnapshot(snapshot));
 }
 
-export function normalizeAvailableZCodeMode(mode: ZodySessionMode): string {
+export function normalizeAvailableZodyMode(mode: ZodySessionMode): string {
   return normalizeSharedAvailableZCodeMode(mode);
 }
 
-export function getZCodeAgentAvailableModes(): ZodyTaskModeInfo[] {
+export function getZodyAgentAvailableModes(): ZodyTaskModeInfo[] {
   return getSharedZCodeAgentAvailableModes();
 }
 
 export function settingsToConfigOptions(settings: ZodySessionSettingsState): ZodyConfigOption[] {
   // service 侧曾经维护了一份三项 mode 白名单，edit 模式上线后没有同步，
   // 切换模式时 mode_update 会把 UI 菜单覆盖成 build/plan/yolo。这里统一复用 shared 的事实源。
-  return zcodeSessionSettingsToZCodeConfigOptions(settings);
+  return zodySessionSettingsToZodyConfigOptions(settings);
 }

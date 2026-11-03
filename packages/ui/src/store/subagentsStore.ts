@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import {
-  normalizeAgentProviderToZCodeAgent,
+  normalizeAgentProviderToZodyAgent,
   ZCODE_AGENT_PROVIDER,
   type ZodyProvider,
   type AgentSummary,
@@ -127,7 +127,7 @@ export const useSubagentsStore = create<SubagentsStoreState>((set, get) => ({
   ) {
     const currentState = get();
     const hasProvider = typeof providerOrSubagentsService === "string";
-    const provider = normalizeAgentProviderToZCodeAgent(
+    const provider = normalizeAgentProviderToZodyAgent(
       hasProvider ? providerOrSubagentsService : ZCODE_AGENT_PROVIDER,
     );
     const subagentsService = hasProvider ? maybeSubagentsService : providerOrSubagentsService;
@@ -203,7 +203,7 @@ export const useSubagentsStore = create<SubagentsStoreState>((set, get) => ({
     }
     const workspaceIdentityFromState =
       workspaceIdentity?.trim() || get().workspaceIdentity || undefined;
-    const provider = normalizeAgentProviderToZCodeAgent(get().provider);
+    const provider = normalizeAgentProviderToZodyAgent(get().provider);
     const hasCachedAgents = get().agents.length > 0;
     set({ loading: !hasCachedAgents, error: null });
     const requestId = nextAgentLoadRequestId();
@@ -287,7 +287,7 @@ export const useSubagentsStore = create<SubagentsStoreState>((set, get) => ({
     try {
       const result = await subagentsService.createAgent({
         config,
-        provider: normalizeAgentProviderToZCodeAgent(provider),
+        provider: normalizeAgentProviderToZodyAgent(provider),
       });
       await get().refresh(subagentsService, workspaceIdentityFromState);
       return result.agent;
@@ -320,7 +320,7 @@ export const useSubagentsStore = create<SubagentsStoreState>((set, get) => ({
         agentId,
         config,
         oldFilePath,
-        provider: normalizeAgentProviderToZCodeAgent(provider),
+        provider: normalizeAgentProviderToZodyAgent(provider),
       });
       await get().refresh(subagentsService, workspaceIdentityFromState);
       return result.agent;

@@ -8,9 +8,9 @@ import type {
 } from "@zody/shared";
 import {
   networkCaptureControlSchema,
-  zcodeProtocolMessageSchema,
-  zcodeProtocolMethods,
-  zcodeProtocolNotifications,
+  zodyProtocolMessageSchema,
+  zodyProtocolMethods,
+  zodyProtocolNotifications,
 } from "@zody/shared";
 import type { Logger } from "@zody/contracts";
 
@@ -28,23 +28,23 @@ const PROTOCOL_EOF_DRAIN_MS = 100;
 // MCP App 的请求由实例凭证和 callId 隔离；若与普通命令一起等待完成，
 // uiCallTool 会挡住自己的 cancel/close，真实 stdio 链路将死锁。
 const MCP_APP_CONCURRENT_METHODS = new Set<string>([
-  zcodeProtocolMethods.mcpReadResource,
-  zcodeProtocolMethods.mcpUiOpenInstance,
-  zcodeProtocolMethods.mcpUiCloseInstance,
-  zcodeProtocolMethods.mcpUiValidateInstance,
-  zcodeProtocolMethods.mcpUiCallTool,
-  zcodeProtocolMethods.mcpUiSampling,
-  zcodeProtocolMethods.mcpUiCancelSampling,
-  zcodeProtocolMethods.mcpUiCancelCall,
-  zcodeProtocolMethods.mcpUiReadResource,
-  zcodeProtocolMethods.mcpUiListResources,
-  zcodeProtocolMethods.mcpUiListResourceTemplates,
-  zcodeProtocolMethods.mcpUiSubscribeResource,
-  zcodeProtocolMethods.mcpUiUnsubscribeResource,
-  zcodeProtocolMethods.mcpUiRegisterAppTools,
-  zcodeProtocolMethods.mcpUiUnregisterAppTools,
-  zcodeProtocolMethods.mcpUiClaimAppToolCall,
-  zcodeProtocolMethods.mcpUiResolveAppToolCall,
+  zodyProtocolMethods.mcpReadResource,
+  zodyProtocolMethods.mcpUiOpenInstance,
+  zodyProtocolMethods.mcpUiCloseInstance,
+  zodyProtocolMethods.mcpUiValidateInstance,
+  zodyProtocolMethods.mcpUiCallTool,
+  zodyProtocolMethods.mcpUiSampling,
+  zodyProtocolMethods.mcpUiCancelSampling,
+  zodyProtocolMethods.mcpUiCancelCall,
+  zodyProtocolMethods.mcpUiReadResource,
+  zodyProtocolMethods.mcpUiListResources,
+  zodyProtocolMethods.mcpUiListResourceTemplates,
+  zodyProtocolMethods.mcpUiSubscribeResource,
+  zodyProtocolMethods.mcpUiUnsubscribeResource,
+  zodyProtocolMethods.mcpUiRegisterAppTools,
+  zodyProtocolMethods.mcpUiUnregisterAppTools,
+  zodyProtocolMethods.mcpUiClaimAppToolCall,
+  zodyProtocolMethods.mcpUiResolveAppToolCall,
 ]);
 
 interface ZodyProtocolNdjsonConnectionOptions {
@@ -64,7 +64,7 @@ interface ZodyProtocolNdjsonConnectionOptions {
   } | null;
 }
 
-export class ZCodeProtocolNdjsonConnection {
+export class ZodyProtocolNdjsonConnection {
   private buffer = "";
   private processing: Promise<void> = Promise.resolve();
   private lastQueuedMessageStarted: Promise<void> = Promise.resolve();
@@ -102,7 +102,7 @@ export class ZCodeProtocolNdjsonConnection {
     // 观测可丢弃，不能在 stdout 背压时无界积压或挤占业务协议输出。
     if (
       "method" in message &&
-      message.method === zcodeProtocolNotifications.processNetworkRequests &&
+      message.method === zodyProtocolNotifications.processNetworkRequests &&
       ((this.options.output as NodeJS.WritableStream & { writableLength?: number })
         .writableLength ?? 0) >=
         256 * 1024
@@ -197,7 +197,7 @@ export class ZCodeProtocolNdjsonConnection {
     if (
       !("id" in message) &&
       "method" in message &&
-      message.method === zcodeProtocolMethods.processNetworkCapture
+      message.method === zodyProtocolMethods.processNetworkCapture
     ) {
       // 启停是进程观测控制，不等待正在执行的生成任务，也不进入 CommandInbox。
       if (networkCaptureControlSchema.safeParse(message.params).success) {
@@ -258,7 +258,7 @@ export class ZCodeProtocolNdjsonConnection {
       return null;
     }
 
-    const parsed = zcodeProtocolMessageSchema.safeParse(decoded);
+    const parsed = zodyProtocolMessageSchema.safeParse(decoded);
     if (!parsed.success) {
       this.sendError("invalid-message", -32600, "Invalid Zody Protocol message", {
         issues: parsed.error.issues,
@@ -275,8 +275,8 @@ export class ZCodeProtocolNdjsonConnection {
     return (
       "id" in message &&
       "method" in message &&
-      (message.method === zcodeProtocolMethods.sessionStop ||
-        message.method === zcodeProtocolMethods.workspaceCancelGenerateText ||
+      (message.method === zodyProtocolMethods.sessionStop ||
+        message.method === zodyProtocolMethods.workspaceCancelGenerateText ||
         MCP_APP_CONCURRENT_METHODS.has(message.method))
     );
   }

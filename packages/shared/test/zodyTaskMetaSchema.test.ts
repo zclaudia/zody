@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { zcodeSessionFileSchema } from "../src/validation.js";
+import { zodySessionFileSchema } from "../src/validation.js";
 
-describe("zcodeTaskMetaSchema", () => {
+describe("zodyTaskMetaSchema", () => {
   it("会保留 unread 持久化字段", () => {
-    const parsed = zcodeSessionFileSchema.parse({
+    const parsed = zodySessionFileSchema.parse({
       meta: {
         taskId: "task-schema",
         traceId: "trace-schema",
@@ -22,7 +22,7 @@ describe("zcodeTaskMetaSchema", () => {
   });
 
   it("会保留 zcode target 持久化字段", () => {
-    const parsed = zcodeSessionFileSchema.parse({
+    const parsed = zodySessionFileSchema.parse({
       meta: {
         taskId: "task-target",
         traceId: "trace-target",
@@ -55,7 +55,7 @@ describe("zcodeTaskMetaSchema", () => {
   });
 
   it("兼容旧 task target 缺失 summaryTitle", () => {
-    const parsed = zcodeSessionFileSchema.parse({
+    const parsed = zodySessionFileSchema.parse({
       meta: {
         taskId: "task-target-legacy",
         traceId: "trace-target-legacy",
@@ -86,7 +86,7 @@ describe("zcodeTaskMetaSchema", () => {
   });
 
   it("会保留 task 最后失败原因", () => {
-    const parsed = zcodeSessionFileSchema.parse({
+    const parsed = zodySessionFileSchema.parse({
       meta: {
         taskId: "task-last-error",
         traceId: "trace-last-error",
@@ -123,7 +123,7 @@ describe("zcodeTaskMetaSchema", () => {
 
   it("会拒绝非法 zcode target 状态", () => {
     expect(() =>
-      zcodeSessionFileSchema.parse({
+      zodySessionFileSchema.parse({
         meta: {
           taskId: "task-target-invalid",
           traceId: "trace-target-invalid",

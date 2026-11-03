@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import {
-  normalizeAgentProviderToZCodeAgent,
+  normalizeAgentProviderToZodyAgent,
   ZCODE_AGENT_PROVIDER,
   type ZodyProvider,
   type SkillSummary,
@@ -93,7 +93,7 @@ export const useSkillStore = create<SkillStoreState>((set, get) => ({
   ) {
     const currentState = get();
     const hasProvider = typeof providerOrSkillsService === "string";
-    const provider = normalizeAgentProviderToZCodeAgent(
+    const provider = normalizeAgentProviderToZodyAgent(
       hasProvider ? providerOrSkillsService : ZCODE_AGENT_PROVIDER,
     );
     const skillsService = hasProvider ? maybeSkillsService : providerOrSkillsService;
@@ -168,7 +168,7 @@ export const useSkillStore = create<SkillStoreState>((set, get) => ({
     }
     const workspaceIdentityFromState =
       workspaceIdentity?.trim() || get().workspaceIdentity || undefined;
-    const provider = normalizeAgentProviderToZCodeAgent(get().provider);
+    const provider = normalizeAgentProviderToZodyAgent(get().provider);
     const hasCachedSkills = get().skills.length > 0;
     // 开关技能后会触发 refresh，之前每次都把 loading 置 true，
     // Settings 列表会先切到“加载中”再切回数据，用户看到整列表闪烁。
@@ -224,7 +224,7 @@ export const useSkillStore = create<SkillStoreState>((set, get) => ({
     const workspaceIdentityFromState =
       workspaceIdentity?.trim() || get().workspaceIdentity || undefined;
     const legacyCall = typeof providerOrEnabled === "boolean";
-    const provider = normalizeAgentProviderToZCodeAgent(
+    const provider = normalizeAgentProviderToZodyAgent(
       legacyCall ? get().provider : providerOrEnabled,
     );
     const scope = legacyCall ? undefined : (scopeOrSkillsService as SkillSummary["scope"]);

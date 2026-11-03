@@ -47,11 +47,11 @@ const ZCODE_AGENT_MODE_ID_SET = new Set<string>([
 
 // OpenRouter 会把 `:free` 作为模型 ID 的一部分。UI/configOptions 的展示态
 // 不能再用冒号分隔 thought level，否则草稿选择会静默截断真实 modelId。
-export function normalizeAvailableZCodeMode(mode: ZodySessionMode): string {
+export function normalizeAvailableZodyMode(mode: ZodySessionMode): string {
   return ZCODE_AGENT_MODE_ID_SET.has(mode) ? mode : "build";
 }
 
-export function getZCodeAgentModeSelectOptions(): NonNullable<ZodyConfigOption["options"]> {
+export function getZodyAgentModeSelectOptions(): NonNullable<ZodyConfigOption["options"]> {
   return ZCODE_AGENT_MODE_OPTIONS.map((mode) => ({
     value: mode.id,
     name: mode.name,
@@ -59,11 +59,11 @@ export function getZCodeAgentModeSelectOptions(): NonNullable<ZodyConfigOption["
   }));
 }
 
-export function getZCodeAgentAvailableModes(): ZodyTaskModeInfo[] {
+export function getZodyAgentAvailableModes(): ZodyTaskModeInfo[] {
   return ZCODE_AGENT_MODE_OPTIONS.map((mode) => ({ ...mode }));
 }
 
-export function zcodeSessionSettingsToZCodeConfigOptions(
+export function zodySessionSettingsToZodyConfigOptions(
   settings: ZodySessionSettingsState,
 ): ZodyConfigOption[] {
   const configOptions: ZodyConfigOption[] = [
@@ -96,8 +96,8 @@ export function zcodeSessionSettingsToZCodeConfigOptions(
       name: "Mode",
       category: MODE_CONFIG_CATEGORY,
       type: "select",
-      currentValue: normalizeAvailableZCodeMode(settings.mode.current),
-      options: getZCodeAgentModeSelectOptions(),
+      currentValue: normalizeAvailableZodyMode(settings.mode.current),
+      options: getZodyAgentModeSelectOptions(),
     },
   ];
   if (settings.thoughtLevel.enabled) {

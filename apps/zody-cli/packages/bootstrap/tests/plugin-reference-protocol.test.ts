@@ -20,9 +20,9 @@ vi.mock("node:os", async (importOriginal) => {
 });
 
 import {
-  zcodeProtocolMethods,
-  zcodePluginsReferenceCatalogParamsSchema,
-  zcodePluginsReferenceCatalogResultSchema,
+  zodyProtocolMethods,
+  zodyPluginsReferenceCatalogParamsSchema,
+  zodyPluginsReferenceCatalogResultSchema,
 } from "@zody/shared";
 import type { PluginReferenceCatalog } from "@zody/contracts";
 import { getPluginReferenceCatalog } from "../src/zody-protocol/plugin-reference-catalog.js";
@@ -67,15 +67,15 @@ function contextWithSession(sessionId: string): ZodyProtocolAgentServerContext {
 
 describe("plugins/referenceCatalog protocol", () => {
   it("registers the protocol method and schemas", () => {
-    expect(zcodeProtocolMethods.pluginsReferenceCatalog).toBe("plugins/referenceCatalog");
+    expect(zodyProtocolMethods.pluginsReferenceCatalog).toBe("plugins/referenceCatalog");
     expect(() =>
-      zcodePluginsReferenceCatalogParamsSchema.parse({
+      zodyPluginsReferenceCatalogParamsSchema.parse({
         workspace: { workspacePath: "/w", workspaceKey: "/w" },
         sessionId: "sess_x",
       }),
     ).not.toThrow();
     expect(() =>
-      zcodePluginsReferenceCatalogResultSchema.parse({
+      zodyPluginsReferenceCatalogResultSchema.parse({
         authority: "workspace",
         plugins: [
           {
@@ -129,7 +129,7 @@ describe("plugins/referenceCatalog protocol", () => {
     ]);
     // 协议投影禁止携带 rootPath（identifiers-only）。
     expect(JSON.stringify(result)).not.toContain("/plugins/frozen");
-    expect(() => zcodePluginsReferenceCatalogResultSchema.parse(result)).not.toThrow();
+    expect(() => zodyPluginsReferenceCatalogResultSchema.parse(result)).not.toThrow();
   });
 
   it("fails closed when the sessionId is unknown instead of falling back to workspace authority", async () => {
@@ -150,7 +150,7 @@ describe("plugins/referenceCatalog protocol", () => {
         workspace: { workspacePath: root, workspaceKey: root },
       });
       expect(result.authority).toBe("workspace");
-      expect(() => zcodePluginsReferenceCatalogResultSchema.parse(result)).not.toThrow();
+      expect(() => zodyPluginsReferenceCatalogResultSchema.parse(result)).not.toThrow();
       // workspace catalog 来自当前发现结果：条目须有稳定 `name@marketplace` id 且不带 rootPath。
       for (const entry of result.plugins) {
         expect(entry.pluginId).toBe(`${entry.name}@${entry.marketplace}`);
@@ -177,7 +177,7 @@ describe("plugins/referenceCatalog protocol", () => {
       expect(enriched.plugins.map((x) => x.pluginId)).toEqual(
         result.plugins.map((x) => x.pluginId),
       );
-      expect(() => zcodePluginsReferenceCatalogResultSchema.parse(enriched)).not.toThrow();
+      expect(() => zodyPluginsReferenceCatalogResultSchema.parse(enriched)).not.toThrow();
       expect(zcodeGuide?.displayName).toBe("Zody Guide");
       expect(zcodeGuide?.displayNameI18n?.["zh-CN"]).toBe("Zody 使用指南");
       expect(zcodeGuide?.description).toEqual(expect.any(String));

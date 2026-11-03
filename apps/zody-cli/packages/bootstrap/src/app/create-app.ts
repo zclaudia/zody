@@ -46,7 +46,7 @@ import {
 } from "@zody/shared";
 import {
   ZCODE_ATTACHMENT_FAULT_CODES,
-  ZCodeAttachmentFaultError,
+  ZodyAttachmentFaultError,
 } from "@zody/shared/zody-protocol-v4";
 
 import { createModelAdapter } from "../model-factory.js";
@@ -1268,7 +1268,7 @@ export async function createZCodeApp(options: ZodyAppOptions): Promise<ZodyApp> 
         const { ref, mediaType, artifactUri } = await resolvePromptAttachment(input);
         if (artifactUri) {
           if (!artifactStore.statToolResultArtifact) {
-            throw new ZCodeAttachmentFaultError(ZCODE_ATTACHMENT_FAULT_CODES.statUnsupported);
+            throw new ZodyAttachmentFaultError(ZCODE_ATTACHMENT_FAULT_CODES.statUnsupported);
           }
           const result = await artifactStore.statToolResultArtifact({
             uri: artifactUri,
@@ -1284,7 +1284,7 @@ export async function createZCodeApp(options: ZodyAppOptions): Promise<ZodyApp> 
         if (result.kind !== "file") {
           // 目录/符号链接/已消失都意味着「这个附件不再是可分享的文件」，用稳定码上抛，
           // 让 share 预检按确定分类处理，而不是靠错误文本猜。
-          throw new ZCodeAttachmentFaultError(ZCODE_ATTACHMENT_FAULT_CODES.statNotFile);
+          throw new ZodyAttachmentFaultError(ZCODE_ATTACHMENT_FAULT_CODES.statNotFile);
         }
         return {
           totalBytes: result.sizeBytes,

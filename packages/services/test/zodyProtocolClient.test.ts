@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { Emitter } from "@zody/rpc";
 import type { ZodyProtocolMessage } from "@zody/shared";
-import { zcodeSessionStateSnapshotSchema } from "@zody/shared";
+import { zodySessionStateSnapshotSchema } from "@zody/shared";
 import {
   DEFAULT_ZCODE_PROTOCOL_REQUEST_TIMEOUT_MS,
-  ZCodeProtocolClient,
+  ZodyProtocolClient,
 } from "../src/zody-agent/zodyProtocolClient.js";
 import type {
   ZodyProtocolTransport,
@@ -91,12 +91,12 @@ const snapshot = {
   messages: [],
 };
 
-describe("ZCodeProtocolClient", () => {
+describe("ZodyProtocolClient", () => {
   it("dispose 批量拒绝不会把 fire-and-forget 请求的外层 Promise 判为 unhandled", async () => {
     // CR 复现：request() 返回的外层 Promise 才是 unhandledRejection 判定对象；
     // 调用方在启动后、挂靠 .catch 前 dispose，内外两层都必须已有兜底 handler。
     const transport = new FakeZCodeTransport();
-    const client = new ZCodeProtocolClient(transport);
+    const client = new ZodyProtocolClient(transport);
     const unhandled: unknown[] = [];
     const onUnhandled = (reason: unknown) => unhandled.push(reason);
     process.on("unhandledRejection", onUnhandled);
@@ -117,7 +117,7 @@ describe("ZCodeProtocolClient", () => {
   it("观测超时不触发进程 watchdog，业务请求仍可完成", async () => {
     vi.useFakeTimers();
     const transport = new FakeZCodeTransport();
-    const client = new ZCodeProtocolClient(transport);
+    const client = new ZodyProtocolClient(transport);
     const timedOut = vi.fn(() => client.dispose());
     client.onRequestTimeout(timedOut);
     try {
@@ -141,7 +141,7 @@ describe("ZCodeProtocolClient", () => {
 
   it("观测不阻止业务 idle，成功和取消也不续期 idle", async () => {
     const transport = new FakeZCodeTransport();
-    const client = new ZCodeProtocolClient(transport);
+    const client = new ZodyProtocolClient(transport);
     const drained = vi.fn();
     client.onPendingRequestsDrained(drained);
     const controller = new AbortController();
@@ -174,7 +174,7 @@ describe("ZCodeProtocolClient", () => {
     vi.useFakeTimers();
     try {
       const transport = new FakeZCodeTransport();
-      const client = new ZCodeProtocolClient(transport, {
+      const client = new ZodyProtocolClient(transport, {
         requireStorageStartup: true,
         requestTimeoutMs: 10,
       });
@@ -217,7 +217,7 @@ describe("ZCodeProtocolClient", () => {
     vi.useFakeTimers();
     try {
       const transport = new FakeZCodeTransport();
-      const client = new ZCodeProtocolClient(transport, { requestTimeoutMs: 10 });
+      const client = new ZodyProtocolClient(transport, { requestTimeoutMs: 10 });
       const result = client.request("session/read", { sessionId: "s" });
       const packet = {
         schemaVersion: 1,
@@ -246,12 +246,12 @@ describe("ZCodeProtocolClient", () => {
 
   it("matches requests with responses and validates result schemas", async () => {
     const transport = new FakeZCodeTransport();
-    const client = new ZCodeProtocolClient(transport);
+    const client = new ZodyProtocolClient(transport);
 
     const request = client.request(
       "session/read",
       { sessionId: "sess_1" },
-      zcodeSessionStateSnapshotSchema,
+      zodySessionStateSnapshotSchema,
     );
 
     expect(transport.sent).toMatchObject([
@@ -267,7 +267,7 @@ describe("ZCodeProtocolClient", () => {
 
   it("emits notifications without requiring a jsonrpc field", () => {
     const transport = new FakeZCodeTransport();
-    const client = new ZCodeProtocolClient(transport);
+    const client = new ZodyProtocolClient(transport);
     const notifications: unknown[] = [];
     client.onNotification((event) => notifications.push(event));
 
@@ -280,12 +280,12 @@ describe("ZCodeProtocolClient", () => {
 
   it("serializes protocol traces on the request envelope", async () => {
     const transport = new FakeZCodeTransport();
-    const client = new ZCodeProtocolClient(transport);
+    const client = new ZodyProtocolClient(transport);
 
     const request = client.request(
       "session/create",
       { workspace: { workspacePath: "/workspace/app", workspaceKey: "/workspace/app" } },
-      zcodeSessionStateSnapshotSchema,
+      zodySessionStateSnapshotSchema,
       { trace: { traceId: "trace_from_app" } },
     );
 
@@ -306,7 +306,7 @@ describe("ZCodeProtocolClient", () => {
     vi.useFakeTimers();
     try {
       const transport = new FakeZCodeTransport();
-      const client = new ZCodeProtocolClient(transport, { requestTimeoutMs: 10 });
+      const client = new ZodyProtocolClient(transport, { requestTimeoutMs: 10 });
       const timeouts: unknown[] = [];
       client.onRequestTimeout((event) => timeouts.push(event));
 
@@ -348,7 +348,7 @@ describe("ZCodeProtocolClient", () => {
     vi.useFakeTimers();
     try {
       const transport = new FakeZCodeTransport();
-      const client = new ZCodeProtocolClient(transport);
+      const client = new ZodyProtocolClient(transport);
       const timeouts: unknown[] = [];
       client.onRequestTimeout((event) => timeouts.push(event));
 
@@ -388,7 +388,7 @@ describe("ZCodeProtocolClient", () => {
 
   it("cancels a pending request with an AbortSignal", async () => {
     const transport = new FakeZCodeTransport();
-    const client = new ZCodeProtocolClient(transport);
+    const client = new ZodyProtocolClient(transport);
     const controller = new AbortController();
 
     const request = client.request("workspace/generateText", {}, undefined, {
@@ -406,7 +406,7 @@ describe("ZCodeProtocolClient", () => {
 
   it("does not send a request when its AbortSignal is already aborted", async () => {
     const transport = new FakeZCodeTransport();
-    const client = new ZCodeProtocolClient(transport);
+    const client = new ZodyProtocolClient(transport);
     const controller = new AbortController();
     controller.abort(new DOMException("cancelled", "AbortError"));
 
@@ -420,7 +420,7 @@ describe("ZCodeProtocolClient", () => {
 
   it("supports server-to-client requests and responses", async () => {
     const transport = new FakeZCodeTransport();
-    const client = new ZCodeProtocolClient(transport);
+    const client = new ZodyProtocolClient(transport);
     client.onRequest((request) => {
       void client.respond(request.id, { decision: "allow" });
     });
@@ -439,7 +439,7 @@ describe("ZCodeProtocolClient", () => {
   // getClient 必须能在复用前通过 isDisposed 判断，避免对 disposed client 发请求秒败。
   it("exposes isDisposed so callers can detect a recycled client before reuse", async () => {
     const transport = new FakeZCodeTransport();
-    const client = new ZCodeProtocolClient(transport);
+    const client = new ZodyProtocolClient(transport);
 
     expect(client.isDisposed).toBe(false);
 

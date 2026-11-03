@@ -5,10 +5,10 @@ import {
   type SessionEvent,
 } from "@zody/contracts";
 import {
-  zcodeMcpUiClaimAppToolCallParamsSchema,
-  zcodeMcpUiRegisterAppToolsParamsSchema,
-  zcodeMcpUiResolveAppToolCallParamsSchema,
-  zcodeMcpUiUnregisterAppToolsParamsSchema,
+  zodyMcpUiClaimAppToolCallParamsSchema,
+  zodyMcpUiRegisterAppToolsParamsSchema,
+  zodyMcpUiResolveAppToolCallParamsSchema,
+  zodyMcpUiUnregisterAppToolsParamsSchema,
   type ZodyMcpUiAppToolAcceptedResult,
   type ZodyMcpUiRegisterAppToolsResult,
   type ZodyMcpUiUnregisterAppToolsResult,
@@ -96,7 +96,7 @@ export async function registerMcpUiAppTools(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyMcpUiRegisterAppToolsResult> {
-  const params = parseParams(zcodeMcpUiRegisterAppToolsParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiRegisterAppToolsParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, {
     operation: "mcp/uiRegisterAppTools",
   });
@@ -115,7 +115,7 @@ export async function unregisterMcpUiAppTools(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyMcpUiUnregisterAppToolsResult> {
-  const params = parseParams(zcodeMcpUiUnregisterAppToolsParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiUnregisterAppToolsParamsSchema, rawParams);
   if (params.scopeId !== params.instance.token || params.generation !== params.instance.generation)
     throw new Error("Invalid MCP App binding");
   // 实例销毁时的 best effort 收尾：会话已关闭（登记已清空）不报错。
@@ -127,7 +127,7 @@ export async function claimMcpUiAppToolCall(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyMcpUiAppToolAcceptedResult> {
-  const params = parseParams(zcodeMcpUiClaimAppToolCallParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiClaimAppToolCallParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, { operation: "mcp/uiClaimAppToolCall" });
   mcpUiInstances.validate(
     params.instance,
@@ -143,7 +143,7 @@ export async function resolveMcpUiAppToolCall(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyMcpUiAppToolAcceptedResult> {
-  const params = parseParams(zcodeMcpUiResolveAppToolCallParamsSchema, rawParams);
+  const params = parseParams(zodyMcpUiResolveAppToolCallParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, {
     operation: "mcp/uiResolveAppToolCall",
   });

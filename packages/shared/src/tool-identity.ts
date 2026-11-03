@@ -99,7 +99,7 @@ const TOOL_NAME_BY_LOWER = new Map<string, ZodyKnownToolName>(
   ZCODE_KNOWN_TOOL_NAMES.map((toolName) => [toolName.toLowerCase(), toolName]),
 );
 
-export function normalizeZCodeToolName(
+export function normalizeZodyToolName(
   value: string | null | undefined,
 ): ZodyKnownToolName | null {
   const normalized = value?.trim();
@@ -110,20 +110,20 @@ export function normalizeZCodeToolName(
   return TOOL_NAME_BY_LOWER.get(normalized.toLowerCase()) ?? null;
 }
 
-export function getZCodeToolFamilyForName(
+export function getZodyToolFamilyForName(
   value: string | null | undefined,
 ): ZodyToolFamily | null {
-  const toolName = normalizeZCodeToolName(value);
+  const toolName = normalizeZodyToolName(value);
   return toolName ? TOOL_FAMILY_BY_NAME[toolName] : null;
 }
 
-export function isZCodeToolFamily(
+export function isZodyToolFamily(
   value: string | null | undefined,
   family: ZodyToolFamily,
 ): boolean {
-  return getZCodeToolFamilyForName(value) === family;
+  return getZodyToolFamilyForName(value) === family;
 }
 
-export function isZCodeFileContentWriteToolName(value: string | null | undefined): boolean {
-  return normalizeZCodeToolName(value) === "Write";
+export function isZodyFileContentWriteToolName(value: string | null | undefined): boolean {
+  return normalizeZodyToolName(value) === "Write";
 }

@@ -43,6 +43,6 @@ export const ZCODE_AGENT_RUNTIME: ZodyAgentRuntimeDescriptor = {
   },
 };
 
-export function getZCodeAgentRuntime(): ZodyAgentRuntimeDescriptor {
+export function getZodyAgentRuntime(): ZodyAgentRuntimeDescriptor {
   return ZCODE_AGENT_RUNTIME;
 }

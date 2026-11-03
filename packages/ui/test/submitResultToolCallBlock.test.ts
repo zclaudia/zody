@@ -6,7 +6,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { getZCodeToolFamilyForName, normalizeZCodeToolName } from "@zody/shared";
+import { getZodyToolFamilyForName, normalizeZodyToolName } from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import { resolveToolCallIdentity } from "@/lib/toolIdentity.js";
 
@@ -112,8 +112,8 @@ const REJECTION_TEXT = [
 describe("submit_result 路由", () => {
   it("submit_result 是已知工具名，归 workflow family", () => {
     // wire 名就是 snake_case 的 `submit_result`——下划线必须字面在场。
-    expect(normalizeZCodeToolName("submit_result")).toBe("submit_result");
-    expect(getZCodeToolFamilyForName("submit_result")).toBe("workflow");
+    expect(normalizeZodyToolName("submit_result")).toBe("submit_result");
+    expect(getZodyToolFamilyForName("submit_result")).toBe("workflow");
     expect(resolveToolCallIdentity({ toolName: "submit_result" })).toMatchObject({
       toolName: "submit_result",
       family: "workflow",

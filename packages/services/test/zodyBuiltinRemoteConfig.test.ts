@@ -36,7 +36,7 @@ describe("fetchZCodeBuiltinRemoteRelease", () => {
         await fetchZCodeBuiltinRemoteRelease({
           apiClient: new NodeApiClient({
             fetchImpl: request as typeof fetch,
-            resolveZCodeEndpointOrigin: () => "https://example.com",
+            resolveZodyEndpointOrigin: () => "https://example.com",
           }),
           endpointOrigin: "https://example.com/base",
           appVersion: "3.0.0",

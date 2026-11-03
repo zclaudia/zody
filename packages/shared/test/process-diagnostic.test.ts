@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  parseZCodeProcessDiagnostic,
+  parseZodyProcessDiagnostic,
   ZCODE_PROCESS_DIAGNOSTIC_PREFIX,
   ZCODE_PROCESS_DIAGNOSTIC_MAX_LINE_CHARS,
 } from "@zody/shared/process-diagnostic";
@@ -21,7 +21,7 @@ describe("CLI process diagnostic contract", () => {
   it("preserves multiline stack in one stderr frame and validates Host IPC", () => {
     const line = ZCODE_PROCESS_DIAGNOSTIC_PREFIX + JSON.stringify(diagnostic);
     expect(line.split("\n")).toHaveLength(1);
-    expect(parseZCodeProcessDiagnostic(line)).toEqual(diagnostic);
+    expect(parseZodyProcessDiagnostic(line)).toEqual(diagnostic);
     expect(
       hostResponseMessageSchema.parse({
         type: "agent-process-exception",
@@ -43,7 +43,7 @@ describe("CLI process diagnostic contract", () => {
       { ...diagnostic, message: "x".repeat(4001) },
     ]) {
       expect(
-        parseZCodeProcessDiagnostic(ZCODE_PROCESS_DIAGNOSTIC_PREFIX + JSON.stringify(value)),
+        parseZodyProcessDiagnostic(ZCODE_PROCESS_DIAGNOSTIC_PREFIX + JSON.stringify(value)),
       ).toBeUndefined();
     }
     for (const line of [
@@ -51,7 +51,7 @@ describe("CLI process diagnostic contract", () => {
       ZCODE_PROCESS_DIAGNOSTIC_PREFIX + "{",
       ZCODE_PROCESS_DIAGNOSTIC_PREFIX + "x".repeat(ZCODE_PROCESS_DIAGNOSTIC_MAX_LINE_CHARS),
     ]) {
-      expect(parseZCodeProcessDiagnostic(line)).toBeUndefined();
+      expect(parseZodyProcessDiagnostic(line)).toBeUndefined();
     }
   });
 });

@@ -1,5 +1,5 @@
 import {
-  getZCodeAgentModeSelectOptions,
+  getZodyAgentModeSelectOptions,
   type ModelSelection,
   type ZodyConfigOption,
   type ZodyProvider,
@@ -46,7 +46,7 @@ export function buildAutomationModeOption(currentValue: string): ZodyConfigOptio
     category: "mode",
     type: "select",
     currentValue,
-    options: getZCodeAgentModeSelectOptions(),
+    options: getZodyAgentModeSelectOptions(),
   };
 }
 

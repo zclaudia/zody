@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { zcodeWorkspaceUpdateModelIoPreferencesResultSchema } from "@zody/shared";
+import { zodyWorkspaceUpdateModelIoPreferencesResultSchema } from "@zody/shared";
 import { updateModelIoPreferences } from "../src/zody-protocol/model-io-preferences.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
@@ -27,7 +27,7 @@ describe("ModelIO runtime preferences", () => {
       ]),
     } as unknown as ZodyProtocolAgentServerContext;
 
-    const result = zcodeWorkspaceUpdateModelIoPreferencesResultSchema.parse(
+    const result = zodyWorkspaceUpdateModelIoPreferencesResultSchema.parse(
       await updateModelIoPreferences(context, {
         workspace,
         preferences: { fullRetentionEnabled: true },

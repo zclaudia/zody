@@ -5553,7 +5553,7 @@ test("dispatches app-server stdio command to the ZCode Protocol runner without p
         loaded: false,
       };
     },
-    runZCodeProtocolAgent: async (options) => {
+    runZodyProtocolAgent: async (options) => {
       called = true;
       assert.equal(options?.cwd, "/workspace");
       assert.equal(options?.input, ctx.stdin);
@@ -5604,7 +5604,7 @@ test("passes the Desktop presentation surface to the protocol app server", async
   const ctx = createContext(["app-server", "--stdio", "--surface", "desktop"]);
   let called = false;
   const exitCode = await run(ctx, {
-    runZCodeProtocolAgent: async (options) => {
+    runZodyProtocolAgent: async (options) => {
       called = true;
       assert.equal(options?.presentationSurface, "zcode_desktop");
     },
@@ -5619,7 +5619,7 @@ test("rejects force MCS before starting the protocol app server", async () => {
   const ctx = createContext(["app-server", "--stdio", "--force-mcs"]);
   let called = false;
   const exitCode = await run(ctx, {
-    runZCodeProtocolAgent: async () => {
+    runZodyProtocolAgent: async () => {
       called = true;
     },
   });
@@ -5651,7 +5651,7 @@ test("loads dotenv for app-server only in development runtime", async () => {
         path: "/workspace/.env",
       };
     },
-    runZCodeProtocolAgent: async (options) => {
+    runZodyProtocolAgent: async (options) => {
       called = true;
       assert.equal(options?.cwd, "/workspace");
       assert.equal(options?.env?.[ZCODE_RUNTIME_ENV_KEY], "development");

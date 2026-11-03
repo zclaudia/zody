@@ -9,7 +9,7 @@ import {
   type McpTelemetryTracker,
 } from "@zody/adapters/mcp";
 import {
-  zcodeProtocolNotifications,
+  zodyProtocolNotifications,
   type ZodyMcpResourceSample,
   type ZodyMcpTelemetryEvent,
 } from "@zody/shared";
@@ -31,10 +31,10 @@ import { closeSessionStore, getSessionDbPath } from "./app/session-store.js";
 import { startProcessProviderRegistryRuntime } from "./app/process-provider-registry-runtime.js";
 import { scheduleStartupLogRetentionCleanup } from "./log-retention.js";
 import { StartupTimer, startupNow } from "./startup-logging.js";
-import { installZCodeProtocolAiSdkWarningLogger } from "./zody-protocol/ai-sdk-warning-logger.js";
+import { installZodyProtocolAiSdkWarningLogger } from "./zody-protocol/ai-sdk-warning-logger.js";
 // fork（F4.6）：官方 MCP 身份头端口与可信 origin 注册表随官方 MCP 鉴权链删除。
-import { ZCodeProtocolAgentServer } from "./zody-protocol/server.js";
-import { ZCodeProtocolNdjsonConnection } from "./zody-protocol/transport.js";
+import { ZodyProtocolAgentServer } from "./zody-protocol/server.js";
+import { ZodyProtocolNdjsonConnection } from "./zody-protocol/transport.js";
 import { cleanupProtocolRuntime } from "./zody-protocol/runtime-cleanup.js";
 import { startProtocolResourceSampler } from "./zody-protocol/resource-sampler.js";
 import { acquireProtocolStartupResource } from "./zody-protocol/startup-resource.js";
@@ -71,7 +71,7 @@ export function applyProtocolProviderRegistry(
   };
 }
 
-export async function runZCodeProtocolAgent(
+export async function runZodyProtocolAgent(
   options: RunZodyProtocolAgentOptions = {},
 ): Promise<void> {
   if (options.prepareStorageOnly) {
@@ -97,7 +97,7 @@ export async function runZCodeProtocolAgent(
     ...traceContextToLogContext(traceContext),
     module: "bootstrap.zcode_protocol",
   });
-  installZCodeProtocolAiSdkWarningLogger(logger);
+  installZodyProtocolAiSdkWarningLogger(logger);
   const startupTimer = new StartupTimer(
     logger,
     {
@@ -114,7 +114,7 @@ export async function runZCodeProtocolAgent(
   });
 
   let sessionStore: SqliteSessionStore | undefined;
-  let serverForCleanup: ZCodeProtocolAgentServer | undefined;
+  let serverForCleanup: ZodyProtocolAgentServer | undefined;
   let nodeReplBrowserBroker: NodeReplBrowserBroker | undefined;
   let mcpConnectionPool: McpConnectionPool | undefined;
   let mcpPort: McpPort | undefined;
@@ -218,7 +218,7 @@ export async function runZCodeProtocolAgent(
       activeProviderRegistryRuntime.runtime.registryService,
     );
     options.lifecycle?.signal.throwIfAborted();
-    const server = (serverForCleanup = new ZCodeProtocolAgentServer({
+    const server = (serverForCleanup = new ZodyProtocolAgentServer({
       createZCodeApp: (appOptions = {}) =>
         createZCodeApp({
           ...applyProtocolProviderRegistry(
@@ -255,7 +255,7 @@ export async function runZCodeProtocolAgent(
             ? { cuaNodeReplMcpPortFactory: options.cuaNodeReplMcpPortFactory }
             : {}),
           onToolExecResource: (params) =>
-            connection.send({ method: zcodeProtocolNotifications.toolExecResource, params }),
+            connection.send({ method: zodyProtocolNotifications.toolExecResource, params }),
         }),
       cwd: options.cwd,
       env: options.env,
@@ -283,7 +283,7 @@ export async function runZCodeProtocolAgent(
         create: () => broker.ready,
       });
     }
-    const connection = new ZCodeProtocolNdjsonConnection({
+    const connection = new ZodyProtocolNdjsonConnection({
       signal: options.lifecycle?.signal,
       clearPostResponseMessages: () => server.clearPostResponseMessages(),
       handleMessage: (message) => server.handleMessage(message),
@@ -296,14 +296,14 @@ export async function runZCodeProtocolAgent(
     server.setNotificationSink((notification) => connection.send(notification));
     mcpResourceSink = (samples) =>
       connection.send({
-        method: zcodeProtocolNotifications.mcpResourceSamples,
+        method: zodyProtocolNotifications.mcpResourceSamples,
         params: samples,
       });
     mcpTelemetrySink = (event) => {
       // 五分钟资源通知取代旧内存通知；tracker 内部孤儿事实仍保留原判据。
       if (event.kind === "memory") return;
       connection.send({
-        method: zcodeProtocolNotifications.mcpTelemetry,
+        method: zodyProtocolNotifications.mcpTelemetry,
         params: event,
       });
     };

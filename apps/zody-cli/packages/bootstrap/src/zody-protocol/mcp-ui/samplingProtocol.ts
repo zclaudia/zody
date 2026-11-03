@@ -1,6 +1,6 @@
 import {
-  zcodeMcpUiSamplingParamsSchema,
-  zcodeMcpUiCancelSamplingParamsSchema,
+  zodyMcpUiSamplingParamsSchema,
+  zodyMcpUiCancelSamplingParamsSchema,
 } from "@zody/shared";
 import { mcpAppsSamplingResultSchema } from "@zody/shared/mcp-apps";
 import {
@@ -13,7 +13,7 @@ import { McpUiSamplingCalls } from "./samplingCalls.js";
 
 const calls = new McpUiSamplingCalls();
 export async function sampleMcpUi(context: ZodyProtocolAgentServerContext, raw: unknown) {
-  const params = parseParams(zcodeMcpUiSamplingParamsSchema, raw);
+  const params = parseParams(zodyMcpUiSamplingParamsSchema, raw);
   const record = requireSession(context, params.sessionId, { operation: "mcp/uiSampling" });
   const validate = () =>
     mcpUiInstances.validate(
@@ -54,7 +54,7 @@ export async function sampleMcpUi(context: ZodyProtocolAgentServerContext, raw: 
   );
 }
 export function cancelMcpUiSampling(context: ZodyProtocolAgentServerContext, raw: unknown) {
-  const params = parseParams(zcodeMcpUiCancelSamplingParamsSchema, raw);
+  const params = parseParams(zodyMcpUiCancelSamplingParamsSchema, raw);
   const record = requireSession(context, params.sessionId, { operation: "mcp/uiCancelSampling" });
   const active = mcpUiInstances.validate(
     params.instance,

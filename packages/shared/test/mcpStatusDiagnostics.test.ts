@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   MCP_SERVER_FAILURE_KINDS,
-  zcodeMcpServerStatusSnapshotSchema,
+  zodyMcpServerStatusSnapshotSchema,
 } from "../src/zody-protocol/index.js";
 
 describe("MCP status diagnostics protocol", () => {
   it("accepts structured failure diagnostics and keeps legacy snapshots compatible", () => {
     expect(
-      zcodeMcpServerStatusSnapshotSchema.parse({
+      zodyMcpServerStatusSnapshotSchema.parse({
         error: "raw sdk error",
         failureKind: "server_unavailable",
         serverRequestId: "20260822000000abcdef1234567890abcd",
@@ -22,7 +22,7 @@ describe("MCP status diagnostics protocol", () => {
     });
 
     expect(
-      zcodeMcpServerStatusSnapshotSchema.parse({
+      zodyMcpServerStatusSnapshotSchema.parse({
         status: "connected",
         toolCount: 3,
         transport: "stdio",
@@ -54,7 +54,7 @@ describe("MCP status diagnostics protocol", () => {
     ]);
 
     expect(
-      zcodeMcpServerStatusSnapshotSchema.safeParse({
+      zodyMcpServerStatusSnapshotSchema.safeParse({
         serverRequestId: "",
         status: "failed",
         toolCount: 0,

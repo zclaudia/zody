@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { IZodyAgentService } from "@zody/services";
 import type { ZodyAgentMcpServer, ZodySessionStateSnapshot } from "@zody/shared";
-import { createZCodeSessionService } from "@zody/services/node";
+import { createZodySessionService } from "@zody/services/node";
 import type { ZodyTaskIndexSyncer } from "../src/zody-agent/zodyTaskIndexSyncer.js";
 import { getLegacyTaskSessionSnapshotPath, setDataBaseDir } from "../src/paths.js";
 
@@ -27,7 +27,7 @@ function useTempDataBaseDir(): string {
   return dir;
 }
 
-describe("createZCodeSessionService", () => {
+describe("createZodySessionService", () => {
   it("injects product CUA helper broker config before desktop-continuous session creation", async () => {
     const snapshot = {
       session: {
@@ -62,7 +62,7 @@ describe("createZCodeSessionService", () => {
         ),
       ),
     };
-    const service = createZCodeSessionService({
+    const service = createZodySessionService({
       agentService,
       cuaProductMcpServerResolver: resolver,
     });
@@ -112,7 +112,7 @@ describe("createZCodeSessionService", () => {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
     };
-    const service = createZCodeSessionService({
+    const service = createZodySessionService({
       agentService,
       taskIndexSyncer: taskIndexSyncer as never,
     });
@@ -155,7 +155,7 @@ describe("createZCodeSessionService", () => {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
     } as unknown as ZodyTaskIndexSyncer;
-    const service = createZCodeSessionService({ agentService, taskIndexSyncer });
+    const service = createZodySessionService({ agentService, taskIndexSyncer });
 
     await service.createSession({
       workspacePath: "/workspace/app",
@@ -200,7 +200,7 @@ describe("createZCodeSessionService", () => {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
     } as unknown as ZodyTaskIndexSyncer;
-    const service = createZCodeSessionService({ agentService, taskIndexSyncer });
+    const service = createZodySessionService({ agentService, taskIndexSyncer });
 
     await service.createSession({
       workspacePath: "/workspace/app",
@@ -263,7 +263,7 @@ describe("createZCodeSessionService", () => {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
     } as unknown as ZodyTaskIndexSyncer;
-    const service = createZCodeSessionService({ agentService, taskIndexSyncer });
+    const service = createZodySessionService({ agentService, taskIndexSyncer });
     const target = {
       workspacePath: "/workspace/app",
       workspaceIdentity: "remote:ssh:dev:/workspace/app",
@@ -290,7 +290,7 @@ describe("createZCodeSessionService", () => {
   it("only closes a draft when the Agent confirms it is still deferred", async () => {
     const closeSession = vi.fn(async () => false);
     const agentService = { closeSession } as unknown as IZodyAgentService;
-    const service = createZCodeSessionService({ agentService });
+    const service = createZodySessionService({ agentService });
 
     await expect(
       service.closeDeferredDraftSession({
@@ -313,7 +313,7 @@ describe("createZCodeSessionService", () => {
       throw new Error("Invalid params: expectedPersistence");
     });
     const agentService = { closeSession } as unknown as IZodyAgentService;
-    const service = createZCodeSessionService({ agentService });
+    const service = createZodySessionService({ agentService });
 
     await expect(
       service.closeDeferredDraftSession({
@@ -336,7 +336,7 @@ describe("createZCodeSessionService", () => {
       readSessionMessages: vi.fn(async () => []),
       readSessionEvents: vi.fn(async () => []),
     } as unknown as IZodyAgentService;
-    const service = createZCodeSessionService({ agentService });
+    const service = createZodySessionService({ agentService });
 
     await expect(
       service.initializeWorkspace({
@@ -443,7 +443,7 @@ describe("createZCodeSessionService", () => {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
     } as unknown as ZodyTaskIndexSyncer;
-    const service = createZCodeSessionService({ agentService, taskIndexSyncer });
+    const service = createZodySessionService({ agentService, taskIndexSyncer });
 
     await expect(service.resumeSession({ workspacePath, sessionId })).resolves.toBe(
       repairedSnapshot,
@@ -545,7 +545,7 @@ describe("createZCodeSessionService", () => {
       resumeSession: vi.fn(async () => corruptedSnapshot),
       createSession: vi.fn(async () => repairedSnapshot),
     } as unknown as IZodyAgentService;
-    const service = createZCodeSessionService({ agentService });
+    const service = createZodySessionService({ agentService });
 
     await expect(service.resumeSession({ workspacePath, sessionId })).resolves.toBe(
       repairedSnapshot,
@@ -619,7 +619,7 @@ describe("createZCodeSessionService", () => {
       resumeSession: vi.fn(async () => ordinarySnapshot),
       createSession: vi.fn(),
     } as unknown as IZodyAgentService;
-    const service = createZCodeSessionService({ agentService });
+    const service = createZodySessionService({ agentService });
 
     await expect(service.resumeSession({ workspacePath, sessionId })).resolves.toBe(
       ordinarySnapshot,
@@ -654,7 +654,7 @@ describe("createZCodeSessionService", () => {
         status: "running",
       })),
     } as unknown as ZodyTaskIndexSyncer;
-    const service = createZCodeSessionService({ agentService, taskIndexSyncer });
+    const service = createZodySessionService({ agentService, taskIndexSyncer });
 
     await service.createSession({ workspacePath: "/workspace/app" });
 
@@ -705,7 +705,7 @@ describe("createZCodeSessionService", () => {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
     } as unknown as ZodyTaskIndexSyncer;
-    const service = createZCodeSessionService({ agentService, taskIndexSyncer });
+    const service = createZodySessionService({ agentService, taskIndexSyncer });
 
     await service.resumeSession({
       workspacePath: "/workspace/app",
@@ -761,7 +761,7 @@ describe("createZCodeSessionService", () => {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
     } as unknown as ZodyTaskIndexSyncer;
-    const service = createZCodeSessionService({ agentService, taskIndexSyncer });
+    const service = createZodySessionService({ agentService, taskIndexSyncer });
 
     await expect(
       service.resumeSession({
@@ -836,7 +836,7 @@ describe("createZCodeSessionService", () => {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
     } as unknown as ZodyTaskIndexSyncer;
-    const service = createZCodeSessionService({ agentService, taskIndexSyncer });
+    const service = createZodySessionService({ agentService, taskIndexSyncer });
 
     await expect(
       service.resumeSession({
@@ -888,7 +888,7 @@ describe("createZCodeSessionService", () => {
       syncSnapshotAndBroadcast: vi.fn(),
       syncTaskModel: vi.fn(),
     } as unknown as ZodyTaskIndexSyncer;
-    const service = createZCodeSessionService({ agentService, taskIndexSyncer });
+    const service = createZodySessionService({ agentService, taskIndexSyncer });
 
     await service.resumeSession({
       workspacePath: "/workspace/app",
@@ -925,7 +925,7 @@ describe("createZCodeSessionService", () => {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
     } as unknown as ZodyTaskIndexSyncer;
-    const service = createZCodeSessionService({ agentService, taskIndexSyncer });
+    const service = createZodySessionService({ agentService, taskIndexSyncer });
 
     await expect(
       service.setModel({

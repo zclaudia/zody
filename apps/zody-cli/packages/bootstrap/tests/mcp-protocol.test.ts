@@ -4,10 +4,10 @@ import { join } from "node:path";
 import type { McpPort } from "@zody/contracts";
 import { describe, expect, it, vi } from "vitest";
 import {
-  zcodeMcpListResultSchema,
-  zcodeMcpListParamsSchema,
-  zcodeProtocolMethods,
-  zcodeProtocolSessionMethodContracts,
+  zodyMcpListResultSchema,
+  zodyMcpListParamsSchema,
+  zodyProtocolMethods,
+  zodyProtocolSessionMethodContracts,
 } from "@zody/shared";
 import { listMcpServers } from "../src/zody-protocol/mcp.js";
 import { mcpUiInstances } from "../src/zody-protocol/mcp-ui/instances.js";
@@ -16,12 +16,12 @@ import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server
 
 describe("mcp protocol contracts", () => {
   it("registers mcp/list", () => {
-    expect(zcodeProtocolMethods.mcpList).toBe("mcp/list");
-    expect(zcodeProtocolSessionMethodContracts[zcodeProtocolMethods.mcpList]).toBeDefined();
+    expect(zodyProtocolMethods.mcpList).toBe("mcp/list");
+    expect(zodyProtocolSessionMethodContracts[zodyProtocolMethods.mcpList]).toBeDefined();
   });
 
   it("parses an MCP status snapshot", () => {
-    const parsed = zcodeMcpListResultSchema.parse({
+    const parsed = zodyMcpListResultSchema.parse({
       statuses: {
         filesystem: {
           status: "disconnected",
@@ -37,7 +37,7 @@ describe("mcp protocol contracts", () => {
 
   it("defaults mcp/list mode to connect and accepts status-only mode", () => {
     expect(
-      zcodeMcpListParamsSchema.parse({
+      zodyMcpListParamsSchema.parse({
         workspace: {
           workspaceKey: "/tmp/project",
           workspacePath: "/tmp/project",
@@ -46,7 +46,7 @@ describe("mcp protocol contracts", () => {
     ).toBe("connect");
 
     expect(
-      zcodeMcpListParamsSchema.parse({
+      zodyMcpListParamsSchema.parse({
         workspace: {
           workspaceKey: "/tmp/project",
           workspacePath: "/tmp/project",
@@ -58,7 +58,7 @@ describe("mcp protocol contracts", () => {
 
   it("rejects invalid MCP status values", () => {
     expect(() =>
-      zcodeMcpListResultSchema.parse({
+      zodyMcpListResultSchema.parse({
         statuses: {
           broken: {
             status: "unknown",
@@ -72,7 +72,7 @@ describe("mcp protocol contracts", () => {
   });
 
   it("parses HTTP MCP OAuth client credentials in protocol params", () => {
-    const parsed = zcodeMcpListParamsSchema.parse({
+    const parsed = zodyMcpListParamsSchema.parse({
       workspace: {
         workspaceKey: "/tmp/project",
         workspacePath: "/tmp/project",
@@ -103,7 +103,7 @@ describe("mcp protocol contracts", () => {
   });
 
   it("parses HTTP MCP OAuth authorization code in protocol params", () => {
-    const parsed = zcodeMcpListParamsSchema.parse({
+    const parsed = zodyMcpListParamsSchema.parse({
       workspace: {
         workspaceKey: "/tmp/project",
         workspacePath: "/tmp/project",

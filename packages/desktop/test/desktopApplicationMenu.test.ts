@@ -170,7 +170,7 @@ vi.mock("../src/main/desktopCommandHandlers.js", () => ({
 }));
 
 vi.mock("@zody/services/node", () => ({
-  readZCodeStdioTapDevState: vi.fn(() => ({ enabled: false, visible: false })),
+  readZodyStdioTapDevState: vi.fn(() => ({ enabled: false, visible: false })),
 }));
 
 describe("desktopApplicationMenu endpoint submenu", () => {

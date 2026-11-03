@@ -129,7 +129,7 @@ vi.mock("@zody/telemetry", async (importOriginal) => ({
   shutdownPreparedModelTelemetry: telemetryMocks.shutdownPreparedModelTelemetry,
 }));
 
-import { runZCodeProtocolAgent } from "../src/zody-protocol-entrypoint.js";
+import { runZodyProtocolAgent } from "../src/zody-protocol-entrypoint.js";
 
 describe("ZCode Protocol telemetry lifecycle", () => {
   afterEach(() => {
@@ -249,7 +249,7 @@ async function runProtocolAgent(
         }) + "\n",
       );
     else input.end();
-    await runZCodeProtocolAgent({
+    await runZodyProtocolAgent({
       env: {
         ZCODE_LOG_DIR: join(root, "log"),
         ZCODE_SESSION_DB_PATH: join(root, "session.sqlite"),

@@ -5,7 +5,7 @@ import { shutdownPreparedModelTelemetry } from "@zody/telemetry";
 import { closeSessionStore } from "../app/session-store.js";
 import type { NodeReplBrowserBroker } from "../app/node-repl-browser-broker.js";
 import type { ZodyProcessResourceSampler } from "../process-resource-sampler.js";
-import type { ZCodeProtocolAgentServer } from "./server.js";
+import type { ZodyProtocolAgentServer } from "./server.js";
 
 const DEFAULT_CLEANUP_BUDGET_MS = 1_200;
 const CLEANUP_STEP_BUDGET_MS = 400;
@@ -13,7 +13,7 @@ const CLEANUP_STEP_BUDGET_MS = 400;
 export async function cleanupProtocolRuntime(options: {
   logger: Logger;
   deadlineAt?: number;
-  server?: Pick<ZCodeProtocolAgentServer, "shutdown" | "disposeProjections">;
+  server?: Pick<ZodyProtocolAgentServer, "shutdown" | "disposeProjections">;
   processResourceSampler?: Pick<ZodyProcessResourceSampler, "stop">;
   mcpTelemetryTracker?: Pick<McpTelemetryTracker, "stop">;
   nodeReplBrowserBroker?: Pick<NodeReplBrowserBroker, "close">;

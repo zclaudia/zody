@@ -5,7 +5,7 @@ import { acquireProtocolStartupResource } from "../src/zody-protocol/startup-res
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 import type { Logger } from "@zody/contracts";
 import { createInMemorySessionEventStore } from "@zody/adapters/storage";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 
 const telemetry = vi.hoisted(() => ({ shutdown: vi.fn(async () => {}) }));
 vi.mock("@zody/telemetry", async (importOriginal) => ({
@@ -35,7 +35,7 @@ describe("protocol runtime resource ownership", () => {
       const deleteSession = vi.spyOn(eventStore, "deleteSession");
       const notifications: unknown[] = [];
       let sessionId = "";
-      const server = new ZCodeProtocolAgentServer({
+      const server = new ZodyProtocolAgentServer({
         createZCodeApp: (options) => {
           const app = createFakeApp(options, { close });
           sessionId = app.sessionId;

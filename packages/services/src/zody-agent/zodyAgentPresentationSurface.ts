@@ -9,7 +9,7 @@ export interface ZodyAgentPresentationHostFacts {
   desktopContextPromptEnabled?: boolean;
 }
 
-export function resolveZCodeAgentPresentationSurface(
+export function resolveZodyAgentPresentationSurface(
   facts: ZodyAgentPresentationHostFacts,
 ): ZodyAgentPresentationSurface | undefined {
   // Desktop 呈现能力必须从 Host 已有的可信装配事实推导，不能让每个调用方重复传递独立开关。

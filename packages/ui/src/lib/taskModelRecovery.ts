@@ -1,5 +1,5 @@
 import type { ZodyConfigOption, ZodyTaskMeta } from "@zody/shared";
-import { getZCodeAgentModeSelectOptions } from "@zody/shared";
+import { getZodyAgentModeSelectOptions } from "@zody/shared";
 import {
   decodeCustomModelValue,
   encodeCustomModelValue,
@@ -119,7 +119,7 @@ function createRecoveredModeOption(modeValue: string): ZodyConfigOption {
     currentValue: modeValue,
     id: "mode",
     name: "Mode",
-    options: getZCodeAgentModeSelectOptions(),
+    options: getZodyAgentModeSelectOptions(),
     type: "select",
   };
 }

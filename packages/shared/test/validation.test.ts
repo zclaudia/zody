@@ -6,7 +6,7 @@ import {
   hostIncomingMessageSchema,
   hostResponseMessageSchema,
   wslConnectOptionsSchema,
-  zcodePersistedMessageSchema,
+  zodyPersistedMessageSchema,
 } from "../src/validation.js";
 
 it("资源查询取消必须指定 requestId 且不接受附加字段", () => {
@@ -20,7 +20,7 @@ it("资源查询取消必须指定 requestId 且不接受附加字段", () => {
 
 it("accepts persisted user messages with video attachments", () => {
   expect(
-    zcodePersistedMessageSchema.safeParse({
+    zodyPersistedMessageSchema.safeParse({
       role: "user",
       content: "Summarize the video.",
       timestamp: 1,

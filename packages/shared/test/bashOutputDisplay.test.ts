@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { zcodeSessionEventSchema } from "../src/zody-protocol/index.js";
+import { zodySessionEventSchema } from "../src/zody-protocol/index.js";
 import { conversationRowSchema } from "../src/zody-protocol-v4/index.js";
 
 const display = {
@@ -35,7 +35,7 @@ function parseBoth(value: unknown) {
     status: "success",
     output: { text: "model preview", display: value },
   };
-  return [zcodeSessionEventSchema.safeParse(event), conversationRowSchema.safeParse(row)];
+  return [zodySessionEventSchema.safeParse(event), conversationRowSchema.safeParse(row)];
 }
 describe("Bash output display wire contract", () => {
   it("preserves display on the legacy event and V4 row", () => {

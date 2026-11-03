@@ -6,13 +6,13 @@ import {
   type SessionId,
 } from "@zody/contracts";
 import {
-  zcodeProtocolMethods,
-  zcodeSessionEventsResultSchema,
-  zcodeSessionStateSnapshotSchema,
+  zodyProtocolMethods,
+  zodySessionEventsResultSchema,
+  zodySessionStateSnapshotSchema,
   type ZodyProtocolMessage,
 } from "@zody/shared";
 import type { ZodyAppOptions } from "../src/app/types.js";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 
 const workspace = {
@@ -20,7 +20,7 @@ const workspace = {
   workspaceKey: "/workspace/retention",
 };
 
-async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProtocolMessage) {
+async function requestResult(server: ZodyProtocolAgentServer, message: ZodyProtocolMessage) {
   const response = await server.handleMessage(message);
   if (!response || !("result" in response)) {
     throw new Error(`Expected protocol success response: ${JSON.stringify(response)}`);
@@ -29,7 +29,7 @@ async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProt
 }
 
 interface Harness {
-  server: ZCodeProtocolAgentServer;
+  server: ZodyProtocolAgentServer;
   stores: InMemorySessionEventStore[];
   factoryCalls: string[];
   eventStore: () => ZodyAppOptions["eventStore"];
@@ -41,7 +41,7 @@ function createHarness(): Harness {
   const factoryCalls: string[] = [];
   let eventStore: ZodyAppOptions["eventStore"];
   let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
-  const server = new ZCodeProtocolAgentServer({
+  const server = new ZodyProtocolAgentServer({
     createSessionEventStore: (sessionId) => {
       factoryCalls.push(sessionId);
       const store = new InMemorySessionEventStore();
@@ -72,7 +72,7 @@ function createHarness(): Harness {
   server.setNotificationSink((message) => {
     if (
       "id" in message &&
-      message.method === zcodeProtocolMethods.sessionRequestRuntimePreferences
+      message.method === zodyProtocolMethods.sessionRequestRuntimePreferences
     ) {
       void server.handleMessage({
         id: message.id,
@@ -90,16 +90,16 @@ function createHarness(): Harness {
 }
 
 async function createSubscribedSession(harness: Harness): Promise<string> {
-  const created = zcodeSessionStateSnapshotSchema.parse(
+  const created = zodySessionStateSnapshotSchema.parse(
     await requestResult(harness.server, {
       id: 1,
-      method: zcodeProtocolMethods.sessionCreate,
+      method: zodyProtocolMethods.sessionCreate,
       params: { workspace },
     }),
   );
   await requestResult(harness.server, {
     id: 2,
-    method: zcodeProtocolMethods.sessionSubscribe,
+    method: zodyProtocolMethods.sessionSubscribe,
     params: {
       sessionId: created.session.sessionId,
       deliveryKind: "desktop-continuous",
@@ -120,7 +120,7 @@ describe("session event store retention (protocol)", () => {
 
     await requestResult(harness.server, {
       id: 3,
-      method: zcodeProtocolMethods.sessionClose,
+      method: zodyProtocolMethods.sessionClose,
       params: { sessionId },
     });
 
@@ -175,10 +175,10 @@ describe("session event store retention (protocol)", () => {
     });
 
     // 一 turn 滞后：turn 1 刚结束，delta 仍可回放。
-    const beforeNextTurn = zcodeSessionEventsResultSchema.parse(
+    const beforeNextTurn = zodySessionEventsResultSchema.parse(
       await requestResult(harness.server, {
         id: 10,
-        method: zcodeProtocolMethods.sessionEvents,
+        method: zodyProtocolMethods.sessionEvents,
         params: { sessionId, afterSeq: 0 },
       }),
     );
@@ -191,10 +191,10 @@ describe("session event store retention (protocol)", () => {
       type: SessionEventType.TurnStarted,
     });
 
-    const afterNextTurn = zcodeSessionEventsResultSchema.parse(
+    const afterNextTurn = zodySessionEventsResultSchema.parse(
       await requestResult(harness.server, {
         id: 11,
-        method: zcodeProtocolMethods.sessionEvents,
+        method: zodyProtocolMethods.sessionEvents,
         params: { sessionId, afterSeq: 0 },
       }),
     );
@@ -257,10 +257,10 @@ describe("session event store retention (protocol)", () => {
     expect(store.getStats().retainedTransient).toBe(1);
     // 超过 grace 淘汰，回放不再含 model.streaming。
     expect(harness.server.pruneSessionEventStores(Date.now() + 3 * 60_000)).toBe(1);
-    const replayed = zcodeSessionEventsResultSchema.parse(
+    const replayed = zodySessionEventsResultSchema.parse(
       await requestResult(harness.server, {
         id: 20,
-        method: zcodeProtocolMethods.sessionEvents,
+        method: zodyProtocolMethods.sessionEvents,
         params: { sessionId, afterSeq: 0 },
       }),
     );

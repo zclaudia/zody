@@ -13,8 +13,8 @@ import type {
 } from "@zody/shared/zody-protocol-v4";
 import type { NetworkObservation } from "@zody/rpc";
 import { getLegacyTaskSessionSnapshotPath, setDataBaseDir } from "../src/paths.js";
-import { createZCodeTaskServiceAdapter } from "../src/zody-agent/zodyTaskServiceAdapter.js";
-import { createZCodeTaskIndexSyncer } from "../src/zody-agent/zodyTaskIndexSyncer.js";
+import { createZodyTaskServiceAdapter } from "../src/zody-agent/zodyTaskServiceAdapter.js";
+import { createZodyTaskIndexSyncer } from "../src/zody-agent/zodyTaskIndexSyncer.js";
 import { TaskIndexRepo } from "../src/session/taskIndexRepo.js";
 import type { CuaProductMcpServerResolver } from "../src/cua-permission-broker/index.js";
 import type {
@@ -430,12 +430,12 @@ function createService(options?: {
     : undefined;
   // adapter 现在要求注入 syncer；测试里给一个真实的 syncer（agent 上面已经 mock 了 onDynamicSessionEvent）。
   const taskIndexRepo = new TaskIndexRepo();
-  const taskIndexSyncer = createZCodeTaskIndexSyncer({
+  const taskIndexSyncer = createZodyTaskIndexSyncer({
     agentService: agent,
     taskIndexRepo,
   });
 
-  const service = createZCodeTaskServiceAdapter({
+  const service = createZodyTaskServiceAdapter({
     zcodeAgentService: agent,
     taskIndexRepo,
     taskIndexSyncer,
@@ -443,7 +443,7 @@ function createService(options?: {
     ...(options?.cuaProductMcpServerResolver
       ? { cuaProductMcpServerResolver: options.cuaProductMcpServerResolver }
       : {}),
-  }) as ReturnType<typeof createZCodeTaskServiceAdapter> & {
+  }) as ReturnType<typeof createZodyTaskServiceAdapter> & {
     disposeAll(): void;
   };
   disposables.push(service);

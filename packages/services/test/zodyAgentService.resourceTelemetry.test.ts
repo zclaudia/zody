@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AgentLaneResourceSample } from "@zody/shared";
 import { afterEach, describe, expect, it } from "vitest";
-import { createZCodeAgentService } from "../src/zody-agent/zodyAgentService.js";
+import { createZodyAgentService } from "../src/zody-agent/zodyAgentService.js";
 
 const RESOURCE_SAMPLE_FAKE_AGENT = `
 let buffer = "";
@@ -90,7 +90,7 @@ describe("ZCodeAgentService process resource telemetry", () => {
     tempDirs.push(workspacePath);
     const scriptPath = join(workspacePath, "resource-agent.cjs");
     writeFileSync(scriptPath, RESOURCE_SAMPLE_FAKE_AGENT);
-    const service = createZCodeAgentService({
+    const service = createZodyAgentService({
       commandResolver: () => ({ command: process.execPath, args: [scriptPath] }),
     });
     const samples: AgentLaneResourceSample[] = [];

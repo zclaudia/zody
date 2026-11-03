@@ -1,7 +1,7 @@
 // sealed sessionStorageEntry：只运行原 bootstrap 的 prepareStorageOnly 路径。
 // 不装载 TUI/CLI 全量入口；Host 通过 contract source 在私有 0700 文件里执行这份字节。
 import { writeSync } from "node:fs";
-import { runZCodeProtocolAgent } from "../../../../../apps/zody-cli/packages/bootstrap/src/zody-protocol-entrypoint.js";
+import { runZodyProtocolAgent } from "../../../../../apps/zody-cli/packages/bootstrap/src/zody-protocol-entrypoint.js";
 
 function argumentValue(argv: readonly string[], flag: string): string | undefined {
   const index = argv.indexOf(flag);
@@ -13,7 +13,7 @@ function argumentValue(argv: readonly string[], flag: string): string | undefine
 const argv = process.argv.slice(2);
 let exitCode = 0;
 try {
-  await runZCodeProtocolAgent({
+  await runZodyProtocolAgent({
     prepareStorageOnly: true,
     cwd: argumentValue(argv, "--cwd") ?? process.cwd(),
     env: process.env,

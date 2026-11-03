@@ -1,8 +1,8 @@
 import { isAbsolute } from "node:path";
 import type { ModelSelection } from "@zody/shared";
 import {
-  digestZCodeAgentNativeRuntimeNetwork,
-  normalizeZCodeAgentNativeRuntimeNetwork,
+  digestZodyAgentNativeRuntimeNetwork,
+  normalizeZodyAgentNativeRuntimeNetwork,
 } from "@zody/services/node";
 
 /** Fixed compile-time opt-in. Missing/undefined keeps the normal Electron utility Host path. */
@@ -130,18 +130,18 @@ export interface CuaNarrowNetworkConfig {
 }
 
 export type CuaNarrowNormalizedNetworkConfig = ReturnType<
-  typeof normalizeZCodeAgentNativeRuntimeNetwork
+  typeof normalizeZodyAgentNativeRuntimeNetwork
 >;
 
 /** Same normalization used by the services readback digest and the build profile. */
 export function normalizeCuaNarrowNetworkConfig(
   input: CuaNarrowNetworkConfig,
 ): CuaNarrowNormalizedNetworkConfig {
-  return normalizeZCodeAgentNativeRuntimeNetwork(input);
+  return normalizeZodyAgentNativeRuntimeNetwork(input);
 }
 
 export function digestCuaNarrowNetworkConfig(input: CuaNarrowNetworkConfig): string {
-  return digestZCodeAgentNativeRuntimeNetwork(input);
+  return digestZodyAgentNativeRuntimeNetwork(input);
 }
 
 export function parseCuaNarrowAgentBuildProfile(value: unknown): CuaNarrowAgentBuildProfile {

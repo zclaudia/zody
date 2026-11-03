@@ -2,7 +2,7 @@ import { posix } from "node:path";
 import type { CustomPublishOptions, PackageFileInfo } from "builder-util-runtime";
 import {
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
-  normalizeZCodeEndpointOrigin,
+  normalizeZodyEndpointOrigin,
   type ElectronReleaseChannel,
 } from "@zody/shared";
 import {
@@ -87,7 +87,7 @@ export function buildElectronManifestUrl(options: {
   }
   const url = manifestUrl
     ? new URL(manifestUrl)
-    : new URL(ELECTRON_MANIFEST_API_PATH, normalizeZCodeEndpointOrigin(options.endpointOrigin));
+    : new URL(ELECTRON_MANIFEST_API_PATH, normalizeZodyEndpointOrigin(options.endpointOrigin));
   url.searchParams.set("platform", options.platform);
   // fork（F2.10）：设备标识停发，manifest 请求不再携带 device_mid 查询参数。
   url.searchParams.set("channel", mapReleaseChannelToApiValue(options.channel));
@@ -199,7 +199,7 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
     this.releasePlatform = options.releasePlatform?.trim() || getElectronReleasePlatform();
     const endpointOrigin = (options.endpointOrigin ?? DEFAULT_ZCODE_ENDPOINT_ORIGIN).trim();
     this.resolveBaseUrl = endpointOrigin
-      ? new URL(normalizeZCodeEndpointOrigin(endpointOrigin))
+      ? new URL(normalizeZodyEndpointOrigin(endpointOrigin))
       : null;
   }
 
@@ -264,7 +264,7 @@ export class ManifestUpdateProvider extends Provider<UpdateInfo> {
       }
       throw new Error("Zody endpoint 未配置，无法检查更新");
     }
-    return normalizeZCodeEndpointOrigin(resolved);
+    return normalizeZodyEndpointOrigin(resolved);
   }
 
   private async resolveReleaseChannel(): Promise<ElectronReleaseChannel> {

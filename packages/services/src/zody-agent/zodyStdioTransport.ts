@@ -3,7 +3,7 @@ import type { ChildProcess } from "node:child_process";
 import { StringDecoder } from "node:string_decoder";
 import { Emitter } from "@zody/rpc";
 import type { ZodyProtocolMessage } from "@zody/shared";
-import { zcodeProtocolMessageSchema } from "@zody/shared";
+import { zodyProtocolMessageSchema } from "@zody/shared";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import type {
   ZodyProtocolTransport,
@@ -48,7 +48,7 @@ const PROCESS_TREE_WINDOWS_TASKKILL_TIMEOUT_MS = 1_000;
 const PROCESS_TREE_WINDOWS_EXIT_OBSERVATION_GRACE_MS = 250;
 const processTreeLogger = createServiceLogger("zcode-agent-process-tree");
 
-export class ZCodeStdioTransport implements ZodyProtocolTransport {
+export class ZodyStdioTransport implements ZodyProtocolTransport {
   readonly kind = "stdio" as const;
 
   private readonly messageEmitter = new Emitter<ZodyProtocolMessage>();
@@ -282,7 +282,7 @@ export class ZCodeStdioTransport implements ZodyProtocolTransport {
       return;
     }
     try {
-      const parsed = zcodeProtocolMessageSchema.parse(JSON.parse(line));
+      const parsed = zodyProtocolMessageSchema.parse(JSON.parse(line));
       // 协议帧分发曾同步查询系统进程表，telemetry/streaming 高峰会阻塞
       // Host event loop 并让 subagent 面板无输出。运行期 data plane 只做解析和转发；
       // 完整进程树查询严格留在 dispose cleanup 边界。

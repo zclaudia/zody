@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { BrowserControlPort, TraceContext } from "@zody/contracts";
 import {
-  zcodeBrowserDefaultResultSchema,
-  zcodeBrowserExecuteResultSchema,
-  zcodeBrowserListResultSchema,
-  zcodeProtocolMethods,
+  zodyBrowserDefaultResultSchema,
+  zodyBrowserExecuteResultSchema,
+  zodyBrowserListResultSchema,
+  zodyProtocolMethods,
 } from "@zody/shared";
 import {
   protocolTraceFromTraceContext,
@@ -79,14 +79,14 @@ export function createProtocolBrowserControlBroker(
     await Promise.allSettled(
       connections.map(({ browserId, browserGeneration }) =>
         context.requestClient(
-          zcodeProtocolMethods.interactionBrowserExecute,
+          zodyProtocolMethods.interactionBrowserExecute,
           {
             ...buildBrowserRequestContext(context, state, { sessionId, turnId }),
             browserId,
             browserGeneration,
             command,
           },
-          zcodeBrowserExecuteResultSchema,
+          zodyBrowserExecuteResultSchema,
         ),
       ),
     );
@@ -95,9 +95,9 @@ export function createProtocolBrowserControlBroker(
   const port: BrowserControlPort = {
     async list({ sessionId, turnId, traceContext, signal }) {
       const result = await context.requestClient(
-        zcodeProtocolMethods.interactionBrowserList,
+        zodyProtocolMethods.interactionBrowserList,
         buildBrowserRequestContext(context, state, { sessionId, turnId, traceContext }),
-        zcodeBrowserListResultSchema,
+        zodyBrowserListResultSchema,
         buildRequestOptions(traceContext, signal),
       );
       return result.browsers;
@@ -105,9 +105,9 @@ export function createProtocolBrowserControlBroker(
 
     async getDefaultBrowserId({ sessionId, turnId, traceContext, signal }) {
       const result = await context.requestClient(
-        zcodeProtocolMethods.interactionBrowserDefault,
+        zodyProtocolMethods.interactionBrowserDefault,
         buildBrowserRequestContext(context, state, { sessionId, turnId, traceContext }),
-        zcodeBrowserDefaultResultSchema,
+        zodyBrowserDefaultResultSchema,
         buildRequestOptions(traceContext, signal),
       );
       return result.defaultBrowserId;
@@ -136,14 +136,14 @@ export function createProtocolBrowserControlBroker(
         // 已下发动作无法证明无副作用时由 manager 返回 uncertain 标记。
         void context
           .requestClient(
-            zcodeProtocolMethods.interactionBrowserExecute,
+            zodyProtocolMethods.interactionBrowserExecute,
             {
               ...buildBrowserRequestContext(context, state, { sessionId, turnId, traceContext }),
               browserId,
               browserGeneration,
               command: { method: "cancelRequest", requestId: requestContext.requestId },
             },
-            zcodeBrowserExecuteResultSchema,
+            zodyBrowserExecuteResultSchema,
             buildRequestOptions(traceContext, undefined),
           )
           .catch(() => undefined);
@@ -152,14 +152,14 @@ export function createProtocolBrowserControlBroker(
       else signal?.addEventListener("abort", cancelBackendRequest, { once: true });
       try {
         return await context.requestClient(
-          zcodeProtocolMethods.interactionBrowserExecute,
+          zodyProtocolMethods.interactionBrowserExecute,
           {
             ...requestContext,
             browserId,
             browserGeneration,
             command,
           },
-          zcodeBrowserExecuteResultSchema,
+          zodyBrowserExecuteResultSchema,
           buildRequestOptions(traceContext, signal),
         );
       } finally {

@@ -1,4 +1,4 @@
-import { zcodeProcessResourceSampleSchema } from "@zody/shared";
+import { zodyProcessResourceSampleSchema } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import {
   ZCODE_PROCESS_RESOURCE_SAMPLE_INTERVAL_MS,
@@ -67,7 +67,7 @@ describe("createZCodeProcessResourceSampler", () => {
     });
     expect(onSample.mock.calls[0]?.[1]).toBe(memoryUsage);
     // CLI 是协议样本的生产方：样本必须直接通过协议 schema，否则 services 侧会整条丢弃。
-    expect(() => zcodeProcessResourceSampleSchema.parse(onSample.mock.calls[0]?.[0])).not.toThrow();
+    expect(() => zodyProcessResourceSampleSchema.parse(onSample.mock.calls[0]?.[0])).not.toThrow();
   });
 
   it("instanceToken 在进程生命周期内不变，且不含 pid、路径等可识别内容", () => {

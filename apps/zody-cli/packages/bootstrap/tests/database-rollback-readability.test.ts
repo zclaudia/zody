@@ -8,7 +8,7 @@ import { promisify } from "node:util";
 import { DatabaseSync } from "node:sqlite";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createSessionId } from "@zody/contracts";
-import { zcodeMessageWithPartsSchema } from "@zody/shared";
+import { zodyMessageWithPartsSchema } from "@zody/shared";
 import { SQLITE_MIGRATIONS } from "../../adapters/src/storage/session-store/migrations.js";
 import { createSqliteSessionStore } from "../../adapters/src/storage/session-store/sqlite-session-store.js";
 import { mapMessageWithParts as oldMap } from "../../adapters/tests/fixtures/staging-backup-model-readers.mjs";
@@ -75,7 +75,7 @@ describe("DB109：配置可失效，回滚和再升级的内容读取不可报�
   async function readCurrent() {
     const messages = await store!.messages({ sessionID });
     return messages.map((message) =>
-      zcodeMessageWithPartsSchema.parse(mapMessageWithParts(message)),
+      zodyMessageWithPartsSchema.parse(mapMessageWithParts(message)),
     );
   }
 

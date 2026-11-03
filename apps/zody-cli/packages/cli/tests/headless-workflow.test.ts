@@ -6,7 +6,7 @@ import {
   type SessionEvent,
 } from "@zody/contracts";
 import type { RunContext } from "@zody/shared-types";
-import { zcodeSessionEventTypeSchema } from "@zody/shared";
+import { zodySessionEventTypeSchema } from "@zody/shared";
 import { run } from "../src/run.js";
 import type { RunDependencies } from "../src/run.js";
 import {
@@ -95,7 +95,7 @@ test("the CLI-private stream type stays out of the v3 protocol enum", () => {
   // 类型面上宣告一个它永不发出的事件（协议路径在 mapSessionEventForProtocol 里就已经
   // 把这个事件剥掉了）。谁把映射搬进协议枚举，这条先红。
   assert.equal(
-    zcodeSessionEventTypeSchema.options.includes(WORKFLOW_RUN_PROGRESS_STREAM_TYPE as never),
+    zodySessionEventTypeSchema.options.includes(WORKFLOW_RUN_PROGRESS_STREAM_TYPE as never),
     false,
   );
 });

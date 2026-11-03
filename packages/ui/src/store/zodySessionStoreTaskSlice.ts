@@ -1,6 +1,6 @@
 /* oxlint-disable eslint(max-lines) -- 当前文件承接 task 级状态切片，先保持最小改动修复草稿逻辑，后续再统一拆分 */
 import {
-  normalizeAgentProviderToZCodeAgent,
+  normalizeAgentProviderToZodyAgent,
   type ZodyApiRetryStatus,
   type ZodyConfigOption,
   type ZodyPermissionRequest,
@@ -764,7 +764,7 @@ export function createTaskSlice(set: SetFn) {
 
             return {
               ...current,
-              selectedProvider: normalizeAgentProviderToZCodeAgent(params.provider),
+              selectedProvider: normalizeAgentProviderToZodyAgent(params.provider),
               // 性能优化：后台首发不需要先经历 optimistic -> cache -> runtime 多轮 set。
               // 合到一次写入可以削掉并发压测创建任务时的 renderer 订阅风暴。
               optimisticTaskListByTaskId: {

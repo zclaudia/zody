@@ -27,7 +27,7 @@ export interface BuildZodySourceHeadersFromContextOptions {
   sourceTitle?: string;
 }
 
-export function normalizeZCodeSourceHeaderValue(value: string | undefined): string | undefined {
+export function normalizeZodySourceHeaderValue(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
   if (!trimmed || !/^[\x20-\x7e]+$/.test(trimmed)) {
     return undefined;
@@ -35,20 +35,20 @@ export function normalizeZCodeSourceHeaderValue(value: string | undefined): stri
   return trimmed;
 }
 
-export function buildZCodeSourceHeadersFromContext(
+export function buildZodySourceHeadersFromContext(
   options: BuildZodySourceHeadersFromContextOptions = {},
 ): Record<string, string> {
-  const appVersion = normalizeZCodeSourceHeaderValue(options.appVersion);
-  const arch = normalizeZCodeSourceHeaderValue(options.arch);
-  const clientLanguage = normalizeZCodeSourceHeaderValue(options.clientLanguage) ?? "unknown";
-  const clientTimezone = normalizeZCodeSourceHeaderValue(options.clientTimezone) ?? "unknown";
-  const osVersion = normalizeZCodeSourceHeaderValue(options.osVersion);
-  const platform = normalizeZCodeSourceHeaderValue(options.platform);
-  const releaseChannel = normalizeZCodeSourceHeaderValue(options.releaseChannel);
-  const sourceTitle = normalizeZCodeSourceHeaderValue(options.sourceTitle) ?? "electron";
+  const appVersion = normalizeZodySourceHeaderValue(options.appVersion);
+  const arch = normalizeZodySourceHeaderValue(options.arch);
+  const clientLanguage = normalizeZodySourceHeaderValue(options.clientLanguage) ?? "unknown";
+  const clientTimezone = normalizeZodySourceHeaderValue(options.clientTimezone) ?? "unknown";
+  const osVersion = normalizeZodySourceHeaderValue(options.osVersion);
+  const platform = normalizeZodySourceHeaderValue(options.platform);
+  const releaseChannel = normalizeZodySourceHeaderValue(options.releaseChannel);
+  const sourceTitle = normalizeZodySourceHeaderValue(options.sourceTitle) ?? "electron";
   // 构建期注入值同样经过合法性校验；为空或含非法字符时一律不发。
-  const sourceRefererUrl = normalizeZCodeSourceHeaderValue(ZCODE_SOURCE_REFERER_URL);
-  const sourceTitleBase = normalizeZCodeSourceHeaderValue(ZCODE_SOURCE_TITLE);
+  const sourceRefererUrl = normalizeZodySourceHeaderValue(ZCODE_SOURCE_REFERER_URL);
+  const sourceTitleBase = normalizeZodySourceHeaderValue(ZCODE_SOURCE_TITLE);
 
   return {
     ...ZCODE_SOURCE_HEADERS,

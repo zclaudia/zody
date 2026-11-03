@@ -1,7 +1,7 @@
 import {
   getTasksIndexDatabasePath,
   markTasksStoragePrepared,
-  resolveZCodeAgentSpawnCwd,
+  resolveZodyAgentSpawnCwd,
 } from "@zody/services/storage-startup";
 import type { DatabaseStartupState } from "@zody/shared";
 import { DatabaseStartupCoordinator } from "./databaseStartupCoordinator.js";
@@ -66,7 +66,7 @@ export function createHostDatabaseStartup(options: {
         const directories = new Set<string>();
         for (const candidate of candidates) {
           // 历史项目 ENOTDIR/无权限不是数据库失败；与普通 Agent 使用同一 cwd 选择规则。
-          const { cwd } = await resolveZCodeAgentSpawnCwd({
+          const { cwd } = await resolveZodyAgentSpawnCwd({
             requestedCwd: candidate,
             workspacePath: candidate,
             spawnFallbackCwd: options.cwd,

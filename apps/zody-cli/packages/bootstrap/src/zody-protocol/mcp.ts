@@ -1,8 +1,8 @@
 import { createConfig, resolvePath } from "@zody/adapters/config";
 import type { Logger, McpConnectionSnapshot, McpPort, McpServerStatus } from "@zody/contracts";
 import {
-  zcodeMcpListParamsSchema,
-  zcodeMcpListResultSchema,
+  zodyMcpListParamsSchema,
+  zodyMcpListResultSchema,
   type ZodyMcpListResult,
 } from "@zody/shared";
 import {
@@ -31,7 +31,7 @@ export async function listMcpServers(
   context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyMcpListResult> {
-  const params = parseParams(zcodeMcpListParamsSchema, rawParams);
+  const params = parseParams(zodyMcpListParamsSchema, rawParams);
   const workingDirectory = params.workspace.workspacePath;
   const configResult = createConfig({
     env: context.deps.env,
@@ -83,7 +83,7 @@ export async function listMcpServers(
         configuredMcpServers,
         untrustedProjectMcpServers,
       );
-      return zcodeMcpListResultSchema.parse({ statuses });
+      return zodyMcpListResultSchema.parse({ statuses });
     }
 
     // OAuth 轮询已由 mode=status 隔离；默认/connect 必须继续执行 replace 收敛，
@@ -115,7 +115,7 @@ export async function listMcpServers(
           workspacePath: params.workspace.workspacePath,
         });
       });
-      return zcodeMcpListResultSchema.parse({
+      return zodyMcpListResultSchema.parse({
         statuses: pendingAuthorizationSnapshot.statuses,
       });
     }
@@ -127,7 +127,7 @@ export async function listMcpServers(
     configuredMcpServers,
     untrustedProjectMcpServers,
   );
-  return zcodeMcpListResultSchema.parse({ statuses });
+  return zodyMcpListResultSchema.parse({ statuses });
 }
 
 async function waitForOAuthAuthorizationSnapshot(

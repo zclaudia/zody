@@ -1,5 +1,5 @@
 import type { ZodyMessageWithParts } from "./zody-protocol-legacy-types.js";
-import { textFromZCodeMessageParts } from "./zody-protocol-legacy-types.js";
+import { textFromZodyMessageParts } from "./zody-protocol-legacy-types.js";
 import type { ZodyStreamEvent } from "./zody-task-types-core.js";
 
 export interface ZodyBackgroundTaskNotificationInfo {
@@ -11,7 +11,7 @@ export interface ZodyBackgroundTaskNotificationInfo {
   taskId?: string;
 }
 
-export function parseZCodeBackgroundTaskNotificationText(
+export function parseZodyBackgroundTaskNotificationText(
   text: string | undefined,
 ): { notification: ZodyBackgroundTaskNotificationInfo; toolUseId: string } | null {
   const trimmed = text?.trim();
@@ -35,7 +35,7 @@ export function parseZCodeBackgroundTaskNotificationText(
   };
 }
 
-export function collectZCodeBackgroundTaskNotificationsByToolUseId(
+export function collectZodyBackgroundTaskNotificationsByToolUseId(
   messages: readonly ZodyMessageWithParts[],
 ): Map<string, ZodyBackgroundTaskNotificationInfo> {
   const notifications = new Map<string, ZodyBackgroundTaskNotificationInfo>();
@@ -43,8 +43,8 @@ export function collectZCodeBackgroundTaskNotificationsByToolUseId(
     if (message.info.role !== "user") {
       continue;
     }
-    const parsed = parseZCodeBackgroundTaskNotificationText(
-      textFromZCodeMessageParts(message.parts),
+    const parsed = parseZodyBackgroundTaskNotificationText(
+      textFromZodyMessageParts(message.parts),
     );
     if (!parsed) {
       continue;
@@ -54,7 +54,7 @@ export function collectZCodeBackgroundTaskNotificationsByToolUseId(
   return notifications;
 }
 
-export function zcodeBackgroundTaskNotificationToolUpdateStatus(
+export function zodyBackgroundTaskNotificationToolUpdateStatus(
   status: string | undefined,
 ): Extract<
   Extract<ZodyStreamEvent, { type: "tool_call_update" }>["status"],
@@ -70,7 +70,7 @@ export function zcodeBackgroundTaskNotificationToolUpdateStatus(
   return "completed";
 }
 
-export function attachZCodeBackgroundTaskNotificationToRaw(
+export function attachZodyBackgroundTaskNotificationToRaw(
   raw: unknown,
   notification: ZodyBackgroundTaskNotificationInfo | undefined,
 ): unknown {
@@ -79,13 +79,13 @@ export function attachZCodeBackgroundTaskNotificationToRaw(
   }
   const record = asPlainRecord(raw);
   const meta = asPlainRecord(record._meta);
-  const zcode = asPlainRecord(meta.zcode);
+  const zody = asPlainRecord(meta.zcode);
   return {
     ...record,
     _meta: {
       ...meta,
       zcode: {
-        ...zcode,
+        ...zody,
         taskNotification: notification,
       },
     },

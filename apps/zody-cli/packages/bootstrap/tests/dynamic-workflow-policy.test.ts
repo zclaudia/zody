@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { updateDynamicWorkflowPolicy } from "../src/zody-protocol/dynamic-workflow-policy.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { closeSession, createSessionRecordForV4 } from "../src/zody-protocol/server-operations.js";
 import { listProtocolSlashCommands } from "../src/zody-protocol/slash-commands.js";
 import type { ZodyAppOptions } from "../src/app/types.js";
@@ -66,7 +66,7 @@ describe("session 创建：runtimeConfig.dynamicWorkflowEnabled", () => {
     preferenceMode?: "disabled" | "onDemand" | "alwaysOn";
   }): Promise<{ enabled: boolean | undefined; onDemand: boolean | undefined }> {
     let appOptions: ZodyAppOptions | undefined;
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp: (options) => {
         appOptions = options;
         return createFakeApp(options);

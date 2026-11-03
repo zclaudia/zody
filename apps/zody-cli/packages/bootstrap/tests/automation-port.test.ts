@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { AutomationCreateLimitError, isAutomationCreateLimitError } from "@zody/contracts";
-import { AUTOMATION_CREATE_LIMIT_ERROR_CODE, zcodeProtocolMethods } from "@zody/shared";
+import { AUTOMATION_CREATE_LIMIT_ERROR_CODE, zodyProtocolMethods } from "@zody/shared";
 import {
   AUTOMATION_CREATE_BOUND_SESSION_CHECK_ERROR,
   AUTOMATION_CREATE_FROM_AUTOMATION_RUN_ERROR,
@@ -55,7 +55,7 @@ describe("createProtocolAutomationPort", () => {
     // Bugfix 回归：桌面交互输入直连 CLI，绕过 host adapter 的 toolDenylist 注入；用户在一个已归属
     // 定时任务的会话里继续输入时，CronCreate 仍会被注册。这里在创建入口按 targetTaskId 兜底拒绝。
     const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationCheckTaskBinding) {
+      if (method === zodyProtocolMethods.automationCheckTaskBinding) {
         return { bound: true };
       }
       throw new Error(`unexpected method ${method}`);
@@ -91,17 +91,17 @@ describe("createProtocolAutomationPort", () => {
       ),
     ).rejects.toThrow(AUTOMATION_CREATE_IN_BOUND_SESSION_ERROR);
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCheckTaskBinding,
+      zodyProtocolMethods.automationCheckTaskBinding,
       { targetTaskId: "session-1" },
       expect.anything(),
     );
     expect(requestClient).not.toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationList,
+      zodyProtocolMethods.automationList,
       expect.anything(),
       expect.anything(),
     );
     expect(requestClient).not.toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       expect.anything(),
       expect.anything(),
     );
@@ -111,8 +111,8 @@ describe("createProtocolAutomationPort", () => {
     "普通会话创建 automation 保留显式模式 %s，不迁移未设置值",
     async (mode) => {
       const requestClient = vi.fn(async (method: string) => {
-        if (method === zcodeProtocolMethods.automationCheckTaskBinding) return { bound: false };
-        if (method === zcodeProtocolMethods.automationCreate) {
+        if (method === zodyProtocolMethods.automationCheckTaskBinding) return { bound: false };
+        if (method === zodyProtocolMethods.automationCreate) {
           return {
             automation: {
               automationId: "automation-new",
@@ -160,12 +160,12 @@ describe("createProtocolAutomationPort", () => {
         ),
       ).resolves.toEqual(expect.objectContaining({ automationId: "automation-new", mode }));
       expect(requestClient).toHaveBeenCalledWith(
-        zcodeProtocolMethods.automationCreate,
+        zodyProtocolMethods.automationCreate,
         expect.objectContaining({ targetTaskId: "session-1", ...(mode ? { mode } : {}) }),
         expect.anything(),
       );
       expect(requestClient).not.toHaveBeenCalledWith(
-        zcodeProtocolMethods.automationList,
+        zodyProtocolMethods.automationList,
         expect.anything(),
         expect.anything(),
       );
@@ -181,8 +181,8 @@ describe("createProtocolAutomationPort", () => {
       anchorAt: 1_700_000_000_000,
     };
     const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationCheckTaskBinding) return { bound: false };
-      if (method === zcodeProtocolMethods.automationCreate) {
+      if (method === zodyProtocolMethods.automationCheckTaskBinding) return { bound: false };
+      if (method === zodyProtocolMethods.automationCreate) {
         return {
           automation: {
             automationId: "automation-interval",
@@ -197,7 +197,7 @@ describe("createProtocolAutomationPort", () => {
           },
         };
       }
-      if (method === zcodeProtocolMethods.automationUpdate) {
+      if (method === zodyProtocolMethods.automationUpdate) {
         return {
           automation: {
             automationId: "automation-interval",
@@ -218,7 +218,7 @@ describe("createProtocolAutomationPort", () => {
           },
         };
       }
-      if (method === zcodeProtocolMethods.automationList) {
+      if (method === zodyProtocolMethods.automationList) {
         return {
           automations: [
             {
@@ -282,7 +282,7 @@ describe("createProtocolAutomationPort", () => {
     const listed = await port.list();
 
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       expect.objectContaining({
         intervalUnit: "minute",
         interval: 200,
@@ -291,7 +291,7 @@ describe("createProtocolAutomationPort", () => {
       expect.anything(),
     );
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationUpdate,
+      zodyProtocolMethods.automationUpdate,
       expect.objectContaining({
         intervalUnit: "hourly",
         interval: 200,
@@ -309,10 +309,10 @@ describe("createProtocolAutomationPort", () => {
   // 全量删除（specs/bot-channels-removal.md）；automation create 不再携带 bot 投递目标。
   it("旧 Host 缺少归属查询方法时回退 automation/list，并允许未绑定会话 CronCreate", async () => {
     const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationCheckTaskBinding) {
+      if (method === zodyProtocolMethods.automationCheckTaskBinding) {
         throw new ProtocolRequestError(-32601, "Method not found");
       }
-      if (method === zcodeProtocolMethods.automationList) {
+      if (method === zodyProtocolMethods.automationList) {
         return {
           automations: [
             {
@@ -329,7 +329,7 @@ describe("createProtocolAutomationPort", () => {
           ],
         };
       }
-      if (method === zcodeProtocolMethods.automationCreate) {
+      if (method === zodyProtocolMethods.automationCreate) {
         return {
           automation: {
             automationId: "automation-new",
@@ -363,12 +363,12 @@ describe("createProtocolAutomationPort", () => {
       ),
     ).resolves.toEqual(expect.objectContaining({ automationId: "automation-new" }));
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationList,
+      zodyProtocolMethods.automationList,
       {},
       expect.anything(),
     );
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       expect.objectContaining({ targetTaskId: "session-1" }),
       expect.anything(),
     );
@@ -376,10 +376,10 @@ describe("createProtocolAutomationPort", () => {
 
   it("旧 Host 回退列表命中当前会话绑定时仍拒绝 CronCreate", async () => {
     const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationCheckTaskBinding) {
+      if (method === zodyProtocolMethods.automationCheckTaskBinding) {
         throw new ProtocolRequestError(-32601, "Method not found");
       }
-      if (method === zcodeProtocolMethods.automationList) {
+      if (method === zodyProtocolMethods.automationList) {
         return {
           automations: [
             {
@@ -415,7 +415,7 @@ describe("createProtocolAutomationPort", () => {
       ),
     ).rejects.toThrow(AUTOMATION_CREATE_IN_BOUND_SESSION_ERROR);
     expect(requestClient).not.toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       expect.anything(),
       expect.anything(),
     );
@@ -423,7 +423,7 @@ describe("createProtocolAutomationPort", () => {
 
   it("相对时间通过 relativeDelayMinutes 交给 Host，模型不再计算绝对 cron", async () => {
     const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationCreate) {
+      if (method === zodyProtocolMethods.automationCreate) {
         return {
           automation: {
             automationId: "automation-relative",
@@ -453,7 +453,7 @@ describe("createProtocolAutomationPort", () => {
     });
 
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       expect.objectContaining({
         cronExpr: "* * * * *",
         relativeDelayMinutes: 3,
@@ -465,7 +465,7 @@ describe("createProtocolAutomationPort", () => {
 
   it("省略 delayMinutes 的普通 cron 创建保持 recurring 默认，不误走相对分支", async () => {
     const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationCreate) {
+      if (method === zodyProtocolMethods.automationCreate) {
         return {
           automation: {
             automationId: "automation-plain",
@@ -495,12 +495,12 @@ describe("createProtocolAutomationPort", () => {
     });
 
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       expect.objectContaining({ cronExpr: "0 9 * * *", recurring: true }),
       expect.anything(),
     );
     const createPayload = requestClient.mock.calls.find(
-      ([method]) => method === zcodeProtocolMethods.automationCreate,
+      ([method]) => method === zodyProtocolMethods.automationCreate,
     )?.[1] as Record<string, unknown>;
     expect(createPayload).not.toHaveProperty("relativeDelayMinutes");
   });
@@ -519,7 +519,7 @@ describe("createProtocolAutomationPort", () => {
       ["yolo", "yolo"],
     ] as const;
     const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationList) {
+      if (method === zodyProtocolMethods.automationList) {
         return {
           automations: modeCases.map(([mode], index) => ({
             automationId: `automation-${index}`,
@@ -550,8 +550,8 @@ describe("createProtocolAutomationPort", () => {
 
   it("将 automation/create 上限错误映射为 CLI 稳定领域错误", async () => {
     const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationCheckTaskBinding) return { bound: false };
-      if (method === zcodeProtocolMethods.automationCreate) {
+      if (method === zodyProtocolMethods.automationCheckTaskBinding) return { bound: false };
+      if (method === zodyProtocolMethods.automationCreate) {
         throw new Error(
           `[${AUTOMATION_CREATE_LIMIT_ERROR_CODE}] At most 20 automations may be retained.`,
         );
@@ -577,7 +577,7 @@ describe("createProtocolAutomationPort", () => {
   it("automation 归属查询失败时 fail-closed，且不调用 automation/create", async () => {
     const logger = { warn: vi.fn() };
     const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationCheckTaskBinding) {
+      if (method === zodyProtocolMethods.automationCheckTaskBinding) {
         throw new Error("automation storage unavailable");
       }
       throw new Error(`unexpected method ${method}`);
@@ -607,12 +607,12 @@ describe("createProtocolAutomationPort", () => {
       }),
     );
     expect(requestClient).not.toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationList,
+      zodyProtocolMethods.automationList,
       expect.anything(),
       expect.anything(),
     );
     expect(requestClient).not.toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       expect.anything(),
       expect.anything(),
     );
@@ -672,7 +672,7 @@ describe("createProtocolAutomationPort", () => {
     );
 
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       {
         cronExpr: "0 9 * * *",
         prompt: "write daily report",
@@ -696,7 +696,7 @@ describe("createProtocolAutomationPort", () => {
 
   it("CronCreate 持久化会话常驻模型（fork 注：原为加速 Turn 场景，F4.2 删加速卡后保留会话模型快照断言）", async () => {
     const requestClient = vi.fn(async (method: string) => {
-      if (method === zcodeProtocolMethods.automationCheckTaskBinding) return { bound: false };
+      if (method === zodyProtocolMethods.automationCheckTaskBinding) return { bound: false };
       return {
         automation: {
           automationId: "automation-highspeed",
@@ -746,7 +746,7 @@ describe("createProtocolAutomationPort", () => {
     );
 
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       expect.objectContaining({
         modelSelection: { providerId: "account:zai-individual-coding-plan", modelId: "GLM-5" },
       }),
@@ -836,7 +836,7 @@ describe("createProtocolAutomationPort", () => {
       runCount: 3,
     });
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationUpdate,
+      zodyProtocolMethods.automationUpdate,
       {
         automationId: "automation-1",
         title: "updated report",
@@ -847,12 +847,12 @@ describe("createProtocolAutomationPort", () => {
       expect.anything(),
     );
     expect(requestClient).not.toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationDelete,
+      zodyProtocolMethods.automationDelete,
       expect.anything(),
       expect.anything(),
     );
     expect(requestClient).not.toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       expect.anything(),
       expect.anything(),
     );
@@ -867,7 +867,7 @@ describe("createProtocolAutomationPort", () => {
 
     await expect(port.delete({ id: "stale-id" })).resolves.toBe(false);
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationDelete,
+      zodyProtocolMethods.automationDelete,
       { automationId: "stale-id" },
       expect.anything(),
     );
@@ -929,7 +929,7 @@ describe("createProtocolAutomationPort", () => {
     );
 
     expect(requestClient).toHaveBeenCalledWith(
-      zcodeProtocolMethods.automationCreate,
+      zodyProtocolMethods.automationCreate,
       {
         cronExpr: "0 9 * * *",
         prompt: "write daily report",

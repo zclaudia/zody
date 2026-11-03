@@ -1,13 +1,13 @@
 /* eslint-disable max-lines -- task index 的 v4 帧摄入、snapshot upsert 和 workspace 广播必须共享同一份闭包状态。 */
 import { repairSubagentTaskIndex } from "#src/zody-agent/repairSubagentTaskIndex.js";
 import {
-  deriveZCodeTaskStatusFromSessionSnapshot,
+  deriveZodyTaskStatusFromSessionSnapshot,
   generateTraceId,
-  getZCodeUserVisibleMessages,
-  isZCodeGoalContinuationReminderText,
-  isZCodeModelOnlySyntheticUserMessage,
+  getZodyUserVisibleMessages,
+  isZodyGoalContinuationReminderText,
+  isZodyModelOnlySyntheticUserMessage,
   resolveWorkspaceKey,
-  resolveZCodeVisibleSessionTitle,
+  resolveZodyVisibleSessionTitle,
   ZCODE_AGENT_PROVIDER_NOT_READY_CODE,
   ZCODE_AGENT_PROVIDER,
   type ZodyTaskGoal,
@@ -297,7 +297,7 @@ interface PendingTopicFrames<TFrame> {
   recoveryNeeded: boolean;
 }
 
-export function createZCodeTaskIndexSyncer(
+export function createZodyTaskIndexSyncer(
   options: CreateZodyTaskIndexSyncerOptions,
 ): ZodyTaskIndexSyncer {
   const { agentService, taskIndexRepo } = options;
@@ -1837,7 +1837,7 @@ function buildMetaFromSnapshot(
     workspaceIdentity: snapshot.session.workspace.workspaceIdentity,
     createdAt: snapshot.session.createdAt,
     updatedAt: snapshot.session.updatedAt,
-    mode: fromZCodeMode(snapshot.session.mode),
+    mode: fromZodyMode(snapshot.session.mode),
     // 用户显式切模型或历史模型不可用时，session 操作已经带了新的可用模型。
     // 这类场景要同步覆盖 sqlite 的 task model，否则下次恢复仍会从已删除的历史模型起跳；
     // 普通历史快照仍走最近消息模型优先，避免被误污染的 settings.current 反向污染索引。
@@ -1846,7 +1846,7 @@ function buildMetaFromSnapshot(
     // 当恢复入口已经带上 task-local thoughtLevel 时，sqlite 必须写入入口值，避免下次打开继续被污染。
     thoughtLevel: thoughtLevelOverride || snapshot.settings.thoughtLevel.current,
     provider: ZCODE_AGENT_PROVIDER,
-    status: deriveZCodeTaskStatusFromSessionSnapshot(snapshot),
+    status: deriveZodyTaskStatusFromSessionSnapshot(snapshot),
     lastError: snapshot.projection.lastError
       ? {
           code: snapshot.projection.lastError.code ?? snapshot.projection.lastError.type,
@@ -1866,14 +1866,14 @@ function buildMetaFromSnapshot(
     // target 字段缺席表示本次 snapshot 未提供 goal 信息，不能覆盖旧索引；
     // null 才表示 DB 明确没有 goal，需要清空 task-index 中的目标。
     meta.target = snapshot.projection.target
-      ? fromZCodeGoal(snapshot.projection.target)
+      ? fromZodyGoal(snapshot.projection.target)
       : snapshot.projection.target;
   }
   return meta;
 }
 
 function deriveTitleFromSnapshot(snapshot: ZodySessionStateSnapshot): string {
-  return resolveZCodeVisibleSessionTitle({
+  return resolveZodyVisibleSessionTitle({
     title: snapshot.session.title,
     messages: snapshot.messages,
     target: snapshot.projection.target,
@@ -1885,7 +1885,7 @@ function deriveTitleFromSnapshot(snapshot: ZodySessionStateSnapshot): string {
 // 这里判断"是否已有用户可见内容"，没有就只写 sqlite 不广播，等真实 title 到了再广播。
 function hasUserVisibleContent(snapshot: ZodySessionStateSnapshot): boolean {
   const title = snapshot.session.title?.trim() ?? "";
-  if (title && !isZCodeGoalContinuationReminderText(title)) {
+  if (title && !isZodyGoalContinuationReminderText(title)) {
     return true;
   }
   if (snapshot.projection.target?.objective.trim()) {
@@ -1893,7 +1893,7 @@ function hasUserVisibleContent(snapshot: ZodySessionStateSnapshot): boolean {
   }
   return snapshot.messages.some((message) => {
     if (message.info.role !== "user") return false;
-    if (isZCodeModelOnlySyntheticUserMessage(message)) return false;
+    if (isZodyModelOnlySyntheticUserMessage(message)) return false;
     return message.parts.some((part) => part.type === "text" && part.text.trim().length > 0);
   });
 }
@@ -1908,7 +1908,7 @@ function buildSearchableTextFromSnapshot(snapshot: ZodySessionStateSnapshot): st
   let total = 0;
   // /goal 自动续跑会把内部 system-reminder 作为 runtime user turn 持久化；
   // 这条内容是 model-only 输入，不是用户可见 query，不能写进侧边栏搜索正文。
-  for (const message of getZCodeUserVisibleMessages(snapshot.messages, {
+  for (const message of getZodyUserVisibleMessages(snapshot.messages, {
     target: snapshot.projection.target,
   })) {
     const textParts = message.parts.filter(
@@ -1937,11 +1937,11 @@ function buildSearchableTextFromSnapshot(snapshot: ZodySessionStateSnapshot): st
   return parts.join("\n").slice(0, TASK_SEARCH_TEXT_MAX_CHARS);
 }
 
-function fromZCodeMode(mode: ZodySessionMode): ZodyTaskMode {
+function fromZodyMode(mode: ZodySessionMode): ZodyTaskMode {
   return mode === "build" ? "build" : mode;
 }
 
-function fromZCodeGoal(
+function fromZodyGoal(
   goal: NonNullable<ZodySessionStateSnapshot["projection"]["target"]>,
 ): ZodyTaskGoal {
   return {

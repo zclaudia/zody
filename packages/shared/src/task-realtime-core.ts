@@ -6,15 +6,15 @@
 
 import { z } from "zod";
 import type { ZodyTaskMigrationSource, ZodyTaskMode } from "./zody-task-types-core.js";
-import { legacyZCodeProviderSchema } from "./zody-agent-policy.js";
-import { zcodePermissionResponseSchema } from "./zody-protocol-legacy-types.js";
+import { legacyZodyProviderSchema } from "./zody-agent-policy.js";
+import { zodyPermissionResponseSchema } from "./zody-protocol-legacy-types.js";
 // merge 冲突解决：两侧分别在相邻行新增独立 import（本分支 hook trust review
 // 决策 schema、staging telemetry error attribution schema），二者无语义交集，均保留。
 import { workspaceHookReviewDecisionSchema } from "./zody-protocol-v4/workspace-hook-review.js";
 import { errorAttributionSchema } from "./zody-protocol-v4/snapshot.js";
 
 const nonEmptyString = z.string().trim().min(1);
-const zcodeTaskModeRealtimeValues = [
+const zodyTaskModeRealtimeValues = [
   "default",
   "yolo",
   "guarded",
@@ -27,10 +27,10 @@ const zcodeTaskModeRealtimeValues = [
   "autoEdit",
   "build",
 ] as const satisfies readonly ZodyTaskMode[];
-const zcodeTaskMigrationSourceRealtimeValues = [
+const zodyTaskMigrationSourceRealtimeValues = [
   "claudeCode",
 ] as const satisfies readonly ZodyTaskMigrationSource[];
-const zcodeTaskChangeSummaryRealtimeSchema = z
+const zodyTaskChangeSummaryRealtimeSchema = z
   .object({
     fileCount: z.number().int().nonnegative(),
     added: z.number().int().nonnegative(),
@@ -59,12 +59,12 @@ const taskMetaRealtimeSchema = z.object({
   updatedAt: z.number().int().nonnegative(),
   // realtime deliver 的运行时 schema 之前把 mode 放宽成 string，
   // schema 推导类型因此无法回到 ZCodeTaskMeta，host typecheck 也就无法覆盖这条链路。
-  mode: z.enum(zcodeTaskModeRealtimeValues),
+  mode: z.enum(zodyTaskModeRealtimeValues),
   model: z.string().optional(),
   runtimeEpoch: z.number().int().nonnegative().optional(),
   // relay payload 可能由旧版本桌面投影；历史 provider 值在此归一为 glm。
-  provider: legacyZCodeProviderSchema.optional(),
-  migrationSource: z.enum(zcodeTaskMigrationSourceRealtimeValues).optional(),
+  provider: legacyZodyProviderSchema.optional(),
+  migrationSource: z.enum(zodyTaskMigrationSourceRealtimeValues).optional(),
   forkedFromTaskId: nonEmptyString.optional(),
   unreadAt: z.number().int().nonnegative().optional(),
   status: z.enum(["running", "completed", "error"]).optional(),
@@ -79,7 +79,7 @@ const taskMetaRealtimeSchema = z.object({
       attribution: errorAttributionSchema.optional(),
     })
     .optional(),
-  changeSummary: zcodeTaskChangeSummaryRealtimeSchema.optional(),
+  changeSummary: zodyTaskChangeSummaryRealtimeSchema.optional(),
 });
 export function resolveWorkspaceKey(params: {
   workspacePath: string;
@@ -164,7 +164,7 @@ export const workspaceTaskListInvalidatedEventSchema = taskRealtimeInvalidationB
     taskMeta: taskMetaRealtimeSchema.optional(),
   })
   .strict();
-const zcodePromptAttachmentSchema = z.discriminatedUnion("kind", [
+const zodyPromptAttachmentSchema = z.discriminatedUnion("kind", [
   z
     .object({
       kind: z.literal("image"),
@@ -229,7 +229,7 @@ const taskStreamMirrorUserMessagePublishOpSchema = z
     kind: z.literal("user_message"),
     messageId: nonEmptyString,
     content: z.string(),
-    attachments: z.array(zcodePromptAttachmentSchema).optional(),
+    attachments: z.array(zodyPromptAttachmentSchema).optional(),
     timestamp: z.number().finite(),
   })
   .strict();
@@ -334,7 +334,7 @@ const taskRespondPermissionOwnerCommandRequestSchema = taskOwnerCommandBaseSchem
     type: z.literal("respond_permission"),
     permissionRequestId: nonEmptyString,
     optionId: nonEmptyString,
-    response: zcodePermissionResponseSchema,
+    response: zodyPermissionResponseSchema,
   })
   .strict();
 const taskRespondElicitationOwnerCommandRequestSchema = taskOwnerCommandBaseSchema
@@ -366,7 +366,7 @@ const taskRespondWorkspaceHookReviewOwnerCommandRequestSchema = taskOwnerCommand
       });
     }
   });
-const zcodeTaskRuntimeCommandBaseSchema = z
+const zodyTaskRuntimeCommandBaseSchema = z
   .object({
     commandId: nonEmptyString,
     taskId: nonEmptyString,
@@ -382,12 +382,12 @@ const zcodeTaskRuntimeCommandBaseSchema = z
     error: z.string().optional(),
   })
   .strict();
-const zcodeTaskRuntimeCommandSchema = z.discriminatedUnion("type", [
-  zcodeTaskRuntimeCommandBaseSchema
+const zodyTaskRuntimeCommandSchema = z.discriminatedUnion("type", [
+  zodyTaskRuntimeCommandBaseSchema
     .extend({
       type: z.literal("send_prompt"),
       content: z.string(),
-      attachments: z.array(zcodePromptAttachmentSchema).optional(),
+      attachments: z.array(zodyPromptAttachmentSchema).optional(),
       automationId: nonEmptyString.optional(),
     })
     .strict(),
@@ -395,7 +395,7 @@ const zcodeTaskRuntimeCommandSchema = z.discriminatedUnion("type", [
 const taskEnqueueCommandOwnerCommandRequestSchema = taskOwnerCommandBaseSchema
   .extend({
     type: z.literal("enqueue_task_command"),
-    taskCommand: zcodeTaskRuntimeCommandSchema,
+    taskCommand: zodyTaskRuntimeCommandSchema,
   })
   .strict();
 const taskPromoteCommandOwnerCommandRequestSchema = taskOwnerCommandBaseSchema
@@ -476,7 +476,7 @@ export const taskOwnerCommandResultSchema = z.discriminatedUnion("success", [
     .object({
       commandRequestId: nonEmptyString,
       success: z.literal(true),
-      taskCommand: zcodeTaskRuntimeCommandSchema.optional(),
+      taskCommand: zodyTaskRuntimeCommandSchema.optional(),
     })
     .strict(),
   z

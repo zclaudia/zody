@@ -1,6 +1,6 @@
 import type { ZodyApiRetryStatus } from "./zody-task-types-core.js";
 
-export function normalizeZCodeApiRetryStatus(
+export function normalizeZodyApiRetryStatus(
   value: unknown,
 ): ZodyApiRetryStatus | null | undefined {
   if (value === null) {
@@ -36,15 +36,15 @@ export function normalizeZCodeApiRetryStatus(
   };
 }
 
-export function zcodeApiRetryFromModelNetworkStatusPayload(
+export function zodyApiRetryFromModelNetworkStatusPayload(
   payload: Record<string, unknown>,
 ): ZodyApiRetryStatus | null | undefined {
   const type = stringValue(payload.type);
   if (type === "model_retry_scheduled") {
-    return normalizeZCodeApiRetryStatus(payload);
+    return normalizeZodyApiRetryStatus(payload);
   }
   if (type === "model_request_started") {
-    const streamRecoveryRetry = zcodeApiRetryFromStreamRecoveryPayload(payload.streamRecovery);
+    const streamRecoveryRetry = zodyApiRetryFromStreamRecoveryPayload(payload.streamRecovery);
     if (streamRecoveryRetry !== undefined) {
       return streamRecoveryRetry;
     }
@@ -63,7 +63,7 @@ export function zcodeApiRetryFromModelNetworkStatusPayload(
   return undefined;
 }
 
-export function isZCodeModelRetryRecoveryProgressPayload(
+export function isZodyModelRetryRecoveryProgressPayload(
   payload: Record<string, unknown>,
 ): boolean {
   const kind = stringValue(payload.kind);
@@ -83,7 +83,7 @@ export function isZCodeModelRetryRecoveryProgressPayload(
   return false;
 }
 
-export function zcodeApiRetryFromStreamRecoveryPayload(
+export function zodyApiRetryFromStreamRecoveryPayload(
   value: unknown,
 ): ZodyApiRetryStatus | undefined {
   const record = asRecord(value);

@@ -16,7 +16,7 @@ import type {
   ZodyMcpServerStatusSnapshot,
   ZodyMcpServer,
 } from "@zody/shared";
-import { convertToZCodeAgentMcpServer } from "@zody/shared";
+import { convertToZodyAgentMcpServer } from "@zody/shared";
 import { logger } from "@/logger.js";
 import {
   fetchNativeMcpServers,
@@ -576,7 +576,7 @@ export const useMcpStore = create<McpStoreState>((set, get) => {
 
       const result: ZodyAgentMcpServer[] = [];
       for (const server of candidates.values()) {
-        const zcodeAgentServer = convertToZCodeAgentMcpServer(server.name, server.config);
+        const zcodeAgentServer = convertToZodyAgentMcpServer(server.name, server.config);
         if (zcodeAgentServer) result.push(zcodeAgentServer);
       }
       return result;

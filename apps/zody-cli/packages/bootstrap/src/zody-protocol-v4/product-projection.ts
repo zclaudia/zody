@@ -71,11 +71,11 @@ import {
   ZCODE_FILE_STREAMING_TOOL_INPUT_PREVIEW_MIN_INTERVAL_MS,
   extractPlanStepsFromToolInput,
   extractPlanStepsFromToolOutput,
-  isZCodeFileStreamingToolInputPreviewTool,
-  isZCodeModelRetryRecoveryProgressPayload,
-  parseZCodeBackgroundTaskNotificationText,
-  resolveZCodeBackgroundTaskControlKind,
-  zcodeBackgroundTaskNotificationToolUpdateStatus,
+  isZodyFileStreamingToolInputPreviewTool,
+  isZodyModelRetryRecoveryProgressPayload,
+  parseZodyBackgroundTaskNotificationText,
+  resolveZodyBackgroundTaskControlKind,
+  zodyBackgroundTaskNotificationToolUpdateStatus,
 } from "@zody/shared";
 import { verdictWorkspaceHookReviewRequest } from "@zody/shared/workspace-hook-review-monotonicity";
 import type {
@@ -1358,7 +1358,7 @@ export class ProductProjection {
         if (fact.semanticKind !== "assistantSegment") return [];
         const shouldClearApiRetry =
           this.acceptsActiveModelEvent(event) &&
-          isZCodeModelRetryRecoveryProgressPayload(
+          isZodyModelRetryRecoveryProgressPayload(
             event.payload as unknown as Record<string, unknown>,
           );
         const streamingDeltas = this.onModelStreaming(fact);
@@ -2190,12 +2190,12 @@ export class ProductProjection {
   }
 
   private applyBackgroundTaskNotification(fact: CanonicalUserIntentFact): ConversationDelta[] {
-    const parsed = parseZCodeBackgroundTaskNotificationText(fact.input);
+    const parsed = parseZodyBackgroundTaskNotificationText(fact.input);
     if (!parsed) return [];
     const row = this.findToolRow(parsed.toolUseId);
     if (!row) return [];
 
-    const notificationStatus = zcodeBackgroundTaskNotificationToolUpdateStatus(
+    const notificationStatus = zodyBackgroundTaskNotificationToolUpdateStatus(
       parsed.notification.status,
     );
     const status: ToolCallRow["status"] =
@@ -2884,7 +2884,7 @@ export class ProductProjection {
       inputText: "",
     };
     this.toolRowIdByCallId.set(toolCallId, row.rowId);
-    if (isZCodeFileStreamingToolInputPreviewTool(row.toolName)) {
+    if (isZodyFileStreamingToolInputPreviewTool(row.toolName)) {
       this.fileToolInputPreviewByCallId.set(toolCallId, {
         lastPublishedAt: null,
         pendingAppend: "",
@@ -4447,7 +4447,7 @@ export class ProductProjection {
     if (!workId) return [];
     const prev = this.snapshot.backgroundWorks;
     const existing = prev.find((work) => work.workId === workId);
-    const legacyKind = resolveZCodeBackgroundTaskControlKind(payload);
+    const legacyKind = resolveZodyBackgroundTaskControlKind(payload);
     // 新事件使用 runtime 的显式 taskKind；旧事件统一走 shared resolver，
     // 不能再在 reducer 内散落 Agent/Task/subagent 字符串分支。
     // "workflow" 是 workflow run（此前错标成 bash）；legacy resolver 里没有对应值，因为

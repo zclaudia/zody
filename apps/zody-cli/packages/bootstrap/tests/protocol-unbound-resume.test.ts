@@ -10,9 +10,9 @@ import {
   SESSION_ENTRY_MODEL_SELECTION,
 } from "@zody/contracts";
 import {
-  zcodeProtocolMethods,
-  zcodeSessionForkResultSchema,
-  zcodeSessionStateSnapshotSchema,
+  zodyProtocolMethods,
+  zodySessionForkResultSchema,
+  zodySessionStateSnapshotSchema,
 } from "@zody/shared";
 import {
   V4_METHODS,
@@ -20,7 +20,7 @@ import {
   routedTopicWireFrameSchema,
   conversationTopicFrameSchema,
 } from "@zody/shared/zody-protocol-v4";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 import {
   createRegistryBackedTestApp,
   createTestProviderRegistry,
@@ -37,7 +37,7 @@ describe.each(["desktop-continuous", "web-remote-replayable"] as const)(
       const apps: Awaited<ReturnType<typeof createRegistryBackedTestApp>>[] = [];
       // 未绑定创建必须明确使用空候选；公共测试 helper 会额外 seed 默认模型。
       let registry = new ProviderRegistry([]);
-      const server = new ZCodeProtocolAgentServer({
+      const server = new ZodyProtocolAgentServer({
         cwd: process.cwd(),
         sessionStore: store,
         createZCodeApp: async (options) => {
@@ -55,7 +55,7 @@ describe.each(["desktop-continuous", "web-remote-replayable"] as const)(
       server.setNotificationSink((message) => {
         if (
           "id" in message &&
-          message.method === zcodeProtocolMethods.sessionRequestRuntimePreferences
+          message.method === zodyProtocolMethods.sessionRequestRuntimePreferences
         ) {
           void server.handleMessage({
             id: message.id,
@@ -102,7 +102,7 @@ describe.each(["desktop-continuous", "web-remote-replayable"] as const)(
         const importedId = createSessionId(`unbound-import-${clientMode}`);
         const imported = await server.handleMessage({
           id: "import",
-          method: zcodeProtocolMethods.sessionCreate,
+          method: zodyProtocolMethods.sessionCreate,
           params: {
             sessionId: importedId,
             workspace: { workspacePath: process.cwd(), workspaceKey: process.cwd() },
@@ -193,7 +193,7 @@ describe.each(["desktop-continuous", "web-remote-replayable"] as const)(
         });
       const apps: Awaited<ReturnType<typeof createRegistryBackedTestApp>>[] = [];
       const legacyProviderResolveRequests: unknown[] = [];
-      const server = new ZCodeProtocolAgentServer({
+      const server = new ZodyProtocolAgentServer({
         cwd: process.cwd(),
         sessionStore: store,
         createZCodeApp: async (options) => {
@@ -213,7 +213,7 @@ describe.each(["desktop-continuous", "web-remote-replayable"] as const)(
       });
       server.setNotificationSink((message) => {
         if (!("id" in message)) return;
-        if (message.method === zcodeProtocolMethods.sessionRequestRuntimePreferences) {
+        if (message.method === zodyProtocolMethods.sessionRequestRuntimePreferences) {
           void server.handleMessage({
             id: message.id,
             result: { nativeSearchEnhancementsEnabled: false, memoryEnabled: false },
@@ -281,12 +281,12 @@ describe.each(["desktop-continuous", "web-remote-replayable"] as const)(
         // 订阅成功不代表其他读取入口安全：未绑定会话还必须能生成严格协议快照。
         const read = await server.handleMessage({
           id: "read-unbound",
-          method: zcodeProtocolMethods.sessionRead,
+          method: zodyProtocolMethods.sessionRead,
           params: { sessionId: sessionID },
         });
         expect(read).toHaveProperty("result");
         if (!read || !("result" in read)) throw new Error("Expected session/read result");
-        const snapshot = zcodeSessionStateSnapshotSchema.parse(read.result);
+        const snapshot = zodySessionStateSnapshotSchema.parse(read.result);
         expect(snapshot.session.model).toBeUndefined();
         expect(snapshot.settings.model.current).toBeUndefined();
         expect(snapshot.settings.model.lastUsed).toBeUndefined();
@@ -301,12 +301,12 @@ describe.each(["desktop-continuous", "web-remote-replayable"] as const)(
         ).toEqual(expectedStored);
         const forked = await server.handleMessage({
           id: "fork-unbound",
-          method: zcodeProtocolMethods.sessionFork,
+          method: zodyProtocolMethods.sessionFork,
           params: { sessionId: sessionID, target: { kind: "message", messageId: messageID } },
         });
         expect(forked, JSON.stringify(forked)).toHaveProperty("result");
         if (!forked || !("result" in forked)) throw new Error("Expected fork result");
-        const forkSnapshot = zcodeSessionForkResultSchema.parse(forked.result).snapshot;
+        const forkSnapshot = zodySessionForkResultSchema.parse(forked.result).snapshot;
         expect(forkSnapshot.settings.model.current).toBeUndefined();
         expect(forkSnapshot.session.parentSessionId).toBe(sessionID);
       } finally {

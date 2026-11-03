@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   TEST_ZCODE_ENDPOINT_ORIGIN,
-  buildRuntimeZCodeApiUrl,
-  normalizeZCodeEndpointOrigin,
-  resolveRuntimeZCodeEndpointOrigin,
-  resolveRuntimeZCodeEnv,
-  resolveZCodeEndpointOrigin,
-  rewriteZCodeEndpointUrl,
+  buildRuntimeZodyApiUrl,
+  normalizeZodyEndpointOrigin,
+  resolveRuntimeZodyEndpointOrigin,
+  resolveRuntimeZodyEnv,
+  resolveZodyEndpointOrigin,
+  rewriteZodyEndpointUrl,
 } from "../src/zodyEndpoint.js";
 import { appSettingsPatchSchema, appSettingsSchema } from "../src/validationAppSettings.js";
 
@@ -20,26 +20,26 @@ describe("zcodeEndpoint", () => {
   });
 
   it("keeps production unconfigured unless an explicit env base url is provided", () => {
-    expect(resolveZCodeEndpointOrigin({ env: "production" })).toBe(DEFAULT_ZCODE_ENDPOINT_ORIGIN);
-    expect(resolveRuntimeZCodeEndpointOrigin({ ZCODE_ENV: "production" })).toBe("");
+    expect(resolveZodyEndpointOrigin({ env: "production" })).toBe(DEFAULT_ZCODE_ENDPOINT_ORIGIN);
+    expect(resolveRuntimeZodyEndpointOrigin({ ZCODE_ENV: "production" })).toBe("");
   });
 
   it("falls back to the test placeholder in non-production without env base url", () => {
-    expect(resolveZCodeEndpointOrigin({ env: "test" })).toBe(TEST_ZCODE_ENDPOINT_ORIGIN);
-    expect(resolveRuntimeZCodeEndpointOrigin({ ZCODE_ENV: "test" })).toBe(
+    expect(resolveZodyEndpointOrigin({ env: "test" })).toBe(TEST_ZCODE_ENDPOINT_ORIGIN);
+    expect(resolveRuntimeZodyEndpointOrigin({ ZCODE_ENV: "test" })).toBe(
       TEST_ZCODE_ENDPOINT_ORIGIN,
     );
   });
 
   it("uses explicit ZCODE_BASE_URL style env base in both environments", () => {
     expect(
-      resolveZCodeEndpointOrigin({
+      resolveZodyEndpointOrigin({
         env: "test",
         envBaseOrigin: "https://zcode.example.test/api/v1",
       }),
     ).toBe("https://zcode.example.test");
     expect(
-      resolveZCodeEndpointOrigin({
+      resolveZodyEndpointOrigin({
         env: "production",
         envBaseOrigin: "https://zcode.example.test/api/v1",
       }),
@@ -48,14 +48,14 @@ describe("zcodeEndpoint", () => {
 
   it("resolves the runtime env selection without implying an endpoint", () => {
     // 生产默认只表示「环境选择」，不再意味着官方地址；端点仍需显式配置。
-    expect(resolveRuntimeZCodeEnv({})).toBe("production");
-    expect(resolveRuntimeZCodeEnv({ ZCODE_ENV: "test" })).toBe("test");
-    expect(resolveRuntimeZCodeEndpointOrigin({})).toBe("");
+    expect(resolveRuntimeZodyEnv({})).toBe("production");
+    expect(resolveRuntimeZodyEnv({ ZCODE_ENV: "test" })).toBe("test");
+    expect(resolveRuntimeZodyEndpointOrigin({})).toBe("");
   });
 
   it("keeps the non-production settings override above env base url", () => {
     expect(
-      resolveZCodeEndpointOrigin({
+      resolveZodyEndpointOrigin({
         env: "test",
         envBaseOrigin: "https://zcode.example.test",
         overrideOrigin: "http://localhost:3030/api/v1",
@@ -65,7 +65,7 @@ describe("zcodeEndpoint", () => {
 
   it("uses a non-production override after normalizing to origin", () => {
     expect(
-      resolveZCodeEndpointOrigin({
+      resolveZodyEndpointOrigin({
         env: "test",
         overrideOrigin: `${TEST_ZCODE_ENDPOINT_ORIGIN}/api/v1/ignored?x=1`,
       }),
@@ -74,7 +74,7 @@ describe("zcodeEndpoint", () => {
 
   it("ignores overrides in production", () => {
     expect(
-      resolveZCodeEndpointOrigin({
+      resolveZodyEndpointOrigin({
         env: "production",
         envBaseOrigin: "https://zcode.example.test",
         overrideOrigin: "https://override.example.test",
@@ -83,19 +83,19 @@ describe("zcodeEndpoint", () => {
   });
 
   it("builds runtime API urls from the selected environment", () => {
-    expect(buildRuntimeZCodeApiUrl({ ZCODE_ENV: "test" }, "/api/v1/client/scenes")).toBe(
+    expect(buildRuntimeZodyApiUrl({ ZCODE_ENV: "test" }, "/api/v1/client/scenes")).toBe(
       `${TEST_ZCODE_ENDPOINT_ORIGIN}/api/v1/client/scenes`,
     );
     expect(
-      buildRuntimeZCodeApiUrl(
+      buildRuntimeZodyApiUrl(
         { ZCODE_ENV: "test", ZCODE_BASE_URL: "http://localhost:3030/x" },
         "/health",
       ),
     ).toBe("http://localhost:3030/health");
     // 未配置端点时不拼接相对路径（相对 URL 会被 Node fetch 当成非法地址）。
-    expect(buildRuntimeZCodeApiUrl({ ZCODE_ENV: "production" }, "/api/v1/client/scenes")).toBe("");
+    expect(buildRuntimeZodyApiUrl({ ZCODE_ENV: "production" }, "/api/v1/client/scenes")).toBe("");
     expect(
-      buildRuntimeZCodeApiUrl(
+      buildRuntimeZodyApiUrl(
         { ZCODE_ENV: "production", ZCODE_BASE_URL: "https://zcode.example.test/x" },
         "/health",
       ),
@@ -106,7 +106,7 @@ describe("zcodeEndpoint", () => {
     // fork（F3.1）：DEFAULT 为空后不再存在「官方默认 origin → 活动 origin」的隐式改写，
     // 调用方必须直接用当前 endpoint 构造 URL。
     expect(
-      rewriteZCodeEndpointUrl(
+      rewriteZodyEndpointUrl(
         "https://zcode.example.test/api/v1/event/report?x=1",
         "http://localhost:3030",
       ),
@@ -115,14 +115,14 @@ describe("zcodeEndpoint", () => {
 
   it("rewrites only the explicitly configured source origin", () => {
     expect(
-      rewriteZCodeEndpointUrl(
+      rewriteZodyEndpointUrl(
         "https://zcode.example.test/api/v1/event/report?x=1",
         "http://localhost:3030",
         { sourceOrigin: "https://zcode.example.test" },
       ),
     ).toBe("http://localhost:3030/api/v1/event/report?x=1");
     expect(
-      rewriteZCodeEndpointUrl(
+      rewriteZodyEndpointUrl(
         "https://other.example.test/api/v1/event/report",
         "http://localhost:3030",
         { sourceOrigin: "https://zcode.example.test" },
@@ -130,16 +130,16 @@ describe("zcodeEndpoint", () => {
     ).toBe("https://other.example.test/api/v1/event/report");
     // 目标端点为「未配置」时保持原地址，不产生相对 URL。
     expect(
-      rewriteZCodeEndpointUrl("https://zcode.example.test/api/v1/event/report", "", {
+      rewriteZodyEndpointUrl("https://zcode.example.test/api/v1/event/report", "", {
         sourceOrigin: "https://zcode.example.test",
       }),
     ).toBe("https://zcode.example.test/api/v1/event/report");
   });
 
   it("rejects empty and non-http endpoint origins", () => {
-    expect(() => normalizeZCodeEndpointOrigin("   ")).toThrow(/empty/);
-    expect(() => normalizeZCodeEndpointOrigin("file:///tmp/zcode")).toThrow(/http or https/);
-    expect(normalizeZCodeEndpointOrigin("https://zcode.example.test/path?x=1")).toBe(
+    expect(() => normalizeZodyEndpointOrigin("   ")).toThrow(/empty/);
+    expect(() => normalizeZodyEndpointOrigin("file:///tmp/zcode")).toThrow(/http or https/);
+    expect(normalizeZodyEndpointOrigin("https://zcode.example.test/path?x=1")).toBe(
       "https://zcode.example.test",
     );
   });

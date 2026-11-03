@@ -1,9 +1,9 @@
 import {
-  formatZCodeAgentProcessName,
-  formatZCodeGpuProcessName,
-  formatZCodeHostProcessName,
-  formatZCodeRendererProcessName,
-  formatZCodeUtilityProcessName,
+  formatZodyAgentProcessName,
+  formatZodyGpuProcessName,
+  formatZodyHostProcessName,
+  formatZodyRendererProcessName,
+  formatZodyUtilityProcessName,
   HostMessageTypes,
 } from "@zody/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -127,19 +127,19 @@ describe("resourceManagerWindow", () => {
         sampled: true,
       });
       expect(byPid.get(gpuPid)).toMatchObject({
-        name: formatZCodeGpuProcessName(),
+        name: formatZodyGpuProcessName(),
         groupKey: "gpu",
       });
       expect(byPid.get(rendererPid)).toMatchObject({
-        name: formatZCodeRendererProcessName("Zody"),
+        name: formatZodyRendererProcessName("Zody"),
         groupKey: "renderer",
       });
       expect(byPid.get(hostPid)).toMatchObject({
-        name: formatZCodeHostProcessName("local-1"),
+        name: formatZodyHostProcessName("local-1"),
         groupKey: "host",
       });
       expect(byPid.get(utilityPid)).toMatchObject({
-        name: formatZCodeUtilityProcessName("network-service"),
+        name: formatZodyUtilityProcessName("network-service"),
         groupKey: "utility",
       });
       expect(byPid.get(guestPid)).toMatchObject({
@@ -232,7 +232,7 @@ describe("resourceManagerWindow", () => {
       expect(byPid.get(mcpPid)).toMatchObject({ category: "community-plugin", sampled: true });
       expect(byPid.get(unsampledAgentPid)).toEqual({
         pid: unsampledAgentPid,
-        name: formatZCodeAgentProcessName("glm", "/w/other"),
+        name: formatZodyAgentProcessName("glm", "/w/other"),
         category: "base",
         groupKey: "cli",
         groupLabel: "cli",

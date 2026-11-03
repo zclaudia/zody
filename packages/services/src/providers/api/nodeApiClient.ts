@@ -1,6 +1,6 @@
 import {
   ApiError,
-  normalizeZCodeEndpointOrigin,
+  normalizeZodyEndpointOrigin,
   type ApiClient,
   type ApiRequestInit,
 } from "@zody/shared";
@@ -19,7 +19,7 @@ interface NodeApiClientOptions {
     headers: Headers,
   ) => boolean | Promise<boolean>;
   businessUnauthorizedObservationTimeoutMs?: number;
-  resolveZCodeEndpointOrigin?: () => Promise<string> | string;
+  resolveZodyEndpointOrigin?: () => Promise<string> | string;
 }
 
 const DEFAULT_BUSINESS_UNAUTHORIZED_OBSERVATION_TIMEOUT_MS = 1000;
@@ -116,7 +116,7 @@ function isRequestForEndpoint(input: string | URL, endpointOrigin: string): bool
     return false;
   }
   try {
-    return new URL(resolveUrl(input)).origin === normalizeZCodeEndpointOrigin(endpointOrigin);
+    return new URL(resolveUrl(input)).origin === normalizeZodyEndpointOrigin(endpointOrigin);
   } catch {
     return false;
   }
@@ -153,7 +153,7 @@ function resolveRequestHeaders(
 
 export class NodeApiClient implements ApiClient {
   private readonly fetchImpl?: typeof fetch;
-  private readonly resolveZCodeEndpointOrigin?: () => Promise<string> | string;
+  private readonly resolveZodyEndpointOrigin?: () => Promise<string> | string;
   private readonly onZcodeJwtInvalid?: (input: string | URL, headers: Headers) => void;
   private readonly isZcodeJwtRequest?: NodeApiClientOptions["isZcodeJwtRequest"];
   private readonly isBusinessUnauthorizedRequest?: NodeApiClientOptions["isBusinessUnauthorizedRequest"];
@@ -167,12 +167,12 @@ export class NodeApiClient implements ApiClient {
     this.businessUnauthorizedObservationTimeoutMs =
       options.businessUnauthorizedObservationTimeoutMs ??
       DEFAULT_BUSINESS_UNAUTHORIZED_OBSERVATION_TIMEOUT_MS;
-    this.resolveZCodeEndpointOrigin = options.resolveZCodeEndpointOrigin;
+    this.resolveZodyEndpointOrigin = options.resolveZodyEndpointOrigin;
   }
 
   async request(input: string | URL, init?: ApiRequestInit): Promise<Response> {
-    const endpointOrigin = this.resolveZCodeEndpointOrigin
-      ? await this.resolveZCodeEndpointOrigin()
+    const endpointOrigin = this.resolveZodyEndpointOrigin
+      ? await this.resolveZodyEndpointOrigin()
       : undefined;
     // fork（F3.1）：默认端点为空（未配置），不再存在「官方默认 origin → 活动 origin」的
     // 隐式改写；请求 URL 由调用方用 buildRuntimeZCodeApiUrl / 当前 endpoint 构造。

@@ -1,16 +1,16 @@
-import { zcodeProtocolMethods, zcodeRuntimeCapabilitiesSchema } from "@zody/shared";
-import type { ZCodeProtocolClient } from "./zodyProtocolClient.js";
+import { zodyProtocolMethods, zodyRuntimeCapabilitiesSchema } from "@zody/shared";
+import type { ZodyProtocolClient } from "./zodyProtocolClient.js";
 
 const checks = new WeakMap<object, Promise<void>>();
 
 /** Host 更新不代表远端 CLI 已更新；旧 CLI 会剥掉 Plan 字段，必须在发送前确认执行端。 */
 export function ensureIndependentPlanSupport(
-  client: Pick<ZCodeProtocolClient, "request">,
+  client: Pick<ZodyProtocolClient, "request">,
 ): Promise<void> {
   const cached = checks.get(client);
   if (cached) return cached;
   const check = client
-    .request(zcodeProtocolMethods.runtimeCapabilities, {}, zcodeRuntimeCapabilitiesSchema)
+    .request(zodyProtocolMethods.runtimeCapabilities, {}, zodyRuntimeCapabilitiesSchema)
     .then((result) => {
       if (result.independentPlanState !== true) throw new Error("proto.independentPlanUnsupported");
     })

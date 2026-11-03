@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  zcodeProtocolMethods,
-  zcodeProtocolNotifications,
+  zodyProtocolMethods,
+  zodyProtocolNotifications,
   type ZodyPluginOperationProgressNotification,
 } from "@zody/shared";
 
@@ -11,11 +11,11 @@ describe("zcodeAgentService Plugin operation progress", () => {
       | ((notification: { method: string; params?: unknown }) => void)
       | null = null;
     const request = vi.fn(async (method: string) => {
-      if (method !== zcodeProtocolMethods.pluginsResolveSuggestedReference) {
+      if (method !== zodyProtocolMethods.pluginsResolveSuggestedReference) {
         throw new Error(`Unexpected request method: ${method}`);
       }
       notificationListener?.({
-        method: zcodeProtocolNotifications.pluginOperationProgress,
+        method: zodyProtocolNotifications.pluginOperationProgress,
         params: { operationId: "suggested-progress", state: "refreshing" },
       });
       return {
@@ -55,8 +55,8 @@ describe("zcodeAgentService Plugin operation progress", () => {
         async disposeAllAndWait() {}
       },
     }));
-    const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
-    const service = createZCodeAgentService();
+    const { createZodyAgentService } = await import("../src/zody-agent/zodyAgentService.js");
+    const service = createZodyAgentService();
     const received: ZodyPluginOperationProgressNotification[] = [];
     const subscription = service.onDynamicPluginOperationProgress("suggested-progress")((event) =>
       received.push(event),
@@ -74,7 +74,7 @@ describe("zcodeAgentService Plugin operation progress", () => {
       expect(received).toEqual([{ operationId: "suggested-progress", state: "refreshing" }]);
 
       notificationListener?.({
-        method: zcodeProtocolNotifications.pluginOperationProgress,
+        method: zodyProtocolNotifications.pluginOperationProgress,
         params: {
           operationId: "suggested-progress",
           state: "refreshing",

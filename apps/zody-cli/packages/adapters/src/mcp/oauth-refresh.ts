@@ -10,7 +10,7 @@ import {
   type OAuthDiscoveryState,
 } from "@modelcontextprotocol/client";
 import type { Logger } from "@zody/contracts";
-import { isZCodeFileLockTimeoutError } from "@zody/shared";
+import { isZodyFileLockTimeoutError } from "@zody/shared";
 import { withFileLock } from "@zody/shared/node";
 import type { SharedZodyCredentialStore } from "../auth/shared-credentials.js";
 import {
@@ -78,7 +78,7 @@ export async function refreshMcpOAuthTokensUnderLock(
       lockMaxWaitMs: REFRESH_LOCK_MAX_WAIT_MS,
     });
   } catch (error) {
-    if (!isZCodeFileLockTimeoutError(error)) throw error;
+    if (!isZodyFileLockTimeoutError(error)) throw error;
     // 等锁超时不代表刷新失败：winner 可能已经发布结果。先重读，确认换代且有 token 就直接用。
     const current = await loadCredentialPair(input.credentialStore, input.keyPrefix);
     if (current?.tokens && current.generation !== observedGeneration) {

@@ -6,8 +6,8 @@ import type {
 } from "@zody/contracts";
 import {
   getCapturedZodyCuaBrokerCredentials,
-  isZCodeCuaMcpCommand,
-  isZCodeCuaMcpPackageArg,
+  isZodyCuaMcpCommand,
+  isZodyCuaMcpPackageArg,
   ZCODE_CUA_BROKER_SOCKET_ENV_KEY,
   ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
@@ -189,8 +189,8 @@ function isZCodeCuaStdioServer(
     return true;
   }
   // 判定与 desktop/services 共用 @zcode/shared 的单一事实源，避免两条注入入口漂移。
-  if (isZCodeCuaMcpCommand(config.command)) return true;
-  return (config.args ?? []).some(isZCodeCuaMcpPackageArg);
+  if (isZodyCuaMcpCommand(config.command)) return true;
+  return (config.args ?? []).some(isZodyCuaMcpPackageArg);
 }
 
 function isRetiredCuaMcpServer(name: string, config: McpServerConfig | undefined): boolean {

@@ -2,14 +2,14 @@ import { querySessionDebug } from "./session-debug.js";
 import { createNodeNetworkCapture } from "@zody/shared/node";
 import {
   networkCaptureControlSchema,
-  zcodeProtocolNotifications,
-  zcodeRuntimeIdentityInitializeParamsSchema,
+  zodyProtocolNotifications,
+  zodyRuntimeIdentityInitializeParamsSchema,
 } from "@zody/shared";
 import {
-  zcodePluginsCancelOperationParamsSchema,
-  zcodeProtocolMethods,
-  zcodeWorkspaceCancelGenerateTextParamsSchema,
-  zcodeWorkspaceHookTrustGrantParamsSchema,
+  zodyPluginsCancelOperationParamsSchema,
+  zodyProtocolMethods,
+  zodyWorkspaceCancelGenerateTextParamsSchema,
+  zodyWorkspaceHookTrustGrantParamsSchema,
 } from "@zody/shared";
 import type { BrowserControlPort } from "@zody/contracts";
 import type {
@@ -233,10 +233,10 @@ interface PendingClientRequest<T> {
   abortHandler?: () => void;
 }
 
-export class ZCodeProtocolAgentServer {
+export class ZodyProtocolAgentServer {
   private readonly networkCapture = createNodeNetworkCapture("cli", (batch) => {
     this.messageSink?.({
-      method: zcodeProtocolNotifications.processNetworkRequests,
+      method: zodyProtocolNotifications.processNetworkRequests,
       params: batch,
     });
   });
@@ -466,7 +466,7 @@ export class ZCodeProtocolAgentServer {
       return await this.handleRequest(message);
     }
     if (isNotification(message)) {
-      if (message.method === zcodeProtocolMethods.processNetworkCapture) {
+      if (message.method === zodyProtocolMethods.processNetworkCapture) {
         const control = networkCaptureControlSchema.safeParse(message.params);
         if (control.success) this.networkCapture.setCaptureId(control.data.captureId);
         return undefined;
@@ -624,45 +624,45 @@ export class ZCodeProtocolAgentServer {
         return this.requireV4Gateway().handleCommand(request.params);
       case V4_METHODS.commandsQuery:
         return this.requireV4Gateway().queryCommands(request.params);
-      case zcodeProtocolMethods.sessionCreate:
+      case zodyProtocolMethods.sessionCreate:
         return await createSession(this.context, request.params, request.trace);
-      case zcodeProtocolMethods.sessionResume:
+      case zodyProtocolMethods.sessionResume:
         return await resumeSession(this.context, request.params);
-      case zcodeProtocolMethods.sessionList:
+      case zodyProtocolMethods.sessionList:
         return await listSessions(this.context, request.params);
-      case zcodeProtocolMethods.sessionSubagents:
+      case zodyProtocolMethods.sessionSubagents:
         return await listSessionSubagents(this.context, request.params);
-      case zcodeProtocolMethods.sessionRead:
+      case zodyProtocolMethods.sessionRead:
         return await readSession(this.context, request.params);
-      case zcodeProtocolMethods.sessionMessages:
+      case zodyProtocolMethods.sessionMessages:
         return await readMessages(this.context, request.params);
-      case zcodeProtocolMethods.sessionEvents:
+      case zodyProtocolMethods.sessionEvents:
         return await readEvents(this.context, request.params);
-      case zcodeProtocolMethods.sessionSubscribe:
+      case zodyProtocolMethods.sessionSubscribe:
         return await subscribeSession(this.context, request.params);
-      case zcodeProtocolMethods.sessionSend:
+      case zodyProtocolMethods.sessionSend:
         return await sendPrompt(this.context, request.params);
-      case zcodeProtocolMethods.sessionStop:
+      case zodyProtocolMethods.sessionStop:
         return await stopSession(this.context, request.params);
-      case zcodeProtocolMethods.sessionCancelBackgroundTask:
+      case zodyProtocolMethods.sessionCancelBackgroundTask:
         return await cancelBackgroundTask(this.context, request.params);
-      case zcodeProtocolMethods.sessionFork:
+      case zodyProtocolMethods.sessionFork:
         return await forkSession(this.context, request.params);
-      case zcodeProtocolMethods.sessionCompact:
+      case zodyProtocolMethods.sessionCompact:
         return await compactSession(this.context, request.params);
-      case zcodeProtocolMethods.sessionGoal:
+      case zodyProtocolMethods.sessionGoal:
         return await goalSession(this.context, request.params);
-      case zcodeProtocolMethods.sessionSetModel:
+      case zodyProtocolMethods.sessionSetModel:
         return await setModel(this.context, request.params);
-      case zcodeProtocolMethods.sessionSetThoughtLevel:
+      case zodyProtocolMethods.sessionSetThoughtLevel:
         return await setThoughtLevel(this.context, request.params);
-      case zcodeProtocolMethods.sessionSetMode:
+      case zodyProtocolMethods.sessionSetMode:
         return await setMode(this.context, request.params);
-      case zcodeProtocolMethods.sessionClose:
+      case zodyProtocolMethods.sessionClose:
         return await closeSession(this.context, request.params);
-      case zcodeProtocolMethods.workspaceReadPresentation:
+      case zodyProtocolMethods.workspaceReadPresentation:
         return await readWorkspacePresentation(this.context, request.params);
-      case zcodeProtocolMethods.workspaceHookTrustGrant: {
+      case zodyProtocolMethods.workspaceHookTrustGrant: {
         const grantResult = await grantWorkspaceHookTrustForProtocol(request.params, {
           appVersion: this.context.deps.version,
           policyProvider: this.context.deps.workspaceHookPolicyProvider,
@@ -671,9 +671,9 @@ export class ZCodeProtocolAgentServer {
           await notifyWorkspaceHookTrustGrantSessions({
             // dispatch 层的 params 是弱类型；grant 内部已用同一 schema parse 过，这里
             // safeParse 只为取出 workspaceKey 做匹配，失败即跳过通知（防御，正常必成功）。
-            grantedWorkspaceKey: zcodeWorkspaceHookTrustGrantParamsSchema.safeParse(request.params)
+            grantedWorkspaceKey: zodyWorkspaceHookTrustGrantParamsSchema.safeParse(request.params)
               .success
-              ? zcodeWorkspaceHookTrustGrantParamsSchema.parse(request.params).workspace
+              ? zodyWorkspaceHookTrustGrantParamsSchema.parse(request.params).workspace
                   .workspaceKey
               : undefined,
             sessions: this.context.sessions,
@@ -681,101 +681,101 @@ export class ZCodeProtocolAgentServer {
         }
         return grantResult;
       }
-      case zcodeProtocolMethods.providerUpdateAccountConfig:
+      case zodyProtocolMethods.providerUpdateAccountConfig:
         return await updateAccountProviderConfig(this.context, request.params);
-      case zcodeProtocolMethods.workspaceUpdateInteractionPreferences:
+      case zodyProtocolMethods.workspaceUpdateInteractionPreferences:
         return await updateInteractionPreferences(this.context, request.params);
-      case zcodeProtocolMethods.workspaceUpdateModelIoPreferences:
+      case zodyProtocolMethods.workspaceUpdateModelIoPreferences:
         return await updateModelIoPreferences(this.context, request.params);
       // fork（F4.3）：workspaceUpdateOffPeakToolPolicy case 随闲时任务全链路删除。
-      case zcodeProtocolMethods.workspaceUpdateDynamicWorkflowPolicy:
+      case zodyProtocolMethods.workspaceUpdateDynamicWorkflowPolicy:
         return await updateDynamicWorkflowPolicy(this.context, request.params);
-      case zcodeProtocolMethods.workspaceGenerateText:
+      case zodyProtocolMethods.workspaceGenerateText:
         return await this.withWorkspaceGenerateTextSignal(request, (signal) =>
           generateWorkspaceText(this.context, request.params, signal),
         );
-      case zcodeProtocolMethods.workspaceCancelGenerateText:
+      case zodyProtocolMethods.workspaceCancelGenerateText:
         return this.cancelWorkspaceGenerateText(request.params);
-      case zcodeProtocolMethods.providerTestModelConnectivity:
+      case zodyProtocolMethods.providerTestModelConnectivity:
         return await testProviderModelConnectivity(this.context, request.params);
-      case zcodeProtocolMethods.mcpList:
+      case zodyProtocolMethods.mcpList:
         return await listMcpServers(this.context, request.params);
-      case zcodeProtocolMethods.mcpReadResource:
+      case zodyProtocolMethods.mcpReadResource:
         return await readMcpUiResource(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiOpenInstance:
+      case zodyProtocolMethods.mcpUiOpenInstance:
         return openMcpUiInstance(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiValidateInstance:
+      case zodyProtocolMethods.mcpUiValidateInstance:
         return validateMcpUiInstance(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiCloseInstance:
+      case zodyProtocolMethods.mcpUiCloseInstance:
         return closeMcpUiInstance(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiSampling:
+      case zodyProtocolMethods.mcpUiSampling:
         return sampleMcpUi(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiCancelSampling:
+      case zodyProtocolMethods.mcpUiCancelSampling:
         return cancelMcpUiSampling(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiCallTool:
+      case zodyProtocolMethods.mcpUiCallTool:
         return await callMcpUiTool(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiCancelCall:
+      case zodyProtocolMethods.mcpUiCancelCall:
         return await cancelMcpUiToolCall(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiReadResource:
+      case zodyProtocolMethods.mcpUiReadResource:
         return await readMcpUiResourceForUi(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiListResources:
+      case zodyProtocolMethods.mcpUiListResources:
         return await listMcpUiResources(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiListResourceTemplates:
+      case zodyProtocolMethods.mcpUiListResourceTemplates:
         return await listMcpUiResourceTemplates(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiSubscribeResource:
+      case zodyProtocolMethods.mcpUiSubscribeResource:
         return await subscribeMcpUiResource(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiUnsubscribeResource:
+      case zodyProtocolMethods.mcpUiUnsubscribeResource:
         return await unsubscribeMcpUiResource(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiRegisterAppTools:
+      case zodyProtocolMethods.mcpUiRegisterAppTools:
         return await registerMcpUiAppTools(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiUnregisterAppTools:
+      case zodyProtocolMethods.mcpUiUnregisterAppTools:
         return await unregisterMcpUiAppTools(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiClaimAppToolCall:
+      case zodyProtocolMethods.mcpUiClaimAppToolCall:
         return await claimMcpUiAppToolCall(this.context, request.params);
-      case zcodeProtocolMethods.mcpUiResolveAppToolCall:
+      case zodyProtocolMethods.mcpUiResolveAppToolCall:
         return await resolveMcpUiAppToolCall(this.context, request.params);
-      case zcodeProtocolMethods.pluginsList:
+      case zodyProtocolMethods.pluginsList:
         return await listPlugins(this.context, request.params);
-      case zcodeProtocolMethods.pluginsReferenceCatalogWithCategory:
+      case zodyProtocolMethods.pluginsReferenceCatalogWithCategory:
         return await getPluginReferenceCatalog(this.context, request.params, true);
-      case zcodeProtocolMethods.pluginsReferenceCatalog:
+      case zodyProtocolMethods.pluginsReferenceCatalog:
         return await getPluginReferenceCatalog(this.context, request.params);
-      case zcodeProtocolMethods.pluginsListUiSurfaces:
+      case zodyProtocolMethods.pluginsListUiSurfaces:
         return await listPluginUiSurfaces(this.context, request.params);
-      case zcodeProtocolMethods.skillsReferenceCatalog:
+      case zodyProtocolMethods.skillsReferenceCatalog:
         return await getSkillReferenceCatalog(this.context, request.params);
-      case zcodeProtocolMethods.workflowsList:
+      case zodyProtocolMethods.workflowsList:
         return await listSavedWorkflowsOp(this.context, request.params);
-      case zcodeProtocolMethods.workflowsGet:
+      case zodyProtocolMethods.workflowsGet:
         return await getSavedWorkflowOp(this.context, request.params);
-      case zcodeProtocolMethods.workflowsUpdateMeta:
+      case zodyProtocolMethods.workflowsUpdateMeta:
         return await updateSavedWorkflowMetaOp(this.context, request.params);
-      case zcodeProtocolMethods.workflowsDelete:
+      case zodyProtocolMethods.workflowsDelete:
         return await deleteSavedWorkflowOp(this.context, request.params);
-      case zcodeProtocolMethods.workflowsRuns:
+      case zodyProtocolMethods.workflowsRuns:
         return await listSavedWorkflowRunsOp(this.context, request.params);
-      case zcodeProtocolMethods.workflowsMove:
+      case zodyProtocolMethods.workflowsMove:
         return await moveSavedWorkflowOp(this.context, request.params);
-      case zcodeProtocolMethods.workflowsSave:
+      case zodyProtocolMethods.workflowsSave:
         return await saveSavedWorkflowFromRunOp(this.context, request.params);
-      case zcodeProtocolMethods.workflowsForRun:
+      case zodyProtocolMethods.workflowsForRun:
         return await findSavedWorkflowForRunOp(this.context, request.params);
-      case zcodeProtocolMethods.pluginsResolveSuggestedReference:
+      case zodyProtocolMethods.pluginsResolveSuggestedReference:
         return await this.withPluginOperationSignal(request, (signal) =>
           resolveSuggestedPluginReference(this.context, request.params, signal),
         );
-      case zcodeProtocolMethods.pluginsSetEnabled:
+      case zodyProtocolMethods.pluginsSetEnabled:
         return await this.withPluginOperationSignal(request, (signal) =>
           setPluginEnabled(this.context, request.params, signal),
         );
-      case zcodeProtocolMethods.pluginsOverview:
+      case zodyProtocolMethods.pluginsOverview:
         return await getPluginsOverview(this.context, request.params);
-      case zcodeProtocolMethods.processChildProcesses:
+      case zodyProtocolMethods.processChildProcesses:
         return listChildProcesses(this.context.deps.mcpTelemetry?.listProcesses() ?? []);
-      case zcodeProtocolMethods.runtimeCapabilities:
+      case zodyProtocolMethods.runtimeCapabilities:
         return { independentPlanState: true };
-      case zcodeProtocolMethods.runtimeIdentityInitialize: {
-        const params = parseParams(zcodeRuntimeIdentityInitializeParamsSchema, request.params);
+      case zodyProtocolMethods.runtimeIdentityInitialize: {
+        const params = parseParams(zodyRuntimeIdentityInitializeParamsSchema, request.params);
         try {
           const pinned = pinCuaLaunchIdentity(this.context.cuaLaunchIdentity, params.identity);
           this.context.cuaLaunchIdentity = pinned.identity;
@@ -787,41 +787,41 @@ export class ZCodeProtocolAgentServer {
           );
         }
       }
-      case zcodeProtocolMethods.pluginsMarketplaceAdd:
+      case zodyProtocolMethods.pluginsMarketplaceAdd:
         return await this.withPluginOperationSignal(request, (signal) =>
           addPluginMarketplace(this.context, request.params, signal),
         );
-      case zcodeProtocolMethods.pluginsMarketplaceRemove:
+      case zodyProtocolMethods.pluginsMarketplaceRemove:
         return await removePluginMarketplace(this.context, request.params);
-      case zcodeProtocolMethods.pluginsMarketplaceUpdate:
+      case zodyProtocolMethods.pluginsMarketplaceUpdate:
         return await this.withPluginOperationSignal(request, (signal) =>
           updatePluginMarketplace(this.context, request.params, signal),
         );
-      case zcodeProtocolMethods.pluginsInstall:
+      case zodyProtocolMethods.pluginsInstall:
         return await this.withPluginOperationSignal(request, (signal) =>
           installPlugin(this.context, request.params, signal),
         );
-      case zcodeProtocolMethods.pluginsCancelOperation:
+      case zodyProtocolMethods.pluginsCancelOperation:
         return this.cancelPluginOperation(request.params);
-      case zcodeProtocolMethods.pluginsUninstall:
+      case zodyProtocolMethods.pluginsUninstall:
         return await uninstallPlugin(this.context, request.params);
-      case zcodeProtocolMethods.pluginsUpdate:
+      case zodyProtocolMethods.pluginsUpdate:
         return await updatePlugin(this.context, request.params);
-      case zcodeProtocolMethods.pluginsRestoreBuiltin:
+      case zodyProtocolMethods.pluginsRestoreBuiltin:
         return await restoreBuiltinPlugin(this.context, request.params);
-      case zcodeProtocolMethods.pluginsConfigure:
+      case zodyProtocolMethods.pluginsConfigure:
         return await configurePlugin(this.context, request.params);
-      case zcodeProtocolMethods.pluginsResetConfig:
+      case zodyProtocolMethods.pluginsResetConfig:
         return await resetPluginConfig(this.context, request.params);
-      case zcodeProtocolMethods.pluginsValidate:
+      case zodyProtocolMethods.pluginsValidate:
         return await validatePlugin(this.context, request.params);
-      case zcodeProtocolMethods.pluginsDescribe:
+      case zodyProtocolMethods.pluginsDescribe:
         return await describePlugin(this.context, request.params);
-      case zcodeProtocolMethods.usageStats:
+      case zodyProtocolMethods.usageStats:
         return await getUsageStats(this.context, request.params);
-      case zcodeProtocolMethods.sessionDebug:
+      case zodyProtocolMethods.sessionDebug:
         return querySessionDebug(this.context, request.params);
-      case zcodeProtocolMethods.sessionUsage:
+      case zodyProtocolMethods.sessionUsage:
         return await getTaskTokenUsage(this.context, request.params);
       default:
         throw new ProtocolRequestError(-32601, `Method not found: ${request.method}`);
@@ -854,7 +854,7 @@ export class ZCodeProtocolAgentServer {
   }
 
   private cancelPluginOperation(rawParams: unknown) {
-    const params = parseParams(zcodePluginsCancelOperationParamsSchema, rawParams);
+    const params = parseParams(zodyPluginsCancelOperationParamsSchema, rawParams);
     const controller = this.pluginOperationControllers.get(params.operationId);
     if (!controller) return { operationId: params.operationId, cancelled: false };
     // 插件同步的可取消能力必须保留在 V4 server；仅按 operationId 中止对应链路。
@@ -891,7 +891,7 @@ export class ZCodeProtocolAgentServer {
   }
 
   private cancelWorkspaceGenerateText(rawParams: unknown) {
-    const params = parseParams(zcodeWorkspaceCancelGenerateTextParamsSchema, rawParams);
+    const params = parseParams(zodyWorkspaceCancelGenerateTextParamsSchema, rawParams);
     const controller = this.workspaceGenerateTextControllers.get(params.operationId);
     if (!controller) return { operationId: params.operationId, cancelled: false };
     controller.abort(new DOMException("Workspace model request cancelled", "AbortError"));

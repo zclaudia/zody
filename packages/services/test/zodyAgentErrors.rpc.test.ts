@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { IZodyAgentService } from "#src/zody-agent/zodyAgent.js";
 import {
   ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
-  ZCodeAgentMcpStatusModeUnsupportedError,
+  ZodyAgentMcpStatusModeUnsupportedError,
 } from "#src/zody-agent/zodyAgentErrors.js";
 
 describe("ZCode Agent RPC errors", () => {
@@ -15,7 +15,7 @@ describe("ZCode Agent RPC errors", () => {
       IZodyAgentService.channelName,
       ProxyChannel.fromService({
         async listMcpServerStatuses() {
-          throw new ZCodeAgentMcpStatusModeUnsupportedError();
+          throw new ZodyAgentMcpStatusModeUnsupportedError();
         },
       }),
     );

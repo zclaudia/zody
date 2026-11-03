@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ZodyMcpTelemetryEvent, ZodyMcpResourceSample } from "@zody/shared";
 import { afterEach, describe, expect, it } from "vitest";
-import { createZCodeAgentService } from "../src/zody-agent/zodyAgentService.js";
+import { createZodyAgentService } from "../src/zody-agent/zodyAgentService.js";
 
 const MCP_TELEMETRY_FAKE_AGENT = `
 let buffer = "";
@@ -56,7 +56,7 @@ describe("ZCodeAgentService MCP telemetry", () => {
     tempDirs.push(workspacePath);
     const scriptPath = join(workspacePath, "mcp-telemetry-agent.cjs");
     writeFileSync(scriptPath, MCP_TELEMETRY_FAKE_AGENT);
-    const service = createZCodeAgentService({
+    const service = createZodyAgentService({
       commandResolver: () => ({ command: process.execPath, args: [scriptPath] }),
     });
     const events: ZodyMcpTelemetryEvent[] = [];
@@ -93,7 +93,7 @@ describe("ZCodeAgentService MCP telemetry", () => {
     tempDirs.push(workspacePath);
     const scriptPath = join(workspacePath, "agent.cjs");
     writeFileSync(scriptPath, MCP_TELEMETRY_FAKE_AGENT);
-    const service = createZCodeAgentService({
+    const service = createZodyAgentService({
       commandResolver: () => ({ command: process.execPath, args: [scriptPath] }),
     });
     const batches: ZodyMcpResourceSample[][] = [];

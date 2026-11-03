@@ -16,8 +16,8 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createSqliteSessionStore } from "@zody/adapters/storage";
 import {
-  zcodeProtocolMethods,
-  zcodeSessionStateSnapshotSchema,
+  zodyProtocolMethods,
+  zodySessionStateSnapshotSchema,
   type ZodyProtocolMessage,
 } from "@zody/shared";
 import {
@@ -68,7 +68,7 @@ import {
 } from "../src/zody-protocol-v4/index.js";
 import { resolveSessionContextUsage } from "../src/zody-protocol/session-mapper.js";
 import { getRegistryBackedModel } from "../src/app/provider-registry-selection.js";
-import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
+import { ZodyProtocolAgentServer } from "../src/zody-protocol/server.js";
 import type { SessionUsageSeed } from "../src/zody-protocol-v4/product-projection.js";
 import type { ZodyApp, ZodyAppOptions } from "../src/app/types.js";
 import { createApiKeyProviderConfig } from "./provider-config-fixtures.js";
@@ -878,7 +878,7 @@ const remoteWorkspace = {
 };
 type TestSessionStore = ReturnType<typeof createSqliteSessionStore>;
 
-async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProtocolMessage) {
+async function requestResult(server: ZodyProtocolAgentServer, message: ZodyProtocolMessage) {
   const response = await server.handleMessage(message);
   if (!response || !("result" in response)) {
     throw new Error(`Expected protocol success response: ${JSON.stringify(response)}`);
@@ -887,7 +887,7 @@ async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProt
 }
 
 function takeInitialFrameParams(
-  server: ZCodeProtocolAgentServer,
+  server: ZodyProtocolAgentServer,
   requestId: string | number,
 ): unknown {
   const messages = server.takePostResponseMessages(requestId);
@@ -902,7 +902,7 @@ function takeInitialFrameParams(
 
 /** I19：rowsRange 与 command/query 一样等待 cold owner 的 READY 终态。 */
 async function awaitColdReady(
-  server: ZCodeProtocolAgentServer,
+  server: ZodyProtocolAgentServer,
   sessionId: string,
   requestId: string | number,
 ): Promise<void> {
@@ -914,7 +914,7 @@ async function awaitColdReady(
 }
 
 async function subscribeSnapshot(
-  server: ZCodeProtocolAgentServer,
+  server: ZodyProtocolAgentServer,
   requestId: string,
   params: { topic: string; connectionId: string; clientMode: string },
 ): Promise<ConversationTopicFrame> {
@@ -931,7 +931,7 @@ async function subscribeSnapshot(
  * 等 READY 后重新订阅取一份 post-READY snapshot，用于断言 runtime 事实收敛。
  */
 async function takeReadySnapshot(
-  server: ZCodeProtocolAgentServer,
+  server: ZodyProtocolAgentServer,
   requestId: string,
   sessionId: string,
   params: { topic: string; connectionId: string; clientMode: string },
@@ -1643,7 +1643,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
   ) {
     const store = createSqliteSessionStore({ dbPath });
     const providerRegistry = createColdProviderRegistry();
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp: (options) => {
         const effectiveOptions = { ...options, providerRegistry };
         createdAppOptions.push(effectiveOptions);
@@ -1668,7 +1668,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
       const activationStarted = deferred();
       const activationGate = deferred();
       const frames: ConversationTopicFrame[] = [];
-      const server = new ZCodeProtocolAgentServer({
+      const server = new ZodyProtocolAgentServer({
         createZCodeApp: async (options) => {
           activationStarted.resolve();
           await activationGate.promise;
@@ -1680,7 +1680,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
       server.setNotificationSink((message) => {
         if (
           "id" in message &&
-          message.method === zcodeProtocolMethods.sessionRequestRuntimePreferences
+          message.method === zodyProtocolMethods.sessionRequestRuntimePreferences
         ) {
           // activation 在 createZCodeApp 前会等待宿主偏好；history 不依赖它。
           void server.handleMessage({
@@ -1769,7 +1769,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
   function bootRealRestartedServer(dbPath: string, registry = createColdProviderRegistry()) {
     const store = createSqliteSessionStore({ dbPath });
     const apps: ZodyApp[] = [];
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       cwd: process.cwd(),
       sessionStore: store,
       createZCodeApp: async (options) => {
@@ -1785,7 +1785,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     });
     server.setNotificationSink((message) => {
       if (!("id" in message)) return;
-      if (message.method === zcodeProtocolMethods.sessionRequestRuntimePreferences) {
+      if (message.method === zodyProtocolMethods.sessionRequestRuntimePreferences) {
         void server.handleMessage({
           id: message.id,
           result: {
@@ -1901,7 +1901,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     server.setNotificationSink((message) => {
       if (
         "id" in message &&
-        message.method === zcodeProtocolMethods.sessionRequestRuntimePreferences
+        message.method === zodyProtocolMethods.sessionRequestRuntimePreferences
       ) {
         preferenceRequests.push(message);
         pendingPreferenceRequestId = message.id;
@@ -1987,7 +1987,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
 
     const store = createSqliteSessionStore({ dbPath });
     const resumedWorkingDirectories: string[] = [];
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp: (options) => {
         resumedWorkingDirectories.push(options?.runtimeConfig?.workingDirectory ?? "");
         return createColdFakeApp(options, []);
@@ -2050,7 +2050,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
 
     const store = createSqliteSessionStore({ dbPath });
     const resumedWorkingDirectories: string[] = [];
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp: (options) => {
         resumedWorkingDirectories.push(options?.runtimeConfig?.workingDirectory ?? "");
         return createColdFakeApp(options, []);
@@ -2099,7 +2099,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     });
     store.repairLegacyRemoteSessionWorkspace = vi.fn(async () => false);
     const resumedWorkingDirectories: string[] = [];
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp: (options) => {
         resumedWorkingDirectories.push(options?.runtimeConfig?.workingDirectory ?? "");
         return createColdFakeApp(options, []);
@@ -2160,7 +2160,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
       return false;
     });
     const resumedWorkingDirectories: string[] = [];
-    const server = new ZCodeProtocolAgentServer({
+    const server = new ZodyProtocolAgentServer({
       createZCodeApp: (options) => {
         resumedWorkingDirectories.push(options?.runtimeConfig?.workingDirectory ?? "");
         return createColdFakeApp(options, []);
@@ -2549,7 +2549,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
           );
           const legacy = (await requestResult(server, {
             id: "legacy-list",
-            method: zcodeProtocolMethods.sessionList,
+            method: zodyProtocolMethods.sessionList,
             params: { workspace },
           })) as { sessions: Array<{ sessionId: string }> };
           expect(legacy.sessions.map((session) => session.sessionId)).not.toContain(SESSION_ID);
@@ -2629,7 +2629,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
       await awaitColdReady(server, SESSION_ID, "open-child-ready");
       const result = await server.handleMessage({
         id: "legacy-send",
-        method: zcodeProtocolMethods.sessionSend,
+        method: zodyProtocolMethods.sessionSend,
         params: { sessionId: SESSION_ID, content: "continue child", queryId: "legacy-child-send" },
       });
       expect(result).toMatchObject({ error: { data: { reasonCode: "guard.subagentReadOnly" } } });
@@ -2657,7 +2657,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
         version: "test",
       });
       const read = (id: string, params: unknown) =>
-        requestResult(server, { id, method: zcodeProtocolMethods.sessionList, params }) as Promise<{
+        requestResult(server, { id, method: zodyProtocolMethods.sessionList, params }) as Promise<{
           sessions: Array<{ sessionId: string; sessionKind: string }>;
         }>;
       const normal = await read("normal", { workspace });
@@ -2899,10 +2899,10 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
         usedTokens: 2,
       });
 
-      const legacy = zcodeSessionStateSnapshotSchema.parse(
+      const legacy = zodySessionStateSnapshotSchema.parse(
         await requestResult(server, {
           id: "legacy-resume-after-v4",
-          method: zcodeProtocolMethods.sessionResume,
+          method: zodyProtocolMethods.sessionResume,
           params: { sessionId: SESSION_ID, workspace },
         }),
       );
@@ -2930,10 +2930,10 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     const { server, store } = bootRestartedServer(dbPath, [], probe);
 
     try {
-      const legacy = zcodeSessionStateSnapshotSchema.parse(
+      const legacy = zodySessionStateSnapshotSchema.parse(
         await requestResult(server, {
           id: "fresh-legacy-resume",
-          method: zcodeProtocolMethods.sessionResume,
+          method: zodyProtocolMethods.sessionResume,
           params: { sessionId: SESSION_ID, workspace },
         }),
       );

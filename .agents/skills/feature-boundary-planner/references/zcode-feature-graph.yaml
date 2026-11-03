@@ -158,7 +158,7 @@ nodes:
         file: "apps/zody-cli/packages/core/src/tool/executor/permission-flow.ts"
       - symbol: "buildProtocolPermissionOptions"
         file: "apps/zody-cli/packages/bootstrap/src/permission-options.ts"
-      - symbol: "getZCodeAgentAvailableModes"
+      - symbol: "getZodyAgentAvailableModes"
         file: "packages/shared/src/zody-agent-model-state.ts"
       - symbol: "buildAutomationModeOption"
         file: "packages/ui/src/settings/automationAgentConfigOptions.ts"
@@ -434,7 +434,7 @@ nodes:
         file: "apps/zody-cli/packages/bootstrap/src/app/provider-registry-model-runtime.ts"
       - symbol: "compactActiveConversation"
         file: "apps/zody-cli/packages/core/src/runtime/methods/compact-active.ts"
-      - symbol: "zcodeSessionSettingsToZCodeConfigOptions"
+      - symbol: "zodySessionSettingsToZodyConfigOptions"
         file: "packages/shared/src/zody-agent-model-state.ts"
     invariants:
       - "Each complete Model Option Spec owns a restricted CEL map from its effective value to an RFC 7396 raw request-body patch. Config validation and runtime execution share @zcode/model-option-map; the adapter applies reasoningLevel then maxOutputTokens after AI SDK serialization and schema compatibility but before body-dependent signing, so reasoningMapping, AI SDK reasoning namespaces, and duplicate max-output authorities are not model facts."
@@ -594,7 +594,7 @@ nodes:
         file: "apps/zody-cli/packages/adapters/src/model/runner-retry.ts"
       - symbol: "createZCodeProcessResourceSampler"
         file: "apps/zody-cli/packages/bootstrap/src/process-resource-sampler.ts"
-      - symbol: "createZCodeAgentService"
+      - symbol: "createZodyAgentService"
         file: "packages/services/src/zody-agent/zodyAgentService.ts"
       - symbol: "ingestCliResourceSample"
         file: "packages/desktop/src/main/processResourceCliSource.ts"
@@ -975,7 +975,7 @@ nodes:
         file: "packages/ui/src/v4/ConversationTurnGroup.tsx"
       - symbol: "ProductProjection"
         file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/product-projection.ts"
-      - symbol: "zcodeApiRetryFromStreamRecoveryPayload"
+      - symbol: "zodyApiRetryFromStreamRecoveryPayload"
         file: "packages/shared/src/zody-api-retry-status.ts"
 
   - id: "capability.model-stream-recovery"
@@ -2342,7 +2342,7 @@ nodes:
     kind: "service"
     label: "Sessions-index to task-index synchronizer"
     codeSeeds:
-      - symbol: "createZCodeTaskIndexSyncer"
+      - symbol: "createZodyTaskIndexSyncer"
         file: "packages/services/src/zody-agent/zodyTaskIndexSyncer.ts"
 
   - id: "surface.conversation-model-control"
@@ -3172,7 +3172,7 @@ nodes:
         file: "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/interaction-registry.ts"
       - symbol: "syncAppRuntimePreferences"
         file: "packages/services/src/zody-agent/zodyAgentService.ts"
-      - symbol: "createZCodeAgentService"
+      - symbol: "createZodyAgentService"
         file: "packages/services/src/zody-agent/zodyAgentService.ts"
 
   - id: "service.conversation-rows-range"
@@ -5000,7 +5000,7 @@ nodes:
     kind: "service"
     label: "Host-trusted ZCode Agent attachment connection scope"
     codeSeeds:
-      - symbol: "createZCodeAgentConnectionScope"
+      - symbol: "createZodyAgentConnectionScope"
         file: "packages/services/src/zody-agent/zodyAgentConnectionScope.ts"
 
   - id: "capability.plugin-creator-entry"

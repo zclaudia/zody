@@ -1,6 +1,6 @@
 import { PassThrough } from "node:stream";
 import { describe, expect, it } from "vitest";
-import { ZCodeProtocolNdjsonConnection } from "./transport.js";
+import { ZodyProtocolNdjsonConnection } from "./transport.js";
 
 describe("MCP App NDJSON admission", () => {
   it("admits cancellation, close and another app while a real wire request is pending", async () => {
@@ -10,7 +10,7 @@ describe("MCP App NDJSON admission", () => {
     const finish = Promise.withResolvers<void>();
     const received = Promise.withResolvers<void>();
     const order: string[] = [];
-    const transport = new ZCodeProtocolNdjsonConnection({
+    const transport = new ZodyProtocolNdjsonConnection({
       input,
       output,
       async handleMessage(message) {
@@ -55,7 +55,7 @@ describe("MCP App NDJSON admission", () => {
     const finish = Promise.withResolvers<void>();
     const controls = Promise.withResolvers<void>();
     const order: string[] = [];
-    const transport = new ZCodeProtocolNdjsonConnection({
+    const transport = new ZodyProtocolNdjsonConnection({
       input,
       output,
       async handleMessage(message) {

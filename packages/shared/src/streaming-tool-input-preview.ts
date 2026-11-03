@@ -51,7 +51,7 @@ const PARTIAL_JSON_STRING_FIELD_KEYS = [
   "script",
 ] as const;
 
-export function appendZCodeStreamingToolInputDelta(
+export function appendZodyStreamingToolInputDelta(
   state: ZodyStreamingToolInputState | undefined,
   delta: string,
 ): ZodyStreamingToolInputState {
@@ -62,7 +62,7 @@ export function appendZCodeStreamingToolInputDelta(
   };
 }
 
-export function buildZCodeStreamingToolInputPreview(
+export function buildZodyStreamingToolInputPreview(
   rawInput: string,
   completeInput?: unknown,
 ): ZodyStreamingToolInputPreview {
@@ -90,7 +90,7 @@ export function buildZCodeStreamingToolInputPreview(
   };
 }
 
-export function shouldMaterializeZCodeStreamingToolInputPreview(
+export function shouldMaterializeZodyStreamingToolInputPreview(
   state: ZodyStreamingToolInputState,
   options: {
     mode?: ZodyStreamingToolInputPreviewMode;
@@ -106,7 +106,7 @@ export function shouldMaterializeZCodeStreamingToolInputPreview(
     return true;
   }
   const lastPreviewAt = state.lastPreviewAt ?? 0;
-  if (isZCodeFileStreamingToolInputPreviewTool(options.toolName)) {
+  if (isZodyFileStreamingToolInputPreviewTool(options.toolName)) {
     // 性能修复：Write/Edit 的半截 JSON 会触发全量内容恢复和行级 diff。
     // 大字节 chunk 不能绕过一秒窗口，否则模型输出越快，UI 反而更新越频繁。
     return (
@@ -130,12 +130,12 @@ export function shouldMaterializeZCodeStreamingToolInputPreview(
   return state.rawInput.length <= ZCODE_ACTIVE_STREAMING_TOOL_INPUT_TIME_BUDGET_MAX_RAW_INPUT;
 }
 
-export function isZCodeFileStreamingToolInputPreviewTool(toolName?: string): boolean {
+export function isZodyFileStreamingToolInputPreviewTool(toolName?: string): boolean {
   const normalized = toolName?.trim().toLowerCase();
   return normalized === "write" || normalized === "edit";
 }
 
-export function markZCodeStreamingToolInputPreviewMaterialized(
+export function markZodyStreamingToolInputPreviewMaterialized(
   state: ZodyStreamingToolInputState,
   now = Date.now(),
 ): void {

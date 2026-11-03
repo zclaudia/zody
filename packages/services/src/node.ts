@@ -96,9 +96,9 @@ export {
 } from "./setting/settingService.js";
 export { createCredentialService } from "./credential/credentialService.js";
 export { createBroadcastService } from "./broadcast/broadcastService.js";
-export { createZCodeAgentService } from "./zody-agent/zodyAgentService.js";
-export { createZCodeTaskServiceAdapter } from "./zody-agent/zodyTaskServiceAdapter.js";
-export { createZCodeSessionService } from "./zody-session/zodySessionService.js";
+export { createZodyAgentService } from "./zody-agent/zodyAgentService.js";
+export { createZodyTaskServiceAdapter } from "./zody-agent/zodyTaskServiceAdapter.js";
+export { createZodySessionService } from "./zody-session/zodySessionService.js";
 export {
   createZodyAgentCommandResolver,
   resolveDefaultZodyAgentCommand,
@@ -117,20 +117,20 @@ export type {
   ZodyAgentProcessManagerOptions,
 } from "./zody-agent/zodyAgentProcessManager.js";
 export {
-  createZCodeAgentNativeRuntimeStartupContext,
-  digestZCodeAgentNativeRuntimeProviderSnapshot,
-  digestZCodeAgentNativeRuntimeNetwork,
-  normalizeZCodeAgentNativeRuntimeNetwork,
-  normalizeZCodeAgentNativeRuntimeSelection,
-  projectZCodeAgentNativeRuntimeProviderSnapshot,
+  createZodyAgentNativeRuntimeStartupContext,
+  digestZodyAgentNativeRuntimeProviderSnapshot,
+  digestZodyAgentNativeRuntimeNetwork,
+  normalizeZodyAgentNativeRuntimeNetwork,
+  normalizeZodyAgentNativeRuntimeSelection,
+  projectZodyAgentNativeRuntimeProviderSnapshot,
 } from "./zody-agent/nativeRuntimeStartupProfile.js";
-export { ZCodeProtocolClient } from "./zody-agent/zodyProtocolClient.js";
+export { ZodyProtocolClient } from "./zody-agent/zodyProtocolClient.js";
 export type { ZodyProtocolTransport } from "./zody-agent/zodyProtocolTransport.js";
-export { ZCodeStdioTransport } from "./zody-agent/zodyStdioTransport.js";
+export { ZodyStdioTransport } from "./zody-agent/zodyStdioTransport.js";
 export {
-  getZCodeStdioTapDevLogDir,
-  readZCodeStdioTapDevState,
-  setZCodeStdioTapDevEnabled,
+  getZodyStdioTapDevLogDir,
+  readZodyStdioTapDevState,
+  setZodyStdioTapDevEnabled,
 } from "./zody-agent/zodyStdioTapDevConfig.js";
 export type { ZodyStdioTapDevState } from "@zody/shared";
 export {
@@ -314,7 +314,7 @@ import { createOnboardingRecordService } from "./onboarding/onboardingRecordServ
 import { createObservableSettingService } from "./setting/observableSettingService.js";
 import { createCredentialService } from "./credential/credentialService.js";
 import { createBroadcastService } from "./broadcast/broadcastService.js";
-import { createZCodeAgentService } from "./zody-agent/zodyAgentService.js";
+import { createZodyAgentService } from "./zody-agent/zodyAgentService.js";
 import type {
   ZodyAgentCommandResolver,
   ZodyAgentCommandResolverContext,
@@ -322,10 +322,10 @@ import type {
   ZodyAgentNativeRuntimeResolver,
 } from "./zody-agent/zodyAgentProcessManager.js";
 import { buildAgentTelemetrySpawnEnv } from "./zody-agent/agentTelemetryEnv.js";
-import { resolveZCodeAgentPresentationSurface } from "./zody-agent/zodyAgentPresentationSurface.js";
-import { createZCodeTaskServiceAdapter } from "./zody-agent/zodyTaskServiceAdapter.js";
-import { createZCodeSessionService } from "./zody-session/zodySessionService.js";
-import { createZCodeTaskIndexSyncer } from "./zody-agent/zodyTaskIndexSyncer.js";
+import { resolveZodyAgentPresentationSurface } from "./zody-agent/zodyAgentPresentationSurface.js";
+import { createZodyTaskServiceAdapter } from "./zody-agent/zodyTaskServiceAdapter.js";
+import { createZodySessionService } from "./zody-session/zodySessionService.js";
+import { createZodyTaskIndexSyncer } from "./zody-agent/zodyTaskIndexSyncer.js";
 import { TaskIndexRepo } from "./session/taskIndexRepo.js";
 // fork（bots 移除）：createBotsService / createBotRemoteWorkspaceService 随 bot channels
 // 功能整体删除（specs/bot-channels-removal.md）。
@@ -348,7 +348,7 @@ import {
   IProviderSettingsService,
 } from "./model-provider/providerFacadeServices.js";
 import { createProviderSettingsConnectivityTester } from "./model-provider/providerSettingsConnectivity.js";
-import { createZCodeAgentNativeRuntimeStartupContext } from "./zody-agent/nativeRuntimeStartupProfile.js";
+import { createZodyAgentNativeRuntimeStartupContext } from "./zody-agent/nativeRuntimeStartupProfile.js";
 import {
   createProviderProvisioningSource,
   listProviderProvisioningCredentialKeys,
@@ -419,7 +419,7 @@ import {
   ICuaPermissionService,
   ICuaPipSessionService,
   isOfficialCuaPluginEnabledForWorkspace,
-  isPotentialZCodeCuaAgentMcpServer,
+  isPotentialZodyCuaAgentMcpServer,
   isScreenCaptureProbeSuccess,
   reapOrphanedHelpers,
   resolveStandaloneStatusLaunchCandidates,
@@ -453,12 +453,12 @@ import {
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
   formatLogPrefix,
   type ServiceAuthorityMode,
-  resolveRuntimeZCodeEndpointOrigin,
+  resolveRuntimeZodyEndpointOrigin,
   type BrowserBackendDescriptor,
   type BrowserClientMode,
   type BrowserCommand,
-  isZCodeCuaMcpCommand,
-  isZCodeCuaMcpPackageArg,
+  isZodyCuaMcpCommand,
+  isZodyCuaMcpPackageArg,
   isZodyCuaInternalFeatureEnabled,
   ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   type ZodyAutomation,
@@ -674,7 +674,7 @@ export function createDynamicCuaProductMcpServerResolver(options: {
       // delegate 可能跨过 Helper start/health await；dispose 在等待中置 terminal 时，不能把旧代际
       // 刚注入的 socket/token 交给晚到 Agent。移除 CUA candidate，保持其它 MCP 原样。
       return options.isResolverCurrent?.(resolver, context) === false
-        ? servers?.filter((server) => !isPotentialZCodeCuaAgentMcpServer(server))
+        ? servers?.filter((server) => !isPotentialZodyCuaAgentMcpServer(server))
         : resolved;
     },
     async restart() {
@@ -964,12 +964,12 @@ function isGlobalCliZCodeCuaServer(name: string, config: unknown): boolean {
   // 与 desktop/services resolver 和 CLI bootstrap 共用 @zcode/shared 的单一事实源，避免第三处
   // 判定漂移：git/.git/本地路径形态的 zcode-cua 若这里漏判，全局 CLI env 注入不会带 broker
   // socket/token，agent 会回退成 Python/uvx 自己持有 macOS TCC（违反 product broker 边界）。
-  if (typeof config.command === "string" && isZCodeCuaMcpCommand(config.command)) {
+  if (typeof config.command === "string" && isZodyCuaMcpCommand(config.command)) {
     return true;
   }
   return (
     Array.isArray(config.args) &&
-    config.args.some((arg) => typeof arg === "string" && isZCodeCuaMcpPackageArg(arg))
+    config.args.some((arg) => typeof arg === "string" && isZodyCuaMcpPackageArg(arg))
   );
 }
 
@@ -1122,7 +1122,7 @@ export function createLocalServices(options: {
     options?.settingService ?? localSettings!.service,
   );
   const resolveCurrentZodyEndpointOrigin = async () =>
-    resolveRuntimeZCodeEndpointOrigin(process.env, {
+    resolveRuntimeZodyEndpointOrigin(process.env, {
       overrideOrigin: (await settingService.get()).zodyEndpointOrigin,
     });
   // fork（F4.7）：OAuth 凭据变更触发的账号派生 Key 失效、插件 UI 账号失效与
@@ -1143,7 +1143,7 @@ export function createLocalServices(options: {
   // fork（F4.7）：401 时的 OAuth 凭据判定/登出钩子随官方账号链删除。
   const apiClient = createNodeApiClient({
     fetchImpl: hostApiNetworkTransport.fetch,
-    resolveZCodeEndpointOrigin: resolveCurrentZodyEndpointOrigin,
+    resolveZodyEndpointOrigin: resolveCurrentZodyEndpointOrigin,
   });
   const systemService = createSystemService();
   // onboarding 资格与任务列表共用同一份全局 tasks-index；repo 懒加载数据库，提前构造不会
@@ -1715,7 +1715,7 @@ export function createLocalServices(options: {
                 providerRuntime.modelSelection.getView(),
                 settingService.get(),
               ]);
-              return createZCodeAgentNativeRuntimeStartupContext({
+              return createZodyAgentNativeRuntimeStartupContext({
                 providerSettingsView,
                 modelSelectionView,
                 settings,
@@ -1725,7 +1725,7 @@ export function createLocalServices(options: {
       : undefined;
   // fork（F4.3）：offPeakTaskServiceForAgent 前向引用与 offPeakToolWiring（Off-Peak 工具面装配）
   // 随闲时任务全链路删除。
-  const zcodeAgentService = createZCodeAgentService({
+  const zcodeAgentService = createZodyAgentService({
     // fork（F4.7）：账号请求鉴权已随官方账号链删除，Agent 只消费 BYOK/自定义 provider。
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
     authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
@@ -1741,7 +1741,7 @@ export function createLocalServices(options: {
     nativeRuntime: options?.zodyAgentNativeRuntime,
     nativeRuntimeResolver: zodyAgentNativeRuntimeResolver,
     cuaHostInstanceId: options?.hostInstanceId,
-    presentationSurface: resolveZCodeAgentPresentationSurface({
+    presentationSurface: resolveZodyAgentPresentationSurface({
       runtimeSurface: options?.agentTelemetry?.runtimeSurface,
       serviceAuthorityMode: options?.serviceAuthorityMode,
       desktopContextPromptEnabled,
@@ -1879,7 +1879,7 @@ export function createLocalServices(options: {
   // mapServiceEvent 路径，导致 task_complete 永远不会写回 sqlite，侧边栏 spinner 不停。
   // 在 services 层装配一个共享的 taskIndexRepo + syncer，session 任意入口都会唤醒
   // shadow 订阅，把 runtime 终态收敛进 sqlite。
-  const zcodeTaskIndexSyncer = createZCodeTaskIndexSyncer({
+  const zcodeTaskIndexSyncer = createZodyTaskIndexSyncer({
     agentService: zcodeAgentService,
     taskIndexRepo,
   });
@@ -1900,7 +1900,7 @@ export function createLocalServices(options: {
   });
   const cuaProductMcpServerResolver =
     options?.cuaProductMcpServerResolver ?? defaultCuaProductMcpServerResolver;
-  const zcodeSessionService = createZCodeSessionService({
+  const zcodeSessionService = createZodySessionService({
     agentService: zcodeAgentService,
     taskIndexSyncer: zcodeTaskIndexSyncer,
     cuaProductMcpServerResolver,
@@ -1930,7 +1930,7 @@ export function createLocalServices(options: {
     commitMessageGenerator: gitCommitMessageGenerator,
   });
   // task wrapper 由 ZCode task service adapter 提供；核心 session 状态由 ZCode agent server 维护。
-  const zcodeTaskService = createZCodeTaskServiceAdapter({
+  const zcodeTaskService = createZodyTaskServiceAdapter({
     zcodeAgentService,
     taskIndexRepo,
     taskIndexSyncer: zcodeTaskIndexSyncer,
