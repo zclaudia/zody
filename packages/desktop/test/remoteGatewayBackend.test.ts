@@ -367,6 +367,34 @@ describe("createRemoteGatewayBackend", () => {
     expect(mobileUiHandler).toHaveBeenCalledWith(MOBILE_UI_REQUEST);
   });
 
+  it("UI HTTP handler 与 zcode-remote channel handler 互不串线", async () => {
+    const mobileUiHandler = vi.fn(async () => ({ status: 200, body: "ui-only" }));
+    const channelHandler = vi.fn();
+    const harness = createHarness(COMPLETE_CONFIG, { mobileUiHandler });
+    harness.backend.setChannelHandler(channelHandler);
+
+    await harness.backend.reloadConfig();
+    const fake = harness.backends[0]!;
+
+    // 业务路径也只由 UI handler 做静态映射；provider 负责 404，不会进入 channel handler。
+    await fake.serveHttpRequest({
+      method: "GET",
+      path: "/api/sessions",
+      headers: {},
+      body: new Uint8Array(),
+    });
+    expect(mobileUiHandler).toHaveBeenCalledTimes(1);
+    expect(channelHandler).not.toHaveBeenCalled();
+
+    // channel offer 只交给 zcode-remote handler，不会触发 UI HTTP handler；
+    // HTTP 侧不持有 task/session/snapshot/queue 状态。
+    const channel = new FakeChannel();
+    expect(fake.offer("zcode-remote", channel)).toBe(true);
+    expect(channelHandler).toHaveBeenCalledTimes(1);
+    expect(channelHandler.mock.calls[0]?.[0]).toBe(channel);
+    expect(mobileUiHandler).toHaveBeenCalledTimes(1);
+  });
+
   it("同一 SDK 多次 reload 不重复注册 serveHttp", async () => {
     const mobileUiHandler = vi.fn(async () => ({ status: 200 }));
     const harness = createHarness(COMPLETE_CONFIG, { mobileUiHandler });

@@ -17,10 +17,11 @@ import {
   type GatewayTerminalTransportState,
 } from "../src/mobile-remote/gatewayTerminalTransport.js";
 import { createWebRemoteControlVersionGuard } from "../src/webRemoteControlVersion.js";
-import type {
-  WebRemoteControlAppPayload,
-  WebRemoteControlChannelFrame,
-  WebRemoteControlFailure,
+import {
+  WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION,
+  type WebRemoteControlAppPayload,
+  type WebRemoteControlChannelFrame,
+  type WebRemoteControlFailure,
 } from "@zcode/shared";
 
 /**
@@ -511,7 +512,7 @@ describe("GatewayTerminalTransport", () => {
     expect(socket.frames()[0]).toEqual({
       type: "hello",
       protocolVersion: 1,
-      appProtocol: { min: 1, max: 3 },
+      appProtocol: { min: 1, max: WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION },
       clientInstanceId: "client-instance-1",
       clientName: "test-phone",
       appVersion: "1.0.0",
@@ -544,6 +545,78 @@ describe("GatewayTerminalTransport", () => {
       "second send-ready",
     );
     expect(harness.states.at(-1)).toBe("ready");
+  });
+
+  it("数据 socket 关闭并重连后，旧 channel 的迟到帧不投递，新 channel 载荷保持到达顺序", async () => {
+    const harness = createHarness();
+    const firstSocket = await startReady(harness);
+    const payload = (error: string): WebRemoteControlAppPayload => ({
+      zcode_type: "app-error",
+      reason: "unexpected-error",
+      error,
+    });
+
+    firstSocket.emitMessage(JSON.stringify({ type: "data", payload: payload("snapshot") }));
+    await waitUntil(() => harness.payloads.length === 1, 2_000, "first snapshot payload");
+
+    firstSocket.emitClose(1000, "timeout");
+    await waitUntil(() => harness.client.openChannelCalls.length === 2, 2_000, "second channel");
+    harness.client.emitChannelMessage({
+      type: "hello_ack",
+      appProtocol: 2,
+      desktopAppVersion: "1.5.0",
+    });
+    await waitUntil(() => harness.states.at(-1) === "ready", 2_000, "second ready");
+
+    // 旧 channel 关闭后仍可能收到已入队的迟到帧；transport 必须按 channel 身份丢弃，
+    // 不能让新一轮恢复的页面看到旧快照/队列结果。
+    firstSocket.emitMessage(JSON.stringify({ type: "data", payload: payload("stale") }));
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(harness.payloads.map((item) => (item as { error?: string }).error)).toEqual([
+      "snapshot",
+    ]);
+
+    harness.client
+      .lastChannelSocket()
+      .emitMessage(JSON.stringify({ type: "data", payload: payload("queue-1") }));
+    harness.client
+      .lastChannelSocket()
+      .emitMessage(JSON.stringify({ type: "data", payload: payload("queue-2") }));
+    await waitUntil(() => harness.payloads.length === 3, 2_000, "new payloads");
+    expect(harness.payloads.map((item) => (item as { error?: string }).error)).toEqual([
+      "snapshot",
+      "queue-1",
+      "queue-2",
+    ]);
+  });
+
+  it("session-conflict 终态后旧 channel 迟到帧不投递，也不自动重开 channel", async () => {
+    const harness = createHarness();
+    const socket = await startReady(harness);
+
+    harness.client.emitChannelMessage({ type: "close", reason: "superseded" });
+    await waitUntil(
+      () => harness.failures.some((failure) => failure.reason === "session-conflict"),
+      2_000,
+      "session conflict",
+    );
+
+    socket.emitMessage(
+      JSON.stringify({
+        type: "data",
+        payload: {
+          zcode_type: "app-error",
+          reason: "unexpected-error",
+          error: "stale-after-conflict",
+        },
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(harness.payloads).toHaveLength(0);
+
+    harness.client.emitRegistry([presence()]);
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(harness.client.openChannelCalls).toHaveLength(1);
   });
 
   it.each(["backend_offline", "epoch_changed", "timeout"] as const)(

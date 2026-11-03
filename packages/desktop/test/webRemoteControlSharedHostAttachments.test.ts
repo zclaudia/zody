@@ -131,6 +131,8 @@ describe("createWebRemoteControlSharedHostAttachments", () => {
     });
     // 旧 Remote 页面卸载：只释放手机侧端口，不结束桌面 Host。
     manager.releaseAttachment(beforeReload.attachmentId);
+    // 页面卸载可能重复触发；重复释放不能误伤同一 Host 上的其他 attachment。
+    manager.releaseAttachment(beforeReload.attachmentId);
 
     const afterReload = await manager.attachWorkspaceHost(7, {
       kind: "local",

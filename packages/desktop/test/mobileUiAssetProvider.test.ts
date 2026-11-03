@@ -1,7 +1,7 @@
 import { chmod, mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { HttpHandler, HttpServeResponse } from "@zclaudia/gateway-backend";
 import {
   createMobileUiAssetProvider,
@@ -176,6 +176,36 @@ describe("mobile UI method and path rejection", () => {
     const response = await request("/mobile-ui/release", "HEAD", new Uint8Array([1]));
     expect(response.status).toBe(400);
     expect(header(response, "Cache-Control")).toBe("no-store");
+  });
+
+  it.each([
+    "/api/tasks",
+    "/api/sessions",
+    "/api/snapshots",
+    "/api/queue",
+    "/tasks",
+    "/sessions/session-1",
+    "/mobile-ui/tasks",
+    "/mobile-ui/sessions",
+    "/mobile-ui/snapshot",
+    "/mobile-ui/queue",
+    "/zcode-remote",
+    "/channel/channel-1",
+  ])("rejects business path %s without reading any runtime state", async (path) => {
+    const resolveSecurityContext = vi.fn(() => ({
+      gatewayHttpOrigin: "https://gateway.example.com",
+      gatewayWsOrigin: "wss://gateway.example.com",
+    }));
+    handler = createHandler({ resolveSecurityContext });
+
+    const response = await request(path);
+
+    expect(response.status).toBe(404);
+    expect(header(response, "Cache-Control")).toBe("no-store");
+    expect(response.body).toBeUndefined();
+    // provider 只映射静态制品；业务 task/session/snapshot/queue 路径在读取
+    // CSP 上下文或文件系统前就被拒绝，不会把桌面运行时状态带进 HTTP 面。
+    expect(resolveSecurityContext).not.toHaveBeenCalled();
   });
 
   it.each([
