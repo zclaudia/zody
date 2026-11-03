@@ -144,3 +144,69 @@ test("missing notices still surface the underlying file error", async (t) => {
     code: "ENOENT",
   });
 });
+
+test(
+  "production inventory 读取同名第三方 LICENSE 原文而不纳入 workspace 或 dev-only",
+  { skip: process.platform === "win32" },
+  async (t) => {
+    const { collectNpmNotices } = await import("./third-party-npm.mjs");
+    const { chmod } = await import("node:fs/promises");
+    const root = await mkdtemp(join(tmpdir(), "zody-notice-identity-"));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    async function pkg(dir, version, text) {
+      await mkdir(dir, { recursive: true });
+      await writeFile(
+        join(dir, "package.json"),
+        JSON.stringify({
+          name: "debug",
+          version,
+          license: "MIT",
+          repository: { url: "git://example/debug" },
+        }),
+      );
+      await writeFile(join(dir, "LICENSE"), text);
+    }
+    const own = join(root, "workspace/debug"),
+      external = join(root, "node_modules/debug"),
+      dev = join(own, "node_modules/debug");
+    await pkg(own, "0.1.0", "workspace\n");
+    await pkg(external, "4.4.3", "Copyright External 4\nMIT\n");
+    await pkg(dev, "2.6.9", "Copyright External 2\nMIT\n");
+    const graph = [
+      {
+        name: "debug",
+        version: "0.1.0",
+        path: own,
+        dependencies: { debug: { name: "debug", version: "4.4.3", path: external } },
+      },
+    ];
+    await writeFile(join(root, "pnpm-workspace.yaml"), "packages: []\n");
+    await writeFile(join(root, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\npackages: {}\n");
+    await writeFile(join(root, "graph.json"), JSON.stringify(graph));
+    const fakeBin = join(root, "bin");
+    await mkdir(fakeBin);
+    await writeFile(join(fakeBin, "pnpm"), `#!/bin/sh\ncat '${join(root, "graph.json")}'\n`);
+    await chmod(join(fakeBin, "pnpm"), 0o755);
+    const oldPath = process.env.PATH;
+    process.env.PATH = `${fakeBin}:${oldPath}`;
+    t.after(() => {
+      process.env.PATH = oldPath;
+    });
+    const result = await collectNpmNotices(root, []);
+    assert.deepEqual(
+      result.packages.map((p) => `${p.name}@${p.version}`),
+      ["debug@4.4.3"],
+    );
+    assert.equal(result.packages[0].repository, "git://example/debug");
+    assert.equal(
+      hash(result.packages[0].notices.find((n) => n.member === "LICENSE").bytes),
+      hash("Copyright External 4\nMIT\n"),
+    );
+    const duplicate = join(own, "node_modules/debug-duplicate");
+    await pkg(duplicate, "4.4.3", "conflicting origin\n");
+    await assert.rejects(
+      collectNpmNotices(root, []),
+      (error) => error.message.includes(external) && error.message.includes(duplicate),
+    );
+  },
+);

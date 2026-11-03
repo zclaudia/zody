@@ -9,3 +9,7 @@
 证据位于 `output/zody-rename-r21/final-confirmation-ad859/` 的 reinstall-pruning-audit、debug-workspace-name-collision-audit、debug-graph-readonly 及补充JSON。可审方案见 R21-license-collision-fix-proposal.md：只按路径/可验证link身份区分workspace与第三方，先补同名/alias/symlink回归，再重新生成并复审；不改版本/锁、来源、原文或应用运行时。
 
 依AGENTS.md:48“发现设计缺陷时先与用户对齐”，已用异步问题请用户选择修复或暂缓。当前未获此新设计变更答复，未修改生成器或新建正式行为spec。其他独立R22测试/归因继续；不得把此缺口静默豁免或把19条既有strict义务当作已解决。
+
+## 后续裁决
+
+用户已明确选择“修复身份判断并补齐许可（推荐）”，批准对应方案。上述待裁决状态是发现问题时的历史记录；当前由 Terra 按 spec、红绿回归、实现、固定候选生成顺序修复，随后交 DeepSeek 独立复核。

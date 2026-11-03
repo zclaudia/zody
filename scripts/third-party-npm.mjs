@@ -1,7 +1,9 @@
+import { prepareWorkspaceIdentity } from "./third-party-workspace-identity.mjs";
+export { prepareWorkspaceIdentity } from "./third-party-workspace-identity.mjs";
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFile, readdir, realpath } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { promisify } from "node:util";
 import { resolveSpawnRuntimeOptions } from "./spawn-command.mjs";
 
@@ -119,32 +121,51 @@ export async function readInstallTargets(root) {
   };
 }
 
-// 修复：pnpm 按 supportedArchitectures 跳过的平台包（如 sharp 的 s390x/wasm32 构建）从不安装、不分发，
-// 此前靠按包名的例外名单放行，新依赖一引入就会误报缺失；现在按锁文件平台约束整棵子树跳过。
-export function productionPackages(projects, isInstallable = () => true) {
-  const own = new Set(projects.map((project) => project.name));
+// pnpm 跳过的平台包及其独有依赖不属于可安装生产图。
+export function productionPackages(projects, isInstallable = () => true, identity) {
+  // 纯图测试可不提供异步 identity；仅绝对路径完全一致才识别 workspace。
+  const ownPaths = new Set(
+    projects.map((project) => project.path && resolve(project.path)).filter(Boolean),
+  );
+  const classify =
+    identity?.classify ??
+    ((info, parentPath, alias) => {
+      const link = typeof info.version === "string" && info.version.startsWith("link:");
+      const target = info.path
+        ? resolve(info.path)
+        : link && parentPath
+          ? resolve(parentPath, info.version.slice(5))
+          : undefined;
+      if (target && ownPaths.has(target)) return "workspace";
+      if (link)
+        throw new Error(
+          `Unresolved non-workspace link identity: parent=${parentPath ?? "(unknown)"} alias=${alias} target=${target ?? info.version}`,
+        );
+      return "third-party";
+    });
   const required = new Map();
-  function dependencies(deps) {
+  function dependencies(deps, parentPath) {
     for (const [alias, info] of Object.entries(deps ?? {})) {
       const name = info.name ?? alias;
       if (!isInstallable(name, info.version)) continue;
-      if (!own.has(name) && !name.startsWith("@zody/") && !info.version.startsWith("link:")) {
+      if (classify(info, parentPath, alias) === "third-party") {
         required.set(`${name}@${info.version}`, { name, version: info.version });
       }
-      dependencies(info.dependencies);
-      dependencies(info.optionalDependencies);
+      // pnpm 的递归 ls 在嵌套节点保留顶层 importer 的 link 值和相对基准。
+      dependencies(info.dependencies, parentPath);
+      dependencies(info.optionalDependencies, parentPath);
     }
   }
   for (const project of projects) {
-    dependencies(project.dependencies);
-    dependencies(project.optionalDependencies);
+    dependencies(project.dependencies, project.path);
+    dependencies(project.optionalDependencies, project.path);
   }
   return required;
 }
 
-export function assertProductionGraphs(lockedProjects, installedProjects, isInstallable) {
-  const locked = productionPackages(lockedProjects, isInstallable);
-  const installed = productionPackages(installedProjects, isInstallable);
+export function assertProductionGraphs(lockedProjects, installedProjects, isInstallable, identity) {
+  const locked = productionPackages(lockedProjects, isInstallable, identity);
+  const installed = productionPackages(installedProjects, isInstallable, identity);
   const missing = [...locked].filter(([key]) => !installed.has(key));
   const stale = [...installed.keys()].filter((key) => !locked.has(key));
   if (missing.length || stale.length) {
@@ -184,48 +205,105 @@ export async function readWorkspaceProductionGraph(root) {
     readLockfilePlatformConstraints(await readFile(join(root, "pnpm-lock.yaml"), "utf8")),
     await readInstallTargets(root),
   );
-  const required = assertProductionGraphs(locked, actual, isInstallable);
+  const identity = await prepareWorkspaceIdentity(locked, actual);
+  const required = assertProductionGraphs(locked, actual, isInstallable, identity);
   return { required, projects: actual };
 }
 
 export async function scanInstalledPackages(root, projects) {
-  // pnpm hoisted 布局的 ls.path 仍可能指向不存在的 .pnpm 路径；按真实安装目录和精确版本匹配。
+  // 修复：真实 workspace 目录与外部同名包必须分开，不能用 name/version 推断来源。
   const installed = new Map();
   const visited = new Set();
+  const visitedPackages = new Set();
+  const workspacePaths = new Set(
+    await Promise.all(
+      projects.filter((project) => project.path).map((project) => realpath(project.path)),
+    ),
+  );
   async function scanNodeModules(directory) {
     let actual;
     try {
       actual = await realpath(directory);
     } catch (error) {
-      if (error.code === "ENOENT") return;
+      if (error.code === "ENOENT" || error.code === "ENOTDIR") return;
       throw error;
     }
     if (visited.has(actual)) return;
     visited.add(actual);
     const entries = await readdir(directory, { withFileTypes: true });
-    for (const entry of entries) {
+    for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name, "en"))) {
       if (entry.name.startsWith(".")) continue;
-      const path = join(directory, entry.name);
+      const target = join(directory, entry.name);
       if (entry.name.startsWith("@")) {
-        for (const scoped of await readdir(path)) await scanPackage(join(path, scoped));
-      } else await scanPackage(path);
+        for (const scoped of (await readdir(target)).sort())
+          await scanPackage(join(target, scoped));
+      } else await scanPackage(target);
     }
   }
   async function scanPackage(directory) {
-    let pkg;
+    let pkg, actual;
     try {
-      pkg = JSON.parse(await readFile(join(directory, "package.json"), "utf8"));
+      actual = await realpath(directory);
+      pkg = JSON.parse(await readFile(join(actual, "package.json"), "utf8"));
     } catch (error) {
       if (["ENOENT", "ENOTDIR"].includes(error.code)) return;
       throw error;
     }
-    if (pkg.name && pkg.version) installed.set(`${pkg.name}@${pkg.version}`, { pkg, directory });
-    await scanNodeModules(join(directory, "node_modules"));
+    if (visitedPackages.has(actual)) return;
+    visitedPackages.add(actual);
+    if (!workspacePaths.has(actual) && pkg.name && pkg.version) {
+      const key = `${pkg.name}@${pkg.version}`;
+      const current = installed.get(key);
+      const copy = { pkg, directory: actual };
+      if (current) current.copies.push(copy);
+      else installed.set(key, { ...copy, copies: [copy] });
+    }
+    // workspace 本体不计入第三方，但其 node_modules 仍须递归。
+    await scanNodeModules(join(actual, "node_modules"));
   }
   for (const project of projects) await scanNodeModules(join(project.path, "node_modules"));
   await scanNodeModules(join(root, "node_modules"));
   await scanNodeModules(join(root, "apps/zody-cli/node_modules"));
   return installed;
+}
+
+export async function verifyInstalledCopies(key, item) {
+  const copies = item.copies ?? [item];
+  if (copies.length < 2) return;
+  const signatures = [];
+  for (const copy of copies) {
+    const notices = await readPackageNotices(copy.directory);
+    signatures.push(
+      JSON.stringify({
+        license: copy.pkg.license ?? copy.pkg.licenses ?? null,
+        repository:
+          typeof copy.pkg.repository === "string"
+            ? copy.pkg.repository
+            : (copy.pkg.repository?.url ?? null),
+        notices: notices.map(({ member, bytes }) => ({ member, sha256: hashBytes(bytes) })),
+      }),
+    );
+  }
+  if (new Set(signatures).size !== 1) {
+    throw new Error(
+      `Conflicting installed third-party copies for ${key}: ${copies.map((copy) => copy.directory).join(", ")}`,
+    );
+  }
+}
+
+// 基础检查覆盖全部安装包，生产标记仅来自已验证的生产图。
+export async function collectInstalledLicenseRecords(scanned, required, normalize) {
+  const records = new Map();
+  for (const [key, item] of scanned) {
+    await verifyInstalledCopies(key, item);
+    records.set(key, {
+      name: item.pkg.name,
+      version: item.pkg.version,
+      license: normalize(item.pkg),
+      isProd: required.has(key),
+    });
+  }
+  return records;
 }
 
 export function missingProductionPackages(required, installed) {
@@ -249,6 +327,7 @@ export async function collectNpmNotices(root, overrides) {
     if (!installedPackage) {
       continue;
     }
+    await verifyInstalledCopies(key, installedPackage);
     const { pkg, directory } = installedPackage;
     const notices = await readPackageNotices(directory);
     const override = overrides.find((record) => record.package === key);
