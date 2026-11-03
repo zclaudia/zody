@@ -11,10 +11,14 @@ import androidx.activity.enableEdgeToEdge
 import io.github.zclaudia.zody.mobile.remote.RemoteControlKeepAliveService
 import io.github.zclaudia.zody.mobile.bridge.MobileNotificationClickDispatcher
 import io.github.zclaudia.zody.mobile.bridge.MobileNotificationPermissionDispatcher
+import io.github.zclaudia.zody.mobile.bridge.RemoteNativeOperationState
 import io.github.zclaudia.zody.mobile.ui.RemoteControlApp
 import io.github.zclaudia.zody.mobile.ui.theme.ZodymobileTheme
 
 class MainActivity : ComponentActivity() {
+    // M3：与 Compose 侧共享，通知权限弹窗也计入 prepareReload 的原生 veto。
+    private val nativeOperationState = RemoteNativeOperationState()
+
     override fun onStart() {
         super.onStart()
         io.github.zclaudia.zody.mobile.bridge.MobileNotificationBridgeClient.setAppForeground(this, true)
@@ -43,7 +47,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ZodymobileTheme {
-                RemoteControlApp()
+                RemoteControlApp(nativeOperationState = nativeOperationState)
             }
         }
     }
@@ -58,6 +62,8 @@ class MainActivity : ComponentActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_NOTIFICATIONS) {
+            // 授予、拒绝或系统取消都会回到这里；权限弹窗不再阻塞安全刷新。
+            nativeOperationState.end(RemoteNativeOperationState.Operation.NOTIFICATION_PERMISSION)
             val granted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
             MobileNotificationPermissionDispatcher.publish(granted)
@@ -125,6 +131,11 @@ class MainActivity : ComponentActivity() {
         if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
             return
         }
+        // 同一时间只允许一个系统权限弹窗；避免重复请求让 busy 与回调配对错位。
+        if (nativeOperationState.isActive(RemoteNativeOperationState.Operation.NOTIFICATION_PERMISSION)) {
+            return
+        }
+        nativeOperationState.begin(RemoteNativeOperationState.Operation.NOTIFICATION_PERMISSION)
         requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_NOTIFICATIONS)
     }
 

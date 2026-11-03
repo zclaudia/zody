@@ -79,6 +79,7 @@ internal object MobileBridgeErrors {
     const val OPEN_REMOTE_FAILED = "open-remote-failed"
     const val SESSION_CONTEXT_INVALID = "session-context-invalid"
     const val STALE_SESSION = "stale-session"
+    const val NATIVE_BUSY = "native-busy"
     const val BRIDGE_VERSION_UNSUPPORTED = "bridge-version-unsupported"
     const val UNSUPPORTED_CAPABILITY = "unsupported-capability"
 }

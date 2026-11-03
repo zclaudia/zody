@@ -81,6 +81,8 @@ import io.github.zclaudia.zody.mobile.bridge.MobileNotificationBridgeAdapter
 import io.github.zclaudia.zody.mobile.bridge.MobileNotificationBridgeClient
 import io.github.zclaudia.zody.mobile.bridge.MobileNotificationClickDispatcher
 import io.github.zclaudia.zody.mobile.bridge.MobileNotificationPermissionDispatcher
+import io.github.zclaudia.zody.mobile.bridge.RemoteNativeOperationState
+import io.github.zclaudia.zody.mobile.bridge.RemoteNativeReloadGuard
 import io.github.zclaudia.zody.mobile.bridge.ZodyRemoteBridge
 import io.github.zclaudia.zody.mobile.bridge.ZodyShellBridge
 import io.github.zclaudia.zody.mobile.config.MobileShellConfigStore
@@ -133,7 +135,11 @@ private class FileChooserActions {
  * WebView 的同步拦截器接线，不保存 task/session 业务状态。
  */
 @Composable
-fun RemoteControlApp(modifier: Modifier = Modifier) {
+fun RemoteControlApp(
+    modifier: Modifier = Modifier,
+    // M3：与 MainActivity 共享同一实例，通知权限请求也计入原生 veto；重建时随宿主新建。
+    nativeOperationState: RemoteNativeOperationState = remember { RemoteNativeOperationState() },
+) {
     val context = LocalContext.current
     val activity = context as? Activity
     val assetLoader = remember(context) {
@@ -148,6 +154,12 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
     var controllerState by remember { mutableStateOf<MobileShellControllerState?>(null) }
     // Activity/进程重建时恢复上一 source；冷启动始终从 Shell 开始。
     var startRemote by rememberSaveable { mutableStateOf(false) }
+    // 文件选择、拍照和相机权限由本 Composable 的 ActivityResult launcher 承载；
+    // 状态只表达“系统 UI 尚未返回”，prepareReload 读取它做原生 veto。
+    var pendingFileChooser by remember { mutableStateOf<PendingFileChooser?>(null) }
+    var showFileSourceDialog by remember { mutableStateOf(false) }
+    var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
+    var pendingCameraFile by remember { mutableStateOf<File?>(null) }
 
     // 凭证存储随页面创建；Keystore 主密钥在首次读写时才初始化。
     val secureStore = remember(context) { EncryptedSharedPreferencesSecureStore(context) }
@@ -185,7 +197,14 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
             allowInsecureGatewayTransport = BuildConfig.DEBUG,
         )
     }
-    val remoteBridge = remember(controller, fileSaver, fileOpener, notificationBridge, activity) {
+    val remoteBridge = remember(
+        controller,
+        fileSaver,
+        fileOpener,
+        notificationBridge,
+        activity,
+        nativeOperationState,
+    ) {
         ZodyRemoteBridge(
             controller = controller,
             appVersion = BuildConfig.VERSION_NAME,
@@ -195,6 +214,7 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
             requestNotificationPermission = {
                 (activity as? MainActivity)?.requestNotificationPermissionIfNeeded()
             },
+            nativeReloadGuard = RemoteNativeReloadGuard { nativeOperationState.isBusy() },
         )
     }
     val shellHost = remember(controller, shellBridge, remoteBridge) {
@@ -206,12 +226,9 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
         )
     }
 
-    var pendingFileChooser by remember { mutableStateOf<PendingFileChooser?>(null) }
-    var showFileSourceDialog by remember { mutableStateOf(false) }
-    var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
-    var pendingCameraFile by remember { mutableStateOf<File?>(null) }
-
     fun completeFileChooser(uris: Array<Uri>?) {
+        nativeOperationState.end(RemoteNativeOperationState.Operation.FILE_CHOOSER)
+        nativeOperationState.end(RemoteNativeOperationState.Operation.CAMERA_CAPTURE)
         val pending = pendingFileChooser
         pendingFileChooser = null
         showFileSourceDialog = false
@@ -245,6 +262,8 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { result ->
+        // 拍照取消或完成都会回到这里，先释放拍照 busy。
+        nativeOperationState.end(RemoteNativeOperationState.Operation.CAMERA_CAPTURE)
         val uri = pendingCameraUri
         if (result.resultCode == Activity.RESULT_OK && uri != null) {
             // 拍摄成功后保留缓存文件，交给 WebView 读取；系统会在缓存压力下自行清理。
@@ -262,6 +281,8 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
+        // 权限对话框已返回（授予、拒绝或系统取消），对应 busy 结束。
+        nativeOperationState.end(RemoteNativeOperationState.Operation.CAMERA_PERMISSION)
         // 拒绝拍照权限时回退到系统文件选择器，用户仍能添加附件。
         if (granted) {
             actions.launchCamera()
@@ -278,6 +299,7 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
         if (granted) {
             actions.launchCamera()
         } else {
+            nativeOperationState.begin(RemoteNativeOperationState.Operation.CAMERA_PERMISSION)
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
@@ -296,10 +318,12 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
                         Intent.FLAG_GRANT_READ_URI_PERMISSION,
                 )
             }
+            nativeOperationState.begin(RemoteNativeOperationState.Operation.CAMERA_CAPTURE)
             try {
                 cameraLauncher.launch(intent)
             } catch (error: ActivityNotFoundException) {
                 Log.w(TAG, "No camera app is available for attachment capture.", error)
+                nativeOperationState.end(RemoteNativeOperationState.Operation.CAMERA_CAPTURE)
                 clearCameraCapture()
                 completeFileChooser(null)
             }
@@ -340,6 +364,7 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
         // 上一次选择还没结束时，先按取消处理，避免页面一直等不到回调。
         pendingFileChooser?.callback?.onReceiveValue(null)
         pendingFileChooser = PendingFileChooser(callback, params)
+        nativeOperationState.begin(RemoteNativeOperationState.Operation.FILE_CHOOSER)
         when {
             params.isCaptureEnabled -> requestCameraCapture()
             FileChooserSpecs.acceptsImages(params.acceptTypes.toList()) ->
@@ -430,6 +455,9 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
 
     DisposableEffect(Unit) {
         onDispose {
+            // Activity 重建/销毁：先失效 controller，再清理随宿主生命周期结束的原生 busy 标记。
+            controller.shutdown()
+            nativeOperationState.clear()
             // 页面销毁时把未完成的文件选择按取消收尾，避免 WebView 的回调悬挂。
             pendingFileChooser?.callback?.onReceiveValue(null)
             pendingFileChooser = null
@@ -437,7 +465,6 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
             pendingCameraFile = null
             pendingCameraUri = null
             downloadHandler.shutdown()
-            controller.shutdown()
             webView?.destroy()
             webView = null
             bridgeDispatcher = null

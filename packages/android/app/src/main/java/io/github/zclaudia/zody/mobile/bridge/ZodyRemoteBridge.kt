@@ -32,6 +32,7 @@ class ZodyRemoteBridge(
     private val fileOpener: MobileFileOpener? = null,
     private val notificationBridge: RemoteNotificationBridge? = null,
     private val requestNotificationPermission: (() -> Unit)? = null,
+    private val nativeReloadGuard: RemoteNativeReloadGuard? = null,
     private val decodeBase64: (String) -> ByteArray = { value ->
         Base64.decode(value, Base64.NO_WRAP)
     },
@@ -78,6 +79,43 @@ class ZodyRemoteBridge(
     @JavascriptInterface
     fun returnShell(reason: String, sessionId: String): String =
         transitionResult(controller.returnShellFromRemote(reason, sessionId))
+
+    /**
+     * M3：Web 在执行 `window.location.reload()` 前请求原生 veto（spec 9.3）。
+     *
+     * 顺序固定：先校验当前 generation/session，再检查原生操作。原生只返回判定，绝不主动
+     * reload；实际 reload 只由 Web controller 在全部 guard 通过后执行。
+     *
+     * 返回：
+     * - `ready`：无原生阻塞，可执行 reload；
+     * - `stale-session`：session 已失效、Activity 已销毁或页面不是当前 Remote；
+     * - `native-busy`：文件选择、拍照、相机/通知权限弹窗或未完成保存会话仍在进行；
+     * - `unsupported-capability`：宿主未接入原生操作状态、状态不可判定或参数非法，fail closed。
+     */
+    @JavascriptInterface
+    fun prepareReload(sessionId: String, releaseId: String): String {
+        sessionFailure(sessionId)?.let { return it }
+        if (releaseId.isBlank() || releaseId.length > MAX_RELEASE_ID_CHARS) {
+            return MobileBridgeJson.failure(MobileBridgeErrors.UNSUPPORTED_CAPABILITY)
+        }
+        // 旧 session 遗留的保存会话不能再 finish/abort，只按当前 session 判定 busy。
+        if (saveSessions.values.any { it.sessionId == sessionId }) {
+            return MobileBridgeJson.failure(MobileBridgeErrors.NATIVE_BUSY)
+        }
+        val guard = nativeReloadGuard
+            ?: return MobileBridgeJson.failure(MobileBridgeErrors.UNSUPPORTED_CAPABILITY)
+        val busy = try {
+            guard.isOperationInProgress()
+        } catch (_: Exception) {
+            return MobileBridgeJson.failure(MobileBridgeErrors.UNSUPPORTED_CAPABILITY)
+        }
+        if (busy) {
+            return MobileBridgeJson.failure(MobileBridgeErrors.NATIVE_BUSY)
+        }
+        // 检查期间可能已发生导航/销毁；ready 必须基于同一代次。
+        sessionFailure(sessionId)?.let { return it }
+        return MobileBridgeJson.success { put("status", "ready") }
+    }
 
     @JavascriptInterface
     fun saveFileBegin(sessionId: String, fileName: String, mimeType: String): String {
@@ -323,6 +361,56 @@ class ZodyRemoteBridge(
         private const val MAX_CHUNK_BYTES = 1024 * 1024
         private const val MAX_SAVE_SESSIONS = 8
         private const val MAX_SESSION_ID_CHARS = 256
+        private const val MAX_RELEASE_ID_CHARS = 256
+    }
+}
+
+/** M3：`prepareReload` 查询宿主原生操作；返回 true 表示必须 veto 本次 reload。 */
+fun interface RemoteNativeReloadGuard {
+    fun isOperationInProgress(): Boolean
+}
+
+/**
+ * M3 原生 reload veto 的唯一状态所有者：记录尚未返回系统的原生操作。
+ *
+ * 只保存「操作占用系统 UI」这一事实，不保存回调、URI 或页面业务状态：
+ * - 文件选择：`onShowFileChooser` 开始，取消/选择完成/宿主销毁时结束；
+ * - 拍照：相机 Activity 启动前开始，结果回调结束；
+ * - 相机权限：系统权限对话框弹出前开始，权限结果回调结束；
+ * - 通知权限：MainActivity 发起请求前开始，`onRequestPermissionsResult` 结束。
+ *
+ * Activity 重建会随宿主创建新实例；旧实例在 Compose dispose 时 [clear]，不把上一代
+ * busy 带入新会话。bridge 只读 [isBusy]，不复制原生操作状态。
+ */
+class RemoteNativeOperationState {
+    enum class Operation {
+        FILE_CHOOSER,
+        CAMERA_CAPTURE,
+        CAMERA_PERMISSION,
+        NOTIFICATION_PERMISSION,
+    }
+
+    private val activeOperations = mutableSetOf<Operation>()
+
+    @Synchronized
+    fun begin(operation: Operation) {
+        activeOperations += operation
+    }
+
+    @Synchronized
+    fun end(operation: Operation) {
+        activeOperations -= operation
+    }
+
+    @Synchronized
+    fun isActive(operation: Operation): Boolean = operation in activeOperations
+
+    @Synchronized
+    fun isBusy(): Boolean = activeOperations.isNotEmpty()
+
+    @Synchronized
+    fun clear() {
+        activeOperations.clear()
     }
 }
 

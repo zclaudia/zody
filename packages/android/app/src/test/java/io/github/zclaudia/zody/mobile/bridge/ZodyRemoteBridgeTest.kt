@@ -8,6 +8,7 @@ import io.github.zclaudia.zody.mobile.remoteui.RemoteUiInterceptResponse
 import io.github.zclaudia.zody.mobile.remoteui.RemoteUiSessionContext
 import io.github.zclaudia.zody.mobile.ui.shell.MobileShellController
 import io.github.zclaudia.zody.mobile.ui.shell.MobileShellControllerHost
+import io.github.zclaudia.zody.mobile.ui.shell.MobileShellTransitionResult
 import io.github.zclaudia.zody.mobile.ui.shell.RemoteUiInterceptor
 import io.github.zclaudia.zody.mobile.ui.shell.RemoteUiInterceptorFactory
 import org.json.JSONObject
@@ -135,10 +136,12 @@ class ZodyRemoteBridgeTest {
         val opener: FakeFileOpener,
         val notifications: FakeNotificationBridge,
         val sessionId: String,
+        val configRevision: Long,
     )
 
     private fun environment(
         allowInsecureGatewayTransport: Boolean = true,
+        reloadGuard: RemoteNativeReloadGuard? = null,
     ): Environment {
         val store = MobileShellConfigStore(
             InMemorySecureStore(),
@@ -152,6 +155,7 @@ class ZodyRemoteBridgeTest {
                 backendId = "backend-1",
             ),
         )
+        val configRevision = store.readConfig()!!.configRevision
         var sessionSequence = 0
         val controller = MobileShellController(
             configStore = store,
@@ -173,6 +177,7 @@ class ZodyRemoteBridgeTest {
             fileOpener = opener,
             notificationBridge = notifications,
             requestNotificationPermission = {},
+            nativeReloadGuard = reloadGuard,
             decodeBase64 = { value -> Base64.getDecoder().decode(value) },
         )
         return Environment(
@@ -182,6 +187,7 @@ class ZodyRemoteBridgeTest {
             opener = opener,
             notifications = notifications,
             sessionId = controller.remoteSessionSnapshot()!!.sessionId,
+            configRevision = configRevision,
         )
     }
 
@@ -373,5 +379,156 @@ class ZodyRemoteBridgeTest {
         assertFalse(result.getBoolean("ok"))
         assertEquals("stale-session", result.getJSONObject("error").getString("code"))
         assertTrue(envelope(environment.bridge.markRemoteReady(environment.sessionId)).getBoolean("ok"))
+    }
+
+    @Test
+    fun `prepareReload returns ready for the current session without changing it`() {
+        val environment = environment(reloadGuard = RemoteNativeReloadGuard { false })
+
+        val result = envelope(environment.bridge.prepareReload(environment.sessionId, "release-1"))
+
+        assertTrue(result.getBoolean("ok"))
+        assertEquals(1, result.getInt("schemaVersion"))
+        assertEquals("ready", result.getString("status"))
+        // 原生只返回判定，不主动 reload；同一 backend 的 session 在 reload 前后保持有效。
+        assertTrue(environment.controller.isCurrentRemoteSession(environment.sessionId))
+        assertTrue(envelope(environment.bridge.getSessionContext()).getBoolean("ok"))
+    }
+
+    @Test
+    fun `prepareReload returns stale session before reporting native busy`() {
+        val environment = environment(reloadGuard = RemoteNativeReloadGuard { true })
+
+        val old = envelope(environment.bridge.prepareReload("old-session", "release-1"))
+        assertFalse(old.getBoolean("ok"))
+        assertEquals("stale-session", old.getJSONObject("error").getString("code"))
+
+        val busy = envelope(environment.bridge.prepareReload(environment.sessionId, "release-1"))
+        assertFalse(busy.getBoolean("ok"))
+        assertEquals("native-busy", busy.getJSONObject("error").getString("code"))
+
+        // Activity 销毁：controller.shutdown 后旧 session 一律 stale，不再暴露原生 busy。
+        environment.controller.shutdown()
+        val destroyed = envelope(environment.bridge.prepareReload(environment.sessionId, "release-1"))
+        assertFalse(destroyed.getBoolean("ok"))
+        assertEquals("stale-session", destroyed.getJSONObject("error").getString("code"))
+    }
+
+    @Test
+    fun `prepareReload vetoes each native operation until it is cancelled or completes`() {
+        val nativeState = RemoteNativeOperationState()
+        val environment = environment(
+            reloadGuard = RemoteNativeReloadGuard { nativeState.isBusy() },
+        )
+
+        for (operation in RemoteNativeOperationState.Operation.entries) {
+            nativeState.begin(operation)
+
+            // 自动与手动安全刷新共用同一原生方法；阻塞期间重复调用仍返回 native-busy。
+            repeat(2) {
+                val blocked = envelope(
+                    environment.bridge.prepareReload(environment.sessionId, "release-1"),
+                )
+                assertFalse(blocked.getBoolean("ok"))
+                assertEquals(
+                    "native-busy",
+                    blocked.getJSONObject("error").getString("code"),
+                )
+            }
+
+            // 系统取消和正常结束都走 end；结束后恢复 ready。
+            nativeState.end(operation)
+            val ready = envelope(
+                environment.bridge.prepareReload(environment.sessionId, "release-1"),
+            )
+            assertTrue(ready.getBoolean("ok"))
+            assertEquals("ready", ready.getString("status"))
+        }
+    }
+
+    @Test
+    fun `prepareReload fails closed when native operation state is unavailable or invalid`() {
+        val missing = environment()
+        assertEquals(
+            "unsupported-capability",
+            envelope(missing.bridge.prepareReload(missing.sessionId, "release-1"))
+                .getJSONObject("error")
+                .getString("code"),
+        )
+
+        val throwing = environment(
+            reloadGuard = RemoteNativeReloadGuard { error("native state unavailable") },
+        )
+        assertEquals(
+            "unsupported-capability",
+            envelope(throwing.bridge.prepareReload(throwing.sessionId, "release-1"))
+                .getJSONObject("error")
+                .getString("code"),
+        )
+
+        val bounded = environment(reloadGuard = RemoteNativeReloadGuard { false })
+        assertEquals(
+            "unsupported-capability",
+            envelope(bounded.bridge.prepareReload(bounded.sessionId, ""))
+                .getJSONObject("error")
+                .getString("code"),
+        )
+    }
+
+    @Test
+    fun `prepareReload vetoes an unfinished save session for the current session`() {
+        val environment = environment(reloadGuard = RemoteNativeReloadGuard { false })
+        val token = envelope(
+            environment.bridge.saveFileBegin(
+                environment.sessionId,
+                "report.pdf",
+                "application/pdf",
+            ),
+        ).getString("token")
+
+        val blocked = envelope(
+            environment.bridge.prepareReload(environment.sessionId, "release-1"),
+        )
+        assertFalse(blocked.getBoolean("ok"))
+        assertEquals("native-busy", blocked.getJSONObject("error").getString("code"))
+
+        assertTrue(
+            envelope(environment.bridge.saveFileAbort(environment.sessionId, token))
+                .getBoolean("ok"),
+        )
+        assertTrue(
+            envelope(environment.bridge.prepareReload(environment.sessionId, "release-1"))
+                .getBoolean("ok"),
+        )
+    }
+
+    @Test
+    fun `an unfinished save from an invalidated session does not block a new remote session`() {
+        val environment = environment(reloadGuard = RemoteNativeReloadGuard { false })
+        envelope(
+            environment.bridge.saveFileBegin(
+                environment.sessionId,
+                "report.pdf",
+                "application/pdf",
+            ),
+        )
+
+        assertEquals(
+            MobileShellTransitionResult.Success,
+            environment.controller.returnShellFromRemote("switch", environment.sessionId),
+        )
+        assertEquals(
+            MobileShellTransitionResult.Success,
+            environment.controller.openRemoteFromShell(
+                "backend-1",
+                environment.configRevision.toDouble(),
+            ),
+        )
+        val nextSessionId = environment.controller.remoteSessionSnapshot()!!.sessionId
+        assertTrue(nextSessionId != environment.sessionId)
+
+        val ready = envelope(environment.bridge.prepareReload(nextSessionId, "release-1"))
+        assertTrue(ready.getBoolean("ok"))
+        assertEquals("ready", ready.getString("status"))
     }
 }
