@@ -1,5 +1,5 @@
 import { APICallError, RetryError } from "ai";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ModelErrorCode, ModelFailureReason, ModelRetryReason } from "@zcode/contracts";
 import { classifyModelFailure } from "../src/model/failure-classifier.js";
 import type { ResolvedAiSdkModelRetryOptions } from "../src/model/retry-policy.js";
@@ -42,6 +42,45 @@ describe("calculateRetryDelay", () => {
 
   it("falls back to local backoff when retry-after is above five minutes", () => {
     expect(calculateRetryDelay(retry, 1, 300_001)).toBe(2_000);
+  });
+
+  // 修复原因：同一批被限流的请求拿到同一个 retry-after，不加抖动会在同一毫秒一起醒来再撞限流
+  // （上游 v3.17.1 a60ba6a7，2026-10 线上 1302 风暴）。
+  it("jitters retry-after hints upwards only, by at most 20% capped at five seconds", () => {
+    const jittered = { ...retry, jitter: true };
+    const random = vi.spyOn(Math, "random");
+    try {
+      random.mockReturnValue(0);
+      expect(calculateRetryDelay(jittered, 1, 10_000)).toBe(10_000);
+      random.mockReturnValue(0.999_999);
+      expect(calculateRetryDelay(jittered, 1, 10_000)).toBe(12_000);
+      expect(calculateRetryDelay(jittered, 1, 60_000)).toBe(65_000);
+      expect(calculateRetryDelay(jittered, 1, 0)).toBe(0);
+    } finally {
+      random.mockRestore();
+    }
+  });
+
+  it("keeps retry-after exact when jitter is disabled", () => {
+    expect(calculateRetryDelay(retry, 1, 41_000)).toBe(41_000);
+  });
+
+  // 验收条款：同一 retry-after 多次采样退避值不全等，且增量落在 20%/5s 封顶之内。
+  it("spreads sampled retry-after delays within the jitter bound instead of repeating one value", () => {
+    const jittered = { ...retry, jitter: true };
+    const sample = (retryAfterMs: number) =>
+      Array.from({ length: 64 }, () => calculateRetryDelay(jittered, 1, retryAfterMs));
+
+    for (const delayMs of sample(10_000)) {
+      expect(delayMs).toBeGreaterThanOrEqual(10_000);
+      expect(delayMs).toBeLessThanOrEqual(12_000);
+    }
+    for (const delayMs of sample(60_000)) {
+      expect(delayMs).toBeGreaterThanOrEqual(60_000);
+      expect(delayMs).toBeLessThanOrEqual(65_000);
+    }
+    expect(new Set(sample(10_000)).size).toBeGreaterThan(1);
+    expect(new Set(sample(60_000)).size).toBeGreaterThan(1);
   });
 });
 
