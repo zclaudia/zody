@@ -206,7 +206,7 @@ describe("macOS CUA R11 real CuaSubmissionAuthority entry", () => {
     };
     const publicExport = packageJson.exports?.["./cua-submission"];
     if (!publicExport?.import || !publicExport.types) {
-      throw new Error("@zcode/core does not expose the ./cua-submission public entry");
+      throw new Error("@zody/core does not expose the ./cua-submission public entry");
     }
 
     const tscPath = resolve(repoRoot, "node_modules/typescript/bin/tsc");

@@ -107,7 +107,7 @@ function assertCapturedBrokerLaunchIsAuthorized(credentials: CapturedBrokerCrede
   // 凭据组里已经没有 token 了：broker 全平台改为身份模式（Helper 按对端代码签名裁决连接），
   // shared/runtimeEnv.ts 的 CapturedCuaBrokerCredentials 只有 socket + pluginAuthority
   // (+ refreshMarker)。这里不能再读 `credentials.token`；token 已从凭据组移除，
-  // 残留读取方只能靠 CLI 自己的 typecheck 发现（根 `pnpm typecheck` 不含 apps/zcode-cli）。
+  // 残留读取方只能靠 CLI 自己的 typecheck 发现（根 `pnpm typecheck` 不含 apps/zody-cli）。
   // socket + pluginAuthority 必须成对（authority 是 bootstrap 写入 node_repl 配置的 provenance
   // 随机数，core 据此认官方 server）；捕获侧本就只在成对时落快照，半组会清空并 fail-closed。
   // 校验也不能要求 token 齐全——身份模式凭据没有 token，强校验会让 node_repl 宿主启动即

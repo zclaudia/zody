@@ -94,3 +94,5 @@ SEA TUI 运行时资产由构建收集器按当前 workspace 包名放入隔离�
 Desktop 发行配置延续既有 workspace 包排除策略：排除规则覆盖当前 manifest 中以 `workspace:*` 引用的 `@zody/` 包；本条只同步包名，不改变哪些运行时代码需要打包的策略。验收以实际配置和当前 workspace 包集合核对排除规则，最终发行包仍需单独验证。
 
 SEA 五组内部资产键统一以 `zody-tui-runtime/`、`zody-playwright-runtime/`、`zody-runtime-tools/`、`zody-bundled-skills/`、`zody-official-plugins/` 为前缀，生产者与消费者必须随同一 binary 原子切换。manifest 格式、文件内容和哈希、已持久缓存位置、插件市场及插件身份保持原样；根发行脚本的工具许可文件索引同步。验收要求真实 collector 数据与按完整 key 严格查找的模拟 SEA 消费者联动，检查文件、缺失键和缓存复用，避免 fallback 掩盖键错配；最终还需实际 SEA 构建与 smoke。
+
+根格式检查继续排除迁移后的 `apps/zody-cli/` 既有范围及其原有 fixture 路径；目录改名只映射忽略路径，不扩大忽略范围。
