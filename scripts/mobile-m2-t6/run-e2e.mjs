@@ -85,9 +85,18 @@ async function setupDevtools() {
   adbShell(`am start -W -n ${appId}/.MainActivity`);
   const pid = adbShell(`pidof ${appId}`);
   assert(pid, "app process is not running");
-  const sockets = adbShell("cat /proc/net/unix");
-  const match = sockets.match(new RegExp(`@webview_devtools_remote_${pid}\\b`, "u"));
-  assert(match, `WebView devtools socket missing for pid ${pid}`);
+  // 冷启动时 WebView 可能晚于 Activity 显示才创建调试 socket。
+  const socketDeadline = Date.now() + 20000;
+  let sockets = "";
+  while (Date.now() < socketDeadline) {
+    sockets = adbShell("cat /proc/net/unix");
+    if (sockets.includes(`@webview_devtools_remote_${pid}`)) break;
+    await sleep(250);
+  }
+  assert(
+    sockets.includes(`@webview_devtools_remote_${pid}`),
+    `WebView devtools socket missing for pid ${pid}`,
+  );
   try {
     adb("forward", "--remove", `tcp:${process.env.ZODY_E2E_DEVTOOLS_PORT || 9222}`);
   } catch {
@@ -258,6 +267,7 @@ async function remoteContext(page) {
 }
 
 async function runDeviceBootstrap() {
+  await control("/delay?ms=0").catch(() => {});
   await returnShellIfRemote();
   const pairing = await ensureConfigured();
   const shell = await shellPage();
@@ -267,8 +277,11 @@ async function runDeviceBootstrap() {
   assert(selected, `no selectable desktop: ${JSON.stringify(state.items)}`);
   const remote = await clickBackend(shell, selected.id);
   await remote.waitFor(
-    "document.body.innerText.includes('Connected to the gateway') || document.body.innerText.includes('No project is open')",
-    20000,
+    "document.body.innerText.includes('Connected to the gateway') || " +
+      "document.body.innerText.includes('No project is open') || " +
+      "document.body.innerText.includes('Recent projects') || " +
+      "document.body.innerText.includes('Open another project')",
+    45000,
     "remote start page",
   );
   const context = await remoteContext(remote);
@@ -376,12 +389,18 @@ async function runContracts() {
     headers.indexGet.status === 200 &&
     Boolean(headers.indexGet.csp?.includes("frame-src 'none'")) &&
     headers.indexGet.xfo === "DENY" &&
+    headers.indexGet.nosniff === "nosniff" &&
+    headers.indexGet.referrer === "no-referrer" &&
     headers.indexHead.status === 200 &&
+    (headers.indexHead.bodyLength === null || headers.indexHead.bodyLength === 0) &&
     headers.post.status === 405 &&
     headers.post.allow === "GET, HEAD" &&
     headers.oldHash.status === 404 &&
+    headers.oldHash.bodyLength === 0 &&
     headers.traversal.status === 404 &&
+    headers.traversal.bodyLength === 0 &&
     headers.apiPath.status === 404 &&
+    headers.apiPath.bodyLength === 0 &&
     !Object.values(leaks).some(Boolean) &&
     navigation.after === navigation.before &&
     stale.markRemoteReady.error?.code === "stale-session" &&
@@ -419,22 +438,25 @@ async function runFileAndNotificationContract() {
     };
   })()`);
   page.close();
+  let savedFile = null;
+  let savedFileMatches = false;
+  try {
+    savedFile = adbShell("cat /sdcard/Download/m2-t6-e2e.txt");
+    savedFileMatches = savedFile === "m2-t6-e2e-file-content";
+  } catch {
+    // 读取失败即视为未落盘，纳入 pass 断言。
+  }
   const pass =
     result.begin.ok &&
     result.append.ok &&
     result.finish.ok &&
     result.pendingClick.ok &&
     result.pendingAction.ok &&
-    result.status.ok;
-  let savedFile = null;
-  try {
-    savedFile = adbShell("cat /sdcard/Download/m2-t6-e2e.txt");
-  } catch {
-    // 文件未落盘时保留 contract 结果，不覆盖为 fail。
-  }
+    result.status.ok &&
+    savedFileMatches;
   record("file-notification-contract", pass ? "pass" : "fail", {
     ...result,
-    savedFileMatches: savedFile === "m2-t6-e2e-file-content",
+    savedFileMatches,
   });
 }
 
