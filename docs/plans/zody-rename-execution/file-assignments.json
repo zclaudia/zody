@@ -15195,7 +15195,7 @@
       ".agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml",
       ".agents/skills/feature-boundary-planner/SKILL.md",
       ".agents/skills/feature-boundary-planner/references/source-discovery.md",
-      ".agents/skills/feature-boundary-planner/references/zcode-domain-cross-products.md",
+      ".agents/skills/feature-boundary-planner/references/zody-domain-cross-products.md",
       "apps/dev-docs/vite.config.ts",
       "apps/dev-docs/test/featureBoundaryGraph.test.ts",
       "docs/feature-boundary-graph-visualization.md",
@@ -15256,7 +15256,20 @@
       "operation": "byte-preserving path move; exact current path references only",
       "preserve": "graph nodes, edges, IDs, historical records; semantic changes require separate authorization",
       "base": "70366cdc774b5cb96fc2f7f6c57e17046d4a19a8",
-      "status": "implemented; controller hash verified; independent review pending"
+      "status": "implemented; controller hash verified; independent review pending",
+      "laterReferenceMove": "Historical graph-batch consumer path subsequently moves under domainReferencePathClosure; preserve this list as recorded."
+    },
+    "domainReferencePathClosure": {
+      "owner": "R21",
+      "base": "b867ad3d359d3219b0a111c8e9b2911ea172b096",
+      "old": ".agents/skills/feature-boundary-planner/references/zcode-domain-cross-products.md",
+      "new": ".agents/skills/feature-boundary-planner/references/zody-domain-cross-products.md",
+      "consumerPaths": [
+        ".agents/skills/feature-boundary-planner/SKILL.md"
+      ],
+      "operation": "byte-preserving reference-resource move; update exact current skill reference",
+      "preserve": "prior graphPathClosure consumerPaths remain historical evidence; external guide skill and historical documents unchanged",
+      "status": "implemented; controller review pending"
     }
   },
   "R22": {

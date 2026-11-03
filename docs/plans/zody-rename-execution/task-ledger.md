@@ -281,3 +281,5 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 ## R21 graph resource path
 
 - Graph byte-preserving move plus9active consumers verified by controller hashes/exact replacements; parent graph4/4 exit0. Terra devdocs build/roottypes/lint/changedarchitecture passed. Active readSet uses the new graph path; historical references and graph semantic gaps retained. Fixed-candidate independent review follows. Historical runtime closure preflight at a8 is now archived; its work was subsequently resolved through the separately reviewed runtime batches, not a new pending product scope.
+
+- Additional active internal skill reference moved byte-identically from zcode-domain-cross-products.md to zody-domain-cross-products.md with its sole SKILL consumer. Controller independently verified exact two-file transformation and metadata. Metadata formatting baseline failure retained; no new test/build claim. Public bundled guide skill identity remains assigned R54/R56.

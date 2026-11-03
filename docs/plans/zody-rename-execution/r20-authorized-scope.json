@@ -21935,6 +21935,19 @@
       "docs/testing/model-selection-regression-factor-catalog.yaml"
     ],
     "operation": "byte-preserving path move; exact current path references only",
-    "preserve": "graph nodes, edges, IDs, historical records; semantic changes require separate authorization"
+    "preserve": "graph nodes, edges, IDs, historical records; semantic changes require separate authorization",
+    "laterReferenceMove": "After this fixed graph batch, its then-current consumer .agents/skills/feature-boundary-planner/references/zcode-domain-cross-products.md is moved to .agents/skills/feature-boundary-planner/references/zody-domain-cross-products.md under r21DomainReferencePathClosure; historical consumerPaths remain unchanged."
+  },
+  "r21DomainReferencePathClosure": {
+    "owner": "R21",
+    "base": "b867ad3d359d3219b0a111c8e9b2911ea172b096",
+    "old": ".agents/skills/feature-boundary-planner/references/zcode-domain-cross-products.md",
+    "new": ".agents/skills/feature-boundary-planner/references/zody-domain-cross-products.md",
+    "consumerPaths": [
+      ".agents/skills/feature-boundary-planner/SKILL.md"
+    ],
+    "operation": "byte-preserving reference-resource move; update exact current skill reference",
+    "preserve": "prior graphPathClosure consumerPaths remain historical evidence; external guide skill and historical documents unchanged",
+    "status": "implemented; controller review pending"
   }
 }

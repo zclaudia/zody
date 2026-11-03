@@ -29,7 +29,7 @@ For every impact scan, read:
 - `docs/feature-impact-discovery.md`
 - `references/zody-feature-graph.yaml`
 - `references/impact-brief-template.md`
-- the relevant rows in `references/zcode-domain-cross-products.md`
+- the relevant rows in `references/zody-domain-cross-products.md`
 
 For `planning` or `implementation-handoff`, also read:
 
