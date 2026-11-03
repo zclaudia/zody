@@ -25,7 +25,8 @@ export default defineConfig({
   sourcemap: true,
   splitting: false,
   banner: {
-    js: 'import { fileURLToPath as __zcodeFileURLToPath } from "node:url"; import { dirname as __zcodeDirname } from "node:path"; const __filename = __zcodeFileURLToPath(import.meta.url); const __dirname = __zcodeDirname(__filename);',
+    // ESM 入口内联 CJS 可能加载 Node 内置模块；require 必须以实际发行入口为解析基点。
+    js: 'import { fileURLToPath as __zodyFileURLToPath } from "node:url"; import { dirname as __zodyDirname } from "node:path"; import { createRequire as __zodyCreateRequire } from "node:module"; const require = __zodyCreateRequire(import.meta.url); const __filename = __zodyFileURLToPath(import.meta.url); const __dirname = __zodyDirname(__filename);',
   },
   noExternal: ["@zody/shared", "@zody/rpc", "@zody/services"],
   define: SERVER_CLI_DEFINES,

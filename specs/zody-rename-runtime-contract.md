@@ -29,3 +29,9 @@ sequenceDiagram
 非插件 `ZCODE_*`/define 硬切为 `ZODY_*`；新旧并存只认新名，子进程和远端传递一致。插件例外见 [contract-map](../docs/plans/zody-rename-execution/contract-map.md)。artifact URI 硬切且不迁移旧媒体；会话主体仍可读。遥测一次上报新名称，不双发。工作区 hook 信任按原始来源与摘要验证，不能把 `.zcode` 记录改写为 `.zody` 后继承批准；移动、篡改、未知 schema 和拒绝均不能执行。现有 project `.zcode` 只读路径兼容仍有效。
 
 RemoteServer stdio 的 hello/ack 不适用于 Agent stdio。Agent 的 LF JSON 帧及 CLI 对端保持既有协议和请求关联、分片、EOF、进程清理；原子名称清单和实际调用端见 [契约映射](../docs/plans/zody-rename-execution/contract-map.md)。
+
+## 独立 Server ESM 发行入口
+
+独立 server-cli 与 server-core 的生产 ESM bundle 共用显式 `createRequire(import.meta.url)` 兼容桥，以入口实际发行位置解析内联 CommonJS 所需模块；保持原有内联布局和依赖版本，不新增旧名兼容或改变握手协议。动态 require 目标必须经两份真实 bundle 核验：Node 内置模块可由该桥加载，其他字面目标或计算目标须明确来源、发行闭包与许可，未知目标不得静默视为安全。
+
+验收使用真实构建和 staging 产物，在隔离 HOME/TMP 与不能回落仓库 node_modules 的独立目录验证 CLI help/version、Supervisor fork 的 core ready、localhost server-info、停止及进程/socket 清理；确认同一发行目录内资源和依赖完整，记录平台、工具链、hash 和真实失败。mock 或构建成功本身不能替代真实入口验证；未运行的平台保持 pending。
