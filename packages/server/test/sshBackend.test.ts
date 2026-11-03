@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { Writable } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
 import { SSHBackend } from "@zcode/server/remote/ssh-backend.js";
+import { waitForClose } from "@zcode/server/remote/deployShared.js";
 
 class FakeExecChannel extends EventEmitter {
   readonly stderr = new EventEmitter();
@@ -1005,6 +1006,156 @@ describe("SSHBackend", () => {
       consoleLogSpy.mockRestore();
       consoleWarnSpy.mockRestore();
       consoleErrorSpy.mockRestore();
+    }
+  });
+
+  it("exec 通道被信号杀死时应上报 128+signal 并被调用方判定为失败", async () => {
+    const backend = new SSHBackend({
+      host: "example.com",
+      username: "root",
+      password: "secret",
+    });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    const fakeClient = {
+      exec: (
+        _command: string,
+        callback: (error: Error | null, channel: FakeExecChannel) => void,
+      ) => {
+        const channel = new FakeExecChannel();
+        callback(null, channel);
+        // ssh2 收到 exit-signal 时 code 为 null，signal 才是真实终止原因。
+        queueMicrotask(() => {
+          channel.emit("exit", null, "SIGKILL");
+          channel.emit("close", null, "SIGKILL");
+        });
+      },
+    };
+
+    const mutableBackend = backend as unknown as {
+      client: typeof fakeClient;
+      connected: boolean;
+    };
+    mutableBackend.client = fakeClient;
+    mutableBackend.connected = true;
+
+    try {
+      const stream = await backend.exec("long-running-download");
+      const code = await new Promise<number>((resolve) => stream.onClose(resolve));
+      expect(code).toBe(137);
+      // 部署链路（remoteAssetInstaller 等）用 waitForClose 判定成功，被杀命令必须失败。
+      await expect(waitForClose(stream)).rejects.toThrow("exit code 137");
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it("exec 通道 close 不带任何退出信息时应返回 255 而不是当作成功", async () => {
+    const backend = new SSHBackend({
+      host: "example.com",
+      username: "root",
+      password: "secret",
+    });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    const fakeClient = {
+      exec: (
+        _command: string,
+        callback: (error: Error | null, channel: FakeExecChannel) => void,
+      ) => {
+        const channel = new FakeExecChannel();
+        callback(null, channel);
+        // ssh2 通道在没有任何退出信息时 close 不带参数。
+        queueMicrotask(() => {
+          channel.emit("close");
+        });
+      },
+    };
+
+    const mutableBackend = backend as unknown as {
+      client: typeof fakeClient;
+      connected: boolean;
+    };
+    mutableBackend.client = fakeClient;
+    mutableBackend.connected = true;
+
+    try {
+      const stream = await backend.exec("missing-exit-status");
+      const code = await new Promise<number>((resolve) => stream.onClose(resolve));
+      expect(code).toBe(255);
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  it("execSimple 命令被信号杀死时应以 128+signal 失败而不是空输出成功", async () => {
+    const backend = new SSHBackend({
+      host: "example.com",
+      username: "root",
+      password: "secret",
+    });
+
+    const fakeClient = {
+      exec: (
+        _command: string,
+        callback: (error: Error | null, channel: FakeExecChannel) => void,
+      ) => {
+        const channel = new FakeExecChannel();
+        callback(null, channel);
+        queueMicrotask(() => {
+          channel.emit("exit", null, "SIGKILL");
+          channel.emit("close", null, "SIGKILL");
+        });
+      },
+    };
+
+    const mutableBackend = backend as unknown as {
+      client: typeof fakeClient;
+      connected: boolean;
+    };
+    mutableBackend.client = fakeClient;
+    mutableBackend.connected = true;
+
+    // detect 的 uname 探测走 execSimple；被 kill -9 的探测不能返回空结果成功。
+    await expect(backend.detect()).rejects.toThrow("code 137");
+  });
+
+  it("正常退出码应原样透传不回归", async () => {
+    const backend = new SSHBackend({
+      host: "example.com",
+      username: "root",
+      password: "secret",
+    });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    const fakeClient = {
+      exec: (
+        _command: string,
+        callback: (error: Error | null, channel: FakeExecChannel) => void,
+      ) => {
+        const channel = new FakeExecChannel();
+        callback(null, channel);
+        queueMicrotask(() => {
+          channel.emit("exit", 0, null);
+          channel.emit("close", 0, null);
+        });
+      },
+    };
+
+    const mutableBackend = backend as unknown as {
+      client: typeof fakeClient;
+      connected: boolean;
+    };
+    mutableBackend.client = fakeClient;
+    mutableBackend.connected = true;
+
+    try {
+      const stream = await backend.exec("printf ok");
+      const code = await new Promise<number>((resolve) => stream.onClose(resolve));
+      expect(code).toBe(0);
+      await expect(waitForClose(stream)).resolves.toBeUndefined();
+    } finally {
+      warnSpy.mockRestore();
     }
   });
 });

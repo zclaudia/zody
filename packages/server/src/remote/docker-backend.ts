@@ -8,10 +8,13 @@ import type {
   RemoteUploadOptions,
   StdioStream,
 } from "@zcode/server/remote/backend.js";
-import { createCloseEventController } from "@zcode/server/remote/closeEvent.js";
 import {
-  isDockerAvailable,
+  createCloseEventController,
+  resolveRemoteExitCode,
+} from "@zcode/server/remote/closeEvent.js";
+import {
   listDockerContainers,
+  probeDockerDaemon,
   resolveDockerCommand,
   type DockerContainerInfo,
 } from "@zcode/server/remote/docker-detect.js";
@@ -200,11 +203,12 @@ export class DockerBackend implements IRemoteBackend {
           onClose.fire(code);
         };
 
-        child.on("exit", (code) => {
-          fireOnce(code ?? 0);
+        // 被信号终止时 code 为 null，不能当作成功，见 resolveRemoteExitCode。
+        child.on("exit", (code, signal) => {
+          fireOnce(resolveRemoteExitCode(code, signal));
         });
-        child.on("close", (code) => {
-          fireOnce(code ?? 0);
+        child.on("close", (code, signal) => {
+          fireOnce(resolveRemoteExitCode(code, signal));
         });
 
         resolve({
@@ -241,9 +245,18 @@ export class DockerBackend implements IRemoteBackend {
   }
 
   private async ensureAvailable(): Promise<void> {
-    const available = await isDockerAvailable();
-    if (!available) {
-      throw new Error("当前系统未检测到可用的 Docker 环境");
+    // Bug 原因（上游 ZCode a60ba6a7）：经 isDockerAvailable 只拿到 false，连接错误只剩“未检测到可用的
+    // Docker 环境”，无法区分 docker 未安装、daemon 未启动与 socket 权限不足。连接路径改用
+    // probeDockerDaemon 保留 docker CLI 的原始原因；入口展示等布尔判断仍走 isDockerAvailable。
+    try {
+      await probeDockerDaemon();
+    } catch (error) {
+      const detail = error instanceof Error ? error.message.trim() : String(error);
+      throw new Error(
+        detail
+          ? `当前系统未检测到可用的 Docker 环境：${detail}`
+          : "当前系统未检测到可用的 Docker 环境",
+      );
     }
   }
 

@@ -493,4 +493,20 @@ describe("buildWslArgs", () => {
     ).rejects.toMatchObject({ name: "AbortError" });
     expect(mocks.spawn).not.toHaveBeenCalled();
   });
+
+  it("exec 子进程被信号杀死时应上报 128+signal 而不是当作成功", async () => {
+    mocks.spawn.mockImplementation(() => {
+      const child = createSpawnChild({ closeOnStdinFinish: false });
+      queueMicrotask(() => {
+        child.emit("exit", null, "SIGKILL");
+        child.emit("close", null, "SIGKILL");
+      });
+      return child;
+    });
+    const backend = new WSLBackend({ kind: "wsl", distro: "Ubuntu-24.04" });
+
+    const stream = await backend.exec("printf ok");
+    const code = await new Promise<number>((resolve) => stream.onClose(resolve));
+    expect(code).toBe(137);
+  });
 });

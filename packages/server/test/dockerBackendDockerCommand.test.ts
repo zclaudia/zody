@@ -5,11 +5,13 @@ import { join } from "node:path";
 import { PassThrough } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { waitForClose } from "@zcode/server/remote/deployShared.js";
 
 const mocks = vi.hoisted(() => ({
   execFile: vi.fn(),
   isDockerAvailable: vi.fn(),
   listDockerContainers: vi.fn(),
+  probeDockerDaemon: vi.fn(),
   resolveDockerCommand: vi.fn(),
   spawn: vi.fn(),
 }));
@@ -22,6 +24,7 @@ vi.mock("node:child_process", () => ({
 vi.mock("@zcode/server/remote/docker-detect.js", () => ({
   isDockerAvailable: mocks.isDockerAvailable,
   listDockerContainers: mocks.listDockerContainers,
+  probeDockerDaemon: mocks.probeDockerDaemon,
   resolveDockerCommand: mocks.resolveDockerCommand,
 }));
 
@@ -72,10 +75,12 @@ describe("DockerBackend docker command resolution", () => {
     mocks.spawn.mockReset();
     mocks.isDockerAvailable.mockReset();
     mocks.listDockerContainers.mockReset();
+    mocks.probeDockerDaemon.mockReset();
     mocks.resolveDockerCommand.mockReset();
 
     mocks.resolveDockerCommand.mockReturnValue(RESOLVED_DOCKER_COMMAND);
     mocks.isDockerAvailable.mockResolvedValue(true);
+    mocks.probeDockerDaemon.mockResolvedValue(undefined);
     mocks.listDockerContainers.mockResolvedValue([
       {
         id: "abc123",
@@ -187,5 +192,34 @@ describe("DockerBackend docker command resolution", () => {
       uploadedBytes: 96 * 1024,
       totalBytes: 96 * 1024,
     });
+  });
+
+  it("exec 子进程被信号杀死时应上报 128+signal 并被调用方判定为失败", async () => {
+    mocks.spawn.mockImplementation(() => {
+      const child = createSpawnChild();
+      queueMicrotask(() => {
+        child.emit("exit", null, "SIGKILL");
+        child.emit("close", null, "SIGKILL");
+      });
+      return child;
+    });
+    const backend = createBackend();
+
+    const stream = await backend.exec("long-running-download");
+    const code = await new Promise<number>((resolve) => stream.onClose(resolve));
+    expect(code).toBe(137);
+    // 部署链路用 waitForClose 判定成功，被 kill -9 的下载/解包必须失败。
+    await expect(waitForClose(stream)).rejects.toThrow("exit code 137");
+  });
+
+  it("daemon 探测失败时应保留 docker CLI 的原始原因用于区分未安装/未启动", async () => {
+    mocks.probeDockerDaemon.mockRejectedValue(
+      new Error("Cannot connect to the Docker daemon at unix:///var/run/docker.sock"),
+    );
+    const backend = createBackend();
+
+    await expect(backend.exec("printf ok")).rejects.toThrow(
+      "当前系统未检测到可用的 Docker 环境：Cannot connect to the Docker daemon at unix:///var/run/docker.sock",
+    );
   });
 });

@@ -252,6 +252,19 @@ supported. The deploy lock holder is written to a temporary remote script and
 executed by `sh`, while the existing caller-serialized Desktop SSH path still
 skips the remote lock as documented below.
 
+### Remote command exit codes
+
+Every backend-executed remote command (`SSHBackend`/`DockerBackend`/`WSLBackend`
+`exec`) resolves its close code through `resolveRemoteExitCode`
+(`packages/server/src/remote/closeEvent.ts`): a numeric exit status passes
+through unchanged; a process terminated by a signal reports `128 + signal`;
+a close that carries no exit information at all reports `255` (matching the
+OpenSSH client's no-`exit-status` value). Callers that judge success by exit
+code (`waitForClose` in `deployShared.ts`, and the Docker/WSL exec upload
+paths) therefore treat signal-killed or information-less closes as failures.
+`0` continues to mean success only when the backend actually reported a real
+`0` status.
+
 In local-download-upload mode, Docker files are written through the container's
 current user (`docker exec` + stdin) rather than `docker cp`. This preserves the
 owner needed by later `chmod`/replace commands when the container runs as a

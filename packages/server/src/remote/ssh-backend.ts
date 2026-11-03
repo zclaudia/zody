@@ -18,7 +18,10 @@ import {
   normalizeRemotePlatform,
   resolveRemotePlatform,
 } from "@zcode/server/remote/detectEnv.js";
-import { createCloseEventController } from "@zcode/server/remote/closeEvent.js";
+import {
+  createCloseEventController,
+  resolveRemoteExitCode,
+} from "@zcode/server/remote/closeEvent.js";
 import {
   buildPosixShellExecCommand,
   quotePosixShellArg,
@@ -98,6 +101,8 @@ export class SSHBackend implements IRemoteBackend {
   private disposed = false;
   private hasEverConnected = false;
   private disconnectReported = false;
+  /** 本次连接尝试中 keyboard-interactive 提示明确要求动态口令；每次 connect 前清零，只用于认证失败的分类。 */
+  private additionalVerificationPrompted = false;
   private readonly disconnectEmitter = new Emitter<RemoteDisconnectEvent>();
   readonly onDidDisconnect = this.disconnectEmitter.event;
 
@@ -107,7 +112,11 @@ export class SSHBackend implements IRemoteBackend {
       // dispose 期间保留监听器只为吸收这类迟到事件，不能再向上层重复报告或触发未捕获异常。
       return;
     }
-    const normalizedError = normalizeSSHConnectError(error);
+    // 先读取 connected：reportDisconnect 会把它清零，而 ready 后的 client-timeout 只来自 Keepalive。
+    const normalizedError = normalizeSSHConnectError(error, {
+      established: this.connected,
+      additionalVerificationPrompted: this.additionalVerificationPrompted,
+    });
     // ready 之后如果底层连接抖动，ssh2 仍会发出 "error" 事件。
     // 若没有常驻监听，Node 会把它当成未捕获异常直接抛出，可能导致 host 进程崩溃。
     // 这里先记录错误详情再上报断连；上层收到断连后会退出 host，反过来会丢掉真实 error 文案。
@@ -157,9 +166,9 @@ export class SSHBackend implements IRemoteBackend {
         }
       ).on(
         "keyboard-interactive",
-        createKeyboardInteractiveResponder(options.password) as unknown as (
-          ...args: unknown[]
-        ) => void,
+        createKeyboardInteractiveResponder(options.password, () => {
+          this.additionalVerificationPrompted = true;
+        }) as unknown as (...args: unknown[]) => void,
       );
     }
   }
@@ -192,10 +201,16 @@ export class SSHBackend implements IRemoteBackend {
       };
       const handleConnectError = (error: unknown) => {
         this.client.off("ready", handleReady);
-        reject(normalizeSSHConnectError(error));
+        reject(
+          normalizeSSHConnectError(error, {
+            additionalVerificationPrompted: this.additionalVerificationPrompted,
+          }),
+        );
       };
       this.client.once("ready", handleReady);
       this.client.once("error", handleConnectError);
+      // 2FA 提示证据只属于当前这次连接尝试，重试/重连前清零，避免上一次的提示污染本次失败分类。
+      this.additionalVerificationPrompted = false;
       this.client.connect(this.config);
     });
   }
@@ -294,16 +309,18 @@ export class SSHBackend implements IRemoteBackend {
           if (code !== 0) {
             console.warn(`[ssh] exec channel failed: code=${code}`);
           }
-          onClose.fire(code ?? 0);
+          onClose.fire(code);
         };
 
         // ssh2 channels may fire 'exit' before 'close', or sometimes
         // only one of them. Listen to both to be safe.
-        channel.on("exit", (code: number | null) => {
-          fireOnce(code ?? 0);
+        // ssh2 收到 exit-signal 时 code 为 null；没有收到任何退出信息时 close 不带参数。
+        // 两种情况都不是成功，见 resolveRemoteExitCode。
+        channel.on("exit", (code: number | null, signal?: string) => {
+          fireOnce(resolveRemoteExitCode(code, signal));
         });
-        channel.on("close", () => {
-          fireOnce(0);
+        channel.on("close", (code?: number | null, signal?: string) => {
+          fireOnce(resolveRemoteExitCode(code, signal));
         });
 
         resolve({
@@ -366,12 +383,11 @@ export class SSHBackend implements IRemoteBackend {
         // ssh2 在短命令场景下可能先发 exit，再异步派发 stdout data。
         // 不能在 exit 事件直接 finish：会把后续 data 丢掉，导致 platform/arch 偶发识别为空。
         // 这里改为只在 close 统一收尾，并优先使用 exit 记录的真实退出码，避免误判成功。
-        channel.on("exit", (code: number | null) => {
-          exitCode = code ?? 0;
+        channel.on("exit", (code: number | null, signal?: string) => {
+          exitCode = resolveRemoteExitCode(code, signal);
         });
-        channel.on("close", (code: number | null) => {
-          const resolvedCode = exitCode ?? code ?? 0;
-          finish(resolvedCode);
+        channel.on("close", (code?: number | null, signal?: string) => {
+          finish(exitCode ?? resolveRemoteExitCode(code, signal));
         });
       });
     });

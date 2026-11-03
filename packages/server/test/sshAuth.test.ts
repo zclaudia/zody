@@ -96,6 +96,94 @@ describe("sshAuth", () => {
     expect(responses).toEqual(["secret", "secret"]);
   });
 
+  it("提示文字明确要求动态口令时应触发 onAdditionalVerificationPrompt", () => {
+    let prompted = false;
+    const responder = createKeyboardInteractiveResponder("secret", () => {
+      prompted = true;
+    });
+
+    responder("Verification", "", "", [{ prompt: "Password:", echo: false }], () => undefined);
+    // 提示轮数和个数不能作为证据：只有提示文字才算。
+    expect(prompted).toBe(false);
+
+    responder(
+      "",
+      "",
+      "",
+      [
+        { prompt: "Password:", echo: false },
+        { prompt: "Verification code:", echo: false },
+      ],
+      () => undefined,
+    );
+    expect(prompted).toBe(true);
+
+    prompted = false;
+    responder(
+      "",
+      "Enter your one-time passcode",
+      "",
+      [{ prompt: "Password:", echo: false }],
+      () => undefined,
+    );
+    expect(prompted).toBe(true);
+  });
+
+  it("同一轮重复询问密码不应被误判为二次验证", () => {
+    let prompted = false;
+    const responder = createKeyboardInteractiveResponder("secret", () => {
+      prompted = true;
+    });
+
+    // 输错密码后主机在同一轮里再问一次密码，仍只是在要密码。
+    responder(
+      "",
+      "",
+      "",
+      [
+        { prompt: "Password:", echo: false },
+        { prompt: "Password (again):", echo: false },
+      ],
+      () => undefined,
+    );
+
+    expect(prompted).toBe(false);
+  });
+
+  it("认证失败且提示过动态口令时应说明不支持二次验证", () => {
+    const error = normalizeSSHConnectError(
+      { level: "client-authentication" },
+      { additionalVerificationPrompted: true },
+    );
+
+    expect(error.message).toContain("额外验证");
+    expect(error.message).toContain("动态口令");
+  });
+
+  it("认证失败且未提示过动态口令时保持原有密码检查提示", () => {
+    const error = normalizeSSHConnectError(
+      { level: "client-authentication" },
+      { additionalVerificationPrompted: false },
+    );
+
+    expect(error.message).toBe("SSH 认证失败：请检查用户名、密码或私钥配置");
+  });
+
+  it("连接建立后的 client-timeout 应归一为 Keepalive 无响应而不是握手超时", () => {
+    const error = normalizeSSHConnectError({ level: "client-timeout" }, { established: true });
+
+    expect(error.message).toContain("心跳");
+    expect(error.message).not.toContain("握手");
+  });
+
+  it("连接建立前的 client-timeout 仍归一为握手超时", () => {
+    const error = normalizeSSHConnectError({ level: "client-timeout" }, { established: false });
+
+    expect(error.message).toBe(
+      "SSH 连接握手超时：未能在 60 秒内建立 SSH 会话，请检查网络、服务器 SSH 服务或终端 SSH 配置差异",
+    );
+  });
+
   it("client-authentication 错误应转换为可读信息", () => {
     const error = normalizeSSHConnectError({ level: "client-authentication" });
     expect(error.message).toContain("SSH 认证失败");
