@@ -36,7 +36,7 @@ import {
 
 const REMOTE_AGENT_RUNTIME_BASE = `${REMOTE_BASE}/agents`;
 
-export interface DeployZCodeAgentRuntimeOptions extends RemoteAssetDeployOptions {
+export interface DeployZodyAgentRuntimeOptions extends RemoteAssetDeployOptions {
   platformArch: string;
   installer: RemoteAssetInstaller;
   selectedResourcePackageIds?: RemoteResourcePackageId[];
@@ -152,7 +152,7 @@ async function findMissingRemoteOfficialPluginAssetPaths(
 export async function deployZCodeAgentRuntime(
   backend: IRemoteBackend,
   env: RemoteEnvironment,
-  options: DeployZCodeAgentRuntimeOptions,
+  options: DeployZodyAgentRuntimeOptions,
   loggers: DeployLoggers,
 ): Promise<void> {
   const provider = ZCODE_AGENT_PROVIDER;

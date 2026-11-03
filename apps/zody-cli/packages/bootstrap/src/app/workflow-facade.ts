@@ -39,12 +39,12 @@ import {
   type WorkflowDefinition,
 } from "@zody/contracts";
 import { collectDisabledPaths } from "../skill-command-overrides.js";
-import type { PrepareUserExecutionBoundary, ZCodeAppOptions } from "./types.js";
+import type { PrepareUserExecutionBoundary, ZodyAppOptions } from "./types.js";
 import { createWorkflowMethods, type WorkflowFacade } from "./workflow-methods.js";
 
 interface CreateWorkflowFacadeDeps {
   agentTelemetry: AgentExecutionTelemetryPort;
-  appOptions: ZCodeAppOptions;
+  appOptions: ZodyAppOptions;
   appVersion: string;
   artifactStore?: ToolArtifactStorePort;
   cliStorageRoot: string;

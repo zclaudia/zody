@@ -8,7 +8,7 @@ import { filterVisualizeSkillRoots } from "./app/visualize-skill-gate.js";
 import { resolveZCodePlugins } from "./plugins.js";
 import { collectDisabledPaths } from "./skill-command-overrides.js";
 
-export interface ListZCodeSkillsOptions {
+export interface ListZodySkillsOptions {
   env?: NodeJS.ProcessEnv;
   /** 协议宿主草稿目录使用；CLI 命令缺省关闭。 */
   includeVisualize?: boolean;
@@ -19,17 +19,17 @@ export interface ListZCodeSkillsOptions {
   workingDirectory?: string;
 }
 
-export interface InspectZCodeSkillOptions extends ListZCodeSkillsOptions {
+export interface InspectZodySkillOptions extends ListZodySkillsOptions {
   name: string;
 }
 
-export interface ZCodeSkillInspection {
+export interface ZodySkillInspection {
   diagnostics: SkillDiagnostic[];
   skill: SkillContent;
 }
 
 export async function listZCodeSkills(
-  options: ListZCodeSkillsOptions = {},
+  options: ListZodySkillsOptions = {},
 ): Promise<SkillLoadOutcome> {
   const discovery = createSkillDiscovery(options);
   if (!discovery.enabled) {
@@ -46,8 +46,8 @@ export async function listZCodeSkills(
 }
 
 export async function inspectZCodeSkill(
-  options: InspectZCodeSkillOptions,
-): Promise<ZCodeSkillInspection> {
+  options: InspectZodySkillOptions,
+): Promise<ZodySkillInspection> {
   const discovery = createSkillDiscovery(options);
   if (!discovery.enabled) {
     throw new Error("Skills are disabled.");
@@ -75,7 +75,7 @@ export async function inspectZCodeSkill(
   };
 }
 
-function createSkillDiscovery(options: ListZCodeSkillsOptions):
+function createSkillDiscovery(options: ListZodySkillsOptions):
   | {
       enabled: false;
       workingDirectory: string;

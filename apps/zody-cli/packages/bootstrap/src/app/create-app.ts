@@ -55,8 +55,8 @@ import { scheduleStartupLogRetentionCleanup } from "../log-retention.js";
 import type {
   PrepareUserExecutionBoundary,
   ResumeOptions,
-  ZCodeApp,
-  ZCodeAppOptions,
+  ZodyApp,
+  ZodyAppOptions,
 } from "./types.js";
 import {
   createConfigCliOverrides,
@@ -167,7 +167,7 @@ function decodePromptAttachmentDataUrl(
   return { bytes, mediaType };
 }
 
-export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp> {
+export async function createZCodeApp(options: ZodyAppOptions): Promise<ZodyApp> {
   if (!options?.providerRegistry) {
     throw new Error("createZCodeApp requires a Provider Registry");
   }
@@ -422,8 +422,8 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
     // 它既供 app.captureCuaOnce 使用，也供显式注入的 node_repl 候选端口复用。
     const captureCuaOnce = options.cuaNativeCapture
       ? (
-          target: Parameters<NonNullable<ZCodeApp["captureCuaOnce"]>>[0],
-          captureOptions?: Parameters<NonNullable<ZCodeApp["captureCuaOnce"]>>[1],
+          target: Parameters<NonNullable<ZodyApp["captureCuaOnce"]>>[0],
+          captureOptions?: Parameters<NonNullable<ZodyApp["captureCuaOnce"]>>[1],
         ) =>
           captureCuaRuntimeOnce(getRuntime(), {
             ...options.cuaNativeCapture!,

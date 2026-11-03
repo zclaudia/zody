@@ -107,7 +107,7 @@ import type {
   WorkspaceHookTrustRevokeTarget,
 } from "@zody/shared/zody-protocol-v4";
 import type { ModelProviderSourceTitle } from "../model-config.js";
-import type { ZCodeInstalledPluginData } from "../plugins.js";
+import type { ZodyInstalledPluginData } from "../plugins.js";
 import type { SessionTranscriptMessage } from "../session-transcript.js";
 import type { NodeReplBrowserBroker } from "./node-repl-browser-broker.js";
 import type { CuaControlSessionOptions } from "./cua-runtime-control.js";
@@ -142,14 +142,14 @@ export type RevokeWorkspaceHookTrustInput =
   | WorkspaceHookTrustRevokeTarget;
 
 /** 新 Session 可使用 Environment 默认选择；恢复 Session 允许保持未绑定，不补默认模型。 */
-export type ZCodeAppRuntimeConfigInput = AgentRuntimeConfig;
+export type ZodyAppRuntimeConfigInput = AgentRuntimeConfig;
 
-export interface ZCodeAppOptions {
+export interface ZodyAppOptions {
   sessionId?: SessionId;
   resume?: boolean;
   version?: string;
   traceContext?: TraceContext;
-  runtimeConfig?: ZCodeAppRuntimeConfigInput;
+  runtimeConfig?: ZodyAppRuntimeConfigInput;
   /**
    * 启动期由 Host→Agent 私有 stdio 帧固定的真实实例身份。仅 bootstrap 协议宿主注入；
    * 不是业务命令/模型参数，缺失时本 app 的 CUA coordinator 不构造。
@@ -320,15 +320,15 @@ export interface ResumeOptions {
   persistedMessages?: MessageWithParts[];
 }
 
-export interface ZCodePluginSetResult {
+export interface ZodyPluginSetResult {
   enabled: boolean;
   path: string;
   plugin: PluginMetadata;
 }
 
-export interface ZCodePluginUninstallResult {
+export interface ZodyPluginUninstallResult {
   // null 表示该 plugin id 当前未安装（幂等 no-op），调用方据此提示"未安装"。
-  removed: ZCodeInstalledPluginData | null;
+  removed: ZodyInstalledPluginData | null;
 }
 
 export interface SetLocaleResult {
@@ -339,7 +339,7 @@ export interface SetLocaleResult {
   traceId: TraceContext["traceId"];
 }
 
-export interface ZCodeApp {
+export interface ZodyApp {
   readonly sessionId: SessionId;
   readonly traceId: string;
   readonly runtime: AgentRuntime;
@@ -459,8 +459,8 @@ export interface ZCodeApp {
   listModels(): ZodyModelOption[];
   listThoughtLevels(): string[];
   listPlugins(): Promise<PluginLoadOutcome>;
-  setPluginEnabled(plugin: string, enabled: boolean): Promise<ZCodePluginSetResult>;
-  uninstallPlugin(plugin: string): Promise<ZCodePluginUninstallResult>;
+  setPluginEnabled(plugin: string, enabled: boolean): Promise<ZodyPluginSetResult>;
+  uninstallPlugin(plugin: string): Promise<ZodyPluginUninstallResult>;
   /**
    * Session 冻结的 Plugin 身份 catalog。
    * 在 App 创建时由 resolveStartupPlugins 结果构建一次，之后只读；
@@ -882,7 +882,7 @@ export interface ResolveLatestSessionOptions {
   sessionStore?: SessionStorePort;
 }
 
-export interface RunZCodeProtocolAgentOptions {
+export interface RunZodyProtocolAgentOptions {
   /** 入口拥有退出时限；bootstrap 只编排取消和资源清理，不直接退出进程。 */
   lifecycle?: {
     readonly signal: AbortSignal;
@@ -903,7 +903,7 @@ export interface RunZCodeProtocolAgentOptions {
   cuaNodeReplMcpPortFactory?: CuaNodeReplMcpPortFactory;
 }
 
-export interface ListZCodeSessionsOptions {
+export interface ListZodySessionsOptions {
   directory?: string;
   env?: NodeJS.ProcessEnv;
   limit?: number;

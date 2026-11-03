@@ -13,7 +13,7 @@ import type { Logger } from "@zody/contracts";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createSharedZCodeCredentialStore,
-  type SharedZCodeCredentialStore,
+  type SharedZodyCredentialStore,
 } from "../src/auth/shared-credentials.js";
 import { createMcpAdapter } from "../src/mcp/index.js";
 import { publishCanonicalCredentials } from "../src/mcp/oauth-credentials.js";
@@ -813,7 +813,7 @@ describe("MCP OAuth client credentials e2e", () => {
 
       let loadAttempts = 0;
       const transientFailure = new Error("injected transient credential load failure");
-      const retryingStore: SharedZCodeCredentialStore = {
+      const retryingStore: SharedZodyCredentialStore = {
         ...credentialStore,
         async loadMany(keys: string[]): Promise<Record<string, string | null>> {
           loadAttempts += 1;
@@ -841,7 +841,7 @@ describe("MCP OAuth client credentials e2e", () => {
       filePath: join(credentialsDir, "credentials.json"),
     });
     const cleanupError = new Error("injected verifier cleanup failure");
-    const failingStore: SharedZCodeCredentialStore = {
+    const failingStore: SharedZodyCredentialStore = {
       ...credentialStore,
       async delete(key: string): Promise<void> {
         if (key.includes(":code_verifier:")) throw cleanupError;
@@ -1870,7 +1870,7 @@ function createStrictAuthorizationServerState(): StrictAuthorizationServerState 
 }
 
 async function createTestOAuthSession(
-  credentialStore: SharedZCodeCredentialStore,
+  credentialStore: SharedZodyCredentialStore,
   adapterInstanceId: string,
   serverUrl = "https://mcp.example.test/mcp",
 ): Promise<McpOAuthSession> {

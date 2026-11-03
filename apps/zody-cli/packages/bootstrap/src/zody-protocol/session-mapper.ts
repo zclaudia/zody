@@ -42,7 +42,7 @@ import {
   type TodoItem,
   type ToolState,
 } from "@zody/contracts";
-import type { ZCodeApp } from "../app/types.js";
+import type { ZodyApp } from "../app/types.js";
 import { mapMessageWithParts } from "./message-mapper.js";
 import { formatProtocolModelSelection, optionalModelSelectionFromString } from "./model-mapper.js";
 import {
@@ -57,7 +57,7 @@ import {
 const SNAPSHOT_INLINE_IMAGE_DATA_URL_MAX_BYTES = 20 * 1024 * 1024;
 
 export async function buildSessionSnapshot(input: {
-  app: ZCodeApp;
+  app: ZodyApp;
   deliveryKind?: ZodyDeliveryKind;
   eventSeq: number;
   fallbackCreatedAt?: number;
@@ -136,7 +136,7 @@ export async function buildSessionSnapshot(input: {
 }
 
 async function mapSnapshotMessages(
-  app: Pick<ZCodeApp, "readToolResultArtifact">,
+  app: Pick<ZodyApp, "readToolResultArtifact">,
   messages: readonly MessageWithParts[],
 ) {
   const mapped = messages.map(mapMessageWithParts);
@@ -149,7 +149,7 @@ async function mapSnapshotMessages(
 }
 
 async function hydrateSnapshotFilePartUrl(
-  app: Pick<ZCodeApp, "readToolResultArtifact">,
+  app: Pick<ZodyApp, "readToolResultArtifact">,
   part: ReturnType<typeof mapMessageWithParts>["parts"][number],
 ) {
   // 历史图片附件持久化后只剩 zcode-artifact:// 引用，UI/手机端不能直接渲染。
@@ -213,7 +213,7 @@ function isUsableDataUrl(value: string): boolean {
 }
 
 export async function mapSessionSettings(
-  app: ZCodeApp,
+  app: ZodyApp,
   options: {
     currentModelContextWindow?: number;
     modelAvailability?: "all" | "current";
@@ -277,7 +277,7 @@ export async function mapSessionSettings(
 }
 
 export function mapSessionInfo(input: {
-  app?: Pick<ZCodeApp, "getMode" | "getModel" | "sessionId" | "traceId">;
+  app?: Pick<ZodyApp, "getMode" | "getModel" | "sessionId" | "traceId">;
   fallbackCreatedAt?: number;
   fallbackUpdatedAt?: number;
   projection?: SessionProjection;
@@ -558,7 +558,7 @@ export function mapSessionProjection(projection: SessionProjection): ZodySession
 }
 
 function mapRuntimeState(input: {
-  activeTurn?: ReturnType<ZCodeApp["runtime"]["getActiveTurnInfo"]>;
+  activeTurn?: ReturnType<ZodyApp["runtime"]["getActiveTurnInfo"]>;
   deliveryKind?: ZodyDeliveryKind;
   eventSeq: number;
   messages: MessageWithParts[];

@@ -47,10 +47,10 @@ import {
 } from "./provider-registry-selection.js";
 import { isClosableSessionStore } from "./session-store.js";
 import { createSubagentObservation } from "./subagent-observation.js";
-import type { PrepareUserExecutionBoundary, ZCodeApp } from "./types.js";
+import type { PrepareUserExecutionBoundary, ZodyApp } from "./types.js";
 
 type SessionFacade = Pick<
-  ZCodeApp,
+  ZodyApp,
   | "readBackgroundBashOutput"
   | "cancelBackgroundTask"
   | "clearTarget"
@@ -355,10 +355,10 @@ export function createSessionFacade(deps: CreateSessionFacadeDeps): SessionFacad
         traceContext: input.traceContext ?? deps.traceContext,
       }),
     setTarget: async (input) =>
-      (await setTargetStatus("set", input)) as Awaited<ReturnType<ZCodeApp["setTarget"]>>,
+      (await setTargetStatus("set", input)) as Awaited<ReturnType<ZodyApp["setTarget"]>>,
     updateTargetStatus: async (status) =>
       (await setTargetStatus("status_updated", { status })) as Awaited<
-        ReturnType<ZCodeApp["updateTargetStatus"]>
+        ReturnType<ZodyApp["updateTargetStatus"]>
       >,
     clearTarget: async () => (await setTargetStatus("cleared", {})) as boolean,
     listModels: () => {

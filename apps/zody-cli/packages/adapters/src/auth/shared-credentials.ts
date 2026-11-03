@@ -13,7 +13,7 @@ import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import {
   createZCodeCredentialCipher,
   isEncryptedZCodeCredentialValue,
-  type ZCodeCredentialCipher,
+  type ZodyCredentialCipher,
 } from "./credential-cipher.js";
 
 const ZCODE_DATA_BASE_DIR_ENV_KEY = "ZCODE_DATA_BASE_DIR";
@@ -24,14 +24,14 @@ const credentialChangeListeners = new Map<string, Set<() => void | Promise<void>
 // Coding Plan 账号键随 CLI 登录链删除；存量 credentials.json 中的旧键保持原样且不再读取，
 // 不主动重写用户文件（同步友好）。MCP OAuth 使用独立的 key prefix，通用凭据库行为不变。
 
-export interface SharedZCodeCredentialStoreOptions {
+export interface SharedZodyCredentialStoreOptions {
   baseDir?: string;
-  cipher?: ZCodeCredentialCipher;
+  cipher?: ZodyCredentialCipher;
   env?: Record<string, string | undefined>;
   filePath?: string;
 }
 
-export interface SharedZCodeCredentialStore {
+export interface SharedZodyCredentialStore {
   readonly filePath: string;
   delete(key: string): Promise<void>;
   deleteIfValue(key: string, expectedValue: string): Promise<boolean>;
@@ -52,8 +52,8 @@ export interface SharedZCodeCredentialStore {
 }
 
 export function createSharedZCodeCredentialStore(
-  options: SharedZCodeCredentialStoreOptions = {},
-): SharedZCodeCredentialStore {
+  options: SharedZodyCredentialStoreOptions = {},
+): SharedZodyCredentialStore {
   const env = options.env ?? process.env;
   const filePath = resolveSharedZCodeCredentialsPath(options);
   const getCipher = async () => {
@@ -217,7 +217,7 @@ export function createSharedZCodeCredentialStore(
 
 export function loadSharedZCodeCredentialSync(
   key: string,
-  options: SharedZCodeCredentialStoreOptions = {},
+  options: SharedZodyCredentialStoreOptions = {},
 ): string | undefined {
   const filePath = resolveSharedZCodeCredentialsPath(options);
   if (!existsSync(filePath)) {
@@ -249,7 +249,7 @@ export function loadSharedZCodeCredentialSync(
 }
 
 export function resolveSharedZCodeCredentialsPath(
-  options: SharedZCodeCredentialStoreOptions = {},
+  options: SharedZodyCredentialStoreOptions = {},
 ): string {
   if (options.filePath) {
     return resolveUserPath(options.filePath);
@@ -304,7 +304,7 @@ async function mutateRawCredentialRecord(
 
 async function decryptValue(
   value: string,
-  getCipher: () => Promise<ZCodeCredentialCipher>,
+  getCipher: () => Promise<ZodyCredentialCipher>,
 ): Promise<string> {
   return isEncryptedZCodeCredentialValue(value) ? (await getCipher()).decrypt(value) : value;
 }

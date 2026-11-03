@@ -1,10 +1,10 @@
 import type { ExecutionShellSelection, SessionId } from "@zody/contracts";
-import type { ZCodeApp, ZCodeAppOptions } from "../../src/app/types.js";
+import type { ZodyApp, ZodyAppOptions } from "../../src/app/types.js";
 
 export function createFakeApp(
-  options?: ZCodeAppOptions,
-  overrides: Partial<ZCodeApp> = {},
-): ZCodeApp {
+  options?: ZodyAppOptions,
+  overrides: Partial<ZodyApp> = {},
+): ZodyApp {
   const sessionId = options?.sessionId ?? ("sess_test" as SessionId);
   const traceId = options?.traceContext?.traceId ?? ("trace_test" as never);
   let mode = options?.runtimeConfig?.mode ?? "build";
@@ -200,11 +200,11 @@ export function createFakeApp(
     traceId,
     updateTargetStatus: async () => null,
     ...overrides,
-  } as ZCodeApp;
+  } as ZodyApp;
 }
 
 type ShellInitializationCandidate = Parameters<
-  ZCodeApp["runtime"]["initializeSessionShellEnvironmentIfNeeded"]
+  ZodyApp["runtime"]["initializeSessionShellEnvironmentIfNeeded"]
 >[0];
 
 function resolveShellInitializationCandidate(

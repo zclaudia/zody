@@ -308,7 +308,7 @@ export const ZCodeConfigFileSchema = z
   })
   .passthrough();
 
-export type ZCodeConfigFile = z.infer<typeof ZCodeConfigFileSchema>;
+export type ZodyConfigFile = z.infer<typeof ZCodeConfigFileSchema>;
 
 type SkillCommandOverrideMap = Record<string, { enable?: boolean }>;
 
@@ -398,7 +398,7 @@ export function parseConfigFileToRuntimePatchWithDiagnostics(
   };
 }
 
-function parsedConfigFileToRuntimePatch(parsed: ZCodeConfigFile): RuntimeConfigPatch {
+function parsedConfigFileToRuntimePatch(parsed: ZodyConfigFile): RuntimeConfigPatch {
   const config: RuntimeConfigPatch = {};
   if (parsed.modelStream) config.modelStream = parsed.modelStream;
 
@@ -427,7 +427,7 @@ function parsedConfigFileToRuntimePatch(parsed: ZCodeConfigFile): RuntimeConfigP
 }
 
 function normalizePluginConfig(
-  plugins: ZCodeConfigFile["plugins"],
+  plugins: ZodyConfigFile["plugins"],
 ): NonNullable<RuntimeConfigPatch["plugins"]> {
   if (!plugins) return {};
   const enabledPlugins = plugins.enabledPlugins ? { ...plugins.enabledPlugins } : undefined;
@@ -532,7 +532,7 @@ function readPositiveNumber(value: unknown): number | undefined {
 }
 
 function parseSkillsRuntimeConfig(
-  skills: ZCodeConfigFile["skills"],
+  skills: ZodyConfigFile["skills"],
 ): RuntimeConfigPatch["skills"] | undefined {
   if (!skills) return undefined;
   const next: NonNullable<RuntimeConfigPatch["skills"]> = {};
@@ -546,7 +546,7 @@ function parseSkillsRuntimeConfig(
 }
 
 function parseSkillOverridesFromPluralSkills(
-  skills: ZCodeConfigFile["skills"],
+  skills: ZodyConfigFile["skills"],
 ): SkillCommandOverrideMap | undefined {
   if (!skills) return undefined;
   const overrides: SkillCommandOverrideMap = {};

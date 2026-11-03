@@ -52,13 +52,13 @@ const RETIRED_ZAPI_PROVIDER_ID = "builtin:zapi";
 
 type JsonObject = Record<string, unknown>;
 
-interface ZCodeConfigFile {
+interface ZodyConfigFile {
   $schema?: string;
-  provider?: Record<string, ZCodeOpenCodeProviderConfig>;
+  provider?: Record<string, ZodyOpenCodeProviderConfig>;
   [key: string]: unknown;
 }
 
-interface ZCodeOpenCodeProviderConfig {
+interface ZodyOpenCodeProviderConfig {
   api?: string;
   name?: string;
   env?: string[];
@@ -84,18 +84,18 @@ interface ZCodeOpenCodeProviderConfig {
   providerMappings?: ProviderModelMappings;
   createdAt?: number;
   updatedAt?: number;
-  models?: Record<string, ZCodeOpenCodeModelConfig>;
-  zcode?: ZCodeProviderConfigExtension;
+  models?: Record<string, ZodyOpenCodeModelConfig>;
+  zcode?: ZodyProviderConfigExtension;
   [key: string]: unknown;
 }
 
-interface ZCodeOpenCodeModelConfig {
+interface ZodyOpenCodeModelConfig {
   id?: string;
   name?: string;
   family?: string;
   release_date?: string;
   attachment?: boolean;
-  reasoning?: boolean | ZCodeReasoningConfigExtension;
+  reasoning?: boolean | ZodyReasoningConfigExtension;
   temperature?: boolean;
   tool_call?: boolean;
   interleaved?: unknown;
@@ -131,18 +131,18 @@ interface ZCodeOpenCodeModelConfig {
   priority?: number;
   modified?: boolean;
   deleted?: boolean;
-  zcode?: ZCodeModelConfigExtension;
+  zcode?: ZodyModelConfigExtension;
   [key: string]: unknown;
 }
 
-interface ZCodeReasoningConfigExtension {
+interface ZodyReasoningConfigExtension {
   enabled?: boolean;
   variants?: string[];
   defaultVariant?: string;
   aliases?: Record<string, string>;
 }
 
-interface ZCodeProviderConfigExtension {
+interface ZodyProviderConfigExtension {
   enabled?: boolean;
   systemDisabledReason?: ModelProviderSystemDisabledReason;
   endpoints?: ModelProviderEndpoints;
@@ -162,7 +162,7 @@ interface ZCodeProviderConfigExtension {
   deletedModels?: string[];
 }
 
-interface ZCodeModelConfigExtension {
+interface ZodyModelConfigExtension {
   kinds?: ModelProviderKind[];
   defaultKind?: ModelProviderKind;
   modelIdByKind?: Partial<Record<ModelProviderKind, string>>;
@@ -205,7 +205,7 @@ const zcodeModelConfigExtensionSchema = z
   })
   .passthrough();
 
-const zcodeOpenCodeModelConfigSchema: z.ZodType<ZCodeOpenCodeModelConfig> = z
+const zcodeOpenCodeModelConfigSchema: z.ZodType<ZodyOpenCodeModelConfig> = z
   .object({
     id: z.string().optional(),
     name: z.string().optional(),
@@ -268,7 +268,7 @@ const zcodeProviderConfigExtensionSchema = z
   })
   .passthrough();
 
-const zcodeOpenCodeProviderConfigSchema: z.ZodType<ZCodeOpenCodeProviderConfig> = z
+const zcodeOpenCodeProviderConfigSchema: z.ZodType<ZodyOpenCodeProviderConfig> = z
   .object({
     api: z.string().optional(),
     name: z.string().optional(),
@@ -342,7 +342,7 @@ function readStringRecord(value: unknown): Record<string, string> | undefined {
 }
 
 function inferModelProviderKindFromOpenCodeProvider(
-  provider: ZCodeOpenCodeProviderConfig,
+  provider: ZodyOpenCodeProviderConfig,
 ): ModelProviderKind {
   if (provider.kind) {
     return provider.kind;
@@ -360,7 +360,7 @@ function inferModelProviderKindFromOpenCodeProvider(
   return "openai-compatible";
 }
 
-function hasOpenCodeProviderRuntimeFields(provider: ZCodeOpenCodeProviderConfig): boolean {
+function hasOpenCodeProviderRuntimeFields(provider: ZodyOpenCodeProviderConfig): boolean {
   // config.json 的权威运行态字段是 kind/options.baseURL。
   // 旧 endpoints/apiFormat/defaultKind/zcode 可能是历史迁移残留，若继续优先读取会覆盖新配置。
   return Boolean(
@@ -372,7 +372,7 @@ function hasOpenCodeProviderRuntimeFields(provider: ZCodeOpenCodeProviderConfig)
 }
 
 function resolveOpenCodeProviderDefaultKind(
-  provider: ZCodeOpenCodeProviderConfig,
+  provider: ZodyOpenCodeProviderConfig,
 ): ModelProviderKind {
   if (provider.kind) {
     return provider.kind;
@@ -388,7 +388,7 @@ function resolveOpenCodeProviderDefaultKind(
 }
 
 function resolveOpenCodeProviderEndpoints(
-  provider: ZCodeOpenCodeProviderConfig,
+  provider: ZodyOpenCodeProviderConfig,
   defaultKind: ModelProviderKind,
 ): ModelProviderEndpoints {
   const baseURL = readString(provider.options?.baseURL) ?? readString(provider.api);
@@ -419,7 +419,7 @@ function stripZCodePrefixedProviderMappings(
 }
 
 function openCodeReasoningToModelReasoning(
-  model: ZCodeOpenCodeModelConfig,
+  model: ZodyOpenCodeModelConfig,
   options: { preferOpenCodeFields: boolean },
 ): ModelProviderReasoningSpec | undefined {
   if (!options.preferOpenCodeFields && model.reasoningSpec) {
@@ -448,7 +448,7 @@ function openCodeReasoningToModelReasoning(
 
 function openCodeModelToModelProviderModel(
   modelId: string,
-  model: ZCodeOpenCodeModelConfig,
+  model: ZodyOpenCodeModelConfig,
   providerDefaultKind: ModelProviderKind,
   options: { preferOpenCodeFields: boolean },
 ): ModelProviderModelConfig {
@@ -527,7 +527,7 @@ function createDeletedModelTombstone(
 
 function openCodeProviderToModelProviderConfig(
   providerId: string,
-  provider: ZCodeOpenCodeProviderConfig,
+  provider: ZodyOpenCodeProviderConfig,
 ): ModelProviderConfig {
   const zcode = provider.zcode;
   const preferOpenCodeFields = hasOpenCodeProviderRuntimeFields(provider);
@@ -613,7 +613,7 @@ function openCodeProviderToModelProviderConfig(
   });
 }
 
-async function readRawZCodeConfigFile(): Promise<ZCodeConfigFile | null> {
+async function readRawZCodeConfigFile(): Promise<ZodyConfigFile | null> {
   const filePath = getZCodeConfigFilePath();
   let raw: string;
   try {

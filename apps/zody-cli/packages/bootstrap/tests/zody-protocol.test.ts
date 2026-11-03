@@ -81,7 +81,7 @@ import {
 } from "../src/zody-protocol/mapper.js";
 import { createWorkspaceZCodeApp } from "../src/zody-protocol/workspace-model-runtime.js";
 import { onSessionEvent } from "../src/zody-protocol/server-operations.js";
-import type { ZCodeApp, ZCodeAppOptions } from "../src/app/types.js";
+import type { ZodyApp, ZodyAppOptions } from "../src/app/types.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 import { createApiKeyProviderConfig } from "./provider-config-fixtures.js";
 
@@ -239,7 +239,7 @@ describe("ZCodeProtocolAgentServer", () => {
       mode: "user_decides",
       policyRevision: "test:user-decides:v1",
     });
-    let createdOptions: ZCodeAppOptions | undefined;
+    let createdOptions: ZodyAppOptions | undefined;
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
         createdOptions = options;
@@ -2077,7 +2077,7 @@ describe("ZCodeProtocolAgentServer", () => {
   it("sends contiguous protocol seq for the visible session event stream", async () => {
     const notifications: ZodyProtocolNotification[] = [];
     const logs: RecordedLog[] = [];
-    let eventStore: ZCodeAppOptions["eventStore"];
+    let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
@@ -2238,7 +2238,7 @@ describe("ZCodeProtocolAgentServer", () => {
 
   it("omits repeated scheduled tool input after model streaming tool calls", async () => {
     const notifications: ZodyProtocolNotification[] = [];
-    let eventStore: ZCodeAppOptions["eventStore"];
+    let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
@@ -2381,7 +2381,7 @@ describe("ZCodeProtocolAgentServer", () => {
 
   it("coalesces streaming tool input deltas with eager and timestamp-budgeted flushes", async () => {
     const notifications: ZodyProtocolNotification[] = [];
-    let eventStore: ZCodeAppOptions["eventStore"];
+    let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
@@ -2509,7 +2509,7 @@ describe("ZCodeProtocolAgentServer", () => {
 
   it("coalesces text and reasoning streaming deltas after the first visible token", async () => {
     const notifications: ZodyProtocolNotification[] = [];
-    let eventStore: ZCodeAppOptions["eventStore"];
+    let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
@@ -2633,7 +2633,7 @@ describe("ZCodeProtocolAgentServer", () => {
 
   it("keeps separate text streaming parts in separate protocol batches", async () => {
     const notifications: ZodyProtocolNotification[] = [];
-    let eventStore: ZCodeAppOptions["eventStore"];
+    let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
@@ -2875,7 +2875,7 @@ describe("ZCodeProtocolAgentServer", () => {
 
   it("keeps session title generation internals out of the visible event stream", async () => {
     const notifications: ZodyProtocolNotification[] = [];
-    let eventStore: ZCodeAppOptions["eventStore"];
+    let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
@@ -3383,7 +3383,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("enables model streaming by default for protocol workspace apps", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
 
     await createWorkspaceZCodeApp(
       {
@@ -3408,7 +3408,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("passes the opaque workspace identity into protocol app Memory config", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const remoteWorkspace = {
       workspaceIdentity: "ssh:example:/workspace/app",
       workspaceKey: "ssh:example:/workspace/app",
@@ -3444,7 +3444,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("preserves unapplied zcode-plan runtime headers original failure", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const requestClient = vi.fn(async () => ({
       headersApplied: false,
       errorMessage: "Runtime headers helper timed out after 5000ms.",
@@ -3511,7 +3511,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("does not fail refreshed runtime headers when provider registry revision advances concurrently", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const requestClient = vi.fn(async () => ({
       headersApplied: true,
       requestAuth: {
@@ -3599,7 +3599,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("injects protocol MCP servers into session runtime config", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
         createdAppOptions.push(options);
@@ -3667,7 +3667,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("injects protocol tool allow and deny lists into session runtime config", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
         createdAppOptions.push(options);
@@ -3694,7 +3694,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("远程 SSH/WSL workspace 默认禁用全部 Cron 工具并保留调用方 denylist", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
         createdAppOptions.push(options);
@@ -3732,7 +3732,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("reads materialization preferences once per root runtime and keeps active resumes stable", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     let nativeSearchEnabled = false;
     let memoryEnabled = false;
     let modelContextBudgetStrategy: "legacy" | "preflight-v1" = "legacy";
@@ -3787,7 +3787,7 @@ describe("ZCodeProtocolAgentServer", () => {
   it("reads the latest materialization preferences for a cold resume", async () => {
     const store = createSqliteSessionStore({ dbPath: ":memory:" });
     const sessionId = "sess_native_search_cold_resume" as SessionId;
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     try {
       await store.createSession({
         id: sessionId,
@@ -3832,7 +3832,7 @@ describe("ZCodeProtocolAgentServer", () => {
   it.each([undefined, "remote:ssh:example.test:22:dev:/workspace/app"])(
     "injects pull access only into advertised local sessions (%s)",
     async (workspaceIdentity) => {
-      const options: ZCodeAppOptions[] = [];
+      const options: ZodyAppOptions[] = [];
       const reads: unknown[] = [];
       let content = "old";
       const server = new ZCodeProtocolAgentServer({
@@ -3909,7 +3909,7 @@ describe("ZCodeProtocolAgentServer", () => {
   );
 
   it("keeps native search on but defaults Memory off when no Host client is attached", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
         createdAppOptions.push(options);
@@ -3932,7 +3932,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("defaults Memory off for an old Host but rejects other preference failures", async () => {
-    const oldHostOptions: ZCodeAppOptions[] = [];
+    const oldHostOptions: ZodyAppOptions[] = [];
     const oldHostServer = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
         oldHostOptions.push(options);
@@ -3966,7 +3966,7 @@ describe("ZCodeProtocolAgentServer", () => {
       { error: { code: -32603, message: "setting read failed" } },
       { result: { nativeSearchEnhancementsEnabled: "invalid" } },
     ]) {
-      const createdAppOptions: ZCodeAppOptions[] = [];
+      const createdAppOptions: ZodyAppOptions[] = [];
       const server = new ZCodeProtocolAgentServer({
         createZCodeApp: (options) => {
           createdAppOptions.push(options);
@@ -3997,7 +3997,7 @@ describe("ZCodeProtocolAgentServer", () => {
 
   it("times out runtime preference resolution while the Host remains connected", async () => {
     vi.useFakeTimers();
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const logs: RecordedLog[] = [];
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
@@ -4047,7 +4047,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("defaults Memory off when an older responder omits the preference field", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
         createdAppOptions.push(options);
@@ -4072,7 +4072,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("settles queued Session creation when the Host disconnects during preference resolution", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
         createdAppOptions.push(options);
@@ -4147,7 +4147,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("initializes the configured integrated terminal shell before the first prompt", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const shellInitializations: unknown[] = [];
     const tempRoot = await mkdtemp(join(tmpdir(), "zcode-protocol-shell-"));
     const fakeGitBash = join(tempRoot, "bash.exe");
@@ -4219,7 +4219,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("does not initialize an unavailable configured integrated terminal shell as the effective snapshot", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const shellInitializations: unknown[] = [];
     const unavailablePath = "Z:\\Missing\\Git\\bin\\bash.exe";
     const server = new ZCodeProtocolAgentServer({
@@ -4371,7 +4371,7 @@ describe("ZCodeProtocolAgentServer", () => {
   it("initializes a deferred draft shell before accepting its first prompt", async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "zcode-protocol-shell-deferred-"));
     const laterGitBash = join(tempRoot, "later-bash.exe");
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const shellInitializations: unknown[] = [];
     await writeFile(laterGitBash, "");
     await chmod(laterGitBash, 0o755);
@@ -4582,7 +4582,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("maps a protocol session model to structured Runtime Selection", async () => {
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
         createdAppOptions.push(options);
@@ -4654,7 +4654,7 @@ describe("ZCodeProtocolAgentServer", () => {
         tokens: { input: 12345, output: 67, reasoning: 0, cache: { read: 2345, write: 678 } },
       });
 
-      const appOptions: ZCodeAppOptions[] = [];
+      const appOptions: ZodyAppOptions[] = [];
       const server = new ZCodeProtocolAgentServer({
         createZCodeApp: (options) => {
           appOptions.push(options ?? {});
@@ -5127,7 +5127,7 @@ describe("ZCodeProtocolAgentServer", () => {
       parentTurnId: "turn_parent_perm",
     } as const;
     let brokerResult:
-      | Awaited<ReturnType<NonNullable<ZCodeAppOptions["permissionBroker"]>["requestPermission"]>>
+      | Awaited<ReturnType<NonNullable<ZodyAppOptions["permissionBroker"]>["requestPermission"]>>
       | undefined;
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) =>
@@ -5218,7 +5218,7 @@ describe("ZCodeProtocolAgentServer", () => {
     try {
       const outgoing: ZodyProtocolMessage[] = [];
       let brokerResultPromise:
-        | ReturnType<NonNullable<ZCodeAppOptions["permissionBroker"]>["requestPermission"]>
+        | ReturnType<NonNullable<ZodyAppOptions["permissionBroker"]>["requestPermission"]>
         | undefined;
       const server = new ZCodeProtocolAgentServer({
         createZCodeApp: (options) =>
@@ -5313,7 +5313,7 @@ describe("ZCodeProtocolAgentServer", () => {
       parentTurnId: "turn_parent_ask",
     } as const;
     let brokerResult:
-      | Awaited<ReturnType<NonNullable<ZCodeAppOptions["permissionBroker"]>["requestPermission"]>>
+      | Awaited<ReturnType<NonNullable<ZodyAppOptions["permissionBroker"]>["requestPermission"]>>
       | undefined;
     const askInput = {
       questions: [
@@ -5423,7 +5423,7 @@ describe("ZCodeProtocolAgentServer", () => {
       parentTurnId: "turn_parent_exit_plan",
     } as const;
     let brokerResult:
-      | Awaited<ReturnType<NonNullable<ZCodeAppOptions["permissionBroker"]>["requestPermission"]>>
+      | Awaited<ReturnType<NonNullable<ZodyAppOptions["permissionBroker"]>["requestPermission"]>>
       | undefined;
     const exitPlanInput = {
       plan: "1. Change the runtime\n2. Add tests",
@@ -5516,7 +5516,7 @@ describe("ZCodeProtocolAgentServer", () => {
     try {
       const outgoing: ZodyProtocolMessage[] = [];
       let brokerResultPromise:
-        | ReturnType<NonNullable<ZCodeAppOptions["permissionBroker"]>["requestPermission"]>
+        | ReturnType<NonNullable<ZodyAppOptions["permissionBroker"]>["requestPermission"]>
         | undefined;
       const exitPlanInput = {
         plan: "1. Change the runtime\n2. Add tests",
@@ -5847,7 +5847,7 @@ describe("ZCodeProtocolAgentServer", () => {
       resolveStarted = resolve;
     });
     const generateWorkspaceText = vi.fn(
-      async (...[, options]: Parameters<ZCodeApp["generateWorkspaceText"]>) => {
+      async (...[, options]: Parameters<ZodyApp["generateWorkspaceText"]>) => {
         generatedSignal = options?.abortSignal;
         resolveStarted?.();
         await new Promise<never>((_resolve, reject) => {
@@ -5899,7 +5899,7 @@ describe("ZCodeProtocolAgentServer", () => {
     });
     let invocation = 0;
     const generateWorkspaceText = vi.fn(
-      async (...[, options]: Parameters<ZCodeApp["generateWorkspaceText"]>) => {
+      async (...[, options]: Parameters<ZodyApp["generateWorkspaceText"]>) => {
         invocation += 1;
         if (invocation > 1) {
           return {
@@ -5973,7 +5973,7 @@ describe("ZCodeProtocolAgentServer", () => {
 
   it("closes the temporary app after draft workspace text generation", async () => {
     const close = vi.fn(async () => {});
-    const appOptions: ZCodeAppOptions[] = [];
+    const appOptions: ZodyAppOptions[] = [];
     const generateWorkspaceText = vi.fn(async () => ({
       text: "fix(git): generate message",
       selection: { providerId: "custom-openai", modelId: "backup-model" },
@@ -6057,7 +6057,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("runs goal through target APIs instead of submitPrompt", async () => {
-    let target: Awaited<ReturnType<NonNullable<ZCodeApp["readTarget"]>>> = null;
+    let target: Awaited<ReturnType<NonNullable<ZodyApp["readTarget"]>>> = null;
     const submitPrompt = vi.fn();
     const continueActiveTarget = vi.fn(async () => ({ response: "continued" }) as never);
     const server = new ZCodeProtocolAgentServer({
@@ -6115,7 +6115,7 @@ describe("ZCodeProtocolAgentServer", () => {
             target = { ...target, status, time: { ...target.time, updated: 3 } };
             return target;
           },
-        } satisfies ZCodeApp;
+        } satisfies ZodyApp;
       },
       cwd: workspace.workspacePath,
     });
@@ -6247,8 +6247,8 @@ describe("ZCodeProtocolAgentServer", () => {
 
   it("allows session goal pause to stop a running prompt", async () => {
     const abortReasons: string[] = [];
-    let target: Awaited<ReturnType<NonNullable<ZCodeApp["readTarget"]>>> = null;
-    const sendInput = vi.fn<ZCodeApp["sendInput"]>(
+    let target: Awaited<ReturnType<NonNullable<ZodyApp["readTarget"]>>> = null;
+    const sendInput = vi.fn<ZodyApp["sendInput"]>(
       async (_input, options) =>
         await new Promise<never>((_resolve, reject) => {
           const signal = options.abortSignal;
@@ -6303,7 +6303,7 @@ describe("ZCodeProtocolAgentServer", () => {
             target = { ...target, status, time: { ...target.time, updated: 3 } };
             return target;
           },
-        } satisfies ZCodeApp;
+        } satisfies ZodyApp;
       },
     });
     const created = zcodeSessionStateSnapshotSchema.parse(
@@ -6358,8 +6358,8 @@ describe("ZCodeProtocolAgentServer", () => {
     const continuationStarted = new Promise<void>((resolve) => {
       resolveContinuationStarted = resolve;
     });
-    let target: Awaited<ReturnType<NonNullable<ZCodeApp["readTarget"]>>> = null;
-    const continueActiveTarget = vi.fn<ZCodeApp["continueActiveTarget"]>(
+    let target: Awaited<ReturnType<NonNullable<ZodyApp["readTarget"]>>> = null;
+    const continueActiveTarget = vi.fn<ZodyApp["continueActiveTarget"]>(
       async (options) =>
         await new Promise<never>((_resolve, reject) => {
           const signal = options?.abortSignal;
@@ -6422,7 +6422,7 @@ describe("ZCodeProtocolAgentServer", () => {
             target = { ...target, status, time: { ...target.time, updated: 3 } };
             return target;
           },
-        } satisfies ZCodeApp;
+        } satisfies ZodyApp;
       },
       cwd: workspace.workspacePath,
     });
@@ -7284,7 +7284,7 @@ describe("ZCodeProtocolAgentServer", () => {
   it("forks sessions and lets selection children inherit parent runtime preferences", async () => {
     const store = createSqliteSessionStore({ dbPath: ":memory:" });
     const forkTargets: Array<{ targetCheckpointId?: string; targetMessageId?: string }> = [];
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const selectionChildId = "sess_selection_runtime_preferences" as SessionId;
     try {
       const server = new ZCodeProtocolAgentServer({
@@ -7359,7 +7359,7 @@ describe("ZCodeProtocolAgentServer", () => {
               }),
             updateTargetStatus: async (status) =>
               await store.updateTargetStatus({ sessionID: app.sessionId, status }),
-          } satisfies ZCodeApp;
+          } satisfies ZodyApp;
         },
         cwd: workspace.workspacePath,
         sessionStore: store,
@@ -8078,7 +8078,7 @@ function createProtocolPendingAuthorizationMcpPort(
 }
 
 type ShellInitializationCandidate = Parameters<
-  ZCodeApp["runtime"]["initializeSessionShellEnvironmentIfNeeded"]
+  ZodyApp["runtime"]["initializeSessionShellEnvironmentIfNeeded"]
 >[0];
 
 function resolveShellInitializationCandidate(
@@ -8088,10 +8088,10 @@ function resolveShellInitializationCandidate(
 }
 
 function createShellRecordingFakeApp(
-  options: ZCodeAppOptions,
+  options: ZodyAppOptions,
   shellInitializations: unknown[],
-  createdAppOptions?: ZCodeAppOptions[],
-): ZCodeApp {
+  createdAppOptions?: ZodyAppOptions[],
+): ZodyApp {
   createdAppOptions?.push(options);
   const app = createFakeApp(options);
   let effectiveShellSelection = options.runtimeConfig?.bashShellSelection;

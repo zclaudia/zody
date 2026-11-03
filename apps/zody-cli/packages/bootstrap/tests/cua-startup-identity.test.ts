@@ -4,7 +4,7 @@ import type { ZodyProtocolMessage } from "@zody/shared";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import { createWorkspaceZCodeApp } from "../src/zody-protocol/workspace-model-runtime.js";
-import type { ZCodeAppOptions } from "../src/app/types.js";
+import type { ZodyAppOptions } from "../src/app/types.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 
 const LOCAL_WORKSPACE = {
@@ -26,9 +26,9 @@ async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProt
 
 async function createWorkspaceAppWithServerIdentity(
   workspace: ZodyWorkspaceRef,
-  options: Omit<ZCodeAppOptions, "providerRegistry">,
-): Promise<ZCodeAppOptions | undefined> {
-  const createdOptions: ZCodeAppOptions[] = [];
+  options: Omit<ZodyAppOptions, "providerRegistry">,
+): Promise<ZodyAppOptions | undefined> {
+  const createdOptions: ZodyAppOptions[] = [];
   const context = {
     cuaLaunchIdentity: TRUSTED_IDENTITY,
     deps: {
@@ -46,7 +46,7 @@ async function createWorkspaceAppWithServerIdentity(
 
 describe("CUA startup identity protocol", () => {
   it("pins the first identity, treats the same value as idempotent, and rejects replacement", async () => {
-    const createdOptions: ZCodeAppOptions[] = [];
+    const createdOptions: ZodyAppOptions[] = [];
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => {
         createdOptions.push(options ?? {});

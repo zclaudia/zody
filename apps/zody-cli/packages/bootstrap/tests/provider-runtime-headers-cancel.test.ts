@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { createProviderRuntimeHeadersPort } from "../src/zody-protocol/provider-runtime-headers.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
-import type { ZCodeAppOptions } from "../src/app/types.js";
+import type { ZodyAppOptions } from "../src/app/types.js";
 import type { ZodyProviderRuntimeHeadersRequestParams } from "@zody/shared";
 const workspace = {
   workspacePath: "/work",
@@ -18,7 +18,7 @@ it("真实工厂同样装配唯一请求端口，完整账号事实透传而不�
       requestAuth,
     }),
   );
-  const createZCodeApp = vi.fn(async (_options: Omit<ZCodeAppOptions, "providerRegistry">) => ({}));
+  const createZCodeApp = vi.fn(async (_options: Omit<ZodyAppOptions, "providerRegistry">) => ({}));
   await createWorkspaceZCodeApp(
     {
       deps: { createZCodeApp },

@@ -6,18 +6,18 @@ const CREDENTIAL_CIPHER_IV_BYTES = 12;
 const CREDENTIAL_CIPHER_AUTH_TAG_BYTES = 16;
 const CREDENTIAL_SECRET_ENV_KEY = "ZCODE_CREDENTIAL_SECRET";
 
-export interface ZCodeCredentialCipher {
+export interface ZodyCredentialCipher {
   decrypt(value: string): string;
   encrypt(value: string): string;
 }
 
-export interface ZCodeCredentialCipherOptions {
+export interface ZodyCredentialCipherOptions {
   env?: Record<string, string | undefined>;
 }
 
 export function createZCodeCredentialCipher(
-  options: ZCodeCredentialCipherOptions = {},
-): ZCodeCredentialCipher {
+  options: ZodyCredentialCipherOptions = {},
+): ZodyCredentialCipher {
   const key = deriveCipherKey(resolveCredentialSecret(options.env ?? process.env));
 
   return {

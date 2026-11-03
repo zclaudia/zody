@@ -13,7 +13,7 @@ import type {
 import type { McpAppsDownloadFileItem } from "@zody/shared/mcp-apps";
 
 /** `window.zcode` / `window.openai` 的公开形状；实现在 aliasRuntime / openaiAlias，两边只依赖这里。 */
-export interface ZcodeAliasApi {
+export interface ZodyAliasApi {
   readonly toolInput: Record<string, unknown> | null;
   readonly toolOutput: unknown;
   readonly toolResponseMetadata: Record<string, unknown> | null;

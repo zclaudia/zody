@@ -2,7 +2,7 @@ import { BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES, type ZodySlashCommand } from 
 import { BUILTIN_WORKFLOW_COMMAND_NAME } from "../builtin-workflow-command.js";
 import {
   listZCodeCustomCommands,
-  type ListZCodeCustomCommandsOptions,
+  type ListZodyCustomCommandsOptions,
 } from "../custom-commands.js";
 import {
   APP_PROTOCOL_APP_ONLY_BUILTIN_SLASH_COMMANDS,
@@ -10,7 +10,7 @@ import {
   isReservedZCodeSlashCommandName,
 } from "../slash-command-surface.js";
 
-export interface ListProtocolSlashCommandsOptions extends ListZCodeCustomCommandsOptions {
+export interface ListProtocolSlashCommandsOptions extends ListZodyCustomCommandsOptions {
   /**
    * 动态工作流灰度门（docs/dynamic-workflow/launch.md「Gray release」）。**只有显式 false
    * 才剔除** 内置 `workflow`：CLI 自身的目录装配（TUI / 未参与灰度的调用方）缺席该字段，

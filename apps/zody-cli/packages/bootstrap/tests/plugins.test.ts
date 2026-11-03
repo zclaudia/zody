@@ -20,7 +20,7 @@ import {
   OFFICIAL_PLUGIN_DEFINITIONS,
 } from "../src/app/official-plugin-definitions.js";
 import { createPluginFacadeForApp } from "../src/app/plugin-facade.js";
-import type { ZCodeAppOptions } from "../src/app/types.js";
+import type { ZodyAppOptions } from "../src/app/types.js";
 import { loadPluginAgentProfiles } from "./helpers/subagents.js";
 import {
   configureZCodePlugin,
@@ -1169,7 +1169,7 @@ describe("ZCode plugins", () => {
       });
       const facade = createPluginFacadeForApp({
         configResult,
-        options: { env: {}, pluginStorageRoot } as ZCodeAppOptions,
+        options: { env: {}, pluginStorageRoot } as ZodyAppOptions,
         workingDirectory: root,
       });
 
@@ -2573,7 +2573,7 @@ describe("ZCode plugins", () => {
         cliStorageRoot: join(root, "cli"),
         configResult,
         env: {},
-        options: { pluginStorageRoot } as ZCodeAppOptions,
+        options: { pluginStorageRoot } as ZodyAppOptions,
         startupTimer: createNoopStartupTimer(),
         workingDirectory: root,
       });

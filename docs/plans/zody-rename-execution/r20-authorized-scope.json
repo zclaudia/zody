@@ -20101,6 +20101,17 @@
         "context": "Current test descriptions; reconcile after symbol groups, without modifying replay payloads.",
         "owner": "R20.5"
       }
+    ],
+    "completedTypeBatches": [
+      {
+        "id": "R20.4-types-remaining-01",
+        "base": "a8a0fe2b5b168536bfb68d24911ba4368f7d1ff5",
+        "status": "controller-verified-pending-DeepSeek",
+        "declarations": 106,
+        "files": 140,
+        "edits": 854,
+        "migrationRecord": "docs/plans/zody-rename-execution/r20-symbol-migrations.json"
+      }
     ]
   },
   "substep5CurrentDocs": {

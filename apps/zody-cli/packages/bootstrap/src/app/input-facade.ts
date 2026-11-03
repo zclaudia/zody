@@ -22,7 +22,7 @@ import {
 import { composeInputIntentMetadata } from "./input-intent-metadata.js";
 import { freezeSubmissionModelSelection } from "./provider-registry-selection.js";
 import { queueItemIdForSubmission } from "./session-input-id.js";
-import type { PrepareUserExecutionBoundary, SubmitPromptOptions, ZCodeApp } from "./types.js";
+import type { PrepareUserExecutionBoundary, SubmitPromptOptions, ZodyApp } from "./types.js";
 
 /**
  * legacy 提交没有 V4 CommandInbox 的 per-bucket admission 序号；用单调时间序列生成唯一值。
@@ -37,7 +37,7 @@ function nextSynthesizedAdmissionSeq(now: number): number {
 }
 
 type InputFacade = Pick<
-  ZCodeApp,
+  ZodyApp,
   | "continueActiveTarget"
   | "enqueueDeferredInput"
   | "recordInputHistory"

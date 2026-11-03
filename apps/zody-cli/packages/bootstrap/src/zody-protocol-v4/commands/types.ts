@@ -23,7 +23,7 @@ import type {
   StableForkTargetResolution,
   ConversationRowTarget,
 } from "@zody/shared/zody-protocol-v4";
-import type { ZCodeApp } from "../../app/types.js";
+import type { ZodyApp } from "../../app/types.js";
 import type { V4InteractionRegistry } from "../interaction-registry.js";
 import type {
   ConversationEditTarget,
@@ -58,7 +58,7 @@ export type V4StableForkTargetResolution =
  * 结构兼容：binder 直接把旧 record 对象透传进来；v4 自持会话注册表后由其提供同形对象。
  */
 export interface V4SessionRecordView {
-  app: ZCodeApp;
+  app: ZodyApp;
   /**
    * 会话根 traceContext（traceId 位于 sessionId 之上，对应整条任务链）。
    * 命令层调 runtime 方法/补发 core 事件时透传沿用，不得中途另起 trace。

@@ -2,7 +2,7 @@ import { materializeZCodeBuiltinProviderConfig } from "@zody/services/node";
 
 declare const __ZCODE_BUILTIN_PROVIDER_CONFIG_JSON__: string | undefined;
 
-export interface MaterializeBundledZCodeBuiltinProviderConfigOptions {
+export interface MaterializeBundledZodyBuiltinProviderConfigOptions {
   readonly environmentConfigRoot: string;
   readonly content: string;
 }
@@ -20,7 +20,7 @@ export function readBundledZCodeBuiltinProviderConfig(): string {
  * 升级前退出旧进程；不保留按内容 hash 增长的历史文件。
  */
 export async function materializeBundledZCodeBuiltinProviderConfig(
-  options: MaterializeBundledZCodeBuiltinProviderConfigOptions,
+  options: MaterializeBundledZodyBuiltinProviderConfigOptions,
 ): Promise<string> {
   return materializeZCodeBuiltinProviderConfig(options);
 }

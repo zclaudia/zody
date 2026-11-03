@@ -17,13 +17,13 @@ import {
   type PluginSubagentModelSelectionOverrides,
 } from "@zody/shared";
 
-interface LoadZCodeAgentProfilesInput {
+interface LoadZodyAgentProfilesInput {
   logger?: Logger;
   storageRoot: string;
   workingDirectory: string;
 }
 
-interface LoadZCodeAgentProfilesResult {
+interface LoadZodyAgentProfilesResult {
   builtInModelSelectionOverrides: BuiltInSubagentModelSelectionOverrides;
   pluginAgentModelSelectionOverrides: PluginSubagentModelSelectionOverrides;
   diagnostics: AgentProfileParseDiagnostic[];
@@ -47,8 +47,8 @@ interface ParsedPluginAgentProfile {
 const RESERVED_AGENT_NAMES = new Set(["general-purpose", "Explore"]);
 
 export async function loadZCodeAgentProfiles(
-  input: LoadZCodeAgentProfilesInput,
-): Promise<LoadZCodeAgentProfilesResult> {
+  input: LoadZodyAgentProfilesInput,
+): Promise<LoadZodyAgentProfilesResult> {
   const migration = await migrateUserSubagentMarkdown(join(input.storageRoot, "agents"));
   await migrateSubagentStateFile(join(input.storageRoot, "v2", "agents-state.json"));
   const roots = [
@@ -118,7 +118,7 @@ export function loadPluginAgentTemplates(
 export function resolvePluginAgentProfiles(
   input: LoadPluginAgentProfilesInput,
   templates: ReturnType<typeof loadPluginAgentTemplates>,
-): LoadZCodeAgentProfilesResult {
+): LoadZodyAgentProfilesResult {
   const diagnostics = [...templates.diagnostics];
   const parsedProfiles = templates.profiles;
   const reservedProfileNames = new Set([

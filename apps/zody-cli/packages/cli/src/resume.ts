@@ -1,4 +1,4 @@
-import type { ZCodeAppOptions } from "@zody/bootstrap";
+import type { ZodyAppOptions } from "@zody/bootstrap";
 import type { CliEnv } from "./env.js";
 import { loadBootstrapModule } from "./bootstrap-loader.js";
 import type { CliResumeRequest, RunDependencies } from "./cli-types.js";
@@ -8,9 +8,9 @@ export const resolveResumeSession = async (
   workingDirectory: string,
   env: CliEnv,
   deps: RunDependencies,
-): Promise<ZCodeAppOptions["sessionId"] | undefined> => {
+): Promise<ZodyAppOptions["sessionId"] | undefined> => {
   if (request.resumeSessionId) {
-    return request.resumeSessionId as ZCodeAppOptions["sessionId"];
+    return request.resumeSessionId as ZodyAppOptions["sessionId"];
   }
 
   if (!request.continueSession) {

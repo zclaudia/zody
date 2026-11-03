@@ -17,7 +17,7 @@ import type { SqliteSessionStore } from "@zody/adapters/storage";
 import { traceContextToLogContext, createRootTraceContext } from "@zody/contracts";
 import type { McpPort, ModelSelection } from "@zody/contracts";
 import type { PresentationSurface } from "@zody/core";
-import type { RunZCodeProtocolAgentOptions, ZCodeAppOptions } from "./app/types.js";
+import type { RunZodyProtocolAgentOptions, ZodyAppOptions } from "./app/types.js";
 import { createZCodeApp } from "./app/create-app.js";
 import {
   createNodeReplBrowserBroker,
@@ -39,12 +39,12 @@ import { cleanupProtocolRuntime } from "./zody-protocol/runtime-cleanup.js";
 import { startProtocolResourceSampler } from "./zody-protocol/resource-sampler.js";
 import { acquireProtocolStartupResource } from "./zody-protocol/startup-resource.js";
 import { prepareZCodeTelemetryEnv, shutdownZCodeTelemetry } from "./telemetry-bootstrap.js";
-import type { ZCodeProcessResourceSampler } from "./process-resource-sampler.js";
+import type { ZodyProcessResourceSampler } from "./process-resource-sampler.js";
 
 export function applyProtocolPresentationSurface(
-  options: Omit<ZCodeAppOptions, "providerRegistry">,
+  options: Omit<ZodyAppOptions, "providerRegistry">,
   presentationSurface: PresentationSurface,
-): Omit<ZCodeAppOptions, "providerRegistry"> {
+): Omit<ZodyAppOptions, "providerRegistry"> {
   return {
     ...options,
     runtimeConfig: {
@@ -60,10 +60,10 @@ export function applyProtocolPresentationSurface(
  * 旧 workspace snapshot 不再参与 Provider 和 Model 执行。
  */
 export function applyProtocolProviderRegistry(
-  options: Omit<ZCodeAppOptions, "providerRegistry">,
-  providerRegistry: ZCodeAppOptions["providerRegistry"],
+  options: Omit<ZodyAppOptions, "providerRegistry">,
+  providerRegistry: ZodyAppOptions["providerRegistry"],
   configuredDefaultModelSelection?: ModelSelection,
-): ZCodeAppOptions {
+): ZodyAppOptions {
   return {
     ...options,
     providerRegistry,
@@ -72,7 +72,7 @@ export function applyProtocolProviderRegistry(
 }
 
 export async function runZCodeProtocolAgent(
-  options: RunZCodeProtocolAgentOptions = {},
+  options: RunZodyProtocolAgentOptions = {},
 ): Promise<void> {
   if (options.prepareStorageOnly) {
     const config = createConfig({ env: options.env });
@@ -121,7 +121,7 @@ export async function runZCodeProtocolAgent(
   let mcpTelemetryTracker: McpTelemetryTracker | undefined;
   let mcpResourceSink: ((samples: ZodyMcpResourceSample[]) => void) | undefined;
   let mcpTelemetrySink: ((event: ZodyMcpTelemetryEvent) => void) | undefined;
-  let processResourceSampler: ZCodeProcessResourceSampler | undefined;
+  let processResourceSampler: ZodyProcessResourceSampler | undefined;
   let providerRegistryRuntime:
     | Awaited<ReturnType<typeof startProcessProviderRegistryRuntime>>
     | undefined;

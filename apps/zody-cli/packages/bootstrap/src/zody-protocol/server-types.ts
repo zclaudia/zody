@@ -28,7 +28,7 @@ import {
   type ZodySessionPersistence,
   type ZodyWorkspaceRef,
 } from "@zody/shared";
-import type { ZCodeApp, ZCodeAppOptions } from "../app/types.js";
+import type { ZodyApp, ZodyAppOptions } from "../app/types.js";
 import type { V4InteractionRegistry } from "../zody-protocol-v4/interaction-registry.js";
 import type { ConversationV4Gateway } from "../zody-protocol-v4/v4-gateway.js";
 import type { SessionResidentPool, SessionResidentPoolOptions } from "./session-resident-pool.js";
@@ -39,7 +39,7 @@ export interface ParamsSchema<T> {
 }
 
 export interface ZodyProtocolAgentDependencies {
-  createZCodeApp(options?: Omit<ZCodeAppOptions, "providerRegistry">): ZCodeApp | Promise<ZCodeApp>;
+  createZCodeApp(options?: Omit<ZodyAppOptions, "providerRegistry">): ZodyApp | Promise<ZodyApp>;
   /**
    * 每个 session record 的内存 event store 工厂。
    * 默认 turn 窗口保留策略；测试可注入 spy 或 unbounded 实现做对照。
@@ -81,7 +81,7 @@ export interface ZodyProtocolToolInputTransmissionState {
 }
 
 export interface ZodyProtocolSessionRecord {
-  app: ZCodeApp;
+  app: ZodyApp;
   subagentRuntimeConfigEnabled?: boolean;
   memoryEnabled: boolean;
   nativeSearchEnhancementsEnabled: boolean;

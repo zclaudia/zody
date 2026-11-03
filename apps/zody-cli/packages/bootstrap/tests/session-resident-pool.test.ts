@@ -57,7 +57,7 @@ import type {
 } from "../src/zody-protocol/server-types.js";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
-import type { ZCodeApp } from "../src/app/types.js";
+import type { ZodyApp } from "../src/app/types.js";
 
 // ── 常驻池单元（fake host）──────────────────────────────────────────────────
 
@@ -730,19 +730,19 @@ async function seedPersistedSession(dbPath: string): Promise<void> {
 interface IntegrationHarness {
   server: ZCodeProtocolAgentServer;
   store: TestSessionStore;
-  createdApps: ZCodeApp[];
+  createdApps: ZodyApp[];
   sessions: Map<string, ZodyProtocolSessionRecord>;
 }
 
 function bootServer(
   dbPath: string,
   options: {
-    appOverrides?: Partial<ZCodeApp>;
+    appOverrides?: Partial<ZodyApp>;
     poolOptions?: SessionResidentPoolOptions;
   } = {},
 ): IntegrationHarness {
   const store = createSqliteSessionStore({ dbPath });
-  const createdApps: ZCodeApp[] = [];
+  const createdApps: ZodyApp[] = [];
   const server = new ZCodeProtocolAgentServer({
     createZCodeApp: (appOptions) => {
       const app = createFakeApp(appOptions, options.appOverrides ?? {});

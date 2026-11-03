@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { createSqliteSessionStore } from "@zody/adapters/storage";
 import { describe, expect, it, vi } from "vitest";
 import { createRegistryBackedTestApp } from "./helpers/registry-backed-test-app.js";
-import type { ZCodeApp } from "../src/app/types.js";
+import type { ZodyApp } from "../src/app/types.js";
 
 const { resolveRuntimeConfig } = vi.hoisted(() => ({ resolveRuntimeConfig: vi.fn() }));
 vi.mock("../src/app/runtime-config.js", async (importOriginal) => {
@@ -26,8 +26,8 @@ describe("App 初始化旧 Subagent 身份", () => {
     const markdown =
       "---\nname: legacy\ndescription: legacy profile\nmodel: builtin:zai-coding-plan/glm-4.6\nthoughtLevel: high\n---\nreview";
     const store = createSqliteSessionStore({ dbPath: ":memory:" });
-    let app: ZCodeApp | undefined;
-    let creation: Promise<ZCodeApp> | undefined;
+    let app: ZodyApp | undefined;
+    let creation: Promise<ZodyApp> | undefined;
     try {
       await mkdir(directory, { recursive: true });
       await writeFile(file, markdown);

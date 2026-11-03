@@ -6,18 +6,18 @@ import { tmpdir } from "node:os";
 import {
   buildZCodeDataSizeArmsPayload,
   createZCodeDataSizeTelemetryScheduler,
-  type ZCodeDataSizeTelemetryState,
+  type ZodyDataSizeTelemetryState,
 } from "../src/main/desktopZodyDataSizeTelemetry.js";
 import {
   scanZCodeDataDirectory,
-  type ZCodeDataSizeScanResult,
+  type ZodyDataSizeScanResult,
 } from "../src/main/zodyDataSizeScanner.js";
 import {
   readZCodeDataSizeTelemetryState,
   writeZCodeDataSizeTelemetryState,
 } from "../src/main/zodyDataSizeTelemetryState.js";
 
-const COMPLETE_RESULT: ZCodeDataSizeScanResult = {
+const COMPLETE_RESULT: ZodyDataSizeScanResult = {
   bytes: 42,
   directoriesScanned: 2,
   durationMs: 15,
@@ -124,8 +124,8 @@ describe("createZCodeDataSizeTelemetryScheduler", () => {
     idleSeconds?: number;
     onScan?: () => void;
     onWriteState?: () => void;
-    readState?: () => Promise<ZCodeDataSizeTelemetryState | null>;
-    state?: ZCodeDataSizeTelemetryState | null;
+    readState?: () => Promise<ZodyDataSizeTelemetryState | null>;
+    state?: ZodyDataSizeTelemetryState | null;
     writeStateError?: Error;
   }) {
     let appBackground = options?.appBackground ?? true;
@@ -138,7 +138,7 @@ describe("createZCodeDataSizeTelemetryScheduler", () => {
       return COMPLETE_RESULT;
     });
     const readState = vi.fn(options?.readState ?? (async () => state));
-    const writeState = vi.fn(async (next: ZCodeDataSizeTelemetryState) => {
+    const writeState = vi.fn(async (next: ZodyDataSizeTelemetryState) => {
       options?.onWriteState?.();
       if (options?.writeStateError) {
         throw options.writeStateError;
@@ -317,7 +317,7 @@ describe("createZCodeDataSizeTelemetryScheduler", () => {
     const report = vi.fn();
     const scan = vi.fn(
       ({ signal }: { signal: AbortSignal }) =>
-        new Promise<ZCodeDataSizeScanResult>((_resolve, reject) => {
+        new Promise<ZodyDataSizeScanResult>((_resolve, reject) => {
           signal.addEventListener("abort", () => {
             reject(new DOMException("aborted", "AbortError"));
           });

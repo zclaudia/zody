@@ -36,11 +36,11 @@ import {
 } from "@zody/contracts";
 import { collectDisabledPaths } from "../skill-command-overrides.js";
 import { parseProviderQualifiedModelSelection } from "./provider-registry-selection.js";
-import type { ZCodeAppOptions } from "./types.js";
+import type { ZodyAppOptions } from "./types.js";
 
 export interface ScriptWorkflowAgentRuntimeDeps {
   agentTelemetry: AgentExecutionTelemetryPort;
-  appOptions: ZCodeAppOptions;
+  appOptions: ZodyAppOptions;
   appVersion: string;
   artifactStore?: ToolArtifactStorePort;
   configResult: ConfigResult;

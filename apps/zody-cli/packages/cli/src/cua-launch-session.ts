@@ -3,7 +3,7 @@ import { lstat } from "node:fs/promises";
 import { createConnection, type Socket } from "node:net";
 import { isAbsolute } from "node:path";
 import type { Duplex } from "node:stream";
-import type { RunZCodeProtocolAgentOptions } from "@zody/bootstrap";
+import type { RunZodyProtocolAgentOptions } from "@zody/bootstrap";
 import {
   assertTransportAuthenticationKey,
   generateTransportChallenge,
@@ -54,7 +54,7 @@ export interface CuaLaunchSessionOptions {
   readonly output: NodeJS.WritableStream | number;
   /** 仅由外层可信 composition 注入；默认不从 sealed JS 自报事实推导认证。 */
   readonly expectedEntrySha256?: string;
-  readonly runProtocolAgent?: (options?: RunZCodeProtocolAgentOptions) => Promise<void>;
+  readonly runProtocolAgent?: (options?: RunZodyProtocolAgentOptions) => Promise<void>;
   readonly connectAuthority?: (endpoint: string, signal?: AbortSignal) => Promise<Duplex>;
   /** ready 严格解析完成后、protocol agent 启动前调用；用于把 cellEndpoint 交给 factory。 */
   readonly onSessionReady?: (ready: CuaLaunchSessionReady) => void;
@@ -62,7 +62,7 @@ export interface CuaLaunchSessionOptions {
    * 由 native cli-entry 从 @zcode/node-repl-host 公开入口显式注入；不读取 env/argv。
    * 缺省时仍是普通 protocol app，不装配真实 node_repl 截图。
    */
-  readonly cuaNodeReplMcpPortFactory?: RunZCodeProtocolAgentOptions["cuaNodeReplMcpPortFactory"];
+  readonly cuaNodeReplMcpPortFactory?: RunZodyProtocolAgentOptions["cuaNodeReplMcpPortFactory"];
 }
 
 const MAX_SESSION_READY_BYTES = 16 * 1024;
@@ -457,14 +457,14 @@ function signalAbortError(signal: AbortSignal | undefined): Error {
 }
 
 async function loadProtocolAgent(): Promise<
-  (options?: RunZCodeProtocolAgentOptions) => Promise<void>
+  (options?: RunZodyProtocolAgentOptions) => Promise<void>
 > {
   const module = await import("@zody/bootstrap");
   return module.runZCodeProtocolAgent;
 }
 
 interface CuaControlLifetime {
-  readonly lifecycle: NonNullable<RunZCodeProtocolAgentOptions["lifecycle"]>;
+  readonly lifecycle: NonNullable<RunZodyProtocolAgentOptions["lifecycle"]>;
   throwIfFailed(): void;
   dispose(): void;
 }

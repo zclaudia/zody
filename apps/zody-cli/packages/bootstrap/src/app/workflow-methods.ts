@@ -1,9 +1,9 @@
 import type { ExpertWorkflowRuntime } from "@zody/core";
 import type { SessionId, TraceContext, WorkflowDefinition } from "@zody/contracts";
-import type { PrepareUserExecutionBoundary, ZCodeApp } from "./types.js";
+import type { PrepareUserExecutionBoundary, ZodyApp } from "./types.js";
 
 export type WorkflowFacade = Pick<
-  ZCodeApp,
+  ZodyApp,
   | "expertWorkflowStatus"
   | "workflowStatus"
   | "retryWorkflow"

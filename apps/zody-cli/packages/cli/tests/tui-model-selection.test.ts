@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { TurnId } from "@zody/contracts";
-import type { ZCodeAppOptions } from "@zody/bootstrap";
+import type { ZodyAppOptions } from "@zody/bootstrap";
 import {
   NodeModelSelectionConfigRepository,
   NodePersonalProviderConfigRepository,
@@ -259,7 +259,7 @@ test("TUI persists defaults through the shared repository across new sessions an
   await seed.update((current) => ({ ...current, providerOrder: ["personal"] }));
   seed.dispose();
   const originalFile = JSON.parse(await readFile(filePath, "utf8"));
-  const created: Array<{ options: ZCodeAppOptions; app: CommandCenterApp }> = [];
+  const created: Array<{ options: ZodyAppOptions; app: CommandCenterApp }> = [];
   const restoredSelection = { ...model().ref, options: { reasoningLevel: "high" } };
   let runtimeStarts = 0;
   const deps = {
@@ -267,7 +267,7 @@ test("TUI persists defaults through the shared repository across new sessions an
     cwd: () => dir,
     skipUserConfig: true,
     loadDotenv: () => ({ keys: [], loaded: false, path: "" }),
-    createZCodeApp: async (options: ZCodeAppOptions) => {
+    createZCodeApp: async (options: ZodyAppOptions) => {
       const f = fixture(
         options.resume ? restoredSelection : options.configuredDefaultModelSelection,
       );

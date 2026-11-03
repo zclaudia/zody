@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { decodeZCodeBuiltinRelease, type ZCodeBuiltinRelease } from "./zody-builtin-release.js";
+import { decodeZCodeBuiltinRelease, type ZodyBuiltinRelease } from "./zody-builtin-release.js";
 
 const clientConfigSchema = z
   .object({
@@ -23,7 +23,7 @@ const clientConfigSchema = z
   })
   .passthrough();
 
-export interface ZCodeBuiltinDownloadOptions {
+export interface ZodyBuiltinDownloadOptions {
   readonly endpointOrigin: string;
   readonly appVersion: string;
   readonly platform: string;
@@ -33,8 +33,8 @@ export interface ZCodeBuiltinDownloadOptions {
 
 /** App/CLI 共用下载边界。总预算包含两次请求正文，不依赖 ApiClient 的响应头超时。 */
 export async function downloadZCodeBuiltinRelease(
-  options: ZCodeBuiltinDownloadOptions,
-): Promise<ZCodeBuiltinRelease | null> {
+  options: ZodyBuiltinDownloadOptions,
+): Promise<ZodyBuiltinRelease | null> {
   const controller = new AbortController();
   let timedOut = false;
   const timer = setTimeout(() => {

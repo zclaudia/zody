@@ -12,7 +12,7 @@ import {
   type Provider,
 } from "@zody/provider";
 import { createZCodeApp } from "../../src/app/create-app.js";
-import type { ZCodeApp, ZCodeAppOptions } from "../../src/app/types.js";
+import type { ZodyApp, ZodyAppOptions } from "../../src/app/types.js";
 import { createApiKeyProviderConfig } from "../provider-config-fixtures.js";
 
 const DEFAULT_TEST_MODEL = {
@@ -36,14 +36,14 @@ export interface RegistryBackedTestModelExecutor {
   ): AsyncIterable<ModelEvent>;
 }
 
-type RegistryBackedTestAppOptions = Omit<ZCodeAppOptions, "providerRegistry"> & {
+type RegistryBackedTestAppOptions = Omit<ZodyAppOptions, "providerRegistry"> & {
   modelExecutor?: RegistryBackedTestModelExecutor;
-  providerRegistry?: ZCodeAppOptions["providerRegistry"];
+  providerRegistry?: ZodyAppOptions["providerRegistry"];
 };
 
 export function createRegistryBackedTestApp(
   options: RegistryBackedTestAppOptions = {},
-): Promise<ZCodeApp> {
+): Promise<ZodyApp> {
   const modelSelections = collectModelSelections(options);
   const providerRegistry = options.providerRegistry ?? createTestProviderRegistry(modelSelections);
   const { modelExecutor, ...appOptions } = options;

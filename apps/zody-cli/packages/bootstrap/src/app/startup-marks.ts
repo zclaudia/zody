@@ -6,7 +6,7 @@ import type { StartupTimer } from "../startup-logging.js";
 import { resolveOfficialPluginRoots } from "./bundled-plugins.js";
 import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS } from "./official-plugin-definitions.js";
 import { getPluginStorageRoot } from "./paths.js";
-import type { ZCodeAppOptions } from "./types.js";
+import type { ZodyAppOptions } from "./types.js";
 import { filterVisualizeSkillRoots } from "./visualize-skill-gate.js";
 
 export function resolveStartupPlugins(input: {
@@ -14,7 +14,7 @@ export function resolveStartupPlugins(input: {
   configResult: ConfigResult;
   env?: NodeJS.ProcessEnv;
   logger?: Logger;
-  options: Pick<ZCodeAppOptions, "officialPluginRoots" | "pluginStorageRoot" | "includeVisualize">;
+  options: Pick<ZodyAppOptions, "officialPluginRoots" | "pluginStorageRoot" | "includeVisualize">;
   startupTimer: StartupTimer;
   workingDirectory: string;
 }): PluginLoadOutcome {

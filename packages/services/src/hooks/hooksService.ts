@@ -45,7 +45,7 @@ const HOOK_EVENTS: readonly HookEvent[] = [
   "Stop",
 ];
 
-interface ZCodeConfigFile {
+interface ZodyConfigFile {
   hooks?: WorkspaceHooksConfig;
   [key: string]: unknown;
 }
@@ -280,7 +280,7 @@ async function writeZCodeHooksConfig(
   const effectivePath = workspacePath
     ? resolveProjectResourcePaths(workspacePath, ZCODE_CONFIG_FILE).readPath
     : configPath;
-  const existingConfig = (await readJsonFile<ZCodeConfigFile>(effectivePath)) ?? {};
+  const existingConfig = (await readJsonFile<ZodyConfigFile>(effectivePath)) ?? {};
   const enabled = resolveNextRootEnabled(existingConfig.hooks?.enabled, hooks);
   await atomicWriteWorkspaceHookConfig(configPath, {
     ...existingConfig,

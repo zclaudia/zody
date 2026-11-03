@@ -45,7 +45,7 @@ import { resolve } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import {
   createSharedZCodeCredentialStore,
-  type SharedZCodeCredentialStore,
+  type SharedZodyCredentialStore,
 } from "../auth/shared-credentials.js";
 import { normalizeMcpToolDescriptor } from "./descriptor.js";
 import {
@@ -203,7 +203,7 @@ class NodeMcpAdapter implements McpPort {
   private readonly network?: NetworkEgressEnvPolicy;
   private readonly telemetry?: McpTelemetryTracker;
   private readonly connectionGenerations = new Map<string, number>();
-  private credentialStore?: SharedZCodeCredentialStore;
+  private credentialStore?: SharedZodyCredentialStore;
   private readonly records = new Map<string, McpServerRecord>();
   private readonly workingDirectory?: string;
   private readonly elicitation?: McpElicitationPort;
@@ -1724,7 +1724,7 @@ class NodeMcpAdapter implements McpPort {
     return undefined;
   }
 
-  private resolveCredentialStore(): SharedZCodeCredentialStore {
+  private resolveCredentialStore(): SharedZodyCredentialStore {
     this.credentialStore ??= this.mcpOAuth?.credentialStore ?? createSharedZCodeCredentialStore();
     return this.credentialStore;
   }

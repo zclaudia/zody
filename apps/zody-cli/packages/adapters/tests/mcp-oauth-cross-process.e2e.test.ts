@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   createSharedZCodeCredentialStore,
-  type SharedZCodeCredentialStore,
+  type SharedZodyCredentialStore,
 } from "../src/auth/shared-credentials.js";
 import { publishCanonicalCredentials } from "../src/mcp/oauth-credentials.js";
 import { createCredentialKeyPrefix } from "../src/mcp/oauth.js";
@@ -339,7 +339,7 @@ function runChild(config: Record<string, unknown>): ChildHandle {
 }
 
 async function createCredentials(secret: string): Promise<{
-  credentialStore: SharedZCodeCredentialStore;
+  credentialStore: SharedZodyCredentialStore;
   credentialsPath: string;
 }> {
   const directory = await mkdtemp(join(tmpdir(), "zcode-mcp-oauth-cross-process-"));

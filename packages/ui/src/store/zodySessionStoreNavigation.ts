@@ -14,15 +14,15 @@ import {
   type AutomationsNavigationTab,
   type WorkspaceNavEntry,
 } from "@/lib/taskNavigationHistory.js";
-import type { ZCodeSessionStoreState } from "./zodySessionStoreTypes.js";
+import type { ZodySessionStoreState } from "./zodySessionStoreTypes.js";
 
 type SetFn = (
   partial:
-    | ZCodeSessionStoreState
-    | Partial<ZCodeSessionStoreState>
-    | ((state: ZCodeSessionStoreState) => ZCodeSessionStoreState | Partial<ZCodeSessionStoreState>),
+    | ZodySessionStoreState
+    | Partial<ZodySessionStoreState>
+    | ((state: ZodySessionStoreState) => ZodySessionStoreState | Partial<ZodySessionStoreState>),
 ) => void;
-type GetFn = () => ZCodeSessionStoreState;
+type GetFn = () => ZodySessionStoreState;
 
 /**
  * 创建导航切片，供 store creator 展开使用：

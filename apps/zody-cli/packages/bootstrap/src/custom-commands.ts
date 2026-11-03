@@ -10,7 +10,7 @@ import type {
 import { resolveZCodePlugins } from "./plugins.js";
 import { collectDisabledPaths } from "./skill-command-overrides.js";
 
-export interface ListZCodeCustomCommandsOptions {
+export interface ListZodyCustomCommandsOptions {
   env?: NodeJS.ProcessEnv;
   homeDirectory?: string;
   logger?: Logger;
@@ -20,17 +20,17 @@ export interface ListZCodeCustomCommandsOptions {
   workingDirectory?: string;
 }
 
-export interface InspectZCodeCustomCommandOptions extends ListZCodeCustomCommandsOptions {
+export interface InspectZodyCustomCommandOptions extends ListZodyCustomCommandsOptions {
   name: string;
 }
 
-export interface ZCodeCustomCommandInspection {
+export interface ZodyCustomCommandInspection {
   command: CustomCommandContent;
   diagnostics: CustomCommandDiagnostic[];
 }
 
 export async function listZCodeCustomCommands(
-  options: ListZCodeCustomCommandsOptions = {},
+  options: ListZodyCustomCommandsOptions = {},
 ): Promise<CustomCommandLoadOutcome> {
   const discovery = createCustomCommandDiscovery(options);
   return await discovery.adapter.discoverCommands({
@@ -39,8 +39,8 @@ export async function listZCodeCustomCommands(
 }
 
 export async function inspectZCodeCustomCommand(
-  options: InspectZCodeCustomCommandOptions,
-): Promise<ZCodeCustomCommandInspection> {
+  options: InspectZodyCustomCommandOptions,
+): Promise<ZodyCustomCommandInspection> {
   const discovery = createCustomCommandDiscovery(options);
   const workingDirectory = discovery.workingDirectory;
   const adapter = discovery.adapter;
@@ -60,7 +60,7 @@ export async function inspectZCodeCustomCommand(
 }
 
 export async function loadZCodeCustomCommand(
-  options: InspectZCodeCustomCommandOptions,
+  options: InspectZodyCustomCommandOptions,
 ): Promise<CustomCommandContent> {
   const discovery = createCustomCommandDiscovery(options);
   return await discovery.adapter.loadCommand({
@@ -69,7 +69,7 @@ export async function loadZCodeCustomCommand(
   });
 }
 
-function createCustomCommandDiscovery(options: ListZCodeCustomCommandsOptions) {
+function createCustomCommandDiscovery(options: ListZodyCustomCommandsOptions) {
   const workingDirectory = resolve(options.workingDirectory ?? process.cwd());
   const configResult = createConfig({
     env: options.env,

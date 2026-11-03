@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
-import type { SharedZCodeCredentialStore } from "@zody/adapters/auth";
+import type { SharedZodyCredentialStore } from "@zody/adapters/auth";
 import {
   NodeModelSelectionConfigRepository,
   NodePersonalProviderConfigRepository,
@@ -90,7 +90,7 @@ describe("Todo104 CLI 同文件默认选择", () => {
       ZCODE_PERSONAL_PROVIDER_CONFIG_FILE: personalPath,
     };
     // 不读取测试机账号凭据，只有迁移和正式文件读写参与本用例。
-    const credentialStore = { loadMany: async () => ({}) } as unknown as SharedZCodeCredentialStore;
+    const credentialStore = { loadMany: async () => ({}) } as unknown as SharedZodyCredentialStore;
     const standalone = await startProcessProviderRegistryRuntime(env, {
       standalone: { legacyCliUserConfigFilePath: legacyPath, credentialStore },
     });

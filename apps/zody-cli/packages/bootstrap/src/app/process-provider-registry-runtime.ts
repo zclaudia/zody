@@ -17,7 +17,7 @@ import {
   downloadZCodeBuiltinRelease,
   resolveZCodeBuiltinClientPlatform,
   ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV,
-  type ZCodeBuiltinRefreshEvent,
+  type ZodyBuiltinRefreshEvent,
 } from "@zody/provider-node";
 import { readLegacyCliPersonalProviderConfig } from "./legacy-cli-personal-provider-config-importer.js";
 
@@ -27,7 +27,7 @@ export interface ProcessProviderRegistryRuntimeOptions {
     readonly legacyCliUserConfigFilePath?: string;
     readonly request?: typeof fetch;
     readonly onBuiltinRefreshError?: (error: unknown) => void;
-    readonly onBuiltinRefreshResult?: (event: ZCodeBuiltinRefreshEvent) => void;
+    readonly onBuiltinRefreshResult?: (event: ZodyBuiltinRefreshEvent) => void;
   };
 }
 

@@ -10,16 +10,16 @@ import {
 export const ZCODE_BUILTIN_RELEASE_SCHEMA_VERSION = 1 as const;
 const RETIRED_ZAPI_PROVIDER_ID = "builtin:zapi";
 
-export interface ZCodeBuiltinConfigContent {
+export interface ZodyBuiltinConfigContent {
   readonly providers: ProviderConfigMap;
   readonly providerTemplates: ProviderTemplateMap;
   readonly modelConfigRules: ModelConfigRules;
 }
 
-export interface ZCodeBuiltinRelease {
+export interface ZodyBuiltinRelease {
   readonly schemaVersion: typeof ZCODE_BUILTIN_RELEASE_SCHEMA_VERSION;
   readonly revision: number;
-  readonly config: ZCodeBuiltinConfigContent;
+  readonly config: ZodyBuiltinConfigContent;
 }
 
 const releaseSchema = z
@@ -35,7 +35,7 @@ const releaseSchema = z
   })
   .strict();
 
-export function decodeZCodeBuiltinRelease(input: unknown): ZCodeBuiltinRelease {
+export function decodeZCodeBuiltinRelease(input: unknown): ZodyBuiltinRelease {
   const parsed = releaseSchema.parse(input);
   const { providers, providerTemplates } = parseZCodeBuiltinProviderConfigRules(
     parsed.config.providerConfigRules,
@@ -56,7 +56,7 @@ export function decodeZCodeBuiltinRelease(input: unknown): ZCodeBuiltinRelease {
   });
 }
 
-export function encodeZCodeBuiltinRelease(release: ZCodeBuiltinRelease): object {
+export function encodeZCodeBuiltinRelease(release: ZodyBuiltinRelease): object {
   return {
     schemaVersion: ZCODE_BUILTIN_RELEASE_SCHEMA_VERSION,
     revision: release.revision,
@@ -70,6 +70,6 @@ export function encodeZCodeBuiltinRelease(release: ZCodeBuiltinRelease): object 
   };
 }
 
-export function serializeZCodeBuiltinRelease(release: ZCodeBuiltinRelease): string {
+export function serializeZCodeBuiltinRelease(release: ZodyBuiltinRelease): string {
   return JSON.stringify(encodeZCodeBuiltinRelease(release));
 }

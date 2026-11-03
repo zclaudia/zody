@@ -14,7 +14,7 @@ import {
   reassembleTopicWireFrames,
   routedTopicWireFrameSchema,
 } from "@zody/shared/zody-protocol-v4";
-import type { ZCodeApp, ZCodeAppOptions } from "../src/app/types.js";
+import type { ZodyApp, ZodyAppOptions } from "../src/app/types.js";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 
@@ -107,7 +107,7 @@ describe("v4 queue auto-drain foreground races", () => {
       );
 
     const server = new ZCodeProtocolAgentServer({
-      createZCodeApp: (options: ZCodeAppOptions) => {
+      createZCodeApp: (options: ZodyAppOptions) => {
         const app = createFakeApp(options);
         return {
           ...app,
@@ -128,7 +128,7 @@ describe("v4 queue auto-drain foreground races", () => {
               return () => {};
             },
           },
-        } as ZCodeApp;
+        } as ZodyApp;
       },
       cwd: workspace.workspacePath,
       version: "test-version",

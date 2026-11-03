@@ -11,7 +11,7 @@ import {
   zcodeSessionStateSnapshotSchema,
   type ZodyProtocolMessage,
 } from "@zody/shared";
-import type { ZCodeAppOptions } from "../src/app/types.js";
+import type { ZodyAppOptions } from "../src/app/types.js";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 
@@ -32,14 +32,14 @@ interface Harness {
   server: ZCodeProtocolAgentServer;
   stores: InMemorySessionEventStore[];
   factoryCalls: string[];
-  eventStore: () => ZCodeAppOptions["eventStore"];
+  eventStore: () => ZodyAppOptions["eventStore"];
   liveSink: () => ((event: SessionEvent) => void | Promise<void>) | undefined;
 }
 
 function createHarness(): Harness {
   const stores: InMemorySessionEventStore[] = [];
   const factoryCalls: string[] = [];
-  let eventStore: ZCodeAppOptions["eventStore"];
+  let eventStore: ZodyAppOptions["eventStore"];
   let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
   const server = new ZCodeProtocolAgentServer({
     createSessionEventStore: (sessionId) => {

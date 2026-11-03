@@ -1,6 +1,6 @@
-import type { ZCodeCopy } from "../types.js";
+import type { ZodyCopy } from "../types.js";
 
-export const enUS: ZCodeCopy = {
+export const enUS: ZodyCopy = {
   locale: "en-US",
   cli: {
     errors: {

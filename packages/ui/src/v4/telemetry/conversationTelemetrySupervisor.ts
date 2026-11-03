@@ -57,7 +57,7 @@ import {
   reportUiToolCallDetail,
   reportUiTurnBreakdown,
 } from "@/lib/uiPerfArmsTelemetry.js";
-import type { ZCodeUiError } from "@/lib/zodyUiError.js";
+import type { ZodyUiError } from "@/lib/zodyUiError.js";
 import { resolveLegacyRuntimeModelValue } from "@/v4/telemetry/conversationPromptTelemetry.js";
 
 const MAX_DEDUPE_KEYS = 2_000;
@@ -1305,7 +1305,7 @@ export class ConversationTelemetrySupervisor {
     surface?: ChatErrorBannerSurface;
     errorKey?: string | null;
     displayMessage: string;
-    error: ZCodeUiError;
+    error: ZodyUiError;
   }): void {
     if (this.disposed) return;
     void reportChatErrorBannerTelemetry(this.platform, {

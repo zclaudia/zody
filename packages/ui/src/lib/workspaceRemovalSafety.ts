@@ -1,6 +1,6 @@
 import type { FileEntry, ZodyTaskMeta, ZodyTaskRuntimeStatus } from "@zody/shared";
 import type { IFileService } from "@zody/services";
-import type { WorkspaceZCodeUIState } from "@/store/zodySessionStoreTypes.js";
+import type { WorkspaceZodyUIState } from "@/store/zodySessionStoreTypes.js";
 import { isChatTaskRunning } from "@/lib/chatStatus.js";
 import { logger } from "@/logger.js";
 
@@ -39,7 +39,7 @@ for (let index = 1; index <= 9; index += 1) {
 }
 
 export function hasRunningWorkspaceChat(params: {
-  workspaceState: Pick<WorkspaceZCodeUIState, "draftRuntime" | "taskRuntimeByTaskId">;
+  workspaceState: Pick<WorkspaceZodyUIState, "draftRuntime" | "taskRuntimeByTaskId">;
   taskItems: Pick<ZodyTaskMeta, "taskId">[];
 }): boolean {
   if (isChatTaskRunning(params.workspaceState.draftRuntime.status)) {

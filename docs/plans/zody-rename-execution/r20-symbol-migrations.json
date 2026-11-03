@@ -5400,6 +5400,902 @@
       "controllerReport": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-04-controller-verification.md",
       "implementationReport": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-04-implementation.md",
       "review": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-04-deepseek-review.md"
+    },
+    {
+      "id": "R20.4-types-remaining-01",
+      "base": "a8a0fe2b5b168536bfb68d24911ba4368f7d1ff5",
+      "candidate": null,
+      "status": "controller-verified-pending-DeepSeek",
+      "records": [
+        {
+          "file": "apps/zody-cli/packages/adapters/src/auth/credential-cipher.ts",
+          "old": "ZCodeCredentialCipher",
+          "new": "ZodyCredentialCipher",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/adapters/src/auth/credential-cipher.ts",
+          "old": "ZCodeCredentialCipherOptions",
+          "new": "ZodyCredentialCipherOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/adapters/src/auth/shared-credentials.ts",
+          "old": "SharedZCodeCredentialStoreOptions",
+          "new": "SharedZodyCredentialStoreOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/adapters/src/auth/shared-credentials.ts",
+          "old": "SharedZCodeCredentialStore",
+          "new": "SharedZodyCredentialStore",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/adapters/src/config/schema.ts",
+          "old": "ZCodeConfigFile",
+          "new": "ZodyConfigFile",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/app/types.ts",
+          "old": "ZCodeAppRuntimeConfigInput",
+          "new": "ZodyAppRuntimeConfigInput",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/app/types.ts",
+          "old": "ZCodeAppOptions",
+          "new": "ZodyAppOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/app/types.ts",
+          "old": "ZCodePluginSetResult",
+          "new": "ZodyPluginSetResult",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/app/types.ts",
+          "old": "ZCodePluginUninstallResult",
+          "new": "ZodyPluginUninstallResult",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/app/types.ts",
+          "old": "ZCodeApp",
+          "new": "ZodyApp",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/app/types.ts",
+          "old": "RunZCodeProtocolAgentOptions",
+          "new": "RunZodyProtocolAgentOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/app/types.ts",
+          "old": "ListZCodeSessionsOptions",
+          "new": "ListZodySessionsOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/builtin-prompt-command.ts",
+          "old": "ResolveZCodeBuiltinPromptCommandOptions",
+          "new": "ResolveZodyBuiltinPromptCommandOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/builtin-prompt-command.ts",
+          "old": "ResolvedZCodeBuiltinPromptCommand",
+          "new": "ResolvedZodyBuiltinPromptCommand",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/custom-command-prompt.ts",
+          "old": "ResolveZCodeCustomCommandPromptOptions",
+          "new": "ResolveZodyCustomCommandPromptOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/custom-commands.ts",
+          "old": "ListZCodeCustomCommandsOptions",
+          "new": "ListZodyCustomCommandsOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/custom-commands.ts",
+          "old": "InspectZCodeCustomCommandOptions",
+          "new": "InspectZodyCustomCommandOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/custom-commands.ts",
+          "old": "ZCodeCustomCommandInspection",
+          "new": "ZodyCustomCommandInspection",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ResolveZCodePluginsOptions",
+          "new": "ResolveZodyPluginsOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ListZCodePluginsOptions",
+          "new": "ListZodyPluginsOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "SetZCodePluginEnabledOptions",
+          "new": "SetZodyPluginEnabledOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "SetZCodePluginEnabledResult",
+          "new": "SetZodyPluginEnabledResult",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ZCodeMarketplaceSummaryData",
+          "new": "ZodyMarketplaceSummaryData",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ZCodeAvailablePluginData",
+          "new": "ZodyAvailablePluginData",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ZCodeInstalledPluginData",
+          "new": "ZodyInstalledPluginData",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ZCodePluginsOverviewData",
+          "new": "ZodyPluginsOverviewData",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ZCodeMarketplaceUpdateData",
+          "new": "ZodyMarketplaceUpdateData",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "AddZCodeMarketplaceOptions",
+          "new": "AddZodyMarketplaceOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "RemoveZCodeMarketplaceOptions",
+          "new": "RemoveZodyMarketplaceOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "UpdateZCodeMarketplaceOptions",
+          "new": "UpdateZodyMarketplaceOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "InstallZCodeMarketplacePluginOptions",
+          "new": "InstallZodyMarketplacePluginOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "UninstallZCodeMarketplacePluginOptions",
+          "new": "UninstallZodyMarketplacePluginOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "UpdateZCodeMarketplacePluginOptions",
+          "new": "UpdateZodyMarketplacePluginOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ValidateZCodePluginPathOptions",
+          "new": "ValidateZodyPluginPathOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ZCodePluginUpdateData",
+          "new": "ZodyPluginUpdateData",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ConfigureZCodePluginOptions",
+          "new": "ConfigureZodyPluginOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ResetZCodePluginConfigOptions",
+          "new": "ResetZodyPluginConfigOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ValidateZCodePluginOptions",
+          "new": "ValidateZodyPluginOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "DescribeZCodePluginOptions",
+          "new": "DescribeZodyPluginOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+          "old": "ZCodePluginInstallData",
+          "new": "ZodyPluginInstallData",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/process-resource-sampler.ts",
+          "old": "CreateZCodeProcessResourceSamplerOptions",
+          "new": "CreateZodyProcessResourceSamplerOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/process-resource-sampler.ts",
+          "old": "ZCodeProcessResourceSampler",
+          "new": "ZodyProcessResourceSampler",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/skills.ts",
+          "old": "ListZCodeSkillsOptions",
+          "new": "ListZodySkillsOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/skills.ts",
+          "old": "InspectZCodeSkillOptions",
+          "new": "InspectZodySkillOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/skills.ts",
+          "old": "ZCodeSkillInspection",
+          "new": "ZodySkillInspection",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/subagents.ts",
+          "old": "LoadZCodeAgentProfilesInput",
+          "new": "LoadZodyAgentProfilesInput",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/bootstrap/src/subagents.ts",
+          "old": "LoadZCodeAgentProfilesResult",
+          "new": "LoadZodyAgentProfilesResult",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/packages/i18n/src/types.ts",
+          "old": "ZCodeCopy",
+          "new": "ZodyCopy",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/tools/prompt-trajectory/src/record.ts",
+          "old": "ZCodeBootstrapModule",
+          "new": "ZodyBootstrapModule",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/tools/prompt-trajectory/src/record.ts",
+          "old": "ZCodeContractsModule",
+          "new": "ZodyContractsModule",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "apps/zody-cli/tools/prompt-trajectory/src/record.ts",
+          "old": "ZCodeProviderModule",
+          "new": "ZodyProviderModule",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/desktop/src/host/mobileNotificationEventBridge.ts",
+          "old": "ZCodeSessionTerminalEvent",
+          "new": "ZodySessionTerminalEvent",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/desktop/src/main/desktopZodyDataSizeTelemetry.ts",
+          "old": "ZCodeDataSizeTelemetryTiming",
+          "new": "ZodyDataSizeTelemetryTiming",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/desktop/src/main/desktopZodyDataSizeTelemetry.ts",
+          "old": "ZCodeDataSizeTelemetryLogger",
+          "new": "ZodyDataSizeTelemetryLogger",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/desktop/src/main/desktopZodyDataSizeTelemetry.ts",
+          "old": "ZCodeDataSizeTelemetrySchedulerDependencies",
+          "new": "ZodyDataSizeTelemetrySchedulerDependencies",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/desktop/src/main/zodyDataSizeScanner.ts",
+          "old": "ZCodeDataSizePartialReason",
+          "new": "ZodyDataSizePartialReason",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/desktop/src/main/zodyDataSizeScanner.ts",
+          "old": "ZCodeDataSizeScanResult",
+          "new": "ZodyDataSizeScanResult",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/desktop/src/main/zodyDataSizeScanner.ts",
+          "old": "ZCodeDataSizeScanRequest",
+          "new": "ZodyDataSizeScanRequest",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/desktop/src/main/zodyDataSizeScanner.ts",
+          "old": "ZCodeDataSizeScanOptions",
+          "new": "ZodyDataSizeScanOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/desktop/src/main/zodyDataSizeTelemetryState.ts",
+          "old": "ZCodeDataSizeTelemetryState",
+          "new": "ZodyDataSizeTelemetryState",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/desktop/src/renderer/src/plugin-sandbox/aliasApi.ts",
+          "old": "ZcodeAliasApi",
+          "new": "ZodyAliasApi",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/endpoint-scoped-zody-builtin-source.ts",
+          "old": "EndpointScopedZCodeBuiltinSourceOptions",
+          "new": "EndpointScopedZodyBuiltinSourceOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-cache-paths.ts",
+          "old": "ZCodeBuiltinCachePathOptions",
+          "new": "ZodyBuiltinCachePathOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-cache-paths.ts",
+          "old": "ZCodeBuiltinCachePaths",
+          "new": "ZodyBuiltinCachePaths",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-download.ts",
+          "old": "ZCodeBuiltinDownloadOptions",
+          "new": "ZodyBuiltinDownloadOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-provider-config-materializer.ts",
+          "old": "MaterializeZCodeBuiltinProviderConfigOptions",
+          "new": "MaterializeZodyBuiltinProviderConfigOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-provider-config-source.ts",
+          "old": "NodeZCodeBuiltinProviderConfigSourceOptions",
+          "new": "NodeZodyBuiltinProviderConfigSourceOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-provider-config-source.ts",
+          "old": "ApplyZCodeBuiltinReleaseResult",
+          "new": "ApplyZodyBuiltinReleaseResult",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-release.ts",
+          "old": "ZCodeBuiltinConfigContent",
+          "new": "ZodyBuiltinConfigContent",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-release.ts",
+          "old": "ZCodeBuiltinRelease",
+          "new": "ZodyBuiltinRelease",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-remote-synchronizer.ts",
+          "old": "ZCodeBuiltinRefreshResult",
+          "new": "ZodyBuiltinRefreshResult",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-remote-synchronizer.ts",
+          "old": "ZCodeBuiltinRemoteSynchronizerOptions",
+          "new": "ZodyBuiltinRemoteSynchronizerOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/provider-node/src/zody-builtin-remote-synchronizer.ts",
+          "old": "ZCodeBuiltinRefreshEvent",
+          "new": "ZodyBuiltinRefreshEvent",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/server/src/bundledZodyBuiltinProviderConfig.ts",
+          "old": "MaterializeBundledZCodeBuiltinProviderConfigOptions",
+          "new": "MaterializeBundledZodyBuiltinProviderConfigOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/server/src/remote/zodyAgentDeploy.ts",
+          "old": "DeployZCodeAgentRuntimeOptions",
+          "new": "DeployZodyAgentRuntimeOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/server/src/remote/zodyAgentDevDeploy.ts",
+          "old": "DeployDevelopmentZCodeAgentRuntimeParams",
+          "new": "DeployDevelopmentZodyAgentRuntimeParams",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/services/src/hooks/hooksService.ts",
+          "old": "ZCodeConfigFile",
+          "new": "ZodyConfigFile",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
+          "old": "ZCodeConfigFile",
+          "new": "ZodyConfigFile",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
+          "old": "ZCodeOpenCodeProviderConfig",
+          "new": "ZodyOpenCodeProviderConfig",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
+          "old": "ZCodeOpenCodeModelConfig",
+          "new": "ZodyOpenCodeModelConfig",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
+          "old": "ZCodeReasoningConfigExtension",
+          "new": "ZodyReasoningConfigExtension",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
+          "old": "ZCodeProviderConfigExtension",
+          "new": "ZodyProviderConfigExtension",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
+          "old": "ZCodeModelConfigExtension",
+          "new": "ZodyModelConfigExtension",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/services/src/model-provider/zodyBuiltinRemoteConfig.ts",
+          "old": "FetchZCodeBuiltinRemoteReleaseOptions",
+          "new": "FetchZodyBuiltinRemoteReleaseOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/services/src/providers/sourceHeaders.ts",
+          "old": "ZCodeSourceHeaderOptions",
+          "new": "ZodySourceHeaderOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/app-shell/types.ts",
+          "old": "WorkspaceShellZCodeState",
+          "new": "WorkspaceShellZodyState",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/app-shell/useWorkspaceShellZodyState.ts",
+          "old": "WorkspaceShellZCodeState",
+          "new": "WorkspaceShellZodyState",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/askUserQuestion.ts",
+          "old": "ZCodeUserQuestionAnswers",
+          "new": "ZodyUserQuestionAnswers",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodyFileCitation.ts",
+          "old": "ZCodeFileCitationPreviewKind",
+          "new": "ZodyFileCitationPreviewKind",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodyFileCitation.ts",
+          "old": "ZCodeFileCitation",
+          "new": "ZodyFileCitation",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodyFileCitation.ts",
+          "old": "ZCodeFileCitationDirective",
+          "new": "ZodyFileCitationDirective",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodyFileCitation.ts",
+          "old": "ZCodeFileCitationProjection",
+          "new": "ZodyFileCitationProjection",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodySessionEventOrder.ts",
+          "old": "ZCodeSessionEventGap",
+          "new": "ZodySessionEventGap",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodySessionEventOrder.ts",
+          "old": "ZCodeSessionEventOrderResult",
+          "new": "ZodySessionEventOrderResult",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodySessionEventOrder.ts",
+          "old": "ZCodeSessionEventOrderGate",
+          "new": "ZodySessionEventOrderGate",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodySessionProjection.ts",
+          "old": "ZCodeSessionEventProjectionState",
+          "new": "ZodySessionEventProjectionState",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodySessionProjection.ts",
+          "old": "ZCodeSessionProjectionMode",
+          "new": "ZodySessionProjectionMode",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodySessionRestore.ts",
+          "old": "ZCodeSessionRestoreService",
+          "new": "ZodySessionRestoreService",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodySessionRestore.ts",
+          "old": "ZCodeLegacyTaskSnapshotRestoreService",
+          "new": "ZodyLegacyTaskSnapshotRestoreService",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodyUiError.ts",
+          "old": "ZCodeUiError",
+          "new": "ZodyUiError",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/lib/zodyUiError.ts",
+          "old": "NormalizeZCodeUiErrorOptions",
+          "new": "NormalizeZodyUiErrorOptions",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/store/index.ts",
+          "old": "ZCodeState",
+          "new": "ZodyState",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/store/index.ts",
+          "old": "ZCodeStore",
+          "new": "ZodyStore",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/store/zodySessionStore.ts",
+          "old": "ZCodeSessionStoreE2EBridge",
+          "new": "ZodySessionStoreE2EBridge",
+          "kind": "TypeAliasDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/store/zodySessionStoreTypes.ts",
+          "old": "WorkspaceZCodeUIState",
+          "new": "WorkspaceZodyUIState",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        },
+        {
+          "file": "packages/ui/src/store/zodySessionStoreTypes.ts",
+          "old": "ZCodeSessionStoreState",
+          "new": "ZodySessionStoreState",
+          "kind": "InterfaceDeclaration",
+          "sourceStatus": "binding-candidate"
+        }
+      ],
+      "files": [
+        "apps/zody-cli/packages/adapters/src/auth/credential-cipher.ts",
+        "apps/zody-cli/packages/adapters/src/auth/shared-credentials.ts",
+        "apps/zody-cli/packages/adapters/src/mcp/oauth-credentials.ts",
+        "apps/zody-cli/packages/adapters/src/mcp/oauth-lease.ts",
+        "apps/zody-cli/packages/adapters/src/mcp/oauth-shared.ts",
+        "apps/zody-cli/packages/adapters/src/mcp/oauth-interactive.ts",
+        "apps/zody-cli/packages/adapters/src/mcp/oauth-refresh.ts",
+        "apps/zody-cli/packages/adapters/src/mcp/oauth-provider.ts",
+        "apps/zody-cli/packages/adapters/src/mcp/oauth.ts",
+        "apps/zody-cli/packages/adapters/src/mcp/index.ts",
+        "apps/zody-cli/packages/adapters/tests/mcp-oauth-cross-process.e2e.test.ts",
+        "apps/zody-cli/packages/adapters/tests/mcp-oauth-refresh.test.ts",
+        "apps/zody-cli/packages/adapters/tests/mcp-oauth.e2e.test.ts",
+        "apps/zody-cli/packages/adapters/tests/mcp.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/personal-config-default-integration.test.ts",
+        "apps/zody-cli/packages/adapters/src/config/schema.ts",
+        "apps/zody-cli/packages/adapters/src/config/index.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/types.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/app-config-options.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/workflow-facade.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/plugin-facade.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/runtime-config.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/script-workflow-child-runtime.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/startup-marks.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/create-app.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol/server-types.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol/provider-runtime-headers.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol/workspace-model-runtime.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol-entrypoint.ts",
+        "apps/zody-cli/packages/bootstrap/src/index.ts",
+        "apps/zody-cli/packages/bootstrap/tests/helpers/registry-backed-test-app.ts",
+        "apps/zody-cli/packages/bootstrap/tests/helpers/fake-zody-app.ts",
+        "apps/zody-cli/packages/bootstrap/tests/cua-startup-identity.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/dynamic-workflow-policy.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/plugins.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/provider-runtime-headers-cancel.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/session-event-store-retention.protocol.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/v4-auto-drain-race.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/v4-cold-resume.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/visualize-skill-gate.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/zody-protocol.test.ts",
+        "apps/zody-cli/packages/cli/src/cli-types.ts",
+        "apps/zody-cli/packages/cli/src/headless-workflow.ts",
+        "apps/zody-cli/packages/cli/src/resume.ts",
+        "apps/zody-cli/packages/cli/src/tui-command-state.ts",
+        "apps/zody-cli/packages/cli/src/tui-prompt-handler.ts",
+        "apps/zody-cli/packages/cli/tests/headless-workflow-option.test.ts",
+        "apps/zody-cli/packages/cli/tests/tui-model-selection.test.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/workflow-methods.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/input-facade.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/session-facade.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/script-workflow-methods.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/commands/types.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/model-config-mutation.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol/runtime-resources.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol/session-mapper.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/commands/attachment-refs.ts",
+        "apps/zody-cli/packages/bootstrap/tests/app-subagent-legacy-init.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/model-config-mutation.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/session-resident-pool.test.ts",
+        "apps/zody-cli/packages/bootstrap/tests/session-selection-cold-resume.test.ts",
+        "apps/zody-cli/packages/cli/src/cua-launch-session.ts",
+        "apps/zody-cli/packages/cli/tests/cua-launch-session.test.ts",
+        "apps/zody-cli/packages/bootstrap/src/sessions.ts",
+        "apps/zody-cli/packages/bootstrap/src/builtin-prompt-command.ts",
+        "apps/zody-cli/packages/bootstrap/src/custom-command-prompt.ts",
+        "apps/zody-cli/packages/bootstrap/src/custom-commands.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol/slash-commands.ts",
+        "apps/zody-cli/packages/cli/src/commands-command.ts",
+        "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+        "apps/zody-cli/packages/cli/src/plugins-command-format.ts",
+        "apps/zody-cli/packages/cli/src/plugins-command.ts",
+        "apps/zody-cli/packages/bootstrap/src/process-resource-sampler.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol/runtime-cleanup.ts",
+        "apps/zody-cli/packages/bootstrap/src/zody-protocol/resource-sampler.ts",
+        "apps/zody-cli/packages/bootstrap/src/skills.ts",
+        "apps/zody-cli/packages/cli/src/skills-command.ts",
+        "apps/zody-cli/packages/bootstrap/src/subagents.ts",
+        "apps/zody-cli/packages/i18n/src/types.ts",
+        "apps/zody-cli/packages/i18n/src/locales/en-US.ts",
+        "apps/zody-cli/packages/i18n/src/locales/zh-CN.ts",
+        "apps/zody-cli/packages/i18n/src/index.ts",
+        "apps/zody-cli/packages/i18n/tests/i18n.test.ts",
+        "apps/zody-cli/tools/prompt-trajectory/src/record.ts",
+        "packages/desktop/src/host/mobileNotificationEventBridge.ts",
+        "packages/desktop/src/main/desktopZodyDataSizeTelemetry.ts",
+        "packages/desktop/src/main/zodyDataSizeScanner.ts",
+        "packages/desktop/src/main/zodyDataSizeWorkerClient.ts",
+        "packages/desktop/test/zodyDataSizeTelemetry.test.ts",
+        "packages/desktop/src/main/zodyDataSizeWorker.ts",
+        "packages/desktop/src/main/zodyDataSizeTelemetryState.ts",
+        "packages/desktop/src/renderer/src/plugin-sandbox/aliasApi.ts",
+        "packages/desktop/src/renderer/src/plugin-sandbox/openaiAlias.ts",
+        "packages/desktop/src/renderer/src/plugin-sandbox/aliasRuntime.ts",
+        "packages/provider-node/src/endpoint-scoped-zody-builtin-source.ts",
+        "packages/provider-node/src/provider-config-runtime.ts",
+        "packages/provider-node/src/zody-builtin-cache-paths.ts",
+        "packages/provider-node/src/zody-builtin-download.ts",
+        "packages/provider-node/src/zody-builtin-provider-config-materializer.ts",
+        "packages/provider-node/src/zody-builtin-provider-config-source.ts",
+        "packages/provider-node/src/zody-builtin-release.ts",
+        "packages/provider-node/src/zody-builtin-remote-synchronizer.ts",
+        "packages/services/src/model-provider/zodyBuiltinRemoteConfig.ts",
+        "apps/zody-cli/packages/bootstrap/src/app/process-provider-registry-runtime.ts",
+        "apps/zody-cli/packages/cli/src/provider-runtime-env.ts",
+        "packages/server/src/bundledZodyBuiltinProviderConfig.ts",
+        "packages/server/src/remote/zodyAgentDeploy.ts",
+        "packages/server/src/remote/zodyAgentDevDeploy.ts",
+        "packages/services/src/hooks/hooksService.ts",
+        "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
+        "packages/services/src/providers/sourceHeaders.ts",
+        "packages/ui/src/app-shell/types.ts",
+        "packages/ui/src/app-shell/useWorkspaceShellZodyState.ts",
+        "packages/ui/src/lib/askUserQuestion.ts",
+        "packages/ui/src/lib/zodyFileCitation.ts",
+        "packages/ui/src/lib/zodySessionEventOrder.ts",
+        "packages/ui/src/lib/zodySessionProjection.ts",
+        "packages/ui/test/zodySessionProjection.test.ts",
+        "packages/ui/src/lib/zodySessionRestore.ts",
+        "packages/ui/src/lib/zodyUiError.ts",
+        "packages/ui/src/store/zodySessionStoreTypes.ts",
+        "packages/ui/src/store/zodySessionStoreTaskSlice.ts",
+        "packages/ui/src/store/zodySessionStoreWorkspaceSlice.ts",
+        "packages/ui/src/ChatErrorBanner.tsx",
+        "packages/ui/src/lib/chatErrorAttribution.ts",
+        "packages/ui/src/lib/chatErrorBannerTelemetry.ts",
+        "packages/ui/src/v4/telemetry/conversationTelemetrySupervisor.ts",
+        "packages/ui/src/v4/ConversationComposer.tsx",
+        "packages/ui/src/v4/SessionPane.tsx",
+        "packages/ui/src/store/index.ts",
+        "packages/ui/src/index.ts",
+        "packages/ui/src/store/StoreProvider.tsx",
+        "packages/ui/src/store/zodySessionStore.ts",
+        "packages/ui/src/store/zodySessionStoreSelectors.ts",
+        "packages/ui/src/lib/workspaceDraftProvider.ts",
+        "packages/ui/src/v4/activeTaskProvider.ts",
+        "packages/ui/src/lib/unreadTaskCount.ts",
+        "packages/ui/src/lib/remoteWorkspaceSessionRuntime.ts",
+        "packages/ui/src/lib/workspaceRemovalSafety.ts",
+        "packages/ui/src/store/zodySessionStoreNavigation.ts"
+      ],
+      "edits": 854,
+      "patchSha256": "b28712e630cb208877a47b0ad81ed12b63cc422f79c9c0b85078859e23d7984a",
+      "controllerReport": "docs/plans/zody-rename-execution/reports/R20-symbols-types-remaining-controller-verification.md",
+      "implementationReport": "docs/plans/zody-rename-execution/reports/R20-symbols-types-remaining-implementation.md"
     }
   ]
 }

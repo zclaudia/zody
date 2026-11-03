@@ -6,14 +6,14 @@
  */
 import { create } from "zustand";
 import { shouldExposeE2EStoreBridge } from "@/lib/e2eStoreBridge.js";
-import { type ZCodeSessionStoreState } from "./zodySessionStoreTypes.js";
+import { type ZodySessionStoreState } from "./zodySessionStoreTypes.js";
 import { getWorkspaceState } from "./zodySessionStoreSelectors.js";
 import { createNavigationSlice } from "./zodySessionStoreNavigation.js";
 import { createTaskSlice } from "./zodySessionStoreTaskSlice.js";
 import { createWorkspaceSlice } from "./zodySessionStoreWorkspaceSlice.js";
 import { uiMemoryDiagnosticsRegistry } from "@/lib/memoryDiagnostics.js";
 
-export const useZCodeSessionStore = create<ZCodeSessionStoreState>()((set, get) => ({
+export const useZCodeSessionStore = create<ZodySessionStoreState>()((set, get) => ({
   workspaces: {},
   ...createNavigationSlice(set, get),
   ...createWorkspaceSlice(set),
@@ -22,11 +22,11 @@ export const useZCodeSessionStore = create<ZCodeSessionStoreState>()((set, get) 
     getWorkspaceState(get(), workspacePath, workspaceIdentity),
 }));
 
-type ZCodeSessionStoreE2EBridge = typeof useZCodeSessionStore;
+type ZodySessionStoreE2EBridge = typeof useZCodeSessionStore;
 
 declare global {
   interface Window {
-    __zcodeSessionStoreE2E?: ZCodeSessionStoreE2EBridge;
+    __zcodeSessionStoreE2E?: ZodySessionStoreE2EBridge;
   }
 }
 

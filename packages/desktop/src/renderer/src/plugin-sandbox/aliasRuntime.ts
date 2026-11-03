@@ -21,7 +21,7 @@ import {
   MCP_APPS_SET_WIDGET_STATE_METHOD,
   MCP_APPS_WIDGET_STATE_CONTEXT_KEY,
 } from "@zody/shared/mcp-apps";
-import type { OpenAiCompatApi, ZcodeAliasApi } from "./aliasApi.js";
+import type { OpenAiCompatApi, ZodyAliasApi } from "./aliasApi.js";
 import { createOpenAiCompatApi, readOpenAiGlobals } from "./openaiAlias.js";
 
 /**
@@ -73,7 +73,7 @@ export interface AliasAppLike {
 export const ZCODE_GLOBALS_EVENT = "zcode:globals";
 
 export interface PluginSandboxAliasRuntime {
-  zcode: ZcodeAliasApi;
+  zcode: ZodyAliasApi;
   openai: OpenAiCompatApi;
   /** 是否已经（或正在）握手；诊断用。 */
   readonly connecting: boolean;
@@ -165,7 +165,7 @@ export function createPluginSandboxAliasRuntime(options: {
   const whenReady = <T>(run: () => Promise<T>): Promise<T> => ready().then(run);
 
   const hostContext = () => app.getHostContext() ?? null;
-  const zcodeTarget: ZcodeAliasApi = {
+  const zcodeTarget: ZodyAliasApi = {
     get toolInput() {
       return toolInput;
     },

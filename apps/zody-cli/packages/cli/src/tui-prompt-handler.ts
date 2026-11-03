@@ -1,6 +1,6 @@
 import { getDefaultConfigPath, updateUiLocaleInFileConfig } from "@zody/adapters/config";
 import type { SessionEvent } from "@zody/contracts";
-import type { ZCodeAppOptions } from "@zody/bootstrap";
+import type { ZodyAppOptions } from "@zody/bootstrap";
 import { DEFAULT_LOCALE, type SupportedLocale } from "@zody/i18n";
 import type { TuiRequestPermission } from "@zody/tui";
 import type { GlobalOptions } from "@zody/shared-types";
@@ -71,7 +71,7 @@ export function createTuiSubmitPrompt(
     1,
     Math.trunc(deps.shutdownCleanupTimeoutMs ?? DEFAULT_CLI_CLEANUP_TIMEOUT_MS),
   );
-  const permissionBroker: NonNullable<ZCodeAppOptions["permissionBroker"]> = {
+  const permissionBroker: NonNullable<ZodyAppOptions["permissionBroker"]> = {
     requestPermission: async (request, requestOptions) => {
       const requestPermission = activeRequestPermission;
       if (!requestPermission) {

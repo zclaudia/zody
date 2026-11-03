@@ -8,16 +8,16 @@ import {
   decodeZCodeBuiltinRelease,
   encodeZCodeBuiltinRelease,
   serializeZCodeBuiltinRelease,
-  type ZCodeBuiltinRelease,
+  type ZodyBuiltinRelease,
 } from "./zody-builtin-release.js";
 
-export interface NodeZCodeBuiltinProviderConfigSourceOptions {
+export interface NodeZodyBuiltinProviderConfigSourceOptions {
   readonly bundledFilePath: string;
   readonly activeFilePath?: string;
   readonly watch?: boolean;
 }
 
-export type ApplyZCodeBuiltinReleaseResult = "updated" | "unchanged" | "stale";
+export type ApplyZodyBuiltinReleaseResult = "updated" | "unchanged" | "stale";
 
 /** Bundled、Active/LKG 与 Remote 共用同一 Release，并最终发布为现有 Config Snapshot。 */
 export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<ProviderConfigLayerSnapshot> {
@@ -31,7 +31,7 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
   #watchRefresh = Promise.resolve();
   #disposed = false;
 
-  constructor(options: NodeZCodeBuiltinProviderConfigSourceOptions) {
+  constructor(options: NodeZodyBuiltinProviderConfigSourceOptions) {
     const bundledFilePath = options.bundledFilePath.trim();
     if (!bundledFilePath) throw new Error("ZCode Built-in bundledFilePath 不能为空");
     this.#bundledFilePath = bundledFilePath;
@@ -48,7 +48,7 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
 
   async read(): Promise<ProviderConfigLayerSnapshot> {
     this.#assertNotDisposed();
-    let release: ZCodeBuiltinRelease;
+    let release: ZodyBuiltinRelease;
     try {
       await this.#ensureWatcher();
       release = await withFileLock(this.#activeFilePath, () => this.#readAndMaterializeLocked());
@@ -63,7 +63,7 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
     return snapshotFromRelease(release, this.#sourceKey);
   }
 
-  async applyRemoteRelease(release: ZCodeBuiltinRelease): Promise<ApplyZCodeBuiltinReleaseResult> {
+  async applyRemoteRelease(release: ZodyBuiltinRelease): Promise<ApplyZodyBuiltinReleaseResult> {
     this.#assertNotDisposed();
     await this.#ensureWatcher();
     const result = await withFileLock(this.#activeFilePath, async () => {
@@ -101,7 +101,7 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
     this.#listeners.clear();
   }
 
-  async #readAndMaterializeLocked(): Promise<ZCodeBuiltinRelease> {
+  async #readAndMaterializeLocked(): Promise<ZodyBuiltinRelease> {
     const [bundled, active] = await Promise.all([
       readReleaseCandidate(this.#bundledFilePath),
       this.#activeFilePath === this.#bundledFilePath
@@ -116,7 +116,7 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
     return selected;
   }
 
-  async #writeActiveLocked(release: ZCodeBuiltinRelease): Promise<void> {
+  async #writeActiveLocked(release: ZodyBuiltinRelease): Promise<void> {
     this.#assertNotDisposed();
     await atomicWritePrivateTextFile(
       this.#activeFilePath,
@@ -194,13 +194,13 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
 }
 
 export function createNodeZCodeBuiltinProviderConfigSource(
-  options: NodeZCodeBuiltinProviderConfigSourceOptions,
+  options: NodeZodyBuiltinProviderConfigSourceOptions,
 ): NodeZCodeBuiltinProviderConfigSource {
   return new NodeZCodeBuiltinProviderConfigSource(options);
 }
 
 interface ReleaseCandidate {
-  readonly release?: ZCodeBuiltinRelease;
+  readonly release?: ZodyBuiltinRelease;
   readonly error?: unknown;
 }
 
@@ -216,7 +216,7 @@ async function readReleaseCandidate(filePath: string): Promise<ReleaseCandidate 
 function selectReleaseCandidate(
   bundled: ReleaseCandidate | null,
   active: ReleaseCandidate | null,
-): ZCodeBuiltinRelease {
+): ZodyBuiltinRelease {
   if (
     bundled?.release &&
     active?.release &&
@@ -228,7 +228,7 @@ function selectReleaseCandidate(
     return bundled.release;
   }
   const valid = [bundled?.release, active?.release].filter(
-    (candidate): candidate is ZCodeBuiltinRelease => candidate !== undefined,
+    (candidate): candidate is ZodyBuiltinRelease => candidate !== undefined,
   );
   if (valid.length === 0) {
     throw new AggregateError(
@@ -242,7 +242,7 @@ function selectReleaseCandidate(
 }
 
 function snapshotFromRelease(
-  release: ZCodeBuiltinRelease,
+  release: ZodyBuiltinRelease,
   sourceKey: string,
 ): ProviderConfigLayerSnapshot {
   return Object.freeze({
@@ -253,7 +253,7 @@ function snapshotFromRelease(
   });
 }
 
-function signatureOf(release: ZCodeBuiltinRelease): string {
+function signatureOf(release: ZodyBuiltinRelease): string {
   return `${release.revision}:${serializeZCodeBuiltinRelease(release)}`;
 }
 

@@ -11,19 +11,19 @@ export type {
   CuaNodeReplMcpPortFactoryInput,
 } from "./app/cua-runtime-native-capture.js";
 export type {
-  ListZCodeSessionsOptions,
+  ListZodySessionsOptions,
   PromptInput,
   ResolveLatestSessionOptions,
   ResumeOptions,
-  RunZCodeProtocolAgentOptions,
+  RunZodyProtocolAgentOptions,
   SendInputOptions,
   SendInputResult,
   SetLocaleResult,
   SteerTurnOptions,
   SubmitPromptOptions,
   UserPromptInput,
-  ZCodeApp,
-  ZCodeAppOptions,
+  ZodyApp,
+  ZodyAppOptions,
   ZodyModelOption,
 } from "./app/types.js";
 export {
@@ -32,9 +32,9 @@ export {
   loadZCodeCustomCommand,
 } from "./custom-commands.js";
 export type {
-  InspectZCodeCustomCommandOptions,
-  ListZCodeCustomCommandsOptions,
-  ZCodeCustomCommandInspection,
+  InspectZodyCustomCommandOptions,
+  ListZodyCustomCommandsOptions,
+  ZodyCustomCommandInspection,
 } from "./custom-commands.js";
 export { createModelAdapter } from "./model-factory.js";
 export type { CreateModelAdapterOptions } from "./model-factory.js";
@@ -54,24 +54,24 @@ export {
   validateZCodePluginPath,
 } from "./plugins.js";
 export type {
-  AddZCodeMarketplaceOptions,
-  InstallZCodeMarketplacePluginOptions,
-  ListZCodePluginsOptions,
-  RemoveZCodeMarketplaceOptions,
-  ResolveZCodePluginsOptions,
-  SetZCodePluginEnabledOptions,
-  SetZCodePluginEnabledResult,
-  UninstallZCodeMarketplacePluginOptions,
-  UpdateZCodeMarketplaceOptions,
-  UpdateZCodeMarketplacePluginOptions,
-  ValidateZCodePluginPathOptions,
-  ZCodeAvailablePluginData,
-  ZCodeInstalledPluginData,
-  ZCodeMarketplaceSummaryData,
-  ZCodeMarketplaceUpdateData,
-  ZCodePluginInstallData,
-  ZCodePluginUpdateData,
-  ZCodePluginsOverviewData,
+  AddZodyMarketplaceOptions,
+  InstallZodyMarketplacePluginOptions,
+  ListZodyPluginsOptions,
+  RemoveZodyMarketplaceOptions,
+  ResolveZodyPluginsOptions,
+  SetZodyPluginEnabledOptions,
+  SetZodyPluginEnabledResult,
+  UninstallZodyMarketplacePluginOptions,
+  UpdateZodyMarketplaceOptions,
+  UpdateZodyMarketplacePluginOptions,
+  ValidateZodyPluginPathOptions,
+  ZodyAvailablePluginData,
+  ZodyInstalledPluginData,
+  ZodyMarketplaceSummaryData,
+  ZodyMarketplaceUpdateData,
+  ZodyPluginInstallData,
+  ZodyPluginUpdateData,
+  ZodyPluginsOverviewData,
 } from "./plugins.js";
 export { runZCodeProtocolAgent } from "./zody-protocol-entrypoint.js";
 // Exposed for the CLI's --output-format stream-json: it needs the same event
@@ -82,9 +82,9 @@ export type { SessionTranscriptMessage, SessionTranscriptPart } from "./session-
 export { listZCodeSessions, resolveLatestSession } from "./sessions.js";
 export { inspectZCodeSkill, listZCodeSkills } from "./skills.js";
 export type {
-  InspectZCodeSkillOptions,
-  ListZCodeSkillsOptions,
-  ZCodeSkillInspection,
+  InspectZodySkillOptions,
+  ListZodySkillsOptions,
+  ZodySkillInspection,
 } from "./skills.js";
 // Exposed for the CLI's headless slash routing: it must decide "is this a real
 // custom command?" with the *same* reserved-name gate the app facade's

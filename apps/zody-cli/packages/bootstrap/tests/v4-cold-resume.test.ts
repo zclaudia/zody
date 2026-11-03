@@ -70,7 +70,7 @@ import { resolveSessionContextUsage } from "../src/zody-protocol/session-mapper.
 import { getRegistryBackedModel } from "../src/app/provider-registry-selection.js";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import type { SessionUsageSeed } from "../src/zody-protocol-v4/product-projection.js";
-import type { ZCodeApp, ZCodeAppOptions } from "../src/app/types.js";
+import type { ZodyApp, ZodyAppOptions } from "../src/app/types.js";
 import { createApiKeyProviderConfig } from "./provider-config-fixtures.js";
 import { createRegistryBackedTestApp } from "./helpers/registry-backed-test-app.js";
 
@@ -1016,10 +1016,10 @@ interface ColdFakeAppProbe {
 }
 
 function createColdFakeApp(
-  options: ZCodeAppOptions | undefined,
+  options: ZodyAppOptions | undefined,
   sentInputs: Array<{ text: string }>,
   probe?: ColdFakeAppProbe,
-): ZCodeApp {
+): ZodyApp {
   const sessionId = options?.sessionId ?? ("sess_cold" as SessionId);
   const traceId = options?.traceContext?.traceId ?? ("trace_cold" as never);
   let runtimeSink: { onSessionEvent(event: SessionEvent): Promise<void> | void } | undefined;
@@ -1236,7 +1236,7 @@ function createColdFakeApp(
     },
     traceId,
     updateTargetStatus: async () => null,
-  } as ZCodeApp;
+  } as ZodyApp;
 }
 
 const SESSION_ID = "sess_cold_resume" as SessionId;
@@ -1639,7 +1639,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     dbPath: string,
     sentInputs: Array<{ text: string }>,
     probe?: ColdFakeAppProbe,
-    createdAppOptions: ZCodeAppOptions[] = [],
+    createdAppOptions: ZodyAppOptions[] = [],
   ) {
     const store = createSqliteSessionStore({ dbPath });
     const providerRegistry = createColdProviderRegistry();
@@ -1768,7 +1768,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
   // 模型恢复须走真实 App，不能让生命周期测试替身复制生产迁移逻辑。
   function bootRealRestartedServer(dbPath: string, registry = createColdProviderRegistry()) {
     const store = createSqliteSessionStore({ dbPath });
-    const apps: ZCodeApp[] = [];
+    const apps: ZodyApp[] = [];
     const server = new ZCodeProtocolAgentServer({
       cwd: process.cwd(),
       sessionStore: store,
@@ -1890,7 +1890,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
   it("rowsRange-first 与 subscribe 并发时只按 Host 当前设置冷恢复一次", async () => {
     const dbPath = join(tempRoot, "sessions.db");
     await seedPersistedSession(dbPath);
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const { server, store } = bootRestartedServer(dbPath, [], undefined, createdAppOptions);
     let pendingPreferenceRequestId: string | number | undefined;
     let markPreferenceRequested: (() => void) | undefined;
@@ -2467,7 +2467,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
         const dbPath = join(tempRoot, "sessions.db");
         await seedPersistedSession(dbPath, undefined, "subagent_child");
         const sentInputs: Array<{ text: string }> = [];
-        const options: ZCodeAppOptions[] = [];
+        const options: ZodyAppOptions[] = [];
         const { server, store } = bootRestartedServer(dbPath, sentInputs, undefined, options);
         const { v4Gateway: gateway } = (
           server as unknown as {
@@ -2642,7 +2642,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
   it("SAT29: 显式 session/list 按 workspace 查询隐藏身份，不激活 child；普通列表保留 fork", async () => {
     const dbPath = join(tempRoot, "sessions.db");
     await seedPersistedSession(dbPath, undefined, "subagent_child");
-    const options: ZCodeAppOptions[] = [];
+    const options: ZodyAppOptions[] = [];
     const { server, store } = bootRestartedServer(dbPath, [], undefined, options);
     try {
       await store.createSession({
@@ -2809,7 +2809,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     const dbPath = join(tempRoot, "sessions.db");
     await seedPersistedSession(dbPath);
     const sentInputs: Array<{ text: string }> = [];
-    const createdAppOptions: ZCodeAppOptions[] = [];
+    const createdAppOptions: ZodyAppOptions[] = [];
     const { server, store } = bootRestartedServer(dbPath, sentInputs, undefined, createdAppOptions);
     const attachmentWorkspace = {
       workspacePath: `${WORKSPACE_PATH}/`,

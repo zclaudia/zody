@@ -3,10 +3,10 @@ import type { Logger } from "@zody/contracts";
 import type { GlobalOptions, RunContext } from "@zody/shared-types";
 import type {
   inspectZCodeCustomCommand,
-  InspectZCodeCustomCommandOptions,
+  InspectZodyCustomCommandOptions,
   listZCodeCustomCommands,
-  ListZCodeCustomCommandsOptions,
-  ZCodeCustomCommandInspection,
+  ListZodyCustomCommandsOptions,
+  ZodyCustomCommandInspection,
 } from "@zody/bootstrap";
 import type { CliEnv } from "./env.js";
 
@@ -18,10 +18,10 @@ interface CommandsCommandDependencies {
   cwd?: () => string;
   env?: CliEnv;
   inspectCustomCommand?: (
-    options: InspectZCodeCustomCommandOptions,
+    options: InspectZodyCustomCommandOptions,
   ) => ReturnType<typeof inspectZCodeCustomCommand>;
   listCustomCommands?: (
-    options: ListZCodeCustomCommandsOptions,
+    options: ListZodyCustomCommandsOptions,
   ) => ReturnType<typeof listZCodeCustomCommands>;
   loadBootstrapModule?: () => Promise<BootstrapModule>;
   logger?: Logger;
@@ -147,7 +147,7 @@ function formatHumanCommandList(
 }
 
 function formatHumanCommandInspection(
-  inspection: ZCodeCustomCommandInspection,
+  inspection: ZodyCustomCommandInspection,
   options: GlobalOptions,
 ): string {
   const { metadata } = inspection.command;
@@ -199,7 +199,7 @@ const formatCommandJson = (outcome: CustomCommandListOutcome, cwd: string): stri
   });
 
 const formatCommandInspectionJson = (
-  inspection: ZCodeCustomCommandInspection,
+  inspection: ZodyCustomCommandInspection,
   cwd: string,
 ): string =>
   formatJson({

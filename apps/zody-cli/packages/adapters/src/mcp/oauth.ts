@@ -13,7 +13,7 @@ import {
 } from "../auth/localhost-callback.js";
 import {
   createSharedZCodeCredentialStore,
-  type SharedZCodeCredentialStore,
+  type SharedZodyCredentialStore,
 } from "../auth/shared-credentials.js";
 import {
   deriveCredentialPair,
@@ -51,7 +51,7 @@ export type { McpOAuthAuthorizationContext };
 
 export interface McpOAuthRuntimeOptions {
   authorizationTimeoutMs?: number;
-  credentialStore?: SharedZCodeCredentialStore;
+  credentialStore?: SharedZodyCredentialStore;
   onAuthorizationRequired?: (context: McpOAuthAuthorizationContext) => Promise<void> | void;
   openAuthorizationUrl?: (context: McpOAuthAuthorizationContext) => Promise<void> | void;
 }
@@ -112,7 +112,7 @@ class ZCodeMcpAuthorizationCodeProvider implements OAuthClientProvider {
   private readonly adapterInstanceId?: string;
   private readonly callbackServer: LocalhostOAuthCallbackServer;
   private readonly config: McpAuthorizationCodeOAuthConfig;
-  private readonly credentialStore: SharedZCodeCredentialStore;
+  private readonly credentialStore: SharedZodyCredentialStore;
   private readonly keyPrefix: string;
   private readonly logger?: Logger;
   private readonly onAuthorizationRequired?: (
@@ -139,7 +139,7 @@ class ZCodeMcpAuthorizationCodeProvider implements OAuthClientProvider {
     adapterInstanceId?: string;
     callbackServer: LocalhostOAuthCallbackServer;
     config: McpAuthorizationCodeOAuthConfig;
-    credentialStore: SharedZCodeCredentialStore;
+    credentialStore: SharedZodyCredentialStore;
     keyPrefix: string;
     logger?: Logger;
     onAuthorizationRequired?: (context: McpOAuthAuthorizationContext) => Promise<void> | void;

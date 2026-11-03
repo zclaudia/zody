@@ -2,7 +2,7 @@ import type { SupportedLocale } from "@zody/contracts";
 
 export type { SupportedLocale, UiLocale } from "@zody/contracts";
 
-export interface ZCodeCopy {
+export interface ZodyCopy {
   cli: CliCopy;
   locale: SupportedLocale;
   tui: TuiCopy;

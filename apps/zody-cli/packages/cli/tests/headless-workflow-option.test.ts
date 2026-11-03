@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { ZCodeAppOptions } from "@zody/bootstrap";
+import type { ZodyAppOptions } from "@zody/bootstrap";
 import type { RunContext } from "@zody/shared-types";
 import { run, type RunDependencies } from "../src/run.js";
 import { WORKFLOW_MODE_SCOPE_ERROR } from "../src/workflow-mode.js";
@@ -14,7 +14,7 @@ import { WORKFLOW_MODE_SCOPE_ERROR } from "../src/workflow-mode.js";
 function harness(argv: string[]) {
   let stdout = "";
   let stderr = "";
-  const appOptions: ZCodeAppOptions[] = [];
+  const appOptions: ZodyAppOptions[] = [];
   let protocolCalls = 0;
   const ctx: RunContext = {
     argv,
@@ -103,7 +103,7 @@ const PAIRS = {
   alwaysOn: { enabled: true, onDemand: false },
 } as const;
 
-function assertPair(options: ZCodeAppOptions, mode: keyof typeof PAIRS) {
+function assertPair(options: ZodyAppOptions, mode: keyof typeof PAIRS) {
   assert.equal(options.runtimeConfig?.dynamicWorkflowEnabled, PAIRS[mode].enabled);
   assert.equal(options.runtimeConfig?.dynamicWorkflowToolsOnDemand, PAIRS[mode].onDemand);
 }

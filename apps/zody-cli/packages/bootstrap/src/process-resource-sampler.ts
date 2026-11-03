@@ -45,7 +45,7 @@ interface ResourceSamplerTimer {
   clearInterval(handle: ResourceSamplerTimerHandle): void;
 }
 
-interface CreateZCodeProcessResourceSamplerOptions {
+interface CreateZodyProcessResourceSamplerOptions {
   /**
    * 第二个参数是本周期完整的内存快照，供进程内本地诊断日志使用；
    * 协议样本自身只带 rss 与 heapUsed 两项内存字段。
@@ -66,7 +66,7 @@ interface CreateZCodeProcessResourceSamplerOptions {
   timer?: ResourceSamplerTimer;
 }
 
-export interface ZCodeProcessResourceSampler {
+export interface ZodyProcessResourceSampler {
   start(): void;
   stop(): void;
 }
@@ -98,8 +98,8 @@ function toRoundedUnit(value: number, divisor: number): number | undefined {
 }
 
 export function createZCodeProcessResourceSampler(
-  options: CreateZCodeProcessResourceSamplerOptions,
-): ZCodeProcessResourceSampler {
+  options: CreateZodyProcessResourceSamplerOptions,
+): ZodyProcessResourceSampler {
   const platform = options.platform ?? (process.platform as ZodyProcessResourceSample["platform"]);
   const arch = options.arch ?? (process.arch as ZodyProcessResourceSample["arch"]);
   const logicalCpuCount = Math.max(

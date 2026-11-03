@@ -101,7 +101,7 @@ const COMPACTION_PROJECTION_DIAG_LIMIT = 200;
 const compactionProjectionDiagSignatures = new Set<string>();
 const ZCODE_AGENT_MODE_OPTIONS = getSharedAgentAvailableModes();
 
-export interface ZCodeSessionEventProjectionState extends ZodyToolProjectionMemory {
+export interface ZodySessionEventProjectionState extends ZodyToolProjectionMemory {
   activePromptInputIdBySession?: Map<string, InputId>;
   rewindControlTurnKeys?: Set<string>;
   activeApiRetrySessionIds?: Set<string>;
@@ -109,7 +109,7 @@ export interface ZCodeSessionEventProjectionState extends ZodyToolProjectionMemo
   streamedTurnKeys?: Set<string>;
 }
 
-export function createZCodeSessionEventProjectionState(): ZCodeSessionEventProjectionState {
+export function createZCodeSessionEventProjectionState(): ZodySessionEventProjectionState {
   return {
     ...createZCodeToolProjectionMemory(),
     activePromptInputIdBySession: new Map<string, InputId>(),
@@ -118,7 +118,7 @@ export function createZCodeSessionEventProjectionState(): ZCodeSessionEventProje
   };
 }
 
-export type ZCodeSessionProjectionMode = "active-live" | "background-summary";
+export type ZodySessionProjectionMode = "active-live" | "background-summary";
 
 export function formatModelPickerValue(ref: ModelSelection | undefined): string {
   return formatSharedModelSelection(ref);
@@ -818,8 +818,8 @@ export function zcodeSessionSnapshotToTaskMeta(snapshot: ZodySessionStateSnapsho
 
 export function zcodeSessionEventToZCodeStreamEvents(params: {
   event: ZodySessionEvent;
-  projectionMode?: ZCodeSessionProjectionMode;
-  state?: ZCodeSessionEventProjectionState;
+  projectionMode?: ZodySessionProjectionMode;
+  state?: ZodySessionEventProjectionState;
   taskId: string;
 }): ZodyStreamEvent[] {
   const { event, state, taskId, projectionMode = "active-live" } = params;
@@ -1093,7 +1093,7 @@ export function zcodeSessionEventToZCodeStreamEvents(params: {
 }
 
 function ensureProjectionToolMemory(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
 ): ZodyToolProjectionMemory | undefined {
   if (!state) {
     return undefined;
@@ -1104,7 +1104,7 @@ function ensureProjectionToolMemory(
 }
 
 function ensureProjectionApiRetrySessionIds(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
 ): Set<string> | undefined {
   if (!state) {
     return undefined;
@@ -1114,7 +1114,7 @@ function ensureProjectionApiRetrySessionIds(
 }
 
 function trackProjectionApiRetryEvents(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   sessionId: string,
   events: ZodyStreamEvent[],
 ): ZodyStreamEvent[] {
@@ -1135,14 +1135,14 @@ function trackProjectionApiRetryEvents(
 }
 
 function clearProjectionApiRetryState(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   sessionId: string,
 ): void {
   state?.activeApiRetrySessionIds?.delete(sessionId);
 }
 
 function takeProjectionApiRetryClearOnModelProgress(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   sessionId: string,
   taskId: string,
   traceId: TraceId,
@@ -1833,7 +1833,7 @@ function mapModelStreaming(
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
   toolProjectionMemory?: ZodyToolProjectionMemory,
-  projectionMode: ZCodeSessionProjectionMode = "active-live",
+  projectionMode: ZodySessionProjectionMode = "active-live",
 ): ZodyStreamEvent | null {
   const kind = stringValue(payload.kind);
   const delta = stringValue(payload.delta);
@@ -1881,7 +1881,7 @@ function mapToolInputStreaming(
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
   toolProjectionMemory?: ZodyToolProjectionMemory,
-  projectionMode: ZCodeSessionProjectionMode = "active-live",
+  projectionMode: ZodySessionProjectionMode = "active-live",
 ): ZodyStreamEvent | null {
   const streamingToolInputById = toolProjectionMemory?.streamingToolInputById;
   const toolNameById = toolProjectionMemory?.toolNameById;
@@ -2749,7 +2749,7 @@ function pendingExitPlanModeToElicitationEvent(
 }
 
 function ensureProjectionBackgroundTaskControlsCache(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
 ): Map<string, ZodyBackgroundTaskControlItem[]> | null {
   if (!state) {
     return null;
@@ -2759,7 +2759,7 @@ function ensureProjectionBackgroundTaskControlsCache(
 }
 
 function setProjectionBackgroundTaskControls(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   taskId: string,
   jobs: ZodyBackgroundTaskControlItem[],
 ) {
@@ -2767,7 +2767,7 @@ function setProjectionBackgroundTaskControls(
 }
 
 export function syncZCodeSessionBackgroundTaskProjection(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   taskId: string,
   jobs: ZodyBackgroundTaskControlItem[],
 ) {
@@ -2775,7 +2775,7 @@ export function syncZCodeSessionBackgroundTaskProjection(
 }
 
 export function syncZCodeSessionBackgroundTaskProjectionFromSnapshot(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   snapshot: ZodySessionStateSnapshot,
 ) {
   // Bugfix: 单 task completion 是增量 payload，必须以同一订阅收到的完整 snapshot
@@ -2788,7 +2788,7 @@ export function syncZCodeSessionBackgroundTaskProjectionFromSnapshot(
 }
 
 function updateProjectionBackgroundTaskControlsFromPayload(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   taskId: string,
   payload: Record<string, unknown>,
 ): ZodyBackgroundTaskControlItem[] | null {
@@ -2869,7 +2869,7 @@ function mapSessionInfoLikePayload(
   inputId: InputId | undefined,
   eventId: string | undefined,
   payload: Record<string, unknown>,
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
 ): ZodyStreamEvent[] {
   const events: ZodyStreamEvent[] = [];
   const goalVerification = goalVerificationFromPayload(payload);
@@ -3395,14 +3395,14 @@ function usageFromPayload(value: unknown): ZodyUsage | undefined {
 }
 
 function getActivePromptInputId(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   sessionId: string,
 ): InputId | undefined {
   return state?.activePromptInputIdBySession?.get(sessionId);
 }
 
 function setActivePromptInputId(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   sessionId: string,
   inputId: InputId,
 ): void {
@@ -3415,7 +3415,7 @@ function setActivePromptInputId(
 }
 
 function clearActivePromptInputId(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   sessionId: string,
   inputId: InputId,
 ): void {
@@ -3425,7 +3425,7 @@ function clearActivePromptInputId(
 }
 
 function rememberRewindControlTurn(
-  state: ZCodeSessionEventProjectionState | undefined,
+  state: ZodySessionEventProjectionState | undefined,
   turnKey: string,
   input: string | undefined,
 ): void {

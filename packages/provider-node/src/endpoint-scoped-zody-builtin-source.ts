@@ -6,18 +6,18 @@ import {
 import { NodeZCodeBuiltinProviderConfigSource } from "./zody-builtin-provider-config-source.js";
 import {
   ZCodeBuiltinRemoteSynchronizer,
-  type ZCodeBuiltinRefreshResult,
-  type ZCodeBuiltinRemoteSynchronizerOptions,
+  type ZodyBuiltinRefreshResult,
+  type ZodyBuiltinRemoteSynchronizerOptions,
 } from "./zody-builtin-remote-synchronizer.js";
 
-export interface EndpointScopedZCodeBuiltinSourceOptions {
+export interface EndpointScopedZodyBuiltinSourceOptions {
   readonly bundledFilePath: string;
   readonly environmentConfigRoot: string;
   readonly platform: string;
   readonly appVersion: string;
   readonly resolveEndpointOrigin: () => string | Promise<string>;
-  readonly fetchRelease: ZCodeBuiltinRemoteSynchronizerOptions["fetchRelease"];
-  readonly onRefreshResult?: ZCodeBuiltinRemoteSynchronizerOptions["onRefreshResult"];
+  readonly fetchRelease: ZodyBuiltinRemoteSynchronizerOptions["fetchRelease"];
+  readonly onRefreshResult?: ZodyBuiltinRemoteSynchronizerOptions["onRefreshResult"];
   readonly watch?: boolean;
 }
 
@@ -26,13 +26,13 @@ export interface EndpointScopedZCodeBuiltinSourceOptions {
  * Endpoint 切换只替换当前 Source，不读取上一 Endpoint 的缓存。
  */
 export class EndpointScopedZCodeBuiltinSource implements ProviderSource<ProviderConfigLayerSnapshot> {
-  readonly #options: EndpointScopedZCodeBuiltinSourceOptions;
+  readonly #options: EndpointScopedZodyBuiltinSourceOptions;
   readonly #listeners = new Set<(reason: string) => void>();
   #current: CurrentEndpointSource | null = null;
   #ensureInFlight: Promise<CurrentEndpointSource> | null = null;
   #disposed = false;
 
-  constructor(options: EndpointScopedZCodeBuiltinSourceOptions) {
+  constructor(options: EndpointScopedZodyBuiltinSourceOptions) {
     this.#options = options;
   }
 
@@ -46,7 +46,7 @@ export class EndpointScopedZCodeBuiltinSource implements ProviderSource<Provider
     return () => this.#listeners.delete(listener);
   }
 
-  async refresh(options?: { readonly force?: boolean }): Promise<ZCodeBuiltinRefreshResult> {
+  async refresh(options?: { readonly force?: boolean }): Promise<ZodyBuiltinRefreshResult> {
     const current = await this.#ensureCurrent();
     // fork（F3.1）：端点未配置时关闭远端刷新，只读取随包/本地缓存。
     if (!current.synchronizer) {

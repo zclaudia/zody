@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   createSharedZCodeCredentialStore,
-  type SharedZCodeCredentialStore,
+  type SharedZodyCredentialStore,
 } from "../src/auth/shared-credentials.js";
 import {
   loadCanonicalCredentials,
@@ -97,7 +97,7 @@ async function startFakeAuthorizationServer(
 }
 
 interface SeededCredentials {
-  credentialStore: SharedZCodeCredentialStore;
+  credentialStore: SharedZodyCredentialStore;
   keyPrefix: string;
   mcpUrl: string;
 }

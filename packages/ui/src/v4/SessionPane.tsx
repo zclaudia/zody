@@ -201,7 +201,7 @@ import {
   hasChatLoadingBlockingActiveWork,
   hasChatLoadingBlockingInteraction,
 } from "@/v4/chatLoadingVisibility.js";
-import type { ZCodeUiError } from "@/lib/zodyUiError.js";
+import type { ZodyUiError } from "@/lib/zodyUiError.js";
 import { isProviderNotReadyError } from "@/lib/chatPrepareError.js";
 import { setPendingSettingsSectionIntent } from "@/lib/settingsNavigation.js";
 import { useOptionalTabStore } from "@/store/TabStoreProvider.js";
@@ -384,7 +384,7 @@ const MAX_CONVERSATION_FILE_CHANGES_CACHE_ENTRIES = 20;
 function toComposerUiError(
   sessionId: string | null | undefined,
   error: SessionErrorInfo,
-): ZCodeUiError {
+): ZodyUiError {
   return {
     code: error.code,
     message: error.message,
@@ -843,7 +843,7 @@ export function SessionPane({
     readonly string[]
   >([]);
   const [sendSubmissionError, setSendSubmissionError] =
-    useState<ZCodeUiError | null>(null);
+    useState<ZodyUiError | null>(null);
   const [
     paneLocalSummaryPanelVariantOverride,
     setPaneLocalSummaryPanelVariantOverride,

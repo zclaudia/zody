@@ -13,17 +13,17 @@ import {
 } from "@zody/shared";
 import { persistLastSelectedAgentProvider } from "@/lib/zodyProviderPreference.js";
 import { areConfigOptionsEquivalent } from "@/lib/configOptionsEquality.js";
-import type { ZCodeUiError } from "@/lib/zodyUiError.js";
+import type { ZodyUiError } from "@/lib/zodyUiError.js";
 import { pushNavEntry } from "@/lib/taskNavigationHistory.js";
 import { resolveTaskRestorePreloadConfigOptions } from "@/lib/taskModelRecovery.js";
 import type {
-  ZCodeSessionStoreState,
+  ZodySessionStoreState,
   ConfigOptionsStatus,
   ComposerMentionPrefill,
   GroupedDraftTaskState,
   GroupedDraftTaskPlacement,
   ModelSwitchStage,
-  WorkspaceZCodeUIState,
+  WorkspaceZodyUIState,
 } from "@/store/zodySessionStoreTypes.js";
 import {
   getTaskMeta,
@@ -34,9 +34,9 @@ import {
 
 type SetFn = (
   partial:
-    | ZCodeSessionStoreState
-    | Partial<ZCodeSessionStoreState>
-    | ((state: ZCodeSessionStoreState) => ZCodeSessionStoreState | Partial<ZCodeSessionStoreState>),
+    | ZodySessionStoreState
+    | Partial<ZodySessionStoreState>
+    | ((state: ZodySessionStoreState) => ZodySessionStoreState | Partial<ZodySessionStoreState>),
 ) => void;
 
 let groupedDraftSequence = 0;
@@ -170,9 +170,9 @@ function updateCurrentModeConfigOption(
 }
 
 function updateActiveTaskConfigOptions(
-  current: WorkspaceZCodeUIState,
+  current: WorkspaceZodyUIState,
   updater: (options: ZodyConfigOption[] | null) => ZodyConfigOption[] | null,
-): Pick<WorkspaceZCodeUIState, "taskConfigOptionsByTaskId"> | null {
+): Pick<WorkspaceZodyUIState, "taskConfigOptionsByTaskId"> | null {
   const activeTaskId = current.activeTaskId;
   if (!activeTaskId) {
     return null;
@@ -197,7 +197,7 @@ function updateActiveTaskConfigOptions(
 }
 
 function resolveActiveTaskConfigOptionsOnSwitch(
-  current: WorkspaceZCodeUIState,
+  current: WorkspaceZodyUIState,
   taskId: string,
 ): { configOptions: ZodyConfigOption[]; status: ConfigOptionsStatus } | null {
   const cachedTaskConfigOptions = current.taskConfigOptionsByTaskId[taskId];
@@ -763,7 +763,7 @@ export function createWorkspaceSlice(set: SetFn) {
 
     setDraftError: (
       workspacePath: string,
-      error: ZCodeUiError | null,
+      error: ZodyUiError | null,
       workspaceIdentity?: string,
     ) => {
       set((state) =>

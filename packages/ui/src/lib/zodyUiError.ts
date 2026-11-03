@@ -2,14 +2,14 @@ import type { ZodyError, ZodyTaskMeta, TraceId } from "@zody/shared";
 import { errorAttributionSchema, type ErrorAttribution } from "@zody/shared/zody-protocol-v4";
 import { resolveRequestVerificationBusinessCode } from "@/lib/providerBusinessError.js";
 
-export interface ZCodeUiError extends ZodyError {
+export interface ZodyUiError extends ZodyError {
   attribution?: ErrorAttribution;
   detail?: string;
   underlyingErrorMessage?: string;
   underlyingErrorDetail?: string;
 }
 
-interface NormalizeZCodeUiErrorOptions {
+interface NormalizeZodyUiErrorOptions {
   fallbackCode?: string;
   fallbackMessage?: string;
   traceId?: TraceId;
@@ -191,8 +191,8 @@ function readFirstAttributionFromPaths(error: unknown): ErrorAttribution | undef
 
 export function normalizeZCodeUiError(
   error: unknown,
-  options: NormalizeZCodeUiErrorOptions = {},
-): ZCodeUiError {
+  options: NormalizeZodyUiErrorOptions = {},
+): ZodyUiError {
   const candidates = collectMessageCandidates(error);
   // zcode-cli 已经把 provider/network 根因放进 detail 或 data.zcode.error，
   // 外层仍可能保留 "Internal error" 这类包装文案。主提示优先选非泛化候选，避免根因被盖住。
@@ -272,7 +272,7 @@ export function normalizeZCodeUiError(
   };
 }
 
-export function normalizeRestoredTaskFailureError(meta: ZodyTaskMeta): ZCodeUiError | null {
+export function normalizeRestoredTaskFailureError(meta: ZodyTaskMeta): ZodyUiError | null {
   if (!meta.lastError) {
     return null;
   }

@@ -33,7 +33,7 @@ import type {
   WorkspaceSidePaneState,
 } from "@/lib/workspaceSidePane.js";
 import type { TreemappingSidePaneTab } from "@/lib/workspaceSidePane.js";
-import type { WorkspaceZCodeUIState } from "@/store/zodySessionStore.js";
+import type { WorkspaceZodyUIState } from "@/store/zodySessionStore.js";
 import type { RemoteConnectionLogEntry } from "@/hooks/useRemoteConnectionLogs.js";
 import type { Theme } from "@/useTheme.js";
 import type {
@@ -48,14 +48,14 @@ import type {
 import type { TaskFindDialogProps } from "@/quickpick/TaskFindDialog.js";
 import type { AutomationsNavigationTab, OpenAutomationsMain } from "@/lib/taskNavigationHistory.js";
 
-export interface WorkspaceShellZCodeState {
-  activeTaskId: WorkspaceZCodeUIState["activeTaskId"];
-  draftFocusVersion: WorkspaceZCodeUIState["draftFocusVersion"];
-  modelSwitchPending: WorkspaceZCodeUIState["modelSwitchPending"];
-  modelSwitchStage: WorkspaceZCodeUIState["modelSwitchStage"];
-  selectedProvider: WorkspaceZCodeUIState["selectedProvider"];
-  optimisticTaskListByTaskId: WorkspaceZCodeUIState["optimisticTaskListByTaskId"];
-  workspaceInit: WorkspaceZCodeUIState["workspaceInit"];
+export interface WorkspaceShellZodyState {
+  activeTaskId: WorkspaceZodyUIState["activeTaskId"];
+  draftFocusVersion: WorkspaceZodyUIState["draftFocusVersion"];
+  modelSwitchPending: WorkspaceZodyUIState["modelSwitchPending"];
+  modelSwitchStage: WorkspaceZodyUIState["modelSwitchStage"];
+  selectedProvider: WorkspaceZodyUIState["selectedProvider"];
+  optimisticTaskListByTaskId: WorkspaceZodyUIState["optimisticTaskListByTaskId"];
+  workspaceInit: WorkspaceZodyUIState["workspaceInit"];
   taskStatus: ZodyTaskRuntimeStatus;
   taskError: string | null;
 }
@@ -146,7 +146,7 @@ export interface WorkspaceShellLayoutProps extends Omit<AppProps, "baseFeedbackS
   handleOpenAutomations: OpenAutomationsMain;
   handleOpenPluginStore: () => void;
   handleManageInstalledPlugins: () => void;
-  workspaceShellZCodeState: WorkspaceShellZCodeState;
+  workspaceShellZCodeState: WorkspaceShellZodyState;
   theme: Theme;
   isMacFullscreen: boolean;
   desktopWindowChromeState: DesktopWindowChromeState | null;

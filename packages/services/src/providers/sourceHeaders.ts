@@ -6,7 +6,7 @@ import {
   ZCODE_VERSION,
 } from "@zody/shared";
 
-interface ZCodeSourceHeaderOptions {
+interface ZodySourceHeaderOptions {
   appVersion?: string;
   arch?: string;
   clientLanguage?: string;
@@ -31,7 +31,7 @@ function resolveClientTimezone(): string {
 }
 
 export function buildZCodeSourceHeaders(
-  options: ZCodeSourceHeaderOptions = {},
+  options: ZodySourceHeaderOptions = {},
 ): Record<string, string> {
   const platform = options.platform ?? process.platform;
   const arch = options.arch ?? process.arch;

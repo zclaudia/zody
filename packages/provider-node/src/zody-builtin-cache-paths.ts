@@ -8,22 +8,22 @@ export function resolveZCodeBuiltinClientPlatform(): string {
   return `${target}-${arch}`;
 }
 
-export interface ZCodeBuiltinCachePathOptions {
+export interface ZodyBuiltinCachePathOptions {
   readonly environmentConfigRoot: string;
   readonly platform: string;
   readonly appVersion: string;
   readonly zcodeEndpointOrigin: string;
 }
 
-export interface ZCodeBuiltinCachePaths {
+export interface ZodyBuiltinCachePaths {
   readonly activeFilePath: string;
   readonly controlFilePath: string;
 }
 
 /** 按平台与 App 版本隔离 Active/LKG；路径本身就是兼容范围。 */
 export function resolveZCodeBuiltinCachePaths(
-  options: ZCodeBuiltinCachePathOptions,
-): ZCodeBuiltinCachePaths {
+  options: ZodyBuiltinCachePathOptions,
+): ZodyBuiltinCachePaths {
   const platform = normalizeSegment(options.platform, "platform");
   const appVersion = normalizeSegment(options.appVersion, "appVersion");
   const endpointKey = createZCodeBuiltinEndpointKey(options.zcodeEndpointOrigin);

@@ -16,7 +16,7 @@ import {
 import { MessageLedger } from "./message-ledger.js";
 import { startOpenAiProviderProxy } from "./openai-provider-proxy.js";
 
-interface ZCodeBootstrapModule {
+interface ZodyBootstrapModule {
   createModelAdapter(input: unknown): unknown;
   createZCodeApp(input: unknown): Promise<{
     close?: () => Promise<void>;
@@ -31,7 +31,7 @@ type RecorderPromptInput =
       text: string;
     };
 
-interface ZCodeContractsModule {
+interface ZodyContractsModule {
   parseModelSelection(input: string): unknown;
 }
 
@@ -43,7 +43,7 @@ interface ProviderRegistryConstructor {
   new (providers?: readonly unknown[]): unknown;
 }
 
-interface ZCodeProviderModule {
+interface ZodyProviderModule {
   ApiKeyAccessConfig: ConfigConstructor;
   ModelConfig: ConfigConstructor;
   ModelOptionSpecsConfig: ConfigConstructor;
@@ -257,9 +257,9 @@ function assertNever(value: never): never {
 }
 
 async function loadZCodeModules(): Promise<{
-  bootstrap: ZCodeBootstrapModule;
-  contracts: ZCodeContractsModule;
-  provider: ZCodeProviderModule;
+  bootstrap: ZodyBootstrapModule;
+  contracts: ZodyContractsModule;
+  provider: ZodyProviderModule;
 }> {
   const bootstrapPath = pathToFileURL(
     join(import.meta.dirname, "../../../packages/bootstrap/dist/index.js"),
@@ -275,10 +275,10 @@ async function loadZCodeModules(): Promise<{
   ).href;
   try {
     const [bootstrap, contracts, providerConfig, providerRegistry] = await Promise.all([
-      import(bootstrapPath) as Promise<ZCodeBootstrapModule>,
-      import(contractsPath) as Promise<ZCodeContractsModule>,
-      import(providerConfigPath) as Promise<Omit<ZCodeProviderModule, "ProviderRegistry">>,
-      import(providerRegistryPath) as Promise<Pick<ZCodeProviderModule, "ProviderRegistry">>,
+      import(bootstrapPath) as Promise<ZodyBootstrapModule>,
+      import(contractsPath) as Promise<ZodyContractsModule>,
+      import(providerConfigPath) as Promise<Omit<ZodyProviderModule, "ProviderRegistry">>,
+      import(providerRegistryPath) as Promise<Pick<ZodyProviderModule, "ProviderRegistry">>,
     ]);
     return {
       bootstrap,
@@ -294,7 +294,7 @@ async function loadZCodeModules(): Promise<{
 }
 
 function createRecorderProviderRegistry(
-  provider: ZCodeProviderModule,
+  provider: ZodyProviderModule,
   modelConfig: RuntimeModelConfig,
   fixture: PromptTrajectoryFixture,
 ): unknown {

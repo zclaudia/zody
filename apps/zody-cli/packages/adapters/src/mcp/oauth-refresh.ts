@@ -12,7 +12,7 @@ import {
 import type { Logger } from "@zody/contracts";
 import { isZCodeFileLockTimeoutError } from "@zody/shared";
 import { withFileLock } from "@zody/shared/node";
-import type { SharedZCodeCredentialStore } from "../auth/shared-credentials.js";
+import type { SharedZodyCredentialStore } from "../auth/shared-credentials.js";
 import {
   invalidateCanonicalCredentials,
   loadCredentialPair,
@@ -35,7 +35,7 @@ import { loadDiscoveryRecord, saveDiscoveryRecord } from "./oauth-shared.js";
 const REFRESH_LOCK_MAX_WAIT_MS = 45_000;
 
 export interface RefreshMcpOAuthTokensInput {
-  credentialStore: SharedZCodeCredentialStore;
+  credentialStore: SharedZodyCredentialStore;
   fetchFn?: FetchLike;
   keyPrefix: string;
   logger?: Logger;

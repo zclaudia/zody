@@ -9,18 +9,18 @@ import {
   zcodeSessionSettingsToConfigOptions,
   zcodeSessionSnapshotToZCodeTaskSnapshot,
 } from "@/lib/zodySessionProjection.js";
-import { normalizeZCodeUiError, type ZCodeUiError } from "@/lib/zodyUiError.js";
+import { normalizeZCodeUiError, type ZodyUiError } from "@/lib/zodyUiError.js";
 import { logger } from "@/logger.js";
 
-export type ZCodeSessionRestoreService = Pick<
+export type ZodySessionRestoreService = Pick<
   IZodySessionService,
   "readSession" | "resumeSession"
 >;
-export type ZCodeLegacyTaskSnapshotRestoreService = Pick<IZodyTaskService, "getTaskSnapshot">;
+export type ZodyLegacyTaskSnapshotRestoreService = Pick<IZodyTaskService, "getTaskSnapshot">;
 
 export interface DesktopContinuousSessionRestoreSnapshot {
   snapshot: ZodyTaskSnapshot;
-  restoreWarning?: ZCodeUiError;
+  restoreWarning?: ZodyUiError;
   resumedSessionSnapshot?: ZodySessionStateSnapshot;
   usedLegacySnapshot?: boolean;
 }
@@ -73,8 +73,8 @@ function getSessionSnapshotDiagnostics(snapshot: ZodySessionStateSnapshot) {
 }
 
 export async function readDesktopContinuousSessionRestoreSnapshot(params: {
-  zcodeSessionService: ZCodeSessionRestoreService;
-  zcodeTaskService?: ZCodeLegacyTaskSnapshotRestoreService;
+  zcodeSessionService: ZodySessionRestoreService;
+  zcodeTaskService?: ZodyLegacyTaskSnapshotRestoreService;
   workspacePath: string;
   workspaceIdentity?: string;
   sessionId: string;
@@ -197,7 +197,7 @@ export async function readDesktopContinuousSessionRestoreSnapshot(params: {
 }
 
 export async function readWebRemoteReplayableSessionConfigOptions(params: {
-  zcodeSessionService: ZCodeSessionRestoreService;
+  zcodeSessionService: ZodySessionRestoreService;
   workspacePath: string;
   workspaceIdentity?: string;
   sessionId: string;

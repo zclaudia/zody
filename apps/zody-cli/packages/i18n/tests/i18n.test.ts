@@ -6,7 +6,7 @@ import {
   isUiLocale,
   resolveLocale,
   SUPPORTED_LOCALES,
-  type ZCodeCopy,
+  type ZodyCopy,
 } from "../src/index.js";
 
 describe("i18n catalog", () => {
@@ -69,4 +69,4 @@ function catalogShape(value: unknown): unknown {
   return typeof value;
 }
 
-void ({} satisfies Partial<ZCodeCopy>);
+void ({} satisfies Partial<ZodyCopy>);

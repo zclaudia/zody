@@ -46,7 +46,7 @@ const DEV_AGENT_BUNDLE_ENV = "ZCODE_REMOTE_DEV_AGENT_BUNDLE";
 const REMOTE_DEV_AGENT_BUNDLE_NAME = REMOTE_AGENT_BUNDLE_NAME;
 const REMOTE_DEV_AGENT_VERSION_FILE_NAME = ".dev-version";
 
-interface DeployDevelopmentZCodeAgentRuntimeParams {
+interface DeployDevelopmentZodyAgentRuntimeParams {
   runtimeVersion: string;
   runtimeResourceDir: string;
   remoteProviderDir: string;
@@ -375,7 +375,7 @@ async function uploadDevelopmentOfficialPluginPackages(params: {
 
 export async function deployDevelopmentZCodeAgentRuntime(
   backend: IRemoteBackend,
-  params: DeployDevelopmentZCodeAgentRuntimeParams,
+  params: DeployDevelopmentZodyAgentRuntimeParams,
   loggers: DeployLoggers,
 ): Promise<boolean> {
   const developmentBundle = resolveDevelopmentAgentBundle();

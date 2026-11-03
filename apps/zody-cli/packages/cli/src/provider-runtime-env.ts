@@ -10,7 +10,7 @@ import {
   ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
   ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
-  type ZCodeBuiltinRefreshEvent,
+  type ZodyBuiltinRefreshEvent,
 } from "@zody/provider-node";
 import {
   resolveRuntimeZCodeEndpointOrigin,
@@ -30,7 +30,7 @@ export function createCliProviderRefreshReporter(
         `Zody Built-in 刷新失败: ${error instanceof Error ? error.message : "unknown error"}\n`,
       );
     },
-    onBuiltinRefreshResult(event: ZCodeBuiltinRefreshEvent) {
+    onBuiltinRefreshResult(event: ZodyBuiltinRefreshEvent) {
       // TTL 检查不是生产事件；成功更新才默认留痕，不能输出 CDN URL 查询参数或内容。
       if (event.result === "updated" || process.env.NODE_ENV !== "production") {
         stderr.write(

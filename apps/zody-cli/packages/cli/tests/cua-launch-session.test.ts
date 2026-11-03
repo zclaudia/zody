@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Duplex, PassThrough } from "node:stream";
 import test from "node:test";
-import type { RunZCodeProtocolAgentOptions } from "@zody/bootstrap";
+import type { RunZodyProtocolAgentOptions } from "@zody/bootstrap";
 import {
   computeHelperTransportProof,
   parseHelperProofRequestLine,
@@ -49,7 +49,7 @@ function ready(overrides: Partial<CuaLaunchSessionReady> = {}): CuaLaunchSession
   };
 }
 
-type Capture = NonNullable<RunZCodeProtocolAgentOptions["cuaNativeCapture"]>;
+type Capture = NonNullable<RunZodyProtocolAgentOptions["cuaNativeCapture"]>;
 
 class FakeAuthorityPeer extends Duplex {
   private input = "";
@@ -273,9 +273,9 @@ test("launch requires this PID, private capture root and only optional explicit 
   const control = new PassThrough();
   const input = new PassThrough();
   const output = new PassThrough();
-  let seen: RunZCodeProtocolAgentOptions | undefined;
+  let seen: RunZodyProtocolAgentOptions | undefined;
   let readySeen: CuaLaunchSessionReady | undefined;
-  const factory: NonNullable<RunZCodeProtocolAgentOptions["cuaNodeReplMcpPortFactory"]> = (
+  const factory: NonNullable<RunZodyProtocolAgentOptions["cuaNodeReplMcpPortFactory"]> = (
     input,
   ) => input.port;
   control.write(`${JSON.stringify(ready({ captureRoot: root }))}\n`);
@@ -344,7 +344,7 @@ test("launch requires this PID, private capture root and only optional explicit 
 test("CUA factory requires a ready cellEndpoint and never falls back", async () => {
   const root = await mkdtemp(join(tmpdir(), "zody-cua-launch-"));
   await chmod(root, 0o700);
-  const factory: NonNullable<RunZCodeProtocolAgentOptions["cuaNodeReplMcpPortFactory"]> = (
+  const factory: NonNullable<RunZodyProtocolAgentOptions["cuaNodeReplMcpPortFactory"]> = (
     input,
   ) => input.port;
   const { cellEndpoint: _cellEndpoint, ...withoutEndpoint } = ready({ captureRoot: root });
@@ -501,7 +501,7 @@ test("keeps fd3 lifetime after ready and stops on EOF", async () => {
   const root = await mkdtemp(join(tmpdir(), "zody-cua-launch-"));
   await chmod(root, 0o700);
   const control = new PassThrough();
-  let seen: RunZCodeProtocolAgentOptions | undefined;
+  let seen: RunZodyProtocolAgentOptions | undefined;
   let started!: () => void;
   const didStart = new Promise<void>((resolve) => {
     started = resolve;
@@ -533,7 +533,7 @@ test("keeps fd3 lifetime after ready and stops on control error", async () => {
   const root = await mkdtemp(join(tmpdir(), "zody-cua-launch-"));
   await chmod(root, 0o700);
   const control = new PassThrough();
-  let seen: RunZCodeProtocolAgentOptions | undefined;
+  let seen: RunZodyProtocolAgentOptions | undefined;
   let started!: () => void;
   const didStart = new Promise<void>((resolve) => {
     started = resolve;

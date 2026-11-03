@@ -6,7 +6,7 @@ import {
   zcodeProviderRuntimeHeadersResponseSchema,
   type ZodyWorkspaceRef,
 } from "@zody/shared";
-import type { ZCodeAppOptions } from "../app/types.js";
+import type { ZodyAppOptions } from "../app/types.js";
 import {
   ProtocolRequestError,
   protocolTraceFromTraceContext,
@@ -20,7 +20,7 @@ const CLIENT_REQUEST_TIMEOUT_CODE = -32022;
 export function createProviderRuntimeHeadersPort(
   context: ZodyProtocolAgentServerContext,
   workspace: ZodyWorkspaceRef,
-): NonNullable<ZCodeAppOptions["providerRuntimeHeadersPort"]> {
+): NonNullable<ZodyAppOptions["providerRuntimeHeadersPort"]> {
   return {
     shouldRefreshBeforeModelRequest() {
       // Account 请求由绑定 Model 决定是否进入鉴权，不能把所有账号收窄到旧 Start ID。

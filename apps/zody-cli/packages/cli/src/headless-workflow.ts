@@ -7,7 +7,7 @@ import {
 } from "@zody/contracts";
 import { createDenyPermissionBroker } from "@zody/core";
 import type { GlobalOptions } from "@zody/shared-types";
-import type { ZCodeAppOptions } from "@zody/bootstrap";
+import type { ZodyAppOptions } from "@zody/bootstrap";
 import { readRuntimeFunction } from "./runtime-event-subscriber.js";
 
 /**
@@ -29,7 +29,7 @@ import { readRuntimeFunction } from "./runtime-event-subscriber.js";
  * 的 `??` 短路），权限事件照常发射，run 内 actor 照旧继承会话的权限 profile。
  */
 export const createHeadlessPermissionBroker = (): NonNullable<
-  ZCodeAppOptions["permissionBroker"]
+  ZodyAppOptions["permissionBroker"]
 > => {
   const denyBroker = createDenyPermissionBroker();
   return {

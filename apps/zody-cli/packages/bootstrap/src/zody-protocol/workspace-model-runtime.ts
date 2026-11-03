@@ -7,7 +7,7 @@ import {
   zcodeWorkspaceReadPresentationParamsSchema,
   type ZodyWorkspaceRef,
 } from "@zody/shared";
-import type { ZCodeApp, ZCodeAppOptions } from "../app/types.js";
+import type { ZodyApp, ZodyAppOptions } from "../app/types.js";
 import { listProtocolSlashCommands } from "./slash-commands.js";
 import {
   parseParams,
@@ -70,8 +70,8 @@ export async function testProviderModelConnectivity(
 export async function createWorkspaceZCodeApp(
   context: ZodyProtocolAgentServerContext,
   workspace: ZodyWorkspaceRef,
-  options: Omit<ZCodeAppOptions, "providerRegistry">,
-): Promise<ZCodeApp> {
+  options: Omit<ZodyAppOptions, "providerRegistry">,
+): Promise<ZodyApp> {
   // 只接受本进程 startup 帧固定下来的 Host/runtime 身份；调用方 options 的同名字段一律丢弃。
   const { cuaLaunchIdentity: _untrustedLaunchIdentity, ...trustedOptions } = options;
   const workspaceIdentity = workspace.workspaceIdentity?.trim();

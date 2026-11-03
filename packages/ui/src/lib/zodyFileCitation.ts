@@ -5,9 +5,9 @@ import {
   findUnclosedAssistantDirectiveStart,
 } from "@/lib/assistantDirectiveParser.js";
 
-export type ZCodeFileCitationPreviewKind = "docx" | "xlsx" | "pptx" | "pdf" | "video" | "audio";
+export type ZodyFileCitationPreviewKind = "docx" | "xlsx" | "pptx" | "pdf" | "video" | "audio";
 
-export interface ZCodeFileCitation {
+export interface ZodyFileCitation {
   artifactKind?: string;
   end: number;
   path: string;
@@ -16,7 +16,7 @@ export interface ZCodeFileCitation {
   start: number;
 }
 
-export interface ZCodeFileCitationDirective {
+export interface ZodyFileCitationDirective {
   artifactKind?: string;
   end: number;
   path?: string;
@@ -25,12 +25,12 @@ export interface ZCodeFileCitationDirective {
   start: number;
 }
 
-export interface ZCodeFileCitationProjection {
+export interface ZodyFileCitationProjection {
   visibleText: string;
 }
 
 const ARTIFACT_KIND_TO_PREVIEW_KIND: Readonly<
-  Record<string, Exclude<ZCodeFileCitationPreviewKind, "pdf">>
+  Record<string, Exclude<ZodyFileCitationPreviewKind, "pdf">>
 > = {
   audio: "audio",
   document: "docx",
@@ -38,7 +38,7 @@ const ARTIFACT_KIND_TO_PREVIEW_KIND: Readonly<
   video: "video",
   workbook: "xlsx",
 };
-const PREVIEW_EXTENSION_TO_KIND: Readonly<Record<string, ZCodeFileCitationPreviewKind>> = {
+const PREVIEW_EXTENSION_TO_KIND: Readonly<Record<string, ZodyFileCitationPreviewKind>> = {
   ".docx": "docx",
   ".flac": "audio",
   ".m4a": "audio",
@@ -63,7 +63,7 @@ const ZCODE_FILE_CITATION_SYNTAX = {
   allowTripleColon: true,
 } as const;
 
-export function extractZCodeFileCitationDirectives(content: string): ZCodeFileCitationDirective[] {
+export function extractZCodeFileCitationDirectives(content: string): ZodyFileCitationDirective[] {
   return extractAssistantDirectives(
     content,
     ZCODE_FILE_CITATION_DIRECTIVE_NAME,
@@ -82,7 +82,7 @@ export function extractZCodeFileCitationDirectives(content: string): ZCodeFileCi
   }));
 }
 
-export function extractZCodeFileCitations(content: string): ZCodeFileCitation[] {
+export function extractZCodeFileCitations(content: string): ZodyFileCitation[] {
   return extractZCodeFileCitationDirectives(content).flatMap((directive) =>
     directive.path
       ? [
@@ -103,7 +103,7 @@ export function extractZCodeFileCitations(content: string): ZCodeFileCitation[] 
 export function projectZCodeFileCitations(
   content: string,
   options: { streaming: boolean },
-): ZCodeFileCitationProjection {
+): ZodyFileCitationProjection {
   if (!options.streaming || !content) return { visibleText: content };
 
   const protectedRanges = findMarkdownCodeRanges(content);
@@ -134,7 +134,7 @@ export function projectZCodeFileCitations(
   };
 }
 
-function inferPreviewKindFromPath(path: string): ZCodeFileCitationPreviewKind | null {
+function inferPreviewKindFromPath(path: string): ZodyFileCitationPreviewKind | null {
   const normalizedPath = path.trim().toLowerCase();
   for (const [extension, kind] of Object.entries(PREVIEW_EXTENSION_TO_KIND)) {
     if (normalizedPath.endsWith(extension)) return kind;
@@ -145,7 +145,7 @@ function inferPreviewKindFromPath(path: string): ZCodeFileCitationPreviewKind | 
 export function resolveZCodeFileCitationPreviewKind(params: {
   artifactKind?: string;
   path: string;
-}): ZCodeFileCitationPreviewKind | null {
+}): ZodyFileCitationPreviewKind | null {
   const inferredKind = inferPreviewKindFromPath(params.path);
   if (params.artifactKind === undefined) return inferredKind;
 

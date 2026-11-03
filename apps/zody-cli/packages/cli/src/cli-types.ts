@@ -14,22 +14,22 @@ import type {
   grantWorkspaceHookTrust,
   revokeWorkspaceHookTrustCli,
   inspectZCodeCustomCommand,
-  InspectZCodeCustomCommandOptions,
-  InspectZCodeSkillOptions,
+  InspectZodyCustomCommandOptions,
+  InspectZodySkillOptions,
   listZCodeCustomCommands,
-  ListZCodeCustomCommandsOptions,
+  ListZodyCustomCommandsOptions,
   loadZCodeCustomCommand,
   listZCodeSessions,
   listZCodeSkills,
-  ListZCodeSessionsOptions,
-  ListZCodeSkillsOptions,
+  ListZodySessionsOptions,
+  ListZodySkillsOptions,
   resolveLatestSession,
   ResolveLatestSessionOptions,
-  RunZCodeProtocolAgentOptions,
+  RunZodyProtocolAgentOptions,
   prepareZCodeTelemetryEnv,
   startProcessProviderRegistryRuntime,
   shutdownZCodeTelemetry,
-  ZCodeAppOptions,
+  ZodyAppOptions,
 } from "@zody/bootstrap";
 import type { CliEnv, DotenvLoadResult, LoadCliDotenvOptions } from "./env.js";
 import type { PluginsCommandOverrides } from "./plugins-command.js";
@@ -39,7 +39,7 @@ import type { resolveWorkspaceGitBranch } from "./tui-workspace-git.js";
 export type BootstrapModule = typeof import("@zody/bootstrap");
 
 export interface RunDependencies extends PluginsCommandOverrides {
-  protocolLifecycle?: RunZCodeProtocolAgentOptions["lifecycle"];
+  protocolLifecycle?: RunZodyProtocolAgentOptions["lifecycle"];
   protocolInput?: NodeJS.ReadableStream;
   createManagedCdpBrowserRuntime?: (
     options?: ManagedCdpBrowserRuntimeOptions,
@@ -48,7 +48,7 @@ export interface RunDependencies extends PluginsCommandOverrides {
     options?: CreateModelAdapterOptions,
   ) => ReturnType<typeof createModelAdapter>;
   createZCodeApp?: (
-    options?: ZCodeAppOptions,
+    options?: ZodyAppOptions,
   ) => Awaited<ReturnType<typeof createZCodeApp>> | ReturnType<typeof createZCodeApp>;
   /**
    * Session-event shaper for --output-format stream-json. Defaults to the
@@ -59,27 +59,27 @@ export interface RunDependencies extends PluginsCommandOverrides {
   mapSessionEvent?: BootstrapModule["mapSessionEvent"];
   cwd?: () => string;
   env?: CliEnv;
-  inspectSkill?: (options: InspectZCodeSkillOptions) => ReturnType<typeof inspectZCodeSkill>;
+  inspectSkill?: (options: InspectZodySkillOptions) => ReturnType<typeof inspectZCodeSkill>;
   inspectWorkspaceHookTrust?: typeof inspectWorkspaceHookTrust;
   grantWorkspaceHookTrust?: typeof grantWorkspaceHookTrust;
   revokeWorkspaceHookTrustCli?: typeof revokeWorkspaceHookTrustCli;
   inspectCustomCommand?: (
-    options: InspectZCodeCustomCommandOptions,
+    options: InspectZodyCustomCommandOptions,
   ) => ReturnType<typeof inspectZCodeCustomCommand>;
   loadDotenv?: (options?: LoadCliDotenvOptions) => DotenvLoadResult;
   prepareZCodeTelemetryEnv?: typeof prepareZCodeTelemetryEnv;
   projectConfigPath?: string;
-  listSessions?: (options: ListZCodeSessionsOptions) => ReturnType<typeof listZCodeSessions>;
+  listSessions?: (options: ListZodySessionsOptions) => ReturnType<typeof listZCodeSessions>;
   listCustomCommands?: (
-    options: ListZCodeCustomCommandsOptions,
+    options: ListZodyCustomCommandsOptions,
   ) => ReturnType<typeof listZCodeCustomCommands>;
   loadCustomCommand?: (
-    options: InspectZCodeCustomCommandOptions,
+    options: InspectZodyCustomCommandOptions,
   ) => ReturnType<typeof loadZCodeCustomCommand>;
   // headless slash 路由要和 app facade 的保留名 gate 用同一个判据；默认取 bootstrap 的，
   // 注入点只为让单测不必拉起整个 bootstrap 模块。见 prompt-command.ts。
   isReservedSlashCommandName?: BootstrapModule["isReservedZCodeSlashCommandName"];
-  listSkills?: (options: ListZCodeSkillsOptions) => ReturnType<typeof listZCodeSkills>;
+  listSkills?: (options: ListZodySkillsOptions) => ReturnType<typeof listZCodeSkills>;
   logger?: Logger;
   readClipboardImage?: TuiReadClipboardImage;
   writeClipboardText?: TuiWriteClipboardText;
@@ -87,7 +87,7 @@ export interface RunDependencies extends PluginsCommandOverrides {
     options: ResolveLatestSessionOptions,
   ) => ReturnType<typeof resolveLatestSession>;
   resolveWorkspaceGitBranch?: typeof resolveWorkspaceGitBranch;
-  runZCodeProtocolAgent?: (options?: RunZCodeProtocolAgentOptions) => Promise<void>;
+  runZCodeProtocolAgent?: (options?: RunZodyProtocolAgentOptions) => Promise<void>;
   runTui?: typeof import("@zody/tui").runTui;
   skipUserConfig?: boolean;
   userConfigPath?: string;

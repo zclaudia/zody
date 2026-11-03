@@ -1,13 +1,13 @@
 import type { ZodyProvider } from "@zody/shared";
 import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySessionStore.js";
-import type { WorkspaceZCodeUIState } from "@/store/zodySessionStoreTypes.js";
+import type { WorkspaceZodyUIState } from "@/store/zodySessionStoreTypes.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
 import { isWorkspaceTab } from "@/store/tabStore.js";
 
 export function resolveChatViewActiveTaskProvider(
   taskId: string | null,
   workspaceState: Pick<
-    WorkspaceZCodeUIState,
+    WorkspaceZodyUIState,
     "selectedProvider" | "taskListCache" | "optimisticTaskListByTaskId"
   >,
 ): ZodyProvider {

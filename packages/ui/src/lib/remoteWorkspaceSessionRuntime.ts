@@ -1,6 +1,6 @@
 import type { ZodyTaskRuntimeStatus } from "@zody/shared";
 import { getWorkspaceDisplayedTaskState } from "@/store/zodySessionStore.js";
-import type { ZCodeSessionStoreState, WorkspaceZCodeUIState } from "@/store/zodySessionStore.js";
+import type { ZodySessionStoreState, WorkspaceZodyUIState } from "@/store/zodySessionStore.js";
 
 interface RemoteWorkspaceRuntimeTab {
   workspacePath: string;
@@ -9,8 +9,8 @@ interface RemoteWorkspaceRuntimeTab {
 
 interface MarkRemoteWorkspaceRunningTasksFailedParams {
   tabs: RemoteWorkspaceRuntimeTab[];
-  getWorkspaceState: ZCodeSessionStoreState["getWorkspaceState"];
-  setTaskRuntimeState: ZCodeSessionStoreState["setTaskRuntimeState"];
+  getWorkspaceState: ZodySessionStoreState["getWorkspaceState"];
+  setTaskRuntimeState: ZodySessionStoreState["setTaskRuntimeState"];
   reason: string;
 }
 
@@ -19,7 +19,7 @@ function isRunningRuntimeStatus(status: ZodyTaskRuntimeStatus): boolean {
 }
 
 function shouldTreatPersistedRunningTaskAsRunning(
-  workspaceState: WorkspaceZCodeUIState,
+  workspaceState: WorkspaceZodyUIState,
   taskId: string,
 ): boolean {
   const runtimeState = workspaceState.taskRuntimeByTaskId[taskId];
@@ -32,7 +32,7 @@ function shouldTreatPersistedRunningTaskAsRunning(
   return isRunningRuntimeStatus(runtimeState.status);
 }
 
-function collectRemoteWorkspaceRunningTaskIds(workspaceState: WorkspaceZCodeUIState): string[] {
+function collectRemoteWorkspaceRunningTaskIds(workspaceState: WorkspaceZodyUIState): string[] {
   const taskIds = new Set<string>();
 
   if (

@@ -13,10 +13,10 @@ import {
 } from "react";
 import { useStore } from "zustand";
 import type { IBroadcastService } from "@zody/services";
-import { createZCodeStore, type ZCodeStore, type ZCodeState } from "./index.js";
+import { createZCodeStore, type ZodyStore, type ZodyState } from "./index.js";
 
 // 导出 Context 供测试直接注入已构造的 store 实例（如跨窗口广播抑制用例）。
-export const StoreContext = createContext<ZCodeStore | null>(null);
+export const StoreContext = createContext<ZodyStore | null>(null);
 
 export function StoreProvider({
   broadcastService,
@@ -26,7 +26,7 @@ export function StoreProvider({
   children: ReactNode;
 }) {
   // 只在首次渲染时创建 store，避免 HMR 重复订阅
-  const storeRef = useRef<ZCodeStore | null>(null);
+  const storeRef = useRef<ZodyStore | null>(null);
   if (!storeRef.current) {
     storeRef.current = createZCodeStore(broadcastService);
   }
@@ -41,7 +41,7 @@ export function StoreProvider({
  *   const theme = useZCodeStore(s => s.theme);
  *   const setTheme = useZCodeStore(s => s.setTheme);
  */
-export function useZCodeStore<T>(selector: (state: ZCodeState) => T): T {
+export function useZCodeStore<T>(selector: (state: ZodyState) => T): T {
   const store = useContext(StoreContext);
   if (!store) {
     throw new Error("useZCodeStore 必须在 StoreProvider 内使用");
@@ -60,7 +60,7 @@ export function useZCodeStore<T>(selector: (state: ZCodeState) => T): T {
  * 注意：selector 返回值与 defaultValue 都必须引用稳定，否则会造成无限重渲染。
  */
 export function useZCodeStoreWithDefault<T>(
-  selector: (state: ZCodeState) => T,
+  selector: (state: ZodyState) => T,
   defaultValue: T,
 ): T {
   const store = useContext(StoreContext);

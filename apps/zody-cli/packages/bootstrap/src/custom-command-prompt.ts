@@ -8,7 +8,7 @@ import {
 } from "@zody/contracts";
 import {
   loadZCodeCustomCommand,
-  type ListZCodeCustomCommandsOptions,
+  type ListZodyCustomCommandsOptions,
 } from "./custom-commands.js";
 import { expandCustomCommandShellSyntax } from "./custom-command-shell-expansion.js";
 import { isReservedZCodeSlashCommandName } from "./slash-command-surface.js";
@@ -16,7 +16,7 @@ import { isReservedZCodeSlashCommandName } from "./slash-command-surface.js";
 const CUSTOM_COMMAND_NOT_FOUND_PATTERN = /not found/i;
 const PROMPT_CUSTOM_COMMAND_PATTERN = /^\/([^\s]+)(?:\s+([\s\S]*))?$/;
 
-export interface ResolveZCodeCustomCommandPromptOptions extends ListZCodeCustomCommandsOptions {
+export interface ResolveZodyCustomCommandPromptOptions extends ListZodyCustomCommandsOptions {
   executionPort?: ExecutionPort;
   sessionId?: SessionId;
   signal?: AbortSignal;
@@ -25,7 +25,7 @@ export interface ResolveZCodeCustomCommandPromptOptions extends ListZCodeCustomC
 
 export async function resolveZCodeCustomCommandPrompt(
   input: string,
-  options: ResolveZCodeCustomCommandPromptOptions = {},
+  options: ResolveZodyCustomCommandPromptOptions = {},
 ): Promise<string | undefined> {
   const invocation = parsePromptCustomCommandInvocation(input);
   // 保留名（含内置 `workflow`）在这里直接返回 undefined，与「命令不存在」同形：内置命令由

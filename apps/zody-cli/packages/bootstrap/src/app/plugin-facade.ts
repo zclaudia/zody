@@ -7,14 +7,14 @@ import {
   uninstallZCodeMarketplacePlugin,
 } from "../plugins.js";
 import type {
-  ZCodeApp,
-  ZCodeAppOptions,
-  ZCodePluginSetResult,
-  ZCodePluginUninstallResult,
+  ZodyApp,
+  ZodyAppOptions,
+  ZodyPluginSetResult,
+  ZodyPluginUninstallResult,
 } from "./types.js";
 
 type PluginFacade = Pick<
-  ZCodeApp,
+  ZodyApp,
   "listPlugins" | "setPluginEnabled" | "uninstallPlugin"
 >;
 
@@ -44,7 +44,7 @@ function createPluginFacade(options: CreatePluginFacadeOptions): PluginFacade {
     setPluginEnabled: async (
       plugin: string,
       enabled: boolean,
-    ): Promise<ZCodePluginSetResult> => {
+    ): Promise<ZodyPluginSetResult> => {
       const result = await setZCodePluginEnabled({
         ...commonOptions(),
         enabled,
@@ -56,7 +56,7 @@ function createPluginFacade(options: CreatePluginFacadeOptions): PluginFacade {
       };
       return result;
     },
-    uninstallPlugin: async (plugin: string): Promise<ZCodePluginUninstallResult> => {
+    uninstallPlugin: async (plugin: string): Promise<ZodyPluginUninstallResult> => {
       const removed = await uninstallZCodeMarketplacePlugin({
         ...commonOptions(),
         pluginId: plugin,
@@ -81,7 +81,7 @@ function createPluginFacade(options: CreatePluginFacadeOptions): PluginFacade {
 
 export function createPluginFacadeForApp(input: {
   configResult: ConfigResult;
-  options: ZCodeAppOptions;
+  options: ZodyAppOptions;
   workingDirectory: string;
 }): PluginFacade {
   return createPluginFacade({

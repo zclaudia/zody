@@ -2,7 +2,7 @@ import { dirname } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UnauthorizedError } from "@modelcontextprotocol/client";
 import { ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY } from "@zody/shared";
-import type { SharedZCodeCredentialStore } from "../src/auth/shared-credentials.js";
+import type { SharedZodyCredentialStore } from "../src/auth/shared-credentials.js";
 
 const {
   capturedClientInfo,
@@ -1528,7 +1528,7 @@ describe("createMcpAdapter", () => {
       loadMany: vi.fn(async () => {
         throw credentialError;
       }),
-    } as unknown as SharedZCodeCredentialStore;
+    } as unknown as SharedZodyCredentialStore;
     clientConnectMock.mockRejectedValue(new UnauthorizedError());
     const adapter = createMcpAdapter({
       mcpOAuth: {

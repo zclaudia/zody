@@ -1,6 +1,6 @@
 import type { FetchLike, AuthProvider } from "@modelcontextprotocol/client";
 import type { Logger, McpOAuthConfig } from "@zody/contracts";
-import type { SharedZCodeCredentialStore } from "../auth/shared-credentials.js";
+import type { SharedZodyCredentialStore } from "../auth/shared-credentials.js";
 import { isCanonicalTokenNearExpiry, loadCredentialPair } from "./oauth-credentials.js";
 import { createInteractiveAuthorizationRequiredError } from "./oauth-errors.js";
 import { refreshMcpOAuthTokensUnderLock } from "./oauth-refresh.js";
@@ -9,7 +9,7 @@ type McpAuthorizationCodeOAuthConfig = Extract<McpOAuthConfig, { type: "authoriz
 
 export interface CreateMcpOAuthTokenProviderInput {
   config: McpAuthorizationCodeOAuthConfig;
-  credentialStore: SharedZCodeCredentialStore;
+  credentialStore: SharedZodyCredentialStore;
   fetchFn?: FetchLike;
   keyPrefix: string;
   logger?: Logger;

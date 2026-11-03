@@ -8,7 +8,7 @@ import {
 } from "@zody/shared";
 import {
   createZCodeProcessResourceSampler,
-  type ZCodeProcessResourceSampler,
+  type ZodyProcessResourceSampler,
 } from "../process-resource-sampler.js";
 import type { ZCodeProtocolAgentServer } from "./server.js";
 
@@ -16,7 +16,7 @@ export function startProtocolResourceSampler(
   server: ZCodeProtocolAgentServer,
   send: (message: ZodyProtocolNotification) => void,
   logger: Logger,
-): ZCodeProcessResourceSampler | undefined {
+): ZodyProcessResourceSampler | undefined {
   try {
     // 本地内存诊断日志：复用同一 60s 节拍，
     // 变化/心跳门控后才写一行，避免与消息流同频刷盘。

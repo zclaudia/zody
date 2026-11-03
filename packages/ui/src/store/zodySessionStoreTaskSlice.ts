@@ -9,13 +9,13 @@ import {
   type ZodyTaskRuntimeStatus,
   type ZodyTaskMeta,
 } from "@zody/shared";
-import type { ZCodeUiError } from "@/lib/zodyUiError.js";
+import type { ZodyUiError } from "@/lib/zodyUiError.js";
 import { removeTaskFromHistory } from "@/lib/taskNavigationHistory.js";
 import { mergeTaskWithOptimisticMeta } from "@/lib/zodyTaskMetaMerge.js";
 import type {
   ConfigOptionsStatus,
   ElicitationFormDraft,
-  ZCodeSessionStoreState,
+  ZodySessionStoreState,
   TaskUsageState,
 } from "@/store/zodySessionStoreTypes.js";
 import { getDefaultWorkspaceState } from "@/store/zodySessionStoreTypes.js";
@@ -31,9 +31,9 @@ import {
 
 type SetFn = (
   partial:
-    | ZCodeSessionStoreState
-    | Partial<ZCodeSessionStoreState>
-    | ((state: ZCodeSessionStoreState) => ZCodeSessionStoreState | Partial<ZCodeSessionStoreState>),
+    | ZodySessionStoreState
+    | Partial<ZodySessionStoreState>
+    | ((state: ZodySessionStoreState) => ZodySessionStoreState | Partial<ZodySessionStoreState>),
 ) => void;
 
 function sortTasksByUpdatedAt(tasks: readonly ZodyTaskMeta[]): ZodyTaskMeta[] {
@@ -175,13 +175,13 @@ function normalizeTaskContextWindow(contextWindow: number | null): number | null
 }
 
 function updateWorkspaceStateForIdentityScopedTaskState(
-  state: ZCodeSessionStoreState,
+  state: ZodySessionStoreState,
   workspacePath: string,
   workspaceIdentity: string | undefined,
   updater: (
     current: ReturnType<typeof getDefaultWorkspaceState>,
   ) => ReturnType<typeof getDefaultWorkspaceState>,
-): Pick<ZCodeSessionStoreState, "workspaces"> {
+): Pick<ZodySessionStoreState, "workspaces"> {
   const workspaceKey = resolveWorkspaceStateKey(workspacePath, workspaceIdentity);
   if (workspaceKey === workspacePath) {
     return updateWorkspaceState(state, workspacePath, updater);
@@ -709,7 +709,7 @@ export function createTaskSlice(set: SetFn) {
     setTaskError: (
       workspacePath: string,
       taskId: string,
-      error: ZCodeUiError | null,
+      error: ZodyUiError | null,
       workspaceIdentity?: string,
     ) => {
       set((state) =>

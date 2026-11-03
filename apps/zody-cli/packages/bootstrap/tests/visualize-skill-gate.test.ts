@@ -7,7 +7,7 @@ import type { Logger } from "@zody/contracts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createWorkflowChildSkillPort } from "../src/app/script-workflow-child-runtime.js";
 import { resolveStartupPlugins } from "../src/app/startup-marks.js";
-import type { ZCodeApp, ZCodeAppOptions } from "../src/app/types.js";
+import type { ZodyApp, ZodyAppOptions } from "../src/app/types.js";
 import { inspectZCodeSkill, listZCodeSkills } from "../src/skills.js";
 import { StartupTimer } from "../src/startup-logging.js";
 import { getSkillReferenceCatalog } from "../src/zody-protocol/skill-reference-catalog.js";
@@ -61,7 +61,7 @@ describe("visualize protocol-only skill discovery", () => {
     "startup and workflow child agree with includeVisualize=%s",
     async (includeVisualize) => {
       const configResult = createConfig({ env, skipUserConfig: true, workingDirectory: root });
-      const appOptions = { includeVisualize } as ZCodeAppOptions;
+      const appOptions = { includeVisualize } as ZodyAppOptions;
       const plugins = resolveStartupPlugins({
         cliStorageRoot: join(root, "storage", "cli"),
         configResult,
@@ -123,14 +123,14 @@ describe("visualize protocol-only skill discovery", () => {
   });
 
   it("opts protocol apps in and keeps their draft catalog consistent", async () => {
-    const createZCodeApp = vi.fn(() => ({}) as ZCodeApp);
+    const createZCodeApp = vi.fn(() => ({}) as ZodyApp);
     const context = {
       deps: { createZCodeApp, env },
       sessions: new Map(),
     } as unknown as ZodyProtocolAgentServerContext;
     const workspace = { workspacePath: root, workspaceKey: root };
     await createWorkspaceZCodeApp(context, workspace, {
-      providerRuntimeHeadersPort: {} as ZCodeAppOptions["providerRuntimeHeadersPort"],
+      providerRuntimeHeadersPort: {} as ZodyAppOptions["providerRuntimeHeadersPort"],
     });
     expect(createZCodeApp).toHaveBeenCalledWith(
       expect.objectContaining({ includeVisualize: true }),

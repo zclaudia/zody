@@ -13,7 +13,7 @@ import {
 import {
   formatModelPickerValue as formatProjectedModelSelection,
   parseModelPickerValue,
-  type ZCodeSessionEventProjectionState,
+  type ZodySessionEventProjectionState,
   zcodeSessionEventToZCodeStreamEvents,
   zcodeSessionSettingsToConfigOptions,
   zcodeSessionSnapshotToZCodeTaskSnapshot,
@@ -2450,7 +2450,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("maps scheduled tool tombstones without rematerializing input", () => {
-    const state: ZCodeSessionEventProjectionState = {
+    const state: ZodySessionEventProjectionState = {
       streamingToolInputById: new Map(),
       toolNameById: new Map<string, string>(),
     };
@@ -2521,7 +2521,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("clears streaming raw input when complete tool input is remembered", () => {
-    const state: ZCodeSessionEventProjectionState = {
+    const state: ZodySessionEventProjectionState = {
       streamingToolInputById: new Map(),
       toolNameById: new Map<string, string>(),
     };
@@ -2580,7 +2580,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("creates missing streaming input state so foreground Write deltas accumulate", () => {
-    const state: ZCodeSessionEventProjectionState = {
+    const state: ZodySessionEventProjectionState = {
       toolNameById: new Map<string, string>(),
     };
     const common = {
@@ -2692,7 +2692,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("keeps background streaming tool input as a tombstone until materialization", () => {
-    const state: ZCodeSessionEventProjectionState = {
+    const state: ZodySessionEventProjectionState = {
       streamingToolInputById: new Map(),
       toolNameById: new Map<string, string>(),
     };
@@ -2775,7 +2775,7 @@ describe("zcodeSessionProjection", () => {
     vi.useFakeTimers();
     try {
       vi.setSystemTime(1_000);
-      const state: ZCodeSessionEventProjectionState = {
+      const state: ZodySessionEventProjectionState = {
         streamingToolInputById: new Map(),
         toolNameById: new Map<string, string>(),
       };
@@ -3409,7 +3409,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("keeps adapter retry visible until the retry attempt produces progress", () => {
-    const state: ZCodeSessionEventProjectionState = {
+    const state: ZodySessionEventProjectionState = {
       streamedTurnKeys: new Set<string>(),
       toolNameById: new Map<string, string>(),
     };
@@ -3733,7 +3733,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("maps single background task payloads into cached background job updates", () => {
-    const state: ZCodeSessionEventProjectionState = {};
+    const state: ZodySessionEventProjectionState = {};
     const bashEvents = zcodeSessionEventToZCodeStreamEvents({
       event: {
         eventId: "evt_background_bash_started",
@@ -4374,7 +4374,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("does not render conversation rewind command ack as an assistant chunk", () => {
-    const state: ZCodeSessionEventProjectionState = {
+    const state: ZodySessionEventProjectionState = {
       activePromptInputIdBySession: new Map<string, string>(),
       streamedTurnKeys: new Set<string>(),
     };
@@ -4492,7 +4492,7 @@ describe("zcodeSessionProjection", () => {
     const state = {
       activePromptInputIdBySession: new Map([["sess_1", "input_1"]]),
       toolNameById: new Map<string, string>(),
-    } satisfies ZCodeSessionEventProjectionState;
+    } satisfies ZodySessionEventProjectionState;
     const startedPayload = {
       toolCallId: "tool_subagent_agent_1_call_search",
       parentToolCallId: "call_parent_agent",
@@ -4602,7 +4602,7 @@ describe("zcodeSessionProjection", () => {
         activePromptInputIdBySession: new Map([["sess_1", "input_1"]]),
         streamingToolInputById: new Map(),
         toolNameById: new Map<string, string>(),
-      } satisfies ZCodeSessionEventProjectionState;
+      } satisfies ZodySessionEventProjectionState;
       const toolCallId = `tool_subagent_agent_1_call_${testCase.toolName.toLowerCase()}`;
       const scheduledPayload = {
         toolCallId,
@@ -4686,7 +4686,7 @@ describe("zcodeSessionProjection", () => {
       activePromptInputIdBySession: new Map([["sess_1", "input_1"]]),
       streamingToolInputById: new Map(),
       toolNameById: new Map<string, string>(),
-    } satisfies ZCodeSessionEventProjectionState;
+    } satisfies ZodySessionEventProjectionState;
     const scheduledPayload = {
       toolCallId: "tool_subagent_agent_1_call_bash",
       parentToolCallId: "call_parent_agent",

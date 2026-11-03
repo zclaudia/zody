@@ -1,11 +1,11 @@
 import type { ZodyProvider } from "@zody/shared";
-import type { WorkspaceZCodeUIState } from "@/store/zodySessionStore.js";
+import type { WorkspaceZodyUIState } from "@/store/zodySessionStore.js";
 
 interface ResolveWorkspaceSwitchDraftProviderOptions {
   currentSelectedProvider: ZodyProvider;
   targetWorkspacePath: string;
   targetWorkspaceIdentity?: string;
-  workspaces: Record<string, WorkspaceZCodeUIState | undefined>;
+  workspaces: Record<string, WorkspaceZodyUIState | undefined>;
 }
 
 export function resolveWorkspaceSwitchDraftProvider({

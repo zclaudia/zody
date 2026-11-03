@@ -1,21 +1,21 @@
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
-export interface ZCodeDataSizeTelemetryState {
+export interface ZodyDataSizeTelemetryState {
   lastReportedAt?: number;
   reportReservedAt?: number;
 }
 
 export async function readZCodeDataSizeTelemetryState(
   stateFile: string,
-): Promise<ZCodeDataSizeTelemetryState | null> {
+): Promise<ZodyDataSizeTelemetryState | null> {
   try {
     const parsed: unknown = JSON.parse(await readFile(stateFile, "utf8"));
     if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
       throw new TypeError("Invalid ZCode data size telemetry state");
     }
     const record = parsed as Record<string, unknown>;
-    const state: ZCodeDataSizeTelemetryState = {};
+    const state: ZodyDataSizeTelemetryState = {};
     if (record.lastReportedAt !== undefined) {
       if (typeof record.lastReportedAt !== "number" || !Number.isFinite(record.lastReportedAt)) {
         throw new TypeError("Invalid lastReportedAt in ZCode data size telemetry state");
@@ -44,7 +44,7 @@ export async function readZCodeDataSizeTelemetryState(
 
 export async function writeZCodeDataSizeTelemetryState(
   stateFile: string,
-  state: ZCodeDataSizeTelemetryState,
+  state: ZodyDataSizeTelemetryState,
 ): Promise<void> {
   await mkdir(dirname(stateFile), { recursive: true });
   const temporaryFile = `${stateFile}.${process.pid}.${Date.now()}.tmp`;

@@ -124,7 +124,7 @@ import { appendWorkspaceFileMentionToComposer } from "@/lib/workspaceFileCompose
 import { resolveProviderBaseURL } from "@/lib/registryProviderView.js";
 import type { ModelSelectionView } from "@zody/services";
 import type { ModelSelectionState } from "@/hooks/useModelSelectionView.js";
-import type { ZCodeUiError } from "@/lib/zodyUiError.js";
+import type { ZodyUiError } from "@/lib/zodyUiError.js";
 import {
   resolveComposerAutoFocus,
   type ComposerAutoFocusOptions,
@@ -456,7 +456,7 @@ export interface ConversationComposerProps {
   /** context usage 面板的 /compact 入口（宿主走 v4 compact 命令）。 */
   onSendCompressionCommand?: (command: string) => void;
   /** v4 会话级错误（snapshot.control.lastError），展示在输入框上方。 */
-  error?: ZCodeUiError | null;
+  error?: ZodyUiError | null;
   onDismissError?: () => void;
   /** 无可用模型横幅的恢复动作；由 SessionPane 注入壳层导航，组件不直接操作 tab。 */
   onOpenModelSettings?: () => void;

@@ -3,13 +3,13 @@ import {
   getWorkspaceDisplayedTaskState,
   selectWorkspaceZCodeState,
   useZCodeSessionStore,
-  type WorkspaceZCodeUIState,
+  type WorkspaceZodyUIState,
 } from "@/store/zodySessionStore.js";
 import { resolveWorkspaceModelConfigSyncScope } from "@/lib/modelConfigSync.js";
 import { hasBusyTaskInWorkspaceProvider } from "@/lib/workspaceBusyTaskLock.js";
 
-type WorkspaceShellZCodeState = Pick<
-  WorkspaceZCodeUIState,
+type WorkspaceShellZodyState = Pick<
+  WorkspaceZodyUIState,
   | "activeTaskId"
   | "draftFocusVersion"
   | "modelSwitchPending"
@@ -27,7 +27,7 @@ export function useWorkspaceShellZCodeState(workspaceAbsPath: string, workspaceI
   // 这会把侧边栏、Header、Git 派生逻辑一起拖进同步重渲染，性能 trace 里那串 long task 就是这样被放大的。
   // 这里把外壳真正依赖的字段收敛成浅比较选择器，避免消息流惊动无关 UI。
   const workspaceShellZCodeState = useZCodeSessionStore(
-    useShallow((state): WorkspaceShellZCodeState => {
+    useShallow((state): WorkspaceShellZodyState => {
       const workspaceState = selectWorkspaceZCodeState(state, workspaceAbsPath, workspaceIdentity);
       const displayedTaskState = getWorkspaceDisplayedTaskState(workspaceState);
       return {

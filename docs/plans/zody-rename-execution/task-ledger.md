@@ -239,3 +239,8 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 
 - Exactly2 graph symbols and3 copied-component roots updated; controller reconstructs byte-exact expected result and verifies copied files retain original hashes. Graph test4/4 pass; root types/lint and changed architecture pass for this limited input diff. Existing full graph missing seeds and two full architecture violations remain; no semantic deletion/restoration of retired functionality.
 - Notices/inventory regeneration not yet executed. Docker0ed compact install/23 CLI build tasks passed but image export has not returned; no image success or browser run claimed. Avoid extra heavy installation while export and host disk pressure persist.
+
+## R20.4 remaining types
+
+- Applied `R20.4-types-remaining-01` at base `a8a0fe2b5b168536bfb68d24911ba4368f7d1ff5`: 106 declarations, 140 product files, 854 identifier edits. Exact records and file list are in `r20-symbol-migrations.json`; status is controller-verified, pending DeepSeek independent review.
+- Controller evidence: root 117, CLI 374 and Node 50 assertions passed; only CLI's retained command JSON records exit code 0. Root typecheck and lint logs completed (lint 303 warnings, 0 errors); their separate exit codes were not retained. Independent 140-file isolated runtime JS comparison matched, and old-name scan of JS/MJS/CJS/d.ts had no output. Controller Main log has 85 diagnostics, with full normalized text identical to the previous baseline; it is not a passing Main check. See `reports/R20-symbols-types-remaining-controller-verification.md`.

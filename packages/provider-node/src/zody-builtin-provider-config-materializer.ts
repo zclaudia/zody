@@ -6,7 +6,7 @@ import {
   serializeZCodeBuiltinRelease,
 } from "./zody-builtin-release.js";
 
-export interface MaterializeZCodeBuiltinProviderConfigOptions {
+export interface MaterializeZodyBuiltinProviderConfigOptions {
   readonly environmentConfigRoot: string;
   readonly content: string;
 }
@@ -16,7 +16,7 @@ export interface MaterializeZCodeBuiltinProviderConfigOptions {
  * 与下载配置分离，并复用统一锁及原子写入，避免并发启动读到半份 JSON。
  */
 export async function materializeZCodeBuiltinProviderConfig(
-  options: MaterializeZCodeBuiltinProviderConfigOptions,
+  options: MaterializeZodyBuiltinProviderConfigOptions,
 ): Promise<string> {
   const content = `${serializeZCodeBuiltinRelease(
     decodeZCodeBuiltinRelease(JSON.parse(options.content)),

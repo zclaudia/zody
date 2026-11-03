@@ -9,7 +9,7 @@ import {
 const BUILTIN_PROMPT_COMMAND_PATTERN = /^\/([^\s]+)(?:\s+([\s\S]*))?$/;
 const INIT_COMMAND_NAME = "init";
 
-export interface ResolveZCodeBuiltinPromptCommandOptions {
+export interface ResolveZodyBuiltinPromptCommandOptions {
   /**
    * 动态工作流灰度门（docs/dynamic-workflow/launch.md「Gray release」）。**只有显式 false 才挡下**
    * `/workflow`：TUI / headless 从不设置该字段，那里的功能始终开启。挡下时返回 undefined，
@@ -20,7 +20,7 @@ export interface ResolveZCodeBuiltinPromptCommandOptions {
   workingDirectory?: string;
 }
 
-export interface ResolvedZCodeBuiltinPromptCommand {
+export interface ResolvedZodyBuiltinPromptCommand {
   /** 命中的内置命令名（`init` / `workflow`），调用方据此挂命令特有的副作用（如 onDemand 激活）。 */
   name: string;
   prompt: string;
@@ -28,15 +28,15 @@ export interface ResolvedZCodeBuiltinPromptCommand {
 
 export function resolveZCodeBuiltinPromptCommand(
   input: string,
-  options: ResolveZCodeBuiltinPromptCommandOptions = {},
+  options: ResolveZodyBuiltinPromptCommandOptions = {},
 ): string | undefined {
   return resolveZCodeBuiltinPromptCommandInvocation(input, options)?.prompt;
 }
 
 export function resolveZCodeBuiltinPromptCommandInvocation(
   input: string,
-  options: ResolveZCodeBuiltinPromptCommandOptions = {},
-): ResolvedZCodeBuiltinPromptCommand | undefined {
+  options: ResolveZodyBuiltinPromptCommandOptions = {},
+): ResolvedZodyBuiltinPromptCommand | undefined {
   const invocation = parseBuiltinPromptCommandInvocation(input);
   if (!invocation) {
     return undefined;

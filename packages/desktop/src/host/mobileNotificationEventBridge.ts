@@ -61,11 +61,11 @@ export function createMobileNotificationEventBridge(params: {
   let lastTaskCount: number | undefined;
   const reportedMessageKinds = new Set<string>();
 
-  type ZCodeSessionTerminalEvent = Extract<
+  type ZodySessionTerminalEvent = Extract<
     import("@zody/shared").ZodySessionEvent,
     { type: "turn.completed" | "turn.failed" }
   >;
-  type CapturedTerminalEvent = ZCodeSessionTerminalEvent & { recovered?: boolean };
+  type CapturedTerminalEvent = ZodySessionTerminalEvent & { recovered?: boolean };
 
   const currentBackendId = () => params.getBackendId();
   const rebuildCaptureTasks = () => {

@@ -69,7 +69,7 @@ function loadPerformanceMode(): boolean {
 // State 定义
 // ============================================================================
 
-export interface ZCodeState {
+export interface ZodyState {
   /** 展示详情偏好，不改变 Agent 权限或执行能力。 */
   interfaceMode: InterfaceMode;
   setInterfaceMode: (mode: InterfaceMode) => void;
@@ -150,7 +150,7 @@ export function createZCodeStore(broadcastService: IBroadcastService) {
   let cleanupSystemThemeListener: (() => void) | null = null;
   let syncSystemThemeListener = (_theme: Theme) => {};
 
-  const useStore = create<ZCodeState>()((set, get) => ({
+  const useStore = create<ZodyState>()((set, get) => ({
     interfaceMode: normalizeInterfaceMode(readSafeLocalStorage(INTERFACE_MODE_STORAGE_KEY)),
     setInterfaceMode: (mode) => {
       const interfaceMode = normalizeInterfaceMode(mode);
@@ -339,4 +339,4 @@ export function createZCodeStore(broadcastService: IBroadcastService) {
   return useStore;
 }
 
-export type ZCodeStore = ReturnType<typeof createZCodeStore>;
+export type ZodyStore = ReturnType<typeof createZCodeStore>;

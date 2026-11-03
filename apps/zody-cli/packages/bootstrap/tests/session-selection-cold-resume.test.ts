@@ -130,8 +130,8 @@ describe("Session 完整选择的实际保存与冷恢复", () => {
       ...makeCommon(fullRegistry),
       sessionStore: store,
     });
-    let cancelled: import("../src/app/types.js").ZCodeApp | undefined;
-    let reconnected: import("../src/app/types.js").ZCodeApp | undefined;
+    let cancelled: import("../src/app/types.js").ZodyApp | undefined;
+    let reconnected: import("../src/app/types.js").ZodyApp | undefined;
     try {
       const sessionId = app.sessionId;
       await app.runtime.executeTurn("Create the bound Session.");

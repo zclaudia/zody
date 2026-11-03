@@ -2,14 +2,14 @@ import { Worker } from "node:worker_threads";
 
 import {
   isZCodeDataSizeScanResult,
-  type ZCodeDataSizeScanRequest,
-  type ZCodeDataSizeScanResult,
+  type ZodyDataSizeScanRequest,
+  type ZodyDataSizeScanResult,
 } from "./zodyDataSizeScanner.js";
 
 export function scanZCodeDataDirectoryInWorker(
-  request: ZCodeDataSizeScanRequest,
+  request: ZodyDataSizeScanRequest,
   signal: AbortSignal,
-): Promise<ZCodeDataSizeScanResult> {
+): Promise<ZodyDataSizeScanResult> {
   return new Promise((resolve, reject) => {
     const worker = new Worker(new URL("./zodyDataSizeWorker.js", import.meta.url), {
       workerData: request,
@@ -32,7 +32,7 @@ export function scanZCodeDataDirectoryInWorker(
     worker.once("message", (message: unknown) => {
       const response = message as { ok?: unknown; result?: unknown; error?: unknown };
       if (response.ok === true && isZCodeDataSizeScanResult(response.result)) {
-        finish(() => resolve(response.result as ZCodeDataSizeScanResult));
+        finish(() => resolve(response.result as ZodyDataSizeScanResult));
         return;
       }
       finish(() =>

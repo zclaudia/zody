@@ -6,12 +6,12 @@ import {
 import { NodeZCodeBuiltinProviderConfigSource } from "./zody-builtin-provider-config-source.js";
 import {
   EndpointScopedZCodeBuiltinSource,
-  type EndpointScopedZCodeBuiltinSourceOptions,
+  type EndpointScopedZodyBuiltinSourceOptions,
 } from "./endpoint-scoped-zody-builtin-source.js";
 import {
   ZCodeBuiltinRemoteSynchronizer,
-  type ZCodeBuiltinRemoteSynchronizerOptions,
-  type ZCodeBuiltinRefreshResult,
+  type ZodyBuiltinRemoteSynchronizerOptions,
+  type ZodyBuiltinRefreshResult,
 } from "./zody-builtin-remote-synchronizer.js";
 import {
   NodePersonalProviderConfigRepository,
@@ -21,9 +21,9 @@ import {
 export interface NodeProviderConfigRuntimeOptions {
   readonly zcodeBuiltinFilePath: string;
   readonly zcodeBuiltinActiveFilePath?: string;
-  readonly zcodeBuiltinRemote?: Omit<ZCodeBuiltinRemoteSynchronizerOptions, "source">;
+  readonly zcodeBuiltinRemote?: Omit<ZodyBuiltinRemoteSynchronizerOptions, "source">;
   readonly zcodeBuiltinEnvironment?: Omit<
-    EndpointScopedZCodeBuiltinSourceOptions,
+    EndpointScopedZodyBuiltinSourceOptions,
     "bundledFilePath"
   >;
   readonly onZCodeBuiltinRefreshError?: (error: unknown) => void;
@@ -130,7 +130,7 @@ export class NodeProviderConfigRuntime {
     return startPromise;
   }
 
-  refreshZCodeBuiltin(options?: { readonly force?: boolean }): Promise<ZCodeBuiltinRefreshResult> {
+  refreshZCodeBuiltin(options?: { readonly force?: boolean }): Promise<ZodyBuiltinRefreshResult> {
     if (this.#disposed) return Promise.resolve("disposed");
     if (this.#zcodeBuiltinSource instanceof EndpointScopedZCodeBuiltinSource) {
       return this.#zcodeBuiltinSource.refresh(options);

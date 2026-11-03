@@ -1,9 +1,9 @@
 import { lstat, opendir } from "node:fs/promises";
 import { join } from "node:path";
 
-export type ZCodeDataSizePartialReason = "file_limit" | "io_error" | "time_limit";
+export type ZodyDataSizePartialReason = "file_limit" | "io_error" | "time_limit";
 
-export type ZCodeDataSizeScanResult = {
+export type ZodyDataSizeScanResult = {
   bytes: number;
   directoriesScanned: number;
   durationMs: number;
@@ -11,16 +11,16 @@ export type ZCodeDataSizeScanResult = {
   scanErrorCount: number;
 } & (
   | { status: "complete"; partialReason?: never }
-  | { status: "partial"; partialReason: ZCodeDataSizePartialReason }
+  | { status: "partial"; partialReason: ZodyDataSizePartialReason }
 );
 
-export interface ZCodeDataSizeScanRequest {
+export interface ZodyDataSizeScanRequest {
   rootPath: string;
   maxDurationMs: number;
   maxFiles: number;
 }
 
-export interface ZCodeDataSizeScanOptions extends ZCodeDataSizeScanRequest {
+export interface ZodyDataSizeScanOptions extends ZodyDataSizeScanRequest {
   signal?: AbortSignal;
   /** 仅用于定向测试时间上限，不进入 Worker 消息。 */
   now?: () => number;
@@ -41,8 +41,8 @@ function isMissingPathError(error: unknown): boolean {
  * 符号链接，避免循环或越出用户选择的数据根。
  */
 export async function scanZCodeDataDirectory(
-  options: ZCodeDataSizeScanOptions,
-): Promise<ZCodeDataSizeScanResult> {
+  options: ZodyDataSizeScanOptions,
+): Promise<ZodyDataSizeScanResult> {
   const now = options.now ?? Date.now;
   const startedAt = now();
   const directories = [options.rootPath];
@@ -50,7 +50,7 @@ export async function scanZCodeDataDirectory(
   let directoriesScanned = 0;
   let filesScanned = 0;
   let scanErrorCount = 0;
-  let terminalPartialReason: Exclude<ZCodeDataSizePartialReason, "io_error"> | null = null;
+  let terminalPartialReason: Exclude<ZodyDataSizePartialReason, "io_error"> | null = null;
 
   const elapsed = () => Math.max(0, now() - startedAt);
   const ensureWithinLimits = (): boolean => {
@@ -162,11 +162,11 @@ export async function scanZCodeDataDirectory(
   };
 }
 
-export function isZCodeDataSizeScanResult(value: unknown): value is ZCodeDataSizeScanResult {
+export function isZCodeDataSizeScanResult(value: unknown): value is ZodyDataSizeScanResult {
   if (typeof value !== "object" || value === null) {
     return false;
   }
-  const candidate = value as Partial<ZCodeDataSizeScanResult>;
+  const candidate = value as Partial<ZodyDataSizeScanResult>;
   const finiteNumbers = [
     candidate.bytes,
     candidate.directoriesScanned,

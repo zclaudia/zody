@@ -25,7 +25,7 @@ import {
   type InputId,
   type SessionCreateSource,
 } from "@zody/shared";
-import type { ZCodeUiError } from "@/lib/zodyUiError.js";
+import type { ZodyUiError } from "@/lib/zodyUiError.js";
 import type {
   AutomationsNavigationTab,
   TaskNavigationHistory,
@@ -109,7 +109,7 @@ export interface TaskUiState {
   elicitationRequest: ZodyElicitationRequest | null;
   pendingElicitationRequests: ZodyElicitationRequest[];
   elicitationFormDraftsByRequestId: Record<string, ElicitationFormDraft>;
-  error: ZCodeUiError | null;
+  error: ZodyUiError | null;
 }
 
 export type ModelSwitchStage =
@@ -145,7 +145,7 @@ export interface TimelineBottomRequest {
   taskId: string;
 }
 
-export interface WorkspaceZCodeUIState {
+export interface WorkspaceZodyUIState {
   /** 当前 workspace 激活中的 task */
   activeTaskId: string | null;
   /**
@@ -170,7 +170,7 @@ export interface WorkspaceZCodeUIState {
   timelineBottomRequestVersion: number;
   timelineBottomRequest: TimelineBottomRequest | null;
   /** 草稿态错误需要跨页面保留，避免切走再回来后提示被本地 state 一起卸载 */
-  draftError: ZCodeUiError | null;
+  draftError: ZodyUiError | null;
   /** 模型切换中的并发保护 requestId；只允许最新请求落库 */
   modelSwitchRequestId: string | null;
   /** 模型切换是否进行中（用于禁发和工具栏 loading） */
@@ -215,10 +215,10 @@ export interface WorkspaceZCodeUIState {
   draftFocusVersion: number;
 }
 
-export interface ZCodeSessionStoreState {
+export interface ZodySessionStoreState {
   /** 按 workspace 维护聊天相关 UI 状态 */
-  workspaces: Record<string, WorkspaceZCodeUIState>;
-  getWorkspaceState: (workspacePath: string, workspaceIdentity?: string) => WorkspaceZCodeUIState;
+  workspaces: Record<string, WorkspaceZodyUIState>;
+  getWorkspaceState: (workspacePath: string, workspaceIdentity?: string) => WorkspaceZodyUIState;
 
   setActiveTaskId: (workspacePath: string, id: string | null, workspaceIdentity?: string) => void;
   promoteGroupedDraftTask: (
@@ -366,12 +366,12 @@ export interface ZCodeSessionStoreState {
   setTaskError: (
     workspacePath: string,
     taskId: string,
-    error: ZCodeUiError | null,
+    error: ZodyUiError | null,
     workspaceIdentity?: string,
   ) => void;
   setDraftError: (
     workspacePath: string,
-    error: ZCodeUiError | null,
+    error: ZodyUiError | null,
     workspaceIdentity?: string,
   ) => void;
   startModelSwitch: (
@@ -512,7 +512,7 @@ export const DEFAULT_TASK_RUNTIME_STATE: TaskRuntimeState = {
 
 export function createDefaultWorkspaceState(
   selectedProvider: ZodyProvider,
-): WorkspaceZCodeUIState {
+): WorkspaceZodyUIState {
   return {
     activeTaskId: null,
     workspaceInit: { ...DEFAULT_WORKSPACE_INIT_STATE },
@@ -551,7 +551,7 @@ export function createDefaultWorkspaceState(
 
 const DEFAULT_WORKSPACE_STATE = createDefaultWorkspaceState(FALLBACK_PROVIDER);
 
-export function getDefaultWorkspaceState(): WorkspaceZCodeUIState {
+export function getDefaultWorkspaceState(): WorkspaceZodyUIState {
   // 单 ZCode Agent 迁移后默认 provider 必须收敛到 glm。
   // 这里返回稳定引用，避免未写入 workspace bucket 的连续 selector 读取产生不同快照。
   return DEFAULT_WORKSPACE_STATE;

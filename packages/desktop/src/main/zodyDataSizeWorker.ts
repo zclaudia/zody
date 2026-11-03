@@ -1,6 +1,6 @@
 import { isMainThread, parentPort, workerData } from "node:worker_threads";
 
-import { scanZCodeDataDirectory, type ZCodeDataSizeScanRequest } from "./zodyDataSizeScanner.js";
+import { scanZCodeDataDirectory, type ZodyDataSizeScanRequest } from "./zodyDataSizeScanner.js";
 
 type WorkerResponse =
   | { ok: true; result: Awaited<ReturnType<typeof scanZCodeDataDirectory>> }
@@ -8,7 +8,7 @@ type WorkerResponse =
 
 const workerParentPort = parentPort;
 if (!isMainThread && workerParentPort) {
-  void scanZCodeDataDirectory(workerData as ZCodeDataSizeScanRequest)
+  void scanZCodeDataDirectory(workerData as ZodyDataSizeScanRequest)
     .then((result) => {
       workerParentPort.postMessage({ ok: true, result } satisfies WorkerResponse);
     })

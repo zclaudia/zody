@@ -15,10 +15,10 @@ import {
   DEFAULT_TASK_RUNTIME_STATE,
   createDefaultWorkspaceState,
   getDefaultWorkspaceState,
-  type ZCodeSessionStoreState,
+  type ZodySessionStoreState,
   type WorkspaceInitState,
   type TaskRuntimeState,
-  type WorkspaceZCodeUIState,
+  type WorkspaceZodyUIState,
 } from "./zodySessionStoreTypes.js";
 
 // ────────────────────────────────────────────
@@ -41,7 +41,7 @@ function copyTaskRecordEntries<T>(
 }
 
 function collectIdentityTaskIds(
-  baseState: WorkspaceZCodeUIState,
+  baseState: WorkspaceZodyUIState,
   workspaceIdentity: string,
 ): Set<string> {
   const normalizedIdentity = workspaceIdentity.trim();
@@ -60,9 +60,9 @@ function collectIdentityTaskIds(
 }
 
 function createIdentityWorkspaceStateSeed(
-  baseState: WorkspaceZCodeUIState | undefined,
+  baseState: WorkspaceZodyUIState | undefined,
   workspaceIdentity?: string,
-): WorkspaceZCodeUIState {
+): WorkspaceZodyUIState {
   if (!baseState) {
     return createDefaultWorkspaceState(getDefaultWorkspaceState().selectedProvider);
   }
@@ -118,10 +118,10 @@ function createIdentityWorkspaceStateSeed(
 }
 
 export function getWorkspaceState(
-  state: ZCodeSessionStoreState,
+  state: ZodySessionStoreState,
   workspacePath: string,
   workspaceIdentity?: string,
-): WorkspaceZCodeUIState {
+): WorkspaceZodyUIState {
   const baseState = state.workspaces[workspacePath] ?? getDefaultWorkspaceState();
   const workspaceKey = resolveWorkspaceStateKey(workspacePath, workspaceIdentity);
   if (workspaceKey === workspacePath) {
@@ -140,11 +140,11 @@ export function getWorkspaceState(
 }
 
 export function updateWorkspaceState(
-  state: ZCodeSessionStoreState,
+  state: ZodySessionStoreState,
   workspacePath: string,
-  updater: (current: WorkspaceZCodeUIState) => WorkspaceZCodeUIState,
+  updater: (current: WorkspaceZodyUIState) => WorkspaceZodyUIState,
   workspaceIdentity?: string,
-): Pick<ZCodeSessionStoreState, "workspaces"> {
+): Pick<ZodySessionStoreState, "workspaces"> {
   const workspaceKey = resolveWorkspaceStateKey(workspacePath, workspaceIdentity);
   const current =
     workspaceKey === workspacePath
@@ -185,7 +185,7 @@ export function updateWorkspaceState(
 // ────────────────────────────────────────────
 
 export function getTaskRuntimeState(
-  workspaceState: WorkspaceZCodeUIState,
+  workspaceState: WorkspaceZodyUIState,
   taskId: string,
 ): TaskRuntimeState {
   return workspaceState.taskRuntimeByTaskId[taskId] ?? DEFAULT_TASK_RUNTIME_STATE;
@@ -197,7 +197,7 @@ interface WorkspaceDisplayedTaskState {
 }
 
 export function getWorkspaceDisplayedTaskState(
-  workspaceState: WorkspaceZCodeUIState,
+  workspaceState: WorkspaceZodyUIState,
 ): WorkspaceDisplayedTaskState {
   if (!workspaceState.activeTaskId) {
     return {
@@ -213,12 +213,12 @@ export function getWorkspaceDisplayedTaskState(
   };
 }
 
-export function getTaskUiState(workspaceState: WorkspaceZCodeUIState, taskId: string) {
+export function getTaskUiState(workspaceState: WorkspaceZodyUIState, taskId: string) {
   return workspaceState.taskUiByTaskId[taskId] ?? DEFAULT_TASK_UI_STATE;
 }
 
 export function hasTaskPendingPermissionRequest(
-  workspaceState: WorkspaceZCodeUIState,
+  workspaceState: WorkspaceZodyUIState,
   taskId: string,
 ): boolean {
   const taskUiState = getTaskUiState(workspaceState, taskId);
@@ -227,7 +227,7 @@ export function hasTaskPendingPermissionRequest(
 }
 
 export function hasTaskPendingHumanInterventionRequest(
-  workspaceState: WorkspaceZCodeUIState,
+  workspaceState: WorkspaceZodyUIState,
   taskId: string,
 ): boolean {
   const taskUiState = getTaskUiState(workspaceState, taskId);
@@ -240,8 +240,8 @@ export function hasTaskPendingHumanInterventionRequest(
 
 export function getTaskMeta(
   workspaceState:
-    | WorkspaceZCodeUIState
-    | Partial<Pick<WorkspaceZCodeUIState, "optimisticTaskListByTaskId" | "taskListCache">>,
+    | WorkspaceZodyUIState
+    | Partial<Pick<WorkspaceZodyUIState, "optimisticTaskListByTaskId" | "taskListCache">>,
   taskId: string,
 ): ZodyTaskMeta | null {
   const optimisticTask = workspaceState.optimisticTaskListByTaskId?.[taskId];
@@ -260,8 +260,8 @@ export function getTaskMeta(
 
 export function getVisibleTaskMetas(
   workspaceState:
-    | WorkspaceZCodeUIState
-    | Partial<Pick<WorkspaceZCodeUIState, "optimisticTaskListByTaskId" | "taskListCache">>,
+    | WorkspaceZodyUIState
+    | Partial<Pick<WorkspaceZodyUIState, "optimisticTaskListByTaskId" | "taskListCache">>,
 ): ZodyTaskMeta[] {
   const taskById = new Map<string, ZodyTaskMeta>();
 
@@ -278,10 +278,10 @@ export function getVisibleTaskMetas(
 
 export function getTaskUnreadIndicator(
   workspaceState:
-    | WorkspaceZCodeUIState
+    | WorkspaceZodyUIState
     | Partial<
         Pick<
-          WorkspaceZCodeUIState,
+          WorkspaceZodyUIState,
           "optimisticTaskListByTaskId" | "taskListCache" | "taskUnreadByTaskId"
         >
       >,
@@ -302,7 +302,7 @@ export function getTaskUnreadIndicator(
 // ────────────────────────────────────────────
 
 export function selectWorkspaceZCodeState(
-  state: ZCodeSessionStoreState,
+  state: ZodySessionStoreState,
   workspacePath: string,
   workspaceIdentity?: string,
 ) {
@@ -310,7 +310,7 @@ export function selectWorkspaceZCodeState(
 }
 
 export function getWorkspaceInitState(
-  workspaceState: Pick<WorkspaceZCodeUIState, "workspaceInit">,
+  workspaceState: Pick<WorkspaceZodyUIState, "workspaceInit">,
 ): WorkspaceInitState {
   return workspaceState.workspaceInit ?? DEFAULT_WORKSPACE_INIT_STATE;
 }

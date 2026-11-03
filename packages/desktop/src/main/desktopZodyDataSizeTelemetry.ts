@@ -1,15 +1,15 @@
 import armsRum from "@arms/rum-electron";
 import type { ArmsRumEnv, FinalArmsCustomEventPayload } from "@zody/shared";
 
-import type { ZCodeDataSizeScanResult } from "./zodyDataSizeScanner.js";
+import type { ZodyDataSizeScanResult } from "./zodyDataSizeScanner.js";
 import {
   readZCodeDataSizeTelemetryState,
   writeZCodeDataSizeTelemetryState,
-  type ZCodeDataSizeTelemetryState,
+  type ZodyDataSizeTelemetryState,
 } from "./zodyDataSizeTelemetryState.js";
 import { scanZCodeDataDirectoryInWorker } from "./zodyDataSizeWorkerClient.js";
 
-export type { ZCodeDataSizeTelemetryState } from "./zodyDataSizeTelemetryState.js";
+export type { ZodyDataSizeTelemetryState } from "./zodyDataSizeTelemetryState.js";
 
 export const ZCODE_DATA_SIZE_SCAN_MAX_DURATION_MS = 30_000;
 export const ZCODE_DATA_SIZE_SCAN_MAX_FILES = 200_000;
@@ -24,7 +24,7 @@ export const ZCODE_DATA_SIZE_ABORTED_RETRY_MS = 30 * 60 * 1000;
 export const ZCODE_DATA_SIZE_FAILURE_RETRY_MS = 6 * 60 * 60 * 1000;
 export const ZCODE_DATA_SIZE_ACTIVITY_POLL_MS = 1_000;
 
-interface ZCodeDataSizeTelemetryTiming {
+interface ZodyDataSizeTelemetryTiming {
   abortedRetryMs: number;
   activityPollMs: number;
   dailyIntervalMs: number;
@@ -37,7 +37,7 @@ interface ZCodeDataSizeTelemetryTiming {
   startupMinDelayMs: number;
 }
 
-const DEFAULT_TIMING: ZCodeDataSizeTelemetryTiming = {
+const DEFAULT_TIMING: ZodyDataSizeTelemetryTiming = {
   abortedRetryMs: ZCODE_DATA_SIZE_ABORTED_RETRY_MS,
   activityPollMs: ZCODE_DATA_SIZE_ACTIVITY_POLL_MS,
   dailyIntervalMs: ZCODE_DATA_SIZE_DAILY_INTERVAL_MS,
@@ -50,22 +50,22 @@ const DEFAULT_TIMING: ZCodeDataSizeTelemetryTiming = {
   startupMinDelayMs: ZCODE_DATA_SIZE_STARTUP_MIN_DELAY_MS,
 };
 
-interface ZCodeDataSizeTelemetryLogger {
+interface ZodyDataSizeTelemetryLogger {
   info: (...args: unknown[]) => void;
   warn: (...args: unknown[]) => void;
 }
 
-interface ZCodeDataSizeTelemetrySchedulerDependencies {
+interface ZodyDataSizeTelemetrySchedulerDependencies {
   deviceMid: string;
   getSystemIdleTimeSeconds: () => number;
   isAppBackground: () => boolean;
   isZCodeBusy: () => boolean;
-  logger: ZCodeDataSizeTelemetryLogger;
-  readState: () => Promise<ZCodeDataSizeTelemetryState | null>;
-  report: (result: ZCodeDataSizeScanResult) => Promise<void> | void;
-  scan: (options: { signal: AbortSignal }) => Promise<ZCodeDataSizeScanResult>;
-  timing?: Partial<ZCodeDataSizeTelemetryTiming>;
-  writeState: (state: ZCodeDataSizeTelemetryState) => Promise<void>;
+  logger: ZodyDataSizeTelemetryLogger;
+  readState: () => Promise<ZodyDataSizeTelemetryState | null>;
+  report: (result: ZodyDataSizeScanResult) => Promise<void> | void;
+  scan: (options: { signal: AbortSignal }) => Promise<ZodyDataSizeScanResult>;
+  timing?: Partial<ZodyDataSizeTelemetryTiming>;
+  writeState: (state: ZodyDataSizeTelemetryState) => Promise<void>;
 }
 
 function normalizeOsCategory(platform: NodeJS.Platform): string {
@@ -97,7 +97,7 @@ export function buildZCodeDataSizeArmsPayload(params: {
     deviceMid: string;
     platform: NodeJS.Platform;
   };
-  result: ZCodeDataSizeScanResult;
+  result: ZodyDataSizeScanResult;
 }): FinalArmsCustomEventPayload {
   const eventName = "perf_resource_zcode_data_size";
   return {
@@ -150,14 +150,14 @@ function unrefTimer(timer: ReturnType<typeof setTimeout> | ReturnType<typeof set
 }
 
 export function createZCodeDataSizeTelemetryScheduler(
-  dependencies: ZCodeDataSizeTelemetrySchedulerDependencies,
+  dependencies: ZodyDataSizeTelemetrySchedulerDependencies,
 ): { start: () => Promise<void>; stop: () => void } {
   const timing = { ...DEFAULT_TIMING, ...dependencies.timing };
   let scheduledTimer: ReturnType<typeof setTimeout> | null = null;
   let activityTimer: ReturnType<typeof setInterval> | null = null;
   let activeAbortController: AbortController | null = null;
   let idleWaitingSince: number | null = null;
-  let persistedState: ZCodeDataSizeTelemetryState | null = null;
+  let persistedState: ZodyDataSizeTelemetryState | null = null;
   let stopped = true;
 
   function clearScheduledTimer(): void {
@@ -218,7 +218,7 @@ export function createZCodeDataSizeTelemetryScheduler(
     }
   }
 
-  async function reserveReport(reservedAt: number): Promise<ZCodeDataSizeTelemetryState | null> {
+  async function reserveReport(reservedAt: number): Promise<ZodyDataSizeTelemetryState | null> {
     const previousState = persistedState;
     const reservation = { ...previousState, reportReservedAt: reservedAt };
     // Bug 根因：旧实现先发送再落盘，落盘失败后重启会再次发送，绕过 24 小时限流。
@@ -229,7 +229,7 @@ export function createZCodeDataSizeTelemetryScheduler(
   }
 
   async function rollbackReportReservation(
-    previousState: ZCodeDataSizeTelemetryState | null,
+    previousState: ZodyDataSizeTelemetryState | null,
   ): Promise<void> {
     try {
       const restoredState = previousState ?? {};
@@ -334,7 +334,7 @@ export function createZCodeDataSizeTelemetryScheduler(
   }
 
   async function initializeFromPersistedState(): Promise<void> {
-    let state: ZCodeDataSizeTelemetryState | null;
+    let state: ZodyDataSizeTelemetryState | null;
     try {
       state = await dependencies.readState();
     } catch (error) {
@@ -397,7 +397,7 @@ export function registerDesktopZCodeDataSizeTelemetry(options: {
   getSystemIdleTimeSeconds: () => number;
   isAppBackground: () => boolean;
   isZCodeBusy: () => boolean;
-  logger: ZCodeDataSizeTelemetryLogger;
+  logger: ZodyDataSizeTelemetryLogger;
   rootPath: string;
   stateFile: string;
 }): void {

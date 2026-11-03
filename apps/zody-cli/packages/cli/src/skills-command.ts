@@ -3,10 +3,10 @@ import type { Logger } from "@zody/contracts";
 import type { RunContext, GlobalOptions } from "@zody/shared-types";
 import type {
   inspectZCodeSkill,
-  InspectZCodeSkillOptions,
+  InspectZodySkillOptions,
   listZCodeSkills,
-  ListZCodeSkillsOptions,
-  ZCodeSkillInspection,
+  ListZodySkillsOptions,
+  ZodySkillInspection,
 } from "@zody/bootstrap";
 import type { CliEnv } from "./env.js";
 
@@ -17,8 +17,8 @@ type CliSkillListItem = CliSkillListOutcome["skills"][number];
 interface SkillsCommandDependencies {
   cwd?: () => string;
   env?: CliEnv;
-  inspectSkill?: (options: InspectZCodeSkillOptions) => ReturnType<typeof inspectZCodeSkill>;
-  listSkills?: (options: ListZCodeSkillsOptions) => ReturnType<typeof listZCodeSkills>;
+  inspectSkill?: (options: InspectZodySkillOptions) => ReturnType<typeof inspectZCodeSkill>;
+  listSkills?: (options: ListZodySkillsOptions) => ReturnType<typeof listZCodeSkills>;
   logger?: Logger;
   loadBootstrapModule?: () => Promise<BootstrapModule>;
 }
@@ -142,7 +142,7 @@ function formatHumanSkillList(outcome: CliSkillListOutcome, options: GlobalOptio
 }
 
 function formatHumanSkillInspection(
-  inspection: ZCodeSkillInspection,
+  inspection: ZodySkillInspection,
   options: GlobalOptions,
 ): string {
   const { metadata } = inspection.skill;
@@ -204,7 +204,7 @@ const formatSkillJson = (outcome: CliSkillListOutcome, cwd: string): string =>
     totalDiscovered: outcome.totalDiscovered,
   });
 
-const formatSkillInspectionJson = (inspection: ZCodeSkillInspection, cwd: string): string =>
+const formatSkillInspectionJson = (inspection: ZodySkillInspection, cwd: string): string =>
   formatJson({
     cwd,
     diagnostics: inspection.diagnostics.map(formatDiagnosticJson),
