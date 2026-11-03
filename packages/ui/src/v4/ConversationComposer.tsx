@@ -28,6 +28,10 @@ import {
 } from "react";
 import { cn } from "@/components/lib/utils.js";
 import {
+  resolveComposerDraftBlockReason,
+  useMobileRemoteRefreshGuard,
+} from "@/mobileRemoteRefreshGuards.js";
+import {
   TID_CHAT_ATTACHMENT_BUTTON,
   TID_CHAT_ATTACHMENT_MENU_ITEM,
   TID_V4_COMPOSER,
@@ -656,6 +660,19 @@ function ConversationComposerImpl({
     disabled,
     listenAddToChatEvents: listenAddToChatEvents && !disabled,
   });
+
+  // M3-T2：composer 未发送正文/附件与待确认的队列发送分别阻塞安全刷新。
+  // guard 读取 textRef/attachments 当前所有者状态，不复制草稿；卸载时由 hook 释放。
+  useMobileRemoteRefreshGuard("composer-draft", () =>
+    resolveComposerDraftBlockReason({
+      text: textRef.current,
+      hasAttachments: attachmentsApi.hasAttachments,
+    }),
+  );
+  useMobileRemoteRefreshGuard("composer-held-confirmation", () =>
+    heldQueueConfirmation ? "active-overlay" : null,
+  );
+
   // 对齐旧版 useChatComposer：窗口级 dragover 会在指针进入 ChatView 前预先点亮
   // 整个聊天区与桌面草稿标题栏；workspace payload 的文案优先于系统附件。
   const { externalFileDragging, workspaceFileDragging } = usePromptEditorDragState({

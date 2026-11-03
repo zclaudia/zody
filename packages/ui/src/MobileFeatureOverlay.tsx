@@ -10,6 +10,7 @@ import {
 import type { WebRemoteControlWorkspaceSwitcherApi } from "@/root/types.js";
 import { logger } from "@/logger.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useMobileRemoteRefreshGuard } from "@/mobileRemoteRefreshGuards.js";
 
 export type WebRemoteControlMobileFeaturePage = "search" | "files" | "notifications";
 
@@ -40,6 +41,8 @@ export function MobileFeatureOverlay({
 }) {
   const { intl } = useZCodeIntl();
   const containerRef = useRef<HTMLDivElement | null>(null);
+  // 文件/搜索/通知全屏弹层在卸载时才解除，避免 reload 丢失当前浏览上下文。
+  useMobileRemoteRefreshGuard("mobile-feature-overlay", () => "active-overlay");
   useEffect(() => {
     const previousFocus =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;

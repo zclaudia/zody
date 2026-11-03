@@ -63,11 +63,7 @@ import { createWebRemoteControlRelayRequestRecovery } from "./requestRecovery.js
 import { createHomeOnlyWebRemoteControlServices } from "./homeOnlyServices.js";
 import { createWebRemoteControlLifecycleRecovery } from "../webRemoteControlLifecycle.js";
 import { seedWebRemoteControlThemePreference } from "../webRemoteControlThemeSeed.js";
-import {
-  createWebRemoteControlVersionGuard,
-  retryObsoleteWebRemoteControlBootstrapCheck,
-} from "../webRemoteControlVersion.js";
-import { showWebRemoteControlVersionNotice } from "../webRemoteControlVersionNotice.js";
+import { retryObsoleteWebRemoteControlBootstrapCheck } from "../webRemoteControlVersion.js";
 import { collectWebRemoteControlMobileDeviceInfo } from "../webRemoteControlDeviceInfo.js";
 import {
   markCurrentWebRemoteControlBridgeTaskRead,
@@ -106,6 +102,15 @@ import {
   resolveMobileRemoteFileBridge,
 } from "./mobileRemoteFileBridge.js";
 import { parseMobileRemoteBridgeEnvelope } from "./mobileRemoteBridgeEnvelope.js";
+import {
+  createMobileRemoteReleaseRuntime,
+  type MobileRemoteReleaseRuntime,
+} from "./mobileUiReleaseRuntime.js";
+import { showMobileUiReleaseNotice } from "./mobileUiReleaseNotice.js";
+import type {
+  MobileUiReleaseController,
+  MobileUiReleaseControllerOptions,
+} from "./mobileUiReleaseController.js";
 
 /**
  * 手机 Remote 启动模块（M2-T2）。
@@ -132,6 +137,10 @@ export interface BootstrapGatewayWebRemoteControlOptions {
   isProduction?: boolean;
   /** 测试注入；缺省使用全局 fetch。 */
   fetcher?: typeof fetch;
+  /** 测试注入 release controller 工厂；缺省使用 M3-T1 实现。 */
+  createReleaseController?: (
+    options: MobileUiReleaseControllerOptions,
+  ) => MobileUiReleaseController;
 }
 
 type GatewaySessionContext = {
@@ -143,6 +152,10 @@ type GatewaySessionContext = {
   allowInsecureTransport: boolean;
   /** 修改连接/切换电脑/失败出口的统一入口；原生按 sessionId 校验。 */
   requestReturnShell(reason: string): void;
+  /** M3-T2：release controller 与文件桥共用同一构建/网络注入。 */
+  isProduction: boolean;
+  fetcher?: typeof fetch;
+  createReleaseController?: BootstrapGatewayWebRemoteControlOptions["createReleaseController"];
 };
 
 /**
@@ -390,6 +403,11 @@ export async function bootstrapGatewayWebRemoteControl(
     bridge: session.bridge,
     allowInsecureTransport: session.allowInsecureTransport,
     requestReturnShell,
+    isProduction,
+    ...(options.fetcher ? { fetcher: options.fetcher } : {}),
+    ...(options.createReleaseController
+      ? { createReleaseController: options.createReleaseController }
+      : {}),
   };
   await startGatewaySession(context);
 }
@@ -399,6 +417,19 @@ async function startGatewaySession(
 ): Promise<void> {
   const gatewayConfig = context.session;
 
+  // M3-T2：整个文档只创建一个 release controller/guard 注册表。注册表先安装，
+  // 后续任一 React root 挂载的 UI 状态都能登记 guard；controller 在业务 ready 后才启动。
+  const releaseRuntime: MobileRemoteReleaseRuntime = createMobileRemoteReleaseRuntime({
+    session: gatewayConfig,
+    ...(context.bridge ? { bridge: context.bridge } : {}),
+    isProduction: context.isProduction,
+    ...(context.fetcher ? { fetcher: context.fetcher } : {}),
+    ...(context.createReleaseController
+      ? { createController: context.createReleaseController }
+      : {}),
+  });
+  const disposeReleaseNotice = showMobileUiReleaseNotice(releaseRuntime.controller);
+
   const navigationOwner = createMobileNavigationOwner();
   let mobileCapabilities:
     | import("@zcode/shared").MobileCapabilities
@@ -407,6 +438,16 @@ async function startGatewaySession(
   let negotiatedAppProtocol: number | undefined;
   let renderCurrentExternalRelayRoot: (() => void) | undefined;
   let connectionGeneration = 0;
+  // 旧 mobile versionGuard 已由 release controller 替代；bootstrap 仍需要按连接代际
+  // 丢弃迟到的 desktop bootstrap 响应，避免旧结果参与新 Root 挂载。
+  let bootstrapCheckGeneration = 0;
+  let pendingVersionCheck:
+    | Promise<WebRemoteControlWindowBootstrapResult | undefined>
+    | undefined;
+  const invalidateBootstrapCheck = (): void => {
+    bootstrapCheckGeneration += 1;
+    pendingVersionCheck = undefined;
+  };
   let notificationServices:
     | Awaited<ReturnType<typeof connectViaProtocol>>
     | undefined;
@@ -464,24 +505,16 @@ async function startGatewaySession(
       // 原生可能已在导航/重建期间淘汰当前 session；保持页面 fail closed，不重试也不写配置。
     }
   };
+  // 业务 ready 的唯一收口：先启动 release controller 并立即检查，再通知原生可派发。
+  const signalBusinessReady = (): void => {
+    releaseRuntime.start();
+    signalRemoteReady();
+  };
   let nextBridgeGeneration = 0;
   let latestRecentProjects: WebRemoteControlRecentProjectsResult | undefined;
   let renderStartPageIfActive: (() => void) | undefined;
   let disposeStartPageWorkspaceSubscription: (() => void) | undefined;
   let disposeStartPageRecentSubscription: (() => void) | undefined;
-  let disposeVersionNotice: (() => void) | undefined;
-  const versionGuard = createWebRemoteControlVersionGuard({
-    requestBootstrap: () => requestBootstrap(),
-    isPageReady: () => ready,
-    onVersionChanged: (version) => {
-      // 页面打进 APK 后没有版本化 URL 可导航；这里只提示，是否重新加载由用户决定，
-      // 真正的协议不兼容由 channel 的 appProtocol 协商处理（见 webRemoteControlVersion.ts）。
-      disposeVersionNotice?.();
-      disposeVersionNotice = showWebRemoteControlVersionNotice(version, () =>
-        window.location.reload(),
-      );
-    },
-  });
   let activeRelayProtocol:
     | ReturnType<typeof createAcknowledgedWebRemoteControlRelayProtocol>
     | undefined;
@@ -777,7 +810,7 @@ async function startGatewaySession(
       bootstrapping = false;
       if (recoveryReady && !terminated) {
         // 首次 ready 后原生才允许派发；恢复成功时补一次幂等通知。
-        signalRemoteReady();
+        signalBusinessReady();
         // Android 可能在回前台重协商期间点击通知；原生 slot 仍是权威待办，
         // 仅在 recovery owner 成功后重新读取，不用定时器猜恢复时序。
         retryPendingNotificationClick();
@@ -855,7 +888,7 @@ async function startGatewaySession(
       }
       const uiState = toUiTerminalTransportState(state);
       terminalTransportState = uiState;
-      if (uiState !== "paired") versionGuard.invalidate();
+      if (uiState !== "paired") invalidateBootstrapCheck();
       setWebRemoteControlTerminalTransportState(uiState);
       if (!ready) {
         renderWebRemoteControlLoading(uiState);
@@ -929,6 +962,8 @@ async function startGatewaySession(
       sendMobileDiagnostic(diagnostic);
     },
     onSendReady: () => {
+      // 业务 Channel 重新 ready 时立即检查发布；controller 未启动前为 no-op。
+      releaseRuntime.notifyBusinessReconnect();
       if (activeRelayProtocol?.isDegraded()) return;
       // Bug 修复：channel 重新 ready 只说明链路恢复，desktop peer 可能已经换代，
       // 也可能只丢了上一批 data/ACK。重放同 bridge 未 ACK 批次，由 messageSeq 去重；
@@ -940,8 +975,7 @@ async function startGatewaySession(
       negotiatedAppProtocol = info.appProtocol;
       // 新 channel 的 capability 必须来自新 bootstrap。让旧代际检查失效，
       // 但保留上次已确认值，避免恢复期间把现有入口暂时隐藏。
-      versionGuard.invalidate();
-      pendingVersionCheck = undefined;
+      invalidateBootstrapCheck();
       // 旧检查返回 undefined 后，由原始 bootstrap/recovery caller 等待新 generation，
       // 这样 fresh 结果会继续原来的 Root 挂载流程，而非只刷新脱离流程的 capabilities。
       if (!import.meta.env.PROD) {
@@ -988,20 +1022,25 @@ async function startGatewaySession(
       return response.result;
     };
 
-  let pendingVersionCheck:
-    | Promise<WebRemoteControlWindowBootstrapResult | undefined>
-    | undefined;
   const checkDesktopVersion = (): Promise<
     WebRemoteControlWindowBootstrapResult | undefined
   > => {
     if (pendingVersionCheck) return pendingVersionCheck;
     // T4.2：版本不匹配不会返回 undefined。这里只在明确发生连接代际变化、且新 channel
     // 已 ready 时继续原 caller 的 bootstrap；普通网络失败和释放状态不会触发重试。
+    // M3-T2：发布变化由 release controller 检测；这里只保留 bootstrap 请求与代际丢弃。
+    // generation 必须在每次 check 时读取：retryObsolete 会在新 channel ready 后重试，
+    // 若沿用首次请求的旧代际，会把重试结果也判为过期。
     const request = retryObsoleteWebRemoteControlBootstrapCheck({
-      check: () =>
-        requestWithRelayRecovery(() => versionGuard.check(), {
+      check: async () => {
+        const requestGeneration = bootstrapCheckGeneration;
+        const result = await requestWithRelayRecovery(() => requestBootstrap(), {
           recoverTimeout: true,
-        }),
+        });
+        return terminated || requestGeneration !== bootstrapCheckGeneration
+          ? undefined
+          : result;
+      },
       getConnectionGeneration: () => connectionGeneration,
       isChannelReady: () => terminalTransportState === "paired",
       isDisposed: () => terminated,
@@ -2081,7 +2120,7 @@ async function startGatewaySession(
     if (bootstrapResult.workspaces.length === 0) {
       // 「电脑上没有窗口 / 没有打开的项目」不是失败，属于首页空态（方案「失败原因与恢复」）。
       renderMobileRemoteStartPage();
-      signalRemoteReady();
+      signalBusinessReady();
       void consumeNativeNotification();
       void consumeNativeNotificationAction();
       return;
@@ -2107,7 +2146,7 @@ async function startGatewaySession(
       : resolveWebRemoteControlInitialWorkspaceSelection(bootstrapResult);
     if (!selectedWorkspace) {
       renderMobileRemoteStartPage();
-      signalRemoteReady();
+      signalBusinessReady();
       void consumeNativeNotification();
       void consumeNativeNotificationAction();
       return;
@@ -2117,7 +2156,7 @@ async function startGatewaySession(
         selectedWorkspace.workspaceKey,
         selectedWorkspace.taskId,
       );
-      signalRemoteReady();
+      signalBusinessReady();
       void consumeNativeNotification();
       void consumeNativeNotificationAction();
       return;
@@ -2127,7 +2166,7 @@ async function startGatewaySession(
       taskId: selectedWorkspace.taskId,
     });
     renderExternalRelayRoot(result.services, result.bridge);
-    signalRemoteReady();
+    signalBusinessReady();
     void consumeNativeNotification();
   };
 
@@ -2192,9 +2231,10 @@ async function startGatewaySession(
     disposeNotificationNotice?.();
     disposeNotificationNotice = undefined;
     searchHighlight = undefined;
-    versionGuard.dispose();
-    disposeVersionNotice?.();
-    disposeVersionNotice = undefined;
+    // M3-T2：统一销毁 release controller/轮询/guard 注册表与提示浮层；
+    // beforeunload 复用同一路径，不触发重复 admission 或配置写入。
+    disposeReleaseNotice();
+    releaseRuntime.dispose();
     disposeStartPageWorkspaceSubscription?.();
     disposeStartPageWorkspaceSubscription = undefined;
     disposeStartPageRecentSubscription?.();

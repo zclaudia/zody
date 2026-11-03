@@ -61,17 +61,19 @@ describe("Remote 只读 session context（M2-T2）", () => {
 
   it("文件、通知与 lifecycle 适配器均携带 sessionId", () => {
     expect(source).toContain("createMobileRemoteFileCapabilities(");
+    expect(source).toContain("resolveMobileRemoteFileBridge(),");
     expect(source).toContain("{ sessionId: session.context.sessionId }");
     expect(source).toContain("createMobileNotificationPlatform(globalThis, {");
     expect(source).toContain("installMobileRemoteNativeHost({");
     expect(source).toContain("sessionId: session.context.sessionId");
   });
 
-  it("业务 Channel ready 后先 markRemoteReady，再消费通知 intent", () => {
+  it("业务 Channel ready 后先启动发布检查/markRemoteReady，再消费通知 intent", () => {
     const bootstrapStart = source.indexOf("bootstrapPairedSession = async");
     expect(bootstrapStart).toBeGreaterThan(0);
     const bootstrapBody = source.slice(bootstrapStart);
-    const readyIndex = bootstrapBody.indexOf("signalRemoteReady();");
+    // M3-T2：ready 收口统一走 signalBusinessReady（先启动 release controller，再 markRemoteReady）。
+    const readyIndex = bootstrapBody.indexOf("signalBusinessReady();");
     const consumeIndex = bootstrapBody.indexOf("void consumeNativeNotification();");
     expect(readyIndex).toBeGreaterThan(0);
     expect(consumeIndex).toBeGreaterThan(readyIndex);

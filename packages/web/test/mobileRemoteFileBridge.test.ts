@@ -3,7 +3,9 @@ import { MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY } from "@zcode/shared";
 import {
   MOBILE_REMOTE_MAX_ATTACHMENT_BYTES,
   MOBILE_REMOTE_SAVE_CHUNK_BYTES,
+  beginMobileRemoteFileOperation,
   createMobileRemoteFileCapabilities,
+  hasActiveMobileRemoteFileOperation,
   resolveMobileRemoteFileBridge,
   saveMobileRemoteFile,
   type MobileRemoteFileNativeBridge,
@@ -76,6 +78,42 @@ function decodeChunks(chunks: string[]): Uint8Array {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe("mobile remote file operation guard (M3-T2)", () => {
+  it("counts nested operations and releases idempotently", () => {
+    expect(hasActiveMobileRemoteFileOperation()).toBe(false);
+    const first = beginMobileRemoteFileOperation();
+    const second = beginMobileRemoteFileOperation();
+    expect(hasActiveMobileRemoteFileOperation()).toBe(true);
+    first();
+    first();
+    expect(hasActiveMobileRemoteFileOperation()).toBe(true);
+    second();
+    expect(hasActiveMobileRemoteFileOperation()).toBe(false);
+  });
+
+  it("releases the tracker after successful and failed saves", async () => {
+    const { bridge } = createFakeBridge();
+    const pending = saveMobileRemoteFile(bridge, "session-1", {
+      data: new Uint8Array([1, 2, 3]).buffer,
+      suggestedName: "report.txt",
+    });
+    expect(hasActiveMobileRemoteFileOperation()).toBe(true);
+    await expect(pending).resolves.toEqual({ success: true, path: "Download/report.pdf" });
+    expect(hasActiveMobileRemoteFileOperation()).toBe(false);
+
+    const failing = createFakeBridge();
+    failing.bridge.finish.mockReturnValueOnce(failure("native-busy"));
+    await expect(
+      saveMobileRemoteFile(failing.bridge, "session-1", {
+        data: new Uint8Array([1]).buffer,
+        suggestedName: "report.txt",
+      }),
+    ).resolves.toMatchObject({ success: false });
+    expect(hasActiveMobileRemoteFileOperation()).toBe(false);
+    expect(failing.bridge.abort).toHaveBeenCalledOnce();
+  });
 });
 
 describe("mobile remote file bridge (T6.3)", () => {

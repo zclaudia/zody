@@ -37,6 +37,30 @@ export const MOBILE_REMOTE_MAX_ATTACHMENT_BYTES = 16 * 1024 * 1024;
 /** 每次桥调用的原始字节数；base64 后约 341 KiB，远低于原生 1 MiB 保护上限。 */
 export const MOBILE_REMOTE_SAVE_CHUNK_BYTES = 256 * 1024;
 
+/**
+ * 页面内正在进行的文件保存/下载计数（M3-T2 refresh guard 的只读事实源）。
+ *
+ * 只在本模块维护，不进入 controller；`saveMobileRemoteFile` 覆盖下载与分块写入的完整
+ * 生命周期，成功/失败都会释放。导出查询函数供 bootstrap 注册 `file-operation` guard。
+ */
+let activeMobileRemoteFileOperations = 0;
+
+export function beginMobileRemoteFileOperation(): () => void {
+  activeMobileRemoteFileOperations += 1;
+  let released = false;
+  return () => {
+    if (released) {
+      return;
+    }
+    released = true;
+    activeMobileRemoteFileOperations = Math.max(0, activeMobileRemoteFileOperations - 1);
+  };
+}
+
+export function hasActiveMobileRemoteFileOperation(): boolean {
+  return activeMobileRemoteFileOperations > 0;
+}
+
 export interface MobileRemoteFileNativeBridge {
   saveFileBegin(sessionId: string, fileName: string, mimeType: string): string;
   saveFileAppend(sessionId: string, token: string, chunkBase64: string): string;
@@ -156,48 +180,55 @@ export async function saveMobileRemoteFile(
   sessionId: string,
   payload: SaveFileRequest,
 ): Promise<SaveFileResult> {
-  let token: string | undefined;
+  // 整条保存链路（下载/读取 + 分块写入 + openFile）都计入文件操作 guard；
+  // finally 保证成功、失败和异常都不会留下永久阻塞。
+  const releaseOperation = beginMobileRemoteFileOperation();
   try {
-    const { bytes, mimeType } = await readSavePayload(payload);
-    token = requireMobileRemoteBridgeString(
-      parseMobileRemoteBridgeEnvelope(
-        bridge.saveFileBegin(sessionId, payload.suggestedName, mimeType),
-      ),
-      "token",
-    );
-    for (let offset = 0; offset < bytes.length; offset += MOBILE_REMOTE_SAVE_CHUNK_BYTES) {
-      const chunk = bytes.subarray(
-        offset,
-        Math.min(offset + MOBILE_REMOTE_SAVE_CHUNK_BYTES, bytes.length),
-      );
-      parseMobileRemoteBridgeEnvelope(
-        bridge.saveFileAppend(sessionId, token, encodeBase64(chunk)),
-      );
-    }
-    const saved = parseSavedFile(bridge.saveFileFinish(sessionId, token));
-    token = undefined;
-    if (bridge.openFile) {
-      try {
+    let token: string | undefined;
+    try {
+      const { bytes, mimeType } = await readSavePayload(payload);
+      token = requireMobileRemoteBridgeString(
         parseMobileRemoteBridgeEnvelope(
-          bridge.openFile(sessionId, saved.uri, mimeType),
+          bridge.saveFileBegin(sessionId, payload.suggestedName, mimeType),
+        ),
+        "token",
+      );
+      for (let offset = 0; offset < bytes.length; offset += MOBILE_REMOTE_SAVE_CHUNK_BYTES) {
+        const chunk = bytes.subarray(
+          offset,
+          Math.min(offset + MOBILE_REMOTE_SAVE_CHUNK_BYTES, bytes.length),
         );
-      } catch {
-        // Bugfix: 保存已经成功，系统没有可打开该类型的应用时不能把保存结果改成失败。
+        parseMobileRemoteBridgeEnvelope(
+          bridge.saveFileAppend(sessionId, token, encodeBase64(chunk)),
+        );
       }
-    }
-    return { success: true, path: saved.displayPath };
-  } catch (error) {
-    if (token) {
-      try {
-        parseMobileRemoteBridgeEnvelope(bridge.saveFileAbort(sessionId, token));
-      } catch {
-        // 原生会话可能已经结束；保留原始错误。
+      const saved = parseSavedFile(bridge.saveFileFinish(sessionId, token));
+      token = undefined;
+      if (bridge.openFile) {
+        try {
+          parseMobileRemoteBridgeEnvelope(
+            bridge.openFile(sessionId, saved.uri, mimeType),
+          );
+        } catch {
+          // Bugfix: 保存已经成功，系统没有可打开该类型的应用时不能把保存结果改成失败。
+        }
       }
+      return { success: true, path: saved.displayPath };
+    } catch (error) {
+      if (token) {
+        try {
+          parseMobileRemoteBridgeEnvelope(bridge.saveFileAbort(sessionId, token));
+        } catch {
+          // 原生会话可能已经结束；保留原始错误。
+        }
+      }
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
     }
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
+  } finally {
+    releaseOperation();
   }
 }
 

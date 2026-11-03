@@ -29,6 +29,12 @@ const testState = vi.hoisted(() => ({
   deferBridge: false,
   bridgeReplies: [] as Array<() => void>,
   sentPayloads: [] as WebRemoteControlAppPayload[],
+  releaseController: {
+    starts: 0,
+    checks: 0,
+    reconnects: 0,
+    disposals: 0,
+  },
 }));
 
 const renderMock = vi.fn();
@@ -48,6 +54,7 @@ vi.mock("react-dom/client", () => ({
 
 vi.mock("@zcode/ui", () => ({
   AppErrorBoundary: ({ children }: { children: unknown }) => children,
+  Button: () => null,
   Root: () => null,
   WebRemoteControlMobileStartPage: () => null,
   WebRemoteControlMobileSettingsScreen: () => null,
@@ -55,6 +62,7 @@ vi.mock("@zcode/ui", () => ({
   ZCodeIntlProvider: ({ children }: { children: unknown }) => children,
   generateMobileDeviceFingerprint: vi.fn(() => "test-mobile-fingerprint"),
   installDocumentHiddenMotionPause: vi.fn(),
+  installMobileRemoteRefreshGuardRegistry: vi.fn(() => () => {}),
   playTaskNotificationSound: vi.fn(),
   setStreamClientId: vi.fn(),
   setWebRemoteControlTerminalTransportState: vi.fn(),
@@ -62,6 +70,10 @@ vi.mock("@zcode/ui", () => ({
 
 vi.mock("@zcode/client", () => ({
   connectViaProtocol: vi.fn(() => ({ settingService: {} })),
+  connectViaProtocolOwned: vi.fn(() => ({
+    services: { settingService: {} },
+    dispose: vi.fn(),
+  })),
   connectViaWebSocket: vi.fn(),
   createAcknowledgedWebRemoteControlRelayProtocol: vi.fn((options) => {
     testState.relayProtocolOptions.push(options);
@@ -287,10 +299,74 @@ function setupExternalRelayGlobals(pathname = "/remote") {
   };
 }
 
+const testSessionContext = {
+  schemaVersion: 1,
+  sessionId: "session-1",
+  gatewayUrl: "http://gateway.test",
+  namespace: "zcode",
+  backendId: "backend-1",
+  credential: "zgd_test",
+  clientInstanceId: "client-1",
+  appVersion: "1.0.0",
+  bridgeCapabilities: {
+    schemaVersion: 1,
+    bridgeVersion: 1,
+    appVersion: "1.0.0",
+    capabilities: ["session-context", "insecure-gateway-transport"],
+  },
+};
+
+const testReleaseManifest = {
+  schemaVersion: 1 as const,
+  releaseId: "0123456789abcdef01234567",
+  desktopVersion: "1.0.0",
+  supportedBridgeVersions: [1],
+  entry: "/assets/remote/index.html",
+  assetDigest: "a".repeat(64),
+};
+
+function createTestRemoteBridge() {
+  return {
+    getSessionContext: () =>
+      JSON.stringify({ schemaVersion: 1, ok: true, context: testSessionContext }),
+    markRemoteReady: () => JSON.stringify({ schemaVersion: 1, ok: true }),
+    returnShell: vi.fn(),
+  };
+}
+
 /** 手机 bootstrap 不再挂在普通 Web 入口的 `/remote*` 路由上（T3.4 隔离 SDK），直接调用启动函数。 */
 async function startMobileBootstrap(): Promise<void> {
   const { bootstrapGatewayWebRemoteControl } = await import("../src/mobile-remote/bootstrap.js");
-  await bootstrapGatewayWebRemoteControl(new URLSearchParams(window.location.search));
+  await bootstrapGatewayWebRemoteControl(new URLSearchParams(window.location.search), {
+    // M2-T2 Remote 只从原生 session context 启动；测试直接注入可信上下文，
+    // 不依赖开发 handoff。发布检查与 controller 也在此固定，避免真实网络和轮询。
+    bridge: createTestRemoteBridge(),
+    checkRelease: async () => ({ kind: "compatible", manifest: testReleaseManifest }),
+    createReleaseController: (options) => {
+      return {
+        guards: options.guards!,
+        start: () => {
+          testState.releaseController.starts += 1;
+        },
+        checkNow: () => {
+          testState.releaseController.checks += 1;
+          return Promise.resolve();
+        },
+        notifyBusinessReconnect: () => {
+          testState.releaseController.reconnects += 1;
+        },
+        dispose: () => {
+          testState.releaseController.disposals += 1;
+        },
+        getStatus: () => ({ kind: "idle" as const }),
+        subscribe: () => () => {},
+        requestSafeReload: async () => ({
+          kind: "not-ready" as const,
+          status: { kind: "idle" as const },
+        }),
+      };
+    },
+  });
 }
 
 /**
@@ -332,6 +408,10 @@ describe("external relay frame gap recovery", () => {
     testState.bootstrapReplies.length = 0;
     testState.deferBridge = false;
     testState.bridgeReplies.length = 0;
+    testState.releaseController.starts = 0;
+    testState.releaseController.checks = 0;
+    testState.releaseController.reconnects = 0;
+    testState.releaseController.disposals = 0;
     renderMock.mockClear();
     navigateMock.mockClear();
     noticeMock.mockClear();
@@ -350,16 +430,16 @@ describe("external relay frame gap recovery", () => {
   });
 
   it.each(["pair", "foreground"])(
-    "notifies on %s when the desktop version changes and keeps the page usable",
+    "keeps the page usable on %s desktop version change without the removed version notice",
     async (kind) => {
       vi.stubEnv("BASE_URL", "/remote/v4/");
       const lifecycle = setupExternalRelayGlobals("/remote/v4");
       testState.desktopAppVersion = "1.0.0";
       await startMobileBootstrap();
       await vi.waitFor(() =>
-        expect(
-          renderMock.mock.calls.some(([element]) => elementRendersRootServices(element)),
-        ).toBe(true),
+        expect(renderMock.mock.calls.some(([element]) => elementRendersRootServices(element))).toBe(
+          true,
+        ),
       );
       const renderCount = renderMock.mock.calls.length;
       testState.desktopAppVersion = "3.12.2";
@@ -372,9 +452,10 @@ describe("external relay frame gap recovery", () => {
         lifecycle.setVisibilityState("visible");
         lifecycle.dispatchDocumentEvent("visibilitychange");
       }
-      await vi.waitFor(() => expect(noticeMock).toHaveBeenCalledOnce());
-      expect(noticeMock.mock.calls[0]![0]).toBe("3.12.2");
-      // 版本变化不再阻塞帧发送，也不卸载已挂载页面。
+      // M3-T2：桌面版本提示由 release controller 轮询 releaseId 替代；
+      // 旧 versionGuard 不再在移动 bootstrap 中展示版本变化提示。
+      expect(noticeMock).not.toHaveBeenCalled();
+      // 版本变化不阻塞帧发送，也不卸载已挂载页面。
       expect(navigateMock).not.toHaveBeenCalled();
       expect(testState.relayProtocolOptions).toHaveLength(1);
       expect(renderMock).toHaveBeenCalledTimes(renderCount);
@@ -387,11 +468,26 @@ describe("external relay frame gap recovery", () => {
       });
       expect(protocol.sendFrame(frame!)).toBe(true);
       expect(testState.sentPayloads.length).toBeGreaterThan(sentBeforeFrame);
-      // 提示里的「重新加载」是用户的显式动作，不再是自动导航。
-      noticeMock.mock.calls[0]![1]();
-      expect(navigateMock).toHaveBeenCalledOnce();
     },
   );
+
+  it("starts the release controller on business ready, forwards reconnects and disposes on beforeunload", async () => {
+    vi.stubEnv("BASE_URL", "/remote/v4/");
+    const lifecycle = setupExternalRelayGlobals("/remote/v4");
+    await startMobileBootstrap();
+    await vi.waitFor(() => expect(testState.releaseController.starts).toBe(1));
+
+    expect(testState.releaseController.starts).toBe(1);
+    expect(testState.releaseController.checks).toBeGreaterThanOrEqual(1);
+
+    testState.transportOptions[0]!.onSendReady?.();
+    expect(testState.releaseController.reconnects).toBe(1);
+
+    lifecycle.dispatchWindowEvent("beforeunload");
+    expect(testState.releaseController.disposals).toBe(1);
+    // 页面卸载只释放 controller/transport，不触发 reload 或配置写入。
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
 
   it("rebuilds a bridge that degrades while foreground version validation is pending", async () => {
     vi.stubEnv("BASE_URL", "/remote/v4/");

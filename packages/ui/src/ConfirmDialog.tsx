@@ -19,11 +19,17 @@ import {
   AUTOMATION_CONFIRM_DIALOG_CONTENT_CLASS,
   AUTOMATION_CONFIRM_DIALOG_DESCRIPTION_CLASS,
 } from "@/settings/automationConfirmDialogPresentation.js";
+import { useMobileRemoteRefreshGuard } from "@/mobileRemoteRefreshGuards.js";
 
 export function ConfirmDialogHost() {
   const { intl } = useZCodeIntl();
   const pendingRequest = useConfirmDialogStore((state) => state.pendingRequest);
   const settleConfirmation = useConfirmDialogStore((state) => state.settleConfirmation);
+
+  // 未确认的破坏性操作属于 active-overlay 阻塞来源；确认/取消后 store 清空即解除。
+  useMobileRemoteRefreshGuard("active-confirm-dialog", () =>
+    pendingRequest ? "active-overlay" : null,
+  );
 
   const settleChoice = useConfirmDialogStore((state) => state.settleChoice);
 
