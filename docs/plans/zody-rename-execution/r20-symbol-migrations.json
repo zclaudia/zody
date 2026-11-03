@@ -523,6 +523,31 @@
       ],
       "controllerReport": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-03-controller-verification.md",
       "review": "docs/plans/zody-rename-execution/reports/R20-symbols-batch-03-deepseek-review.md"
+    },
+    {
+      "id": "R20.5-manual-local-bindings",
+      "base": "f28dfddcbd4e646d7fa93d2e593b91a62063b2b6",
+      "candidate": null,
+      "status": "controller-verified-pending-review",
+      "records": [
+        {
+          "old": "zcodeRoot",
+          "new": "zodyRoot",
+          "declarationBefore": ".agents/skills/zody-large-task-fixture/scripts/generate-large-task-fixture.mjs",
+          "declarationAfter": ".agents/skills/zody-large-task-fixture/scripts/generate-large-task-fixture.mjs",
+          "category": "internal-local-binding",
+          "owner": "R20.5"
+        },
+        {
+          "old": "ZCODE_PROVIDER",
+          "new": "ZODY_PROVIDER",
+          "declarationBefore": "apps/zody-cli/packages/restore-legacy-sessions-plugin/skills/restore-legacy-sessions/scripts/restore-conversation.mjs",
+          "declarationAfter": "apps/zody-cli/packages/restore-legacy-sessions-plugin/skills/restore-legacy-sessions/scripts/restore-conversation.mjs",
+          "category": "internal-local-binding",
+          "owner": "R20.5"
+        }
+      ],
+      "controllerReport": "docs/plans/zody-rename-execution/reports/R20-manual-data-paths-controller-verification.md"
     }
   ]
 }

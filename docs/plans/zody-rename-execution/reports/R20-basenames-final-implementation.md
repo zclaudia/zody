@@ -25,3 +25,7 @@ WDIO ConfigParser 的实际发现结果经离线 `file://` 转换后包含新的
 ## 格式化补丁
 
 主控预提交发现 `packages/desktop/test/upstreamReplayFixtureResolution.test.ts` 未通过 oxfmt；仅对该文件执行 `pnpm exec oxfmt`，随后 `pnpm exec oxfmt --check packages/desktop/test/upstreamReplayFixtureResolution.test.ts` 退出 0。格式化除换行空白外还移除了两个多行调用中合法的尾随逗号；因此忽略空白的 diff 和 token 比较均退出 1。TypeScript 解析后的标准打印结果一致（`resolver-format-ast-check.json`），人工核对补丁未发现行为变化；前后 SHA-256、补丁与命令输出分别在 `final-d49/resolver-format-hashes.txt`、`resolver-format.patch`、`resolver-format*.log`。上文 342 文件逐字节核验发生在这一格式化 overlay 之前；该文件当前内容以 overlay 后哈希为准。未重跑测试或构建。
+
+## Audit store 路径后续修正
+
+`scripts/audit-zody-agent-remnants.mjs` 中 store 前缀从已消失的 `zcodeSessionStore` 改为现行 `zodySessionStore`，未添加旧新兼容。前面的 `packages/ui/src/` 规则已覆盖该路径；对现存 6 个对应 store 文件，修改前后直接分类均为 `compat-type`（`final-d49/audit-prefix-followup.classification.json`）。执行 `node scripts/audit-zody-agent-remnants.mjs --json --root=packages/ui/src/store` 前后均退出 0，JSON 相同，但该 root 实际扫描文件数为 0，不能单凭此结果证明分类；额外路径分类核验补足此局限。`node --check scripts/audit-zody-agent-remnants.mjs` 退出 0。

@@ -20067,6 +20067,11 @@
         "candidate": "1b042046c373fa91c5ed80b1501bcf0677f2eb39",
         "path": "scripts/audit-zody-agent-remnants.mjs",
         "change": "Exact compat-type basename zcode-agent-policy to zody-agent-policy. Preserve unmoved model-state and all unrelated classification behavior."
+      },
+      {
+        "candidate": "f28dfddcbd4e646d7fa93d2e593b91a62063b2b6",
+        "path": "scripts/audit-zody-agent-remnants.mjs",
+        "change": "Current store basename prefix zcodeSessionStore to zodySessionStore; six current classifications unchanged under prior UI rule, no legacy alias added."
       }
     ],
     "remainingBasenameExactExtensions": [
@@ -20114,5 +20119,28 @@
       "After batch-03 freezes, reconcile exact renamed symbol references against that candidate."
     ],
     "report": "docs/plans/zody-rename-execution/reports/R20-current-docs.md"
+  },
+  "substep5ManualDataPaths": {
+    "baseline": "f28dfddcbd4e646d7fa93d2e593b91a62063b2b6",
+    "writeSet": [
+      ".agents/skills/zody-large-task-fixture/scripts/generate-large-task-fixture.mjs",
+      ".agents/skills/zody-large-task-fixture/SKILL.md",
+      "apps/zody-cli/packages/restore-legacy-sessions-plugin/skills/restore-legacy-sessions/scripts/scan-legacy-sessions.mjs",
+      "apps/zody-cli/packages/restore-legacy-sessions-plugin/skills/restore-legacy-sessions/scripts/restore-conversation.mjs",
+      "apps/zody-cli/packages/restore-legacy-sessions-plugin/skills/restore-legacy-sessions/SKILL.md",
+      "packages/desktop/test/e2e/fixtures/cases/conversation-session/conversation-session-model-trajectory-viewer.json",
+      "packages/desktop/test/e2e/fixtures/cases/conversation-session/conversation-session-pasted-image-path-edge-cases.json",
+      "specs/zody-brand-residual-cleanup.md",
+      "scripts/test/zody-manual-data-paths.test.mjs"
+    ],
+    "rules": [
+      "Apply specification and failing isolated-HOME behavior tests before product default-path fixes.",
+      "Current target roots use .zody; legacy snapshot input .zcode and existing explicit override semantics remain unchanged. No automatic migration, config discovery, new CLI options or real-user data operations.",
+      "Correct current product descriptions and verified local zcodeRoot/ZCODE_PROVIDER bindings in the already granted scripts only; preserve historical labels, serialized keys, provider values and external identity.",
+      "All behavior tests use isolated temporary HOME/USERPROFILE and databases. Use async file/child-process test helpers. Metadata JSON may be statically inspected; do not claim native E2E."
+    ],
+    "report": "docs/plans/zody-rename-execution/reports/R20-manual-data-paths-implementation.md",
+    "status": "controller-verified-pending-review",
+    "controllerReport": "docs/plans/zody-rename-execution/reports/R20-manual-data-paths-controller-verification.md"
   }
 }

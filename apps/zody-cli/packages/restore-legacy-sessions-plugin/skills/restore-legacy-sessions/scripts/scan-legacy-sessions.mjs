@@ -13,8 +13,9 @@ const { DatabaseSync } = await import("node:sqlite");
 process.emitWarning = originalEmitWarning;
 
 const defaultLegacyDir = join(homedir(), ".zcode", "v2", "sessions");
-const defaultTaskIndexPath = join(homedir(), ".zcode", "v2", "tasks-index.sqlite");
-const defaultCliDbPath = join(homedir(), ".zcode", "cli", "db", "db.sqlite");
+// 修复：目标数据库使用当前 .zody 默认根；历史快照来源仍由既有路径或参数指定。
+const defaultTaskIndexPath = join(homedir(), ".zody", "v2", "tasks-index.sqlite");
+const defaultCliDbPath = join(homedir(), ".zody", "cli", "db", "db.sqlite");
 
 function printUsage() {
   console.log(`Usage:
@@ -26,7 +27,7 @@ function printUsage() {
 Options:
   --legacy-dir <path>   Legacy snapshot root. Default: ${defaultLegacyDir}
   --task-index <path>   Task index sqlite path. Default: ${defaultTaskIndexPath}
-  --cli-db <path>       New ZCode session sqlite path. Default: ${defaultCliDbPath}
+  --cli-db <path>       Zody session sqlite path. Default: ${defaultCliDbPath}
   --agent <provider>    Filter by provider, such as glm, claude, codex, opencode.
   --workspace <path>    Filter by exact workspace path.
   --query <text>        Filter conversations by title, ids, or visible message text.

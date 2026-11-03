@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Restore a single legacy ACP-era conversation snapshot into the new ZCode stores.
+ * Restore a single legacy ACP-era conversation snapshot into the current Zody stores.
  *
  * Usage:
  *   restore-conversation.mjs --snapshot <path> [--task-index <path>] [--cli-db <path>]
  *
  * Options:
  *   --snapshot <path>   Path to the legacy snapshot JSON file (required)
- *   --task-index <path> Task index sqlite path. Default: ~/.zcode/v2/tasks-index.sqlite
- *   --cli-db <path>     New ZCode session sqlite path. Default: ~/.zcode/cli/db/db.sqlite
+ *   --task-index <path> Task index sqlite path. Default: ~/.zody/v2/tasks-index.sqlite
+ *   --cli-db <path>     Zody session sqlite path. Default: ~/.zody/cli/db/db.sqlite
  *   --dry-run           Print what would be done without writing
  */
 
@@ -24,9 +24,10 @@ process.emitWarning = function filterSqliteExperimentalWarning(warning, ...args)
 const { DatabaseSync } = await import("node:sqlite");
 process.emitWarning = originalEmitWarning;
 
-const ZCODE_PROVIDER = "glm";
-const defaultTaskIndexPath = join(homedir(), ".zcode", "v2", "tasks-index.sqlite");
-const defaultCliDbPath = join(homedir(), ".zcode", "cli", "db", "db.sqlite");
+const ZODY_PROVIDER = "glm";
+// 修复：目标数据库使用当前 .zody 默认根；历史快照来源仍由既有路径或参数指定。
+const defaultTaskIndexPath = join(homedir(), ".zody", "v2", "tasks-index.sqlite");
+const defaultCliDbPath = join(homedir(), ".zody", "cli", "db", "db.sqlite");
 
 function parseArgs(argv) {
   const args = {
@@ -299,7 +300,7 @@ function buildRestorePlan(snapshotPath) {
   const createdAt = optionalNumber(meta.createdAt) ?? Date.now();
   const updatedAt = optionalNumber(meta.updatedAt) ?? createdAt;
 
-  // 旧 ACP provider 只代表来源。恢复后的新 ZCode 任务必须按 glm 写入，否则任务列表会被过滤掉。
+  // 旧 ACP provider 只代表来源。恢复后的 Zody 任务必须按 glm 写入，否则任务列表会被过滤掉。
   const normalizedMeta = removeUndefined({
     ...meta,
     taskId: restoredTaskId,
@@ -313,7 +314,7 @@ function buildRestorePlan(snapshotPath) {
     model: model || undefined,
     thoughtLevel: optionalString(meta.thoughtLevel),
     runtimeEpoch: optionalNumber(meta.runtimeEpoch),
-    provider: ZCODE_PROVIDER,
+    provider: ZODY_PROVIDER,
     legacyTaskId,
     restoredTaskId,
     workspaceHash,
@@ -349,7 +350,7 @@ function printPlan(plan, dryRun) {
   console.log("=== Restoring conversation ===");
   console.log(`  Title:          ${plan.title}`);
   console.log(`  SourceProvider: ${plan.sourceProvider}`);
-  console.log(`  RuntimeProvider: ${ZCODE_PROVIDER}`);
+  console.log(`  RuntimeProvider: ${ZODY_PROVIDER}`);
   console.log(`  Model:          ${plan.model}`);
   console.log(`  Workspace:      ${plan.workspacePath}`);
   console.log(`  Messages:       ${plan.messages.length}`);
@@ -401,7 +402,7 @@ function writeTaskIndex(taskDb, plan) {
     task_id: plan.restoredTaskId,
     title: plan.title,
     task_status: optionalString(plan.meta.status) || null,
-    provider: ZCODE_PROVIDER,
+    provider: ZODY_PROVIDER,
     mode: plan.mode,
     model: plan.model || null,
     forked_from_task_id: optionalString(plan.meta.forkedFromTaskId) || null,
@@ -500,7 +501,7 @@ function writeMessages(cliDb, plan) {
             ...baseMessageData,
             content: message.content,
             modelId: message.model || plan.model || "unknown",
-            providerId: ZCODE_PROVIDER,
+            providerId: ZODY_PROVIDER,
             mode: plan.mode,
             path: {
               cwd: plan.workspacePath,
@@ -537,7 +538,7 @@ function writeMessages(cliDb, plan) {
             ...baseMessageData,
             content: message.content,
             modelSelection: {
-              providerId: ZCODE_PROVIDER,
+              providerId: ZODY_PROVIDER,
               modelId: message.model || plan.model || "unknown",
             },
             // 旧 Reader 无条件访问 User.model；显式导入绕过普通 Writer，也必须补最小对象防止回滚打不开正文。

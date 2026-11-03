@@ -37,3 +37,11 @@
 `manual-result.patch` 已将 27 条逐位置清单落成差异：351 个文件、2,134 处去重编辑，包含三个 interface/const 联合改名、动态导入解构与动态函数注入键、当前 dev-docs/测试字符串、Desktop 未解析测试的两处引用和 `services/src/index.ts` 的类型重导出。`manual-result-files.json` 是精确文件集；描述符继续使用原 `ServiceChannels`，没有添加旧名别名或额外类型定义。
 
 `combined-result.patch` 将 04-A、552 个额外可绑定候选和上述补充按原始快照位置合成一次编辑，包含 695 个文件、7,657 处去重编辑；精确文件集在 `combined-result-files.json`。原独立补丁有重叠文件/上下文，应使用合成结果核验，不假定可逐个串行应用。两份补丁均对 d49 隔离快照通过 `git apply --check --directory=output/zody-rename-r20-symbols/batch-04/snapshot`；该检查只验证补丁上下文，并不证明编译、运行或最终迁移后的绑定正确。生成脚本 `make-manual-closure.mjs` 对每处旧文本和同位置冲突进行校验；最终 N 基线冻结后仍须重新绑定、映射新 basename 并重新生成，再按授权集合审查，不能直接将 d49 补丁应用到产品工作树。本轮未运行测试或构建、未写产品。
+
+### f28 最终 basename 基线重绑定
+
+基线 `f28dfddcbd4e646d7fa93d2e593b91a62063b2b6`，按 `substep4.appliedBasenameMap` 的 198 项实际映射重建 3,221 个授权快照输入，缺失 0；TypeScript checker 重新扫描后为 565 个 `binding-candidate`、6 条 type/value 合并记录、20 条含当前文档或测试字符串记录、1 条 Desktop 未解析记录，以及此前已迁移的 8 条。人工未解析位置仍与 d49 一致：DI 动态函数注入键 1 处、动态 import 解构/调用 2 处、Desktop 缺失公开 type re-export 的导入/使用 2 处。
+
+新的完整补丁为 `output/zody-rename-r20-symbols/batch-04/f28/combined-result.patch`：695 文件、7,657 处去重编辑，已对 f28 隔离快照通过 `git apply --check`。声明及实际引用见同目录 `bc-bindings.json`；`exact-audit.json` 逐文件列出补丁前后 SHA-256、授权判断和 3,221 个 TypeScript 项目快照输入的前置 SHA-256，越授权 0、manual 排除冲突 0。`combined-result-files.json` 为精确写集合；`manual-result.patch` 保留单独补充差异供审阅。合并补丁包含三个 DI interface/const、动态引用、现行文档和测试文字以及缺失的单一类型重导出；不更改原 channel 值。
+
+生成时工作树 HEAD 仍为 f28，`git diff f28 --name-only` 未发现跟踪文件改动；此结论只对应生成时刻。交源码锁前必须重新核对 `exact-audit.json` 中候选文件与项目输入的哈希及 HEAD，相关输入变化则重新绑定；无关并行变更不应被补丁覆盖。本批仍只准备隔离候选，没有运行测试、构建或修改产品源码。

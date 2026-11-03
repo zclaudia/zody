@@ -96,7 +96,7 @@ const categoryRules = [
       /^packages\/web\/src\//u,
       /^packages\/ui\/src\/hooks\/useAcp/u,
       /^packages\/ui\/src\/lib\/zodySessionProjection\.ts$/u,
-      /^packages\/ui\/src\/store\/zcodeSessionStore/u,
+      /^packages\/ui\/src\/store\/zodySessionStore/u,
     ],
   },
   {

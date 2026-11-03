@@ -7,9 +7,10 @@ import { DatabaseSync } from "node:sqlite";
 import { spawnSync } from "node:child_process";
 
 const args = parseArgs(process.argv.slice(2));
-const zcodeRoot = join(homedir(), ".zcode");
-const cliDbPath = join(zcodeRoot, "cli", "db", "db.sqlite");
-const taskIndexPath = join(zcodeRoot, "v2", "tasks-index.sqlite");
+// 修复：默认数据根已切换为 .zody，避免向旧产品的数据库写入测试数据。
+const zodyRoot = join(homedir(), ".zody");
+const cliDbPath = join(zodyRoot, "cli", "db", "db.sqlite");
+const taskIndexPath = join(zodyRoot, "v2", "tasks-index.sqlite");
 
 if (args.help) {
   printHelp();
@@ -80,7 +81,7 @@ function generateTask({ workspacePath, turnCount, title, backup }) {
   const modelId = "deepseek-v4-flash";
   const model = `${providerId}/${modelId}`;
   const baseTime = now - 1000 * 60 * 60 * 24;
-  const manifestPath = join(zcodeRoot, "perf-task-manifests", `${sessionId}.json`);
+  const manifestPath = join(zodyRoot, "perf-task-manifests", `${sessionId}.json`);
   let partCount = 0;
 
   const cli = openDb(cliDbPath);
@@ -315,7 +316,7 @@ function assertDatabases() {
 
 function backupDatabases() {
   const stamp = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
-  const backupDir = join(zcodeRoot, "perf-task-backups", stamp);
+  const backupDir = join(zodyRoot, "perf-task-backups", stamp);
   mkdirSync(backupDir, { recursive: true });
   sqliteBackup(taskIndexPath, join(backupDir, "tasks-index.sqlite"));
   sqliteBackup(cliDbPath, join(backupDir, "cli-db.sqlite"));

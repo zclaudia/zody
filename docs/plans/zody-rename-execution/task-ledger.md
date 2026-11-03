@@ -193,3 +193,17 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 - R21 intermediate graph writer applied only23 exact basename path substitutions across13 paths, preserving372 nodes/726 edges. Graph tests now4/4; existing invalid seeds and later symbol mappings remain final R21 work.
 - WDIO config loading triggered an unplanned Electron installer invocation. No install process remained at inspection;342 candidate files and649 manifests/locks match expected. No node_modules pre/post inventory exists, so full dependency changes are unknown. Incident is recorded; no claim of clean install or native E2E success.
 - Product/build/graph writers stopped. Prepare frozen candidate and fixed-SHA DeepSeek review before handing the source lock to the complete B/C type batch or minimal manual-path correction. Isolated manual-path candidate now has2 meaningful async behavior tests, both red on old snapshot/green on candidate; current product not yet patched.
+
+- Remaining98 + graph checkpoint frozen as `f28dfddcbd4e646d7fa93d2e593b91a62063b2b6`; DeepSeek B reviewing fixed d49→f28. Original198 basename moves are applied, not a claim all rename phases are complete.
+- Exact manual-data-path exception granted for the seven prepared files plus spec and async Node regression test. Terra R21 alone receives current source/build lock for this minimal correction; all tests must use temporary HOME and retain legacy input/explicit override semantics. Terra R01 may only refresh the complete type batch against fixed f28 and prepare in isolated output.
+
+## Minimal manual tool data-path correction
+
+- Terra R21 applied spec and async behavior tests first, reproduced2 failures, then fixed the seven exactly granted files;2 tests passed. Controller independently reran those2 tests, root typecheck and lint (303 warnings), and verified all9 content hashes and semantic boundaries. Historical snapshot source and existing explicit overrides remain intact; no new config detection/options or user-data operations.
+- Terra R10 separately closed the remaining audit store-prefix spelling. One exact prefix changed; actual matching category for six current stores is unchanged due the existing broader UI rule. A zero-hit CLI audit run is explicitly not treated as positive classification evidence.
+- Source/build writers stopped for a new fixed candidate. DeepSeek B remains on immutable f28 basename review; reviewer C was revalidated completed and can accept the independent small manual-path candidate after it is frozen.
+
+## Root workspace installation decision and final basename review
+
+- User explicitly selected root workspace as sole dependency installation owner; remove the stale nested CLI workspace/lock, retaining `pnpm --dir apps/zody-cli …` script usage. This supersedes the earlier pending-choice notes; do not resolve unrelated third-party version conflicts. Terra R21 prepares an exact scoped change before receiving the source/build lock.
+- DeepSeek B returned scoped PASS for fixed d49→f28; raw review saved in R20-basenames-final-deepseek-review.md. Its nonblocking store-prefix finding is addressed in the next manual-path candidate. Previously existing protocol-v4/shadow-replay directory consumers are assigned to Terra R10 for read-only preparation; not declared closed.

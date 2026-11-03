@@ -619,7 +619,7 @@
       "correctionCandidate": "d49aecefa7d1c3571bfae69fe4817950654b9298",
       "initialReview": "docs/plans/zody-rename-execution/reports/R20-basenames-deepseek-review-1.md",
       "deferredE2EFollowup": {
-        "status": "moved-and-resolver-tested-in-basename03-pending-review",
+        "status": "moved-and-resolver-tested-scoped-review-PASS",
         "newPath": "packages/desktop/test/e2e/conversation-session/manual-review/pending/conversation-session-workspace-zodyignore.test.ts",
         "nativeE2EExecuted": false
       }
@@ -627,8 +627,8 @@
     {
       "id": "R20.4-basename-03",
       "base": "d49aecefa7d1c3571bfae69fe4817950654b9298",
-      "candidate": null,
-      "status": "controller-verified-with-recorded-baseline-failure-pending-review",
+      "candidate": "f28dfddcbd4e646d7fa93d2e593b91a62063b2b6",
+      "status": "scoped-review-PASS",
       "moves": [
         {
           "old": "apps/zody-cli/packages/bootstrap/src/zcode-protocol-entrypoint.ts",
@@ -1219,7 +1219,7 @@
           "candidateSha256": "e3c64262b3f9463ba2636e0be03ad5049bf20ae387a930bfde236b75793fb1fd"
         }
       ],
-      "review": null,
+      "review": "docs/plans/zody-rename-execution/reports/R20-basenames-final-deepseek-review.md",
       "implementationReport": "docs/plans/zody-rename-execution/reports/R20-basenames-final-implementation.md",
       "graphCheckpointReport": "docs/plans/zody-rename-execution/reports/R21-basename-graph-checkpoint.md",
       "controllerReport": "docs/plans/zody-rename-execution/reports/R20-basenames-final-controller-verification.md"

@@ -58,3 +58,9 @@ localStorage、分区和 cookie 改名不迁移旧值：0.1.0 无正式存量用
 - 单测覆盖：请求头名称与值、MCP clientInfo/OAuth client_name、记忆敏感路径包含 `.zody`、`.zodyignore` 优先与 `.zcodeignore` 回退及写入目标、namespace 默认值、Finder workflow 与 Windows 右键菜单按 flavor 生成、进程名与主窗口识别、安装目录候选、beta 存储根、内置插件列表不含 `restore-legacy-sessions`。
 - 修改断言旧值的既有测试，使其断言新值。
 - `pnpm typecheck`、`pnpm lint`、`pnpm architecture:check --changed` 与受影响包的单测实际执行并如实记录；Windows 安装器、macOS Finder 服务等需要真机的场景标为待人工验收。
+
+## 手工数据工具默认路径
+
+大型任务 fixture 工具的默认任务索引和 CLI 会话数据库位于 `~/.zody/v2/tasks-index.sqlite` 与 `~/.zody/cli/db/db.sqlite`；备份和 manifest 位于同一 `.zody` 根。`--workspace` 仅指定任务工作区，不改变数据库目标。恢复旧会话工具默认从 `~/.zcode/v2/sessions` 扫描历史快照，目标使用上述 `.zody` 数据库；既有 `--legacy-dir`、`--snapshot`、`--task-index` 和 `--cli-db` 保持各自的覆盖语义。工具不自动迁移旧数据库。
+
+验收：隔离 HOME 下生成、验证和删除仅影响新默认库及其备份；恢复默认读取旧快照、写入新目标，显式输入与数据库路径覆盖准确生效；历史源和旧数据库不被改变。E2E case 中 HOME 下的 model-io 和 image-cache fixture 描述与 `.zody/cli` 实际路径一致。
