@@ -230,7 +230,7 @@
     "apps/zody-cli/packages/android-emulator-plugin/package.json": "00f29fd67ebdffd073d93fd65747768663ff580592bb122ba2c17440f8a591eb",
     "apps/zody-cli/packages/bootstrap/package.json": "fc214a4e1be76442abdbbdcfcb4bab04a30cb5b4e0457472cbe7b21b5bea7df0",
     "apps/zody-cli/packages/browser-use-plugin/package.json": "50dfedac5b3cd18e110f168a38719047f47c883a94345c9efefa48e64ddfa398",
-    "apps/zody-cli/packages/cli/package.json": "4d8c6a0612f40f62610d5e5d8066bf985851038d5b6d60ccc0273b705f5ab187",
+    "apps/zody-cli/packages/cli/package.json": "1320e255651a1e9c9593ec5a2239295bc7630a8a25c12b88073744d57ca12b95",
     "apps/zody-cli/packages/contracts/package.json": "87fdc8f7b617103a333d73c9283af3131a501cbdc418302c0b494f753902a237",
     "apps/zody-cli/packages/core/package.json": "6354ce97f87e322f5599b91754acffe5f8811084ca0f08d23c0e8f925b27f858",
     "apps/zody-cli/packages/core/src/tool/handlers/generated/bash-command-registry.ts": "60fa5acd9f5c357f4e51b1d1e944ee39da92680e4bc5e98dd708f1457fcf612b",
