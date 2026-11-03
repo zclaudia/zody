@@ -73,8 +73,16 @@ class ZodyRemoteBridge(
 
     /** Remote 业务 Channel ready；在此之前通知 intent 只排队不派发。 */
     @JavascriptInterface
-    fun markRemoteReady(sessionId: String): String =
-        transitionResult(controller.markRemoteReady(sessionId))
+    fun markRemoteReady(sessionId: String): String {
+        val result = controller.markRemoteReady(sessionId)
+        // M4-T1：新 Remote 会话就绪即回收上一 session 留下的未完成保存。
+        // 页面 reload/切换 backend 后旧 token 已无法 finish/abort，只靠 8 个会话的容量淘汰
+        // 会让 MediaStore pending 行和输出流滞留；这里按 session 所有权立即清理。
+        if (result == MobileShellTransitionResult.Success) {
+            abortSaveSessionsExcept(sessionId)
+        }
+        return transitionResult(result)
+    }
 
     @JavascriptInterface
     fun returnShell(reason: String, sessionId: String): String =
@@ -337,6 +345,21 @@ class ZodyRemoteBridge(
     private fun JSONObject.putStatus(raw: String) {
         val parsed = MobileBridgeJson.parseObjectOrNull(raw)
         if (parsed != null) put("status", parsed) else put("statusRaw", raw)
+    }
+
+    /**
+     * 回收不属于当前 session 的保存会话（M4-T1）。
+     *
+     * 新 Remote 会话 ready 时调用；当前 session 自己的会话保留，因为页面仍可能 finish/abort。
+     */
+    private fun abortSaveSessionsExcept(sessionId: String) {
+        saveSessions.entries
+            .filter { it.value.sessionId != sessionId }
+            .forEach { entry ->
+                if (saveSessions.remove(entry.key, entry.value)) {
+                    runCatching { entry.value.session.abort() }
+                }
+            }
     }
 
     /**

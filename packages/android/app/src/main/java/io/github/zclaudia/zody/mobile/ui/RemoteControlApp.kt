@@ -170,9 +170,6 @@ fun RemoteControlApp(
     val fileSaver = remember(context) { DownloadsFileWriter(context) }
     val fileOpener = remember(context) { AndroidMobileFileOpener(context) }
     val notificationBridge = remember(context) { MobileNotificationBridgeClient(context) }
-    val downloadHandler = remember(context) {
-        MobileDownloadHandler(context, fileSaver, fileOpener)
-    }
     val remoteUiCache = remember { RemoteUiResponseCache() }
     val controller = remember(configStore) {
         MobileShellController(
@@ -187,6 +184,16 @@ fun RemoteControlApp(
                 )
             },
             mainExecutor = { runnable -> Handler(Looper.getMainLooper()).post(runnable) },
+        )
+    }
+    // M4-T1：WebView 下载在后台线程落盘；发起下载的 session 必须仍是当前 Remote 会话，
+    // 切换 backend 后旧页面的迟到下载不能在 Downloads 提交或触发 ACTION_VIEW。
+    val downloadHandler = remember(context, controller) {
+        MobileDownloadHandler(
+            context = context,
+            saver = fileSaver,
+            opener = fileOpener,
+            currentSessionId = { controller.remoteSessionSnapshot()?.sessionId },
         )
     }
     val shellBridge = remember(controller, configStore) {

@@ -83,10 +83,12 @@ class ZodyRemoteBridgeTest {
     }
 
     private class FakeFileSaver : MobileFileSaver {
+        val sessions = mutableListOf<FakeFileSaveSession>()
         lateinit var session: FakeFileSaveSession
 
         override fun begin(fileName: String, mimeType: String): MobileFileSaveSession {
             session = FakeFileSaveSession(MobileFileNames.sanitize(fileName))
+            sessions += session
             return session
         }
     }
@@ -530,5 +532,89 @@ class ZodyRemoteBridgeTest {
         val ready = envelope(environment.bridge.prepareReload(nextSessionId, "release-1"))
         assertTrue(ready.getBoolean("ok"))
         assertEquals("ready", ready.getString("status"))
+    }
+
+    @Test
+    fun `new remote ready aborts saves left behind by the previous session`() {
+        val environment = environment(reloadGuard = RemoteNativeReloadGuard { false })
+        val staleToken = envelope(
+            environment.bridge.saveFileBegin(
+                environment.sessionId,
+                "old-report.pdf",
+                "application/pdf",
+            ),
+        ).getString("token")
+        val staleSession = environment.saver.session
+
+        assertEquals(
+            MobileShellTransitionResult.Success,
+            environment.controller.returnShellFromRemote("switch", environment.sessionId),
+        )
+        assertEquals(
+            MobileShellTransitionResult.Success,
+            environment.controller.openRemoteFromShell(
+                "backend-1",
+                environment.configRevision.toDouble(),
+            ),
+        )
+        val nextSessionId = environment.controller.remoteSessionSnapshot()!!.sessionId
+        assertTrue(envelope(environment.bridge.markRemoteReady(nextSessionId)).getBoolean("ok"))
+
+        // backend 切换后旧 token 不能再被新页面 finish/abort；markRemoteReady 负责立即回收，
+        // 不能只依赖 8 个会话的容量淘汰。
+        assertTrue(staleSession.aborted)
+        assertEquals(
+            "stale-session",
+            envelope(environment.bridge.saveFileFinish(environment.sessionId, staleToken))
+                .getJSONObject("error")
+                .getString("code"),
+        )
+        assertTrue(
+            envelope(environment.bridge.prepareReload(nextSessionId, "release-1"))
+                .getBoolean("ok"),
+        )
+    }
+
+    @Test
+    fun `save sessions are capped and the oldest orphan is aborted`() {
+        val environment = environment(reloadGuard = RemoteNativeReloadGuard { false })
+        repeat(9) { index ->
+            assertTrue(
+                envelope(
+                    environment.bridge.saveFileBegin(
+                        environment.sessionId,
+                        "chunk-$index.bin",
+                        "application/octet-stream",
+                    ),
+                ).getBoolean("ok"),
+            )
+        }
+
+        // 页面 reload 会留下未 finish/abort 的会话；容量满时必须按 begin 顺序回收最早会话，
+        // 否则 MediaStore pending 行和输出流会无限累积。
+        assertEquals(8, environment.saver.sessions.count { !it.aborted })
+        assertTrue(environment.saver.sessions.first().aborted)
+    }
+
+    @Test
+    fun `native chunk size above one MiB is rejected and can be aborted`() {
+        val environment = environment()
+        val token = envelope(
+            environment.bridge.saveFileBegin(environment.sessionId, "big.bin", "application/octet-stream"),
+        ).getString("token")
+        val oversized = Base64.getEncoder().encodeToString(ByteArray(1024 * 1024 + 1))
+        val append = envelope(
+            environment.bridge.saveFileAppend(environment.sessionId, token, oversized),
+        )
+
+        assertFalse(append.getBoolean("ok"))
+        assertEquals("invalid-argument", append.getJSONObject("error").getString("code"))
+        assertTrue(
+            envelope(environment.bridge.saveFileAbort(environment.sessionId, token))
+                .getBoolean("ok"),
+        )
+        // 拒绝的超大块不能写进会话；abort 后不能留下半成品。
+        assertTrue(environment.saver.session.aborted)
+        assertTrue(environment.saver.session.bytes.isEmpty())
     }
 }
