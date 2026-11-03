@@ -127,7 +127,7 @@ const workspacePackageParentDirectories = (root) => {
 const runtimePackageNames = async ({ root, target, workspacePackageDirectories }) => {
   const tuiDirectory = workspacePackageDirectories.get("@zody/tui");
   if (!tuiDirectory) {
-    throw new Error("Missing @zcode/tui workspace package.");
+    throw new Error("Missing @zody/tui workspace package.");
   }
   const queue = [
     { fromDirectory: tuiDirectory, packageName: "@zody/tui" },
@@ -157,7 +157,7 @@ const runtimePackageNames = async ({ root, target, workspacePackageDirectories }
       packageName,
       packageDirectory,
       placements,
-      fromAssetPath: entry.fromAssetPath ?? "node_modules/@zcode/tui",
+      fromAssetPath: entry.fromAssetPath ?? "node_modules/@zody/tui",
     });
     if (!assetPackagePath) continue;
     ordered.push({

@@ -29,7 +29,8 @@ type SeaTuiRuntimeManifest = {
 
 const assetPrefix = "zcode-tui-runtime/";
 const manifestAssetKey = `${assetPrefix}manifest.json`;
-const packageEntryPath = "node_modules/@zcode/tui/dist/index.js";
+// 修复：SEA 资产按当前 workspace 包名落盘，加载路径必须与收集器一致。
+const packageEntryPath = "node_modules/@zody/tui/dist/index.js";
 const manifestFileName = "manifest.json";
 
 export const loadTuiRuntime = async (): Promise<TuiRuntimeModule> => {

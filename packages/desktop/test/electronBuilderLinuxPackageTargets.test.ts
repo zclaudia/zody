@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { matchesGlob } from "node:path";
 import { describe, expect, it } from "vitest";
 import desktopBuilderConfig from "../electron-builder.config.js";
 import { resolveDesktopProductIdentity } from "../scripts/desktop-product-identity.mjs";
@@ -64,4 +66,26 @@ describe("electron-builder Linux 打包目标", () => {
     // 配置 schema 拒绝，因此只约束扩展名，不在配置中覆盖默认压缩格式。
     expect(desktopBuilderConfig.pacman?.compression).toBeUndefined();
   });
+});
+
+it("保留 Desktop workspace 包原有的打包排除范围", async () => {
+  const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  const names = Object.entries({
+    ...manifest.dependencies,
+    ...manifest.optionalDependencies,
+    ...manifest.devDependencies,
+  })
+    .filter(
+      ([name, range]) =>
+        name.startsWith("@zody/") && typeof range === "string" && range.startsWith("workspace:"),
+    )
+    .map(([name]) => name);
+  expect(names.length).toBeGreaterThan(0);
+  const exclusions = (desktopBuilderConfig.files ?? [])
+    .filter((entry): entry is string => typeof entry === "string" && entry.startsWith("!"))
+    .map((entry) => entry.slice(1));
+  const missing = names.filter(
+    (name) => !exclusions.some((glob) => matchesGlob(`node_modules/${name}/package.json`, glob)),
+  );
+  expect(missing).toEqual([]);
 });

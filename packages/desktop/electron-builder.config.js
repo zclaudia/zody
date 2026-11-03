@@ -638,7 +638,8 @@ export default {
     // 默认也会原样进入安装包。这里统一在主包层做一次裁剪，只移除非运行时文件，LICENSE 继续保留。
     ...PACKAGING_PRUNE_PATTERNS,
     ...createDesktopNativePackagePrunePatterns(targetPlatform.key),
-    "!node_modules/@zcode/**",
+    // 修复：workspace 包已迁至 @zody，沿用原有打包排除范围。
+    "!node_modules/@zody/**",
     "!node_modules/react/**",
     "!node_modules/react-dom/**",
   ],

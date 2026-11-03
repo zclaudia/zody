@@ -88,3 +88,7 @@ shared、bootstrap、services 和其消费者的内部声明、导出、动态�
 ## 内部 store hook 诊断
 
 `useZodyStore` 在缺少 `StoreProvider` 时的内部开发诊断使用 `useZodyStore 必须在 StoreProvider 内使用`。独立手机页面提供本地 store，正常渲染不得出现该诊断。此规则只覆盖内部 hook 文案，不改变外部 `Error.name`、协议字段或兼容键。
+
+SEA TUI 运行时资产由构建收集器按当前 workspace 包名放入隔离缓存；SEA 加载器必须从相同的 `@zody/tui` 资产路径加载入口，不能依赖旧 scope。验收需让实际资产路径分配和加载器在临时缓存中联动，检查可执行模块能被加载；普通非 SEA 加载路径保持现有行为。
+
+Desktop 发行配置延续既有 workspace 包排除策略：排除规则覆盖当前 manifest 中以 `workspace:*` 引用的 `@zody/` 包；本条只同步包名，不改变哪些运行时代码需要打包的策略。验收以实际配置和当前 workspace 包集合核对排除规则，最终发行包仍需单独验证。

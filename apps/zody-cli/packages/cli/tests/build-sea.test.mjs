@@ -1295,3 +1295,70 @@ async function writeOfficialPluginFixtures(root, omittedPaths = []) {
     }
   }
 }
+
+test("SEA TUI loader imports the entry placed by the runtime asset resolver", async () => {
+  const { placeRuntimePackage } = await import("../scripts/sea-runtime-package-resolution.mjs");
+  const directory = await mkdtemp(join(tmpdir(), "zody-sea-tui-loader-"));
+  try {
+    const assetPath = placeRuntimePackage({
+      packageName: "@zody/tui",
+      packageDirectory: join(directory, "package"),
+      fromAssetPath: "node_modules/@zody/tui",
+      placements: new Map(),
+    });
+    const content = Buffer.from('export function runTui() { return "fixture"; }\n');
+    const source = join(directory, "entry.mjs");
+    await writeFile(source, content);
+    const entryPath = `${assetPath}/dist/index.js`;
+    const packagePath = `${assetPath}/package.json`;
+    const metadata = Buffer.from('{"type":"module"}\n');
+    const packageFile = join(directory, "package.json");
+    await writeFile(packageFile, metadata);
+    const hash = (data) => createHash("sha256").update(data).digest("hex");
+    const manifest = {
+      version: 1,
+      target: "test",
+      hash: "fixture",
+      files: [
+        { path: entryPath, sha256: hash(content) },
+        { path: packagePath, sha256: hash(metadata) },
+      ],
+    };
+    const payload = join(directory, "payload.json");
+    await writeFile(
+      payload,
+      JSON.stringify({ manifest, assets: { [entryPath]: source, [packagePath]: packageFile } }),
+    );
+    const loader = pathToFileURL(join(import.meta.dirname, "../src/tui-runtime-loader.ts")).href;
+    const child = `
+      import { createRequire, syncBuiltinESMExports } from "node:module";
+      import { readFileSync } from "node:fs";
+      import assert from "node:assert/strict";
+      const data = JSON.parse(readFileSync(process.argv[1], "utf8"));
+      const sea = createRequire(import.meta.url)("node:sea");
+      sea.isSea = () => true;
+      sea.getAsset = () => JSON.stringify(data.manifest);
+      sea.getRawAsset = (key) => readFileSync(data.assets[key.slice("zcode-tui-runtime/".length)]);
+      syncBuiltinESMExports();
+      globalThis.__CLI_VERSION__ = "fixture";
+      const { loadTuiRuntime } = await import(process.argv[2]);
+      assert.equal((await loadTuiRuntime()).runTui(), "fixture");
+    `;
+    await promisify(execFile)(
+      process.execPath,
+      ["--import", "tsx", "--input-type=module", "--eval", child, payload, loader],
+      {
+        cwd: join(import.meta.dirname, ".."),
+        env: {
+          ...process.env,
+          HOME: directory,
+          USERPROFILE: directory,
+          XDG_CACHE_HOME: directory,
+          LOCALAPPDATA: directory,
+        },
+      },
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});

@@ -1,6 +1,6 @@
 # Zody rename execution ledger
 
-Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full rename plan with Terra, independent DeepSeek review, and controller integration. License source9d135318 and its exact generated pair (integratededb0a691) received scoped PASS; the approved debug coverage fix is complete. Root frozen installation, material hashes and license regressions passed. Strict retains19 unresolved material obligations. R22 continues: the prior full suite/architecture/knip failures and baseline attribution are recorded; current-source CLI build prerequisites and two missing-dist tests are running. R22 full build, R30+ and release remain incomplete.
+Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full rename plan with Terra, independent DeepSeek review, and controller integration. License source9d135318 and its exact generated pair (integratededb0a691) received scoped PASS; the approved debug coverage fix is complete. Root frozen installation, material hashes and license regressions passed. Strict retains19 unresolved material obligations. R22 continues: the prior full suite/architecture/knip failures and baseline attribution are recorded; current-source CLI build and both missing-dist tests passed7/7. The first distribution build stopped on missing shared dist; typecheck supplied that prerequisite. SEA TUI and Desktop scope omissions are repaired with passing checks, awaiting fixed-candidate rebuild/review. R22 full build, R30+ and release remain incomplete.
 
 - Source base: `033f91783901e6adaf968d3d4b8ca34c41d89442`.
 - Frozen plan commit: `06ad2270f121c46a0f5c069ae3da18641c6a9858`.
@@ -330,3 +330,10 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 
 - DeepSeek C returned source9d and exact generated-pair scoped PASS; no source/pair CHANGES_REQUIRED. Raw receipt R21-license-identity-final-review.md reflects its snapshot before promotion. Controller had separately verified all hashes and integrated those identical bytes at edb0a691; this reconciles the receipt's historical “pair not committed/controller pending” wording. Neither review authorizes strict/release claims.
 - R21 coverage defect is closed within the approved path/link identity and exact debug backfill scope. R22 continues with current-source CLI dependency builds and the two missing-dist tests; later full build/other unresolved checks remain.
+
+- R22 prerequisite closure at edb: promoted9d clean-install tree using only matching generated outputs, no reinstall; pnpm --filter @zody/cli... build0 generated current adapters/contracts outputs; storagePreparationProtocol and macosCuaHelperRound11Authority7/7 pass. Report R22-cli-prerequisites-edb.md. Four-target distribution build now running under the sole artifact lock, using a new output directory and isolated environment.
+
+## R22 build prerequisite and path correction
+
+- First edb build:zody --all failed in initial SEA stage with0archives after CLI/server/web builds; shared dist was absent because isolated candidate had not yet run publicG typecheck. Running typecheck0 generated it; actual SEA collector already rewrites src exports,25entry targets verified. No shared public export/source fix was needed.
+- Read-only residual audit found confirmed stale SEA loader @zcode/tui path; fixed producer/consumer default and real loader regression. Desktop old namespace exclusion was synchronized after exact workspace mapping/clean-install evidence; same policy, new scope. Six-file source batch independently verified by controller, loader1/1 andDesktop8/8,root type/lint/changed architecture0. Full candidate build and independent code review remain next.
