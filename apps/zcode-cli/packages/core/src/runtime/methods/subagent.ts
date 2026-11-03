@@ -316,9 +316,13 @@ export function createDefaultSubagentPort(
           agentTelemetryCausationMode: request.background ? "linked_root" : "child",
           eventStore: this.eventStore,
           sessionStore: deps.sessionStore,
-          // 子 runtime 继承父的模型请求准入端口：subagent 的请求 provider 同样看得见，
-          // 它们该与父一样喂治理器信号（父是 observer 则子也是 observer）。
-          modelRequestAdmission: this.modelRequestAdmission,
+          // 子 runtime 的模型请求准入：装配方给了 subagent 工厂就用它（受闸门约束，同一父会话的
+          // subagent 共用一条队列）；没给则沿用父的端口。
+          // 修复原因（上游 v3.17.1 a60ba6a7）：subagent 曾直接继承父的 observer（不排队、不看
+          // Retry-After），一轮并行多个 Agent 调用会放大成 1302 风暴
+          // （docs/dynamic-workflow/concurrency.md「Where the port is bound」）。
+          modelRequestAdmission:
+            deps.subagentModelRequestAdmission?.(this.sessionId) ?? this.modelRequestAdmission,
           modelFactory: childModelFactory,
           resolveEffectiveModelSelection: deps.resolveEffectiveModelSelection,
           // 子 runtime 自己仍使用 request.sessionId 做事件持久化和 trace 归档；对外阻塞交互

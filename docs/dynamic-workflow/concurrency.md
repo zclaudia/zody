@@ -305,12 +305,40 @@ answers only "why".
 |---|---|---|
 | a workflow subagent (`taskType` `workflow_child` or `nested_workflow_child`) | the driver's per-subagent wrapper over the run's seat gate and the governor | takes a seat when the run's own bound was lowered under it ("Retuning a live run"), then queues at the governor's gate; feeds signals |
 | the main agent, and its tools and sidecars | the governor's **observer** | never queues, never waits for cooldown; counts in flight and feeds signals |
+| a subagent of the main agent (`taskType` `subagent_child`, the `Agent` tool), and its tools and sidecars | the governor's **session subagent pool**, one per parent session | queues at the governor's gate and waits for cooldown like a workflow run; feeds signals |
 | a subagent of the legacy `Workflow` tool | none | ungoverned: no gate, no signals |
 | a snippet evaluation (`EvalWorkflowSnippet`) | none | its driver has no ask path |
 
 The main agent is an observer because its turn must never block behind workflow traffic,
 and it still feeds the controller because the provider sees its requests too: a 429 on the
 user's own conversation lowers the workflow cap.
+
+A subagent of the main agent is **not** an observer. It used to inherit the observer from its
+parent, and a turn that fans out ten `Agent` calls then sent ten request streams that neither
+queued nor honoured a Retry-After, each retrying on its own backoff: in production the
+subagents were the largest source of rate-limit refusals (2026-10-20: 46% of the sampled
+1302s, against 21% for main-agent turns), and they kept refusing the workflow runs and the
+user's own turn too. The main-agent rule protects the user's turn, which a subagent is not:
+it is delegated work, the same kind of work a workflow subagent does, so it takes the same
+gate. The governor exposes one admission per parent session, `sessionSubagents(parentSessionId)`
+(source: upstream v3.17.1 `a60ba6a7`):
+
+- Its run identity is `\0subagents:<parentSessionId>`, so all the subagents of a session share
+  **one** queue and take one turn in the round robin (below) next to each workflow run. A turn
+  that fans out ten subagents gets one share of a saturated bucket, not ten.
+- It neither registers a bound nor subscribes; it does not join a bucket's `runs`, so it never
+  lifts the growth limit and leaves nothing behind when the session goes away.
+- `tryAcquire` is the fast path, so a queued subagent request publishes `model_request_queued`
+  and `model_request_admitted` like a workflow subagent's, and a tool deadline pauses for the wait.
+  The `Agent` tool itself has no deadline, so a long cooldown cannot time a subagent out.
+- A user cancel aborts the request signal, which takes the waiter out of the queue.
+- The parent's foreground `Agent` call holds no ticket while it waits for its subagents (tool
+  execution holds no ticket), so the parent waiting on a queued subagent cannot deadlock.
+
+The runtime binds it at spawn time: `AgentRuntimeDeps.subagentModelRequestAdmission` is a
+factory the core calls with its current session id when it builds a subagent runtime; an
+assembly without it leaves the subagent on the parent's port, as before. Subagents cannot
+spawn subagents, so the pool has no nesting.
 
 ### One attempt, start to end
 
@@ -841,7 +869,7 @@ carries it.
 |---|---|
 | `dynamic-workflow/tests/engine/concurrency.test.ts` | the constants; current-epoch throttle cuts by 0.75 to the floor and turns the epoch; a cut clears `lastGood` and records `lastBad`; old-epoch throttles move nothing, emit nothing, still reset the streak; thirteen epoch-0 refusals cut once; Retry-After cooldown, including from old epochs; K current-epoch successes prove `lastGood` with or without waiters; a raise needs waiters and headroom; old-epoch successes do not count; `failedTransient` and `ended`; idle reset after five minutes with nothing in flight, back to `initial`; growth stops at `growthLimit`, a raised limit is climbed step by step, a lowered one pulls the cap down (`limit_lowered`) and turns the epoch; `seed` jumps to the target within the growth limit, clears `lastGood` so the next refusal cuts by the factor, and is refused for a target at or below the cap or within five minutes of any refusal; the 16→12→13 and 13→9→6→4→5→6→5 sequences |
 | `dynamic-workflow/tests/engine/engine-concurrency-observations.test.ts` | the three sink methods each record one event and are ignored after settlement |
-| `bootstrap/tests/workflow-concurrency-governor.test.ts` | buckets per key; first run starts at D; auto-growth stops at 2D; a registered bound above 2D lifts the growth limit only for keys that run used and seeds the cap to it at once, a refusal in the last five minutes suppresses the seed, a default run never seeds, and clearing it pulls a higher cap down with `limit_lowered` fanned out to the runs still engaged; the observer never lifts it; a new run inherits a cap the observer's 429s lowered; idle reset; `tryAdmit` misses while anyone waits; round-robin across runs; the ticket's event mapping and double-count guard; a `retryable: false` 429 the policy still retries stays a throttle, while a quota `stop` ends the ticket with no cap cut and no cooldown even when the Retry-After is hours long, leaving the gate open for the resumed run; `release()` as `ended`; abort dequeues; fan-out only to engaged runs; cooldown wake |
+| `bootstrap/tests/workflow-concurrency-governor.test.ts` | buckets per key; first run starts at D; auto-growth stops at 2D; a registered bound above 2D lifts the growth limit only for keys that run used and seeds the cap to it at once, a refusal in the last five minutes suppresses the seed, a default run never seeds, and clearing it pulls a higher cap down with `limit_lowered` fanned out to the runs still engaged; the observer never lifts it; a new run inherits a cap the observer's 429s lowered; idle reset; `tryAdmit` misses while anyone waits; round-robin across runs; the ticket's event mapping and double-count guard; a `retryable: false` 429 the policy still retries stays a throttle, while a quota `stop` ends the ticket with no cap cut and no cooldown even when the Retry-After is hours long, leaving the gate open for the resumed run; `release()` as `ended`; abort dequeues; fan-out only to engaged runs; cooldown wake; the session subagent pool queues at the gate and waits out cooldowns, feeds signals, shares one queue per parent session in the round robin, dequeues on abort, and never lifts the growth limit |
 | `bootstrap/tests/workflow-driver-concurrency.test.ts` | slot and backoff waits, executing on the first and post-wait `started`, per-ask reset; chain aggregation with parallel tool requests; wait deduplication; the driver-side policy split (stop / `ContextLimit` / redrive); the stall clock's 19-minute silence, 20-minute fire, and re-arm |
 | `dynamic-workflow/tests/engine/engine-retune-concurrency.test.ts`, `dynamic-workflow-runtime/tests/control.test.ts` | the setter: a raise pumps and dispatches within the same slice, a cut leaves live asks alone and stops the next dispatch, an unchanged value and a settled run both answer false and write neither row nor event; one `run-caps-changed` carrying `caps` and `previous`, one `updateRunCaps`; the scheduler reads `host.caps` on every pump, so a bound changed between two pumps is the one the second pump enforces; the harness binds the control to the engine it just built, and a binding never bound answers false |
 | `bootstrap/tests/workflow-seat-gate.test.ts` | the gate alone: park on a turn step over the limit (`tryAcquire` misses → `model_request_queued` → `waiting(slot)`), seat before governor, FIFO unpark on an ask settling and on a raise, one at a time; `activeAsks = working + parked`; limit 1 keeps one subagent working and deadlocks nothing; a tool-side request never parks and a subagent with no live ask never parks; abort dequeues, rejects with the signal's reason and returns the subagent to `working`, its later settlement frees no phantom seat, an already-aborted signal never enters the FIFO, and a settle that beats the abort refuses the waiter without freeing a seat; a settle for an instance never seen started is a strict no-op; a cut inside the `ensureSession` window still parks the late subagent and counts nobody twice; two asks in a row on one subagent join idempotently; a run never lowered is a pure pass-through and the governor sees every call |

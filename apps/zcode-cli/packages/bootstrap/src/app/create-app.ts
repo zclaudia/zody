@@ -931,6 +931,10 @@ export async function createZCodeApp(options: ZCodeAppOptions): Promise<ZCodeApp
       agentTelemetry: modelTelemetry.agentExecution,
       // 主代理的模型请求过治理器的 observer：立即放行，但让治理器看见它的 429 / 成功。
       modelRequestAdmission: workflowConcurrencyGovernor.observer(),
+      // 主代理的 subagent 不是 observer：和 workflow run 一样排队、看冷却，同一父会话共用一条队列
+      // （上游 v3.17.1 a60ba6a7；docs/dynamic-workflow/concurrency.md「Where the port is bound」）。
+      subagentModelRequestAdmission: (parentSessionId) =>
+        workflowConcurrencyGovernor.sessionSubagents(parentSessionId),
       eventStore: options.eventStore ?? createInMemorySessionEventStore(),
       sessionStore,
       sessionMailboxPort,

@@ -377,6 +377,13 @@ export interface AgentRuntimeDeps {
    * 包装（受闸门约束），主 runtime 拿治理器的 observer（只喂信号）；缺席即不设闸门。
    */
   modelRequestAdmission?: ModelRequestAdmission;
+  /**
+   * 主代理 subagent（`Agent` 工具）的准入端口工厂：派生 subagent 时以**当前**父 sessionId 调用，
+   * 结果作为子 runtime 的 `modelRequestAdmission`（受闸门约束，同一父会话的 subagent 共用一条队列）。
+   * 缺席时子 runtime 沿用父的 `modelRequestAdmission`。
+   * 来源：上游 v3.17.1 a60ba6a7（runtime/types.ts）。
+   */
+  subagentModelRequestAdmission?: (parentSessionId: string) => ModelRequestAdmission;
   workflowPort?: WorkflowPort;
   /** workflow run 的提交/观察/取消端口；存在即 CreateWorkflow 真启动，缺席则回占位诊断。 */
   dynamicWorkflowRunPort?: DynamicWorkflowRunPort;
