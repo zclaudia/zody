@@ -1,6 +1,6 @@
 # Zody rename execution ledger
 
-Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest product/derived candidate `ad859813ec8ace8e21d418186cfe1d16939abb59` (source4fac). Text correction4fac and native-inputff395 received scoped PASS; generated-pair diffad859 also scoped PASS. R21 complete license coverage is CHANGES_REQUIRED: preexisting name-only workspace filtering omits production npm debug@4.4.3. Concrete proposal is prepared and user alignment is pending under AGENTS:48; generator remains unchanged. R22.1 ran: type/lint pass; fullarchitecture2fail,knip1,unit34files/104assertions fail,6environment files rerun62pass; remaining failure attribution is running. Main85 baseline confirmed, narrow33/37 lacks frozen inputs. R22.2 build/R30+ and release remain unexecuted.
+Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest product/derived candidate `ad859813ec8ace8e21d418186cfe1d16939abb59` (source4fac). Text correction4fac and native-inputff395 received scoped PASS; generated-pair diffad859 also scoped PASS. R21 complete license coverage is CHANGES_REQUIRED: preexisting name-only workspace filtering omits production npm debug@4.4.3. Concrete proposal is prepared and user alignment is pending under AGENTS:48; generator remains unchanged. R22.1 ran: type/lint pass; fullarchitecture2fail,knip1,unit34files/104assertions fail,6environment files rerun62pass; targeted ancestor attribution is recorded in R22-failure-triage.md with unresolved differences. Main85 baseline confirmed, narrow33/37 lacks frozen inputs. R22.2 build/R30+ and release remain unexecuted.
 
 - Source base: `033f91783901e6adaf968d3d4b8ca34c41d89442`.
 - Frozen plan commit: `06ad2270f121c46a0f5c069ae3da18641c6a9858`.
@@ -10,7 +10,7 @@ Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan usi
 - Implementation agents use native `gpt-6.1-terra`; original R00 ownership is historical. Controller now maintains manifest, scopes and this ledger.
 - DeepSeek A accepted corrected text4fac; B accepted native-inputff395; C accepted ad859 pair diff but requires changes for complete production-license coverage. Raw receipts are preserved in reports; all used read-only deepseek-flash / magpie / group/deepseek.
 - Broker grant: exact implementation cwd, connection scope, no UI grant.
-- Product source/install writers stopped. Terra R01 holds the sole R22 test/build-artifact lock for targeted failure/ancestor validation only; no source correction or build:zody yet. R21 license design awaits the user's pending choice; R30 preparation is read-only and is not an implementation authorization.
+- Product source/install writers stopped. Terra R01 released the R22 test/build-artifact lock after targeted failure/ancestor validation; no source correction or build:zody yet. R21 license design awaits the user's pending choice; R30 preparation is read-only and is not an implementation authorization.
 
 | Task | Status     | Implementation                    | Review / gate                                                                                                    |
 | ---- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -20,7 +20,7 @@ Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan usi
 | R10  | verified   | /root/terra_r10                   | DeepSeek review-2 PASS at 0e403023; P1 scope only, not release validation                                        |
 | R20  | review | Terra + controller | Source/basename/symbol/text batches scoped PASS through4fac; integration depends R21/R22. Historical A-MO-01 quote follow-up remains recorded below |
 | R21  | changes-required | Terra + controller | Root-only install/generation and pair-diff verified; complete license coverage blocked on same-name debug omission, user design choice pending; strict19 remain |
-| R22  | running | /root/terra_r01 | Static/full tests actually executed with failures; environment rerun62pass, remaining baseline attribution running; complete build not run |
+| R22  | incomplete | /root/terra_r01 | Static/full tests failed; targeted ancestor comparison and isolated reruns recorded; missing build inputs and unresolved failures remain; complete build not run |
 | R30  | planned    | unassigned                        | not run                                                                                                          |
 | R40  | planned    | unassigned                        | not run                                                                                                          |
 | R41  | planned    | unassigned                        | not run                                                                                                          |
@@ -305,3 +305,9 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 - Complete production coverage cannot be inferred from the generated-pair diff or basiccheck0. Same-name workspace filtering excludes npmdebug4.4.3; independent review requires correction before completeness/release claims. Concrete proposal and evidence archived; async user decision pending, no generator code changed.
 - ad859 final confirmation reused its own fresh4fac dependency installation after outputs-only promotion; frozen reinstall0,source/lock/pair unchanged,50members/92links. Actual -146 removals lack a saved pre-install physical graph; no causal claim from skipped146.
 - R22.1 results and environmental tool downloads retained in R22-static-ad859.md. 1792files/15972tests actual root run failed34files/104 assertions; isolated shorterTMP/BrewPython rerun6files62/62 only addresses those cases. Failure triage and permitted ancestor tests continue without altering source/expectations.
+
+## Targeted R22 triage and R30 preparation
+
+- Remaining28 files reran in the corrected environment:23fail/5pass,342testpass/36fail/9skip. Ancestor7c ran the23candidate-failing files:20fail/3pass,159testpass/39fail/4skip. Exact failure comparisons are in R22-failure-triage.md; matching names alone do not establish a baseline cause. Source/test snapshots remained unchanged.
+- Two candidate-only failing files need current dependency build outputs (adapters/contracts); no old dist copied. stateStorage reran alone3/3 without changing its30s timeout. Other watcher/diagnostic differences remain unresolved, and the original full-suite failure remains authoritative.
+- R30-child-env-preflight.md records four exact producer/consumer closures, including the actually executed coreWiringFixture.mjs and verified package-specific test commands/build prerequisites. This is read-only preparation, not an implemented R30 or passed test.
