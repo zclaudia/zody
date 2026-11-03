@@ -295,7 +295,7 @@ function createSeaFixture(input: { target: string; tools: ToolFixture[] }): {
   const assets = new Map<string, Buffer>();
   const tools = input.tools.map((tool) => {
     const sha256 = createHash("sha256").update(tool.bytes).digest("hex");
-    const assetKey = `zcode-runtime-tools/${tool.id}/${sha256}/${tool.binaryName}`;
+    const assetKey = `zody-runtime-tools/${tool.id}/${sha256}/${tool.binaryName}`;
     assets.set(assetKey, tool.bytes);
     return { ...tool, assetKey, sha256 };
   });

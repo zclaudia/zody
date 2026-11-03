@@ -19,7 +19,7 @@ or the composer's `$` skill picker. The runtime discovers its `skills/` director
   (`packages/bundled-skills` relative to the entry, the same candidate walk official plugins
   use) and read in place; nothing is copied.
 - **SEA binaries**: `scripts/sea-bundled-skill-assets.mjs` embeds `skills/**` under the
-  `zcode-bundled-skills/` asset prefix. On start the CLI extracts them once into
+  `zody-bundled-skills/` asset prefix. On start the CLI extracts them once into
   `~/.zody/cli/bundled-skills/<content-hash>/` and reads from there.
 - **Remote hosts**: `scripts/prepare-prebuilds.mjs` stages the directory next to the remote
   `zody.cjs`, like the official plugin packages.

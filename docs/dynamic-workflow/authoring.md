@@ -598,7 +598,7 @@ How the pack reaches each runtime:
   place; nothing is copied. `packages/desktop/scripts/prepare-agent-node-bundle.mjs` stages
   it beside `resources/glm/zody.cjs`; `scripts/prepare-prebuilds.mjs` stages it for remote
   hosts.
-- SEA binaries embed `skills/**` under the `zcode-bundled-skills/` asset prefix
+- SEA binaries embed `skills/**` under the `zody-bundled-skills/` asset prefix
   (`cli/scripts/sea-bundled-skill-assets.mjs`) with a manifest whose hash covers every file.
   On start the CLI extracts the pack once into `~/.zcode/cli/bundled-skills/<hash>/`; the
   directory name is the content identity, so restarts are idempotent and concurrent starts

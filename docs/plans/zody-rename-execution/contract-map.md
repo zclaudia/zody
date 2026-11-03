@@ -53,3 +53,19 @@ R54 同步 bootstrap seed/official runtime、打包及安装升级的调用者�
 权威上下文提供 root、data、id、name。构造子进程 env 时先继承宿主环境、合并 manifest 自定义 env（其他键保留既有行为），最后覆盖身份键：`ZODY_PLUGIN_ROOT/DATA/ID/NAME` 与 `ZCODE_PLUGIN_ROOT/DATA/ID/NAME` 分别取同一 root/data/id/name；`CLAUDE_PLUGIN_ROOT/DATA` 同取 root/data。上下文不存在时不凭外部值伪造身份；各消费者需保持缺失上下文的原错误语义。保留其他既有 Claude 环境及模板，不新增 `CLAUDE_PLUGIN_ID/NAME` 契约。`ZCODE_CUA_PLUGIN_ROOT` 是内置专用变量，由 R30 硬切为 `ZODY_CUA_PLUGIN_ROOT`，不属于 R55 的通用插件双注入。当前注入源为 `apps/zcode-cli/packages/bootstrap/src/app/built-in-node-repl.ts` 的 CUA package root；真实消费者为 `apps/zcode-cli/packages/node-repl-host/src/node-repl-session-executor.ts`；`apps/zcode-cli/packages/zcode-cua-plugin/skills/computer-use/SKILL.md` 也引用该变量。R30 须同时切换这些生产、消费和 skill 引用，保持其现有 fallback 次序及 CUA 定向语义。
 
 模板仅新增 `${ZODY_PLUGIN_ROOT}`、`${ZODY_PLUGIN_DATA}`，与既有 `${ZCODE_PLUGIN_ROOT}`、`${ZCODE_PLUGIN_DATA}`、`${CLAUDE_PLUGIN_ROOT}`、`${CLAUDE_PLUGIN_DATA}` 从同一上下文展开；不承诺 ID/NAME 模板。hook、MCP、shell expansion、official runtime 和 built-in node-repl 均覆盖各自支持的键；不改变其他 session/project/skill token 的既有规则。1.0 移除本节旧 ZCODE 插件 env/token，保留 CLAUDE 兼容；普通旧 `ZCODE_*` 不因此获得别名期。
+
+## R20.3 SEA 内部资产命名闭包（2026-11-03 补充分派）
+
+固定 f0b8 的源码审计确认，下列五组 key 仅在本仓同一 SEA binary 的资产构建/加载边界内配对使用。主控依据完整独立改名目标将它们收回 R20.3，同一候选原子同步生产者、消费者、直接 key 索引、测试和现行说明，不增加旧 key 别名或跨 binary 兼容。此处不改 manifest schema、内容相对路径、hash 算法或已有持久缓存；marketplace/plugin 身份和 .zcode-plugin 仍按 R54/R55 合同处理。
+
+| 资产族 | 内部前缀 old → new | 唯一构建 owner / 消费闭包 |
+| --- | --- | --- |
+| TUI | `zcode-tui-runtime/` → `zody-tui-runtime/` | CLI sea-tui-assets → tui-runtime-loader；模拟 SEA 测试的切前缀逻辑同批 |
+| Playwright | `zcode-playwright-runtime/` → `zody-playwright-runtime/` | CLI sea-playwright-assets → sea-playwright-runtime；第三方包名/内容不变 |
+| Runtime tools | `zcode-runtime-tools/` → `zody-runtime-tools/` | CLI sea-runtime-tool-assets → sea-runtime-tools；根 build-zody 的许可直接索引同批 |
+| Bundled skills | `zcode-bundled-skills/` → `zody-bundled-skills/` | CLI sea-bundled-skill-assets → bootstrap bundled-skills；原 skill 身份与缓存不变 |
+| Official plugins | `zcode-official-plugins/` → `zody-official-plugins/` | CLI sea-official-plugin-assets → bootstrap bundled-plugins；key 后缀 marketplace/name/version 原样 |
+
+各 manifest key 以新前缀加 `manifest.json` 构造。实际 provider key 已是 `zody-provider/zody-builtin.json`，保持其字节；`SEA_ZCODE_BUILTIN_PROVIDER_CONFIG_ASSET_KEY` 的精确局部绑定可归 R20.4 同批更名，须核对所有绑定引用。`createRequire` 的合成基准名 `zcode-playwright-loader.cjs` 归本机内部命名闭包，可改为 zody，验证解析结果不变。精确前置清单位于 `output/zody-rename-r22/sea-key-closure/`；它是取证材料，正式写集由本节和派发记录限定。
+
+验收使用真实 collector 结果与严格按 key 匹配的模拟 SEA 消费者，覆盖文件/manifest、缺失 key 和缓存复用，避免插件/skill fallback 把错配掩盖成成功；根分发脚本仍读取完全相同的第三方许可原文字节。随后固定候选实际构建并执行可运行目标 smoke；静态 grep 或 mock 不能替代该最终步骤。

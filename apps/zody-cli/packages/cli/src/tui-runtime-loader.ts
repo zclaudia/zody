@@ -27,7 +27,7 @@ type SeaTuiRuntimeManifest = {
   version: 1;
 };
 
-const assetPrefix = "zcode-tui-runtime/";
+const assetPrefix = "zody-tui-runtime/";
 const manifestAssetKey = `${assetPrefix}manifest.json`;
 // 修复：SEA 资产按当前 workspace 包名落盘，加载路径必须与收集器一致。
 const packageEntryPath = "node_modules/@zody/tui/dist/index.js";

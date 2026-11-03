@@ -191,10 +191,10 @@ async function stageRuntimeTools(packageRoot, target) {
   const toolRoot = resolve(packageRoot, "runtime-tools");
   await mkdir(toolRoot, { recursive: true });
   await cp(
-    assets["zcode-runtime-tools/THIRD-PARTY-NOTICES.txt"],
+    assets["zody-runtime-tools/THIRD-PARTY-NOTICES.txt"],
     resolve(toolRoot, "THIRD-PARTY-NOTICES.txt"),
   );
-  await cp(assets["zcode-runtime-tools/SOURCES.json"], resolve(toolRoot, "SOURCES.json"));
+  await cp(assets["zody-runtime-tools/SOURCES.json"], resolve(toolRoot, "SOURCES.json"));
   for (const tool of manifest.tools) {
     const assetKey = Object.keys(assets).find((key) =>
       key.endsWith(`/${tool.sha256}/${tool.binaryName}`),

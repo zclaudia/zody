@@ -956,8 +956,8 @@ export default {
   linux: {
     target: ["AppImage", "deb", "rpm", "pacman"],
     artifactName: buildDesktopArtifactName("linux"),
-    // desktop 包名是 scoped package（@zcode/desktop），electron-builder 默认会把
-    // Linux executable/Icon 推成 @zcodedesktop。部分桌面环境无法按这个 icon name 命中
+    // desktop 包名是 scoped package（@zody/desktop），electron-builder 默认会把
+    // Linux executable/Icon 推成 @zodydesktop。部分桌面环境无法按这个 icon name 命中
     // hicolor 图标，最终回退成系统齿轮。这里使用 identity 中的小写 executableName，
     // 让生产/Preview 的 Icon 与各自安装的 hicolor 图标保持一致。
     executableName: desktopProductIdentity.linuxExecutableName,

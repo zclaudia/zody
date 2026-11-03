@@ -9,7 +9,7 @@ import {
 } from "./sea-runtime-package-resolution.mjs";
 import { stageSeaPackageAssets } from "./sea-workspace-package-assets.mjs";
 
-export const seaTuiAssetPrefix = "zcode-tui-runtime/";
+export const seaTuiAssetPrefix = "zody-tui-runtime/";
 export const seaTuiManifestAssetKey = `${seaTuiAssetPrefix}manifest.json`;
 
 const workspacePackageParentDirectoryNames = ["packages", "tools"];
@@ -118,8 +118,8 @@ const workspacePackageParentDirectories = (root) => {
 
   return [
     ...workspacePackageParentDirectoryNames.map((directoryName) => resolve(root, directoryName)),
-    // TUI runtime 闭包会经由 @zcode/contracts 依赖仓库根的 @zcode/shared；
-    // 只扫描 apps/zody-cli 子 workspace 会把这个合法 workspace 误判为缺失。
+    // TUI runtime 闭包会经由 @zody/contracts 依赖仓库根的 @zody/shared；
+    // 只扫描 apps/zody-cli 下的包会把这个合法 workspace 误判为缺失。
     resolve(repositoryRoot, "packages"),
   ];
 };

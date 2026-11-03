@@ -433,13 +433,13 @@ for (const fixture of [
         const expectedBytes = Buffer.from(`${fixture.target}:${tool.id}`);
         assert.equal(tool.size, expectedBytes.byteLength);
         assert.equal(tool.sha256, createHash("sha256").update(expectedBytes).digest("hex"));
-        const assetKey = `zcode-runtime-tools/${tool.id}/${tool.sha256}/${tool.binaryName}`;
+        const assetKey = `zody-runtime-tools/${tool.id}/${tool.sha256}/${tool.binaryName}`;
         assert.equal(assets[assetKey].endsWith(tool.binaryName), true);
       }
-      const notices = await readFile(assets["zcode-runtime-tools/THIRD-PARTY-NOTICES.txt"], "utf8");
+      const notices = await readFile(assets["zody-runtime-tools/THIRD-PARTY-NOTICES.txt"], "utf8");
       assert.ok(notices.startsWith("NATIVE SEARCH THIRD-PARTY NOTICES"));
       assert.deepEqual(
-        await readFile(assets["zcode-runtime-tools/SOURCES.json"]),
+        await readFile(assets["zody-runtime-tools/SOURCES.json"]),
         await readFile(join(root, "third-party/native-search/sources.json")),
       );
     } finally {
@@ -1338,7 +1338,7 @@ test("SEA TUI loader imports the entry placed by the runtime asset resolver", as
       const sea = createRequire(import.meta.url)("node:sea");
       sea.isSea = () => true;
       sea.getAsset = () => JSON.stringify(data.manifest);
-      sea.getRawAsset = (key) => readFileSync(data.assets[key.slice("zcode-tui-runtime/".length)]);
+      sea.getRawAsset = (key) => readFileSync(data.assets[key.slice("zody-tui-runtime/".length)]);
       syncBuiltinESMExports();
       globalThis.__CLI_VERSION__ = "fixture";
       const { loadTuiRuntime } = await import(process.argv[2]);
