@@ -20164,5 +20164,29 @@
     "boundary": "Current path consumers and manual manifest regression only; preserve runtime identities and frozen sources.",
     "candidate": "3cb3a0050fb47771305fe084852fc6aed994eb92",
     "review": "docs/plans/zody-rename-execution/reports/R20-directory-residual-deepseek-review.md"
-  }
+  },
+  "retiredCurrentPaths": [
+    {
+      "path": "apps/zody-cli/pnpm-lock.yaml",
+      "currentPath": null,
+      "disposition": "removed",
+      "owner": "root-workspace",
+      "retiredAt": "7c4ff9113680a38e273032b09bee32ee6ba399af"
+    },
+    {
+      "path": "apps/zody-cli/pnpm-workspace.yaml",
+      "currentPath": null,
+      "disposition": "removed",
+      "owner": "root-workspace",
+      "retiredAt": "7c4ff9113680a38e273032b09bee32ee6ba399af"
+    },
+    {
+      "path": "apps/zody-cli/turbo.json",
+      "currentPath": null,
+      "disposition": "removed",
+      "owner": "root-workspace",
+      "retiredAt": "7c4ff9113680a38e273032b09bee32ee6ba399af"
+    }
+  ],
+  "retiredPathsPolicy": "Earlier moveMap/contentMap/substep3 entries are historical migration evidence, not permission to recreate retired paths. The old lock remains protected against writes/recreation; current installation uses root pnpm-lock.yaml, pnpm-workspace.yaml and turbo.json only."
 }

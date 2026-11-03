@@ -15179,9 +15179,6 @@
     "readSet": [
       ".agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
       "AGENTS.md",
-      "apps/zcode-cli/pnpm-lock.yaml",
-      "apps/zcode-cli/skills-lock.json",
-      "apps/zody-cli/pnpm-lock.yaml",
       "apps/zody-cli/skills-lock.json",
       "docs/plans/zody-full-divergence-rename-execution-plan.md",
       "docs/plans/zody-full-divergence-rename-survey.md",
@@ -15191,9 +15188,6 @@
     "writeSet": [
       ".agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
       "THIRD-PARTY-NOTICES.md",
-      "apps/zcode-cli/pnpm-lock.yaml",
-      "apps/zcode-cli/skills-lock.json",
-      "apps/zody-cli/pnpm-lock.yaml",
       "apps/zody-cli/skills-lock.json",
       "docs/plans/zody-rename-execution/reports/R21.md",
       "pnpm-lock.yaml",
@@ -15210,9 +15204,29 @@
       "docs/plans/zody-rename-execution/reports/R21.md"
     ],
     "scopeStatus": "structural-seed-not-authorized",
-    "gate": "用户决定根 workspace 为唯一安装 owner；移除 CLI 嵌套 workspace/lock，完整集成提交在干净工作树根 frozen install，核验 CLI 入口、包成员、本地 links 和第三方解析无漂移。",
+    "gate": "用户决定根 workspace 为唯一安装 owner；移除 CLI 嵌套 workspace/lock，完整集成提交在干净工作树根 frozen install，核验 CLI 入口、包成员、本地 links/bin 和第三方解析无漂移。",
     "structureScope": [
       "根 lock 唯一安装解析；删除过时 CLI 嵌套 workspace/lock，保留根 Turbo 上 CLI 任务入口范围及真实依赖闭包；skills-lock 外部来源不重生成。"
+    ],
+    "removedPaths": [
+      {
+        "path": "apps/zody-cli/pnpm-lock.yaml",
+        "currentPath": null,
+        "disposition": "removed",
+        "candidate": "7c4ff9113680a38e273032b09bee32ee6ba399af"
+      },
+      {
+        "path": "apps/zody-cli/pnpm-workspace.yaml",
+        "currentPath": null,
+        "disposition": "removed",
+        "candidate": "7c4ff9113680a38e273032b09bee32ee6ba399af"
+      },
+      {
+        "path": "apps/zody-cli/turbo.json",
+        "currentPath": null,
+        "disposition": "removed",
+        "candidate": "7c4ff9113680a38e273032b09bee32ee6ba399af"
+      }
     ]
   },
   "R22": {
