@@ -120,6 +120,9 @@ export function createGatewayDeviceTransport(
         activeSession?.onStateChange("waiting_terminal");
       }
     }
+    // Bugfix：gateway 宣告关闭后数据 socket 仍可能有迟到帧；入站分发只看 ready/closing，
+    // 必须锁 closing，否则旧 channel 的迟到命令会进入 runtime 形成重复 admission。
+    record.closing = true;
   }
 
   function closeRecord(record: ChannelRecord, reason: string): void {

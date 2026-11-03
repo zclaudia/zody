@@ -109,6 +109,82 @@ describe("createWebRemoteControlSharedHostAttachments", () => {
     expect(attachRemoteWorkspaceSessionHost).not.toHaveBeenCalled();
   });
 
+  it("手机刷新后复用同一桌面 Host 进程，只轮换 attachment 端口", async () => {
+    const child = new MockUtilityProcess();
+    const firstPorts = createPortPair();
+    const secondPorts = createPortPair();
+    const ports = [firstPorts, secondPorts];
+    browserWindowMock.fromId
+      .mockReturnValueOnce({ id: 7, webContents: { id: 99 } })
+      .mockReturnValueOnce({ id: 7, webContents: { id: 99 } });
+    let nextPort = 0;
+    const manager = createWebRemoteControlSharedHostAttachments({
+      windowHostProcessMap: new Map([[99, child as never]]),
+      createMessageChannel: (() => ports[nextPort++]) as never,
+      attachRemoteWorkspaceSessionHost: vi.fn(),
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+    });
+
+    const beforeReload = await manager.attachWorkspaceHost(7, {
+      kind: "local",
+      workspacePath: "/repo/demo",
+    });
+    // 旧 Remote 页面卸载：只释放手机侧端口，不结束桌面 Host。
+    manager.releaseAttachment(beforeReload.attachmentId);
+
+    const afterReload = await manager.attachWorkspaceHost(7, {
+      kind: "local",
+      workspacePath: "/repo/demo",
+    });
+
+    expect(afterReload.attachmentId).not.toBe(beforeReload.attachmentId);
+    expect(afterReload.process).toBe(beforeReload.process);
+    expect(child.postMessage).toHaveBeenCalledTimes(2);
+    expect(firstPorts.port1.close).toHaveBeenCalledTimes(1);
+    expect(secondPorts.port1.close).not.toHaveBeenCalled();
+    expect(child.kill).not.toHaveBeenCalled();
+  });
+
+  it("远程 workspace 刷新同样复用原有 session host，不新建进程", async () => {
+    const child = new MockUtilityProcess();
+    const firstPorts = createPortPair();
+    const secondPorts = createPortPair();
+    const attachRemoteWorkspaceSessionHost = vi
+      .fn()
+      .mockReturnValueOnce({
+        process: child as never,
+        port: firstPorts.port1 as never,
+        remoteKind: "ssh" as const,
+      })
+      .mockReturnValueOnce({
+        process: child as never,
+        port: secondPorts.port1 as never,
+        remoteKind: "ssh" as const,
+      });
+    const manager = createWebRemoteControlSharedHostAttachments({
+      windowHostProcessMap: new Map(),
+      createMessageChannel: createPortPair as never,
+      attachRemoteWorkspaceSessionHost,
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+    });
+    const context = {
+      kind: "remote" as const,
+      workspacePath: "/workspace",
+      workspaceIdentity: "remote:ssh:host:22:user:/workspace",
+      remoteSessionId: "remote-session-1",
+    };
+
+    const beforeReload = await manager.attachWorkspaceHost(7, context);
+    manager.releaseAttachment(beforeReload.attachmentId);
+    const afterReload = await manager.attachWorkspaceHost(7, context);
+
+    expect(attachRemoteWorkspaceSessionHost).toHaveBeenCalledTimes(2);
+    expect(afterReload.process).toBe(beforeReload.process);
+    expect(afterReload.attachmentId).not.toBe(beforeReload.attachmentId);
+    expect(firstPorts.port1.close).toHaveBeenCalledTimes(1);
+    expect(child.kill).not.toHaveBeenCalled();
+  });
+
   it("WPL-012 reuses one remote Window Host without copying Plugin state into the mobile attachment", async () => {
     const workspacePluginSecret = "E2E_WPL_012_WORKSPACE_PLUGIN_SECRET";
     const child = Object.assign(new MockUtilityProcess(), {
