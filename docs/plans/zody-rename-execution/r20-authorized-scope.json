@@ -21918,5 +21918,23 @@
       "Graph resource basename is handed to R21 with exact mapping and consumer closure."
     ],
     "evidence": "reports/R20-current-text-implementation.md"
+  },
+  "r21GraphPathClosure": {
+    "owner": "R21",
+    "old": ".agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
+    "new": ".agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml",
+    "consumerPaths": [
+      ".agents/skills/feature-boundary-planner/SKILL.md",
+      ".agents/skills/feature-boundary-planner/references/source-discovery.md",
+      ".agents/skills/feature-boundary-planner/references/zcode-domain-cross-products.md",
+      "apps/dev-docs/vite.config.ts",
+      "apps/dev-docs/test/featureBoundaryGraph.test.ts",
+      "docs/feature-boundary-graph-visualization.md",
+      "docs/feature-impact-discovery.md",
+      "docs/monitoring/mcp-process-arms-telemetry.md",
+      "docs/testing/model-selection-regression-factor-catalog.yaml"
+    ],
+    "operation": "byte-preserving path move; exact current path references only",
+    "preserve": "graph nodes, edges, IDs, historical records; semantic changes require separate authorization"
   }
 }

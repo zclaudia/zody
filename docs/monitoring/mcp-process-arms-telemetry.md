@@ -175,7 +175,7 @@ task snapshot / queue / replay / owner command ------------ X
 
 - feature graph 的 `capability.data-observability` 已登记本 spec、`createMcpTelemetryTracker`
   与 `reportMcpTelemetryToArms` 两个 code seed，见
-  `.agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml`。
+  `.agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml`。
 - 当前保留三类生命周期事件；CPU / 内存采样与资源属性统一以全进程 spec 为准。
   超过 60 秒的疑似孤儿只保留为 tracker 内部事实。
 

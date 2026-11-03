@@ -1,10 +1,10 @@
 # ZCode Domain Cross-Products
 
-Use this reference after `zcode-feature-graph.yaml` when scanning or planning any ZCode feature. The feature graph records curated semantic relationships; this file routes the scan into deeper domains and cross-products. Neither replaces current docs, code, or live codegraph evidence. Prefer the freshest fact/spec/architecture doc and implementation when they conflict.
+Use this reference after `zody-feature-graph.yaml` when scanning or planning any ZCode feature. The feature graph records curated semantic relationships; this file routes the scan into deeper domains and cross-products. Neither replaces current docs, code, or live codegraph evidence. Prefer the freshest fact/spec/architecture doc and implementation when they conflict.
 
 ## How To Use
 
-1. Match the user request to capability aliases and declared surfaces in `zcode-feature-graph.yaml`.
+1. Match the user request to capability aliases and declared surfaces in `zody-feature-graph.yaml`.
 2. Classify the change as presentation, option-source, draft-default, validation, commit-effect, persistence, or recovery.
 3. Map the result to 1-4 deeper capability domains from the table below and read their current source docs.
 4. Inspect indexed implementation with codegraph: explore graph seeds, find direct callers, and trace each UI surface to its validation and commit sink. Use depth 2 by default and depth 3 only for an unresolved critical owner.
@@ -90,7 +90,7 @@ impact <matched seed>, depth 2
 affected tests <matched seed>
 ```
 
-Interpret these as codegraph operations, not product conclusions. Compare live callers with `zcode-feature-graph.yaml` and report undeclared surfaces as graph drift.
+Interpret these as codegraph operations, not product conclusions. Compare live callers with `zody-feature-graph.yaml` and report undeclared surfaces as graph drift.
 
 Use focused text searches for docs, configuration, generated files, or unindexed content:
 

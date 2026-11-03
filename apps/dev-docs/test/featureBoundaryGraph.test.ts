@@ -104,7 +104,7 @@ describe("feature boundary graph helpers", () => {
     const source = await readFile(
       resolve(
         process.cwd(),
-        "../../.agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
+        "../../.agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml",
       ),
       "utf8",
     );
@@ -125,7 +125,7 @@ describe("feature boundary graph helpers", () => {
     const source = await readFile(
       resolve(
         process.cwd(),
-        "../../.agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
+        "../../.agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml",
       ),
       "utf8",
     );

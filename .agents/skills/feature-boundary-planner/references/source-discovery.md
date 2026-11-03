@@ -2,10 +2,10 @@
 
 Paths below are repository-relative starting points, not a feature inventory. Confirm each path exists and contains tracked source before using it. Discover exact symbols and callers from the current checkout.
 
-Use [zcode-feature-graph.yaml](zcode-feature-graph.yaml) for known capability aliases, UI surfaces, owners and ranked relationships. Search first rather than loading the whole graph:
+Use [zody-feature-graph.yaml](zody-feature-graph.yaml) for known capability aliases, UI surfaces, owners and ranked relationships. Search first rather than loading the whole graph:
 
 ```sh
-rg -n '模型选择|消息队列|工作区隔离|输入框触发器' .agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml
+rg -n '模型选择|消息队列|工作区隔离|输入框触发器' .agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml
 ```
 
 Read the matching node and relationships referencing its ID, then inspect the declared source. Missing graph coverage is a reason to use the source entrypoints below, not evidence that a feature is absent. File and symbol presence validates a retrieval seed, not its behavior or test coverage.

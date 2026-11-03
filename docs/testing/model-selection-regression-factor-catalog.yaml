@@ -31,7 +31,7 @@ sourceOfTruth:
     - apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/model-config.ts
     - apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/input-intent.ts
   graph:
-    - .agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml
+    - .agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml
   graphIndex:
     status: unavailable
     note: No live codegraph index was present; live-code evidence was checked with rg and direct source reading.

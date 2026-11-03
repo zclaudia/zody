@@ -15177,7 +15177,7 @@
   "R21": {
     "title": "P2 lock、生成物与 feature graph 收口",
     "readSet": [
-      ".agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
+      ".agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml",
       "AGENTS.md",
       "apps/zody-cli/skills-lock.json",
       "docs/plans/zody-full-divergence-rename-execution-plan.md",
@@ -15191,7 +15191,17 @@
       "apps/zody-cli/skills-lock.json",
       "docs/plans/zody-rename-execution/reports/R21.md",
       "pnpm-lock.yaml",
-      "third-party/inventory.json"
+      "third-party/inventory.json",
+      ".agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml",
+      ".agents/skills/feature-boundary-planner/SKILL.md",
+      ".agents/skills/feature-boundary-planner/references/source-discovery.md",
+      ".agents/skills/feature-boundary-planner/references/zcode-domain-cross-products.md",
+      "apps/dev-docs/vite.config.ts",
+      "apps/dev-docs/test/featureBoundaryGraph.test.ts",
+      "docs/feature-boundary-graph-visualization.md",
+      "docs/feature-impact-discovery.md",
+      "docs/monitoring/mcp-process-arms-telemetry.md",
+      "docs/testing/model-selection-regression-factor-catalog.yaml"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -15227,7 +15237,27 @@
         "disposition": "removed",
         "candidate": "7c4ff9113680a38e273032b09bee32ee6ba399af"
       }
-    ]
+    ],
+    "graphPathClosure": {
+      "owner": "R21",
+      "old": ".agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
+      "new": ".agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml",
+      "consumerPaths": [
+        ".agents/skills/feature-boundary-planner/SKILL.md",
+        ".agents/skills/feature-boundary-planner/references/source-discovery.md",
+        ".agents/skills/feature-boundary-planner/references/zcode-domain-cross-products.md",
+        "apps/dev-docs/vite.config.ts",
+        "apps/dev-docs/test/featureBoundaryGraph.test.ts",
+        "docs/feature-boundary-graph-visualization.md",
+        "docs/feature-impact-discovery.md",
+        "docs/monitoring/mcp-process-arms-telemetry.md",
+        "docs/testing/model-selection-regression-factor-catalog.yaml"
+      ],
+      "operation": "byte-preserving path move; exact current path references only",
+      "preserve": "graph nodes, edges, IDs, historical records; semantic changes require separate authorization",
+      "base": "70366cdc774b5cb96fc2f7f6c57e17046d4a19a8",
+      "status": "implemented; controller hash verified; independent review pending"
+    }
   },
   "R22": {
     "title": "P2 集成与构建门禁",

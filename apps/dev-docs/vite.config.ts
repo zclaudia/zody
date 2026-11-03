@@ -17,7 +17,7 @@ const FEATURE_BOUNDARY_GRAPH_MODULE_ID = "virtual:zcode-feature-boundary-graph";
 const FEATURE_BOUNDARY_GRAPH_RESOLVED_ID = `\0${FEATURE_BOUNDARY_GRAPH_MODULE_ID}`;
 const FEATURE_BOUNDARY_GRAPH_SOURCE_PATH = resolve(
   __dirname,
-  "../../.agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml",
+  "../../.agents/skills/feature-boundary-planner/references/zody-feature-graph.yaml",
 );
 
 interface StdioTrafficFile {

@@ -153,6 +153,7 @@ flowchart TD
 
 - **依赖/锁**：R20 写入停止；唯一 lock/graph 写者。
 - **写范围**：根 `pnpm-lock.yaml`、根 workspace / Turbo 和 CLI 开发入口、对应测试、CI/容器、安装文档、`third-party/inventory.json` 与同源 notices 的必要变化、feature graph 和报告；精确文件由主控交接，第三方作者归属不变。CLI `skills-lock.json` 是外部来源证据，不因安装 owner 改动重生成。
+- **图路径合同**：R21 将 `.agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml` 原字节移动为同目录 `zody-feature-graph.yaml`，同步登记的现行读取者；节点、边和 ID 不因路径移动变化，历史材料保留原文。
 - **操作**：用户已决定根工作区为唯一安装 owner，移除 CLI 嵌套 workspace 与旧锁，保留 `pnpm --dir apps/zody-cli …`。根锁维持现有第三方解析，不删除重解析或升级；CLI Turbo 入口限定其 packages/tools，真实依赖闭包可含根包。按真实工具生成 inventory；图仅作已授权路径映射。
 - **验收**：主控将完整候选制成临时集成提交，记录 commit/tree SHA，在该提交的干净工作树从根执行 `pnpm install --frozen-lockfile`；核对成员、CLI 入口、Turbo 选择范围及依赖闭包、本地链接真实目标、包名及实际 bin。不得出现无关第三方版本/integrity/peer 漂移；图与 exports 校验另行执行。R22 通过后以相同内容原子合入，内容变化时重新建立并验证集成版本。
 

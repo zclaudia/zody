@@ -1,6 +1,6 @@
 # Zody rename execution ledger
 
-Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest committed product candidate: `0ed4aa34ffd611c3ec05a90a51759c25bb7a304f`. Type batch04 at677771fe received scoped DeepSeek PASS; root-only install at7c passed clean host installation/build checks but requires the container corrections now being verified. Manual data paths and directory corrections through3cb have scoped PASS. Full rename and release gates remain incomplete.
+Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest committed product candidate: `70366cdc774b5cb96fc2f7f6c57e17046d4a19a8`. Original198 basenames, all original1602 declaration records, runtime A/CUA and B/C/D, and three service-accessor member families have scoped independent acceptance. Current text/three independent JS binding records at70366 are under fixed-candidate review. R21 graph-resource basename closure is the sole current product writer, followed by final clean installation and paired notices generation. Full rename and release gates remain incomplete.
 
 - Source base: `033f91783901e6adaf968d3d4b8ca34c41d89442`.
 - Frozen plan commit: `06ad2270f121c46a0f5c069ae3da18641c6a9858`.
@@ -8,9 +8,9 @@ Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan usi
 - Implementation cwd: `/Users/zhvala/SourceCode/zody/.worktrees/zody-full-rename`.
 - Main worktree unrelated changes are preserved; only the two rename plans were copied into this worktree.
 - Implementation agents use native `gpt-6.1-terra`; original R00 ownership is historical. Controller now maintains manifest, scopes and this ledger.
-- DeepSeek A (`broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19cc4-82c8-7cc2-a81c-fee2d8b18b67`) reviews fixed3cb→677 type batch04. B (`broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19ccf-8092-7d11-9010-8010e395f2a5`) requested root-owner container fixes at7c. C (`broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19cdb-5be9-73f3-9b21-930b5c45f36a`) completed scoped PASS for3cb and closed manual-path tests. All use read-only deepseek-flash / magpie / group/deepseek.
+- DeepSeek A (`broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19cc4-82c8-7cc2-a81c-fee2d8b18b67`) reviews fixed66af→70366 current text/local JS. B (`broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19ccf-8092-7d11-9010-8010e395f2a5`) accepted internal service members66af. C (`broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19cdb-5be9-73f3-9b21-930b5c45f36a`) accepted B/C/D21c with separate statistics correction. All use read-only deepseek-flash / magpie / group/deepseek.
 - Broker grant: exact implementation cwd, connection scope, no UI grant.
-- Controller owns integration metadata and current product tree. Terra R10 owns only Docker verification and three precise Docker/README files in isolated `output/zody-rename-r21/docker-clean-0ed4aa34`; local detached candidate commits there are authorized for actual fixed-tree rebuilds. Terra R01/R21 have released product/build locks. Prior chronology below is retained as historical evidence; this summary supersedes earlier pending-choice notes.
+- Controller owns integration and ledger. Terra R10 has the sole source/build lock for byte-preserving graph basename migration and nine active consumers, plus explicitly granted dispatch metadata. Terra R01 prepares R22 read-only; Terra R21 prepares final install/generation tooling under ignored output only. No concurrent installation. Earlier chronology is historical evidence, superseded by these current statuses.
 
 | Task | Status     | Implementation                    | Review / gate                                                                                                    |
 | ---- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -18,8 +18,8 @@ Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan usi
 | R01  | integrated | /root/terra_r01                   | Accepted contracts at 40cae940; later source/doc refinements preserve those contracts |
 | R02  | review     | controller / prior Terra evidence | Source preservation and isolated restore gate passed; old runtime smoke recorded. Standalone old server-cli defect and full mixed-mode runtime evidence remain unresolved for R48 |
 | R10  | verified   | /root/terra_r10                   | DeepSeek review-2 PASS at 0e403023; P1 scope only, not release validation                                        |
-| R20  | running    | /root/terra_r10 + /root/terra_r01 | R20.2/3, all198 registered basenames, manual data paths/directory corrections and type batch04 at677 scoped PASS; runtime bindings, other types and text residuals incomplete |
-| R21  | running    | /root/terra_r21_links             | User selected root-only installation; Terra implementing root Turbo, CLI task scopes, install docs and container consumers. Earlier root frozen/link evidence does not validate this new candidate   |
+| R20  | review     | /root/terra_r01 + /root/terra_r21_links | Basename/type/runtime/member groups independently accepted; final text/JS70366 pending review. Whole-candidate rebuild/residual gate belongs R21/R22 |
+| R21  | running    | /root/terra_r10 + /root/terra_r21_links | Root-only installation implemented and old7c clean install passed; final graph basename, clean final candidate install and paired notices generation pending |
 | R22  | planned    | unassigned                        | not run                                                                                                          |
 | R30  | planned    | unassigned                        | not run                                                                                                          |
 | R40  | planned    | unassigned                        | not run                                                                                                          |
@@ -277,3 +277,7 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 
 - Applied87 current source/spec/doc files rebased on66af;7JS files exactly preserve literals/payloads while renaming two independent loader bindings and one local fixture schema. Original1602 declaration audit and explicit future-contract/historical retentions remain recorded. Controller hashes87files and verifies7JS byte/AST literal equality, root16/docs18/types/lint passed, isolatedcompact7/memory4 passed with existing build. Initial memory wrapper failed to spawn pnpm in isolatedPATH; successful prior subprocess statuses and corrected direct-node memory invocation retained separately, no whole-wrapper pass claim.
 - Graph resource basename identified as active internal R21 path rather than permanent external identity; precise move plus9active consumers will be handled before complete final install/generation candidate. Notices/inventory and R22 remain open.
+
+## R21 graph resource path
+
+- Graph byte-preserving move plus9active consumers verified by controller hashes/exact replacements; parent graph4/4 exit0. Terra devdocs build/roottypes/lint/changedarchitecture passed. Active readSet uses the new graph path; historical references and graph semantic gaps retained. Fixed-candidate independent review follows. Historical runtime closure preflight at a8 is now archived; its work was subsequently resolved through the separately reviewed runtime batches, not a new pending product scope.
