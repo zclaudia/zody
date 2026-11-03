@@ -13,6 +13,7 @@ import {
   type MobileUiReleaseLogger,
 } from "./mobileUiReleaseController.js";
 import { fetchMobileUiReleaseObservation } from "./mobileUiReleaseDto.js";
+import { createMobileUiReleaseLogger } from "./mobileUiReleaseLogger.js";
 import {
   createMobileUiRefreshGuardRegistry,
   type MobileUiRefreshGuardRegistry,
@@ -52,29 +53,6 @@ export interface MobileRemoteReleaseRuntime {
   /** 业务 Channel 重连后调用；启动前调用为 no-op。 */
   notifyBusinessReconnect(): void;
   dispose(): void;
-}
-
-function createReleaseLogger(isProduction: boolean): MobileUiReleaseLogger {
-  return {
-    debug(message, context) {
-      if (!isProduction) {
-        console.debug("[mobile-ui-release]", message, context ?? {});
-      }
-    },
-    info(message, context) {
-      if (!isProduction) {
-        console.info("[mobile-ui-release]", message, context ?? {});
-      }
-    },
-    warn(message, context) {
-      if (!isProduction) {
-        console.warn("[mobile-ui-release]", message, context ?? {});
-      }
-    },
-    error(message, context) {
-      console.error("[mobile-ui-release]", message, context ?? {});
-    },
-  };
 }
 
 export function createMobileRemoteReleaseRuntime(
@@ -117,7 +95,7 @@ export function createMobileRemoteReleaseRuntime(
     prepareReload,
     reload,
     guards,
-    logger: options.logger ?? createReleaseLogger(options.isProduction),
+    logger: options.logger ?? createMobileUiReleaseLogger(),
   });
 
   let started = false;
