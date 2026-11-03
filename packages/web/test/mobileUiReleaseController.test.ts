@@ -581,6 +581,87 @@ describe("MobileUiReleaseController refresh guards 与手动安全刷新", () =>
     expect(harness.reload).toHaveBeenCalledOnce();
   });
 
+  it("等待重新请求 release 期间开始的保存操作会在 reload 前再次阻止", async () => {
+    let resolveFetch!: (value: MobileUiReleaseObservation) => void;
+    const pendingFetch = new Promise<MobileUiReleaseObservation>((resolve) => {
+      resolveFetch = resolve;
+    });
+    // 第一次：初始 check 取得候选；第二次：apply 首次 fetch 立即返回；第三次是被延迟的
+    // apply 复核请求；最后一项供恢复后的手动刷新使用。
+    const harness = createHarness({
+      responses: [observed(RELEASE_B), observed(RELEASE_B), pendingFetch, observed(RELEASE_B)],
+    });
+    let fileOperation: "file-operation" | null = null;
+    harness.guards.register({
+      id: "file",
+      getBlockReason: () => fileOperation,
+    });
+
+    await checkNow(harness.controller);
+    await harness.advance(5_000);
+    expect(harness.reload).not.toHaveBeenCalled();
+    expect(harness.prepareReload).not.toHaveBeenCalled();
+
+    // release 复核在途时用户开始保存文件：第一次 guard 已经通过，第二次必须拦住。
+    fileOperation = "file-operation";
+    resolveFetch(observed(RELEASE_B));
+    await flushAsync();
+
+    expect(harness.reload).not.toHaveBeenCalled();
+    // 第二次 guard 在 native prepareReload 之后执行；此时 native 已返回 ready，
+    // 但保存操作仍必须阻止 reload。
+    expect(harness.prepareReload).toHaveBeenCalledOnce();
+    expect(harness.controller.getStatus()).toMatchObject({
+      kind: "ready",
+      releaseId: RELEASE_B,
+      blockedReasons: ["file-operation"],
+    });
+
+    fileOperation = null;
+    const result = await harness.controller.requestSafeReload();
+    expect(result).toEqual({ kind: "reloaded", releaseId: RELEASE_B });
+    expect(harness.reload).toHaveBeenCalledOnce();
+  });
+
+  it("等待原生 prepareReload 期间开始的保存操作会在 reload 前再次阻止", async () => {
+    let resolveNative!: (value: MobileRemotePrepareReloadResult) => void;
+    const pendingNative = new Promise<MobileRemotePrepareReloadResult>((resolve) => {
+      resolveNative = resolve;
+    });
+    const harness = createHarness({
+      responses: [observed(RELEASE_B), observed(RELEASE_B), observed(RELEASE_B)],
+    });
+    harness.prepareReload.mockImplementation(() => pendingNative);
+    let fileOperation: "file-operation" | null = null;
+    harness.guards.register({
+      id: "file",
+      getBlockReason: () => fileOperation,
+    });
+
+    await checkNow(harness.controller);
+    await harness.advance(5_000);
+    expect(harness.prepareReload).toHaveBeenCalledOnce();
+    expect(harness.reload).not.toHaveBeenCalled();
+
+    // 原生 veto 检查返回 ready 前开始保存：native ready 之后仍需重新评估 guard。
+    fileOperation = "file-operation";
+    resolveNative({ kind: "ready" });
+    await flushAsync();
+
+    expect(harness.reload).not.toHaveBeenCalled();
+    expect(harness.controller.getStatus()).toMatchObject({
+      kind: "ready",
+      releaseId: RELEASE_B,
+      blockedReasons: ["file-operation"],
+    });
+
+    fileOperation = null;
+    harness.prepareReload.mockReturnValue({ kind: "ready" });
+    const result = await harness.controller.requestSafeReload();
+    expect(result).toEqual({ kind: "reloaded", releaseId: RELEASE_B });
+    expect(harness.reload).toHaveBeenCalledOnce();
+  });
+
   it("多个 guard 原因稳定返回，未知状态默认阻塞", async () => {
     const harness = createHarness({ responses: [observed(RELEASE_B), observed(RELEASE_B)] });
     harness.guards.register({ id: "file", getBlockReason: () => "file-operation" });

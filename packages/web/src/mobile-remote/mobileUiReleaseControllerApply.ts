@@ -22,7 +22,8 @@ import type {
  * 刷新决策（spec 第 9.3、10、11 M3 节）。
  *
  * 顺序固定为：guard（未知阻塞）→ 重新 GET release 并复核目标/当前文档 → 自动限频
- * → native `prepareReload` veto → 再次复核文档/目标 → reload。
+ * → native `prepareReload` veto → 再次求值 guard（等待期间新出现的文件保存等状态）
+ * → 再次复核文档/目标 → reload。
  * 任一失败都保留当前文档；后台、pagehide、dispose 会让在途 apply 失效。
  */
 export interface MobileUiReleaseApplyContext {
@@ -92,6 +93,20 @@ function isCompatible(manifest: MobileUiReleaseManifest, bridgeVersion: number):
   return manifest.supportedBridgeVersions.includes(bridgeVersion);
 }
 
+function blockByRefreshGuards(
+  context: MobileUiReleaseApplyContext,
+  target: MobileUiReleaseTarget,
+  guardResult: ReturnType<MobileUiRefreshGuardRegistry["evaluate"]>,
+): MobileUiSafeReloadResult {
+  context.state.manualPending = false;
+  setReadyStatus(context, target, { blockedReasons: guardResult.reasons });
+  context.logger.info("mobile-ui reload blocked by refresh guard.", {
+    reasons: [...guardResult.reasons],
+    unknownGuardIds: [...guardResult.unknownGuardIds],
+  });
+  return { kind: "blocked", releaseId: target.releaseId, reasons: guardResult.reasons };
+}
+
 function documentReleased(
   context: MobileUiReleaseApplyContext,
   documentRelease: Exclude<DocumentReleaseRead, { kind: "invalid" | "missing" }>,
@@ -143,13 +158,7 @@ export async function performMobileUiReleaseApply(
 
   const guardResult = context.guards.evaluate();
   if (!guardResult.allowed) {
-    state.manualPending = false;
-    setReadyStatus(context, target, { blockedReasons: guardResult.reasons });
-    context.logger.info("mobile-ui reload blocked by refresh guard.", {
-      reasons: [...guardResult.reasons],
-      unknownGuardIds: [...guardResult.unknownGuardIds],
-    });
-    return { kind: "blocked", releaseId: target.releaseId, reasons: guardResult.reasons };
+    return blockByRefreshGuards(context, target, guardResult);
   }
 
   // 刷新前重新请求 release：目标必须仍是待刷新 release，且不能与当前文档混淆。
@@ -291,6 +300,13 @@ export async function performMobileUiReleaseApply(
       reasons: [],
       nativeVeto: nativeResult.kind,
     };
+  }
+
+  // fetchObservation/prepareReload 是异步等待窗口：文件保存等 guard 可能刚在此间开始。
+  // 第一次 guard 结果已经过期，reload 前必须重新求值，不能只信 native ready。
+  const guardResultAfterAsync = context.guards.evaluate();
+  if (!guardResultAfterAsync.allowed) {
+    return blockByRefreshGuards(context, target, guardResultAfterAsync);
   }
 
   // prepareReload 可能跨过 generation/session 变化；reload 前再次复核文档与目标。
